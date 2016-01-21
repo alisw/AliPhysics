@@ -58,7 +58,9 @@
 #include "AliEMCALTriggerPatch.h"
 #include "AliEMCALTriggerTypes.h"
 
+/// \cond CLASSIMP
 ClassImp(AliEMCALReconstructor) 
+/// \endcond
   
 const AliEMCALRecParam*     AliEMCALReconstructor::fgkRecParam        = 0;   // EMCAL rec. parameters
 AliEMCALRawUtils*           AliEMCALReconstructor::fgRawUtils         = 0;   // EMCAL raw utilities class
@@ -69,14 +71,14 @@ TClonesArray*               AliEMCALReconstructor::fgTriggerDigits    = 0;   // 
 AliEMCALTriggerElectronics *AliEMCALReconstructor::fgTriggerProcessor = 0x0;
 TClonesArray               *AliEMCALReconstructor::fgTriggerData      = 0x0;
 
+///
+/// Constructor
+/// Init all arrays and stuff.
+///
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
   : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0), fMatches(0x0)
 {
-  // ctor
-
-  // AliDebug(2, "Mark.");  
-
   fgRawUtils = new AliEMCALRawUtils;
   
   AliCDBManager* man = AliCDBManager::Instance();
@@ -176,13 +178,12 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   fMatches->SetOwner(kTRUE);
 } 
 
+///
+/// Destructor
+///
 //____________________________________________________________________________
 AliEMCALReconstructor::~AliEMCALReconstructor()
 {
-  // dtor
-
-  //AliDebug(2, "Mark.");
-
   ////RS  if(fGeom)              delete fGeom;
   
   //No need to delete, recovered from OCDB
@@ -215,29 +216,37 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   AliCodeTimer::Instance()->Print();
 } 
 
+///
+/// Init the fgClusterizer with geometry and calibration pointers, avoid doing it twice.                          
+///
 //____________________________________________________________________________                                  
 void AliEMCALReconstructor::InitClusterizer() const
 {
-  //Init the clusterizer with geometry and calibration pointers, avoid doing it twice.                          
   Int_t clusterizerType = -1;
   Int_t eventType = -1;
-  if(GetRecParam()) {
+  if(GetRecParam()) 
+  {
     clusterizerType = GetRecParam()->GetClusterizerFlag();
     eventType       = GetRecParam()->GetEventSpecie();
   }
-  else{
+  else
+  {
     AliCDBEntry *entry = (AliCDBEntry*)
       AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
-    //Get The reco param for the default event specie                                                           
-    if (entry) {
+  
+    // Get The reco param for the default event specie                                                           
+    if (entry) 
+    {
       AliEMCALRecParam *recParam  = (AliEMCALRecParam*)((TObjArray *) entry->GetObject())->At(0);
       if(recParam) clusterizerType = recParam->GetClusterizerFlag(); 
     }
   }
   
-  //Check if clusterizer previously set corresponds to what is needed for this event type                       
-  if(fgClusterizer){
-    if(eventType!=AliRecoParam::kCalib){
+  // Check if clusterizer previously set corresponds to what is needed for this event type                       
+  if(fgClusterizer)
+  {
+    if(eventType!=AliRecoParam::kCalib)
+    {
       //printf("ReCreate clusterizer? Clusterizer set <%d>, Clusterizer in use <%s>\n",
       //     clusterizerType, fgClusterizer->Version());
       
@@ -271,18 +280,19 @@ void AliEMCALReconstructor::InitClusterizer() const
   }
 }
 
+///
+/// Method called by AliReconstruction; 
+/// Only the clusterization is performed, the rest of the reconstruction is done 
+/// in FillESD because the track matching needs access to the AliESD object to 
+/// retrieve the tracks reconstructed by the global tracking.
+/// Works on the current event.
+///
 //____________________________________________________________________________
 void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
-  // method called by AliReconstruction; 
-  // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
-  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
-  // the global tracking.
-  // Works on the current event.
-  
   AliCodeTimerAuto("",0)
     
-  //Get input digits and put them in fgDigitsArr, clear the list before 
+  // Get input digits and put them in fgDigitsArr, clear the list before 
   ReadDigitsArrayFromTree(digitsTree);
   
   InitClusterizer();
@@ -290,11 +300,11 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
   
-  //Skip clusterization of LED events
-  if (GetRecParam()->GetEventSpecie()!=AliRecoParam::kCalib){
-    
-    if(fgDigitsArr && fgDigitsArr->GetEntries()) {
-      
+  // Skip clusterization of LED events
+  if (GetRecParam()->GetEventSpecie()!=AliRecoParam::kCalib)
+  {
+    if(fgDigitsArr && fgDigitsArr->GetEntries()) 
+    {
       fgClusterizer->SetInput(digitsTree);
       
       //fgClusterizer->Digits2Clusters("deb all") ; //For debugging
@@ -311,17 +321,17 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   fgClusterizer->DeleteRecPoints();
 }
 
+///
+/// Conversion from raw data to EMCAL digits.
+/// Works on a single-event basis.
+///
 //____________________________________________________________________________
 void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
-  
 {
-  // Conversion from raw data to
-  // EMCAL digits.
-  // Works on a single-event basis
-  
   rawReader->Reset() ; 
   
-  for (int  i=0;i<fgTriggerData->GetEntriesFast();i++) {
+  for (int  i=0;i<fgTriggerData->GetEntriesFast();i++) 
+  {
     ((AliEMCALTriggerData*)fgTriggerData->At(i))->SetMode(1);  
   }
 
@@ -334,11 +344,13 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   digitsTree->Branch("EMCAL", &fgDigitsArr, bufsize);
   digitsTree->Branch("EMTRG", &digitsTrg, bufsize);
   
-  //Skip calibration events do the rest
+  // Skip calibration events do the rest
   Bool_t doFit = kTRUE;
   if ( !(GetRecParam()->FitLEDEvents()) && GetRecParam()->GetEventSpecie()==AliRecoParam::kCalib) doFit = kFALSE;
-  if (doFit){
-    //must be done here because, in constructor, option is not yet known
+  
+  if (doFit)
+  {
+    // must be done here because, in constructor, option is not yet known
     fgRawUtils->SetOption(GetOption());
     
     //  fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
@@ -362,7 +374,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     fgRawUtils->Raw2Digits(rawReader,fgDigitsArr,fPedestalData,digitsTrg,fgTriggerData);
     
   }//skip calibration event
-  else{
+  else
+  {
     AliDebug(1," Calibration Event, skip!");
   }
   
@@ -372,17 +385,17 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   
 }
 
-
+///
+/// Create AliESDCaloCells, AliESDCaloClusters and AliESDCaloTrigger entries 
+/// from AliEMCALRecPoints, AliEMCALDigits. 
+/// Called by AliReconstruct after Reconstruct() and global tracking and 
+/// vertexing and V0. 
+/// Works on the current event
+///
 //____________________________________________________________________________
 void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree, 
 				    AliESDEvent* esd) const
 {
-  // Called by AliReconstruct after Reconstruct() and global tracking and vertexing 
-  // and V0 
-  // Works on the current event
-  // printf(" ## AliEMCALReconstructor::FillESD() is started ### \n ");
-  //return;
-  
   //########################################
   // Trigger
   //########################################
@@ -393,11 +406,13 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   
-  if (esdV0) {
+  if (esdV0) 
+  {
     v0M[0] = esdV0->GetTriggerChargeC();
     v0M[1] = esdV0->GetTriggerChargeA();
   }
-  else {
+  else 
+  {
     AliWarning("No V0 ESD! Run trigger processor w/ null V0 charges");
   }
   
@@ -405,7 +420,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   TBranch *branchtrg = digitsTree->GetBranch("EMTRG");
   
-  if (!branchtrg) { 
+  if (!branchtrg) 
+  { 
     AliError("Can't get the branch with the EMCAL trigger digits!");
     return;
   }
@@ -419,7 +435,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");
   
-  if (trgESD) {
+  if (trgESD) 
+  {
     trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
     int trgBitWord=0;
     for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++) {
@@ -441,7 +458,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     
     trgESD->SetTriggerBitWord(trgBitWord);
     
-    for (int i=0;i<fgTriggerData->GetEntriesFast();i++) {
+    for (int i=0;i<fgTriggerData->GetEntriesFast();i++) 
+    {
       for (int j=0;j<2;j++) {
         trgESD->SetL1Threshold(i,2 * j    , ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1JetThreshold(  j));
         trgESD->SetL1Threshold(i,2 * j + 1, ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1GammaThreshold(j));
@@ -453,7 +471,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       trgESD->SetL1V0(i,v0);        
 
       trgESD->SetMedian(i,((AliEMCALTriggerData*)fgTriggerData->At(i))->GetMedian());
-      if (!saveOnce[i] && ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1DataDecoded()) {
+      if (!saveOnce[i] && ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1DataDecoded()) 
+      {
         int type[19] = {0};
         ((AliEMCALTriggerData*)fgTriggerData->At(i))->GetL1TriggerType(type);
         
@@ -465,12 +484,13 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   }
   
   // Resetting
-  for (int i=0;i<fgTriggerData->GetEntriesFast();i++) {
+  for (int i=0;i<fgTriggerData->GetEntriesFast();i++) 
+  {
     ((AliEMCALTriggerData*)fgTriggerData->At(i))->Reset();
   }
   
   //########################################
-  //##############Fill CaloCells###############
+  //##############Fill CaloCells############
   //########################################
   
   // Get input digits and put them in fgDigitsArr, clear the list before 
@@ -530,7 +550,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   emcCells.Sort();
   
   //------------------------------------------------------------
-  //-----------------CLUSTERS-----------------------------
+  //-----------------CLUSTERS-----------------------------------
   //------------------------------------------------------------
   clustersTree->SetBranchStatus("*",0); //disable all branches
   clustersTree->SetBranchStatus("EMCALECARP",1); //Enable only the branch we need
@@ -545,7 +565,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   
   //########################################
-  //##############Fill CaloClusters#############
+  //##############Fill CaloClusters#########
   //########################################
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) 
   {
@@ -592,7 +612,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     absIdList.Set(newCellMult);
     fracList.Set(newCellMult);
     
-    if(newCellMult > 0) { // accept cluster if it has some digit
+    // Accept cluster if it has some digit
+    if(newCellMult > 0) 
+    { 
       nClustersNew++;
       
       // Fill the ESDCaloCluster
@@ -654,7 +676,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
           
           // Find the 4 MC labels that contributed to the cluster and their 
           // deposited energy in the current digit
-	  Int_t  nparents   = dig->GetNiparent();
+          Int_t  nparents   = dig->GetNiparent();
           if ( nparents > 0 ) 
           {
             Int_t   digLabel   =-1 ; 
@@ -747,8 +769,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   } // cycle on clusters
 
   //
-  //Reset the index of matched cluster for tracks
-  //to the one in CaloCluster array
+  // Reset the index of matched cluster for tracks
+  // to the one in CaloCluster array
+  //
   Int_t ncls = esd->GetNumberOfCaloClusters();
   for(Int_t icl=0; icl<ncls; icl++)
   {
@@ -762,41 +785,47 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     }
   }
   
-  //Fill ESDCaloCluster with PID weights
+  // Fill ESDCaloCluster with PID weights
   AliEMCALPID *pid = new AliEMCALPID;
   //pid->SetPrintInfo(kTRUE);
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
   delete pid;
   
-  //Store EMCAL misalignment matrixes
+  // Store EMCAL misalignment matrixes
   FillMisalMatrixes(esd) ;
   
 }
 
+///
+/// Store EMCAL matrixes in ESD Header.
+///
 //==================================================================================
-void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
-  //Store EMCAL matrixes in ESD Header
-  
-  //Check, if matrixes was already stored
-  for(Int_t sm = 0 ; sm < fGeom->GetNumberOfSuperModules(); sm++){
+void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const
+{  
+  // Check, if matrixes was already stored
+  for(Int_t sm = 0 ; sm < fGeom->GetNumberOfSuperModules(); sm++)
+  {
     if(esd->GetEMCALMatrix(sm)!=0)
       return ;
   }
   
-  //Create and store matrixes
-  if(!gGeoManager){
+  // Create and store matrixes
+  if(!gGeoManager)
+  {
     AliError("Can not store misal. matrixes: no gGeoManager! \n") ;
     return ;
   }
-  //Note, that owner of copied marixes will be header
+  
+  // Note, that owner of copied matrixes will be header
   const Int_t bufsize = 255;
   char path[bufsize] ;
   TGeoHMatrix * m = 0x0;
   Int_t tmpType = -1;
   Int_t SMOrder = 0;
   TString SMName;
-  for(Int_t sm = 0; sm < fGeom->GetNumberOfSuperModules(); sm++){
+  for(Int_t sm = 0; sm < fGeom->GetNumberOfSuperModules(); sm++)
+  {
     if(fGeom->GetSMType(sm) == AliEMCALGeometry::kEMCAL_Standard )      SMName = "SMOD";
     else if(fGeom->GetSMType(sm) == AliEMCALGeometry::kEMCAL_Half )     SMName = "SM10";
     else if(fGeom->GetSMType(sm) == AliEMCALGeometry::kEMCAL_3rd )      SMName = "SM3rd";
@@ -804,15 +833,19 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
     else if( fGeom->GetSMType(sm) == AliEMCALGeometry::kDCAL_Ext )      SMName = "DCEXT";
     else AliError("Unkown SM Type!!");
 
-    if(fGeom->GetSMType(sm) == tmpType) {
+    if(fGeom->GetSMType(sm) == tmpType) 
+    {
       SMOrder++;
-    } else {
+    } 
+    else 
+    {
       tmpType = fGeom->GetSMType(sm);
       SMOrder = 1;
     }
     snprintf(path,bufsize,"/ALIC_1/XEN1_1/%s_%d", SMName.Data(), SMOrder) ;
 
-    if (gGeoManager->CheckPath(path)){
+    if (gGeoManager->CheckPath(path))
+    {
       gGeoManager->cd(path);
       m = gGeoManager->GetCurrentMatrix() ;
       //			printf("================================================= \n");
@@ -821,30 +854,35 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
       esd->SetEMCALMatrix(new TGeoHMatrix(*m),sm) ;
       //			printf("================================================= \n");
     }
-    else{
+    else
+    {
       esd->SetEMCALMatrix(NULL,sm) ;
     }
   }
 }
 
+///
+/// Read the digits from the input tree
+/// See AliEMCALClusterizer::SetInput(TTree *digitsTree);    
+///
 //__________________________________________________________________________
 void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
 {
-  // Read the digits from the input tree
-  // See AliEMCALClusterizer::SetInput(TTree *digitsTree);    
-  
   // Clear previous digits in the list
-  if(fgDigitsArr){ 
+  if(fgDigitsArr)
+  { 
     fgDigitsArr->Clear("C");
   }
-  else{
+  else
+  {
     // It should not happen, but just in case ...
     fgDigitsArr = new TClonesArray("AliEMCALDigit",100); 
   }
   
   // Read the digits from the input tree
   TBranch *branch = digitsTree->GetBranch("EMCAL");
-  if (!branch) { 
+  if (!branch)
+  { 
     AliError("can't get the branch with the EMCAL digits !");
     return;
   }  
@@ -853,16 +891,15 @@ void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
   branch->GetEntry(0);
 }
 
+///
+/// Calculate the residual between track and cluster.
+///
+/// If the esdFriend is available, use the TPCOuter point as the starting 
+/// point of extrapolation, otherwise use the TPCInner point.
+///
 //==================================================================================
 Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Float_t &dEta, Float_t &dPhi)const
 {
-  //
-  // calculate the residual between track and cluster
-  //
-
-  // If the esdFriend is available, use the TPCOuter point as the starting point of extrapolation
-  // Otherwise use the TPCInner point
-
   dEta = -999, dPhi = -999;
   Bool_t ITSTrackSA = 0;
 
@@ -873,25 +910,28 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
     trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
   else if(track->GetInnerParam())
     trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
-  else{
+  else
+  {
     trkParam = new AliExternalTrackParam(*track); //If there is ITSSa track 
     ITSTrackSA = 1;	
   }
   if(!trkParam) return kFALSE;
   
   AliExternalTrackParam trkParamTmp (*trkParam);
-  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)){
-	if(ITSTrackSA) delete trkParam;
-	return kFALSE;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(kTRUE), GetRecParam()->GetExtrapolateStep(), dEta, dPhi))
+  {
+    if(ITSTrackSA) delete trkParam;
+    return kFALSE;
   }
 
   if(ITSTrackSA) delete trkParam;
   return kTRUE;
 }
 
-//
+///
+/// Default constructor.
+///
 //==================================================================================
-//
 AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch() 
   : TObject(),  
     fIndexT(-1), 
@@ -899,13 +939,12 @@ AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch()
     fdEta(-999.),
     fdPhi(-999.)
 {
-  //default constructor
-
 }
 
-//
+///
+/// Copy constructor.
+///
 //==================================================================================
-//
 AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch(const AliEMCALMatch& copy)
   : TObject(),
     fIndexT(copy.fIndexT),
@@ -913,25 +952,26 @@ AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch(const AliEMCALMatch& copy)
     fdEta(copy.fdEta),
     fdPhi(copy.fdPhi)
 {
-  //copy ctor
 }
+
+///
+/// Assignment operator; use copy ctor.
+///
 //_____________________________________________________________________
 AliEMCALReconstructor::AliEMCALMatch& AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch::operator = (const AliEMCALMatch &source)
-{ // assignment operator; use copy ctor
+{ 
   if (&source == this) return *this;
 
   new (this) AliEMCALMatch(source);
   return *this;
 }
-//
+
+///
+/// Compare wrt the residual.
+///
 //==================================================================================
-//
 Int_t AliEMCALReconstructor::AliEMCALMatch::Compare(const TObject *obj) const 
-{
-  //
-  // Compare wrt the residual
-  //
-	
+{	
   AliEMCALReconstructor::AliEMCALMatch *that = (AliEMCALReconstructor::AliEMCALMatch*)obj;
 	
   Double_t thisDist = fDistance;//fDistance;
