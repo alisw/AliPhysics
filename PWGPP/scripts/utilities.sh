@@ -694,6 +694,27 @@ copyFileToLocal()
   return 1
 )
 
+mkdirLocal() (
+  # Creates the given directories, with full path, only if local. If not local,
+  # print a message and return success.
+  # Return 1 if at least one error happened, 0 on success.
+  err=0
+  while [[ $# -gt 0 ]]; do
+    dir=$1
+    shift
+    if [[ "${dir%%://*}" != "$dir" ]]; then
+      echo "mkdirLocal: skipping creation of $dir: it is not local"
+      continue
+    fi
+    mkdir -p "$dir"
+    [[ -d "$dir" ]]
+    rv=$?
+    err=$((err + ($rv & 1)))
+    echo "mkdirLocal: creation of dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
+  done
+  return $((err & 1))
+)
+
 copyFileToRemote() (
   # Copy a list of files ($1, $2...${n-1}) to a certain dest dir ($n). The last
   # parameter must then be a directory. The destination might be local or remote
