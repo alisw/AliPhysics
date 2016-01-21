@@ -91,6 +91,10 @@ protected:
     static Int_t fgAntiXiCode;//pdg anti-xi code
     static Int_t fgSigmaCode;//pdg sigma code
     static Int_t fgAntiSigmaCode;//pdg anti-sigma code
+    static Int_t fgSigma0Code;//pdg sigma code
+    static Int_t fgAntiSigma0Code;//pdg anti-sigma code
+    static Int_t fgSigmaPlusCode;//pdg sigma code
+    static Int_t fgAntiSigmaPlusCode;//pdg anti-sigma code 
     static Int_t fgK0LCode;//pdg k0 long code
     static Int_t fgNeutronCode;//pdg neutron code
     static Int_t fgAntiNeutronCode;//pdg anti-neutron code
