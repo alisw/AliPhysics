@@ -57,9 +57,12 @@ AliRDHFCuts(name),
   fUseCascadePID(kFALSE),
   fPidObjCascPi(0),
   fPidObjCascPr(0),
+  fBzkG(0),
   fProdTrackTPCNclsPIDMin(0),
   fProdTrackTPCNclsRatioMin(0.0),
   fProdUseAODFilterBit(kTRUE),
+  fProdAODFilterBit(4),
+  fProdRejectTrackWithShared(kFALSE),
   fProdMassTolLambda(0.010),
   fProdMassTolXiRough(0.020),
   fProdMassTolXi(0.008),
@@ -104,22 +107,31 @@ AliRDHFCuts(name),
   //
   // Default Constructor
   //
+  for(Int_t i=0;i<3;i++){
+    fPrimVert[i] = 0.;
+  }
 
-  const Int_t nvars=2;
+  const Int_t nvars=4;
   SetNVars(nvars);
   TString varNames[nvars]={
 			   "InvMass [GeV/c2]", //0
-			   "cos(Opening angle) [cos(rad)]" //1
+			   "cos(Opening angle) [cos(rad)]", //1
+         "dPhiS", //2
+         "dEtaS" //3
   };
 
   Bool_t isUpperCut[nvars]={
 			    kTRUE, //0
-			    kFALSE //1
+			    kFALSE, //1
+          kFALSE, //2
+          kFALSE //3
   };
   SetVarNames(nvars,varNames,isUpperCut);
   Bool_t forOpt[nvars]={
 			kTRUE, //0
 			kTRUE, //1
+			kTRUE, //2
+			kTRUE //3
   };
   SetVarsForOpt(nvars,forOpt);
 
@@ -134,9 +146,12 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fUseCascadePID(source.fUseCascadePID),
   fPidObjCascPi(source.fPidObjCascPi),
   fPidObjCascPr(source.fPidObjCascPr),
+  fBzkG(source.fBzkG),
   fProdTrackTPCNclsPIDMin(source.fProdTrackTPCNclsPIDMin),
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
+  fProdAODFilterBit(source.fProdAODFilterBit),
+  fProdRejectTrackWithShared(source.fProdRejectTrackWithShared),
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolXiRough(source.fProdMassTolXiRough),
   fProdMassTolXi(source.fProdMassTolXi),
@@ -181,6 +196,9 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   //
   // Copy constructor
   //
+  for(Int_t i=0;i<3;i++){
+    fPrimVert[i] = source.fPrimVert[i];
+  }
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator=(const AliRDHFCutsXictoeleXifromAODtracks &source)
@@ -198,9 +216,12 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fUseCascadePID = source.fUseCascadePID;
   fPidObjCascPi = source.fPidObjCascPi;
   fPidObjCascPr = source.fPidObjCascPr;
+  fBzkG = source.fBzkG;
   fProdTrackTPCNclsPIDMin = source.fProdTrackTPCNclsPIDMin;
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
+  fProdAODFilterBit = source.fProdAODFilterBit;
+  fProdRejectTrackWithShared = source.fProdRejectTrackWithShared;
   fProdMassTolLambda = source.fProdMassTolLambda;
   fProdMassTolXiRough = source.fProdMassTolXiRough;
   fProdMassTolXi = source.fProdMassTolXi;
@@ -242,6 +263,9 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
 	fConversionMassMax = source.fConversionMassMax;
   
+  for(Int_t i=0;i<3;i++){
+    fPrimVert[i] = source.fPrimVert[i];
+  }
   
   return *this;
 }
@@ -344,6 +368,34 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TObject* obj, Int_t selecti
 		Double_t epy = d->PyProng(0);
 		Double_t epz = d->PzProng(0);
 		Double_t cosoa = (xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz);
+
+    Double_t dphis_e_pr, detas_e_pr, dphis_e_pi, detas_e_pi, dphis_e_bach, detas_e_bach;
+    dphis_e_pr = 9999.;
+    detas_e_pr = 9999.;
+    dphis_e_pi = 9999.;
+    detas_e_pi = 9999.;
+    dphis_e_bach = 9999.;
+    detas_e_bach = 9999.;
+    if(fCutsRD[GetGlobalIndex(2,ptbin)]>0 || fCutsRD[GetGlobalIndex(3,ptbin)]>0){
+      AliAODTrack *trke = (AliAODTrack*)d->GetDaughter(0);
+      AliAODcascade *casc = (AliAODcascade*)d->GetDaughter(1);
+      if(trke && casc){
+        AliAODTrack *cprtrk = 0;
+        AliAODTrack *cpitrk = 0;
+        AliAODTrack *cbtrk = 0;
+        if(casc->ChargeXi()<0){
+          cprtrk = (AliAODTrack*)casc->GetDaughter(0);
+          cpitrk = (AliAODTrack*)casc->GetDaughter(1);
+          cbtrk = (AliAODTrack*)casc->GetDecayVertexXi()->GetDaughter(0);
+        }else{
+          cprtrk = (AliAODTrack*)casc->GetDaughter(1);
+          cpitrk = (AliAODTrack*)casc->GetDaughter(0);
+          cbtrk = (AliAODTrack*)casc->GetDecayVertexXi()->GetDaughter(0);
+        }
+        if(cprtrk && cpitrk && cbtrk)
+          GetdPhiSdEtaSR125(trke,cprtrk,cpitrk,cbtrk,fBzkG,fPrimVert, dphis_e_pr,detas_e_pr,dphis_e_pi,detas_e_pi,dphis_e_bach,detas_e_bach);
+      }
+    }
     
     if(InvMassEleXi > fCutsRD[GetGlobalIndex(0,ptbin)])
       {
@@ -353,6 +405,30 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TObject* obj, Int_t selecti
       {
 	okcand = kFALSE;
       }
+    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    {
+      okcand = kFALSE;
+    }
+    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    {
+      okcand = kFALSE;
+    }
+    if(fabs(dphis_e_bach) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    {
+      okcand = kFALSE;
+    }
+    if(fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    {
+      okcand = kFALSE;
+    }
+    if(fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    {
+      okcand = kFALSE;
+    }
+    if(fabs(detas_e_bach) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    {
+      okcand = kFALSE;
+    }
     
     if(!okcand)  return 0;
     returnvalueCuts = 1;
@@ -416,76 +492,109 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCombinedPID(AliAODRecoDecayH
 }
 
 //________________________________________________________________________
-Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleTrkCuts(AliAODTrack *trk, AliAODVertex *primVert)
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *primVert)
 {
   //
   // Single Track Cut to be applied before object creation
   //
 
-  if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
-  if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
-  if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
+  //if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
+  //if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
+  //if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
 
-	Double_t pos[3]; primVert->GetXYZ(pos);
-	Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
-	const AliESDVertex vESD(pos,cov,100.,100);
-	if(fTrackCuts&&!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+  if(fTrackCuts){
+    if(fProdAODFilterBit==7){
+      Float_t ptmin, ptmax, etamin, etamax;
+      fTrackCuts->GetPtRange(ptmin,ptmax);
+      fTrackCuts->GetEtaRange(etamin,etamax);
+      if(trk->Pt()<ptmin || trk->Pt()>ptmax) return kFALSE;
+      if(trk->Eta()<etamin || trk->Eta()>etamax) return kFALSE;
+    }else{
+      Double_t pos[3]; primVert->GetXYZ(pos);
+      Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
+      const AliESDVertex vESD(pos,cov,100.,100);
+      if(!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+    }
+  }
 
-	if(trk->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
+	if(trkpid->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
 	if(trk->GetTPCNclsF()>0){
 		Float_t tpcratio = (Float_t)trk->GetTPCncls()/(Float_t)trk->GetTPCNclsF();
 		if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
 	}
 
-  if(fUsePID)
-    {
-      if(fPidHF->GetPidResponse()==0x0){
-	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-	AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-	AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-	fPidHF->SetPidResponse(pidResp);
-      }
-
-			switch(fPIDStrategy){
-					case kNSigmaCuts:
-						return IsSelectedeID(trk);
-						break;
-					case kNSigmaCustomizedCuts:
-						return IsSelectedCustomizedeID(trk);
-						break;
-					case kNSigmaCustomizedPtDepCuts:
-						return IsSelectedCustomizedPtDepeID(trk);
-						break;
-					case kCombinedCuts:
-						return IsSelectedCombinedeID(trk);
-						break;
-			}
-
+  if(fProdRejectTrackWithShared){
+    const TBits sharedMap = trk->GetTPCSharedMap();
+    if((sharedMap.CountBits()) >= 1){
+      return kFALSE;
     }
+  }
+
+  if(fUsePID)
+  {
+    if(fPidHF->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidHF->SetPidResponse(pidResp);
+    }
+
+    switch(fPIDStrategy){
+      case kNSigmaCuts:
+        return IsSelectedeID(trkpid);
+        break;
+      case kNSigmaCustomizedCuts:
+        return IsSelectedCustomizedeID(trkpid);
+        break;
+      case kNSigmaCustomizedPtDepCuts:
+        return IsSelectedCustomizedPtDepeID(trk,trkpid);
+        break;
+      case kCombinedCuts:
+        return IsSelectedCombinedeID(trkpid);
+        break;
+    }
+  }
 
   return kTRUE;
 }
 //________________________________________________________________________
-Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleTrkCutsNoPID(AliAODTrack *trk, AliAODVertex *primVert)
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *primVert)
 {
   //
   // Single Track Cut to be applied before object creation
   //
 
-  if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
-  if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
-  if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
+  //if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
+  //if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
+  //if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
+  if(fTrackCuts){
+    if(fProdAODFilterBit==7){
+      Float_t ptmin, ptmax, etamin, etamax;
+      fTrackCuts->GetPtRange(ptmin,ptmax);
+      fTrackCuts->GetEtaRange(etamin,etamax);
+      if(trk->Pt()<ptmin || trk->Pt()>ptmax) return kFALSE;
+      if(trk->Eta()<etamin || trk->Eta()>etamax) return kFALSE;
+    }else{
+      Double_t pos[3]; primVert->GetXYZ(pos);
+      Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
+      const AliESDVertex vESD(pos,cov,100.,100);
+      if(!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+    }
+  }
 
-	Double_t pos[3]; primVert->GetXYZ(pos);
-	Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
-	const AliESDVertex vESD(pos,cov,100.,100);
-	if(fTrackCuts&&!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
-
-	if(trk->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
+	if(trkpid->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
 	if(trk->GetTPCNclsF()>0){
 		Float_t tpcratio = (Float_t)trk->GetTPCncls()/(Float_t)trk->GetTPCNclsF();
 		if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
 	}
+
+  if(fProdRejectTrackWithShared){
+    const TBits sharedMap = trk->GetTPCSharedMap();
+    if((sharedMap.CountBits()) >= 1){
+      return kFALSE;
+    }
+  }
+
 
   return kTRUE;
 }
@@ -563,14 +672,14 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedeID(AliAODTrack *
 	return kTRUE;
 }
 //________________________________________________________________________
-Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTrack *trk)
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTrack *trk, AliAODTrack *trkpid)
 {
   //
   // electron ID pt dependent
   //
 
-	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
-	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
+	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
+	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
 
 	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
@@ -740,6 +849,18 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
 
 	Double_t EtaXi = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
 	if(EtaXi<fProdCascEtaMin || EtaXi>fProdCascEtaMax) return kFALSE;
+
+  if(fProdRejectTrackWithShared){
+    const TBits sharedMap1 = ptrack->GetTPCSharedMap();
+    const TBits sharedMap2 = ntrack->GetTPCSharedMap();
+    const TBits sharedMap3 = btrack->GetTPCSharedMap();
+    if((sharedMap1.CountBits() >= 1) || (sharedMap2.CountBits() >= 1) ||
+        (sharedMap3.CountBits() >= 1))
+    {
+      return kFALSE;
+    }
+  }
+
   
   return kTRUE;
 }
@@ -800,7 +921,7 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSideBand(TLorentzVector *casc)
 }
 
 //________________________________________________________________________
-Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversions(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversions(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
 {
   //
   // Tag conversion electron tracks
@@ -820,9 +941,26 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversions(AliAODTrack *etrk, Ali
 		AliAODTrack *trk2 = (AliAODTrack*) evt->GetTrack(it);
 		if(!trk2) continue;
 		Int_t trkid2 = trk2->GetID();
-		if(trkid==trkid2) continue;
+    if(abs(trkid)==abs(trkid2)) continue;
 		if(etrk->Charge()*trk2->Charge()>0) continue;
-		if(!etrk->TestFilterMask(BIT(4))) continue;
+
+    if(fProdAODFilterBit==7){
+      if(!trk2->TestFilterBit(BIT(fProdAODFilterBit))) continue;
+    }else{
+      if(!trk2->TestFilterMask(BIT(fProdAODFilterBit))) continue;
+    }
+
+    Double_t nSigmaTPCele = 9999.;
+    if(fProdAODFilterBit==7){
+      if(-trkid2-1>=19000) continue;
+      if(-trkid2-1<0) continue;
+      Int_t index = id2index[-trkid2-1];
+      AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
+      nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+    }else{
+      nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+    }
+    if(fabs(nSigmaTPCele)>5.) continue;
 
 		Double_t px2 = trk2->Px();
 		Double_t py2 = trk2->Py();
@@ -838,7 +976,7 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversions(AliAODTrack *etrk, Ali
   return isconv;
 }
 //________________________________________________________________________
-Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversionsSameSign(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversionsSameSign(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
 {
   //
   // Tag conversion electron tracks
@@ -858,9 +996,26 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversionsSameSign(AliAODTrack *e
 		AliAODTrack *trk2 = (AliAODTrack*) evt->GetTrack(it);
 		if(!trk2) continue;
 		Int_t trkid2 = trk2->GetID();
-		if(trkid==trkid2) continue;
+    if(abs(trkid)==abs(trkid2)) continue;
 		if(etrk->Charge()*trk2->Charge()<0) continue;
-		if(!etrk->TestFilterMask(BIT(4))) continue;
+
+    if(fProdAODFilterBit==7){
+      if(!trk2->TestFilterBit(BIT(fProdAODFilterBit))) continue;
+    }else{
+      if(!trk2->TestFilterMask(BIT(fProdAODFilterBit))) continue;
+    }
+
+    Double_t nSigmaTPCele = 9999.;
+    if(fProdAODFilterBit==7){
+      if(-trkid2-1>=19000) continue;
+      if(-trkid2-1<0) continue;
+      Int_t index = id2index[-trkid2-1];
+      AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
+      nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+    }else{
+      nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+    }
+    if(fabs(nSigmaTPCele)>5.) continue;
 
 		Double_t px2 = trk2->Px();
 		Double_t py2 = trk2->Py();
@@ -874,4 +1029,258 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::TagConversionsSameSign(AliAODTrack *e
 	if(minmass<fConversionMassMax) isconv = kTRUE;
 
   return isconv;
+}
+
+//________________________________________________________________________
+void AliRDHFCutsXictoeleXifromAODtracks::SetSftPosR125(AliAODTrack *track,Double_t bfield,Double_t priVtx[3],Double_t *XSftR125)
+{
+  //
+  // Sets the spatial position of the track at the radius R=1.25m in the shifted coordinate system
+  //
+  
+  // Initialize the array to something indicating there was no propagation
+  XSftR125[0]=-9999.;
+  XSftR125[1]=-9999.;
+  XSftR125[2]=-9999.;
+   // Make a copy of the track to not change parameters of the track
+  AliExternalTrackParam etp;
+  etp.CopyFromVTrack(track);
+  
+  // The global position of the the track
+  Double_t xyz[3]={-9999.,-9999.,-9999.};  
+
+  // The radius we want to propagate to, squared
+  const Float_t RSquaredWanted(125.*125.);
+
+
+  // Propagation is done in local x of the track
+  for (Float_t x = 58.;x<247.;x+=1.){
+    // Starts at 83 / Sqrt(2) and goes outwards. 85/Sqrt(2) is the smallest local x
+    // for global radius 85 cm. x = 245 is the outer radial limit of the TPC when
+    // the track is straight, i.e. has inifinite pt and doesn't get bent. 
+    // If the track's momentum is smaller than infinite, it will develop a y-component,
+    // which adds to the global radius
+    // We don't change the propagation steps to not mess up things!
+
+    // Stop if the propagation was not succesful. This can happen for low pt tracks
+    // that don't reach outer radii
+    if(!etp.PropagateTo(x,(Float_t)bfield))break;
+    etp.GetXYZ(xyz); // GetXYZ returns global coordinates
+
+    // Calculate the shifted radius we are at, squared. 
+    // Compare squared radii for faster code
+    Float_t shiftedRadiusSquared = (xyz[0]-priVtx[0])*(xyz[0]-priVtx[0])
+                                 + (xyz[1]-priVtx[1])*(xyz[1]-priVtx[1]);
+
+    // Roughly reached the radius we want
+    if(shiftedRadiusSquared > RSquaredWanted){
+      
+      // Bigger loop has bad precision, we're nearly one centimeter too far, 
+      // go back in small steps.
+      while (shiftedRadiusSquared>RSquaredWanted){
+	// Propagate a mm inwards
+	x-=.1;
+	if(!etp.PropagateTo(x,bfield)){
+	  // Propagation failed but we're already with a
+	  // cm precision at R=1.25m so we only break the 
+	  // inner loop
+	  break;
+	}
+	// Get the global position
+	etp.GetXYZ(xyz);
+	// Calculate shifted radius, squared
+	shiftedRadiusSquared = (xyz[0]-priVtx[0])*(xyz[0]-priVtx[0])
+	                     + (xyz[1]-priVtx[1])*(xyz[1]-priVtx[1]);
+      }
+      // We reached R=1.25m with a precission of a cm to a mm,
+      // set the spatial position
+      XSftR125[0]=xyz[0]-priVtx[0];
+      XSftR125[1]=xyz[1]-priVtx[1];
+      XSftR125[2]=xyz[2]-priVtx[2];
+      // Done
+      return;
+    } // End of if roughly reached radius
+  } // End of coarse propagation loop
+}
+
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::dEtaSR125(Double_t *postrack1,Double_t *postrack2)
+{
+  //
+  // Returns the pseudorapidity star difference
+  //
+
+  // It is important to keep the calculations easy and separated.
+  // The calculation of EtaS is straight forward, one just has to
+  // do it step by step to not get confused.
+  Double_t ThetaS1 = TMath::Pi()/2. - TMath::ATan(postrack1[2]/125.);
+  Double_t ThetaS2 = TMath::Pi()/2. - TMath::ATan(postrack2[2]/125.);
+  Double_t EtaS1 =  -TMath::Log( TMath::Tan(ThetaS1/2.) );
+  Double_t EtaS2 =  -TMath::Log( TMath::Tan(ThetaS2/2.) );
+
+  return EtaS1-EtaS2;
+}
+
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::dPhiSR125(Double_t *postrack1,Double_t *postrack2)
+{
+  //
+  // returns delta phi star at R=1.25m
+  // position5 at R=1.2m is stored as second radius
+  //
+  //
+  Double_t distSft= TMath::Sqrt(TMath::Power(postrack1[0] - postrack2[0],2)
+				     +TMath::Power(postrack1[1] - postrack2[1],2));
+  return 2.0 * TMath::ATan(distSft/2./(125.));
+}
+
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackb,
+    AliAODTrack *trackn, Double_t bfield, Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep, 
+    Double_t &dPhiS_en, Double_t &dEtaS_en, Double_t &dPhiS_eb, Double_t &dEtaS_eb)
+{
+  //
+  // Returns dPhi and dEta at R 125
+  //
+  Double_t XSftR125_e[3];
+  SetSftPosR125(tracke,bfield,priVtx, XSftR125_e);
+  Double_t XSftR125_p[3];
+  SetSftPosR125(trackp,bfield,priVtx, XSftR125_p);
+  Double_t XSftR125_n[3];
+  SetSftPosR125(trackn,bfield,priVtx, XSftR125_n);
+  Double_t XSftR125_b[3];
+  SetSftPosR125(trackb,bfield,priVtx, XSftR125_b);
+  dPhiS_ep = dPhiSR125(XSftR125_e,XSftR125_p);
+  dEtaS_ep = dEtaSR125(XSftR125_e,XSftR125_p);
+  dPhiS_en = dPhiSR125(XSftR125_e,XSftR125_n);
+  dEtaS_en = dEtaSR125(XSftR125_e,XSftR125_n);
+  dPhiS_eb = dPhiSR125(XSftR125_e,XSftR125_b);
+  dEtaS_eb = dEtaSR125(XSftR125_e,XSftR125_b);
+}
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TLorentzVector* vtrk, TLorentzVector *vcasc, Double_t *cutvars, Int_t selectionLevel) 
+{
+  //
+  // Apply selection on mixed event tracks
+  //
+
+  if (!fCutsRD) {
+    AliFatal("Cut matrix not inizialized. Exit...");
+    return 0;
+  }
+
+  Double_t ptD=cutvars[1];
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+
+  Double_t pt=cutvars[1];
+  Int_t ptbin=PtBin(pt);
+  if (ptbin==-1) {
+    return 0;
+  }
+
+  if (selectionLevel==AliRDHFCuts::kAll ||
+      selectionLevel==AliRDHFCuts::kTracks) {
+    //Performed in production stage
+  }
+
+  Int_t returnvalueCuts=1;
+  // selection on candidate
+  if (selectionLevel==AliRDHFCuts::kAll ||
+      selectionLevel==AliRDHFCuts::kCandidate) {
+    
+    Bool_t okcand=kTRUE;
+    
+    Double_t mlcPDG =  TDatabasePDG::Instance()->GetParticle(4132)->Mass();
+    Double_t melePDG =  TDatabasePDG::Instance()->GetParticle(11)->Mass();
+    Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+		Double_t v0px = vcasc->Px();
+		Double_t v0py = vcasc->Py();
+		Double_t v0pz = vcasc->Pz();
+		Double_t epx = vtrk->Px();
+		Double_t epy = vtrk->Py();
+		Double_t epz = vtrk->Pz();
+		Double_t cosoa = (v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz);
+
+    TLorentzVector vele, vxi,vlc;
+    vele.SetXYZM(epx,epy,epz,melePDG);
+    vxi.SetXYZM(v0px,v0py,v0pz,mxiPDG);
+    vlc = vele + vxi;
+
+    Double_t dphis_e_pr = 9999.;
+    Double_t detas_e_pr = 9999.;
+    Double_t dphis_e_pi = 9999.;
+    Double_t detas_e_pi = 9999.;
+    Double_t dphis_e_bach = 9999.;
+    Double_t detas_e_bach = 9999.;
+    if(fCutsRD[GetGlobalIndex(2,ptbin)]>0 || fCutsRD[GetGlobalIndex(3,ptbin)]>0){
+      Double_t xyzR125_e[3], xyzR125_pr[3], xyzR125_pi[3], xyzR125_bach[3];
+      xyzR125_e[0] = cutvars[0];
+      xyzR125_e[1] = cutvars[1];
+      xyzR125_e[2] = cutvars[2];
+      xyzR125_pr[0] = cutvars[3];
+      xyzR125_pr[1] = cutvars[4];
+      xyzR125_pr[2] = cutvars[5];
+      xyzR125_pi[0] = cutvars[6];
+      xyzR125_pi[1] = cutvars[7];
+      xyzR125_pi[2] = cutvars[8];
+      xyzR125_bach[0] = cutvars[9];
+      xyzR125_bach[1] = cutvars[10];
+      xyzR125_bach[2] = cutvars[11];
+      dphis_e_pr = dPhiSR125(xyzR125_e,xyzR125_pr);
+      detas_e_pr = dPhiSR125(xyzR125_e,xyzR125_pr);
+      dphis_e_pi = dPhiSR125(xyzR125_e,xyzR125_pi);
+      detas_e_pi = dPhiSR125(xyzR125_e,xyzR125_pi);
+      dphis_e_bach = dPhiSR125(xyzR125_e,xyzR125_bach);
+      detas_e_bach = dPhiSR125(xyzR125_e,xyzR125_bach);
+    }
+    
+    if(vlc.M() > fCutsRD[GetGlobalIndex(0,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(cosoa < fCutsRD[GetGlobalIndex(1,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(dphis_e_bach) < fCutsRD[GetGlobalIndex(2,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+    if(fabs(detas_e_bach) < fCutsRD[GetGlobalIndex(3,ptbin)])
+      {
+	okcand = kFALSE;
+      }
+
+    if(!okcand)  return 0;
+    returnvalueCuts = 1;
+  }
+  
+  Int_t returnvaluePID=1;
+  if(selectionLevel==AliRDHFCuts::kAll ||
+     selectionLevel==AliRDHFCuts::kCandidate|| 
+     selectionLevel==AliRDHFCuts::kPID) {
+  }
+  
+  Int_t returnvalue = 0;
+  if(returnvalueCuts==1 && returnvaluePID==1) returnvalue=1;
+  
+  return returnvalue;
 }
