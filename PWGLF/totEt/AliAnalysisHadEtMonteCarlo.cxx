@@ -798,6 +798,23 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 			FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),pT,eta,myrecoEt*weight);
 		      }
 		    }
+		    if(pdgCode ==fgSigmaCode ||pdgCode ==fgAntiSigmaCode || pdgCode ==fgSigmaPlusCode ||pdgCode ==fgAntiSigmaPlusCode || pdgCode ==fgSigma0Code ||pdgCode ==fgAntiSigma0Code){//identify all Sigma daughters
+		      written = true;
+		      float myEt = Et(simPart); 
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
+		      //if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+			//}
+		      if( !fRunLightweight){
+			FillHisto2D(Form("EtReconstructed%sSigmaDaughters",cutName->Data()),pT,eta,myEt);
+		      }
+		    }
 		    if(pdgCode == fgK0SCode || pdgCode == fgK0LCode || pdgCode == fgKPlusCode || pdgCode == fgKMinusCode){//actually get all kaon daughters
 		      written = true;
 		      float myEt = Et(simPart);
@@ -1542,26 +1559,66 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      }
 	      filled = true;
 	    }
-	    //There are two codes for Sigmas
-	    if(pdgCode == fgSigmaCode || pdgCode == -3222){
+	    //There are three Sigmas
+	    if(pdgCode == fgSigmaPlusCode){
 	      float myEt = Et(part);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      if( !fRunLightweight){
-		FillHisto2D("EtSimulatedSigma",part->Pt(),part->Eta(),myEt);
+		FillHisto2D("EtSimulatedSigmaPlus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      }
 	      filled = true;
 	    }
-	    if(pdgCode == fgAntiSigmaCode || pdgCode == 3222){
+	    if(pdgCode == fgAntiSigmaPlusCode){
 	      float myEt = Et(part);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      if( !fRunLightweight){
-		FillHisto2D("EtSimulatedAntiSigma",part->Pt(),part->Eta(),myEt);
+		FillHisto2D("EtSimulatedAntiSigmaPlus",part->Pt(),part->Eta(),myEt);
 		FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      }
 	      filled = true;
+	    }
+	    if(pdgCode == fgSigmaCode){
+	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
+	      if( !fRunLightweight){
+		FillHisto2D("EtSimulatedSigmaMinus",part->Pt(),part->Eta(),myEt);
+		FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      }
+	      filled = true;
+	    }
+	    if(pdgCode == fgAntiSigmaCode){
+	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
+	      if( !fRunLightweight){
+		FillHisto2D("EtSimulatedAntiSigmaMinus",part->Pt(),part->Eta(),myEt);
+		FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      }
+	      filled = true;
+	    }
+	    if(pdgCode == fgSigma0Code){
+	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
+	      if( !fRunLightweight){
+		FillHisto2D("EtSimulatedSigma0",part->Pt(),part->Eta(),myEt);
+		FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      }
+	      filled = true;
+	    }
+	    if(pdgCode == fgAntiSigma0Code){
+	      float myEt = Et(part);
+	      fSimHadEt += myEt;
+	      fSimTotEt += myEt;
+	      if( !fRunLightweight){
+		FillHisto2D("EtSimulatedAntiSigma0",part->Pt(),part->Eta(),myEt);
+		FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
+	      }
+	      filled = true; 
 	    }
 	    if(pdgCode == fgXiCode){
 	      float myEt = Et(part);
@@ -1928,8 +1985,12 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D("EtSimulatedAntiOmega","Simulated E_{T} from #Omega^{+}");
     CreateEtaPtHisto2D("EtSimulatedXi","Simulated E_{T} from #Xi^{-}");
     CreateEtaPtHisto2D("EtSimulatedAntiXi","Simulated E_{T} from #Xi^{+}");
-    CreateEtaPtHisto2D("EtSimulatedSigma","Simulated E_{T} from #Xi^{-}");
-    CreateEtaPtHisto2D("EtSimulatedAntiSigma","Simulated E_{T} from #Xi^{+}");
+    CreateEtaPtHisto2D("EtSimulatedSigmaMinus","Simulated E_{T} from #Xi^{-}");
+    CreateEtaPtHisto2D("EtSimulatedAntiSigmaMinus","Simulated E_{T} from #Xi^{+}");
+    CreateEtaPtHisto2D("EtSimulatedSigmaPlus","Simulated E_{T} from #Xi^{-}");
+    CreateEtaPtHisto2D("EtSimulatedAntiSigmaPlus","Simulated E_{T} from #Xi^{+}");
+    CreateEtaPtHisto2D("EtSimulatedSigma0","Simulated E_{T} from #Xi^{-}");
+    CreateEtaPtHisto2D("EtSimulatedAntiSigma0","Simulated E_{T} from #Xi^{+}");
     CreateEtaPtHisto2D("EtSimulatedXi0","Simulated E_{T} from #Xi^{0}");
     CreateEtaPtHisto2D("EtSimulatedAntiXi0","Simulated E_{T} from #Xi^{0}");
     CreateEtaPtHisto2D("EtSimulatedAllHadron","Simulated E_{T} from all hadrons");
@@ -2090,11 +2151,12 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       CreateEtaPtHisto2D(Form("EtReconstructed%sEPlus",cutName->Data()),"Reconstructed E_{T} from e^{+}");
       CreateEtaPtHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),"Reconstructed E_{T} from e^{-}");
 
-
+ 
 
       CreateEtaPtHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),"Reconstructed E_{T} from #Lambda Daughters");
       CreateEtaPtHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),"Reconstructed E_{T} from #bar{#Lambda} Daughters");
       CreateEtaPtHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),"Reconstructed E_{T} from K^{0}_{S} Daughters");
+      CreateEtaPtHisto2D(Form("EtReconstructed%sSigmaDaughters",cutName->Data()),"Reconstructed E_{T} from K^{0}_{S} Daughters");
       CreateEtaPtHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),"Reconstructed E_{T} from #Lambda Daughters");
       CreateEtaPtHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),"Reconstructed E_{T} from #bar{#Lambda} Daughters");
       CreateEtaPtHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),"Reconstructed E_{T} from K^{0}_{S} Daughters");

@@ -358,7 +358,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    etpartialcorrected = etpartialcorrectedNoID;//Not using PID for ITS
 	  }
 	  AddEt(et,etNoID,etpartialcorrected,etpartialcorrectedPion,etpartialcorrectedProton,etpartialcorrectedKaon,etpartialcorrectedNoID,track->Pt(),isTPC,inPHOS,inEMCAL,track->Phi(),track->Eta());
-	  FillHisto2D(Form("ETvsPhiAndEtaCB%i",fCentBin),track->Phi(),track->Eta(),1.0);
+	  if(fCentBin>0) FillHisto2D(Form("ETvsPhiAndEtaCB%i",fCentBin),track->Phi(),track->Eta(),1.0);
 
 	}
       }
@@ -938,7 +938,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 
 		if(pid==1){//only want to make one for each centrality bin
 		  //void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
-		  CreateHisto2D(Form("ETvsPhiAndEtaCB%i",i),"E_{T} vs #phi and #eta","#phi","#eta",200,0.0,TMath::Pi(),200,-0.7,0.7);
+		  CreateHisto2D(Form("ETvsPhiAndEtaCB%i",i),"E_{T} vs #phi and #eta","#phi","#eta",200,0.0,TMath::Pi()*2,200,-0.7,0.7);
 		}
 
 		snprintf(histoname,200,"Reco%s%sAcceptance%s%sNegEtaCB%i",et->Data(),acceptance->Data(),detector->Data(),partid->Data(),i);
