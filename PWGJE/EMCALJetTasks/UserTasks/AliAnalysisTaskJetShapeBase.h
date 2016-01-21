@@ -5,6 +5,10 @@
 /// 
 /// 
 /// In case the embedding is done starting from particle and detector level jet 4-vector stored in a TTree, this tree must be given as input
+/// The tree is produced with AliAnalysisTaskPrepareInputForEmbedding and then cooked out locally before being used as input of this task
+/// The operations to be performed are the following
+/// - merge the output file per pT-hard bin
+/// - the entries have to be shuffled so that they're not ordered by pt
 ///
 /// \author Chiara Bianchin
 /// \date November 2015
@@ -114,7 +118,7 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   TH1F 	        *fhpTTracksJetO;                                   //!<!
   TH1F 	        *fhpTTracksCont;                                   //!<!
   TH1F 	        *fhptjetSMinusSingleTrack;                         //!<! pT distribution of jets subtracting the pT of the embedded track
-  TH3F          *fhJetSubMatchEtaPhiPt;                             //!<! eta, phi, pt distribution of jet subtracted and matched
+  TH3F          *fhJetSubMatchEtaPhiPt;                            //!<! eta, phi, pt distribution of jet subtracted and matched
   TTree         *fTreeEmb;                                         //!<! tree with the TLorentzVector of the jet detector and particle level
   Bool_t        fFromTree;                                         ///< Input embedding from tree
   TString       fPathTreeinputFile;                                ///< path to the file where the external input Tree is (can be from alien)
@@ -125,16 +129,14 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   Int_t         fMaxTreeEntries;                                   ///< number of entries in the TTree
   TLorentzVector *fVecD;                                           //!<! vector with detector level jet
   TLorentzVector *fVecP;                                           //!<! vector with particle level jet
-  Float_t         fXsec;					   //!<! cross section embedded event
-  Float_t         fNtrls;					   //!<! number of trials embedded event
-  
+ 
   private:
      
      AliAnalysisTaskJetShapeBase(const AliAnalysisTaskJetShapeBase&);            // not implemented
      AliAnalysisTaskJetShapeBase &operator=(const AliAnalysisTaskJetShapeBase&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetShapeBase, 4);
+  ClassDef(AliAnalysisTaskJetShapeBase, 5);
   /// \endcond
 };
 #endif

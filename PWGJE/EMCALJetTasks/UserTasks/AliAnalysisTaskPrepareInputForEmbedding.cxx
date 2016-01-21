@@ -26,9 +26,6 @@ fJetPartL(0),
 fNumberOfJets(0),
 fhFractionSharedpT(0),
 fNAccJets(0),
-fXsec(0),
-fNtrials(0),
-fPthardB(0),
 fhResponse(0)
 {
    /// default constructor
@@ -52,9 +49,6 @@ fJetPartL(0),
 fNumberOfJets(0),
 fhFractionSharedpT(0),
 fNAccJets(0),
-fXsec(0),
-fNtrials(0),
-fPthardB(0),
 fhResponse(0)
 
 {
@@ -80,15 +74,9 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    if(fLeadingJetOnly){
       fTreeJets->Branch("fJetDetL.", fJetDetL);
       fTreeJets->Branch("fJetPartL.",fJetPartL);
-      fTreeJets->Branch("fXsection", &fXsec, "fXsection/F");
-      fTreeJets->Branch("fNTrials",  &fNtrials, "fNTrials/F");
-      fTreeJets->Branch("fPthardB",  &fPthardB, "fPthardB/I");
    } else {
       fTreeJets->Branch("fJetDet.", fJetDet);
       fTreeJets->Branch("fJetPart.",fJetPart);
-      fTreeJets->Branch("fXsection", &fXsec, "fXsection/F");
-      fTreeJets->Branch("fNTrials",  &fNtrials, "fNTrials/F");
-      fTreeJets->Branch("fPthardB",  &fPthardB, "fPthardB/I");
    }
    //fOutput->Add(fTreeJets);
    PostData(2, fTreeJets);
@@ -130,18 +118,17 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskPrepareInputForEmbedding::Run(){
    /// Run code before FillHistograms()
    
-   Int_t   pthardbin   = 0;
-   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-   if (!tree) {
-      AliError(Form("%s : No current tree!",GetName()));
-      return kFALSE;
-   }
-   TFile *curfile = tree->GetCurrentFile();
-   if (!curfile) {
-      AliError(Form("%s : No current file!",GetName()));
-      return kFALSE;
-   }
-   PythiaInfoFromFile(curfile->GetName(), fXsec, fNtrials, fPthardB);
+   //TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+   //if (!tree) {
+   //   AliError(Form("%s : No current tree!",GetName()));
+   //   return kFALSE;
+   //}
+   //TFile *curfile = tree->GetCurrentFile();
+   //if (!curfile) {
+   //   AliError(Form("%s : No current file!",GetName()));
+   //   return kFALSE;
+   //}
+   //PythiaInfoFromFile(curfile->GetName(), fXsec, fNtrials, fPthardB);
    
    return kTRUE;
 }
@@ -157,7 +144,6 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       AliError(Form("Container position %d (area based) not found", fContainer));
       return kFALSE;
    }
-   Double_t weight = fXsec/fNtrials;
    //TVector for leading jet
    fJetDetL ->SetPtEtaPhiM(0,0,0,0);
    fJetPartL->SetPtEtaPhiM(0,0,0,0);
@@ -177,17 +163,17 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       fJetPart ->SetPtEtaPhiM(0,0,0,0);
       
       count++;
-      fNumberOfJets->Fill(0., weight);
+      fNumberOfJets->Fill(0.);
       
       AliEmcalJet *jetP = jet->ClosestJet();
       if(!jetP) continue;
-      fNumberOfJets->Fill(1., weight);
+      fNumberOfJets->Fill(1.);
       Double_t fraction = jetCont->GetFractionSharedPt(jet);
       //fill the TLorentsVectors with the jet 4-vectors
       //Printf("MC jet %p, Fraction %.4f, pT %f, eta %f, phi %f, m  %f",jetP, fraction, jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
-      fhFractionSharedpT->Fill(jet->Pt(), fraction, weight);
+      fhFractionSharedpT->Fill(jet->Pt(), fraction);
       if(fMinFractionShared<0. || fraction>fMinFractionShared) {
-      	 fNumberOfJets->Fill(2., weight);
+      	 fNumberOfJets->Fill(2.);
       	 fJetDet ->SetPtEtaPhiM(jet->Pt(), jet->Eta(), jet->Phi(), jet->M());
       	 fJetPart->SetPtEtaPhiM(jetP->Pt(), jetP->Eta(), jetP->Phi(), jetP->M());
       	
@@ -199,11 +185,11 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
       	 if(!fLeadingJetOnly) fTreeJets->Fill();
       	 
       	 Double_t response[5] = {jetP->M(), jet->M(), jetP->Pt(), jet->Pt(), (Double_t)jet->GetNumberOfConstituents()/(Double_t)jetP->GetNumberOfConstituents()};
-      	 fhResponse->Fill(response, weight);
+      	 fhResponse->Fill(response);
       }
       
    }
-   fNAccJets->Fill(count, weight);
+   fNAccJets->Fill(count);
    
    if(fLeadingJetOnly) {
       if(fJetPartL->Pt() > 0){ // fill only when there is a leading jet
