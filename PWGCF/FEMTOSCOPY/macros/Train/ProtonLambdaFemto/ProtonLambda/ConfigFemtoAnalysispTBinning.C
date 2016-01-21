@@ -206,8 +206,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		  //dtc1etaphitpc[aniter]->SetPt(0.5,5.0); //0.4,100
 		  dtc1etaphitpc[aniter]->SetPt(pTbins[ipT], pTbins[ipT+1]);
 		  dtc1etaphitpc[aniter]->SetEtaDaughters(0.8); //0.8
-		  dtc1etaphitpc[aniter]->SetPtPosDaughter(0.5,4.0); //0.5
-		  dtc1etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0); //0.16
+		  dtc1etaphitpc[aniter]->SetPtPosDaughter(0.5, 4.0); //0.5
+		  dtc1etaphitpc[aniter]->SetPtNegDaughter(0.16, 4.0); //0.16
 		  dtc1etaphitpc[aniter]->SetTPCnclsDaughters(80); //80
 		  dtc1etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
 		  dtc1etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
@@ -218,7 +218,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		  dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5); //5.0
 		  dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
 		  dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
-		  dtc1etaphitpc[aniter]->SetInvariantMassLambda(1.077, LambdaMass+0.0041);
+		  dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038, LambdaMass+0.0043);
 	      
 		  //V0 second particle cut -> AntiLambda ichg 1, 3, 4, 5
 		  dtc2etaphitpc[aniter] = new AliFemtoV0TrackCut();
@@ -227,8 +227,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		  //dtc2etaphitpc[aniter]->SetPt(0.5,5.0);
 		  dtc2etaphitpc[aniter]->SetPt(pTbins[ipT], pTbins[ipT+1]);
 		  dtc2etaphitpc[aniter]->SetEtaDaughters(0.8);
-		  dtc2etaphitpc[aniter]->SetPtPosDaughter(0.16,4.0);
-		  dtc2etaphitpc[aniter]->SetPtNegDaughter(0.3,4.0);
+		  dtc2etaphitpc[aniter]->SetPtPosDaughter(0.16, 4.0);
+		  dtc2etaphitpc[aniter]->SetPtNegDaughter(0.3, 4.0);
 		  dtc2etaphitpc[aniter]->SetTPCnclsDaughters(80);
 		  dtc2etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
 		  dtc2etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
@@ -239,7 +239,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		  dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.3, 0.1);
 		  dtc2etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
 		  dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
-		  dtc2etaphitpc[aniter]->SetInvariantMassLambda(1.077,LambdaMass+0.0036);
+		  dtc2etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0036, LambdaMass+0.0041);
 	      
 	      
 		  //ESD first particle cut -> Proton 3, 5; AntiProton 4, 6, 7, 8
