@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//_________________________________________________________________________
-//--
-//-- Yves Schutz (SUBATECH) 
-// Reconstruction class. Redesigned from the old AliReconstructionner class and 
-// derived from STEER/AliReconstructor. 
-// 
-
-
 // --- ROOT system ---
 #include <TClonesArray.h>
 #include "TGeoManager.h"
@@ -483,7 +473,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //##############Fill CaloCells###############
   //########################################
   
-  //Get input digits and put them in fgDigitsArr, clear the list before 
+  // Get input digits and put them in fgDigitsArr, clear the list before 
   ReadDigitsArrayFromTree(digitsTree);
   
   Int_t nDigits = fgDigitsArr->GetEntries(), idignew = 0 ;
@@ -495,45 +485,45 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   Float_t energy = 0;
   Float_t time   = 0;
+  Int_t   mapDigitAndCellIndex[20000] = { 0 } ; // needed to pack cell MC labels in cluster and not loop all digits
+  
   for (Int_t idig = 0 ; idig < nDigits ; idig++) 
   {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)fgDigitsArr->At(idig);
     time   = dig->GetTime();      // Time already calibrated in clusterizer
     energy = dig->GetAmplitude(); // energy calibrated in clusterizer
     
-    if(energy > 0 )
-    {
-      fgClusterizer->Calibrate(energy,time,dig->GetId()); //Digits already calibrated in clusterizers
+    if (energy <= 0 ) continue ;
+    
+    fgClusterizer->Calibrate(energy,time,dig->GetId()); // Digits already calibrated in clusterizers
       
-      if(energy > 0) //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them
+    if (energy <= 0 ) continue ; // Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them
+       
+    // Only for MC
+    // Get the label of the primary particle that generated the cell
+    // Assign the particle that deposited more energy
+    Int_t   nparents   = dig->GetNiparent();
+    Int_t   digLabel   =-1 ;
+    Float_t edep       =-1.;
+    if ( nparents > 0 )
+    {
+      for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
       { 
-        // Only for MC
-        // Get the label of the primary particle that generated the cell
-        // Assign the particle that deposited more energy
-        Int_t   nprimaries = dig->GetNprimary() ;
-        Int_t   digLabel   =-1 ;
-        Float_t edep       =-1.;
-        if ( nprimaries > 0 )
-        {
-          Int_t jndex ;
-          for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
- 
-            if(edep < dig->GetDEParent(jndex+1))
-            {
-              digLabel = dig->GetIparent (jndex+1);
-              edep     = dig->GetDEParent(jndex+1);
-            }
-                   
-          } // all primaries in digit      
-        } // select primary label
+         if(edep >= dig->GetDEParent(jndex+1)) continue ;
+            
+         digLabel = dig->GetIparent (jndex+1);
+         edep     = dig->GetDEParent(jndex+1);          
+      } // all primaries in digit      
+    } // select primary label
         
-        Bool_t highGain = kFALSE;
-        if( dig->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
+    Bool_t highGain = kFALSE;
+    if( dig->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
         
-        emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel,0.,highGain);
-        idignew++;
-      }
-    }
+    emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel,0.,highGain);
+        
+    mapDigitAndCellIndex[idignew] = idig; // needed to pack cell MC labels in cluster 
+        
+    idignew++;
   }
   
   emcCells.SetNumberOfCells(idignew);
@@ -557,11 +547,14 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   //##############Fill CaloClusters#############
   //########################################
-  for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
+  for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) 
+  {
     const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)fgClustersArr->At(iClust);
+    
     if(!clust) continue;
-    //if(clust->GetClusterType()== AliVCluster::kEMCALClusterv1) nRP++; else nPC++;
+    
     // clust->Print(); //For debugging
+    
     // Get information from EMCAL reconstruction points
     Float_t xyz[3];
     TVector3 gpos;
@@ -570,26 +563,28 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       xyz[ixyz] = gpos[ixyz];
     Float_t elipAxis[2];
     clust->GetElipsAxis(elipAxis);
+    
     //Create digits lists
     Int_t cellMult = clust->GetMultiplicity();
-    //TArrayS digiList(digitMult);
+
     Float_t *amplFloat = clust->GetEnergiesList();
     Int_t   *digitInts = clust->GetAbsId();
     TArrayS absIdList(cellMult);
     TArrayD fracList(cellMult);
-    
+
     Int_t newCellMult = 0;
-    for (Int_t iCell=0; iCell<cellMult; iCell++) {
-      if (amplFloat[iCell] > 0) {
+    for (Int_t iCell=0; iCell<cellMult; iCell++) 
+    {
+      if (amplFloat[iCell] > 0) 
+      {
         absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
+        
         //Calculate Fraction
-        if(emcCells.GetCellAmplitude(digitInts[iCell])>0 && GetRecParam()->GetUnfold()){
+        if(emcCells.GetCellAmplitude(digitInts[iCell])>0 && GetRecParam()->GetUnfold())
           fracList[newCellMult] = amplFloat[iCell]/(emcCells.GetCellAmplitude(digitInts[iCell]));//get cell calibration value 
-          
-        }
-        else{
+        else
           fracList[newCellMult] = 0; 
-        }
+
         newCellMult++;
       }
     }
@@ -599,83 +594,155 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     
     if(newCellMult > 0) { // accept cluster if it has some digit
       nClustersNew++;
-      //Primaries
-      Int_t  parentMult  = 0;
-      Int_t *parentList =  clust->GetParents(parentMult);
-      // fills the ESDCaloCluster
+      
+      // Fill the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ;
       ec->SetType(AliVCluster::kEMCALClusterv1);
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
-      
-      //Distance to the nearest bad crystal
+      ec->SetTOF(clust->GetTime()) ; //time-of-flight
+
+      ec->SetChi2(-1); //not yet implemented
+
+      // Distance to the nearest bad tower
       ec->SetDistanceToBadChannel(clust->GetDistanceToBadTower()); 
       
+      //
+      // Shower shape related
+      //
       ec->SetNCells(newCellMult);
-      //Change type of list from short to ushort
-      UShort_t *newAbsIdList  = new UShort_t[newCellMult];
-      Double_t *newFracList   = new Double_t[newCellMult];
-      for(Int_t i = 0; i < newCellMult ; i++) {
-        newAbsIdList[i]=absIdList[i];
-        newFracList[i] =fracList[i];
-      }
-      ec->SetCellsAbsId(newAbsIdList);
-      ec->SetCellsAmplitudeFraction(newFracList);
       ec->SetDispersion(clust->GetDispersion());
-      ec->SetChi2(-1); //not yet implemented
       ec->SetM02(elipAxis[0]*elipAxis[0]) ;
       ec->SetM20(elipAxis[1]*elipAxis[1]) ;
-      ec->SetTOF(clust->GetTime()) ; //time-of-fligh
-      ec->SetNExMax(clust->GetNExMax());          //number of local maxima
+      ec->SetNExMax(clust->GetNExMax()); //number of local maxima
   
-      
-      TArrayI arrayParents(parentMult,parentList);
-      ec->AddLabels(arrayParents);
       //
-      //Track matching
+      // Primaries
+      //
+      Int_t    parentMult   = 0;
+      Int_t   *parentList   =  clust->GetParents(parentMult); // label index
+      Float_t *parentListDE =  clust->GetParentsDE();         // deposited energy
+
+      ec->SetLabel(parentList,parentMult);    
+     
+      ec->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+     
+      //
+      // Change type of cells list from short to ushort
+      // Pack the at maximum 4 different primary contributions on cells into a single int.
+      // (Profit from the same loop on cells in cluster)
+      //
+      UShort_t *newAbsIdList  = new UShort_t[newCellMult];
+      Double_t *newFracList   = new Double_t[newCellMult];
+      UInt_t   *cellEDepFrac  = new UInt_t  [newCellMult];
+
+      for(Int_t i = 0; i < newCellMult ; i++) 
+      {
+        // int to short
+        newAbsIdList[i] = absIdList[i];
+        newFracList [i] = fracList[i];
+        cellEDepFrac[i] = 0;
+        
+        // *Pack cells parent energy deposit*
+        if(parentMult > 0)
+        {          
+          // Get the digit that originated this cell cluster
+          Int_t   cellPos = emcCells.GetCellPosition (newAbsIdList[i]);
+          Float_t cellEne = emcCells.GetCellAmplitude(newAbsIdList[i]);
+          Int_t   idigit  = mapDigitAndCellIndex[cellPos];
+          const AliEMCALDigit * dig = (const AliEMCALDigit*)fgDigitsArr->At(idigit);
+          
+          // Find the 4 MC labels that contributed to the cluster and their 
+          // deposited energy in the current digit
+	  Int_t  nparents   = dig->GetNiparent();
+          if ( nparents > 0 ) 
+          {
+            Int_t   digLabel   =-1 ; 
+            Float_t edep       = 0 ;
+            Float_t edepTot    = 0 ;
+            Float_t mcEDepFrac[4] = {0,0,0,0};
+
+            for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
+            { // all primaries in digit
+              digLabel = dig->GetIparent (jndex+1);
+              edep     = dig->GetDEParent(jndex+1);
+              edepTot += edep;
+              
+              if       ( digLabel == parentList[0] ) mcEDepFrac[0] = edep; 
+              else  if ( digLabel == parentList[1] ) mcEDepFrac[1] = edep;
+              else  if ( digLabel == parentList[2] ) mcEDepFrac[2] = edep;
+              else  if ( digLabel == parentList[3] ) mcEDepFrac[3] = edep;
+            } // all primaries in digit
+        
+            // Divide energy deposit by total deposited energy
+            // Do not take the stored digit energy since it is smeared and with noise
+            // One could go back to the sdigit, but it is simpler to take the added 
+            // deposited energy of all primaries.
+            // Do this only when deposited energy is significant, use 10 MeV although 50 MeV should be expected
+            if(edepTot > 0.01) 
+            {
+              for(Int_t idep = 0; idep < 4; idep++) 
+                mcEDepFrac[idep] /= edepTot;
+
+              cellEDepFrac[i] = ec->PackMCEdepFraction(mcEDepFrac);
+            }
+          } // select primary label
+        } // at least one primary in cluster, do the cell primary packing
+      } // cell cluster loop 
+      
+      ec->SetCellsAbsId(newAbsIdList);
+      ec->SetCellsAmplitudeFraction(newFracList);
+      ec->SetCellsMCEdepFractionMap(cellEDepFrac);
+      
+      //
+      // Track matching
       //
       fMatches->Clear();
       Int_t nTracks = esd->GetNumberOfTracks();
       for (Int_t itrack = 0; itrack < nTracks; itrack++)
-      	{
-      	  AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
-      	  if(track->GetEMCALcluster()==iClust)
-      	    {
-      	      Float_t dEta=-999, dPhi=-999;
-      	      Bool_t isMatch =  CalculateResidual(track, ec, dEta, dPhi);
-      	      if(!isMatch) 
-      		{
-      		  // AliDebug(10, "Not good");
-      		  continue;
-      		}
-      	      AliEMCALMatch *match = new AliEMCALMatch();
-      	      match->SetIndexT(itrack);
-      	      match->SetDistance(TMath::Sqrt(dEta*dEta+dPhi*dPhi));
-      	      match->SetdEta(dEta);
-      	      match->SetdPhi(dPhi);
-      	      fMatches->Add(match);
-      	    }
-      	} 
+      {
+        AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
+        if(track->GetEMCALcluster()==iClust)
+        {
+          Float_t dEta=-999, dPhi=-999;
+          Bool_t isMatch =  CalculateResidual(track, ec, dEta, dPhi);
+          if(!isMatch) 
+          {
+            // AliDebug(10, "Not good");
+            continue;
+          }
+          
+          AliEMCALMatch *match = new AliEMCALMatch();
+          match->SetIndexT(itrack);
+          match->SetDistance(TMath::Sqrt(dEta*dEta+dPhi*dPhi));
+          match->SetdEta(dEta);
+          match->SetdPhi(dPhi);
+          fMatches->Add(match);
+        }
+      } 
+      
       fMatches->Sort(kSortAscending); //Sort matched tracks from closest to furthest
       Int_t nMatch = fMatches->GetEntries();
       TArrayI arrayTrackMatched(nMatch);
       for(Int_t imatch=0; imatch<nMatch; imatch++)
-      	{
-      	  AliEMCALMatch *match = (AliEMCALMatch*)fMatches->At(imatch);
-      	  arrayTrackMatched[imatch] = match->GetIndexT();
-      	  if(imatch==0)
-      	    {
-      	      ec->SetTrackDistance(match->GetdPhi(), match->GetdEta());
-      	    }
-      	}
+      {
+        AliEMCALMatch *match = (AliEMCALMatch*)fMatches->At(imatch);
+        arrayTrackMatched[imatch] = match->GetIndexT();
+        if(imatch==0)
+        {
+          ec->SetTrackDistance(match->GetdPhi(), match->GetdEta());
+        }
+      }
+      
       ec->AddTracksMatched(arrayTrackMatched);
-    
+      
       //add the cluster to the esd object
       esd->AddCaloCluster(ec);
 
       delete ec;
       delete [] newAbsIdList ;
       delete [] newFracList ;
+      delete [] cellEDepFrac ;
     }
   } // cycle on clusters
 
@@ -684,17 +751,16 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //to the one in CaloCluster array
   Int_t ncls = esd->GetNumberOfCaloClusters();
   for(Int_t icl=0; icl<ncls; icl++)
+  {
+    AliESDCaloCluster *cluster = esd->GetCaloCluster(icl);
+    if(!cluster || !cluster->IsEMCAL()) continue;
+    TArrayI *trackIndex = cluster->GetTracksMatched();
+    for(Int_t itr=0; itr<trackIndex->GetSize(); itr++)
     {
-      AliESDCaloCluster *cluster = esd->GetCaloCluster(icl);
-      if(!cluster || !cluster->IsEMCAL()) continue;
-      TArrayI *trackIndex = cluster->GetTracksMatched();
-      for(Int_t itr=0; itr<trackIndex->GetSize(); itr++)
-	{
-	  AliESDtrack *track = esd->GetTrack(trackIndex->At(itr));
-	  track->SetEMCALcluster(cluster->GetID());
-	}
+      AliESDtrack *track = esd->GetTrack(trackIndex->At(itr));
+      track->SetEMCALcluster(cluster->GetID());
     }
-  
+  }
   
   //Fill ESDCaloCluster with PID weights
   AliEMCALPID *pid = new AliEMCALPID;
