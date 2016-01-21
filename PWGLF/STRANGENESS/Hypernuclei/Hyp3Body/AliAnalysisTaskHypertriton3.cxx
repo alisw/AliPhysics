@@ -883,7 +883,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Int_t ntracks,label = 0 ;
   Int_t labelM_deu, labelM_pro, labelM_pio = 0;
   Double_t chi2PerClusterTPC, nClustersTPC=0.;
-  Double_t p, p_tpc, pOverZ, pT = 0.;
+  Double_t p, pOverZ, pT = 0.;
   Float_t beta = 0.;
   AliESDtrack *track = 0x0;
 
@@ -1082,8 +1082,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if(track->GetTPCsignalN()<80) continue;
     
     p = track->P(); //track->GetTPCmomentum()
-    p_tpc = track->GetTPCmomentum();
-    pOverZ = p_tpc*track->GetSign();
+    pOverZ = p*track->GetSign();
     pT = track->Pt();
     //if(p<0.2) continue;
     
