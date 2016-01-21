@@ -1452,5 +1452,5 @@ void SetPSFParams(TString pixType, AliITSMFTParamList* parData )
     fin->Close();  
     //
     parData->AddParamObject(hProfWrk);
-    parData->SetParameter(AliITSMFTSimuParam::kChargeSpreadType,AliITSUSimulationPix::kSpreadFunHisto,pixType.Data());
+    parData->SetParameter(AliITSMFTSimuParam::kChargeSpreadType,AliITSMFTSimulationPix::kSpreadFunHisto,pixType.Data());
 }

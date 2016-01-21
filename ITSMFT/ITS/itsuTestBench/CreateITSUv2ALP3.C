@@ -56,7 +56,7 @@ void CreateITSUv2ALP3()
   const int nChipsPerModule = 7; // For OB: how many chips in a row
 
   // create segmentations:
-  AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,        // segID (0:9)
+  AliITSMFTSegmentationPix* seg0 = new AliITSMFTSegmentationPix(0,        // segID (0:9)
 							    1,  // chips per module
 							    kNCol,    // ncols (total for module)
 							    kNRow,    // nrows
@@ -69,7 +69,7 @@ void CreateITSUv2ALP3()
 							    kLeftRightEdge, // right
 							    kTopEdge, // top
 							    kReadOutEdge  // bottom
-							    );    // see AliITSUSegmentationPix.h for extra options
+							    );    // see AliITSMFTSegmentationPix.h for extra options
   seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
   //
   seg0->Print();
