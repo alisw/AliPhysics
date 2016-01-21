@@ -31,9 +31,17 @@ class AliVTrack;
  * functions need to be implemented by inheriting classes:
  * - GetAcceptedTracks (with TClonesArray and AliVEvent as parameters)
  * - IsTrackAccepted (with AliVTrackCuts)
+ * - GenerateTrackCuts
  */
 class AliEmcalTrackSelection : public TObject {
 public:
+  enum ETrackFilterType_t {
+    kNoTrackFilter = 0,
+    kCustomTrackFilter,
+    kHybridTracks,
+    kTPCOnlyTracks
+  };
+
 	AliEmcalTrackSelection();
 	AliEmcalTrackSelection(const AliEmcalTrackSelection &ref);
 	AliEmcalTrackSelection &operator=(const AliEmcalTrackSelection &ref);
@@ -43,13 +51,14 @@ public:
 	TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 	virtual bool IsTrackAccepted(AliVTrack * const trk) = 0;
 
+	virtual void GenerateTrackCuts(ETrackFilterType_t type, const char* period = "") = 0;
 	void AddTrackCuts(AliVCuts *cuts);
+	void AddTrackCuts(TObjArray *cuts);
 	Int_t GetNumberOfCutObjects() const;
 	AliVCuts *GetTrackCuts(Int_t icut);
 
-
 	TBits GetTrackBitmap() const { return fTrackBitmap; }
-	TObjArray* GetAcceoptedTrackBitmaps() const { return fListOfTrackBitmaps; }
+	TObjArray* GetAcceptedTrackBitmaps() const { return fListOfTrackBitmaps; }
 
 	void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
 	void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }

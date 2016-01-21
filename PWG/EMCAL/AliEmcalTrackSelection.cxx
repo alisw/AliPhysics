@@ -103,6 +103,19 @@ void AliEmcalTrackSelection::AddTrackCuts(AliVCuts *cuts){
 }
 
 /**
+ * Add new track cuts to the list of cuts. Takes ownership over the cuts
+ * \param cuts New cuts to add
+ */
+void AliEmcalTrackSelection::AddTrackCuts(TObjArray *cuts){
+  TIter next(cuts);
+  AliVCuts* item = 0;
+  while ((item = static_cast<AliVCuts*>(next())))
+  {
+    AddTrackCuts(item);
+  }
+}
+
+/**
  * Get the number of cut objects assigned.
  * \return The number of cut objects
  */

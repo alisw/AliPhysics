@@ -1,18 +1,23 @@
-// $Id$
 //
 // Container with name, TClonesArray and cuts for particles
 //
-// Author: M. Verweij
+// Author: M. Verweij, S. Aiola
 
 #include <TClonesArray.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
-#include "AliAODTrack.h"
+#include "AliVCuts.h"
+#include "AliVTrack.h"
 
+#include "AliEmcalTrackSelectionAOD.h"
+#include "AliEmcalTrackSelectionESD.h"
 #include "AliParticleContainer.h"
 
 ClassImp(AliParticleContainer)
+
+
+TString AliParticleContainer::fgDefTrackCutsPeriod = "";
 
 //________________________________________________________________________
 AliParticleContainer::AliParticleContainer():
@@ -31,7 +36,13 @@ AliParticleContainer::AliParticleContainer():
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1),
-  fFilterHybridTracks(kFALSE)
+  fTrackFilterType(AliEmcalTrackSelection::kNoTrackFilter),
+  fListOfCuts(0),
+  fSelectionModeAny(kFALSE),
+  fAODFilterBits(0),
+  fTrackCutsPeriod(),
+  fEmcalTrackSelection(0),
+  fTrackType(kUndefined)
 {
   // Default constructor.
 
@@ -39,7 +50,7 @@ AliParticleContainer::AliParticleContainer():
 }
 
 //________________________________________________________________________
-AliParticleContainer::AliParticleContainer(const char *name):
+AliParticleContainer::AliParticleContainer(const char *name, const char *period):
   AliEmcalContainer(name),
   fParticlePtCut(0.15),
   fParticleMinEta(-0.9),
@@ -55,11 +66,22 @@ AliParticleContainer::AliParticleContainer(const char *name):
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1),
-  fFilterHybridTracks(kFALSE)
+  fTrackFilterType(AliEmcalTrackSelection::kNoTrackFilter),
+  fListOfCuts(0),
+  fSelectionModeAny(kFALSE),
+  fAODFilterBits(0),
+  fTrackCutsPeriod(period),
+  fEmcalTrackSelection(0),
+  fTrackType(kUndefined)
 {
   // Standard constructor.
 
   fClassName = "AliVParticle";
+
+  if (fTrackCutsPeriod.IsNull() && !AliParticleContainer::fgDefTrackCutsPeriod.IsNull()) {
+    AliInfo(Form("Default track cuts period is %s", AliParticleContainer::fgDefTrackCutsPeriod.Data()));
+    fTrackCutsPeriod = AliParticleContainer::fgDefTrackCutsPeriod;
+  }
 }
 
 //________________________________________________________________________
@@ -69,9 +91,60 @@ void AliParticleContainer::SetArray(AliVEvent *event)
 
   AliEmcalContainer::SetArray(event);
 
-  if (fClassName != "AliAODTrack" && fFilterHybridTracks) {
-    AliWarning("Only class type AliAODTrack can be filtered for hybrid tracks. This functionality will be disabled.");
-    fFilterHybridTracks = kFALSE;
+  TClass* particleClass = fClArray->GetClass();
+
+  if (fTrackFilterType == AliEmcalTrackSelection::kNoTrackFilter) {
+    if (fEmcalTrackSelection) delete fEmcalTrackSelection;
+    fEmcalTrackSelection = 0;
+  }
+  else {
+    if (fTrackFilterType == AliEmcalTrackSelection::kCustomTrackFilter) {
+
+      AliInfo("Using custom track cuts");
+
+      if (particleClass->InheritsFrom("AliAODTrack")) {
+        AliInfo(Form("Objects are of type %s: AOD track selection will be done.", particleClass->GetName()));
+        fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(0, fAODFilterBits);
+      }
+      else if (particleClass->InheritsFrom("AliESDtrack")) {
+        AliInfo(Form("Objects are of type %s: ESD track selection will be done.", particleClass->GetName()));
+        fEmcalTrackSelection = new AliEmcalTrackSelectionESD(0);
+      }
+      else {
+        AliWarning(Form("Objects are of type %s: no track filtering will be done!!", particleClass->GetName()));
+      }
+
+      if (fEmcalTrackSelection) {
+        if (fSelectionModeAny) {
+          fEmcalTrackSelection->SetSelectionModeAny();
+        }
+        else {
+          fEmcalTrackSelection->SetSelectionModeAll();
+        }
+
+        fEmcalTrackSelection->AddTrackCuts(fListOfCuts);
+      }
+    }
+    else {
+      if (!fTrackCutsPeriod.IsNull()) {
+        AliInfo(Form("Using track cuts %d for period %s", fTrackFilterType, fTrackCutsPeriod.Data()));
+      }
+      else {
+        AliInfo(Form("Using track cuts %d (no data period was provided!)", fTrackFilterType));
+      }
+
+      if (particleClass->InheritsFrom("AliAODTrack")) {
+        AliInfo(Form("Objects are of type %s: AOD track selection will be done.", particleClass->GetName()));
+        fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(fTrackFilterType, fTrackCutsPeriod);
+      }
+      else if (particleClass->InheritsFrom("AliESDtrack")) {
+        AliInfo(Form("Objects are of type %s: ESD track selection will be done.", particleClass->GetName()));
+        fEmcalTrackSelection = new AliEmcalTrackSelectionESD(fTrackFilterType, fTrackCutsPeriod);
+      }
+      else {
+        AliWarning(Form("Objects are of type %s: no track filtering will be done!!", particleClass->GetName()));
+      }
+    }
   }
 }
 
@@ -189,7 +262,7 @@ void AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
   //Get momentum of the i^th particle in array
 
   AliVParticle *vp = GetParticle(i);
-  if(vp) mom.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),0.139);
+  if (vp) mom.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),0.139);
 }
 
 //________________________________________________________________________
@@ -198,17 +271,33 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
   // Return true if vp is accepted.
 
   fRejectionReason = 0;
+  fTrackType = kUndefined;
 
   if (!vp) {
     fRejectionReason |= kNullObject;
     return kFALSE;
   }
 
-  if (fFilterHybridTracks) {  // the cast is safe because fFilterHybridTracks is reset in DoInit if the object type is not AliAODTrack
-    AliAODTrack* aodTrack = static_cast<AliAODTrack*>(vp);
-    if (!aodTrack->IsHybridGlobalConstrainedGlobal()) {
+  if (fEmcalTrackSelection) {
+    AliVTrack* vTrack = static_cast<AliVTrack*>(vp);
+    if (!fEmcalTrackSelection->IsTrackAccepted(vTrack)) {
       fRejectionReason |= kNotHybridTrack;
       return kFALSE;
+    }
+    else {
+      if (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) {
+        if (fEmcalTrackSelection->GetTrackBitmap().FirstSetBit() == 0) {
+          fTrackType = kHybridGlobal;
+        }
+        else if (fEmcalTrackSelection->GetTrackBitmap().FirstSetBit() == 1) {
+          if (vTrack->GetStatus()&AliVTrack::kITSrefit != 0) {
+            fTrackType = kHybridConstrained;
+          }
+          else {
+            fTrackType = kHybridConstrainedNoITSrefit;
+          }
+        }
+      }
     }
   }
 
@@ -300,4 +389,31 @@ void AliParticleContainer::SetClassName(const char *clname)
   TClass cls(clname);
   if (cls.InheritsFrom("AliVParticle")) fClassName = clname;
   else AliError(Form("Unable to set class name %s for a AliParticleContainer, it must inherits from AliVParticle!",clname));
+}
+
+//________________________________________________________________________
+void AliParticleContainer::AddTrackCuts(AliVCuts *cuts)
+{
+  if (!fListOfCuts) {
+    fListOfCuts = new TObjArray;
+    fListOfCuts->SetOwner(true);
+  }
+  fListOfCuts->Add(cuts);
+}
+
+//________________________________________________________________________
+Int_t AliParticleContainer::GetNumberOfCutObjects() const
+{
+  if (!fListOfCuts) return 0;
+  return fListOfCuts->GetEntries();
+}
+
+//________________________________________________________________________
+AliVCuts* AliParticleContainer::GetTrackCuts(Int_t icut)
+{
+  if (!fListOfCuts) return NULL;
+  if (icut < fListOfCuts->GetEntries()) {
+    return static_cast<AliVCuts *>(fListOfCuts->At(icut));
+  }
+  return NULL;
 }

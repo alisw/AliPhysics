@@ -28,8 +28,11 @@ class AliVTrack;
 class AliEmcalTrackSelectionAOD: public AliEmcalTrackSelection {
 public:
 	AliEmcalTrackSelectionAOD();
+	AliEmcalTrackSelectionAOD(ETrackFilterType_t type, const char* period = "");
 	AliEmcalTrackSelectionAOD(AliVCuts *cuts, UInt_t filterbits);
 	virtual ~AliEmcalTrackSelectionAOD() {}
+
+	virtual void GenerateTrackCuts(ETrackFilterType_t type, const char* /*period*/ = "");
 
 	virtual bool IsTrackAccepted(AliVTrack * const trk);
 
@@ -44,6 +47,8 @@ public:
 
 private:
 	UInt_t			fFilterBits;				    ///< Track filter bits
+	Bool_t      fFilterHybridTracks;    ///< Filter hybrid tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
+	Bool_t      fFilterTPCTracks;       ///< Filter TPC-only tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
 
 	/// \cond CLASSIMP
 	ClassDef(AliEmcalTrackSelectionAOD, 1);

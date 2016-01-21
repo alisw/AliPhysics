@@ -32,7 +32,9 @@ ClassImp(AliEmcalTrackSelectionAOD)
  */
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
 	AliEmcalTrackSelection(),
-	fFilterBits(0)
+	fFilterBits(0),
+	fFilterHybridTracks(kFALSE),
+	fFilterTPCTracks(kFALSE)
 {
 }
 
@@ -46,9 +48,51 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
  */
 AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filterbits):
 	AliEmcalTrackSelection(),
-	fFilterBits(filterbits)
+	fFilterBits(filterbits),
+  fFilterHybridTracks(kFALSE),
+  fFilterTPCTracks(kFALSE)
 {
   AddTrackCuts(cuts);
+}
+
+/**
+ * Constructor, initalising track cuts depending on the requested type of filtering
+ *
+ * \param type Track filtering type
+ * \param period  Period string (e.g. LHC11h)
+ */
+AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, const char* period):
+  AliEmcalTrackSelection(),
+  fFilterBits(0),
+  fFilterHybridTracks(kFALSE),
+  fFilterTPCTracks(kFALSE)
+{
+  GenerateTrackCuts(type, period);
+}
+
+/**
+ * Automatically generates track cuts depending on the requested type of filtering
+ *
+ * \param type Track filtering type
+ */
+void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const char* /*period*/)
+{
+  switch (type) {
+  case kHybridTracks:
+    fFilterHybridTracks = kTRUE;
+    fFilterTPCTracks = kFALSE;
+    break;
+
+  case kTPCOnlyTracks:
+    fFilterHybridTracks = kFALSE;
+    fFilterTPCTracks = kTRUE;
+    break;
+
+  default:
+    fFilterHybridTracks = kFALSE;
+    fFilterTPCTracks = kFALSE;
+    break;
+  }
 }
 
 /**
@@ -86,6 +130,12 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
     if(aodt->TestFilterBit(fFilterBits)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
+  if(fFilterHybridTracks) {
+    if(aodt->IsHybridGlobalConstrainedGlobal()) fTrackBitmap.SetBitNumber(cutcounter++);
+  }
+  if(fFilterTPCTracks) {
+    if(aodt->IsHybridTPCConstrainedGlobal()) fTrackBitmap.SetBitNumber(cutcounter++);
+  }
   if (fListOfCuts) {
     for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
       AliVCuts *trackCuts = static_cast<AliVCuts *>(*cutIter);
@@ -99,8 +149,9 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
       cutcounter++;
     }
   }
-  if (fSelectionModeAny) {
-    // In case of ANY one of the cuts need to be fulfilled (equivalent to one bit set)
+
+  if (fSelectionModeAny){
+    // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
     return fTrackBitmap.CountBits() > 0 || cutcounter == 0;
   } else {
     // In case of ALL all of the cuts need to be fulfilled (equivalent to all bits set)
