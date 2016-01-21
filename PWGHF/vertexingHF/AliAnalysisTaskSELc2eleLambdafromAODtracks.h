@@ -19,6 +19,7 @@
 /* $Id$ */ 
 
 #include "TROOT.h"
+#include "TVector.h"
 #include "TSystem.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -51,8 +52,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray);
-  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Double_t *v0info, Int_t charge);
+  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, TClonesArray *mcArray);
+  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Double_t *v0info, TVector *tinfo, TVector *v0info2, Int_t charge);
   void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
@@ -81,11 +82,13 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
-  AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
+  AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod);
 	Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgele_array, Int_t *pdgv0_array, Int_t *labelele_array, Int_t *labelv0_array,  Int_t &ngen_ele, Int_t &ngen_v0);
 	void	GetMCDecayHistory(AliAODMCParticle *mcpart, TClonesArray *mcArray, Int_t *pdgarray, Int_t *labelarray, Int_t &ngen);
 
+  void StoreGlobalTrackReference(AliAODTrack *track, Int_t);
+  void ResetGlobalTrackReference();
 
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
@@ -512,18 +515,21 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlWSMix1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlWSMix2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
 
-	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
-	TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
-	TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
-	TH2D *fHistoResponseEleLambdaPt; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPt1; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPt2; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPtFeeddownXic0; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPtFeeddownXic01; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPtFeeddownXic02; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus1; //!<! Response function e-Lambda pT <- XicPt
-	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus2; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+  TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
+  TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
+  TH2D *fHistoResponseEleLambdaPt; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPt1; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPt2; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownXic0; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownXic01; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownXic02; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus1; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus2; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownSigma; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownSigma1; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtFeeddownSigma2; //!<! Response function e-Lambda pT <- XicPt
   THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
 	TH2F *fHistoEleLambdaPtvsRapidityRS; //!<! e-Lambda pT vs y
@@ -536,6 +542,19 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistonLambdavsRunNumber;//!<! nlambda vs runnumber
 	TH1F *fHistoMCEventType;//!<! MC even type
 	TH1F *fHistoMCDeltaPhiccbar;//!<! MC dphi ccbar
+
+  // Store pointers to global tracks for pid and dca
+  AliAODTrack **fGTI;                //! Array of pointers, just nicely sorted according to the id
+  Int_t *fGTIndex;                //! Array of integers to keep the index of tpc only track
+  const UShort_t  fTrackBuffSize;          //! Size of the above array, ~12000 for PbPb
+  TH2D *fHistodPhiSdEtaSElectronProtonR125RS;//!<! dPhiS vs dEtaS R125 RS
+  TH2D *fHistodPhiSdEtaSElectronProtonR125WS;//!<! dPhiS vs dEtaS R125 WS
+  TH2D *fHistodPhiSdEtaSElectronProtonR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
+  TH2D *fHistodPhiSdEtaSElectronProtonR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+  TH2D *fHistodPhiSdEtaSElectronPionR125RS;//!<! dPhiS vs dEtaS R125 RS
+  TH2D *fHistodPhiSdEtaSElectronPionR125WS;//!<! dPhiS vs dEtaS R125 WS
+  TH2D *fHistodPhiSdEtaSElectronPionR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
+  TH2D *fHistodPhiSdEtaSElectronPionR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -551,13 +570,16 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; /// array of electron-compatible tracks
   TObjArray* fV0Tracks1; /// array of lambda-compatible tracks
   TObjArray* fV0Tracks2; /// array of antilambda-compatible tracks
-	std::vector<Double_t> fV0dlArray1; /// array of lambda-compatible tracks' information
+  std::vector<Double_t> fV0dlArray1; /// array of lambda-compatible tracks' information
   std::vector<Double_t> fV0dlArray2; /// array of antilambda-compatible tracks' information
-	std::vector<Double_t> fV0dcaArray1; /// array of lambda-compatible tracks' information
+  std::vector<Double_t> fV0dcaArray1; /// array of lambda-compatible tracks' information
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
+  TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
+  TObjArray* fV0CutVarsArray1; /// array of RDHF cut information
+  TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,21); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,22); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

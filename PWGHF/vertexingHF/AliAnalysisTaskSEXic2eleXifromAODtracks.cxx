@@ -283,6 +283,19 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCXic0Decays(0),
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
+  fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
+  fHistodPhiSdEtaSElectronProtonR125RS(0),
+  fHistodPhiSdEtaSElectronProtonR125WS(0),
+  fHistodPhiSdEtaSElectronProtonR125RSMix(0),
+  fHistodPhiSdEtaSElectronProtonR125WSMix(0),
+  fHistodPhiSdEtaSElectronPionR125RS(0),
+  fHistodPhiSdEtaSElectronPionR125WS(0),
+  fHistodPhiSdEtaSElectronPionR125RSMix(0),
+  fHistodPhiSdEtaSElectronPionR125WSMix(0),
+  fHistodPhiSdEtaSElectronBachelorR125RS(0),
+  fHistodPhiSdEtaSElectronBachelorR125WS(0),
+  fHistodPhiSdEtaSElectronBachelorR125RSMix(0),
+  fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kTRUE),
 	fNumberOfEventsForMixing		(5),
@@ -293,7 +306,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fEventInfo(0x0),
 	fElectronTracks(0x0),
 	fCascadeTracks1(0x0),
-	fCascadeTracks2(0x0)
+	fCascadeTracks2(0x0),
+  fElectronCutVarsArray(0x0),
+  fCascadeCutVarsArray1(0x0),
+  fCascadeCutVarsArray2(0x0)
 {
   //
   // Default Constructor. 
@@ -509,6 +525,19 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCXic0Decays(0),
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
+  fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
+  fHistodPhiSdEtaSElectronProtonR125RS(0),
+  fHistodPhiSdEtaSElectronProtonR125WS(0),
+  fHistodPhiSdEtaSElectronProtonR125RSMix(0),
+  fHistodPhiSdEtaSElectronProtonR125WSMix(0),
+  fHistodPhiSdEtaSElectronPionR125RS(0),
+  fHistodPhiSdEtaSElectronPionR125WS(0),
+  fHistodPhiSdEtaSElectronPionR125RSMix(0),
+  fHistodPhiSdEtaSElectronPionR125WSMix(0),
+  fHistodPhiSdEtaSElectronBachelorR125RS(0),
+  fHistodPhiSdEtaSElectronBachelorR125WS(0),
+  fHistodPhiSdEtaSElectronBachelorR125RSMix(0),
+  fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kTRUE),
 	fNumberOfEventsForMixing		(5),
@@ -519,7 +548,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fEventInfo(0x0),
 	fElectronTracks(0x0),
 	fCascadeTracks1(0x0),
-	fCascadeTracks2(0x0)
+	fCascadeTracks2(0x0),
+  fElectronCutVarsArray(0x0),
+  fCascadeCutVarsArray1(0x0),
+  fCascadeCutVarsArray2(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -620,6 +652,20 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::~AliAnalysisTaskSEXic2eleXifromAODtrack
     delete fEventBuffer;
   }
   delete fEventInfo;
+
+  if(fElectronCutVarsArray) fElectronCutVarsArray->Delete();
+  delete fElectronCutVarsArray;
+  if(fCascadeCutVarsArray1) fCascadeCutVarsArray1->Delete();
+  delete fCascadeCutVarsArray1;
+  if(fCascadeCutVarsArray2) fCascadeCutVarsArray2->Delete();
+  delete fCascadeCutVarsArray2;
+
+  if (fGTI)
+    delete[] fGTI;
+  fGTI=0;
+  if (fGTIndex)
+    delete[] fGTIndex;
+  fGTIndex=0;
 }
 
 //_________________________________________________
@@ -779,6 +825,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
+  fAnalCuts->SetMagneticField(fBzkG);
+  fAnalCuts->SetPrimaryVertex(pos);
   MakeAnalysis(aodEvent,mcArray);
 
 
@@ -883,6 +931,12 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
 		fCascadeTracks1->SetOwner();
 		fCascadeTracks2 = new TObjArray();
 		fCascadeTracks2->SetOwner();
+    fElectronCutVarsArray = new TObjArray();
+    fElectronCutVarsArray->SetOwner();
+    fCascadeCutVarsArray1 = new TObjArray();
+    fCascadeCutVarsArray1->SetOwner();
+    fCascadeCutVarsArray2 = new TObjArray();
+    fCascadeCutVarsArray2->SetOwner();
 
 		fNOfPools=fNCentBins*fNzVtxBins;
 		fEventBuffer = new TTree*[fNOfPools];
@@ -893,9 +947,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
 			fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
 			fEventBuffer[i]->Branch("c1array", "TObjArray", &fCascadeTracks1);
 			fEventBuffer[i]->Branch("c2array", "TObjArray", &fCascadeTracks2);
+      fEventBuffer[i]->Branch("c1varsarray", "TObjArray", &fCascadeCutVarsArray1);
+      fEventBuffer[i]->Branch("c2varsarray", "TObjArray", &fCascadeCutVarsArray2);
 		}
 	}
 
+  fGTI = new AliAODTrack *[fTrackBuffSize]; // Array of pointers 
+  fGTIndex = new Int_t [fTrackBuffSize]; // Array of index 
 
   return;
 }
@@ -915,6 +973,20 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
 	if(fDoEventMixing && fElectronTracks) fElectronTracks->Delete();
 	if(fDoEventMixing && fCascadeTracks1) fCascadeTracks1->Delete();
 	if(fDoEventMixing && fCascadeTracks2) fCascadeTracks2->Delete();
+	if(fDoEventMixing && fCascadeCutVarsArray1) fCascadeCutVarsArray1->Delete();
+	if(fDoEventMixing && fCascadeCutVarsArray2) fCascadeCutVarsArray2->Delete();
+
+  ResetGlobalTrackReference();
+  // ..and set it
+  for (Int_t iTrack=0;iTrack<aodEvent->GetNumberOfTracks();iTrack++){
+    // cast needed since the event now returns AliVTrack instead of AliAODTrack
+    AliAODTrack *track = dynamic_cast<AliAODTrack *>(aodEvent->GetTrack(iTrack));
+    if (!track) continue;
+
+    // Store the reference of the global tracks
+    StoreGlobalTrackReference(track,iTrack);
+  }
+
 
   Int_t nCascs= aodEvent->GetNumberOfCascades();
   Int_t nTracks= aodEvent->GetNumberOfTracks();
@@ -957,25 +1029,35 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
     for (Int_t itrk = 0; itrk<nTracks; itrk++) {
       if(!seleTrkFlags[itrk]) continue;
       AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
-      if(trk->GetID()<0) continue;
+      //if(trk->GetID()<0) continue;
+
+      //if(!fAnalCuts->SelectWithRoughCuts(v0,trk)) continue;
+      
+      //TPC only track (BIT 7) does not have PID information 
+      //In addition to that, TPC only tracks does not have good DCA resolution
+      //(according to femtoscopy code)
+      AliAODTrack *trkpid = 0;
+      if(fAnalCuts->GetProdAODFilterBit()==7){
+        trkpid = fGTI[-trk->GetID()-1];
+      }else{
+        trkpid = trk;
+      }
 
       Int_t cpid = cptrack->GetID();
       Int_t cnid = cntrack->GetID();
       Int_t cbid = cbtrack->GetID();
-      Int_t lpid = trk->GetID();
+      Int_t lpid = trkpid->GetID();
       if((cpid==lpid)||(cnid==lpid)||(cbid==lpid)) continue;
-
-      //if(!fAnalCuts->SelectWithRoughCuts(v0,trk)) continue;
 
       AliAODVertex *secVert = ReconstructSecondaryVertex(casc,trk,aodEvent);//Fake, prim vertex is just used as secondary vertex. place holder for future
       if(!secVert) continue;
 
-      AliAODRecoCascadeHF *exobj = MakeCascadeHF(casc,trk,aodEvent,secVert);
+      AliAODRecoCascadeHF *exobj = MakeCascadeHF(casc,trk,trkpid,aodEvent,secVert);
       if(!exobj) {
 	continue;
       }
 
-      FillROOTObjects(exobj, casc,trk,mcArray);
+      FillROOTObjects(exobj, casc,trk,trkpid,mcArray);
 
       exobj->GetSecondaryVtx()->RemoveDaughters();
       exobj->UnsetOwnPrimaryVtx();
@@ -1121,12 +1203,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineTreeVariables()
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *exobj, AliAODcascade *casc, AliAODTrack *trk, TClonesArray *mcArray) 
+void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *exobj, AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, TClonesArray *mcArray) 
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
   //
 	if(!trk) return;
+	if(!trkpid) return;
 	if(!casc) return;
 
 	for(Int_t i=0;i<90;i++){
@@ -1202,17 +1285,17 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 	Double_t nSigmaTOFele = -9999.;
   if(fAnalCuts->GetIsUsePID())
   {
-		nSigmaTPCele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
-		nSigmaTOFele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
+		nSigmaTPCele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
+		nSigmaTOFele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
     fCandidateVariables[17] = nSigmaTPCele;
     fCandidateVariables[18] = nSigmaTOFele;
 
-		Double_t nSigmaTPCpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
-		Double_t nSigmaTOFpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
-		Double_t nSigmaTPCka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kKaon);
-		Double_t nSigmaTOFka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kKaon);
-		Double_t nSigmaTPCpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kPion);
-		Double_t nSigmaTOFpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kPion);
+		Double_t nSigmaTPCpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kProton);
+		Double_t nSigmaTOFpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kProton);
+		Double_t nSigmaTPCka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kKaon);
+		Double_t nSigmaTOFka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kKaon);
+		Double_t nSigmaTPCpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kPion);
+		Double_t nSigmaTOFpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kPion);
     fCandidateVariables[19] = nSigmaTPCpr_etrk;
     fCandidateVariables[20] = nSigmaTOFpr_etrk;
     fCandidateVariables[21] = nSigmaTPCka_etrk;
@@ -1345,46 +1428,19 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 
   fCandidateVariables[89] = fEvNumberCounter;
 
-  //Copied from pK0s analysis
-  Double_t LcPx = exobj->Px();
-  Double_t LcPy = exobj->Py();
-  Double_t LcPt = TMath::Sqrt(LcPx*LcPx+LcPy*LcPy);
-  Double_t d0z0[2],covd0z0[3];
-  trk->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0,covd0z0);
-  Double_t x0 = fVtx1->GetX();
-  Double_t y0 = fVtx1->GetY();
-  Double_t px0 = LcPx/LcPt;
-  Double_t py0 = LcPy/LcPt;
-  Double_t tx[3];
-  trk->GetXYZ(tx);
-  Double_t x1 = tx[0];
-  Double_t y1 = tx[1];
-  trk->GetPxPyPz(tx);
-  Double_t px1 = tx[0];
-  Double_t py1 = tx[1];
-  Double_t pt1 = sqrt(px1*px1+py1*py1);
-  px1 = px1/pt1;
-  py1 = py1/pt1;
-
-  Double_t dx = x0 - x1;
-  Double_t dy = y0 - y1;
-
-  Double_t Delta = -px0*py1+py0*px1;
-  Double_t a0 = -9999.;
-	if(Delta!=0)
-	{
-		a0 = 1./Delta * (py1 * dx - px1 * dy);
-	}
-  if(fabs(a0)>0.5) a0 = 0.499;
 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
+  Double_t dphis_ele_pr, detas_ele_pr,dphis_ele_pi, detas_ele_pi, dphis_ele_bach, detas_ele_bach;
+  dphis_ele_pr = 9999.;detas_ele_pr = 9999.;dphis_ele_pi = 9999.;detas_ele_pi = 9999.;dphis_ele_bach=9999.;detas_ele_bach=9999.;
+  //fAnalCuts->GetdPhiSdEtaSR125(trk,cptrack,cntrack,cbtrack,fBzkG,posVtx, dphis_ele_pr,detas_ele_pr,dphis_ele_pi,detas_ele_pi, dphis_ele_bach, detas_ele_bach);
+
+
 	Double_t cont[4];
 	cont[0] = exobj->InvMass(2,pdgdg);
 	cont[1] = exobj->Pt();
-	//cont[2] = exobj->Getd0Prong(0)*trk->Charge();
-	cont[2] = a0;
+	cont[2] = exobj->Getd0Prong(0)*trk->Charge();
 	cont[3] = fCentrality;
 	fHistoEleXiMass->Fill(cont);
 
@@ -1673,6 +1729,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 					}
 				}
 			}
+      fHistodPhiSdEtaSElectronProtonR125RS->Fill(dphis_ele_pr,detas_ele_pr);
+      fHistodPhiSdEtaSElectronPionR125RS->Fill(dphis_ele_pi,detas_ele_pi);
+      fHistodPhiSdEtaSElectronBachelorR125RS->Fill(dphis_ele_bach,detas_ele_bach);
 		}else{
 			fHistoEleXiMassWS->Fill(cont);
 			if(trk->Charge()>0) fHistoEleXiMassWS1->Fill(cont);
@@ -1793,6 +1852,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
           }
         }
       }
+      fHistodPhiSdEtaSElectronProtonR125WS->Fill(dphis_ele_pr,detas_ele_pr);
+      fHistodPhiSdEtaSElectronPionR125WS->Fill(dphis_ele_pi,detas_ele_pi);
+      fHistodPhiSdEtaSElectronBachelorR125WS->Fill(dphis_ele_bach,detas_ele_bach);
 		}
 
 	}
@@ -1848,7 +1910,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector *trke, TLorentzVector *casc, Int_t chargexi) 
+void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector *trke, TLorentzVector *casc, TVector *elevars, TVector *cascvars, Int_t chargexi) 
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
@@ -1954,7 +2016,43 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 	cont_eleptvsd0[1] = 0.;
 	cont_eleptvsd0[2] = fCentrality;
 
-	if(mexi<10. && cosoa>0. && fAnalCuts->IsPeakRegion(casc))
+  Double_t xyzR125_ele[3], xyzR125_pr[3], xyzR125_pi[3], xyzR125_bach[3];
+  xyzR125_ele[0] = (*elevars)[0];
+  xyzR125_ele[1] = (*elevars)[1];
+  xyzR125_ele[2] = (*elevars)[2];
+  xyzR125_pr[0] = (*cascvars)[0];
+  xyzR125_pr[1] = (*cascvars)[1];
+  xyzR125_pr[2] = (*cascvars)[2];
+  xyzR125_pi[0] = (*cascvars)[3];
+  xyzR125_pi[1] = (*cascvars)[4];
+  xyzR125_pi[2] = (*cascvars)[5];
+  xyzR125_bach[0] = (*cascvars)[6];
+  xyzR125_bach[1] = (*cascvars)[7];
+  xyzR125_bach[2] = (*cascvars)[8];
+
+  Double_t rdhfcutvars[12];
+  rdhfcutvars[0] = xyzR125_ele[0];
+  rdhfcutvars[1] = xyzR125_ele[1];
+  rdhfcutvars[2] = xyzR125_ele[2];
+  rdhfcutvars[3] = xyzR125_pr[0];
+  rdhfcutvars[4] = xyzR125_pr[1];
+  rdhfcutvars[5] = xyzR125_pr[2];
+  rdhfcutvars[6] = xyzR125_pi[0];
+  rdhfcutvars[7] = xyzR125_pi[1];
+  rdhfcutvars[8] = xyzR125_pi[2];
+  rdhfcutvars[9] = xyzR125_bach[0];
+  rdhfcutvars[10] = xyzR125_bach[1];
+  rdhfcutvars[11] = xyzR125_bach[2];
+
+  Double_t dphis_ele_pr = fAnalCuts->dPhiSR125(xyzR125_ele,xyzR125_pr);
+  Double_t detas_ele_pr = fAnalCuts->dEtaSR125(xyzR125_ele,xyzR125_pr);
+  Double_t dphis_ele_pi = fAnalCuts->dPhiSR125(xyzR125_ele,xyzR125_pi);
+  Double_t detas_ele_pi = fAnalCuts->dEtaSR125(xyzR125_ele,xyzR125_pi);
+  Double_t dphis_ele_bach = fAnalCuts->dPhiSR125(xyzR125_ele,xyzR125_bach);
+  Double_t detas_ele_bach = fAnalCuts->dEtaSR125(xyzR125_ele,xyzR125_bach);
+
+	//if(mexi<10. && cosoa>0. && fAnalCuts->IsPeakRegion(casc))
+  if(fAnalCuts->IsSelected(trke,casc,rdhfcutvars,AliRDHFCuts::kCandidate) &&  fAnalCuts->IsPeakRegion(casc))
 	{
 		if(((int)trke->T())*chargexi<0){
 			fHistoEleXiMassRSMix->Fill(cont);
@@ -1969,6 +2067,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 				fHistoElePtvsXiPtRSMix->Fill(cont_eleptvsxipt);
 				fHistoElePtvsd0RSMix->Fill(cont_eleptvsd0);
 			}
+      fHistodPhiSdEtaSElectronProtonR125RSMix->Fill(dphis_ele_pr,detas_ele_pr);
+      fHistodPhiSdEtaSElectronPionR125RSMix->Fill(dphis_ele_pi,detas_ele_pi);
+      fHistodPhiSdEtaSElectronBachelorR125RSMix->Fill(dphis_ele_bach,detas_ele_bach);
 		}else{
 			fHistoEleXiMassWSMix->Fill(cont);
 			if(trke->T()>0) fHistoEleXiMassWSMix1->Fill(cont);
@@ -1982,6 +2083,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 				fHistoElePtvsXiPtWSMix->Fill(cont_eleptvsxipt);
 				fHistoElePtvsd0WSMix->Fill(cont_eleptvsd0);
 			}
+      fHistodPhiSdEtaSElectronProtonR125WSMix->Fill(dphis_ele_pr,detas_ele_pr);
+      fHistodPhiSdEtaSElectronPionR125WSMix->Fill(dphis_ele_pi,detas_ele_pi);
+      fHistodPhiSdEtaSElectronBachelorR125WSMix->Fill(dphis_ele_bach,detas_ele_bach);
 		}
 	}
 
@@ -2062,6 +2166,18 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
 
 	if(fDoEventMixing){
 		fElectronTracks->AddLast(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
+
+    Double_t pv[3];
+    pv[0] = fVtx1->GetX();
+    pv[1] = fVtx1->GetY();
+    pv[2] = fVtx1->GetZ();
+    Double_t xyzR125[3] = {9999.,9999.,9999.};
+    if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(trk,fBzkG,pv,xyzR125);
+    TVector *varvec = new TVector(3);
+    (*varvec)[0] = xyzR125[0];
+    (*varvec)[1] = xyzR125[1];
+    (*varvec)[2] = xyzR125[2];
+    fElectronCutVarsArray->AddLast(varvec);
 	}
 
 
@@ -2215,6 +2331,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   // Fill histograms or tree depending on fWriteVariableTree (tree not implemented yet)
   //
 	if(!casc) return;
+  AliAODTrack *cptrack =  (AliAODTrack*)(casc->GetDaughter(0));
+  AliAODTrack *cntrack =  (AliAODTrack*)(casc->GetDaughter(1));
+  AliAODTrack *cbtrack =  (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
+  if(!cptrack) return;
+  if(!cntrack) return;
+  if(!cbtrack) return;
+
 	fHistoXiMassvsPt->Fill(casc->MassXi(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 	fHistoOmegaMassvsPt->Fill(casc->MassOmega(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 	Double_t momxix = casc->MomXiX();
@@ -2290,10 +2413,46 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
 	if(fDoEventMixing){
 		TLorentzVector *lv = new TLorentzVector();
 		lv->SetXYZM(momcasc_new[0],momcasc_new[1],momcasc_new[2],casc->MassXi());
-		if(casc->ChargeXi()>0)
+    Double_t xyzR125pr[3]={9999.,9999.,9999.};
+    Double_t xyzR125pi[3]={9999.,9999.,9999.};
+    Double_t xyzR125bach[3]={9999.,9999.,9999.};
+		if(casc->ChargeXi()>0){
 			fCascadeTracks1->AddLast(lv);
-		else
+      if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.){
+        fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pr);
+        fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pi);
+        fAnalCuts->SetSftPosR125(cbtrack,fBzkG,posVtx,xyzR125bach);
+      }
+      TVector *varvec = new TVector(9);
+      (*varvec)[0] = xyzR125pr[0];
+      (*varvec)[1] = xyzR125pr[1];
+      (*varvec)[2] = xyzR125pr[2];
+      (*varvec)[3] = xyzR125pi[0];
+      (*varvec)[4] = xyzR125pi[1];
+      (*varvec)[5] = xyzR125pi[2];
+      (*varvec)[6] = xyzR125bach[0];
+      (*varvec)[7] = xyzR125bach[1];
+      (*varvec)[8] = xyzR125bach[2];
+      fCascadeCutVarsArray1->AddLast(varvec);
+    }else{
 			fCascadeTracks2->AddLast(lv);
+      if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.){
+        fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pr);
+        fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pi);
+        fAnalCuts->SetSftPosR125(cbtrack,fBzkG,posVtx,xyzR125bach);
+      }
+      TVector *varvec = new TVector(9);
+      (*varvec)[0] = xyzR125pr[0];
+      (*varvec)[1] = xyzR125pr[1];
+      (*varvec)[2] = xyzR125pr[2];
+      (*varvec)[3] = xyzR125pi[0];
+      (*varvec)[4] = xyzR125pi[1];
+      (*varvec)[5] = xyzR125pi[2];
+      (*varvec)[6] = xyzR125bach[0];
+      (*varvec)[7] = xyzR125bach[1];
+      (*varvec)[8] = xyzR125bach[2];
+      fCascadeCutVarsArray2->AddLast(varvec);
+    }
 	}
 
 	if(!fWriteEachVariableTree) return;
@@ -3046,6 +3205,31 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoMCDeltaPhiccbar);
   fHistoMCNccbar=new TH1F("fHistoMCNccbar","",100,-0.5,99.5);
   fOutputAll->Add(fHistoMCNccbar);
+ 
+	fHistodPhiSdEtaSElectronProtonR125RS = new TH2D("fHistodPhiSdEtaSElectronProtonR125RS","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronProtonR125RS);
+	fHistodPhiSdEtaSElectronProtonR125WS = new TH2D("fHistodPhiSdEtaSElectronProtonR125WS","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronProtonR125WS);
+	fHistodPhiSdEtaSElectronProtonR125RSMix = new TH2D("fHistodPhiSdEtaSElectronProtonR125RSMix","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronProtonR125RSMix);
+	fHistodPhiSdEtaSElectronProtonR125WSMix = new TH2D("fHistodPhiSdEtaSElectronProtonR125WSMix","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronProtonR125WSMix);
+	fHistodPhiSdEtaSElectronPionR125RS = new TH2D("fHistodPhiSdEtaSElectronPionR125RS","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronPionR125RS);
+	fHistodPhiSdEtaSElectronPionR125WS = new TH2D("fHistodPhiSdEtaSElectronPionR125WS","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronPionR125WS);
+	fHistodPhiSdEtaSElectronPionR125RSMix = new TH2D("fHistodPhiSdEtaSElectronPionR125RSMix","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronPionR125RSMix);
+	fHistodPhiSdEtaSElectronPionR125WSMix = new TH2D("fHistodPhiSdEtaSElectronPionR125WSMix","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronPionR125WSMix);
+	fHistodPhiSdEtaSElectronBachelorR125RS = new TH2D("fHistodPhiSdEtaSElectronBachelorR125RS","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronBachelorR125RS);
+	fHistodPhiSdEtaSElectronBachelorR125WS = new TH2D("fHistodPhiSdEtaSElectronBachelorR125WS","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronBachelorR125WS);
+	fHistodPhiSdEtaSElectronBachelorR125RSMix = new TH2D("fHistodPhiSdEtaSElectronBachelorR125RSMix","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronBachelorR125RSMix);
+	fHistodPhiSdEtaSElectronBachelorR125WSMix = new TH2D("fHistodPhiSdEtaSElectronBachelorR125WSMix","",50,0.,0.2,50,0.,0.2);
+  fOutputAll->Add(fHistodPhiSdEtaSElectronBachelorR125WSMix);
 
 	for(Int_t ih=0;ih<23;ih++){
 		Int_t bins_eleptvscutvars[3];
@@ -3138,7 +3322,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
 }
 
 //________________________________________________________________________
-AliAODRecoCascadeHF* AliAnalysisTaskSEXic2eleXifromAODtracks::MakeCascadeHF(AliAODcascade *casc, AliAODTrack *part, AliAODEvent * aod, AliAODVertex *secVert) 
+AliAODRecoCascadeHF* AliAnalysisTaskSEXic2eleXifromAODtracks::MakeCascadeHF(AliAODcascade *casc, AliAODTrack *part, AliAODTrack *partpid, AliAODEvent * aod, AliAODVertex *secVert) 
 {
   //
   // Create AliAODRecoCascadeHF object from the argument
@@ -3169,7 +3353,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEXic2eleXifromAODtracks::MakeCascadeHF(AliA
   //------------------------------------------------
   // DCA between tracks
   //------------------------------------------------
-  AliESDtrack *esdtrack = new AliESDtrack((AliVTrack*)part);
+  AliESDtrack *esdtrack = new AliESDtrack((AliVTrack*)partpid);
 
   Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
   xyz[0]=casc->DecayVertexXiX();
@@ -3588,20 +3772,38 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::SelectTrack( const AliVEvent *even
     AliVTrack *track;
     track = (AliVTrack*)event->GetTrack(i);
     
-    if(track->GetID()<0) continue;
+    //if(track->GetID()<0) continue;
     Double_t covtest[21];
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
+
+    if(!fAnalCuts) continue;
     
     AliAODTrack *aodt = (AliAODTrack*)track;
+
+    if(fAnalCuts->GetProdUseAODFilterBit()){
+      Int_t filterbit = fAnalCuts->GetProdAODFilterBit();
+      if(filterbit==7){
+        if(!aodt->TestFilterBit(BIT(filterbit))) continue;
+      }else{
+        if(!aodt->TestFilterMask(BIT(filterbit))) continue;
+      }
+    }
+
+    AliAODTrack *aodtpid = 0;
+    if(fAnalCuts->GetProdAODFilterBit()==7){
+      aodtpid = fGTI[-aodt->GetID()-1];
+    }else{
+      aodtpid = aodt;
+    }
+
 		Double_t nsigma_tpcele = -9999;
 		Double_t nsigma_tofele = -9999;
 		if(fAnalCuts->GetIsUsePID()){
-			nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodt,AliPID::kElectron);
-			nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodt,AliPID::kElectron);
+			nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
+			nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
 		}
 
-    if(!fAnalCuts) continue;
-    if(fAnalCuts->SingleTrkCutsNoPID(aodt,fVtx1)){
+    if(fAnalCuts->SingleTrkCutsNoPID(aodt,aodtpid,fVtx1)){
 			fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFPID->Fill(aodt->Pt(),nsigma_tofele);
 			if(fabs(nsigma_tofele)<3.){
@@ -3633,14 +3835,14 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::SelectTrack( const AliVEvent *even
 				fHistoElectronTOFPIDSelTPC->Fill(aodt->Pt(),nsigma_tofele);
 			}
 		}
-    if(fAnalCuts->SingleTrkCuts(aodt,fVtx1)){
+    if(fAnalCuts->SingleTrkCuts(aodt,aodtpid,fVtx1)){
       seleFlags[i]=kTRUE;
       nSeleTrks++;
 			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
 
-			Double_t minmass;
-			Bool_t isconv = fAnalCuts->TagConversions(aodt,(AliAODEvent*)event,trkEntries,minmass);
+			Double_t minmass = 9999.;
+			Bool_t isconv = fAnalCuts->TagConversions(aodt,fGTIndex,(AliAODEvent*)event,trkEntries,minmass);
 			fHistoMassConversionsMin->Fill(minmass);
 			if(isconv) seleFlags[i] = kFALSE;
 
@@ -3650,9 +3852,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::SelectTrack( const AliVEvent *even
         FillElectronROOTObjects(aodt,mcArray);
       }
 
-//			Double_t minmasslike;
-//			fAnalCuts->TagConversionsSameSign(aodt,(AliAODEvent*)event,trkEntries,minmasslike);
-//			fHistoMassConversionsSameSignMin->Fill(minmasslike);
+      Double_t minmasslike = 9999.;
+      fAnalCuts->TagConversionsSameSign(aodt,fGTIndex,(AliAODEvent*)event,trkEntries,minmasslike);
+      fHistoMassConversionsSameSignMin->Fill(minmasslike);
     }
   } // end loop on tracks
 }
@@ -3707,6 +3909,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::ResetPool(Int_t poolIndex){
 	fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
 	fEventBuffer[poolIndex]->Branch("c1array", "TObjArray", &fCascadeTracks1);
 	fEventBuffer[poolIndex]->Branch("c2array", "TObjArray", &fCascadeTracks2);
+	fEventBuffer[poolIndex]->Branch("c1varsarray", "TObjArray", &fCascadeCutVarsArray1);
+	fEventBuffer[poolIndex]->Branch("c2varsarray", "TObjArray", &fCascadeCutVarsArray2);
 
   return;
 }
@@ -3725,6 +3929,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
 
   TObjArray* c1array=0x0;
   TObjArray* c2array=0x0;
+  TObjArray* c1varsarray=0x0;
+  TObjArray* c2varsarray=0x0;
   Float_t zVertex,cent;
   TObjString* eventInfo=0x0;
   fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
@@ -3732,10 +3938,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
   fEventBuffer[poolIndex]->SetBranchAddress("centrality", &cent);
   fEventBuffer[poolIndex]->SetBranchAddress("c1array", &c1array);
   fEventBuffer[poolIndex]->SetBranchAddress("c2array", &c2array);
+  fEventBuffer[poolIndex]->SetBranchAddress("c1varsarray", &c1varsarray);
+  fEventBuffer[poolIndex]->SetBranchAddress("c2varsarray", &c2varsarray);
   for (Int_t i=0; i<nEle; i++)
   {
 		TLorentzVector* trke=(TLorentzVector*) fElectronTracks->At(i);
     if(!trke)continue;
+    TVector *elevarsarray = (TVector*)fElectronCutVarsArray->At(i);
 
 		for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
 			fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
@@ -3754,7 +3963,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
       for(Int_t iTr1=0; iTr1<nCascs1; iTr1++){
 				TLorentzVector* casc1=(TLorentzVector*) c1array->At(iTr1);
 				if(!casc1) continue;
-				FillMixROOTObjects(trke,casc1,1);
+        TVector *cascvarsarray = (TVector*) c1varsarray->At(iTr1);
+				FillMixROOTObjects(trke,casc1,elevarsarray,cascvarsarray,1);
 			}//casc loop
 
 			//TObjArray* c2array1=(TObjArray*)c2array->Clone();
@@ -3762,7 +3972,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
       for(Int_t iTr2=0; iTr2<nCascs2; iTr2++){
 				TLorentzVector* casc2=(TLorentzVector*) c2array->At(iTr2);
 				if(!casc2) continue;
-				FillMixROOTObjects(trke,casc2,-1);
+        TVector *cascvarsarray = (TVector*) c2varsarray->At(iTr2);
+				FillMixROOTObjects(trke,casc2,elevarsarray,cascvarsarray,-1);
 			}//casc loop
 
 			//delete c1array1;
@@ -4084,6 +4295,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCGenPairROOTObjects(AliAODMCP
 ////-------------------------------------------------------------------------------
 void	AliAnalysisTaskSEXic2eleXifromAODtracks::GetMCDecayHistory(AliAODMCParticle *mcpart, TClonesArray *mcArray, Int_t *pdgarray, Int_t *labelarray, Int_t &ngen)
 {
+//
+// MC decay history
+//
 
 	for(Int_t i=0;i<100;i++){
 		pdgarray[i] = -9999;
@@ -4109,4 +4323,68 @@ void	AliAnalysisTaskSEXic2eleXifromAODtracks::GetMCDecayHistory(AliAODMCParticle
 		ngen ++;
 		if(ngen == 100) break;
 	}
+}
+//________________________________________________________________________
+void AliAnalysisTaskSEXic2eleXifromAODtracks::StoreGlobalTrackReference(AliAODTrack *track, Int_t index){
+  //
+  // Stores the pointer to the global track
+  // copied from femtoscopy/k0analysis/plamanalysis
+  //
+
+  // Check that the id is positive
+  if(track->GetID()<0){
+    //    printf("Warning: track has negative ID: %d\n",track->GetID());
+    return;
+  }
+
+  // Check id is not too big for buffer
+  if(track->GetID()>=fTrackBuffSize){
+    printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n"
+        ,track->GetID(),fTrackBuffSize);
+    return;
+  }
+
+  // Warn if we overwrite a track
+  if(fGTI[track->GetID()]){
+    // Seems like there are FilterMap 0 tracks
+    // that have zero TPCNcls, don't store these!
+    if( (!track->GetFilterMap()) &&
+        (!track->GetTPCNcls())   )
+      return;
+
+    // Imagine the other way around,
+    // the zero map zero clusters track
+    // is stored and the good one wants 
+    // to be added. We ommit the warning
+    // and just overwrite the 'bad' track
+    if( fGTI[track->GetID()]->GetFilterMap() ||
+        fGTI[track->GetID()]->GetTPCNcls()   ){
+      // If we come here, there's a problem
+      printf("Warning! global track info already there!");
+      printf("         TPCNcls track1 %u track2 %u",
+          (fGTI[track->GetID()])->GetTPCNcls(),track->GetTPCNcls());
+      printf("         FilterMap track1 %u track2 %u\n",
+          (fGTI[track->GetID()])->GetFilterMap(),track->GetFilterMap());
+    }
+  } // Two tracks same id
+
+  // // There are tracks with filter bit 0,
+  // // do they have TPCNcls stored?
+  // if(!track->GetFilterMap()){
+  //   printf("Filter map is zero, TPCNcls: %u\n"
+  // 	   ,track->GetTPCNcls());
+  // }
+
+  // Assign the pointer
+  (fGTI[track->GetID()]) = track;
+  (fGTIndex[track->GetID()]) = index;
+}
+//________________________________________________________________________
+void AliAnalysisTaskSEXic2eleXifromAODtracks::ResetGlobalTrackReference(){
+  // Sets all the pointers to zero. To be called at
+  // the beginning or end of an event
+  for(UShort_t i=0;i<fTrackBuffSize;i++){
+    fGTI[i]=0;
+    fGTIndex[i]=-9999;
+  }
 }
