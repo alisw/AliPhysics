@@ -317,6 +317,22 @@ hostInfo(){
   return 0
 }
 
+parseListOfFiles()
+{
+  #generate a list of files, one per line out of arguments.
+  #names starting with "@" are assumed to be file lists and will
+  #be expanded
+  for file in "${@}"; do
+    if [[ "$file" =~ ^@ ]]; then
+      while IFS= read x; do
+        echo "$x"
+      done < "${file#@}"
+    else
+      echo "$file"
+    fi
+  done
+}
+
 summarizeLogs()
 {
   #validate and summarize the status of logs
@@ -327,12 +343,14 @@ summarizeLogs()
   #exit code 1 if some logs are not validated
 
   #print a summary of logs
-  local input
+  local -a input
   local file=""
   declare -A files
-  input=("${@}")
+  while IFS= read x; do
+    input+=("$x")
+  done < <(parseListOfFiles "$@")
   [[ -z "${input[*]}" ]] && input=( "${PWD}"/* )
-  
+
   #double inclusion protection+make full paths
   for file in "${input[@]}"; do
     [[ ! "${file}" =~ ^/ ]] && file="${PWD}/${file}"
@@ -348,11 +366,11 @@ summarizeLogs()
   local validationStatus=""
   declare -A coreFiles
   for file in "${files[@]}"; do
-    [[ ! -f ${file} ]] && continue
+    [[ ! -f "${file}" ]] && continue
     #keep track of core files for later processing
     [[ "${file##*/}" =~ ^core$ ]] && coreFiles[${file}]="${file}" && continue
     [[ ! "${file##*/}" =~ ${logFiles} ]] && continue
-    errorSummary=$(validateLog ${file})
+    errorSummary=$(validateLog "${file}")
     validationStatus=$?
     [[ validationStatus -ne 0 ]] && logStatus=1
     if [[ ${validationStatus} -eq 0 ]]; then 
@@ -367,10 +385,10 @@ summarizeLogs()
 
   #report core files
   for x in "${coreFiles[@]}"; do
-    echo ${x}
-    chmod 644 ${x}
+    echo "${x}"
+    chmod 644 "${x}"
     #gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace.log
+    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > stacktrace.log
     local nLines[2]
     #nLines=($(wc -l stacktrace_${x//\//_}.log))
     nLines=($(wc -l stacktrace.log))
@@ -392,7 +410,8 @@ validateLog()
   #input is path to log file
   #output an error summary on stdout
   #exit code is 0 if validated, 1 otherwise
-  log=${1}
+  log="${1}"
+  [[ ! -f "$log" ]] && return 1
   errorConditions=(
             'There was a crash'
             'floating'
@@ -420,7 +439,7 @@ validateLog()
   local warningSummary=""
   local errorCondition=""
   for errorCondition in "${errorConditions[@]}"; do
-    local tmp=$(grep -m1 -e "${errorCondition}" ${log})
+    local tmp=$(grep -m1 -e "${errorCondition}" "${log}")
     local error=""
     [[ -n ${tmp} ]] && error=" : ${errorCondition}"
     errorSummary+=${error}
@@ -428,10 +447,10 @@ validateLog()
 
   local warningCondition=""
   for warningCondition in "${warningConditions[@]}"; do
-    local tmp=$(grep -m1 -e "${warningCondition}" ${log})
+    local tmp=$(grep -m1 -e "${warningCondition}" "${log}")
     local warning=""
     [[ -n ${tmp} ]] && warning=" : ${warningCondition}"
-    warningSummary+=${warning}
+    warningSummary+="${warning}"
   done
 
   if [[ -n ${errorSummary} ]]; then 
@@ -453,6 +472,7 @@ mergeSysLogs()
     echo 'merge syslogs to an output file'
     echo 'usage:'
     echo 'mergeSysLogs outputFile inputFile1 inputFile2 ...'
+    echo 'if file name prepended with "@" it is a file list'
     return 0
   fi
   local outputFile
@@ -464,13 +484,12 @@ mergeSysLogs()
   shift
   inputFiles="$@"
   i=0
-  if ! ls -1 ${inputFiles} &>/dev/null; then echo "the files dont exist!: ${inputFiles}"; return 1; fi
-  while read x; do 
-    runNumber=$(guessRunNumber ${x})
+  parseListOfFiles "$inputFiles" | while IFS= read x; do
+    runNumber=$(guessRunNumber "${x}")
     [[ -z ${runNumber} ]] && echo "run number cannot be guessed for ${x}" && continue
-    awk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' ${x}
+    gawk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' "${x}"
     (( i++ ))
-  done < <(ls -1 ${inputFiles}) > ${outputFile}
+  done > "${outputFile}"
   return 0
 }
 
@@ -485,24 +504,25 @@ stackTraceTree()
     echo 'benchmark.sh stackTraceTree /foo/*/rec.log'
     echo 'benchmark.sh stackTraceTree $(cat file.list)'
     echo 'benchmark.sh stackTraceTree `cat file.list`'
+    echo 'benchmark.sh stackTraceTree @file.list somefile.log'
     return 0
   fi
-  #cat "${@}" | gawk '
-  gawk '
+  parseListOfFiles "$@" | while IFS= read x; do echo "filename: $x"; cat "$x" 2>/dev/null; done | gawk '
        BEGIN { 
        print "frame/I:method/C:line/C:cpass/I:aliroot/I:file/C";
                RS="#[0-9]*";
                aliroot=0;
                read=1;
-             } 
+             }
+      /^filename:/ {filename=$2}
       /There was a crash/ {read=1;}
       /The lines below might hint at the cause of the crash/ {read=0;}
       read==1 { 
                if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
                gsub("#","",RT); 
-               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot" "FILENAME
+               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot" "filename
              }
-      ' "${@}" 2>/dev/null
+      ' 2>/dev/null
 }
 
 plotStackTraceTree()
@@ -579,11 +599,9 @@ printLogStatistics()
   # - number of each type of problem
   # example usage:
   #   printLogStatistics */*.log
-  [[ ! -f $1 ]] && return 1
   echo "log statistics from: ${1%/*}"
-  #cat "${@}" | awk '
-  awk '
-  BEGIN {nOK=0; nCores=0; nStackTraces=0;}
+  parseListOfFiles "$@" | while IFS= read x; do cat "$x" 2>/dev/null; done | gawk '
+  BEGIN {nOK=0; nCores=0; nStackTraces=0; nLogs=0;}
   /\/core/ {nCores++}
   /\/stacktrace.log/ {nStackTraces++}
   /OK/ {nOK++; nLogs++;}
@@ -619,7 +637,7 @@ printLogStatistics()
     }
     if (nCores>0) print "core files: "nCores", stack traces: "nStackTraces 
   }
-  ' "${@}"
+  '
 }
 
 createUniquePID()
