@@ -695,41 +695,58 @@ copyFileToLocal()
 )
 
 copyFileToRemote() (
-  # Copy $1 (local) to $2 (remote). Retries up to $maxCopyTries times before
-  # giving up. Returns 0 on success, 1 on failure.
-  # Note: both local and remote files are full paths. You cannot specify just a
-  # directory as remote destination. The full destination path is created if it
-  # does not exist.
-  src="$1"
-  dst="$2"
+  # Copy a list of files ($1, $2...${n-1}) to a certain dest dir ($n). The last
+  # parameter must then be a directory. The destination might be local or remote
+  # if a protocol is specified (e.g. root://).
+  # Dest dir is created if not existing (xrdcp does that already).
+  # If a source file is in the form @list.txt, then the list of files (one per
+  # line) in list.txt will be expanded and copied.
+  # Shell glob is supported.
+  # On success 0 is returned - 1 otherwise.
+  # Example: copyFileToRemote file1.txt files* @list.txt test1 root://host/dir
+
+  dstdir=${!#}
   maxCopyTries=${maxCopyTries-10}
-  proto="${dst%%://*}"
-  opname="copy file to remote dest ($proto)"
-  ok=0
-  echo "$opname started: $src -> $dst"
-  [[ "$proto" == "$dst" ]] && proto=local
-  for ((i=1; i<=maxCopyTries; i++ )); do
-    echo "...$opname attempt $i of $maxCopyTries"
-    case "$proto" in
-      local) echo "==> cp $src $dst"
-             mkdir -p "$(dirname "$dst")"
-             cp "$src" "$dst" ;;
-      root)  echo "==> xrdcp -f $src $dst"
-             xrdcp -f "$src" "$dst" ;;
-      *)     echo "protocol not supported: $proto"
-             return 2 ;;
-    esac
-    if [[ $? == 0 ]]; then
-      ok=1
-      break
-    fi
+  proto="${dstdir%%://*}"
+  err=0
+  [[ "$proto" == "$dstdir" ]] && proto=local
+  opname="copy file to remote dst (proto=$proto)"
+
+  # Remove trailing slashes.
+  while [[ "${dstdir:$((${#dstdir}-1))}" == / ]]; do
+    dstdir=${dstdir:0:$((${#dstdir}-1))}
   done
-  if [[ $ok == 1 ]]; then
-    echo "$opname OK after $i attempt(s): $src -> $dst"
-    return 0
-  fi
-  echo "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
-  return 1
+
+  while [[ $# -gt 1 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read src; do
+      thiserr=1
+      dst="$dstdir/$(basename "$src")"
+      echo "$opname started: $src -> $dst"
+      for ((i=1; i<=maxCopyTries; i++)); do
+        echo "...$opname attempt $i of $maxCopyTries"
+        case "$proto" in
+          local) echo "==> cp $src $dst"
+                 mkdir -p "$(dirname "$dst")"
+                 cp "$src" "$dst" ;;
+          root)  echo "==> xrdcp -f $src $dst"
+                 xrdcp -f "$src" "$dst" ;;
+          *)     echo "protocol not supported: $proto"
+                 return 2 ;;
+        esac
+        if [[ $? == 0 ]]; then
+          thiserr=0
+          break
+        fi
+      done  # cp attempts
+      [[ $thiserr == 0 ]] && echo "$opname OK after $i attempt(s): $src -> $dst" \
+                          || echo "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      err=$((err+thiserr))
+    done < <($inputcmd)
+    shift
+  done
+
+  return $((err & 1))
 )
 
 paranoidCp()
