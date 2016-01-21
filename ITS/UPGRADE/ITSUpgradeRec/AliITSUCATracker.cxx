@@ -424,7 +424,7 @@ void AliITSUCATracker::FindTracksCA(int iteration)
   // Road finding and fitting. The routine starts from cells with level 5 since they are the head
   // of a full road (candidate with 7 points). Minimum level is 2, so candidates at the end have
   // at least 4 points.
-  const int itLevelLimit[3] = {4, 4, 1};
+  const int itLevelLimit[3] = {2, 2, 2};
   for (int level = 5; level > itLevelLimit[iteration]; --level) {
     vector<AliITSUCARoad> roads;
     // Road finding. For each cell at level $(level) a loop on their neighbours to start building
