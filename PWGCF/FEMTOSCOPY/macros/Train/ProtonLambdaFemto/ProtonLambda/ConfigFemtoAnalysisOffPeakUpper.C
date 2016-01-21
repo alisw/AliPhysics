@@ -211,7 +211,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5); //5.0
 	      dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
 	      dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
-	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(1.128, 4.5);
+	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(1.17, 4.5);
 	      
 	      //V0 second particle cut -> AntiLambda ichg 1, 3, 4, 5
 	      dtc2etaphitpc[aniter] = new AliFemtoV0TrackCut();
@@ -231,7 +231,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.3, 0.1);
 	      dtc2etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
 	      dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
-	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(1.128, 4.5);
+	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(1.17, 4.5);
 	      
 	      
 	      //ESD first particle cut -> Proton 3, 5; AntiProton 4, 6, 7, 8
