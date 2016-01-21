@@ -67,6 +67,7 @@ set(SRCS
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
+  AliEmcalESDTrackCutsGenerator.cxx
   Trigger/AliEmcalTriggerMaker.cxx
   Trigger/AliEmcalTriggerMakerKernel.cxx
   Trigger/AliEmcalTriggerMakerTask.cxx
