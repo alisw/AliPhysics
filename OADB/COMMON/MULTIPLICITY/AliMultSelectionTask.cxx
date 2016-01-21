@@ -987,6 +987,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fRefMultEta8 -> SetValueInteger ( header->GetRefMultiplicityComb08() );
 
         //FIXME: get ZDC information in AOD in a fully consistent way
+        AliAODZDC *lAODZDC = aodevent->GetZDCData();
+
+        if (TMath::Abs(lAODZDC->GetZNATime()) < 990.) fZnaFired -> SetValueInteger(1);
+        if (TMath::Abs(lAODZDC->GetZNCTime()) < 990.) fZncFired -> SetValueInteger(1);
+        if (TMath::Abs(lAODZDC->GetZPATime()) < 990.) fZpaFired -> SetValueInteger(1);
+        if (TMath::Abs(lAODZDC->GetZPCTime()) < 990.) fZpcFired -> SetValueInteger(1);
+
+        const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
+        const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
+        const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
+        const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
+        if (fZnaFired->GetValueInteger() > 0) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+        if (fZncFired->GetValueInteger() > 0) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+        if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+        if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
     }
 
     //===============================================
