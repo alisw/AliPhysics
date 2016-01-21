@@ -765,9 +765,9 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
       
       if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue;
       if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetITSNcls() < 3)continue;
+      if(trk->GetITSNcls() < 4)continue;
       if(trk->GetITSchi2()/trk->GetITSNcls() > 2.5)continue;
-      if((!trk->HasPointOnITSLayer(0))||(!trk->HasPointOnITSLayer(1)))continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
  
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
