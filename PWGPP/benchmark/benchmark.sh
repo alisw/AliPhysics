@@ -117,92 +117,77 @@ goCPass0()
   export runNumber=${6}
   jobindex=${7}
   shift 7
-  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
-  echo Start: goCPass0
-  alilog_info  "[BEGIN] goCPass0() with following parameters $*"
-  #record the working directory provided by the batch system
-  batchWorkingDirectory=${PWD}
 
-  #use the jobindex only if set and non-negative
-  if [[ -z ${jobindex} || ${jobindex} -lt 0 ]]; then
-    [[ -n "${LSB_JOBINDEX}" ]] && jobindex=${LSB_JOBINDEX}
-    [[ -n "${SGE_TASK_ID}" ]] && jobindex=${SGE_TASK_ID}
-    if [[ -z ${jobindex} ]]; then 
+  parseConfig configFile=$configFile "$@" || return 1
+
+  echo Start: goCPass0
+  alilog_info "[BEGIN] goCPass0() with following parameters $*"
+
+  # Remember working directory provided by the batch system (i.e. current dir).
+  batchWorkingDirectory=$PWD
+
+  # Use the jobindex only if set and non-negative
+  if [[ -z "$jobindex" || "$jobindex" -lt 0 ]]; then
+    [[ -n "$LSB_JOBINDEX" ]] && jobindex=$LSB_JOBINDEX
+    [[ -n "$SGE_TASK_ID" ]] && jobindex=$SGE_TASK_ID
+    if [[ -z ${jobindex} ]]; then
       echo "no jobindex!"
-       alilog_error "goCPass0() No job index [Paremeters] $*"
+      alilog_error "goCPass0() No job index [Paremeters] $*"
       return 1
     fi
   fi
 
-  [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
+  [[ -z "$commonOutputPath" ]] && commonOutputPath=$PWD
 
-  # This file signals that/if everything went fine
-  doneFileBase="cpass0.job${jobindex}.run${runNumber}.done"
-  [[ -n ${useProfilingCommand} ]] && doneFileBase="profiling.cpass0.job${jobindex}.run${runNumber}.done"
+  # .done files signal job completion to Makeflow.
+  [[ -n ${useProfilingCommand} ]] \
+    && doneFileBase="profiling.cpass0.job${jobindex}.run${runNumber}.done" \
+    || doneFileBase="cpass0.job${jobindex}.run${runNumber}.done"
 
-  # We will have two copies of the file
-  mkdir -p "${commonOutputPath}/meta" || return 1
-  doneFileTmp="${batchWorkingDirectory}/${doneFileBase}"
-  doneFile="${commonOutputPath}/meta/${doneFileBase}"
+  # .done file is created locally as $doneFileTmp and copied on the remote when finished.
+  mkdirLocal "$commonOutputPath/meta" || return 1
+  doneFileTmp="$batchWorkingDirectory/$doneFileBase"
+  doneFile="$commonOutputPath/meta/$doneFileBase"
 
-  [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
+  [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source ${alirootSource}
   
-  if [[ -n ${ALIROOT_FORCE_COREDUMP} ]]; then
+  if [[ -n "$ALIROOT_FORCE_COREDUMP" ]]; then
     ulimit -c unlimited 
     export ALIROOT_FORCE_COREDUMP
   fi
 
-  #the contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
-  #at the QA stage the pass number is guessed from the path stored here.
-  #The Format is:
-  #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
+  # The contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
+  # At the QA stage the pass number is guessed from the path stored here.
+  # The Format is:
+  #   Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;
+  #   LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
   export PRODUCTION_METADATA="OutputDir=cpass0"
 
-  if [[ "${inputList}" =~ \.root$ ]]; then
-    infile=${inputList}
-  else
-    infile=$(sed -ne "${jobindex}p" ${inputList} | egrep '\s*\w*/\w*')
-  fi
+  [[ "$inputList" =~ \.root$ ]] && infile=${inputList} \
+                                || infile=$(sed -ne "${jobindex}p" ${inputList} | egrep '\s*\w*/\w*')
   chunkName=${infile##*/}
 
-  outputDir=${targetDirectory}/${jobindex}_${chunkName%.*}
-  mkdir -p ${outputDir}
-  if [[ ! -d ${outputDir} ]]; then 
-    touch ${doneFileTmp}
-    echo "cannot make ${outputDir}" >> ${doneFileTmp}
-    cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-    [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
-    return 1  
-  fi
-  
-  runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass0.XXXXXX)
-  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
-  mkdir -p ${runpath}
-  if [[ ! -d ${runpath} ]]; then
-    touch ${doneFileTmp} 
-    echo "cannot make runpath ${runpath}" >> ${doneFileTmp}
-    cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-    [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
-    return 1
-  fi
-  if ! cd ${runpath}; then
-    touch ${doneFileTmp}
-    echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFileTmp}
-    cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-    [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  outputDir="${targetDirectory}/${jobindex}_${chunkName%.*}"
+  case "$reconstructInTemporaryDir" in
+    1) runpath=$(mktemp -d -t cpass0.XXXXXX) ;;
+    2) runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex} ;;
+    *) runpath=$outputDir ;;
+  esac
+
+  # Robust error check in directory creation. After this block we are in $runpath.
+  if ! mkdirLocal "$outputDir" || ! mkdirLocal "$runpath" || ! cd "$runpath"; then
+    touch "$doneFileTmp"
+    echo "Error creating $outputDir or runpath $runpath, or cd'ing to it" >> $doneFileTmp
+    copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
     return 1
   fi
 
-  #runCPassX/C expects the raw chunk to be linked in the run dir
-  #despite it being accessed by the full path
-  if [[ $copyInputData == 0 ]]; then
-    ln -s ${infile} ${runpath}/${chunkName}
-  else
-    copyFileToLocal ${infile} ${runpath}/${chunkName}
-  fi
+  # runCPassX/C expects the raw chunk to be linked in the run dir despite it being accessed by the
+  # full path.
+  [[ $copyInputData == 0 ]] && ln -s ${infile} ${runpath}/${chunkName} \
+                            || copyFileToLocal ${infile} ${runpath}/${chunkName}
 
-  #####MC
+  ##### MC
   if [[ -n ${generateMC} ]]; then
     olddir=${PWD}
     outputDirMC=${commonOutputPath}/000${runNumber}/sim/${jobindex}
@@ -234,21 +219,18 @@ goCPass0()
       infile=""
     fi
   fi
-  ######
+  ###### /MC
   
-  if [[ "${inputList}" == "${inputList%%://*}" && ! -f "${inputList}" && -z ${pretend} ]]; then
-    touch ${doneFileTmp}
-    echo "input file ${inputList} not found, exiting..." >> ${doneFileTmp}
-    cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-    [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  if [[ "$inputList" == "${inputList%%://*}" && ! -f "$inputList" && -z "$pretend" ]]; then
+    echo "Input list file $inputList not found, exiting..." >> $doneFileTmp
+    copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
     return 1
   fi
 
-  logOutputDir=${runpath}
-  [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/stdout
-  #[[ -z ${dontRedirectStdOutToLog} ]] && exec 2> ${logOutputDir}/stderr
-  echo "${0} $*"
+  logOutputDir=$runpath
+  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
+  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> ${logOutputDir}/stdout
+  echo "$0 $*"
 
   echo "#####################"
   echo CPass0:
@@ -273,76 +255,66 @@ goCPass0()
 
   alirootInfo > ALICE_ROOT.log
 
-  filesCPass0=( 
-               "${batchWorkingDirectory}/runCPass0.sh"
-               "${batchWorkingDirectory}/recCPass0.C"
-               "${batchWorkingDirectory}/runCalibTrain.C"
-               "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-               "${batchWorkingDirectory}/OCDB.root"
-               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
-               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
-               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C"
-  )
+  # Those files are locally found. They should be copied to the current working
+  # directory (which is $runpath).
+  filesCPass0=( "${batchWorkingDirectory}/runCPass0.sh"
+                "${batchWorkingDirectory}/recCPass0.C"
+                "${batchWorkingDirectory}/runCalibTrain.C"
+                "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                "${batchWorkingDirectory}/OCDB.root"
+                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
+                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
+                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" )
 
   for file in ${filesCPass0[*]}; do
-    [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
-    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
+    [[ ! -f ${file##*/} && -f ${file} ]] && printExec cp -f $file . \
+                                         && [[ ${file##*/} =~ .*\.sh ]] \
+                                         && printExec chmod +x ${file##*/}
   done
 
-  echo "this directory (${PWD}) contents:"
-  /bin/ls
-  echo
-  chmod u+x runCPass0.sh
+  echo "Contents of current directory before running CPass0 ($PWD):" ; /bin/ls ; echo
 
-  #remove spaces from around arguments to root macros
-  #for example this sometimes fails: 
-  #  root 'macro.C(argument1, argument2)'
+  # Monkey patching: emove spaces from around arguments to root macros. For example this sometimes
+  # is known to fail: root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
-  if [[ -n ${postSetUpActionCPass0} ]]; then
+  if [[ -n "$postSetUpActionCPass0" ]]; then
     echo "running ${postSetUpActionCPass0}"
-    eval ${postSetUpActionCPass0}
+    eval $postSetUpActionCPass0
   fi
 
-  #run CPass0
-  echo "${runpath}/runCPass0.sh /${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
-  if [[ -n ${pretend} ]]; then
-    sleep ${pretendDelay}
-    touch AliESDs.root
-    touch AliESDfriends.root
-    touch AliESDfriends_v1.root
-    touch rec.log
-    touch calib.log
+  # Run CPass0. Since $infile is local, by convention it must start with a slash. The initial slash
+  # is there just to signal runCPass0.sh that the file is local, and it is not an actual path.
+  echo "$runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
+  if [[ -n "$pretend" ]]; then
+    sleep $pretendDelay
+    for fakeOutput in AliESDs.root AliESDfriends.root AliESDfriends_v1.root rec.log calib.log; do
+      touch $fakeOutput
+    done
   else
-    #caveat: in the local case, first arg must start with a slash
-    ./runCPass0.sh "/${infile}" "${nEvents}" "${runNumber}" "${ocdbPath}" "${recoTriggerOptions}"
+    # Caveat: in the local case, first arg must start with a slash.
+    ./runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions
   fi
   
-  #move stuff to final destination
-  echo "this directory (${PWD}) contents:"
-  /bin/ls
-  echo
+  echo "Contents of current directory after running CPass0 ($PWD):" ; /bin/ls ; echo
 
-  # [dberzano] OK this is fine!
-  echo rm -f ./${chunkName}
-  rm -f ./${chunkName}
-  echo "paranoidCp ${runpath}/* ${outputDir}"
-  paranoidCp ${runpath}/* ${outputDir}
+  # CPass0 has completed. Copy all created files to the destination (which might be remote).
+  printExec rm -f ./$chunkName
+  printExec copyFileToRemote $runpath/* $outputDir
   echo
   
-  #validate CPass0
-  cd ${outputDir}
-  if summarizeLogs >> ${doneFileTmp}; then
-    [[ -f ${outputDirMC}/galice.root ]] && echo "sim ${outputDirMC}/galice.root" >> ${doneFileTmp}
-    [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFileTmp}
-    [[ -f AliESDs.root ]] && echo "esd ${outputDir}/AliESDs.root" >> ${doneFileTmp}
+  # Validate CPass0.
+  if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
+    statRemote $outputDirMC/galice.root && echo "sim $outputDirMC/galice.root" >> $doneFileTmp
+    statRemote AliESDfriends_v1.root && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
+    statRemote AliESDs.root && echo "esd $outputDir/AliESDs.root" >> $doneFileTmp
   fi
 
-  [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath} && echo "removing ${runpath}"
-  cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-  [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  # Final cleanup (only if we are not writing directly to destination).
+  [[ "$runpath" != "$outputDir" ]] && printExec rm -rf $runpath
+  copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
   echo End: goCPass0
-  alilog_info  "[END] goCPass0() with following parameters $*"
+  alilog_info "[END] goCPass0() with following parameters $*"
   return 0
 )
 
@@ -1132,9 +1104,9 @@ goSubmitMakeflow()
   #if which greadlink; then self=$(greadlink -f "${0}"); fi
   
   #for reference copy the setup to the output dir
-  paranoidCp ${self} ${commonOutputPath}
-  paranoidCp ${configFile} ${commonOutputPath}
-  paranoidCp ${inputFileList} ${commonOutputPath}
+  copyFileToRemote ${self} ${commonOutputPath}
+  copyFileToRemote ${configFile} ${commonOutputPath}
+  copyFileToRemote ${inputFileList} ${commonOutputPath}
 
   #submit - use makeflow if available, fall back to old stuff when makeflow not there
   if which makeflow; then
@@ -1151,7 +1123,7 @@ goSubmitMakeflow()
        /COMPLETED/ {endTime=$3} 
        END         {print "makeflow running time: "(endTime-startTime)/1000000/3600" hours"}' \
       benchmark.makeflow.makeflowlog | tee -a summary.log
-  paranoidCp summary.log ${commonOutputPath}
+  copyFileToRemote summary.log ${commonOutputPath}
 
   return 0
 }
