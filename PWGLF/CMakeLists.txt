@@ -23,5 +23,6 @@ add_subdirectory (spectraJET)
 add_subdirectory (STRANGENESS)
 add_subdirectory (ThermalFits)
 add_subdirectory (totEt)
+add_subdirectory (ppVsMult)
 
 message(STATUS "PWGLF enabled")

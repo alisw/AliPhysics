@@ -51,8 +51,8 @@ void QA(TString fdata = "trmult.data.root",
   
   //  qacentrality(fdata);
   QAoccupancy(fdata, fmc);
-  //  QAtracklets(fdata, fmc);
-  //QAvertex(fdata, fmc);
+  QAtracklets(fdata, fmc);
+  QAvertex(fdata, fmc);
   
 }
 
