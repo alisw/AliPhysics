@@ -38,8 +38,9 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Bool_t IsSelectedeID(AliAODTrack* trk);
   Bool_t IsSelectedCustomizedeID(AliAODTrack* trk);
-  Bool_t IsSelectedCustomizedPtDepeID(AliAODTrack* trk);
+  Bool_t IsSelectedCustomizedPtDepeID(AliAODTrack* trk, AliAODTrack *trkpid);
   Bool_t IsSelectedCombinedeID(AliAODTrack* trk);
+  Int_t IsSelected(TLorentzVector* vtrk, TLorentzVector *vv0, Double_t *cutvars, Int_t selectionLevel);
 
   void SetPIDStrategy(EPIDStrategy pidStrategy){fPIDStrategy=pidStrategy;}
   EPIDStrategy GetPIDStrategy() const {return fPIDStrategy;}
@@ -49,16 +50,21 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
-  Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODVertex *vert);
-  Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODVertex *vert);
+  Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
+  Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
   Bool_t SingleV0Cuts(AliAODv0 *v0, AliAODVertex *vert);
-	Bool_t TagConversions(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
-	Bool_t TagConversionsSameSign(AliAODTrack *etrk, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
+	Bool_t TagConversions(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
+	Bool_t TagConversionsSameSign(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
   Bool_t SelectWithRoughCuts(AliAODv0 *v0, AliAODTrack *trk1);
+
+  void SetMagneticField(Double_t a){fBzkG = a;}
+  void SetPrimaryVertex(Double_t *a){fPrimVert[0] = a[0];fPrimVert[1] = a[1];fPrimVert[2] = a[2];}
 
   void SetProdTrackTPCNclsPIDMin(Int_t a){fProdTrackTPCNclsPIDMin=a;}
   void SetProdTrackTPCNclsRatioMin(Double_t a){fProdTrackTPCNclsRatioMin=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
+  void SetProdAODFilterBit(Int_t a){fProdAODFilterBit=a;}
+  void SetProdRejectTrackWithShared(Bool_t a){fProdRejectTrackWithShared=a;}
   void SetProdV0MassTolLambda(Double_t a){fProdV0MassTolLambda=a;}
   void SetProdV0MassTolLambdaRough(Double_t a){fProdV0MassTolLambdaRough=a;}
   void SetProdV0PtMin(Double_t a){fProdV0PtMin=a;}
@@ -85,6 +91,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Int_t GetProdTrackTPCNclsPIDMin(){return fProdTrackTPCNclsPIDMin;}
   Double_t GetProdTrackTPCNclsRatioMin(){return fProdTrackTPCNclsRatioMin;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
+  Int_t   GetProdAODFilterBit(){return fProdAODFilterBit;}
+  Bool_t   GetProdRejectTrackWithShared(){return fProdRejectTrackWithShared;}
   Double_t GetProdV0MassTolLambda(){return fProdV0MassTolLambda;}
   Double_t GetProdV0MassTolLambdaRough(){return fProdV0MassTolLambdaRough;}
   Double_t GetProdV0PtMin(){return fProdV0PtMin;}
@@ -141,6 +149,11 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Bool_t IsPeakRegion(TLorentzVector *c);
 	Bool_t IsSideBand(AliAODv0 *c);
 	Bool_t IsSideBand(TLorentzVector *c);
+  void SetSftPosR125(AliAODTrack *track,Double_t bfield,Double_t priVtx[3], Double_t *XSftR125);
+  Double_t dEtaSR125(Double_t *postrack1,Double_t *postrack2);
+  Double_t dPhiSR125(Double_t *postrack1,Double_t *postrack2);
+  Double_t GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en);
+  Double_t CalculatePhotonMass(AliAODTrack *track1, AliAODTrack *track2);
 
  protected:
 	
@@ -152,10 +165,14 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF *fPidObjProton;         /// PID object for proton from Lc
   AliAODPidHF *fPidObjPion;         /// PID object for proton from Lc
   Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
+  Double_t fBzkG; ///B field
+  Double_t fPrimVert[3]; ///Primary vertex
   
   Int_t fProdTrackTPCNclsPIDMin;      /// Min. Number of TPC PID cluster
   Double_t fProdTrackTPCNclsRatioMin;      /// Min. Number of TPC PID cluster
   Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
+  Int_t    fProdAODFilterBit;    /// AOD filter Bit used before object creation
+  Bool_t   fProdRejectTrackWithShared;    /// Flag to Reject tracks with shared clusters
   Double_t fProdV0MassTolLambda;       /// Lambda mass selection  used before object creation
   Double_t fProdV0MassTolLambdaRough;       /// Lambda mass selection  used before object creation
   Double_t fProdV0PtMin;            /// Minimum Lambda pT used before object creation
@@ -197,7 +214,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fConversionMassMax; /// Conversion mass
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,6);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,7);
   /// \endcond
 };
 

@@ -64,7 +64,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
-  void SetChargeTriplet(bool sign_c = kFALSE, bool ls_c = kFALSE) {fMinvLikeSign = sign_c; fMinvLikeSign = ls_c;}
+  void SetChargeTriplet(bool sign_c = kTRUE, bool ls_c = kTRUE) {fMinvSignal = sign_c; fMinvLikeSign = ls_c;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}

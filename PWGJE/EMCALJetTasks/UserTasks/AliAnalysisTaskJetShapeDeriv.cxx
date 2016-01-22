@@ -443,8 +443,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
-      if(fFromTree && fNtrls!=0) fhnMassResponse[fCentBin]->Fill(varsp, fXsec/fNtrls);
-      else fhnMassResponse[fCentBin]->Fill(varsp);
+      fhnMassResponse[fCentBin]->Fill(varsp);
       
       Double_t varsp1[6];
       varsp1[0] = var-var2;
@@ -454,13 +453,11 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       varsp1[4] = ptjet1;
       varsp1[5] = ptJetR;
 
-      if(fFromTree && fNtrls!=0) fhnDeltaMass[fCentBin]->Fill(varsp1, fXsec/fNtrls);
-      else fhnDeltaMass[fCentBin]->Fill(varsp1);
+      fhnDeltaMass[fCentBin]->Fill(varsp1);
       
       //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
       Double_t varsp2[8] = {var-var2, ptjet1-ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
-      if(fFromTree && fNtrls!=0) fhnDeltaMassAndBkgInfo->Fill(varsp2, fXsec/fNtrls);
-      else fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      fhnDeltaMassAndBkgInfo->Fill(varsp2);
     }
     
     if(fCreateTree) {      

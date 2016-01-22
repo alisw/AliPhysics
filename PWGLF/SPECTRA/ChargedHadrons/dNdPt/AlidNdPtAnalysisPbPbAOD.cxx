@@ -45,6 +45,7 @@ fPt(0),
 fMCPt(0),
 fZvPtEtaCent(0),
 fDeltaphiPtEtaPhiCent(0),
+fDeltaphiPtEtaPhiZvCent(0),
 fPtResptCent(0),
 fPtResptptCent(0),
 fPtEvent(0),
@@ -55,6 +56,10 @@ fMCPtEtaPhiCent(0),
 fMCRecPrimPtEtaPhiCent(0),
 fMCGenPtEtaPhiCent(0),
 fMCRecSecPtEtaPhiCent(0),
+fMCPtEtaPhiZvCent(0),
+fMCRecPrimPtEtaPhiZvCent(0),
+fMCGenPtEtaPhiZvCent(0),
+fMCRecSecPtEtaPhiZvCent(0),
 fEventStatistics(0),
 fEventStatisticsCentrality(0),
 fMCEventStatisticsCentrality(0),
@@ -171,6 +176,7 @@ fEtaCheckNbins(0),
 fZvNbins(0),
 fCentralityNbins(0),
 fPhiNbins(0),
+fPhiCorrNbins(0),
 fDeltaphiNbins(0),
 fRunNumberNbins(0),
 fBinsMult(0),
@@ -183,6 +189,7 @@ fBinsEtaCheck(0),
 fBinsZv(0),
 fBinsCentrality(0),
 fBinsPhi(0),
+fBinsPhiCorr(0),
 fBinsDeltaphi(0),
 fBinsRunNumber(0)
 {
@@ -203,6 +210,7 @@ fBinsRunNumber(0)
   fZvNbins = 0;
   fCentralityNbins = 0;
   fPhiNbins = 0;
+  fPhiCorrNbins = 0;
   fDeltaphiNbins = 0;
   fRunNumberNbins = 0;
   fBinsMult = 0;
@@ -215,6 +223,7 @@ fBinsRunNumber(0)
   fBinsZv = 0;
   fBinsCentrality = 0;
   fBinsPhi = 0;
+  fBinsPhiCorr = 0;
   fBinsDeltaphi = 0;
   fBinsRunNumber = 0;
   
@@ -256,8 +265,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   Double_t binsPhiDefault[37] = { 0., 0.174533, 0.349066, 0.523599, 0.698132, 0.872665, 1.0472, 1.22173, 1.39626, 1.5708, 1.74533, 1.91986, 2.0944, 2.26893, 2.44346, 2.61799, 2.79253, 2.96706, 3.14159, 3.31613, 3.49066, 3.66519, 3.83972, 4.01426, 4.18879, 4.36332, 4.53786, 4.71239, 4.88692, 5.06145, 5.23599, 5.41052, 5.58505, 5.75959, 5.93412, 6.10865, 2.*TMath::Pi()};
   
-  Double_t binsDeltaphiDefault[9] = {  0, 1./16.*TMath::Pi(), 2./16.*TMath::Pi(), 3./16.*TMath::Pi(), 4./16.*TMath::Pi(), 5./16.*TMath::Pi(), 6./16.*TMath::Pi(), 7./16.*TMath::Pi(), 8./16.*TMath::Pi()};
+  Double_t binsPhiCorrDefault[19] = { 0, 1./9.*TMath::Pi(), 2./9.*TMath::Pi(), 3./9.*TMath::Pi(), 4./9.*TMath::Pi(), 5./9.*TMath::Pi(), 6./9.*TMath::Pi(), 7./9.*TMath::Pi(), 8./9.*TMath::Pi(), 9./9.*TMath::Pi(), 10./9.*TMath::Pi(), 11./9.*TMath::Pi(), 12./9.*TMath::Pi(), 13./9.*TMath::Pi(), 14./9.*TMath::Pi(), 15./9.*TMath::Pi(), 16./9.*TMath::Pi(), 17./9.*TMath::Pi(), 18./9.*TMath::Pi() };
   
+  Double_t binsDeltaphiDefault[9] = {  0, 1./16.*TMath::Pi(), 2./16.*TMath::Pi(), 3./16.*TMath::Pi(), 4./16.*TMath::Pi(), 5./16.*TMath::Pi(), 6./16.*TMath::Pi(), 7./16.*TMath::Pi(), 8./16.*TMath::Pi()};
   
   Double_t binsPtCheckDefault[8] = {0.,0.15,1.0,5.0, 10.0, 20.0, 50.0, 200.0};
   Double_t binsEtaCheckDefault[7] = {-1.0,-0.8,-0.4,0.,0.4,0.8,1.0};
@@ -277,6 +287,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   if (!fBinsZv)			{ SetBinsZv(7,binsZvDefault); }
   if (!fBinsCentrality)	{ SetBinsCentrality(12,binsCentralityDefault); }
   if (!fBinsPhi)		{ SetBinsPhi(37,binsPhiDefault); }
+  if (!fBinsPhiCorr)		{ SetBinsPhiCorr(19,binsPhiCorrDefault); }
   if (!fBinsDeltaphi)	{ SetBinsDeltaphi(9,binsDeltaphiDefault); }
   if (!fBinsRunNumber) 	{ SetBinsRunNumber(186, binsRunNumbers2011); }
   
@@ -292,6 +303,13 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t minbinsPhiPtEtaCent[5]={0,				0,-1.5,0 ,0};
   Double_t maxbinsPhiPtEtaCent[5]={TMath::Pi()/2.,200,1.5,2.*TMath::Pi(),100};
   
+  Int_t binsDeltaphiPtEtaPhiZvCent[6] =       { fDeltaphiNbins-1, fPtNbins-1, fEtaNbins-1, fPhiNbins-1, fZvNbins-1, fCentralityNbins-1 };
+  Double_t minbinsDeltaphiPtEtaPhiZvCent[6] = {  0              , 0     , -1.5        , 0            , -10.      ,   0};
+  Double_t maxbinsDeltaphiPtEtaPhiZvCent[6] = {  TMath::Pi()/2.  , 200     , 1.5        , 2.*TMath::Pi()   , 10.      ,   100};
+  
+  Int_t binsPtCorrEtaPhiCorrZvCent[5] =       { fPtCorrNbins-1, fEtaNbins-1, fPhiCorrNbins-1, fZvNbins-1, fCentralityNbins-1 };
+  Double_t minbinsPtCorrEtaPhiCorrZvCent[5] = { 0     , -1.5        , 0            , -10.      ,   0};
+  Double_t maxbinsPtCorrEtaPhiCorrZvCent[5] = {  200     , 1.5        , 2.*TMath::Pi()   , 10.      ,   100};
   
   Int_t binsZvMultCent[3]={fZvNbins-1,fMultFineNbins-1,fCentralityNbins-1};
   
@@ -331,6 +349,21 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fDeltaphiPtEtaPhiCent->GetAxis(3)->SetTitle("Phi");
   fDeltaphiPtEtaPhiCent->GetAxis(4)->SetTitle("Centrality");
   fDeltaphiPtEtaPhiCent->Sumw2();
+  
+  fDeltaphiPtEtaPhiZvCent = new THnSparseF("fDeltaphiPtEtaPhiZvCent","Deltaphi:Pt:Eta:Phi:Zv:Centrality",6,binsDeltaphiPtEtaPhiZvCent);
+  fDeltaphiPtEtaPhiZvCent->SetBinEdges(0,fBinsDeltaphi);
+  fDeltaphiPtEtaPhiZvCent->SetBinEdges(1,fBinsPt);
+  fDeltaphiPtEtaPhiZvCent->SetBinEdges(2,fBinsEta);
+  fDeltaphiPtEtaPhiZvCent->SetBinEdges(3,fBinsPhi);
+  fDeltaphiPtEtaPhiZvCent->SetBinEdges(4,fBinsZv);
+  fDeltaphiPtEtaPhiZvCent->SetBinEdges(5,fBinsCentrality);
+  fDeltaphiPtEtaPhiZvCent->GetAxis(0)->SetTitle("#Delta phi to ep");
+  fDeltaphiPtEtaPhiZvCent->GetAxis(1)->SetTitle("Pt (GeV/c)");
+  fDeltaphiPtEtaPhiZvCent->GetAxis(2)->SetTitle("Eta");
+  fDeltaphiPtEtaPhiZvCent->GetAxis(3)->SetTitle("Phi");
+  fDeltaphiPtEtaPhiZvCent->GetAxis(4)->SetTitle("Zv");
+  fDeltaphiPtEtaPhiZvCent->GetAxis(5)->SetTitle("Centrality");
+  fDeltaphiPtEtaPhiZvCent->Sumw2();
   
   fPtResptCent = new THnSparseF("fPtResptCent","OneOverPt:PtRes:Centrality",3,binsOneOverPtPtResCent, minbinsOneOverPtPtResCent, maxbinsOneOverPtPtResCent);
   fPtResptCent->SetBinEdges(2, fBinsCentrality);
@@ -429,6 +462,62 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCRecSecPtEtaPhiCent->GetAxis(2)->SetTitle("MC Phi");
   fMCRecSecPtEtaPhiCent->GetAxis(3)->SetTitle("Centrality");
   fMCRecSecPtEtaPhiCent->Sumw2();
+  
+  //
+  // MC Histograms Pt:Eta:Phi:Zv:Centrality
+  //
+  
+  fMCPtEtaPhiZvCent = new THnF("fMCPtEtaPhiZvCent","Pt:Eta:Phi:Zv:Centrality",5,binsPtCorrEtaPhiCorrZvCent, minbinsPtCorrEtaPhiCorrZvCent, maxbinsPtCorrEtaPhiCorrZvCent);
+  fMCPtEtaPhiZvCent->SetBinEdges(0,fBinsPtCorr);
+  fMCPtEtaPhiZvCent->SetBinEdges(1,fBinsEta);
+  fMCPtEtaPhiZvCent->SetBinEdges(2,fBinsPhiCorr);
+  fMCPtEtaPhiZvCent->SetBinEdges(3,fBinsZv);
+  fMCPtEtaPhiZvCent->SetBinEdges(4,fBinsCentrality);
+  fMCPtEtaPhiZvCent->GetAxis(0)->SetTitle("Pt (GeV/c)");
+  fMCPtEtaPhiZvCent->GetAxis(1)->SetTitle("Eta");
+  fMCPtEtaPhiZvCent->GetAxis(2)->SetTitle("Phi");
+  fMCPtEtaPhiZvCent->GetAxis(3)->SetTitle("Zv");
+  fMCPtEtaPhiZvCent->GetAxis(4)->SetTitle("Centrality");
+  fMCPtEtaPhiZvCent->Sumw2();
+  
+  fMCRecPrimPtEtaPhiZvCent = new THnF("fMCRecPrimPtEtaPhiZvCent","mcPt:mcEta:mcPhi:Zv:Centrality",5,binsPtCorrEtaPhiCorrZvCent, minbinsPtCorrEtaPhiCorrZvCent, maxbinsPtCorrEtaPhiCorrZvCent);
+  fMCRecPrimPtEtaPhiZvCent->SetBinEdges(0,fBinsPtCorr);
+  fMCRecPrimPtEtaPhiZvCent->SetBinEdges(1,fBinsEta);
+  fMCRecPrimPtEtaPhiZvCent->SetBinEdges(2,fBinsPhiCorr);
+  fMCRecPrimPtEtaPhiZvCent->SetBinEdges(3,fBinsZv);
+  fMCRecPrimPtEtaPhiZvCent->SetBinEdges(4,fBinsCentrality);
+  fMCRecPrimPtEtaPhiZvCent->GetAxis(0)->SetTitle("MC Pt (GeV/c)");
+  fMCRecPrimPtEtaPhiZvCent->GetAxis(1)->SetTitle("MC Eta");
+  fMCRecPrimPtEtaPhiZvCent->GetAxis(2)->SetTitle("MC Phi");
+  fMCRecPrimPtEtaPhiZvCent->GetAxis(3)->SetTitle("Zv");
+  fMCRecPrimPtEtaPhiZvCent->GetAxis(4)->SetTitle("Centrality");
+  fMCRecPrimPtEtaPhiZvCent->Sumw2();
+  
+  fMCGenPtEtaPhiZvCent = new THnF("fMCGenPtEtaPhiZvCent","mcPt:mcEta:mcPhi:Zv:Centrality",5,binsPtCorrEtaPhiCorrZvCent, minbinsPtCorrEtaPhiCorrZvCent, maxbinsPtCorrEtaPhiCorrZvCent);
+  fMCGenPtEtaPhiZvCent->SetBinEdges(0,fBinsPtCorr);
+  fMCGenPtEtaPhiZvCent->SetBinEdges(1,fBinsEta);
+  fMCGenPtEtaPhiZvCent->SetBinEdges(2,fBinsPhiCorr);
+  fMCGenPtEtaPhiZvCent->SetBinEdges(3,fBinsZv);
+  fMCGenPtEtaPhiZvCent->SetBinEdges(4,fBinsCentrality);
+  fMCGenPtEtaPhiZvCent->GetAxis(0)->SetTitle("MC Pt (GeV/c)");
+  fMCGenPtEtaPhiZvCent->GetAxis(1)->SetTitle("MC Eta");
+  fMCGenPtEtaPhiZvCent->GetAxis(2)->SetTitle("MC Phi");
+  fMCGenPtEtaPhiZvCent->GetAxis(3)->SetTitle("Zv");
+  fMCGenPtEtaPhiZvCent->GetAxis(4)->SetTitle("Centrality");
+  fMCGenPtEtaPhiZvCent->Sumw2();
+  
+  fMCRecSecPtEtaPhiZvCent = new THnF("fMCRecSecPtEtaPhiZvCent","mcPt:mcEta:mcPhi:Zv:Centrality",5,binsPtCorrEtaPhiCorrZvCent, minbinsPtCorrEtaPhiCorrZvCent, maxbinsPtCorrEtaPhiCorrZvCent);
+  fMCRecSecPtEtaPhiZvCent->SetBinEdges(0,fBinsPtCorr);
+  fMCRecSecPtEtaPhiZvCent->SetBinEdges(1,fBinsEta);
+  fMCRecSecPtEtaPhiZvCent->SetBinEdges(2,fBinsPhiCorr);
+  fMCRecSecPtEtaPhiZvCent->SetBinEdges(3,fBinsZv);
+  fMCRecSecPtEtaPhiZvCent->SetBinEdges(4,fBinsCentrality);
+  fMCRecSecPtEtaPhiZvCent->GetAxis(0)->SetTitle("MC Sec Pt (GeV/c)");
+  fMCRecSecPtEtaPhiZvCent->GetAxis(1)->SetTitle("MC Sec Eta");
+  fMCRecSecPtEtaPhiZvCent->GetAxis(2)->SetTitle("MC Phi");
+  fMCRecSecPtEtaPhiZvCent->GetAxis(3)->SetTitle("Zv");
+  fMCRecSecPtEtaPhiZvCent->GetAxis(4)->SetTitle("Centrality");
+  fMCRecSecPtEtaPhiZvCent->Sumw2();
   
   fPt = new TH1F("fPt","fPt",2000,0,200);
   fPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -883,6 +972,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaPhiCent);
+  fOutputList->Add(fDeltaphiPtEtaPhiZvCent);
   fOutputList->Add(fPtResptCent);
   fOutputList->Add(fPtResptptCent);
   fOutputList->Add(fPtEvent);
@@ -894,6 +984,12 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fMCRecPrimPtEtaPhiCent);
   fOutputList->Add(fMCGenPtEtaPhiCent);
   fOutputList->Add(fMCRecSecPtEtaPhiCent);
+  
+  fOutputList->Add(fMCPtEtaPhiZvCent);
+  fOutputList->Add(fMCRecPrimPtEtaPhiZvCent);
+  fOutputList->Add(fMCGenPtEtaPhiZvCent);
+  fOutputList->Add(fMCRecSecPtEtaPhiZvCent);
+  
   fOutputList->Add(fMCPt);
   fOutputList->Add(fEventStatistics);
   fOutputList->Add(fEventStatisticsCentrality);
@@ -1017,6 +1113,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dMCTrackDeltaphiPtEtaPhiCent[5] = {0};
   Double_t dTrackDeltaphiPtEtaPhiCent[5] = {0};
   
+  Double_t dMCTrackPtEtaPhiZvCent[5] = {0};
+  Double_t dTrackDeltaphiPtEtaPhiZvCent[6] = {0};
+  
   Double_t dMCTrackPtEtaPhiCent[4] = {0};
   Double_t dTrackPtEtaPhiCent[4] = {0};
   
@@ -1094,7 +1193,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   fTriggerStringComplete->Fill(sFiredTrigger.Data(), 1);
   
-  if(eventAOD->IsPileupFromSPD()) cout << "Event is pileup " << endl;
+  //  if(eventAOD->IsPileupFromSPD()) cout << "Event is pileup " << endl;
   
   //   if(nTriggerFired == 0) { return; }
   //   if( !bIsEventSelected || nTriggerFired>1 ) return;
@@ -1174,6 +1273,25 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if(fIsMonteCarlo)
   {
     
+    //    TList *genHeaders = mcHdr->GetCocktailHeaders();
+    //
+    //    if(!genHeaders)     {
+    //      AliError("ERROR: Could not retrieve genHeaders");
+    //      return;
+    //    }
+    //
+    //    Int_t nGenerators = genHeaders->GetEntries();
+    //
+    //    printf("N generators %d \n", nGenerators);
+    //
+    //    // igen==1 and igen==2 are pi0 and eta added signals, respectively, when looking at lhc13ef
+    //    // check eventHeader2->GetName(); for your dataset
+    //    for(Int_t igen = 0; igen < nGenerators; igen++) {
+    //      AliGenEventHeader* eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
+    //      TString name = eventHeader2->GetName();
+    ////      cout << "Generator: " << igen << " " << name.Data() << endl;
+    //    }
+    
     if( dMCEventZv > GetCutMaxZVertex() )  { return; }
     
     dMCTrackZvPtEtaCent[0] = dMCEventZv;
@@ -1220,6 +1338,14 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       dMCTrackPtEtaPhiCent[3] = dCentrality;
       
       fMCGenPtEtaPhiCent->Fill(dMCTrackPtEtaPhiCent);
+      
+      
+      dMCTrackPtEtaPhiZvCent[0] = mcPart->Pt();
+      dMCTrackPtEtaPhiZvCent[1] = mcPart->Eta();
+      dMCTrackPtEtaPhiZvCent[2] = mcPart->Phi();
+      dMCTrackPtEtaPhiZvCent[3] = dMCEventZv;
+      dMCTrackPtEtaPhiZvCent[4] = dCentrality;
+      fMCGenPtEtaPhiZvCent->Fill(dMCTrackPtEtaPhiZvCent);
       
       bEventHasATrack = kTRUE;
       
@@ -1319,6 +1445,12 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     dMCTrackDeltaphiPtEtaPhiCent[3] = 0;
     dMCTrackDeltaphiPtEtaPhiCent[4] = 0;
     
+    dMCTrackPtEtaPhiZvCent[0] = 0;
+    dMCTrackPtEtaPhiZvCent[1] = 0;
+    dMCTrackPtEtaPhiZvCent[2] = 0;
+    dMCTrackPtEtaPhiZvCent[3] = 0;
+    dMCTrackPtEtaPhiZvCent[4] = 0;
+    
     dMCTrackPtEtaPhiCent[0] = 0;
     dMCTrackPtEtaPhiCent[1] = 0;
     dMCTrackPtEtaPhiCent[2] = 0;
@@ -1337,6 +1469,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     dTrackZvPtEtaCent[1] = track->Pt();
     dTrackZvPtEtaCent[2] = track->Eta();
     dTrackZvPtEtaCent[3] = dCentrality;
+    
+    
     
     if(GetEventplaneSelector().CompareTo("Q") == 0)
     {
@@ -1391,6 +1525,13 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     dTrackDeltaphiPtEtaPhiCent[3] = track->Phi();
     dTrackDeltaphiPtEtaPhiCent[4] = dCentrality;
     
+    dTrackDeltaphiPtEtaPhiZvCent[0] = dTrackDeltaphiPtEtaPhiCent[0];
+    dTrackDeltaphiPtEtaPhiZvCent[1] = track->Pt();
+    dTrackDeltaphiPtEtaPhiZvCent[2] = track->Eta();
+    dTrackDeltaphiPtEtaPhiZvCent[3] = track->Phi();
+    dTrackDeltaphiPtEtaPhiZvCent[4] = dEventZv;
+    dTrackDeltaphiPtEtaPhiZvCent[5] = dCentrality;
+    
     dTrackPtEtaPhiCent[0] = track->Pt();
     dTrackPtEtaPhiCent[1] = track->Eta();
     dTrackPtEtaPhiCent[2] = track->Phi();
@@ -1408,6 +1549,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       bIsHijingParticle = IsHijingParticle(mcPart, genHijingHeader);
       //       bIsPythiaParticle = IsPythiaParticle(mcPart, genPythiaHeader);
       
+//      if(!bIsHijingParticle && mcPart->GetGeneratorIndex()==0)
+//      cout << "IsHijing: " << bIsHijingParticle << " GeneratorIndex: " << mcPart->GetGeneratorIndex() <<  " label: " << mcPart->Label() << " NProduced-1: " <<(genHijingHeader->NProduced()-1) << endl;
+      
       bIsPrimary = mcPart->IsPhysicalPrimary();
       
       dMCTrackZvPtEtaCent[1] = mcPart->Pt();
@@ -1421,6 +1565,12 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       dMCTrackDeltaphiPtEtaPhiCent[3] = mcPart->Phi();
       dMCTrackDeltaphiPtEtaPhiCent[4] = dCentrality;
       
+      dMCTrackPtEtaPhiZvCent[0] = mcPart->Pt();
+      dMCTrackPtEtaPhiZvCent[1] = mcPart->Eta();
+      dMCTrackPtEtaPhiZvCent[2] = mcPart->Phi();
+      dMCTrackPtEtaPhiZvCent[3] = dEventZv;
+      dMCTrackPtEtaPhiZvCent[4] = dCentrality;
+      
       dMCTrackPtEtaPhiCent[0] = mcPart->Pt();
       dMCTrackPtEtaPhiCent[1] = mcPart->Eta();
       dMCTrackPtEtaPhiCent[2] = mcPart->Phi();
@@ -1430,6 +1580,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
       {
         fMCRecPrimZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
         fMCRecPrimPtEtaPhiCent->Fill(dMCTrackPtEtaPhiCent);
+        fMCRecPrimPtEtaPhiZvCent->Fill(dMCTrackPtEtaPhiZvCent);
         fMCDCAPtPrimary->Fill(dDCAxyDCAzPt);
         if( (dMCTrackZvPtEtaCent[1] > GetCutPtMin()) &&
            (dMCTrackZvPtEtaCent[1] < GetCutPtMax()) &&
@@ -1453,6 +1604,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
           {
             fMCRecSecZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
             fMCRecSecPtEtaPhiCent->Fill(dMCTrackPtEtaPhiCent);
+            fMCRecSecPtEtaPhiZvCent->Fill(dMCTrackPtEtaPhiZvCent);
             fMCDCAPtSecondary->Fill(dDCAxyDCAzPt);
             // 	  delete moth;
           }
@@ -1480,8 +1632,13 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
     
     fZvPtEtaCent->Fill(dTrackZvPtEtaCent);
     fDeltaphiPtEtaPhiCent->Fill(dTrackDeltaphiPtEtaPhiCent);
+    fDeltaphiPtEtaPhiZvCent->Fill(dTrackDeltaphiPtEtaPhiZvCent);
     
-    if(fIsMonteCarlo) fMCPtEtaPhiCent->Fill(dTrackPtEtaPhiCent);
+    if(fIsMonteCarlo)
+    {
+      fMCPtEtaPhiCent->Fill(dTrackPtEtaPhiCent);
+      fMCPtEtaPhiZvCent->Fill(dMCTrackPtEtaPhiZvCent);
+    }
     
     fDCAPtAccepted->Fill(dDCAxyDCAzPt);
     
@@ -1971,21 +2128,24 @@ AliGenPythiaEventHeader* AlidNdPtAnalysisPbPbAOD::GetPythiaEventHeader(AliAODMCH
 //________________________________________________________________________
 Bool_t AlidNdPtAnalysisPbPbAOD::IsHijingParticle(const AliAODMCParticle *part, AliGenHijingEventHeader* hijingGenHeader){
   
-  // Check whether a particle is from Hijing or some injected 
+  // Check whether a particle is from Hijing or some injected
   // returns kFALSE if particle is injected
   
-  if(part->Label() > (hijingGenHeader->NProduced()-1)) return kFALSE;
+//  if(part->Label() > (hijingGenHeader->NProduced()-1)) return kFALSE;
+//  return kTRUE;
+  
+  if(part->GetGeneratorIndex()>0) return kFALSE;
   return kTRUE;
 }
 
 //________________________________________________________________________
 Bool_t AlidNdPtAnalysisPbPbAOD::IsPythiaParticle(const AliAODMCParticle *part, AliGenPythiaEventHeader* pythiaGenHeader){
   
-  // Check whether a particle is from Pythia or some injected 
+  // Check whether a particle is from Pythia or some injected
   
   if(part->Label() > (pythiaGenHeader->NProduced()-1)) return kFALSE;
   return kTRUE;
-}    
+}
 
 Double_t* AlidNdPtAnalysisPbPbAOD::GetArrayClone(Int_t n, Double_t* source)
 {
