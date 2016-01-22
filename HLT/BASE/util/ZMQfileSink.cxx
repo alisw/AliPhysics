@@ -168,7 +168,7 @@ void* run(void* arg)
             continue;
         }
 
-        TObject* object;
+        TObject* object = NULL;
         alizmq_msg_iter_data(i, object);
 
         if (fVerbose) Printf("got %s %s", object->ClassName(), object->GetName());
@@ -199,6 +199,7 @@ void* run(void* arg)
           if (fVerbose) Printf("opening file: %s", fFileName.Data());
           if (!fFile) fFile = new TFile(fFileName,fileMode);
           DumpToFile(object);
+          delete object;
         }
         else
         {
@@ -238,6 +239,7 @@ int main(int argc, char** argv)
   //init stuff
   //globally enable schema evolution for serializing ROOT objects
   TMessage::EnableSchemaEvolutionForAll(kTRUE);
+  TDirectory::AddDirectory(kFALSE);
   //ZMQ init
   fZMQcontext = zmq_ctx_new();
   fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), -1, 2);
