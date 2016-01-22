@@ -1,5 +1,4 @@
 /**************************************************************************
-/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -1773,7 +1772,7 @@ void AliPIDResponse::SetTRDEtaMaps()
   // Load the TRD eta correction map from the OADB
   //
 
-    if (fIsMC) fUseTRDEtaCorrection == kFALSE;
+    if (fIsMC) fUseTRDEtaCorrection = kFALSE;
     if (fUseTRDEtaCorrection == kFALSE) {
       //  fTRDResponse.SetEtaCorrMap(0,0x0);
 	AliInfo("Request to disable TRD eta correction -> Eta correction has been disabled");
@@ -1811,7 +1810,7 @@ void AliPIDResponse::SetTRDEtaMaps()
 
 
 
-	if (!etaMap) {
+	if (!etaMap[0]) {
 	    AliError(Form("TRD Eta Correction Params not found"));
 	    fUseTRDEtaCorrection = kFALSE;
             return;
