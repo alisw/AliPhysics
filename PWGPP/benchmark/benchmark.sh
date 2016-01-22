@@ -1337,8 +1337,8 @@ goGenerateMakeflow()
 
   #Summary
   echo "### Summary ###"
-  echo "summary.log: benchmark.sh ${configFile} ${arr_cpass1_merged[*]}"
-  echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
+  echo "summary.log: benchmark.sh ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]}"
+  echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]} commonOutputPath=\$OUTPATH"
   echo ; echo
 
   return 0
@@ -1356,7 +1356,7 @@ goPrintValues()
   outputFile=${2}
   [[ ${outputFile} =~ "-" ]] && outputFile=""
   shift 2 #remove 2 first arguments from arg list to only pass the input files to awk
-  awk -v key=${key} '$0 ~ key" " {print $2}' "$@" | tee ${outputFile}
+  cat $(parseListOfFiles "$@") | awk -v key=${key} '$0 ~ key" " {print $2}' | tee ${outputFile}
   return 0
 )
 
@@ -1384,10 +1384,9 @@ goCreateQAplots()
   [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/makeQAplots.log
   echo "${0} $*"
 
-  olddir=${PWD}
   mkdir -p ${outputDir}
   cd ${outputDir}
-  [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${olddir} && return 1
+  [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${batchWorkingDirectory} && return 1
 
   inputFiles=(
               "${batchWorkingDirectory}/runQA.sh"
@@ -1400,7 +1399,7 @@ goCreateQAplots()
   echo "running QA with command:"
   echo ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
-  cd ${olddir}
+  cd ${batchWorkingDirectory}
   alilog_info  "[END] goCreateQAplots() with folloing parameters: $*"
   echo "$@"
   return 0
@@ -2192,10 +2191,10 @@ goMakeSummary()
 
   [[ ! -f ${configFile} ]] && echo "no config file ${configFile}!" && return
 
-  [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-
-  #copy some useful stuff
-  [ -f "${commonOutputPath}/${configFile}" ] || paranoidCp "${configFile}" "${commonOutputPath}"
+  #if we use workqueue all the files are in PWD, on batch systems they are in the meta subdir
+  [[ -z ${commonOutputPath} ]] && commonOutputPath=${batchWorkingDirectory}
+  metadir=${commonOutputPath}/meta
+  [[ ! -d $metadir ]] && metadir="PWD"
 
   exec &> >(tee ${logTmp})
 
@@ -2203,10 +2202,6 @@ goMakeSummary()
   echo "env script: ${alirootSource} ${alirootEnv}"
   echo "\$ALICE_ROOT=${ALICE_ROOT}"
   echo "commonOutputPath=${commonOutputPath}"
-
-  #summarize the stacktraces
-  stackTraceTree ${commonOutputPath}/*/*/000*/cpass0/*/stacktrace* > stacktrace_cpass0.tree
-  stackTraceTree ${commonOutputPath}/*/*/000*/cpass1/*/stacktrace* > stacktrace_cpass1.tree
 
   # json header: open array of objects
   echo '[' > "${jsonLogTmp}"
@@ -2216,59 +2211,59 @@ goMakeSummary()
   awk 'BEGIN {nFiles=0;nCore=0;} 
   /^calibfile/ {nFiles++;} 
   /core dumped/ {nCore++i;}
-  END {print     "cpass0 produced "nFiles" calib files, "nCore" core files";}' ${commonOutputPath}/meta/cpass0.job*done 2>/dev/null
+  END {print     "cpass0 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass0.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/rec.log OK/ {nOK++;} 
   /\/rec.log BAD/ {nBAD++;} 
   /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass0 reco:  OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/cpass0.job*done 2>/dev/null
+  END {print     "cpass0 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass0.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/calib.log OK/ {nOK++;} 
   /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass0 calib: OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/cpass0.job*done 2>/dev/null
+  END {print "cpass0 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass0.job*done 2>/dev/null
 
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /merge.log OK/ {nOK++;} 
   /merge.log BAD/ {nBAD++;} 
-  END {print "cpass0 merge: OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/merge.cpass0*done 2>/dev/null
+  END {print "cpass0 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass0*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /ocdb.log OK/ {nOK++;} 
   /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass0 OCDB:  OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/merge.cpass0*done 2>/dev/null
+  END {print   "cpass0 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass0*done 2>/dev/null
 
   echo
   awk 'BEGIN {nFiles=0;nCore=0;} 
   /^calibfile/ {nFiles++;} 
   /core dumped/ {nCore++;}
-  END {print     "cpass1 produced "nFiles" calib files, "nCore" core files";}' ${commonOutputPath}/meta/cpass1.job*done 2>/dev/null
+  END {print     "cpass1 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass1.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/rec.log OK/ {nOK++;} 
   /\/rec.log BAD/ {nBAD++;} 
   /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass1 reco:  OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/cpass1.job*done 2>/dev/null
+  END {print     "cpass1 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass1.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/calib.log OK/ {nOK++;} 
   /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass1 calib: OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/cpass1.job*done 2>/dev/null
+  END {print "cpass1 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass1.job*done 2>/dev/null
 
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /merge.log OK/ {nOK++;} 
   /merge.log BAD/ {nBAD++;} 
-  END {print "cpass1 merge: OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/merge.cpass1*done 2>/dev/null
+  END {print "cpass1 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /ocdb.log OK/ {nOK++;} 
   /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass1 OCDB:  OK: "nOK"\tBAD: "nBAD;}' ${commonOutputPath}/meta/merge.cpass1*done 2>/dev/null
+  END {print   "cpass1 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
 
   echo
   echo per run stats:
-  /bin/ls -1 ${commonOutputPath}/meta/merge.cpass0.run*.done | while read x 
+  /bin/ls -1 "$metadir"/merge.cpass0.run*.done | while read x 
 do
   dir=$(goPrintValues dir - ${x})
   runNumber=$(guessRunNumber ${dir})
   [[ -z ${runNumber} ]] && continue
 
-  if $(/bin/ls ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done &> /dev/null); then
+  if $(/bin/ls "$metadir"/cpass0.job*.run${runNumber}.done &> /dev/null); then
     statusCPass0=( $(
     awk 'BEGIN {nOKrec=0;nBADrec=0;nOKcalib=0;nBADcalib=0;nOKstderr=0;nBADstderr=0;}
     /\/rec.log OK/ {nOKrec++;} 
@@ -2277,11 +2272,11 @@ do
     /stderr OK/ {nOKstderr++;}
     /\/calib.log OK/ {nOKcalib++;}
     /\/calib.log BAD/ {nBADcalib++}
-    END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib;}' ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done 2>/dev/null
+    END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib;}' "$metadir"/cpass0.job*.run${runNumber}.done 2>/dev/null
     ) ) 
   fi
 
-  if $(/bin/ls ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done &>/dev/null); then
+  if $(/bin/ls "$metadir"/cpass1.job*.run${runNumber}.done &>/dev/null); then
     statusCPass1=( $(
     awk 'BEGIN {nOKrec=0;nBADrec=0;nOKcalib=0;nBADcalib=0;nOKstderr=0;nBADstderr=0;nQAbarrelOK=0;nQAbarrelBAD=0;nQAouterOK=0;nQAouterBAD=0;}
     /\/rec.log OK/ {nOKrec++;} 
@@ -2294,7 +2289,7 @@ do
     /\/qa_barrel.log BAD/ {nQAbarrelBAD++;}
     /\/qa_outer.log OK/ {nQAouterOK++;}
     /\/qa_outer.log BAD/ {nQAouterBAD++;}
-    END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib" "nQAbarrelOK" "nQAbarrelBAD" "nQAouterOK" "nQAouterBAD;}' ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done 2>/dev/null
+    END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib" "nQAbarrelOK" "nQAbarrelBAD" "nQAouterOK" "nQAouterBAD;}' "$metadir"/cpass1.job*.run${runNumber}.done 2>/dev/null
     ) ) 
   fi
 
@@ -2335,27 +2330,50 @@ done
   # json footer: close array of objects
   echo ']' >> "${jsonLogTmp}"
 
-  #make lists with output files - QA, trending, filtering and calibration
+  #make file lists - QA, trending, stacktraces, filtering and calibration
   ### wait for the merging of all runs to be over ###
-  rm -f qa.list
-  goPrintValues qafile qa.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
-  rm -f calib.list
-  goPrintValues calibfile calib.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
-  rm -f trending.list
-  goPrintValues trendingfile trending.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
-  rm -f filtering.list
-  goPrintValues filteredTree filtering.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
-  rm -f cpass0.dcsTree.list
-  goPrintValues dcsTree cpass0.dcsTree.list ${commonOutputPath}/meta/merge.cpass0.run*.done &>/dev/null
-  rm -f cpass1.dcsTree.list
-  goPrintValues dcsTree cpass1.dcsTree.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
+  goPrintValues qafile remote.qa.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues calibfile remote.calib.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues trendingfile remote.trending.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues filteredTree remote.filtering.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues dcsTree remote.cpass0.dcsTree.list "$metadir"/merge.cpass0.run*.done &>/dev/null
+  goPrintValues dcsTree remote.cpass1.dcsTree.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues stacktrace.log remote.cpass0.stacktrace.list "$metadir"/*cpass0*done &>/dev/null
+  goPrintValues stacktrace.log remote.cpass1.stacktrace.list "$metadir"/*cpass1*done &>/dev/null
  
+  #copy all the files to a local dir tree
+  for remoteList in "
+    remote.qa.list
+    remote.calib.list
+    remote.trending.list
+    remote.filtering.list
+    remote.cpass0.dcsTree.list
+    remote.cpass1.dcsTree.list
+    remote.cpass0.stacktrace.list
+    remote.cpass1.stacktrace.list
+  "
+  do 
+    localList=${remoteList#remote.}
+    rm -f "$localList" && touch "$localList"
+    while read sourceFile; do
+      destinationFile="${PWD}"/"${sourceFile}"
+      mkdir -p ${destinationFile##*/}
+      if copyFileToLocal "${sourceFile}" "${destinationFile}"; then
+        echo "${destinationFile}" >> "$localList"
+      fi
+    done < <(cat "$remoteList")
+  done
+
+  #summarize the stacktraces
+  stackTraceTree @stacktraces.cpass0.list > stacktrace_cpass0.tree
+  stackTraceTree @stacktraces.cpass1.list > stacktrace_cpass1.tree
+
   #merge trending
   rm -f trending.root
   goMerge trending.list trending.root ${configFile} "${extraOpts[@]}" &> mergeTrending.log
 
-  goMakeSummaryTree ${commonOutputPath} 0
-  goMakeSummaryTree ${commonOutputPath} 1
+  goMakeSummaryTree ${metadir} 0
+  goMakeSummaryTree ${metadir} 1
 
   goCreateQAplots "${PWD}/qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/filtering.list" &>createQAplots.log
 
@@ -2365,17 +2383,22 @@ done
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
+  #copy the QA directory
+  find QAplots | while read sourceFile; do
+    copyFileToRemote "${sourceFile}" "${commonOutputPath}/${sourceFile}"
+  done
+
   #copy logs to destination
-  paranoidCp "$logTmp" "${commonOutputPath}"
-  paranoidCp "$jsonLogTmp" "${commonOutputPath}"
+  copyFileToRemote "$logTmp" "${commonOutputPath}"
+  copyFileToRemote "$jsonLogTmp" "${commonOutputPath}"
   
   #copy output files
   exec &> >(tee fileCopy.log)
-  paranoidCp QAplots ${commonOutputPath}
-  paranoidCp *.list ${commonOutputPath}
-  paranoidCp *.root ${commonOutputPath}
-  paranoidCp *.log ${commonOutputPath}
-  paranoidCp fileCopy.log ${commonOutputPath}
+  copyFileToRemote *.list ${commonOutputPath}
+  copyFileToRemote *.root ${commonOutputPath}
+  copyFileToRemote *.log ${commonOutputPath}
+  copyFileToRemote *.tree ${commonOutputPath}
+  copyFileToRemote fileCopy.log ${commonOutputPath}
   alilog_info  "[END] goMakeSummary() with following parameters $*"
   return 0
 )
@@ -2387,7 +2410,7 @@ goMakeSummaryTree()
     return
   fi
   #1. define vars/arrays
-  DIR=${1} #use input or exec in current dir
+  DIR=${1} #the directory with the meta files
   pass=${2-"0"} #pass from input
   outfile="summary_pass${pass}.tree"
   Ncolumns=0
