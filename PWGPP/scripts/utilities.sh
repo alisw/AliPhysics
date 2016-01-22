@@ -714,7 +714,7 @@ copyFileToLocal()
 )
 
 printExec() {
-  echo "==> COMMAND: $*"
+  echo "==> COMMAND: $*" >&2
   "$@"
 }
 
@@ -727,14 +727,14 @@ mkdirLocal() (
     dir=$1
     shift
     if [[ "${dir%%://*}" != "$dir" ]]; then
-      echo "mkdirLocal: skipping creation of $dir: it is not local"
+      echo "[mkdirLocal] skipping creation of $dir: it is not local"
       continue
     fi
     mkdir -p "$dir"
     [[ -d "$dir" ]]
     rv=$?
     err=$((err + ($rv & 1)))
-    echo "mkdirLocal: creation of dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
+    echo "[mkdirLocal] creation of dir $dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
   done
   return $((err & 1))
 )
@@ -796,7 +796,7 @@ copyFileToRemote() (
   proto="${dstdir%%://*}"
   err=0
   [[ "$proto" == "$dstdir" ]] && proto=local
-  opname="copy file to remote dst (proto=$proto)"
+  opname="[copyFileToRemote] (proto=$proto)"
 
   # Remove trailing slashes.
   while [[ "${dstdir:$((${#dstdir}-1))}" == / ]]; do
@@ -805,22 +805,21 @@ copyFileToRemote() (
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
-    while read src; do
+    while read -u 3 src; do
       thiserr=1
       dst="$dstdir/$(basename "$src")"
       echo "$opname started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
-        echo "...$opname attempt $i of $maxCopyTries"
+        [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && continue
+        echo "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
-          local) echo "==> cp $src $dst"
-                 mkdir -p "$(dirname "$dst")"
-                 cp "$src" "$dst"
+          local) mkdir -p "$(dirname "$dst")"
+                 printExec "$src" "$dst"
                  if [[ $? != 0 ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
-          root)  echo "==> xrdcp -f $src $dst"
-                 xrdcp -f "$src" "$dst" ;;
+          root)  printExec xrdcp -f "$src" "$dst" ;;
           *)     echo "protocol not supported: $proto"
                  return 2 ;;
         esac
@@ -832,7 +831,7 @@ copyFileToRemote() (
       [[ $thiserr == 0 ]] && echo "$opname OK after $i attempt(s): $src -> $dst" \
                           || echo "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
-    done < <($inputcmd)
+    done 3< <($inputcmd)
     shift
   done
 
