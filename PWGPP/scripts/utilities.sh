@@ -397,7 +397,7 @@ summarizeLogs()
       rm stacktrace.log
     else
       logStatus=1
-      echo "${x%/*}/stacktrace.log"
+      echo "${x%/*}/stacktrace.log BAD"
     fi
   done
 
@@ -441,7 +441,7 @@ validateLog()
   for errorCondition in "${errorConditions[@]}"; do
     local tmp=$(grep -m1 -e "${errorCondition}" "${log}")
     local error=""
-    [[ -n ${tmp} ]] && error=" : ${errorCondition}"
+    [[ -n "${tmp}" ]] && error=" : ${errorCondition}"
     errorSummary+=${error}
   done
 
@@ -449,7 +449,7 @@ validateLog()
   for warningCondition in "${warningConditions[@]}"; do
     local tmp=$(grep -m1 -e "${warningCondition}" "${log}")
     local warning=""
-    [[ -n ${tmp} ]] && warning=" : ${warningCondition}"
+    [[ -n "${tmp}" ]] && warning=" : ${warningCondition}"
     warningSummary+="${warning}"
   done
 
@@ -630,12 +630,12 @@ printLogStatistics()
     }
   } 
   END {
-    print ("number of succesful jobs: " nOK" out of "nLogs )
+    print ("number of validated logs: " nOK" out of "nLogs )
     for (key in sumBAD)
     {
       print key": "sumBAD[key]
     }
-    if (nCores>0) print "core files: "nCores", stack traces: "nStackTraces 
+    if (nCores>0 || nStackTraces>0) print "core files: "nCores", stack traces: "nStackTraces 
   }
   '
 }
