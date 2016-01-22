@@ -713,6 +713,11 @@ copyFileToLocal()
   return 1
 )
 
+printExec() {
+  echo "==> COMMAND: $*"
+  "$@"
+}
+
 mkdirLocal() (
   # Creates the given directories, with full path, only if local. If not local,
   # print a message and return success.
@@ -732,6 +737,27 @@ mkdirLocal() (
     echo "mkdirLocal: creation of dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
   done
   return $((err & 1))
+)
+
+statRemote() (
+  # Check if file exists, whether it is local or remote. Returns 0 on success, 1 on failure.
+  file=$1
+  proto="${file%%://*}"
+  [[ "$proto" == "$file" ]] && proto=local
+  case "$proto" in
+    local) [[ -f $file ]] ;;
+    root)  path=${file:$((${#proto}+3))}
+           host=${path%%/*}
+           path=${path:$((${#host}))}
+           while [[ ${path:0:2} == // ]]; do path=${path:1}; done
+           xrd "$host" stat "$path" 2>&1 | grep -q Modtime: ;;
+    *)     echo "[statRemote] for file $file: protocol not supported: $proto"
+           return 2 ;;
+  esac
+  rv=$?
+  echo "[statRemote] file $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD"))" \
+       "$([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
+  return $rv
 )
 
 copyFileToRemote() (
