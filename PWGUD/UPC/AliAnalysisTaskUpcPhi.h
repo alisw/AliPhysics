@@ -85,6 +85,7 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   //vzero, zdc
   Double_t fZDCAenergy, fZDCCenergy;
   Int_t fV0Adecision, fV0Cdecision;
+  Int_t fADAdecision, fADCdecision;
   //input data
   TObjString *fDataFilnam;
   Short_t fRecoPass;

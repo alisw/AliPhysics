@@ -69,7 +69,7 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi()
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fFastOrMap(0),
     fBCrossNum(0),fNtracklets(0),fNLooseITSTracks(0),fNLooseTPCTracks(0),
-    fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
+    fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fPhiAODTracks(0),fPhiESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
@@ -90,7 +90,7 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name)
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),fFastOrMap(0),
     fBCrossNum(0),fNtracklets(0),fNLooseITSTracks(0),fNLooseTPCTracks(0),
-    fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
+    fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),fADAdecision(0),fADCdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
     fPhiAODTracks(0),fPhiESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistC0tvxAndCint1TriggersPerRun(0),
@@ -214,7 +214,9 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fITSTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fITSTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
   fITSTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
-  fITSTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
+  fITSTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
+  fITSTree ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
+  fITSTree ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");  
   fITSTree ->Branch("fDataFilnam", &fDataFilnam);
   fITSTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
   fITSTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");  		       
@@ -260,7 +262,9 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   fTPCTree ->Branch("fZDCAenergy", &fZDCAenergy, "fZDCAenergy/D");
   fTPCTree ->Branch("fZDCCenergy", &fZDCCenergy, "fZDCCenergy/D");
   fTPCTree ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
-  fTPCTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");  
+  fTPCTree ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
+  fTPCTree ->Branch("fADAdecision", &fADAdecision, "fADAdecision/I");
+  fTPCTree ->Branch("fADCdecision", &fADCdecision, "fADCdecision/I");   
   fTPCTree ->Branch("fDataFilnam", &fDataFilnam);
   fTPCTree ->Branch("fRecoPass", &fRecoPass, "fRecoPass/S");
   fTPCTree ->Branch("fEvtNum", &fEvtNum, "fEvtNum/L");  		       
@@ -492,9 +496,14 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
   //VZERO, ZDC
   AliAODVZERO *fV0data = aod ->GetVZEROData();
   AliAODZDC *fZDCdata = aod->GetZDCData();
+  AliAODAD *fADdata = aod ->GetADData();
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
+  
+  fADAdecision = fADdata->GetADADecision();
+  fADCdecision = fADdata->GetADCDecision();
+ 
   fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   
@@ -735,9 +744,12 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   //VZERO, ZDC
   AliESDVZERO *fV0data = esd->GetVZEROData();
   AliESDZDC *fZDCdata = esd->GetESDZDC();
+  AliESDAD *fADdata = esd->GetADData();
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
+  fADAdecision = fADdata->GetADADecision();
+  fADCdecision = fADdata->GetADCDecision();
   fZDCAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZDCCenergy = fZDCdata->GetZNCTowerEnergy()[0];
 
