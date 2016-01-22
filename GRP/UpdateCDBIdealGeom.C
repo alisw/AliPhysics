@@ -1,5 +1,5 @@
-#include "ARVersion.h"
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include "ARVersion.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
@@ -40,10 +40,10 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
 	TString av(ALIROOT_VERSION);
 	TString revnum(ALIROOT_REVISION);
 
-	Printf("root version: %s.  AliRoot %s, revision number %s",rootv,av.Data(),revnum);
+	Printf("root version: %s.  AliRoot %s, revision number %s",rootv,av.Data(),revnum.Data());
 
 	md->SetAliRootVersion(av.Data());
-	md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %s",rootv,av.Data(),revnum));
+	md->SetComment(Form("Geometry produced with root version %s and AliRoot %s, revision number %s",rootv,av.Data(),revnum.Data()));
 	md->AddDateToComment();
 
 	//gSystem->Exec("if [ -e geometry.root ]; then \necho deleting existing geometry.root \nrm -rf geometry.root \nfi");
@@ -51,7 +51,9 @@ void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
 		Printf("Deleting existing \"geometry.root\"");
 		gSystem->Exec("rm -rf geometry.root");
 	}
-
+	gSystem->Load("libgeant321");
+	gSystem->Load("libqpythia");
+	gSystem->Load("libAliPythia6");
 	gROOT->LoadMacro(cfgFile);
 	gInterpreter->ProcessLine(gAlice->GetConfigFunction());
 
