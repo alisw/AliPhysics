@@ -124,7 +124,8 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk){
   TBits selectedMap(64);
   Int_t cutcounter(0);
   if(fFilterBits){
-    if(aodt->TestFilterBit(fFilterBits)) selectedMap.SetBitNumber(cutcounter++);
+    if(aodt->TestFilterBit(fFilterBits)) selectedMap.SetBitNumber(cutcounter);
+    cutcounter++;
   }
   if(fListOfCuts){
     for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
@@ -132,15 +133,17 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk){
       if(trackCuts->IsA() == AliESDtrackCuts::Class()){
         // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
         AliESDtrack copyTrack(aodt);
-        if(trackCuts->IsSelected(&copyTrack)) selectedMap.SetBitNumber(cutcounter++);
+        if(trackCuts->IsSelected(&copyTrack)) selectedMap.SetBitNumber(cutcounter);
       } else{
-        if(trackCuts->IsSelected(aodt)) selectedMap.SetBitNumber(cutcounter++);
+        if(trackCuts->IsSelected(aodt)) selectedMap.SetBitNumber(cutcounter);
       }
+
+      cutcounter++;
     }
   }
   if(fSelectionModeAny){
-    // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
-    return selectedMap.CountBits() > 0;
+    // In case of ANY one of the cuts need to be fulfilled (equivalent to one bit set)
+    return selectedMap.CountBits() > 0 || cutcounter == 0;
   } else {
     // In case of ALL all of the cuts need to be fulfilled (equivalent to all bits set)
     return selectedMap.CountBits() == cutcounter;
