@@ -105,12 +105,13 @@ bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
   TBits selectedMap(64);        // Counting track cuts among which track was SELECTED
   Int_t cutcounter = 0;
   for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-    if((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) selectedMap.SetBitNumber(cutcounter++);
+    if((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) selectedMap.SetBitNumber(cutcounter);
+    cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
   if(fSelectionModeAny){
-    return selectedMap.CountBits(0) > 0;
+    return selectedMap.CountBits() > 0 || cutcounter == 0;
   } else {
-    return selectedMap.CountBits(0) == fListOfCuts->GetEntries();
+    return selectedMap.CountBits() == cutcounter;
   }
 }
