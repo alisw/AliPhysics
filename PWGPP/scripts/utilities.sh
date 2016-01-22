@@ -760,6 +760,26 @@ statRemote() (
   return $rv
 )
 
+lsRemote() (
+  # List remote files on stdout. Returns 0 on success, 1 on failure.
+  dir=$1
+  proto="${dir%%://*}"
+  [[ "$proto" == "$dir" ]] && proto=local
+  case "$proto" in
+    local) find "$dir" -maxdepth 1 -mindepth 1 ;;
+    root)  path=${dir:$((${#proto}+3))}
+           host=${path%%/*}
+           path=${path:$((${#host}))}
+           while [[ ${path:0:2} == // ]]; do path=${path:1}; done
+           xrd "$host" ls "$path" 2>&1 | grep -v "No such file or directory" | grep -o "${path}.*" ;;
+    *)     echo "[lsRemote] for directory $dir: protocol not supported: $proto" >&2
+           return 2 ;;
+  esac
+  rv=$?
+  [[ $rv != 0 ]] && echo "[lsRemote] cannot list directory $dir" >&2
+  return $rv
+)
+
 copyFileToRemote() (
   # Copy a list of files ($1, $2...${n-1}) to a certain dest dir ($n). The last
   # parameter must then be a directory. The destination might be local or remote
