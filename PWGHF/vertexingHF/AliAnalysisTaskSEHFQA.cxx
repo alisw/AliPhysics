@@ -502,8 +502,18 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hnLayerITS->GetXaxis()->SetBinLabel(6,"SSDin");
     hnLayerITS->GetXaxis()->SetBinLabel(7,"SSDout");
 
+    hname="hnLayerITSselTr";
+    TH1F* hnLayerITSselTr=new TH1F(hname.Data(),"Number of selected tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(1,"n tracks");
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(2,"SPDin");
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(3,"SPDout");
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(4,"SDDin");
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(5,"SDDout");
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(6,"SSDin");
+    hnLayerITSselTr->GetXaxis()->SetBinLabel(7,"SSDout");
+
     hname="hnLayerITSsa";
-    TH1F* hnLayerITSsa=new TH1F(hname.Data(),"Number of tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    TH1F* hnLayerITSsa=new TH1F(hname.Data(),"Number of ITSsa tracks with point in layer;ITS layer;",7,-1.5,5.5);
     hnLayerITSsa->GetXaxis()->SetBinLabel(1,"n tracks");
     hnLayerITSsa->GetXaxis()->SetBinLabel(2,"SPDin");
     hnLayerITSsa->GetXaxis()->SetBinLabel(3,"SPDout");
@@ -729,6 +739,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hnClsITSselTr);
     fOutputTrack->Add(hnClsITSSA);
     fOutputTrack->Add(hnLayerITS);
+    fOutputTrack->Add(hnLayerITSselTr);
     fOutputTrack->Add(hnLayerITSsa);
     fOutputTrack->Add(hnClsSPD);
     fOutputTrack->Add(hptGoodTr);
@@ -1971,7 +1982,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
 
       Bool_t selTrack=kTRUE;
-       if (!((trStatus & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+      if (!((trStatus & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
 	  !((trStatus & AliVTrack::kITSrefit) == AliVTrack::kITSrefit)){
 	selTrack=kFALSE;
       }
@@ -1987,6 +1998,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
       }
       
+      Bool_t selTrackNoSPD=selTrack;
       if(selTrack){
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
 	  ((TH1F*)fOutputTrack->FindObject("hd0TracksTPCITSSPDany"))->Fill(d0z0[0]);
@@ -2128,9 +2140,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(fOnOff[0]){
 
 	((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(-1);
+	if(selTrackNoSPD) ((TH1F*)fOutputTrack->FindObject("hnLayerITSselTr"))->Fill(-1);
 	for(Int_t l=0;l<6;l++) {
 	  if(TESTBIT(track->GetITSClusterMap(),l)) {
 	    ((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(l);
+	    if(selTrackNoSPD) ((TH1F*)fOutputTrack->FindObject("hnLayerITSselTr"))->Fill(l);
 	    nclsTot++; if(l<2) nclsSPD++;
 	  }
 	}
@@ -2182,7 +2196,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}
 	if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kITSpureSA)){//tracks retrieved in the ITS and not reconstructed in the TPC
 	  ((TH1F*)fOutputTrack->FindObject("hnClsITS-SA"))->Fill(nclsTot);
-	  ((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(-1);
+	  ((TH1F*)fOutputTrack->FindObject("hnLayerITSsa"))->Fill(-1);
 	  for(Int_t l=0;l<6;l++) {
 	    if(TESTBIT(track->GetITSClusterMap(),l)) {
 	      ((TH1F*)fOutputTrack->FindObject("hnLayerITSsa"))->Fill(l);

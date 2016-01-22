@@ -58,7 +58,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetBranchGenJets("");//insert string for embedding in wagon configuration, method declared and defined in FragmentationFunction task
   
   if(useExtraTracks)task->SetMatchMode(1);//default = 1: is det.level rec. - det.level PYTHIA matching, '2' is matching from 'det.level rec. extra' jets to 'particle level PYTHIA' jets
-  task->SetUseStandardV0s(kFALSE);//fill extra branch also with standard v0s for UE V0 subtraction
+  task->SetUseStandardV0s(kTRUE);//fill extra branch also with standard v0s for UE V0 subtraction
 
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
@@ -106,9 +106,10 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCutV0RadiusMax(100.);//in cm
   task->SetCutBetheBloch(3.);//in units of sigma
 
+
   if(useExtraTracks)task->UseExtraTracks();
   if(useExtraOnlyTracks)task->UseExtraonlyTracks();
-  if(useExtraJetPt)task->SetUseExtraJetPt();//Use smeared jet pt for MC truth reference
+  if(useExtraJetPt)task->SetUseExtraJetPt(kTRUE);//Use smeared jet pt for MC truth reference
 
 
   //task->SetCutRatioTPC(0.8);//Cut on Ratio of crossed Rows over findable clusters in TPC -> not used anymore by Strangeness PAG group

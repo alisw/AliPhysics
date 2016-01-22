@@ -60,6 +60,7 @@
 #include <AliExternalTrackParam.h>
 #include <AliESDpid.h>
 #include <AliCentrality.h>
+#include <AliMultSelection.h>
 #include <AliAODpidUtil.h>
 #include <AliPID.h>
 #include <AliPIDResponse.h>
@@ -2200,9 +2201,20 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   Double_t centralityV0A = -1; 
   Double_t centralityV0C = -1;
   Double_t centralityZNA = -1;
+
+  //centrality 2015 only C0M, CL0, CL1 supported at the moment 18.01.2016
+  AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(event)->FindListObject("MultSelection");
+  if(MultSelection){
+    centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+    centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    
+  }else{
+    printf("did not find AliMultSelection!");
+  }
   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
-  if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
-  if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+
+  //  if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
+  // if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
   if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
   if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
   if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
@@ -2218,7 +2230,6 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
   
-
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC(); 
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
 
@@ -2889,8 +2900,14 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   Double_t centralitySPD = -1; Double_t vtxZ = -999.;
   if(event->IsA() == AliESDEvent::Class()) {
     const AliESDEvent* esdEv = static_cast<const AliESDEvent*>(event);
-    AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
-    if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+    //   }
+  //  AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
+    //if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+    //2015 cent    
+     AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
+    if(MultSelection){
+      centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+      }
   }
   if(event->IsA() == AliAODEvent::Class()) {
     const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);

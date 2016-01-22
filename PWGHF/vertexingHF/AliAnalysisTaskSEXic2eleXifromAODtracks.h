@@ -19,6 +19,7 @@
 /* $Id$ */ 
 
 #include "TROOT.h"
+#include "TVector.h"
 #include "TSystem.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -52,8 +53,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk, TClonesArray *mcArray);
-  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Int_t charge);
+  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, TClonesArray *mcArray);
+  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, TVector *tinfo, TVector *vinfo, Int_t charge);
   void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
@@ -82,12 +83,14 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
-  AliAODRecoCascadeHF* MakeCascadeHF(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
+  AliAODRecoCascadeHF* MakeCascadeHF(AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod);
 	Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgarray_ele, Int_t *pdgarray_casc, Int_t *labelarray_ele, Int_t *labelarray_casc,  Int_t &ngen_ele, Int_t &ngen_casc);
 	Int_t MatchToMCCascade(AliAODcascade *theCascade, Int_t pdgabscasc, Int_t *pdgDgcasc, Int_t *pdgDgv0, TClonesArray *mcArray) const;
 	void	GetMCDecayHistory(AliAODMCParticle *mcpart, TClonesArray *mcArray, Int_t *pdgarray, Int_t *labelarray, Int_t &ngen);
 
+  void StoreGlobalTrackReference(AliAODTrack *track, Int_t id);
+  void ResetGlobalTrackReference();
 
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
@@ -337,6 +340,23 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistoMCDeltaPhiccbar;//!<!  MC Event Type
 	TH1F *fHistoMCNccbar;//!<!  MC Event Type
 
+  // Store pointers to global tracks for pid and dca
+  AliAODTrack **fGTI;                //! Array of pointers, just nicely sorted according to the id
+  Int_t *fGTIndex;                //! Array of integers to keep the index of tpc only track
+  const UShort_t  fTrackBuffSize;          //! Size of the above array, ~12000 for PbPb
+  TH2D *fHistodPhiSdEtaSElectronProtonR125RS;//!<! dPhiS vs dEtaS R125 RS
+  TH2D *fHistodPhiSdEtaSElectronProtonR125WS;//!<! dPhiS vs dEtaS R125 WS
+  TH2D *fHistodPhiSdEtaSElectronProtonR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
+  TH2D *fHistodPhiSdEtaSElectronProtonR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+  TH2D *fHistodPhiSdEtaSElectronPionR125RS;//!<! dPhiS vs dEtaS R125 RS
+  TH2D *fHistodPhiSdEtaSElectronPionR125WS;//!<! dPhiS vs dEtaS R125 WS
+  TH2D *fHistodPhiSdEtaSElectronPionR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
+  TH2D *fHistodPhiSdEtaSElectronPionR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+  TH2D *fHistodPhiSdEtaSElectronBachelorR125RS;//!<! dPhiS vs dEtaS R125 RS
+  TH2D *fHistodPhiSdEtaSElectronBachelorR125WS;//!<! dPhiS vs dEtaS R125 WS
+  TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
+  TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
   Bool_t fMixWithoutConversionFlag; /// flag for mixing
@@ -351,9 +371,12 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; /// array of e-compatible tracks
   TObjArray* fCascadeTracks1; /// array of xi+compatible tracks
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
+  TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
+  TObjArray* fCascadeCutVarsArray1; /// array of RDHF cut information
+  TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,20); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,21); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

@@ -4,7 +4,7 @@
 //  - MC output
 // 
 //Created by Christine Nattrass, Rebecca Scott, Irakli Martashvili
-//University of Tennessee at Knoxville
+//University of Tennessee at Knoxville 
 //_________________________________________________________________________
 #ifndef ALIANALYSISHADETMONTECARLO_H
 #define ALIANALYSISHADETMONTECARLO_H

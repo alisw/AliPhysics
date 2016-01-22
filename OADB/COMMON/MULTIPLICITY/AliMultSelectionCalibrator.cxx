@@ -499,6 +499,13 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     lAcceptedEvents = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),lCondition.Data(),"goff");
                 }
                 lNrawBoundaries[0] = 0.0; //Defined OK even if anchored
+                //Overwrite lower boundary in case this has a negative minimum...
+                if ( lMinEst[iEst][iRun] < 0 ) {
+		  lNrawBoundaries[0] = lMinEst[iEst][iRun]; 
+		  cout<<"Min Value Override, Negative..."<<flush;
+		}
+                
+                
                 for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
                     Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
                     
@@ -754,6 +761,29 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
     
+    //ZDC Related
+    AliMultVariable *fZncEnergy = new AliMultVariable("fZncEnergy");
+    AliMultVariable *fZpcEnergy = new AliMultVariable("fZpcEnergy");
+    AliMultVariable *fZnaEnergy = new AliMultVariable("fZnaEnergy");
+    AliMultVariable *fZpaEnergy = new AliMultVariable("fZpaEnergy");
+    AliMultVariable *fZem1Energy = new AliMultVariable("fZem1Energy");
+    AliMultVariable *fZem2Energy = new AliMultVariable("fZem2Energy");
+
+    AliMultVariable *fZnaTower = new AliMultVariable("fZnaTower");
+    AliMultVariable *fZncTower = new AliMultVariable("fZncTower");
+    AliMultVariable *fZpaTower = new AliMultVariable("fZpaTower");
+    AliMultVariable *fZpcTower = new AliMultVariable("fZpcTower");
+
+    //Fired or not booleans (stored as integer for compatibility)
+    AliMultVariable *fZnaFired = new AliMultVariable("fZnaFired"); 
+    fZnaFired->SetIsInteger(kTRUE); 
+    AliMultVariable *fZncFired = new AliMultVariable("fZncFired");
+    fZncFired->SetIsInteger(kTRUE); 
+    AliMultVariable *fZpaFired = new AliMultVariable("fZpaFired");
+    fZpaFired->SetIsInteger(kTRUE);  
+    AliMultVariable *fZpcFired = new AliMultVariable("fZpcFired"); 
+    fZpcFired->SetIsInteger(kTRUE); 
+    
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
@@ -782,6 +812,20 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fnTracklets   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
+    fInput->AddVariable( fZncEnergy );
+    fInput->AddVariable( fZpcEnergy );
+    fInput->AddVariable( fZnaEnergy );
+    fInput->AddVariable( fZpaEnergy );
+    fInput->AddVariable( fZem1Energy );
+    fInput->AddVariable( fZem2Energy );
+    fInput->AddVariable( fZnaTower );
+    fInput->AddVariable( fZncTower );
+    fInput->AddVariable( fZpaTower );
+    fInput->AddVariable( fZpcTower );
+    fInput->AddVariable( fZnaFired ); 
+    fInput->AddVariable( fZncFired ); 
+    fInput->AddVariable( fZpaFired ); 
+    fInput->AddVariable( fZpcFired );   
     fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
     
