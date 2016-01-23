@@ -158,7 +158,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   //pid
   enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
-  enum kParticleType_ { kPion_, kKaon_, kProton_, kAll_ };
+  enum kParticleType_ { kPion_, kKaon_, kProton_ };
 
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
     fUsePID = kTRUE; fUsePIDnSigma = kFALSE; fUsePIDPropabilities = kTRUE;
@@ -237,6 +237,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
 // Add By N.Alam on 13/12/2015
    void IsTOF(AliAODTrack *track);
+   void IsTPC(AliAODTrack *track);  // For TPC Track Pt .2 to .6 
 
 
  
@@ -345,6 +346,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 // For TPC and TOF Pt cut variables 
 
   Bool_t fHasTOFPID;  //TOF PID is or not
+  Bool_t fHasTPCPID;  // TPC PID is or not
   Double_t fPtTOFMin;  // TOF Min Pt
   Double_t fPtTOFMax;  // TOF Max Pt
   Double_t fPtTPCMin;  // TPC Min Pt

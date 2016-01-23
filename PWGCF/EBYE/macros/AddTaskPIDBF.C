@@ -86,7 +86,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 
   // for local changed BF configuration
   //gROOT->LoadMacro("./configBalanceFunctionPsiAnalysis.C");
- // gROOT->LoadMacro("configBalanceFunctionPsiAnalysis.C");
+//  gROOT->LoadMacro("configBalanceFunctionPsiAnalysis.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/macros/configBalanceFunctionPsiAnalysis.C");
   AliBalancePsi *bf  = 0;  // Balance Function object
   AliBalancePsi *bfs = 0;  // shuffled Balance function object
@@ -164,7 +164,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
   // If correctionFileName = "", do not use corrections
   if(correctionFileName != "")
     //taskBF->SetInputCorrection(Form("Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
-    taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
+    taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/../src/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
 
   //+++++++++++++++++++++
 
