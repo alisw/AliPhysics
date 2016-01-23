@@ -37,8 +37,10 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Double_t minTime = -20.,
 							     Double_t maxTime = 20.,
 							     Bool_t   pileupFromSPDFlag = kFALSE,
-							     TString  referenceFileName = "",
-							     TString  referenceSMFileName = "")//Reference.root
+							     TString  referenceFileName = "",//Reference.root
+							     TString  referenceSMFileName = "",//ReferenceSM.root
+							     TString  referenceWrongL1SMFileName = "",//ReferenceWrongSM.root
+)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -73,6 +75,13 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
 
+  //add in pass1 for runs before LHC15n muon_calo_pass1
+  if(referenceWrongL1SMFileName.Length()!=0){
+    taskmbemcal->SetReferenceWrongL1PhasesRunByRunFileName(referenceWrongL1SMFileName);
+    taskmbemcal->LoadWrongReferenceRunByRunHistos();
+    taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+  }
+
   // pass2
   if(referenceSMFileName.Length()!=0){
     taskmbemcal->SetReferenceRunByRunFileName(referenceSMFileName);
@@ -100,11 +109,8 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							   outputFile.Data());
 
   mgr->AddTask(taskmbemcal);
-
-                                                             
   mgr->ConnectInput  (taskmbemcal, 0, cinput1);
   mgr->ConnectOutput (taskmbemcal, 1, coutput);
-
 
   return taskmbemcal;
 }
