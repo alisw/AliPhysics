@@ -7247,8 +7247,14 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  
   Float_t jetPt = jet->Pt();//getting smeared (extra) jet pt or true jet pt (unsmeared), to be set in AddTask macro and only for extra only branch!!
   if(fUseExtraJetPt){
+
+     if(fDebug > 2)std::cout<<"Use Extra JetPt:  "<<jetPt<<std::endl;
+
     if(extraJet) jetPt = extraJet->Pt();
-    else jetPt = 0;
+
+
+    else {jetPt = 0;  if(fDebug > 2)std::cout<<" ATTENTION!! No extra jet available!!!!! "<<std::endl;
+}
   }
   
   fh1PtEmbAfterMatch->Fill(jetPt);
