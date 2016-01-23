@@ -10,7 +10,6 @@
 #include "TH3D.h"
 #include "TArrayF.h"
 #include "TF1.h"
-#include "TFile.h"
 #include "TRandom.h"
 #include "TROOT.h"
 
@@ -44,6 +43,9 @@
 #include "AliAnalysisTaskPIDBF.h"
 #include "AliBalancePsi.h"
 #include "AliAnalysisTaskTriggeredBF.h"
+#include "TFile.h"
+#include <iostream>
+
 
 
 // Analysis task for the BF vs Psi code
@@ -175,6 +177,7 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fPtTPCMin(0.0),
   fPtTPCMax(0.3),
   fHasTOFPID(0),
+  fHasTPCPID(0),
   fPhiMin(0.),
   fPhiMax(360.),
   fDCAxyCut(-1),
@@ -358,6 +361,8 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
   fHistMixTracks = new TH2F("fHistMixTracks","Number of mixed tracks;Centrality percentile;N_{mix,trks}",101, 0, 101, 200, 0, fMixingTracks * 1.5);
   fList->Add(fHistMixTracks);
 
+if(fUsePID){
+
   switch(fParticleType_){
   case kPion_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Pion particles ",40,-1.6,1.6);
@@ -376,11 +381,11 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Proton Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Proton After Cut ",200,0.0,200);
   break;
+  }
+}
 
-  case kAll_:
+else {
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of All Charged particles ",40,-1.6,1.6);
-  break;
-
 } // end of switch command
 
   fList->Add(HistEtaTest); 		 	 
@@ -1487,7 +1492,42 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //===========================end of PID (so far only for electron rejection)===============================//
 
       //+++++++++++++++++++++++++++++//
-      //===========================PID===============================//		    
+
+
+     // Filter the track according to Pt and Eta cut-----------------------------> 
+
+      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+     
+       if( fDCAxyCut != -1 && fDCAzCut != -1){
+       if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
+          continue;  // 2D cut
+        }
+     }
+
+
+        // Extra TPC cuts (for systematic studies [!= -1])
+      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+        continue;
+      }
+      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+        continue;
+      }
+
+      // Extra cut on shared clusters
+      if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
+        continue;
+      }
+
+    // End of Filtering  --------------------------------------------------------->
+
+      //===========================PID===============================//		   
+
+
+ 
     Double_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
 
       if(fUsePID) {
@@ -1502,6 +1542,7 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
     IsTOF(aodTrack);
 // --------------------------> If loop start
    if(fHasTOFPID && aodTrack->Pt()>fPtTOFMin && aodTrack->Pt()<fPtTOFMax){
+//cout<<" Hi I am now at TPC+TOF  track "<<endl;
     nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kProton);
     nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kKaon);
     nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
@@ -1518,7 +1559,9 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
 }
 
  else {
-    if(aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax){
+     IsTPC(aodTrack);
+    if(fHasTPCPID && aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax){
+//cout<<" Hi I am now at TPC track "<<endl;
     nsigmaProton =  TMath::Abs(nsigmaTPCkProton);
     nsigmaKaon   =  TMath::Abs(nsigmaTPCkKaon);
     nsigmaPion   =  TMath::Abs(nsigmaTPCkPion);
@@ -1541,26 +1584,17 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //cout<<"Nsigma of  Proton Before cut is "<<nsigmaProton<<endl;
       break;
 
-} // end of switch command
+        } // end of switch command
 
  
-      }
+   }
       //===========================PID===============================//
-      //+++++++++++++++++++++++++++++//
-
-
-      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
-      
-      
-      // Kinematics cuts from ESD track cuts
-// Start of if loop
-
-
-
+     
 
 // N.A Changed here for BF with PID
 
+
+if(fUsePID) {
 
 switch(fParticleType_){
 
@@ -1570,29 +1604,6 @@ case kPion_:
 
  //cout<<"Nsigma of  Pion After cut is "<<nsigmaPion<<endl;
  
-      if( vPt < fPtMin || vPt > fPtMax)      continue;
-      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-
-      
-      // Extra DCA cuts (for systematic studies [!= -1])
-      if( fDCAxyCut != -1 && fDCAzCut != -1){
-	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
-	  continue;  // 2D cut
-	}
-      }
-      
-      // Extra TPC cuts (for systematic studies [!= -1])
-      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-	continue;
-      }
-      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-	continue;
-      }
-
-      // Extra cut on shared clusters
-      if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
-	continue;
-      }
       
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -1625,29 +1636,6 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
 
  //cout<<"Nsigma of  Kaon After cut is "<<nsigmaKaon<<endl;
  
-      if( vPt < fPtMin || vPt > fPtMax)      continue;
-      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-
-      
-      // Extra DCA cuts (for systematic studies [!= -1])
-      if( fDCAxyCut != -1 && fDCAzCut != -1){
-	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
-	  continue;  // 2D cut
-	}
-      }
-      
-      // Extra TPC cuts (for systematic studies [!= -1])
-      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-	continue;
-      }
-      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-	continue;
-      }
-
-      // Extra cut on shared clusters
-      if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
-	continue;
-      }
       
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -1670,7 +1658,7 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
       
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
-      } // Kaon if loop end
+     } // Kaon if loop end
 
    break;
 
@@ -1681,29 +1669,6 @@ case kProton_:
 
  //cout<<"Nsigma of  Proton After cut is "<<nsigmaProton<<endl;
  
-      if( vPt < fPtMin || vPt > fPtMax)      continue;
-      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-
-      
-      // Extra DCA cuts (for systematic studies [!= -1])
-      if( fDCAxyCut != -1 && fDCAzCut != -1){
-	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
-	  continue;  // 2D cut
-	}
-      }
-      
-      // Extra TPC cuts (for systematic studies [!= -1])
-      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-	continue;
-      }
-      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-	continue;
-      }
-
-      // Extra cut on shared clusters
-      if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
-	continue;
-      }
       
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -1726,37 +1691,18 @@ case kProton_:
       
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
-      } // Proton if loop end
+     } // Proton if loop end
 
    break;
 
-case  kAll_:
+  }  // Switch Command end 
 
- //cout<<"There are no NSigma for All Charged Particles "<<endl;
+} // If commmand end
+
+else {
+
+ cout<<"There are no NSigma for All Charged Particles "<<endl;
  
-      if( vPt < fPtMin || vPt > fPtMax)      continue;
-      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
-
-      
-      // Extra DCA cuts (for systematic studies [!= -1])
-      if( fDCAxyCut != -1 && fDCAzCut != -1){
-	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
-	  continue;  // 2D cut
-	}
-      }
-      
-      // Extra TPC cuts (for systematic studies [!= -1])
-      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-	continue;
-      }
-      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-	continue;
-      }
-
-      // Extra cut on shared clusters
-      if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
-	continue;
-      }
       
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -1778,10 +1724,7 @@ case  kAll_:
       
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
-
-   break;
-
-} // Swtich command end;
+   }  // Else command end
 
     }//track loop
   }// AOD analysis
@@ -2705,6 +2648,17 @@ void AliAnalysisTaskPIDBF::IsTOF(AliAODTrack *track)
   if(track->Pt()<fPtTOFMin || track->Pt()>fPtTOFMax) fHasTOFPID=kFALSE;
 
  } //End of IsTOF
+
+
+void AliAnalysisTaskPIDBF::IsTPC(AliAODTrack *track)
+{
+
+ AliPIDResponse::EDetPidStatus status = fPIDResponse -> CheckPIDStatus(AliPIDResponse::kTPC,track);
+ if (status != AliPIDResponse::kDetPidOk) fHasTPCPID=kFALSE;
+else fHasTPCPID=kTRUE;
+if(track->Pt()<fPtTPCMin || track->Pt()>fPtTPCMax) fHasTPCPID=kFALSE;
+
+}
 
 
 
