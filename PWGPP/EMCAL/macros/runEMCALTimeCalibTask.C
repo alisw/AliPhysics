@@ -130,8 +130,15 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
   taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
   //taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
 
+  //to load reference with wrong L1 phases to revert them back in pass1
+  //taskmbemcal->SetReferenceWrongL1PhasesRunByRunFileName("ReferenceSMwrongL1_LHC15n.root");
+  //taskmbemcal->LoadWrongReferenceRunByRunHistos();
+  //taskmbemcal->SetMinTime(300);
+  //taskmbemcal->SetMaxTime(900);
+  //taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+
   // to load reference histograms run-by-run in pass2
-  //taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_v3.root");
+  //taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_LHC15n.root");
   //taskmbemcal->LoadReferenceRunByRunHistos();
   //taskmbemcal->SetMinTime(300);
   //taskmbemcal->SetMaxTime(900);

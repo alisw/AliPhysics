@@ -79,6 +79,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fMinCellEnergy(0),
   fReferenceFileName(),
   fReferenceRunByRunFileName(),
+  fReferenceWrongL1PhasesRunByRunFileName(),
   fPileupFromSPD(kFALSE),
   fMinTime(0),
   fMaxTime(0),
@@ -95,7 +96,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fFineTmin(0),
   fFineTmax(0),
   fL1PhaseList(0),
-//  fReferenceFile(0),
+  fWrongL1PhaseList(0),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -116,6 +117,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhAllAverageBC(),
   fhAllAverageLGBC(),
   fhRefRuns(0),
+  fhWrongL1Phases(0),
   fhTimeDsup(),
   fhTimeDsupBC(),
   fhRawTimeVsIdBC(),
@@ -173,6 +175,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
 AliAnalysisTaskEMCALTimeCalib::~AliAnalysisTaskEMCALTimeCalib() {
   fL1PhaseList->SetOwner();
   fL1PhaseList->Delete();
+  fWrongL1PhaseList->SetOwner();
+  fWrongL1PhaseList->Delete();
 }
 
 
@@ -249,12 +253,41 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
   }
 } // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
 
+/// Load reference Histograms (run-by-run in one period) from file into memory
+/// The set of wrong L1 phases is loaded to revert them back 
+/// This method should be called at the beginning of processing only once
+//_____________________________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadWrongReferenceRunByRunHistos()
+{
+  // connect ref run here
+  if(fReferenceWrongL1PhasesRunByRunFileName.Length()!=0){
+    TFile *referenceFile = TFile::Open(fReferenceWrongL1PhasesRunByRunFileName.Data());
+    if(referenceFile==0x0) {
+      AliFatal("*** NO REFERENCE R-B-R FILE with WRONG L1 PHASES");
+      return;
+    } else {
+      AliInfo(Form("Reference R-b-R file with wrong L1 phases: %s, pointer %p",fReferenceWrongL1PhasesRunByRunFileName.Data(),referenceFile));
+
+      //load wrong L1 phases to memory
+      fWrongL1PhaseList=new TObjArray(referenceFile->GetNkeys());
+      TIter next(referenceFile->GetListOfKeys());
+      TKey *key;
+      while ((key=(TKey*)next())) {
+        fWrongL1PhaseList->AddLast((TH1F*)referenceFile->Get(key->GetName()) );
+        //printf("key: %s points to an object of class: %s at %dn",key->GetName(),key->GetClassName(),key->GetSeekKey());
+      }
+    }
+  } else { //reference file is not provided
+    AliFatal("You require to load reference run-by-run histos with wrong L1 phases from file but FILENAME is not provided");
+    return;
+  }
+} // End of AliAnalysisTaskEMCALTimeCalib::LoadWrongReferenceRunByRunHistos
+
 /// Load reference histogram with L1 phases for given run
 /// This method should be called per run
 ////_____________________________________________________________________
 void AliAnalysisTaskEMCALTimeCalib::SetL1PhaseReferenceForGivenRun()
 {
-
   fhRefRuns=NULL;
   if(!fL1PhaseList) {
     AliFatal("Array with reference L1 phase histograms do not exist in memory");
@@ -280,6 +313,36 @@ void AliAnalysisTaskEMCALTimeCalib::SetL1PhaseReferenceForGivenRun()
   AliDebug(1,Form("hRefRuns entries %d", (Int_t)fhRefRuns->GetEntries() )); 
 }
 
+/// Load reference histogram with wrong L1 phases in the reconstruction for given run
+/// This method should be called per run
+////_____________________________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::SetWrongL1PhaseReferenceForGivenRun()
+{
+  fhWrongL1Phases=NULL;
+  if(!fWrongL1PhaseList) {
+    AliFatal("Array with reference with wrong L1 phase histograms do not exist in memory");
+    return;
+  }
+  if(fRunNumber<0) {
+    AliFatal("Negative run number, why?");
+    return;
+  }
+
+  fhWrongL1Phases=(TH1C*)fWrongL1PhaseList->FindObject(Form("h%d",fRunNumber));
+  if(fhWrongL1Phases==0x0){
+    AliError(Form("Reference histogram with wrong L1 phase does not exist for run %d. Use Default",fRunNumber));
+    fhWrongL1Phases=(TH1C*)fWrongL1PhaseList->FindObject("h0");
+  }
+  if(fhWrongL1Phases==0x0) {
+    AliFatal(Form("No default histogram with wrong L1 phases! Add default histogram to file %s!!!",fReferenceWrongL1PhasesRunByRunFileName.Data()));
+    return;
+  }
+
+  AliDebug(1,Form("Reference R-b-R with wrong L1 phases histo %p, list %p, run number %d",fhWrongL1Phases,fWrongL1PhaseList,fRunNumber));
+  if(fhWrongL1Phases->GetEntries()==0)AliWarning("fhWrongL1Phases->GetEntries() = 0");
+  AliDebug(1,Form("fhWrongL1Phases entries %d", (Int_t)fhWrongL1Phases->GetEntries() ));
+}
+
 //_____________________________________________________________________
 /// Connect ESD or AOD here
 /// Called when run is changed
@@ -302,6 +365,10 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   // Init EMCAL geometry 
   if (!fgeom) SetEMCalGeometry();
   //Init EMCAL geometry done
+
+  //set wrong L1 phases for current run
+  if(fReferenceWrongL1PhasesRunByRunFileName.Length()!=0)
+    SetWrongL1PhaseReferenceForGivenRun();
 
   //set L1 phases for current run
   if(fReferenceRunByRunFileName.Length()!=0)
@@ -673,7 +740,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   
   Float_t offset=0.;
   Float_t offsetPerSM=0.;
+  Float_t wrongOffsetPerSM=0.;
   Int_t L1phase=0;
+  Int_t wrongL1phase=0;
 
   Int_t nBC = 0;
   nBC = BunchCrossNumber%4;
@@ -759,6 +828,23 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 
       // Solution for 2015 data where L1 phase is not correct in data. We need to calibrate run by run.
       // The shift is done per SM (0-19).
+
+      //for runs with 100ns shift for BC0 and BC1 and wrong L1 phase we need to revert them and apply next step
+      if(fhWrongL1Phases!=0){//comming from file provoded by Martin, from raw data extraction before the first iteration
+	wrongL1phase = (Int_t)(fhWrongL1Phases->GetBinContent(nSupMod));//SM0 = bin0
+        if(nBC >= wrongL1phase)
+          wrongOffsetPerSM = (nBC - wrongL1phase)*25;
+        else
+          wrongOffsetPerSM = (nBC - wrongL1phase + 4)*25;
+	if(nBC==0 || nBC==1) wrongOffsetPerSM+=100;
+
+      } else if(fReferenceWrongL1PhasesRunByRunFileName.Length()!=0){//protection against missing reference histogram
+        AliFatal("Reference histogram run-by-run with erong L1 phases not properly loaded");
+      }
+      //end of load additional wrong offset
+
+      //works for reconstructed runs without 100ns shift for BC0 and BC1 and no L1 phase 
+      // valid for muon_calo_pass1 of LHC15n (pp@2.76) and later reconstructions 
       if(fhRefRuns!=0) {//comming from file after the first iteration
 	//offsetPerSM = (Float_t)(fhRefRuns->GetBinContent(nBC*kNSM+nSupMod));//BC0SM0 = bin0
 	L1phase = (Int_t)(fhRefRuns->GetBinContent(nSupMod));//SM0 = bin0
@@ -772,19 +858,19 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       //end of load additional offset 
 
       if(amp>0.5) {					
-	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM);
-	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM);
+	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM+wrongOffsetPerSM);
+	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM+wrongOffsetPerSM);
       }
       
       if(amp>0.9) {
 	fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
       }
 
-      fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM);
+      fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM+wrongOffsetPerSM);
 
       hkdtime = hkdtime-timeBCoffset;//time corrected by manual offset (default=0)
       Float_t hkdtimecorr;
-      hkdtimecorr= hkdtime-offset-offsetPerSM;//time after first iteration
+      hkdtimecorr= hkdtime-offset-offsetPerSM+wrongOffsetPerSM;//time after first iteration
 
       //main histograms after the first itereation for calibration constants
       //if(hkdtimecorr>=-20. && hkdtimecorr<=20. && amp>0.9 ) {
@@ -799,7 +885,8 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
 
         //correction in 2015 for wrong phase
-	if(offsetPerSM!=0) hkdtime=hkdtime-offsetPerSM;
+	if(offsetPerSM != 0) hkdtime = hkdtime - offsetPerSM;
+	if(wrongOffsetPerSM != 0) hkdtime = hkdtime + wrongOffsetPerSM;
 
 	if(isHighGain){
 	  fhTimeEnt[nBC]->Fill(absId,1.);
@@ -960,6 +1047,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="";//Reference.root
   fReferenceRunByRunFileName="";
+  fReferenceWrongL1PhasesRunByRunFileName="";
   fGeometryName="";//EMCAL_COMPLETE12SMV1_DCAL_8SM
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
@@ -1174,10 +1262,13 @@ const  Double_t upperLimit[]={
     for(Int_t j=0;j<kNBCmask;j++){
       fitResult=ccBC[j]->Fit("f1","CQ","",lowerLimit[i],upperLimit[i]);
       if(fitResult<0){
-	hRun->SetBinContent(i,0);
+	hRun->SetBinContent(i,0);//correct it please
+	meanBC[j]=-1;
+	printf("Fit failed for SM %d BC%d\n",i,j);
 	continue;
+      } else {
+	fitParameter = f1->GetParameter(0);
       }
-      fitParameter = f1->GetParameter(0);
       if(offset100 && (j==0 || j==1)) {
 	//the 100 ns offset was removed in LHC15n muon_calo_pass1 and further reconstructions 
 	fitParameter+=100;
@@ -1190,6 +1281,7 @@ const  Double_t upperLimit[]={
       }
     }
     hRun->SetBinContent(i,minimumIndex);
+    printf("SM %d, min index %d meanBC %f %f %f %f\n",i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3]);
   }
   delete f1;
   TFile *fileNew=new TFile(outputFile.Data(),"update");
