@@ -1990,7 +1990,6 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
   fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
   // ------------------- BeginEvent ----------------------------
-  
   AliEventplane *EventPlane = fInputEvent->GetEventplane();
   if(fIsHeavyIon ==1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
   else fEventPlaneAngle=0.0;
@@ -2003,7 +2002,8 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
     
     fiCut = iCut;
-//     cout << ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber() << "_" <<  ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber() << endl;
+//     cout << ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber() << "_" <<  ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber() << 
+//             "_" << ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber() <<endl;
     
     Bool_t isRunningEMCALrelAna = kFALSE;
     if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
@@ -2203,8 +2203,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   // Loop over EMCal clusters
-  for(Int_t i = 0; i < nclus; i++){
-    
+  for(Int_t i = 0; i < nclus; i++){    
     AliVCluster* clus = NULL;
     if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
     else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
@@ -2257,8 +2256,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
         }
       }
     }
-
-
+    
     if (fIsOverlappingWithOtherHeader) 
       fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
     
