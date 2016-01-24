@@ -92,16 +92,19 @@ TString AliAnalysisTaskADCalib::GetHistTitle(Int_t  ch, // offline channel,
 			 bc);
 }
 
-void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
-
-  fStatus = kOk; // pedantic
-
+void AliAnalysisTaskADCalib::NotifyRun() {
   // (1) get the AD Calibration OCDB object
   AliCDBManager *man = AliCDBManager::Instance();
   if (NULL == man) {
     AliFatal("CDB manager not found");
     return;
   }
+
+  if (!man->IsDefaultStorageSet())
+    man->SetDefaultStorage("raw://");
+
+  man->SetRun(fCurrentRunNumber);
+
   AliCDBEntry *entry = man->Get("AD/Calib/Data");
   if (NULL == entry) {
     AliFatal("AD/Calib/Data not found");
@@ -112,6 +115,11 @@ void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
     AliFatal("No calibration data from calibration database");
     return;
   }
+}
+
+void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
+
+  fStatus = kOk; // pedantic
 
   // (1a) set up the output list
   fList = new THashList;

@@ -333,6 +333,7 @@ install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C
 install(FILES AD/AddTaskADQA.C
 	      AD/AddTaskADVVQA.C 
 	      AD/AddTaskADPilot.C
+	      AD/AddTaskADCalib.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C 
  	      AD/trending/MakeTrendingADQA.C 

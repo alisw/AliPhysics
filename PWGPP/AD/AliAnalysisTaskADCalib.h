@@ -23,6 +23,7 @@ public:
   AliAnalysisTaskADCalib(const char *name="AliAnalysisTaskADCalib");
   virtual ~AliAnalysisTaskADCalib();
   
+  virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
