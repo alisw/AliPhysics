@@ -7468,6 +7468,10 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	       
 	      Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
 	      
+
+	      if(fDebug > 2)std::cout<<" extra EmbConeRef K0s candidate: "<<"invMK0s: "<<invMK0s<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	    
+
 	      fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
 	    }	    
 	  }
@@ -7480,6 +7484,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    // std::cout<<"MCPt :"<<MCPt<<std::endl;
 
 	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s, trackPt, fEta};
+	    
+	    if(fDebug > 2)std::cout<<" extraonly EmbCone K0s candidate: "<<"invMK0s: "<<invMK0s<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
 	    
 	    
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
@@ -7586,6 +7592,9 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
 	    	    
+	    if(fDebug > 2)std::cout<<" EmbCone Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	    
+
 	    fhnLaEmbConeStandard->Fill(vLaEmbCone);
 	    
 	  }
@@ -7595,7 +7604,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	   
 	    Double_t vLaEmbStCone[4] = {jetPt, -1., -1., -100.};
-	    
+	      
 	    fhnLaEmbConeStandard->Fill(vLaEmbStCone);	  
 	    	
 	  }    
@@ -7662,6 +7671,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 
 	  if(fUseExtraTracks == 1){//only for extra particles used
 	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
+
+	    if(fDebug > 2)std::cout<<" extra EmbCone Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
 	    
 	    
 	    fhnLaEmbCone->Fill(vLaEmbCone);
@@ -7692,6 +7703,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	          
 	      Double_t vLaEmbConeRef[4] = {jetPt,invMLa,trackPt,fEta};
 	      
+	      if(fDebug > 2)std::cout<<"extra EmbConeRef Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	    
 	      fhnLaEmbConeRef->Fill(vLaEmbConeRef);
 	    }	    
 	  }
@@ -7702,6 +7715,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	   
     	    Double_t vLaEmbCone[4] = {jetPt, invMLa, trackPt, fEta};
 	    fhnLaEmbCone->Fill(vLaEmbCone);
+	    
+	    if(fDebug > 2)std::cout<<" extraonly EmbCone Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
 	    
 	  }
 	  
@@ -7802,6 +7817,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	    Double_t vALaEmbStCone[4] = {jetPt, invMALa,trackPt,fEta};
 	    	    
+	    if(fDebug > 2)std::cout<<" standard EmbCone ALambda candidate: "<<"invMALa: "<<invMALa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	    
 	    fhnALaEmbConeStandard->Fill(vALaEmbStCone);
 	    
 	  }
@@ -7879,7 +7896,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 
 	  if(fUseExtraTracks == 1){//only for extra particles used
 	    Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
-	    
+	    if(fDebug > 2)std::cout<<" EmbCone ALambda candidate: "<<"invMALa: "<<invMALa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
 	    
 	    fhnALaEmbCone->Fill(vALaEmbCone);
 	  }
@@ -7910,6 +7927,8 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	      Double_t vALaEmbConeRef[4] = {jetPt,invMALa,trackPt,fEta};
 	      
+	      if(fDebug > 2)std::cout<<" EmbConeRef ALambda candidate: "<<"invMALa: "<<invMALa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	    
 	      fhnALaEmbConeRef->Fill(vALaEmbConeRef);
 	    }	    
 	  }
