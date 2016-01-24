@@ -65,6 +65,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		void SetDoChicAnalysis(Bool_t flag){ fDoChicAnalysis = flag; }
 		void SetDoMesonQA(Int_t flag){ fDoMesonQA = flag; }
 		void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
+		void SetDoHistoDalitzMassLog(Bool_t flag){fDoHistoDalitzMassLog = flag;}
 		void SetProductionVertextoVGamma(Bool_t flag) { fSetProductionVertextoVGamma = flag; }
 		
 	
@@ -161,9 +162,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDDalitzElectronAfterTPCdEdxVsPhi;
 		TH2F 									**hESDDalitzPositronAfterTPCdEdxVsPhi;
 		TH2F 									**hESDEposEnegPsiPairDPhi;
+		TH2F									**hESDEposEnegPsiPairEta;
+		TH2F									**hESDEposEnegDPhiEta;
 		TH2F 									**hESDEposEnegInvMassPt;
-		TH2F 									**hESDEposEnegAfterMassCutInvMassPi0Pt;
-		TH2F 									**hESDEposEnegInvMassPi0Pt;
 		TH2F									**hESDTruePi0EposEnegInvMassPi0Pt;
 		TH2F 									**hESDEposEnegLikeSignBackInvMassPt;
 		TH2F 									**hESDMotherInvMassPt;
@@ -210,6 +211,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDEposEnegTruePi0DalitzInvMassPt;
 		TH1F 									**hESDEposEnegTruePrimPi0DalitzInvMass;
 		TH2F 									**hESDEposEnegTruePi0DalitzPsiPairDPhi;
+		TH2F									**hESDEposEnegTruePi0DalitzPsiPairEta;
+		TH2F									**hESDEposEnegTruePi0DalitzDPhiEta;
 		TH2F 									**hESDEposEnegTrueEtaDalitzInvMassPt;
 		TH1F 									**hESDEposEnegTruePrimEtaDalitzInvMass;
 		TH2F 									**hESDEposEnegTrueEtaDalitzPsiPairDPhi;
@@ -296,6 +299,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		Bool_t 									fIsFromMBHeader;
 		Bool_t 									fIsMC;
 		Bool_t                              					fDoTHnSparse; 
+		Bool_t									fDoHistoDalitzMassLog;
 
 	private:
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
