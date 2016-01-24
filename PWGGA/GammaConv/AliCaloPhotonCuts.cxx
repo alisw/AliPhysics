@@ -3288,10 +3288,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
         //pass2
         else if( fCurrentMC == k15h1 )
-          energy /= FunctionNL_kSDM(energy, 0.983251, -3.44339, -1.70998);
+          energy /= FunctionNL_kSDM(energy, 0.976865, -4.03942, -0.444076);
 
         else if( fCurrentMC == k15h2 )
-          energy /= FunctionNL_kSDM(energy, 0.984462, -3.00363, -2.63773);
+          energy /= FunctionNL_kSDM(energy, 0.969703, -3.80387, -0.200546);
 
         // 2.76TeV LHC11a/LHC13g
         else if( fCurrentMC==k12f1a || fCurrentMC==k12i3 || fCurrentMC==k15g2 )
@@ -3325,10 +3325,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
         //pass2
         else if( fCurrentMC == k15h1 )
-          energy /= FunctionNL_kSDM(2.0*energy, 0.967301, -3.1683, -0.653058);
+          energy /= FunctionNL_kSDM(energy, 0.963379, -3.61217, -0.614043);
 
         else if( fCurrentMC == k15h2 )
-          energy /= FunctionNL_kSDM(2.0*energy, 0.96728, -2.96279, -0.903677);
+          energy /= FunctionNL_kSDM(energy, 0.96105, -3.62239, -0.556256);
 
         // 2.76TeV LHC11a/LHC13g
         else if(  fCurrentMC==k12f1a || fCurrentMC==k12i3 || fCurrentMC==k15g2 )
@@ -3392,6 +3392,34 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
         if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772*0.995*0.9981, -3.256, -0.4449);      
       }  
+      break;
+
+    case 17:
+      if(isMC>0){
+        // 8TeV LHC12x
+        //pass2
+        if( fCurrentMC == k15h1 )
+          energy /= FunctionNL_DPOW(energy, 1.0628330160, -0.0904854081, -0.1137883054, 1.1837801885, -0.1999914832, -0.0854569214);
+
+        else if( fCurrentMC == k15h2 )
+          energy /= FunctionNL_DPOW(energy, 1.0652493513, -0.0929276101, -0.1113762695, 1.1837801885, -0.1999914832, -0.0854569214);
+
+        else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+
+    case 18:
+      if(isMC>0){
+        // 8TeV LHC12x
+        //pass2
+        if( fCurrentMC == k15h1 )
+          energy /= FunctionNL_DPOW(energy, 1.1389201636, -0.1999994717, -0.1622237979, 1.1603460704, -0.1999999989, -0.2194447313);
+
+        else if( fCurrentMC == k15h2 )
+          energy /= FunctionNL_DPOW(energy, 1.0105301622, -0.0732424689, -0.5000000000, 1.0689250170, -0.1082682369, -0.4388156470);
+
+        else fPeriodNameAvailable = kFALSE;
+      }
       break;
 
 // *************** 20 + x **** modified tender Settings 1 - pp
