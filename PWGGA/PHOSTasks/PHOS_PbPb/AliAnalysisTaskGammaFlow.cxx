@@ -658,10 +658,12 @@ void AliAnalysisTaskGammaFlow::UserExec(Option_t *)
   fCutsV0->SetEvent(event,0x0);
   fFlowEvent->ClearFast();
   fFlowEvent->Fill(fCutsV0, fCutsTPC);
+  fFlowEvent->TagSubeventsInEta(-10.,-1.,1.,10.) ;
   fFlowEvent->SetReferenceMultiplicity(event->GetNumberOfTracks());
   fFlowEvent->DefineDeadZone(0., 0, 0, 0);
   AliFlowVector qArray[2] ;
   fFlowEvent->Get2Qsub(qArray,fHarmonics) ;
+   
   
   Double_t x= qArray[1].Phi()/Double_t(fHarmonics) ;
   while(x<0)x+=TMath::TwoPi()/fHarmonics ;
@@ -1918,22 +1920,15 @@ void AliAnalysisTaskGammaFlow::EvalQResolution(){
   Double_t x= fCentrality;
   if(x<0.5)x=0.5 ;
   if(fHarmonics==2){
-    //LHC11h
-    fTPCQres=4.163312e-01*(1.+x*1.043385e+12+x*x*2.153523e+11-x*x*x*7.611083e+09+x*x*x*x*6.276471e+07)/(1.+x*3.925593e+10+x*x*1.775034e+08+x*x*x*2.824151e+07-x*x*x*x*6.714683e+05);
-  
-    //LHC10h
-    fV0CQres=TMath::Max(1.e-3,7.230292e-03*(1+x*2.671781e-01+x*x*1.411288e-03-x*x*x*4.300557e-05)/(1+x*1.757692e-02+x*x*2.754502e-04-x*x*x*4.745331e-06+x*x*x*x*3.665055e-08));
-    fV0AQres=TMath::Max(1.e-3,7.000136e-03*(1+x*7.121832e-01+x*x*2.374374e-01-x*x*x*2.556374e-03)/(1+x*7.515240e-01+x*x*1.825883e-02-x*x*x*3.200369e-04+x*x*x*x*2.503614e-06));
-//    fTPCQres=TMath::Max(1.e-3,1.415754e+01*(1+x*1.918894e-01-x*x*4.286376e-03+x*x*x*2.299338e-05)/(1-x*1.286185e-03+x*x*2.264905e-03-x*x*x*5.115092e-05+x*x*x*x*6.681453e-07));
+    fTPCQres=4.857694e-01*(1+x*2.920904e-01-x*x*6.514101e-03+x*x*x*1.018369e-04-x*x*x*x*6.986208e-07)/(1+x*9.235900e-02+x*x*6.325890e-05-x*x*x*3.163401e-05+x*x*x*x*4.747334e-07);
+    fV0CQres=4.387220e-01*(1+x*1.357633e-01+x*x*1.995734e-02-x*x*x*3.375979e-04+x*x*x*x*1.024155e-06)/(1+x*2.594425e-02+x*x*1.252949e-02-x*x*x*2.449652e-04+x*x*x*x*1.850385e-06);
+    fV0AQres=3.242703e-01*(1+x*2.721827e-01+x*x*9.379002e-02-x*x*x*2.090242e-03+x*x*x*x*1.154136e-05)/(1+x*1.793834e-01+x*x*3.256506e-02-x*x*x*7.118371e-04+x*x*x*x*5.327807e-06);
   }
   if(fHarmonics==3){
-    fV0CQres=2.021368e+03*(1.+x*4.875652e+06+x*x*4.539997e+05-x*x*x*8.133617e+03)/(1.+x*1.472069e+08+x*x*1.223060e+07+x*x*x*2.177704e+05);
-    fV0AQres=3.661564e+01*(1.+x*1.078803e-01-x*x*4.268523e-03+x*x*x*3.666018e-05)/(1.+x*9.092748e-02-x*x*2.259800e-04-x*x*x*2.475584e-05);
-    fTPCQres=1.350710e+01*(1.+x*2.478133e-01-x*x*1.994573e-03-x*x*x*2.568868e-05)/(1.+x*2.251109e-01+x*x*1.065556e-03+x*x*x*1.059591e-04);
-    //LHC10h
-//    fV0CQres=TMath::Max(1.e-3,5.029474e-03*(1+x*5.707185e-01-x*x*4.066224e-03-x*x*x*3.489881e-05)/(1+x*3.961095e-01-x*x*7.443697e-03+x*x*x*5.587215e-05));
-//    fV0AQres=TMath::Max(1.e-3,4.528592e-03*(1+x*1.746747e-01-x*x*5.681926e-03+x*x*x*5.366525e-05)/(1+x*9.432721e-02-x*x*3.709922e-03+x*x*x*4.062858e-05));
-//    fTPCQres=TMath::Max(1.e-3,1.764630e+01*(1+x*6.013300e-02-x*x*2.019909e-03+x*x*x*1.397540e-05)/(1+x*5.422807e-02+x*x*1.721534e-04+x*x*x*2.311255e-06));
+    if(x>70)x=70 ;//bad statistics above
+    fTPCQres=6.054041e-01*(1+x*2.871979e-01-x*x*8.501828e-03+x*x*x*6.042861e-05)/(1+x*2.422995e-01-x*x*6.217416e-03+x*x*x*4.229649e-05);
+    fV0CQres=3.666094e-01*(1+x*6.818115e+00+x*x*2.199777e-01-x*x*x*3.688469e-03)/(1+x*6.666333e+00+x*x*1.403492e-01+x*x*x*1.229574e-03);
+    fV0AQres=1.927797e-01*(1+x*1.306917e+01-x*x*1.261409e-01-x*x*x*2.002856e-04)/(1+x*9.054694e+00-x*x*1.144981e-01+x*x*x*2.580067e-03);
   }
 }
 //_________________________________________________________________________
