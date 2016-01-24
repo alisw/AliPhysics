@@ -3438,7 +3438,8 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= FunctionNL_DPOW(energy, 1.1100193881, -0.1389194936, -0.0800000242, 1.1673716264, -0.1853095466, -0.0848801702);          
         else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b )
           energy /= FunctionNL_DPOW(energy, 1.0520183153, -0.0806102847, -0.1450415920, 1.0336724056, -0.0467844121, -0.4406992764);          
-    }    
+      }
+      break;
       
     // NonLinearity pp Calo - only shifting MC - no timing cut
     case 22:
@@ -3456,7 +3457,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ) 
           energy /= FunctionNL_DPOW(energy, 1.0119417393, -0.0755250741, -0.4999999996, 1.1614181498, -0.1999995361, -0.1711378093);    
       }    
-      
+      break;
     // NonLinearity ConvCalo - kTestBeamv3 + shifting MC  
     case 23:
       energy *= FunctionNL_kTestBeamv3(energy);
@@ -3484,10 +3485,9 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b )
           energy /= FunctionNL_kSDM(energy, 0.983176, -1.85546, -3.37696);          
         else if( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b )
-          energy /= FunctionNL_kSDM(energy, 0.977035, -3.82187, -1.04332);          
-            
+          energy /= FunctionNL_kSDM(energy, 0.977035, -3.82187, -1.04332);               
       }    
-      
+      break;
     // NonLinearity pp Calo - only shifting MC - no timing cut
     case 32:
       label_case_32:
@@ -3504,7 +3504,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if ( fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b ) 
           energy /= FunctionNL_kSDM(energy, 0.963307, -4.01949, -0.38667);    
       }    
-      
+      break;
     // NonLinearity ConvCalo - kTestBeamv3 + shifting MC  
     case 33:
       energy *= FunctionNL_kTestBeamv3(energy);
@@ -3618,7 +3618,13 @@ Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Fl
 
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5){
-  return ( (p0 +  p1 * TMath::Power(e,p2 ) )/(p3 +  p4 * TMath::Power(e,p5 ) ) );
+  Float_t ret = 1;
+  if ((p3 +  p4 * TMath::Power(e,p5 ) ) != 0)
+    ret = ( (p0 +  p1 * TMath::Power(e,p2 ) )/(p3 +  p4 * TMath::Power(e,p5 ) ) );
+  if (ret != 0.)
+    return ret;
+  else 
+    return 1.;
 }
 
 //************************************************************************
