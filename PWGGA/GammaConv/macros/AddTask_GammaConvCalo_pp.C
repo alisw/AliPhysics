@@ -731,8 +731,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity none
     eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity LHC12 ConvCalo
     eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC12 Calo
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111117063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC12 ConvCalo MassRatioFits
-    eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111118063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC12 Calo MassRatioFits
+    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC12 ConvCalo MassRatioFits
+    eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111122063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC12 Calo MassRatioFits
   } else if (trainConfig == 111){  //Different NonLinearities part2
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity none
     eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111101063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kSDMv5
@@ -781,14 +781,14 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     eventCutArray[ 0] = "00052113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity none
     eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity LHC12 ConvCalo
     eventCutArray[ 2] = "00052113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC12 Calo
-    eventCutArray[ 3] = "00052113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111117063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC12 ConvCalo MassRatioFits
-    eventCutArray[ 4] = "00052113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111118063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC12 Calo MassRatioFits
+    eventCutArray[ 3] = "00052113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC12 ConvCalo MassRatioFits
+    eventCutArray[ 4] = "00052113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111122063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC12 Calo MassRatioFits
   } else if (trainConfig == 124){ // EGA Different NonLinearities
     eventCutArray[ 0] = "00081113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity none
     eventCutArray[ 1] = "00081113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity LHC12 ConvCalo
     eventCutArray[ 2] = "00081113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC12 Calo
-    eventCutArray[ 3] = "00081113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111117063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC12 ConvCalo MassRatioFits
-    eventCutArray[ 4] = "00081113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111118063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC12 Calo MassRatioFits
+    eventCutArray[ 3] = "00081113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111121063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC12 ConvCalo MassRatioFits
+    eventCutArray[ 4] = "00081113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111122063032230000"; mesonCutArray[4] = "0163103100000010"; // NonLinearity LHC12 Calo MassRatioFits
   } else if (trainConfig == 126){ // PCM variations pi dEdx
     eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009317300008250400000"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000010"; // dEdx pi: 0: 0.4-3.5, -10: 3.5 ->
     eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327300008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // dEdx pi: 1: 0.4-3.5, -10: 3.5 ->
