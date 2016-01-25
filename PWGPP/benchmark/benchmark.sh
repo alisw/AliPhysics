@@ -1211,7 +1211,7 @@ goGenerateMakeflow()
     arr_cpass0_calib_list[${runNumber}]="cpass0.calib.run${runNumber}.list"
     echo "### Produces the list of CPass0 files to merge (executes locally) ###"
     echo "${arr_cpass0_calib_list[${runNumber}]}: benchmark.sh ${arr_cpass0_outputs[*]}"
-    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass0_calib_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass0_calib_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_outputs[*]}"
     echo ; echo
 
     #CPass0 merging
@@ -1398,8 +1398,7 @@ goMakeLocalOCDBaccessConfig()
   umask 0002
   # make a script that sets the specific storages form all the root files produced by CPass0
   local localOCDBpathCPass0=${1}
-  local OCDBpathPrefix=${2}
-  [[ -z ${OCDBpathPrefix} ]] && OCDBpathPrefix="."
+  local OCDBpathPrefix=${2-.}
 
   if [[ -f ${localOCDBpathCPass0} && ${localOCDBpathCPass0} =~ \.tgz$ ]]; then
     tar xzf ${localOCDBpathCPass0}
