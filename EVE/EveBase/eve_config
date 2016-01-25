@@ -10,6 +10,7 @@ trigger.class.filter:                   none
 HLTESDtree.show:                        0
 MUON.show:                              1
 EMCal.show:                             1
+AD.show:                                1
 axes.show:                              1
 fullscreen.mode:                        0
 
@@ -17,6 +18,7 @@ tracks.width:                           2
 tracks.noRefit.dash:                    1
 tracks.noRefit.show:                    1
 tracks.byType.show:                     1
+tracks.byPt.show:                       0
 tracks.byCategory.show:                 0
 tracks.aod.byPID.show:                  1
 tracks.primary.vertex.show:             0
@@ -82,6 +84,7 @@ HLT.tracks.show:                        0
 
 
 events.autoload.set:                    0
+save.on.autoload:                       0
 ALICE_LIVE.send:                        0
 
 OCDB.default.path:                      local://$(ALICE_ROOT)/../src/OCDB/

@@ -273,7 +273,7 @@ void AliEveSaveViews::SaveForAmore()
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
 }
 
-void AliEveSaveViews::SaveWithDialog()
+void AliEveSaveViews::Save(bool withDialog,char* filename)
 {
     TEnv settings;
     AliEveInit::GetConfig(&settings);
@@ -303,8 +303,12 @@ void AliEveSaveViews::SaveWithDialog()
     TEveViewerList* viewers = gEve->GetViewers();
     int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
     
-    int width = 3556;
-    int height= 2000;
+    int width = 3840;
+    int height= 2160;
+
+    // 3,840 × 2,160 (4K)
+    // 7,680 × 4,320 (8K)
+    // 15,360 × 8,640 (16K)
     
     TASImage *compositeImg = new TASImage(width, height);
     
@@ -322,7 +326,7 @@ void AliEveSaveViews::SaveWithDialog()
     int x = width3DView;    // x position of the child view
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
-    
+
     for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
@@ -347,7 +351,6 @@ void AliEveSaveViews::SaveWithDialog()
          else {
              viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
          }
-        
         
         if(viewImg){
             // copy view image in the composite image
@@ -392,7 +395,7 @@ void AliEveSaveViews::SaveWithDialog()
             break;
         }
     }
-    
+
     //draw ALICE Logo
     if(logo)
     {
@@ -452,22 +455,28 @@ void AliEveSaveViews::SaveWithDialog()
     // write composite image to disk
     TASImage *imgToSave = new TASImage(width,height);
     compositeImg->CopyArea(imgToSave, 0,0, width, height);
-    
+
     // Save screenshot to file
-    
-    TGFileInfo fileinfo;
-    const char *filetypes[] = {"PNG images", "*.png", 0, 0};
-    fileinfo.fFileTypes = filetypes;
-    fileinfo.fIniDir = StrDup(".");
-    new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
-    if(!fileinfo.fFilename)
+    if(withDialog)
     {
-        cout<<"AliEveSaveViews::SaveWithDialog() -- couldn't get path from dialog window!!!"<<endl;
-        return;
+        TGFileInfo fileinfo;
+        const char *filetypes[] = {"All types", "*", 0, 0};
+        fileinfo.fFileTypes = filetypes;
+        fileinfo.fIniDir = StrDup(".");
+        new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
+        if(!fileinfo.fFilename)
+        {
+            cout<<"AliEveSaveViews::SaveWithDialog() -- couldn't get path from dialog window!!!"<<endl;
+            return;
+        }
+        
+        imgToSave->WriteImage(fileinfo.fFilename);
+    }
+    else
+    {
+        imgToSave->WriteImage(filename);
     }
     
-    imgToSave->WriteImage(fileinfo.fFilename);
-        
     if(compositeImg){delete compositeImg;compositeImg=0;}
     if(imgToSave){delete imgToSave;imgToSave=0;}
 }

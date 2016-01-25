@@ -87,11 +87,7 @@ fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFAL
 fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
 fExecutor(0),fViewsSaver(0),fESDTracksDrawer(0),fAODTracksDrawer(0),fPrimaryVertexDrawer(0),fKinksDrawer(0),fCascadesDrawer(0),fV0sDrawer(0),fMuonTracksDrawer(0),fSPDTracklersDrawer(0),fKineTracksDrawer(0),  fMomentumHistogramsDrawer(0),fPEventSelector(0),
 fgGRPLoaded(false),
-fgMagField(0),
-fSaveViews(false),
-fDrawESDtracksByCategory(false),
-fDrawESDtracksByType(false),
-fDrawAODtracksByPID(false)
+fgMagField(0)
 {
     InitInternals();
     ChangeDataSource(defaultDataSource);
@@ -481,7 +477,7 @@ void AliEveEventManager::SetTrigSel(Int_t trig)
 void AliEveEventManager::StartAutoLoadTimer()
 {
     // Start the auto-load timer.
-    fAutoLoadTimer->SetTime((Long_t)(1000*fAutoLoadTime));
+    fAutoLoadTimer->SetTime((Long_t)(100*fAutoLoadTime));
     fAutoLoadTimer->Reset();
     fAutoLoadTimer->TurnOn();
     fAutoLoadTimerRunning = kTRUE;
@@ -511,7 +507,19 @@ void AliEveEventManager::AutoLoadNextEvent()
     
     StopAutoLoadTimer();
     cout<<"Calling NextEvent method on current data source"<<endl;
-    fCurrentDataSource->NextEvent();
+
+    fCurrentDataSource->GotoEvent(fEventId+1);
+    
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    if(settings.GetValue("save.on.autoload",false))
+    {
+        if(fCurrentData->fESD->GetNumberOfTracks() != 0){
+            fViewsSaver->Save(false,Form("alice_%d.png",fEventId));
+        }
+    }
+    
     if (fAutoLoad){
         StartAutoLoadTimer();
     }
@@ -554,11 +562,11 @@ void AliEveEventManager::AfterNewEventLoaded()
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
 
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
     if(HasESD())
     {
-        TEnv settings;
-        AliEveInit::GetConfig(&settings);
-        
         if(settings.GetValue("momentum.histograms.show",false)){fMomentumHistogramsDrawer->Draw();}
         if(settings.GetValue("tracks.primary.vertex.show",false)){fESDTracksDrawer->PrimaryVertexTracks();}
         
@@ -594,8 +602,9 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         
         
-        if(fDrawESDtracksByCategory)fESDTracksDrawer->ByCategory();
-        if(fDrawESDtracksByType)fESDTracksDrawer->ByType();
+        if(settings.GetValue("tracks.byCategory.show",false))fESDTracksDrawer->ByCategory();
+        if(settings.GetValue("tracks.byType.show",true))fESDTracksDrawer->ByType();
+        if(settings.GetValue("tracks.byPt.show",false))fESDTracksDrawer->ByPt();
         if(settings.GetValue("kinks.show",false)){fKinksDrawer->Draw();}
         if(settings.GetValue("kinks.points.show",false)){fKinksDrawer->DrawPoints();}
         if(settings.GetValue("cascades.show",false)){fCascadesDrawer->Draw();}
@@ -661,7 +670,10 @@ void AliEveEventManager::AfterNewEventLoaded()
             if(fabs(v[0])>xMax || fabs(v[1])>yMax || fabs(v[2])>zMax)draw=false;
         }
         */
-        if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0 && draw)
+        
+        bool saveViews = settings.GetValue("ALICE_LIVE.send",false);
+        
+        if(saveViews  && fCurrentData->fESD->GetNumberOfTracks()>0 && draw)
         {
             fViewsSaver->SaveForAmore();
             fViewsSaver->SendToAmore();
@@ -669,7 +681,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     }
     if(HasAOD())
     {
-        if(fDrawAODtracksByPID)fAODTracksDrawer->ByPID();
+        if(settings.GetValue("tracks.aod.byPID.show",false))fAODTracksDrawer->ByPID();
         
         Double_t x[3] = { 0, 0, 0 };
         

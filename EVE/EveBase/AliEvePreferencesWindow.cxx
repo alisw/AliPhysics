@@ -255,12 +255,6 @@ void AliEvePreferencesWindow::ApplyChanges()
  
     AliEveEventManager *man =  AliEveEventManager::GetMaster();
  
-    man->SetESDwidth(settings.GetValue("tracks.width",2));
-    man->SetESDdashNoRefit(settings.GetValue("tracks.noRefit.dash",true));
-    man->SetESDdrawNoRefit(settings.GetValue("tracks.noRefit.show",true));
-    man->SetESDtracksByCategory(settings.GetValue("tracks.byCategory.show",false));
-    man->SetESDtracksByType(settings.GetValue("tracks.byType.show",true));
-    man->SetSaveViews(settings.GetValue("ALICE_LIVE.send",false));
     man->SetAutoLoad(settings.GetValue("events.autoload.set",false));
     
     man->InitOCDB(man->GetCurrentRun());

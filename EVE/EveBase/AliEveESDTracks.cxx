@@ -36,19 +36,14 @@ fTrueField(kTRUE),
 fRKstepper(kFALSE),
 fAnalCuts(0),
 fDashNoRefit(true),
-fDrawNoRefit(false),
-fWidth(1)
+fDrawNoRefit(false)
 {
-    // default color scheme by category:
-    fColorsByCategory[0] = kMagenta;
-    fColorsByCategory[1] = kMagenta+1;
-    fColorsByCategory[2] = kMagenta+2;
-    fColorsByCategory[3] = kRed;
-    fColorsByCategory[4] = kRed+1;
-    fColorsByCategory[5] = kRed+2;
-    fColorsByCategory[6] = kGreen;
-    fColorsByCategory[7] = kGreen+1;
-    fColorsByCategory[8] = kGreen+2;
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    fWidth =  settings.GetValue("tracks.width",2);
+    fDashNoRefit = settings.GetValue("tracks.noRefit.dash",true);
+    fDrawNoRefit = settings.GetValue("tracks.noRefit.show",true);
 }
 
 AliEveESDTracks::~AliEveESDTracks()
@@ -544,6 +539,18 @@ TEveElementList* AliEveESDTracks::ByCategory()
     
     AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     
+    // default color scheme by category:
+    Color_t colors[9];
+    colors[0] = kMagenta;
+    colors[1] = kMagenta+1;
+    colors[2] = kMagenta+2;
+    colors[3] = kRed;
+    colors[4] = kRed+1;
+    colors[5] = kRed+2;
+    colors[6] = kGreen;
+    colors[7] = kGreen+1;
+    colors[8] = kGreen+2;
+    
     TEveElementList* cont = new TEveElementList("ESD Tracks by category");
     gEve->AddElement(cont);
     
@@ -568,7 +575,7 @@ TEveElementList* AliEveESDTracks::ByCategory()
     for (int i=0; i<9; i++) {
         tc[i] = 0;
         SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
-        tl[i]->SetMainColor(fColorsByCategory[i]);
+        tl[i]->SetMainColor(colors[i]);
         tl[i]->SetLineWidth(fWidth);
         cont->AddElement(tl[i]);
     }
@@ -662,9 +669,6 @@ TEveElementList* AliEveESDTracks::ByCategory()
 
 TEveElementList* AliEveESDTracks::ByType()
 {
-    // Import ESD tracks, separate them into several containers
-    // according to primary-vertex cut and ITS&TPC refit status.
-    
     TEnv settings;
     AliEveInit::GetConfig(&settings);
     Color_t colors[15];
@@ -771,6 +775,111 @@ TEveElementList* AliEveESDTracks::ByType()
     
     return cont;
 }
+
+TEveElementList* AliEveESDTracks::ByPt()
+{
+    AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
+    
+    TEveElementList* cont = new TEveElementList("ESD Tracks by Pt");
+    gEve->AddElement(cont);
+    
+    const Int_t   nCont = 6;
+    const Float_t maxR  = 520;
+    const Float_t magF  = 0.1*esd->GetMagneticField();
+
+    TEveTrackList *tl[nCont];
+    Int_t          tc[nCont];
+    Int_t          count = 0;
+
+    Color_t colors[15];
+    // default color scheme by type:
+    colors[0] = kGreen;
+    colors[1] = kSpring+10;
+    colors[2] = kYellow+1;
+    colors[3] = kOrange;
+    colors[4] = kOrange-3;
+    colors[5] = kRed;
+    
+    tl[0] = new TEveTrackList("pt<0.2");
+    tl[1] = new TEveTrackList("0.2<pt<0.4");
+    tl[2] = new TEveTrackList("0.4<pt<0.7");
+    tl[3] = new TEveTrackList("0.7<pt<1.1");
+    tl[4] = new TEveTrackList("1.1<pt<1.6");
+    tl[5] = new TEveTrackList("pt>1.6");
+
+    for (int i=0; i<nCont; i++)
+    {
+        tc[i] = 0;
+        SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
+        tl[i]->SetMainColor(colors[i]);
+        tl[i]->SetLineWidth(fWidth);
+        cont->AddElement(tl[i]);
+    }
+    
+
+    AliESDtrack* at = NULL;
+//    bool shading = settings.GetValue("tracks.shading",false);
+//    int shade = -3;
+    
+//    TH1D *ptHist = new TH1D("ptHist","ptHist",100,0,5);
+    
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        at = esd->GetTrack(n);
+//        ptHist->Fill(abs(at->GetSignedPt()));
+        
+        int index;
+        double pt=abs(at->GetSignedPt());
+        
+        if(pt<=0.2) index = 0;
+        else if(pt>0.2 && pt <= 0.4) index = 1;
+        else if(pt>0.4 && pt <= 0.7) index = 2;
+        else if(pt>0.7 && pt <= 1.1) index = 3;
+        else if(pt>1.1 && pt <= 1.6) index = 4;
+        else if(pt>1.6) index = 5;
+        
+//        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
+//        
+//        if(good_cont || fDrawNoRefit)
+//        {
+//            pid = at->GetPID();
+//            
+            TEveTrackList* tlist = tl[index];
+            ++tc[index];
+            ++count;
+            
+            AliEveTrack* track = MakeTrack(at, tlist);
+//
+//            if(shading){
+//                if((colors[pid]+shade) < 0){shade=0;}
+//                track->SetMainColor(colors[pid]+shade);
+//                shade++;
+//                if(shade>3)shade=-3;
+//            }
+//            
+            track->SetName(Form("ESD Track idx=%d, pt=%d", at->GetID(), pt));
+            tlist->AddElement(track);
+//        }
+    }
+    
+    for (Int_t ti = 0; ti < nCont; ++ti)
+    {
+        TEveTrackList* tlist = tl[ti];
+        tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
+        tlist->SetTitle(Form("N tracks=%d", tc[ti]));
+        tlist->MakeTracks();
+    }
+    cont->SetTitle(Form("N all tracks = %d", count));
+    // ??? The following does not always work:
+    cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+
+    gEve->Redraw3D();
+//
+//    ptHist->Draw();
+    
+    return cont;
+}
+
 
 TEveElementList* AliEveESDTracks::PrimaryVertexTracks()
 {

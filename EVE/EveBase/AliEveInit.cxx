@@ -69,15 +69,7 @@ fPath(path)
     TEnv settings;
     GetConfig(&settings);
     
-    Width_t width         = settings.GetValue("tracks.width",2);              // width of all ESD tracks
-    bool dashNoRefit      = settings.GetValue("tracks.noRefit.dash",true);    // dash no-refit tracks
-    bool drawNoRefit      = settings.GetValue("tracks.noRefit.show",true);    // show no-refit tracks
-    bool tracksByType     = settings.GetValue("tracks.byType.show",true);     // colorize tracks by PID
-    bool aodTracksByPID   = settings.GetValue("tracks.aod.byPID.show",true);  // colorize AOD tracks by PID
-    bool tracksByCategory = settings.GetValue("tracks.byCategory.show",false);// colorize tracks by reconstruction quality
-    
     bool autoloadEvents   = settings.GetValue("events.autoload.set",false);   // set autoload by default
-    bool saveViews        = settings.GetValue("ALICE_LIVE.send",false);       // send pictures to ALICE LIVE
     bool fullscreen       = settings.GetValue("fullscreen.mode",false);       // hide left and bottom tabs
     
     TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
@@ -184,7 +176,7 @@ fPath(path)
     gEve->Redraw3D(true);
     gSystem->ProcessEvents();
     
-    man->GotoEvent(0);
+//    man->GotoEvent(0);
     
     gEve->EditElement(g_trkcnt);
     gEve->Redraw3D();
@@ -195,7 +187,7 @@ fPath(path)
     TGLViewer *glv2 = mv->GetRPhiView()->GetGLViewer();
     TGLViewer *glv3 = mv->GetRhoZView()->GetGLViewer();
     
-    glv1->CurrentCamera().RotateRad(-0.4, 0.6);
+    glv1->CurrentCamera().RotateRad(-0.4, 1.0);
     glv2->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     glv3->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     
@@ -210,20 +202,14 @@ fPath(path)
     gSystem->ProcessEvents();
     gEve->Redraw3D(true);
     
-    man->SetESDwidth(width);
-    man->SetESDdashNoRefit(dashNoRefit);
-    man->SetESDdrawNoRefit(drawNoRefit);
-    
-    man->SetESDtracksByCategory(tracksByCategory);
-    man->SetESDtracksByType(tracksByType);
-    man->SetAODtracksByPID(aodTracksByPID);
-    
-    man->SetSaveViews(saveViews);
     man->SetAutoLoad(autoloadEvents);// set autoload by default
     
     if(defaultDataSource == AliEveEventManager::kSourceOffline){
-        ((AliEveDataSourceOffline*)man->GetDataSourceOffline())->GotoEvent(0);
-        if(settings.GetValue("momentum.histograms.all.events.show",false)){man->GetMomentumHistogramsDrawer()->DrawAllEvents();}
+        if(settings.GetValue("momentum.histograms.all.events.show",false))
+        {
+            ((AliEveDataSourceOffline*)man->GetDataSourceOffline())->GotoEvent(0);
+            man->GetMomentumHistogramsDrawer()->DrawAllEvents();
+        }
     }
 }
 
@@ -270,12 +256,13 @@ void AliEveInit::AddMacros()
     TEnv settings;
     GetConfig(&settings);
     
-    bool showMuon         = settings.GetValue("MUON.show", true);             // show MUON's geom
+    bool showMuon         = settings.GetValue("MUON.show", true);              // show MUON's geom
     bool showEMCal        = settings.GetValue("EMCal.show", false);            // show EMCal and PHOS histograms
     bool drawClusters     = settings.GetValue("clusters.show",false);          // show clusters
     bool drawRawData      = settings.GetValue("rawData.show",false);           // show raw data
     bool drawHits         = settings.GetValue("hits.show",false);              // show hits
-    bool drawDigits       = settings.GetValue("digits.show",false);              // show digits
+    bool drawDigits       = settings.GetValue("digits.show",false);            // show digits
+    bool drawAD           = settings.GetValue("AD.show",false);                // show AD hits
     
     AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
     exec->RemoveMacros(); // remove all old macros
@@ -330,7 +317,7 @@ void AliEveInit::AddMacros()
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C", "muon_digits", "", drawDigits));
         exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", drawClusters));
     }
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", kTRUE));
+    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", drawAD));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", showEMCal));
 }
 

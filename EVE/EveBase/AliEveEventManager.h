@@ -85,18 +85,6 @@ public:
     void          StartAutoLoadTimer();
     void          StopAutoLoadTimer();
     
-    // options' setters
-    void          SetSaveViews(bool save){fSaveViews=save;}
-    void          SetESDtracksByCategory(bool set){fDrawESDtracksByCategory=set;}
-    void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
-    void          SetAODtracksByPID(bool set){fDrawAODtracksByPID=set;}
-    
-    void          SetESDcolorsByCategory(Color_t colors[9]){fESDTracksDrawer->SetColorsByCategory(colors);}
-    void          SetESDwidth(Width_t width){fESDTracksDrawer->SetWidth(width);}
-    void          SetESDdashNoRefit(bool dashNoRefit){fESDTracksDrawer->SetDashNoRefit(dashNoRefit);}
-    void          SetESDdrawNoRefit(bool drawNoRefit){fESDTracksDrawer->SetDrawNoRefit(drawNoRefit);}
-    
-    
     // global and transient elements:
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,Bool_t replace, Bool_t update);
@@ -190,12 +178,6 @@ private:
     
     Bool_t    fgGRPLoaded;     // Global run parameters loaded?
     AliMagF*  fgMagField;      // Global pointer to magnetic field.
-    
-    
-    bool fSaveViews;
-    bool fDrawESDtracksByCategory;
-    bool fDrawESDtracksByType;
-    bool fDrawAODtracksByPID;
     
     ClassDef(AliEveEventManager, 0); // Interface for getting all event components in a uniform way.
 };
