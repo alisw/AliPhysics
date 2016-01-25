@@ -41,7 +41,7 @@ class AliGRPObject : public TObject {
 		 khpL3bkf8H1, khpL3bkf8H2, khpL3bkf8H3, khpL3bkf8Temperature,
 		 khpDipoleInsideH1, khpDipoleInsideH2, khpDipoleInsideH3, khpDipoleInsideTemperature,
 		 khpDipoleOutsideH1, khpDipoleOutsideH2, khpDipoleOutsideH3, khpDipoleOutsideTemperature};
-
+	enum HLTMode {kUnknown=-1,kModeA,kModeB,kModeC};
 
 	AliGRPObject();
 	AliGRPObject(const AliGRPObject & obj);
@@ -80,6 +80,8 @@ class AliGRPObject : public TObject {
 	static AliDCSSensor* GetBestCavernAtmosPressure(AliDCSSensor* cavern1, 
 	                   AliDCSSensor* cavern2, AliDCSSensor* surface, const TTimeStamp& time);
 
+	Int_t     GetHLTMode()         const {return fHLTMode;}
+	void      SetHLTMode(char m)         {fHLTMode = m;}
 
 	Float_t*  GetHallProbesArray(DP_HallProbes hp) const;
 	Float_t   GetHallProbes(Int_t hp) const {return fHallProbes[hp];}
@@ -190,6 +192,7 @@ class AliGRPObject : public TObject {
  	time_t   fTimeEnd;                // DAQ_time_end entry from DAQ logbook
 	Float_t  fBeamEnergy;             // beamEnergy entry from DAQ logbook
 	TString  fBeamType;               // beamType entry from DAQ logbook
+	Char_t   fHLTMode;                // HLT mode
 	Char_t   fNumberOfDetectors;      // numberOfDetectors entry from DAQ logbook
 	UInt_t   fDetectorMask;           // detectorMask entry from DAQ logbook
 	TString  fLHCPeriod;              // LHCperiod entry from DAQ logbook 
@@ -224,7 +227,7 @@ class AliGRPObject : public TObject {
 	                                 // when the data quality flag was FALSE
 	TString fBeamTypeFromLHC;        // string containing the information about the beam types AS SENT BY LHC (in the form "beam1-beam2")
 	
-	ClassDef(AliGRPObject,10)
+	ClassDef(AliGRPObject,11)
 
 };
 
