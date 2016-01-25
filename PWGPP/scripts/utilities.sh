@@ -804,9 +804,10 @@ copyFileToRemote() (
     while read -u 3 src; do
       thiserr=1
       dst="$dstdir/$(basename "$src")"
-      echo "$opname started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
-        [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && continue
+        [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && break
+        # TODO use shopt -s nullglob
+        [[ ! -r "$src" ]] && echo "$opname $src -> $dst skipping, cannot access source" && thiserr=0 && break
         echo "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
           local) mkdir -p "$(dirname "$dst")"
