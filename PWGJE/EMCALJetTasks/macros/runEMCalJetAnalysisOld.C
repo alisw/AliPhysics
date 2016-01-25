@@ -248,6 +248,10 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   else {
     pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0., 0, 0, 0., 0., "TPC");
   }
+  pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
+  pQATask->GetParticleContainer(0)->SetClassName("AliPicoTrack");
+  pQATask->SelectCollisionCandidates(kPhysSel);
+  pQATask->SetHistoBins(200, 0, 30);
 
   // Charged jet analysis
   if (bDoChargedJets) {
