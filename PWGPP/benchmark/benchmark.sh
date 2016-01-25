@@ -802,10 +802,26 @@ old_goCPass1()
 )
 
 
-goMergeCPass0()
+goMergeCPass0() (
+  goMergeCPass CPass0 "$@"
+)
+
+goMergeCPass1() (
+  goMergeCPass CPass1 "$@"
+)
+
+goMergeCPass()
 (
   # Find CPass0 output files and merge them. OCDB is created.
 
+  # First argument can be either CPass0 or CPass1.
+  cpass=$1
+  cpass=${cpass##*CPass}
+  [[ $cpass != 0 && $cpass != 1 ]] \
+    && echo "FATAL: call goMergeCPass with CPass[0|1] as first param!" && return 1
+  shift
+
+  # Arguments in common between MergeCPass0 and MergeCPass1.
   outputDir=$1
   ocdbStorage=$2
   configFile=$3
@@ -813,10 +829,17 @@ goMergeCPass0()
   calibrationFilesToMerge=$5  #can be a non-existent file, will then be produced on the fly
   shift 5
 
+  # MergeCPass1 takes two arguments more.
+  if [[ $cpass == 1 ]]; then
+    qaFilesToMerge=$1
+    filteredFilesToMerge=$2
+    shift 2
+  fi
+
   parseConfig configFile=$configFile "$@" || return 1
 
-  echo Start: goMergeCPass0
-  alilog_info "[BEGIN] goMergeCPass0() with following parameters $*"
+  echo Start: goMergeCPass${cpass}
+  alilog_info "[BEGIN] goMergeCPass${cpass}() with following parameters $*"
 
   # Record the working directory provided by the batch system.
   batchWorkingDirectory=$PWD
@@ -824,9 +847,10 @@ goMergeCPass0()
   [[ -z "$commonOutputPath" ]] && commonOutputPath=$PWD
 
   # This file signals that everything went fine
-  doneFileBase="merge.cpass0.run${runNumber}.done"
+  doneFileBase="merge.cpass${cpass}.run${runNumber}.done"
 
-  # We will have two copies of the file
+  # We will have two copies of the file. The tmp one is used locally, then it is
+  # transferred remotely as the other one.
   doneFileTmp="${batchWorkingDirectory}/${doneFileBase}"
   doneFile="${commonOutputPath}/meta/${doneFileBase}"
 
@@ -836,8 +860,8 @@ goMergeCPass0()
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source "$alirootSource"
 
   case "$reconstructInTemporaryDir" in
-    1) runpath=$(mktemp -d -t mergeCPass0.XXXXXX) ;;
-    2) runpath=${PWD}/rundir_mergeCPass0_${runNumber} ;;
+    1) runpath=$(mktemp -d -t mergeCPass${cpass}.XXXXXX) ;;
+    2) runpath=${PWD}/rundir_mergeCPass${cpass}_${runNumber} ;;
     *) runpath=$outputDir ;;
   esac
 
@@ -856,7 +880,15 @@ goMergeCPass0()
 
   mergingScript="mergeMakeOCDB.byComponent.sh"
 
-  echo goMergeCPass0 SETUP:
+  if [[ $cpass == 1 ]]; then
+    calibrationOutputFileName='AliESDfriends_v1.root'
+    qaOutputFileName='QAresults*.root'
+    # Important to have the string "Stage.txt" in the filename to trigger the merging.
+    # It has to be a list of directories containing the files.
+    qaMergedOutputFileName="QAresults_merged.root"
+  fi
+
+  echo goMergeCPass${cpass} SETUP:
   echo runNumber=${runNumber}
   echo outputDir=${outputDir}
   echo ocdbStorage=${ocdbStorage}
@@ -864,18 +896,37 @@ goMergeCPass0()
   echo mergingScript=${mergingScript}
   echo commonOutputPath=${commonOutputPath}
   echo runpath=${runpath}
+  [[ $cpass == 1 ]] && echo qaFilesToMerge=$qaFilesToMerge
+  [[ $cpass == 1 ]] && echo calibrationOutputFileName=$calibrationOutputFileName
   
-  # copy files in case they are not already there
-  filesMergeCPass0=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
-                     "${batchWorkingDirectory}/OCDB.root"
-                     "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
-                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
-                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
-                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C"
-                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh" )
+  # Copy files in case they are not already there.
+  case $cpass in
+    0) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                         "${batchWorkingDirectory}/OCDB.root"
+                         "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh" ) ;;
 
-  for file in ${filesMergeCPass0[*]}; do
+    1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                         "${batchWorkingDirectory}/${qaFilesToMerge}"
+                         "${batchWorkingDirectory}/OCDB.root"
+                         "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                         "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
+                         "${batchWorkingDirectory}/QAtrain_duo.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
+                         "${trustedQAtrainMacro}" ) ;;
+  esac
+
+  for file in ${filesMergeCPass[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && printExec cp -f $file . \
                                          && [[ ${file##*/} =~ .*\.sh ]] \
                                          && printExec chmod +x ${file##*/}
@@ -887,35 +938,92 @@ goMergeCPass0()
 
   alirootInfo > ALICE_ROOT.log
 
-  echo "Contents of current directory before running MergeCPass0 ($PWD):" ; /bin/ls ; echo
-  echo "Contents of parent directory before running MergeCPass0 ($(cd ..;pwd)):" ; /bin/ls .. ; echo
+  # Configure local OCDB storage (a macro is produced). Only used in MergeCPass1 but could be used
+  # in CPass0 too. It's harmless in any case.
+  if [[ -f cpass0.localOCDB.${runNumber}.tgz ]]; then
+    printExec goMakeLocalOCDBaccessConfig "cpass0.localOCDB.${runNumber}.tgz"
+  else
+    echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
+  fi
+
+  echo "Contents of current directory before running MergeCPass${cpass} ($PWD):" ; /bin/ls ; echo
+  echo "Contents of parent directory before running MergeCPass${cpass} ($(cd ..;pwd)):" ; /bin/ls .. ; echo
 
   # Merge calibration.
   chmod u+x $mergingScript
   mkdir -p OCDB
 
-  if [[ -n ${pretend} ]]; then
-    sleep $pretendDelay
-    for file in CalibObjects.root ocdb.log merge.log dcsTime.root; do
-      touch $file
-    done
-    mkdir -p OCDB/TPC/Calib/{TimeGain,TimeDrift}
-    echo "some calibration" >> OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
-    echo "some calibration" >> OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
-  else
-    printExec ./$mergingScript $calibrationFilesToMerge \
-                               $runNumber \
-                               "local://./OCDB" \
-                               defaultOCDB=$ocdbStorage \
-                               fileAccessMethod=nocopy >> mergeMakeOCDB.log
+  # Run Merge of this CPass.
+  case $cpass in
+    0)
+      # MergeCPass0.
 
-    #produce the calib trees for expert QA (dcsTime.root)
-    goMakeLocalOCDBaccessConfig ./OCDB
-    printExec aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C($runNumber,\"$ocdbStorage\")"
-  fi
+      if [[ -n ${pretend} ]]; then
+        sleep $pretendDelay
+        for file in CalibObjects.root ocdb.log merge.log dcsTime.root; do
+          touch $file
+        done
+        mkdir -p OCDB/TPC/Calib/{TimeGain,TimeDrift}
+        echo "some calibration" >> OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
+        echo "some calibration" >> OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
+      else
+        printExec ./$mergingScript $calibrationFilesToMerge \
+                                   $runNumber \
+                                   "local://./OCDB" \
+                                   defaultOCDB=$ocdbStorage \
+                                   fileAccessMethod=nocopy >> mergeMakeOCDB.log
+    
+        #produce the calib trees for expert QA (dcsTime.root)
+        goMakeLocalOCDBaccessConfig ./OCDB
+        printExec aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C($runNumber,\"$ocdbStorage\")"
+      fi
+
+      # End of MergeCPass0.
+    ;;
+
+    1)
+      # MergeCPass1.
+
+      if [[ -n ${pretend} ]]; then
+        sleep ${pretendDelay}
+        for file in ocdb.log cpass1.localOCDB.${runNumber}.tgz ${qaMergedOutputFileName} \
+                    merge.log trending.root FilterEvents_Trees.root CalibObjects.root \
+                    dcsTime.root; do
+          touch $file
+        done
+      else
+        printExec ./${mergingScript} ${calibrationFilesToMerge} \
+                                     ${runNumber} \
+                                     "local://./OCDB" \
+                                     defaultOCDB=${ocdbStorage} \
+                                     fileAccessMethod=nocopy
+
+        # Merge QA (and filtered trees).
+
+        [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
+        [[ -n ${AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+
+        # TODO can we delete the following line?
+        #printExec aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
+        printExec aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
+
+        mv QAresults_barrel.root ${qaMergedOutputFileName}
+        mv trending_barrel.root trending.root
+ 
+        # Merge filtered trees.
+        printExec aliroot -l -b -q "merge.C(\"${filteredFilesToMerge}\",\"\",kFALSE,\"FilterEvents_Trees.root\")" > mergeFilteredTrees.log
+
+        # Produce the calib trees for expert QA.
+        printExec aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")" > calibTree.log
+
+      fi
+
+      # End of MergeCPass1.
+    ;;
+  esac
   
   # Create tarball with OCDB, store on the shared directory, create signal file on batch directory
-  baseTar="cpass0.localOCDB.${runNumber}.tgz"
+  baseTar="cpass${cpass}.localOCDB.${runNumber}.tgz"
   printExec tar czvvf ${batchWorkingDirectory}/${baseTar} ./OCDB && \
     touch ${batchWorkingDirectory}/${baseTar}.done
 
@@ -930,256 +1038,32 @@ goMergeCPass0()
   copyFileToRemote ${batchWorkingDirectory}/${baseTar} $commonOutputPath/meta
 
   # TODO: check if MC still works. Not used at CERN release validation.
-  if [[ -n ${generateMC} ]]; then
+  if [[ $cpass == 0 && -n ${generateMC} ]]; then
     goPrintValues sim ${commonOutputPath}/meta/sim.run${runNumber}.list ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
   fi
 
-  # Validate merging CPass0.
   if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
-    statRemote CalibObjects.root && echo "calibfile $outputDir/CalibObjects.root" >> $doneFileTmp
-    statRemote dcsTime.root && echo "dcsTree $outputDir/dcsTime.root" >> $doneFileTmp
+    [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFileTmp}
+    [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFileTmp}
+
+    # Those files should be there only when merging CPass1.
+    [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFileTmp}
+    [[ -f trending.root ]] && echo "trendingfile ${outputDir}/trending.root" >> ${doneFileTmp}
+    [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFileTmp}
+
+  else
+    grep -q "mergeQA.log.*OK" $doneFileTmp \
+      && [[ -f $qaMergedOutputFileName ]] \
+      && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> $doneFileTmp
+    grep -q "mergeFilteredTrees.log.*OK" $doneFileTmp \
+      && [[ -f FilterEvents_Trees.root ]] \
+      && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> $doneFileTmp
   fi
 
   [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
   copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
-  echo End: goMergeCPass0
-  alilog_info "[END] goMergeCPass0() with following parameters $*"
-  return 0
-)
-
-goMergeCPass1()
-(
-  #
-  # find the output files and merge them
-  #
-
-  outputDir=${1}
-  ocdbStorage=${2}
-  configFile=${3}
-  export runNumber=${4}
-  calibrationFilesToMerge=${5}
-  qaFilesToMerge=${6}
-  filteredFilesToMerge=${7}
-  shift 7
-  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
-  echo Start: goMergeCPass1
-  alilog_info  "[BEGIN] goMergeCPass1() with following parameters $*"
-  #record the working directory provided by the batch system
-  batchWorkingDirectory=${PWD}
-
-  [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-
-  # This file signals that everything went fine
-  doneFileBase="merge.cpass1.run${runNumber}.done"
-
-  # We will have two copies of the file
-  mkdir -p "${commonOutputPath}/meta" || return 1
-  doneFileTmp="${batchWorkingDirectory}/${doneFileBase}"
-  doneFile="${commonOutputPath}/meta/${doneFileBase}"
-
-  umask 0002
-  ulimit -c unlimited 
-
-  #clean up first:
-  rm -f ${outputDir}/*.log
-  rm -f ${outputDir}/*.root
-  rm -f ${outputDir}/*done
-
-  [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
-
-  runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass1.XXXXXX)
-  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_mergeCPass1_${runNumber}
-
-  mkdir -p ${runpath}
-  if [[ ! -d ${runpath} ]]; then
-    touch ${doneFileTmp}
-    echo "not able to make the runpath ${runpath}" >> ${doneFileTmp}
-    cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-    [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
-    return 1
-  fi
-  if ! cd ${runpath}; then 
-    touch ${doneFileTmp}
-    echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFileTmp}
-    cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-    [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
-    return 1
-  fi
-
-  logOutputDir=${runpath}
-  [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/mergeMakeOCDB.log
-  echo "${0} $*"
-
-  calibrationOutputFileName='AliESDfriends_v1.root'
-  qaOutputFileName='QAresults*.root'
-  mergingScript="mergeMakeOCDB.byComponent.sh"
-  #important to have the string "Stage.txt" in the filename to trigger the merging
-  #it has to be a list of directories containing the files
-  qaMergedOutputFileName="QAresults_merged.root"
-
-  echo goMergeCPass1 SETUP:
-  echo runNumber=${runNumber}
-  echo outputDir=${outputDir}
-  echo ocdbStorage=${ocdbStorage}
-  echo calibrationFilesToMerge=$calibrationFilesToMerge
-  echo qaFilesToMerge=$qaFilesToMerge
-  echo calibrationOutputFileName=${calibrationOutputFileName}
-  echo mergingScript=${mergingScript}
-  
-  # copy files in case they are not already there
-  filesMergeCPass1=(
-                    "${batchWorkingDirectory}/${calibrationFilesToMerge}"
-                    "${batchWorkingDirectory}/${qaFilesToMerge}"
-                    "${batchWorkingDirectory}/OCDB.root"
-                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
-                    "${batchWorkingDirectory}/QAtrain_duo.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
-                    "${trustedQAtrainMacro}"
-
-  )
-  for file in ${filesMergeCPass1[*]}; do
-    [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
-    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
-  done
-
-  #remove spaces from around arguments to root macros
-  #for example this sometimes fails: 
-  #  root 'macro.C(argument1, argument2)'
-  sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
-
-  #configure local OCDB storage from CPass0 (creates the localOCDBaccessConfig.C script)
-  if [[ -f cpass0.localOCDB.${runNumber}.tgz ]]; then
-    echo goMakeLocalOCDBaccessConfig "cpass0.localOCDB.${runNumber}.tgz"
-    goMakeLocalOCDBaccessConfig "cpass0.localOCDB.${runNumber}.tgz"
-  else
-    echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
-  fi
-
-  alirootInfo > ALICE_ROOT.log
-
-  #
-  /bin/ls
-
-  #merge calibration
-  chmod u+x ${mergingScript}  
-  mkdir -p OCDB
-  
-  #if not provided, create the lists of files to merge
-  if [[ ! -f ${filteredFilesToMerge} ]]; then
-    echo "/bin/ls -1 ${outputDir}/*/FilterEvents_Trees.root > ${filteredFilesToMerge}"
-    /bin/ls -1 ${outputDir}/*/FilterEvents_Trees.root 2>/dev/null > ${filteredFilesToMerge}
-
-    #sometimes the filesystem refuses, then fall back on parsing the metafiles
-    if [[ $(wc -l ${filteredFilesToMerge} | awk '{print $1}') == 0 ]]; then
-      echo "ls did not work, parsing the meta files"
-      echo "goPrintValues filteredTree ${filteredFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done"
-      goPrintValues filteredTree ${filteredFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done
-    fi
-  fi
-  if [[ ! -f ${calibrationFilesToMerge} ]]; then
-    echo "/bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root > ${calibrationFilesToMerge}"
-    /bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root 2>/dev/null > ${calibrationFilesToMerge}
-
-    #sometimes the filesystem refuses, then fall back on parsing the metafiles
-    if [[ $(wc -l ${calibrationFilesToMerge} | awk '{print $1}') == 0 ]]; then
-      echo "ls did not work, parsing the meta files"
-      echo "goPrintValues calibfile ${calibrationFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done"
-      goPrintValues calibfile ${calibrationFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done
-    fi
-  fi
-  if [[ ! -f ${qaFilesToMerge} ]]; then
-    #find the files, but only store the directories (QAtrain_duo.C requires this)
-    echo "/bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}"
-    /bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}
-
-    #sometimes the filesystem refuses, then fall back on parsing the metafiles
-    if [[ $(wc -l ${qaFilesToMerge} | awk '{print $1}') == 0 ]]; then
-      echo "ls did not work, parsing the meta files"
-      echo "goPrintValues qafile - ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done | while read x; do echo "'${x%/*}'"; done | sort | uniq > ${qaFilesToMerge}"
-      goPrintValues qafile - ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}
-    fi
-  fi
-
-  echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
-  if [[ -n ${pretend} ]]; then
-    sleep ${pretendDelay}
-    touch ocdb.log
-    touch cpass1.localOCDB.${runNumber}.tgz
-    touch ${qaMergedOutputFileName}
-    touch merge.log
-    touch trending.root
-    touch FilterEvents_Trees.root
-    touch CalibObjects.root
-    touch dcsTime.root
-    touch ${qaMergedOutputFileName}
-    mkdir -p OCDB
-  else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy
-
-    #merge QA (and filtered trees)
-    [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
-    [[ -n ${AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
-
-    #echo aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
-    echo aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")"
-    #aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
-    aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
-    mv QAresults_barrel.root ${qaMergedOutputFileName}
-    mv trending_barrel.root trending.root
-
-    #merge filtered trees
-    echo aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
-    aliroot -l -b -q "merge.C(\"${filteredFilesToMerge}\",\"\",kFALSE,\"FilterEvents_Trees.root\")" > mergeFilteredTrees.log
-
-    #produce the calib trees for expert QA
-    echo aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
-    aliroot -b -q "${ALICE_PHYSICS}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")" > calibTree.log
-  fi
-
-  # Create tarball with OCDB, store on the shared directory, create signal file on batch directory
-  mkdir -p ${commonOutputPath}/meta
-  baseTar="cpass1.localOCDB.${runNumber}.tgz"
-  tar czf ${batchWorkingDirectory}/${baseTar} ./OCDB && \
-    mv ${batchWorkingDirectory}/${baseTar} ${commonOutputPath}/meta/${baseTar} && \
-    touch ${batchWorkingDirectory}/${baseTar}.done
-
-  /bin/ls
-
-  #copy all to output dir
-  echo "paranoidCp ${runpath}/* ${outputDir}"
-  paranoidCp ${runpath}/* ${outputDir}
-  
-  #validate merge cpass1
-  cd ${outputDir}
-  if summarizeLogs >>  ${doneFileTmp}; then
-    [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFileTmp}
-    [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFileTmp}
-    [[ -f trending.root ]] && echo "trendingfile ${outputDir}/trending.root" >> ${doneFileTmp}
-    [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFileTmp}
-    [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFileTmp}
-  else
-    if grep "mergeQA.log.*OK" ${doneFileTmp} > /dev/null; then
-      [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFileTmp}
-    fi
-    if grep "mergeFilteredTrees.log.*OK" ${doneFileTmp} > /dev/null; then
-      [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFileTmp}
-    fi
-  fi
-      
-  [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
-  cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
-  [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
-  alilog_info  "[END] goMergeCPass1() with following parameters $*"
-  echo End: goMergeCPass1
+  echo End: goMergeCPass${cpass}
+  alilog_info "[END] goMergeCPass${cpass}() with following parameters $*"
   return 0
 )
 
@@ -1395,21 +1279,21 @@ goGenerateMakeflow()
     arr_cpass1_QA_list[${runNumber}]="cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
     echo "### Lists CPass1 QA ###"
     echo "${arr_cpass1_QA_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo -e "\tLOCAL ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_QA_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_QA_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
     #arr_cpass1_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list"
     arr_cpass1_calib_list[${runNumber}]="cpass1.calib.run${runNumber}.list"
     echo "### Lists CPass1 Calib ###"
     echo "${arr_cpass1_calib_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_calib_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_calib_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
     #arr_cpass1_ESD_list[${runNumber}]="${commonOutputPath}/meta/cpass1.ESD.run${runNumber}.list"
     arr_cpass1_ESD_list[${runNumber}]="cpass1.ESD.run${runNumber}.list"
     echo "### Lists CPass1 ESDs ###"
     echo "${arr_cpass1_ESD_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo -e "\tLOCAL ./benchmark.sh PrintValues esd ${arr_cpass1_ESD_list[${runNumber}]} ${arr_cpass1_outputs[*]} && mkdir -p \$OUTPATH/meta && cp ${arr_cpass1_ESD_list[${runNumber}]} \$OUTPATH/meta/${arr_cpass1_ESD_list[${runNumber}]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues esd ${arr_cpass1_ESD_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
     #arr_cpass1_filtered_list[${runNumber}]="${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list"
