@@ -626,7 +626,7 @@ void AliEMCALDigit::Print(const Option_t* /*opt*/) const
 /// Not used in reconstruction/simulation, add here just in case used in analysis
 ///
 //______________________________________________________________________________
-void AliEMCALDigit::SetListOfPrimaries(Int_t npri, Int_t * prilist, Int_t * edepList) 
+void AliEMCALDigit::SetListOfPrimaries(Int_t npri, Int_t * prilist, Float_t * edepList) 
 {
   if ( npri <= 0 || !prilist || !edepList )
   {
@@ -654,7 +654,7 @@ void AliEMCALDigit::SetListOfPrimaries(Int_t npri, Int_t * prilist, Int_t * edep
 /// Not used in reconstruction/simulation, but in analysis for reclusterization.
 ///
 //______________________________________________________________________________
-void AliEMCALDigit::SetListOfParents(Int_t npar, Int_t * parlist, Int_t * edepList) 
+void AliEMCALDigit::SetListOfParents(Int_t npar, Int_t * parlist, Float_t * edepList) 
 {
   if ( npar <= 0 || !parlist  || !edepList )  
   {

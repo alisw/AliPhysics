@@ -94,8 +94,8 @@ class AliEMCALDigit : public AliDigitNew {
   // Primary/Parents array creation
   // Used at analysis level while reclusterizing
   //
-  void SetListOfPrimaries(Int_t npri, Int_t * prilist, Int_t * edepList) ;  
-  void SetListOfParents  (Int_t npar, Int_t * parlist, Int_t * edepList) ;  
+  void SetListOfPrimaries(Int_t npri, Int_t * prilist, Float_t * edepList) ;  
+  void SetListOfParents  (Int_t npar, Int_t * parlist, Float_t * edepList) ;  
   
   //
   // Other
