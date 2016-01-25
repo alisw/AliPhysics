@@ -61,7 +61,9 @@ public:
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   enum     { kNCuts = 12 }; //track matching Marcel
-  enum     TrackCutsType{kTPCOnlyCut=0, kGlobalCut=1, kLooseCut=2, kITSStandAlone=3};  //Marcel
+  
+  enum     TrackCutsType{ kTPCOnlyCut = 0, kGlobalCut = 1, kLooseCut = 2, kITSStandAlone = 3, 
+                          kGlobalCut2011 = 4, kLooseCutWithITSrefit = 5};  
 
   //-----------------------------------------------------
   //Position recalculation
@@ -458,7 +460,7 @@ private:
   Bool_t     fCutRequireITSStandAlone;   // Require ITSStandAlone
   Bool_t     fCutRequireITSpureSA;       // ITS pure standalone tracks
   
-  ClassDef(AliEMCALRecoUtils, 22)
+  ClassDef(AliEMCALRecoUtils, 23)
 };
 #endif // ALIEMCALRECOUTILS_H
 
