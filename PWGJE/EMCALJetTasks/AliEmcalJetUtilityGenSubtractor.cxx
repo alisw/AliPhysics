@@ -96,7 +96,7 @@ void AliEmcalJetUtilityGenSubtractor::Init()
 
   if (!fRhoName.IsNull() && !fRhoParam) { // get rho from the event
     if(!fJetTask) return;
-    fRhoParam = dynamic_cast<AliRhoParameter*>(fJetTask->GetEvent()->FindListObject(fRhoName));
+    fRhoParam = dynamic_cast<AliRhoParameter*>(fJetTask->InputEvent()->FindListObject(fRhoName));
     if (!fRhoParam) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
       return;
@@ -104,7 +104,7 @@ void AliEmcalJetUtilityGenSubtractor::Init()
   }
   
   if (!fRhomName.IsNull() && !fRhomParam) { // get rhom from the event
-    fRhomParam = dynamic_cast<AliRhoParameter*>(fJetTask->GetEvent()->FindListObject(fRhomName));
+    fRhomParam = dynamic_cast<AliRhoParameter*>(fJetTask->InputEvent()->FindListObject(fRhomName));
     if (!fRhomParam) {
       AliError(Form("%s: Could not retrieve rho_m %s!", GetName(), fRhomName.Data()));
       return;

@@ -20,16 +20,16 @@ AliEmcalJetTask* AddTaskEmcalJet(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskAliEmcalJet", "No analysis manager to connect to.");
-    return NULL;
+    ::Error("AddTaskEmcalJet", "No analysis manager to connect to.");
+    return 0;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler())
   {
-    ::Error("AddTaskAliEmcalJet", "This task requires an input event handler");
-    return NULL;
+    ::Error("AddTaskEmcalJet", "This task requires an input event handler");
+    return 0;
   }
   
   //-------------------------------------------------------
@@ -97,8 +97,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   else if(recombScheme==99)
     sprintf(recombSchemeString,"%s","ext_scheme");
   else {
-    ::Error("AddTaskAliEmcalJet", "Recombination scheme not recognized.");
-    return NULL;
+    ::Error("AddTaskEmcalJet", "Recombination scheme not recognized.");
+    return 0;
   }
 
   TString name;
@@ -129,7 +129,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
     jetTask->SetRadius(radius);
   jetTask->SetGhostArea(ghostArea);
   jetTask->SetRecombScheme(recombScheme);
-  jetTask->SelectPhysicalPrimaries(selectPhysPrim);
+  if (jetTask->GetParticleContainer(0)) jetTask->GetParticleContainer(0)->SelectPhysicalPrimaries(selectPhysPrim);
   if (bFillGhosts) jetTask->SetFillGhost();
   if (lockTask) jetTask->SetLocked();
 
@@ -143,9 +143,9 @@ AliEmcalJetTask* AddTaskEmcalJet(
   AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(jetTask, 0, cinput);
 
-  if (useExchangeCont > 0) {
-    TObjArray* cnt = mgr->GetContainers();
+  TObjArray* cnt = mgr->GetContainers();
 
+  if (useExchangeCont > 0) {
     if (strcmp(nTracks, "") != 0) {
       AliAnalysisDataContainer* trackCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nTracks));
       if (trackCont) {
@@ -216,7 +216,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
 
   if (ghostArea<=0) {
     ::Error("AddTaskEmcalJet","Ghost area set to 0, check your settings (try 0.005)");
-    return NULL;
+    return 0;
   }
 
   return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, lockTask, useExchangeCont, bFillGhosts);
