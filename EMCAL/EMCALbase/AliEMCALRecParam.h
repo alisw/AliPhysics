@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //-----------------------------------------------------------------------------
 // Container of EMCAL reconstruction parameters
 // The purpose of this object is to store it to OCDB
@@ -61,7 +59,9 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetUnfold             (Bool_t unfold)     {fUnfold    = unfold     ;}
   void SetNxM(Int_t rdiff, Int_t cdiff)          {fNRowDiff=rdiff; fNColDiff = cdiff; }
 
-  //PID (Guenole)
+  // PID (Guenole)
+  void InitPIDParametersForHighFlux();
+    
   Double_t GetGamma(Int_t i, Int_t j) const       {return fGamma[i][j];} 
   Double_t GetGammaEnergyProb(Int_t i) const      {return fGammaEnergyProb[i];} 
   Double_t GetGamma1to10(Int_t i, Int_t j) const  {return fGamma1to10[i][j];}   // not used
@@ -88,6 +88,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetTrkCutPt(Double_t value)         {fTrkCutPt = value;}
   void SetTrkCutNITS(Double_t value)       {fTrkCutNITS = value;}
   void SetTrkCutNTPC(Double_t value)       {fTrkCutNTPC = value;}
+  void SetTrkInITS(Bool_t value)           {fTrkInITS = value;}
+
   /* track matching cut getters */
   Double_t GetMthCutEta() const         {return fMthCutEta;}
   Double_t GetMthCutPhi() const         {return fMthCutPhi;}
@@ -95,6 +97,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Double_t GetTrkCutPt() const          {return fTrkCutPt;}
   Double_t GetTrkCutNITS() const        {return fTrkCutNITS;}
   Double_t GetTrkCutNTPC() const        {return fTrkCutNTPC;}
+  Bool_t   GetTrkInITS()   const        {return fTrkInITS;}
   
   //Raw signal fitting (Jenn)
   /* raw signal setters */
@@ -123,6 +126,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   UseL1Phase()           const {return fUseL1Phase;}     
   
   //Unfolding (Adam)
+  void InitUnfoldingParameters();  
   Double_t GetSSPars(Int_t i) const   {return fSSPars[i];}
   Double_t GetPar5(Int_t i) const     {return fPar5[i];}
   Double_t GetPar6(Int_t i) const     {return fPar6[i];}
@@ -199,8 +203,10 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Double_t fPar6[3];   // UF SSPar nr 6
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
-  
-  ClassDef(AliEMCALRecParam,19)     // Reconstruction parameters
+
+  Bool_t   fTrkInITS;              // Select tracks with AliVTrack::kITSout
+
+  ClassDef(AliEMCALRecParam,20)   
 };
 
 #endif //  ALIEMCALRECPARAM_H

@@ -13,17 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-----------------------------------------------------------------------------
-// Container of EMCAL reconstruction parameters
-// The purpose of this object is to store it to OCDB
-// and retrieve it in the corresponding reconstruction class:
-// AliEMCALClusterizer, AliEMCALPID, AliEMCALTracker ...
-//
-// Author: Yuri Kharlov
-//-----------------------------------------------------------------------------
-
 // --- Root header files
 //#include "TObjArray.h"
 
@@ -36,6 +25,10 @@ ClassImp(AliEMCALRecParam)
 
 TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings 
 
+///
+/// Constructor
+/// Set Default reco values.
+///
 AliEMCALRecParam::AliEMCALRecParam() :
 AliDetectorRecoParam(),
 fClusteringThreshold(0.1), 
@@ -66,41 +59,194 @@ fFittingAlgorithm(0),
 fUseFALTRO(kTRUE), 
 fFitLEDEvents(kFALSE),
 fUseL1Phase(kTRUE),//raw signal
-fRejectBelowThreshold(0)
+fRejectBelowThreshold(0),
+fTrkInITS(kTRUE) 
+{  
+  InitPIDParametersForHighFlux();
+  
+  InitUnfoldingParameters();  
+}
+
+//-----------------------------------------------------------------------------
+AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
+AliDetectorRecoParam(),
+fClusteringThreshold(rp.fClusteringThreshold),
+fW0(rp.fW0),
+fMinECut(rp.fMinECut), 
+fUnfold(rp.fUnfold), 
+fLocMaxCut(rp.fLocMaxCut), 
+fTimeCut(rp.fTimeCut), 
+fTimeMin(rp.fTimeMin),
+fTimeMax(rp.fTimeMax),
+fTimeCalibration(rp.fTimeCalibration),//clustering
+fClusterizerFlag(rp.fClusterizerFlag),
+fNRowDiff(rp.fNRowDiff),
+fNColDiff(rp.fNColDiff),
+fMthCutEta(rp.fMthCutEta), 
+fMthCutPhi(rp.fMthCutPhi),
+fStep(rp.fStep),
+fTrkCutPt(rp.fTrkCutPt),
+fTrkCutNITS(rp.fTrkCutNITS),
+fTrkCutNTPC(rp.fTrkCutNTPC), // track matching
+fHighLowGainFactor(rp.fHighLowGainFactor), 
+fOrderParameter(rp.fOrderParameter), 
+fTau(rp.fTau), 
+fNoiseThreshold(rp.fNoiseThreshold), 
+fNPedSamples(rp.fNPedSamples), 	
+fRemoveBadChannels(rp.fRemoveBadChannels),
+fFittingAlgorithm(rp.fFittingAlgorithm),  
+fUseFALTRO(rp.fUseFALTRO),
+fFitLEDEvents(rp.fFitLEDEvents), 
+fUseL1Phase(rp.fUseL1Phase),//raw signal
+fRejectBelowThreshold(rp.fRejectBelowThreshold),
+fTrkInITS(rp.fTrkInITS)
 {
-  // default reco values
+  //copy constructor
   
-  // PID parameters for Pb Pb from Lambda0 distributions fitted by  
-  // a landau inverted + Gaussian for Gammas
-  // and a Landau +Gaussian for Pi0 and hadrons 
-  // New parametrisation for 
-  // lambda0^2 (=x): f(x) = normLandau*TMath::Landau(((1-mpvlandau)-x),mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus) for gammas
-  // lambda0^2 (=x): f(x) = normLandau*TMath::Landau(x,mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus) for pi0 & hadrons
+  //PID values
+  Int_t i=0, j=0;
+  for (i = 0; i < 6; i++) {
+    for (j = 0; j < 6; j++) {
+      fGamma[i][j]       = rp.fGamma[i][j];
+      fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
+      fHadron[i][j]      = rp.fHadron[i][j];
+      fHadron1to10[i][j] = rp.fHadron1to10[i][j];
+      fPiZero[i][j]      = rp.fPiZero[i][j];
+    }
+    fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
+    fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
+    fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
+    
+  }
   
-  // See AliEMCALPid 
-  // (index i) refers to each parameters of the f(lambda0^2) 
-  // i=0: normGaus
-  // i=1: meanGaus
-  // i=2: sigmaGaus
-  // i=3: normLandau
-  // i=4: mpvLandau
-  // i=5: sigmaLanda
-  // (index j) refers to the polynomial parameters of the fit of each parameter vs energy
-  // Pb Pb
+  //unfolding  
+  for (i = 0; i < 8; i++) {
+    fSSPars[i] = rp.fSSPars[i];
+  }
+  for (i = 0; i < 3; i++) {
+    fPar5[i] = rp.fPar5[i];
+    fPar6[i] = rp.fPar6[i];
+  }
   
-  // as a first step, all array elements are initialized to 0.0
+}
+
+///
+/// Assignment operator
+///
+//-----------------------------------------------------------------------------
+AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
+{  
+  if(this != &rp) 
+  {
+    // clustering
+    fClusteringThreshold = rp.fClusteringThreshold;
+    fW0        = rp.fW0;
+    fMinECut   = rp.fMinECut;
+    fUnfold    = rp.fUnfold;
+    fLocMaxCut = rp.fLocMaxCut; 
+    fTimeCut   = rp.fTimeCut;
+    fTimeMax   = rp.fTimeMax;
+    fTimeMin   = rp.fTimeMin;
+    fTimeCalibration = rp.fTimeCalibration;
+    fClusterizerFlag = rp.fClusterizerFlag;
+    fNRowDiff  = rp.fNRowDiff;
+    fNColDiff  = rp.fNColDiff;
+    // clustering
+    
+    // track matching
+    fMthCutEta         = rp.fMthCutEta;
+    fMthCutPhi         = rp.fMthCutPhi;
+    fStep              = rp.fStep;
+    fTrkCutPt          = rp.fTrkCutPt;
+    fTrkCutNITS        = rp.fTrkCutNITS;
+    fTrkCutNTPC        = rp.fTrkCutNTPC; 
+    fTrkInITS          = rp.fTrkInITS;
+    // track matching
+    
+    // raw signal
+    fHighLowGainFactor = rp.fHighLowGainFactor; 
+    fOrderParameter    = rp.fOrderParameter;
+    fTau               = rp.fTau;
+    fNoiseThreshold    = rp.fNoiseThreshold;
+    fNPedSamples       = rp.fNPedSamples; 
+    fRemoveBadChannels = rp.fRemoveBadChannels;
+    fFittingAlgorithm  = rp.fFittingAlgorithm;
+    fUseFALTRO         = rp.fUseFALTRO;
+    fFitLEDEvents      = rp.fFitLEDEvents;
+    fUseL1Phase        = rp.fUseL1Phase;
+	  // raw signal
+    
+    // PID values
+    Int_t i=0, j=0;
+    for (i = 0; i < 6; i++) 
+    {
+      for (j = 0; j < 6; j++) 
+      {
+        fGamma[i][j]       = rp.fGamma[i][j];
+        fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
+        fHadron[i][j]      = rp.fHadron[i][j];
+        fHadron1to10[i][j] = rp.fHadron1to10[i][j];
+        fPiZero[i][j]      = rp.fPiZero[i][j];
+      }
+      fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
+      fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
+      fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
+    }
+
+    // unfolding  
+    fRejectBelowThreshold =rp.fRejectBelowThreshold;//unfolding
+
+    for (i = 0; i < 8; i++) 
+      fSSPars[i] = rp.fSSPars[i];
+    
+    for (i = 0; i < 3; i++) 
+    {
+      fPar5[i] = rp.fPar5[i];
+      fPar6[i] = rp.fPar6[i];
+    }
+  }    
+  
+  return *this;
+  
+}
+
+///
+///
+/// PID parameters for Pb Pb from Lambda0 distributions fitted by  
+/// a landau inverted + Gaussian for Gammas
+/// and a Landau +Gaussian for Pi0 and hadrons 
+/// New parametrisation for 
+/// lambda0^2 (=x): f(x) = normLandau*TMath::Landau(((1-mpvlandau)-x),mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus) for gammas
+/// lambda0^2 (=x): f(x) = normLandau*TMath::Landau(x,mpvLandau,widthLandau)+normgaus*TMath::Gaus(x,meangaus,sigmagaus) for pi0 & hadrons
+///
+/// See AliEMCALPid 
+/// (index i) refers to each parameters of the f(lambda0^2) 
+/// i=0: normGaus
+/// i=1: meanGaus
+/// i=2: sigmaGaus
+/// i=3: normLandau
+/// i=4: mpvLandau
+/// i=5: sigmaLanda
+/// (index j) refers to the polynomial parameters of the fit of each parameter vs energy
+/// Pb Pb
+///
+//-----------------------------------------------------------------------------
+void AliEMCALRecParam::InitPIDParametersForHighFlux()
+{
+  // As a first step, all array elements are initialized to 0.0
   Int_t i=0, j=0;
   for (i = 0; i < 6; i++) {
     for (j = 0; j < 6; j++) {      
       fGamma[i][j] =  fPiZero[i][j] = fHadron[i][j] = 0.; 
       fGamma1to10[i][j] =  fHadron1to10[i][j]= 0.;
     }
+    
     fGammaEnergyProb[i] =0.; // not yet implemented
     fHadronEnergyProb[i]=0.; 
     fPiZeroEnergyProb[i]=0.; // not yet implemented
     
-    
   }
+  
   // Set here default parameters for Pb+Pb (high flux)
   
   fGamma[0][0] = -7.656908e-01; 
@@ -222,8 +368,14 @@ fRejectBelowThreshold(0)
   fHadronEnergyProb[2]=  6.188452e-02;
   fHadronEnergyProb[3]=  2.030230e+00;
   fHadronEnergyProb[4]= -6.402242e-02;
-  
-  //unfolding  
+}
+
+///
+/// Init parameters used in unfolding
+///
+//-----------------------------------------------------------------------------
+void AliEMCALRecParam::InitUnfoldingParameters()
+{
   fSSPars[0] = 0.9262;
   fSSPars[1] = 3.365;
   fSSPars[2] = 1.548;
@@ -238,134 +390,6 @@ fRejectBelowThreshold(0)
   fPar6[0] = 0.05452; 
   fPar6[1] = 0.0001228; 
   fPar6[2] = 0.001361; 
-  
-}
-
-//-----------------------------------------------------------------------------
-AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
-AliDetectorRecoParam(),
-fClusteringThreshold(rp.fClusteringThreshold),
-fW0(rp.fW0),
-fMinECut(rp.fMinECut), 
-fUnfold(rp.fUnfold), 
-fLocMaxCut(rp.fLocMaxCut), 
-fTimeCut(rp.fTimeCut), 
-fTimeMin(rp.fTimeMin),
-fTimeMax(rp.fTimeMax),
-fTimeCalibration(rp.fTimeCalibration),//clustering
-fClusterizerFlag(rp.fClusterizerFlag),
-fNRowDiff(rp.fNRowDiff),
-fNColDiff(rp.fNColDiff),
-fMthCutEta(rp.fMthCutEta), 
-fMthCutPhi(rp.fMthCutPhi),
-fStep(rp.fStep),
-fTrkCutPt(rp.fTrkCutPt),
-fTrkCutNITS(rp.fTrkCutNITS),
-fTrkCutNTPC(rp.fTrkCutNTPC), // track matching
-fHighLowGainFactor(rp.fHighLowGainFactor), 
-fOrderParameter(rp.fOrderParameter), 
-fTau(rp.fTau), 
-fNoiseThreshold(rp.fNoiseThreshold), 
-fNPedSamples(rp.fNPedSamples), 	
-fRemoveBadChannels(rp.fRemoveBadChannels),
-fFittingAlgorithm(rp.fFittingAlgorithm),  
-fUseFALTRO(rp.fUseFALTRO),
-fFitLEDEvents(rp.fFitLEDEvents), 
-fUseL1Phase(rp.fUseL1Phase),//raw signal
-fRejectBelowThreshold(rp.fRejectBelowThreshold)
-{
-  //copy constructor
-  
-  //PID values
-  Int_t i=0, j=0;
-  for (i = 0; i < 6; i++) {
-    for (j = 0; j < 6; j++) {
-      fGamma[i][j]       = rp.fGamma[i][j];
-      fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
-      fHadron[i][j]      = rp.fHadron[i][j];
-      fHadron1to10[i][j] = rp.fHadron1to10[i][j];
-      fPiZero[i][j]      = rp.fPiZero[i][j];
-    }
-    fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
-    fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
-    fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
-    
-  }
-  
-  //unfolding  
-  for (i = 0; i < 8; i++) {
-    fSSPars[i] = rp.fSSPars[i];
-  }
-  for (i = 0; i < 3; i++) {
-    fPar5[i] = rp.fPar5[i];
-    fPar6[i] = rp.fPar6[i];
-  }
-  
-}
-
-//-----------------------------------------------------------------------------
-AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
-{
-  //assignment operator
-  
-  if(this != &rp) {
-    fClusteringThreshold = rp.fClusteringThreshold;
-    fW0        = rp.fW0;
-    fMinECut   = rp.fMinECut;
-    fUnfold    = rp.fUnfold;
-    fLocMaxCut = rp.fLocMaxCut; 
-    fTimeCut   = rp.fTimeCut;
-    fTimeMax   = rp.fTimeMax;
-    fTimeMin   = rp.fTimeMin;
-    fTimeCalibration = rp.fTimeCalibration;//clustering
-    fClusterizerFlag = rp.fClusterizerFlag;
-    fNRowDiff  = rp.fNRowDiff;
-    fNColDiff  = rp.fNColDiff;
-    fMthCutEta         = rp.fMthCutEta;
-    fMthCutPhi         = rp.fMthCutPhi;
-    fStep              = rp.fStep;
-    fTrkCutPt          = rp.fTrkCutPt;
-    fTrkCutNITS        = rp.fTrkCutNITS;
-    fTrkCutNTPC        = rp.fTrkCutNTPC; //track matching
-    fHighLowGainFactor = rp.fHighLowGainFactor; 
-    fOrderParameter    = rp.fOrderParameter;
-    fTau               = rp.fTau;
-    fNoiseThreshold    = rp.fNoiseThreshold;
-    fNPedSamples       = rp.fNPedSamples; 
-    fRemoveBadChannels = rp.fRemoveBadChannels;
-    fFittingAlgorithm  = rp.fFittingAlgorithm;
-    fUseFALTRO         = rp.fUseFALTRO;
-    fFitLEDEvents      = rp.fFitLEDEvents;
-    fUseL1Phase        = rp.fUseL1Phase;//raw signal
-    fRejectBelowThreshold =rp.fRejectBelowThreshold;//unfolding
-	  
-    //PID values
-    Int_t i=0, j=0;
-    for (i = 0; i < 6; i++) {
-      for (j = 0; j < 6; j++) {
-        fGamma[i][j]       = rp.fGamma[i][j];
-        fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
-        fHadron[i][j]      = rp.fHadron[i][j];
-        fHadron1to10[i][j] = rp.fHadron1to10[i][j];
-        fPiZero[i][j]      = rp.fPiZero[i][j];
-      }
-      fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
-      fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
-      fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
-    }
-    //unfolding  
-    for (i = 0; i < 8; i++) {
-      fSSPars[i] = rp.fSSPars[i];
-    }
-    for (i = 0; i < 3; i++) {
-      fPar5[i] = rp.fPar5[i];
-      fPar6[i] = rp.fPar6[i];
-    }
-    
-  }    
-  
-  return *this;
-  
 }
 
 //-----------------------------------------------------------------------------
@@ -601,8 +625,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n fTimeCalibration=%d\n ",
                  fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9,fTimeCalibration));
     
-    AliInfo(Form("Track-matching cuts :\n dEta<%f, dPhi<%f, step=%f[cm], pT>%f, NITS>%f, NTPC>%f\n", 
-                 fMthCutEta, fMthCutPhi, fStep, fTrkCutPt, fTrkCutNITS,fTrkCutNTPC));
+    AliInfo(Form("Track-matching cuts :\n dEta<%2.3f, dPhi<%2.3f, step=%2.1f[cm], pT>%2.1f, NITS>%2.0f, NTPC>%2.0f; In ITS %d\n", 
+                 fMthCutEta, fMthCutPhi, fStep, fTrkCutPt, fTrkCutNITS,fTrkCutNTPC,fTrkInITS));
     
     AliInfo(Form("Unfolding parameters, Shower shape function :\n")); 
     for(Int_t i = 0; i < 8; i++){
