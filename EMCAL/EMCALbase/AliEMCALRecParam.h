@@ -4,13 +4,23 @@
  * See cxx source for full Copyright notice                               */
 
 //-----------------------------------------------------------------------------
-// Container of EMCAL reconstruction parameters
-// The purpose of this object is to store it to OCDB
-// and retrieve it in AliEMCALClusterizerv1, AliEMCALPID,
-// AliEMCALTracker and use it to configure AliEMCALRawUtils
-// 
-// 
-// Author: Yuri Kharlov
+///
+/// \class AliEMCALRecParam
+/// \brief Container of reconstruction parameters
+///
+/// Container of EMCAL reconstruction parameters
+/// The purpose of this object is to store it to OCDB
+/// and retrieve it in AliEMCALClusterizer, AliEMCALPID,
+/// AliEMCALTracker and use it to configure AliEMCALRawUtils
+///  
+/// \author: Yuri Kharlov, IHEP, first implementation
+/// \author: Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
+/// \author: Adam Matyja, clusterization with unfolding 
+/// \author: Marie Germain, SUBATECH, PID
+/// \author: Jenn Klay, CalPoly, Raw fitting
+/// \author: Alberto Pulvirenti, INFN Catania, Track matching
+/// \author: Rong Rong Ma, Yale, Track matching
+///
 //-----------------------------------------------------------------------------
 
 // --- ROOT system ---
@@ -127,12 +137,12 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   
   //Unfolding (Adam)
   void InitUnfoldingParameters();  
-  Double_t GetSSPars(Int_t i) const   {return fSSPars[i];}
-  Double_t GetPar5(Int_t i) const     {return fPar5[i];}
-  Double_t GetPar6(Int_t i) const     {return fPar6[i];}
-  void SetSSPars(Int_t i, Double_t param )     {fSSPars[i]=param;}
-  void SetPar5(Int_t i, Double_t param )       {fPar5[i]=param;}
-  void SetPar6(Int_t i, Double_t param )       {fPar6[i]=param;}
+  Double_t GetSSPars(Int_t i)            const { return fSSPars[i]  ; }
+  Double_t GetPar5  (Int_t i)            const { return fPar5  [i]  ; }
+  Double_t GetPar6  (Int_t i)            const { return fPar6  [i]  ; }
+  void     SetSSPars(Int_t i, Double_t param ) { fSSPars[i] = param ; }
+  void     SetPar5  (Int_t i, Double_t param ) { fPar5  [i] = param ; }
+  void     SetPar6  (Int_t i, Double_t param ) { fPar6  [i] = param ; }
 
   Bool_t  GetRejectBelowThreshold()           const { return fRejectBelowThreshold;    }
   void    SetRejectBelowThreshold(Bool_t reject)    { fRejectBelowThreshold = reject;  }
@@ -149,64 +159,66 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   
   void    SetClusterizerFlag(Short_t val) { fClusterizerFlag = val;  }
   Short_t GetClusterizerFlag() const      { return fClusterizerFlag; }
-  
+ 
  private:
-  //Clustering
-  Float_t fClusteringThreshold ; // Minimum energy to seed a EC digit in a cluster
-  Float_t fW0 ;                  // Logarithmic weight for the cluster center of gravity calculation
-  Float_t fMinECut;              // Minimum energy for a digit to be a member of a cluster
-  Bool_t  fUnfold;               // Flag to perform cluster unfolding
-  Float_t fLocMaxCut;            // Minimum energy difference to consider local maxima in a cluster
-  Float_t fTimeCut ;             // Maximum time of digits with respect to EMC cluster max.
-  Float_t fTimeMin ;             // Minimum time of digits
-  Float_t fTimeMax ;             // Maximum time of digits
-  Bool_t  fTimeCalibration;      // Activate time calibration
-  Short_t fClusterizerFlag ;     // Choice of the clusterizer; Default selection (v1) is zero
-  Int_t   fNRowDiff;             // NxN: How many neighbors to consider along row (phi)
-  Int_t   fNColDiff;             // NxN: How many neighbors to consider along col (eta)
+  // Clustering
+  Float_t fClusteringThreshold ;   ///< Minimum energy to seed a EC digit in a cluster
+  Float_t fW0 ;                    ///< Logarithmic weight for the cluster center of gravity calculation
+  Float_t fMinECut;                ///< Minimum energy for a digit to be a member of a cluster
+  Bool_t  fUnfold;                 ///< Flag to perform cluster unfolding
+  Float_t fLocMaxCut;              ///< Minimum energy difference to consider local maxima in a cluster
+  Float_t fTimeCut ;               ///< Maximum time of digits with respect to EMC cluster max.
+  Float_t fTimeMin ;               ///< Minimum time of digits
+  Float_t fTimeMax ;               ///< Maximum time of digits
+  Bool_t  fTimeCalibration;        ///< Activate time calibration
+  Short_t fClusterizerFlag ;       ///< Choice of the clusterizer; Default selection (v1) is zero
+  Int_t   fNRowDiff;               ///< NxN: How many neighbors to consider along row (phi)
+  Int_t   fNColDiff;               ///< NxN: How many neighbors to consider along col (eta)
 
-  //PID (Guenole)
-  Double_t fGamma[6][6];         // Parameter to Compute PID for photons     
-  Double_t fGamma1to10[6][6];    // Parameter to Compute PID not used
-  Double_t fHadron[6][6]; 	     // Parameter to Compute PID for hadrons  	 
-  Double_t fHadron1to10[6][6]; 	 // Parameter to Compute PID for hadrons between 1 and 10 GeV  	 
-  Double_t fHadronEnergyProb[6]; // Parameter to Compute PID for energy ponderation for hadrons  	 
-  Double_t fPiZeroEnergyProb[6]; // Parameter to Compute PID for energy ponderation for Pi0  	 
-  Double_t fGammaEnergyProb[6];  // Parameter to Compute PID for energy ponderation for gamma  	 
-  Double_t fPiZero[6][6];        // Parameter to Compute PID for pi0  	 
+  // PID (Guenole)
+  Double_t fGamma[6][6];           ///< Parameter to Compute PID for photons     
+  Double_t fGamma1to10[6][6];      ///< Parameter to Compute PID not used
+  Double_t fHadron[6][6];          ///< Parameter to Compute PID for hadrons  	 
+  Double_t fHadron1to10[6][6]; 	   ///< Parameter to Compute PID for hadrons between 1 and 10 GeV  	 
+  Double_t fHadronEnergyProb[6];   ///< Parameter to Compute PID for energy ponderation for hadrons  	 
+  Double_t fPiZeroEnergyProb[6];   ///< Parameter to Compute PID for energy ponderation for Pi0  	 
+  Double_t fGammaEnergyProb[6];    ///< Parameter to Compute PID for energy ponderation for gamma  	 
+  Double_t fPiZero[6][6];          ///< Parameter to Compute PID for pi0  	 
   
+  // Track-Matching (Alberto; Revised by Rongrong)
+  Double_t  fMthCutEta;            ///< eta-difference cut for track matching
+  Double_t  fMthCutPhi;            ///< phi-difference cut for track matching
+  Double_t  fStep;                 ///< Extrapolate length of each step
+  Double_t  fTrkCutPt;             ///< Minimum pT cut on tracks. Needed for Pb-Pb runs
+  Double_t  fTrkCutNITS;           ///< Number of ITS hits for track matching
+  Double_t  fTrkCutNTPC;           ///< Number of TPC hits for track matching
   
-  //Track-Matching (Alberto; Revised by Rongrong)
-  Double_t  fMthCutEta;            // eta-difference cut for track matching
-  Double_t  fMthCutPhi;            // phi-difference cut for track matching
-  Double_t  fStep;                 // Extrapolate length of each step
-  Double_t  fTrkCutPt;             // Minimum pT cut on tracks. Needed for Pb-Pb runs
-  Double_t  fTrkCutNITS;           // Number of ITS hits for track matching
-  Double_t  fTrkCutNTPC;           // Number of TPC hits for track matching
+  // Raw signal fitting parameters (Jenn)
+  Double_t fHighLowGainFactor;     ///< Gain factor to convert between high and low gain
+  Int_t    fOrderParameter;        ///< Order parameter for raw signal fit
+  Double_t fTau;                   ///< Decay constant for raw signal fit
+  Int_t    fNoiseThreshold;        ///< Threshold to consider signal or noise
+  Int_t    fNPedSamples;           ///< Number of time samples to use in pedestal calculation
+  Bool_t   fRemoveBadChannels;     ///< Select if bad channels are removed before fitting
+  Int_t    fFittingAlgorithm;      ///< Select the fitting algorithm
+  Bool_t   fUseFALTRO;             ///< Get FALTRO (trigger) and put it on trigger digits.
+  Bool_t   fFitLEDEvents;          ///< Fit LED events or not
+  Bool_t   fUseL1Phase;            ///< Shift time bin depending on L1 phase
   
-  //Raw signal fitting parameters (Jenn)
-  Double_t fHighLowGainFactor;     // gain factor to convert between high and low gain
-  Int_t    fOrderParameter;        // order parameter for raw signal fit
-  Double_t fTau;                   // decay constant for raw signal fit
-  Int_t    fNoiseThreshold;        // threshold to consider signal or noise
-  Int_t    fNPedSamples;           // number of time samples to use in pedestal calculation
-  Bool_t   fRemoveBadChannels;     // select if bad channels are removed before fitting
-  Int_t    fFittingAlgorithm;      // select the fitting algorithm
-  Bool_t   fUseFALTRO;             // get FALTRO (trigger) and put it on trigger digits.
-  Bool_t   fFitLEDEvents;          // fit LED events or not
-  Bool_t   fUseL1Phase;            // shift time bin depending on L1 phase
-  
-  //Shower shape parameters (Adam)
-  Bool_t   fRejectBelowThreshold;  // split (false-default) or reject (true) cell energy below threshold after UF 
-  Double_t fSSPars[8]; // Unfolding shower shape parameters
-  Double_t fPar5[3];   // UF SSPar nr 5
-  Double_t fPar6[3];   // UF SSPar nr 6
+  // Shower shape parameters (Adam)
+  Bool_t   fRejectBelowThreshold;  ///< split (false-default) or reject (true) cell energy below threshold after UF 
+  Double_t fSSPars[8];             ///< Unfolding shower shape parameters
+  Double_t fPar5[3];               ///< UF SSPar nr 5
+  Double_t fPar6[3];               ///< UF SSPar nr 6
 
-  static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
+  static TObjArray* fgkMaps;       ///< ALTRO mappings for RCU0..RCUX
 
-  Bool_t   fTrkInITS;              // Select tracks with AliVTrack::kITSout
+  Bool_t   fTrkInITS;              ///< Select tracks with AliVTrack::kITSout
 
-  ClassDef(AliEMCALRecParam,20)   
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALRecParam,20) ;
+  /// \endcond
+ 
 };
 
 #endif //  ALIEMCALRECPARAM_H

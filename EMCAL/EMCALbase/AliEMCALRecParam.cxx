@@ -13,15 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// --- Root header files
-//#include "TObjArray.h"
-
 // --- AliRoot header files ---
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliEMCALRecParam.h"
 
-ClassImp(AliEMCALRecParam)
+/// \cond CLASSIMP
+ClassImp(AliEMCALRecParam) ;
+/// \endcond
 
 TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings 
 
@@ -29,6 +28,7 @@ TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings
 /// Constructor
 /// Set Default reco values.
 ///
+//-----------------------------------------------------------------------------
 AliEMCALRecParam::AliEMCALRecParam() :
 AliDetectorRecoParam(),
 fClusteringThreshold(0.1), 
@@ -67,6 +67,9 @@ fTrkInITS(kTRUE)
   InitUnfoldingParameters();  
 }
 
+///
+/// Copy constructor.
+///
 //-----------------------------------------------------------------------------
 AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
 AliDetectorRecoParam(),
@@ -100,38 +103,40 @@ fFitLEDEvents(rp.fFitLEDEvents),
 fUseL1Phase(rp.fUseL1Phase),//raw signal
 fRejectBelowThreshold(rp.fRejectBelowThreshold),
 fTrkInITS(rp.fTrkInITS)
-{
-  //copy constructor
-  
-  //PID values
+{  
+  // PID values
   Int_t i=0, j=0;
-  for (i = 0; i < 6; i++) {
-    for (j = 0; j < 6; j++) {
+  for (i = 0; i < 6; i++) 
+  {
+    for (j = 0; j < 6; j++) 
+    {
       fGamma[i][j]       = rp.fGamma[i][j];
       fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
       fHadron[i][j]      = rp.fHadron[i][j];
       fHadron1to10[i][j] = rp.fHadron1to10[i][j];
       fPiZero[i][j]      = rp.fPiZero[i][j];
     }
+  
     fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
     fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
-    fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];
-    
+    fHadronEnergyProb[i] = rp.fHadronEnergyProb[i];  
   }
   
-  //unfolding  
-  for (i = 0; i < 8; i++) {
+  // Unfolding  
+  for (i = 0; i < 8; i++) 
+  {
     fSSPars[i] = rp.fSSPars[i];
   }
-  for (i = 0; i < 3; i++) {
+
+  for (i = 0; i < 3; i++) 
+  {
     fPar5[i] = rp.fPar5[i];
     fPar6[i] = rp.fPar6[i];
   }
-  
 }
 
 ///
-/// Assignment operator
+/// Assignment operator.
 ///
 //-----------------------------------------------------------------------------
 AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
@@ -210,7 +215,6 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
   
 }
 
-///
 ///
 /// PID parameters for Pb Pb from Lambda0 distributions fitted by  
 /// a landau inverted + Gaussian for Gammas
@@ -392,21 +396,23 @@ void AliEMCALRecParam::InitUnfoldingParameters()
   fPar6[2] = 0.001361; 
 }
 
+///
+/// Default parameters for the reconstruction.
 //-----------------------------------------------------------------------------
 AliEMCALRecParam* AliEMCALRecParam::GetDefaultParameters()
 {
-  //default parameters for the reconstruction
   AliEMCALRecParam* params = GetLowFluxParam();
   params->SetName("Default - p+p");
   params->SetTitle("Default - p+p");
-  return params;
-  
+  return params;  
 }
 
+///
+/// Parameters for the reconstruction of calibration runs.
+///
 //-----------------------------------------------------------------------------
 AliEMCALRecParam* AliEMCALRecParam::GetCalibParam()
 {
-  //parameters for the reconstruction of calibration runs
   AliEMCALRecParam* params = GetLowFluxParam();
   //params->SetClusteringThreshold(0.1); // 100 MeV                                             
   //params->SetMinECut(0.01);  //10 MeV       
@@ -415,13 +421,14 @@ AliEMCALRecParam* AliEMCALRecParam::GetCalibParam()
   params->SetEventSpecie(AliRecoParam::kCalib);
   
   return params;
-  
 }
 
+///
+/// Parameters for the reconstruction of cosmic runs.
+///
 //-----------------------------------------------------------------------------
 AliEMCALRecParam* AliEMCALRecParam::GetCosmicParam()
 {
-  //parameters for the reconstruction of cosmic runs
   AliEMCALRecParam* params = GetLowFluxParam();
   //params->SetClusteringThreshold(0.1); // 100 MeV                                             
   //params->SetMinECut(0.01);  //10 MeV       
@@ -430,14 +437,14 @@ AliEMCALRecParam* AliEMCALRecParam::GetCosmicParam()
   params->SetEventSpecie(AliRecoParam::kCosmic);
   
   return params;
-  
 }
 
-
+///
+/// Low flux/multiplicity ("p+p") parameters for the reconstruction.
+///
 //-----------------------------------------------------------------------------
 AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
 {
-  //low flux/multiplicity ("p+p") parameters for the reconstruction
   AliEMCALRecParam* params = new AliEMCALRecParam();
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       
@@ -446,24 +453,24 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
   params->SetEventSpecie(AliRecoParam::kLowMult);
   params->SetExtrapolateStep(1);
   
-  
-  //PID parameters for pp  implemented 
+  // PID parameters for pp  implemented 
   // as a first step, all array elements are initialized to 0.0
   Int_t i=0, j=0;
-  for (i = 0; i < 6; i++) {
-    for (j = 0; j < 6; j++) {
+  for (i = 0; i < 6; i++) 
+  {
+    for (j = 0; j < 6; j++) 
+    {
       params->SetGamma(i,j,0.);
       params->SetGamma1to10(i,j,0.);
       params->SetHadron(i,j,0.);
       params->SetHadron1to10(i,j,0.);
       params->SetPiZero(i,j,0.);
-      
     }
+
     params->SetGammaEnergyProb(i,0.); // not yet implemented
     params->SetHadronEnergyProb(i,0.);
     params->SetPiZeroEnergyProb(i,0.); // not yet implemented
   }
-  
   
   params->SetGamma(0,0,-7.656908e-01);
   params->SetGamma(0,1,2.352536e-01);
@@ -593,16 +600,17 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
   // 	cout << " Low Flux Parameters fGamma [2][2] = " << params->GetGamma(2,2) << endl;
   // 	cout << " Low Flux Parameters fHadron [2][2] = " << params->GetHadron(2,2) << endl;
   
-  return params;
-  
+  return params; 
 }
 
-
+///
+/// High flux/multiplicity ("Pb+Pb") parameters for the reconstruction.
+///
 //-----------------------------------------------------------------------------
 AliEMCALRecParam* AliEMCALRecParam::GetHighFluxParam()
 {
-  //high flux/multiplicity ("Pb+Pb") parameters for the reconstruction
   AliEMCALRecParam* params = new AliEMCALRecParam();
+
   //For now, same as default
   //if later these need to be modified, here's where it is done
   params->SetName("High Flux - Pb+Pb");
@@ -611,16 +619,18 @@ AliEMCALRecParam* AliEMCALRecParam::GetHighFluxParam()
   params->SetTrkCutPt(0.15);//This value can be higher if necessary
   
   return params;
-  
 }
 
+///
+/// Print reconstruction parameters to stdout.
+/// if nothing is specified print all, if "reco" just clusterization/track matching,
+/// if "pid", just PID parameters, if "raw", just raw utils parameters.
+///
 //-----------------------------------------------------------------------------
 void AliEMCALRecParam::Print(Option_t * opt) const
 {
-  // Print reconstruction parameters to stdout
-  // if nothing is specified print all, if "reco" just clusterization/track matching
-  // if "pid", just PID parameters, if "raw", just raw utils parameters.
-  if(!strcmp("",opt) || !strcmp("reco",opt)){
+  if(!strcmp("",opt) || !strcmp("reco",opt))
+  {
     AliInfo(Form("Clusterizer selected: %d", fClusterizerFlag));
     AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n fTimeCalibration=%d\n ",
                  fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9,fTimeCalibration));
@@ -644,7 +654,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("Unfolding fRejectBelowThreshold, 0-split,1-reject: %d\n",fRejectBelowThreshold)); 
   }
   
-  if(!strcmp("",opt) || !strcmp("pid",opt)){
+  if(!strcmp("",opt) || !strcmp("pid",opt))
+  {
     AliInfo(Form("PID parameters, Gamma :\n"));
     for(Int_t i = 0; i < 6; i++){
       for(Int_t j = 0; j < 6; j++){
@@ -652,8 +663,7 @@ void AliEMCALRecParam::Print(Option_t * opt) const
       }
       printf("\n");
     }
-    
-    
+      
     AliInfo(Form("PID parameters, Hadron :\n"));
     for(Int_t i = 0; i < 6; i++){
       for(Int_t j = 0; j < 6; j++){
@@ -673,10 +683,10 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     }
     
     printf("\n");
-    
   }
   
-  if(!strcmp("",opt) || !strcmp("raw",opt)){
+  if(!strcmp("",opt) || !strcmp("raw",opt))
+  {
     AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
                  fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
     AliInfo(Form("Raw signal: remove bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d, Fit LED events %d, use L1Phase %d\n",
@@ -684,18 +694,19 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   }
 }
 
+///
+/// \return array of AliAltroMappings for RCU0..RCUX.
+/// If not found, read it from OCDB.                                           
+///  
+/// Quick check as follows:                                                   
+///  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT"
+///  root [1] AliCDBManager::Instance()->SetRun(1);                             
+///  root [2] TObjArray* maps = AliEMCALRecParam::GetMappings();                
+///  root [3] maps->Print();      
+///   
 //-----------------------------------------------------------------------------
 const TObjArray* AliEMCALRecParam::GetMappings()
-{
-  //Returns array of AliAltroMappings for RCU0..RCUX.
-  //If not found, read it from OCDB.                                           
-  
-  //Quick check as follows:                                                   
-  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT"
-  //  root [1] AliCDBManager::Instance()->SetRun(1);                             
-  //  root [2] TObjArray* maps = AliEMCALRecParam::GetMappings();                
-  //  root [3] maps->Print();                                                    
-  
+{                                            
   if(fgkMaps) return fgkMaps;
   
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/Mapping");
@@ -703,6 +714,5 @@ const TObjArray* AliEMCALRecParam::GetMappings()
     fgkMaps = (TObjArray*)entry->GetObject();
   
   return fgkMaps;
-  
 }
 
