@@ -2942,7 +2942,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fUseExtraTracks == 0) std::cout<< "standard nK0s: "<<nK0s<<std::endl;
   */
 
-  if(fDebug>2)Printf("%s:%d Selected V0s after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
+  if(fDebug>2)Printf("%s:%d Selected Rec K0s candidates after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   if(nK0s != fListK0s->GetEntries()) Printf("%s:%d Mismatch selected K0s: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   fh1K0Mult->Fill(fListK0s->GetEntries());
 
@@ -2957,7 +2957,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fUseExtraTracks == -1)      nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
   if(fUseExtraTracks ==  0)      nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard tracks of event, no embedded tracks
   
-  if(fDebug>2)Printf("%s:%d Selected Rec tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nLa,fListLa->GetEntries());
+  if(fDebug>2)Printf("%s:%d Selected Rec La candidates after cuts: %d %d",(char*)__FILE__,__LINE__,nLa,fListLa->GetEntries());
   if(nLa != fListLa->GetEntries()) Printf("%s:%d Mismatch selected La: %d %d",(char*)__FILE__,__LINE__,nLa,fListLa->GetEntries());
   fh1LaMult->Fill(fListLa->GetEntries());
  
@@ -2970,7 +2970,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(fUseExtraTracks == -1)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
   if(fUseExtraTracks ==  0)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard tracks of event, no embedded tracks
 
-  if(fDebug>2)Printf("%s:%d Selected Rec tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nALa,fListALa->GetEntries());
+  if(fDebug>2)Printf("%s:%d Selected Rec ALa candidates after cuts: %d %d",(char*)__FILE__,__LINE__,nALa,fListALa->GetEntries());
   if(nALa != fListALa->GetEntries()) Printf("%s:%d Mismatch selected ALa: %d %d",(char*)__FILE__,__LINE__,nALa,fListALa->GetEntries());
   fh1ALaMult->Fill(fListALa->GetEntries());
 
