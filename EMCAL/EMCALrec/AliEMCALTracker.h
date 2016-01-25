@@ -2,21 +2,24 @@
 // Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.  
 // See cxx source for full Copyright notice                                
 //========================================================================  
-//                       
-//                       Class AliEMCALTracker 
-//                      -----------------------
-// Implementation of the track matching method between barrel tracks and
-// EMCAL clusters.
-// Besides algorithm implementation, some cuts are required to be set
-// in order to define, for each track, an acceptance window where clusters
-// are searched to find best match (if any).
-// The class accepts as input an ESD container, and works directly on it,
-// simply setting, for each of its tracks, the fEMCALindex flag, for each
-// track which is matched to a cluster.
-// In order to use method, one must launch PropagateBack().
-//
-// ------------------------------------------------------------------------
-// author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+///                       
+/// \class AliEMCALTracker 
+/// \brief Steer EMCal-Track matching
+///
+/// Implementation of the track matching method between barrel tracks and
+/// EMCAL clusters.
+/// Besides algorithm implementation, some cuts are required to be set
+/// in order to define, for each track, an acceptance window where clusters
+/// are searched to find best match (if any).
+/// The class accepts as input an ESD container, and works directly on it,
+/// simply setting, for each of its tracks, the fEMCALindex flag, for each
+/// track which is matched to a cluster.
+/// In order to use method, one must launch PropagateBack().
+///
+/// \author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+/// \author: Rong Rong Ma, Yale: Adapt to data analysis tools and other fixes.
+/// \author: Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS, Run2 fixes
+///
 //=========================================================================
 
 #ifndef ALIEMCALTRACKER_H
@@ -83,37 +86,40 @@ class AliEMCALTracker : public AliTracker
     Double_t  Y() const {return fY;} 
     Double_t  Z() const {return fZ;}
    private:
-    Int_t     fIndex;  // index of cluster in its native container (ESD or TClonesArray)
-    Double_t  fX;      // global X position
-    Double_t  fY;      // global Y position
-    Double_t  fZ;      // global Z position
+    Int_t     fIndex;  ///< Index of cluster in its native container (ESD or TClonesArray)
+    Double_t  fX;      ///< Global X position
+    Double_t  fY;      ///< Global Y position
+    Double_t  fZ;      ///< Global Z position
   };
    
  private:
   Int_t  FindMatchedCluster(AliESDtrack *track);
   enum ETrackCorr { 
-    kTrackCorrNone  = 0, // do not correct for energy loss
-    kTrackCorrMMB   = 1, // use MeanMaterialBudget() function to evaluate correction
+    kTrackCorrNone  = 0,        ///< Do not correct for energy loss
+    kTrackCorrMMB   = 1,        ///< Use MeanMaterialBudget() function to evaluate correction
   };
 
-  Double_t    fCutPt;           // mimimum pT cut on tracks
-  Double_t    fCutNITS;         // mimimum number of track hits in the ITS
-  Double_t    fCutNTPC;         // mimimum number of track hits in the TPC
+  Double_t    fCutPt;           ///< Minimum pT cut on tracks
+  Double_t    fCutNITS;         ///< Minimum number of track hits in the ITS
+  Double_t    fCutNTPC;         ///< Minimum number of track hits in the TPC
 	
-  Float_t     fStep;            // Length of each step in propagation
-  ETrackCorr  fTrackCorrMode;   // Material budget correction mode
-  Float_t     fEMCalSurfaceDistance; // EMCal surface distance
-  Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
-  Double_t    fCutEta;          // cut on eta difference
-  Double_t    fCutPhi;          // cut on phi difference
-  Bool_t      fITSTrackSA;      // If no TPC, use ITS Tracks	
-  Bool_t      fTrackInITS;      // Requiere ITS refit with AliVTrack::kITSout	
+  Float_t     fStep;            ///< Length of each step in propagation
+  ETrackCorr  fTrackCorrMode;   ///< Material budget correction mode
+  Float_t     fEMCalSurfaceDistance; ///< EMCal surface distance
+  Double_t    fClusterWindow;   ///< Select clusters in the window to be matched to tracks
+  Double_t    fCutEta;          ///< cut on eta difference
+  Double_t    fCutPhi;          ///< cut on phi difference
+  Bool_t      fITSTrackSA;      ///< If no TPC, use ITS Tracks	
+  Bool_t      fTrackInITS;      ///< Requiere ITS refit with AliVTrack::kITSout	
 	
-  TObjArray  *fTracks;          //! collection of tracks
-  TObjArray  *fClusters;        //! collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
+  TObjArray  *fTracks;          //!<! Collection of tracks
+  TObjArray  *fClusters;        //!<! Collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
 	
-  AliEMCALGeometry *fGeom;      //! EMCAL geometry
+  AliEMCALGeometry *fGeom;      //!<! EMCAL geometry
   
-  ClassDef(AliEMCALTracker, 8) 
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALTracker, 8) ;
+  /// \endcond
+ 
 };
 #endif
