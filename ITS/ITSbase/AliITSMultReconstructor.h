@@ -23,7 +23,8 @@
 class TBits;
 class TTree;
 class TH1F;
-class TH2F; 
+class TH2F;
+class TClonesArray;
 class AliITSDetTypeRec;
 class AliITSgeom;
 class AliESDEvent;
