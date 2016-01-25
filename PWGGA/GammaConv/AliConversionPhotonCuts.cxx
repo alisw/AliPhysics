@@ -1144,7 +1144,23 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
 	return kTRUE;
 
 }
-
+///________________________________________________________________________
+Float_t AliConversionPhotonCuts::GetKappaTPC(AliAODConversionPhoton *gamma, AliVEvent * event){
+	
+	if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
+	if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
+	
+	AliVTrack * negTrack = GetTrack(event, gamma->GetTrackLabelNegative());
+	AliVTrack * posTrack = GetTrack(event, gamma->GetTrackLabelPositive());
+	
+	Float_t KappaPlus, KappaMinus, Kappa;
+	KappaMinus = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
+	KappaPlus  = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
+	Kappa = ( KappaMinus + KappaPlus ) / 2 ;
+	
+	return Kappa;
+	
+}
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 	// Electron Identification Cuts for Photon reconstruction
