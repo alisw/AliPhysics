@@ -39,8 +39,7 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Bool_t   pileupFromSPDFlag = kFALSE,
 							     TString  referenceFileName = "",//Reference.root
 							     TString  referenceSMFileName = "",//ReferenceSM.root
-							     TString  referenceWrongL1SMFileName = "",//ReferenceWrongSM.root
-)
+							     TString  referenceWrongL1SMFileName = "")//ReferenceWrongSM.root
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
