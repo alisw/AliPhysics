@@ -86,6 +86,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		void UpdateEventByEventData();
 		void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
 		Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
+		Double_t GetPsiPairMC(const TParticle *fMCPosParticle, const TParticle *fMCNegParticle) const;
+
 		Bool_t IsDalitz(TParticle *fMCMother) const;
 		Bool_t IsPi0DalitzDaughter( Int_t label ) const;
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
@@ -211,6 +213,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDEposEnegTruePi0DalitzInvMassPt;
 		TH1F 									**hESDEposEnegTruePrimPi0DalitzInvMass;
 		TH2F 									**hESDEposEnegTruePi0DalitzPsiPairDPhi;
+		TH1F									**hESDEposEnegTruePi0DalitzPsiPairMC;
 		TH2F									**hESDEposEnegTruePi0DalitzPsiPairEta;
 		TH2F									**hESDEposEnegTruePi0DalitzDPhiEta;
 		TH2F 									**hESDEposEnegTrueEtaDalitzInvMassPt;
@@ -218,6 +221,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDEposEnegTrueEtaDalitzPsiPairDPhi;
 		TH2F 									**hESDEposEnegTruePhotonInvMassPt;
 		TH2F 									**hESDEposEnegTrueInvMassPt;
+		TH2F									**hESDEposEnegTrueMotherInvMassPt;
 		TH2F 									**hESDEposEnegTruePhotonPsiPairDPhi;
 		TH2F 									**hESDEposEnegTruePhotonPsiPairDPhiPtCut;
 		TH2F 									**hESDEposEnegTrueJPsiInvMassPt;
