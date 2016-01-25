@@ -74,7 +74,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetALaType(ALatype); 
   task->SetSelectArmenteros(IsArmenterosSelected);
   task->SetAnalysisMC(IsMC); // 0: real data, 1: MC data
-  task->SetCutV0Rap(100.);//not applied as default
+  task->SetCutV0Rap(0.);//not applied as default
   task->SetCutDeltaREmbedded(0.); //for standard tracks
   task->SetCutFractionPtEmbedded(1.); //for standard tracks
 
