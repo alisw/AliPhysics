@@ -775,11 +775,19 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
     AliESDtrack *trk = esd->GetTrack(itr);
     if( !trk ) continue;
       
-      if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue;
+      
+      if((trk->GetStatus() & AliESDtrack::kITSin) == 0 || (trk->GetStatus() & AliESDtrack::kTPCin))continue; //ITS standalone(what left after global tracking)
+      //if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue; //Pure ITS standalone
+      
       if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
       if(trk->GetITSNcls() < 4)continue;
       if(trk->GetITSchi2()/trk->GetITSNcls() > 2.5)continue;
       if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
+      
+      Float_t dca[2] = {0.0,0.0};
+      trk->GetImpactParameters(dca[0],dca[1]);
+      Double_t cut_DCAxy = (0.0231+0.0315/TMath::Power(trk->Pt(),1.3));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
  
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
