@@ -320,11 +320,12 @@ void AliFJWrapper::AddInputVector(Double_t px, Double_t py, Double_t pz, Double_
 
   fastjet::PseudoJet inVec(px, py, pz, E);
 
-  if (index > -99999) {
-    inVec.set_user_index(index);
-  } else {
-    inVec.set_user_index(fInputVectors.size());
-  }
+  // Salvatore Aiola: not sure why this was done...
+  //if (index > -99999) {
+  inVec.set_user_index(index);
+  //} else {
+  //inVec.set_user_index(fInputVectors.size());
+  //}
 
   // add to the fj container of input vectors
   fInputVectors.push_back(inVec);
