@@ -22,7 +22,13 @@ void AddTask_GammaConvFlow_PbPb2(
                                Bool_t doWeighting = kFALSE,  //enable Weighting
                                TString cutnumberAODBranch = "100000006008400000001500000",
                                Bool_t BasicHistoSP = kFALSE,
-                               Bool_t debug = kFALSE
+                               Bool_t debug = kFALSE,
+                               Bool_t UseMassSel = kFALSE,
+                               Float_t MinMass = 0,
+                               Float_t MaxMass = 0.2,
+                               Bool_t UseKappaSel = kFALSE,
+                               Float_t MinKappa = 0,
+                               Float_t MaxKappa = 10
                                ) {
     
   // ================= Load Librariers =================================
@@ -128,6 +134,9 @@ void AddTask_GammaConvFlow_PbPb2(
   cutsRP->SetApplyRecentering(kTRUE);
   
   task->SetRPCuts(cutsRP);
+  
+  if(UseMassSel==kTRUE)  task->SetMassWindow(MinMass,MaxMass);
+  if(UseKappaSel==kTRUE) task->SetKappaWindow(MinKappa,MaxKappa);
   
   AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
 //     POIfilterVZERO->SetEtaMin(-0.8);
