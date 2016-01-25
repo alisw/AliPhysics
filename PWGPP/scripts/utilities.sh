@@ -655,66 +655,8 @@ createUniquePID()
   echo "${id}"
 }
 
-copyFileToLocal()
-(
-  #copies a single file to a local destination: the file may either come from
-  #a local filesystem or from a remote location (whose protocol must be
-  #supported)
-  #copy is "robust" and it is repeated some times in case of failure before
-  #giving up (1 is returned in that case)
-  #origin: Dario Berzano, dario.berzano@cern.ch
-  src="$1"
-  dst="$2"
-  ok=0
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
-
-  proto="${src%%://*}"
-
-  echo "copy file to local dest started: $src -> $dst"
-
-  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
-
-    echo "...attempt $i of $maxCopyTries"
-    rm -f "$dst"
-
-    if [[ "$proto" == "$src" ]]; then
-      echo "==> cp $src $dst"
-      cp "$src" "$dst"
-    else
-      case "$proto" in
-        root)
-          echo "==> xrdcp -f $src $dst"
-          xrdcp -f "$src" "$dst"
-        ;;
-        http)
-          echo "==> curl -L $src -O $dst"
-          curl -L "$src" -O "$dst"
-        ;;
-        *)
-          echo "protocol not supported: $proto"
-          return 2
-        ;;
-      esac
-    fi
-
-    if [ $? == 0 ] ; then
-      ok=1
-      break
-    fi
-
-  done
-
-  if [[ "$ok" == 1 ]] ; then
-    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
-    return 0
-  fi
-
-  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
-  return 1
-)
-
 printExec() {
-  echo "==> COMMAND: $*" >&2
+  echo "==> COMMAND [PWD=$PWD]: $*" >&2
   "$@"
 }
 
@@ -780,6 +722,60 @@ lsRemote() (
   return $rv
 )
 
+copyFileFromRemote() (
+  # Copy a list of remote files ($1, $2...${n-1}) to a certain dest dir ($n).
+  # The last parameter must then be a local directory. Files can be local too.
+  # Dest dir is created if not existing.
+  # If a source file is in the form @list.txt, then the list of files (one per
+  # line) in list.txt will be expanded and copied.
+  # On success 0 is returned - 1 otherwise.
+  # Example: copyFileFromRemote root://localhost//file1.txt @list.txt /tmp/localdir/foo
+
+  dstdir=${!#}
+  maxCopyTries=${maxCopyTries-10}
+  err=0
+  opname="[copyFileFromRemote]"
+  mkdir -p "$dstdir"
+
+  while [[ $# -gt 1 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read -u 3 src; do
+      thiserr=1
+      proto="${src%%://*}"
+      [[ "$proto" == "$src" ]] && proto=local
+      # Remove leading double slashes.
+      while [[ "${src:$((${#src}-1))}" == / ]]; do
+        src=${src:0:$((${#src}-1))}
+      done
+      dst="$dstdir/$(basename "$src")"
+      echo "$opname (proto=$proto) started: $src -> $dst"
+      for ((i=1; i<=maxCopyTries; i++)); do
+        echo "$opname $src -> $dst attempt $i of $maxCopyTries"
+        case "$proto" in
+          local) printExec cp "$src" "$dst"
+                 if [[ $? != 0 ]]; then
+                   rm -f "$dst"
+                   false
+                 fi ;;
+          root)  printExec xrdcp -f "$src" "$dst" ;;
+          *)     echo "protocol not supported: $proto"
+                 return 2 ;;
+        esac
+        if [[ $? == 0 ]]; then
+          thiserr=0
+          break
+        fi
+      done  # cp attempts
+      [[ $thiserr == 0 ]] && echo "$opname (proto=$proto) OK after $i attempt(s): $src -> $dst" \
+                          || echo "$opname (proto=$proto) FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      err=$((err+thiserr))
+    done 3< <($inputcmd)
+    shift
+  done
+
+  return $((err & 1))
+)
+
 copyFileToRemote() (
   # Copy a list of files ($1, $2...${n-1}) to a certain dest dir ($n). The last
   # parameter must then be a directory. The destination might be local or remote
@@ -814,7 +810,7 @@ copyFileToRemote() (
         echo "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
           local) mkdir -p "$(dirname "$dst")"
-                 printExec "$src" "$dst"
+                 printExec cp "$src" "$dst"
                  if [[ $? != 0 ]]; then
                    rm -f "$dst"
                    false
@@ -966,3 +962,6 @@ reformatXMLCollection()
 #use case:
 #  bashdb utilities.sh summarizeLogs * */*
 [[ $# != 0 ]] && eval "$@" || true
+
+
+# vi:syntax=zsh

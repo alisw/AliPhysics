@@ -105,23 +105,42 @@ generateMC()
   fi
 }
 
-goCPass0()
+goCPass0() (
+  # Wrapper function that calls goCPass with the CPass0 option.
+  declare -a params
+  params=("$1" "$2" "$3" "$4" "$5" "$6" "$7" CPass0)
+  shift 7
+  goCPass "${params[@]}" "$@"
+)
+
+goCPass1() (
+  # Wrapper function that calls goCPass with the CPass1 option.
+  declare -a params
+  params=("$1" "$2" "$3" "$4" "$5" "$6" "$7" CPass1)
+  shift 7
+  goCPass "${params[@]}" "$@"
+)
+
+goCPass()
 (
   umask 0002
   
-  targetDirectory=${1}
-  inputList=${2}
-  nEvents=${3}
-  ocdbPath=${4}
-  configFile=${5}
-  export runNumber=${6}
-  jobindex=${7}
-  shift 7
+  targetDirectory=$1
+  inputList=$2
+  nEvents=$3
+  ocdbPath=$4
+  configFile=$5
+  export runNumber=$6
+  jobindex=$7
+  cpass=$8  # cpass=CPass0 or CPass1
+  shift 8
+  extraOpts=("$@")
+  cpass=${cpass##*CPass}
 
   parseConfig configFile=$configFile "$@" || return 1
 
-  echo Start: goCPass0
-  alilog_info "[BEGIN] goCPass0() with following parameters $*"
+  echo Start: goCPass${cpass}
+  alilog_info "[BEGIN] goCPass${cpass}() with following extra parameters $*"
 
   # Remember working directory provided by the batch system (i.e. current dir).
   batchWorkingDirectory=$PWD
@@ -132,7 +151,7 @@ goCPass0()
     [[ -n "$SGE_TASK_ID" ]] && jobindex=$SGE_TASK_ID
     if [[ -z ${jobindex} ]]; then
       echo "no jobindex!"
-      alilog_error "goCPass0() No job index [Paremeters] $*"
+      alilog_error "goCPass${cpass}() No job index [Paremeters] $*"
       return 1
     fi
   fi
@@ -140,9 +159,9 @@ goCPass0()
   [[ -z "$commonOutputPath" ]] && commonOutputPath=$PWD
 
   # .done files signal job completion to Makeflow.
-  [[ -n ${useProfilingCommand} ]] \
-    && doneFileBase="profiling.cpass0.job${jobindex}.run${runNumber}.done" \
-    || doneFileBase="cpass0.job${jobindex}.run${runNumber}.done"
+  [[ -n "$useProfilingCommand" ]] \
+    && doneFileBase="profiling.cpass${cpass}.job${jobindex}.run${runNumber}.done" \
+    || doneFileBase="cpass${cpass}.job${jobindex}.run${runNumber}.done"
 
   # .done file is created locally as $doneFileTmp and copied on the remote when finished.
   mkdirLocal "$commonOutputPath/meta" || return 1
@@ -151,32 +170,45 @@ goCPass0()
 
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source ${alirootSource}
   
-  if [[ -n "$ALIROOT_FORCE_COREDUMP" ]]; then
-    ulimit -c unlimited 
-    export ALIROOT_FORCE_COREDUMP
-  fi
+  [[ -n "$ALIROOT_FORCE_COREDUMP" ]] && export ALIROOT_FORCE_COREDUMP && ulimit -c unlimited
 
   # The contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
   # At the QA stage the pass number is guessed from the path stored here.
   # The Format is:
   #   Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;
   #   LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
-  export PRODUCTION_METADATA="OutputDir=cpass0"
+  export PRODUCTION_METADATA="OutputDir=cpass${cpass}"
 
-  [[ "$inputList" =~ \.root$ ]] && infile=${inputList} \
-                                || infile=$(sed -ne "${jobindex}p" ${inputList} | egrep '\s*\w*/\w*')
+  # Check if input list exists. Works both for local and remote cases.
+  if ! statRemote "$inputList" && [[ -z $pretend ]]; then
+    touch $doneFileTmp
+    echo "Cannot find input list $inputList, exiting..." >> $doneFileTmp
+    copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
+    return 1
+  fi
+
+  [[ "$inputList" =~ \.root$ ]] && infile=$inputList \
+                                || infile=$(sed -ne "${jobindex}p" $inputList | egrep '\s*\w*/\w*')
   chunkName=${infile##*/}
 
   outputDir="${targetDirectory}/${jobindex}_${chunkName%.*}"
   case "$reconstructInTemporaryDir" in
-    1) runpath=$(mktemp -d -t cpass0.XXXXXX) ;;
-    2) runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex} ;;
+    1) runpath=$(mktemp -d -t cpass${cpass}.XXXXXX) ;;
+    2) runpath=${PWD}/rundir_cpass${cpass}_${runNumber}_${jobindex} ;;
     *) runpath=$outputDir ;;
   esac
 
+  # TODO: check if this is really for CPass1 only. Asymmetry found when merging CPass0/1.
+  if [[ $cpass == 1 ]]; then
+    if [[ "${infile}" =~ galice\.root ]]; then
+      ln -s ${inputList%/*}/* ${runpath}
+      infile=""
+    fi
+  fi
+
   # Robust error check in directory creation. After this block we are in $runpath.
   if ! mkdirLocal "$outputDir" || ! mkdirLocal "$runpath" || ! cd "$runpath"; then
-    touch "$doneFileTmp"
+    touch $doneFileTmp
     echo "Error creating $outputDir or runpath $runpath, or cd'ing to it" >> $doneFileTmp
     copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
     return 1
@@ -185,10 +217,15 @@ goCPass0()
   # runCPassX/C expects the raw chunk to be linked in the run dir despite it being accessed by the
   # full path.
   [[ $copyInputData == 0 ]] && ln -s ${infile} ${runpath}/${chunkName} \
-                            || copyFileToLocal ${infile} ${runpath}/${chunkName}
+                            || copyFileFromRemote ${infile} ${runpath}/
 
-  ##### MC
-  if [[ -n ${generateMC} ]]; then
+  logOutputDir=$runpath
+  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
+  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> ${logOutputDir}/stdout
+  echo "$0 $*"
+
+  ##### MC -- TODO: does this still work? is it really needed during CPass0 only?
+  if [[ $cpass == 0 && -n $generateMC ]]; then
     olddir=${PWD}
     outputDirMC=${commonOutputPath}/000${runNumber}/sim/${jobindex}
     simrunpath=${outputDirMC}
@@ -220,20 +257,9 @@ goCPass0()
     fi
   fi
   ###### /MC
-  
-  if [[ "$inputList" == "${inputList%%://*}" && ! -f "$inputList" && -z "$pretend" ]]; then
-    echo "Input list file $inputList not found, exiting..." >> $doneFileTmp
-    copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
-    return 1
-  fi
-
-  logOutputDir=$runpath
-  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> ${logOutputDir}/stdout
-  echo "$0 $*"
 
   echo "#####################"
-  echo CPass0:
+  echo CPass${cpass}:
   echo JOB setup
   echo nEvents               ${nEvents}
   echo runNumber             ${runNumber}
@@ -257,68 +283,203 @@ goCPass0()
 
   # Those files are locally found. They should be copied to the current working
   # directory (which is $runpath).
-  filesCPass0=( "${batchWorkingDirectory}/runCPass0.sh"
-                "${batchWorkingDirectory}/recCPass0.C"
-                "${batchWorkingDirectory}/runCalibTrain.C"
-                "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                "${batchWorkingDirectory}/OCDB.root"
-                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
-                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
-                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" )
+  case $cpass in
+    0) filesCPass=( "${batchWorkingDirectory}/runCPass0.sh"
+                    "${batchWorkingDirectory}/recCPass0.C"
+                    "${batchWorkingDirectory}/runCalibTrain.C"
+                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                    "${batchWorkingDirectory}/OCDB.root"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" ) ;;
 
-  for file in ${filesCPass0[*]}; do
+    1) filesCPass=( "${batchWorkingDirectory}/runCPass1.sh"
+                    "${batchWorkingDirectory}/recCPass1.C"
+                    "${batchWorkingDirectory}/recCPass1_OuterDet.C"
+                    "${batchWorkingDirectory}/runCalibTrain.C"
+                    "${batchWorkingDirectory}/QAtrain_duo.C"
+                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                    "${batchWorkingDirectory}/${configFile}"
+                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
+                    "${batchWorkingDirectory}/OCDB.root"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C" ) ;;
+  esac
+
+  for file in ${filesCPass[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && printExec cp -f $file . \
                                          && [[ ${file##*/} =~ .*\.sh ]] \
                                          && printExec chmod +x ${file##*/}
   done
 
-  echo "Contents of current directory before running CPass0 ($PWD):" ; /bin/ls ; echo
+  echo "Contents of current directory ($PWD) before running CPass${cpass}:" ; /bin/ls ; echo
 
   # Monkey patching: emove spaces from around arguments to root macros. For example this sometimes
   # is known to fail: root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
-  if [[ -n "$postSetUpActionCPass0" ]]; then
-    echo "running ${postSetUpActionCPass0}"
-    eval $postSetUpActionCPass0
-  fi
+  # A post-setup action (different for CPass0/1) can be defined. Here it is executed.
+  case $cpass in
+    0) postSetUpActionCPass="$postSetUpActionCPass0" ;;
+    1) postSetUpActionCPass="$postSetUpActionCPass1" ;;
+  esac
+  [[ -n "$postSetUpActionCPass" ]] && printExec eval $postSetUpActionCPass
 
-  # Run CPass0. Since $infile is local, by convention it must start with a slash. The initial slash
-  # is there just to signal runCPass0.sh that the file is local, and it is not an actual path.
-  echo "$runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
-  if [[ -n "$pretend" ]]; then
-    sleep $pretendDelay
-    for fakeOutput in AliESDs.root AliESDfriends.root AliESDfriends_v1.root rec.log calib.log; do
-      touch $fakeOutput
-    done
-  else
-    # Caveat: in the local case, first arg must start with a slash.
-    ./runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions
-  fi
-  
-  echo "Contents of current directory after running CPass0 ($PWD):" ; /bin/ls ; echo
+  # Run CPass0 or CPass1.
+  case $cpass in
 
-  # CPass0 has completed. Copy all created files to the destination (which might be remote).
+    0)
+      # Run CPass0. Since $infile is local, by convention it must start with a slash. The initial slash
+      # is there just to signal runCPass0.sh that the file is local, and it is not an actual path.
+      if [[ -n "$pretend" ]]; then
+        echo "Pretending to run: $runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
+        sleep $pretendDelay
+        for fakeOutput in AliESDs.root AliESDfriends.root AliESDfriends_v1.root rec.log calib.log; do
+          touch $fakeOutput
+        done
+      else
+        # Caveat: in the local case, first arg must start with a slash.
+        printExec ./runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions
+      fi
+
+      # End of CPass0.
+    ;;
+
+    1)
+      # This is CPass1.
+
+      # Procure OCDB.
+      echo "Downloading OCDB produced during CPass0 for run $runNumber"
+      copyFileFromRemote $commonOutputPath/meta/cpass0.localOCDB.${runNumber}.tgz $PWD
+
+      # If OCDB is found here, then create a macro that configures local OCDB access.
+      # This step also decompresses the tarball into $PWD/OCDB.
+      [[ -f cpass0.localOCDB.${runNumber}.tgz ]] \
+        && printExec goMakeLocalOCDBaccessConfig cpass0.localOCDB.${runNumber}.tgz \
+        || echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
+
+      # Check if CPass0 has produced calibration.
+      if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
+        touch $doneFileTmp
+        echo "CPass0 produced no calibration! Exiting..." >> $doneFileTmp
+        copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
+        return 1
+      fi
+
+
+      # Create the Barrel and OuterDet directories for CPass1 and link the local OCDB directory
+      # there to make the localOCDBaccessConfig.C file work, since it may point to the OCDB
+      # entries using a relative path, e.g. local://./OCDB.
+      echo "Linking the OCDB/ for Barrel and OuterDet directories"
+      mkdir Barrel OuterDet
+      ls -l
+      ln -s ../OCDB Barrel/OCDB
+      ln -s ../OCDB OuterDet/OCDB
+
+      # Setup the filtering.
+      # The following option enables the filtering task inside the QAtrain_duo.C
+      [[ -n $runESDfiltering ]] && export QA_TaskFilteredTree=1
+      #set the downscaling factors during the filtering fro expert QA (overrides the previous values)
+      [[ -n ${filteringFactorHighPt} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF=${filteringFactorHighPt}
+      [[ -n ${filteringFactorV0s} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF=${filteringFactorV0s}
+
+      # Run CPass1.
+      if [[ -n "$pretend" ]]; then
+        echo "Pretending to run: ./runCPass1.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
+        sleep $pretendDelay
+        for fakeOutput in AliESDs_Barrel.root AliESDfriends_Barrel.root AliESDfriends_v1.root \
+                          QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root \
+                          AliESDs_Outer.root AliESDfriends_Outer.root QAresults_outer.root \
+                          EventStat_temp_outer.root rec.log calib.log qa.log filtering.log \
+                          FilterEvents_Trees.root ; do
+          touch $fakeOutput
+        done
+      else
+        # Caveat: in the local case, first arg must start with a slash.
+        printExec ./runCPass1.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions
+      fi
+
+      # Fix output locations.
+      [[ ! -f AliESDs_Barrel.root && -f Barrel/AliESDs.root ]] && mv Barrel/AliESDs.root AliESDs_Barrel.root
+      [[ ! -f AliESDfriends_Barrel.root && -f Barrel/AliESDfriends.root ]] && mv Barrel/AliESDfriends.root AliESDfriends_Barrel.root
+      [[ ! -f AliESDfriends_v1.root && -f Barrel/AliESDfriends_v1.root ]] && mv Barrel/AliESDfriends_v1.root .
+      [[ ! -f QAresults_barrel.root && -f Barrel/QAresults_barrel.root ]] && mv Barrel/QAresults_barrel.root .
+      [[ ! -f AliESDs_Outer.root && -f OuterDet/AliESDs.root ]] && mv OuterDet/AliESDs.root AliESDs_Outer.root
+      [[ ! -f AliESDfriends_Outer.root && -f OuterDet/AliESDfriends.root ]] && mv OuterDet/AliESDfriends.root AliESDfriends_Outer.root
+      [[ ! -f QAresults_outer.root && -f OuterDet/QAresults_outer.root ]] && mv OuterDet/QAresults_outer.root .
+      [[ ! -f FilterEvents_Trees.root && -f Barrel/FilterEvents_Trees.root ]] && mv Barrel/FilterEvents_Trees.root .
+
+      # Make the filtered tree (if requested and not already produced by QA.
+      # TODO: check if it works with non-shared filesystems.
+      [[ -f AliESDs_Barrel.root ]] && echo AliESDs_Barrel.root > filtered.list
+      if [[ -n $runESDfiltering && ! -f FilterEvents_Trees.root && -f filtered.list ]]; then
+        goMakeFilteredTrees $PWD $runNumber "$PWD/filtered.list" $filteringFactorHighPt \
+                            $filteringFactorV0s $ocdbPath 1000000 0 10000000 0 \
+                            $configFile AliESDs_Barrel.root "${extraOpts[@]}" > filtering.log
+      fi
+
+      # End of CPass1.
+    ;;
+
+  esac
+
+  echo "Contents of current directory ($PWD) after running CPass$cpass:" ; /bin/ls ; echo
+
+  # CPass has completed. Copy all created files to the destination (which might be remote).
   printExec rm -f ./$chunkName
   printExec copyFileToRemote $runpath/* $outputDir
   echo
   
-  # Validate CPass0.
-  if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
-    statRemote $outputDirMC/galice.root && echo "sim $outputDirMC/galice.root" >> $doneFileTmp
-    statRemote AliESDfriends_v1.root && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
-    statRemote AliESDs.root && echo "esd $outputDir/AliESDs.root" >> $doneFileTmp
-  fi
+  # Validate CPass.
+  case $cpass in
+
+    0)
+      # Validate CPass0.
+      if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
+        [[ -f $outputDirMC/galice.root ]] && echo "sim $outputDirMC/galice.root" >> $doneFileTmp
+        [[ -f AliESDfriends_v1.root ]] && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
+        [[ -f AliESDs.root ]] && echo "esd $outputDir/AliESDs.root" >> $doneFileTmp
+      fi
+      # End of CPass0 validation.
+    ;;
+
+    1)
+      # Validate CPass1.
+      if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
+        [[ -f AliESDs_Barrel.root ]] && echo "esd $outputDir/AliESDs_Barrel.root" >> $doneFileTmp
+        [[ -f AliESDfriends_v1.root ]] && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
+        [[ -f QAresults_Barrel.root ]] && echo "qafile $outputDir/QAresults_Barrel.root" >> $doneFileTmp
+        [[ -f QAresults_Outer.root ]] && echo "qafile $outputDir/QAresults_Outer.root" >> $doneFileTmp
+        [[ -f QAresults_barrel.root ]] && echo "qafile $outputDir/QAresults_barrel.root" >> $doneFileTmp
+        [[ -f QAresults_outer.root ]] && echo "qafile $outputDir/QAresults_outer.root" >> $doneFileTmp
+        [[ -f FilterEvents_Trees.root ]] && echo "filteredTree $outputDir/FilterEvents_Trees.root" >> $doneFileTmp
+      else
+        if grep -q qa_outer.log.*OK $doneFileTmp; then
+          [[ -f QAresults_Outer.root ]] && echo "qafile $outputDir/QAresults_Outer.root" >> $doneFileTmp
+          [[ -f QAresults_outer.root ]] && echo "qafile $outputDir/QAresults_outer.root" >> $doneFileTmp
+        fi
+        if grep -q qa_barrel.log.*OK $doneFileTmp; then
+          [[ -f QAresults_Barrel.root ]] && echo "qafile $outputDir/QAresults_Barrel.root" >> $doneFileTmp
+          [[ -f QAresults_barrel.root ]] && echo "qafile $outputDir/QAresults_barrel.root" >> $doneFileTmp
+        fi
+        if grep -q filtering.log.*OK $doneFileTmp; then
+          [[ -f FilterEvents_Trees.root ]] && echo "filteredTree $outputDir/FilterEvents_Trees.root" >> $doneFileTmp
+        fi
+      fi
+      # End of CPass1 validation.
+    ;;
+
+  esac
 
   # Final cleanup (only if we are not writing directly to destination).
   [[ "$runpath" != "$outputDir" ]] && printExec rm -rf $runpath
   copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
-  echo End: goCPass0
-  alilog_info "[END] goCPass0() with following parameters $*"
+  echo End: goCPass${cpass}
+  alilog_info "[END] goCPass${cpass}() with following parameters $*"
   return 0
 )
 
-goCPass1()
+old_goCPass1()
 (
   umask 0002
   
@@ -426,7 +587,7 @@ goCPass1()
   if [[ $copyInputData == 0 ]]; then
     ln -s ${infile} ${runpath}/${chunkName}
   else
-    copyFileToLocal ${infile} ${runpath}/${chunkName}
+    copyFileFromRemote ${infile} ${runpath}/
   fi
 
   logOutputDir=${runpath}
@@ -740,11 +901,11 @@ goMergeCPass0()
     echo "some calibration" >> OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
     echo "some calibration" >> OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
   else
-    printExec $mergingScript $calibrationFilesToMerge \
-                             $runNumber \
-                             "local://./OCDB" \
-                             defaultOCDB=$ocdbStorage \
-                             fileAccessMethod=nocopy >> mergeMakeOCDB.log
+    printExec ./$mergingScript $calibrationFilesToMerge \
+                               $runNumber \
+                               "local://./OCDB" \
+                               defaultOCDB=$ocdbStorage \
+                               fileAccessMethod=nocopy >> mergeMakeOCDB.log
 
     #produce the calib trees for expert QA (dcsTime.root)
     goMakeLocalOCDBaccessConfig ./OCDB
@@ -753,15 +914,15 @@ goMergeCPass0()
   
   # Create tarball with OCDB, store on the shared directory, create signal file on batch directory
   baseTar="cpass0.localOCDB.${runNumber}.tgz"
-  tar czf ${batchWorkingDirectory}/${baseTar} ./OCDB && \
+  printExec tar czvvf ${batchWorkingDirectory}/${baseTar} ./OCDB && \
     touch ${batchWorkingDirectory}/${baseTar}.done
 
-  echo "Contents (recursive) of batch working directory after tarball creation in MergeCPass0 ($batchWorkingDirectory):" ; /bin/ls -R ; echo
+  echo "Contents (recursive) of batch working directory after tarball creation in MergeCPass0 ($batchWorkingDirectory):" ; /bin/ls -R $batchWorkingDirectory ; echo
 
   # Copy all to output dir.
   copyFileToRemote $runpath/* $outputDir
 
-  # Copy OCDB to meta. TODO: maybe it is performed later on by other steps?
+  # Copy OCDB to meta.
   copyFileToRemote ${batchWorkingDirectory}/${baseTar} $commonOutputPath/meta
 
   # TODO: check if MC still works. Not used at CERN release validation.
@@ -1401,7 +1562,7 @@ goMakeLocalOCDBaccessConfig()
   local OCDBpathPrefix=${2-.}
 
   if [[ -f ${localOCDBpathCPass0} && ${localOCDBpathCPass0} =~ \.tgz$ ]]; then
-    tar xzf ${localOCDBpathCPass0}
+    tar xzvvf ${localOCDBpathCPass0}
     local localOCDBpathCPass0="${OCDBpathPrefix}/OCDB"
   fi
 
@@ -1414,7 +1575,6 @@ goMakeLocalOCDBaccessConfig()
   local tempLocalOCDB=""
   if [[ -f localOCDBaccessConfig.C ]]; then
     tempLocalOCDB=$(mktemp -t tempLocalOCDB.XXXXXX)
-    echo "egrep "SetSpecificStorage" localOCDBaccessConfig.C > ${tempLocalOCDB}"
     egrep "SetSpecificStorage" localOCDBaccessConfig.C > ${tempLocalOCDB}
   fi
 
@@ -2302,7 +2462,7 @@ done
     while read sourceFile; do
       destinationFile="${PWD}"/"${sourceFile}"
       mkdir -p ${destinationFile##*/}
-      if copyFileToLocal "${sourceFile}" "${destinationFile}"; then
+      if copyFileFromRemote "${sourceFile}" "$(dirname "${destinationFile}")"; then
         echo "${destinationFile}" >> "$localList"
       fi
     done < <(cat "$remoteList")
@@ -2469,3 +2629,4 @@ aliroot()
 }
 
 main "$@"
+# vi:syntax=zsh
