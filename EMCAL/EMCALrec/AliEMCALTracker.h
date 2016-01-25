@@ -43,24 +43,31 @@ class AliEMCALTracker : public AliTracker
   virtual ~AliEMCALTracker() {Clear();}
 	
   virtual void        Clear(Option_t *option="ALL");
-  virtual Int_t       Clusters2Tracks(AliESDEvent*) {return -1;}
+
+  virtual Int_t       Clusters2Tracks(AliESDEvent*) { return -1   ; }
+
           void        InitParameters();
+
   virtual Int_t       LoadClusters(TTree*);
           Int_t       LoadClusters(AliESDEvent* esd);
-	  Int_t       LoadTracks(AliESDEvent* esd);
+          Int_t       LoadTracks  (AliESDEvent* esd);
   virtual Int_t       PropagateBack(AliESDEvent* esd);
-  virtual Int_t       RefitInward(AliESDEvent*) {return -1;}
+  virtual Int_t       RefitInward(AliESDEvent*)     { return -1   ; }
   virtual void        UnloadClusters();
-  virtual AliCluster* GetCluster(Int_t) const {return NULL;}
-          void        SetCutEta(Double_t value) {fCutEta=value;}
-	  void        SetCutPhi(Double_t value) {fCutPhi=value;}
-	  void        SetGeometry(AliEMCALGeometry *geom) {fGeom=geom;}
-	  void        SetCutPt(Double_t value)   {fCutPt=value;}
-	  void        SetCutNITS(Double_t value) {fCutNITS=value;}
-	  void        SetCutNTPC(Double_t value) {fCutNTPC=value;}
-	  void        SetStepLength(Float_t length) {fStep=length;}
+
+  virtual AliCluster* GetCluster   (Int_t)    const { return NULL ; }
+
+          void        SetCutEta    (Double_t value) { fCutEta     = value ; }
+	  void        SetCutPhi    (Double_t value) { fCutPhi     = value ; }
+	  void        SetCutPt     (Double_t value) { fCutPt      = value ; }
+	  void        SetCutNITS   (Double_t value) { fCutNITS    = value ; }
+	  void        SetCutNTPC   (Double_t value) { fCutNTPC    = value ; }
+	  void        SetTrackInITS(Bool_t   value) { fTrackInITS = value ; }
+	  void        SetStepLength(Float_t length) { fStep       = length; }
+
 	  void        SetTrackCorrectionMode(Option_t *option);
 	  void        SetEMCalSurfaceDistance(Double_t d) {fEMCalSurfaceDistance = d;}
+	  void        SetGeometry  (AliEMCALGeometry *geom) { fGeom = geom ; }
 
   enum {	kUnmatched = -99999 };
 	
@@ -97,15 +104,16 @@ class AliEMCALTracker : public AliTracker
   ETrackCorr  fTrackCorrMode;   // Material budget correction mode
   Float_t     fEMCalSurfaceDistance; // EMCal surface distance
   Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
-  Double_t    fCutEta;	      // cut on eta difference
-  Double_t    fCutPhi;	      // cut on phi difference
-  Bool_t	    fITSTrackSA;      // If ITS Tracks	
+  Double_t    fCutEta;          // cut on eta difference
+  Double_t    fCutPhi;          // cut on phi difference
+  Bool_t      fITSTrackSA;      // If no TPC, use ITS Tracks	
+  Bool_t      fTrackInITS;      // Requiere ITS refit with AliVTrack::kITSout	
 	
   TObjArray  *fTracks;          //! collection of tracks
   TObjArray  *fClusters;        //! collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
 	
   AliEMCALGeometry *fGeom;      //! EMCAL geometry
   
-  ClassDef(AliEMCALTracker, 7)  // EMCAL "tracker"
+  ClassDef(AliEMCALTracker, 8) 
 };
 #endif
