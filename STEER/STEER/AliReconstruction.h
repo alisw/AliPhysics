@@ -445,7 +445,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 50)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 51)      // class for running the reconstruction
 };
 
 #endif
