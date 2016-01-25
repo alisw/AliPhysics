@@ -12,17 +12,17 @@ void LoadLibs();
 void LoadMacros();
 
 //______________________________________________________________________________
-void runEMCalJetAnalysisOld(
+AliAnalysisManager* runEMCalJetAnalysisOld(
     const char   *cDataType      = "AOD",                                   // set the analysis type, AOD or ESD
     const char   *cLocalFiles    = "fileLists/files_LHC11h_2_AOD145.txt",   // set the local list file
     UInt_t        iNumFiles      = 100,                                     // number of files analyzed locally
     UInt_t        iNumEvents     = 5000,                                    // number of events to be analyzed
     const char   *cRunPeriod     = "LHC11h",                                // set the run period
-    const char   *cTaskName      = "JetAna"                                 // sets name of analysis manager
+    const char   *cTaskName      = "JetAna",                                // sets name of analysis manager
+    Bool_t        doNotStart     = kFALSE
 )
 {
   const Bool_t   bDoEmcal             = kTRUE;
-  const Bool_t   bUseNewCode          = kTRUE;
   const Bool_t   bDoChargedJets       = kTRUE;
   const Bool_t   bDoFullJets          = kTRUE;
   const Bool_t   bDoTender            = kTRUE;
@@ -49,7 +49,7 @@ void runEMCalJetAnalysisOld(
   else {
     Printf("Incorrect data type option, check third argument of run macro.");
     Printf("datatype = AOD or ESD");
-    return;
+    return 0;
   }
 
   Printf("%s analysis chosen.", cDataType);
@@ -57,7 +57,7 @@ void runEMCalJetAnalysisOld(
   TString sLocalFiles(cLocalFiles);
   if (sLocalFiles == "") {
     Printf("You need to provide the list of local files!");
-    return;
+    return 0;
   }
   Printf("Setting local analysis for %d files from list %s, max events = %d", iNumFiles, sLocalFiles.Data(), iNumEvents);
 
@@ -217,44 +217,18 @@ void runEMCalJetAnalysisOld(
     sEmcalTracksName += sTracksName;
     sEmcalClusName += sClusName;
 
-    // EmcalParticles maker
-    if (!bUseNewCode) {
-      AliEmcalParticleMaker *pPartMakerTask = AddTaskEmcalParticleMaker(sTracksName, sClusName, sEmcalTracksName, sEmcalClusName, "AliEmcalParticleMaker");
-      pPartMakerTask->GetClusterContainer(0)->SetClusECut(0.15);
-      pPartMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
-      pPartMakerTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
-      pPartMakerTask->SelectCollisionCandidates(kPhysSel);
-    }
-
     // Cluster-track matcher task
-    if (bUseNewCode) {
-      AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher(sTracksName, sClusName, 0.1, kTRUE, kTRUE, kTRUE, kTRUE);
-      pMatcherTask->SelectCollisionCandidates(kPhysSel);
-      pMatcherTask->GetClusterContainer(0)->SetClusECut(0.15);
-      pMatcherTask->GetClusterContainer(0)->SetClusPtCut(0.);
-      pMatcherTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
-    }
-    else {
-      AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher(sEmcalTracksName, sEmcalClusName, 0.1, kFALSE, kTRUE);
-      pMatcherTask->SelectCollisionCandidates(kPhysSel);
-      pMatcherTask->GetParticleContainer(0)->SetParticlePtCut(0.);
-      pMatcherTask->GetParticleContainer(1)->SetParticlePtCut(0.);
-      pMatcherTask->SetModifyObjs(kTRUE);
-    }
+    AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher(sTracksName, sClusName, 0.1, kTRUE, kTRUE, kTRUE, kTRUE);
+    pMatcherTask->SelectCollisionCandidates(kPhysSel);
+    pMatcherTask->GetClusterContainer(0)->SetClusECut(0.15);
+    pMatcherTask->GetClusterContainer(0)->SetClusPtCut(0.);
+    pMatcherTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
 
     // Hadronic correction task
-    if (bUseNewCode) {
-      AliHadCorrTask *pHadCorrTask = AddTaskHadCorr(sTracksName, sClusName, sCorrClusName, 
-          kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
-      pHadCorrTask->SetHistoBins(150,0,150);
-      pHadCorrTask->SelectCollisionCandidates(kPhysSel);
-    }
-    else {
-      AliHadCorrTask *pHadCorrTask = AddTaskHadCorr(sEmcalTracksName, sEmcalClusName, sCorrClusName, 
-          kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
-      pHadCorrTask->SetHistoBins(150,0,150);
-      pHadCorrTask->SelectCollisionCandidates(kPhysSel); 
-    }
+    AliHadCorrTask *pHadCorrTask = AddTaskHadCorr(sTracksName, sClusName, sCorrClusName,
+        kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
+    pHadCorrTask->SetHistoBins(150,0,150);
+    pHadCorrTask->SelectCollisionCandidates(kPhysSel);
   }
   else {
     sCorrClusName = sClusName;
@@ -306,26 +280,10 @@ void runEMCalJetAnalysisOld(
     }
   }
 
-  if (!pMgr->InitAnalysis()) return;
+  if (!pMgr->InitAnalysis()) return 0;
   pMgr->PrintStatus();
 
-  TChain* pChain = 0;
-  if (iDataType == kAod) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
-    pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE, "");
-  }
-  else { 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
-    pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
-  }
-
-  // start analysis
-  Printf("Starting Analysis...");
-  pMgr->SetUseProgressBar(1, 250);
-  //pMgr->SetDebugLevel(1);
-
-  // To have more debug info
-  //pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
+  pMgr->SetUseProgressBar(kTRUE, 250);
 
   TFile *pOutFile = new TFile("train.root","RECREATE");
   pOutFile->cd();
@@ -333,7 +291,23 @@ void runEMCalJetAnalysisOld(
   pOutFile->Close();
   delete pOutFile;
 
-  pMgr->StartAnalysis("local", pChain, iNumEvents);
+  if (!doNotStart) {
+    TChain* pChain = 0;
+    if (iDataType == kAod) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
+      pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+    }
+    else {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
+      pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+    }
+
+    // start analysis
+    Printf("Starting Analysis...");
+    pMgr->StartAnalysis("local", pChain, iNumEvents);
+  }
+
+  return pMgr;
 }
 
 //______________________________________________________________________________
