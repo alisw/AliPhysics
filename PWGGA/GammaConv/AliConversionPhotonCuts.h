@@ -114,6 +114,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
 		TString GetCutNumber();
 		
+		Float_t GetKappaTPC(AliAODConversionPhoton *gamma, AliVEvent *event);
+		
 		// Cut Selection
 		Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
 		Bool_t PhotonIsSelectedMC(TParticle *particle,AliStack *fMCStack,Bool_t checkForConvertedGamma=kTRUE);

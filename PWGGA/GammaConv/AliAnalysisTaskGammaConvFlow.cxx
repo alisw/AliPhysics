@@ -90,6 +90,7 @@ fMesonCutArray(NULL),
 fMesonCuts(NULL),
 hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
+hKappaTPC(NULL),
 hESDConvGammaR(NULL),
 hESDConvGammaEta(NULL),
 //tESDConvGammaPtDcazCat(NULL),
@@ -180,6 +181,7 @@ fMesonCutArray(NULL),
 fMesonCuts(NULL),
 hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
+hKappaTPC(NULL),
 hESDConvGammaR(NULL),
 hESDConvGammaEta(NULL),
 //tESDConvGammaPtDcazCat(NULL),
@@ -318,6 +320,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	hEtaShift = new TProfile*[fnCuts];
 	hESDConvGammaPt = new TH1F*[fnCuts];
 	hInvMassPair = new TH2F*[fnCuts];
+	hKappaTPC = new TH2F*[fnCuts];
 	
 	if (fDoPhotonQA == 2){
 		fPhotonDCAList = new TList*[fnCuts];
@@ -407,6 +410,9 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		
 		hInvMassPair[iCut]= new TH2F("InvMassPair_Pt","Gamma invariant mass vs Pt",200,0,0.2,250,0,25);	
 		fESDList[iCut]->Add(hInvMassPair[iCut]);
+		
+		hKappaTPC[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt",200,0,10,250,0,25);
+		fESDList[iCut]->Add(hKappaTPC[iCut]);
 		
 		if (fDoPhotonQA == 2){
 			fPhotonDCAList[iCut] = new TList();
@@ -640,7 +646,8 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
             
             if(fIsFromMBHeader){
                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-		hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
+                hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
+                hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
                 if (fDoPhotonQA > 0){
                     hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
                     hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
@@ -688,7 +695,8 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
                 fGammaCandidates->Add(PhotonCandidate);
                 if(fIsFromMBHeader){
                     hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-		    hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
+                    hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
+                    hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
                     if (fDoPhotonQA > 0){
                         hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
                         hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
@@ -728,7 +736,8 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
             fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
             if(fIsFromMBHeader){
                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-		hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
+                hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
+                hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
                 if (fDoPhotonQA > 0){
                     hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
                     hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
