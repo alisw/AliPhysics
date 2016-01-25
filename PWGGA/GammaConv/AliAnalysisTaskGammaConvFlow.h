@@ -78,6 +78,8 @@ public:
     void                                 PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const;
     void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
     void                                 ProcessPhotonCandidatesforV2();
+    void                                 SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
+    void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
     
     
 protected:
@@ -175,6 +177,11 @@ protected:
 	Int_t 								fDoPhotonQA;										//
 	Bool_t 								fIsFromMBHeader;									//
 	TH1D                               	*fhistoEPVZ;										//!
+	
+  Float_t               fMinMass;                        //
+  Float_t               fMaxMass;                        //
+  Float_t               fMinKappa;                       //
+  Float_t               fMaxKappa;                       //
 
     
 private:

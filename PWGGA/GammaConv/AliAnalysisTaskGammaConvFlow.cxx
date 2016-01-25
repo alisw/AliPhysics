@@ -145,6 +145,10 @@ fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
 fhistoEPVZ(NULL),
+fMinMass(0),
+fMaxMass(0),
+fMinKappa(0),
+fMaxKappa(0),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
@@ -235,6 +239,10 @@ fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
 fhistoEPVZ(NULL),
+fMinMass(0),
+fMaxMass(0),
+fMinKappa(0),
+fMaxKappa(0),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
@@ -812,6 +820,8 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 		
 		AliAODConversionPhoton *gammaForv2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
 		if (gammaForv2 == NULL) return;
+    if (gammaForv2->GetInvMassPair() < fMinMass || gammaForv2->GetInvMassPair() > fMaxMass) return;
+    if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent) < fMinKappa || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent) > fMaxKappa) return;
 		AliFlowTrack *sTrack = new AliFlowTrack();
 		sTrack->SetForRPSelection(kFALSE);
 		sTrack->SetForPOISelection(kTRUE);
