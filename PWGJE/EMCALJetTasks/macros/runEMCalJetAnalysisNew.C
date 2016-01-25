@@ -40,6 +40,10 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   Double_t kGhostArea = 0.01;
   if (!bIsPP) kGhostArea = 0.005;
 
+  AliParticleContainer::SetDefTrackCutsPeriod(cRunPeriod);
+
+  Printf("Default track cut period set to: %s", AliParticleContainer::GetDefTrackCutsPeriod().Data());
+
   const Bool_t   bDoTender            = kTRUE;
   const Bool_t   bDoHadCorr           = kTRUE;
   const Double_t kJetRadius           = 0.4;
@@ -54,8 +58,6 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   eDataType iDataType;
   if (!strcmp(cDataType, "ESD")) {
     iDataType = kEsd;
-    Printf("For the moment, this macro is only available for AOD analysis!");
-    return 0;
   }
   else if (!strcmp(cDataType, "AOD")) {
     iDataType = kAod;
@@ -201,7 +203,6 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     // Cluster-track matcher task
     AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher(sTracksName, sClusName, 0.1, kFALSE, kTRUE, kTRUE, kTRUE);
     pMatcherTask->SelectCollisionCandidates(kPhysSel);
-    pMatcherTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
     pMatcherTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
     pMatcherTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
     pMatcherTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
@@ -216,7 +217,6 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     AliHadCorrTask *pHadCorrTask = AddTaskHadCorr(sTracksName, sClusName, "", 
         kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
     pHadCorrTask->SelectCollisionCandidates(kPhysSel);
-    pHadCorrTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
     pHadCorrTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
     pHadCorrTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
     pHadCorrTask->GetClusterContainer(0)->SetClusECut(0);
@@ -236,18 +236,19 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   else {
     AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0, 0, 0, 0., 0., "TPC");
   }
-  pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
   pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
   pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
-  pQATask->SetAODfilterBits(256, 512);
   pQATask->SelectCollisionCandidates(kPhysSel);
   pQATask->SetHistoBins(200, 0, 30);
 
   // Charged jet analysis
   if (bDoChargedJets) {
-    AliEmcalJetTask *pChJetTask = AddTaskEmcalJet(sTracksName, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
+    AliEmcalJetTask *pChJetTask = AddTaskEmcalJet(sTracksName, "", 1, kJetRadius, 1, 0, 0, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
     pChJetTask->SelectCollisionCandidates(kPhysSel);
-    pChJetTask->SetFilterHybridTracks(kTRUE);
+
+    pChJetTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+    pChJetTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
+
     sChJetsName = pChJetTask->GetName();
 
     AliAnalysisTaskSAJF *pSpectraChTask = AddTaskSAJF(sTracksName, "", sChJetsName, "",  kJetRadius, kJetPtCut, 0., "TPC");
@@ -258,10 +259,17 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
   // Full jet analysis
   if (bDoFullJets) {
-    AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet(sTracksName, sClusName, 1, kJetRadius, 0, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
+    AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet(sTracksName, sClusName, 1, kJetRadius, 0, 0, 0, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
     pFuJetTask->SelectCollisionCandidates(kPhysSel);
-    pFuJetTask->SetFilterHybridTracks(kTRUE);
+
+    pFuJetTask->GetClusterContainer(0)->SetClusECut(0.);
+    pFuJetTask->GetClusterContainer(0)->SetClusPtCut(0.);
+    pFuJetTask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
     pFuJetTask->SetClusterEnergyType(AliVCluster::kHadCorr);
+
+    pFuJetTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+    pFuJetTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
+
     sFuJetsName = pFuJetTask->GetName();
 
     AliAnalysisTaskSAJF *pSpectraFuTask = AddTaskSAJF(sTracksName, sClusName, sFuJetsName, "", kJetRadius, kJetPtCut, 0., "EMCAL"); 
