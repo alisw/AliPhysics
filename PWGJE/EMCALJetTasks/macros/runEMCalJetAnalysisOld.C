@@ -128,6 +128,10 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     // Hybrid tracks maker for AOD
     AliEmcalAodTrackFilterTask *pHybTask = AddTaskEmcalAodTrackFilter("HybridTracks", "tracks", cRunPeriod);
     pHybTask->SelectCollisionCandidates(kPhysSel);
+    if (!bDoEmcal) {
+      pHybTask->SetAttemptProp(kFALSE);
+      pHybTask->SetAttemptPropMatch(kFALSE);
+    }
   }
 
   AliEmcalPicoTrackMaker *pPicoTrackTask = AddTaskEmcalPicoTrackMaker(sTracksName, "HybridTracks");
@@ -235,13 +239,15 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   }
 
   // QA task
-  AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0., 0, 0, 0., 0., "TPC");
-  pQATask->GetClusterContainer(0)->SetClusECut(0.30);
-  pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
-  pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
-  pQATask->GetParticleContainer(0)->SetClassName("AliPicoTrack");
-  pQATask->SelectCollisionCandidates(kPhysSel);
-  pQATask->SetHistoBins(200, 0, 30);
+  AliAnalysisTaskSAQA *pQATask = 0;
+  if (bDoEmcal) {
+    pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0., 0, 0, 0., 0., "TPC");
+    pQATask->GetClusterContainer(0)->SetClusECut(0.30);
+    pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
+  }
+  else {
+    pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0., 0, 0, 0., 0., "TPC");
+  }
 
   // Charged jet analysis
   if (bDoChargedJets) {

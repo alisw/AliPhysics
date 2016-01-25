@@ -221,19 +221,25 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pQATaskAfterMaker->SetHistoBins(200, 0, 30);
     pQATaskAfterMaker->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
-  
+
   // QA task
-  AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sClusName, sCellName, "", "", 0, 0, 0, 0., 0., "TPC");
-  pQATask->GetClusterContainer(0)->SetClusECut(0.);
-  pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
-  pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
+  AliAnalysisTaskSAQA *pQATask = 0;
+  if (bDoFullJets) {
+    AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, sClusName, sCellName, "", "", 0, 0, 0, 0., 0., "TPC");
+    pQATask->GetClusterContainer(0)->SetClusECut(0.);
+    pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
+    pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
+    pQATask->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+  else {
+    AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0, 0, 0, 0., 0., "TPC");
+  }
   pQATask->GetParticleContainer(0)->SetClassName("AliAODTrack");
   pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
   pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
   pQATask->SetAODfilterBits(256, 512);
   pQATask->SelectCollisionCandidates(kPhysSel);
   pQATask->SetHistoBins(200, 0, 30);
-  pQATask->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
 
   // Charged jet analysis
   if (bDoChargedJets) {
