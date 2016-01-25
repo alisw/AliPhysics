@@ -199,6 +199,7 @@ goCPass()
   esac
 
   # TODO: check if this is really for CPass1 only. Asymmetry found when merging CPass0/1.
+  # TODO: Used only in MC. Check if this still works.
   if [[ $cpass == 1 ]]; then
     if [[ "${infile}" =~ galice\.root ]]; then
       ln -s ${inputList%/*}/* ${runpath}
@@ -366,7 +367,6 @@ goCPass()
         return 1
       fi
 
-
       # Create the Barrel and OuterDet directories for CPass1 and link the local OCDB directory
       # there to make the localOCDBaccessConfig.C file work, since it may point to the OCDB
       # entries using a relative path, e.g. local://./OCDB.
@@ -411,6 +411,7 @@ goCPass()
 
       # Make the filtered tree (if requested and not already produced by QA.
       # TODO: check if it works with non-shared filesystems.
+      # TODO: check if they are still needed. In principle we could remove them.
       [[ -f AliESDs_Barrel.root ]] && echo AliESDs_Barrel.root > filtered.list
       if [[ -n $runESDfiltering && ! -f FilterEvents_Trees.root && -f filtered.list ]]; then
         goMakeFilteredTrees $PWD $runNumber "$PWD/filtered.list" $filteringFactorHighPt \
@@ -427,8 +428,9 @@ goCPass()
 
   # CPass has completed. Copy all created files to the destination (which might be remote).
   printExec rm -f ./$chunkName
-  printExec copyFileToRemote $runpath/* $outputDir
-  echo
+  while read cpdir; do
+    printExec copyFileToRemote $cpdir/* $outputDir/$cpdir
+  done < <(find . -type d)
   
   # Validate CPass.
   case $cpass in
@@ -919,8 +921,10 @@ goMergeCPass0()
 
   echo "Contents (recursive) of batch working directory after tarball creation in MergeCPass0 ($batchWorkingDirectory):" ; /bin/ls -R $batchWorkingDirectory ; echo
 
-  # Copy all to output dir.
-  copyFileToRemote $runpath/* $outputDir
+  # Copy all to output dir. Preserve dir structure.
+  while read cpdir; do
+    copyFileToRemote $cpdir/* $outputDir/$cpdir
+  done < <(find . -type d)
 
   # Copy OCDB to meta.
   copyFileToRemote ${batchWorkingDirectory}/${baseTar} $commonOutputPath/meta
@@ -2487,22 +2491,11 @@ done
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
-  #copy the QA directory
-  find QAplots | while read sourceFile; do
-    copyFileToRemote "${sourceFile}" "${commonOutputPath}/${sourceFile}"
-  done
+  # Copy all, recursively.
+  while read cpdir; do
+    copyFileToRemote $cpdir/* $commonOutputPath/$cpdir
+  done < <( find . -type d )
 
-  #copy logs to destination
-  copyFileToRemote "$logTmp" "${commonOutputPath}"
-  copyFileToRemote "$jsonLogTmp" "${commonOutputPath}"
-  
-  #copy output files
-  exec &> >(tee fileCopy.log)
-  copyFileToRemote *.list ${commonOutputPath}
-  copyFileToRemote *.root ${commonOutputPath}
-  copyFileToRemote *.log ${commonOutputPath}
-  copyFileToRemote *.tree ${commonOutputPath}
-  copyFileToRemote fileCopy.log ${commonOutputPath}
   alilog_info  "[END] goMakeSummary() with following parameters $*"
   return 0
 )
