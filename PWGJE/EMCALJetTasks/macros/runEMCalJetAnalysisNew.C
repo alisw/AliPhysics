@@ -12,13 +12,14 @@ void LoadLibs();
 void LoadMacros();
 
 //______________________________________________________________________________
-void runEMCalJetAnalysisNew(
+AliAnalysisManager* runEMCalJetAnalysisNew(
     const char   *cDataType      = "AOD",                                   // set the analysis type, AOD or ESD
     const char   *cLocalFiles    = "fileLists/files_LHC11h_2_AOD145.txt",   // set the local list file
     UInt_t        iNumFiles      = 100,                                     // number of files analyzed locally
     UInt_t        iNumEvents     = 5000,                                    // number of events to be analyzed
     const char   *cRunPeriod     = "LHC11h",                                // set the run period
-    const char   *cTaskName      = "JetAna"                                 // sets name of analysis manager
+    const char   *cTaskName      = "JetAna",                                // sets name of analysis manager
+    Bool_t        doNotStart     = kFALSE
 )
 {
   const Bool_t   bDoChargedJets       = kTRUE;
@@ -47,7 +48,7 @@ void runEMCalJetAnalysisNew(
   else {
     Printf("Incorrect data type option, check third argument of run macro.");
     Printf("datatype = AOD or ESD");
-    return;
+    return 0;
   }
 
   Printf("%s analysis chosen.", cDataType);
@@ -55,7 +56,7 @@ void runEMCalJetAnalysisNew(
   TString sLocalFiles(cLocalFiles);
   if (sLocalFiles == "") {
     Printf("You need to provide the list of local files!");
-    return;
+    return 0;
   }
   Printf("Setting local analysis for %d files from list %s, max events = %d", iNumFiles, sLocalFiles.Data(), iNumEvents);
 
@@ -261,26 +262,10 @@ void runEMCalJetAnalysisNew(
     pSpectraFuTask->SetHistoType(kHistoType);
   }
 
-  if (!pMgr->InitAnalysis()) return;
+  if (!pMgr->InitAnalysis()) return 0;
   pMgr->PrintStatus();
-
-  TChain* pChain = 0;
-  if (iDataType == kAod) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
-    pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
-  }
-  else { 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
-    pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
-  }
     
-  // start analysis
-  Printf("Starting Analysis...");
-  pMgr->SetUseProgressBar(1, 250);
-  //pMgr->SetDebugLevel(2);
-
-  // To have more debug info
-  //pMgr->AddClassDebug("AliEmcalClusTrackMatcherTask", AliLog::kDebug+100);
+  pMgr->SetUseProgressBar(kTRUE, 250);
   
   TFile *pOutFile = new TFile("train.root","RECREATE");
   pOutFile->cd();
@@ -288,7 +273,23 @@ void runEMCalJetAnalysisNew(
   pOutFile->Close();
   delete pOutFile;
 
-  pMgr->StartAnalysis("local", pChain, iNumEvents);
+  if (!doNotStart) {
+    TChain* pChain = 0;
+    if (iDataType == kAod) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
+      pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+    }
+    else {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
+      pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+    }
+
+    // start analysis
+    Printf("Starting Analysis...");
+    pMgr->StartAnalysis("local", pChain, iNumEvents);
+  }
+
+  return pMgr;
 }
 
 //______________________________________________________________________________
