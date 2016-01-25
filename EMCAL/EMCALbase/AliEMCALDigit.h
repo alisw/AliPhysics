@@ -3,17 +3,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //_________________________________________________________________________
 //  EMCAL digit: 
-// 
-//  A  Digit is the sum of energy in a Tower (Hit sum) and stores information, about primaries
-//  and entering particle contributing to a Digit
+//      A Digit is the sum of the energy lost in an EMCAL Tower
+//      It also stores information on Primary, and enterring particle
+//      tracknumbers Digits are created using AliEMCALSDigitizer, followed
+//      by AliEMCALDigitizer 
 //
 //*-- Author: Sahal Yacoob (LBL)
 // based on : AliPHOSDigit
-//___________________________________________________________________________
+//__________________________________________________________________________
 
 // --- ROOT system ---
 
@@ -72,13 +71,17 @@ class AliEMCALDigit : public AliDigitNew {
   void     SetType(Int_t t)          { fDigitType = t    ; }
   void     ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
-  //Raw time sample
-  //ALTRO
+  //
+  // Raw time sample
+  //
+  
+  // ALTRO
   Int_t    GetNALTROSamplesLG() const {if(fDigitType==kLG)      return fNSamples;   else return 0 ; }
   Bool_t   GetALTROSampleLG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const;
   Int_t    GetNALTROSamplesHG() const {if(fDigitType==kHG)      return fNSamplesHG; else return 0 ; }
   Bool_t   GetALTROSampleHG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const;
-  //FALTRO, trigger. Same data members as Low Gain	
+  
+  // FALTRO, trigger. Same data members as Low Gain	
   Int_t    GetNFALTROSamples()  const {if(fDigitType==kTrigger) return fNSamples;   else return 0 ; }
   Bool_t   GetFALTROSample(const Int_t iSample, Int_t& timeBin, Int_t& amp)  const ;
 	
@@ -87,6 +90,16 @@ class AliEMCALDigit : public AliDigitNew {
   void     SetFALTROSamples  (const Int_t nSamples,   Int_t *samples) 
   { if(fDigitType==kTrigger) SetALTROSamplesLG(nSamples, samples) ; } 
 
+  //
+  // Primary/Parents array creation
+  // Used at analysis level while reclusterizing
+  //
+  void SetListOfPrimaries(Int_t npri, Int_t * prilist, Int_t * edepList) ;  
+  void SetListOfParents  (Int_t npar, Int_t * parlist, Int_t * edepList) ;  
+  
+  //
+  // Other
+  //
   void     SetCalibAmp(Float_t amp) { fAmpCalib = amp  ; }
   Double_t GetCalibAmp()   const    { return fAmpCalib ; }
 
@@ -96,7 +109,7 @@ class AliEMCALDigit : public AliDigitNew {
 	
   Float_t  fAmpFloat;     // Cell amplitude, float
   Int_t    fNSamples;     // Number of time samples, Low Gain for ALTRO, used also for FALTRO 
-  Int_t   *fSamples;	  //[fNSamples], list of time bin constents, Low Gain for ALTRO, used also for FALTRO 
+  Int_t   *fSamples;	    //[fNSamples], list of time bin constents, Low Gain for ALTRO, used also for FALTRO 
   Int_t    fNSamplesHG;   // Number of time samples, High Gain for ALTRO
   Int_t   *fSamplesHG;	  //[fNSamples], list of time bin constents, High Gain for ALTRO, used also for FALTRO 
 	
@@ -112,6 +125,7 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t    fMaxIter  ;    // Number to Increment Maxiparent, and MaxPrimary if default is not sufficient
   Float_t  fTime ;        // Calculated time  
   Float_t  fTimeR ;       // Earliest time: to be used by Digits2Raw
+  
   //Fit quality parameters
   Float_t  fChi2;         // Fit Chi aquare	
   Int_t    fNDF;          // Fit Number of Degrees of Freedom
@@ -119,7 +133,7 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t    fDigitType;    // This is a trigger digit(0), HG (1) or LG (3)
   Float_t  fAmpCalib;     //! Calibrated energy
 
-  ClassDef(AliEMCALDigit,6)   // Digit in EMCAL 
+  ClassDef(AliEMCALDigit,7)   // Digit in EMCAL 
 } ;
 
 #endif //  ALIEMCALDIGIT_H
