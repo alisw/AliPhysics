@@ -117,6 +117,7 @@ public:
   void SetStopOnMissingTriggerFile(Bool_t flag=kTRUE) {fStopOnMissingTriggerFile=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
+  void SetWriteHLTESD(Bool_t flag=kTRUE) {fWriteHLTESD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
   void SetDiamondProfileSPD(AliESDVertex *dp) {fDiamondProfileSPD=dp;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
@@ -307,6 +308,7 @@ private:
   Bool_t         fStopOnMissingTriggerFile; // stop if the simulated trigger file is absent
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
+  Bool_t         fWriteHLTESD;        // write HLT ESD tree
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
   //
   Bool_t         fWriteThisFriend;    // decision to store or not friends for given event

@@ -229,6 +229,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fStopOnMissingTriggerFile(kTRUE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
+  fWriteHLTESD(kTRUE),
   fFillTriggerESD(kTRUE),
   //
   fWriteThisFriend(kFALSE),
@@ -376,6 +377,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fStopOnMissingTriggerFile(rec.fStopOnMissingTriggerFile),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
+  fWriteHLTESD(rec.fWriteHLTESD),
   fFillTriggerESD(rec.fFillTriggerESD),
   //
   fWriteThisFriend(rec.fWriteThisFriend),
@@ -541,6 +543,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fStopOnMissingTriggerFile = rec.fStopOnMissingTriggerFile;
   fWriteAlignmentData    = rec.fWriteAlignmentData;
   fWriteESDfriend        = rec.fWriteESDfriend;
+  fWriteHLTESD           = rec.fWriteHLTESD;
   fFillTriggerESD        = rec.fFillTriggerESD;
   //
   //
@@ -1918,7 +1921,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   ftree->GetUserInfo()->Add(fesd);
 
-  fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
+  if (fWriteHLTESD) fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
   fhltesd = new AliESDEvent();
   fhltesd->CreateStdContent();
   // read the ESD template from CDB
@@ -1934,19 +1937,23 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   AliESDEvent* pESDLayout=dynamic_cast<AliESDEvent*>(hltESDConfig->GetObject());
   if (pESDLayout) {
-      // init all internal variables from the list of objects
-      pESDLayout->GetStdContent();
-
-      // copy content and create non-std objects
-      *fhltesd=*pESDLayout;
-      fhltesd->Reset();
+    // init all internal variables from the list of objects
+    pESDLayout->GetStdContent();
+    
+    // copy content and create non-std objects
+    *fhltesd=*pESDLayout;
+    fhltesd->Reset();
   } else {
-      AliError(Form("error setting hltEsd layout from \"HLT/Calib/esdLayout\": invalid object type"));
+    AliError(Form("error setting hltEsd layout from \"HLT/Calib/esdLayout\": invalid object type"));
   }
-
-  fhltesd->WriteToTree(fhlttree);
-  fhlttree->GetUserInfo()->Add(fhltesd);
-
+  if (fWriteHLTESD) {
+    fhltesd->WriteToTree(fhlttree);
+    fhlttree->GetUserInfo()->Add(fhltesd);
+  }
+  else {
+    AliInfo("HLT ESD tree writing is disabled");
+  }
+  
   ProcInfo_t procInfo;
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form("Current memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
@@ -1980,7 +1987,9 @@ void AliReconstruction::SlaveBegin(TTree*)
     fRecoHandler->SetEvent(fesd);
     fRecoHandler->SetESDfriend(fesdf);
     fRecoHandler->SetHLTEvent(fhltesd);
-    fRecoHandler->SetHLTTree(fhlttree);
+    if (fWriteHLTESD) {
+      fRecoHandler->SetHLTTree(fhlttree);
+    }
     fAnalysis->SetInputEventHandler(fRecoHandler);
     // Enter external loop mode
     fAnalysis->SetExternalLoop(kTRUE);
@@ -2548,17 +2557,18 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
   }
   // write HLT ESD
-  
-  nbf = fhlttree->Fill();
-  if (fTreeBuffSize>0 && fhlttree->GetAutoFlush()<0 && (fMemCountESDHLT += nbf)>fTreeBuffSize ) { // default limit is still not reached
-    nbf = fhlttree->GetZipBytes();
-    if (nbf>0) nbf = -nbf;
-    else       nbf = fhlttree->GetEntries();
-    fhlttree->SetAutoFlush(nbf);
-    AliInfo(Form("Calling fhlttree->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
-		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
+  if (fWriteHLTESD) {
+    nbf = fhlttree->Fill();
+    if (fTreeBuffSize>0 && fhlttree->GetAutoFlush()<0 && (fMemCountESDHLT += nbf)>fTreeBuffSize ) { // default limit is still not reached
+      nbf = fhlttree->GetZipBytes();
+      if (nbf>0) nbf = -nbf;
+      else       nbf = fhlttree->GetEntries();
+      fhlttree->SetAutoFlush(nbf);
+      AliInfo(Form("Calling fhlttree->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
+		   nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
+    }
   }
-    
+
   gSystem->GetProcInfo(&procInfo);
   Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
   Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
@@ -2700,7 +2710,7 @@ void AliReconstruction::SlaveTerminate()
 
   // we want to have only one tree version number
   ftree->Write(ftree->GetName(),TObject::kOverwrite);
-  fhlttree->Write(fhlttree->GetName(),TObject::kOverwrite);
+  if (fWriteHLTESD) fhlttree->Write(fhlttree->GetName(),TObject::kOverwrite);
 
   if (fWriteESDfriend) {
     ffileF->cd();
