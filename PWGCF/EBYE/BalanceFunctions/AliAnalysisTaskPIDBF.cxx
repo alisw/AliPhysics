@@ -1701,7 +1701,7 @@ case kProton_:
 
 else {
 
- cout<<"There are no NSigma for All Charged Particles "<<endl;
+ //cout<<"There are no NSigma for All Charged Particles "<<endl;
  
       
       // fill QA histograms
