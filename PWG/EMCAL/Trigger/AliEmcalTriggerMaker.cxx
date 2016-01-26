@@ -17,8 +17,9 @@
 #include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
-#include "AliEmcalTriggerDataGridAP.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerConstants.h"
+#include "AliEMCALTriggerDataGrid.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"
 #include "AliVCaloCells.h"
@@ -131,16 +132,16 @@ void AliEmcalTriggerMaker::ExecOnce()
   if(!fTriggerBitConfig){
     switch(fUseTriggerBitConfig){
     case kNewConfig:
-      fTriggerBitConfig = new AliEmcalTriggerBitConfigNewAP();
+      fTriggerBitConfig = new AliEMCALTriggerBitConfigNew();
       break;
     case kOldConfig:
-      fTriggerBitConfig = new AliEmcalTriggerBitConfigOldAP();
+      fTriggerBitConfig = new AliEMCALTriggerBitConfigOld();
       break;
     }
   }
 
   if (!fCaloTriggersOutName.IsNull()) {
-    fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfo");
+    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
     fCaloTriggersOut->SetName(fCaloTriggersOutName);
 
     if (!(InputEvent()->FindListObject(fCaloTriggersOutName))) {
@@ -193,10 +194,10 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   // Create data structure for energy measurements;
-  fPatchAmplitudes = new AliEmcalTriggerDataGridAP<float>;
-  fPatchADC =  new AliEmcalTriggerDataGridAP<int>;
-  fPatchADCSimple = new AliEmcalTriggerDataGridAP<double>;
-  fLevel0TimeMap = new AliEmcalTriggerDataGridAP<char>;
+  fPatchAmplitudes = new AliEMCALTriggerDataGrid<float>;
+  fPatchADC =  new AliEMCALTriggerDataGrid<int>;
+  fPatchADCSimple = new AliEMCALTriggerDataGrid<double>;
+  fLevel0TimeMap = new AliEMCALTriggerDataGrid<char>;
 
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
@@ -222,8 +223,8 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
  */
 Bool_t AliEmcalTriggerMaker::Run() 
 {
-  AliEmcalTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
-  AliEmcalTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
+  AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
+  AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
 
   // delete patch array, clear setup object
   fCaloTriggersOut->Delete();
@@ -319,7 +320,7 @@ Bool_t AliEmcalTriggerMaker::Run()
     Int_t globCol=-1, globRow=-1;
     fGeom->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    (*fPatchADCSimple)(globCol,globRow) += amp/EmcalTriggerAP::kEMCL1ADCtoGeV;
+    (*fPatchADCSimple)(globCol,globRow) += amp/EMCALTrigger::kEMCL1ADCtoGeV;
   }
 
   // dig out common data (thresholds)
@@ -426,31 +427,31 @@ Bool_t AliEmcalTriggerMaker::Run()
     if (triggerMainJet != 0) {
       Int_t tBits = triggerMainJet->GetTriggerBits();
       // main trigger flag
-      tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kMainTriggerBitNum );
+      tBits = tBits | ( 1 << kMainTriggerBitNum );
       triggerMainJet->SetTriggerBits( tBits );
     }
     if (triggerMainJetSimple != 0) {
       Int_t tBits = triggerMainJetSimple->GetTriggerBits();
       // main trigger flag
-      tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kMainTriggerBitNum );
+      tBits = tBits | ( 1 << kMainTriggerBitNum );
       triggerMainJetSimple->SetTriggerBits(tBits);
     }
     if (triggerMainGamma != 0) {
       Int_t tBits = triggerMainGamma->GetTriggerBits();
       // main trigger flag
-      tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kMainTriggerBitNum );
+      tBits = tBits | ( 1 << kMainTriggerBitNum );
       triggerMainGamma->SetTriggerBits( tBits );
     }
     if (triggerMainGammaSimple != 0) {
       Int_t tBits = triggerMainGammaSimple->GetTriggerBits();
       // main trigger flag
-      tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kMainTriggerBitNum );
+      tBits = tBits | ( 1 << kMainTriggerBitNum );
       triggerMainGammaSimple->SetTriggerBits( tBits );
     }
     if(triggerMainLevel0){
       Int_t tBits = triggerMainLevel0->GetTriggerBits();
       // main trigger flag
-      tBits |= (1 << AliEmcalTriggerPatchInfo::kMainTriggerBitNum);
+      tBits |= (1 << kMainTriggerBitNum);
       triggerMainLevel0->SetTriggerBits(tBits);
     }
   } // there are some triggers
@@ -458,7 +459,7 @@ Bool_t AliEmcalTriggerMaker::Run()
   // Diagnostics
   int npatchOnline = 0;
   for(TIter patchIter = TIter(fCaloTriggersOut).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *mypatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(mypatch->IsOfflineSimple()) continue;
     AliDebug(1,Form("Patch with bits: %s, types: JH[%s], JL[%s], GH[%s], GL[%s], L0[%s]",
         std::bitset<sizeof(int)*4>(mypatch->GetTriggerBits()).to_string().c_str(),
@@ -478,7 +479,7 @@ Bool_t AliEmcalTriggerMaker::Run()
  * \param isOfflineSimple Switch between online and offline patches
  * \return The new patch (NULL in case of failure)
  */
-AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple)
+AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple)
 {
   Int_t tBits=-1;
   if (!isOfflineSimple)
@@ -497,8 +498,8 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   if ((type == kTMEMCalJet    && !IsEJE( tBits )) || 
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
       (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))) ||
-      (type == kTMEMCalRecalcJet && (tBits & (1 << AliEmcalTriggerPatchInfo::kRecalcJetBitNum))==0) ||
-      (type == kTMEMCalRecalcGamma && (tBits & (1 << AliEmcalTriggerPatchInfo::kRecalcGammaBitNum))==0) ) 
+      (type == kTMEMCalRecalcJet && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) ||
+      (type == kTMEMCalRecalcGamma && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) )
     return 0;
 
   // save primary vertex in vector
@@ -573,7 +574,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       if(type == kTMEMCalLevel0){
         try {
           adcAmp += static_cast<Int_t>((*fPatchAmplitudes)(globCol+i,globRow+j) * 4); // precision loss in case of global integer field
-        } catch (const AliEmcalTriggerDataGridAP<float>::OutOfBoundsException &e) {
+        } catch (const AliEMCALTriggerDataGrid<float>::OutOfBoundsException &e) {
           if(fDebugLevel){
             std::cerr << e.what() << std::endl;
           }
@@ -581,7 +582,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       } else {
         try {
           adcAmp += (*fPatchADC)(globCol+i,globRow+j);
-        } catch (AliEmcalTriggerDataGridAP<int>::OutOfBoundsException &e){
+        } catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e){
           if(fDebugLevel){
             std::cerr << e.what() << std::endl;
           }
@@ -590,7 +591,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 
       try{
         adcOfflineAmp += (*fPatchADCSimple)(globCol+i,globRow+j);
-      } catch (AliEmcalTriggerDataGridAP<double>::OutOfBoundsException &e){
+      } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e){
         if(fDebugLevel){
           std::cerr << e.what() << std::endl;
         }
@@ -743,8 +744,8 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   };
 
   // save the trigger object
-  AliEmcalTriggerPatchInfo *trigger = 
-    new ((*fCaloTriggersOut)[fITrigger]) AliEmcalTriggerPatchInfo();
+  AliEMCALTriggerPatchInfo *trigger =
+    new ((*fCaloTriggersOut)[fITrigger]) AliEMCALTriggerPatchInfo();
   fITrigger++;
   trigger->SetTriggerBitConfig(fTriggerBitConfig);
   trigger->SetCenterGeo(centerGeo, amp);
@@ -789,19 +790,19 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
   
   // First entries are for recalculated patches
 
-  tBitsArray[0] = 1 << AliEmcalTriggerPatchInfo::kRecalcJetBitNum;
+  tBitsArray[0] = 1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
   colArray[0] = -1;
   rowArray[0] = -1;
 
-  tBitsArray[1] = 1 << AliEmcalTriggerPatchInfo::kRecalcJetBitNum | 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum;
+  tBitsArray[1] = 1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit()) | 1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit());
   colArray[1] = -1;
   rowArray[1] = -1;
 
-  tBitsArray[2] = 1 << AliEmcalTriggerPatchInfo::kRecalcGammaBitNum;
+  tBitsArray[2] = 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
   colArray[2] = -1;
   rowArray[2] = -1;
 
-  tBitsArray[3] = 1 << AliEmcalTriggerPatchInfo::kRecalcGammaBitNum | 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum;
+  tBitsArray[3] = 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit()) | 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
   colArray[3] = -1;
   rowArray[3] = -1;
 
@@ -851,7 +852,7 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       // add trigger values
       if (tBits != 0) {
         // add offline bit
-        tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum );
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit()) );
         tBitsArray.Set( tBitsArray.GetSize() + 1 );
         colArray.Set( colArray.GetSize() + 1 );
         rowArray.Set( rowArray.GetSize() + 1 );
@@ -900,7 +901,7 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       // add trigger values
       if (tBits != 0) {
         // add offline bit
-        tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum );
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) );
         tBitsArray.Set( tBitsArray.GetSize() + 1 );
         colArray.Set( colArray.GetSize() + 1 );
         rowArray.Set( rowArray.GetSize() + 1 );

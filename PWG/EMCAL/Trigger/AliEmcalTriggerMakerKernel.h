@@ -5,19 +5,19 @@
 
 #include <TObject.h>
 
-#include "AliEmcalTriggerChannelContainerAP.h"
+#include "AliEMCALTriggerChannelContainer.h"
 
 class TObjArray;
-class AliEmcalTriggerPatchInfoAPV1;
-class AliEmcalTriggerRawPatchAP;
+class AliEMCALTriggerPatchInfo;
+class AliEMCALTriggerRawPatch;
 class AliEMCALGeometry;
 class AliVCaloCells;
 class AliVCaloTrigger;
 class AliVEvent;
 class AliVVZERO;
-template<class T> class AliEmcalTriggerDataGridAP;
-template<class T> class AliEmcalTriggerAlgorithmAP;
-template<class T> class AliEmcalTriggerPatchFinderAP;
+template<class T> class AliEMCALTriggerDataGrid;
+template<class T> class AliEMCALTriggerAlgorithm;
+template<class T> class AliEMCALTriggerPatchFinder;
 
 /**
  * @class AliEmcalTriggerMakerKernel
@@ -98,7 +98,7 @@ public:
    * Set the trigger bit configuration applied for the given data set
    * @param config Trigger bit config applied
    */
-  void SetTriggerBitConfig(const AliEmcalTriggerBitConfigAP *const config) { fTriggerBitConfig = config; }
+  void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *const config) { fTriggerBitConfig = config; }
 
   /**
    * Reset data grids
@@ -142,53 +142,53 @@ protected:
    * @param rowmax Maximum row the trigger algorithm operates on
    * @return The gamma trigger algorithm
    */
-  AliEmcalTriggerAlgorithmAP<double> *CreateGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
+  AliEMCALTriggerAlgorithm<double> *CreateGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
   /**
    * Create trigger algorithm for jet triggers
    * @param rowmin Minimum row the trigger algorithm operates on
    * @param rowmax Maximum row the trigger algorithm operates on
    * @return The jet trigger algorithm
    */
-  AliEmcalTriggerAlgorithmAP<double> *CreateJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
+  AliEMCALTriggerAlgorithm<double> *CreateJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
   /**
    * Create trigger algorithm for jet triggers
    * @param rowmin Minimum row the trigger algorithm operates on
    * @param rowmax Maximum row the trigger algorithm operates on
    * @return The jet trigger algorithm
    */
-  AliEmcalTriggerAlgorithmAP<double> *CreateBkgTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
+  AliEMCALTriggerAlgorithm<double> *CreateBkgTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
 
   /**
    * Check from the bitmask whether the patch is a gamma patch
    * @param patch Patch to check
    * @return True if patch is a gamma patch
    */
-  Bool_t IsGammaPatch(const AliEmcalTriggerRawPatchAP &patch) const;
+  Bool_t IsGammaPatch(const AliEMCALTriggerRawPatch &patch) const;
   /**
    * Check from the bitmask whether the patch is a jet patch
    * @param patch Patch to check
    * @return True if patch is a jet patch
    */
-  Bool_t IsJetPatch(const AliEmcalTriggerRawPatchAP &patch) const;
+  Bool_t IsJetPatch(const AliEMCALTriggerRawPatch &patch) const;
   /**
    * Check from the bitmask whether the patch is a background patch
    * @param patch Patch to check
    * @return True if patch is a background patch
    */
-  Bool_t IsBkgPatch(const AliEmcalTriggerRawPatchAP &patch) const;
+  Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
 
-  AliEmcalTriggerChannelContainerAP         fBadChannels;                 ///< Container of bad channels
-  const AliEmcalTriggerBitConfigAP          *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
+  AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
+  const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
 
-  AliEmcalTriggerDataGridAP<double>         *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
-  AliEmcalTriggerDataGridAP<double>         *fPatchADCSimple;             //!<! patch map for simple offline trigger
-  AliEmcalTriggerDataGridAP<double>         *fPatchADC;                   //!<! ADC values map
-  AliEmcalTriggerDataGridAP<char>           *fLevel0TimeMap;              //!<! Map needed to store the level0 times
-  AliEmcalTriggerDataGridAP<int>            *fTriggerBitMap;              //!<! Map of trigger bits
+  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
+  AliEMCALTriggerDataGrid<double>           *fPatchADC;                   //!<! ADC values map
+  AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
+  AliEMCALTriggerDataGrid<int>              *fTriggerBitMap;              //!<! Map of trigger bits
 
-  AliEmcalTriggerPatchFinderAP<double>      *fPatchFinder;                //!<! The actual patch finder
-  AliEmcalTriggerAlgorithmAP<double>        *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
+  AliEMCALTriggerPatchFinder<double>        *fPatchFinder;                //!<! The actual patch finder
+  AliEMCALTriggerAlgorithm<double>          *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
 
   Int_t                                     fJetPatchsize;                ///< Size of a jet patch
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants

@@ -14,7 +14,7 @@ class AliAnalysisUtils;
 class AliAODTrack;
 class AliESDtrack;
 class AliESDtrackCuts;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliEMCALGeometry;
 class AliVCluster;
 class AliVTrack;
@@ -49,7 +49,7 @@ protected:
 
   void ProcessTrack(const char *triggerclass, const AliVTrack * track, bool isOfflineSelected);
   void ProcessCluster(const char *triggerclass, const AliVCluster *clust, bool isOfflineSelected);
-  void ProcessOfflinePatch(const char * triggerclass, const AliEmcalTriggerPatchInfo * patch, bool isOfflineSelected);
+  void ProcessOfflinePatch(const char * triggerclass, const AliEMCALTriggerPatchInfo * patch, bool isOfflineSelected);
 
   Bool_t TrackSelectionESD(AliESDtrack* track) ;
   Bool_t TrackSelectionAOD(AliAODTrack* track);

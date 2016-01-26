@@ -18,7 +18,7 @@ class AliClusterContainer;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 
 #include "Rtypes.h"
@@ -115,7 +115,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TClonesArray               *GetClusterArray(Int_t i=0)                         const;
   Int_t                       GetNParticles(Int_t i=0)                           const;
   Int_t                       GetNClusters(Int_t i=0)                            const;
-  AliEmcalTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
+  AliEMCALTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
   Bool_t		                  HasTriggerType(TriggerType triggersel);
   ULong_t 		                GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);

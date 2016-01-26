@@ -7,7 +7,7 @@
 
 class AliAnalysisUtils;
 class AliEMCALGeometry;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -31,7 +31,7 @@ private:
   AliAnalysisTaskEmcalOfflinePatchesRef(const AliAnalysisTaskEmcalOfflinePatchesRef &);
   AliAnalysisTaskEmcalOfflinePatchesRef &operator=(const AliAnalysisTaskEmcalOfflinePatchesRef &);
 
-  void FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermodule, Int_t sector, Bool_t evsel);
+  void FillTriggerPatchHistos(const char *patchtype, const AliEMCALTriggerPatchInfo * const recpatch, Int_t supermodule, Int_t sector, Bool_t evsel);
 
   ClassDef(AliAnalysisTaskEmcalOfflinePatchesRef, 1);
 };

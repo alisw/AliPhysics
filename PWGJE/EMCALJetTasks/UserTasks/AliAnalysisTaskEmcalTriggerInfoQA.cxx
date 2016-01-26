@@ -28,7 +28,7 @@
 #include "AliEmcalJet.h"
 #include "AliEMCALGeometry.h"
 
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerSetupInfo.h"
 
 ClassImp(AliAnalysisTaskEmcalTriggerInfoQA)
@@ -216,7 +216,7 @@ void AliAnalysisTaskEmcalTriggerInfoQA::UserExecOnce()
 void AliAnalysisTaskEmcalTriggerInfoQA::UserExec(Option_t *) 
 {
   Int_t nPatch, iPatch, iMainPatch, nJetLow, nJetHigh, type;
-  AliEmcalTriggerPatchInfo *patch;
+  AliEMCALTriggerPatchInfo *patch;
   
   if (fIsInitialized==kFALSE)
     UserExecOnce();
@@ -252,7 +252,7 @@ void AliAnalysisTaskEmcalTriggerInfoQA::UserExec(Option_t *)
   
   for( iPatch = 0; iPatch < nPatch; iPatch++ ){
     
-    patch = (AliEmcalTriggerPatchInfo*)fTriggersInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggersInfo->At( iPatch );
     
     // check if high/low threshold
     // high overrides the low, to avoid double counting
@@ -287,7 +287,7 @@ void AliAnalysisTaskEmcalTriggerInfoQA::UserExec(Option_t *)
       fHistos[3000]->Fill( 0 );
   }
   else{
-    patch = (AliEmcalTriggerPatchInfo*)fTriggersInfo->At( iMainPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggersInfo->At( iMainPatch );
     
     fHistos[3000]->Fill( 1 );
     
@@ -309,7 +309,7 @@ void AliAnalysisTaskEmcalTriggerInfoQA::UserExec(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalTriggerInfoQA::FillPatch( AliEmcalTriggerPatchInfo *patch, Int_t type ){
+void AliAnalysisTaskEmcalTriggerInfoQA::FillPatch( AliEMCALTriggerPatchInfo *patch, Int_t type ){
   
   // fills the patch parameters
   

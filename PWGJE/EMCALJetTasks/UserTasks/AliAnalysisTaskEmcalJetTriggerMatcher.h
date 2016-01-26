@@ -41,7 +41,7 @@ class AliClusterContainer;
 #include <AliLog.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include <AliESDCaloCluster.h>
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliAnalysisFilter.h"
 
 class AliAnalysisTaskEmcalJetTriggerMatcher : public AliAnalysisTaskEmcalJet {
@@ -117,7 +117,7 @@ class AliAnalysisTaskEmcalJetTriggerMatcher : public AliAnalysisTaskEmcalJet {
   AliESDEvent                *fESD;//!  // ESD object
   AliAODEvent                *fAOD;//!  // AOD Object
     
-  AliEmcalTriggerPatchInfo  *fMaxPatch;             // main patch
+  AliEMCALTriggerPatchInfo  *fMaxPatch;             // main patch
   MainPatchType             fMainPatchType;         // method to select main patch
   TriggerCategory           fMainTrigCat;           // trigger category for main trigger from AliAnalysisTaskEmcal::GetMainTriggerPatch
   Bool_t                    fMainTrigSimple;        // use offline trigger instead of online from AliAnalysisTaskEmcal::GetMainTriggerPatch

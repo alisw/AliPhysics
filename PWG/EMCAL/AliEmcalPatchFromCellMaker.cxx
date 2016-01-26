@@ -12,9 +12,9 @@
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
-#include "AliEmcalTriggerBitConfigAP.h"
-#include "AliEmcalTriggerConstantsAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerBitConfig.h"
+#include "AliEMCALTriggerConstants.h"
 
 #include "AliEmcalPatchFromCellMaker.h"
 
@@ -89,7 +89,7 @@ void AliEmcalPatchFromCellMaker::ExecOnce()
     return;
 
   if (!fCaloTriggersOutName.IsNull()) {
-    fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfo");
+    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
     fCaloTriggersOut->SetName(fCaloTriggersOutName);
 
     if (!(InputEvent()->FindListObject(fCaloTriggersOutName))) {
@@ -103,7 +103,7 @@ void AliEmcalPatchFromCellMaker::ExecOnce()
   }
 
   if(!fTriggerBitConfig)
-    fTriggerBitConfig = new AliEmcalTriggerBitConfigNewAP();
+    fTriggerBitConfig = new AliEMCALTriggerBitConfigNew();
 
 }
 
@@ -240,7 +240,7 @@ Bool_t AliEmcalPatchFromCellMaker::FillPatchADCSimple()
     Int_t globCol=-1, globRow=-1;
     fGeom->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    fPatchADCSimple[globCol][globRow] += amp/EmcalTriggerAP::kEMCL1ADCtoGeV;
+    fPatchADCSimple[globCol][globRow] += amp/EMCALTrigger::kEMCL1ADCtoGeV;
     fPatchESimple[globCol][globRow] += amp;
 
     TVector3 pos;
@@ -324,8 +324,8 @@ void AliEmcalPatchFromCellMaker::RunSimpleOfflineTrigger()
       centerGeo *= 0.5;
 
       // save the trigger object
-      AliEmcalTriggerPatchInfo *trigger =
-	new ((*fCaloTriggersOut)[itrig]) AliEmcalTriggerPatchInfo();
+      AliEMCALTriggerPatchInfo *trigger =
+          new ((*fCaloTriggersOut)[itrig]) AliEMCALTriggerPatchInfo();
       itrig++;
       trigger->SetTriggerBitConfig(fTriggerBitConfig);
       trigger->SetCenterGeo(centerGeo, enAmp);

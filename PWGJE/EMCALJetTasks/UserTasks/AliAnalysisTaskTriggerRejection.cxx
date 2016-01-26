@@ -17,7 +17,7 @@
 #include "AliRhoParameter.h"
 #include "AliLog.h"
 #include "AliJetContainer.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskTriggerRejection.h"
@@ -141,7 +141,7 @@ namespace JETriggerRejectionAna {
     //extract main trigger patch
     Double_t emax = -1.;
     for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-      AliEmcalTriggerPatchInfo *patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+      AliEMCALTriggerPatchInfo *patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
       if(patch->GetPatchE()>emax) {
         fMaxPatch = patch;
         emax = patch->GetPatchE();

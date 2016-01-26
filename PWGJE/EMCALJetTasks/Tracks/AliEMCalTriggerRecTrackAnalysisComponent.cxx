@@ -24,7 +24,7 @@
 
 #include "AliAODMCParticle.h"
 #include "AliLog.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliMCEvent.h"
 #include "AliPicoTrack.h"
 #include "AliVCluster.h"
@@ -316,7 +316,7 @@ void AliEMCalTriggerRecTrackAnalysisComponent::MatchTriggerPatches(
   Double_t etaEMCAL = rectrack->GetTrackEtaOnEMCal(),
            phiEMCAL = rectrack->GetTrackPhiOnEMCal();
   for(TIter patchiter = TIter(inputpatches).Begin(); patchiter != TIter::End(); ++patchiter){
-    AliEmcalTriggerPatchInfo *recpatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
+    AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
     double etamin = TMath::Min(recpatch->GetEtaMin(), recpatch->GetEtaMax()),
         etamax = TMath::Max(recpatch->GetEtaMin(), recpatch->GetEtaMax()),
         phimin = TMath::Min(recpatch->GetPhiMin(), recpatch->GetPhiMax()),
@@ -341,7 +341,7 @@ Bool_t AliEMCalTriggerRecTrackAnalysisComponent::HasMatchedPatchOfType(
       hasJetLow = kFALSE,
       hasJetHigh = kFALSE;
   for(TIter patchIter = TIter(&patches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *matchedpad = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *matchedpad = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(matchedpad->IsOfflineSimple()) continue;
     if(matchedpad->IsJetHigh()) hasJetHigh = kTRUE;
     if(matchedpad->IsJetLow()) hasJetLow = kTRUE;

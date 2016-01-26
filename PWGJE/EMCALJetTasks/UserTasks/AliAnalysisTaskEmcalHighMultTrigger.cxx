@@ -12,7 +12,7 @@
 #include <TLorentzVector.h>
 
 #include "AliLog.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliParticleContainer.h"
 #include "AliVVZERO.h"
 
@@ -328,7 +328,7 @@ Bool_t AliAnalysisTaskEmcalHighMultTrigger::Run()
   Int_t indexes[999] = {0};
   Int_t iacc = 0;
   for(Int_t i = 0; i<nPatch; i++) {
-    AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo*>(fTriggerPatchInfo->At(i));
+    AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatchInfo->At(i));
     if(!patch) continue;
     if(patch->GetPatchE()>0.) {
       ptarr[iacc] = patch->GetPatchE();

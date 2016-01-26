@@ -14,18 +14,18 @@
  **************************************************************************/
 #include <TClonesArray.h>
 #include <THashList.h>
-#include <Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.h>
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 #include "AliVVertex.h"
 
+#include "AliAnalysisTaskEmcalOfflinePatchesRef.h"
 
 #if __cplusplus < 201103L
 /*
@@ -152,11 +152,11 @@ void AliAnalysisTaskEmcalOfflinePatchesRef::UserExec(Option_t *){
   if(isEG1) fHistos->FillTH1("hEventCountEG1", 1);
   if(isEG2) fHistos->FillTH1("hEventCountEG2", 1);
 
-  AliEmcalTriggerPatchInfo *mypatch(nullptr);
+  AliEMCALTriggerPatchInfo *mypatch(nullptr);
   Int_t supermoduleID = -1;
   TString patchname;
   for(TIter patchiter = TIter(patches).Begin(); patchiter != TIter::End(); ++patchiter){
-    mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
+    mypatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
     if(!mypatch) continue;
     // Select only gamma and L0 online patches
     if(!mypatch->IsOfflineSimple()) continue;
@@ -191,7 +191,7 @@ void AliAnalysisTaskEmcalOfflinePatchesRef::UserExec(Option_t *){
  * @param sector Sector in global numbering scheme
  * @param evsel Check whether additional event selection is applied
  */
-void AliAnalysisTaskEmcalOfflinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector, Bool_t evsel){
+void AliAnalysisTaskEmcalOfflinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEMCALTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector, Bool_t evsel){
   TString fbase = evsel ? "hEvSel" : "h";
   fHistos->FillTH2(Form("%sPatchEnergy%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetPatchE());
   fHistos->FillTH2(Form("%sPatchET%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetLorentzVectorCenterGeo().Et());

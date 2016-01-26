@@ -8,7 +8,7 @@
 #include <TList.h>
 #include <TNamed.h>
 
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliEmcalTriggerSelectionCuts;
 
 class AliEmcalTriggerDecision: public TNamed {
@@ -17,17 +17,17 @@ public:
   AliEmcalTriggerDecision(const char *name, const char *title = "");
   virtual ~AliEmcalTriggerDecision() {}
 
-  const AliEmcalTriggerPatchInfo *GetMainPatch() const { return fMainPatch; }
+  const AliEMCALTriggerPatchInfo *GetMainPatch() const { return fMainPatch; }
   const AliEmcalTriggerSelectionCuts *GetSelectionCuts() const { return fSelectionCuts; }
   const TList *GetAcceptedPatches() const { return &fAcceptedPatches; }
   Bool_t IsSelected() const { return fMainPatch != NULL; }
 
   void SetSelectionCuts(const AliEmcalTriggerSelectionCuts * const cuts) { fSelectionCuts = cuts; }
-  void SetMainPatch(const AliEmcalTriggerPatchInfo * const mainpatch) { fMainPatch = mainpatch; }
-  void AddAcceptedPatch(AliEmcalTriggerPatchInfo * const acceptedPatch);
+  void SetMainPatch(const AliEMCALTriggerPatchInfo * const mainpatch) { fMainPatch = mainpatch; }
+  void AddAcceptedPatch(AliEMCALTriggerPatchInfo * const acceptedPatch);
 
 protected:
-  const AliEmcalTriggerPatchInfo          *fMainPatch;         // Main trigger patch which fires the decision
+  const AliEMCALTriggerPatchInfo          *fMainPatch;         // Main trigger patch which fires the decision
   const AliEmcalTriggerSelectionCuts      *fSelectionCuts;     // Pointer to the cuts used for the trigger selection
   TList                                    fAcceptedPatches;   // All trigger patches which are accepted as well
 

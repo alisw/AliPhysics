@@ -23,8 +23,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliESDEvent.h"
 #include "AliEMCalHistoContainer.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
-#include "AliEmcalTriggerPatchInfoAPV1.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 
@@ -222,7 +221,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   Double_t energy, eta, phi, et;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     if(!IsOfflineSimplePatch(*patchIter)) continue;
-    AliEmcalTriggerPatchInfo *patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
 
     bool isDCAL = SelectDCALPatch(*patchIter), isSingleShower = SelectSingleShowerPatch(*patchIter), isJetPatch = SelectJetPatch(*patchIter);
 
@@ -448,7 +447,7 @@ TString AliAnalysisTaskEmcalPatchesRef::GetFiredTriggerClassesFromPatches(const 
           minADC_EG1 = 140.,
           minADC_EG2 = 89.;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
     if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
     if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;
@@ -472,81 +471,39 @@ TString AliAnalysisTaskEmcalPatchesRef::GetFiredTriggerClassesFromPatches(const 
 }
 
 void AliAnalysisTaskEmcalPatchesRef::GetPatchBoundaries(TObject *o, Double_t *boundaries) const {
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
-    boundaries[0] = patch->GetEtaMin();
-    boundaries[1] = patch->GetEtaMax();
-    boundaries[2] = patch->GetPhiMin();
-    boundaries[3] = patch->GetPhiMax();
-  } else {
-    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
-    if(newpatch){
-      boundaries[0] = newpatch->GetEtaMin();
-      boundaries[1] = newpatch->GetEtaMax();
-      boundaries[2] = newpatch->GetPhiMin();
-      boundaries[3] = newpatch->GetPhiMax();
-    }
-  }
-
+  AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
+  boundaries[0] = patch->GetEtaMin();
+  boundaries[1] = patch->GetEtaMax();
+  boundaries[2] = patch->GetPhiMin();
+  boundaries[3] = patch->GetPhiMax();
 }
 
 bool AliAnalysisTaskEmcalPatchesRef::IsOfflineSimplePatch(TObject *o) const {
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
-    return patch->IsOfflineSimple();
-  } else {
-    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
-    if(newpatch) return newpatch->IsOfflineSimple();
-  }
-  return false;
+  AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
+  return patch->IsOfflineSimple();
 }
 
 bool AliAnalysisTaskEmcalPatchesRef::SelectDCALPatch(TObject *o) const {
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
-    return patch->GetRowStart() >= 64;
-  } else {
-    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
-    if(newpatch) return newpatch->GetRowStart() >= 64;
-  }
-  return false;
+  AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
+  return patch->GetRowStart() >= 64;
 }
 
 bool AliAnalysisTaskEmcalPatchesRef::SelectSingleShowerPatch(TObject *o) const{
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
-    if(!patch->IsOfflineSimple()) return false;
-    return patch->IsGammaLowSimple();
-  } else {
-    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
-    if(newpatch) return newpatch->IsGammaLowSimple();
-  }
-  return false;
+  AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
+  if(!patch->IsOfflineSimple()) return false;
+  return patch->IsGammaLowSimple();
 }
 
 bool AliAnalysisTaskEmcalPatchesRef::SelectJetPatch(TObject *o) const{
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
-    if(!patch->IsOfflineSimple()) return false;
-    return patch->IsJetLowSimple();
-  } else {
-    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
-    if(newpatch) return newpatch->IsJetLowSimple();
-  }
-  return false;
+  AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
+  if(!patch->IsOfflineSimple()) return false;
+  return patch->IsJetLowSimple();
 }
-
 
 double AliAnalysisTaskEmcalPatchesRef::GetPatchEnergy(TObject *o) const {
   double energy = 0.;
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  if((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(o))){
-    if(!patch->IsOfflineSimple()) return false;
-    energy = patch->GetPatchE();
-  } else {
-    AliEmcalTriggerPatchInfoAPV1 *newpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(o);
-    if(newpatch) energy = newpatch->GetPatchE();
-  }
+  AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
+  energy = patch->GetPatchE();
   return energy;
 }
 

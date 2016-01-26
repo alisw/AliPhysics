@@ -17,7 +17,7 @@ class TArrayI;
 #include <AliVEvent.h>
 
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 namespace JETriggerRejectionAna {
   class AliAnalysisTaskTriggerRejection : public AliAnalysisTaskEmcalJet {
@@ -47,7 +47,7 @@ namespace JETriggerRejectionAna {
   private:
     Int_t              fContainerFull;         // number of container with full jets DET
     Int_t              fContainerCharged;      // number of container with charged jets DET
-    AliEmcalTriggerPatchInfo *fMaxPatch;       // main patch
+    AliEMCALTriggerPatchInfo *fMaxPatch;       // main patch
     THnSparse         *fhnTriggerInfo;         //! correlation between jets, patch energy and event observables
     MainPatchType      fMainPatchType;         // method to select main patch
     TriggerCategory    fMainTrigCat;           // trigger category for main trigger from AliAnalysisTaskEmcal::GetMainTriggerPatch

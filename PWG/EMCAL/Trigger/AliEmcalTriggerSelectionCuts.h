@@ -7,7 +7,7 @@
 
 #include <TObject.h>
 
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 
 class AliEmcalTriggerSelectionCuts: public TObject {
 public:
@@ -40,12 +40,12 @@ public:
   void SetThreshold(Double_t threshold) { fThreshold = threshold; }
   void SetUseSimpleOfflinePatches(Bool_t doUse = kTRUE) { fUseSimpleOffline = doUse; }
 
-  Bool_t IsSelected(const AliEmcalTriggerPatchInfo * const patch) const;
-  Int_t CompareTriggerPatches(const AliEmcalTriggerPatchInfo *first, const AliEmcalTriggerPatchInfo *second) const;
+  Bool_t IsSelected(const AliEMCALTriggerPatchInfo * const patch) const;
+  Int_t CompareTriggerPatches(const AliEMCALTriggerPatchInfo *first, const AliEMCALTriggerPatchInfo *second) const;
 
 protected:
-  Double_t GetCutPrimitive(const AliEmcalTriggerPatchInfo * const patch) const;
-  Bool_t SelectPatchType(const AliEmcalTriggerPatchInfo * const patch) const;
+  Double_t GetCutPrimitive(const AliEMCALTriggerPatchInfo * const patch) const;
+  Bool_t SelectPatchType(const AliEMCALTriggerPatchInfo * const patch) const;
 
   SelectionMethod_t     fSelectionMethod;           // Variable to cut on
   PatchType_t           fPatchType;                 // Type of the patch to be selected

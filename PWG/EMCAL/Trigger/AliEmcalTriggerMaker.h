@@ -33,11 +33,11 @@ class AliAODCaloTrigger;
 class AliVVZERO;
 class THistManager;
 
-template<class T> class AliEmcalTriggerDataGridAP;
+template<class T> class AliEMCALTriggerDataGrid;
 
 #include "AliLog.h"
-#include "AliEmcalTriggerBitConfigAP.h"
-#include "AliEmcalTriggerChannelContainerAP.h"
+#include "AliEMCALTriggerBitConfig.h"
+#include "AliEMCALTriggerChannelContainer.h"
 #include "AliAnalysisTaskEmcal.h"
 
 /**
@@ -76,6 +76,11 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
     kTMEMCalRecalcJet = 3, ///< EMCAL Jet patches, recalculated
     kTMEMCalRecalcGamma = 4///< EMCAL Gamma patches, recalculated
   };
+  enum TriggerMakerBits_t {
+    kMainTriggerBitNum = 15, ///< Trigger bit indicating the main (highest energy) trigger patch of a given type per event
+    kRecalcOffset = 16,
+    kOfflineOffset = 24
+  };
 
   /***
    * \enum TriggerMakerTriggerBitConfig_t
@@ -107,7 +112,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
 
   void SetRunTriggerType(TriggerMakerTriggerType_t type, Bool_t doTrigger = kTRUE) { fRunTriggerType[type] = doTrigger; }
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
-  void SetTriggerBitConfig(const AliEmcalTriggerBitConfigAP *conf) { fTriggerBitConfig = conf; }
+  void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *conf) { fTriggerBitConfig = conf; }
 
   /**
    * Switch on rejection of patches which leave the EMCAL acceptance in \f$ \eta \f$ and \f$ \phi \f$
@@ -128,24 +133,24 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Bool_t                                    Run();
   void                                      RunSimpleOfflineTrigger();
   Bool_t                                    NextTrigger( Bool_t &isOfflineSimple );
-  AliEmcalTriggerPatchInfo*                 ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple);
+  AliEMCALTriggerPatchInfo*                 ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple);
   Bool_t 					                          CheckForL0(const AliVCaloTrigger &trg) const;
 
-  AliEmcalTriggerChannelContainerAP         fBadChannels;                 ///< Container of bad channels
+  AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
   TString                                   fCaloTriggersOutName;         ///< name of output track array
   TString                                   fCaloTriggerSetupOutName;     ///< name of output track array
   TString                                   fV0InName;                    ///< name of output track array
   TriggerMakerBitConfig_t                   fUseTriggerBitConfig;         ///< type of trigger config
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
-  const AliEmcalTriggerBitConfigAP          *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
+  const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   TClonesArray                              *fCaloTriggersOut;            //!<! trigger array out
   AliEmcalTriggerSetupInfo                  *fCaloTriggerSetupOut;        //!<! trigger setup
   AliAODCaloTrigger                         *fSimpleOfflineTriggers;      //!<! simple offline trigger
   AliVVZERO                                 *fV0;                         //!<! V0 object
-  AliEmcalTriggerDataGridAP<float>          *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
-  AliEmcalTriggerDataGridAP<double>         *fPatchADCSimple;             //!<! patch map for simple offline trigger
-  AliEmcalTriggerDataGridAP<int>            *fPatchADC;                   //!<! ADC values map
-  AliEmcalTriggerDataGridAP<char>           *fLevel0TimeMap;              //!<! Map needed to store the level0 times
+  AliEMCALTriggerDataGrid<float>            *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
+  AliEMCALTriggerDataGrid<int>              *fPatchADC;                   //!<! ADC values map
+  AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   Int_t                                     fITrigger;                    //!<! trigger counter
   Bool_t                                    fRunTriggerType[5];           ///< Run patch maker for a given trigger type
   Bool_t                                    fDoQA;                        ///< Fill QA histograms

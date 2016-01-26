@@ -9,7 +9,7 @@
 #include <TString.h>
 
 class AliEmcalTriggerDecision;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliEmcalTriggerSelectionCuts;
 class TClonesArray;
 

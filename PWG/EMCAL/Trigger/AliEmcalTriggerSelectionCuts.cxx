@@ -17,7 +17,7 @@
  *
  * Author: Markus Fasel
  */
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 
 ClassImp(AliEmcalTriggerSelectionCuts)
@@ -36,7 +36,7 @@ AliEmcalTriggerSelectionCuts::AliEmcalTriggerSelectionCuts() :
 }
 
 //______________________________________________________________________________
-Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEmcalTriggerPatchInfo * const patch) const {
+Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEMCALTriggerPatchInfo * const patch) const {
   /*
    * Apply selection of the given trigger patch according to the selections described in the object
    *
@@ -51,7 +51,7 @@ Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEmcalTriggerPatchInfo *
 }
 
 //______________________________________________________________________________
-Int_t AliEmcalTriggerSelectionCuts::CompareTriggerPatches(const AliEmcalTriggerPatchInfo *first, const AliEmcalTriggerPatchInfo *second) const {
+Int_t AliEmcalTriggerSelectionCuts::CompareTriggerPatches(const AliEMCALTriggerPatchInfo *first, const AliEMCALTriggerPatchInfo *second) const {
   /*
    * Compare two patches according to the energy measure specified in the cut object
    *
@@ -67,7 +67,7 @@ Int_t AliEmcalTriggerSelectionCuts::CompareTriggerPatches(const AliEmcalTriggerP
 }
 
 //______________________________________________________________________________
-Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEmcalTriggerPatchInfo * const patch) const{
+Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEMCALTriggerPatchInfo * const patch) const{
   /*
    * Return (energy) measure we cut on, depending on the selection method specified
    *
@@ -80,7 +80,7 @@ Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEmcalTriggerPatc
 }
 
 //______________________________________________________________________________
-Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEmcalTriggerPatchInfo * const patch) const{
+Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEMCALTriggerPatchInfo * const patch) const{
   /*
    * Select type of the patch according the definitions in the header file
    *

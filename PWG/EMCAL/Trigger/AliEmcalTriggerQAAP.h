@@ -12,10 +12,10 @@
 #include <TArrayI.h>
 #include <cstring>
 
-class AliEmcalTriggerPatchInfoAPV1;
+class AliEMCALTriggerPatchInfo;
 class THashList;
 class TObjArray;
-class AliEmcalTriggerFastORAP;
+class AliEMCALTriggerFastOR;
 
 /**
  * @class AliEmcalTriggerQAAP
@@ -25,7 +25,7 @@ class AliEmcalTriggerFastORAP;
 class AliEmcalTriggerQAAP : public TNamed {
 public:
 
-  typedef EmcalTriggerAP::EMCalTriggerType_t EMCalTriggerType_t;
+  typedef EMCALTrigger::EMCalTriggerType_t EMCalTriggerType_t;
 
   enum PatchTypes_t {
     kOnlinePatch,
@@ -48,9 +48,9 @@ public:
   void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
 
   void   Init();
-  void   ProcessPatch(AliEmcalTriggerPatchInfoAPV1* patch);
-  void   ProcessBkgPatch(AliEmcalTriggerPatchInfoAPV1* patch);
-  void   ProcessFastor(AliEmcalTriggerFastORAP* fastor);
+  void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
+  void   ProcessBkgPatch(AliEMCALTriggerPatchInfo* patch);
+  void   ProcessFastor(AliEMCALTriggerFastOR* fastor);
   void   EventCompleted();
   void   ComputeBackground();
 

@@ -61,7 +61,7 @@
 
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 #include "AliAnalysisTaskHFEemcQA.h"
 
@@ -1109,9 +1109,9 @@ void AliAnalysisTaskHFEemcQA::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG
   fTriggersInfo = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers"));
   if(!fTriggersInfo) return;
   Int_t nPatch = fTriggersInfo->GetEntries();;
-  AliEmcalTriggerPatchInfo* patch=0;
+  AliEMCALTriggerPatchInfo* patch=0;
   for( int iPatch = 0; iPatch < nPatch; iPatch++ ){
-    patch = (AliEmcalTriggerPatchInfo*)fTriggersInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggersInfo->At( iPatch );
     if(patch->GetADCAmp()<fThresholdEG2) continue;
     if(patch->GetEtaMin()>emceta) continue;
     if(patch->GetEtaMax()<emceta) continue;

@@ -19,7 +19,7 @@
 #include <vector>
 #include <TClonesArray.h>
 
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerPatchAnalysisComponent.h"
@@ -135,9 +135,9 @@ void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
  * \param data Event information
  */
 void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventData* const data) {
-  AliEmcalTriggerPatchInfo *triggerpatch(NULL);
+  AliEMCALTriggerPatchInfo *triggerpatch(NULL);
   TIter patchIter(data->GetTriggerPatchContainer());
-  while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
+  while((triggerpatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
     if(fWithEventSelection){
       std::vector<std::string> triggernames;
       GetMachingTriggerNames(triggernames);
@@ -156,7 +156,7 @@ void AliEMCalTriggerPatchAnalysisComponent::Process(const AliEMCalTriggerEventDa
  * \param patch Trigger patch to be processed
  * \param eventType Trigger class the event was selected by (optional)
  */
-void AliEMCalTriggerPatchAnalysisComponent::FillStandardMonitoring(const AliEmcalTriggerPatchInfo* const patch, TString eventType) {
+void AliEMCalTriggerPatchAnalysisComponent::FillStandardMonitoring(const AliEMCALTriggerPatchInfo* const patch, TString eventType) {
   std::vector<TString> triggerclasses;
   triggerclasses.push_back("JetHigh");
   triggerclasses.push_back("JetLow");
@@ -184,7 +184,7 @@ void AliEMCalTriggerPatchAnalysisComponent::FillStandardMonitoring(const AliEmca
  * \param histo Name of the histogram to fill
  * \param patch Patch with information
  */
-void AliEMCalTriggerPatchAnalysisComponent::FillTriggerInfoHistogram(TString histo, const AliEmcalTriggerPatchInfo* const patch) {
+void AliEMCalTriggerPatchAnalysisComponent::FillTriggerInfoHistogram(TString histo, const AliEMCALTriggerPatchInfo* const patch) {
 	bool isMain = patch->IsOfflineSimple() ? patch->IsMainTriggerSimple() : patch->IsMainTrigger();
 	double triggerpatchinfo[6] = {patch->GetPatchE(),patch->GetADCAmpGeVRough(),
 	    static_cast<double>(patch->IsOfflineSimple() ? patch->GetADCOfflineAmp() : patch->GetADCAmp()), patch->GetEtaGeo(),
@@ -198,7 +198,7 @@ void AliEMCalTriggerPatchAnalysisComponent::FillTriggerInfoHistogram(TString his
  * \param histo Name of the histogram to fill
  * \param patch Patch with information
  */
-void AliEMCalTriggerPatchAnalysisComponent::FillAmplitudeHistogram(TString histo, const AliEmcalTriggerPatchInfo* const patch) {
+void AliEMCalTriggerPatchAnalysisComponent::FillAmplitudeHistogram(TString histo, const AliEMCALTriggerPatchInfo* const patch) {
 	bool isMain = patch->IsOfflineSimple() ? patch->IsMainTriggerSimple() : patch->IsMainTrigger();
 	double amplitudeinfo[5] = {(double)patch->GetADCAmp(), (double)patch->GetADCOfflineAmp(), (double)patch->GetEtaGeo(), (double)patch->GetPhiGeo(), isMain ? 1. : 0.};
   fHistos->FillTHnSparse(histo.Data(), amplitudeinfo);
@@ -214,7 +214,7 @@ void AliEMCalTriggerPatchAnalysisComponent::FillAmplitudeHistogram(TString histo
  * \param patch The patch to check
  * \return True if it is a jet low patch, false otherwise
  */
-Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerJetLow::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerJetLow::IsOfType(const AliEMCALTriggerPatchInfo* const patch) const {
   Bool_t result = false;
   if(patch->IsOfflineSimple()){
     result = ((!fPatchSwapThresholdsOffline && patch->IsJetLowSimple()) || (fPatchSwapThresholdsOffline && patch->IsJetHighSimple()));
@@ -230,7 +230,7 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
  * \param patch The patch to check
  * \return True if it is a jet high patch, false otherwise
  */
-Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerJetHigh::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerJetHigh::IsOfType(const AliEMCALTriggerPatchInfo* const patch) const {
   Bool_t result = false;
   if(patch->IsOfflineSimple()){
     result = ((!fPatchSwapThresholdsOffline && patch->IsJetHighSimple()) || (fPatchSwapThresholdsOffline && patch->IsJetLowSimple()));
@@ -246,7 +246,7 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
  * \param patch The patch to check
  * \return True if it is a gamma low patch, false otherwise
  */
-Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerGammaLow::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerGammaLow::IsOfType(const AliEMCALTriggerPatchInfo* const patch) const {
   Bool_t result = false;
   if(patch->IsOfflineSimple()){
     result = ((!fPatchSwapThresholdsOffline && patch->IsGammaLowSimple()) || (fPatchSwapThresholdsOffline && patch->IsGammaHighSimple()));
@@ -262,7 +262,7 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
  * \param patch The patch to check
  * \return True if it is a gamma high patch, false otherwise
  */
-Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerGammaHigh::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerGammaHigh::IsOfType(const AliEMCALTriggerPatchInfo* const patch) const {
   Bool_t result = false;
   if(patch->IsOfflineSimple()){
     result = ((!fPatchSwapThresholdsOffline && patch->IsGammaHighSimple()) || (fPatchSwapThresholdsOffline && patch->IsGammaLowSimple()));
@@ -278,7 +278,7 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
  * \param patch The patch to check
  * \return True if it is a gamma high patch, false otherwise
  */
-Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerLevel0::IsOfType(const AliEmcalTriggerPatchInfo* const patch) const {
+Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::AliEmcalTriggerPatchHandlerLevel0::IsOfType(const AliEMCALTriggerPatchInfo* const patch) const {
   if(patch->IsLevel0()) return true;
   return false;
 }
@@ -290,7 +290,7 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
  * \return True if the trigger class is
  */
 Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::IsPatchOfType(
-    const AliEmcalTriggerPatchInfo* const patch, TString patchtype) const {
+    const AliEMCALTriggerPatchInfo* const patch, TString patchtype) const {
   Bool_t result = false;
   std::auto_ptr<AliEmcalTriggerPatchHandler> myhandler(NULL);
   if (patchtype == "JetHigh") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));

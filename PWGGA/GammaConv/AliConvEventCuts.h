@@ -28,7 +28,7 @@ class iostream;
 class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 
 using namespace std;
 
@@ -178,7 +178,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Double_t  GetEtaShift()                                                       { return fEtaShift                                          ; }
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
-      AliEmcalTriggerPatchInfo   *GetMainTriggerPatch();
+      AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
       Float_t   GetWeightForCentralityFlattening(AliVEvent *InputEvent = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
@@ -340,7 +340,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fV0ReaderName;                          // Name of V0Reader
       AliVCaloTrigger*            fCaloTriggers;                          //! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //! trigger patch info array
-      AliEmcalTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 // main trigger patch, will be cached after first call
+      AliEMCALTriggerPatchInfo *  fMainTriggerPatchEMCAL;                 // main trigger patch, will be cached after first call
       TString                     fCaloTriggersName;                      // name of calo triggers collection
       TString                     fCaloTriggerPatchInfoName;              // trigger patch info array name
       ULong_t                     fTriggersEMCAL;                         // list of fired EMCAL triggers

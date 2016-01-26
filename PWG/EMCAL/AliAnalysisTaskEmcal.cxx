@@ -35,7 +35,7 @@
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisUtils.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
@@ -712,7 +712,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
-    fTriggerPatchInfo = GetArrayFromEvent(fCaloTriggerPatchInfoName.Data(),"AliEmcalTriggerPatchInfo");
+    fTriggerPatchInfo = GetArrayFromEvent(fCaloTriggerPatchInfoName.Data(),"AliEMCALTriggerPatchInfo");
     if (!fTriggerPatchInfo) {
       AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
       return;
@@ -773,9 +773,9 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
   Int_t nJ1 = 0;
   Int_t nJ2 = 0;
   Int_t nL0 = 0;
-  AliEmcalTriggerPatchInfo *patch;
+  AliEMCALTriggerPatchInfo *patch;
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (patch->IsGammaHigh()) nG1++;
     if (patch->IsGammaLow())  nG2++;
     if (patch->IsJetHigh()) nJ1++;
@@ -1330,7 +1330,7 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const
 }
 
 //________________________________________________________________________
-AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCategory trigger, Bool_t doSimpleOffline)
+AliEMCALTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCategory trigger, Bool_t doSimpleOffline)
 {
   // Get main trigger match
   //
@@ -1348,10 +1348,10 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
   Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
   //extract main trigger patch(es)
-  AliEmcalTriggerPatchInfo *patch(NULL), *selected(NULL);
+  AliEMCALTriggerPatchInfo *patch(NULL), *selected(NULL);
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
 
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (patch->IsMainTrigger()) {
       if(doSimpleOffline){
         if(patch->IsOfflineSimple()){

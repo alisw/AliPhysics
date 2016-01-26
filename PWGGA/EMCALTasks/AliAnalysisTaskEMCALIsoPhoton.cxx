@@ -18,7 +18,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloCells.h"
 #include "AliESDCaloCluster.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
 #include "AliESDHeader.h"
 #include "AliESDInputHandler.h"
@@ -1953,7 +1953,7 @@ void AliAnalysisTaskEMCALIsoPhoton::CheckTriggerPatch()
   if(nPatch>1)
     //printf("more than one calo trigger patch in this event!\n");
   for(Int_t ip = 0;ip<nPatch;ip++){
-    AliEmcalTriggerPatchInfo *pti = dynamic_cast<AliEmcalTriggerPatchInfo*>(triPatchInfo->At(ip));
+    AliEMCALTriggerPatchInfo *pti = dynamic_cast<AliEMCALTriggerPatchInfo*>(triPatchInfo->At(ip));
     if(!pti)
       continue;
     //printf("\ttrigger patch E=%1.1f\n",pti->GetPatchE());

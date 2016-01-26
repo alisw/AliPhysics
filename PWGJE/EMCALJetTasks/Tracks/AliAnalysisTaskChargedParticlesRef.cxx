@@ -30,7 +30,7 @@
 #include "AliInputEventHandler.h"
 #include "AliVVertex.h"
 
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskChargedParticlesRef.h"
 
@@ -614,9 +614,9 @@ Bool_t AliAnalysisTaskChargedParticlesRef::IsOfflineSelected(EmcalTriggerClass t
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
   bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
   int nfound = 0;
-  AliEmcalTriggerPatchInfo *patch = NULL;
+  AliEMCALTriggerPatchInfo *patch = NULL;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
     if(isSingleShower){
      if(!patch->IsGammaLowSimple()) continue;
@@ -641,7 +641,7 @@ TString AliAnalysisTaskChargedParticlesRef::GetFiredTriggerClassesFromPatches(co
           minADC_EG1 = 140.,
           minADC_EG2 = 89.;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
     if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
     if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;

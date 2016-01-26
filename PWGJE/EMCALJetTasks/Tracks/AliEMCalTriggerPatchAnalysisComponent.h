@@ -13,7 +13,7 @@
 #include <TString.h>
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
 
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 
 /**
  * \namespace EMCalTriggerPtAnalysis
@@ -97,7 +97,7 @@ protected:
      * Destructor
      */
     virtual ~AliEmcalTriggerPatchHandlerFactory() {}
-    Bool_t IsPatchOfType(const AliEmcalTriggerPatchInfo *const patch, TString patchtype) const;
+    Bool_t IsPatchOfType(const AliEMCALTriggerPatchInfo *const patch, TString patchtype) const;
 
   protected:
 
@@ -122,7 +122,7 @@ protected:
        */
       virtual ~AliEmcalTriggerPatchHandler() {}
 
-      virtual Bool_t IsOfType(const AliEmcalTriggerPatchInfo * const patch) const = 0;
+      virtual Bool_t IsOfType(const AliEMCALTriggerPatchInfo * const patch) const = 0;
     protected:
       Bool_t                      fPatchSwapThresholdsOnline;          ///< Swap thresholds for online patches
       Bool_t                      fPatchSwapThresholdsOffline;         ///< Swap thresholds for offline patches
@@ -146,7 +146,7 @@ protected:
        * Destructor
        */
       virtual ~AliEmcalTriggerPatchHandlerJetLow() {}
-      virtual Bool_t IsOfType(const AliEmcalTriggerPatchInfo * const patch) const;
+      virtual Bool_t IsOfType(const AliEMCALTriggerPatchInfo * const patch) const;
     };
 
     /**
@@ -167,7 +167,7 @@ protected:
        * Destructor
        */
       virtual ~AliEmcalTriggerPatchHandlerJetHigh() {}
-      virtual Bool_t IsOfType(const AliEmcalTriggerPatchInfo * const patch) const;
+      virtual Bool_t IsOfType(const AliEMCALTriggerPatchInfo * const patch) const;
     };
 
     /**
@@ -188,7 +188,7 @@ protected:
        * Destructor
        */
       virtual ~AliEmcalTriggerPatchHandlerGammaLow() {}
-      virtual Bool_t IsOfType(const AliEmcalTriggerPatchInfo * const patch) const;
+      virtual Bool_t IsOfType(const AliEMCALTriggerPatchInfo * const patch) const;
     };
 
     /**
@@ -209,7 +209,7 @@ protected:
        * Destructor
        */
       virtual ~AliEmcalTriggerPatchHandlerGammaHigh() {}
-      virtual Bool_t IsOfType(const AliEmcalTriggerPatchInfo * const patch) const;
+      virtual Bool_t IsOfType(const AliEMCALTriggerPatchInfo * const patch) const;
     };
 
     /**
@@ -230,16 +230,16 @@ protected:
        * Destructor
        */
       virtual ~AliEmcalTriggerPatchHandlerLevel0() {}
-      virtual Bool_t IsOfType(const AliEmcalTriggerPatchInfo * const patch) const;
+      virtual Bool_t IsOfType(const AliEMCALTriggerPatchInfo * const patch) const;
     };
 
     Bool_t                      fSwapThresholdsOnline;          ///< Swap thresholds for online patches
     Bool_t                      fSwapThresholdsOffline;         ///< Swap thresholds for offline patches
   };
 
-  void FillStandardMonitoring(const AliEmcalTriggerPatchInfo * const patch, TString eventclass = "");
-  void FillTriggerInfoHistogram(TString histo, const AliEmcalTriggerPatchInfo *const patch);
-  void FillAmplitudeHistogram(TString histo, const AliEmcalTriggerPatchInfo *const patch);
+  void FillStandardMonitoring(const AliEMCALTriggerPatchInfo * const patch, TString eventclass = "");
+  void FillTriggerInfoHistogram(TString histo, const AliEMCALTriggerPatchInfo *const patch);
+  void FillAmplitudeHistogram(TString histo, const AliEMCALTriggerPatchInfo *const patch);
 
   Bool_t                        fSwapOnlineThresholds;          ///< Swap trigger thresholds for online patches
   Bool_t                        fSwapOfflineThresholds;         ///< Swap trigger thresholds for offline patches

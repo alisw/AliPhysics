@@ -23,14 +23,14 @@ class THnSparse;
 class TProfile;
 class TClonesArray;
 class TArrayI;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliEMCalTriggerAnaTriggerDecision;
 
 #include <TRef.h>
 #include <TBits.h>
 #include <TMath.h>
 #include <AliVEvent.h>
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliAnalysisTaskEmcal.h"
 
@@ -86,7 +86,7 @@ class AliAnalysisTaskEmcalTriggerPatchClusterMatch : public AliAnalysisTaskEmcal
 
   // Trigger bit - do i need?????
   void                        ExtractMainPatch();//!
-  TH1*                        FillTriggerPatchQA(TH1* h, UInt_t t, AliEmcalTriggerPatchInfo* fPatch); // filled trigger patch QA
+  TH1*                        FillTriggerPatchQA(TH1* h, UInt_t t, AliEMCALTriggerPatchInfo* fPatch); // filled trigger patch QA
   TH1*                        FillEventTriggerQA(TH1* h, UInt_t t); // fill event trigger QA
   Bool_t                      CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
@@ -108,7 +108,7 @@ class AliAnalysisTaskEmcalTriggerPatchClusterMatch : public AliAnalysisTaskEmcal
   Bool_t             fUseALLrecalcPatches;      // use all/ just max recalulated (offline) patches
   TString            fClusterTriggeredEventname; // name of cluster that triggered event collection
 
-  AliEmcalTriggerPatchInfo      *fMaxPatch;//!                           main patch
+  AliEMCALTriggerPatchInfo      *fMaxPatch;//!                           main patch
   MainPatchType                 fMainPatchType;//!                       method to select main patch
 
   TH1F     *fhNEvents;                         //! Histo number of events
