@@ -40,7 +40,7 @@ class AliMTRChEffAnalysis : public TObject {
   TH1* GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const;
   TGraphAsymmErrors* GetTrendEff ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const;
 
-  void CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "" ) const;
+  Int_t CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "" ) const;
   void CompareMergedEfficiencies ( const char* opt ) const;
 
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
@@ -63,7 +63,7 @@ class AliMTRChEffAnalysis : public TObject {
   TArrayI BoardsInRPC ( Int_t irpc ) const;
   void CopyDir ( TDirectory *source ) const;
   Bool_t CopyLocally ( const char* runList, const char* path, const char* pattern, const char* localFileList, const char* outDir, const char* directory ) const;
-  void CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const;
+  Int_t  CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const;
   Bool_t ExecCommand ( TString command, Bool_t prompt ) const;
   Double_t FitRangesFunc ( Double_t* x, Double_t* par );
   Double_t GetError ( Double_t errLow, Double_t errHigh ) const;

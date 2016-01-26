@@ -215,13 +215,13 @@ TArrayI AliMTRChEffAnalysis::BoardsInRPC ( Int_t irpc ) const
 }
 
 //________________________________________________________________________
-void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
+Int_t AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
   TString srcs(sources);
   if ( srcs.Contains("raw://") ) {
     AliError("The method assumes that the specified storage is a SpecificStorage. Hence, please replace raw:// with the actual path in alien, e.g.: alien://folder=/alice/data/<year>/OCDB");
-    return;
+    return -2;
   }
   TObjArray* sourceList = srcs.Tokenize(",");
   TObjArray effMapList;
@@ -261,16 +261,18 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char*
     effMapList.Add(effMap);
   }
 
-  CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
+  return CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
 }
 
 //________________________________________________________________________
-void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const
+Int_t AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
 
   TString sTitles(titles);
   TObjArray* titleList = sTitles.Tokenize(",");
+
+  Int_t nDiffs = 0;
 
   Int_t nLists = effMapList->GetEntriesFast();
 
@@ -291,6 +293,7 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
     iopt = kPull;
     yTitle = "(Eff - (ref.Eff)) / err";
   }
+  else nDiffs = -1;
 
   Bool_t needsLegend = ( nLists > 1 );
 //  if ( iopt != kEff ) needsLegend = nLists > 2;
@@ -330,10 +333,12 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
               for ( Int_t ipt=0; ipt<graph->GetN(); ipt++ ) {
                 refGraph->GetPoint(ipt,xref,yref);
                 graph->GetPoint(ipt,xpt,ypt);
-                if ( iopt == kDiff ) graph->SetPoint(ipt,xpt,ypt-yref);
+                Double_t diff = ypt - yref;
+                if ( TMath::Abs(diff) > 1.e-4 ) nDiffs++;
+                if ( iopt == kDiff ) graph->SetPoint(ipt,xpt,diff);
                 else if ( iopt == kPull ) {
                   Double_t err = GetError(graph->GetErrorYlow(ipt),graph->GetErrorYhigh(ipt));
-                  Double_t pull = ( err > 0. ) ? (ypt-yref)/err : 0.;
+                  Double_t pull = ( err > 0. ) ? diff/err : 0.;
                   graph->SetPoint(ipt,xpt,pull);
                 }
               } // loop on points
@@ -375,6 +380,8 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
   } // loop on types
 
   delete titleList;
+
+  return nDiffs;
 }
 
 //________________________________________________________________________
