@@ -31,8 +31,6 @@ public:
 	AliEmcalTrackSelectionESD(AliVCuts *cuts);
 	virtual ~AliEmcalTrackSelectionESD() {}
 
-	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
-	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 	virtual bool IsTrackAccepted(AliVTrack * const trk);
 
 	/// \cond CLASSIMP

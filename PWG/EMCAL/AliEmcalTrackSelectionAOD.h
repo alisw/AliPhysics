@@ -31,8 +31,6 @@ public:
 	AliEmcalTrackSelectionAOD(AliVCuts *cuts, UInt_t filterbits);
 	virtual ~AliEmcalTrackSelectionAOD() {}
 
-	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
-	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 	virtual bool IsTrackAccepted(AliVTrack * const trk);
 
 	/**

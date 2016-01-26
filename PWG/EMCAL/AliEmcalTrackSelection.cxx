@@ -14,6 +14,9 @@
  **************************************************************************/
 #include <AliEmcalTrackSelection.h>
 #include <TObjArray.h>
+#include <TClonesArray.h>
+#include <AliVTrack.h>
+#include <AliVEvent.h>
 #include "AliVCuts.h"
 
 /// \cond CLASSIMP
@@ -27,6 +30,8 @@ ClassImp(AliEmcalTrackSelection)
 AliEmcalTrackSelection::AliEmcalTrackSelection() :
 	TObject(),
 	fListOfTracks(NULL),
+  fListOfTrackBitmaps(NULL),
+  fTrackBitmap(64),
 	fListOfCuts(NULL),
 	fSelectionModeAny(kFALSE)
 {
@@ -39,10 +44,13 @@ AliEmcalTrackSelection::AliEmcalTrackSelection() :
 AliEmcalTrackSelection::AliEmcalTrackSelection(const AliEmcalTrackSelection& ref):
 	TObject(ref),
 	fListOfTracks(NULL),
+	fListOfTrackBitmaps(NULL),
+	fTrackBitmap(64),
 	fListOfCuts(NULL),
 	fSelectionModeAny(kFALSE)
 {
 	if(ref.fListOfTracks) fListOfTracks = new TObjArray(*(ref.fListOfTracks));
+	if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TObjArray(*(ref.fListOfTrackBitmaps));
 	if(ref.fListOfCuts){
 	  fListOfCuts = new TObjArray;
 	  fListOfCuts->SetOwner(false);
@@ -61,6 +69,7 @@ AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSel
 	if(this != &ref){
 		this->~AliEmcalTrackSelection();
 		if(ref.fListOfTracks) fListOfTracks = new TObjArray(*(ref.fListOfTracks));
+		if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TObjArray(*(ref.fListOfTrackBitmaps));
 		if(ref.fListOfCuts){
 		  fListOfCuts = new TObjArray;
 		  fListOfCuts->SetOwner(false);
@@ -77,6 +86,7 @@ AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSel
  */
 AliEmcalTrackSelection::~AliEmcalTrackSelection() {
 	if(fListOfTracks) delete fListOfTracks;
+	if(fListOfTrackBitmaps) delete fListOfTrackBitmaps;
 	if(fListOfCuts) delete fListOfCuts;
 }
 
@@ -111,4 +121,70 @@ AliVCuts* AliEmcalTrackSelection::GetTrackCuts(Int_t icut) {
   if(icut < fListOfCuts->GetEntries())
     return static_cast<AliVCuts *>(fListOfCuts->At(icut));
   return NULL;
+}
+
+
+/**
+ * Select tracks from a TClonesArray of input tracks
+ *
+ * \param tracks TClonesArray of tracks (must not be null)
+ * \return: TObjArray of selected tracks
+ */
+TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const tracks)
+{
+  if (!fListOfTracks) {
+    fListOfTracks = new TObjArray;
+  }
+  else {
+    fListOfTracks->Clear();
+  }
+
+  if (!fListOfTrackBitmaps) {
+    fListOfTrackBitmaps = new TObjArray;
+    fListOfTrackBitmaps->SetOwner(kTRUE);
+  }
+  else {
+    fListOfTrackBitmaps->Clear();
+  }
+
+  for(TIter trackIter = TIter(tracks).Begin(); trackIter != TIter::End(); ++trackIter){
+    if(IsTrackAccepted(static_cast<AliVTrack *>(*trackIter))) {
+      fListOfTracks->Add(*trackIter);
+      fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
+    }
+  }
+  return fListOfTracks;
+}
+
+/**
+ * Select tracks from a virtual event. Delegates selection process to function IsTrackAccepted
+ *
+ * \param event AliESDEvent, via interface of virtual event (must not be null)
+ * \return TObjArray of selected tracks
+ */
+TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const event)
+{
+  if (!fListOfTracks) {
+    fListOfTracks = new TObjArray;
+  }
+  else {
+    fListOfTracks->Clear();
+  }
+
+  if (!fListOfTrackBitmaps) {
+    fListOfTrackBitmaps = new TObjArray;
+    fListOfTrackBitmaps->SetOwner(kTRUE);
+  }
+  else {
+    fListOfTrackBitmaps->Clear();
+  }
+
+  for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
+    AliVTrack *trk = static_cast<AliVTrack *>(event->GetTrack(itrk));
+    if (IsTrackAccepted(trk)) {
+      fListOfTracks->AddLast(trk);
+      fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
+    }
+  }
+  return fListOfTracks;
 }
