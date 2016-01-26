@@ -322,11 +322,9 @@ parseListOfFiles()
   #generate a list of files, one per line out of arguments.
   #names starting with "@" are assumed to be file lists and will
   #be expanded
-  for file in "${@}"; do
-    if [[ "$file" =~ ^@ ]]; then
-      while IFS= read x; do
-        echo "$x"
-      done < "${file#@}"
+  for file in "$@"; do
+    if [[ ${file:0:1} == @ ]]; then
+      [[ -r "${file:1}" ]] && cat "${file:1}"
     else
       echo "$file"
     fi
