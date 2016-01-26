@@ -23,7 +23,7 @@
 #include <TClonesArray.h>
 
 #include "AliEmcalTriggerDecision.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerSelection.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 
@@ -67,16 +67,16 @@ AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArra
    */
   AliEmcalTriggerDecision *result = new AliEmcalTriggerDecision(fOutputName.Data());
   TIter patchIter(inputPatches);
-  AliEmcalTriggerPatchInfo *patch(NULL);
-  std::vector<AliEmcalTriggerPatchInfo *> selectedPatches;
-  while((patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
+  AliEMCALTriggerPatchInfo *patch(NULL);
+  std::vector<AliEMCALTriggerPatchInfo *> selectedPatches;
+  while((patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
     if(fSelectionCuts->IsSelected(patch)){
       selectedPatches.push_back(patch);
     }
   }
   // Find the main patch
-  AliEmcalTriggerPatchInfo *mainPatch(NULL), *testpatch(NULL);
-  for(std::vector<AliEmcalTriggerPatchInfo *>::iterator it = selectedPatches.begin(); it != selectedPatches.end(); ++it){
+  AliEMCALTriggerPatchInfo *mainPatch(NULL), *testpatch(NULL);
+  for(std::vector<AliEMCALTriggerPatchInfo *>::iterator it = selectedPatches.begin(); it != selectedPatches.end(); ++it){
     testpatch = *it;
     if(!mainPatch) mainPatch = testpatch;
     else if(fSelectionCuts->CompareTriggerPatches(testpatch, mainPatch) > 0) mainPatch = testpatch;

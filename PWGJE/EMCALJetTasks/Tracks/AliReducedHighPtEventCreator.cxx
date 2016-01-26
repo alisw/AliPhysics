@@ -40,7 +40,7 @@
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 #include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliReducedEmcalCluster.h"
@@ -424,7 +424,7 @@ void AliReducedHighPtEventCreator::ConvertTriggerPatches(TClonesArray* patches,
     return;
   }
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *mypatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!mypatch->IsOfflineSimple() && mypatch->IsLevel0()) continue;
     AliReducedPatchContainer::PatchType_t triggertype;
     Bool_t isDefined(kFALSE);

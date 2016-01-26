@@ -60,7 +60,7 @@
 #include "AliClusterContainer.h"
 #include "AliEmcalParticle.h"
 #include "AliESDCaloCluster.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 // event handler (and pico's) includes                                                                                                      
 #include <AliInputEventHandler.h>
@@ -568,7 +568,7 @@ void AliAnalysisTaskEmcalJetTriggerMatcher::ExtractMainPatch() {
     //extract main trigger patch
     Double_t emax = -1.;
     for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-        AliEmcalTriggerPatchInfo *patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+        AliEMCALTriggerPatchInfo *patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
         if (!patch) continue;
         
         if(fFillHists>0){

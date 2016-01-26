@@ -52,7 +52,7 @@
 #include "AliVCaloCells.h"
 #include "AliClusterContainer.h"
 #include "AliParticleContainer.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliAODHeader.h"
 #include "AliPicoTrack.h"
 
@@ -169,7 +169,7 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExecOnce(){
   fClusterTriggeredEvent->SetName(fClusterTriggeredEventname);    
   fClusterTriggeredEvent->SetOwner(kTRUE);
 
-  fRecalcTriggerPatches = new TClonesArray("AliEmcalTriggerPatchInfo");
+  fRecalcTriggerPatches = new TClonesArray("AliEMCALTriggerPatchInfo");
   fRecalcTriggerPatches->SetName("RecalcTriggerPatches");
   fRecalcTriggerPatches->SetOwner(kTRUE);
 
@@ -231,7 +231,7 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillTriggerPatchHistos() {
   //if(fMainPatchType == kManual) ExtractMainPatch();
   // not set up yet for jet patch
   //else if(fMainPatchType == kEmcalJet) cout<<"kEmcalJet"<<endl; //fMaxPatch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
-  //AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
+  //AliEMCALTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
 
   fMaxPatchEnergy = 0;
   fMaxPatchADCEnergy = 0;
@@ -299,10 +299,10 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExtractMainPatch() {
   TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
 
   //extract main trigger patch
-  AliEmcalTriggerPatchInfo *patch;
+  AliEMCALTriggerPatchInfo *patch;
   Double_t emax = -1.;
   for (Int_t iPatch = 0, patchacc = 0; iPatch < nPatch; iPatch++) {
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (!patch) continue;
 
     // count trigger types
@@ -914,9 +914,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
           // number of recalculated patches in event
           Int_t nPatch = fRecalcTriggerPatches->GetEntriesFast();
 
-          AliEmcalTriggerPatchInfo *patch;
+          AliEMCALTriggerPatchInfo *patch;
           for(Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-            patch = (AliEmcalTriggerPatchInfo*)fRecalcTriggerPatches->At(iPatch);
+            patch = (AliEMCALTriggerPatchInfo*)fRecalcTriggerPatches->At(iPatch);
             if(!patch) continue;
 
             // get max patch location
@@ -1125,7 +1125,7 @@ Float_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::RelativeEP(Double_t objAng
   return dphi;   // dphi in [0, Pi/2]
 }
 
-TH1* AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillTriggerPatchQA(TH1* h, UInt_t trig, AliEmcalTriggerPatchInfo *fPatch) {
+TH1* AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillTriggerPatchQA(TH1* h, UInt_t trig, AliEMCALTriggerPatchInfo *fPatch) {
   // check and fill a QA histogram
   if(fPatch->IsLevel0()) h->Fill(1);
   if(fPatch->IsJetLow()) h->Fill(2);
@@ -1175,7 +1175,7 @@ TH1* AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillTriggerPatchQA(TH1* h, UI
 Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const {
   Bool_t hasfound = kFALSE;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    AliEMCALTriggerPatchInfo *mypatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     Double_t etamin = TMath::Min(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
     etamax = TMath::Max(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
     phimin = TMath::Min(mypatch->GetPhiMin(), mypatch->GetPhiMax()),

@@ -8,7 +8,7 @@
 class TArrayD;
 class TClonesArray;
 
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliVCluster;
 
 namespace EMCalTriggerPtAnalysis {
@@ -28,7 +28,7 @@ public:
 
 protected:
   void ProcessCluster(const TString &triggerclass, const AliVCluster * const clust, bool isCalib);
-  void ProcessPatch(const TString &triggerclass, const AliEmcalTriggerPatchInfo * const patch, bool isOnline);
+  void ProcessPatch(const TString &triggerclass, const AliEMCALTriggerPatchInfo * const patch, bool isOnline);
   void CreateEnergyBinning(TArrayD& binning) const;
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
 

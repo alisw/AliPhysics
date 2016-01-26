@@ -45,7 +45,7 @@
 
 #include "AliClusterContainer.h"
 #include "AliEmcalJet.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalPhysicsSelection.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliEMCalHistoContainer.h"
@@ -327,9 +327,9 @@ namespace EMCalTriggerPtAnalysis {
     Bool_t emcalGood = fInputHandler->IsEventSelected() & AliEmcalPhysicsSelection::kEmcalOk;
 
     // Loop over trigger patches, fill patch energy
-    AliEmcalTriggerPatchInfo *triggerpatch(NULL);
+    AliEMCALTriggerPatchInfo *triggerpatch(NULL);
     TIter patchIter(this->fTriggerPatchInfo);
-    while((triggerpatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
+    while((triggerpatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
       double triggerpatchinfo[5] = {triggerpatch->GetPatchE(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
       double triggerpatchinfoamp[5] = {static_cast<double>(triggerpatch->GetADCAmp()), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};
       double triggerpatchinfoer[5] = {triggerpatch->GetADCAmpGeVRough(), triggerpatch->GetEtaGeo(), triggerpatch->GetPhiGeo(), triggerpatch->IsMainTrigger() ? 1. : 0., emcalGood ? 1. : 0.};

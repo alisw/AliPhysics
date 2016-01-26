@@ -5,7 +5,7 @@ class TH1;
 class TList;
 class TClonesArray;
 class TString;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliEmcalTriggerSetupInfo;
 
 #include "AliAnalysisTaskEmcal.h"
@@ -37,7 +37,7 @@ class AliAnalysisTaskEmcalTriggerInfoQA : public AliAnalysisTaskEmcal
     TString    fCaloTriggerSetupInfoName;  // track bins
     
 
-    void FillPatch( AliEmcalTriggerPatchInfo *patch, Int_t type );
+    void FillPatch( AliEMCALTriggerPatchInfo *patch, Int_t type );
 
     AliAnalysisTaskEmcalTriggerInfoQA(const AliAnalysisTaskEmcalTriggerInfoQA&); // not implemented
     AliAnalysisTaskEmcalTriggerInfoQA& operator=(const AliAnalysisTaskEmcalTriggerInfoQA&); // not implemented

@@ -70,31 +70,17 @@ set(SRCS
   Trigger/AliEmcalTriggerMaker.cxx
   Trigger/AliEmcalTriggerMakerKernel.cxx
   Trigger/AliEmcalTriggerMakerTask.cxx
-  Trigger/AliEmcalTriggerBitConfigAP.cxx
-  Trigger/AliEmcalTriggerPatchInfoAP.cxx
-  Trigger/AliEmcalTriggerPatchInfoAPV1.cxx
   Trigger/AliEmcalTriggerSetupInfo.cxx
   Trigger/AliEmcalTriggerDecision.cxx
   Trigger/AliEmcalTriggerDecisionContainer.cxx
   Trigger/AliEmcalTriggerSelectionCuts.cxx
   Trigger/AliEmcalTriggerSelection.cxx
-  Trigger/AliEmcalTriggerDataGridAP.cxx
-  Trigger/AliEmcalTriggerChannelContainerAP.cxx
-  Trigger/AliEmcalTriggerRawPatchAP.cxx
-  Trigger/AliEmcalTriggerPatchFinderAP.cxx
-  Trigger/AliEmcalTriggerAlgorithmAP.cxx
-  Trigger/AliEmcalTriggerFastORAP.cxx
   Trigger/AliEmcalTriggerQAAP.cxx
   Trigger/AliEmcalTriggerQATask.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-
-set(HDRS
-  "${HDRS}"
-  Trigger/AliEmcalTriggerConstantsAP.h
-  )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

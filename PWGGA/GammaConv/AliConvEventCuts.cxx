@@ -49,7 +49,7 @@
 #include "AliVCaloCells.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 class iostream;
 
@@ -3231,7 +3231,7 @@ void AliConvEventCuts::GetCorrectEtaShiftFromPeriod(TString periodName){
 }
 
 //________________________________________________________________________
-AliEmcalTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch() 
+AliEMCALTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch()
 {
   //get main trigger match; if not known yet, look for it and cache
 
@@ -3247,9 +3247,9 @@ AliEmcalTriggerPatchInfo* AliConvEventCuts::GetMainTriggerPatch()
   Int_t nPatch = fTriggerPatchInfo->GetEntries();
 
   //extract main trigger patch
-  AliEmcalTriggerPatchInfo *patch;
+  AliEMCALTriggerPatchInfo *patch;
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (patch->IsMainTrigger()) {
       fMainTriggerPatchEMCAL = patch;
       break;
@@ -3291,7 +3291,7 @@ void AliConvEventCuts::InitializeEMCALTrigger(AliVEvent *fInputEvent)
   }
   
   if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
-    fTriggerPatchInfo = GetArrayFromEvent(fInputEvent, fCaloTriggerPatchInfoName.Data(), "AliEmcalTriggerPatchInfo");
+    fTriggerPatchInfo = GetArrayFromEvent(fInputEvent, fCaloTriggerPatchInfoName.Data(), "AliEMCALTriggerPatchInfo");
     if (!fTriggerPatchInfo) {
       AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
     return;
@@ -3315,10 +3315,10 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   Int_t nJ1 = 0;
   Int_t nJ2 = 0;
   Int_t nL0 = 0;
-  AliEmcalTriggerPatchInfo *patch;
+  AliEMCALTriggerPatchInfo *patch;
 //   if (nPatch> 0) {cout << "NEW Triggers in this event*********************************" << endl;}
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
 //     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
 //     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
 //     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;

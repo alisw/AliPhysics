@@ -14,7 +14,7 @@ class AliHFEpidQAmanager;
 class AliCFManager;
 class AliAODMCHeader;
 class AliAODMCParticle; // sample
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
 #include "AliAnalysisTaskSE.h"
 

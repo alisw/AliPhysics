@@ -24,7 +24,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
@@ -232,7 +232,7 @@ void AliAnalysisTaskEventSelectionRef::FillEventCounterHists(
 
     // ... patches
     for(TIter patchiter = TIter(fTriggerPatchContainer).Begin(); patchiter != TIter::End(); ++patchiter){
-      ProcessOfflinePatch(triggerclass, static_cast<AliEmcalTriggerPatchInfo *>(*patchiter), isOfflineSelected);
+      ProcessOfflinePatch(triggerclass, static_cast<AliEMCALTriggerPatchInfo *>(*patchiter), isOfflineSelected);
     }
   }
 }
@@ -268,7 +268,7 @@ void AliAnalysisTaskEventSelectionRef::ProcessCluster(
 
 void AliAnalysisTaskEventSelectionRef::ProcessOfflinePatch(
     const char * triggerclass,
-    const AliEmcalTriggerPatchInfo * patch,
+    const AliEMCALTriggerPatchInfo * patch,
     bool isOfflineSelected
 )
 {
@@ -301,9 +301,9 @@ Bool_t AliAnalysisTaskEventSelectionRef::IsOfflineSelected(EmcalTriggerClass trg
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
   bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
   int nfound = 0;
-  AliEmcalTriggerPatchInfo *patch = NULL;
+  AliEMCALTriggerPatchInfo *patch = NULL;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
     if(isSingleShower){
      if(!patch->IsGammaLowSimple()) continue;

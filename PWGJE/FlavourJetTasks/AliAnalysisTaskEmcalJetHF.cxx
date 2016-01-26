@@ -59,7 +59,7 @@
 #include <AliESDtrackCuts.h>
 #include "AliPID.h"
 #include "AliTPCdEdxInfo.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliVVZERO.h"
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEmcalTriggerSetupInfo.h"
@@ -688,7 +688,7 @@ void AliAnalysisTaskEmcalJetHF::ExtractMainPatch() {
   //extract main trigger patch
   Double_t emax = -1.;
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
-    AliEmcalTriggerPatchInfo *patch = (AliEmcalTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
+    AliEMCALTriggerPatchInfo *patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
     if (!patch) continue;
     if(fFillHists>0){
       if (patch->IsLevel0() == 1 )            fHistTriggerBitInfo->Fill(1);

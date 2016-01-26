@@ -17,8 +17,8 @@
 #include <THistManager.h>
 #include <TObjArray.h>
 
-#include "AliEmcalTriggerBitConfigAP.h"
-#include "AliEmcalTriggerPatchInfoAPV1.h"
+#include "AliEMCALTriggerBitConfig.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliLog.h"
@@ -111,14 +111,14 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   if (!fInitialized)
     return;
 
-  AliEmcalTriggerBitConfigAP *triggerBitConfig(NULL);
+  AliEMCALTriggerBitConfig *triggerBitConfig(NULL);
   if(!triggerBitConfig){
     switch(fUseTriggerBitConfig){
     case kNewConfig:
-      triggerBitConfig = new AliEmcalTriggerBitConfigNewAP();
+      triggerBitConfig = new AliEMCALTriggerBitConfigNew();
       break;
     case kOldConfig:
-      triggerBitConfig = new AliEmcalTriggerBitConfigOldAP();
+      triggerBitConfig = new AliEMCALTriggerBitConfigOld();
       break;
     }
   }
@@ -126,7 +126,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
 
   if (!fCaloTriggersOutName.IsNull()) {
-    fCaloTriggersOut = new TClonesArray("AliEmcalTriggerPatchInfoAPV1");
+    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
     fCaloTriggersOut->SetName(fCaloTriggersOutName);
 
     if (!(InputEvent()->FindListObject(fCaloTriggersOutName))) {
@@ -162,12 +162,12 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   fTriggerMaker->BuildL1ThresholdsOffline(fV0);
   fTriggerMaker->SetIsMC(MCEvent());
   TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent());
-  AliEmcalTriggerPatchInfoAPV1 *recpatch = NULL;
+  AliEMCALTriggerPatchInfo *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;
   AliDebug(2,Form("Trigger maker - Found %d patches\n", patches->GetEntries()));
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
-    recpatch = dynamic_cast<AliEmcalTriggerPatchInfoAPV1 *>(*patchIter);
+    recpatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(fDoQA){
       std::bitset<32> triggerbits = recpatch->GetTriggerBits();
       std::stringstream triggerbitstring;
@@ -189,7 +189,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
         }
       }
     }
-    new((*fCaloTriggersOut)[patchcounter++]) AliEmcalTriggerPatchInfoAPV1(*recpatch);
+    new((*fCaloTriggersOut)[patchcounter++]) AliEMCALTriggerPatchInfo(*recpatch);
   }
   if(patches) delete patches;
   return true;

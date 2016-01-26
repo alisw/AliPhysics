@@ -20,7 +20,7 @@
  */
 
 #include "AliEmcalTriggerDecision.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 
 ClassImp(AliEmcalTriggerDecision)
 
@@ -55,7 +55,7 @@ AliEmcalTriggerDecision::AliEmcalTriggerDecision(const char *name, const char *t
 }
 
 //______________________________________________________________________________
-void AliEmcalTriggerDecision::AddAcceptedPatch(AliEmcalTriggerPatchInfo * const acceptedPatch){
+void AliEmcalTriggerDecision::AddAcceptedPatch(AliEMCALTriggerPatchInfo * const acceptedPatch){
   /*
    * Add accepted patch to the trigger decision
    *

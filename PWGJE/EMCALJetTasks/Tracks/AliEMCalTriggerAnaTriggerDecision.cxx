@@ -16,7 +16,7 @@
 #include <TClonesArray.h>
 #include <TString.h>
 #include "AliVEvent.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerEventData.h"
 
@@ -93,7 +93,7 @@ bool AliEMCalTriggerAnaTriggerDecision::CheckConsistency() const{
  */
 void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArray& listOfPatches) {
   TIter patchIter(&listOfPatches);
-  AliEmcalTriggerPatchInfo *mypatch(NULL);
+  AliEMCALTriggerPatchInfo *mypatch(NULL);
   if(fDoDebug){
     std::cout << "Generating trigger decision from found patches: " << listOfPatches.GetEntries() << std::endl;
     if(fConfiguration.IsUsingOfflinePatches()) std::cout << "Using offline patches\n";
@@ -101,7 +101,7 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
   }
   int foundpatches[4] = {0,0,0,0};
   int index = -1;
-  while((mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(patchIter()))){
+  while((mypatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
     if(fDoDebug) std::cout << "Next patch: " << (mypatch->IsOfflineSimple() ? "offline" : "online:") << std::endl;
 	  for(int icase = 0; icase < 4; icase++){
 	    if(SelectTriggerPatch(ETATriggerType(icase), mypatch)){
@@ -129,7 +129,7 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
  * \param recpatch Patch to accept
  * \return True if the patch is selected, false otherwise
  */
-Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trigger, const AliEmcalTriggerPatchInfo* const recpatch) const {
+Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trigger, const AliEMCALTriggerPatchInfo* const recpatch) const {
   bool swapThresholds = fConfiguration.IsSwapThresholds();
 	bool selectPatchType = kFALSE;
 	if(fConfiguration.IsUsingOfflinePatches()){
@@ -166,7 +166,7 @@ Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trig
  * \param patch The reconstructed patch
  * \return The patch energy
  */
-Double_t AliEMCalTriggerAnaTriggerDecision::GetPatchEnergy(EPatchEnergyType_t energytype, const AliEmcalTriggerPatchInfo *const patch) const {
+Double_t AliEMCalTriggerAnaTriggerDecision::GetPatchEnergy(EPatchEnergyType_t energytype, const AliEMCALTriggerPatchInfo *const patch) const {
   Double_t energy = 0.;
   switch(energytype){
   case kAmplitudeOnline:      energy = patch->GetADCAmp(); break;

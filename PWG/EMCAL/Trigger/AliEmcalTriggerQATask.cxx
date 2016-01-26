@@ -16,14 +16,14 @@
 #include <THashList.h>
 #include <THnSparse.h>
 
-#include "AliEmcalTriggerPatchInfoAPV1.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerQAAP.h"
-#include "AliEmcalTriggerFastORAP.h"
-#include "AliEmcalTriggerConstantsAP.h"
+#include "AliEMCALTriggerFastOR.h"
+#include "AliEMCALTriggerConstants.h"
 
 #include "AliEmcalTriggerQATask.h"
 
-using namespace EmcalTriggerAP;
+using namespace EMCALTrigger;
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerQATask)
@@ -94,8 +94,8 @@ void AliEmcalTriggerQATask::ExecOnce()
   if (fTriggerPatches) {
     TString objname(fTriggerPatches->GetClass()->GetName());
     TClass cls(objname);
-    if (!cls.InheritsFrom("AliEmcalTriggerPatchInfoAPV1")) {
-      AliError(Form("%s: Objects of type %s in %s are not inherited from AliEmcalTriggerPatchInfoAPV1!",
+    if (!cls.InheritsFrom("AliEMCALTriggerPatchInfo")) {
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliEMCALTriggerPatchInfo!",
           GetName(), cls.GetName(), fTriggerPatchesName.Data()));
       fTriggerPatches = 0;
     }
@@ -332,7 +332,7 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
     for (Int_t i = 0; i < nPatches; i++) {
       AliDebug(2, Form("Processing patch %d", i));
 
-      AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
+      AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
       if (!patch) continue;
 
       GetTriggerQA(fCentBin)->ProcessBkgPatch(patch);
@@ -345,7 +345,7 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
     for (Int_t i = 0; i < nPatches; i++) {
       AliDebug(2, Form("Processing patch %d", i));
 
-      AliEmcalTriggerPatchInfoAPV1* patch = static_cast<AliEmcalTriggerPatchInfoAPV1*>(fTriggerPatches->At(i));
+      AliEMCALTriggerPatchInfo* patch = static_cast<AliEMCALTriggerPatchInfo*>(fTriggerPatches->At(i));
       if (!patch) continue;
 
       GetTriggerQA(fCentBin)->ProcessPatch(patch);
@@ -353,7 +353,7 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
   }
 
   if (fCaloTriggers) {
-    AliEmcalTriggerFastORAP fastor;
+    AliEMCALTriggerFastOR fastor;
     fCaloTriggers->Reset();
     Int_t globCol = -1, globRow = -1;
     Float_t L0amp = -1;

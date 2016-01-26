@@ -24,7 +24,7 @@
 #include "AliJetContainer.h"
 #include "AliClusterContainer.h"
 #include "AliParticleContainer.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliAODHeader.h"
 #include "AliPicoTrack.h"
 
@@ -206,7 +206,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
 
   //Fill trigger patch histos for main trigger
 
-  AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
+  AliEMCALTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
   fMaxPatchEnergy = 0;
   fMaxPatchADCEnergy = 0;
   if(patch) {

@@ -28,15 +28,15 @@
 #include <TObjString.h>
 #include <TObjArray.h>
 
-#include "AliEmcalTriggerPatchInfoAPV1.h"
-#include "AliEmcalTriggerFastORAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerFastOR.h"
 #include "AliLog.h"
 
-#include "AliEmcalTriggerConstantsAP.h"
+#include "AliEMCALTriggerConstants.h"
 
 #include "AliEmcalTriggerQAAP.h"
 
-using namespace EmcalTriggerAP;
+using namespace EMCALTrigger;
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerQAAP)
@@ -259,7 +259,7 @@ void AliEmcalTriggerQAAP::Init()
  * Process a patch, filling relevant histograms.
  * \param patch Pointer to a valid trigger patch
  */
-void AliEmcalTriggerQAAP::ProcessPatch(AliEmcalTriggerPatchInfoAPV1* patch)
+void AliEmcalTriggerQAAP::ProcessPatch(AliEMCALTriggerPatchInfo* patch)
 {
   TString hname;
 
@@ -271,7 +271,7 @@ void AliEmcalTriggerQAAP::ProcessPatch(AliEmcalTriggerPatchInfoAPV1* patch)
       patch->GetTriggerBitConfig()->GetBkgBit()
   };
 
-  Int_t offsets[3] = { 0, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset };
+  Int_t offsets[3] = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
   Int_t amplitudes[3] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
   Double_t bkg[3] = {0};
 
@@ -339,11 +339,11 @@ void AliEmcalTriggerQAAP::ProcessPatch(AliEmcalTriggerPatchInfoAPV1* patch)
  * Process a patch, filling relevant histograms.
  * \param patch Pointer to a valid trigger patch
  */
-void AliEmcalTriggerQAAP::ProcessBkgPatch(AliEmcalTriggerPatchInfoAPV1* patch)
+void AliEmcalTriggerQAAP::ProcessBkgPatch(AliEMCALTriggerPatchInfo* patch)
 {
   TString hname;
 
-  Int_t offsets[3] = { 0, AliEmcalTriggerPatchInfoAPV1::kRecalcOffset, AliEmcalTriggerPatchInfoAPV1::kOfflineOffset };
+  Int_t offsets[3] = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
   Int_t amplitudes[3] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
   Int_t bkgTriggerBit = patch->GetTriggerBitConfig()->GetBkgBit();
 
@@ -415,7 +415,7 @@ void AliEmcalTriggerQAAP::ProcessBkgPatch(AliEmcalTriggerPatchInfoAPV1* patch)
  * Process a FastOR, filling relevant histograms.
  * \param patch Pointer to a valid trigger FastOR
  */
-void AliEmcalTriggerQAAP::ProcessFastor(AliEmcalTriggerFastORAP* fastor)
+void AliEmcalTriggerQAAP::ProcessFastor(AliEMCALTriggerFastOR* fastor)
 {
   TString hname;
 

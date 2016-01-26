@@ -16,7 +16,7 @@
 
 class TClonesArray;
 class TString;
-class AliEmcalTriggerPatchInfo;
+class AliEMCALTriggerPatchInfo;
 
 /**
  * \namespace EMCalTriggerPtAnalysis
@@ -227,8 +227,8 @@ protected:
   void MakeDecisionFromString(const TString &triggerstring);
   void MakeDecisionFromPatches(const TClonesArray &listOfPatches);
 
-  Bool_t SelectTriggerPatch(ETATriggerType trigger, const AliEmcalTriggerPatchInfo * const recpatch) const;
-  Double_t GetPatchEnergy(EPatchEnergyType_t energytype,  const AliEmcalTriggerPatchInfo *const patch) const;
+  Bool_t SelectTriggerPatch(ETATriggerType trigger, const AliEMCALTriggerPatchInfo * const recpatch) const;
+  Double_t GetPatchEnergy(EPatchEnergyType_t energytype,  const AliEMCALTriggerPatchInfo *const patch) const;
 
   AliEMCalTriggerAnaTriggerDecisionConfig     fConfiguration;                      ///< Configuration for the trigger decision handler
   Bool_t                                      fDecisionFromPatches[4];             ///< Storage for result from trigger string

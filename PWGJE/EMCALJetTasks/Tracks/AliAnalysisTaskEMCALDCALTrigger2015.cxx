@@ -9,7 +9,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCalHistoContainer.h"
-#include "AliEmcalTriggerPatchInfoAP.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
@@ -166,7 +166,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
   /*
   if(fPatchContainer){
     for(TIter patchiter = TIter(fPatchContainer).Begin(); patchiter != TIter::End(); ++patchiter){
-      AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
+      AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
       if(!patch) continue;
       if(patch->IsOfflineSimple() && patch->IsGammaLowSimple()){
         for(std::vector<TString>::iterator trgit = triggerclassesSelected.begin(); trgit != triggerclassesSelected.end(); ++trgit){
@@ -199,8 +199,8 @@ void AliAnalysisTaskEMCALDCALTrigger2015::ProcessCluster(const TString &triggerc
   }
 }
 
-/*
-void AliAnalysisTaskEMCALDCALTrigger2015::ProcessPatch(const TString &triggerclass, const AliEmcalTriggerPatchInfo * const patch, bool isOnline){
+
+void AliAnalysisTaskEMCALDCALTrigger2015::ProcessPatch(const TString &triggerclass, const AliEMCALTriggerPatchInfo * const patch, bool isOnline){
   fHistos->FillTH1(Form("hPatchEnergy%s%s", isOnline ? "Online" : "Offline", triggerclass.Data()), patch->GetPatchE());
   fHistos->FillTH2(Form("hPatchEnergyEta%s%s", isOnline ? "Online" : "Offline", triggerclass.Data()), patch->GetEtaCM(), patch->GetPatchE());
   Int_t supermoduleID(-1);
@@ -209,7 +209,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::ProcessPatch(const TString &triggercla
     fHistos->FillTH2(Form("hPatchEnergyEtaSupermodule%d%s%s", supermoduleID,  isOnline ? "Online" : "Offline", triggerclass.Data()), patch->GetEtaCM(), patch->GetPatchE());
   }
 }
-*/
+
 void AliAnalysisTaskEMCALDCALTrigger2015::CreateEnergyBinning(TArrayD& binning) const {
   std::vector<double> mybinning;
   std::map<double,double> definitions;
