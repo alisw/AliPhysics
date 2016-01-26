@@ -87,13 +87,13 @@ TString AliAnalysisTaskADCalib::GetHistTitle(Int_t  ch, // offline channel,
 					     Bool_t integrator) const { // integrator
   return TString::Format("chOff=%02d BC=%02d int=%d;charge in tail [%d..%d] (ADC);charge in BC=%02d",
 			 ch, bc, integrator,
-			 fBCRangeExtrapolation[0],
-			 fBCRangeExtrapolation[1],
+			 fBCRangeTail[0],
+			 fBCRangeTail[1],
 			 bc);
 }
 
 void AliAnalysisTaskADCalib::NotifyRun() {
-  // (1) get the AD Calibration OCDB object
+  // (1) set up the OCDB
   AliCDBManager *man = AliCDBManager::Instance();
   if (NULL == man) {
     AliFatal("CDB manager not found");
@@ -105,6 +105,7 @@ void AliAnalysisTaskADCalib::NotifyRun() {
 
   man->SetRun(fCurrentRunNumber);
 
+  // (2) Get the AD calibration data OCDB object (pedestals)
   AliCDBEntry *entry = man->Get("AD/Calib/Data");
   if (NULL == entry) {
     AliFatal("AD/Calib/Data not found");
@@ -118,14 +119,13 @@ void AliAnalysisTaskADCalib::NotifyRun() {
 }
 
 void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
-
   fStatus = kOk; // pedantic
 
-  // (1a) set up the output list
+  // (1) set up the output list
   fList = new THashList;
   fList->SetOwner(kTRUE);
 
-  // (1b) populate the list with histograms
+  // (2) populate the list with histograms
   TH2 *h = NULL;
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
     for (Int_t bc=fBCRangeExtrapolation[0], n=fBCRangeExtrapolation[1]; bc<=n; ++bc) { // bc
@@ -205,20 +205,21 @@ void AliAnalysisTaskADCalib::Terminate(Option_t* ) {
   // NOP
 }
 
-void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *filename,
+void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
 					   AliCDBStorage *cdbStorage,
 					   Int_t runNumber) {
   fStatus = kOk;
 
+  // if necessary clean up
   if (NULL != fList) {
     delete fList;
     fList = NULL;
   }
 
   // (1) open file
-  TFile *f = TFile::Open(filename);
+  TFile *f = TFile::Open(fileName);
   if (NULL == f || !f->IsOpen()) {
-    AliError(Form("cannot open output file %s", filename));
+    AliError(Form("cannot open output file %s", fileName));
     fStatus = kInputError;
     return;
   }
@@ -244,16 +245,25 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *filename,
     f->Close();
     return;
   }
-
   f->Close();
 
   // (5) update list of histograms
-  TFile *fSave = TFile::Open("CalibObjectsQA_AD.root", "RECREATE");
+  TString qaFileName = fileName;
+  qaFileName.ReplaceAll(".root", "_ADQA.root");
+  TFile *fSave = TFile::Open(qaFileName, "RECREATE");
   fList->Write("", TObject::kSingleKey | TObject::kWriteDelete);
   fSave->Write();
   fSave->Close();
 
-  // (6) Creation of OCDB metadata and id
+  // (6) store OCDB object
+  // (6a) check for cdbStorage
+  if (NULL == cdbStorage) {
+    AliError("NULL == cdbStorage");
+    fStatus = kStoreError;
+    return;
+  }
+
+  // (6b) Creation of OCDB metadata and id
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("C. Mayer");
   md->SetBeamPeriod(0);
@@ -261,20 +271,24 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *filename,
   md->SetComment("AD Saturation");
   AliCDBId id("AD/Calib/Saturation", runNumber, AliCDBRunRange::Infinity());
 
-  // (7) store the AD saturation correction OCDB object
+  // (6c) put the object into the OCDB storage
   fStatus = (cdbStorage->Put(t, id, md)
 	     ? kOk
 	     : kStoreError);
 }
 
 Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, Int_t bc, Double_t &xMax) {
+  if (NULL == h || NULL == f) {
+    xMax = -999.9f;
+    return kFALSE;
+  }
+
   // (1) set up the TF1 depending on BC
   switch (bc) {
   case 10:
     f->SetParameters(0, 8);
     f->SetParNames("offset", "slope");
-    f->SetParLimits(1, 0.0, 20.0);
-    xMax = 120;
+    f->SetParLimits(1, 0.0, 40.0);
     break;
   case 11:
   case 12:
@@ -283,7 +297,6 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     f->SetParLimits(1, 0.0, 10.0);
     f->SetParLimits(2, 0.0,  1.0);
     f->SetParLimits(3, 1.1,  6.0);
-    xMax = 300 + 200*(ch<=8);
     break;
   default:
     return kFALSE;
@@ -293,37 +306,52 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   // (2) fit to the profile
   TProfile *h_pfx = h->ProfileX();
   h_pfx->SetDirectory(NULL);
-  h_pfx->Fit(f, "", "", 0, xMax);
 
-  // new xMax is for saturation
+  xMax = 50.0f;
+  for (Int_t i=1, n=h_pfx->GetNbinsX(); i<n; ++i) {
+    if (h_pfx->GetBinContent(i) <  10.0)
+      continue;
+    if (h_pfx->GetBinContent(i) > 750.0 ||
+	(xMax != 50.0 && h_pfx->GetBinContent(i) <  10.0))
+      break;
+    xMax = h_pfx->GetXaxis()->GetBinUpEdge(i);
+  }
+  AliDebug(3, Form("ch=%02d bc=%2d xMax= %.1f", ch, bc, xMax));
+  h_pfx->Fit(f, "WQ", "", 0, xMax);
+
+  // update xMax based on the fit function
   xMax = f->GetX(1024.0, 10.0, 590.0);
 
-  // (3) cut outliers
-  // (3a) make up a TCutG
-  const Double_t dX =   5.0;
-  const Double_t dY = 120.0;
-  const Int_t  iMax = Int_t(xMax/dX);
-  TString cutName = TString::Format("%s_cutg", h->GetName());
-  TCutG *cutg = new TCutG(cutName, 2*(2+iMax)+1);
-  fList->Add(cutg);
+  // (3) cut outliers by adapting a TGutG to the fitted function
+  const Int_t nInterations = 6;
+  for (Int_t iteration=nInterations-1; iteration>=0; --iteration) {
+    // (3a) make up a TCutG based on the last fit
+    //      last iteraton: adapt dY to the slope
+    const Double_t dX = 5.0;
+    const Double_t dY = (iteration > 0 ? 300.0 : 25.0*(1024.0/xMax)*TMath::Sqrt(TMath::Power(1024.0/xMax, -2) + 1.0));
 
-  Int_t counter=0;
-  for (Int_t i=-1; i<=iMax; ++i)
-    cutg->SetPoint(counter++, dX*i, f->Eval(dX*i)-dY);
-  for (Int_t i=iMax; i>=-1; --i)
-    cutg->SetPoint(counter++, dX*i, f->Eval(dX*i)+dY);
-  cutg->SetPoint(counter++, -dX, f->Eval(-dX)-dY);
+    const Int_t  iMax = Int_t(xMax/dX);
+    TString cutName = TString::Format("%s_cutg_%d", h->GetName(), iteration);
+    TCutG *cutg = new TCutG(cutName, 2*(2+iMax)+1);
+    fList->Add(cutg);
+    
+    Int_t counter=0;
+    for (Int_t i=-1; i<=iMax; ++i)
+      cutg->SetPoint(counter++, dX*i, f->Eval(dX*i)-dY);
+    for (Int_t i=iMax; i>=-1; --i)
+      cutg->SetPoint(counter++, dX*i, f->Eval(dX*i)+dY);
+    cutg->SetPoint(counter++, -dX, f->Eval(-dX)-dY);
 
-  // (3b) get a new profile with TCutG
-  h_pfx = h->ProfileX(Form("%s_pfxCut", h->GetName()), 1, -1, "["+cutName+"]");
-  fList->Add(h_pfx);
-  h_pfx->SetDirectory(NULL);
-  h_pfx->SetLineWidth(2);
+    // (3b) get a new profile with TCutG
+    h_pfx = h->ProfileX(Form("%s_pfxCut_%d", h->GetName(), iteration), 1, -1, "["+cutName+"]");
+    fList->Add(h_pfx);
+    h_pfx->SetDirectory(NULL);
+    h_pfx->SetLineWidth(2);
 
-  // (4) fit the new profile and update xMax
-  h_pfx->Fit(f, "", "", 0, xMax);
-  xMax = f->GetX(1024.0, 10.0, 590.0);
-
+    // (3c) fit the new profile and update xMax
+    h_pfx->Fit(f, "WQ", "", 0, xMax);
+    xMax = f->GetX(1024.0, 10.0, 590.0);
+  }
   return kTRUE;
 }
 
@@ -331,12 +359,12 @@ Int_t AliAnalysisTaskADCalib::GetStatus() const {
   return fStatus;
 }
 
-const Int_t gOffline2Online[16] = {
-  15,13,11,9,14,12,10,8,
-  7,5,3,1,6,4,2,0
-};
-
 TTree* AliAnalysisTaskADCalib::MakeCalibObject() {
+  const Int_t gOffline2Online[16] = {
+    15, 13, 11,  9, 14, 12, 10,  8,
+     7,  5,  3,  1,  6,  4,  2,  0
+  };  
+
   if (NULL == fList)
     return NULL;
 
@@ -392,28 +420,31 @@ TTree* AliAnalysisTaskADCalib::MakeCalibObject() {
       TH2* h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 0)));
       TH2* h1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 1)));
       switch (bc) {
-      case 10: {
-	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x");
-	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x");
-	Bool_t fitOk = kTRUE;
-	Double_t thr[2] = { 0, 0 };
-	fitOk &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
-	fitOk &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
-	doExtrapolation[bc] = fitOk;
-	extrapolationThresholds[bc] = TMath::Min(thr[0], thr[1]);
-	break;
-      }
-      case 11: {
-	new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + (x>0 ? [2]*x**[3] : 0)");
-	new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + (x>0 ? [2]*x**[3] : 0)");
-	Bool_t fitOk = kTRUE;
-	Double_t thr[2] = { 0, 0 };
-	fitOk &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
-	fitOk &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
-	doExtrapolation[bc] = fitOk;
-	extrapolationThresholds[bc] = TMath::Min(thr[0], thr[1]);
-	break;
-      }
+	if (NULL != h0 && NULL != h1) {
+	case 10: {
+	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x");
+	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x");
+	  Bool_t fitOk = kTRUE;
+	  Double_t thr[2] = { 0, 0 };
+	  fitOk &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
+	  fitOk &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
+	  doExtrapolation[bc] = fitOk;
+	  extrapolationThresholds[bc] = TMath::Min(thr[0], thr[1]);
+	  break;
+	}
+	case 11:
+	case 12: {
+	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]");
+	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]");
+	  Bool_t fitOk = kTRUE;
+	  Double_t thr[2] = { 0, 0 };
+	  fitOk &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
+	  fitOk &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
+	  doExtrapolation[bc] = fitOk;
+	  extrapolationThresholds[bc] = TMath::Min(thr[0], thr[1]);
+	  break;
+	}
+	}
       default:
 	doExtrapolation[bc]         = kFALSE;
 	extrapolationThresholds[bc] = -999.9f;
