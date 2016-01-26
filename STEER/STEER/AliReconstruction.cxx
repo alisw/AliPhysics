@@ -236,6 +236,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fSkipFriendsForLargeZ(kFALSE),
   fMaxFriendTracks(3000),
   fFractionFriends(0.03),
+  fFractionHLTESD(1.0),
   fSkipFriendsCutZ(50),
   //
   fSkipIncompleteDAQ(kTRUE),
@@ -384,6 +385,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fSkipFriendsForLargeZ(rec.fSkipFriendsForLargeZ),
   fMaxFriendTracks(rec.fMaxFriendTracks),
   fFractionFriends(rec.fFractionFriends),
+  fFractionHLTESD(rec.fFractionHLTESD),
   fSkipFriendsCutZ(rec.fSkipFriendsCutZ),
   //
   fSkipIncompleteDAQ(rec.fSkipIncompleteDAQ),
@@ -551,6 +553,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fSkipFriendsForLargeZ = rec.fSkipFriendsForLargeZ;
   fMaxFriendTracks = rec.fMaxFriendTracks;
   fFractionFriends = rec.fFractionFriends;
+  fFractionHLTESD = rec.fFractionHLTESD;
   fSkipFriendsCutZ = rec.fSkipFriendsCutZ;
   //
   fSkipIncompleteDAQ = rec.fSkipIncompleteDAQ;
@@ -2002,6 +2005,10 @@ void AliReconstruction::SlaveBegin(TTree*)
   //
   ProcessTriggerAliases();
   //
+  if (!fWriteHLTESD) AliInfo("Writing of HLT ESD tree is disabled");
+  else AliInfoF("%.2f%% of HLT ESD events will be stored",fFractionHLTESD*100.0);
+  AliInfoF("%.2f%% of ESD friends  will be stored",fFractionFriends*100.0);
+
   return;
 }
 
@@ -2558,6 +2565,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   }
   // write HLT ESD
   if (fWriteHLTESD) {
+    if (gRandom->Rndm()>fFractionHLTESD) {
+      AliInfo("HLT ESD for this event will be empty");
+      fhltesd->Reset();
+    } 
     nbf = fhlttree->Fill();
     if (fTreeBuffSize>0 && fhlttree->GetAutoFlush()<0 && (fMemCountESDHLT += nbf)>fTreeBuffSize ) { // default limit is still not reached
       nbf = fhlttree->GetZipBytes();

@@ -71,10 +71,12 @@ public:
   void           SetNumberOfEventsPerFile(UInt_t nEvents)
     {fNumberOfEventsPerFile = nEvents;};
   void           SetFractionFriends(Double_t frac = 0.04)    {fFractionFriends = frac;};
+  void           SetFractionHLTESD(Double_t frac = 0.05)   {fFractionHLTESD = frac;};
   void           SetSkipFriendsForLargeZ(Bool_t v)           {fSkipFriendsForLargeZ=v;}
   void           SetMaxFriendTracks(Int_t n)                 {fMaxFriendTracks = n;}
   void           SetSkipFriendsCutZ(double z)                {fSkipFriendsCutZ = z;}
   //
+  Double_t       GetFractionHLTESD()             const     {return fFractionHLTESD;};
   Double_t       GetFractionFriends()              const     {return fFractionFriends;};
   Bool_t         GetSkipFriendsForLargeZ()         const     {return fSkipFriendsForLargeZ;}
   Int_t          GetMaxFriendTracks()              const     {return fMaxFriendTracks;}
@@ -315,6 +317,7 @@ private:
   Bool_t         fSkipFriendsForLargeZ; // if true, TPC only tracks with |Z|>fSkipFriendsCutZ never stored
   Int_t          fMaxFriendTracks;    // max number of friend tracks to store per event
   Double_t       fFractionFriends;    // fraction of ESD friends to be stored
+  Double_t       fFractionHLTESD;   // fraction of HLT ESD events to store 
   Double_t       fSkipFriendsCutZ;    // friends of TPC only tracks with large Z have low priority
 
   //*** Clean ESD flag and parameters *******************
@@ -445,7 +448,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 51)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 52)      // class for running the reconstruction
 };
 
 #endif
