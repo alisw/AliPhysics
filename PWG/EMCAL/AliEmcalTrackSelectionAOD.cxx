@@ -52,50 +52,6 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filt
 }
 
 /**
- * Select tracks from a list (TClonesArray) of tracks. The actual selection process
- * is delegated to the function IsTrack selected. This function collects all the tracks
- * which are accepted and puts them into a TObjArray. Note that this class keeps ownership
- * over the resulting TObjArray.
- *
- * \param tracks TClonesArray of input tracks, under which we select the appropriate ones
- * \return TObjArray of selected tracks
- */
-TObjArray* AliEmcalTrackSelectionAOD::GetAcceptedTracks(const TClonesArray* const tracks) {
-	if(!fListOfTracks) fListOfTracks = new TObjArray;
-	else fListOfTracks->Clear();
-	TIter trackIter(tracks);
-	AliVTrack *track(NULL);
-	while((track = dynamic_cast<AliVTrack *>(trackIter()))){
-	  if(IsTrackAccepted(track)) fListOfTracks->AddLast(track);
-	}
-	return fListOfTracks;
-}
-
-	/**
-	 * Select tracks from an input event. The actual selection process is delegated to
-	 * the function IsTrack selected. This function collects all the tracks which are
-	 * accepted and puts them into a TObjArray. Note that this class keeps ownership over
-	 * the resulting TObjArray.
-	 *
-	 * \param event Input event under which we select the appropriate tracks
-	 * \return TObjArray of selected tracks
-	 */
-	TObjArray* AliEmcalTrackSelectionAOD::GetAcceptedTracks(const AliVEvent* const event) {
-		if(!fListOfTracks) fListOfTracks = new TObjArray;
-		else fListOfTracks->Clear();
-		const AliAODEvent *aod = dynamic_cast<const AliAODEvent *>(event);
-		if(!aod){
-			AliError("Event not of type AliAODEvent");
-			return fListOfTracks;
-		}
-		for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
-		  AliVTrack *trk = dynamic_cast<AliVTrack *>(event->GetTrack(itrk));
-		  if(IsTrackAccepted(trk)) fListOfTracks->AddLast(trk);
-		}
-		return fListOfTracks;
-	}
-
-/**
  * Function checks whether track is accepted under the given track selection cuts.
  * The function can handle AliAODTrack and AliPicoTrack, while for AliPico track an
  * AliAODTrack is expected to be the underlying structure. If it is not possible to
@@ -106,12 +62,15 @@ TObjArray* AliEmcalTrackSelectionAOD::GetAcceptedTracks(const TClonesArray* cons
  * \param trk: Track to check
  * \return true if selected, false otherwise
  */
-bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk){
-  AliAODTrack *aodt = dynamic_cast<AliAODTrack *>(trk);
-  if(!aodt){
-    AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack *>(trk);
-    if(picotrack) aodt = dynamic_cast<AliAODTrack *>(picotrack->GetTrack());
-    else{
+bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
+{
+  AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
+  if (!aodt){
+    AliPicoTrack *picotrack = dynamic_cast<AliPicoTrack*>(trk);
+    if(picotrack) {
+      aodt = dynamic_cast<AliAODTrack *>(picotrack->GetTrack());
+    }
+    else {
       AliError("Track neither AOD track nor pico track");
       return kFALSE;
     }
@@ -121,31 +80,30 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk){
     return kFALSE;
   }
 
-  TBits selectedMap(64);
+  fTrackBitmap.ResetAllBits();
   Int_t cutcounter(0);
-  if(fFilterBits){
-    if(aodt->TestFilterBit(fFilterBits)) selectedMap.SetBitNumber(cutcounter);
+  if (fFilterBits) {
+    if(aodt->TestFilterBit(fFilterBits)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
-  if(fListOfCuts){
+  if (fListOfCuts) {
     for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
       AliVCuts *trackCuts = static_cast<AliVCuts *>(*cutIter);
       if(trackCuts->IsA() == AliESDtrackCuts::Class()){
         // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
         AliESDtrack copyTrack(aodt);
-        if(trackCuts->IsSelected(&copyTrack)) selectedMap.SetBitNumber(cutcounter);
+        if(trackCuts->IsSelected(&copyTrack)) fTrackBitmap.SetBitNumber(cutcounter);
       } else{
-        if(trackCuts->IsSelected(aodt)) selectedMap.SetBitNumber(cutcounter);
+        if(trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
       }
-
       cutcounter++;
     }
   }
-  if(fSelectionModeAny){
+  if (fSelectionModeAny) {
     // In case of ANY one of the cuts need to be fulfilled (equivalent to one bit set)
-    return selectedMap.CountBits() > 0 || cutcounter == 0;
+    return fTrackBitmap.CountBits() > 0 || cutcounter == 0;
   } else {
     // In case of ALL all of the cuts need to be fulfilled (equivalent to all bits set)
-    return selectedMap.CountBits() == cutcounter;
+    return fTrackBitmap.CountBits() == cutcounter;
   }
 }

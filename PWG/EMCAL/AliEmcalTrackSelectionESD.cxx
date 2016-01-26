@@ -48,70 +48,34 @@ AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(AliVCuts* cuts):
 
 
 /**
- * Select tracks from a TClonesArray of input tracks
- *
- * \param tracks TClonesArray of tracks (must not be null)
- * \return: TObjArray of selected tracks
- */
-TObjArray* AliEmcalTrackSelectionESD::GetAcceptedTracks(const TClonesArray* const tracks) {
-	if(!fListOfTracks) fListOfTracks = new TObjArray;
-	else fListOfTracks->Clear();
-	for(TIter trackIter = TIter(tracks).Begin(); trackIter != TIter::End(); ++trackIter){
-	  if(IsTrackAccepted(static_cast<AliVTrack *>(*trackIter))) fListOfTracks->Add(*trackIter);
-	}
-	return fListOfTracks;
-}
-
-/**
- * Select tracks from a virtual event. Delegates selection process to function IsTrackAccepted
- *
- * \param event AliESDEvent, via interface of virtual event (must not be null)
- * \return TObjArray of selected tracks
- */
-TObjArray* AliEmcalTrackSelectionESD::GetAcceptedTracks(const AliVEvent* const event) {
-	if(!fListOfTracks) fListOfTracks = new TObjArray;
-	else fListOfTracks->Clear();
-	const AliESDEvent *esd = dynamic_cast<const AliESDEvent *>(event);
-	if(!esd){
-		AliError("Event not of type AliESDEvent");
-		return fListOfTracks;
-	}
-	for(int itrk = 0; itrk < esd->GetNumberOfTracks(); itrk++){
-	  AliESDtrack *trk = static_cast<AliESDtrack *>(esd->GetTrack(itrk));
-	  if(IsTrackAccepted(trk)) fListOfTracks->AddLast(trk);
-	}
-	return fListOfTracks;
-}
-
-/**
- * Check whether track is accepted. Itterates over all cuts assinged to the track selection.
  *
  * \param trk: Track to check
  * \return: true if selected, false otherwise
  */
 bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
-  if(!fListOfCuts) return kTRUE;
+  if (!fListOfCuts) return kTRUE;
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
-  if(!esdt){
+  if (!esdt) {
     AliPicoTrack *picoTrack = dynamic_cast<AliPicoTrack *>(trk);
-    if(picoTrack)
+    if (picoTrack) {
       esdt = dynamic_cast<AliESDtrack*>(picoTrack->GetTrack());
-    else{
+    }
+    else {
       AliError("Neither Pico nor ESD track");
       return kFALSE;
     }
   }
 
-  TBits selectedMap(64);        // Counting track cuts among which track was SELECTED
+  fTrackBitmap.ResetAllBits();
   Int_t cutcounter = 0;
-  for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-    if((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) selectedMap.SetBitNumber(cutcounter);
+  for (TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
+    if((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
   // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
-  if(fSelectionModeAny){
-    return selectedMap.CountBits() > 0 || cutcounter == 0;
+  if (fSelectionModeAny){
+    return fTrackBitmap.CountBits() > 0 || cutcounter == 0;
   } else {
-    return selectedMap.CountBits() == cutcounter;
+    return fTrackBitmap.CountBits() == cutcounter;
   }
 }

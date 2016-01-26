@@ -13,8 +13,8 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
 #include <TObject.h>
+#include <TBits.h>
 
 class TClonesArray;
 class TObjArray;
@@ -39,19 +39,25 @@ public:
 	AliEmcalTrackSelection &operator=(const AliEmcalTrackSelection &ref);
 	virtual ~AliEmcalTrackSelection();
 
-	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks) = 0;
-	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event) = 0;
+	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
+	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 	virtual bool IsTrackAccepted(AliVTrack * const trk) = 0;
 
 	void AddTrackCuts(AliVCuts *cuts);
 	Int_t GetNumberOfCutObjects() const;
 	AliVCuts *GetTrackCuts(Int_t icut);
 
-	void SetSelectionModeAny() { fSelectionModeAny = kTRUE; }
+
+	TBits GetTrackBitmap() const { return fTrackBitmap; }
+	TObjArray* GetAcceoptedTrackBitmaps() const { return fListOfTrackBitmaps; }
+
+	void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
 	void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }
 
 protected:
 	TObjArray *fListOfTracks;		      ///< TObjArray with accepted tracks
+	TObjArray *fListOfTrackBitmaps;   ///< TObjArray with accepted tracks' bit maps
+	TBits      fTrackBitmap;          ///< Bitmap of last accepted/rejected track
 	TObjArray *fListOfCuts;           ///< List of track cut objects
 	Bool_t     fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
 
