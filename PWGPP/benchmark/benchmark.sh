@@ -433,7 +433,7 @@ goCPass()
   # Note: stdout is not copied, this will happen at the very end.
   printExec rm -f ./$chunkName
   while read cpdir; do
-    printExec copyFileToRemote $cpdir/!(stdout) $outputDir/$cpdir
+    printExec copyFileToRemote $cpdir/!(stdout|cpass0*.tgz) $outputDir/$cpdir
   done < <(find . -type d)
 
   # Validate CPass.
@@ -1870,6 +1870,10 @@ goMakeSummary()
 
   exec &> >(tee ${logTmp})
 
+  # Take a snapshot of the current directory. Files already here at this point needn't be copied to
+  # the destination, as they were transferred here by Makeflow/Work Queue.
+  dirSnapshotExclusion=$(for f in *; do echo -n "$f|"; done)
+
   # Summarize the global stuff
   echo "env script: ${alirootSource} ${alirootEnv}"
   echo "ALICE_ROOT=${ALICE_ROOT}"
@@ -2056,9 +2060,12 @@ EOF
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
-  # Copy all, recursively.
+  # Copy all, recursively, with the exception of snapshotted files already present when this
+  # was called.
   while read cpdir; do
-    copyFileToRemote $cpdir/* $commonOutputPath/$cpdir
+    [[ "$cpdir" == .  && "$dirSnapshotExclusion" != '' ]] \
+      && copyFileToRemote ./!($dirSnapshotExclusion) $commonOutputPath/ \
+      || copyFileToRemote $cpdir/* $commonOutputPath/$cpdir
   done < <( find . -type d )
 
   alilog_info "[END] goMakeSummary() with following parameters $*"
