@@ -979,14 +979,19 @@ goGenerateMakeflow()
     echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
+    #arr_cpass1_filtered_list[${runNumber}]="${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list"
+    arr_cpass1_filtered_list[${runNumber}]="cpass1.filtered.run${runNumber}.list"
+    echo "### Lists CPass1 filtered ###"
+    echo "${arr_cpass1_filtered_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues filteredTree ${arr_cpass1_filtered_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
+    echo ; echo
 
-  
     #CPass1 merging
     #arr_cpass1_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
     arr_cpass1_merged[${runNumber}]="merge.cpass1.run${runNumber}.done"
     echo "### Merges CPass1 files ###"
-    echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"" "
+    echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
     #CPass0 wrapped in a profiling tool (valgrind,....)
