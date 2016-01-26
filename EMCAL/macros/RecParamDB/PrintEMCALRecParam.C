@@ -14,7 +14,8 @@
 ///
 void PrintEMCALRecParam(TString file = 
                         /*"alien:///alice/data/2015/OCDB/EMCAL/Calib/RecoParam/Run0_999999999_v1_s0.root"*/
-                       "$ALICE_ROOT/OCDB/EMCAL/Calib/RecoParam/Run0_999999999_v0_s1.root")
+                       "$ALICE_ROOT/OCDB/EMCAL/Calib/RecoParam/Run0_999999999_v0_s0.root"
+)
 {
   
   if(file.Contains("alien://"))
@@ -37,7 +38,7 @@ void PrintEMCALRecParam(TString file =
     
     cout<<"================================================"<<endl;
     
-    //rparam->Print("reco");//Print only clusterizer parameters
+    rparam->Print("reco");//Print only clusterizer parameters
     //rparam->Print("pid");//Print only pid parameters
     rparam->Print("raw");//Print only raw digitization parameters
                          //rparam->Print("");// Print all
