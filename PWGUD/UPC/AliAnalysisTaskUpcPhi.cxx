@@ -117,8 +117,11 @@ AliAnalysisTaskUpcPhi::AliAnalysisTaskUpcPhi(const char *name)
 void AliAnalysisTaskUpcPhi::Init()
 {
   
-  for(Int_t i=0; i<ntrg; i++) fTrigger[i] = kFALSE;
-  for(Int_t i=0; i<4; i++) {
+  for(Int_t i=0; i<ntrg; i++) {
+  	fTrigger[i] = kFALSE;
+	fTriggerInputsMC[i] = kFALSE;
+	}
+  for(Int_t i=0; i<2; i++) {
 	fPIDITSMuon[i] = -666;
 	fPIDITSElectron[i] = -666;
 	fPIDITSPion[i] = -666;
@@ -130,8 +133,6 @@ void AliAnalysisTaskUpcPhi::Init()
 	fPIDTPCPion[i] = -666;
 	fPIDTPCKaon[i] = -666;
 	fPIDTPCProton[i] = -666;
-	
-	fTriggerInputsMC[i] = kFALSE;
 	}
   for(Int_t i=0; i<3; i++){
   	fVtxPos[i] = -666; 
@@ -228,7 +229,7 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   }
   if(isMC) {
     fITSTree ->Branch("fGenPart", &fGenPart);
-    fITSTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[2]/O");
+    fITSTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
   }
 
  //output tree with Phi ITS-TPC candidate events
@@ -276,7 +277,7 @@ void AliAnalysisTaskUpcPhi::UserCreateOutputObjects()
   }
   if(isMC) {
     fTPCTree ->Branch("fGenPart", &fGenPart);
-    fTPCTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[2]/O");
+    fTPCTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
   }
 
   
@@ -686,6 +687,8 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
   
+  if(isMC) RunESDMC(esd);
+  
   //input data
   const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
   fDataFilnam->Clear();
@@ -776,18 +779,20 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
     if( !trk ) continue;
       
       
-      if((trk->GetStatus() & AliESDtrack::kITSin) == 0 || (trk->GetStatus() & AliESDtrack::kTPCin))continue; //ITS standalone(what left after global tracking)
-      //if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue; //Pure ITS standalone
+      //if((trk->GetStatus() & AliESDtrack::kITSin) == 0 || (trk->GetStatus() & AliESDtrack::kTPCin))continue; //ITS standalone(what left after global tracking)
+      if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue; //Pure ITS standalone
       
-      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      if(trk->GetITSNcls() < 4)continue;
-      if(trk->GetITSchi2()/trk->GetITSNcls() > 2.5)continue;
-      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
+      if(!isMC){
+      	if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      	if(trk->GetITSNcls() < 4)continue;
+      	if(trk->GetITSchi2()/trk->GetITSNcls() > 2.5)continue;
+      	if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
       
-      Float_t dca[2] = {0.0,0.0};
-      trk->GetImpactParameters(dca[0],dca[1]);
-      Double_t cut_DCAxy = (0.0231+0.0315/TMath::Power(trk->Pt(),1.3));
-      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      	Float_t dca[2] = {0.0,0.0};
+      	trk->GetImpactParameters(dca[0],dca[1]);
+      	Double_t cut_DCAxy = (0.0231+0.0315/TMath::Power(trk->Pt(),1.3));
+      	if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      }
  
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -811,8 +816,9 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
 		new((*fPhiESDTracks)[i]) AliESDtrack(*trk);
 		}
 			
-  fITSTree ->Fill();
+  if(!isMC) fITSTree ->Fill();
   }
+  if(isMC) fITSTree ->Fill();
   
   nGoodTracks=0;
   
@@ -855,14 +861,84 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
 		new((*fPhiESDTracks)[i]) AliESDtrack(*trk);
 		}
 			
-  fTPCTree ->Fill();
+  if(!isMC) fTPCTree ->Fill();
   }
+
   
   PostData(1, fITSTree);
   PostData(2, fTPCTree);
 
 
 }//RunESD
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPhi::RunESDMC(AliESDEvent* esd)
+{
+  for(Int_t i=0; i<ntrg; i++) fTriggerInputsMC[i] = kFALSE;
+  fTriggerInputsMC[0] = esd->GetHeader()->IsTriggerInputFired("0VBA"); //VZERO A
+  fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0VBC"); //VZERO C
+  fTriggerInputsMC[2] = esd->GetHeader()->IsTriggerInputFired("0OMU"); //TOF two hits with topology
+  fTriggerInputsMC[3] = esd->GetHeader()->IsTriggerInputFired("0OM2"); //TOF two hits
+  //SPD inputs
+  const AliMultiplicity *mult = esd->GetMultiplicity();
+  Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
+  Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+
+  Int_t nInner(0), nOuter(0);
+  for (Int_t i(0); i<1200; ++i) {
+    Bool_t isFired(mult->TestFastOrFiredChips(i));
+    if (i<400) {
+      vPhiInner[i/20] += isFired;
+      nInner += isFired;
+    } else {
+      vPhiOuter[(i-400)/20] += isFired;
+      nOuter += isFired;
+    }
+  }
+ 
+  Int_t fired(0);
+  for (Int_t i(0); i<10; ++i) {
+    for (Int_t j(0); j<2; ++j) {
+      const Int_t k(2*i+j);
+      fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
+                    vPhiOuter[k+2]      )
+                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
+                    vPhiOuter[(k+22)%40])
+                && (vPhiInner[i]    || vPhiInner[i+1]       )
+                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+    }
+  }
+  //0SMB - At least one hit in SPD
+  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[4] = kTRUE;
+  //0SM2 - Two hits on outer layer
+  if (nOuter > 1) fTriggerInputsMC[5] = kTRUE;
+  //0STP - Topological SPD trigger (two pairs)
+  if (fired != 0) fTriggerInputsMC[6] = kTRUE;
+  //0SH1 - More then 6 hits on outer layer
+  if (nOuter >= 7) fTriggerInputsMC[7] = kTRUE;
+  
+
+  fGenPart->Clear("C");
+
+  AliMCEvent *mc = MCEvent();
+  if(!mc) return;
+
+  Int_t nmc = 0;
+  //loop over mc particles
+  for(Int_t imc=0; imc<mc->GetNumberOfTracks(); imc++) {
+    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
+    if(!mcPart) continue;
+
+    if(mcPart->GetMother() >= 0) continue;
+
+    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
+    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
+    part->SetPdgCode(mcPart->PdgCode());
+    part->SetUniqueID(imc);
+  }//loop over mc particles
+
+}//RunESDMC
 
 
 //_____________________________________________________________________________
