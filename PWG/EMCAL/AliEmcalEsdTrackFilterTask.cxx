@@ -155,14 +155,14 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
           continue;
         }
 
-	if (fTrackEfficiency) {
-	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency->Eval(ntrack->Pt()) < r)
-	    continue;
-	}
+        if (fTrackEfficiency) {
+          Double_t r = gRandom->Rndm();
+          if (fTrackEfficiency->Eval(ntrack->Pt()) < r)
+            continue;
+        }
 
-	if (fDoPropagation) 	
-	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
+        if (fDoPropagation)
+          AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
         new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
         delete ntrack;
       }
@@ -173,18 +173,18 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         if (!etrack)
           continue;
 
-	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
+        if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
           continue;
-	
-	if (fTrackEfficiency) {
-	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency->Eval(etrack->Pt()) < r)
-	    continue;
-	}
+
+        if (fTrackEfficiency) {
+          Double_t r = gRandom->Rndm();
+          if (fTrackEfficiency->Eval(etrack->Pt()) < r)
+            continue;
+        }
 
         AliESDtrack *ntrack = new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
-	if (fDoPropagation) 	
-	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
+        if (fDoPropagation)
+          AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
       }
     }
 
@@ -195,50 +195,50 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
     for (Int_t i=0, ntrnew=0; i<ntr; ++i) {
       AliESDtrack *etrack = fEsdEv->GetTrack(i);
       if (!etrack) 
-	continue;
+        continue;
 
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
-	if (fTrackEfficiency) {
-	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency->Eval(etrack->Pt()) < r)
-	    continue;
-	}
+        if (fTrackEfficiency) {
+          Double_t r = gRandom->Rndm();
+          if (fTrackEfficiency->Eval(etrack->Pt()) < r)
+            continue;
+        }
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-	if (fDoPropagation) 
-	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
+        if (fDoPropagation)
+          AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
         newTrack->SetBit(BIT(22),0); 
         newTrack->SetBit(BIT(23),0);
-	if (!fMCEvent) newTrack->SetLabel(0);
+        if (!fMCEvent) newTrack->SetLabel(0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
-	if (!etrack->GetConstrainedParam())
-	  continue;
-	UInt_t status = etrack->GetStatus();
-	if (!fIncludeNoITS && ((status&AliESDtrack::kITSrefit)==0))
-	  continue;
+        if (!etrack->GetConstrainedParam())
+          continue;
+        UInt_t status = etrack->GetStatus();
+        if (!fIncludeNoITS && ((status&AliESDtrack::kITSrefit)==0))
+          continue;
 
-	if (fTrackEfficiency) {
-	  Double_t r = gRandom->Rndm();
-	  if (fTrackEfficiency->Eval(etrack->Pt()) < r)
-	    continue;
-	}
-	AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-	if (fDoPropagation) 	
-	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
-	const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
-	newTrack->Set(constrainParam->GetX(),
-		      constrainParam->GetAlpha(),
-		      constrainParam->GetParameter(),
-		      constrainParam->GetCovariance());
-	if ((status&AliESDtrack::kITSrefit)==0) {
-	  newTrack->SetBit(BIT(22),0); //type 2
-	  newTrack->SetBit(BIT(23),1);
-	} else {
-	  newTrack->SetBit(BIT(22),1); //type 1
-	  newTrack->SetBit(BIT(23),0);
-	}
-	if (!fMCEvent) newTrack->SetLabel(0);
-	++ntrnew;
+        if (fTrackEfficiency) {
+          Double_t r = gRandom->Rndm();
+          if (fTrackEfficiency->Eval(etrack->Pt()) < r)
+            continue;
+        }
+        AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
+        if (fDoPropagation)
+          AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
+        const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
+        newTrack->Set(constrainParam->GetX(),
+            constrainParam->GetAlpha(),
+            constrainParam->GetParameter(),
+            constrainParam->GetCovariance());
+        if ((status&AliESDtrack::kITSrefit)==0) {
+          newTrack->SetBit(BIT(22),0); //type 2
+          newTrack->SetBit(BIT(23),1);
+        } else {
+          newTrack->SetBit(BIT(22),1); //type 1
+          newTrack->SetBit(BIT(23),0);
+        }
+        if (!fMCEvent) newTrack->SetLabel(0);
+        ++ntrnew;
       }
     }
   }
