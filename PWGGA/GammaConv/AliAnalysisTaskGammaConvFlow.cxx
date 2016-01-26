@@ -91,6 +91,7 @@ fMesonCuts(NULL),
 hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hKappaTPC(NULL),
+hKappaTPC_after(NULL),
 hESDConvGammaR(NULL),
 hESDConvGammaEta(NULL),
 //tESDConvGammaPtDcazCat(NULL),
@@ -186,6 +187,7 @@ fMesonCuts(NULL),
 hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hKappaTPC(NULL),
+hKappaTPC_after(NULL),
 hESDConvGammaR(NULL),
 hESDConvGammaEta(NULL),
 //tESDConvGammaPtDcazCat(NULL),
@@ -329,6 +331,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	hESDConvGammaPt = new TH1F*[fnCuts];
 	hInvMassPair = new TH2F*[fnCuts];
 	hKappaTPC = new TH2F*[fnCuts];
+  hKappaTPC_after = new TH2F*[fnCuts];
 	
 	if (fDoPhotonQA == 2){
 		fPhotonDCAList = new TList*[fnCuts];
@@ -421,6 +424,9 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		
 		hKappaTPC[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt",200,0,10,250,0,25);
 		fESDList[iCut]->Add(hKappaTPC[iCut]);
+    
+    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_after[iCut]);
 		
 		if (fDoPhotonQA == 2){
 			fPhotonDCAList[iCut] = new TList();
@@ -822,7 +828,8 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 		if (gammaForv2 == NULL) return;
     if (gammaForv2->GetInvMassPair() < fMinMass || gammaForv2->GetInvMassPair() > fMaxMass) return;
     if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent) < fMinKappa || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent) > fMaxKappa) return;
-		AliFlowTrack *sTrack = new AliFlowTrack();
+    hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent),gammaForv2->Pt());
+    AliFlowTrack *sTrack = new AliFlowTrack();
 		sTrack->SetForRPSelection(kFALSE);
 		sTrack->SetForPOISelection(kTRUE);
 		sTrack->SetMass(263732);

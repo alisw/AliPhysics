@@ -110,6 +110,7 @@ protected:
 	TH1F 								**hESDConvGammaPt;									//
 	TH2F 								**hInvMassPair;									//
 	TH2F 								**hKappaTPC;									//
+	TH2F                **hKappaTPC_after;                  //
 	TH1F 								**hESDConvGammaR;									//
 	TH1F 								**hESDConvGammaEta;									//
 	Float_t 							fPtGamma;											//

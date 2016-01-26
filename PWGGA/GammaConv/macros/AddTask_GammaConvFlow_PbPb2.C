@@ -261,6 +261,22 @@ void AddTask_GammaConvFlow_PbPb2(
     eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009797004000500000000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 49) {
     eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009797005000500000000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 50) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 51) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 52) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 53) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 54) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 55) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 56) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 57) {
+    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
