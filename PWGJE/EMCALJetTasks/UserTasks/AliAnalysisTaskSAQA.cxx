@@ -1059,16 +1059,33 @@ void AliAnalysisTaskSAQA::DoTrackLoop()
       }
 
       Int_t type = 0;
+      AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
 
-      if (tracks->GetClassName() == "AliPicoTrack") {
-        type = static_cast<AliPicoTrack*>(track)->GetTrackType();
-      }
-      else if (tracks->GetClassName() == "AliAODTrack") {
-        if (fAODfilterBits[0] != 0 || fAODfilterBits[1] != 0) {
-          type = AliPicoTrack::GetTrackType(static_cast<AliAODTrack*>(track), fAODfilterBits[0], fAODfilterBits[1]);
+      if (vtrack) {
+        // Track type (hybrid)
+        if (tracks->GetClassName() == "AliPicoTrack") {
+          type = static_cast<AliPicoTrack*>(track)->GetTrackType();
+        }
+        else if (tracks->GetTrackFilterType() == AliEmcalTrackSelection::kHybridTracks) {
+          type = tracks->GetTrackType();
+        }
+
+        // Track propagation to EMCal surface
+        if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
+          fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
+          fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
         }
         else {
-          type = AliPicoTrack::GetTrackType(static_cast<AliVTrack*>(track));
+          if (fHistTrEmcPhiEta[fCentBin])
+            fHistTrEmcPhiEta[fCentBin]->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
+          if (fHistTrEmcPt[fCentBin])
+            fHistTrEmcPt[fCentBin]->Fill(vtrack->GetTrackPtOnEMCal());
+          if (fHistDeltaEtaPt[fCentBin])
+            fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
+          if (fHistDeltaPhiPt[fCentBin])
+            fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
+          if (fHistDeltaPtvsPt[fCentBin])
+            fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
         }
       }
 
@@ -1076,27 +1093,8 @@ void AliAnalysisTaskSAQA::DoTrackLoop()
         fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
       }
       else {
-        AliDebug(2,Form("%s: track type %d not recognized!", GetName(), type));
+        AliWarning(Form("%s: track type %d not recognized!", GetName(), type));
       }
-
-      AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
-      if (!vtrack) continue;
-
-      if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
-        fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
-        fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
-      }
-
-      if (fHistTrEmcPhiEta[fCentBin])
-        fHistTrEmcPhiEta[fCentBin]->Fill(vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());   
-      if (fHistTrEmcPt[fCentBin])
-        fHistTrEmcPt[fCentBin]->Fill(vtrack->GetTrackPtOnEMCal());   
-      if (fHistDeltaEtaPt[fCentBin])
-        fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
-      if (fHistDeltaPhiPt[fCentBin])
-        fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
-      if (fHistDeltaPtvsPt[fCentBin])
-        fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
     }
   }
 
