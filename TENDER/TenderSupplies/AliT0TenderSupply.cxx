@@ -72,6 +72,9 @@ AliT0TenderSupply::~AliT0TenderSupply(){
 void AliT0TenderSupply::Init(){
   // Init
   //
+  fCorrectStartTimeOnAmplSatur = kFALSE;
+  fAmplitudeThreshold = 100; //in mips
+
   Int_t run = fTender->GetRun();
   if (run == 0) return;    // to skip first init, when we don't have yet a run number
   Printf("----------- TZERO Tender ----------------");
@@ -81,8 +84,12 @@ void AliT0TenderSupply::Init(){
 
   // align T0s for LHC10def periods 
  // LHC11h
-  if (fTender->GetRun()>=167693 &&  fTender->GetRun()<=1170593){
-    Printf("Loading TZERO OCBD entries");
+
+  if (fTender->GetRun()>=167693 &&  fTender->GetRun()<=170593){
+    //saturation
+    //    fCorrectStartTimeOnAmplSatur = kTRUE;
+    // fAmplitudeThreshold = 100; //in mips
+    Printf("Loading TZERO OCBD entries for run %i\n", fTender->GetRun() );
     AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*>  (fTender->GetESDhandler());
     TTree *tree= (TTree*)esdIH->GetTree();
     TFile *file= (TFile*)tree->GetCurrentFile();
@@ -101,16 +108,6 @@ void AliT0TenderSupply::Init(){
       AliWarning("T0Tender no T0 entry found T0shift set to 0");
     }
   }  
-  
-  // LHC11h
-  fCorrectStartTimeOnAmplSatur = kFALSE;
-  fAmplitudeThreshold = 100; //in mips
-  /*  if(167693<= run && run<=170593){  
-    fCorrectStartTimeOnAmplSatur = kTRUE;
-    fAmplitudeThreshold = 50; //in mips
-    } */
-
-
 
 }
 
@@ -151,7 +148,8 @@ void AliT0TenderSupply::ProcessEvent(){
     //...........................................
     if(fCorrectStartTimeOnAmplSatur){
         //correct A side ORA on amplitude saturation
-        const Double32_t* time = event->GetT0time();
+ 	printf(" correct A side ORA on amplitude saturation\n");
+       const Double32_t* time = event->GetT0time();
         const Double32_t* amplitude = event->GetT0amplitude();
 
         Int_t idxOfFirstPmtA = -1;
@@ -169,10 +167,8 @@ void AliT0TenderSupply::ProcessEvent(){
             const Double32_t* mean = event->GetT0TOF();
             Double32_t timeOrC = mean[2];
             Double32_t timeOrAplusOrC = (timeOrA+timeOrC)/2;
-
             event->SetT0TOF(0, timeOrAplusOrC);
-            event->SetT0TOF(1, timeOrA);
-        }
+         }
     }
 
     //...........................................
@@ -180,9 +176,9 @@ void AliT0TenderSupply::ProcessEvent(){
       // correct mean time offsets  
       const Double32_t* mean = event->GetT0TOF();
       for(int it0=0; it0<3; it0++){
-	if( mean[it0] < 10000 || (mean[it0]>6499000 && mean[it0]<6555000 ) )
-	  event->SetT0TOF(it0, mean[it0] - fTimeOffset[it0]); 
-      }
+	if( mean[it0] < 10000 || (mean[it0]>60000 && mean[it0]<60000 ) )
+	  event->SetT0TOF(it0, mean[it0] - fTimeOffset[it0]);
+     }
     }
     //...........................................
 
