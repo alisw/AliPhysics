@@ -58,9 +58,9 @@ fRemoveBadChannels(kFALSE),
 fFittingAlgorithm(0), 
 fUseFALTRO(kTRUE), 
 fFitLEDEvents(kFALSE),
-fUseL1Phase(kTRUE),//raw signal
+fUseL1Phase(kTRUE),// Run1 setting //raw signal
 fRejectBelowThreshold(0),
-fTrkInITS(kTRUE) 
+fTrkInITS(kFALSE) // Run1 setting 
 {  
   InitPIDParametersForHighFlux();
   
