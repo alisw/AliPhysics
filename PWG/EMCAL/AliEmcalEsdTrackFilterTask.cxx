@@ -76,14 +76,16 @@ void AliEmcalEsdTrackFilterTask::UserCreateOutputObjects()
   fTracks = new TClonesArray("AliESDtrack");
   fTracks->SetName(fTracksName);
 
-  if (fDoSpdVtxCon) {
-    if (!fEsdTrackCuts) {
+
+  if (!fEsdTrackCuts) {
+    if (fDoSpdVtxCon) {
       AliInfo("No track cuts given, creating default (standard only TPC) cuts");
       fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
       fEsdTrackCuts->SetPtRange(0.15,1e3);
     } 
-  } else {
-    AliWarning("No track cuts given, but maybe this is indeed intended?");
+    else {
+      AliWarning("No track cuts given, but maybe this is indeed intended?");
+    }
   }
 }
 
