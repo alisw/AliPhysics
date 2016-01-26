@@ -75,6 +75,7 @@ set(SRCS
     PHOS_PbPb_MC/AliPHOSHijingEfficiency.cxx
     PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
     PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
+    PHOS_pp_pi0/AliAnalysisTaskPi0PP.cxx
     PHOS_pp_pi0/AliCaloPhoton.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
@@ -151,6 +152,7 @@ install(DIRECTORY CaloCellQA/macros DESTINATION PWGGA/PHOSTasks/CaloCellQA)
 install(DIRECTORY PHOS_PbPbQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb DESTINATION PWGGA/PHOSTasks)
+install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
 install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
