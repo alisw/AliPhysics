@@ -230,6 +230,9 @@ private:
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
+  static const Char_t *fgkRunHLTAuto;         // flag for automatic HLT mode detection
+  static const Char_t *fgkHLTDefConf;         // default configuration to run HLT
+
   ClassDef(AliSimulation, 14)  // class for running generation, simulation and digitization
 };
 

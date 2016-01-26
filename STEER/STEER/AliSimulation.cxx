@@ -173,6 +173,9 @@ AliSimulation *AliSimulation::fgInstance = 0;
  "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD",
  "FIT","MFT","HLT"};
 
+const Char_t* AliSimulation::fgkRunHLTAuto = "auto";
+const Char_t* AliSimulation::fgkHLTDefConf = "default";
+
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName,
 			     const char* name, const char* title) :
@@ -225,7 +228,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fEventSpecie(AliRecoParam::kDefault),
   fWriteQAExpertData(kTRUE), 
   fGeometryFile(),
-  fRunHLT("default"),
+  fRunHLT(fgkRunHLTAuto),
   fpHLT(NULL),
   fWriteGRPEntry(kTRUE)
 {
@@ -652,6 +655,33 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
     else
       return kTRUE;
+  }
+
+  if (fRunHLT.Contains(fgkRunHLTAuto)) {   
+    InitCDB();
+    AliGRPManager grpM;
+    grpM.ReadGRPEntry();
+    const AliGRPObject* grp = grpM.GetGRPData();
+    int hmode = grp->GetHLTMode();
+    TString hmodS;
+    switch(hmode) {
+    case AliGRPObject::kModeA : hmodS = "A"; break;
+    case AliGRPObject::kModeB : hmodS = "B"; break;
+    case AliGRPObject::kModeC : hmodS = "C"; break;
+    default: hmodS = "Unknown";
+    }
+    AliInfoF("HLT Trigger Mode %s detected from GRP",fRunHLT.Data());
+    if (hmode==AliGRPObject::kModeC) {
+      fRunHLT.ReplaceAll(fgkRunHLTAuto,fgkHLTDefConf);
+      AliInfoF("HLT simulation set to %s",fRunHLT.Data());
+    }
+    else {
+      fRunHLT.ReplaceAll(fgkRunHLTAuto,"");
+      AliInfoF("HLT simulation set to \"%s\"",fRunHLT.Data());
+    }    
+  }
+  else {
+    AliInfoF("fRunHLT is set to \"%s\", no attempt to extract HLT mode from GRP will be done",fRunHLT.Data());
   }
 
   // create and setup the HLT instance
