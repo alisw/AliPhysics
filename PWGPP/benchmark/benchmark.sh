@@ -476,6 +476,7 @@ goCPass()
     ;;
 
   esac
+  echo "dir $outputDir" >> $doneFileTmp
 
   # Copy stdout to destination.
   [[ -z "$dontRedirectStdOutToLog" ]] && echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
@@ -673,11 +674,14 @@ goMergeCPass()
 
       if [[ -n ${pretend} ]]; then
         sleep ${pretendDelay}
-        for file in ocdb.log cpass1.localOCDB.${runNumber}.tgz ${qaMergedOutputFileName} \
+        for file in ocdb.log ${qaMergedOutputFileName} \
                     merge.log trending.root FilterEvents_Trees.root CalibObjects.root \
                     dcsTime.root; do
           touch $file
         done
+        mkdir -p OCDB/TPC/Calib/{TimeGain,TimeDrift}
+        echo "some calibration" >> OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass1.root
+        echo "some calibration" >> OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass1.root
       else
         printExec ./${mergingScript} ${calibrationFilesToMerge} \
                                      ${runNumber} \
