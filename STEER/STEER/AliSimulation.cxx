@@ -659,6 +659,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   if (fRunHLT.Contains(fgkRunHLTAuto)) {   
     InitCDB();
+    InitRunNumber();
     AliGRPManager grpM;
     grpM.ReadGRPEntry();
     const AliGRPObject* grp = grpM.GetGRPData();
@@ -670,7 +671,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     case AliGRPObject::kModeC : hmodS = "C"; break;
     default: hmodS = "Unknown";
     }
-    AliInfoF("HLT Trigger Mode %s detected from GRP",fRunHLT.Data());
+    AliInfoF("HLT Trigger Mode %s detected from GRP",hmodS.Data());
     if (hmode==AliGRPObject::kModeC) {
       fRunHLT.ReplaceAll(fgkRunHLTAuto,fgkHLTDefConf);
       AliInfoF("HLT simulation set to %s",fRunHLT.Data());
