@@ -79,12 +79,13 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 
   double shqmax;
-  //int nbinssh = 200;
-  int nbinssh = 500;
+  int nbinssh = 100;
+  //int nbinssh = 500;
 
   //if (runshlcms) shqmax = 2.0;
   if (runshlcms) shqmax = 0.25;
-  else shqmax = 0.5;
+  //else shqmax = 0.5;
+  else shqmax = 2.0;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentrality);
