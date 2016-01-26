@@ -512,12 +512,12 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
   Double_t value=vecParam[0];
   if (!rangeOK) return value;
-  if (fUseBinNorm){
+  if (fUseBinNorm) {
     for (Int_t ipar=0; ipar<fNParameters; ipar++){
       Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
       value+=(vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
     }
-  }else{
+  } else {
     for (Int_t ipar=0; ipar<fNParameters; ipar++){
       Double_t delta=(point[ipar]-fBinCenter[ipar]);
       value+=(vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
@@ -545,6 +545,83 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
   //TVectorD &vecQuality = *((TVectorD*)fLocalFitQuality->At(ibin));
   Double_t value=TMath::Sqrt(vecCovar(0,0));  // fill covariance to be used 
   return value;
+}
+
+Bool_t AliNDLocalRegression::Derivative(Double_t *point, Double_t *d)
+{
+  // fill d by partial derivatives
+  //
+  const Double_t almost0=0.00000001;
+  for (Int_t iDim=0; iDim<fNParameters; iDim++){
+    const TAxis* ax = fHistPoints->GetAxis(iDim);
+    if      (point[iDim]<=ax->GetXmin()) point[iDim] = ax->GetXmin()+almost0*ax->GetBinWidth(0);
+    else if (point[iDim]>=ax->GetXmax()) point[iDim] = ax->GetXmax()-almost0*ax->GetBinWidth(0);
+  }
+
+  Int_t ibin = fHistPoints->GetBin(point);
+  if (ibin>=fLocalFitParam->GetEntriesFast() ||
+      !fLocalFitParam->UncheckedAt(ibin) ) return kFALSE;
+  //
+  fHistPoints->GetBinContent(ibin,fBinIndex); 
+  for (Int_t idim=0; idim<fNParameters; idim++){
+    const TAxis* ax = fHistPoints->GetAxis(idim);
+    fBinCenter[idim] = ax->GetBinCenter(fBinIndex[idim]);
+    fBinWidth[idim] = ax->GetBinWidth(fBinIndex[idim]);
+  } 
+  TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
+
+  if (fUseBinNorm){
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+    }
+  }else{
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar]);
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+    }
+  }
+  return kTRUE;
+}
+
+Bool_t AliNDLocalRegression::EvalAndDerivative(Double_t *point, Double_t &val, Double_t *d)
+{
+  // fill d by partial derivatives and calculate value in one go
+  //
+  const Double_t almost0=0.00000001;
+  for (Int_t iDim=0; iDim<fNParameters; iDim++){
+    const TAxis* ax = fHistPoints->GetAxis(iDim);
+    if      (point[iDim]<=ax->GetXmin()) point[iDim] = ax->GetXmin()+almost0*ax->GetBinWidth(0);
+    else if (point[iDim]>=ax->GetXmax()) point[iDim] = ax->GetXmax()-almost0*ax->GetBinWidth(0);
+  }
+  val = 0;
+  Int_t ibin = fHistPoints->GetBin(point);
+  if (ibin>=fLocalFitParam->GetEntriesFast() ||
+      !fLocalFitParam->UncheckedAt(ibin) ) return kFALSE;
+  //
+  fHistPoints->GetBinContent(ibin,fBinIndex); 
+  for (Int_t idim=0; idim<fNParameters; idim++){
+    const TAxis* ax = fHistPoints->GetAxis(idim);
+    fBinCenter[idim] = ax->GetBinCenter(fBinIndex[idim]);
+    fBinWidth[idim] = ax->GetBinWidth(fBinIndex[idim]);
+  } 
+  TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
+  
+  val = vecParam[0];
+  if (fUseBinNorm){
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+      val += (vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
+    }
+  } else {
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar]);
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+      val += (vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
+    }
+  }
+  return kTRUE;
 }
 
 

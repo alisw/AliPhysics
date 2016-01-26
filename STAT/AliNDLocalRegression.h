@@ -33,6 +33,8 @@ class AliNDLocalRegression : public TNamed {
 
   Double_t Eval(Double_t *point);
   Double_t EvalError(Double_t *point);
+  Bool_t   Derivative(Double_t *point, Double_t *d);
+  Bool_t   EvalAndDerivative(Double_t *point, Double_t &val, Double_t *d);
   const THn *GetHistogram() {return fHistPoints;}
   const TObjArray *   GetFitParam(){ return fLocalFitParam;}
   void SetCuts(Double_t nSigma=6, Double_t robustFraction=0.95, Int_t estimator=1);
