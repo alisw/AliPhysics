@@ -36,7 +36,7 @@
 #include "AliParticleContainer.h"
 #include "AliPythiaInfo.h"
 #include "TRandom3.h"
-#include "AliPicoTrack.h"
+
 
 
 #include "AliAODEvent.h"
@@ -795,7 +795,7 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
   if(!partCont || !tracksArray) return -99999;
   AliAODTrack *track = 0x0;
   AliEmcalParticle *emcPart = 0x0;
-  AliPicoTrack *picoTrack = 0x0;
+ 
   
   TList *trackList = new TList();
   Int_t triggers[100];
@@ -804,24 +804,8 @@ Int_t AliAnalysisTaskEmcalQGTagging::SelectTrigger(Float_t minpT, Float_t maxpT)
   
   for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
     
-    if ((fJetShapeSub == kNoSub) || (fJetShapeSub == kDerivSub)) {
-      picoTrack = static_cast<AliPicoTrack*>(tracksArray->At(iTrack));
-      if (!picoTrack) continue;
-      
-      
-      if(TMath::Abs(picoTrack->Eta())>0.9) continue;
-      if(picoTrack->Pt()<0.15) continue;
-      if(picoTrack->GetTrackType() == 2) continue;
-    
-      //if ((picoTrack->Pt()>8) && (picoTrack->Pt()<9)) Printf("picoTrackLabel = %d", picoTrack->GetTrackType());
-      
-      if ((picoTrack->Pt() >= minpT) && (picoTrack->Pt()< maxpT)) {
-        trackList->Add(picoTrack);
-        triggers[iTT] = iTrack;
-        iTT++;
-      }
-    }
-    else if (fJetShapeSub == kConstSub){
+  
+    if (fJetShapeSub == kConstSub){
       emcPart = static_cast<AliEmcalParticle*>(tracksArray->At(iTrack));
       if (!emcPart) continue;
       if(TMath::Abs(emcPart->Eta())>0.9) continue;

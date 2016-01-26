@@ -80,6 +80,9 @@ class AliAnalysisTaskFakeJets : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetMass(AliEmcalJet *jet,Int_t jetContNb);
   Float_t                            Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
+   Float_t                            AngularitySquared(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            GetJetAngularitySquared(AliEmcalJet *jet, Int_t jetContNb);
+
   Float_t                            PTD(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            Circularity(AliEmcalJet *jet, Int_t jetContNb); 
@@ -96,6 +99,9 @@ class AliAnalysisTaskFakeJets : public AliAnalysisTaskEmcalJet {
   AliEmcalJetFinder                   *Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
 Double_t                            SubJetOrdering(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Index);
   Double_t                            NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
+   Double_t                           GetSubjetFraction(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer);
+  
+   Double_t                           SubjetFraction(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer);
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
 
@@ -118,7 +124,7 @@ Double_t                            SubJetOrdering(AliEmcalJet *Jet, AliEmcalJet
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
-  Int_t                               fDerivSubtrOrder;
+  Int_t                                fDerivSubtrOrder;
   Float_t                             fSubjetRadius;
   Float_t                              fJetRadius;
   TH2F                                *fh2ResponseUW;

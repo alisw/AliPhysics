@@ -37,7 +37,6 @@
 #include "AliParticleContainer.h"
 #include "AliPythiaInfo.h"
 #include "TRandom3.h"
-#include "AliPicoTrack.h"
 #include "AliEmcalJetFinder.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskFakeJets.h"
@@ -153,7 +152,7 @@ AliAnalysisTaskFakeJets::~AliAnalysisTaskFakeJets()
   TH1::AddDirectory(kFALSE);
 
   fTreeFakeJets = new TTree("fTreeFakeJets", "fTreeFakeJets");
-  const Int_t nVar = 8;
+  const Int_t nVar = 11;
   fShapesVar = new Float_t [nVar]; 
   TString *fShapesVarNames = new TString [nVar];
 
@@ -161,12 +160,14 @@ AliAnalysisTaskFakeJets::~AliAnalysisTaskFakeJets()
   fShapesVarNames[0] = "ptJet"; 
   fShapesVarNames[1] = "ptDJet"; 
   fShapesVarNames[2] = "angularity";
-  fShapesVarNames[3]= "hardtrack";
-  fShapesVarNames[4]="hard2track";
-  fShapesVarNames[5]="corefrac";
-  fShapesVarNames[6]="nsubjet1";
-  fShapesVarNames[7]="nsubjet2";
-
+   fShapesVarNames[3] = "angularitysquared";
+  fShapesVarNames[4]= "hardtrack";
+  fShapesVarNames[5]="hard2track";
+  fShapesVarNames[6]="corefrac";
+  fShapesVarNames[7]="nsubjet1";
+  fShapesVarNames[8]="nsubjet2";
+  fShapesVarNames[9]="subjetfrac";
+ fShapesVarNames[10]="mass";
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
     fTreeFakeJets->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));
@@ -293,18 +294,18 @@ Bool_t AliAnalysisTaskFakeJets::FillHistograms()
       fShapesVar[0] = ptSubtracted;
       fShapesVar[1] = GetJetpTD(jet1,0);
       fShapesVar[2] = GetJetAngularity(jet1,0);
-      fShapesVar[3]= GetJetHardTrack(jet1,0);
-      fShapesVar[4]=GetJetSecHardTrack(jet1,0);
-      fShapesVar[5]=GetJetCoreFrac(jet1,0);
-      fShapesVar[6]=NSubJettiness(jet1, 0, fJetRadius, Reclusterer1, 1, 0, 1);
-      fShapesVar[7]=NSubJettiness(jet1, 0, fJetRadius, Reclusterer1, 2, 0, 1);
+      fShapesVar[3] = GetJetAngularitySquared(jet1,0);
+      fShapesVar[4]= GetJetHardTrack(jet1,0);
+      fShapesVar[5]=GetJetSecHardTrack(jet1,0);
+      fShapesVar[6]=GetJetCoreFrac(jet1,0);
+      fShapesVar[7]=NSubJettiness(jet1, 0, fJetRadius, Reclusterer1, 1, 0, 1);
+      fShapesVar[8]=NSubJettiness(jet1, 0, fJetRadius, Reclusterer1, 2, 0, 1);
+      fShapesVar[9]=GetSubjetFraction(jet1,0,fJetRadius,Reclusterer1);
      
-        fTreeFakeJets->Fill();
+      fShapesVar[10]=GetJetMass(jet1,0);
+      fTreeFakeJets->Fill();
  
-
-   
-      
-    }}
+       }}
     
   
   
@@ -355,6 +356,42 @@ Float_t AliAnalysisTaskFakeJets::GetJetAngularity(AliEmcalJet *jet, Int_t jetCon
       else return jet->GetSecondOrderSubtractedAngularity();
   else
     return Angularity(jet, jetContNb);
+ 
+}
+//________________________________________________________________________
+Float_t AliAnalysisTaskFakeJets::AngularitySquared(AliEmcalJet *jet, Int_t jetContNb = 0){
+
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
+  if (!jet->GetNumberOfTracks())
+      return 0; 
+    Double_t den=0.;
+    Double_t num = 0.;
+    AliVParticle *vp1 = 0x0;
+    for(UInt_t i = 0; i < jet->GetNumberOfTracks(); i++) {
+      vp1 = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+      
+      if (!vp1){
+        Printf("AliVParticle associated to constituent not found");
+        continue;
+      }
+      
+      Double_t dphi = RelativePhi(vp1->Phi(),jet->Phi());
+      Double_t dr2 = (vp1->Eta()-jet->Eta())*(vp1->Eta()-jet->Eta()) + dphi*dphi;
+      Double_t dr = TMath::Sqrt(dr2);
+      num=num+vp1->Pt()*TMath::Sqrt(dr);
+      den=den+vp1->Pt();
+    }
+    return num/den;
+} 
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskFakeJets::GetJetAngularitySquared(AliEmcalJet *jet, Int_t jetContNb = 0) {
+
+  if((fJetShapeSub==kDerivSub) && (jetContNb==0))
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedAngularity();
+      else return jet->GetSecondOrderSubtractedAngularity();
+  else
+    return AngularitySquared(jet, jetContNb);
  
 }
 
@@ -514,6 +551,32 @@ Double_t AliAnalysisTaskFakeJets::NSubJettiness(AliEmcalJet *Jet, Int_t JetContN
   if (SubJetiness_Denominator!=0 && !Error) return SubJetiness_Numerator/SubJetiness_Denominator;                                                                                  
   else return -2;
 }
+//____________________________________________________________________________
+
+//----------------------------------------------------------------------
+Double_t AliAnalysisTaskFakeJets::GetSubjetFraction(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer){
+  AliJetContainer *JetCont = GetJetContainer(JetContNb);
+  AliEmcalJet *SubJet=NULL;
+  Double_t DeltaR1=0;
+  Double_t DeltaR2=0;
+  AliVParticle *JetParticle=0x0;
+  Double_t SubJetiness_Numerator = 0;
+  Double_t SubJetiness_Denominator = 0;
+  Double_t Index=-2;
+  if (Reclusterer->GetNumberOfJets() < 1) return -2;
+  Index=SubJetOrdering(Jet,Reclusterer,1,0,kTRUE);
+  if(Index==-999) return -2;
+   SubJetiness_Numerator=(Reclusterer->GetJet(Index)->Pt());
+  SubJetiness_Denominator=Jet->Pt();  
+   return SubJetiness_Numerator/SubJetiness_Denominator; 
+
+  
+}
+//__________________________________________________________________________________
+
+
+
+
 
 Float_t AliAnalysisTaskFakeJets::CoreFrac(AliEmcalJet *jet, Int_t jetContNb = 0){
 
@@ -619,7 +682,7 @@ Int_t AliAnalysisTaskFakeJets::SelectTrigger(Float_t minpT, Float_t maxpT){
   if(!partCont || !tracksArray) return -99999;
   AliAODTrack *track = 0x0;
   AliEmcalParticle *emcPart = 0x0;
-  AliPicoTrack *picoTrack = 0x0;
+
   
   TList *trackList = new TList();
   Int_t triggers[100];
@@ -628,24 +691,8 @@ Int_t AliAnalysisTaskFakeJets::SelectTrigger(Float_t minpT, Float_t maxpT){
   
   for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
     
-    if ((fJetShapeSub == kNoSub) || (fJetShapeSub == kDerivSub)) {
-      picoTrack = static_cast<AliPicoTrack*>(tracksArray->At(iTrack));
-      if (!picoTrack) continue;
-      
-      
-      if(TMath::Abs(picoTrack->Eta())>0.9) continue;
-      if(picoTrack->Pt()<0.15) continue;
-      if(picoTrack->GetTrackType() == 2) continue;
-    
-      //if ((picoTrack->Pt()>8) && (picoTrack->Pt()<9)) Printf("picoTrackLabel = %d", picoTrack->GetTrackType());
-      
-      if ((picoTrack->Pt() >= minpT) && (picoTrack->Pt()< maxpT)) {
-        trackList->Add(picoTrack);
-        triggers[iTT] = iTrack;
-        iTT++;
-      }
-    }
-    else if (fJetShapeSub == kConstSub){
+   
+    if (fJetShapeSub == kConstSub){
       emcPart = static_cast<AliEmcalParticle*>(tracksArray->At(iTrack));
       if (!emcPart) continue;
       if(TMath::Abs(emcPart->Eta())>0.9) continue;
