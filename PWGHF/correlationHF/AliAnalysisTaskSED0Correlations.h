@@ -93,6 +93,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
   void SetSpeed(Bool_t speed) {fSpeed=speed;}
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
+  void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
+  void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
  
   enum PartType {kTrack,kKCharg,kK0};
   enum FillType {kSE, kME}; //for single event or event mixing histos fill
@@ -157,8 +159,12 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Int_t     fPoolNum;			// Number of the pool for the analyzed event
   Bool_t    fSpeed;			// Speed up the execution removing bins and histos
   Bool_t    fMergePools;	// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
+  Bool_t 	fUseDeff;		// Use D meson efficiency as weight
+  Bool_t 	fUseTrackeff;   // Use track efficiency as weight
+  
 
-  ClassDef(AliAnalysisTaskSED0Correlations,7); // AliAnalysisTaskSE for D0->Kpi - h correlations
+
+  ClassDef(AliAnalysisTaskSED0Correlations,8); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

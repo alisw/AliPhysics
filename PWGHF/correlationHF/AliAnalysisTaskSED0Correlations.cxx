@@ -105,7 +105,9 @@ AliAnalysisTaskSE(),
   fSignRight_HighPt(0),
   fPoolNum(0),
   fSpeed(kTRUE),
-  fMergePools(kFALSE)   
+  fMergePools(kFALSE),
+  fUseDeff(kTRUE),
+  fUseTrackeff(kTRUE)   
 {
   // Default constructor
 
@@ -156,7 +158,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fSignRight_HighPt(0),
   fPoolNum(0),
   fSpeed(kTRUE),
-  fMergePools(kFALSE)         
+  fMergePools(kFALSE),
+  fUseDeff(kTRUE),
+  fUseTrackeff(kTRUE)         
 {
   // Default constructor
 
@@ -225,7 +229,9 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fSignRight_HighPt(source.fSignRight_HighPt),
   fPoolNum(source.fPoolNum),
   fSpeed(source.fSpeed),
-  fMergePools(source.fMergePools)      
+  fMergePools(source.fMergePools),
+  fUseDeff(source.fUseDeff),
+  fUseTrackeff(source.fUseTrackeff)      
 {
   // Copy constructor
 }
@@ -321,6 +327,8 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fPoolNum = orig.fKaonCorr;
   fSpeed = orig.fKaonCorr;   
   fMergePools = orig.fMergePools;
+  fUseDeff = orig.fUseDeff;
+  fUseTrackeff = orig.fUseTrackeff;
   
   return *this; //returns pointer of the class
 }
@@ -943,6 +951,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histSgn_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+          if(!fUseDeff) effD0=1.;
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
   	} else{ //it was a D0bar
 	  fillthis="histRfl_c_";
@@ -951,6 +960,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histRfl_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+          if(!fUseDeff) effD0=1.;          
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
   	}
       } else if(labD0>=0 && CheckD0Origin(arrMC,(AliAODMCParticle*)arrMC->At(labD0))==5) {
@@ -963,6 +973,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histSgn_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+            if(!fUseDeff) effD0=1.;            
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
   	  } else{ //it was a D0bar
 	    fillthis="histRfl_b_";
@@ -971,6 +982,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histRfl_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+            if(!fUseDeff) effD0=1.;          
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
 	  }
       } else {//background
@@ -980,6 +992,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
         fillthis="histBkg_WeigD0Eff_c_";
         fillthis+=ptbin;
         Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+        if(!fUseDeff) effD0=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       }
     }else{
@@ -989,6 +1002,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+      if(!fUseDeff) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
     }
      
@@ -1006,6 +1020,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histSgn_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+          if(!fUseDeff) effD0=1.; 
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
   	} else{ //it was a D0bar
 	  fillthis="histRfl_c_";
@@ -1014,6 +1029,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
           fillthis="histRfl_WeigD0Eff_c_";
           fillthis+=ptbin;
           Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+          if(!fUseDeff) effD0=1.; 
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
   	}
       } else if(labD0>=0 && CheckD0Origin(arrMC,(AliAODMCParticle*)arrMC->At(labD0))==5) {
@@ -1026,6 +1042,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histSgn_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+            if(!fUseDeff) effD0=1.; 
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
   	  } else{ //it was a D0bar
 	    fillthis="histRfl_b_";
@@ -1034,6 +1051,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
             fillthis="histRfl_WeigD0Eff_b_";
             fillthis+=ptbin;
             Double_t effD0 = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+            if(!fUseDeff) effD0=1.; 
             ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
 	  }
       } else {//background
@@ -1043,6 +1061,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
         fillthis="histBkg_WeigD0Eff_c_";
         fillthis+=ptbin;
         Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+        if(!fUseDeff) effD0=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
       }
     }else{
@@ -1052,6 +1071,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+      if(!fUseDeff) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar,1./effD0);
     }
 
@@ -1851,6 +1871,8 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
         if(origD0==4) effD0 = fCutsTracks->GetTrigWeight(d->Pt(),fMultEv);
         if(origD0==5) effD0 = fCutsTracks->GetTrigWeightB(d->Pt(),fMultEv);
       } else effD0 = fCutsTracks->GetTrigWeight(d->Pt(),fMultEv);
+      if(!fUseDeff) effD0=1.; 
+      if(!fUseTrackeff) effTr=1.; 
       Double_t eff = effTr*effD0;
 
       FillSparsePlots(mcArray,mInv,origD0,PDGD0,track,ptbin,kTrack,1./eff); //fills for charged tracks
