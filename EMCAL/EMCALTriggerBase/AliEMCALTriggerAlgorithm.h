@@ -25,6 +25,8 @@ public:
   AliEMCALTriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask);
   virtual ~AliEMCALTriggerAlgorithm();
 
+  ULong_t GetBitMask() const { return fBitMask; }
+  
   void SetRowMin(Int_t rowmin) { fRowMin = rowmin; }
   void SetRowMax(Int_t rowmax) { fRowMax = rowmax; }
   void SetThresholds(Float_t th, Float_t offTh) { fThreshold = th; fOfflineThreshold = offTh; }
