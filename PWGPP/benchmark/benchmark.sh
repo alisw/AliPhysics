@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #include benchmark.config
 
+# Use extended glob. We can do negative matches for instance. This *has* to be defined here.
+shopt -s extglob
+
 # blame: Mikolaj Krzewicki, mkrzewic@cern.ch
 # this script runs the CPass0/CPass1 train
 # produced OCDB updates are local
@@ -427,11 +430,12 @@ goCPass()
   echo "Contents of current directory ($PWD) after running CPass$cpass:" ; /bin/ls ; echo
 
   # CPass has completed. Copy all created files to the destination (which might be remote).
+  # Note: stdout is not copied, this will happen at the very end.
   printExec rm -f ./$chunkName
   while read cpdir; do
-    printExec copyFileToRemote $cpdir/* $outputDir/$cpdir
+    printExec copyFileToRemote $cpdir/!(stdout) $outputDir/$cpdir
   done < <(find . -type d)
-  
+
   # Validate CPass.
   case $cpass in
 
@@ -472,6 +476,10 @@ goCPass()
     ;;
 
   esac
+
+  # Copy stdout to destination.
+  [[ -z "$dontRedirectStdOutToLog" ]] && echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
+  copyFileToRemote stdout $outputDir
 
   # Final cleanup (only if we are not writing directly to destination).
   [[ "$runpath" != "$outputDir" ]] && printExec rm -rf $runpath
@@ -708,9 +716,9 @@ goMergeCPass()
 
   echo "Contents (recursive) of batch working directory after tarball creation in MergeCPass0 ($batchWorkingDirectory):" ; /bin/ls -R $batchWorkingDirectory ; echo
 
-  # Copy all to output dir. Preserve dir structure.
+  # Copy all to output dir. Preserve dir structure. stdout will be copied later.
   while read cpdir; do
-    copyFileToRemote $cpdir/* $outputDir/$cpdir
+    copyFileToRemote $cpdir/!(stdout) $outputDir/$cpdir
   done < <(find . -type d)
 
   # Copy OCDB to meta.
@@ -739,6 +747,11 @@ goMergeCPass()
       && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> $doneFileTmp
   fi
 
+  # Copy stdout to destination.
+  [[ -z "$dontRedirectStdOutToLog" ]] && echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
+  copyFileToRemote stdout $outputDir
+
+  # Final cleanup.
   [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
   copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
   echo End: goMergeCPass${cpass}
