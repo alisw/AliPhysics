@@ -16,7 +16,7 @@ AliAnalysisTaskCEPQA* AddTaskCEPQA()
 		Form("CEPQAtree"),
 		TTree::Class(),
 		AliAnalysisManager::kOutputContainer,
-		Form("\%s_output.root",name.Data())
+		Form("%s:CEPQA", AliAnalysisManager::GetCommonFileName())
 	);
 	
 	AliAnalysisDataContainer *aadco2 = aam->CreateContainer
@@ -24,7 +24,7 @@ AliAnalysisTaskCEPQA* AddTaskCEPQA()
 		Form("CEPQAhisto"),
 		TList::Class(),
 		AliAnalysisManager::kOutputContainer,
-		Form("\%s_output.root",name.Data())
+		Form("%s:CEPQA", AliAnalysisManager::GetCommonFileName())
 	);
 
 	// add task and connect input and output managers
