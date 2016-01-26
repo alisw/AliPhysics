@@ -34,6 +34,7 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   virtual void RunESDtrig();
   virtual void RunESDhist();
   virtual void RunESDtree();
+  virtual void RunESDMC(AliESDEvent *esd);
   virtual void Terminate(Option_t *);
   void SetRunTree(Bool_t runTree){fRunTree = runTree;}
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
@@ -59,7 +60,7 @@ class AliAnalysisTaskUpcPhi : public AliAnalysisTaskSE {
   UInt_t fPerNum, fOrbNum;
   //trigger
   Bool_t fTrigger[ntrg];
-  Bool_t fTriggerInputsMC[2];
+  Bool_t fTriggerInputsMC[ntrg];
   UInt_t fL0inputs, fL1inputs;
   
   Double_t fPIDITSMuon[2];
