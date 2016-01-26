@@ -19,11 +19,24 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     UInt_t        iNumEvents     = 5000,                                    // number of events to be analyzed
     const char   *cRunPeriod     = "LHC11h",                                // set the run period
     const char   *cTaskName      = "JetAna",                                // sets name of analysis manager
+    const Bool_t  bDoChargedJets = kTRUE,
+    const Bool_t  bDoFullJets    = kTRUE,
+    const char   *cOCDBpath      = "uselocal",                              // change to "raw://" if running on the grid
     Bool_t        doNotStart     = kFALSE
 )
 {
-  const Bool_t   bDoChargedJets       = kTRUE;
-  const Bool_t   bDoFullJets          = kTRUE;
+  TString sRunPeriod(cRunPeriod);
+  sRunPeriod.ToLower();
+
+  Bool_t bIsPP = kTRUE;
+
+  if (sRunPeriod == "lhc10h" || sRunPeriod == "lhc11h" ||
+      sRunPeriod == "lhc12g" || sRunPeriod == "lhc13b" || sRunPeriod == "lhc13c" ||
+      sRunPeriod == "lhc13d" || sRunPeriod == "lhc13e" || sRunPeriod == "lhc13f" ||
+      sRunPeriod == "lhc15o") {
+    bIsPP = kFALSE;
+  }
+
   const Bool_t   bDoTender            = kTRUE;
   const Bool_t   bDoHadCorr           = kTRUE;
   const Double_t kJetRadius           = 0.4;
@@ -40,7 +53,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   if (!strcmp(cDataType, "ESD")) {
     iDataType = kEsd;
     Printf("For the moment, this macro is only available for AOD analysis!");
-    return;
+    return 0;
   }
   else if (!strcmp(cDataType, "AOD")) {
     iDataType = kAod;
@@ -66,8 +79,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   // AliEmcalPhysicsSelection::kEmcalOk, AliEmcalPhysicsSelection::kEmcalH,
   // AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral,
   // AliVEvent::kEMCEGA, AliVEvent::kEMCEJE
-  UInt_t kPrePhysSel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-  UInt_t kPhysSel = AliEmcalPhysicsSelection::kEmcalOk;
+  UInt_t kPhysSel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
 
   // Analysis manager
   AliAnalysisManager* pMgr = new AliAnalysisManager(cTaskName);
@@ -79,27 +91,22 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     AliESDInputHandler* pESDHandler = AddESDHandler();
   }
 
-  if (0) {
-    AliAODHandler* pAODOutHandler = AddAODOutputHandler();
-  }
-
   // Physics selection task
-  if (1) {
-    AliEmcalPhysicsSelectionTask *pPhysSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE,
-                                                                              kPrePhysSel,
-                                                                              5, 5, 10, kTRUE);
+  if (iDataType == kEsd) {
+    AliPhysicsSelectionTask *pPhysSelTask = AddTaskPhysicsSelection();
   }
 
   // Centrality task
-  if (iDataType == kEsd) {
+  if (iDataType == kEsd && !bIsPP) {
     AliCentralitySelectionTask *pCentralityTask = AddTaskCentrality(kTRUE);
-    pCentralityTask->SelectCollisionCandidates(kPhysSel);
+    pCentralityTask->SelectCollisionCandidates(AliVEvent::kAny);
   }
-    
+
   // Setup task
-  if (bDoFullJets || bDoTender || bDoHadCorr) {
+  if (bDoFullJets || iDataType == kEsd) {
     AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
-    pSetupTask->SetOcdbPath("raw://");
+    pSetupTask->SelectCollisionCandidates(AliVEvent::kAny);
+    pSetupTask->SetOcdbPath(cOCDBpath);
   }
 
   TString sTracksName;
@@ -119,7 +126,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     sClusName = "CaloClusters";
   }
 
-  if (bDoTender) {
+  if (bDoFullJets && bDoTender) {
     // QA task
     if (1) {
       AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sClusName, sCellName, "", "",
@@ -157,14 +164,13 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     }
 
     AliAnalysisTaskSE *pTenderTask = AddTaskEMCALTender(bDistBC, bRecalibClus, bRecalcClusPos, bNonLinearCorr, bRemExoticCell, bRemExoticClus,
-                                                        bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
-                                                        fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, cPass);
+        bFidRegion, bCalibEnergy, bCalibTime, bRemBC, iNonLinFunct, bReclusterize, fSeedThresh,
+        fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, cPass);
     pTenderTask->SelectCollisionCandidates(kPhysSel);
-    
+
     AliAnalysisTaskEMCALClusterizeFast *pClusterizerTask = AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer,
-                                                                                  0.05, 0.1, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut,
-                                                                                  kFALSE, kFALSE, AliAnalysisTaskEMCALClusterizeFast::kFEEData);
-    
+        0.05, 0.1, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut,
+        kFALSE, kFALSE, AliAnalysisTaskEMCALClusterizeFast::kFEEData);
     pClusterizerTask->SelectCollisionCandidates(kPhysSel);
 
     bRemExoticClus  = kTRUE;
@@ -174,9 +180,24 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pClusterMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pClusterMakerTask->GetClusterContainer(0)->SetClusECut(0.);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
+
+    AliAnalysisTaskSAQA *pQATaskAfter = AddTaskSAQA("", sClusName, sCellName, "", "", 0, 0, 0, 0., 0., "TPC", "AliAnalysisTaskSAQA_AfterTender");
+    pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.);
+    pQATaskAfter->GetClusterContainer(0)->SetClusPtCut(0.);
+    pQATaskAfter->GetClusterContainer(0)->SetExoticCut(kFALSE);
+    pQATaskAfter->SetHistoBins(200, 0, 30);
+    pQATaskAfter->SelectCollisionCandidates(kPhysSel);
+
+    AliAnalysisTaskSAQA *pQATaskAfterMaker = AddTaskSAQA("", sClusName, "", "", "", 0, 0, 0, 0., 0., "TPC", "AliAnalysisTaskSAQA_AfterClusterMaker");
+    pQATaskAfterMaker->GetClusterContainer(0)->SetClusECut(0.);
+    pQATaskAfterMaker->GetClusterContainer(0)->SetClusPtCut(0.);
+    pQATaskAfterMaker->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
+    pQATaskAfterMaker->SelectCollisionCandidates(kPhysSel);
+    pQATaskAfterMaker->SetHistoBins(200, 0, 30);
+    pQATaskAfterMaker->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
-  
-  if (bDoHadCorr) {    
+
+  if (bDoFullJets && bDoHadCorr) {
     // Cluster-track matcher task
     AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher(sTracksName, sClusName, 0.1, kFALSE, kTRUE, kTRUE, kTRUE);
     pMatcherTask->SelectCollisionCandidates(kPhysSel);
@@ -193,7 +214,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
     // Hadronic correction task
     AliHadCorrTask *pHadCorrTask = AddTaskHadCorr(sTracksName, sClusName, "", 
-                                                  kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
+        kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
     pHadCorrTask->SelectCollisionCandidates(kPhysSel);
     pHadCorrTask->GetParticleContainer(0)->SetClassName("AliAODTrack");
     pHadCorrTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
@@ -201,25 +222,6 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pHadCorrTask->GetClusterContainer(0)->SetClusECut(0);
     pHadCorrTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pHadCorrTask->SetHistoBins(200, 0, 30);
-  }
-
-  if (1) {
-    AliAnalysisTaskSAQA *pQATaskAfter = AddTaskSAQA("", sClusName, sCellName, "", "", 0, 0, 0, 0., 0., "TPC", "AliAnalysisTaskSAQA_AfterTender");
-    pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.);
-    pQATaskAfter->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskAfter->GetClusterContainer(0)->SetExoticCut(kFALSE);
-    pQATaskAfter->SetHistoBins(200, 0, 30);
-    pQATaskAfter->SelectCollisionCandidates(kPhysSel);
-  }
-
-  if (1) {
-    AliAnalysisTaskSAQA *pQATaskAfterMaker = AddTaskSAQA("", sClusName, "", "", "", 0, 0, 0, 0., 0., "TPC", "AliAnalysisTaskSAQA_AfterClusterMaker");
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusECut(0.);
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
-    pQATaskAfterMaker->SelectCollisionCandidates(kPhysSel);
-    pQATaskAfterMaker->SetHistoBins(200, 0, 30);
-    pQATaskAfterMaker->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
 
   // QA task
@@ -316,7 +318,7 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODHandler.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddESDHandler.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
