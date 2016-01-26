@@ -130,14 +130,12 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
   if (bDoFullJets && bDoTender) {
     // QA task
-    if (1) {
-      AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sClusName, sCellName, "", "",
-                                                       0, 0, 0, 0., 0., "TPC", "BeforeTender");
-      pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);
-      pQATaskBefore->GetClusterContainer(0)->SetClusPtCut(0.);
-      pQATaskBefore->SetHistoBins(200, 0, 30);
-      pQATaskBefore->SelectCollisionCandidates(kPhysSel);
-    }
+    AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sClusName, sCellName, "", "",
+        0, 0, 0, 0., 0., "TPC", "BeforeTender");
+    pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);
+    pQATaskBefore->GetClusterContainer(0)->SetClusPtCut(0.);
+    pQATaskBefore->SetHistoBins(200, 0, 30);
+    pQATaskBefore->SelectCollisionCandidates(kPhysSel);
 
     const char *cPass        = 0;
     Bool_t   bDistBC         = kFALSE; //switch for recalculation cluster position from bad channel
