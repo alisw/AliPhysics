@@ -69,7 +69,7 @@
 #include "AliFlowTrack.h"
 #include "AliFlowVector.h"
 #include "AliFlowTrackCuts.h"
-#include "AliFlowEvent.h"  
+#include "AliFlowEvent.h"
 
 #include "AliAnalysisTaskSEHFv2.h"
 
@@ -86,7 +86,7 @@ AliAnalysisTaskSE(),
   fUpmasslimit(2.069),
   fNPtBins(1),
   fNMassBins(200),
-  fReadMC(kFALSE),    
+  fReadMC(kFALSE),
   fUseAfterBurner(kFALSE),
   fDecChannel(0),
   fAfterBurner(0),
@@ -168,6 +168,9 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   case 2:
     DefineOutput(3,AliRDHFCutsDStartoKpipi::Class());  //Cut object for D*
     break;
+  case 3:
+    DefineOutput(3,AliRDHFCutsDstoKKpi::Class());  //Cut object for Ds
+    break;
   }
   //DefineOutput(4,AliFlowEventSimple::Class());
   //DefineOutput(4,TList::Class());
@@ -234,6 +237,13 @@ void AliAnalysisTaskSEHFv2::LocalInit()
       PostData(3,copycut);
     }
     break;
+  case 3:
+    {
+      AliRDHFCutsDstoKKpi* copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
   default:
     return;
   }
@@ -266,7 +276,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
     TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;pt (GeV);M (GeV/c^{2})",centrname.Data()),120,0,24.,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hMPtCand);//For <pt> calculation
+    fOutput->Add(hMPtCand);//For <pt> calculation
 
 
     //Candidate distributions
@@ -334,7 +344,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     fOutput->Add(hCos2EP);
     TH1F *hSin2EP=new TH1F(Form("hSin2EP%s",centrname.Data()),Form("sin(2PsiEP) %s;sin2(#psi_{EP});Entries",centrname.Data()),100,-1.,1.);
     fOutput->Add(hSin2EP);
-   }
+  }
   
   PostData(1,fhEventsInfo);
   PostData(2,fOutput);
@@ -381,6 +391,10 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 	absPdgMom=413;
 	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
       }
+      if(fDecChannel==3){
+	absPdgMom=431;
+	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+      }
     }
   } else if(aod){
     if(fDecChannel==0){
@@ -394,6 +408,10 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fDecChannel==2){
       absPdgMom=413;
       arrayProng=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+    }
+    if(fDecChannel==3){
+      absPdgMom=431;
+      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     }
   }
 
@@ -484,7 +502,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     delete g;g=0x0;
     if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)eventplane);
   }else{
-   // TPC event plane
+    // TPC event plane
     rpangleTPC = pl->GetEventplane("Q");
     if(rpangleTPC<0){
       fhEventsInfo->Fill(6);
@@ -565,6 +583,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fDecChannel==0) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
     if(fDecChannel==1) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
     if(fDecChannel==2) isSelBit=kTRUE;
+    if(fDecChannel==3) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDsCuts);
     if(!isSelBit)continue;
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
     if(ptbin<0) {
@@ -575,6 +594,11 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(!isFidAcc)continue;    
     Int_t isSelected= fRDCuts->IsSelected(d,AliRDHFCuts::kAll,aod);
     if(!isSelected)continue;
+    if(fDecChannel==3) {
+      Int_t isDsPhiKKpi = isSelected&4;
+      Int_t isDsPhipiKK = isSelected&8;
+      if(!isDsPhiKKpi & !isDsPhipiKK) continue;
+    }
 
     fhEventsInfo->Fill(2); // candidate selected
     if(fDebug>3) printf("+++++++Is Selected\n");
@@ -596,6 +620,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi);
     else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi);
     else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi);
+    else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi);
     
     delete [] invMass;
   }
@@ -637,6 +662,15 @@ void AliAnalysisTaskSEHFv2::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& ma
     masses=new Float_t[nmasses];
     masses[0]=((AliAODRecoCascadeHF*)d)->DeltaInvMass();
   } 
+  if(fDecChannel==3){
+    //Ds -- Anastasia
+    nmasses=2;
+    masses=new Float_t[nmasses];
+    UInt_t pdgdaughtersKKpi[3] = {321,321,211};
+    UInt_t pdgdaughterspiKK[3] = {211,321,321};
+    masses[0]=d->InvMass(3,pdgdaughtersKKpi);
+    masses[1]=d->InvMass(3,pdgdaughterspiKK);
+  }
 }
 
 //******************************************************************************
@@ -801,6 +835,83 @@ void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
     } 
   }
 }
+//******************************************************************************
+void AliAnalysisTaskSEHFv2::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD){
+
+  //Ds channel
+  if(!isSel){
+    if(fDebug>3)AliWarning("Candidate not selected\n");
+    return;
+  }
+  if(!masses){
+    if(fDebug>3)AliWarning("Masses not calculated\n");
+    return;
+  }
+  Int_t icentrmin=icentr-fCentBinSizePerMil;
+  Int_t isDsPhiKKpi = isSel&4;
+  Int_t isDsPhipiKK = isSel&8;
+
+  if(isDsPhiKKpi){
+    ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(2*deltaphi),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*phiD),masses[0]);
+    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(2*phiD),masses[0]);
+  }
+  if(isDsPhipiKK){
+    ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[1]);
+    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(2*deltaphi),masses[1]);
+    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+    ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[1]);
+    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*phiD),masses[1]);
+    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(2*phiD),masses[1]);
+  }
+
+  if(fReadMC){
+
+    Int_t pdgdaughters[3] = {321,321,211};
+
+    Int_t lab=-1;
+    Int_t pdgCode0=-1;
+
+    lab = d->MatchToMC(431,arrayMC,3,pdgdaughters);
+    if(lab>=0){ //signal
+      AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(lab);
+      Int_t labDau0=((AliAODTrack*)dMC->GetDaughter(0))->GetLabel();
+      AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
+      pdgCode0=TMath::Abs(p->GetPdgCode());
+    }
+    if(isDsPhiKKpi){
+      if(lab>=0){
+	if(pdgCode0==321){
+	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[0]);
+	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+	}else{
+	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[0]);
+	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+	}
+      }else{
+	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[0]);
+	((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[0]);
+      }
+    }
+    if(isDsPhipiKK){
+      if(lab>=0){
+	if(pdgCode0==211){
+	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[1]);
+	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiS_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+	}else{
+	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[1]);
+	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+	}
+     }else{
+	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[1]);
+	((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
+      }
+    }
+  }
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFv2::SetEventPlaneMethod(Int_t method){
@@ -832,7 +943,7 @@ Float_t AliAnalysisTaskSEHFv2::GetPhi0Pi(Float_t phi){
   while(result>TMath::Pi()){
     result=result-TMath::Pi();
   }
-   return result;
+  return result;
 }
 
 //________________________________________________________________________
@@ -920,6 +1031,28 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, c
       
     qcopy = qcopy -(q0+q1+q2);
 	
+  }
+
+  if(fDecChannel==3){
+    //Ds -- Anastasia
+    AliAODTrack *track0 = (AliAODTrack*)d->GetDaughter(0);
+    AliAODTrack *track1 = (AliAODTrack*)d->GetDaughter(1);
+    AliAODTrack *track2 = (AliAODTrack*)d->GetDaughter(2);
+
+    TVector2 q0;
+    if((track0->GetID()) < qx->fN){
+      q0.Set(qx->At(track0->GetID()),qy->At(track0->GetID()));}
+
+    TVector2 q1;
+    if((track1->GetID()) < qx->fN){
+      q1.Set(qx->At(track1->GetID()),qy->At(track1->GetID()));}
+
+    TVector2 q2;
+    if((track2->GetID()) < qx->fN){
+      q2.Set(qx->At(track2->GetID()),qy->At(track2->GetID()));}
+
+    qcopy = qcopy -(q0+q1+q2);
+
   }
 
   return qcopy.Phi()/2.;
