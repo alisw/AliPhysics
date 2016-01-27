@@ -338,7 +338,7 @@ goCPass()
       if [[ -n "$pretend" ]]; then
         echo "Pretending to run: $runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
         sleep $pretendDelay
-        for fakeOutput in AliESDs.root AliESDfriends.root AliESDfriends_v1.root rec.log calib.log; do
+        for fakeOutput in AliESDs.root AliESDfriends.root CalibObjects.root rec.log calib.log; do
           touch $fakeOutput
         done
       else
@@ -390,7 +390,7 @@ goCPass()
       if [[ -n "$pretend" ]]; then
         echo "Pretending to run: ./runCPass1.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
         sleep $pretendDelay
-        for fakeOutput in AliESDs_Barrel.root AliESDfriends_Barrel.root AliESDfriends_v1.root \
+        for fakeOutput in AliESDs_Barrel.root AliESDfriends_Barrel.root CalibObjects.root \
                           QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root \
                           AliESDs_Outer.root AliESDfriends_Outer.root QAresults_outer.root \
                           EventStat_temp_outer.root rec.log calib.log qa.log filtering.log \
@@ -406,6 +406,7 @@ goCPass()
       [[ ! -f AliESDs_Barrel.root && -f Barrel/AliESDs.root ]] && mv Barrel/AliESDs.root AliESDs_Barrel.root
       [[ ! -f AliESDfriends_Barrel.root && -f Barrel/AliESDfriends.root ]] && mv Barrel/AliESDfriends.root AliESDfriends_Barrel.root
       [[ ! -f AliESDfriends_v1.root && -f Barrel/AliESDfriends_v1.root ]] && mv Barrel/AliESDfriends_v1.root .
+      [[ ! -f CalibObjects.root && -f Barrel/CalibObjects.root ]] && mv Barrel/CalibObjects.root .
       [[ ! -f QAresults_barrel.root && -f Barrel/QAresults_barrel.root ]] && mv Barrel/QAresults_barrel.root .
       [[ ! -f AliESDs_Outer.root && -f OuterDet/AliESDs.root ]] && mv OuterDet/AliESDs.root AliESDs_Outer.root
       [[ ! -f AliESDfriends_Outer.root && -f OuterDet/AliESDfriends.root ]] && mv OuterDet/AliESDfriends.root AliESDfriends_Outer.root
@@ -444,6 +445,7 @@ goCPass()
       if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
         [[ -f $outputDirMC/galice.root ]] && echo "sim $outputDirMC/galice.root" >> $doneFileTmp
         [[ -f AliESDfriends_v1.root ]] && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
+        [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" >> $doneFileTmp  # new name of AliESDfriends_v1.root
         [[ -f AliESDs.root ]] && echo "esd $outputDir/AliESDs.root" >> $doneFileTmp
       fi
       # End of CPass0 validation.
@@ -454,6 +456,7 @@ goCPass()
       if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
         [[ -f AliESDs_Barrel.root ]] && echo "esd $outputDir/AliESDs_Barrel.root" >> $doneFileTmp
         [[ -f AliESDfriends_v1.root ]] && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
+        [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" >> $doneFileTmp  # new name of AliESDfriends_v1.root
         [[ -f QAresults_Barrel.root ]] && echo "qafile $outputDir/QAresults_Barrel.root" >> $doneFileTmp
         [[ -f QAresults_Outer.root ]] && echo "qafile $outputDir/QAresults_Outer.root" >> $doneFileTmp
         [[ -f QAresults_barrel.root ]] && echo "qafile $outputDir/QAresults_barrel.root" >> $doneFileTmp
@@ -517,7 +520,7 @@ goMergeCPass()
   calibrationFilesToMerge=$5  #can be a non-existent file, will then be produced on the fly
   shift 5
 
-  # MergeCPass1 takes two arguments more.
+  # MergeCPass1 takes two more arguments.
   if [[ $cpass == 1 ]]; then
     qaFilesToMerge=$1
     filteredFilesToMerge=$2
@@ -569,7 +572,6 @@ goMergeCPass()
   mergingScript="mergeMakeOCDB.byComponent.sh"
 
   if [[ $cpass == 1 ]]; then
-    calibrationOutputFileName='AliESDfriends_v1.root'
     qaOutputFileName='QAresults*.root'
     # Important to have the string "Stage.txt" in the filename to trigger the merging.
     # It has to be a list of directories containing the files.
@@ -585,7 +587,6 @@ goMergeCPass()
   echo commonOutputPath=${commonOutputPath}
   echo runpath=${runpath}
   [[ $cpass == 1 ]] && echo qaFilesToMerge=$qaFilesToMerge
-  [[ $cpass == 1 ]] && echo calibrationOutputFileName=$calibrationOutputFileName
   
   # Copy files in case they are not already there.
   case $cpass in
@@ -630,7 +631,8 @@ goMergeCPass()
   # in CPass0 too. It's harmless in any case.
   if [[ -f cpass0.localOCDB.${runNumber}.tgz ]]; then
     printExec goMakeLocalOCDBaccessConfig "cpass0.localOCDB.${runNumber}.tgz"
-  else
+  elif [[ $cpass == 1 ]]; then
+    # Print a warning only on CPass1.
     echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
   fi
 
