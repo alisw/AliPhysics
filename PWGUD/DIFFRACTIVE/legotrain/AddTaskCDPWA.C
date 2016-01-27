@@ -24,6 +24,7 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 	//task->SetRunSyst(runSyst);
 	//task->SelectCollisionCandidates(AliVEvent::kMB);
 
+	/*
 	// Load other task
 	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
 
@@ -39,6 +40,7 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 	oadb->SetHardwareTrigger(1,"SPDGFO >= 1");
 	oadb->SetOfflineTrigger(1,"SPDGFO >= 1 && !V0ABG && !V0CBG && !ADABG && !ADCBG && !TPCLaserWarmUp");
 	physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadb,0);
+	*/
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
