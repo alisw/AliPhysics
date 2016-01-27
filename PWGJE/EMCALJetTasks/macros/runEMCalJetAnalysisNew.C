@@ -37,13 +37,15 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     bIsPP = kFALSE;
   }
 
+  Double_t kGhostArea = 0.01;
+  if (!bIsPP) kGhostArea = 0.005;
+
   const Bool_t   bDoTender            = kTRUE;
   const Bool_t   bDoHadCorr           = kTRUE;
   const Double_t kJetRadius           = 0.4;
   const Double_t kClusPtCut           = 0.30;
   const Double_t kTrackPtCut          = 0.15;
   const Double_t kJetPtCut            = 1.;
-  const Double_t kGhostArea           = 0.005;
   const Double_t kHadCorrF            = 2.;
   const Int_t    kHistoType           = 1;
   
