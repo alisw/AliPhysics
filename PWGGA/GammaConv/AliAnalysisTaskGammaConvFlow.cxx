@@ -425,7 +425,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		hKappaTPC[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt",200,0,10,250,0,25);
 		fESDList[iCut]->Add(hKappaTPC[iCut]);
     
-    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
+    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt_after","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
     fESDList[iCut]->Add(hKappaTPC_after[iCut]);
 		
 		if (fDoPhotonQA == 2){
