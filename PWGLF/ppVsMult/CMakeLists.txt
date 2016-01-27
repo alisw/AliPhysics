@@ -76,7 +76,8 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
-#install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
+install(DIRECTORY dNdEtaPP13/macros DESTINATION  PWGLF/ppVsMult/dNdEtaPP13 FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY dNdEtaPP13/task DESTINATION  PWGLF/ppVsMult/dNdEtaPP13 FILES_MATCHING PATTERN "*.C")
 #install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
 #  PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 #install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
