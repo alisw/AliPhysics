@@ -1,0 +1,5 @@
+ root -l -b -q runCD.C\(\"CD\",\"LHC10b\"\)
+ root -l -b -q runCD.C\(\"CD\",\"LHC10c\"\)
+ root -l -b -q runCD.C\(\"CD\",\"LHC10d\"\)
+ root -l -b -q runCD.C\(\"CD\",\"LHC10e\"\)
+ root -l -b -q runCD.C\(\"CD\",\"LHC15f\"\)
