@@ -10,6 +10,7 @@
 class TClonesArray;
 class THistManager;
 class AliVVZERO;
+class AliEMCALTriggerPatchInfo;
 
 class AliEmcalTriggerMakerTask : public AliAnalysisTaskEmcal {
 public:
@@ -111,6 +112,8 @@ public:
 
 
 protected:
+
+  void FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch);
 
   AliEmcalTriggerMakerKernel              *fTriggerMaker;             ///< The actual trigger maker kernel
   AliVVZERO                               *fV0;                       //!<! VZERO data

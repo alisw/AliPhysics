@@ -70,27 +70,32 @@ AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
  */
 void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  const TString kTriggerTypeNames[5] = {"EJE", "EGA", "EL0", "REJE", "REGA"};
+  const TString kTriggerTypeNames[3] = {"EJE", "EGA", "EL0"},
+                kPatchTypes[3] = {"Online", "Offline", "Recalc"};
 
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
-    const char *patchtypes[2] = {"Online", "Offline"};
 
-    for(int itype = 0; itype < 5; itype++){
-      for(const char **patchtype = patchtypes; patchtype < patchtypes + 2; ++patchtype){
+    for(const TString *triggertype = kTriggerTypeNames; triggertype < kTriggerTypeNames + sizeof(kTriggerTypeNames)/sizeof(TString); triggertype++){
+      for(const TString *patchtype = kPatchTypes; patchtype < kPatchTypes + sizeof(kPatchTypes)/sizeof(TString); ++patchtype){
         fQAHistos->CreateTH2(
-            Form("RCPos%s%s", kTriggerTypeNames[itype].Data(), *patchtype),
-            Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", *patchtype, kTriggerTypeNames[itype].Data()),
+            Form("RCPos%s%s", triggertype->Data(), patchtype->Data()),
+            Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", patchtype->Data(), triggertype->Data()),
             48, -0.5, 47.5, 104, -0.5, 103.5
             );
         fQAHistos->CreateTH2(
-            Form("EPCentPos%s%s", kTriggerTypeNames[itype].Data(), *patchtype),
-            Form("Center position of the %s %s trigger patches;#eta;#phi", *patchtype, kTriggerTypeNames[itype].Data()),
+            Form("EPCentPos%s%s", triggertype->Data(), patchtype->Data()),
+            Form("Center position of the %s %s trigger patches;#eta;#phi", patchtype->Data(), triggertype->Data()),
             20, -0.8, 0.8, 700, 0., 7.
             );
         fQAHistos->CreateTH2(
-            Form("PatchADCvsE%s%s", kTriggerTypeNames[itype].Data(), *patchtype),
-            Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", *patchtype, kTriggerTypeNames[itype].Data()),
+            Form("PatchADCvsE%s%s", triggertype->Data(), patchtype->Data()),
+            Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
+            2000, 0., 2000, 200, 0., 200
+            );
+        fQAHistos->CreateTH2(
+            Form("PatchADCOffvsE%s%s", triggertype->Data(), patchtype->Data()),
+            Form("Patch offline ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
             2000, 0., 2000, 200, 0., 200
             );
       }
@@ -172,15 +177,14 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
       std::bitset<32> triggerbits = recpatch->GetTriggerBits();
       std::stringstream triggerbitstring;
       AliDebug(1, Form("Trigger maker - next patch: size %d, trigger bits %s", recpatch->GetPatchSize(), triggerbitstring.str().c_str()));
-      if(recpatch->IsJetHigh() || recpatch->IsJetLow() || recpatch->IsJetHighSimple() || recpatch->IsJetLowSimple()) triggerstring = "EJE";
-      if(recpatch->IsGammaHigh() || recpatch->IsGammaLow() || recpatch->IsGammaHighSimple() || recpatch->IsGammaLowSimple()) triggerstring = "EGA";
-      if(recpatch->IsLevel0()) triggerstring = "EL0";
-      if(recpatch->IsRecalcJet()) triggerstring = "REJE";
-      if(recpatch->IsRecalcGamma()) triggerstring = "REGA";
-      TString patchtype = recpatch->IsOfflineSimple() ? "Offline" : "Online";
-      fQAHistos->FillTH2(Form("RCPos%s%s", triggerstring.Data(), patchtype.Data()), recpatch->GetColStart(), recpatch->GetRowStart());
-      fQAHistos->FillTH2(Form("EPCentPos%s%s", triggerstring.Data(), patchtype.Data()), recpatch->GetEtaGeo(), recpatch->GetPhiGeo());
-      fQAHistos->FillTH2(Form("PatchADCvsE%s%s", triggerstring.Data(), patchtype.Data()), recpatch->IsOfflineSimple() ? recpatch->GetADCOfflineAmp() : recpatch->GetADCAmp(), recpatch->GetPatchE());
+      // Handle types different - online - offline - re
+      if(recpatch->IsJetHigh() || recpatch->IsJetLow())                   FillQAHistos("EJEOnline", *recpatch);
+      if(recpatch->IsGammaHigh() || recpatch->IsGammaLow())               FillQAHistos("EGAOnline", *recpatch);
+      if(recpatch->IsJetHighSimple() || recpatch->IsJetLowSimple())       FillQAHistos("EJEOffline", *recpatch);
+      if(recpatch->IsGammaHighSimple() || recpatch->IsGammaLowSimple())   FillQAHistos("EGAOffline", *recpatch);
+      if(recpatch->IsLevel0())                                            FillQAHistos("EL0Online", *recpatch);
+      if(recpatch->IsRecalcJet())                                         FillQAHistos("EJERecalc", *recpatch);
+      if(recpatch->IsRecalcGamma())                                       FillQAHistos("EGARecalc", *recpatch);
       // Redo checking of found trigger bits after masking of unwanted triggers
       int tBits = recpatch->GetTriggerBits();
       for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
@@ -193,4 +197,11 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   }
   if(patches) delete patches;
   return true;
+}
+
+void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch){
+  fQAHistos->FillTH2(Form("RCPos%s", patchtype.Data()), recpatch.GetColStart(), recpatch.GetRowStart());
+  fQAHistos->FillTH2(Form("EPCentPos%s", patchtype.Data()), recpatch.GetEtaGeo(), recpatch.GetPhiGeo());
+  fQAHistos->FillTH2(Form("PatchADCvsE%s", patchtype.Data()), recpatch.GetADCAmp(), recpatch.GetPatchE());
+  fQAHistos->FillTH2(Form("PatchADCOffvsE%s", patchtype.Data()), recpatch.GetADCOfflineAmp(), recpatch.GetPatchE());
 }
