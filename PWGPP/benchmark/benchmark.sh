@@ -45,11 +45,22 @@ ALIROOT_FORCE_COREDUMP=1
 pretendDelay=0
 copyInputData=0
 
+# Those files are expected to be under $ALICE_PHYSICS/PWGPP/scripts. If a version in the current
+# directory exists, it takes precedence.
+sourceUtilities=( alilog4bash.sh utilities.sh )
+
 main()
 {
   #run in proper mode depending on the selection
-  source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh false
-  source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh false
+  for scr in "${sourceUtilities[@]}"; do
+    if [[ -e $scr ]]; then
+      echo "Sourcing $scr from current directory"
+      source $scr false
+    else
+      echo "Sourcing $scr from AliPhysics"
+      source $ALICE_PHYSICS/PWGPP/scripts/$scr false
+    fi
+  done
   if [[ $# -lt 1 ]]; then
     if [[ ! "${0}" =~ "bash" ]]; then
       echo "uses makeflow:"
@@ -874,19 +885,17 @@ goGenerateMakeflow()
 
   #these files will be made a dependency - will be copied to the working dir of the jobs
   declare -a copyFiles
-  inputFiles=(
-              "OCDB.root"
-              "localOCDBaccessConfig.C"
-              "QAtrain_duo.C"
-              "runCPass1.sh"
-              "recCPass1.C"
-              "recCPass1_OuterDet.C"
-              "runCalibTrain.C"
-              "runCPass0.sh"
-              "recCPass0.C"
-              "runQA.sh"
-	      "mergeQAgroups.C"
-  )
+  inputFiles=( OCDB.root
+               localOCDBaccessConfig.C
+               QAtrain_duo.C
+               runCPass1.sh
+               recCPass1.C
+               recCPass1_OuterDet.C
+               runCalibTrain.C
+               runCPass0.sh
+               recCPass0.C
+               runQA.sh
+               mergeQAgroups.C )
   for file in ${inputFiles[*]}; do
     [[ -f ${file} ]] && copyFiles+=("${file}")
   done
@@ -932,7 +941,7 @@ goGenerateMakeflow()
       #arr_cpass0_outputs[${jobindex}]="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
       arr_cpass0_outputs[${jobindex}]="cpass0.job${jobindex}.run${runNumber}.done"
       echo "### CPass0 ###"
-      echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ${configFile} ${copyFiles[@]}"
+      echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
 
@@ -940,7 +949,7 @@ goGenerateMakeflow()
       #arr_cpass1_outputs[${jobindex}]="${commonOutputPath}/meta/cpass1.job${jobindex}.run${runNumber}.done"
       arr_cpass1_outputs[${jobindex}]="cpass1.job${jobindex}.run${runNumber}.done"
       echo "### CPass1 ###"
-      echo "${arr_cpass1_outputs[${jobindex}]}: benchmark.sh ${configFile} merge.cpass0.run${runNumber}.done ${copyFiles[@]}"
+      echo "${arr_cpass1_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} merge.cpass0.run${runNumber}.done ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass1 \$OUTPATH/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
       ((jobindex++))
@@ -951,7 +960,7 @@ goGenerateMakeflow()
     #arr_cpass0_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list"
     arr_cpass0_calib_list[${runNumber}]="cpass0.calib.run${runNumber}.list"
     echo "### Produces the list of CPass0 files to merge (executes locally) ###"
-    echo "${arr_cpass0_calib_list[${runNumber}]}: benchmark.sh ${arr_cpass0_outputs[*]}"
+    echo "${arr_cpass0_calib_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass0_outputs[*]}"
     echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_outputs[*]}"
     echo ; echo
 
@@ -959,7 +968,7 @@ goGenerateMakeflow()
     echo "### Merges CPass0 files ###"
     #arr_cpass0_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
     arr_cpass0_merged[${runNumber}]="merge.cpass0.run${runNumber}.done"
-    echo "${arr_cpass0_merged[${runNumber}]}: benchmark.sh ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${copyFiles[@]}"
+    echo "${arr_cpass0_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${copyFiles[@]}"
     echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
@@ -970,21 +979,21 @@ goGenerateMakeflow()
     #arr_cpass1_QA_list[${runNumber}]="${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
     arr_cpass1_QA_list[${runNumber}]="cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
     echo "### Lists CPass1 QA ###"
-    echo "${arr_cpass1_QA_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
+    echo "${arr_cpass1_QA_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
     echo -e "\tLOCAL ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
     #arr_cpass1_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list"
     arr_cpass1_calib_list[${runNumber}]="cpass1.calib.run${runNumber}.list"
     echo "### Lists CPass1 Calib ###"
-    echo "${arr_cpass1_calib_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
+    echo "${arr_cpass1_calib_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
     echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
     #arr_cpass1_filtered_list[${runNumber}]="${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list"
     arr_cpass1_filtered_list[${runNumber}]="cpass1.filtered.run${runNumber}.list"
     echo "### Lists CPass1 filtered ###"
-    echo "${arr_cpass1_filtered_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
+    echo "${arr_cpass1_filtered_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
     echo -e "\tLOCAL ./benchmark.sh PrintValues filteredTree ${arr_cpass1_filtered_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
@@ -992,7 +1001,7 @@ goGenerateMakeflow()
     #arr_cpass1_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
     arr_cpass1_merged[${runNumber}]="merge.cpass1.run${runNumber}.done"
     echo "### Merges CPass1 files ###"
-    echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
+    echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
     echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
@@ -1006,7 +1015,7 @@ goGenerateMakeflow()
       #arr_cpass0_profiled_outputs[${runNumber}]="${commonOutputPath}/meta/profiling.cpass0.job${jobindex}.run${runNumber}.done"
       arr_cpass0_profiled_outputs[${runNumber}]="profiling.cpass0.job${jobindex}.run${runNumber}.done"
       echo "### CPass0 in a profiler ###"
-      echo "${arr_cpass0_profiled_outputs[${runNumber}]}: benchmark.sh ${configFile} ${copyFiles[@]}"
+      echo "${arr_cpass0_profiled_outputs[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${copyFiles[@]}"
       profilingCommand=$(encSpaces "${profilingCommand}")
       echo -e "\t${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/${jobindex} ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]} useProfilingCommand=${profilingCommand}"
       echo ; echo
@@ -1016,7 +1025,7 @@ goGenerateMakeflow()
 
   #Summary
   echo "### Summary ###"
-  echo "summary.log: benchmark.sh ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]}"
+  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]}"
   echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
   echo ; echo
 
