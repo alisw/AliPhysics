@@ -40,6 +40,7 @@ public :
   static void MakeEventStatInfo(const char * inputList="cat residual.list", Int_t timeInterval=300, Int_t id=0, Int_t skip=1);
   static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime=-1, Int_t stopTime=-1,  Int_t maxStat=1000000, Int_t selHist=-1,const char * residualInfoFile="residualInfo.root");
   static void    FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
+  static Bool_t FitDrift(Int_t deltaT=120, Double_t sigmaT=600,  Int_t time0=0, Int_t time1=0);
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
   THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}
   THn * GetHisITSTOFDRPhi() const {return fHisITSTOFDRPhi;}
