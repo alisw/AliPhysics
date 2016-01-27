@@ -2546,6 +2546,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   sw.Start();
   int dimVar=1, dimVarID = axOrd[dimVar];
   //
+  TVectorD  vecLTM(9);
   while(1) {
     //
     double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
@@ -2610,7 +2611,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     if (verbose>0) {for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | central bin fit\n");}
     // 
     // >> ------------- do fit
-    double mean=0,mom2=0,rms=0,nrm=0,meanG=0,rmsG=0,chi2G=0,maxVal=0,entriesG=0,mean0=0, rms0=0;
+    double mean=0,mom2=0,rms=0,m3=0, m4=0, nrm=0,meanG=0,rmsG=0,chi2G=0,maxVal=0,entriesG=0,mean0=0, rms0=0, curt0=0;
     hfit->Reset();
     for (int ip=tgtNb;ip--;) {
       //grafFit.SetPoint(ip,binX[ip],binY[ip]);
@@ -2628,11 +2629,13 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     }
     mean0=mean;
     rms0=rms;
+    
 
     Int_t nbins1D=hfit->GetNbinsX();
     Double_t binMedian=0;
     Double_t limits[2]={hfit->GetBinCenter(1), hfit->GetBinCenter(nbins1D)};
     if (nrm>5) {
+      TStatToolkit::LTMHisto(hfit, vecLTM, 0.8); 
       Double_t* integral=hfit->GetIntegral();      
       for (Int_t i=1; i<nbins1D-1; i++){
 	if (integral[i-1]<0.5 && integral[i]>=0.5){
@@ -2655,6 +2658,10 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       hfit->GetXaxis()->SetRangeUser(limits[0], limits[1]);
       mean=hfit->GetMean();
       rms=hfit->GetRMS();
+      if (nrm>0 && rms>0) {
+	m3=hfit->GetSkewness();
+	m4=hfit->GetKurtosis();
+      }
       fgaus.SetRange(limits[0]-rms, limits[1]+rms);
     }else{
       fgaus.SetRange(xax->GetXmin(),xax->GetXmax());
@@ -2689,10 +2696,13 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	"rms0="<<rms0<<         // rms value of the last dimension - without fraction cut
 	"mean="<<mean<<       // mean value of the last dimension
 	"rms="<<rms<<         // rms value of the last dimension
+	"m3="<<m3<<            // m3 (skewnes) of the last dimension
+	"m4="<<m4<<            // m4 (kurtosis) of the last dimension
 	"binMedian="<<binMedian<< //binned median value of 1D histogram
 	"entriesG="<<entriesG<< 
 	"meanG="<<meanG<<     // mean of the gaus fit
 	"rmsG="<<rmsG<<       // rms of the gaus fit
+	"vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
 	"chi2G="<<chi2G<<"\n";      // chi2 of the gaus fit
     }
 
@@ -2703,10 +2713,13 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       "rms0="<<rms0<<         // rms value of the last dimension - without fraction cut
       "mean="<<mean<<       // mean value of the last dimension
       "rms="<<rms<<         // rms value of the last dimension
+      "m3="<<m3<<            // m3 (skewnes) of the last dimension
+      "m4="<<m4<<            // m4 (kurtosis) of the last dimension
       "binMedian="<<binMedian<< //binned median value of 1D histogram
       "entriesG="<<entriesG<<   // 
       "meanG="<<meanG<<     // mean of the gaus fit
       "rmsG="<<rmsG<<       // rms of the gaus fit
+      "vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
       "chi2G="<<chi2G;      // chi2 of the gaus fit
     //
     meanVector[tgtDim] = mean; // what's a point of this?
