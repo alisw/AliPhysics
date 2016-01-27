@@ -295,12 +295,9 @@ void AliAODCluster::Print(Option_t* /* option */) const
 //______________________________________________________________________________
 Float_t  AliAODCluster::GetClusterMCEdepFraction(Int_t mcIndex) const
 { 
-  //printf("%p\n",fClusterMCEdepFraction);
+  if ( mcIndex < 0 ||  mcIndex >= fNLabel ||  !fClusterMCEdepFraction ) return 0. ;
 
-  //if ( mcIndex < 0 ||  mcIndex >= fNLabel ||  !fClusterMCEdepFraction ) return 0. ;
-
-  //return  fClusterMCEdepFraction[mcIndex]/100. ; 
-  return 0;
+  return  fClusterMCEdepFraction[mcIndex]/100. ; 
 }
 
 ///
@@ -314,16 +311,17 @@ Float_t  AliAODCluster::GetClusterMCEdepFraction(Int_t mcIndex) const
 //______________________________________________________________________________
 void  AliAODCluster::SetClusterMCEdepFractionFromEdepArray(Float_t *array)
 {
-  if ( GetNLabels() <= 0 || !array ) return ;
+  if ( fNLabel <= 0 || !array ) return ;
   
   fClusterMCEdepFraction = new  UShort_t[fNLabel];
   
   // Get total deposited energy (can be different from reconstructed energy)
   Float_t totalE = 0;
   for (Int_t i = 0; i < fNLabel; i++) totalE+=array[i];
-  
+
+  // Set the fraction of energy per MC contributor in %
   for (Int_t i = 0; i < fNLabel; i++) 
-    fClusterMCEdepFraction[i] = TMath::Nint(array[i]/E()*100.);
+    fClusterMCEdepFraction[i] = TMath::Nint(array[i]/totalE*100.);
 }
 
 ///
@@ -341,7 +339,7 @@ void  AliAODCluster::SetClusterMCEdepFraction(UShort_t *array)
   if ( fNLabel <= 0 || !array ) 
     return ;
 
-  fClusterMCEdepFraction = new  UShort_t[GetNLabels()];
+  fClusterMCEdepFraction = new  UShort_t[fNLabel];
   
   for (Int_t i = 0; i < fNLabel; i++) 
     fClusterMCEdepFraction[i] = array[i];
