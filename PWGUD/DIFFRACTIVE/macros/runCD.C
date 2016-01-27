@@ -4,7 +4,7 @@
 // please use this macro to run jobs on grid for preselected events
 //------------------------------------------------------------------
 // Author: Taesoo Kim, Beomkyu Kim
-// email:  beomkyu.kim@cern.ch
+// email:  kimb@cern.ch
 //
 
 // good-run list of LHC10b period : 33, 7 TeV
@@ -25,7 +25,7 @@ const int LHC15fRuns[]={225011,225016,225026,225031,225035,225037,225041,225043,
 class AliAnalysisGrid;
 void runCD(
       const char *taskname = "CD"
-    , const char *option = "LHC10c" // LHC10b or c or d or e or LHC15f
+    , const char *option = "LHC10b" // LHC10b or c or d or e or LHC15f
     , const char *gridmode = "full" // or "terminate" to merge
     )
 {
@@ -46,7 +46,7 @@ void runCD(
     plugin->SetAliPhysicsVersion("vAN-20160126-1");
     plugin->SetDropToShell(0);
     plugin->SetRunPrefix("000");
-    plugin->SetNrunsPerMaster(10);
+    plugin->SetNrunsPerMaster(1);
     plugin->SetOutputToRunNo();
     
     TString foption = option;
@@ -76,8 +76,8 @@ void runCD(
     plugin->SetGridOutputDir("out");
     plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
     plugin->SetDefaultOutputs(kFALSE);
-    plugin->SetOutputFiles("AnalysisResults.root");
-    plugin->SetSplitMaxInputFileNumber(100);
+    plugin->SetOutputFiles("AnalysisResults.root tree.root");
+    plugin->SetSplitMaxInputFileNumber(1000);
     plugin->SetMasterResubmitThreshold(90);
 
     // Optionally set time to live (default 30000 sec)
@@ -109,19 +109,30 @@ void runCD(
     AliAnalysisTaskSE *task;
  
     if (foption.Contains("LHC15f")){
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGUD/DIFFRACTIVE/legotrain/AddTaskCDPWA.C");
-        task = AddTaskCDPWA();
+        AliInputEventHandler* hdl = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+        if (hdl) hdl->SetNeedField(kTRUE); 
+        task = ew AliAnalysisTaskCDPWA("ESD");
     } else {
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
         AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0);
         if(!physSelTask) { Printf("no physSelTask"); return; }
 
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGUD/DIFFRACTIVE/legotrain/AddTaskCDTree.C");
-        task = AddTaskCDTree();
+        task = new AliAnalysisTaskCDTree("ESD");
+        task->SelectCollisionCandidates(AliVEvent::kMB);
     }
 
-    mgr->AddTask(task);
     
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TTree::Class(), AliAnalysisManager::kOutputContainer,"tree.root");
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    
+    mgr->AddTask(task);
+    mgr->ConnectInput(task, 0, cinput);
+    mgr->ConnectOutput(task, 1, coutput);
+    mgr->ConnectOutput(task, 2, coutput2);
+
+
     // enable debug printouts
     mgr->SetDebugLevel(2);
     if (!mgr->InitAnalysis()) return;
