@@ -1885,6 +1885,9 @@ goMakeSummary()
   # the destination, as they were transferred here by Makeflow/Work Queue.
   dirSnapshotExclusion=$(for f in *; do echo -n "$f|"; done)
 
+  echo "[goMakeSummary] Exclusion list: those files are already here and will not be copied to destination: $dirSnapshotExclusion"
+  echo "[goMakeSummary] List of $PWD:" ; find . -ls ; echo
+
   # Summarize the global stuff
   echo "env script: ${alirootSource} ${alirootEnv}"
   echo "ALICE_ROOT=${ALICE_ROOT}"
@@ -2031,8 +2034,10 @@ EOF
   goPrintValues stacktrace.log remote.cpass0.stacktrace.list "$metadir"/*cpass0*done &>/dev/null
   goPrintValues stacktrace.log remote.cpass1.stacktrace.list "$metadir"/*cpass1*done &>/dev/null
   goPrintValues esd remote.cpass1.esd.list "$metadir"/*cpass1*done &> /dev/null
+
+  echo "[goMakeSummary] List of $PWD (after goPrintValues):" ; find . -ls ; echo
  
-  #copy all the files to a local dir tree
+  # Copy all the files to a local dir tree.
   for remoteList in remote.qa.list \
                     remote.calib.list \
                     remote.trending.list \
@@ -2050,6 +2055,8 @@ EOF
     done < <(cat "$remoteList")
   done
 
+  echo "[goMakeSummary] List of $PWD (after copying remote lists locally):" ; find . -ls ; echo
+
   #summarize the stacktraces
   stackTraceTree @stacktraces.cpass0.list > stacktrace_cpass0.tree
   stackTraceTree @stacktraces.cpass1.list > stacktrace_cpass1.tree
@@ -2058,15 +2065,21 @@ EOF
   rm -f trending.root
   goMerge trending.list trending.root ${configFile} "${extraOpts[@]}" &> mergeTrending.log
 
+  echo "[goMakeSummary] List of $PWD (after merging trending):" ; find . -ls ; echo
+
   printExec goMakeSummaryTree "${metadir}" 0
   printExec goMakeSummaryTree "${metadir}" 1 
 
-  # Checked until this point.
+  echo "[goMakeSummary] List of $PWD (after making summary tree):" ; find . -ls ; echo
 
   goCreateQAplots "${PWD}/qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/filtering.list" &>createQAplots.log
 
+  echo "[goMakeSummary] List of $PWD (after creation of QA plots):" ; find . -ls ; echo
+
   #make a merged summary tree out of the QA trending, dcs trees and log summary trees
   goMakeMergedSummaryTree
+
+  echo "[goMakeSummary] List of $PWD (after making merged summary tree):" ; find . -ls ; echo
 
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
@@ -2074,6 +2087,7 @@ EOF
   # Copy all, recursively, with the exception of snapshotted files already present when this
   # was called.
   while read cpdir; do
+    echo ; echo ; echo "==> Copying all from directory $cpdir"
     [[ "$cpdir" == .  && "$dirSnapshotExclusion" != '' ]] \
       && copyFileToRemote ./!($dirSnapshotExclusion) $commonOutputPath/ \
       || copyFileToRemote $cpdir/* $commonOutputPath/$cpdir
