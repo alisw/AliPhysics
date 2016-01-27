@@ -543,6 +543,24 @@ goMergeCPass()
   echo Start: goMergeCPass${cpass}
   alilog_info "[BEGIN] goMergeCPass${cpass}() with following parameters $*"
 
+  # Copy all the files to a local dir tree. Replace remote file names in the lists with their local
+  # versions.
+  for remoteList in $calibrationFilesToMerge \
+                    $qaFilesToMerge \
+                    $filteredFilesToMerge; do
+    localList=local.${remoteList}
+    rm -f "$localList" && touch "$localList"
+    while read sourceFile; do
+      destinationFile="${PWD}/${sourceFile#${baseOutputDirectory}}"
+      copyFileFromRemote "$sourceFile" "$(dirname "${destinationFile}")" && \
+        echo "$destinationFile" >> "$localList"
+    done < <(cat "$remoteList")
+  done
+  # Subsequent calls will use the local.* version of those files.
+  calibrationFilesToMerge=local.${calibrationFilesToMerge}
+  qaFilesToMerge=local.${qaFilesToMerge}
+  filteredFilesToMerge=local.${filteredFilesToMerge}
+
   # Record the working directory provided by the batch system.
   batchWorkingDirectory=$PWD
 
@@ -612,6 +630,7 @@ goMergeCPass()
 
     1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${qaFilesToMerge}"
+                         "${batchWorkingDirectory}/${filteredFilesToMerge}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
