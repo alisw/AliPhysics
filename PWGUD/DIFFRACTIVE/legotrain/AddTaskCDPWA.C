@@ -12,6 +12,10 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 		Error("AddTask_CDPWA", "This task requires an input event handler");
 		return 0;
 	}
+	//ESD handler
+	AliInputEventHandler* hdl = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+	if (hdl) hdl->SetNeedField(kTRUE);
+
 	TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 	Bool_t isMC = kFALSE;
 	if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
