@@ -10,11 +10,12 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   };
 
   enum DataSet {
-    kLHC10h  = 0,
-    kLHC11a  = 1,
-    kLHC11c  = 3,
-    kLHC11d  = 3,
-    kLHC11h  = 3
+    kLHC10bcde  = 0,
+    kLHC10h     = 0,
+    kLHC11a     = 1,
+    kLHC11c     = 3,
+    kLHC11d     = 3,
+    kLHC11h     = 3
   };
 
   CutsType cutsType = kHybrid;
@@ -32,24 +33,26 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
     cutsType = kTpcOnly;
     cutsLabel = "TPC only constrained tracks";
   } else {
-    ::Warning("AddTaskEmcalEsdTpcTrack", "Cuts type not recognized, will assume Hybrid");
+    ::Warning("AddTaskEmcalEsdTrackFilter", "Cuts type not recognized, will assume Hybrid");
   }
 
   if (strTrackCuts.Contains("lhc10h")) {
     dataSet = kLHC10h;
     dataSetLabel = "LHC10h";
+  } else if (strTrackCuts.Contains("lhc10b") || strTrackCuts.Contains("lhc10c") ||
+      strTrackCuts.Contains("lhc10d") || strTrackCuts.Contains("lhc10e")) {
+    dataSet = kLHC10bcde;
+    dataSetLabel = "LHC10bcde";
   } else if (strTrackCuts.Contains("lhc11a") || strTrackCuts.Contains("lhc12a15a")) {
     dataSet = kLHC11a;
     dataSetLabel = "LHC11a";
-  } else if (strTrackCuts.Contains("lhc10e")   ||  strTrackCuts.Contains("lhc10d")   ||
-	     strTrackCuts.Contains("lhc10e20") ||  strTrackCuts.Contains("lhc10f6a") ||
-	     strTrackCuts.Contains("lhc11a1a") ||  strTrackCuts.Contains("lhc11a1b") ||
+  } else if (strTrackCuts.Contains("lhc11a1a") ||  strTrackCuts.Contains("lhc11a1b") ||
 	     strTrackCuts.Contains("lhc11a1c") ||  strTrackCuts.Contains("lhc11a1d") ||
 	     strTrackCuts.Contains("lhc11a1e") ||  strTrackCuts.Contains("lhc11a1f") ||
 	     strTrackCuts.Contains("lhc11a1g") ||  strTrackCuts.Contains("lhc11a1h") ||
 	     strTrackCuts.Contains("lhc11a1i") ||  strTrackCuts.Contains("lhc11a1j")) {
     dataSet = kLHC11a;
-    dataSetLabel = "LHC10e";
+    dataSetLabel = "LHC11a";
   } else if (strTrackCuts.Contains("lhc11c")) {
     dataSet = kLHC11c;
     dataSetLabel = "LHC11c";
@@ -102,14 +105,14 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
     dataSet = kLHC11h;
     dataSetLabel = "LHC14a1";
   } else {
-    ::Warning("AddTaskEmcalEsdTpcTrack", "Dataset not recognized, will assume LHC11h");
+    ::Warning("AddTaskEmcalEsdTrackFilter", "Dataset not recognized, will assume LHC11h");
   }
 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskEmcalEsdTpcTrack", "No analysis manager to connect to.");
+    ::Error("AddTaskEmcalEsdTrackFilter", "No analysis manager to connect to.");
     return NULL;
   }  
   
@@ -117,12 +120,12 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   //==============================================================================
   AliVEventHandler *evhand = mgr->GetInputEventHandler();
   if (!evhand) {
-    ::Error("AddTaskEmcalEsdTpcTrack", "This task requires an input event handler");
+    ::Error("AddTaskEmcalEsdTrackFilter", "This task requires an input event handler");
     return NULL;
   }
   
   if (!evhand->InheritsFrom("AliESDInputHandler")) {
-    ::Info("AddTaskEmcalEsdTpcTrack", "This task is only needed for ESD analysis. No task added.");
+    ::Info("AddTaskEmcalEsdTrackFilter", "This task is only needed for ESD analysis. No task added.");
     return NULL;
   }
   
