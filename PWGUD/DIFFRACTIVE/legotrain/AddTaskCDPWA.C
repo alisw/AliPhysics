@@ -48,8 +48,10 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TTree::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+	AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TTree::Class(), AliAnalysisManager::kOutputContainer,
+			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer,
+			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
 
 	// Add task
 	mgr->AddTask(task);
