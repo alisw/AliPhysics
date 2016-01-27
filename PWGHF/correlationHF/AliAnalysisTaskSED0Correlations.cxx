@@ -1192,12 +1192,12 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   	  //Modify n of bins with fast speed: in the "for" loop since bins can depend on pT (e.g. mass bin)
     //setting of mass bin is done at the end of the loop!
     if(fSpeed) { //these with fast speed
-      if(i<9) {nBinsPhi[0] = 32; nBinsPhi[1] = 67; nBinsPhi[2] = 3; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
+      if(i>=9) {nBinsPhi[0] = 32; nBinsPhi[1] = 67; nBinsPhi[2] = 3; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
       else {nBinsPhi[0] = 32; nBinsPhi[1] = 43; nBinsPhi[2] = 3; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
       binMinPhi[0] = -TMath::Pi()/2.; binMinPhi[1] = 1.5848; binMinPhi[2] = 0.; binMinPhi[3] = 0.; binMinPhi[4] = -1.6;
       binMaxPhi[0] = 3.*TMath::Pi()/2.; binMaxPhi[1] = 2.1848; binMaxPhi[2] = 1.5; binMaxPhi[3] = 3.; binMaxPhi[4] = 1.6;
     
-      if(i<9) {nBinsMix[0] = 32; nBinsMix[1] = 67; nBinsMix[2] = 16; nBinsMix[3] = 3;}
+      if(i>=9) {nBinsMix[0] = 32; nBinsMix[1] = 67; nBinsMix[2] = 16; nBinsMix[3] = 3;}
       else {nBinsMix[0] = 32; nBinsMix[1] = 43; nBinsMix[2] = 16; nBinsMix[3] = 3;} 
       binMinMix[0] = -TMath::Pi()/2.; binMinMix[1] = 1.5848; binMinMix[2] = -1.6; binMinMix[3] = 0.;
       binMaxMix[0] = 3.*TMath::Pi()/2.; binMaxMix[1] = 2.1848; binMaxMix[2] = 1.6; binMaxMix[3] = 1.5;
@@ -1342,7 +1342,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
         //modify here the mass axis of THnSparse! 
         if(fSpeed) {
       	  Int_t nBins; Double_t mBin;      
-      	  if(i<9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
+      	  if(i>=9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
       	    nBins = 67;
       	    mBin = 1.7488;
       	  }
@@ -1528,7 +1528,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
          //modify here the mass axis of THnSparse! 
         if(fSpeed) {
       	  Int_t nBins; Double_t mBin;      
-      	  if(i<9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
+      	  if(i>=9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
       	    nBins = 67;
       	    mBin = 1.7488;
       	  }
