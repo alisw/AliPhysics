@@ -489,13 +489,14 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC10h;
   } else if (strPeriod == "lhc11a" || strPeriod == "lhc12a15a") {
     dataSet = kLHC11a;
-  } else if (strPeriod == "lhc10e"   ||  strPeriod == "lhc10d"   ||
-       strPeriod == "lhc10e20" ||  strPeriod == "lhc10f6a" ||
-       strPeriod == "lhc11a1a" ||  strPeriod == "lhc11a1b" ||
-       strPeriod == "lhc11a1c" ||  strPeriod == "lhc11a1d" ||
-       strPeriod == "lhc11a1e" ||  strPeriod == "lhc11a1f" ||
-       strPeriod == "lhc11a1g" ||  strPeriod == "lhc11a1h" ||
-       strPeriod == "lhc11a1i" ||  strPeriod == "lhc11a1j") {
+  } else if (strPeriod == "lhc10b" || strPeriod == "lhc10c" ||
+      strPeriod == "lhc10d" || strPeriod == "lhc10e") {
+    dataSet = kLHC10bcde;
+  } else if (strPeriod == "lhc11a1a" ||  strPeriod == "lhc11a1b" ||
+      strPeriod == "lhc11a1c" ||  strPeriod == "lhc11a1d" ||
+      strPeriod == "lhc11a1e" ||  strPeriod == "lhc11a1f" ||
+      strPeriod == "lhc11a1g" ||  strPeriod == "lhc11a1h" ||
+      strPeriod == "lhc11a1i" ||  strPeriod == "lhc11a1j") {
     dataSet = kLHC11a;
   } else if (strPeriod == "lhc11c") {
     dataSet = kLHC11c;
@@ -560,6 +561,7 @@ void AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(AliEmcalTrackSelection* t
   }
   case kLHC10h:
   case kLHC11a:
+  case kLHC10bcde:
   {
     /* hybrid track cuts*/
     AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(kGlobalTracksNClsPtDepNoSPDNoPtCut, kSPDAny);

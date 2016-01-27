@@ -20,12 +20,13 @@ class TString;
 class AliEmcalESDTrackCutsGenerator {
 public:
   enum EDataSet_t {
-    kUnknown = 0,
-    kLHC10h  = 1,
-    kLHC11a  = 2,
-    kLHC11c  = 3,
-    kLHC11d  = 4,
-    kLHC11h  = 5
+    kUnknown   = 0,
+    kLHC10bcde = 1,
+    kLHC10h    = 2,
+    kLHC11a    = 3,
+    kLHC11c    = 4,
+    kLHC11d    = 5,
+    kLHC11h    = 6
   };
 
   enum EStdCutMode_t {
