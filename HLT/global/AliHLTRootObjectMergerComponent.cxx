@@ -27,6 +27,7 @@
 #include "AliHLTMessage.h"
 #include "TList.h"
 #include "TClass.h"
+#include "AliAnalysisDataContainer.h"
 
 using namespace std;
 
@@ -221,6 +222,26 @@ void AliHLTRootObjectMergerComponent::ClearBuffers(void* buffer, bool isMergeObj
 	else
 	{
 		MergeObjectStruct* tmp = (MergeObjectStruct*) buffer;
+		
+		TIter next(tmp->fList);
+		while (TObject *obj = next())
+		{
+			TObjArray* objArray = (TObjArray*) dynamic_cast<const TObjArray*>(obj);
+			if (objArray != NULL)
+			{
+				for (int i = 0;i <= objArray->GetLast();i++)
+				{
+					AliAnalysisDataContainer* tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*objArray)[i]);
+					if (tmpContainer != NULL)
+					{
+						tmpContainer->SetDataOwned(kTRUE);
+						tmpContainer->DeleteData();
+					}
+				}
+				objArray->Delete();
+			}
+		}
+		
 		tmp->fList->Delete();
 		delete tmp->fList;
 		if (!fCumulative) delete tmp->fObject;
@@ -336,7 +357,10 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 		{
 			HLTImportant("Root objects merging from %d inputs", nInputs);
 		}
-		fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, objectForAsyncProcessor);
+		if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, objectForAsyncProcessor))
+		{
+			ClearBuffers(objectForAsyncProcessor);
+		}
 	}
 	
 	if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
