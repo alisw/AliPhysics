@@ -67,6 +67,7 @@
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "TParticle.h"
+#include <TPDGCode.h>
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 
@@ -222,6 +223,7 @@ evplaneMC(999.),
   fV2(kTRUE),
  fV3(kFALSE),
  fIsAfter2011(kTRUE),
+ kNCent_ds(-1),
   fRun(-1),
   fNcluster(70),
  fEPdet("V0A"),  
@@ -261,6 +263,8 @@ fPhiRPv0Cv3(NULL),
   fProtonPt(0),
   fProtonEta(0),
   fProtonPhi(0),
+ kShortSigmahisto(0),
+LambdaSigmahisto(0),
 fHistdEdxVsPTPCbeforePIDelectron(NULL),
   fHistNSigmaTPCvsPtbeforePIDelectron(NULL),
   fHistdEdxVsPTPCafterPIDelectron(NULL),
@@ -279,6 +283,7 @@ fHistdEdxVsPTPCbeforePIDelectron(NULL),
   fArrayMC(0),
   fAnalysisType("AOD"), 
   fefffilename(""),
+ ffilenamesigmaV0(""),
  ftwoTrackEfficiencyCutDataReco(kTRUE),
 fTwoTrackCutMinRadius(0.8),
 fTwoTrackCutMaxRadius(2.5),
@@ -348,10 +353,11 @@ fAnalysisUtils(0x0),
   fHistFinalPtCentInvK0s(0x0),
   fHistFinalPtCentInvLambda(0x0),
   fHistFinalPtCentInvAntiLambda(0x0),
+ fCtauCut3D(kTRUE),
   NCtau(3.0),
 fCutctauK0s(2.68),
-  fCutctauLambda(7.8),
-  fCutctauAntiLambda(7.8),
+  fCutctauLambda(7.89),
+  fCutctauAntiLambda(7.89),
   fRapCutK0s(0.7),
   fRapCutLambda(0.7),
 fDaugNClsTPC(70),
@@ -365,8 +371,9 @@ fDaugNClsTPC(70),
  fProtondeltacutmax(-14),
  deltapion_val(-999999)
 
-{ 
- for ( Int_t i = 0; i < 16; i++) { 
+{
+ 
+  for ( Int_t i = 0; i < 16; i++) { 
     fHistQA[i] = NULL;
   }
 
@@ -528,6 +535,7 @@ evplaneMC(999.),
  fV2(kTRUE),
  fV3(kFALSE),
  fIsAfter2011(kTRUE),
+   kNCent_ds(-1),
   fRun(-1),
   fNcluster(70),
    fEPdet("V0A"),  
@@ -567,6 +575,8 @@ fPhiRPv0Cv3(NULL),
   fProtonPt(0),
   fProtonEta(0),
   fProtonPhi(0),
+  kShortSigmahisto(0),
+LambdaSigmahisto(0),
      fHistdEdxVsPTPCbeforePIDelectron(NULL),
   fHistNSigmaTPCvsPtbeforePIDelectron(NULL),
   fHistdEdxVsPTPCafterPIDelectron(NULL),
@@ -585,6 +595,7 @@ fPhiRPv0Cv3(NULL),
   fArrayMC(0),
   fAnalysisType("AOD"),
   fefffilename(""),
+  ffilenamesigmaV0(""),
   ftwoTrackEfficiencyCutDataReco(kTRUE),
 fTwoTrackCutMinRadius(0.8),
 fTwoTrackCutMaxRadius(2.5),
@@ -654,10 +665,11 @@ fRemoveDuplicates(kFALSE),
   fHistFinalPtCentInvK0s(0x0),
   fHistFinalPtCentInvLambda(0x0),
   fHistFinalPtCentInvAntiLambda(0x0),
+  fCtauCut3D(kTRUE),
   NCtau(3.0),
 fCutctauK0s(2.68),
-  fCutctauLambda(7.8),
-  fCutctauAntiLambda(7.8),
+  fCutctauLambda(7.89),
+  fCutctauAntiLambda(7.89),
   fRapCutK0s(0.7),
   fRapCutLambda(0.7),
 fDaugNClsTPC(70),
@@ -1044,7 +1056,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
  }
   if(fcontainPIDtrig){
     /*
-      if(fV0TrigCorr){
+      if(fV0TrigCorr){//Invariant mass axis instead of Pid binning axis
 	
        	if(fLambda) defaultBinningStr += "InvariantMass:1.065,1.066,1.067,1.068,1.069,1.07,1.071,1.072,1.073,1.074,1.075,1.076,1.077,1.078,1.079,1.08,1.081,1.082,1.083,1.084,1.085,1.086,1.087,1.088,1.089,1.09,1.091,1.092,1.093,1.094,1.095,1.096,1.097,1.098,1.099,1.1,1.101,1.102,1.103,1.104,1.105,1.106,1.107,1.108,1.109,1.11,1.111,1.112,1.113,1.114,1.115,1.116,1.117,1.118,1.119,1.12,1.121,1.122,1.123,1.124,1.125,1.126,1.127,1.128,1.129,1.13,1.131,1.132,1.133,1.134,1.135,1.136,1.137,1.138,1.139,1.14,1.141,1.142,1.143,1.144,1.145,1.146,1.147,1.148,1.149,1.15,1.151,1.152,1.153,1.154,1.155,1.156,1.157,1.158,1.159,1.16,1.161,1.162,1.163,1.164,1.165\n";
 	
@@ -1053,7 +1065,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
 	
   }
     */
-    defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5\n"; // course
+    defaultBinningStr += "PIDTrig: -0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5\n"; // course
   }
   
   if(fcontainPIDasso){
@@ -1064,6 +1076,20 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
       defaultBinningStr += "TrigCharge: -2.0,0.0,2.0\n"; // course
       defaultBinningStr += "AssoCharge: -2.0,0.0,2.0\n"; // course
   }
+
+  /*  if(fV0TrigCorr){//default values are PbPb(cent:0,5,10,20,40,60,100)
+
+      defaultBinningStr += "kK0sa0: 3.63508e-03, 3.66158e-03, 3.60326e-03, 3.50492e-03, 3.45697e-3, 3.29805e-03\n"; // course
+      defaultBinningStr += "kK0sa1: 6.28389e-04, 5.76389e-04, 5.66960e-04, 5.56158e-04, 5.37069e-4, 5.78176e-04\n"; // course
+      defaultBinningStr += "kK0sa2: 6.28389e-04, 5.76389e-04, 5.66960e-04, 5.56158e-04, 5.37069e-4, 5.78176e-04\n"; // course
+      defaultBinningStr += "kLambdaa0: 1.27024e-03, 1.26385e-03, 1.27434e-03, 1.27346e-03, 1.25620e-03, 1.26722e-03\n"; // course
+      defaultBinningStr += "kLambdaa1: 2.221058e-4,  2.12986e-04, 1.97638e-04, 1.72958e-04, 1.74241e-04, 1.98560e-04\n"; // course
+      defaultBinningStr += "kLambdaa2: 2.221058e-4,  2.12986e-04, 1.97638e-04, 1.72958e-04, 1.74241e-04, 1.98560e-04\n"; // course
+      defaultBinningStr += "kAntiLambdaa0: 1.27024e-03, 1.26385e-03, 1.27434e-03, 1.27346e-03, 1.25620e-03, 1.26722e-03\n"; // course
+      defaultBinningStr += "kAntiLambdaa1: 2.221058e-4,  2.12986e-04, 1.97638e-04, 1.72958e-04, 1.74241e-04, 1.98560e-04\n"; // course
+      defaultBinningStr += "kAntiLambdaa2: 2.221058e-4,  2.12986e-04, 1.97638e-04, 1.72958e-04, 1.74241e-04, 1.98560e-04\n"; // course
+
+      }*/
  // =========================================================
   // Customization (adopted from AliUEHistograms)
   // =========================================================
@@ -1088,7 +1114,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
   // =========================================================
 
     dBinsPair[0]       = GetBinning(fBinningString, "multiplicity", iBinPair[0]);
-    axisTitlePair[0]   = " multiplicity";
+    axisTitlePair[0]   = "multiplicity";
 
     dBinsPair[1]     = GetBinning(fBinningString, "vertex", iBinPair[1]);
     axisTitlePair[1]  = "v_{Z} (cm)"; 
@@ -1123,7 +1149,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
 
  if(fcontainPIDtrig && !fcontainPIDasso){
    /*
-   if(fV0TrigCorr){
+   if(fV0TrigCorr){//Invariant mass axis instead of Pid binning axis
     dBinsPair[dim_val]       = GetBinning(fBinningString, "InvariantMass", iBinPair[dim_val]);
     axisTitlePair[dim_val]   = "InvariantMass"; 
    }
@@ -1159,7 +1185,7 @@ defaultBinningStr += "eventPlanemixing: 0.0*TMath::DegToRad(), 30.0*TMath::DegTo
 
 if(fcontainPIDtrig && fcontainPIDasso){
   /*
-   if(fV0TrigCorr){
+   if(fV0TrigCorr){//Invariant mass axis instead of Pid binning axis
     dBinsPair[dim_val]       = GetBinning(fBinningString, "InvariantMass", iBinPair[dim_val]);
     axisTitlePair[dim_val]   = "InvariantMass"; 
    }
@@ -1201,6 +1227,44 @@ if(fcontainPIDtrig && fcontainPIDasso){
         fmaxPtAsso=dBinsPair[3][iBinPair[3]];
         fmincentmult=dBinsPair[0][0];
         fmaxcentmult=dBinsPair[0][iBinPair[0]];
+
+ //centrality binning for lambda , kshort a0,a1 factor//*********************************hardcoded values in array, be carefu
+
+	/*Int_t Cent_ds  = -1;
+        kBinCent_ds=GetBinning(fBinningString, "multiplicity", Cent_ds);
+	kNCent_ds=Cent_ds;*/
+
+	/*if(fV0TrigCorr){
+	   
+        Int_t ka0  = -1;
+        kK0s_a0=GetBinning(fBinningString, "kK0sa0", ka0);
+
+	Int_t ka1  = -1;
+        kK0s_a1=GetBinning(fBinningString, "kK0sa1", ka1);
+	
+	Int_t ka2  = -1;
+        kK0s_a2=GetBinning(fBinningString, "kK0sa2", ka2);
+
+	Int_t La0  = -1;
+        kLambda_a0=GetBinning(fBinningString, "kLambdaa0", La0);
+
+	Int_t La1  = -1;
+        kLambda_a1=GetBinning(fBinningString, "kLambdaa1", La1);
+
+        Int_t La2  = -1;
+        kLambda_a2=GetBinning(fBinningString, "kLambdaa2", La2);
+	
+	Int_t ALa0  = -1;
+        kAntiLambda_a0=GetBinning(fBinningString, "kAntiLambdaa0", ALa0);
+
+        Int_t ALa1  = -1;
+        kAntiLambda_a1=GetBinning(fBinningString, "kAntiLambdaa1", ALa1);
+
+	 Int_t ALa2  = -1;
+        kAntiLambda_a2=GetBinning(fBinningString, "kAntiLambdaa2", ALa2);
+
+	 }*/
+//****************************************************************************************************************//
 
 	//event pool manager
 Int_t MaxNofEvents=1000;
@@ -1507,6 +1571,26 @@ for(Int_t jj=0;jj<2;jj++)// PID type binning
     }
 //Mixing
 //DefineEventPool();
+
+
+  if(fV0TrigCorr){
+
+    // TFile *fsifile1= TFile::Open(ffilenamesigmaV0);
+
+     
+    if (TString(ffilenamesigmaV0).BeginsWith("alien:"))
+    TGrid::Connect("alien:");
+    TFile *fsifile1=TFile::Open(ffilenamesigmaV0);
+ 
+kShortSigmahisto = (TH2F*)fsifile1->Get("v0MassSigmaCent_KS0");
+LambdaSigmahisto = (TH2F*)fsifile1->Get("v0MassSigmaCent_LAM");
+
+kShortSigmahisto->SetDirectory(0);
+LambdaSigmahisto->SetDirectory(0);
+
+ fsifile1->Close();
+
+  }
 
   if(fapplyTrigefficiency || fapplyAssoefficiency)
    {
@@ -4148,6 +4232,47 @@ if(parpid==SpPion || parpid==SpKaon)
 }
 //---------------------------------------------------------------------------------
 
+
+
+Float_t AliTwoParticlePIDCorr::GetV0_MeanSigma_CentPt(Double_t cent, Float_t V0Pt, Int_t parpid)
+{
+
+ Int_t effVars[2];
+ Float_t effvalue=1.; 
+
+  if(parpid==0)
+            {
+	      effVars[0] = kShortSigmahisto->GetXaxis()->FindBin(cent);
+	      effVars[1] = kShortSigmahisto->GetYaxis()->FindBin(V0Pt); 
+            effvalue=kShortSigmahisto->GetBinContent(effVars[0],effVars[1]);
+	    }
+
+if(parpid==1)
+            {
+	      effVars[0] = LambdaSigmahisto->GetXaxis()->FindBin(cent);
+	      effVars[1] = LambdaSigmahisto->GetYaxis()->FindBin(V0Pt); 
+	      effvalue=LambdaSigmahisto->GetBinContent(effVars[0],effVars[1]);
+	    }
+
+ if(effvalue<=0.) {
+
+   if  (fSampleType=="PbPb") {
+     if(parpid==0)   effvalue=0.007;//average no. , no meaning , just for protection
+     if(parpid==1)   effvalue=0.0024;//average no. , no meaning , just for protection
+   }
+
+   if  (fSampleType=="pPb") {
+     if(parpid==0)   effvalue=0.0055;//average no. , no meaning , just for protection//Check and change for pPb
+     if(parpid==1)   effvalue=0.0021;//average no. , no meaning , just for protection
+   }
+ }
+       return effvalue; 
+
+
+}
+
+
+//____________________________________________________________________________________________
 Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield, Bool_t fill)
 {  
  
@@ -5174,7 +5299,7 @@ if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V
 
       if(!fPPVsMultUtils)
       fPPVsMultUtils=new AliPPVsMultUtils();
-     
+             
      if(fPPVsMultUtils){
        
        cent_v0 = fPPVsMultUtils->GetMultiplicityPercentile(mainevent,fCentralityMethod.Data(),fPileUp_zvtx_INEL_evsel);
@@ -5196,8 +5321,8 @@ if(fCentralityMethod=="V0M" || fCentralityMethod=="V0A" || fCentralityMethod=="V
   fHistCentStats->Fill(5.,fAnalysisUtils->GetMultiplicityPercentile((AliVEvent*)event,"V0MEq"));//only available for LHC10d at present (Quantile info)
   */
      }
-  	else cent_v0 = -1;
-
+    else cent_v0 = -1;
+   
       }
            
 else if(fSampleType=="pPb" || fSampleType=="PbPb")
@@ -5228,6 +5353,21 @@ else if(fSampleType=="pPb" || fSampleType=="PbPb")
 
  else if(fCentralityMethod=="V0M_MANUAL" || fCentralityMethod=="V0A_MANUAL" || fCentralityMethod=="V0C_MANUAL" || fCentralityMethod=="TRACKS_MANUAL" || shift_to_TRACKS_MANUAL)//data or RecoMc and also for TRUTH
    {
+
+
+     if(fSampleType=="pp_7") {
+        
+
+	 cent_v0=AliPPVsMultUtils::GetStandardReferenceMultiplicity(mainevent); 
+       // fHistRefMult08 -> Fill ( AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ) ); 
+
+	 if(cent_v0>0) fHistRefmult->Fill(1.,cent_v0);
+
+
+     }
+
+
+   else{//for pPb and PbPb only
      if(!truth){//for data or RecoMC
        cent_v0 = GetReferenceMultiplicityVZEROFromAOD((AliVEvent*)event);
    }//for data or RecoMC
@@ -5312,6 +5452,8 @@ isduplicate=kTRUE;
  else      cent_v0=gRefMultiplicityTPC_Truth;
 
     }//condition for TRUTH case
+
+   }//condition for else(sampletype other than pp_7 ends)
 
    }//end of MANUAL method
 
@@ -5453,16 +5595,32 @@ fHistQA[0]->Fill((gVertexArray.At(0)));fHistQA[1]->Fill((gVertexArray.At(1)));fH
 
 	      }//Vz cut
 	    }//Vy cut
-	  }//Vx cut
-	}//header    
-      }//MC event object
-    }//MC
+	  }//Vx cut	   
+      }//MC event header
+    }//MC event object
+   }//MC
 
     else  if(fAnalysisType == "MCAOD" || fAnalysisType == "AOD"){// if(fAnalysisType == "MCAOD" || fAnalysisType == "AOD"
   //vertex selection(is it fine for PP?)
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
+  if(fSampleType=="pp_7"){
+    
+    if(!fPPVsMultUtils) fPPVsMultUtils=new AliPPVsMultUtils();
+    Bool_t eventselected=kFALSE;
+    eventselected = fPPVsMultUtils->IsEventSelected(aod); 
+
+      if(eventselected){
+
+    gRefMultiplicity = GetRefMultiOrCentrality((AliVEvent*)aod,kFALSE);
+    //count events having proper centrality/ref multiplicity
+    if(gRefMultiplicity>0) fEventCounter->Fill(9);
+      }
+      
+      else gRefMultiplicity=-1;
+    }
 
 
+  else{//for pPb and PbPb
  // check first event in chunk (is not needed for new reconstructions)
   if(fCheckFirstEventInChunk){
     AliAnalysisUtils ut;
@@ -5489,10 +5647,11 @@ fHistQA[0]->Fill((gVertexArray.At(0)));fHistQA[1]->Fill((gVertexArray.At(1)));fH
    zvtx = trkVtx->GetZ();
   const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
   if (!spdVtx || spdVtx->GetNContributors()<=0) return -1;
+  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return -1;
+  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return -1;
    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return -1;
   }
   else if(fVertextype==2) {//for pp and pb-pb case ,used in AliAnalysisTaskPhiCorelations.cxx
@@ -5571,7 +5730,8 @@ fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]
 //count events after rejection due to centrality weighting
   fEventCounter->Fill(11);
 
-    }
+  }//pPb and PbPb condition ends
+    }//AOD or MCAOD ends
     else gRefMultiplicity=-1;
 
   return gRefMultiplicity;
@@ -6084,12 +6244,29 @@ if(fRequestEventPlane){
  }
 }
 
+
+
+
+//___________________________________________________________________________________________
+
+/* Int_t AliTwoParticlePIDCorr::GetCentBin(Double_t cent)
+{
+  Int_t bin = -1;
+  for(Int_t i=0;i<kNCent_ds;i++)
+    if ( (cent>=kBinCent_ds[i]) && (cent<kBinCent_ds[i+1]) )
+      bin = i;
+
+  return bin;
+
+  }*/
 //____________________________________________________________________________________________________
 
 TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centrality)
-{
+{//Only consider V0 particles having V0Pt>=2.0 GeV/C , REMEMBER that to chenge in case of change in Pt selection...Also note the Pt range in efficiency histogram
 
   AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(event);
+
+  // Int_t curCentBin = GetCentBin(Centrality);//Now not used, previously used for centrality bin wise storage of ao, a1, a2- pol2 fit values of invariant mass fit sigmas
 
  //function to select v0's from AODs
   trkVtx=fAOD->GetPrimaryVertex();
@@ -6105,6 +6282,13 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     AliAODv0 *v0=fAOD->GetV0(iV0);
     if (!v0) continue;
     if(!CheckStatusv0(v0)) continue;
+
+
+     Float_t v0Pt=TMath::Sqrt(v0->Pt2V0());
+
+    if (v0Pt< fminPtTrig  || v0Pt> fmaxPtTrig) continue;//*********************************IMPORTANT(depending on Pt range need for physics, Also note efficiency histo range)
+
+    //(track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig)//to reduce memory consumption in Pool
 
     AliAODTrack *ptrack=(AliAODTrack*)v0->GetDaughter(0);
     AliAODTrack *ntrack=(AliAODTrack*)v0->GetDaughter(1);
@@ -6134,10 +6318,13 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     Double_t InvMassAntiLambda = v0->MassAntiLambda();
     Double_t InvMassLambda = v0->MassLambda();
 
-    Float_t v0Pt=TMath::Sqrt(v0->Pt2V0());
+  
+    
     Float_t v0Eta=v0->Eta();
     Float_t v0Phi=v0->Phi();
 
+
+    
     //This is simply raw v0 without any specialised cut
     if(ffillofflineV0){
     fHistRawPtCentInvK0s->Fill(InvMassK0s,v0Pt,Centrality);
@@ -6151,7 +6338,7 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     Float_t dx,dy,dz;
      dx=xyz[0]-xv, dy=xyz[1]-yv, dz=xyz[2]-zv;
 
-     //  Float_t v0DecayRadius=TMath::Sqrt(dx*dx + dy*dy);
+    Float_t v0DecayRadius=TMath::Sqrt(dx*dx + dy*dy);
     Float_t v0DecayLength=TMath::Sqrt(dx*dx + dy*dy + dz*dz);
     // VO's main characteristics to check the reconstruction cuts
     // Float_t DcaV0Daughters    = v0->DcaV0Daughters();
@@ -6165,16 +6352,27 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     Float_t ctauLambda =999.;
     Float_t ctauAntiLambda = 999.;
     Float_t ctauK0s = 999.;
- if(v0P > 0.0)
+ if(fCtauCut3D)
       {
-	 ctauLambda = (v0DecayLength*InvMassLambda)/v0P;
-	 ctauAntiLambda = (v0DecayLength*InvMassAntiLambda)/v0P;
-	 ctauK0s = (v0DecayLength*InvMassK0s)/v0P;
+	if(v0P > 0){
+	 ctauLambda = (v0DecayLength*1.1157)/v0P;
+	 ctauAntiLambda = (v0DecayLength*1.1157)/v0P;
+	 ctauK0s = (v0DecayLength*0.4977)/v0P;
+	}
       }
+
+
+ else{
+   if(v0Pt > 0.0){
+          ctauLambda = (v0DecayRadius*1.1157)/v0Pt;
+	 ctauAntiLambda = (v0DecayRadius*1.1157)/v0Pt;
+	 ctauK0s = (v0DecayRadius*0.4977)/v0Pt;
+	}
+ }
     
-    Bool_t ctauCutK0s= ctauK0s < NCtau*fCutctauK0s ; //ctauK0s 2.68 cm, mean life time of K0s is 8.95 x10^(-11)
-    Bool_t ctauCutLambda = ctauLambda    < NCtau*fCutctauLambda; //ctauLambda 7.8 cm ,mean life is 2.6 x10 ^(-10) ***** 3xctau is the accepted limit
-    Bool_t ctauCutAntiLambda= ctauAntiLambda < NCtau*fCutctauAntiLambda;
+ Bool_t ctauCutK0s= ctauK0s < (NCtau*fCutctauK0s) ; //ctauK0s 2.68 cm, mean life time of K0s is 8.95 x10^(-11)
+ Bool_t ctauCutLambda = ctauLambda    < (NCtau*fCutctauLambda); //ctauLambda 7.89 cm ,mean life is 2.6 x10 ^(-10) ***** 3xctau is the accepted limit
+ Bool_t ctauCutAntiLambda= ctauAntiLambda < (NCtau*fCutctauAntiLambda);
 
     Bool_t RapCutK0s = v0->RapK0Short() < fRapCutK0s;
     Bool_t RapCutLambda = v0->RapLambda() < fRapCutLambda; 
@@ -6187,6 +6385,7 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     Bool_t MassCutLooseLambda=(TMath::Abs(InvMassLambda - 1.115683) < 0.1); // cut is same for Anti-Lambda
     Bool_t MassCutLooseAntiLambda=(TMath::Abs(InvMassAntiLambda - 1.115683) < 0.1); // cut is same for Anti-Lambda
 
+    // cout<<"MassCutLooseK0s="<<MassCutLooseK0s<<"   "<<"MassCutLooseLambda="<<MassCutLooseLambda<<"   "<<"MassCutLooseAntiLambda="<<MassCutLooseAntiLambda<<endl;
  //Special Cut for Kshort arementeros podalanski plot
     Bool_t ArmenterosCut =kFALSE;
     if(ctauCutK0s && RapCutK0s && CPACut && MassCutLooseK0s)
@@ -6209,15 +6408,29 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
 
     Int_t particletype=999;
 
+    // Disentangle the V0 candidate
+    Double_t massK0s = 0., sK0s = 0.;
+    Double_t massLambda = 0., sL = 0.;
+    Double_t sAL = 0.;
+
+    //if(IskShortOk && (IsLambdaOk || IsAntiLambdaOk)) cout<<"***********************************************This shouldn't happen"<<endl;
+    
 	if( IskShortOk || cutK0sPID )
 	{
 	  if(ffillofflineV0) fHistFinalPtCentInvK0s->Fill(InvMassK0s,v0Pt,Centrality);
-	 
-        Bool_t K0Signal = (InvMassK0s>0.48)&&(InvMassK0s<0.52);
-        Bool_t K0Bckg = ((InvMassK0s>0.40)&&(InvMassK0s<0.44)) || ((InvMassK0s>0.56)&&(InvMassK0s<0.60));
 
-	if(K0Signal) particletype=SpKs0;
-	if(K0Bckg)   particletype=SpKs0Bckg;
+	 massK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+
+
+	 sK0s=GetV0_MeanSigma_CentPt(Centrality,v0Pt,0);//0=kShort
+
+	 // cout<<"InvMass="<<"Pt"<<v0Pt<<"*******************************************************sK0s="<<sK0s<<endl;
+	 
+         if (TMath::Abs(massK0s-InvMassK0s) < 3*sK0s) particletype=SpKs0;
+    
+	 if((massK0s-InvMassK0s) >= -8*sK0s && (massK0s-InvMassK0s)<= -5*sK0s) particletype=SpKs0_LS_Bckg; 
+	 if((massK0s-InvMassK0s) <= 8*sK0s && (massK0s-InvMassK0s)>= 5*sK0s) particletype=SpKs0_RS_Bckg; 
+
 
     Short_t chargeval=0;
     Float_t effmatrix=1.0;
@@ -6226,20 +6439,27 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     selectedV0s->Add(copy1);
   
 	}
+	//cout<<InvMassK0s<<"      "<<InvMassLambda<<"         "<<InvMassAntiLambda<<"     "<<particletype<<endl;
 
 
-	if(IsLambdaOk ||  cutLambdaPID)
+	if(IsLambdaOk ||  cutLambdaPID || IsAntiLambdaOk ||  cutAntiLambdaPID)
 	{
 	if(ffillofflineV0) fHistFinalPtCentInvLambda->Fill(InvMassLambda,v0Pt,Centrality);
 //Add in the LRCParticle and give Lambda a tag 5
+
+       massLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+
+
+         sL=GetV0_MeanSigma_CentPt(Centrality,v0Pt,1);//1=Lambda
+
+	 // cout<<"Pt"<<v0Pt<<"*******************************************************sL="<<sL<<endl;
+
 	 
-	Bool_t LamSignal = (InvMassLambda>1.108)&&(InvMassLambda<1.125);
-        Bool_t LamBckg = ((InvMassLambda>1.090)&&(InvMassLambda<1.100)) || ((InvMassLambda>1.135)&&(InvMassLambda<1.145));
-
-       
-	if(LamSignal) particletype=SpLam;
-	if(LamBckg)   particletype=SpLamBckg;
-
+         if (TMath::Abs(massLambda-InvMassLambda) < 3*sL) particletype=SpLam;
+    
+	 if((massLambda-InvMassLambda) >= -8*sL && (massLambda-InvMassLambda)<= -5*sL) particletype=SpLam_LS_Bckg; 
+	 if((massLambda-InvMassLambda) <= 8*sL && (massLambda-InvMassLambda)>= 5*sL) particletype=SpLam_RS_Bckg; 
+	
 	
     Short_t chargeval=0;
     Float_t effmatrix=1.0;
@@ -6247,17 +6467,26 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     copy1->SetUniqueID(eventno * 200000 + (Int_t)iV0);
     selectedV0s->Add(copy1);
 	}
+	//cout<<InvMassK0s<<"      "<<InvMassLambda<<"         "<<InvMassAntiLambda<<"     "<<particletype<<endl;
 
+	/*
 	if(IsAntiLambdaOk ||  cutAntiLambdaPID)
 	{
-	if(ffillofflineV0) fHistFinalPtCentInvLambda->Fill(InvMassAntiLambda,v0Pt,Centrality);
+	if(ffillofflineV0) fHistFinalPtCentInvAntiLambda->Fill(InvMassAntiLambda,v0Pt,Centrality);
 //Add in the LRCParticle and give Lambda a tag 6
 
-        Bool_t ALamSignal = (InvMassAntiLambda>1.108)&&(InvMassAntiLambda<1.125);
-        Bool_t ALamBckg = ((InvMassAntiLambda>1.090)&&(InvMassAntiLambda<1.100)) || ((InvMassAntiLambda>1.135)&&(InvMassAntiLambda<1.145));
+       massLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
 
-	if(ALamSignal) particletype=SpLam;
-	if(ALamBckg)   particletype=SpLamBckg;
+        
+                	  sAL = kAntiLambda_a0[curCentBin] + kAntiLambda_a1[curCentBin]*v0Pt;
+       if(fpol2)	  sAL = kAntiLambda_a0[curCentBin] + kAntiLambda_a1[curCentBin]*v0Pt + kAntiLambda_a2[curCentBin]*(v0Pt*v0Pt);
+
+	
+        Bool_t ALamSignal = (TMath::Abs(massLambda-InvMassAntiLambda) < 3*sAL);
+        Bool_t ALamBckg =( TMath::Abs(massLambda-InvMassAntiLambda + 6.5*sAL) < 1.5*sAL || TMath::Abs(massLambda-InvMassAntiLambda - 6.5*sAL) < 1.5*sAL  );
+	
+	if(ALamSignal) particletype=SpALam;
+	if(ALamBckg)   particletype=SpALamBckg;
 	
 	Short_t chargeval=0;
     Float_t effmatrix=1.0;
@@ -6265,7 +6494,7 @@ TObjArray* AliTwoParticlePIDCorr::GetV0Particles(AliVEvent* event,Double_t Centr
     copy1->SetUniqueID(eventno * 200000 + (Int_t)iV0);
     selectedV0s->Add(copy1);
 	}
-
+	*/
 
     }//v0 loop
 
@@ -6340,7 +6569,7 @@ if(t1->GetTPCClusterInfo(2,1)<fDaugNClsTPC || t2->GetTPCClusterInfo(2,1)<fDaugNC
     if (dca>fMaxDCADaughter) return kFALSE; //1.0 cm
     
     // V0: Cosine of the pointing angle
-    Float_t cpa=v1->CosPointingAngle(trkVtx); //0.997
+    Float_t cpa=v1->CosPointingAngle(trkVtx); //0.998
     if (cpa<fMinCPA) return kFALSE;
 
     // V0: Fiducial volume

@@ -29,6 +29,7 @@ class AliVParticle;
 class AliCFContainer;
 class AliCFGridSparse;
 class THnBase;
+//class AliTHn;//Showing problem as a redefinition of ALiTHn, after commenting running fine
 class TProfile;
 
 
@@ -45,8 +46,6 @@ class TProfile;
 #include "AliLog.h"
 #include "AliTHn.h"
 #include "TBits.h"
-#include  "AliTHn.h" // cannot forward declare 
-
 
 
 #ifndef ALIANALYSISTASKSE_H
@@ -79,9 +78,11 @@ namespace AliPIDNameSpace {
     SpProton,
     unidentified,
     SpKs0,
-    SpKs0Bckg,
+    SpKs0_LS_Bckg,
+    SpKs0_RS_Bckg,
     SpLam,
-    SpLamBckg,
+    SpLam_LS_Bckg,
+    SpLam_RS_Bckg,
     NSpecies=unidentified,//for pion, kaon and proton part only not for v0s
     SpUndefined=999
   }; // Particle species used in plotting
@@ -272,7 +273,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
  }
 
  void SetEffcorectionfilePathName(TString efffilename) {fefffilename=efffilename;}
- 
+ void SetV0MeanSigmafilePathName(TString efffilename) {ffilenamesigmaV0=efffilename;}
+
 
   //PID Type
   void SetPIDTypes(PIDTypes PIDmethod) { fPIDType = PIDmethod; }
@@ -324,6 +326,9 @@ fFracTPCcls=FracSharedTPCcls;//0.4
 fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 particles to constrain them within a Pt range where ttrack by track PID can be applied;kFALSE by defaul
 }
 
+ void SetCtauCut3D(Bool_t CtauCut3D) {
+   fCtauCut3D=CtauCut3D;
+ }
 
  private:                                                                                      
  //histograms
@@ -460,9 +465,26 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
 
   //    Int_t nCentrBin = 9;          //  cenrality bins
 
+
+  
   //
   // Cuts and options
   //
+ //centrality binning for lambda , kshort a0,a1 factor//*********************************hardcoded values in array, be careful(now in custom binning)
+
+     Int_t kNCent_ds;
+     // Double_t *kBinCent_ds;
+     
+     /*    Double_t *kK0s_a0;
+     Double_t *kK0s_a1;
+     Double_t *kK0s_a2;
+     Double_t *kLambda_a0;
+     Double_t *kLambda_a1;
+     Double_t *kLambda_a2;
+     Double_t *kAntiLambda_a0;
+     Double_t *kAntiLambda_a1;
+     Double_t *kAntiLambda_a2;*/
+
 
   Int_t fRun;                       // current run checked to load VZERO calibrations
 
@@ -517,6 +539,10 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
     TH1F *fProtonPt;//!
     TH1F *fProtonEta;//!
     TH1F *fProtonPhi;//!
+
+    TH2F *kShortSigmahisto;//!
+    TH2F *LambdaSigmahisto;//!
+    
   TH2D *fHistdEdxVsPTPCbeforePIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //!
   TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
@@ -541,6 +567,9 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
      
    
     THnSparse *effcorection[6];//!
+
+   
+    
     // THnF *effmap[6];  
 
     Int_t ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield,Bool_t fill);
@@ -550,10 +579,12 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
   void Fillcorrelation(Float_t ReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
  Bool_t CalculateSharedFraction(const TBits *triggerPadMap,const TBits *assocPadMap,const TBits *triggerShareMap,const TBits *assocShareMap);
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
-
+ Float_t GetV0_MeanSigma_CentPt(Double_t cent, Float_t V0Pt, Int_t parpid);
+ 
  //Fill PID and Event planes
  void FillPIDEventPlane(Double_t centrality,Int_t par,Float_t trigphi,Float_t fReactionPlane);
  //V0-h correlation related functions
+ // Int_t GetCentBin(Double_t cent);
  TObjArray* GetV0Particles(AliVEvent* event,Double_t cent);
  Bool_t CheckStatusv0Daughter(AliAODTrack *t1 ,AliAODTrack *t2);
  Float_t  GetFractionTPCSharedCls( AliAODTrack *track);
@@ -570,6 +601,8 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
   TClonesArray          *fArrayMC;//!
   TString          fAnalysisType;          // "MCAOD", "MC", "AOD"
   TString fefffilename;
+  TString ffilenamesigmaV0;
+
     //PID part histograms
 
   //PID functions
@@ -671,6 +704,7 @@ TH3F*  fHistRawPtCentInvAntiLambda;//!
 TH3F*  fHistFinalPtCentInvK0s;//!
 TH3F*  fHistFinalPtCentInvLambda;//!
 TH3F*  fHistFinalPtCentInvAntiLambda;//!
+ Bool_t fCtauCut3D;
   Double_t NCtau;
   Double_t fCutctauK0s; //ctau cut for kShort
   Double_t fCutctauLambda;
