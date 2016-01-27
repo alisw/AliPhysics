@@ -742,7 +742,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   if (fHistoInvMassAfter) fHistoInvMassAfter->Fill(pi0->M());
   
-  if (!fIsMergedClusterCut == 1){ 
+  if (!(fIsMergedClusterCut == 1)){ 
     if (fHistoDCAGGMesonBefore)fHistoDCAGGMesonBefore->Fill(pi0->GetDCABetweenPhotons());
     if (fHistoDCARMesonPrimVtxBefore)fHistoDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
 
