@@ -488,20 +488,20 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
  
   
   //TPC
-  fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
+  fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p_{TPC} (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCpid->SetOption("scat");
   fHistTPCpid->SetMarkerStyle(kFullCircle);
 
   //Hypertriton prongs
-  fHistTPCdeusignal = new TH2F("fHistTPCdeusignal", "dE/dx after d(#bar{d}) PID; p/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
+  fHistTPCdeusignal = new TH2F("fHistTPCdeusignal", "dE/dx after d(#bar{d}) PID; p_{TPC}/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCdeusignal->SetOption("scat");
   fHistTPCdeusignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCprosignal = new TH2F("fHistTPCprosignal", "dE/dx after p(#bar{p}) PID; p/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
+  fHistTPCprosignal = new TH2F("fHistTPCprosignal", "dE/dx after p(#bar{p}) PID; p_{TPC}/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCprosignal->SetOption("scat");
   fHistTPCprosignal->SetMarkerStyle(kFullCircle);
 
-  fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{+}(#pi^{-}) PID; p/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
+  fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{+}(#pi^{-}) PID; p_{TPC}/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCpionsignal->SetOption("scat");
   fHistTPCpionsignal->SetMarkerStyle(kFullCircle);
   
@@ -1089,7 +1089,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     pT = track->Pt();
     //if(p<0.2) continue;
     
-    fHistTPCpid->Fill(pOverZ, track->GetTPCsignal());
+    fHistTPCpid->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
     if(fRequestTOFPid){
         useTOF = HasTOF(track, beta);
         if(useTOF)fHistTOFsignal->Fill(p,beta);
@@ -1102,7 +1102,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
         if(pT > 7) continue;
         if(pT >= 1){
             if(tparticleDaughter->GetPdgCode() == 1000010020 || tparticleDaughter->GetPdgCode() == -1000010020){ //d
-                fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
+                fHistTPCdeusignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
                 if(useTOF){
                     fHistTOFdeusignal->Fill(p,beta);
                     //fHistTOFdeumass->Fill(mass);
@@ -1113,7 +1113,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
             }
         } else if(pT >= 0.4 && pT <= 4.){
           if (tparticleDaughter->GetPdgCode() == 2212 || tparticleDaughter->GetPdgCode() == -2212) { // p
-              fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
+              fHistTPCprosignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
               if(useTOF){
                   fHistTOFprosignal->Fill(p,beta);
                   //fHistTOFpromass->Fill(mass);
@@ -1125,7 +1125,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
         }
         if(!fESDtrackCutsV0->AcceptTrack(track)) continue;
         if(tparticleDaughter->GetPdgCode() == 211 || tparticleDaughter->GetPdgCode() == -211) { // pi+
-            fHistTPCpionsignal->Fill(pOverZ, track->GetTPCsignal());
+            fHistTPCpionsignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
             cpion[nPioTPC++] = i;
         }
     } // end of MC PID
@@ -1133,7 +1133,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if(pT > 7) continue;
     if(pT >= 1){
         if(PassPIDSelection(track, AliPID::kDeuteron, useTOF)) { //deuteron
-          fHistTPCdeusignal->Fill(pOverZ, track->GetTPCsignal());
+          fHistTPCdeusignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
           if(useTOF){
               fHistTOFdeusignal->Fill(p,beta);
               //fHistTOFdeumass->Fill(mass);
@@ -1145,7 +1145,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if(pT >= 0.4 && pT <= 4.){
       if(PassPIDSelection(track,AliPID::kProton, useTOF)) { // proton
           
-          fHistTPCprosignal->Fill(pOverZ, track->GetTPCsignal());
+          fHistTPCprosignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
           if(useTOF){
               fHistTOFprosignal->Fill(p,beta);
               //fHistTOFpromass->Fill(mass);
@@ -1156,7 +1156,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     }
       if(!fESDtrackCutsV0->AcceptTrack(track)) continue;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 3) { //pion^+
-          fHistTPCpionsignal->Fill(pOverZ, track->GetTPCsignal());
+          fHistTPCpionsignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
           cpion[nPioTPC++] = i;
       }
     }
