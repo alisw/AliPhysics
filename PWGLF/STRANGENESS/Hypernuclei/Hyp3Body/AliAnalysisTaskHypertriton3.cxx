@@ -89,6 +89,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCentrality(0x0),
   fCentralityPercentile(0x0),
   fTriggerConfig(1),
+  fRequestITSrefit(kFALSE),
   fRequestTPCSigmas(3),
   fRequestTOFPid(kFALSE),
   fRequestTOFSigmas(3),
@@ -309,6 +310,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
   fESDtrackCuts->SetMaxChi2PerClusterTPC(5);
   fESDtrackCuts->SetRequireTPCRefit(kTRUE);
+  fESDtrackCuts->SetRequireITSRefit(fRequestITSrefit);
   fESDtrackCuts->SetEtaRange(-0.9,0.9);
   
   //ESD Track cuts V0
@@ -317,6 +319,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fESDtrackCutsV0->SetMinNClustersTPC(100);
   fESDtrackCutsV0->SetMaxChi2PerClusterTPC(5);
   fESDtrackCutsV0->SetRequireTPCRefit(kTRUE);
+  fESDtrackCutsV0->SetRequireITSRefit(fRequestITSrefit);
   fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
   fESDtrackCutsV0->SetPtRange(0.2,1.2);
   
