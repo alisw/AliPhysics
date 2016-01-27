@@ -61,6 +61,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
+  void SetRequestRefit(bool itsR = kFALSE) {fRequestITSrefit = itsR;}
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
@@ -124,6 +125,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
+  Bool_t             fRequestITSrefit;             ///< flag for switch the ITSrefit request in the track cuts
   Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
   Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
