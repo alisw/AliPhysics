@@ -3507,13 +3507,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 41:
       label_case_41:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.979402, -3.78772, -0.664188);//v4
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.995*0.978578, -3.80517, -0.581197);//v4
           //energy /= FunctionNL_kSDM(energy, 0.977118, -3.46238, -0.575729);v0
           //energy /= FunctionNL_kSDM(energy, 0.975357, -3.54572, -0.398501);v1
           //energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
 	  //energy /= FunctionNL_kSDM(energy, 0.982252, -3.49763, -0.969196);//v3
 
-        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.978517, -3.48798, -0.683623);//v0
+        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.979813, -3.53445, -0.733067);//v0
 
         else fPeriodNameAvailable = kFALSE;
       }
@@ -3523,13 +3523,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 42:
       label_case_42:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.971161, -3.70117, -0.749429);//v4
+        if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 1.002*0.970383, -3.65936, -0.721139);//v4
           //energy /= FunctionNL_kSDM(2.0*energy, 0.975467, -1.9989, -1.23208);v0
           //energy /= FunctionNL_kSDM(2.0*energy, 0.974716, -2.56403, -0.85898);v1
           //energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324);//v2
 	  //energy /= FunctionNL_kSDM(energy, 0.973302, -2.41453, -1.88838);//v3
 
-        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.970049, -3.40204, -0.888813);//v0
+        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_kSDM(energy, 0.970537, -3.36675, -0.958747);//v0
 
         else fPeriodNameAvailable = kFALSE;
       }
@@ -3557,7 +3557,38 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
       break;
 
 // *************** 50 + x **** modified tender Settings 1 - pPb
-      
+    // NonLinearity LHC13 pPb ConvCalo  - only shifting MC
+    case 51:
+      label_case_51:
+      if(isMC>0){
+        if( fCurrentMC==k13b2_efix ) energy /= (FunctionNL_DPOW(energy, 1.1849304274, -0.1999999986, -0.0828138864, 1.0754004911, -0.0992327361, -0.0802161499) - 0.005);//v4
+          //energy /= FunctionNL_kSDM(energy, 0.977118, -3.46238, -0.575729);v0
+          //energy /= FunctionNL_kSDM(energy, 0.975357, -3.54572, -0.398501);v1
+          //energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
+          //energy /= FunctionNL_kSDM(energy, 0.982252, -3.49763, -0.969196);//v3
+
+        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_DPOW(energy, 1.1849400584, -0.1999999970, -0.0826417756, 1.0546114304, -0.0758513555, -0.0800000002);//v4
+
+        else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+
+    // NonLinearity LHC13 pPb Calo  - only shifting MC
+    case 52:
+      label_case_52:
+      if(isMC>0){
+        if( fCurrentMC==k13b2_efix ) energy /= (FunctionNL_DPOW(energy, 1.1549558754, -0.1942615277, -0.2216281109, 1.0358207569, -0.0914347267, -0.3683743201) + 0.002);//v4
+          //energy /= FunctionNL_kSDM(2.0*energy, 0.975467, -1.9989, -1.23208);v0
+          //energy /= FunctionNL_kSDM(2.0*energy, 0.974716, -2.56403, -0.85898);v1
+          //energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324);//v2
+          //energy /= FunctionNL_kSDM(energy, 0.973302, -2.41453, -1.88838);//v3
+
+        else if( fCurrentMC==k13e7 ) energy /= FunctionNL_DPOW(energy, 1.1549558754, -0.1942615277, -0.2216281109, 1.0149551972, -0.0697288693, -0.4586527438);//v4
+
+        else fPeriodNameAvailable = kFALSE;
+      }
+      break;
+
       
 // *************** 60 + x **** modified tender Settings 2 - pPb
 
