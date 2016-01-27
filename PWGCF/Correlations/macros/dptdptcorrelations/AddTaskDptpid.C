@@ -26,6 +26,8 @@ AlianalysisTaskDptPID *AddTaskDptpid
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
+ double ptMin                   =  0.2,
+ double ptMax                   =  2.0,
  int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
  const char* taskname           = "WgtPM",
@@ -72,10 +74,18 @@ AlianalysisTaskDptPID *AddTaskDptpid
 	  minCentrality[2] = 70.0; maxCentrality[2]  = 80.0;
 	}
     }
+  if (system==3)
+    {
+      if (centralityMethod == 4)
+	{
+	  minCentrality[0] = 0.0; maxCentrality[0]  = 5.0;
+	  minCentrality[1] = 30.0; maxCentrality[1]  = 40.0;
+	  minCentrality[2] = 70.0; maxCentrality[2]  = 80.0;
+	}
+    }
   
 //----------------------------------------------
-double ptMin                  =  0.2;
-double ptMax                  =  2.0;
+
 double dedxMin                =  0.0;
 double dedxMax                =  20000.0;
 int    requestedCharge1       =  1; //default
