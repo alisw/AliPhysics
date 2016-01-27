@@ -902,6 +902,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
       if ( isEmpty[icond] == 1 ) continue;
       histo[icond] = new TH1D(Form("TriggerEff_syst_%s_%s",condTitle[icond]->GetName(),trigOut->GetName()),"Dispersion of trigger probability (3/4)",200,-0.1,0.1);
       histo[icond]->GetXaxis()->SetTitle("Trig. prob. - (ref. trig. prob)");
+      histo[icond]->GetYaxis()->SetTitle("1/#sigma^{2}");
     }
 
     for ( Int_t ipt=0; ipt<nDE; ipt++ ) {
