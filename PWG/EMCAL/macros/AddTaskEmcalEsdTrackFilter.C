@@ -53,6 +53,7 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
 
   if (strTrackCuts.Contains("lhc10h")) {
     dataSet = kLHC10h;
+    dataSetLabel = "LHC10h";
   } else if (strTrackCuts.Contains("lhc11a") || strTrackCuts.Contains("lhc12a15a")) {
     dataSet = kLHC11a;
     dataSetLabel = "LHC11a";
