@@ -233,8 +233,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity
     eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // default
     eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111142050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111143050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111144050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
+    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111151050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
+    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111152050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
   } else if(trainConfig == 41){ // second set of variations CLUSTER ====>> SETTING TENDER: M_seed=100MeV
     eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050012230000"; mesonCutArray[0] = "0163403100000050"; // min energy cluster variation 1  200 MeV
     eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163403100000050"; // min energy cluster variation 2  300 MeV
