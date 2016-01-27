@@ -28,6 +28,8 @@
 #include "TGraphErrors.h"
 #include "TChain.h"
 #include "AliXRDPROOFtoolkit.h"
+#include "TStyle.h"
+#include "TLegend.h"
 //
 #include "AliSysInfo.h"
 #include "AliESDEvent.h"
@@ -35,6 +37,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliNDLocalRegression.h"
+#include "AliMathBase.h"
 
 
 
@@ -53,6 +56,7 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
     AliTPCcalibAlignInterpolation::FillHistogramsFromChain("residual.list", 6,4,startTime, stopTime, param1,param0);
   }
   if (action==4)    AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers("residual.list",1,1,1);
+
 
   if (action==2) {
     Int_t startTime=TString(gSystem->Getenv("mapStartTime")).Atoi();
@@ -78,6 +82,14 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
   if (action==5) {
     Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
      AliTPCcalibAlignInterpolation::MakeEventStatInfo("cat residual.list",300,param0,1);
+  }
+
+  if (action==6){  //fit drift velocity
+    Int_t deltaT=TString(gSystem->Getenv("driftDeltaT" )).Atoi();
+    Int_t sigmaT=TString(gSystem->Getenv("driftSigmaT" )).Atoi();
+    ::Info("AliTPCcalibAlignInterpolation::FitDrift","Begin");
+    AliTPCcalibAlignInterpolation::FitDrift(deltaT, sigmaT);
+    ::Info("AliTPCcalibAlignInterpolation::FitDrift","End");
   }
  
 }
@@ -571,4 +583,155 @@ Bool_t  FitDrift(TTree * treeIn, Int_t timeStampMin, Int_t timeStampMax, Int_t n
   // 
   //
 
+}
+
+
+void DrawFailedFits(const char * fname, const char * treeName, Int_t firstEntry=0, Int_t entriesDraw=9){
+  //
+  //
+  /*
+    fname="/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o0901/000245231/Time1448613300/his1/ResidualMapFull_1.root";
+    treeName="deltaRPhiTPCITSTRDDistDump";
+    firstEntry=0;
+    entriesDraw=9;
+   */
+  TFile *ff = TFile::Open(fname);
+  gStyle->SetOptFit(1);
+  TH1* his=0;
+  TTree * tree = (TTree*)ff->Get(treeName);
+  tree->SetBranchAddress("hDump.",&his);
+  Int_t entriesSel=tree->Draw("Entry$:binMedian:rms","entries>150&&isFitValid==0","goff");
+  TVectorD vecSel(entriesSel, tree->GetV1());
+  TVectorD vecMed(entriesSel, tree->GetV2());
+  TCanvas * canvas = new TCanvas("canvasGausFailed","canvasGausFailed",900,900);
+  entriesDraw=TMath::Nint(TMath::Sqrt(entriesDraw));
+  canvas->Divide(entriesDraw, entriesDraw);
+  entriesDraw*=entriesDraw;
+  //
+  TF1 fgaus0("fgaus0","gaus",-10,10);
+  TF1 fgaus1("fgaus1","gaus",-10,10);
+  fgaus0.SetLineColor(2);
+  fgaus1.SetLineColor(4);
+  for (Int_t i=firstEntry; i<firstEntry+entriesDraw && i<entriesSel; i++){
+    canvas->cd(i+1);
+    tree->GetEntry(TMath::Nint(vecSel[i]));
+    TH1 *his2=(TH1*)his->Clone();
+    his2->GetXaxis()->UnZoom();
+    fgaus0.SetParameters(his2->GetEntries()/(2.5*his2->GetRMS()/his2->GetBinWidth(50)), vecMed[i], his2->GetRMS());
+    fgaus1.SetParameters(his2->GetEntries()/(2.5*his2->GetRMS()/his2->GetBinWidth(50)), vecMed[i], his2->GetRMS());
+    fgaus0.SetRange(his2->GetMean()-4*his2->GetRMS(),his2->GetMean()+4*his2->GetRMS());
+    his2->Fit(&fgaus0,"rl");
+    fgaus1.Draw("same");
+  }
+  canvas->SaveAs("ATO-108_FaledFitExample.png");
+
+}  
+  
+void DumpDiffEstimators(const char *fname0,const char *fname1, const char *treeName0, const char *treeName1 ){
+  /*
+    fname0="/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o0901/000245231/Time1448613300/his1/ResidualMapFull_1.root";
+    fname1="/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o0901/000245231/Time1448614500/his1/ResidualMapFull_1.root";
+    treeName0="deltaRPhiTPCITSTRDDist";
+    treeName1="deltaRPhiTPCITSTRDDist";
+  */
+  TFile *f0= TFile::Open(fname0);
+  TFile *f1= TFile::Open(fname1);
+  TTree *tree0 = (TTree*)f0->Get(treeName0);
+  TTree *tree1 = (TTree*)f1->Get(treeName1);
+  tree0->AddFriend(tree1,"T1");
+  TCut cutDraw="abs(qptCenter)<0.1&&min(entries,T1.entries)>20";
+  TObjArray arrayFit(3);
+  
+  TH1*hisRMS[4]={0};
+  TH1*hisMean[4]={0};
+  TH1*his2D[4]={0};
+  const char * chLegend[4]={"mean all","mean restricted","gaus fit", "binMedian"};
+  Int_t entries= tree0->Draw("1/sqrt(entries)",cutDraw,"goff");
+  Double_t xmin=TMath::KOrdStat(entries, tree0->GetV1(), Int_t(entries*0.02));
+  Double_t xmax=TMath::KOrdStat(entries, tree0->GetV1(), Int_t(entries*0.98));
+  for (Int_t i=0; i<4; i++){
+    TString query="";
+    if (i==0) query=TString::Format("(mean0-T1.mean0):1/sqrt(entries)>>hisMean0(10,%f,%f,100,-0.5,0.5)",xmin,xmax);
+    if (i==1) query=TString::Format("(mean-T1.mean):1/sqrt(entries)>>hisMean(10,%f,%f,100,-0.5,0.5)",xmin,xmax);
+    if (i==2) query=TString::Format("(meanG-T1.meanG):1/sqrt(entries)>>hisMeanG(10,%f,%f,100,-0.5,0.5)",xmin,xmax);
+    if (i==3) query=TString::Format("(binMedian-T1.binMedian):1/sqrt(entries)>>hisMedian(10,%f,%f,100,-0.5,0.5)",xmin,xmax);
+    tree0->Draw(query.Data(), cutDraw,"goff");
+    ((TH2*)tree0->GetHistogram())->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+    hisMean[i]=(TH1*)arrayFit.At(1);
+    hisRMS[i]=(TH1*)arrayFit.At(2);
+    his2D[i]=tree0->GetHistogram();
+    his2D[i]->SetTitle(chLegend[i]);
+    his2D[i]->GetXaxis()->SetTitle("1/#sqrt(N)");
+    his2D[i]->GetYaxis()->SetTitle("#sigma (cm)");
+  }
+  //
+  TCanvas *canvasDrawEst= new TCanvas("canvasDrawEst","canvasDrawEst",1000,800);
+  canvasDrawEst->Divide(2,3);
+  for (Int_t i=0; i<4; i++){
+    canvasDrawEst->cd(i+1);
+    his2D[i]->Draw("colz");
+    hisMean[i]->Draw("same");    
+  }
+  canvasDrawEst->cd(5);
+  TLegend *legend= new TLegend(0.1,0.1,0.7,0.7,"Estimator resoutution as function of the entries");
+  legend->SetNColumns(2);
+  for (Int_t i=0; i<4; i++){
+    hisRMS[i]->SetMarkerStyle(21+i);
+    hisRMS[i]->SetMarkerColor(1+i);
+    hisRMS[0]->SetMinimum(0);
+    if (i==0) hisRMS[i]->Draw();
+    hisRMS[i]->Draw("same");
+    legend->AddEntry(hisRMS[i], chLegend[i]);
+  }
+  canvasDrawEst->cd(6);
+  legend->Draw();
+  canvasDrawEst->SaveAs("ATO-108_ComparisonOfEstimators_000245231_Time1448613300_his1.png");
+
+
+}
+
+Bool_t LTMHisto(TH1 *his, TVectorD &params , Float_t fraction){
+  //
+  // LTM : Trimmed mean on histogram - Modified version for binned data
+  // 
+  // Robust statistic to estimate properties of the distribution
+  // To handle binning error special treatment
+  // for definition of unbinned data see:
+  //     http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  //
+  // Function parameters:
+  //     his1D   - input histogram
+  //     params  - vector with parameters
+  //             - 0 - area
+  //             - 1 - mean
+  //             - 2 - rms 
+  //
+  Int_t nbins    = his->GetNbinsX();
+  Int_t nentries = (Int_t)his->Integral(0,nbins);
+  const Double_t kEpsilon=0.0000000001;
+
+  if (nentries<=0) return 0;
+  if (fraction>1) fraction=0.9999;
+  if (fraction<0) return 0;
+  
+  TVectorD vec(nentries);
+  Int_t all=0;
+  for (Int_t ibin=1; ibin<=nbins; ibin++){
+    Int_t ncont=his->GetBinContent(ibin);
+    printf("%d\t%d\n",ibin,ncont);
+    Double_t lowEdge= his->GetBinLowEdge(ibin);
+    Double_t width  = his->GetBinWidth(ibin);
+    for (Int_t icont=0; icont<ncont; icont++){
+      Double_t x=lowEdge+icont*(width/ncont);
+      vec[all++]=x;
+    }
+  }
+  Double_t mean, rms;
+  if (fraction*all<3) return 0;
+  AliMathBase::EvaluateUni(all, vec.GetMatrixArray(), mean,rms, fraction*all);
+  params[0]=all;
+  params[1]=mean;
+  params[2]=rms;
+  params[3]=rms/TMath::Sqrt(fraction*all);
+  return kTRUE;
 }
