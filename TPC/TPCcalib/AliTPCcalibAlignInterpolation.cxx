@@ -1459,7 +1459,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
                           -   resulting values choosen using robust median estimator
          fitTime          - set of graphs drift velocity as function of time
                           - n different graph values 
-                          - resulting time dependent graph used as an logal regression with kernel stime  per interval 
+                          - resulting time dependent graph used as an logal regression with kernel sigmaT  per interval 
          fitTimeStat      - comparing median and local regression statistic 
   */  
   /*
@@ -1850,8 +1850,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   AliNDLocalRegression * pfitTOF = new  AliNDLocalRegression("pfitTOF","pfitTOF");
   pfitTRD->SetHistogram((THn*)(hN->Clone()));
   pfitTOF->SetHistogram((THn*)(hN->Clone()));
-  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%d",stime),"2:2",0.0001);
-  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%d",stime),"2:2",0.0001);
+  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%d",sigmaT),"2:2",0.0001);
+  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%d",sigmaT),"2:2",0.0001);
   AliNDLocalRegression::AddVisualCorrection(pfitTRD,104);
   AliNDLocalRegression::AddVisualCorrection(pfitTOF,204);  
   //
