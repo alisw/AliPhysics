@@ -35,7 +35,7 @@ class AliFemtoEvent;
 ///   * Pair
 ///
 /// \author Andrew Kubera <andrew.michael.kubera@cern.ch>
-////
+///
 namespace AliFemtoCutMonitorPionPion {
 
   /// \class AliFemtoCutMonitorPionPion::Event
@@ -78,8 +78,7 @@ namespace AliFemtoCutMonitorPionPion {
 
   protected:
 
-    TH1F *_centrality;
-    TH1F *_multiplicity;
+    TH2F *fCentMult;
     TH1F *_vertex_z;
     TH2F *_vertex_xy;
 

@@ -25,8 +25,7 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                          const bool is_mc_analysis,
                                          const bool suffix_output):
   AliFemtoCutMonitor()
-  , _centrality(NULL)
-  , _multiplicity(NULL)
+  , fCentMult(NULL)
   , _vertex_z(NULL)
   , _vertex_xy(NULL)
   , _collection_size_pass(NULL)
@@ -41,19 +40,14 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
 
   const TString pf(suffix_output ? passing ? "_P" : "_F" : "");
 
-  _centrality = new TH1F(
-    "centrality" + pf,
-    TString::Format("Event Centrality%s; centrality; N_{ev}", title_suffix),
-    100, 0, 100.0
-  );
-  _centrality->Sumw2();
-
-  _multiplicity = new TH1F(
-    "multiplicity" + pf,
-    TString::Format("Event Multiplicity%s; N_{tracks}; N_{ev}", title_suffix),
+  fCentMult = new TH2F(
+    "cent_mult" + pf,
+    TString::Format("Event Centrality vs Multiplicity%s;"
+                    "centrality; multiplicity (N_{tracks}); N_{ev}", title_suffix),
+    100, 0, 100.0,
     100, 0, 10000.0
   );
-  _multiplicity->Sumw2();
+  fCentMult->Sumw2();
 
   _vertex_z = new TH1F(
     "VertexZ" + pf,
@@ -101,8 +95,7 @@ AliFemtoCutMonitorPionPion::Event::GetOutputList()
   TList *olist = new TList();
   TCollection *output = olist;
 
-  output->Add(_centrality);
-  output->Add(_multiplicity);
+  output->Add(fCentMult);
   output->Add(_vertex_z);
   output->Add(_vertex_xy);
 
@@ -124,8 +117,7 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoEvent* ev)
   const Int_t multiplicty = ev->NumberOfTracks();
   const AliFemtoThreeVector vertex = ev->PrimVertPos();
 
-  _centrality->Fill(centrality);
-  _multiplicity->Fill(multiplicty);
+  fCentMult->Fill(centrality, multiplicty);
   _vertex_z->Fill(vertex.z());
   _vertex_xy->Fill(vertex.x(), vertex.y());
 
