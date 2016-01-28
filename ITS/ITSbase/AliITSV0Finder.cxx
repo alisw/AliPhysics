@@ -44,6 +44,7 @@
 
 ClassImp(AliITSV0Finder)
 
+Bool_t AliITSV0Finder::fgDisabled = kFALSE;
 
 AliITSV0Finder::AliITSV0Finder():
 fDebugStreamer(0)
@@ -61,6 +62,10 @@ void AliITSV0Finder::UpdateTPCV0(const AliESDEvent *event,
   //
   //try to update, or reject TPC  V0s
   //
+  if (fgDisabled) {
+    AliWarningClass("On-fly V0 finded is disabled");
+    return;
+  }
   const Float_t kMinTgl2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMinTgl2();
 
   TObjArray *trackHypothesys = tracker->GetTrackHypothesys();
@@ -237,6 +242,11 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   const Float_t kSigpPar2= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetSigpPar2();
   const Float_t kMaxDcaLh0= AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDcaLh0();
 
+  if (fgDisabled) {
+    AliWarningClass("On-fly V0 finded is disabled");
+    return;
+  }
+  
 
   TObjArray *trackHypothesys = tracker->GetTrackHypothesys();
   TObjArray *bestHypothesys  = tracker->GetBestHypothesys();
