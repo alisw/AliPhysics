@@ -222,6 +222,12 @@ void AliMFT::CreateMaterials() {
   Float_t wPolyimide[nPolyimide] = {0.00942, 0.56089, 0.13082, 0.29887};
   Float_t dPolyimide = 1.4;   
 
+	// PEEK mixture (Polyether Ether Ketone)
+	const Int_t nPEEK = 3;
+	Float_t   aPEEK[nPEEK] = {1.00794, 12.0107, 15.9994} ;
+	Float_t   zPEEK[nPEEK] = {1,       6,        8} ;
+	Float_t   wPEEK[nPEEK] = {0.06713, 0.40001,  0.53285} ;
+	Float_t   dPEEK = 1.32;
 
   
   Int_t   matId  = 0;                        // tmp material id number
@@ -312,7 +318,10 @@ void AliMFT::CreateMaterials() {
   
   AliMixture(++matId,  "Polyimide", aPolyimide, zPolyimide, dPolyimide, nPolyimide, wPolyimide);
   AliMedium(kPolyimide, "Polyimide", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-  
+	
+	AliMixture(++matId, "PEEK$", aPEEK, zPEEK, dPEEK, nPEEK, wPEEK);
+	AliMedium(kPEEK,    "PEEK$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+
   AliDebug(1,"End MFT materials");
   
 }
