@@ -12,6 +12,8 @@
 #include <TRandom3.h>
 #include <TList.h>
 #include <TF2.h>
+#include <TGrid.h>
+#include <TFile.h>
 
 #include "AliVEvent.h"
 #include "AliAODCaloCluster.h"
@@ -85,7 +87,10 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fhpTEmb(0),
   fhMEmb(0),
   fhEtaEmb(0),
-  fhPhiEmb(0)
+  fhPhiEmb(0),
+  fMassFromDistr(kFALSE),
+  fHMassDistrib(0),
+  fHMassPtDistrib(0)
 {
   // Default constructor.
 
@@ -149,7 +154,10 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fhpTEmb(0),
   fhMEmb(0),
   fhEtaEmb(0),
-  fhPhiEmb(0)
+  fhPhiEmb(0),
+  fMassFromDistr(kFALSE),
+  fHMassDistrib(0),
+  fHMassPtDistrib(0)
 {
   // Standard constructor.
 
@@ -724,17 +732,20 @@ AliVCluster* AliJetModelBaseTask::AddCluster(Double_t e, Int_t absId, Int_t labe
 AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t phi, Byte_t type, Double_t etaemc, Double_t phiemc, Double_t ptemc, Bool_t ise, Int_t label, Short_t charge, Double_t mass)
 {
   // Add a track to the event.
-  
-  if (pt < 0 && eta < -100 && phi < -100) {
-    GetRandomParticle(pt,eta,phi);
-  }
-  else {
-    if (pt < -100) 
-      pt = GetRandomPt();
-    if (eta < -100) 
-      eta = GetRandomEta();
-    if (phi < -100) 
-      phi = GetRandomPhi(pt);
+  if (pt < 0 && eta < -100 && phi < -100 && mass < -100) {
+     GetRandomMassiveParticle(pt,eta,phi, kFALSE, mass);
+  } else {
+     if (pt < 0 && eta < -100 && phi < -100) {
+     	GetRandomParticle(pt,eta,phi);
+     }
+     else {
+     	if (pt < -100) 
+     	   pt = GetRandomPt();
+     	if (eta < -100) 
+     	   eta = GetRandomEta();
+     	if (phi < -100) 
+     	   phi = GetRandomPhi(pt);
+     }
   }
   //Printf("Adding LABEL %d", label);
   if (label >= 0)
@@ -997,6 +1008,35 @@ Double_t AliJetModelBaseTask::GetRandomPt()
 }
 
 //________________________________________________________________________
+
+Double_t AliJetModelBaseTask::GetRandomM(){
+   
+   Double_t m = 0;
+   
+   if(fMassFromDistr) {
+      if(fHMassDistrib) m = fHMassDistrib->GetRandom();
+      else {
+      	 AliError("Template distribution for mass of track embedding not found, use 0");
+      	 m = 0;
+      }
+   }
+   return m;
+}
+
+//________________________________________________________________________
+
+void AliJetModelBaseTask::GetRandomMvsPt(Double_t &m, Double_t &pt){
+   
+   Double_t maxedgex = fHMassPtDistrib->GetXaxis()->GetBinLowEdge(fHMassPtDistrib->GetNbinsX());
+   Double_t maxedgey = fHMassPtDistrib->GetYaxis()->GetBinLowEdge(fHMassPtDistrib->GetNbinsY());
+   
+   if(maxedgex < maxedgey) //condition assuming that the mass axis has smaller range than the pT axis!!
+      fHMassPtDistrib->GetRandom2(m, pt);
+   else fHMassPtDistrib->GetRandom2(pt, m);
+
+}
+
+//________________________________________________________________________
 void AliJetModelBaseTask::GetRandomParticle(Double_t &pt, Double_t &eta, Double_t &phi, Bool_t emcal)
 {
   // Get a random particle.
@@ -1037,6 +1077,28 @@ void AliJetModelBaseTask::GetRandomParticle(Double_t &pt, Double_t &eta, Double_
 }
 
 //________________________________________________________________________
+void AliJetModelBaseTask::GetRandomMvsPtParticle(Double_t &pt, Double_t &m, Double_t &eta, Double_t &phi, Bool_t emcal){
+   
+   /// Get random particle from 2D mass vs pt distribution
+   /// the event plane evolution in not implemented
+   
+   phi = GetRandomPhi(emcal);
+   eta = GetRandomEta(emcal);
+   GetRandomMvsPt(m, pt);
+
+}
+//________________________________________________________________________
+void AliJetModelBaseTask::GetRandomMassiveParticle(Double_t &pt, Double_t &eta, Double_t &phi, Bool_t emcal, Double_t& m){
+   
+   if(!fHMassPtDistrib) {
+   GetRandomParticle(pt,eta,phi,emcal);
+   m = GetRandomM();
+   
+   } else GetRandomMvsPtParticle(pt,m,eta,phi,emcal);
+
+}
+
+//________________________________________________________________________
 void AliJetModelBaseTask::Run() 
 {
   // Run.
@@ -1064,3 +1126,97 @@ void AliJetModelBaseTask::FillHistograms(){
    PostData(1, fOutput);
 
 }
+
+//________________________________________________________________________
+
+void AliJetModelBaseTask::SetMassDistribution(TH1F *hM)  {
+   if(!hM){
+      AliError("Null histogram for mass distribution");
+      return;
+   }
+   fMassFromDistr = kTRUE; 
+   fHMassDistrib = hM;
+   AliInfo("Input mass distribution set");
+   
+   return;
+}
+
+//________________________________________________________________________
+
+void AliJetModelBaseTask::SetMassVsPtDistribution(TH2F *hmasspt)  {
+   if(!hmasspt){
+      AliError("Null histogram for mass vs pt distribution");
+      return;
+   }
+   fMassFromDistr = kTRUE; 
+   fHMassPtDistrib = hmasspt;
+   AliInfo("Input mass vs pt distribution set");
+   
+   return;
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::SetpTDistributionFromFile(TString filename, TString histoname){
+   
+ SetDistributionFromFile(filename, histoname, 1);
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::SetMassDistributionFromFile(TString filename, TString histoname){
+   SetDistributionFromFile(filename, histoname, 2);
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::SetMassVsPtDistributionFromFile(TString filename, TString histoname){
+   SetDistributionFromFile(filename, histoname, 3);
+}
+
+//________________________________________________________________________
+void AliJetModelBaseTask::SetDistributionFromFile(TString filename, TString histoname, Int_t type){
+   
+   if(filename.Contains("alien")) {
+      TGrid::Connect("alien://");
+   }
+   TFile *f = TFile::Open(filename);
+   if(!f){
+      AliFatal(Form("File %s not found, cannot SetMassDistribution", filename.Data()));
+      return;
+   }
+   
+   TH1F* h = 0x0;
+   TH2F* g = 0x0;
+   if(type < 3){
+      h = dynamic_cast<TH1F*> (f->Get(histoname));
+      if(!h) {
+      	 AliError("Input file for Mass not found");
+      	 f->ls();
+      }
+   }
+   if(type == 3){
+      g = dynamic_cast<TH2F*> (f->Get(histoname));
+      if(!g) {
+      	 AliError("Input file for Mass not found");
+      	 f->ls();
+      }
+   }
+   
+   if(type == 1) SetPtSpectrum(h);
+   if(type == 2) SetMassDistribution(h);
+   if(type == 3) SetMassVsPtDistribution(g);
+   
+   //f->Close();
+   //delete f;
+   
+   return;
+
+}
+
+//________________________________________________________________________
+
+void AliJetModelBaseTask::SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT){
+   SetMassDistributionFromFile(filenameM, histonameM);
+   SetpTDistributionFromFile(filenamepT, histonamepT);
+   return;
+}
+
+

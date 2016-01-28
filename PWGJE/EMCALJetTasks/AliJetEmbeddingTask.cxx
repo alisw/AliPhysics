@@ -18,11 +18,9 @@ ClassImp(AliJetEmbeddingTask)
 AliJetEmbeddingTask::AliJetEmbeddingTask() : 
   AliJetModelBaseTask("AliJetEmbeddingTask", kTRUE),
   fMassless(kFALSE),
-  fMassFromDistr(kFALSE),
   fNeutralFraction(0),
   fNeutralMass(0.135),
   fMass(0.1396),
-  fHMassDistrib(0),
   fPathMinputFile(""),
   fPathpTinputFile(""),
   fMinputName(""),
@@ -58,11 +56,9 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
 AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) : 
   AliJetModelBaseTask(name, kTRUE),
   fMassless(kFALSE),
-  fMassFromDistr(kFALSE),
   fNeutralFraction(0),
   fNeutralMass(0.135),
   fMass(0.1396),
-  fHMassDistrib(0),
   fPathMinputFile(""),
   fPathpTinputFile(""),
   fMinputName(""),
@@ -289,14 +285,8 @@ void AliJetEmbeddingTask::Run()
        	     }
        	  }
        	  if(fMassless) mass = 0.;
-       	  if(fMassFromDistr) {
-       	     if(fHMassDistrib)
-       	     	mass = fHMassDistrib->GetRandom();
-       	     else {
-       	     	AliError(Form("Template distribution for mass of track embedding not found, use %f", fMass));
-       	     	mass = fMass;
-       	     }
-       	  }
+       	  if(fMassFromDistr) mass = -999;
+       	  
        	  AddTrack(-999,-999,-999,0,0,0,0,kFALSE,0,charge,mass);
        }
     }
@@ -324,79 +314,7 @@ Float_t AliJetEmbeddingTask::GetDownscalinigFactor(){
    }
    return fDownscale[fCurrentBin];
 }
-//________________________________________________________________________
 
-void AliJetEmbeddingTask::SetMassDistribution(TH1F *hM)  {
-   if(!hM){
-      AliError("Null histogram for mass distribution");
-      return;
-   }
-   fMassFromDistr = kTRUE; 
-   fHMassDistrib = hM;
-   AliInfo("Input mass distribution set");
-   
-   return;
-}
-//________________________________________________________________________
-void AliJetEmbeddingTask::SetMassDistributionFromFile(TString filename, TString histoname){
-   
-   if(filename.Contains("alien")) {
-      TGrid::Connect("alien://");
-   }
-   TFile *f = TFile::Open(filename);
-   if(!f){
-      AliFatal(Form("File %s not found, cannot SetMassDistribution", filename.Data()));
-      return;
-   }
-   
-   TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
-   if(!h) {
-      AliError("Input file for Mass not found");
-      f->ls();
-   }
-   SetMassDistribution(h);
-   
-   //f->Close();
-   //delete f;
-   
-   return;
-
-}
-
-//________________________________________________________________________
-
-void AliJetEmbeddingTask::SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT){
-   SetMassDistributionFromFile(filenameM, histonameM);
-   SetpTDistributionFromFile(filenamepT, histonamepT);
-   return;
-}
-
-//________________________________________________________________________
-void AliJetEmbeddingTask::SetpTDistributionFromFile(TString filename, TString histoname){
-   
-   if(filename.Contains("alien")) {
-      TGrid::Connect("alien://");
-   }
-   TFile *f = TFile::Open(filename);
-   if(!f){
-      AliFatal(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
-      return;
-   }
-
-   TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
-   if(!h) {
-      AliError("Input file for pT not found");
-      f->ls();
-   }
-
-   AliJetModelBaseTask::SetPtSpectrum(h);
-
-   //f->Close();
-   //delete f;
-
-   return;
-
-}
 
 //________________________________________________________________________
 void AliJetEmbeddingTask::SetTree(TTree *tree)  {
