@@ -236,7 +236,7 @@ goCPass()
 
   logOutputDir=$runpath
   [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> ${logOutputDir}/stdout
+  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> >(tee ${logOutputDir}/stdout)
   echo "$0 $*"
 
   ##### MC -- TODO: does this still work? is it really needed during CPass0 only?
@@ -495,8 +495,11 @@ goCPass()
   echo "dir $outputDir" >> $doneFileTmp
 
   # Copy stdout to destination.
-  [[ -z "$dontRedirectStdOutToLog" ]] && echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
-  copyFileToRemote stdout $outputDir
+  if [[ -z "$dontRedirectStdOutToLog" ]]; then
+    echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
+    exec &> /dev/tty
+    copyFileToRemote stdout $outputDir
+  fi
 
   # Final cleanup (only if we are not writing directly to destination).
   [[ "$runpath" != "$outputDir" ]] && printExec rm -rf $runpath
@@ -600,7 +603,7 @@ goMergeCPass()
 
   logOutputDir=${runpath}
   [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> ${logOutputDir}/stdout
+  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> >(tee ${logOutputDir}/stdout)
   echo "$0 $*"
 
   mergingScript="mergeMakeOCDB.byComponent.sh"
@@ -789,8 +792,11 @@ goMergeCPass()
   echo "dir $outputDir" >> $doneFileTmp
 
   # Copy stdout to destination.
-  [[ -z "$dontRedirectStdOutToLog" ]] && echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
-  copyFileToRemote stdout $outputDir
+  if [[ -z "$dontRedirectStdOutToLog" ]]; then
+    echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
+    exec &> /dev/tty
+    copyFileToRemote stdout $outputDir
+  fi
 
   # Final cleanup.
   [[ "$runpath" != "$outputDir" ]] && rm -rf ${runpath}
@@ -1910,6 +1916,7 @@ goMakeSummary()
   # Take a snapshot of the current directory. Files already here at this point needn't be copied to
   # the destination, as they were transferred here by Makeflow/Work Queue.
   dirSnapshotExclusion=$(for f in *; do echo -n "$f|"; done)
+  dirSnapshotExclusion="${log}"  # Append logfile. We'll copy it separately. Can't copy if in use.
 
   echo "[goMakeSummary] Exclusion list: those files are already here and will not be copied to destination: $dirSnapshotExclusion"
   echo "[goMakeSummary] List of $PWD:" ; find . -ls ; echo
@@ -2118,6 +2125,11 @@ EOF
       && copyFileToRemote ./!($dirSnapshotExclusion) $commonOutputPath/ \
       || copyFileToRemote $cpdir/* $commonOutputPath/$cpdir
   done < <( find . -type d )
+
+  # Copy stdout to destination.
+  echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"
+  exec &> /dev/tty
+  copyFileToRemote $log $outputDir
 
   alilog_info "[END] goMakeSummary() with following parameters $*"
   return 0
