@@ -43,12 +43,14 @@ ClassImp(AliRDHFCutsDplustoKpipi);
 
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) : 
-AliRDHFCuts(name),
+  AliRDHFCuts(name),
   fUseStrongPid(0),
   fMaxPtStrongPid(0.),
   fMaxPStrongPidK(0.),
   fMaxPStrongPidpi(0.),
-  fUseImpParProdCorrCut(kFALSE)
+  fUseImpParProdCorrCut(kFALSE),
+  fUsed0MeasMinusExpCut(kFALSE),
+  fMaxd0MeasMinusExp(0x0)
 {
   //
   // Default Constructor
@@ -133,12 +135,14 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &
   fMaxPtStrongPid(source.fMaxPtStrongPid),
   fMaxPStrongPidK(source.fMaxPStrongPidK),
   fMaxPStrongPidpi(source.fMaxPStrongPidpi),
-  fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
+  fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
+  fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
+  fMaxd0MeasMinusExp(0x0)
 {
   //
   // Copy constructor
   //
-
+  if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDplustoKpipi &source)
@@ -155,10 +159,25 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
   fMaxPStrongPidK=source.fMaxPStrongPidK;
   fMaxPStrongPidpi=source.fMaxPStrongPidpi;
   fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
-
+  fUsed0MeasMinusExpCut=source.fUsed0MeasMinusExpCut;
+  if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
+  
   return *this;
 }
-//
+//---------------------------------------------------------------------------
+void AliRDHFCutsDplustoKpipi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
+  //
+  // store the cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
+    AliFatal("exiting");
+  } 
+  if(!fMaxd0MeasMinusExp)  fMaxd0MeasMinusExp = new Float_t[fnPtBins];
+  for(Int_t ib=0; ib<fnPtBins; ib++) fMaxd0MeasMinusExp[ib] = cutval[ib];
+  fUsed0MeasMinusExpCut=kTRUE;
+  return;
+}
 
 
 //---------------------------------------------------------------------------
@@ -477,6 +496,21 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     //sec vert
     Double_t sigmavert=d->GetSigmaVert(aod);
     if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+
+    // d0meas-exp
+    if(fUsed0MeasMinusExpCut){
+      Double_t dd0max=0;
+      for(Int_t ipr=0; ipr<3; ipr++) {
+	Double_t diffIP, errdiffIP;
+	d->Getd0MeasMinusExpProng(ipr,aod->GetMagneticField(),diffIP,errdiffIP);
+	Double_t normdd0=0.;
+	if(errdiffIP>0) normdd0=diffIP/errdiffIP;
+	if(ipr==0) dd0max=normdd0;
+	else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+      }
+      if(TMath::Abs(dd0max)>fMaxd0MeasMinusExp[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
+
 
     // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);
