@@ -39,7 +39,7 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Bool_t   pileupFromSPDFlag = kFALSE,
 							     TString  referenceFileName = "",//Reference.root
 							     TString  referenceSMFileName = "",//ReferenceSM.root
-							     TString  referenceWrongL1SMFileName = "")//ReferenceWrongSM.root
+							     Bool_t   badReconstruction = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -74,25 +74,24 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
 
-  //add in pass1 for runs before LHC15n muon_calo_pass1
-  if(referenceWrongL1SMFileName.Length()!=0){
-    taskmbemcal->SetReferenceWrongL1PhasesRunByRunFileName(referenceWrongL1SMFileName);
-    taskmbemcal->LoadWrongReferenceRunByRunHistos();
-    taskmbemcal->SetPassTimeHisto(1200,300.,900.);
-  }
-
+  // pass1
+  taskmbemcal->SetRawTimeHisto(400,400.,800.);
   // pass2
   if(referenceSMFileName.Length()!=0){
     taskmbemcal->SetReferenceRunByRunFileName(referenceSMFileName);
     taskmbemcal->LoadReferenceRunByRunHistos();
-    taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+    taskmbemcal->SetPassTimeHisto(800,400.,800.);
+    if(badReconstruction) {  //add for runs before LHC15n muon_calo_pass1 in run2
+      taskmbemcal->SwitchOnBadReco();
+      taskmbemcal->SetPassTimeHisto(800,-200.,200.);
+    }
   }
 
   //pass3
   if(referenceFileName.Length()!=0){   
     taskmbemcal->SetReferenceFileName(referenceFileName);
     taskmbemcal->LoadReferenceHistos();
-    taskmbemcal->SetPassTimeHisto(1400,-350.,350.);
+    taskmbemcal->SetPassTimeHisto(1000,-250.,250.);
   }
   if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
   else taskmbemcal->SwitchOffPileupFromSPD();
