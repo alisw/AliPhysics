@@ -457,7 +457,7 @@ goCPass()
 
     0)
       # Validate CPass0.
-      if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
+      if summarizeLogs * */* | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
         [[ -f $outputDirMC/galice.root ]] && echo "sim $outputDirMC/galice.root" >> $doneFileTmp
         [[ -f AliESDfriends_v1.root ]] && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
         [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" >> $doneFileTmp  # new name of AliESDfriends_v1.root
@@ -468,7 +468,7 @@ goCPass()
 
     1)
       # Validate CPass1.
-      if summarizeLogs | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
+      if summarizeLogs * */* | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
         [[ -f AliESDs_Barrel.root ]] && echo "esd $outputDir/AliESDs_Barrel.root" >> $doneFileTmp
         [[ -f AliESDfriends_v1.root ]] && echo "calibfile $outputDir/AliESDfriends_v1.root" >> $doneFileTmp
         [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" >> $doneFileTmp  # new name of AliESDfriends_v1.root
