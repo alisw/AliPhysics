@@ -724,7 +724,8 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 	zvertex = aodevent->GetPrimaryVertex()->GetZ();
 
 	// select the events within |vtx-z| < 7 cm 
-	if( TMath::Abs(zvertex) > 7.0 ) return;
+//	if( TMath::Abs(zvertex) > 7.0 ) return;
+	if( TMath::Abs(zvertex) > 3.0 ) return; // for systematic study
 
 
 	int zBin = -1;
