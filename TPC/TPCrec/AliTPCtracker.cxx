@@ -134,6 +134,7 @@
 #include "AliCosmicTracker.h"
 #include "AliTPCROC.h"
 #include "AliMathBase.h"
+#include <math.h>
 //
 #include "AliESDfriendTrack.h"
 
@@ -2281,7 +2282,7 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
   // cl0 -  cluster to be modified
   // cl1 -  source cluster ion tail of this cluster will be added to the cl0 (accroding time and pad response function)
   // 
-  const Double_t kMinPRF    = 0.5;                           // minimal PRF width
+  const float kMinPRF       = 0.5f;                          // minimal PRF width
   ionTailTotal              = 0.;                            // correction value to be added to Qtot of cl0
   ionTailMax                = 0.;                            // correction value to be added to Qmax of cl0
 
@@ -2292,8 +2293,8 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
   Int_t padcl1              =  TMath::Nint(cl1->GetPad());   // pad1
   Float_t padWidth          = (sectorPad < 36)?0.4:0.6;      // pad width in cm
   const Int_t deltaTimebin  =  TMath::Nint(TMath::Abs(cl1->GetTimeBin()-cl0->GetTimeBin()))+12;  //distance between pads of cl1 and cl0 increased by 12 bins
-  Double_t rmsPad1I         = (cl1->GetSigmaY2()==0)?0.5/kMinPRF:(0.5*padWidth/TMath::Sqrt(cl1->GetSigmaY2()));
-  Double_t rmsPad0I         = (cl0->GetSigmaY2()==0)?0.5/kMinPRF:(0.5*padWidth/TMath::Sqrt(cl0->GetSigmaY2()));
+  float rmsPad1I            = (cl1->GetSigmaY2()==0)?0.5f/kMinPRF:(0.5f*padWidth/sqrtf(cl1->GetSigmaY2()));
+  float rmsPad0I            = (cl0->GetSigmaY2()==0)?0.5f/kMinPRF:(0.5f*padWidth/sqrtf(cl0->GetSigmaY2()));
   
   // RS avoid useless calculations
   //Double_t sumAmp1=0.;
@@ -2305,19 +2306,19 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
   //  sumAmp0+=TMath::Exp(-idelta*idelta*rmsPad0I));
   //}
 
-  double tmp = TMath::Exp(-rmsPad1I);
-  double sumAmp1 = 1.+2.*tmp*(1.+tmp*tmp*tmp);
-  tmp = TMath::Exp(-rmsPad0I);
-  double sumAmp0 = 1.+2.*tmp*(1.+tmp*tmp*tmp);
+  float tmp = expf(-rmsPad1I);
+  float sumAmp1 = 1.f/(1.f+2.f*tmp*(1.f+tmp*tmp*tmp));
+  tmp = expf(-rmsPad0I);
+  float sumAmp0 = 1.f/(1.f+2.f*tmp*(1.f+tmp*tmp*tmp));
 
   // Apply the correction  -->   cl1 corrects cl0 (loop over cl1's pads and find which pads of cl0 are going to be corrected)
   Int_t padScan=2;      // +-2 pad-timebin window will be scanned
   for (Int_t ipad1=padcl1-padScan; ipad1<=padcl1+padScan; ipad1++) {
     //
     //
-    Float_t  deltaPad1  = TMath::Abs(cl1->GetPad()-(Float_t)ipad1);
-    Double_t amp1       = TMath::Exp(-(deltaPad1*deltaPad1)*rmsPad1I)/sumAmp1;  // normalized pad response function
-    Float_t qTotPad1    = amp1*qTot1;                                           // used as a factor to multipliy the response function
+    Float_t deltaPad1  = TMath::Abs(cl1->GetPad()-(Float_t)ipad1);
+    Float_t amp1       = TMath::Exp(-(deltaPad1*deltaPad1)*rmsPad1I)*sumAmp1;  // normalized pad response function
+    Float_t qTotPad1   = amp1*qTot1;                                           // used as a factor to multipliy the response function
       
     // find closest value of cl1 to COG (among the time response functions' amplitude array --> to select proper t.r.f.)
     Int_t ampIndex = 0;
@@ -2339,7 +2340,7 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
       if (ipad1!=ipad0) continue;                                     // check if ipad1 channel sees ipad0 channel, if not no correction to be applied.
       
       Float_t deltaPad0  = TMath::Abs(cl0->GetPad()-(Float_t)ipad0);
-      Double_t amp0      = TMath::Exp(-(deltaPad0*deltaPad0)*rmsPad0I)/sumAmp0;  // normalized pad resp function
+      Float_t amp0       = expf(-(deltaPad0*deltaPad0)*rmsPad0I)*sumAmp0;  // normalized pad resp function
       Float_t qMaxPad0   = amp0*qTot0;
            
       // Add 5 timebin range contribution around the max peak (-+2 tb window)
