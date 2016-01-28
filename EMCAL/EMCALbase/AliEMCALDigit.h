@@ -109,7 +109,7 @@ class AliEMCALDigit : public AliDigitNew {
 	
   Float_t  fAmpFloat;     // Cell amplitude, float
   Int_t    fNSamples;     // Number of time samples, Low Gain for ALTRO, used also for FALTRO 
-  Int_t   *fSamples;	    //[fNSamples], list of time bin constents, Low Gain for ALTRO, used also for FALTRO 
+  Int_t   *fSamples;	  //[fNSamples], list of time bin constents, Low Gain for ALTRO, used also for FALTRO 
   Int_t    fNSamplesHG;   // Number of time samples, High Gain for ALTRO
   Int_t   *fSamplesHG;	  //[fNSamples], list of time bin constents, High Gain for ALTRO, used also for FALTRO 
 	
@@ -127,7 +127,7 @@ class AliEMCALDigit : public AliDigitNew {
   Float_t  fTimeR ;       // Earliest time: to be used by Digits2Raw
   
   //Fit quality parameters
-  Float_t  fChi2;         // Fit Chi aquare	
+  Float_t  fChi2;         // Fit Chi square	
   Int_t    fNDF;          // Fit Number of Degrees of Freedom
 	
   Int_t    fDigitType;    // This is a trigger digit(0), HG (1) or LG (3)
