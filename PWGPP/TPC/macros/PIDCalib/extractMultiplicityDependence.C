@@ -632,14 +632,14 @@ Int_t extractMultiplicityDependence(TString pathTree, Double_t widthFactor /*=1*
         }
         printf("Result: p1 / p0 = %f / %f = %e\n\n", p1, p0, (p0 != 0 ? p1 / p0 : -99999));
         if (p0 > 0) {
-          gSlvsOffset->SetPoint(i, p0, p1/pSigma0);
+          gSlvsOffset->SetPoint(i, p0, p1/p0);
           gSlvsOffset->SetPointError(i, err0, totError);
           
-          gSlvsInvOffset->SetPoint(i, 1./p0, p1/pSigma0);
+          gSlvsInvOffset->SetPoint(i, 1./p0, p1/p0);
           gSlvsInvOffset->SetPointError(i, TMath::Abs(err0/p0/p0), totError);
           
           
-          gSlvsTanTheta[i]->SetPoint(j, (tanThetaBinEdges[2*j] + tanThetaBinEdges[2*j+1]) / 2., p1/pSigma0);
+          gSlvsTanTheta[i]->SetPoint(j, (tanThetaBinEdges[2*j] + tanThetaBinEdges[2*j+1]) / 2., p1/p0);
           gSlvsTanTheta[i]->SetPointError(j, (tanThetaBinEdges[2*j+1] - tanThetaBinEdges[2*j]) / 2., totError); 
           
           // Only makes sense, if valid p0 available
