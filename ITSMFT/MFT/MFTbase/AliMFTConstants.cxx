@@ -47,6 +47,10 @@ const Double_t AliMFTConstants::kSensorThickness=50.e-4; // 50 micron
 
 const Double_t AliMFTConstants::kFlexThickness=100.e-4; // 100 micron // TODO : Change that
 
+// Defaults parameters for track reconstruction
+Double_t AliMFTConstants::fgDiskThicknessInX0[AliMFTConstants::kNDisks] = {0.008, 0.008, 0.008, 0.008, 0.008};
+Double_t AliMFTConstants::fgPlaneZPos[2*AliMFTConstants::kNDisks] = {-45.3, -46.7, -48.6, -50.0, -52.4, -53.8, -68.0, -69.4, -76.1, -77.5};
+
 
 const Double_t AliMFTConstants::fCutForAvailableDigits = 5.;
 const Double_t AliMFTConstants::fCutForAttachingDigits = 1.;

@@ -39,7 +39,14 @@ public:
   static const Double_t kFlexThickness;       ///< \brief Flex Thickness
 
   
-  
+	
+	
+	/// Return Disk thickness in X0
+	static Double_t DiskThicknessInX0(Int_t Id) {return (Id >= 0 && Id < kNDisks) ? fgDiskThicknessInX0[Id] : 0.;}
+	
+	/// Return Plane Z position
+	static Double_t DefaultPlaneZ(Int_t Id) {return (Id >= 0 && Id < kNDisks*2) ? fgPlaneZPos[Id]+(-(Id%2)*2-1)*0.0025 : 0.;} // Move to the middle of the CMOS sensor in Z direction
+
   
   
   
@@ -102,7 +109,9 @@ protected:
 
   AliMFTConstants() : TObject() {}
   virtual ~AliMFTConstants(){}
-  
+	static Double_t  fgDiskThicknessInX0[kNDisks]; ///< default disk thickness in X0 for reconstruction
+	static Double_t  fgPlaneZPos[2*kNDisks]; ///< default Plane Z position for reconstruction
+
   /// \cond CLASSIMP
   ClassDef(AliMFTConstants, 4);
   /// \endcond
