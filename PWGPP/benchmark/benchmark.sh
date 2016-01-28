@@ -329,7 +329,7 @@ goCPass()
                                          && printExec chmod +x ${file##*/}
   done
 
-  echo "Contents of current directory ($PWD) before running CPass${cpass}:" ; /bin/ls ; echo
+  listDir "$PWD" "before running CPass${cpass}"
 
   # Monkey patching: emove spaces from around arguments to root macros. For example this sometimes
   # is known to fail: root 'macro.C(argument1, argument2)'
@@ -388,9 +388,9 @@ goCPass()
       # entries using a relative path, e.g. local://./OCDB.
       echo "Linking the OCDB/ for Barrel and OuterDet directories"
       mkdir Barrel OuterDet
-      ls -l
       ln -s ../OCDB Barrel/OCDB
       ln -s ../OCDB OuterDet/OCDB
+      listDir "$PWD" "after linking the OCDB for Barrel and OuterDet"
 
       # Setup the filtering.
       # The following option enables the filtering task inside the QAtrain_duo.C
@@ -441,7 +441,7 @@ goCPass()
 
   esac
 
-  echo "Contents of current directory ($PWD) after running CPass$cpass:" ; /bin/ls ; echo
+  listDir "$PWD" "after running CPass${cpass}"
 
   # CPass has completed. Copy all created files to the destination (which might be remote).
   # Note: stdout is not copied, this will happen at the very end.
@@ -676,8 +676,7 @@ goMergeCPass()
     echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
   fi
 
-  echo "Contents of current directory before running MergeCPass${cpass} ($PWD):" ; /bin/ls ; echo
-  echo "Contents of parent directory before running MergeCPass${cpass} ($(cd ..;pwd)):" ; /bin/ls .. ; echo
+  listDir ".." "before running MergeCPass${cpass} in ${PWD}"
 
   # Merge calibration.
   chmod u+x $mergingScript
@@ -760,7 +759,7 @@ goMergeCPass()
   printExec tar czvvf ${batchWorkingDirectory}/${baseTar} ./OCDB && \
     echo "ocdbTarball $commonOutputPath/meta/$baseTar" >> $doneFileTmp
 
-  echo "Contents (recursive) of batch working directory after tarball creation in MergeCPass0 ($batchWorkingDirectory):" ; /bin/ls -R $batchWorkingDirectory ; echo
+  listDir "$batchWorkingDirectory" "after tarball creation in MergeCPass${cpass}"
 
   # Copy all to output dir. Preserve dir structure. stdout will be copied later.
   while read cpdir; do
@@ -1921,7 +1920,7 @@ goMakeSummary()
   dirSnapshotExclusion="${log}"  # Append logfile. We'll copy it separately. Can't copy if in use.
 
   echo "[goMakeSummary] Exclusion list: those files are already here and will not be copied to destination: $dirSnapshotExclusion"
-  echo "[goMakeSummary] List of $PWD:" ; find . -ls ; echo
+  listDir "$PWD"
 
   # Summarize the global stuff
   echo "env script: ${alirootSource} ${alirootEnv}"
@@ -2070,7 +2069,7 @@ EOF
   goPrintValues stacktrace.log remote.cpass1.stacktrace.list "$metadir"/*cpass1*done &>/dev/null
   goPrintValues esd remote.cpass1.esd.list "$metadir"/*cpass1*done &> /dev/null
 
-  echo "[goMakeSummary] List of $PWD (after goPrintValues):" ; find . -ls ; echo
+  listDir "$PWD" "after goPrintValues"
  
   # Copy all the files to a local dir tree.
   for remoteList in remote.qa.list \
@@ -2090,7 +2089,7 @@ EOF
     done < <(cat "$remoteList")
   done
 
-  echo "[goMakeSummary] List of $PWD (after copying remote lists locally):" ; find . -ls ; echo
+  listDir "$PWD" "after copying remote lists locally"
 
   #summarize the stacktraces
   stackTraceTree @stacktraces.cpass0.list > stacktrace_cpass0.tree
@@ -2100,21 +2099,21 @@ EOF
   rm -f trending.root
   goMerge trending.list trending.root ${configFile} "${extraOpts[@]}" &> mergeTrending.log
 
-  echo "[goMakeSummary] List of $PWD (after merging trending):" ; find . -ls ; echo
+  listDir "$PWD" "after merging trending"
 
   printExec goMakeSummaryTree "${metadir}" 0
   printExec goMakeSummaryTree "${metadir}" 1 
 
-  echo "[goMakeSummary] List of $PWD (after making summary tree):" ; find . -ls ; echo
+  listDir "$PWD" "after making summary tree"
 
   goCreateQAplots "${PWD}/qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/filtering.list" &>createQAplots.log
 
-  echo "[goMakeSummary] List of $PWD (after creation of QA plots):" ; find . -ls ; echo
+  listDir "$PWD" "after creation of QA plots"
 
   #make a merged summary tree out of the QA trending, dcs trees and log summary trees
   goMakeMergedSummaryTree
 
-  echo "[goMakeSummary] List of $PWD (after making merged summary tree):" ; find . -ls ; echo
+  listDir "$PWD" "after making merged summary tree"
 
   #if set, email the summary
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}

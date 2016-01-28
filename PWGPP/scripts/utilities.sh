@@ -654,9 +654,16 @@ createUniquePID()
 }
 
 printExec() {
-  echo "==> COMMAND [PWD=$PWD]: $*" >&2
+  echo "[command] [PWD=$PWD]: $*" >&2
   "$@"
 }
+
+listDir() (
+  dir="$(cd "$1"; pwd)"
+  echo ; echo "[listDir] Content of ${dir}${2:+" ($2)"}"
+  find "$dir" -ls
+  echo
+)
 
 mkdirLocal() (
   # Creates the given directories, with full path, only if local. If not local,
