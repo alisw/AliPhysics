@@ -43,7 +43,7 @@ then
         echo "Total files $nFiles"
         PartFiles=" "
         t=0
-        secondorderfiles=" "
+        FullFiles=" "
         for j in $Files
         do
             PartFiles=" $PartFiles $j "
