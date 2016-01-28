@@ -322,11 +322,9 @@ parseListOfFiles()
   #generate a list of files, one per line out of arguments.
   #names starting with "@" are assumed to be file lists and will
   #be expanded
-  for file in "${@}"; do
-    if [[ "$file" =~ ^@ ]]; then
-      while IFS= read x; do
-        echo "$x"
-      done < "${file#@}"
+  for file in "$@"; do
+    if [[ ${file:0:1} == @ ]]; then
+      [[ -r "${file:1}" ]] && cat "${file:1}"
     else
       echo "$file"
     fi
@@ -387,17 +385,18 @@ summarizeLogs()
   for x in "${coreFiles[@]}"; do
     echo "${x}"
     chmod 644 "${x}"
+    stacktraceLog=${x}.stacktrace.log
     #gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > stacktrace.log
+    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > "$stacktraceLog"
     local nLines[2]
     #nLines=($(wc -l stacktrace_${x//\//_}.log))
-    nLines=($(wc -l stacktrace.log))
+    nLines=($(wc -l "$stacktraceLog"))
     if [[ ${nLines[0]} -eq 0 ]]; then
       #rm stacktrace_${x//\//_}.log
-      rm stacktrace.log
+      rm "$stacktraceLog"
     else
       logStatus=1
-      echo "${x%/*}/stacktrace.log BAD"
+      echo "stacktrace $stacktraceLog"
     fi
   done
 
@@ -655,62 +654,16 @@ createUniquePID()
   echo "${id}"
 }
 
-copyFileToLocal()
-(
-  #copies a single file to a local destination: the file may either come from
-  #a local filesystem or from a remote location (whose protocol must be
-  #supported)
-  #copy is "robust" and it is repeated some times in case of failure before
-  #giving up (1 is returned in that case)
-  #origin: Dario Berzano, dario.berzano@cern.ch
-  src="$1"
-  dst="$2"
-  ok=0
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+printExec() {
+  echo "[command] [PWD=$PWD]: $*" >&2
+  "$@"
+}
 
-  proto="${src%%://*}"
-
-  echo "copy file to local dest started: $src -> $dst"
-
-  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
-
-    echo "...attempt $i of $maxCopyTries"
-    rm -f "$dst"
-
-    if [[ "$proto" == "$src" ]]; then
-      echo "==> cp $src $dst"
-      cp "$src" "$dst"
-    else
-      case "$proto" in
-        root)
-          echo "==> xrdcp -f $src $dst"
-          xrdcp -f "$src" "$dst"
-        ;;
-        http)
-          echo "==> curl -L $src -O $dst"
-          curl -L "$src" -O "$dst"
-        ;;
-        *)
-          echo "protocol not supported: $proto"
-          return 2
-        ;;
-      esac
-    fi
-
-    if [ $? == 0 ] ; then
-      ok=1
-      break
-    fi
-
-  done
-
-  if [[ "$ok" == 1 ]] ; then
-    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
-    return 0
-  fi
-
-  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
-  return 1
+listDir() (
+  dir="$(cd "$1"; pwd)"
+  echo ; echo "[listDir] Content of ${dir}${2:+" ($2)"}"
+  find "$dir" -ls
+  echo
 )
 
 mkdirLocal() (
@@ -722,15 +675,110 @@ mkdirLocal() (
     dir=$1
     shift
     if [[ "${dir%%://*}" != "$dir" ]]; then
-      echo "mkdirLocal: skipping creation of $dir: it is not local"
+      echo "[mkdirLocal] skipping creation of $dir: it is not local"
       continue
     fi
     mkdir -p "$dir"
     [[ -d "$dir" ]]
     rv=$?
     err=$((err + ($rv & 1)))
-    echo "mkdirLocal: creation of dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
+    echo "[mkdirLocal] creation of dir $dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
   done
+  return $((err & 1))
+)
+
+statRemote() (
+  # Check if file exists, whether it is local or remote. Returns 0 on success, 1 on failure.
+  file=$1
+  proto="${file%%://*}"
+  [[ "$proto" == "$file" ]] && proto=local
+  case "$proto" in
+    local) [[ -f $file ]] ;;
+    root)  path=${file:$((${#proto}+3))}
+           host=${path%%/*}
+           path=${path:$((${#host}))}
+           while [[ ${path:0:2} == // ]]; do path=${path:1}; done
+           xrd "$host" stat "$path" 2>&1 | grep -q Modtime: ;;
+    *)     echo "[statRemote] for file $file: protocol not supported: $proto"
+           return 2 ;;
+  esac
+  rv=$?
+  echo "[statRemote] file $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD"))" \
+       "$([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
+  return $rv
+)
+
+lsRemote() (
+  # List remote files on stdout. Returns 0 on success, 1 on failure.
+  dir=$1
+  proto="${dir%%://*}"
+  [[ "$proto" == "$dir" ]] && proto=local
+  case "$proto" in
+    local) find "$dir" -maxdepth 1 -mindepth 1 ;;
+    root)  path=${dir:$((${#proto}+3))}
+           host=${path%%/*}
+           path=${path:$((${#host}))}
+           while [[ ${path:0:2} == // ]]; do path=${path:1}; done
+           xrd "$host" ls "$path" 2>&1 | grep -v "No such file or directory" | grep -o "${path}.*" ;;
+    *)     echo "[lsRemote] for directory $dir: protocol not supported: $proto" >&2
+           return 2 ;;
+  esac
+  rv=$?
+  [[ $rv != 0 ]] && echo "[lsRemote] cannot list directory $dir" >&2
+  return $rv
+)
+
+copyFileFromRemote() (
+  # Copy a list of remote files ($1, $2...${n-1}) to a certain dest dir ($n).
+  # The last parameter must then be a local directory. Files can be local too.
+  # Dest dir is created if not existing.
+  # If a source file is in the form @list.txt, then the list of files (one per
+  # line) in list.txt will be expanded and copied.
+  # On success 0 is returned - 1 otherwise.
+  # Example: copyFileFromRemote root://localhost//file1.txt @list.txt /tmp/localdir/foo
+
+  dstdir=${!#}
+  maxCopyTries=${maxCopyTries-10}
+  err=0
+  opname="[copyFileFromRemote]"
+  mkdir -p "$dstdir"
+
+  while [[ $# -gt 1 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read -u 3 src; do
+      thiserr=1
+      proto="${src%%://*}"
+      [[ "$proto" == "$src" ]] && proto=local
+      # Remove leading double slashes.
+      while [[ "${src:$((${#src}-1))}" == / ]]; do
+        src=${src:0:$((${#src}-1))}
+      done
+      dst="$dstdir/$(basename "$src")"
+      echo "$opname (proto=$proto) started: $src -> $dst"
+      for ((i=1; i<=maxCopyTries; i++)); do
+        echo "$opname $src -> $dst attempt $i of $maxCopyTries"
+        case "$proto" in
+          local) printExec cp "$src" "$dst"
+                 if [[ $? != 0 ]]; then
+                   rm -f "$dst"
+                   false
+                 fi ;;
+          root)  printExec xrdcp -f "$src" "$dst" ;;
+          *)     echo "protocol not supported: $proto"
+                 return 2 ;;
+        esac
+        if [[ $? == 0 ]]; then
+          thiserr=0
+          break
+        fi
+      done  # cp attempts
+      [[ $thiserr == 0 ]] && echo "$opname (proto=$proto) OK after $i attempt(s): $src -> $dst" \
+                          || echo "$opname (proto=$proto) FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      err=$((err+thiserr))
+    done 3< <($inputcmd)
+    shift
+  done
+
   return $((err & 1))
 )
 
@@ -750,7 +798,7 @@ copyFileToRemote() (
   proto="${dstdir%%://*}"
   err=0
   [[ "$proto" == "$dstdir" ]] && proto=local
-  opname="copy file to remote dst (proto=$proto)"
+  opname="[copyFileToRemote] (proto=$proto)"
 
   # Remove trailing slashes.
   while [[ "${dstdir:$((${#dstdir}-1))}" == / ]]; do
@@ -759,22 +807,22 @@ copyFileToRemote() (
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
-    while read src; do
+    while read -u 3 src; do
       thiserr=1
       dst="$dstdir/$(basename "$src")"
-      echo "$opname started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
-        echo "...$opname attempt $i of $maxCopyTries"
+        [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && break
+        # TODO use shopt -s nullglob
+        [[ ! -r "$src" ]] && echo "$opname $src -> $dst skipping, cannot access source" && thiserr=0 && break
+        echo "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
-          local) echo "==> cp $src $dst"
-                 mkdir -p "$(dirname "$dst")"
-                 cp "$src" "$dst"
+          local) mkdir -p "$(dirname "$dst")"
+                 printExec cp "$src" "$dst"
                  if [[ $? != 0 ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
-          root)  echo "==> xrdcp -f $src $dst"
-                 xrdcp -f "$src" "$dst" ;;
+          root)  printExec xrdcp -f "$src" "$dst" ;;
           *)     echo "protocol not supported: $proto"
                  return 2 ;;
         esac
@@ -786,7 +834,7 @@ copyFileToRemote() (
       [[ $thiserr == 0 ]] && echo "$opname OK after $i attempt(s): $src -> $dst" \
                           || echo "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
-    done < <($inputcmd)
+    done 3< <($inputcmd)
     shift
   done
 
@@ -921,3 +969,6 @@ reformatXMLCollection()
 #use case:
 #  bashdb utilities.sh summarizeLogs * */*
 [[ $# != 0 ]] && eval "$@" || true
+
+
+# vi:syntax=zsh
