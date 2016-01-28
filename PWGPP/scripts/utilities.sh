@@ -385,17 +385,18 @@ summarizeLogs()
   for x in "${coreFiles[@]}"; do
     echo "${x}"
     chmod 644 "${x}"
+    stacktraceLog=${x}.stacktrace.log
     #gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > stacktrace.log
+    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > "$stacktraceLog"
     local nLines[2]
     #nLines=($(wc -l stacktrace_${x//\//_}.log))
-    nLines=($(wc -l stacktrace.log))
+    nLines=($(wc -l "$stacktraceLog"))
     if [[ ${nLines[0]} -eq 0 ]]; then
       #rm stacktrace_${x//\//_}.log
-      rm stacktrace.log
+      rm "$stacktraceLog"
     else
       logStatus=1
-      echo "${x%/*}/stacktrace.log BAD"
+      echo "stacktrace $stacktraceLog"
     fi
   done
 

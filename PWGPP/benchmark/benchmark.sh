@@ -2069,8 +2069,8 @@ EOF
   goPrintValues filteredTree remote.filtering.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues dcsTree remote.cpass0.dcsTree.list "$metadir"/merge.cpass0.run*.done &>/dev/null
   goPrintValues dcsTree remote.cpass1.dcsTree.list "$metadir"/merge.cpass1.run*.done &>/dev/null
-  goPrintValues stacktrace.log remote.cpass0.stacktrace.list "$metadir"/*cpass0*done &>/dev/null
-  goPrintValues stacktrace.log remote.cpass1.stacktrace.list "$metadir"/*cpass1*done &>/dev/null
+  goPrintValues stacktrace remote.cpass0.stacktrace.list "$metadir"/*cpass0*done &>/dev/null
+  goPrintValues stacktrace remote.cpass1.stacktrace.list "$metadir"/*cpass1*done &>/dev/null
   goPrintValues esd remote.cpass1.esd.list "$metadir"/*cpass1*done &> /dev/null
 
   listDir "$PWD" "after goPrintValues"
