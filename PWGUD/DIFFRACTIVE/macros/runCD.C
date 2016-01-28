@@ -77,7 +77,7 @@ void runCD(
     plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
     plugin->SetDefaultOutputs(kFALSE);
     plugin->SetOutputFiles("AnalysisResults.root tree.root");
-    plugin->SetSplitMaxInputFileNumber(1000);
+    plugin->SetSplitMaxInputFileNumber(100);
     plugin->SetMasterResubmitThreshold(90);
 
     // Optionally set time to live (default 30000 sec)
@@ -111,7 +111,7 @@ void runCD(
     if (foption.Contains("LHC15f")){
         AliInputEventHandler* hdl = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
         if (hdl) hdl->SetNeedField(kTRUE); 
-        task = AliAnalysisTaskCDPWA("ESD");
+        task = new AliAnalysisTaskCDPWA("ESD");
     } else {
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
         AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0);
