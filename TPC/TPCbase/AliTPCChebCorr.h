@@ -52,7 +52,7 @@ class AliTPCChebCorr : public TNamed
   void     SetBinning(int nps=1,int nzs=1, float zmxAbs=250);
   Bool_t   GetUseFloatPrec()                     const {return TestBit(kUseParF);}
   Bool_t   GetUseShortPrec()                     const {return !TestBit(kUseParF);}
-  Bool_t   SetUseFloatPrec(Bool_t v)                   {SetBit(kUseParF,v);}
+  Bool_t   SetUseFloatPrec(Bool_t v)                   {SetBit(kUseParF,v); return v;}
   Bool_t   GetUseZ2R()                           const {return TestBit(kUseZ2R);}
   void     SetUseZ2R(Bool_t v=kTRUE)                   {SetBit(kUseZ2R,v);}
   Bool_t   GetTimeDependent()                    const {return TestBit(kTimeDependent);}

@@ -35,7 +35,7 @@ public:
   inline  void Disable(){fUsed=kDisabled;}
   inline  Bool_t IsDisabled() const {return (fUsed==kDisabled);}
 
-  Bool_t  IsSectorChanged()                const {TestBit(kSectorChanged);}
+  Bool_t  IsSectorChanged()                const {return TestBit(kSectorChanged);}
   void    SetSectorChanged(Bool_t v=kTRUE)       {SetBit(kSectorChanged,v);}
 
   virtual Int_t GetDetector() const {return fDetector;}
