@@ -59,10 +59,7 @@ AliMFTLadder::AliMFTLadder(AliMFTLadderSegmentation *segmentation):TNamed(segmen
 fSegmentation(segmentation), fMFTFlex(NULL)
 {
   AliDebug(1, Form("Creating : %s", GetName()));
-  Int_t nChips = fSegmentation->GetNSensors();
-  TGeoMedium *medVac  = gGeoManager->GetMedium("MFT_Air$");
-  Double_t ladderDeltaX = AliMFTConstants::kLadderOffsetToEnd + AliMFTConstants::kSensorSideOffset + nChips * (AliMFTConstants::kSensorLength + AliMFTConstants::kSensorInterspace) ;
-  fLadderVolume = gGeoManager->MakeBox(GetName(), medVac, ladderDeltaX/2., kLadderDeltaY/2., kLadderDeltaZ/2.);
+  fLadderVolume = new TGeoVolumeAssembly(GetName());
   
 
 }
@@ -89,7 +86,20 @@ TGeoVolume * AliMFTLadder::CreateVolume() {
   
   // Create the CMOS Sensors
   CreateSensors();
-  
+	/////////// TEST !!!!  ///////////
+	Int_t nChips = fSegmentation->GetNSensors();
+  Double_t kaptonDeltaX = AliMFTConstants::kLadderOffsetToEnd + AliMFTConstants::kSensorSideOffset + nChips * (AliMFTConstants::kSensorLength + AliMFTConstants::kSensorInterspace);
+	Double_t kaptonDeltaY = AliMFTConstants::kSensorHeight + 2.*AliMFTConstants::kSensorTopOffset;
+	Double_t kaptonDeltaZ = 0.0150;
+	// Position of the center on the kapton in the ladder coordinate system
+	Double_t pos[3] ={kaptonDeltaX/2., kaptonDeltaY/2., kaptonDeltaZ/2. - AliMFTConstants::kSensorThickness};
+	TGeoMedium *kMedKapton = gGeoManager->GetMedium("MFT_Kapton$");
+	TGeoVolume* kaptonlayer = gGeoManager->MakeBox(Form("%s_kaptonlayer",GetName()), kMedKapton, kaptonDeltaX/2., kaptonDeltaY/2., kaptonDeltaZ/2.);
+	kaptonlayer->SetVisibility(1);
+	kaptonlayer->SetLineColor(kYellow);
+	fLadderVolume->AddNode(kaptonlayer,    1,  new TGeoTranslation(pos[0],pos[1],pos[2]));
+	//////////////////////
+
   return fLadderVolume;
   
 }

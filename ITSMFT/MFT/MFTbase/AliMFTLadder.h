@@ -39,7 +39,7 @@ private:
   const static Double_t kLadderDeltaZ;      ///< \brief Ladder size along Z direction (thickness)
   AliMFTLadderSegmentation *fSegmentation;  ///< \brief Virtual Segmentation object of the ladder
   AliMFTFlex      * fMFTFlex;               ///< \brief Flex object (\todo to be removed ?)
-  TGeoVolume * fLadderVolume;               ///< \brief Pointer to the Volume holding the ladder geometry
+  TGeoVolumeAssembly * fLadderVolume;               ///< \brief Pointer to the Volume holding the ladder geometry
 
   
   /// \cond CLASSIMP

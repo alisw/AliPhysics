@@ -83,7 +83,7 @@ void AliMFTHalf::CreateHalfDisks(){
     AliMFTHalfDiskSegmentation * halfDiskSeg = fSegmentation->GetHalfDisk(iDisk);
     
     AliMFTHalfDisk * halfDisk = new AliMFTHalfDisk(halfDiskSeg);
-    Int_t halfDiskId = AliMFTGeometry::Instance()->GetHalfDiskID(halfDiskSeg->GetUniqueID());
+		// Int_t halfDiskId = AliMFTGeometry::Instance()->GetHalfDiskID(halfDiskSeg->GetUniqueID());
     fHalfVolume->AddNode(halfDisk->GetVolume(),0,halfDiskSeg->GetTransformation());
     delete halfDisk;
   }
