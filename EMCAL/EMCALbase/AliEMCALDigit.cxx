@@ -634,13 +634,13 @@ void AliEMCALDigit::SetListOfPrimaries(Int_t npri, Int_t * prilist, Float_t * ed
     return;
   }
   
-  fNMaxPrimary = npri;
+  fNprimary = npri;
   
   if ( fPrimary   ) delete [] fPrimary  ; fPrimary   = NULL;
   if ( fDEPrimary ) delete [] fDEPrimary; fDEPrimary = NULL;
   
-  fPrimary   = new Int_t  [fNMaxPrimary];
-  fDEPrimary = new Float_t[fNMaxPrimary];
+  fPrimary   = new Int_t  [fNprimary];
+  fDEPrimary = new Float_t[fNprimary];
   
   for(Int_t ipri = 0; ipri < npri; ipri++)
   {
@@ -661,15 +661,15 @@ void AliEMCALDigit::SetListOfParents(Int_t npar, Int_t * parlist, Float_t * edep
     AliError(Form("Null number of entries (%d) or null lists (%p,%p), do not set!",npar,parlist,edepList));
     return;
   }
-
-  fNMaxiparent = npar;
   
+  fNiparent = npar;
+    
   if ( fIparent  ) delete [] fIparent ; fIparent  = NULL;
   if ( fDEParent ) delete [] fDEParent; fDEParent = NULL;
   
-  fIparent  = new Int_t  [fNMaxiparent];
-  fDEParent = new Float_t[fNMaxiparent];
-  
+  fIparent  = new Int_t  [fNiparent];
+  fDEParent = new Float_t[fNiparent];
+
   for(Int_t ipar = 0; ipar < npar; ipar++)
   {
     fIparent [ipar] = parlist [ipar];
