@@ -111,7 +111,7 @@ void runCD(
     if (foption.Contains("LHC15f")){
         AliInputEventHandler* hdl = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
         if (hdl) hdl->SetNeedField(kTRUE); 
-        task = ew AliAnalysisTaskCDPWA("ESD");
+        task = AliAnalysisTaskCDPWA("ESD");
     } else {
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
         AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0);
