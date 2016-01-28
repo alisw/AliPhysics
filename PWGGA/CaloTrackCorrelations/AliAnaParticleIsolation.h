@@ -493,6 +493,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTrackMatchedDEta[2]     ;                 //!<! Eta distance between track and cluster vs cluster E.
   TH2F *   fhTrackMatchedDPhi[2]     ;                 //!<! Phi distance between track and cluster vs cluster E.
   TH2F *   fhTrackMatchedDEtaDPhi[2] ;                 //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV.
+  TH2F *   fhTrackMatchedDEtaMC[fgkNmcTypes][2]     ;  //!<! Eta distance between track and cluster vs cluster E for mcTypes particle.
+  TH2F *   fhTrackMatchedDPhiMC[fgkNmcTypes][2]     ;  //!<! Phi distance between track and cluster vs cluster E for mcTypes particle.
+  TH2F *   fhTrackMatchedDEtaDPhiMC[fgkNmcTypes][2] ;  //!<! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV for mcTypes particle.
   TH2F *   fhdEdx[2]  ;                                //!<! matched track dEdx vs cluster E.
   TH2F *   fhEOverP[2];                                //!<! matched track E cluster over P track vs cluster E, after dEdx cut.
   TH2F *   fhTrackMatchedMCParticle[2];                //!<! Trace origin of matched particle.
