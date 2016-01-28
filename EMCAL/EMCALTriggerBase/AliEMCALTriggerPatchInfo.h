@@ -97,22 +97,22 @@ class AliEMCALTriggerPatchInfo: public TObject {
    * Access \f$ \phi \f$ angle of the geometric center of the trigger patch
    * @return \f$ \phi \f$ angle
    */
-  Double_t GetPhiGeo() const { return fCenterGeo.Phi(); }
+  Double_t GetPhiGeo() const { return GetPhiTransform(fCenterGeo.Phi()); }
   /**
    * Access \f$ \phi \f$ angle of the patch at the center of mass
    * @return \f$ \phi \f$ angle
    */
-  Double_t GetPhiCM()  const { return fCenterMass.Phi(); }
+  Double_t GetPhiCM()  const { return GetPhiTransform(fCenterMass.Phi()); }
   /**
    * Get minimal \f$ \phi \f$ of the patch
    * @return \f$ \phi \f$ angle
    */
-  Double_t GetPhiMin() const { return fEdge1.Phi(); }
+  Double_t GetPhiMin() const { return GetPhiTransform(fEdge1.Phi()); }
   /**
    * Get maximal \f$ \phi \f$ of the patch
    * @return \f$ \phi \f$ angle
    */
-  Double_t GetPhiMax() const { return fEdge2.Phi(); }
+  Double_t GetPhiMax() const { return GetPhiTransform(fEdge2.Phi()); }
   /**
    * Get \f$ \eta \f$ of the patch at the geometrical center
    * @return Patch \f$ \eta \f$
@@ -452,6 +452,7 @@ class AliEMCALTriggerPatchInfo: public TObject {
 
  protected:
   //TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
+  Double_t GetPhiTransform(Double_t phiin) const;
 
   TLorentzVector    fCenterGeo;                     ///< geometrical center
   TLorentzVector    fCenterMass;                    ///< CM
