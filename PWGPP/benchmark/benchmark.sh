@@ -548,6 +548,8 @@ goMergeCPass()
   echo Start: goMergeCPass${cpass}
   alilog_info "[BEGIN] goMergeCPass${cpass}() with following parameters $*"
 
+  listDir "$PWD" "before transferring files locally in MergeCPass${cpass}"
+
   # Copy all the files to a local dir tree. Replace remote file names in the lists with their local
   # versions.
   for remoteList in $calibrationFilesToMerge \
@@ -556,17 +558,17 @@ goMergeCPass()
     localList=local.${remoteList}
     rm -f "$localList" && touch "$localList"
     while read sourceFile; do
-      destinationFile="${PWD}/${sourceFile#${baseOutputDirectory}}"
+      destinationFile="${PWD}/${sourceFile#${commonOutputPath}}"
       copyFileFromRemote "$sourceFile" "$(dirname "${destinationFile}")" && \
         echo "$destinationFile" >> "$localList"
     done < <(cat "$remoteList")
   done
   # Subsequent calls will use the local.* version of those files.
   calibrationFilesToMerge=local.${calibrationFilesToMerge}
-  qaFilesToMerge=local.${qaFilesToMerge}
   filteredFilesToMerge=local.${filteredFilesToMerge}
 
   if [[ "$qaFilesToMerge" != '' ]]; then
+    qaFilesToMerge=local.${qaFilesToMerge}
     tmp=$(cat $qaFilesToMerge); echo ${tmp%/*} > ${qaFilesToMerge}.lastMergingStage.txt.list
     qaFilesToMerge=${qaFilesToMerge}.lastMergingStage.txt.list
   fi
