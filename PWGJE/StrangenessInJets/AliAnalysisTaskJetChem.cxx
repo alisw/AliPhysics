@@ -5441,7 +5441,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Double_t ptFractionEmbedded   = 0; 
 	Double_t deltaREmbedded       = 0;
 	AliAODJet* embeddedJet        = 0; // jet from detector level PYTHIA tracks 
-	AliAODJet* extraJet           = 0; // jet from UE + detector levely PYTHIA tracks
+	AliAODJet* extraJet           = 0; // jet from UE + detector level PYTHIA tracks
 	
 	if(fBranchEmbeddedJets.Length()){ // find embedded jet
 	  
@@ -5449,11 +5449,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  ptFractionEmbeddedMC  = fGenMatchPtFraction[ij]; 
 	  
 	  
-	  fh1FractionPtEmbeddedMC->Fill(ptFractionEmbeddedMC);
+	  fh1FractionPtEmbeddedMC->Fill(ptFractionEmbeddedMC);//yes!
 	  
 	  if(fDebug > 2)std::cout<<" ij: "<<ij<<" indexEmbeddedMC: "<<indexEmbeddedMC<<std::endl;
 	  
-	  fh1IndexEmbeddedMC->Fill(indexEmbeddedMC);
+	  fh1IndexEmbeddedMC->Fill(indexEmbeddedMC);//yes!
 
 	  if(indexEmbeddedMC > -1){ 
 	    
@@ -5464,16 +5464,16 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Int_t indexExtra = iEmbeddedMatchIndex[indexEmbeddedMC]; 
 	    
-	    if(fDebug > 2)std::cout<<" ij "<<ij<<" deltaREmbeddedMC "<<deltaREmbeddedMC<<" indexExtra "<<indexExtra<<std::endl;
+	    if(fDebug > 2)std::cout<<" ij "<<ij<<" deltaREmbeddedMC "<<deltaREmbeddedMC<<" indexExtra "<<indexExtra<<std::endl;//yes!
 	    
 	    if(indexExtra > -1){
 	      
 	      extraJet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(indexExtra));
 	      
 	      ptFractionEmbedded = fRecMatchPtFraction[indexExtra]; 
-	      deltaREmbedded     = embeddedJet->DeltaR((AliVParticle*) (extraJet)); 
+	      deltaREmbedded     = embeddedJet->DeltaR((AliVParticle*) (extraJet)); //yes!
 	      
-	      if(fDebug > 2)std::cout<<" ij: "<<ij<<" indexExtra: "<<indexExtra<<" ptFractionEmbedded: "<<ptFractionEmbedded<<" deltaREmbedded: "<<deltaREmbedded<<std::endl;
+	      if(fDebug > 2)std::cout<<" ij: "<<ij<<" indexExtra: "<<indexExtra<<" ptFractionEmbedded: "<<ptFractionEmbedded<<" deltaREmbedded: "<<deltaREmbedded<<std::endl;//yes! This is the last printed statement
 	
 
 	    }	
@@ -5489,7 +5489,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	}
 	else GetJetTracksPointing(fTracksGen, jettrackList, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
 	
-	if(GetFFMinNTracks()>0 && jettrackList->GetSize()<=GetFFMinNTracks()) isBadJet = kTRUE;
+	if(GetFFMinNTracks()>0 && jettrackList->GetSize()<=GetFFMinNTracks()){isBadJet = kTRUE; std::cout<<" Generated jet loop: isBadJet - jet rejected! No jettrack list filled! "<<std::endl;}
 	
 	if(isBadJet){
 	  delete jettrackList;
@@ -5498,20 +5498,24 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	// embedding QA after leading pt cut
 	
+	if(!embeddedJet)std::cout<<"Gen. jet loop: no embedded jet existing!! "<<std::endl; 
+	if(!extraJet)std::cout<<"Gen. jet loop: no extra jet existing!! "<<std::endl; 
+
+
         if((fDebug > 2) && embeddedJet && extraJet) cout<<" After leading pt cut: gen jet "<<ij<<" pt "<<jet->Pt()<<" embedded jet pt "<<embeddedJet->Pt()<<" extra jet pt "<<extraJet->Pt()
 				      <<" ptFractionEmbeddedMC "<<ptFractionEmbeddedMC<<" dRMC "<<deltaREmbeddedMC
-				      <<" ptFractionEmbedded "<<ptFractionEmbedded<<" dR "<<deltaREmbedded<<endl;
+				      <<" ptFractionEmbedded "<<ptFractionEmbedded<<" dR "<<deltaREmbedded<<endl;     //no!
 	
 	
 	if(embeddedJet){ 
 	  
-	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC);
+	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC); //no!
 	  
-	  if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded){ 
+	  if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded){    
 	    
 	    //Double_t deltaPtMC = jet->Pt() - embeddedJet->Pt();
 	    
-	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC);
+	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC); //no!
 	  }
 	}
 	
@@ -5521,7 +5525,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  Double_t genJetPt = embeddedJet->Pt();//jet pt detector level matched to generator level PYTHIA jets
 	  
-	  fh1JetPtEmbGenAfterMatch->Fill(genJetPt);
+	  fh1JetPtEmbGenAfterMatch->Fill(genJetPt);  //no!
 	  
 	  if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - genJetPt: "<<genJetPt<<std::endl; 
 
