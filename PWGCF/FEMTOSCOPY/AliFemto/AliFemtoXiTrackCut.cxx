@@ -9,27 +9,74 @@
 #endif
 
 
-
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000)
+//------------------------------
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000), fBuildMinvHistoXi(false), fMinvHistoXi(0)
 {
   // Default constructor
 }
- //------------------------------
+
+//------------------------------
 AliFemtoXiTrackCut::~AliFemtoXiTrackCut(){
   /* noop */
 }
+
 //------------------------------
+AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
+  AliFemtoV0TrackCut(aCut),
+  fMaxEtaXi(aCut.fMaxEtaXi),fMinPtXi(aCut.fMinPtXi),fMaxPtXi(aCut.fMaxPtXi),fChargeXi(aCut.fChargeXi),
+  fMaxEtaBac(aCut.fMaxEtaBac),fMinPtBac(aCut.fMinPtBac),fMaxPtBac(aCut.fMaxPtBac),fTPCNclsBac(aCut.fTPCNclsBac),
+  fNdofBac(aCut.fNdofBac),fStatusBac(aCut.fStatusBac),fMaxDcaXi(aCut.fMaxDcaXi),fMinDcaXiBac(aCut.fMinDcaXiBac),
+  fMaxDcaXiDaughters(aCut.fMaxDcaXiDaughters),fMinCosPointingAngleXi(aCut.fMinCosPointingAngleXi),
+  fMaxDecayLengthXi(aCut.fMaxDecayLengthXi),fInvMassXiMin(aCut.fInvMassXiMin),fInvMassXiMax(aCut.fInvMassXiMax),
+  fParticleTypeXi(aCut.fParticleTypeXi),fBuildMinvHistoXi(aCut.fBuildMinvHistoXi)
+{
+  //copy constructor
+  if(aCut.fMinvHistoXi) fMinvHistoXi = new TH1D(*aCut.fMinvHistoXi);
+  else fMinvHistoXi = 0;
+}
+
+//------------------------------
+AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut)
+{
+  //assignment operator
+  if (this == &aCut) return *this;
+
+  AliFemtoV0TrackCut::operator=(aCut);
+
+  fMaxEtaXi = aCut.fMaxEtaXi;
+  fMinPtXi = aCut.fMinPtXi;
+  fMaxPtXi = aCut.fMaxPtXi;
+  fChargeXi = aCut.fChargeXi;
+  fMaxEtaBac = aCut.fMaxEtaBac;
+  fMinPtBac = aCut.fMinPtBac;
+  fMaxPtBac = aCut.fMaxPtBac;
+  fTPCNclsBac = aCut.fTPCNclsBac;
+  fNdofBac = aCut.fNdofBac;
+  fStatusBac = aCut.fStatusBac;
+  fMaxDcaXi = aCut.fMaxDcaXi;
+  fMinDcaXiBac = aCut.fMinDcaXiBac;
+  fMaxDcaXiDaughters = aCut.fMaxDcaXiDaughters;
+  fMinCosPointingAngleXi = aCut.fMinCosPointingAngleXi;
+  fMaxDecayLengthXi = aCut.fMaxDecayLengthXi;
+  fInvMassXiMin = aCut.fInvMassXiMin;
+  fInvMassXiMax = aCut.fInvMassXiMax;
+  fParticleTypeXi = aCut.fParticleTypeXi;
+  fBuildMinvHistoXi = aCut.fBuildMinvHistoXi;
+
+  if(aCut.fMinvHistoXi) fMinvHistoXi = new TH1D(*aCut.fMinvHistoXi);
+  else fMinvHistoXi = 0;
+
+  return *this;
+}
+
+
+
+
 bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 {
   // test the particle and return 
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-
-   //invariant mass Xi
-  if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
-     {
-       return false;
-     }
    
   Float_t pt = aXi->PtXi();
   Float_t eta = aXi->EtaXi();
@@ -114,11 +161,17 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   
   if(!AliFemtoV0TrackCut::Pass(aXi))
     return false;
+
+  if(fBuildMinvHistoXi) {fMinvHistoXi->Fill(aXi->MassXi());}
+
+   //invariant mass Xi
+  if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
+     {
+       return false;
+     }
   
   
   return true;
-    
-    
 }
 //------------------------------
 AliFemtoString AliFemtoXiTrackCut::Report()
@@ -221,3 +274,11 @@ void AliFemtoXiTrackCut::SetParticleTypeXi(short x)
 {
   fParticleTypeXi = x;
 }
+
+void AliFemtoXiTrackCut::SetMinvHistoXi(const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+{
+  fBuildMinvHistoXi = true;
+  fMinvHistoXi = new TH1D(title,"MinvHistogramXi",nbins,aInvMassMin,aInvMassMax);
+  fMinvHistoXi->Sumw2();
+}
+
