@@ -843,6 +843,11 @@ goSubmitMakeflow()
   # Create the common output dir and the meta dir, but only if local.
   commonOutputPath=${baseOutputDirectory}/${productionID}
   mkdirLocal $commonOutputPath/meta
+
+  # Copy to the current directory the extra library scripts, if not there.
+  for scr in "${sourceUtilities[@]}"; do
+    [[ -e $scr ]] || printExec cp -v $ALICE_PHYSICS/PWGPP/scripts/$scr .
+  done
  
   self=$0
   
@@ -850,6 +855,7 @@ goSubmitMakeflow()
   copyFileToRemote $self $commonOutputPath
   copyFileToRemote $configFile $commonOutputPath
   copyFileToRemote $inputFileList $commonOutputPath
+  copyFileToRemote "${sourceUtilities[@]}" $commonOutputPath
 
   # Submit - use makeflow if available, fall back to old stuff when makeflow not there.
   if which makeflow; then
