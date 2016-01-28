@@ -567,7 +567,7 @@ goMergeCPass()
   filteredFilesToMerge=local.${filteredFilesToMerge}
 
   if [[ "$qaFilesToMerge" != '' ]]; then
-    sed -e 's!/.*\.root\s*$!/!' $qaFilesToMerge | sort -u > ${qaFilesToMerge}.lastMergingStage.txt.list
+    tmp=$(cat $qaFilesToMerge); echo ${tmp%/*} > ${qaFilesToMerge}.lastMergingStage.txt.list
     qaFilesToMerge=${qaFilesToMerge}.lastMergingStage.txt.list
   fi
 
