@@ -317,6 +317,7 @@ goCPass()
                     "${batchWorkingDirectory}/${configFile}"
                     "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                     "${batchWorkingDirectory}/OCDB.root"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
