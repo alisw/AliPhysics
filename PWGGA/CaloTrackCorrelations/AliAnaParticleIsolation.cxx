@@ -270,7 +270,10 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
       fhPtLambda0MCWithNOverlap    [imc][i] = 0;
       fhPtLambda0MCConvWithNOverlap[imc][i] = 0;
       fhPtNOverlap                 [imc][i] = 0;
-      fhPtNOverlapConv             [imc][i] = 0;      
+      fhPtNOverlapConv             [imc][i] = 0;
+      fhTrackMatchedDEtaMC         [imc][i] = 0 ;
+      fhTrackMatchedDPhiMC         [imc][i] = 0 ;
+      fhTrackMatchedDEtaDPhiMC     [imc][i] = 0 ;
     }
   }
   
@@ -1686,6 +1689,12 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       fhTrackMatchedDEta[isolated]->Fill(energy, dZ, GetEventWeight());
       fhTrackMatchedDPhi[isolated]->Fill(energy, dR, GetEventWeight());
       if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ, dR, GetEventWeight());
+      if(IsDataMC())
+      {
+        fhTrackMatchedDEtaMC[mcIndex][isolated]->Fill(energy, dZ, GetEventWeight());
+        fhTrackMatchedDPhiMC[mcIndex][isolated]->Fill(energy, dR, GetEventWeight());
+        if(energy > 0.5) fhTrackMatchedDEtaDPhiMC[mcIndex][isolated]->Fill(dZ, dR, GetEventWeight());
+      }
     }
     
     // Check dEdx and E/p of matched clusters
@@ -3187,10 +3196,40 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
          nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
         fhTrackMatchedDEtaDPhi[iso]->SetYTitle("d#phi (rad)");
         fhTrackMatchedDEtaDPhi[iso]->SetXTitle("d#eta");
-        
+          
         outputContainer->Add(fhTrackMatchedDEta[iso]) ;
         outputContainer->Add(fhTrackMatchedDPhi[iso]) ;
         outputContainer->Add(fhTrackMatchedDEtaDPhi[iso]) ;
+         
+        if(IsDataMC())
+        {
+          for(int imc = 0; imc < fgkNmcTypes; imc++)
+          {
+              fhTrackMatchedDEtaMC[imc][iso] = new TH2F(Form("hTrackMatchedDEta%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
+                                                        Form("%s - d#eta of cluster-track vs cluster energy, %s",isoTitle[iso].Data(),parTitle.Data()),
+                                                        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+              fhTrackMatchedDEtaMC[imc][iso]->SetYTitle("d#eta");
+              fhTrackMatchedDEtaMC[imc][iso]->SetXTitle("E_{cluster} (GeV)");
+              
+              fhTrackMatchedDPhiMC[imc][iso] = new TH2F(Form("hTrackMatchedDPhi%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
+                                                        Form("%s - d#phi of cluster-track vs cluster energy, %s",isoTitle[iso].Data(),parTitle.Data()),
+                                                        nptbins,ptmin,ptmax,nresetabins,resphimin,resphimax);
+              fhTrackMatchedDPhiMC[imc][iso]->SetYTitle("d#phi");
+              fhTrackMatchedDPhiMC[imc][iso]->SetXTitle("E_{cluster} (GeV)");
+              
+              fhTrackMatchedDEtaDPhiMC[imc][iso]  = new TH2F
+              (Form("hTrackMatchedDEtaDPhi%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
+               Form("%s - d#eta vs d#phi of cluster-track, %s",isoTitle[iso].Data(),parTitle.Data()),
+               nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+              fhTrackMatchedDEtaDPhiMC[imc][iso]->SetYTitle("d#phi (rad)");
+              fhTrackMatchedDEtaDPhiMC[imc][iso]->SetXTitle("d#eta");
+              
+              outputContainer->Add(fhTrackMatchedDEtaMC[imc][iso]) ;
+              outputContainer->Add(fhTrackMatchedDPhiMC[imc][iso]) ;
+              outputContainer->Add(fhTrackMatchedDEtaDPhiMC[imc][iso]);
+          }
+          
+        }
         
         fhdEdx[iso]  = new TH2F
         (Form("hdEdx%s",isoName[iso].Data()),
