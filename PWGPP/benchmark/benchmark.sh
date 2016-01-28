@@ -929,7 +929,7 @@ goGenerateMakeflow()
   [[ -n ${batchFlags} ]] && echo "BATCH_OPTIONS = ${batchFlags}"
   declare -A arr_cpass0_merged arr_cpass1_merged
   declare -A arr_cpass0_calib_list arr_cpass1_calib_list 
-  declare -A arr_cpass1_QA_list arr_cpass1_ESD_list arr_cpass1_filtered_list
+  declare -A arr_cpass1_QA_files_list arr_cpass1_ESD_list arr_cpass1_filtered_list
   declare -A arr_cpass0_profiled_outputs
   declare -A listOfRuns
   [[ -n ${runNumber} ]] && listOfRuns[${runNumber}]=1
@@ -997,15 +997,11 @@ goGenerateMakeflow()
     echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
-    #CPass1 list of Calib/QA/ESD/filtered files
-    # the trick with QA is to have the string "Stage.txt" in the file name of the list of directories with QA output to trigger
-    # the production of the QA trending tree (only then the task->Finish() will be called in QAtrain_duo.C, on the grid
-    # this corresponds to the last merging stage)
-    #arr_cpass1_QA_list[${runNumber}]="${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
-    arr_cpass1_QA_list[${runNumber}]="cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
-    echo "### Lists CPass1 QA ###"
-    echo "${arr_cpass1_QA_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
-    echo -e "\tLOCAL ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
+    # CPass1 list of QA files.
+    arr_cpass1_QA_files_list[${runNumber}]="cpass1.QA.run${runNumber}.list"
+    echo "### Lists CPass1 QA files ###"
+    echo "${arr_cpass1_QA_files_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues qafile ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
     #arr_cpass1_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list"
@@ -1026,8 +1022,8 @@ goGenerateMakeflow()
     #arr_cpass1_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
     arr_cpass1_merged[${runNumber}]="merge.cpass1.run${runNumber}.done"
     echo "### Merges CPass1 files ###"
-    echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"
+    echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
     #CPass0 wrapped in a profiling tool (valgrind,....)
