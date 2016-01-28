@@ -561,6 +561,9 @@ goMergeCPass()
   qaFilesToMerge=local.${qaFilesToMerge}
   filteredFilesToMerge=local.${filteredFilesToMerge}
 
+  sed -e 's!/.*\.root\s*$!/!' $qaFilesToMerge | sort -u > ${qaFilesToMerge}.lastMergingStage.txt.list
+  qaFilesToMerge=${qaFilesToMerge}.lastMergingStage.txt.list
+
   # Record the working directory provided by the batch system.
   batchWorkingDirectory=$PWD
 
