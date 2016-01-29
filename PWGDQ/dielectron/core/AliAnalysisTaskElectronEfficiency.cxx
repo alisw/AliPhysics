@@ -134,6 +134,13 @@ fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
+fCharmElectrons(0x0),
+fCharmPositrons(0x0),
+fBeautyElectrons(0x0),
+fBeautyPositrons(0x0),
+fNHFgenPairs(0x0),
+fvHFrecoPairs(),
+fvHFrecoPairs_poslabel(),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
@@ -255,6 +262,13 @@ fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
+fCharmElectrons(0x0),
+fCharmPositrons(0x0),
+fBeautyElectrons(0x0),
+fBeautyPositrons(0x0),
+fNHFgenPairs(0x0),
+fvHFrecoPairs(),
+fvHFrecoPairs_poslabel(),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
@@ -374,11 +388,17 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     pairEffList->SetName("pairEfficiency");
     pairEffList->SetOwner();
     pairEffList->Add(fNgenPairs);
-    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       pairEffList->Add(fvRecoPairs.at(iCut));
-    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       pairEffList->Add(fvRecoPairs_poslabel.at(iCut));
+    pairEffList->Add(fNHFgenPairs);
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      pairEffList->Add(fvHFrecoPairs.at(iCut));
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+      pairEffList->Add(fvHFrecoPairs_poslabel.at(iCut));
   }
+  
   TList *resolutionList(0x0);
   if(fCalcResolution){
     resolutionList = new TList();
@@ -481,6 +501,12 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   if(pairEffList)    fOutputList->Add(pairEffList);
   if(resolutionList) fOutputList->Add(resolutionList);
   
+  fCharmElectrons  = new TH1F("charmElectrons", "",6,-0.5,5.5); fOutputList->Add(fCharmElectrons);  fCharmElectrons ->Sumw2();
+  fCharmPositrons  = new TH1F("charmPositrons", "",6,-0.5,5.5); fOutputList->Add(fCharmPositrons);  fCharmPositrons ->Sumw2();
+  fBeautyElectrons = new TH1F("beautyElectrons","",6,-0.5,5.5); fOutputList->Add(fBeautyElectrons); fBeautyElectrons->Sumw2();
+  fBeautyPositrons = new TH1F("beautyPositrons","",6,-0.5,5.5); fOutputList->Add(fBeautyPositrons); fBeautyPositrons->Sumw2();
+  
+
   PostData(1, fOutputList);
   
   OpenFile(2, "RECREATE");
@@ -559,18 +585,17 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if(!AliDielectronMC::Instance()->ConnectMCEvent()) return;
   mcEvent = AliDielectronMC::Instance()->GetMCEvent();
   if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
+  AliDielectronVarManager::SetEvent(mcEvent);
   
   AliESDInputHandler *inputHandlerESD = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!inputHandlerESD) { Printf("ERROR: Could not get ESDInputHandler\n"); }
   else fESD = inputHandlerESD->GetEvent();
   if (!fESD) { Printf("ERROR: fESD not available"); return; }
-
-  //AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-  //if (mcH) mcEvent = MCEvent();
-  //if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
+  
   if (!fPIDResponse) SetPIDResponse( ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
   
+
   // set pid correction function to var manager
   if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
@@ -641,11 +666,9 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(4)))->Fill(vtxZGlobal);//hVertexZ
   (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(5)))->Fill(nCtrb);//hNvertexCtrb
   //hNTrksEvent_cent->Fill(fESD->GetNumberOfTracks(),centralityF);
-  
   Int_t Nacc = AliDielectronHelper::GetNacc(fESD);
   Double_t sigmaEleITS_Raw;
   Double_t sigmaEleTPC_Raw;
-  
   //
   // store if there is at least one cutset to be used for Prefilter efficiency determination.
   // store for each cutset if there is at least one electron selected by 'fvExtraTrackCuts'.
@@ -939,6 +962,98 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         }
         tracks1.clear(); cutmasks1.erase(cutmasks1.begin(),cutmasks1.end());
         tracks2.clear(); cutmasks2.erase(cutmasks2.begin(),cutmasks2.end());        
+      }
+      std::vector<TLorentzVector> ce,cp,be,bp;
+      std::vector< std::vector<Bool_t> > rec_ce,rec_cp,rec_be,rec_bp;
+      std::vector< std::vector<Bool_t> > recpl_ce,recpl_cp,recpl_be,recpl_bp;
+      for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
+        AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
+        if(!part){ Printf("bad part"); continue; }
+        if(!AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
+        Int_t pPDG = part->PdgCode();
+        if(TMath::Abs(pPDG) != 11) continue;
+        AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
+        if(!mother){ Printf("bad mother"); continue; }
+        Bool_t mPrim = mother->Particle()->IsPrimary();
+        if(!mother->Particle()->IsPrimary()) continue;
+         char buffer [50];
+         sprintf(buffer,"%d",TMath::Abs(mother->PdgCode()));
+         TString sPDG(buffer);
+         if(sPDG.Length()<3) continue;
+         Bool_t isCharm(kFALSE),isBeauty(kFALSE);
+         if(sPDG(sPDG.Length()-3) == '4' && sPDG(sPDG.Length()-2) != '4') isCharm  = kTRUE;
+         if(sPDG(sPDG.Length()-3) == '5' && sPDG(sPDG.Length()-2) != '5') isBeauty = kTRUE;
+         if(!(isCharm || isBeauty)) continue;
+         TLorentzVector v; 
+         v.SetPtEtaPhiM(part->Pt(),part->Eta(),part->Phi(),0.0005109989);
+         std::vector<Bool_t> rec_part(GetNCutsets(),kFALSE),recpl_part(GetNCutsets(),kFALSE);
+         std::vector<AliESDtrack*> vtracks;
+         for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
+           AliESDtrack *track = fESD->GetTrack(iTracks);
+           if(!track){ Printf("ERROR: Could not receive track %d", iTracks); continue; }  
+           if(TMath::Abs(track->GetLabel()) == iMCtrack) vtracks.push_back(track); 
+         }
+         for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
+           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
+           for(UInt_t i = 0; i < vtracks.size(); ++i){
+             if(fvTrackCuts.at(iCut)->IsSelected(vtracks.at(i)) == selectedMask){
+               rec_part.at(iCut) = kTRUE;
+               if(vtracks.at(i)->GetLabel() > 0) recpl_part.at(iCut) = kTRUE;
+             }
+           }
+         }
+         if(isCharm){
+           if(pPDG == -11){ 
+             cp.push_back(v);
+             rec_cp.push_back(rec_part);
+             recpl_cp.push_back(recpl_part);
+           }
+           else{
+             ce.push_back(v);
+             rec_ce.push_back(rec_part);
+             recpl_ce.push_back(recpl_part);
+           }
+         }
+         if(isBeauty){
+           if(pPDG == -11){ 
+             bp.push_back(v);
+             rec_bp.push_back(rec_part);
+             recpl_bp.push_back(recpl_part);
+           }
+           else{
+             be.push_back(v);
+             rec_be.push_back(rec_part);
+             recpl_be.push_back(recpl_part);
+           }
+         }
+      }
+      fCharmElectrons->Fill(ce.size());
+      fCharmPositrons->Fill(cp.size());
+      fBeautyElectrons->Fill(be.size());
+      fBeautyPositrons->Fill(bp.size());
+      if(ce.size() > 0 && cp.size() > 0){
+        UInt_t iSize = ce.size() <= cp.size() ? ce.size() : cp.size();
+        for(UInt_t iv = 0; iv < iSize; ++iv){
+          Double_t m  = (ce.at(iv) + cp.at(iv)).M();
+          Double_t pt = (ce.at(iv) + cp.at(iv)).Pt();
+          fNHFgenPairs->Fill(m,pt);
+          for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
+            if(rec_ce.at(iv).at(iCut)   && rec_cp.at(iv).at(iCut)  ) fvHFrecoPairs         .at(iCut)->Fill(m,pt);
+            if(recpl_ce.at(iv).at(iCut) && recpl_cp.at(iv).at(iCut)) fvHFrecoPairs_poslabel.at(iCut)->Fill(m,pt);
+          }
+        }
+      }
+      if(be.size() > 0 && bp.size() > 0){
+        UInt_t iSize = be.size() <= bp.size() ? be.size() : bp.size();
+        for(UInt_t iv = 0; iv < iSize; ++iv){
+          Double_t m  = (be.at(iv) + bp.at(iv)).M();
+          Double_t pt = (be.at(iv) + bp.at(iv)).Pt();
+          fNHFgenPairs->Fill(m,pt);
+          for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
+            if(rec_be.at(iv).at(iCut)   && rec_bp.at(iv).at(iCut)  ) fvHFrecoPairs         .at(iCut)->Fill(m,pt);
+            if(recpl_be.at(iv).at(iCut) && recpl_bp.at(iv).at(iCut)) fvHFrecoPairs_poslabel.at(iCut)->Fill(m,pt);
+          }
+        }
       }
     }
     
@@ -1302,6 +1417,13 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
     hNrecoPairs_poslabel->Sumw2();
     fvRecoPairs         .push_back(hNrecoPairs);
     fvRecoPairs_poslabel.push_back(hNrecoPairs_poslabel);
+    
+    TH2F *hNHFrecoPairs          = new TH2F(Form("NHFrecoPairs_%s",         name.Data()),Form("NHFrecoPairs_%s",         name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    TH2F *hNHFrecoPairs_poslabel = new TH2F(Form("NHFrecoPairs_poslabel_%s",name.Data()),Form("NHFrecoPairs_poslabel_%s",name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    hNHFrecoPairs->Sumw2();
+    hNHFrecoPairs_poslabel->Sumw2();
+    fvHFrecoPairs.push_back(hNHFrecoPairs);
+    fvHFrecoPairs_poslabel.push_back(hNHFrecoPairs_poslabel);
   }
   // be really careful if you need to implement this (see comments in UserExec):
   //  TH3F *hNreco_Pio = new TH3F(Form("Nreco_Pio_%s",name.Data()),Form("Nreco_Pio_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1323,6 +1445,7 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
   if(fDoPairing){
     Printf("fNmeeBins=%i\t fMeeBins[1]=%f\t fNpteeBins=%i\t fPteeBins[1]=%f\t ",fNmeeBins,fMeeBins[1],fNpteeBins,fPteeBins[1]);
     fNgenPairs = new TH2F("NgenPairs","NgenPairs",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    fNHFgenPairs = new TH2F("NHFgenPairs","NgenPairs",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
   }
 }
 

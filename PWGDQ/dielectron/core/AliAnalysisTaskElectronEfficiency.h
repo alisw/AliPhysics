@@ -195,6 +195,16 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec_poslabel;
   AliAnalysisFilter*              fResolutionCuts;
   
+  TH1F*                           fCharmElectrons;
+  TH1F*                           fCharmPositrons;
+  TH1F*                           fBeautyElectrons;
+  TH1F*                           fBeautyPositrons;
+  
+  TH2F*                           fNHFgenPairs;
+  std::vector<TH2F*>              fvHFrecoPairs;
+  std::vector<TH2F*>              fvHFrecoPairs_poslabel;
+  
+  
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   
   TH1D*                           fEventStat;               // ! Histogram with event statistics
