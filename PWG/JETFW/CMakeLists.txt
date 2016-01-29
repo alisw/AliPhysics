@@ -23,6 +23,7 @@ include_directories(
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+  ${AliPhysics_SOURCE_DIR}/PWG/Tools
   )
 
 # Sources in alphabetical order
