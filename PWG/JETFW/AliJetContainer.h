@@ -13,6 +13,7 @@ class AliLocalRhoParameter;
 class AliPythiaInfo;
 
 #include <TMath.h>
+#include <TLorentzVector.h>
 #include "AliRhoParameter.h"
 #include "AliEmcalContainer.h"
 #include "AliLog.h"
@@ -86,7 +87,10 @@ class AliJetContainer : public AliEmcalContainer {
   AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)           ;
   AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
   AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
-  void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
+  Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
+  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
   Bool_t                      AcceptJet(const AliEmcalJet* jet)          ;
   Bool_t                      AcceptBiasJet(const AliEmcalJet* jet)      ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
@@ -124,7 +128,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
   Bool_t SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4) const;
-  
+
  protected:
   void SetEMCALGeometry();
   

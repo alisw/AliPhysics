@@ -22,7 +22,8 @@ AliEmcalContainer::AliEmcalContainer():
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
-  fRejectionReason(0)
+  fRejectionReason(0),
+  fLoadedClass(0)
 {
   // Default constructor.
 
@@ -40,7 +41,8 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
-  fRejectionReason(0)
+  fRejectionReason(0),
+  fLoadedClass(0)
 {
   // Standard constructor.
 
@@ -67,13 +69,14 @@ void AliEmcalContainer::SetArray(AliVEvent *event)
     return;
   }
 
+  fLoadedClass = fClArray->GetClass();
+
   if (!fClassName.IsNull()) {
-    TString objname(fClArray->GetClass()->GetName());
-    TClass cls(objname);
-    if (!cls.InheritsFrom(fClassName)) {
+    if (!fLoadedClass->InheritsFrom(fClassName)) {
       AliError(Form("%s: Objects of type %s in %s are not inherited from %s!", 
-		    GetName(), cls.GetName(), fClArrayName.Data(), fClassName.Data())); 
+		    GetName(), fLoadedClass->GetName(), fClArrayName.Data(), fClassName.Data()));
       fClArray = 0;
+      fLoadedClass = 0;
     }
   }
 

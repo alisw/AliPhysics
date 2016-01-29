@@ -23,7 +23,10 @@ class AliClusterContainer : public AliEmcalContainer {
   AliVCluster                *GetCluster(Int_t i)                    const;
   AliVCluster                *GetClusterWithLabel(Int_t lab)         const;
   AliVCluster                *GetLeadingCluster(const char* opt="")       ;
-  void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
+  Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
+  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
   AliVCluster                *GetNextAcceptCluster(Int_t i=-1)            ;
   AliVCluster                *GetNextCluster(Int_t i=-1)                  ;
   Int_t                       GetNClusters()                         const { return GetNEntries();   }
@@ -40,6 +43,9 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetClusUserDefEnergyCut(VCluUserDefEnergy_t t, Double_t cut) { fUserDefEnergyCut[t] = cut                            ; }
   void                        SetClusNonLinCorrEnergyCut(Double_t cut)                     { SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr, cut); }
   void                        SetClusHadCorrEnergyCut(Double_t cut)                        { SetClusUserDefEnergyCut(AliVCluster::kHadCorr, cut)   ; }
+  void                        SetDefaultClusterEnergy(Int_t d)                             { fDefaultClusterEnergy = d                             ; }
+
+  Int_t                       GetDefaultClusterEnergy() const                              { return fDefaultClusterEnergy                          ; }
 
  protected:
   
@@ -54,12 +60,13 @@ class AliClusterContainer : public AliEmcalContainer {
 
   Bool_t           fExoticCut;                  // reject clusters marked as "exotic"
   Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; // cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
+  Int_t            fDefaultClusterEnergy;       // default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
-  ClassDef(AliClusterContainer,3);
+  ClassDef(AliClusterContainer,4);
 };
 
 #endif

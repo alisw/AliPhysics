@@ -1,8 +1,7 @@
-// $Id$
 //
 // Container with name, TClonesArray and cuts for jets
 //
-// Author: M. Verweij
+// Author: M. Verweij, S. Aiola
 
 #include <TClonesArray.h>
 
@@ -306,10 +305,11 @@ AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
-  while (fCurrentID < njets && !jet) { 
-    jet = GetAcceptJet(fCurrentID);
+  do {
     fCurrentID++;
-  }
+    if (fCurrentID >= njets) break;
+    jet = GetAcceptJet(fCurrentID);
+  } while (!jet);
 
   return jet;
 }
@@ -323,10 +323,12 @@ AliEmcalJet* AliJetContainer::GetNextJet(Int_t i) {
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
-  while (fCurrentID < njets && !jet) { 
-    jet = GetJet(fCurrentID);
+  do {
     fCurrentID++;
-  }
+    if (fCurrentID >= njets) break;
+    jet = GetJet(fCurrentID);
+  } while (!jet);
+
 
   return jet;
 }
@@ -346,12 +348,67 @@ Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const {
 }
 
 //________________________________________________________________________
-void AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 {
-  //Get momentum of the i^th jet in array
+  //Get momentum of the i^th particle in array
 
   AliEmcalJet *jet = GetJet(i);
-  if(jet) jet->GetMom(mom);
+  if (jet) {
+    jet->GetMomentum(mom);
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliEmcalJet *jet = GetNextJet(i);
+  if (jet) {
+    jet->GetMom(mom);
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliEmcalJet *jet = GetAcceptJet(i);
+  if (jet) {
+    jet->GetMom(mom);
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliEmcalJet *jet = GetNextAcceptJet(i);
+  if (jet) {
+    jet->GetMom(mom);
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
 }
 
 //________________________________________________________________________

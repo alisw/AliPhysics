@@ -489,8 +489,9 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
 {
   // Return true if cluster is accepted.
 
-  if (!clus)
-    return kFALSE;
+  AliWarning("AliAnalysisTaskEmcal::AcceptCluster method is deprecated. Please use GetCusterContainer(c)->AcceptCluster(clus).");
+
+  if (!clus) return kFALSE;
 
   AliClusterContainer *cont = GetClusterContainer(c);
   if (!cont) {
@@ -506,8 +507,9 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
 {
   // Return true if track is accepted.
 
-  if (!track)
-    return kFALSE;
+  AliWarning("AliAnalysisTaskEmcal::AcceptTrack method is deprecated. Please use GetParticleContainer(c)->AcceptParticle(clus).");
+
+  if (!track) return kFALSE;
 
   AliParticleContainer *cont = GetParticleContainer(c);
   if (!cont) {
@@ -1165,6 +1167,14 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
   fTriggers = GetTriggerList();
+
+  AliEmcalContainer* cont = 0;
+
+  TIter nextPartColl(&fParticleCollArray);
+  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent();
+
+  TIter nextClusColl(&fClusterCollArray);
+  while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))) cont->NextEvent();
 
   return kTRUE;
 }
