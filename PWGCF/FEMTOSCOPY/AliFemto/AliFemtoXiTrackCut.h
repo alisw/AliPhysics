@@ -52,13 +52,11 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetMinCosPointingAngleXi(double max);
   void SetParticleTypeXi(short x);
 
-  //-----The MinvHistoXi is built immediately before the (final) Minv cut, and thus may be used to calculate the purity of the Xi collection
-  // However, the user MUST manually add this histogram to the output list of the analysis.
-  //   i.e. add something similar to:  tOutputList->Add(p1cut->GetMinvHistoXi());
-  //   where p1cut is a AliFemtoXiTrackCut object
-  void SetMinvHistoXi(const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildMinvHisto=true
-  TH1D* GetMinvHistoXi();
-
+  //-----The fMinvPurityAidHistoXi is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the Xi collection
+  void SetMinvPurityAidHistoXi(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidXi=true
+  TH1D* GetMinvPurityAidHistoXi();
+  //--If initiated, fMinvPurityAidHistoXi will be in the output list after all other Xi cut monitors (pass and fail)
+  virtual TList *GetOutputList();  //include fMinvPurityAidHistoXi in the output list 
 
  private:   // here are the quantities I want to cut on...
 
@@ -85,8 +83,8 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fInvMassXiMax;
   short  fParticleTypeXi;
 
-  bool fBuildMinvHistoXi;
-  TH1D* fMinvHistoXi;
+  bool fBuildPurityAidXi;
+  TH1D* fMinvPurityAidHistoXi;
 
 
 #ifdef __ROOT__
@@ -95,5 +93,5 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
 
 };
 
-inline TH1D* AliFemtoXiTrackCut::GetMinvHistoXi() {return fMinvHistoXi;}
+inline TH1D* AliFemtoXiTrackCut::GetMinvPurityAidHistoXi() {return fMinvPurityAidHistoXi;}
 #endif

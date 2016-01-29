@@ -27,8 +27,6 @@ AliFemtoV0TrackCutNSigmaFilter::AliFemtoV0TrackCutNSigmaFilter():
   , fKaonNSigmaFilter(NULL)
   , fProtonNSigmaFilter(NULL)
 
-  , fBuildMinvHisto(false)
-  , fMinvHisto(NULL)
 {
   /* no-op */
 }
@@ -38,7 +36,7 @@ AliFemtoV0TrackCutNSigmaFilter::~AliFemtoV0TrackCutNSigmaFilter()
   delete fPionNSigmaFilter;
   delete fKaonNSigmaFilter;
   delete fProtonNSigmaFilter;
-  delete fMinvHisto;
+  delete fMinvPurityAidHistoV0;
 }
 
 bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
@@ -125,7 +123,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
     if (IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP())) //proton
       if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) { //pion-
         pid_check = true;
-        if(fBuildMinvHisto) fMinvHisto->Fill(aV0->MassLambda());
+        if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassLambda());
         //invariant mass lambda
         if (aV0->MassLambda() < fInvMassLambdaMin || aV0->MassLambda() > fInvMassLambdaMax)
           return false;
@@ -136,7 +134,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
     if (IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) //antiproton
       if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) { //pion+
         pid_check = true;
-        if(fBuildMinvHisto) fMinvHisto->Fill(aV0->MassAntiLambda());
+        if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassAntiLambda());
         //invariant mass antilambda
         if (aV0->MassAntiLambda() < fInvMassLambdaMin || aV0->MassAntiLambda() > fInvMassLambdaMax)
           return false;
@@ -146,7 +144,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::Pass(const AliFemtoV0* aV0)
     if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) //pion-
       if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) { //pion+
         pid_check = true;
-        if(fBuildMinvHisto) fMinvHisto->Fill(aV0->MassK0Short());
+        if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassK0Short());
         //invariant mass K0s
         if (aV0->MassK0Short() < fInvMassK0sMin || aV0->MassK0Short() > fInvMassK0sMax)
           return false;
@@ -260,11 +258,4 @@ void AliFemtoV0TrackCutNSigmaFilter::AddTOFNSigmaCut(DaughterParticleType aDaugh
   else if(aDaughterType == kKaon) {fKaonNSigmaFilter->AddTOFCut(aMomMin,aMomMax,aNSigmaValueTOF);}
   else if(aDaughterType == kProton) {fProtonNSigmaFilter->AddTOFCut(aMomMin,aMomMax,aNSigmaValueTOF);}
   else {/*cerr << "Invalid DaughterParticleType selection in AddTOFNSigmaCut.  No cut will be added to the filter!!!!!" << endl;*/}
-}
-
-void AliFemtoV0TrackCutNSigmaFilter::SetMinvHisto(const char* title, int nbins, float aInvMassMin, float aInvMassMax)
-{
-  fBuildMinvHisto = true;
-  fMinvHisto = new TH1D(title, "MinvHistogram", nbins, aInvMassMin, aInvMassMax);
-  fMinvHisto->Sumw2();
 }

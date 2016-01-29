@@ -66,14 +66,6 @@ public:
   void AddKaonTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF);
   void AddProtonTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTOF);
 
-  //-----The MinvHisto is built immediately before the (final) Minv cut, and thus may be used to calculate the purity of the V0 collection
-  // However, the use MUST manually add this histogram to the output list of the analysis.
-  //   i.e. add something similar to:  tOutputList->Add(p1cut->GetMinvHisto());
-  //   where p1cut is a AliFemtoV0TrackCut object
-  void SetMinvHisto(const char* title, int nbins, float aInvMassMin, float aInvMassMax);   // set the Minv histogram attributes and
-                                                                                                                // sets the fBuildMinvHisto flag to true
-  TH1D* GetMinvHisto();
-
   //DO NOT set these to true unless you completely understand the consequences.  See AliFemtoNSigmaFilter.h for more information
   void SetOverrideImproperPionNSigmaFilter(bool aOverride);
   void SetOverrideImproperKaonNSigmaFilter(bool aOverride);
@@ -88,9 +80,6 @@ protected:
   AliFemtoNSigmaFilter *fPionNSigmaFilter;
   AliFemtoNSigmaFilter *fKaonNSigmaFilter;
   AliFemtoNSigmaFilter *fProtonNSigmaFilter;
-
-  bool fBuildMinvHisto;
-  TH1D* fMinvHisto;
 
 
 #ifdef __ROOT__
@@ -135,11 +124,6 @@ inline void AliFemtoV0TrackCutNSigmaFilter::CreateCustomKaonNSigmaFilter()
 inline void AliFemtoV0TrackCutNSigmaFilter::CreateCustomProtonNSigmaFilter()
 {
   CreateCustomNSigmaFilter(kProton);
-}
-
-inline TH1D* AliFemtoV0TrackCutNSigmaFilter::GetMinvHisto()
-{
-  return fMinvHisto;
 }
 
 inline void AliFemtoV0TrackCutNSigmaFilter::AddPionTPCAndTOFNSigmaCut(double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF)

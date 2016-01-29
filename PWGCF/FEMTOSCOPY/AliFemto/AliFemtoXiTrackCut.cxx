@@ -10,7 +10,7 @@
 
 
 //------------------------------
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000), fBuildMinvHistoXi(false), fMinvHistoXi(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000), fBuildPurityAidXi(false), fMinvPurityAidHistoXi(0)
 {
   // Default constructor
 }
@@ -28,11 +28,11 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
   fNdofBac(aCut.fNdofBac),fStatusBac(aCut.fStatusBac),fMaxDcaXi(aCut.fMaxDcaXi),fMinDcaXiBac(aCut.fMinDcaXiBac),
   fMaxDcaXiDaughters(aCut.fMaxDcaXiDaughters),fMinCosPointingAngleXi(aCut.fMinCosPointingAngleXi),
   fMaxDecayLengthXi(aCut.fMaxDecayLengthXi),fInvMassXiMin(aCut.fInvMassXiMin),fInvMassXiMax(aCut.fInvMassXiMax),
-  fParticleTypeXi(aCut.fParticleTypeXi),fBuildMinvHistoXi(aCut.fBuildMinvHistoXi)
+  fParticleTypeXi(aCut.fParticleTypeXi),fBuildPurityAidXi(aCut.fBuildPurityAidXi)
 {
   //copy constructor
-  if(aCut.fMinvHistoXi) fMinvHistoXi = new TH1D(*aCut.fMinvHistoXi);
-  else fMinvHistoXi = 0;
+  if(aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
+  else fMinvPurityAidHistoXi = 0;
 }
 
 //------------------------------
@@ -61,10 +61,10 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fInvMassXiMin = aCut.fInvMassXiMin;
   fInvMassXiMax = aCut.fInvMassXiMax;
   fParticleTypeXi = aCut.fParticleTypeXi;
-  fBuildMinvHistoXi = aCut.fBuildMinvHistoXi;
+  fBuildPurityAidXi = aCut.fBuildPurityAidXi;
 
-  if(aCut.fMinvHistoXi) fMinvHistoXi = new TH1D(*aCut.fMinvHistoXi);
-  else fMinvHistoXi = 0;
+  if(aCut.fMinvPurityAidHistoXi) fMinvPurityAidHistoXi = new TH1D(*aCut.fMinvPurityAidHistoXi);
+  else fMinvPurityAidHistoXi = 0;
 
   return *this;
 }
@@ -162,7 +162,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(!AliFemtoV0TrackCut::Pass(aXi))
     return false;
 
-  if(fBuildMinvHistoXi) {fMinvHistoXi->Fill(aXi->MassXi());}
+  if(fBuildPurityAidXi) {fMinvPurityAidHistoXi->Fill(aXi->MassXi());}
 
    //invariant mass Xi
   if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
@@ -275,10 +275,19 @@ void AliFemtoXiTrackCut::SetParticleTypeXi(short x)
   fParticleTypeXi = x;
 }
 
-void AliFemtoXiTrackCut::SetMinvHistoXi(const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+void AliFemtoXiTrackCut::SetMinvPurityAidHistoXi(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
 {
-  fBuildMinvHistoXi = true;
-  fMinvHistoXi = new TH1D(title,"MinvHistogramXi",nbins,aInvMassMin,aInvMassMax);
-  fMinvHistoXi->Sumw2();
+  fBuildPurityAidXi = true;
+  fMinvPurityAidHistoXi = new TH1D(name,title,nbins,aInvMassMin,aInvMassMax);
+  fMinvPurityAidHistoXi->Sumw2();
+}
+
+TList *AliFemtoXiTrackCut::GetOutputList()
+{
+  TList *tOutputList = AliFemtoCutMonitorHandler::GetOutputList();  //add all of the typical objects
+
+  if(fBuildPurityAidXi) tOutputList->Add(fMinvPurityAidHistoXi);
+
+  return tOutputList;
 }
 
