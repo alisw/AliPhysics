@@ -285,6 +285,7 @@ AliMultSelectionTask::~AliMultSelectionTask()
         delete fESDtrackCuts;
         fESDtrackCuts = 0x0;
     }
+    if(fTrackCuts) delete fTrackCuts;
     if (fUtils) {
         delete fUtils;
         fUtils = 0x0;
@@ -942,7 +943,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         }
 
         //A.T.
-        fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+        if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
         fNTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1;
 
         // ***** ZDC info
