@@ -412,7 +412,7 @@ Int_t AliEmcalJet::Compare(const TObject* obj) const
 }
 
 //__________________________________________________________________________________________________
-void AliEmcalJet::GetMom(TLorentzVector& vec) const
+void AliEmcalJet::GetMomentum(TLorentzVector& vec) const
 {
   // Return momentum as four-vector.
 
