@@ -62,13 +62,13 @@ void AliAnalysisTaskEventFilter::UserExec(Option_t *){
   fHistos->FillTH1("hINT7all", vz);
   if(!(fInputHandler->IsEventSelected() && AliVEvent::kINT7)) return;
   fHistos->FillTH1("hINT7psel", vz);
-  if(!fAnalysisUtils->IsFirstEventInChunk(InputEvent())) return;
+  if(fAnalysisUtils->IsFirstEventInChunk(InputEvent())) return;
   fHistos->FillTH1("hINT7fe", vz);
-  if(!fAnalysisUtils->IsPileUpEvent(InputEvent())) return;
+  if(fAnalysisUtils->IsPileUpEvent(InputEvent())) return;
   fHistos->FillTH1("hINT7np", vz);
-  if(FakeVertexSelection2013pA(InputEvent())) return;
+  if(!FakeVertexSelection2013pA(InputEvent())) return;
   fHistos->FillTH1("hINT7fv", vz);
-  if(fAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return;
+  if(!fAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return;
   fHistos->FillTH1("hINT7tv", vz);
 }
 
