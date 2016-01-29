@@ -34,6 +34,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
 
 #include "AliAnalysisTaskEMCALTriggerQA.h"
 
@@ -57,7 +58,7 @@ fV0Trigger(0),             fV0A(0),              fV0C(0),
 fFillV0SigHisto(0),        fFillCenHisto(0),     fFillClusAcceptHisto(0),
 fMCData(kFALSE),
 fFirstSM   (0),            fLastSM    (0),
-fCentEstimator("V0M"),
+fCentEstimator("V0M"),     fUseAliCentrality(0),
 fEventMB   (0),            
 fEventL0   (0),            fEventL0D  (0),
 fEventL1G  (0),            fEventL1GD (0),                      
@@ -121,7 +122,7 @@ fV0Trigger(0),             fV0A(0),              fV0C(0),
 fFillV0SigHisto(0),        fFillCenHisto(0),     fFillClusAcceptHisto(0),
 fMCData(kFALSE),
 fFirstSM   (0),            fLastSM    (0),
-fCentEstimator("V0M"),
+fCentEstimator("V0M"),     fUseAliCentrality(0),
 fEventMB   (0),            
 fEventL0   (0),            fEventL0D  (0),
 fEventL1G  (0),            fEventL1GD (0),                      
@@ -458,8 +459,16 @@ void AliAnalysisTaskEMCALTriggerQA::ClusterAnalysis()
   //InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   Float_t centrality = -1;
-  if(InputEvent()->GetCentrality()) centrality = InputEvent()->GetCentrality()->GetCentralityPercentile(fCentEstimator);
-  
+  if(fUseAliCentrality)
+  {
+    if(InputEvent()->GetCentrality()) centrality = InputEvent()->GetCentrality()->GetCentralityPercentile(fCentEstimator);
+  }
+  else
+  {
+    AliMultSelection* multSelection = (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ;
+    if(multSelection) centrality = multSelection->GetMultiplicityPercentile(fCentEstimator, kTRUE) ;
+  }
+    
   if(fFillCenHisto)
   {
     if( fEventL1G   ) fhCentrality[kL1GammaTrig]    ->Fill(centrality);

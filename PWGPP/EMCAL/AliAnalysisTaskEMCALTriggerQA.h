@@ -101,6 +101,9 @@ public:
   void   SwitchOnCentralityHistograms()  { fFillCenHisto      = kTRUE   ; }
   void   SwitchOffCentralityHistograms() { fFillCenHisto      = kFALSE  ; }
   
+  void   SwitchOnAliCentrality ()        { fUseAliCentrality  = kTRUE  ; }
+  void   SwitchOffAliCentrality()        { fUseAliCentrality  = kFALSE ; }
+  
   void   SwitchOnClusterAcceptanceHistograms()  { fFillClusAcceptHisto = kTRUE   ; }
   void   SwitchOffClusterAcceptanceHistograms() { fFillClusAcceptHisto = kFALSE  ; }
   
@@ -155,7 +158,8 @@ private:
   Int_t             fLastSM;          ///<  Fill SM histograms for SM <= fLastSM
   
   TString           fCentEstimator;   ///< Centrality estimator string: V0M, TKL, FMD, ZEMvsZDC, ...
-  
+  Bool_t            fUseAliCentrality;///< Use the centrality estimator from AliCentrality or AliMultSelection
+
   // Event by event trigger recognition bit
   Bool_t            fEventMB   ;      ///<  Bit for MB events
   Bool_t            fEventL0   ;      ///<  Bit for L0 events
@@ -331,7 +335,7 @@ private:
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 17) ;
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 18) ;
   /// \endcond
 
 };

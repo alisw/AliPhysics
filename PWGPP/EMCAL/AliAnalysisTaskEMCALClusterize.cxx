@@ -38,6 +38,8 @@
 #include "AliAODInputHandler.h"
 #include "AliOADBContainer.h"
 #include "AliAODMCParticle.h"
+#include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 // --- EMCAL
 #include "AliEMCALAfterBurnerUF.h"
@@ -80,7 +82,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
-, fCentralityClass(""),   fSelectEMCALEvent(0)
+, fCentralityClass(""),   fUseAliCentrality(0),       fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
 , fSetCellMCLabelFromCluster(0)
 , fRemapMCLabelForAODs(0)
@@ -119,7 +121,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
-, fCentralityClass(""),     fSelectEMCALEvent(0)
+, fCentralityClass(""),     fUseAliCentrality(0),      fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
 , fSetCellMCLabelFromCluster(0)
 , fRemapMCLabelForAODs(0)
@@ -843,10 +845,13 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   header->SetEventType(fEvent->GetEventType());
   
   // Centrality
-  if(fEvent->GetCentrality())
-    header->SetCentrality(new AliCentrality(*(fEvent->GetCentrality())));
-  else
-    header->SetCentrality(0);
+  if(fUseAliCentrality)
+  {
+    if(fEvent->GetCentrality())
+      header->SetCentrality(new AliCentrality(*(fEvent->GetCentrality())));
+    else
+      header->SetCentrality(0);
+  }
   
   // Trigger
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
@@ -979,6 +984,26 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
   fOutputAODBranch->Expand(kNumberOfCaloClusters); // resize TObjArray to 'remove' slots
 }
 
+//________________________________________________________________
+/// Get centrality/multiplicity percentile
+//________________________________________________________________
+Float_t AliAnalysisTaskEMCALClusterize::GetEventCentrality() const                          
+{ 
+  if(fUseAliCentrality)
+  {
+    if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
+    else                return -1.       ; 
+  }
+  else
+  {
+    if(GetMultSelCen()) return GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass,kTRUE) ;
+    else                return -1.       ; 
+  }
+  
+  return -1.;
+}
+
+
 //_______________________________________________
 /// Get or guess pass number/string from path of filename.
 //_______________________________________________
@@ -1062,6 +1087,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fCentralityClass  = clus->fCentralityClass;
     fCentralityBin[0] = clus->fCentralityBin[0];
     fCentralityBin[1] = clus->fCentralityBin[1];
+    fUseAliCentrality = clus->fUseAliCentrality;
   }
 }  
 
@@ -1755,7 +1781,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   // Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   // If we need a centrality bin, we select only those events in the corresponding bin.
-  if( GetCentrality() && fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
+  if( fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
   {
     Float_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return ; //reject events out of bin.
