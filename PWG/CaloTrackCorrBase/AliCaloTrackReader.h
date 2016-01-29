@@ -41,6 +41,7 @@ class AliMCEvent;
 class AliMixedEvent;
 class AliAODMCHeader;
 class AliCentrality;
+class AliMultSelection;
 class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
@@ -506,8 +507,17 @@ public:
   // Centrality / Event Plane
   //--------------------------
 
-  virtual AliCentrality* GetCentrality()             const { if(fDataType!=kMC) return fInputEvent->GetCentrality() ;
-                                                             else               return 0x0       ; } 
+  virtual AliCentrality*    GetCentrality()          const { 
+    if(fDataType!=kMC) return fInputEvent->GetCentrality() ;
+    else               return 0x0                          ; } 
+  
+  virtual AliMultSelection* GetMultSelCen()          const { 
+    if(fDataType!=kMC) return (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ; 
+    else               return 0x0                                                                ; } 
+
+  virtual void     SwitchOnAliCentrality ()                { fUseAliCentrality  = kTRUE          ; }
+  virtual void     SwitchOffAliCentrality()                { fUseAliCentrality  = kFALSE         ; }
+  
   virtual void     SetCentralityClass(TString name)        { fCentralityClass   = name           ; }
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
   virtual TString  GetCentralityClass()              const { return fCentralityClass             ; }
@@ -843,7 +853,7 @@ public:
   Bool_t           fRecalculateVertexBC;           ///<  Recalculate vertex BC from tracks pointing to vertex.
   
   // Centrality/Event plane
-  
+  Bool_t           fUseAliCentrality;              ///<  Select as centrality estimator AliCentrality (Run1) or AliMultSelection (Run1 and Run2)
   TString          fCentralityClass;               ///<  Name of selected centrality class.     
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
@@ -875,7 +885,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,71) ;
+  ClassDef(AliCaloTrackReader,72) ;
   /// \endcond
 
 } ;

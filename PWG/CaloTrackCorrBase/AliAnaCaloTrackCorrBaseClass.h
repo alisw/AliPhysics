@@ -48,6 +48,7 @@ class AliGenEventHeader ;
 class AliEMCALGeometry;
 class AliPHOSGeoUtils;
 class AliCentrality;
+class AliMultSelection;
 class AliEventplane;
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
@@ -95,14 +96,12 @@ public:
   
   virtual Int_t          GetEventNumber() const ;
   
-  // Track multiplicity
+  // Centrality, multiplicity selection
   
-  virtual Int_t GetTrackMultiplicity()                     const { return fReader->GetTrackMultiplicity() ; }
-  
-  // Centrality
-  
-  virtual AliCentrality* GetCentrality()                   const { return fReader->GetCentrality()       ; }
-  virtual Int_t          GetEventCentrality()              const { if(fUseTrackMultBins)
+  virtual Int_t             GetTrackMultiplicity()        const { return fReader->GetTrackMultiplicity() ; }
+  virtual AliCentrality*    GetCentrality()               const { return fReader->GetCentrality() ; }
+  virtual AliMultSelection* GetMultSelCen()               const { return fReader->GetMultSelCen() ; }
+  virtual Int_t             GetEventCentrality()          const { if(fUseTrackMultBins)
                                                                         return GetTrackMultiplicity();
                                                                    else return fReader->GetEventCentrality(); }
   

@@ -29,6 +29,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliMultSelection.h"
 
 #include "AliAnalysisTaskCounter.h"
 
@@ -49,6 +50,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
   //fTriggerAnalysis (new AliTriggerAnalysis),
   fCurrFileName(0), fCheckMCCrossSection(kFALSE),
+  fUseAliCentrality(kFALSE), fCentralityClass("V0M"),
   fhNEvents(0),
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
   fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
@@ -71,6 +73,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
     //fTriggerAnalysis (new AliTriggerAnalysis),
     fCurrFileName(0), fCheckMCCrossSection(kFALSE),
+    fUseAliCentrality(kFALSE), fCentralityClass("V0M"),
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
     fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
@@ -322,9 +325,17 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 
     if(TMath::Abs(v[2]) < 10.) 
     {
-      if(InputEvent()->GetCentrality()) 
-        fhCentrality->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
-      
+      if(fUseAliCentrality)
+      {
+        if(InputEvent()->GetCentrality() && fUseAliCentrality) 
+          fhCentrality->Fill(InputEvent()->GetCentrality()->GetCentralityPercentile(fCentralityClass)) ;
+      }
+      else
+      {
+        AliMultSelection* multSelection = (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ;
+        if(multSelection) fhCentrality->Fill(multSelection->GetMultiplicityPercentile(fCentralityClass, kTRUE));
+      }
+        
       if(InputEvent()->GetEventplane()) 
       {
         Float_t ep = InputEvent()->GetEventplane()->GetEventplane("V0", InputEvent());

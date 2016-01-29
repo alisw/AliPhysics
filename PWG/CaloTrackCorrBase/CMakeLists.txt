@@ -21,6 +21,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   )
 
 # Sources - alphabetical order
