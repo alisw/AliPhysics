@@ -1112,6 +1112,9 @@ goCreateQAplots()
   echo "${0} $*"
 
   mkdir -p ${outputDir}
+
+  [[ -e utilities.sh ]] && cp -f utilities.sh "$outputDir"
+
   cd ${outputDir}
   [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${batchWorkingDirectory} && return 1
 
