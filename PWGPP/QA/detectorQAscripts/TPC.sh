@@ -66,6 +66,7 @@ makeHTMLindexPerRun()
 </div>
 
 EOF
+
 }
 
 makeHTMLindexPerPeriod()
@@ -77,12 +78,16 @@ makeHTMLindexPerPeriod()
 # create run tabletable
 fileName="trending.root"
 
+#make a local copy of the external dependences
+copyFileFromRemote http://tablefilter.free.fr/TableFilter/tablefilter.js .
+copyFileFromRemote http://methvin.com/splitter/splitter.js .
+
 aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/dumpTable.C+\(\"${fileName}\",\"runTable\"\)
 
 #
 # fill html web page
 #
-cat $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/tpcTemplate.js     >   index.html
+cat $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/tpcTemplate.html     >   index.html
 
 ## Write Period Table
 echo "<body class=\"content\">" >> index.html
