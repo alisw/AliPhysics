@@ -33,6 +33,9 @@ private:
   AliAnalysisUtils          *fAnalysisUtils;
   THistManager              *fHistos;
 
+  AliAnalysisTaskEventFilter(const AliAnalysisTaskEventFilter&);
+  AliAnalysisTaskEventFilter& operator=(const AliAnalysisTaskEventFilter&);
+
   ClassDef(AliAnalysisTaskEventFilter, 1);
 };
 

@@ -9,6 +9,7 @@
 #include <TString.h>
 
 #include <AliAnalysisUtils.h>
+#include <AliInputEventHandler.h>
 #include <AliVEvent.h>
 #include <AliVVertex.h>
 
@@ -16,7 +17,7 @@
 
 using namespace EMCalTriggerPtAnalysis;
 
-ClassImp(AliAnalysisTaskEventFilter)
+ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter)
 
 AliAnalysisTaskEventFilter::AliAnalysisTaskEventFilter() :
 AliAnalysisTaskSE(),
@@ -53,6 +54,7 @@ void AliAnalysisTaskEventFilter::UserCreateOutputObjects(){
 }
 
 void AliAnalysisTaskEventFilter::UserExec(Option_t *){
+  PostData(1, fHistos->GetListOfHistograms());
   // Filter event, also run buggy event selection explicitly to check impact
   double vz = InputEvent()->GetPrimaryVertex()->GetZ();
   TString triggerstring(InputEvent()->GetFiredTriggerClasses());

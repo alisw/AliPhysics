@@ -102,7 +102,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
     Tracks/AliAnalysisTaskEMCALDCALTrigger2015.cxx
-    Tracks/AliAnalysisTaskEventFilter.h
+    Tracks/AliAnalysisTaskEventFilter.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
