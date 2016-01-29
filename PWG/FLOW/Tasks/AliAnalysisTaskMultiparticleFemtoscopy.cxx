@@ -805,6 +805,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::MC(AliMCEvent *aMC)
  // Monte Carlo analysis is performed in this method.
 
  // ...
+ aMC = NULL; // TBI eliminating warnings temporarily
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::MC(AliMCEvent *aMC)
 
@@ -815,6 +816,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ESD(AliESDEvent *aESD)
  // ESD analysis is performed in this method.
 
  // ...
+ aESD = NULL; // TBI eliminating warnings temporarily
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::ESD(AliESDEvent *aESD)
 
@@ -897,8 +899,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::V0s(AliVEvent *ave)
    if(!aAODv0) break;
 
 
-   AliAODv0 *temp = (AliAODv0*)fPIDV0sCA[0]->ConstructedAt(index-1);
-   temp = (AliAODv0*)aAODv0->Clone();
+   //AliAODv0 *temp = (AliAODv0*)fPIDV0sCA[0]->ConstructedAt(index-1);
+   //temp = (AliAODv0*)aAODv0->Clone();
    
    //cout<<Form("indddex = %d, fPIDV0sCA[0]->GetEntries() = %d",index,fPIDV0sCA[0]->GetEntries())<<endl;
 
@@ -921,14 +923,15 @@ void AliAnalysisTaskMultiparticleFemtoscopy::V0s(AliVEvent *ave)
    fPAHist->Fill(aAODv0->Alpha(),aAODv0->PtArmV0());
    // Check sharing:
  
-   fUniqueIDHistEBE->Fill(aAODv0->GetPosID()); 
+   fUniqueIDHistEBE->Fill(aAODv0->GetPosID());
    fUniqueIDHistEBE->Fill(aAODv0->GetNegID());
 
+   /*
    //cout<<Form("V0PosID: %d , V0NegID: %d",aAODv0->GetPosID(),aAODv0->GetNegID())<<endl;
    Int_t trackPos = aAODv0->GetPosID()>=0 ? fGlobalTracksAOD[0]->GetValue(aAODv0->GetPosID()) : fGlobalTracksAOD[0]->GetValue(-(aAODv0->GetPosID()+1));
    Int_t trackNeg = aAODv0->GetNegID()>=0 ? fGlobalTracksAOD[0]->GetValue(aAODv0->GetNegID()) : fGlobalTracksAOD[0]->GetValue(-(aAODv0->GetNegID()+1));
    //cout<<Form("global : %d, global : %d", trackPos, trackNeg)<<endl;
-   
+   */
 
    if(-1 != fUniqueIDHistEBE->FindFirstBinAbove(1.44,1)) // TBI
    {
