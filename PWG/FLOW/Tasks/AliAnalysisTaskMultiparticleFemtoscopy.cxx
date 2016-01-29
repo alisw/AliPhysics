@@ -355,7 +355,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
  {
   for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   {
-   if(!fBackground[pid1][pid2]){fCorrelationFunctions[pid1][pid2]->Divide(fBackground[pid1][pid2]);}
+   if(fBackground[pid1][pid2]){fCorrelationFunctions[pid1][pid2]->Divide(fBackground[pid1][pid2]);}
   }
  }
 
