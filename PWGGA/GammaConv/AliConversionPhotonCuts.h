@@ -113,7 +113,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
     TString GetCutNumber();
     
-    Float_t GetKappaTPC(AliAODConversionPhoton *gamma, AliVEvent *event);
+    Float_t GetKappaTPC(AliConversionPhotonBase *gamma, AliVEvent *event);
     
     // Cut Selection
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
@@ -130,9 +130,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
-    void FillPhotonCutIndex(Int_t photoncut){if(hCutIndex)hCutIndex->Fill(photoncut);}
-    void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(hEtaDistV0s)hEtaDistV0s->Fill(v0Eta);}
-    void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
+    void FillPhotonCutIndex(Int_t photoncut){if(fHistoCutIndex)fHistoCutIndex->Fill(photoncut);}
+    void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0s)fHistoEtaDistV0s->Fill(v0Eta);}
+    void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
     
     static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
     static AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
@@ -288,33 +288,34 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fDoDoubleCountingCut;                 // Flag to reject double counting
     Double_t          fMinRDC;                              // Min R for Double Counting Cut
     Double_t          fDeltaR;                              // Delta R for Double Counting Cut
-    Double_t          OpenAngle;                            // Opening Angle for Double Counting Cut
+    Double_t          fOpenAngle;                           // Opening Angle for Double Counting Cut
 
     // Histograms
-    TH1F*             hEtaDistV0s;                          // eta-distribution of all V0s after Finder selection
-    TH1F*             hEtaDistV0sAfterdEdxCuts;             // eta-distribution of all V0s after Finder selection after dEdx cuts
-    TH1F*             hdEdxCuts;                            // bookkeeping for dEdx cuts
-    TH2F*             hTPCdEdxbefore;                       // TPC dEdx before cuts
-    TH2F*             hTPCdEdxafter;                        // TPC dEdx after cuts
-    TH2F*             hTPCdEdxSigbefore;                    // TPC Sigma dEdx before cuts
-    TH2F*             hTPCdEdxSigafter;                     // TPC Sigm dEdx after cuts
-    TH2F*             hTOFbefore;                           // TOF before cuts
-    TH2F*             hTOFSigbefore;                        // TOF Sigma before cuts
-    TH2F*             hTOFSigafter;                         // TOF Sigma after cuts
-    TH2F*             hPsiPairDeltaPhiafter;                // TOF Sigma after cuts
-    TH1F*             hTrackCuts;                           // bookkeeping for track cuts
-    TH1F*             hPhotonCuts;                          // bookkeeping for photon specific cuts
-    TH1F*             hInvMassbefore;                       // e+e- inv mass distribution before cuts
-    TH2F*             hArmenterosbefore;                    // armenteros podolanski plot before cuts
-    TH1F*             hInvMassafter;                        // e+e- inv mass distribution after cuts
-    TH2F*             hArmenterosafter;                     // armenteros podolanski plot after cuts
-    TH1F*             hAcceptanceCuts;                      // bookkeeping for acceptance cuts
-    TH1F*             hCutIndex;                            // bookkeeping for cuts
-    TH1F*             hEventPlanePhi;                       // EventPlaneAngle Minus Photon Angle
+    TH1F*             fHistoEtaDistV0s;                     // eta-distribution of all V0s after Finder selection
+    TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        // eta-distribution of all V0s after Finder selection after dEdx cuts
+    TH1F*             fHistodEdxCuts;                       // bookkeeping for dEdx cuts
+    TH2F*             fHistoTPCdEdxbefore;                  // TPC dEdx before cuts
+    TH2F*             fHistoTPCdEdxafter;                   // TPC dEdx after cuts
+    TH2F*             fHistoTPCdEdxSigbefore;               // TPC Sigma dEdx before cuts
+    TH2F*             fHistoTPCdEdxSigafter;                // TPC Sigm dEdx after cuts
+    TH2F*             fHistoKappabefore;                    // Kappa vs photon pt before cuts
+    TH2F*             fHistoKappaafter;                     // Kappa vs photon pt after cuts
+    TH2F*             fHistoTOFbefore;                      // TOF before cuts
+    TH2F*             fHistoTOFSigbefore;                   // TOF Sigma before cuts
+    TH2F*             fHistoTOFSigafter;                    // TOF Sigma after cuts
+    TH2F*             fHistoITSSigbefore;                   // ITS Sigma before cuts
+    TH2F*             fHistoITSSigafter;                    // ITS Sigma after cuts
+    TH2F*             fHistoPsiPairDeltaPhiafter;           // TOF Sigma after cuts
+    TH1F*             fHistoTrackCuts;                      // bookkeeping for track cuts
+    TH1F*             fHistoPhotonCuts;                     // bookkeeping for photon specific cuts
+    TH1F*             fHistoInvMassbefore;                  // e+e- inv mass distribution before cuts
+    TH2F*             fHistoArmenterosbefore;               // armenteros podolanski plot before cuts
+    TH1F*             fHistoInvMassafter;                   // e+e- inv mass distribution after cuts
+    TH2F*             fHistoArmenterosafter;                // armenteros podolanski plot after cuts
+    TH1F*             fHistoAcceptanceCuts;                 // bookkeeping for acceptance cuts
+    TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
+    TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           // Flag for preselection cut used in V0Reader
-    
-    TH2F*             hITSSigbefore;                        // ITS Sigma before cuts
-    TH2F*             hITSSigafter;                         // ITS Sigma after cuts
 
   private:
   
