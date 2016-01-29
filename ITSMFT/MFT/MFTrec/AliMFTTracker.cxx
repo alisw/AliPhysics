@@ -46,6 +46,7 @@
 #include "AliMFTGeometry.h"
 #include "AliMFTHalfSegmentation.h"
 #include "AliMFTHalfDiskSegmentation.h"
+#include "AliMFTTrackReconstructor.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMFTTracker);
@@ -243,7 +244,13 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
   //fTrackFinder->PrintAll();
   
   AliInfo("Track Finder Done");
-  
+	// Reconstruction of the MFT tracks from the Tracks found by the Cellular Automaton
+	
+	AliMFTTrackReconstructor * trackReco = new AliMFTTrackReconstructor();
+	trackReco->EventReconstruct(fMFTTracks);
+	// ----> Standalone track reconstruction done
+	
+
   Int_t nTracksMUON = event->GetNumberOfMuonTracks();
   Int_t nTracksMFT = fTrackFinder->GetNtracks();
 

@@ -51,7 +51,9 @@ public:
   void SetChargeSign(Short_t sign) { fChargeSign = sign; }
   const Short_t GetChargeSign() { return fChargeSign; }
   void SetCellGID(Int_t index, Int_t gid) { fCellGIDarray[index] = gid; };
-  
+	void EvalSignedPt();
+	const Double_t GetPt() { return fPt; }
+
 private:
   static const Int_t fNDetMax = AliMFTConstants::fNMaxPlanes;
 
@@ -78,7 +80,8 @@ private:
   Double_t fChiSqY;               // reduced ChiSq en yz
   Int_t    fMCindex;              // MC track index for clean tracks
   Short_t  fChargeSign;           // estimated sign of the charge
-  
+	Double_t fPt  ;									// Pt evaluated from sagitta measurement
+
   ClassDef(AliMFTCATrack,2);
   
 };
