@@ -2390,7 +2390,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	   }
 	 } 
        }
+       Bool_t usePureSA = ftVertexer->GetITSpureSA();
+       if (!fesd->GetNumberOfTPCClusters()) {
+	 AliInfo("No TPC clusters: VertexerTracks will run with ITSpureSA tracks");
+	 ftVertexer->SetITSpureSA(kTRUE);
+       }
        AliESDVertex *pvtx=ftVertexer->FindPrimaryVertex(fesd);
+       ftVertexer->SetITSpureSA(usePureSA); // restore use settings
        if (pvtx) {
 	 if(constrSPD){
 	   TString title=pvtx->GetTitle();
