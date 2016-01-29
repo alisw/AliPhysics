@@ -740,12 +740,13 @@ copyFileFromRemote() (
   # Copy a list of remote files ($1, $2...${n-1}) to a certain dest dir ($n).
   # The last parameter must then be a local directory. Files can be local too.
   # Dest dir is created if not existing.
+  # If only one parameter is specified download this file to the current directory.
   # If a source file is in the form @list.txt, then the list of files (one per
   # line) in list.txt will be expanded and copied.
   # On success 0 is returned - 1 otherwise.
   # Example: copyFileFromRemote root://localhost//file1.txt @list.txt /tmp/localdir/foo
 
-  dstdir=${!#}
+  [[ $# == 1 ]] && dstdir=. || dstdir=${!#}
   maxCopyTries=${maxCopyTries-10}
   err=0
   opname="[copyFileFromRemote]"
