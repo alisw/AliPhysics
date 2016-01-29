@@ -749,10 +749,6 @@ copyFileFromRemote() (
       thiserr=1
       proto="${src%%://*}"
       [[ "$proto" == "$src" ]] && proto=local
-      # Remove leading double slashes.
-      while [[ "${src:$((${#src}-1))}" == / ]]; do
-        src=${src:0:$((${#src}-1))}
-      done
       dst="$dstdir/$(basename "$src")"
       echo "$opname (proto=$proto) started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
@@ -764,6 +760,7 @@ copyFileFromRemote() (
                    false
                  fi ;;
           root)  printExec xrdcp -f "$src" "$dst" ;;
+          http*) printExec curl -LsSfo "$dst" "$src" ;;
           *)     echo "protocol not supported: $proto"
                  return 2 ;;
         esac
@@ -799,11 +796,6 @@ copyFileToRemote() (
   err=0
   [[ "$proto" == "$dstdir" ]] && proto=local
   opname="[copyFileToRemote] (proto=$proto)"
-
-  # Remove trailing slashes.
-  while [[ "${dstdir:$((${#dstdir}-1))}" == / ]]; do
-    dstdir=${dstdir:0:$((${#dstdir}-1))}
-  done
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
