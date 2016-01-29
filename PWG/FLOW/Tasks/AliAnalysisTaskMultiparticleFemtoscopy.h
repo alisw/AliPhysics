@@ -18,6 +18,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
 #include "AliAODTrack.h"
+#include "AliAODEvent.h"
+#include "AliVEvent.h"
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
 #include "TExMap.h"
 #include "TProfile.h"
 #include "TH1F.h"
@@ -36,32 +40,67 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void Terminate(Option_t *);
   
   // 0.) Methods called in the constructor:
+  virtual void InitializeArrays(); // use this method temporarily for all objects not classified yet
   virtual void InitializeArraysForControlHistograms(); 
   virtual void InitializeArraysForEBEObjects(); 
+  virtual void InitializeArraysForCorrelationFunctions();
+  virtual void InitializeArraysForBackground();
 
   // 1.) Methods called in UserCreateOutputObjects():
+  virtual void InsanityChecksUserCreateOutputObjects();
   virtual void BookAndNestAllLists();
+  virtual void BookEverything(); // use this to book all un-classified objects
   virtual void BookEverythingForControlHistograms();
   virtual void BookEverythingForEBEObjects();
+  virtual void BookEverythingForCorrelationFunctions();
+  virtual void BookEverythingForBackground();
+
   // 2.) Methods called in UserExec(Option_t *):
+  //  2a) Directly:
   virtual void InsanityChecksUserExec();
+  virtual void MC(AliMCEvent *aMC);
+  virtual void ESD(AliESDEvent *aESD);
+  virtual void AOD(AliAODEvent *aAOD);
+  virtual void OnlineMonitoring();
+  //  2b) Indirectly:
+  virtual void Background(AliVEvent *ave);
+  virtual void FillControlHistogramsEvent(AliVEvent *ave);
+  virtual void FillControlHistogramsParticle(AliVEvent *ave);
+  virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *gtrack); // TBI shall I also pass atrack?
+  virtual void FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack);
+  virtual void V0s(AliVEvent *ave);
+
+
   Bool_t Pion(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t Kaon(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t Proton(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
-  Bool_t PassesCommonEventCuts(AliAODEvent *aAOD);
-  Bool_t PassesCommonTrackCuts(AliAODTrack *gtrack); // TBI I am applying them to global tracks... rethink
-  virtual void GlobalTracksAOD(AliAODEvent *aAOD); // fill fGlobalTracksAOD in e-b-e
+  Bool_t PassesCommonEventCuts(AliVEvent *ave);
+  Bool_t PassesMixedEventCuts(AliVEvent *ave);
+  Bool_t PassesCommonGlobalTrackCuts(AliAODTrack *gtrack); // common cuts for global tracks
+  Bool_t PassesCommonTrackCuts(AliAODTrack *atrack); // common cuts for analysis specific tracks (e.g. TPC-only)
+  virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAOD in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAOD
+  Double_t RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
+
   virtual void ResetEBEObjects();
   Bool_t SpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period);
+  Int_t CurrentEventNumber();
+  virtual void DoSomeDebugging(AliVEvent *ave);
+  virtual void CalculateCorrelationFunctions(AliAODEvent *aAOD);
+  virtual void CalculateBackground(TClonesArray *ca1, TClonesArray *ca2);
   // 3.) Methods called in Terminate(Option_t *):
   //...
 
 
   // Setters and getters:
+  // 0.) Not classified yet;
   // 1.) Control histograms;
   // 2.) Event-by-event histograms;
   // 3.) ... 
   // *.) Debugging
+
+  // 0.) Not classified yet:
+  void SetMaxNoGlobalTracksAOD(Int_t mngta) {this->fMaxNoGlobalTracksAOD = mngta;};
+  Bool_t GetMaxNoGlobalTracksAOD() const {return this->fMaxNoGlobalTracksAOD;};
 
   // 1.) Control histograms:
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
@@ -85,10 +124,42 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile* GetEBEObjectsFlagsPro() const {return this->fEBEObjectsFlagsPro;}; 
   //void SetFillEBEHistograms(Bool_t feh) {this->fFillEBEHistograms = feh;}; // TBI rethink
   //Bool_t GetFillEBEHistograms() const {return this->fFillEBEHistograms;};
-  // 3.) TBI
+  // 3.) Correlation functions:
+  void SetCorrelationFunctionsList(TList* const cfl) {this->fCorrelationFunctionsList = cfl;};
+  TList* GetCorrelationFunctionsList() const {return this->fCorrelationFunctionsList;}
+  void SetCorrelationFunctionsFlagsPro(TProfile* const cffp) {this->fCorrelationFunctionsFlagsPro = cffp;};
+  TProfile* GetCorrelationFunctionsFlagsPro() const {return this->fCorrelationFunctionsFlagsPro;};
+  void SetFillCorrelationFunctions(Bool_t fcf) {this->fFillCorrelationFunctions = fcf;};
+  Bool_t GetFillCorrelationFunctions() const {return this->fFillCorrelationFunctions;};
+  // 4.) Background:
+  void SetBackgroundList(TList* const bl) {this->fBackgroundList = bl;};
+  TList* GetBackgroundList() const {return this->fBackgroundList;}
+  void SetBackgroundFlagsPro(TProfile* const bfp) {this->fBackgroundFlagsPro = bfp;};
+  TProfile* GetBackgroundFlagsPro() const {return this->fBackgroundFlagsPro;};
+  void SetEstimateBackground(Bool_t feb) {this->fEstimateBackground = feb;};
+  Bool_t GetEstimateBackground() const {return this->fEstimateBackground;};
+
+  // *.) Online monitoring:
+  void SetUpdateOutputFile(const Int_t uf, const char *uqof)
+  {
+   // Example usage: taskMPF->SetUpdateOutputFile(44,"AnalysisResults.root");
+   this->fOnlineMonitoring = kTRUE;
+   this->fUpdateOutputFile = kTRUE;
+   this->fUpdateFrequency = uf;
+   this->fUpdateWhichOutputFile = new TString(uqof);
+  };
+  void SetMaxNumberOfEvents(const Int_t mnof, const char *uqof)
+  {
+   // Example usage: taskMPF->SetMaxNumberOfEvents(44,"AnalysisResults.root");
+   this->fOnlineMonitoring = kTRUE;
+   this->fMaxNumberOfEvents = mnof;
+   this->fUpdateWhichOutputFile = new TString(uqof);
+  };
+
   // *.) Debugging:
   void SetWaitForSpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
   {
+   this->fDoSomeDebugging = kTRUE;
    this->fWaitForSpecifiedEvent = kTRUE; 
    this->fRun = run;
    this->fBunchCross = bunchCross;
@@ -101,20 +172,21 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   AliAnalysisTaskMultiparticleFemtoscopy& operator=(const AliAnalysisTaskMultiparticleFemtoscopy& aatmpf);
   
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
+  TString *fAnalysisType; //! MC, ESD, or AOD
 
   AliPIDResponse *fPIDResponse; //! PID response object
 
-  TExMap *fGlobalTracksAOD; //! global tracks in AOD  
-  
+  Int_t fMaxNoGlobalTracksAOD; // maximum # of TExMap *fGlobalTracksAOD objects to be booked. Default is 3, one for default analysis, and two for event mixing
+  TExMap *fGlobalTracksAOD[10]; //! global tracks in AOD. [0] is used in the default analysis, [1] and [2] for event mixing, etc.
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
   TProfile *fControlHistogramsFlagsPro; // profile to hold all flags for control histograms
-  Bool_t fFillControlHistograms;        // fill or not control histograms (by default they are all filled)
-  // 1a) Event:  
+  Bool_t fFillControlHistograms;        // fill or not control histograms (by default they are all filled). Use this flag only to disable. TBI I am not really consistent...
+  // 1a) Event (a.k.a. global event observables):
   TList *fControlHistogramsEventList;        // list to hold all 'control histograms' for events TBI
   TProfile *fControlHistogramsEventFlagsPro; // profile to hold all flags for control histograms for events TBI
-  Bool_t fFillControlHistogramsEvent;        // fill or not control histograms events TBI (by default they are not filled)
+  Bool_t fFillControlHistogramsEvent;        // fill or not control histograms for global event observables
   TH1I *fGetNumberOfTracksHist;              // aAOD->GetNumberOfTracks()
   TH1I *fGetNumberOfV0sHist;                 // aAOD->GetNumberOfV0s()
   TH1F *fVertexXYZ[3];                       // [avtx->GetX(),avtx->GetY(),avtx->GetZ()]
@@ -122,10 +194,10 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *fGetChi2perNDFHist;                  // avtx->GetChi2perNDF();
   TH1I *fGetNDaughtersHist;                  // avtx->GetNDaughters();
   // ...
-  // 1b) Non-identified particles:
+  // 1b) Non-identified particles (for AOD these are "normal global" tracks):
   TList *fControlHistogramsNonIdentifiedParticlesList;        // list to hold all 'control histograms' for non-identified particles
   TProfile *fControlHistogramsNonIdentifiedParticlesFlagsPro; // profile to hold all flags for control histograms for non-identified particles
-  Bool_t fFillControlHistogramsNonIdentifiedParticles;        // fill or not control histograms for non-identified particles (by default they are not filled)
+  Bool_t fFillControlHistogramsNonIdentifiedParticles;        // fill or not control histograms for non-identified particles
   TH1I *fChargeHist;                                          // atrack->Charge()
   TH1I *fGetTPCNclsHist;                                      // atrack->GetTPCNcls()
   TH1I *fGetTPCsignalNHist;                                   // atrack->GetTPCsignalN()
@@ -135,15 +207,16 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *fEtaHist;                                             // atrack->Eta()
   TH1F *fPhiHist;                                             // atrack->Phi()
   TH1F *fMassHist;                                            // atrack->M()
+  TH1I *fGetFilterMap;                                        // atrack->GetFilterMap()
 
   // 1c) Identified particles:
   TList *fControlHistogramsIdentifiedParticlesList;        // list to hold all 'control histograms' for identified particles
   TProfile *fControlHistogramsIdentifiedParticlesFlagsPro; // profile to hold all flags for control histograms for identified particles
   Bool_t fFillControlHistogramsIdentifiedParticles;        // fill or not control histograms for identified particles (by default they are not filled)
-  TH1F *fMassPIDHist[5][2][2];                             // [0=e,1=mu,2=pi,3=K,4=p][particle/antiparticle][kPrimary/kFromDecayVtx]   
-  TH1F *fPtPIDHist[5][2][2];                               // [0=e,1=mu,2=pi,3=K,4=p][particle/antiparticle][kPrimary/kFromDecayVtx]   
-  TH1F *fEtaPIDHist[5][2][2];                              // [0=e,1=mu,2=pi,3=K,4=p][particle/antiparticle][kPrimary/kFromDecayVtx]   
-  TH1F *fPhiPIDHist[5][2][2];                              // [0=e,1=mu,2=pi,3=K,4=p][particle/antiparticle][kPrimary/kFromDecayVtx]   
+  TH1F *fMassPIDHist[5][2][2];                             // [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
+  TH1F *fPtPIDHist[5][2][2];                               // [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
+  TH1F *fEtaPIDHist[5][2][2];                              // [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
+  TH1F *fPhiPIDHist[5][2][2];                              // [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
 
   // ...
   // 1c) V0s:
@@ -174,23 +247,38 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fEBEObjectsFlagsPro; // profile to hold all flags for e-b-e histograms for V0s 
   //Bool_t fFillEBEHistograms;        // fill or not e-b-e histograms TBI do I really need this?
   TH1I *fUniqueIDHistEBE;           // filled with aAODv0->GetPosID() and aAODv0->GetNegID(). If the bin corresponding to that ID is already filled, two V0s share the same daughter     
-  TClonesArray *fPIDCA[5][2][2];    //! holds AliAODTrack candidates for each event [0=e,1=mu,2=pi,3=K,4=p][particle/antiparticle][kPrimary/kFromDecayVtx]
+  TClonesArray *fPIDCA[5][2][2];    //! holds AliAODTrack candidates for each event [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TClonesArray *fPIDV0sCA[1];       //! holds AliAODv0 candidates for each event [0=Lambda,1=...]
 
-  // Internal flags:
-  Bool_t fUseInternalFlags;  // use internal flags (automatically set if some internal flag is used)
+  // 3.) Correlation functions:
+  TList *fCorrelationFunctionsList;        // list to hold all correlation functions for primary particle
+  TProfile *fCorrelationFunctionsFlagsPro; // profile to hold all flags for correlation functions
+  Bool_t fFillCorrelationFunctions;        // fill or not correlation functions (by default they are not filled)
+  TH1F *fCorrelationFunctions[10][10];     // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
 
-  // *. Debugging:
-  Bool_t fWaitForSpecifiedEvent; //! do something only for the specified event
+  // 4.) Background:
+  TList *fBackgroundList;        // list to hold all correlation functions for primary particle
+  TProfile *fBackgroundFlagsPro; // profile to hold all flags for correlation functions
+  Bool_t fEstimateBackground;    // enable or not background estimation. Can be set independenly to the status of fFillCorrelationFunctions flag
+  TH1F *fBackground[10][10];     // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
+  TClonesArray *fMixedEvents[2]; // tracks for mixed events
+
+  // *.) Online monitoring:
+  Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
+  Bool_t fUpdateOutputFile;        // update the output file after certain number of analysed events
+  Int_t fUpdateFrequency;          // after how many events the output file will be updated
+  TString *fUpdateWhichOutputFile; // which file will be regularly updated
+  Int_t fMaxNumberOfEvents;        // if this number of events is reached, write to external file and bail out
+
+  // *.) Debugging:
+  Bool_t fDoSomeDebugging;        //! enable call to function within which debugging is done. Set indirectly.
+  Bool_t fWaitForSpecifiedEvent;  //! do something only for the specified event
   UInt_t fRun;                    //! do something only for the specified event
   UShort_t fBunchCross;           //! do something only for the specified event
   UInt_t fOrbit;                  //! do something only for the specified event
   UInt_t fPeriod;                 //! do something only for the specified event
 
-  // Control histograms:
-  //Bool_t fFillControlHistograms;     // fill or not control histograms (by default they are filled)
-
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,1); 
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,2);
 
 };
 
