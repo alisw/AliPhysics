@@ -267,7 +267,7 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
   else return badval;
 
   if(!fkTRDdEdxParams){
-    AliError("fkTRDdEdxParams null");
+    AliDebug(3,"fkTRDdEdxParams null");
     return -99999;
   }
 
@@ -502,7 +502,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
       // overflow
       probLayer = refUpper->Eval(dEdx);
   } else {
-      AliError("No references available");
+      AliDebug(3,"No references available");
   }
   AliDebug(1, Form("Eval 1D dEdx %f Probability %e", dEdx[0],probLayer));
 
