@@ -5,6 +5,8 @@
 
 #include "AliFemtoTrackCut.h"
 
+#include "TH1D.h"
+
 /**
  * \class AliFemtoV0TrackCut
  * \brief A track cut designed to cut on V0 (i.e. Lambda) particles.
@@ -29,6 +31,9 @@ public:
 
   AliFemtoV0TrackCut();
   virtual ~AliFemtoV0TrackCut();
+
+  AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut);
+  AliFemtoV0TrackCut& operator=(const AliFemtoV0TrackCut& aCut);
 
   virtual bool Pass(const AliFemtoV0* aV0);
 
@@ -64,6 +69,12 @@ public:
   bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
   bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);
 
+  //-----The fMinvPurityAidHistoV0 is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the V0 collection
+  void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidV0=true
+  TH1D* GetMinvPurityAidHistoV0();
+  //--If initiated, fMinvPurityAidHistoV0 will be in the output list after all other V0 cut monitors (pass and fail)
+  virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 in the output list 
+
  protected:   // here are the quantities I want to cut on...
 
   double fInvMassLambdaMin;        ///< invariant mass lambda min
@@ -95,6 +106,9 @@ public:
   float fPtMaxNegDaughter;
   double fMinAvgSepDaughters;
 
+  bool fBuildPurityAidV0;
+  TH1D* fMinvPurityAidHistoV0;
+
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoV0TrackCut, 1);
@@ -103,5 +117,5 @@ public:
 
 };
 
-
+inline TH1D* AliFemtoV0TrackCut::GetMinvPurityAidHistoV0() {return fMinvPurityAidHistoV0;}
 #endif
