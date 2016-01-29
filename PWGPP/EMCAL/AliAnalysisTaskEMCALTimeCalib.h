@@ -36,6 +36,7 @@
 /// 2015.11.19 Added histogram settings
 /// 2016.01.18 L1 phases read once at the beginning of lego train
 /// 2016.01.23 revert L1 phase and 100ns shift for runs before LHC15n muon calo pass1
+/// 2016.01.28 correction for L1 phase shift for runs before LHC15n muon calo pass1
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -82,7 +83,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMinCellEnergy(0),
     fReferenceFileName(),
     fReferenceRunByRunFileName(),
-    fReferenceWrongL1PhasesRunByRunFileName(),
     fPileupFromSPD(kFALSE),
     fMinTime(0),
     fMaxTime(0),
@@ -99,7 +99,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fFineTmin(0),
     fFineTmax(0),
     fL1PhaseList(0),
-    fWrongL1PhaseList(0),
+    fBadReco(kFALSE),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -120,7 +120,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhAllAverageBC(),
     fhAllAverageLGBC(),
     fhRefRuns(0),
-    fhWrongL1Phases(0),
     fhTimeDsup(),
     fhTimeDsupBC(),
     fhRawTimeVsIdBC(),
@@ -130,12 +129,15 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhRawTimeVsIdLGBC(),
     fhRawTimeSumLGBC(),
     fhRawTimeEntriesLGBC(),
-    fhRawTimeSumSqLGBC()
+    fhRawTimeSumSqLGBC(),
+    fhRawCorrTimeVsIdBC(),
+    fhRawCorrTimeVsIdLGBC(),
+    fhTimeVsIdBC(),
+    fhTimeVsIdLGBC()
     { ; }
   
   AliAnalysisTaskEMCALTimeCalib(const char *name);
-  //virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
-  ~AliAnalysisTaskEMCALTimeCalib();
+  virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
   
   //  virtual void   LocalInit();
   //virtual Bool_t Notify();
@@ -158,7 +160,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
   TString  GetReferenceRunByRunFileName() { return fReferenceRunByRunFileName ; }
-  TString  GetReferenceWrongL1PhasesRunByRunFileName() { return fReferenceWrongL1PhasesRunByRunFileName ; }
   TString  GetGeometryName()      { return fGeometryName      ; }
   Double_t GetMinTime()           { return fMinTime           ; }
   Double_t GetMaxTime()           { return fMaxTime           ; }
@@ -176,7 +177,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
   void SetReferenceRunByRunFileName(TString  v) { fReferenceRunByRunFileName= v ; }
-  void SetReferenceWrongL1PhasesRunByRunFileName(TString  v) { fReferenceWrongL1PhasesRunByRunFileName= v ; }
   void SetGeometryName     (TString  v) { fGeometryName     = v ; }
   void SetMinTime          (Double_t v) { fMinTime          = v ; }	   
   void SetMaxTime          (Double_t v) { fMaxTime          = v ; }	
@@ -208,14 +208,14 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SwitchOnPileupFromSPD()  { fPileupFromSPD = kTRUE ; }
   void SwitchOffPileupFromSPD() { fPileupFromSPD = kFALSE ; }
 
+  void SwitchOnBadReco()  { fBadReco = kTRUE ; }
+  void SwitchOffBadReco() { fBadReco = kFALSE ; }
+
   void SetDefaultCuts();
   void LoadReferenceHistos(); //loaded once per period to the memory
 
   void LoadReferenceRunByRunHistos(); //loaded once to the memory at the beginning, phases for all runs 
   void SetL1PhaseReferenceForGivenRun();//set refernce L1phase per run 
-
-  void LoadWrongReferenceRunByRunHistos(); //loaded once to the memory at the beginning, wrong phases for all runs 
-  void SetWrongL1PhaseReferenceForGivenRun();//set reference wrong L1 phase per run
 
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE);
@@ -260,7 +260,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   TString        fReferenceFileName ;   //!<! name of reference file (for one period)
   TString        fReferenceRunByRunFileName ;   ///< name of reference file (run-by-run)
-  TString        fReferenceWrongL1PhasesRunByRunFileName ;   ///< name of reference file (run-by-run) with wrong L1 phases
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
@@ -282,7 +281,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t       fFineTmax     ;        ///< upper range of histo with T0 time
 
   TObjArray     *fL1PhaseList;          ///< array with phases for set of runs 
-  TObjArray     *fWrongL1PhaseList;     ///< array with wrong L1 phases for set of runs 
+  Bool_t         fBadReco;              ///< flag to apply 100ns shift and L1 shift
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
@@ -311,7 +310,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   // histo with reference values run-by-run after the first iteration 
   TH1C		*fhRefRuns; ///< 20 entries per run: nSM
-  TH1C          *fhWrongL1Phases; ///< 20 entries per run to revert L1 phases
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
@@ -326,6 +324,14 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F          *fhRawTimeSumLGBC    [kNBCmask]; //!<! 4 BCmask LG
   TH1F          *fhRawTimeEntriesLGBC[kNBCmask]; //!<! 4 BCmask LG
   TH1F          *fhRawTimeSumSqLGBC  [kNBCmask]; //!<! 4 BCmask LG
+
+  //histos for raw time after wrong reconstruction correction (100ns and L1 phase)
+  TH2F          *fhRawCorrTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
+  TH2F          *fhRawCorrTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
+
+  //histos for raw time after wrong reconstruction correction (100ns and L1 phase) and new L1 phase
+  TH2F          *fhTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
+  TH2F          *fhTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
 
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALTimeCalib(           const AliAnalysisTaskEMCALTimeCalib&);
