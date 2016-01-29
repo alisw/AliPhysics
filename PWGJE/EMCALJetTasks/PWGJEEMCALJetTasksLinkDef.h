@@ -131,6 +131,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEMCALDCALTrigger2015+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ namespace HighPtTracks+;
 #pragma link C++ class HighPtTracks::AliReducedClusterParticle+;
