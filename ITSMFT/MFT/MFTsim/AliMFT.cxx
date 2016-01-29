@@ -414,7 +414,7 @@ void AliMFT::StepManager() {
   mc->TrackPosition(position);
   mc->TrackMomentum(momentum);
   
-  AliDebug(1, Form("AliMFT::StepManager()->%s Hit #%06d (x=%f, y=%f, z=%f) belongs to track %02d\n",
+  AliDebug(1, Form(" %s Hit #%06d (x=%f, y=%f, z=%f) belongs to track %02d",
                    mc->CurrentVolName(), fNhits, position.X(), position.Y(), position.Z(), gAlice->GetMCApp()->GetCurrentTrackNumber()));
   
   hit.SetPosition(position);
@@ -468,7 +468,6 @@ void AliMFT::Hits2SDigits(){
       SetTreeAddress();
       
       AliDebug(1, Form("Event %03d: fLoader->TreeH()->GetEntries() = %2d", iEvt, Int_t(fLoader->TreeH()->GetEntries())));
-      AliDebug(1,Form("Event %03d: fLoader->TreeH()->GetEntries() = %2d", iEvt, Int_t(fLoader->TreeH()->GetEntries())));
 
       for (Int_t iTrack=0; iTrack<fLoader->TreeH()->GetEntries(); iTrack++) {
         fLoader->TreeH()->GetEntry(iTrack);
