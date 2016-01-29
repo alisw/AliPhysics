@@ -40,6 +40,7 @@ set(SRCS
   AliJSONReader.cxx
   AliJSONData.cxx
   AliAnalysisTaskDummy.cxx
+  AliTLorentzVector.cxx
   )
 
 # Headers from sources
