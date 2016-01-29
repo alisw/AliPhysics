@@ -7,6 +7,7 @@
 
 #include "AliVEvent.h"
 #include "AliLog.h"
+#include "TLorentzVector.h"
 
 #include "AliClusterContainer.h"
 
@@ -22,7 +23,8 @@ AliClusterContainer::AliClusterContainer():
   fClusterBitMap(0),
   fMCClusterBitMap(0),
   fMinMCLabel(0),
-  fExoticCut(kTRUE)
+  fExoticCut(kTRUE),
+  fDefaultClusterEnergy(-1)
 {
   // Default constructor.
 
@@ -43,7 +45,8 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fClusterBitMap(0),
   fMCClusterBitMap(0),
   fMinMCLabel(0),
-  fExoticCut(kTRUE)
+  fExoticCut(kTRUE),
+  fDefaultClusterEnergy(-1)
 {
   // Standard constructor.
 
@@ -145,10 +148,11 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i)
 
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
-  while (fCurrentID < n && !c) { 
-    c = GetAcceptCluster(fCurrentID);
+  do {
     fCurrentID++;
-  }
+    if (fCurrentID >= n) break;
+    c = GetAcceptCluster(fCurrentID);
+  } while (!c);
 
   return c;
 }
@@ -162,21 +166,99 @@ AliVCluster* AliClusterContainer::GetNextCluster(Int_t i)
 
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
-  while (fCurrentID < n && !c) { 
-    c = GetCluster(fCurrentID);
+  do {
     fCurrentID++;
-  }
+    if (fCurrentID >= n) break;
+    c = GetCluster(fCurrentID);
+  } while (!c);
 
   return c;
 }
 
 //________________________________________________________________________
-void AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
+Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 {
-  //Get momentum of the i^th cluster in array
+  //Get momentum of the i^th particle in array
 
   AliVCluster *vc = GetCluster(i);
-  if(vc) vc->GetMomentum(mom,const_cast<Double_t*>(fVertex));
+  if (vc) {
+    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
+      vc->GetMomentum(mom, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    }
+    else {
+      vc->GetMomentum(mom, fVertex);
+    }
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliClusterContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliVCluster *vc = GetNextCluster(i);
+  if (vc) {
+    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
+      vc->GetMomentum(mom, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    }
+    else {
+      vc->GetMomentum(mom, fVertex);
+    }
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliClusterContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliVCluster *vc = GetAcceptCluster(i);
+  if (vc) {
+    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
+      vc->GetMomentum(mom, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    }
+    else {
+      vc->GetMomentum(mom, fVertex);
+    }
+
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliClusterContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliVCluster *vc = GetNextAcceptCluster(i);
+  if (vc) {
+    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
+      vc->GetMomentum(mom, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    }
+    else {
+      vc->GetMomentum(mom, fVertex);
+    }
+
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
 }
 
 //________________________________________________________________________

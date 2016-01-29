@@ -9,7 +9,9 @@
 #include "AliLog.h"
 #include "AliVCuts.h"
 #include "AliVTrack.h"
+#include "AliESDtrack.h"
 
+#include "AliTLorentzVector.h"
 #include "AliEmcalTrackSelectionAOD.h"
 #include "AliEmcalTrackSelectionESD.h"
 #include "AliParticleContainer.h"
@@ -42,7 +44,8 @@ AliParticleContainer::AliParticleContainer():
   fAODFilterBits(0),
   fTrackCutsPeriod(),
   fEmcalTrackSelection(0),
-  fTrackType(kUndefined)
+  fFilteredTracks(0),
+  fTrackTypes(5000)
 {
   // Default constructor.
 
@@ -72,7 +75,8 @@ AliParticleContainer::AliParticleContainer(const char *name, const char *period)
   fAODFilterBits(0),
   fTrackCutsPeriod(period),
   fEmcalTrackSelection(0),
-  fTrackType(kUndefined)
+  fFilteredTracks(0),
+  fTrackTypes(5000)
 {
   // Standard constructor.
 
@@ -91,8 +95,6 @@ void AliParticleContainer::SetArray(AliVEvent *event)
 
   AliEmcalContainer::SetArray(event);
 
-  TClass* particleClass = fClArray->GetClass();
-
   if (fTrackFilterType == AliEmcalTrackSelection::kNoTrackFilter) {
     if (fEmcalTrackSelection) delete fEmcalTrackSelection;
     fEmcalTrackSelection = 0;
@@ -102,16 +104,18 @@ void AliParticleContainer::SetArray(AliVEvent *event)
 
       AliInfo("Using custom track cuts");
 
-      if (particleClass->InheritsFrom("AliAODTrack")) {
-        AliInfo(Form("Objects are of type %s: AOD track selection will be done.", particleClass->GetName()));
-        fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(0, fAODFilterBits);
-      }
-      else if (particleClass->InheritsFrom("AliESDtrack")) {
-        AliInfo(Form("Objects are of type %s: ESD track selection will be done.", particleClass->GetName()));
-        fEmcalTrackSelection = new AliEmcalTrackSelectionESD(0);
-      }
-      else {
-        AliWarning(Form("Objects are of type %s: no track filtering will be done!!", particleClass->GetName()));
+      if (fLoadedClass) {
+        if (fLoadedClass->InheritsFrom("AliAODTrack")) {
+          AliInfo(Form("Objects are of type %s: AOD track selection will be done.", fLoadedClass->GetName()));
+          fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(0, fAODFilterBits);
+        }
+        else if (fLoadedClass->InheritsFrom("AliESDtrack")) {
+          AliInfo(Form("Objects are of type %s: ESD track selection will be done.", fLoadedClass->GetName()));
+          fEmcalTrackSelection = new AliEmcalTrackSelectionESD(0);
+        }
+        else {
+          AliWarning(Form("Objects are of type %s: no track filtering will be done!!", fLoadedClass->GetName()));
+        }
       }
 
       if (fEmcalTrackSelection) {
@@ -133,18 +137,56 @@ void AliParticleContainer::SetArray(AliVEvent *event)
         AliInfo(Form("Using track cuts %d (no data period was provided!)", fTrackFilterType));
       }
 
-      if (particleClass->InheritsFrom("AliAODTrack")) {
-        AliInfo(Form("Objects are of type %s: AOD track selection will be done.", particleClass->GetName()));
+      if (fLoadedClass->InheritsFrom("AliAODTrack")) {
+        AliInfo(Form("Objects are of type %s: AOD track selection will be done.", fLoadedClass->GetName()));
         fEmcalTrackSelection = new AliEmcalTrackSelectionAOD(fTrackFilterType, fTrackCutsPeriod);
       }
-      else if (particleClass->InheritsFrom("AliESDtrack")) {
-        AliInfo(Form("Objects are of type %s: ESD track selection will be done.", particleClass->GetName()));
+      else if (fLoadedClass->InheritsFrom("AliESDtrack")) {
+        AliInfo(Form("Objects are of type %s: ESD track selection will be done.", fLoadedClass->GetName()));
         fEmcalTrackSelection = new AliEmcalTrackSelectionESD(fTrackFilterType, fTrackCutsPeriod);
       }
       else {
-        AliWarning(Form("Objects are of type %s: no track filtering will be done!!", particleClass->GetName()));
+        AliWarning(Form("Objects are of type %s: no track filtering will be done!!", fLoadedClass->GetName()));
       }
     }
+  }
+}
+
+//________________________________________________________________________
+void AliParticleContainer::NextEvent()
+{
+  fTrackTypes.Reset(kUndefined);
+  if (fEmcalTrackSelection) {
+    fFilteredTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
+
+    TObjArray* trackBitmaps = fEmcalTrackSelection->GetAcceptedTrackBitmaps();
+    TIter nextBitmap(trackBitmaps);
+    TBits* bits = 0;
+    Int_t i = 0;
+    while ((bits = static_cast<TBits*>(nextBitmap()))) {
+      if (i > fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
+      AliVTrack* vTrack = static_cast<AliVTrack*>(fFilteredTracks->At(i));
+      if (!vTrack) {
+        fTrackTypes[i] = kRejected;
+      }
+      else if (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) {
+        if (bits->FirstSetBit() == 0) {
+          fTrackTypes[i] = kHybridGlobal;
+        }
+        else if (bits->FirstSetBit() == 1) {
+          if ((vTrack->GetStatus()&AliVTrack::kITSrefit) != 0) {
+            fTrackTypes[i] = kHybridConstrained;
+          }
+          else {
+            fTrackTypes[i] = kHybridConstrainedNoITSrefit;
+          }
+        }
+      }
+     i++;
+    }
+  }
+  else {
+    fFilteredTracks = fClArray;
   }
 }
 
@@ -182,21 +224,21 @@ AliVParticle* AliParticleContainer::GetParticle(Int_t i) const
 {
   //Get i^th jet in array
 
-  if(i<0 || i>=fClArray->GetEntriesFast()) return 0;
-  AliVParticle *vp = static_cast<AliVParticle*>(fClArray->At(i));
+  if (i == -1) i = fCurrentID;
+  if (i < 0 || i >= fFilteredTracks->GetEntriesFast()) return 0;
+  AliVParticle *vp = static_cast<AliVParticle*>(fFilteredTracks->At(i));
   return vp;
-
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) {
+AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i)
+{
   //return pointer to particle if particle is accepted
 
-  AliVParticle *vp = GetParticle(i);
-  if(!vp) return 0;
-
-  if(AcceptParticle(vp))
-      return vp;
+  if (i == -1) i = fCurrentID;
+  if (AcceptParticle(i)) {
+      return GetParticle(i);
+  }
   else {
     AliDebug(2,"Particle not accepted.");
     return 0;
@@ -227,14 +269,16 @@ AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i)
 {
   //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
 
-  if (i>=0) fCurrentID = i;
+  if (i >= 0) fCurrentID = i;
 
   const Int_t n = GetNEntries();
+
   AliVParticle *p = 0;
-  while (fCurrentID < n && !p) { 
-    p = GetAcceptParticle(fCurrentID);
+  do {
     fCurrentID++;
-  }
+    if (fCurrentID >= n) break;
+    p = GetAcceptParticle(fCurrentID);
+  } while (!p);
 
   return p;
 }
@@ -244,87 +288,141 @@ AliVParticle* AliParticleContainer::GetNextParticle(Int_t i)
 {
   //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
 
-  if (i>=0) fCurrentID = i;
+  if (i >= 0) fCurrentID = i;
 
   const Int_t n = GetNEntries();
   AliVParticle *p = 0;
-  while (fCurrentID < n && !p) { 
-    p = GetParticle(fCurrentID);
+  do {
     fCurrentID++;
-  }
+    if (fCurrentID >= n) break;
+    p = GetParticle(fCurrentID);
+  } while (!p);
 
   return p;
 }
 
 //________________________________________________________________________
-void AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
+Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
+  if (i == -1) i = fCurrentID;
   AliVParticle *vp = GetParticle(i);
-  if (vp) mom.SetPtEtaPhiM(vp->Pt(),vp->Eta(),vp->Phi(),0.139);
+  if (vp) {
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+        (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(vp);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+    }
+    else {
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+    }
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliVParticle *vp = GetNextParticle(i);
+  if (vp) {
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+        (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(vp);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+    }
+    else {
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+    }
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  if (i == -1) i = fCurrentID;
+  AliVParticle *vp = GetAcceptParticle(i);
+  if (vp) {
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+        (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(vp);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+    }
+    else {
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+    }
+
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliVParticle *vp = GetNextAcceptParticle(i);
+  if (vp) {
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
+        (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(vp);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+    }
+    else {
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+    }
+
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    return kFALSE;
+  }
 }
 
 //________________________________________________________________________
 Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
 {
   // Return true if vp is accepted.
+  Int_t id = fFilteredTracks->IndexOf(vp);
+  if (id >= 0) {
+    return AcceptParticle(id);
+  }
+  else {
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::AcceptParticle(Int_t i)
+{
+  // Return true if i^th particle is accepted.
 
   fRejectionReason = 0;
-  fTrackType = kUndefined;
+
+  // Cuts on the particle properties
+  AliVParticle* vp = GetParticle(i);
 
   if (!vp) {
     fRejectionReason |= kNullObject;
     return kFALSE;
-  }
-
-  if (fEmcalTrackSelection) {
-    AliVTrack* vTrack = static_cast<AliVTrack*>(vp);
-    if (!fEmcalTrackSelection->IsTrackAccepted(vTrack)) {
-      fRejectionReason |= kNotHybridTrack;
-      return kFALSE;
-    }
-    else {
-      if (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) {
-        if (fEmcalTrackSelection->GetTrackBitmap().FirstSetBit() == 0) {
-          fTrackType = kHybridGlobal;
-        }
-        else if (fEmcalTrackSelection->GetTrackBitmap().FirstSetBit() == 1) {
-          if (vTrack->GetStatus()&AliVTrack::kITSrefit != 0) {
-            fTrackType = kHybridConstrained;
-          }
-          else {
-            fTrackType = kHybridConstrainedNoITSrefit;
-          }
-        }
-      }
-    }
-  }
-
-  if (vp->Pt() < fParticlePtCut) {
-    fRejectionReason |= kPtCut;
-    return kFALSE;
-  }
-
-  Double_t phi = vp->Phi() + fPhiOffset;
-  Double_t tpi = TMath::TwoPi();
-  if(phi<0.)  phi+=tpi;
-  if(phi>tpi) phi-=tpi;
-
-  if (vp->Eta() < fParticleMinEta || vp->Eta() > fParticleMaxEta || 
-      phi < fParticleMinPhi       || phi > fParticleMaxPhi) {
-    fRejectionReason |= kAcceptanceCut;
-    return kFALSE;
-  }
-
-  if(fMinDistanceTPCSectorEdge>0.) {
-    const Double_t pi = TMath::Pi();
-    const Double_t kSector = pi/9;
-    Double_t phiDist = TMath::Abs(vp->Phi() - TMath::FloorNint(vp->Phi()/kSector)*kSector);
-    if(phiDist<fMinDistanceTPCSectorEdge) {
-      fRejectionReason |= kMinDistanceTPCSectorEdgeCut;
-      return kFALSE;
-    }
   }
 
   if (TMath::Abs(vp->GetLabel()) < fMinMCLabelAccept) {
@@ -361,6 +459,33 @@ Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
   if (fCharge>=0 && fCharge != vp->Charge()) {
     fRejectionReason |= kChargeCut;
     return kFALSE;
+  }
+
+  // Cuts on the 4-momentum
+  AliTLorentzVector mom;
+  GetMomentum(mom, i);
+
+  if (mom.Pt() < fParticlePtCut) {
+    fRejectionReason |= kPtCut;
+    return kFALSE;
+  }
+
+  Double_t phi = mom.Phi_0_2pi() + fPhiOffset;
+
+  if (mom.Eta() < fParticleMinEta || mom.Eta() > fParticleMaxEta ||
+      phi < fParticleMinPhi       || phi > fParticleMaxPhi) {
+    fRejectionReason |= kAcceptanceCut;
+    return kFALSE;
+  }
+
+  if(fMinDistanceTPCSectorEdge>0.) {
+    const Double_t pi = TMath::Pi();
+    const Double_t kSector = pi/9;
+    Double_t phiDist = TMath::Abs(mom.Phi() - TMath::FloorNint(mom.Phi()/kSector)*kSector);
+    if(phiDist<fMinDistanceTPCSectorEdge) {
+      fRejectionReason |= kMinDistanceTPCSectorEdgeCut;
+      return kFALSE;
+    }
   }
   
   return kTRUE;

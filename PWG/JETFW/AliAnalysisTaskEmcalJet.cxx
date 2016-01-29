@@ -1,4 +1,3 @@
-// $Id$
 //
 // Emcal jet analysis base task.
 //
@@ -233,8 +232,12 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
     return kFALSE;
 
-  if (fRho)
-    fRhoVal = fRho->GetVal();
+  if (fRho) fRhoVal = fRho->GetVal();
+
+  AliEmcalContainer* cont = 0;
+
+  TIter nextJetColl(&fJetCollArray);
+  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent();
 
   return kTRUE;
 }

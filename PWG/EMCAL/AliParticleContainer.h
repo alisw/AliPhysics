@@ -5,6 +5,8 @@ class AliVEvent;
 class AliVParticle;
 class AliVCuts;
 
+#include <TArrayC.h>
+
 #include "AliAODMCParticle.h"
 #include "AliEmcalTrackSelection.h"
 #include "AliEmcalContainer.h"
@@ -15,6 +17,7 @@ class AliParticleContainer : public AliEmcalContainer {
   typedef AliEmcalTrackSelection::ETrackFilterType_t ETrackFilterType_t;
 
   enum ETrackType_t {
+    kRejected = -1,
     kUndefined = 0,
     kHybridGlobal = 0,
     kHybridConstrained = 1,
@@ -26,23 +29,27 @@ class AliParticleContainer : public AliEmcalContainer {
   virtual ~AliParticleContainer(){;}
 
   Bool_t                      AcceptParticle(AliVParticle         *vp)       ;
+  Bool_t                      AcceptParticle(Int_t i)                        ;
   Double_t                    GetParticlePtCut()                        const   { return fParticlePtCut  ; }
   Double_t                    GetParticleEtaMin()                       const   { return fParticleMinEta ; }
   Double_t                    GetParticleEtaMax()                       const   { return fParticleMaxEta ; }
   Double_t                    GetParticlePhiMin()                       const   { return fParticleMinPhi ; }
   Double_t                    GetParticlePhiMax()                       const   { return fParticleMaxPhi ; }
   AliVParticle               *GetLeadingParticle(const char* opt="")         ;
-  AliVParticle               *GetParticle(Int_t i)                      const;
-  AliVParticle               *GetAcceptParticle(Int_t i)                     ;
+  AliVParticle               *GetParticle(Int_t i=-1)                   const;
+  AliVParticle               *GetAcceptParticle(Int_t i=-1)                  ;
   AliVParticle               *GetParticleWithLabel(Int_t lab)           const;
   AliVParticle               *GetAcceptParticleWithLabel(Int_t lab)          ;
   AliVParticle               *GetNextAcceptParticle(Int_t i=-1)              ;
   AliVParticle               *GetNextParticle(Int_t i=-1)                    ;
-  void                        GetMomentum(TLorentzVector &mom, Int_t i) const;
+  Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
+  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
   Int_t                       GetNAcceptedParticles()                   ;
   ETrackFilterType_t          GetTrackFilterType()                      const   { return fTrackFilterType; }
-  ETrackType_t                GetTrackType()                            const   { return fTrackType      ; }
+  Char_t                      GetTrackType(Int_t i)                     const   { return i >= 0 && i < fTrackTypes.GetSize() ? fTrackTypes[i] : kUndefined ; }
 
   void                        SetArray(AliVEvent *event);
 
@@ -72,6 +79,8 @@ class AliParticleContainer : public AliEmcalContainer {
   void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
   void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }
 
+  void                        NextEvent();
+
   static void                 SetDefTrackCutsPeriod(const char* period)       { fgDefTrackCutsPeriod = period; }
   static TString              GetDefTrackCutsPeriod()                         { return fgDefTrackCutsPeriod  ; }
 
@@ -98,7 +107,8 @@ class AliParticleContainer : public AliEmcalContainer {
   UInt_t                      fAODFilterBits;                 // track filter bits
   TString                     fTrackCutsPeriod;               // period string used to generate track cuts
   AliEmcalTrackSelection     *fEmcalTrackSelection;           //!track selection object
-  ETrackType_t                fTrackType;                     //!last accepted track type
+  TObjArray                  *fFilteredTracks;                //!tracks filtered using fEmcalTrackSelection
+  TArrayC                     fTrackTypes;                    //!track types
 
  private:
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor

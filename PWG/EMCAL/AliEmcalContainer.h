@@ -58,12 +58,15 @@ class AliEmcalContainer : public TNamed {
   TClonesArray               *GetArray() const                      { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
   const TString&              GetClassName()                  const { return fClassName                 ; }
-  Int_t                       GetCurrentID()                  const { return fCurrentID-1               ; }
+  Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
   Int_t                       GetNEntries()                   const { return fClArray->GetEntriesFast() ; }
-  virtual void                GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
-  void                        ResetCurrentID(Int_t i=0)             { fCurrentID = i                    ; }
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) = 0;
+  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) = 0;
+  virtual Bool_t              GetNextMomentum(TLorentzVector &mom, Int_t i=-1) = 0;
+  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1) = 0;
+  void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
@@ -71,6 +74,8 @@ class AliEmcalContainer : public TNamed {
   UInt_t                      GetRejectionReason()            const { return fRejectionReason           ; }
   UInt_t                      TestRejectionReason(UInt_t rs)  const { return fRejectionReason & rs      ; }
   UShort_t                    GetRejectionReasonBitPosition() const;
+  TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
+  virtual void                NextEvent() {;}
 
  protected:
   TString                     fClArrayName;             // name of branch
@@ -81,6 +86,7 @@ class AliEmcalContainer : public TNamed {
   AliNamedArrayI             *fLabelMap;                //!Label-Index map
   Double_t                    fVertex[3];               //!event vertex array
   UInt_t                      fRejectionReason;         //!reject reason bit map for the last call to an accept object function
+  TClass                     *fLoadedClass;             //!Class of teh objects contained in the TClonesArray
 
  private:
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
