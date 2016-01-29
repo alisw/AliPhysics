@@ -44,7 +44,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   void ProtonOrigin();
   void SetSftPosR125(AliVTrack *track, const Float_t bfield, Double_t priVtx[3], Double_t fXSftR125[3] ); 
   double CalculateDphiSatR12m(Double_t pos1SftR125[3], Double_t pos2SftR125[3]);
-  double CalculateDphiSatR12m(Short_t chg1, Short_t chg2, Int_t magSign, Double_t ptv1, Double_t ptv2, Double_t phi1, Double_t phi2, Double_t* dps2);
+  double CalculateDphiSatR12mAnal(Short_t chg1, Short_t chg2, Int_t magSign, Double_t ptv1, Double_t ptv2, Double_t phi1, Double_t phi2, Double_t* dps2);
   void SetFirstParticle(firstpart_t firstpart) {fFirstpart = firstpart;}
   void SetSecondParticle(firstpart_t secondpart) {fSecondpart = secondpart;}
   void SetMassWindowCascades(Float_t masswincasc) { fMassWindowCascades = masswincasc;}
