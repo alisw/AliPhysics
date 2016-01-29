@@ -82,7 +82,7 @@ aliroot -l -b -q $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/rootlogon.C $ALICE
 #
 # fill html web page
 #
-cat $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/tpcTemplate.js     >   index.html
+cat $ALICE_PHYSICS/PWGPP/TPC/macros/TPCQAWebpage/tpcTemplate.html     >   index.html
 
 ## Write Period Table
 echo "<body class=\"content\">" >> index.html
