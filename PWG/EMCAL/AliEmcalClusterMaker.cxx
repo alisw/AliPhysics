@@ -12,6 +12,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliEmcalClusterMaker.h"
+#include "AliClusterContainer.h"
 
 ClassImp(AliEmcalClusterMaker)
 
@@ -35,21 +36,21 @@ AliEmcalClusterMaker::AliEmcalClusterMaker() :
 
 //________________________________________________________________________
 AliEmcalClusterMaker::AliEmcalClusterMaker(const char *name, Bool_t histo) : 
-  AliAnalysisTaskEmcal(name, histo),
-  fOutCaloName("EmcClusters"),
-  fRecoUtils(0),
-  fEsdMode(kTRUE),
-  fOutClusters(0),
-  fEnergyDistBefore(0),
-  fEtaPhiDistBefore(0),
-  fEnergyTimeHistBefore(0),
-  fEnergyDistAfter(0),
-  fEtaPhiDistAfter(0),
-  fEnergyTimeHistAfter(0),
-  fEnergyExoticClusters(0)
+   AliAnalysisTaskEmcal(name, histo),
+   fOutCaloName("EmcClusters"),
+   fRecoUtils(0),
+   fEsdMode(kTRUE),
+   fOutClusters(0),
+   fEnergyDistBefore(0),
+   fEtaPhiDistBefore(0),
+   fEnergyTimeHistBefore(0),
+   fEnergyDistAfter(0),
+   fEtaPhiDistAfter(0),
+   fEnergyTimeHistAfter(0),
+   fEnergyExoticClusters(0)
 {
   // Standard constructor.
-  
+
   SetMakeGeneralHistograms(histo);
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
@@ -136,14 +137,16 @@ Bool_t AliEmcalClusterMaker::Run()
   // delete output
   if (fOutClusters) fOutClusters->Delete();
 
+  AliClusterContainer* clusters = GetClusterContainer(0);
+  if (!clusters) return kFALSE;
+
   // loop over clusters
   Int_t clusCount = 0;
   Int_t entries   = fCaloClusters->GetEntries();
-  for (Int_t i = 0; i < entries; ++i) {    
-    AliVCluster *clus = static_cast<AliVCluster*>(fCaloClusters->At(i));
-    if (!clus || !clus->IsEMCAL()) {
-      continue;
-    }
+  AliVCluster *clus = 0;
+  clusters->ResetCurrentID();
+  while ((clus = clusters->GetNextCluster())) {
+    if (!clus->IsEMCAL()) continue;
 
     if (fCreateHisto) {
       fEnergyDistBefore->Fill(clus->E());
@@ -154,49 +157,25 @@ Bool_t AliEmcalClusterMaker::Run()
       fEnergyTimeHistBefore->Fill(clus->E(), clus->GetTOF());
     }
 
-    AliVCluster *oc = 0;
-    if (fOutClusters) {
-      if (fEsdMode) {
-        AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(clus);
-        if (!ec) continue;
-        oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*ec);
-      }
-      else { 
-        AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(clus);
-        if (!ac) continue;
-        oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*ac);
-      }
-    }
-
     Bool_t exResult = kFALSE;
-    
+
     if (fRecoUtils) {
       if (fRecoUtils->IsRejectExoticCluster()) {
-	Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
-	fRecoUtils->SwitchOnRejectExoticCell();                  //switch on temporarily
+        Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
+        fRecoUtils->SwitchOnRejectExoticCell();                  //switch on temporarily
         exResult = fRecoUtils->IsExoticCluster(clus, fCaloCells);
-	if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
-        
+        if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
+
         clus->SetIsExotic(exResult);
-        
-	if (exResult) {
-	  fEnergyExoticClusters->Fill(clus->E());
-	}
+
+        if (exResult) {
+          fEnergyExoticClusters->Fill(clus->E());
+        }
       }
       if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
-	Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
+        Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
         clus->SetNonLinCorrEnergy(energy);
-        
-	if (oc) oc->SetE(energy);
       }
-    }
-
-    if (!AcceptCluster(oc) || exResult) {
-      continue;
-    }
-    
-    if (fOutClusters) {
-      clusCount++;
     }
 
     if (fCreateHisto) {
@@ -207,12 +186,25 @@ Bool_t AliEmcalClusterMaker::Run()
       fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
       fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
     }
-  }
-  
-  if (fOutClusters && (clusCount > 0) && (clusCount == fOutClusters->GetEntries())) {
-    fOutClusters->RemoveAt(clusCount);
-  }
 
+    if (fOutClusters && clusters->AcceptCluster(clus) && !exResult) {
+
+      AliVCluster *oc = 0;
+      if (fEsdMode) {
+        AliESDCaloCluster *ec = dynamic_cast<AliESDCaloCluster*>(clus);
+        if (!ec) continue;
+        oc = new ((*fOutClusters)[clusCount]) AliESDCaloCluster(*ec);
+      }
+      else {
+        AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(clus);
+        if (!ac) continue;
+        oc = new ((*fOutClusters)[clusCount]) AliAODCaloCluster(*ac);
+      }
+
+      oc->SetE(clus->GetNonLinCorrEnergy());
+      clusCount++;
+    }
+  }
 
   return kTRUE;
 }
