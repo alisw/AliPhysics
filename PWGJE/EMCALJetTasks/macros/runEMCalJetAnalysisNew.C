@@ -196,7 +196,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pQATaskAfterMaker->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
     pQATaskAfterMaker->SelectCollisionCandidates(kPhysSel);
     pQATaskAfterMaker->SetHistoBins(200, 0, 30);
-    pQATaskAfterMaker->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
+    pQATaskAfterMaker->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
 
   if (bDoFullJets && bDoHadCorr) {
@@ -231,7 +231,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pQATask->GetClusterContainer(0)->SetClusECut(0.);
     pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
     pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
-    pQATask->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    pQATask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
   else {
     AliAnalysisTaskSAQA *pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0, 0, 0, 0., 0., "TPC");
@@ -265,7 +265,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pFuJetTask->GetClusterContainer(0)->SetClusECut(0.);
     pFuJetTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pFuJetTask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
-    pFuJetTask->SetClusterEnergyType(AliVCluster::kHadCorr);
+    pFuJetTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
 
     pFuJetTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
     pFuJetTask->GetParticleContainer(0)->SetParticlePtCut(0.15);

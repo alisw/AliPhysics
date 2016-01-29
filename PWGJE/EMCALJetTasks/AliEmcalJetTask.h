@@ -58,7 +58,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetTrackLabelRange(Int_t min, Int_t max)   { if (IsLocked()) return; fMinLabelTracks   = min   ; fMaxLabelTracks = max; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost          = b   ; }
-  void                   SetClusterEnergyType(Int_t t)              { if (IsLocked()) return; fClusterEnergyType  = t   ; }
 
   void                   SetEtaRange(Double_t emi, Double_t ema);
   void                   SetMinJetClusPt(Double_t min);
@@ -126,7 +125,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
   Int_t                  fUseExchangeCont;        // use exchange containers as input
-  Int_t                  fClusterEnergyType;      // which corrections to the cluster energy are to be considered (see enum VCluUserDefEnergy_t in AliVCluster.h)
   Bool_t                 fLocked;                 // true if lock is set
 
   Bool_t                 fIsInit;                 //!=true if already initialized
@@ -144,6 +142,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 21) // Jet producing task
+  ClassDef(AliEmcalJetTask, 22) // Jet producing task
 };
 #endif
