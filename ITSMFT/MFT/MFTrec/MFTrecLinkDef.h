@@ -9,7 +9,9 @@
 #pragma link C++ class  AliMFTReconstructor+;
 #pragma link C++ class  AliMFTTrackerMU+;
 #pragma link C++ class  AliMFTTracker+;
+#pragma link C++ class  AliMFTTrackExtrap+;
 #pragma link C++ class  AliMFTTrackFinder+;
+#pragma link C++ class  AliMFTTrackReconstructor+;
 #pragma link C++ class  AliMFTClusterFinder+;
 #pragma link C++ class  AliMuonForwardTrack+;
 #pragma link C++ class  AliMuonForwardTrackPair+;
