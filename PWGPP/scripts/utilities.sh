@@ -659,6 +659,14 @@ printExec() {
   "$@"
 }
 
+bigEcho() {
+  # Outputs big text to stderr.
+  which figlet &> /dev/null \
+    && figlet -- "$@" >&2 \
+    || ( printf "\n\n$*\n\n" | tr -d '[[:lower:]]' '[[:upper:]]' >&2 )
+  true
+}
+
 listDir() (
   dir="$(cd "$1"; pwd)"
   echo ; echo "[listDir] Content of ${dir}${2:+" ($2)"}"
@@ -732,12 +740,13 @@ copyFileFromRemote() (
   # Copy a list of remote files ($1, $2...${n-1}) to a certain dest dir ($n).
   # The last parameter must then be a local directory. Files can be local too.
   # Dest dir is created if not existing.
+  # If only one parameter is specified download this file to the current directory.
   # If a source file is in the form @list.txt, then the list of files (one per
   # line) in list.txt will be expanded and copied.
   # On success 0 is returned - 1 otherwise.
   # Example: copyFileFromRemote root://localhost//file1.txt @list.txt /tmp/localdir/foo
 
-  dstdir=${!#}
+  [[ $# == 1 ]] && dstdir=. || dstdir=${!#}
   maxCopyTries=${maxCopyTries-10}
   err=0
   opname="[copyFileFromRemote]"
@@ -749,10 +758,6 @@ copyFileFromRemote() (
       thiserr=1
       proto="${src%%://*}"
       [[ "$proto" == "$src" ]] && proto=local
-      # Remove leading double slashes.
-      while [[ "${src:$((${#src}-1))}" == / ]]; do
-        src=${src:0:$((${#src}-1))}
-      done
       dst="$dstdir/$(basename "$src")"
       echo "$opname (proto=$proto) started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
@@ -764,6 +769,7 @@ copyFileFromRemote() (
                    false
                  fi ;;
           root)  printExec xrdcp -f "$src" "$dst" ;;
+          http*) printExec curl -LsSfo "$dst" "$src" ;;
           *)     echo "protocol not supported: $proto"
                  return 2 ;;
         esac
@@ -799,11 +805,6 @@ copyFileToRemote() (
   err=0
   [[ "$proto" == "$dstdir" ]] && proto=local
   opname="[copyFileToRemote] (proto=$proto)"
-
-  # Remove trailing slashes.
-  while [[ "${dstdir:$((${#dstdir}-1))}" == / ]]; do
-    dstdir=${dstdir:0:$((${#dstdir}-1))}
-  done
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"

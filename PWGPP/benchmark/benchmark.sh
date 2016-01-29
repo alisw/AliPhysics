@@ -153,6 +153,7 @@ goCPass()
 
   parseConfig configFile=$configFile "$@" || return 1
 
+  bigEcho "CPass ${cpass}"
   echo Start: goCPass${cpass}
   alilog_info "[BEGIN] goCPass${cpass}() with following extra parameters $*"
 
@@ -547,6 +548,7 @@ goMergeCPass()
 
   parseConfig configFile=$configFile "$@" || return 1
 
+  bigEcho "Merging CPass ${cpass}"
   echo Start: goMergeCPass${cpass}
   alilog_info "[BEGIN] goMergeCPass${cpass}() with following parameters $*"
 
@@ -1110,6 +1112,9 @@ goCreateQAplots()
   echo "${0} $*"
 
   mkdir -p ${outputDir}
+
+  [[ -e utilities.sh ]] && cp -f utilities.sh "$outputDir"
+
   cd ${outputDir}
   [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${batchWorkingDirectory} && return 1
 
