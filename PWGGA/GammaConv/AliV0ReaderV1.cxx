@@ -660,8 +660,15 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 	fCurrentMotherKFForMass.GetPt(Pt,Pt_width);
 	fCurrentInvMassPair=mass;
 
-	// Apply Photon Cuts
-
+	// apply possible Kappa cut
+  if (!fConversionCuts->KappaCuts(fCurrentMotherKF,fInputEvent)){
+    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
+    delete fCurrentMotherKF;
+    fCurrentMotherKF=NULL;
+    return 0x0;
+  }
+  
+  // Apply Photon Cuts
 	if(!fConversionCuts->PhotonCuts(fCurrentMotherKF,fInputEvent)){
 		fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kPhotonCuts);
 		delete fCurrentMotherKF;

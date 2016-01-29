@@ -130,7 +130,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
-    void FillPhotonCutIndex(Int_t photoncut){if(fHistoCutIndex)fHistoCutIndex->Fill(photoncut);}
+    void FillPhotonCutIndex(Int_t photoncut){if(fHistoCutIndex)fHistoCutIndex->Fill(photoncut);}    
     void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0s)fHistoEtaDistV0s->Fill(v0Eta);}
     void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
     
@@ -144,6 +144,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
     Bool_t dEdxCuts(AliVTrack * track);
+    Bool_t KappaCuts(AliConversionPhotonBase * photon,AliVEvent *event);
     Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
     Bool_t AsymmetryCut(AliConversionPhotonBase *photon,AliVEvent *event);
     Bool_t PIDProbabilityCut(AliConversionPhotonBase *photon, AliVEvent * event);
@@ -188,6 +189,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx);
     Bool_t SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx);
     Bool_t SetInPlaneOutOfPlane(Int_t inOutPlane);
+    Bool_t SetKappaTPCCut(Int_t kappaCut);
     void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
     Int_t GetFirstTPCRow(Double_t radius);
     
@@ -199,7 +201,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Double_t GetEtaCut(){return fEtaCut;}
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
-    
+    void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
       
   protected:
     TList*            fHistograms;                          //
@@ -289,7 +291,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMinRDC;                              // Min R for Double Counting Cut
     Double_t          fDeltaR;                              // Delta R for Double Counting Cut
     Double_t          fOpenAngle;                           // Opening Angle for Double Counting Cut
-
+    Bool_t            fSwitchToKappa;                       // switches from standard dEdx nSigma TPC cuts to Kappa TPC
+    Float_t           fKappaMinCut;                         // maximum Kappa cut
+    Float_t           fKappaMaxCut;                         // maximum Kappa cut
+    
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     // eta-distribution of all V0s after Finder selection
     TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        // eta-distribution of all V0s after Finder selection after dEdx cuts
@@ -298,7 +303,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoTPCdEdxafter;                   // TPC dEdx after cuts
     TH2F*             fHistoTPCdEdxSigbefore;               // TPC Sigma dEdx before cuts
     TH2F*             fHistoTPCdEdxSigafter;                // TPC Sigm dEdx after cuts
-    TH2F*             fHistoKappabefore;                    // Kappa vs photon pt before cuts
     TH2F*             fHistoKappaafter;                     // Kappa vs photon pt after cuts
     TH2F*             fHistoTOFbefore;                      // TOF before cuts
     TH2F*             fHistoTOFSigbefore;                   // TOF Sigma before cuts
