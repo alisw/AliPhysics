@@ -11,7 +11,6 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TList.h>
-#include <TLorentzVector.h>
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
@@ -50,7 +49,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
   fSeparateEMCalDCal(kTRUE),
-  fDefaultClusterEnergy(-1),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -58,7 +56,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fV0CTotMult(0),
   fNTotTracks(0),
   fSumTracks(0),
-  fLeadingTrack(0),
+  fLeadingTrack(),
   fHistEventQA(0),
   fHistTrNegativeLabels(0),
   fHistTrZeroLabels(0),
@@ -111,7 +109,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
   fSeparateEMCalDCal(kTRUE),
-  fDefaultClusterEnergy(-1),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -119,7 +116,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fV0CTotMult(0),
   fNTotTracks(0),
   fSumTracks(0),
-  fLeadingTrack(0),
+  fLeadingTrack(),
   fHistEventQA(0),
   fHistTrNegativeLabels(0),
   fHistTrZeroLabels(0),
@@ -731,24 +728,22 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
     DoTrackLoop();
     AliDebug(2,Form("%d tracks found in the event", fNTotTracks));
 
-    if (fLeadingTrack) {
-      leadingTrackPt = fLeadingTrack->Pt();
-      leadingTrackEta = fLeadingTrack->Eta();
-      leadingTrackPhi = fLeadingTrack->Phi();
-    }
+    leadingTrackPt = fLeadingTrack.Pt();
+    leadingTrackEta = fLeadingTrack.Eta();
+    leadingTrackPhi = fLeadingTrack.Phi_0_2pi();
   } 
 
   if (fCaloClusters) {
     DoClusterLoop();
     AliDebug(2,Form("%d clusters found in EMCal and %d in DCal", fNTotClusters[0], fNTotClusters[1]));
 
-    TLorentzVector leadingClusVect[2];
+    AliTLorentzVector leadingClusVect[2];
     for (Int_t i = 0; i < 2; i++) {
       if (!fLeadingCluster[i]) continue;
       fLeadingCluster[i]->GetMomentum(leadingClusVect[i], fVertex);
       leadingClusE[i] = fLeadingCluster[i]->E();
       leadingClusEta[i] = leadingClusVect[i].Eta();
-      leadingClusPhi[i] = leadingClusVect[i].Phi();
+      leadingClusPhi[i] = leadingClusVect[i].Phi_0_2pi();
     }
 
   }
@@ -966,12 +961,12 @@ void AliAnalysisTaskSAQA::DoClusterLoop()
   AliVCluster* cluster = 0;
   clusters->ResetCurrentID();
   while ((cluster = clusters->GetNextAcceptCluster())) {
-    TLorentzVector nPart;
+    AliTLorentzVector nPart;
     Double_t energy = 0;
 
-    if (fDefaultClusterEnergy >= 0 &&  fDefaultClusterEnergy <= AliVCluster::kLastUserDefEnergy) {
-      energy = cluster->GetUserDefEnergy(fDefaultClusterEnergy);
-      cluster->GetMomentum(nPart, fVertex, (AliVCluster::VCluUserDefEnergy_t)fDefaultClusterEnergy);
+    if (clusters->GetDefaultClusterEnergy() >= 0 && clusters->GetDefaultClusterEnergy() <= AliVCluster::kLastUserDefEnergy) {
+      energy = cluster->GetUserDefEnergy(clusters->GetDefaultClusterEnergy());
+      cluster->GetMomentum(nPart, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
     }
     else {
       energy = cluster->E();
@@ -984,7 +979,7 @@ void AliAnalysisTaskSAQA::DoClusterLoop()
     cluster->GetPosition(pos);
     fHistClusPosition[fCentBin]->Fill(pos[0], pos[1], pos[2]);
 
-    Double_t phi = TVector2::Phi_0_2pi(nPart.Phi());
+    Double_t phi = nPart.Phi_0_2pi();
 
     Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
 
@@ -994,7 +989,7 @@ void AliAnalysisTaskSAQA::DoClusterLoop()
     fSumClusters[isDcal] += energy;
 
     if (fHistClusDeltaPhiEPEnergy[fCentBin]) {
-      Double_t ep = nPart.Phi() - fEPV0;
+      Double_t ep = nPart.Phi_0_2pi() - fEPV0;
       while (ep < 0) ep += TMath::Pi();
       while (ep >= TMath::Pi()) ep -= TMath::Pi();
       fHistClusDeltaPhiEPEnergy[fCentBin]->Fill(cluster->E(), ep);
@@ -1031,26 +1026,29 @@ void AliAnalysisTaskSAQA::DoTrackLoop()
 
   fNTotTracks = 0;
   fSumTracks = 0;
-  fLeadingTrack = 0;
+  fLeadingTrack.SetPxPyPzE(0,0,0,0);
 
   tracks->ResetCurrentID();
   AliVParticle* track = 0;
+  AliTLorentzVector mom;
   while ((track = tracks->GetNextAcceptParticle())) {
+    tracks->GetMomentum(mom, tracks->GetCurrentID());
+
     fNTotTracks++;
 
-    fSumTracks += track->P();
+    fSumTracks += mom.P();
 
-    if (!fLeadingTrack || fLeadingTrack->Pt() < track->Pt()) fLeadingTrack = track;
+    if (fLeadingTrack.Pt() < mom.Pt()) fLeadingTrack = mom;
 
     if (fParticleLevel) {
-      fHistTrPhiEtaPt[fCentBin][0]->Fill(track->Eta(), track->Phi(), track->Pt());
+      fHistTrPhiEtaPt[fCentBin][0]->Fill(mom.Eta(), mom.Phi_0_2pi(), mom.Pt());
     }
     else {
       if (track->GetLabel() == 0) {
         zero++;
         if (fHistTrPhiEtaZeroLab[fCentBin]) {
-          fHistTrPhiEtaZeroLab[fCentBin]->Fill(track->Eta(), track->Phi());
-          fHistTrPtZeroLab[fCentBin]->Fill(track->Pt());
+          fHistTrPhiEtaZeroLab[fCentBin]->Fill(mom.Eta(), mom.Phi_0_2pi());
+          fHistTrPtZeroLab[fCentBin]->Fill(mom.Pt());
         }
       }
 
@@ -1063,17 +1061,17 @@ void AliAnalysisTaskSAQA::DoTrackLoop()
 
       if (vtrack) {
         // Track type (hybrid)
-        if (tracks->GetClassName() == "AliPicoTrack") {
+        if (tracks->GetLoadedClass()->InheritsFrom("AliPicoTrack")) {
           type = static_cast<AliPicoTrack*>(track)->GetTrackType();
         }
         else if (tracks->GetTrackFilterType() == AliEmcalTrackSelection::kHybridTracks) {
-          type = tracks->GetTrackType();
+          type = tracks->GetTrackType(tracks->GetCurrentID());
         }
 
         // Track propagation to EMCal surface
         if ((vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) && fHistTrPhiEtaNonProp[fCentBin]) {
-          fHistTrPhiEtaNonProp[fCentBin]->Fill(vtrack->Eta(), vtrack->Phi());
-          fHistTrPtNonProp[fCentBin]->Fill(vtrack->Pt());
+          fHistTrPhiEtaNonProp[fCentBin]->Fill(mom.Eta(), mom.Phi_0_2pi());
+          fHistTrPtNonProp[fCentBin]->Fill(mom.Pt());
         }
         else {
           if (fHistTrEmcPhiEta[fCentBin])
@@ -1081,16 +1079,16 @@ void AliAnalysisTaskSAQA::DoTrackLoop()
           if (fHistTrEmcPt[fCentBin])
             fHistTrEmcPt[fCentBin]->Fill(vtrack->GetTrackPtOnEMCal());
           if (fHistDeltaEtaPt[fCentBin])
-            fHistDeltaEtaPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Eta() - vtrack->GetTrackEtaOnEMCal());
+            fHistDeltaEtaPt[fCentBin]->Fill(mom.Pt(), mom.Eta() - vtrack->GetTrackEtaOnEMCal());
           if (fHistDeltaPhiPt[fCentBin])
-            fHistDeltaPhiPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Phi() - vtrack->GetTrackPhiOnEMCal());
+            fHistDeltaPhiPt[fCentBin]->Fill(mom.Pt(), mom.Phi_0_2pi() - vtrack->GetTrackPhiOnEMCal());
           if (fHistDeltaPtvsPt[fCentBin])
-            fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
+            fHistDeltaPtvsPt[fCentBin]->Fill(mom.Pt(), mom.Pt() - vtrack->GetTrackPtOnEMCal());
         }
       }
 
       if (type >= 0 && type <= 3) {
-        fHistTrPhiEtaPt[fCentBin][type]->Fill(track->Eta(), track->Phi(), track->Pt());
+        fHistTrPhiEtaPt[fCentBin][type]->Fill(mom.Eta(), mom.Phi_0_2pi(), mom.Pt());
       }
       else {
         AliWarning(Form("%s: track type %d not recognized!", GetName(), type));

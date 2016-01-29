@@ -9,11 +9,11 @@
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TList.h>
-#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TClass.h>
 
+#include "AliTLorentzVector.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliEMCALGeometry.h"
@@ -58,7 +58,6 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTrackEfficiency(1.),
   fUtilities(0),
   fUseExchangeCont(0),
-  fClusterEnergyType(-1),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -93,7 +92,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fTrackEfficiency(1.),
   fUtilities(0),
   fUseExchangeCont(useExchangeCont),
-  fClusterEnergyType(-1),
   fLocked(0),
   fIsInit(0),
   fIsPSelSet(0),
@@ -198,6 +196,8 @@ Int_t AliEmcalJetTask::FindJets()
 
   AliDebug(2,Form("Jet type = %d", fJetType));
 
+  AliTLorentzVector mom;
+
   Int_t iColl = 1;
   TIter nextPartColl(&fParticleCollArray);
   AliParticleContainer* tracks = 0;
@@ -205,6 +205,7 @@ Int_t AliEmcalJetTask::FindJets()
     tracks->ResetCurrentID();
     AliVParticle* t = 0;
     while ((t = tracks->GetNextAcceptParticle())) {
+      tracks->GetMomentum(mom, tracks->GetCurrentID());
       if (((fJetType & kChargedJet) != 0) && (t->Charge() == 0)) {
         AliDebug(2,Form("Skipping track %d because it is neutral.", tracks->GetCurrentID()));
         continue;
@@ -232,7 +233,7 @@ Int_t AliEmcalJetTask::FindJets()
 
       AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", tracks->GetCurrentID(), lab, t->Pt()));
       Int_t uid = tracks->GetCurrentID() + fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(t->Px(), t->Py(), t->Pz(), t->E(), uid);
+      fFastJetWrapper.AddInputVector(mom.Px(), mom.Py(), mom.Pz(), mom.E(), uid);
     }
     iColl++;
   }
@@ -244,19 +245,13 @@ Int_t AliEmcalJetTask::FindJets()
     clusters->ResetCurrentID();
     AliVCluster* c = 0;
     while ((c = clusters->GetNextAcceptCluster())) {
-      TLorentzVector nP;
-      if (fClusterEnergyType >= 0 &&  fClusterEnergyType <= AliVCluster::kLastUserDefEnergy) {
-        c->GetMomentum(nP, fVertex, (AliVCluster::VCluUserDefEnergy_t)fClusterEnergyType);
-      }
-      else {
-        c->GetMomentum(nP, fVertex);
-      }
-      Double_t cEta = nP.Eta();
-      Double_t cPhi = TVector2::Phi_0_2pi(nP.Phi());
-      Double_t cPt  = nP.Pt();
-      Double_t cPx  = nP.Px();
-      Double_t cPy  = nP.Py();
-      Double_t cPz  = nP.Pz();
+      clusters->GetMomentum(mom, clusters->GetCurrentID());
+      Double_t cEta = mom.Eta();
+      Double_t cPhi = mom.Phi_0_2pi();
+      Double_t cPt  = mom.Pt();
+      Double_t cPx  = mom.Px();
+      Double_t cPy  = mom.Py();
+      Double_t cPz  = mom.Pz();
 
       Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
       AliDebug(2,Form("Cluster %d (label = %d, energy = %.3f)", clusters->GetCurrentID(), c->GetLabel(), e));
@@ -539,15 +534,11 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
       if (!c) continue;
 
-      TLorentzVector nP;
-      if (fClusterEnergyType >= 0 &&  fClusterEnergyType <= AliVCluster::kLastUserDefEnergy) {
-        c->GetMomentum(nP, fVertex, (AliVCluster::VCluUserDefEnergy_t)fClusterEnergyType);
-      }
-      else {
-        c->GetMomentum(nP, fVertex);
-      }
+      AliTLorentzVector nP;
+      clusCont->GetMomentum(nP, cid);
+
       Double_t cEta = nP.Eta();
-      Double_t cPhi = nP.Phi();
+      Double_t cPhi = nP.Phi_0_2pi();
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
 
