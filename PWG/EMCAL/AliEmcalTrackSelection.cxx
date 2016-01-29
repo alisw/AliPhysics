@@ -123,7 +123,6 @@ AliVCuts* AliEmcalTrackSelection::GetTrackCuts(Int_t icut) {
   return NULL;
 }
 
-
 /**
  * Select tracks from a TClonesArray of input tracks
  *
@@ -147,11 +146,16 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
     fListOfTrackBitmaps->Clear();
   }
 
-  for(TIter trackIter = TIter(tracks).Begin(); trackIter != TIter::End(); ++trackIter){
-    if(IsTrackAccepted(static_cast<AliVTrack *>(*trackIter))) {
-      fListOfTracks->Add(*trackIter);
-      fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
+  TIter next(tracks);
+  AliVTrack* track = 0;
+  while((track = static_cast<AliVTrack*>(next()))) {
+    if (IsTrackAccepted(track)) {
+      fListOfTracks->AddLast(track);
     }
+    else {
+      fListOfTracks->AddLast(0);
+    }
+    fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
   }
   return fListOfTracks;
 }
@@ -180,11 +184,14 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
   }
 
   for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){
-    AliVTrack *trk = static_cast<AliVTrack *>(event->GetTrack(itrk));
+    AliVTrack *trk = static_cast<AliVTrack*>(event->GetTrack(itrk));
     if (IsTrackAccepted(trk)) {
       fListOfTracks->AddLast(trk);
-      fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
     }
+    else {
+      fListOfTracks->AddLast(trk);
+    }
+    fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
   }
   return fListOfTracks;
 }

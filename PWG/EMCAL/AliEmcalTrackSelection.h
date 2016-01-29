@@ -39,8 +39,8 @@ public:
 	AliEmcalTrackSelection &operator=(const AliEmcalTrackSelection &ref);
 	virtual ~AliEmcalTrackSelection();
 
-	virtual TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
-	virtual TObjArray *GetAcceptedTracks(const AliVEvent *const event);
+	TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
+	TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 	virtual bool IsTrackAccepted(AliVTrack * const trk) = 0;
 
 	void AddTrackCuts(AliVCuts *cuts);
