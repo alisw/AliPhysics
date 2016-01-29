@@ -242,11 +242,21 @@ void ana(Int_t mode=mGRID)
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC); 
   }
   
-  // Centrality
-  if(kCollision=="PbPb" && kInputData=="ESD")
+  // Centrality, valid for Run1, but superseeded by new task below
+  if(kCollision=="PbPb" && kInputData=="ESD" && kRun < 200000)
   {
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+  }
+
+  {
+    // New centrality/multiplicity selector
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+    AliMultSelectionTask * task = AddTaskMultSelection(kFALSE); // user mode:
+    
+    //use the default calibration for runs which have not yet been calibrated
+    task->SetUseDefaultCalib(kTRUE); // data
+    task->SetUseDefaultMCCalib(kTRUE); // MC
   }
   
   if(kCollision=="PbPb")
@@ -257,6 +267,8 @@ void ana(Int_t mode=mGRID)
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
     AliEPSelectionTask * EP = AddTaskEventplane();
   }
+  
+  
   
   // Simple event counting tasks
   
