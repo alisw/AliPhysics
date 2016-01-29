@@ -659,6 +659,14 @@ printExec() {
   "$@"
 }
 
+bigEcho() {
+  # Outputs big text to stderr.
+  which figlet &> /dev/null \
+    && figlet -- "$@" >&2 \
+    || ( printf "\n\n$*\n\n" | tr -d '[[:lower:]]' '[[:upper:]]' >&2 )
+  true
+}
+
 listDir() (
   dir="$(cd "$1"; pwd)"
   echo ; echo "[listDir] Content of ${dir}${2:+" ($2)"}"

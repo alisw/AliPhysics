@@ -153,6 +153,7 @@ goCPass()
 
   parseConfig configFile=$configFile "$@" || return 1
 
+  bigEcho "CPass ${cpass}"
   echo Start: goCPass${cpass}
   alilog_info "[BEGIN] goCPass${cpass}() with following extra parameters $*"
 
@@ -547,6 +548,7 @@ goMergeCPass()
 
   parseConfig configFile=$configFile "$@" || return 1
 
+  bigEcho "Merging CPass ${cpass}"
   echo Start: goMergeCPass${cpass}
   alilog_info "[BEGIN] goMergeCPass${cpass}() with following parameters $*"
 
