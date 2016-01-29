@@ -20,14 +20,15 @@
 class TTree;
 class TClonesArray;
 
-#include "AliCentrality.h"
-
 // EMCAL
 class AliEMCALGeometry;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
 class AliEMCALRecPoint;
 class AliAODCaloCluster;
+class AliCentrality;
+class AliMultSelection;
+
 #include "AliEMCALRecParam.h"
 #include "AliEMCALRecoUtils.h"
 
@@ -140,11 +141,14 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   // Centrality selection
   
-  AliCentrality* GetCentrality()                                { return InputEvent()->GetCentrality() ; } //Look in AOD reader, different there
+  AliCentrality* GetCentrality()                          const { return InputEvent()->GetCentrality() ; } 
+  AliMultSelection* GetMultSelCen()                       const { return (AliMultSelection * ) InputEvent()->FindListObject("MultSelection") ; }
+  void           SwitchOnAliCentrality ()                       { fUseAliCentrality  = kTRUE  ; }
+  void           SwitchOffAliCentrality()                       { fUseAliCentrality  = kFALSE ; }
+  
   void           SetCentralityClass(TString name)               { fCentralityClass   = name            ; }
   TString        GetCentralityClass()                     const { return fCentralityClass              ; }
-  Float_t        GetEventCentrality()                           { if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
-                                                                  else                return -1.       ; }
+  Float_t        GetEventCentrality()                     const ;
   void           SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                                 { fCentralityBin[0]=min ; fCentralityBin[1]=max ; }
   Float_t        GetCentralityBin(Int_t i)                const { if(i < 0 || i > 1) return -1 ; 
@@ -239,7 +243,8 @@ private:
   // Centrality
   TString                fCentralityClass;         ///<  Name of selected centrality class     
   Float_t                fCentralityBin[2];        ///<  Minimum and maximum value of the centrality for the analysis
-  
+  Bool_t                 fUseAliCentrality;        ///< Use the centrality estimator from AliCentrality or AliMultSelection
+
   //  Event selection with some signal in EMCAL
   Bool_t                 fSelectEMCALEvent;        ///<   Process the event if there is some high energy cluster.
   Float_t                fEMCALEnergyCut;          ///<   At least an EMCAL cluster with this energy in the event.
@@ -263,7 +268,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 30) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 31) ;
   /// \endcond
 
 };
