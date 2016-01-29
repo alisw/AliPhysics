@@ -635,7 +635,6 @@ void AliMFT::MakeBranch(Option_t *option) {
 
 void AliMFT::SetTreeAddress() {
   
-  AliDebug(1, "AliMFT::SetTreeAddress()");
   
   //Set branch address for the Hits and Digits Tree.
   AliDebug(1, "Start.");
