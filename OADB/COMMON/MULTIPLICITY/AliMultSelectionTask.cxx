@@ -479,6 +479,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fESDtrackCuts->SetPtRange(0.15);  // adding pt cut
         fESDtrackCuts->SetEtaRange(-1.0, 1.0);
     }
+    
+    //Create TPC only track cuts
+    if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    
     if(! fUtils ) {
         fUtils = new AliAnalysisUtils();
     }
@@ -943,7 +947,6 @@ void AliMultSelectionTask::UserExec(Option_t *)
         }
 
         //A.T.
-        if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
         fNTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1;
 
         // ***** ZDC info
