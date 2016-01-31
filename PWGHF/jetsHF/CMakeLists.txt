@@ -75,9 +75,9 @@ endif(FASTJET_FOUND)
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 list (APPEND HDRS AliHFJetsUtils.h)
 
-if(FASTJET_FOUND)
-  list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
-endif(FASTJET_FOUND)
+#if(FASTJET_FOUND)
+#  list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
+#endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
