@@ -327,7 +327,7 @@ Bool_t AliAnalysisTaskHIMultCorr::SetupEvent() {
     return kFALSE;
   } 
 
-  fESD = esdH->GetEvent();
+  fESD = (AliESDEvent*)esdH->GetEvent();
   if (!fESD) {
     AliError("fESD not available");
     return kFALSE;

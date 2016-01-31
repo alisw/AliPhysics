@@ -138,7 +138,7 @@ void AliHMPIDTaskQA::ConnectInputData(Option_t *)
   if (!esdH) {
     AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
   } else
-    fESD = esdH->GetEvent();
+    fESD = (AliESDEvent*)esdH->GetEvent();
 
   if (fUseMC){
     // Connect MC

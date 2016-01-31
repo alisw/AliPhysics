@@ -436,7 +436,7 @@ void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
   {
     AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
     if (handler && handler->InheritsFrom("AliESDInputHandler"))
-      fESD = ((AliESDInputHandler*)handler)->GetEvent();
+      fESD = (AliESDEvent*)((AliESDInputHandler*)handler)->GetEvent();
   }
 
   if (fMode)

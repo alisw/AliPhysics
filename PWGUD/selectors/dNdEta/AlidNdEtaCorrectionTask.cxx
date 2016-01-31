@@ -211,7 +211,7 @@ void AlidNdEtaCorrectionTask::ConnectInputData(Option_t *)
   if (!esdH) {
     Printf("ERROR: Could not get ESDInputHandler");
   } else {
-    fESD = esdH->GetEvent();
+    fESD = (AliESDEvent*)esdH->GetEvent();
 
     // Enable only the needed branches
     esdH->SetActiveBranches("AliESDHeader Vertex");

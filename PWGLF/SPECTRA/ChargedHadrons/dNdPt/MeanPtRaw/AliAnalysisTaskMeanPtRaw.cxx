@@ -99,7 +99,7 @@ void AliAnalysisTaskMeanPtRaw::UserExec(Option_t *)
   
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!esdH) { Printf("ERROR: Could not get ESDInputHandler\n"); }
-  else fESD = esdH->GetEvent();
+  else fESD = (AliESDEvent*)esdH->GetEvent();
   if (!fESD) { Printf("ERROR: fESD not available"); return; } 
   fEventCount++;
   

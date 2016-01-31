@@ -181,7 +181,7 @@ void AliTRDPIDTree::UserExec(Option_t *)
     if (!esdH) {
       printf("ERROR: Could not get ESDInputHandler \n");
     }
-    else fESDEvent = esdH->GetEvent();
+    else fESDEvent = (AliESDEvent*)esdH->GetEvent();
     
     // If MC, forward MCevent
     fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());

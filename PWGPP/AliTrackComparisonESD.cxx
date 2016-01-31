@@ -136,7 +136,7 @@ void AliTrackComparisonESD::ConnectInputData(Option_t *) {
     else {
       //esdH->SetReadFriends(kTRUE);
       //esdH->SetActiveBranches("ESDfriend");
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       //Printf("*** CONNECTED NEW EVENT ****");
     }
   }

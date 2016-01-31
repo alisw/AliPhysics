@@ -86,7 +86,7 @@ void AliTriggerTask::ConnectInputData(Option_t *)
   if (!esdH) {
     Printf("ERROR: Could not get ESDInputHandler");
   } else {
-    fESD = esdH->GetEvent();
+    fESD = (AliESDEvent*)esdH->GetEvent();
     
     TString branches("AliESDHeader Vertex AliMultiplicity ALIESDVZERO ALIESDZDC FMD");
 

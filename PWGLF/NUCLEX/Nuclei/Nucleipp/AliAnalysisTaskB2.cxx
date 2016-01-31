@@ -222,7 +222,7 @@ void AliAnalysisTaskB2::ConnectInputData(Option_t *)
 	}
 	
 	// Get pointer to esd event from input handler
-	fESDevent = esdH->GetEvent();
+	fESDevent = (AliESDEvent*)esdH->GetEvent();
 	
 	// PID object for TOF
 	fESDpid = esdH->GetESDpid();

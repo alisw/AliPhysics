@@ -109,7 +109,7 @@ void AliTrackMatchingTPCITSCosmics::ConnectInputData(Option_t *)
     if(!esdH) {
       printf("ERROR: Could not get ESDInputHandler\n");
     } else {
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
     }
   }
   

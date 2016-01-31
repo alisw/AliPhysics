@@ -467,7 +467,7 @@ void AliTPCcalibResidualPID::UserExec(Option_t *)
     if (!esdH) {
       printf("ERROR: Could not get ESDInputHandler \n");
     }
-    else fESD = esdH->GetEvent();
+    else fESD = (AliESDEvent*)esdH->GetEvent();
     
     // If MC, forward MCevent
     fMC = dynamic_cast<AliMCEvent*>(MCEvent());

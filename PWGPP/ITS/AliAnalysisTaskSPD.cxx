@@ -249,7 +249,7 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
     return;
   }
 
-  AliESDEvent *ESD = hand->GetEvent();
+  AliESDEvent *ESD = (AliESDEvent*)hand->GetEvent();
   if(!ESD) {
     printf("No AliESDEvent \n");
     return;

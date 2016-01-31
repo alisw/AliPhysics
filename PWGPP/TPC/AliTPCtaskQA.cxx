@@ -201,7 +201,7 @@ void AliTPCtaskQA::ConnectInputData(Option_t *)
       //Printf("ERROR: Could not get ESDInputHandler");
     }
     else {
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       //Printf("*** CONNECTED NEW EVENT ****");
     }  
   }

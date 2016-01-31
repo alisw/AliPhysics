@@ -143,7 +143,7 @@ void AliGenInfoTask::ConnectInputData(Option_t *)
       //Printf("ERROR: Could not get ESDInputHandler");
     }
     else {
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
       fESD->SetESDfriend(fESDfriend);
       //Printf("*** CONNECTED NEW EVENT ****");

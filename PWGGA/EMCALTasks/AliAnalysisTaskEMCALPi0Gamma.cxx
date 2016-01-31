@@ -1233,7 +1233,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
 	}
   
 	if(esdH)
-    fEsdEv = esdH->GetEvent();
+	  fEsdEv = (AliESDEvent*)esdH->GetEvent();
   
   else if(aodH) fAodEv = aodH->GetEvent();
   

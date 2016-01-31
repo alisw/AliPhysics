@@ -238,7 +238,7 @@ void AliAnalysisTaskDiHadron::ConnectInputData(Option_t *){
     if(!fAODData){
 AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (!esdH){if(fDEBUG) Printf("ERROR: Could not get ESDInputHandler");}
-    else fESD = esdH->GetEvent();
+    else fESD = (AliESDEvent*)esdH->GetEvent();
     }
     else{
         AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
