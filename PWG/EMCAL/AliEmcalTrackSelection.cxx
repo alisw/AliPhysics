@@ -50,7 +50,7 @@ AliEmcalTrackSelection::AliEmcalTrackSelection(const AliEmcalTrackSelection& ref
 	fSelectionModeAny(kFALSE)
 {
 	if(ref.fListOfTracks) fListOfTracks = new TObjArray(*(ref.fListOfTracks));
-	if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TObjArray(*(ref.fListOfTrackBitmaps));
+	if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TClonesArray(*(ref.fListOfTrackBitmaps));
 	if(ref.fListOfCuts){
 	  fListOfCuts = new TObjArray;
 	  fListOfCuts->SetOwner(false);
@@ -69,7 +69,7 @@ AliEmcalTrackSelection& AliEmcalTrackSelection::operator=(const AliEmcalTrackSel
 	if(this != &ref){
 		this->~AliEmcalTrackSelection();
 		if(ref.fListOfTracks) fListOfTracks = new TObjArray(*(ref.fListOfTracks));
-		if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TObjArray(*(ref.fListOfTrackBitmaps));
+		if(ref.fListOfTrackBitmaps) fListOfTrackBitmaps = new TClonesArray(*(ref.fListOfTrackBitmaps));
 		if(ref.fListOfCuts){
 		  fListOfCuts = new TObjArray;
 		  fListOfCuts->SetOwner(false);
@@ -152,7 +152,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
   }
 
   if (!fListOfTrackBitmaps) {
-    fListOfTrackBitmaps = new TObjArray;
+    fListOfTrackBitmaps = new TClonesArray("TBits", 1000);
     fListOfTrackBitmaps->SetOwner(kTRUE);
   }
   else {
@@ -161,6 +161,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
 
   TIter next(tracks);
   AliVTrack* track = 0;
+  Int_t i = 0;
   while((track = static_cast<AliVTrack*>(next()))) {
     if (IsTrackAccepted(track)) {
       fListOfTracks->AddLast(track);
@@ -168,7 +169,8 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
     else {
       fListOfTracks->AddLast(0);
     }
-    fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
+    new ((*fListOfTrackBitmaps)[i]) TBits(fTrackBitmap);
+    i++;
   }
   return fListOfTracks;
 }
@@ -189,7 +191,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
   }
 
   if (!fListOfTrackBitmaps) {
-    fListOfTrackBitmaps = new TObjArray;
+    fListOfTrackBitmaps = new TClonesArray("TBits", 1000);
     fListOfTrackBitmaps->SetOwner(kTRUE);
   }
   else {
@@ -204,7 +206,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
     else {
       fListOfTracks->AddLast(trk);
     }
-    fListOfTrackBitmaps->Add(new TBits(fTrackBitmap));
+    new ((*fListOfTrackBitmaps)[itrk]) TBits(fTrackBitmap);
   }
   return fListOfTracks;
 }
