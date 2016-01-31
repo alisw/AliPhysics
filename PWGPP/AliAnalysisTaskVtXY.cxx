@@ -78,7 +78,7 @@ void AliAnalysisTaskVtXY::ConnectInputData(Option_t *)
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
     } else
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
   }
 }
 

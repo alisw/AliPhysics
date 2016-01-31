@@ -158,7 +158,7 @@ void AliAnalysisTaskFemtoMJ::ConnectInputData(Option_t *)
         AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
 
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       fESDpid = esdH->GetESDpid();
       femtoReader->SetESDPid(fESDpid);
     }
@@ -169,7 +169,7 @@ void AliAnalysisTaskFemtoMJ::ConnectInputData(Option_t *)
       if (fVerbose)
         AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
     }
   } else if ((dynamic_cast<AliFemtoEventReaderKinematicsChainESD *>(fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -177,7 +177,7 @@ void AliAnalysisTaskFemtoMJ::ConnectInputData(Option_t *)
       if (fVerbose)
         AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
     }
   }
 
@@ -189,7 +189,7 @@ void AliAnalysisTaskFemtoMJ::ConnectInputData(Option_t *)
       if (fVerbose)
         AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       fESDpid = esdH->GetESDpid();
       femtoReaderESDKine->SetESDPid(fESDpid);
 
@@ -209,7 +209,7 @@ void AliAnalysisTaskFemtoMJ::ConnectInputData(Option_t *)
       //  AliWarning("Could not get ESDInputHandler");
       //       }
       //       else {
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       //fESDpid = esdH->GetESDpid();
       //femtoReader->SetESDPid(fESDpid);
       //       }
@@ -403,7 +403,7 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
         AliWarning("Could not get ESDInputHandler");
       return;
     } else {
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       fESDpid = esdH->GetESDpid();
     }
 

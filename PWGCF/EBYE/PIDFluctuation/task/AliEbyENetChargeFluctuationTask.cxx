@@ -469,7 +469,7 @@ Int_t AliEbyENetChargeFluctuationTask::SetupESD() {
     return -1;
   } 
 
-  fESD = fESDHandler->GetEvent();
+  fESD = (AliESDEvent*)fESDHandler->GetEvent();
   if (!fESD) {
     AliError("Could not get ESD event");
     return -1;

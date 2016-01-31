@@ -500,7 +500,7 @@ void AliAnalysisTaskSDMGammaMC::UserExec(Option_t *)
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (am->GetInputEventHandler());
   if (!aodH && !esdH)  Printf("ERROR: Could not get ESD or AODInputHandler");
   
-  if(esdH)      fEsdEv = esdH->GetEvent();    
+  if(esdH)      fEsdEv = (AliESDEvent*)esdH->GetEvent();    
   else if(aodH) fAodEv = aodH->GetEvent();  
   else{
     AliFatal("Neither ESD nor AOD event found");

@@ -401,7 +401,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     handRP = (AliESDInputHandlerRP*)handler;
     if (!handRP) { printf("No RP handler\n"); return; }
   }
-  AliESDEvent *esd  = handler->GetEvent();
+  AliESDEvent *esd  = (AliESDEvent*)handler->GetEvent();
   if (!esd) { printf("No AliESDEvent\n"); return; }
   //
   //

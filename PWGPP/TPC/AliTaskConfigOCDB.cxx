@@ -170,7 +170,7 @@ void AliTaskConfigOCDB::Exec(Option_t* /*option*/)
 {
 //
 // Execute all supplied analysis of one event. Notify run change via RunChanged().
-  fESD = fESDhandler->GetEvent();
+  fESD = (AliESDEvent*)fESDhandler->GetEvent();
   // Intercept when the run number changed
   if (fRun != fESD->GetRunNumber()) {
     fRunChanged = kTRUE;
