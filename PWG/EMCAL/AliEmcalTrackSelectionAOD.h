@@ -44,14 +44,16 @@ public:
 	 */
 	void AddFilterBit(UInt_t filterbits) { fFilterBits |= filterbits; }
 
+	static Bool_t GetHybridFilterBits(Char_t bits[], TString period);
 
 private:
 	UInt_t			fFilterBits;				    ///< Track filter bits
 	Bool_t      fFilterHybridTracks;    ///< Filter hybrid tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
 	Bool_t      fFilterTPCTracks;       ///< Filter TPC-only tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
+	Char_t      fHybridFilterBits[2];   ///< Filter bits of hybrid tracks
 
 	/// \cond CLASSIMP
-	ClassDef(AliEmcalTrackSelectionAOD, 1);
+	ClassDef(AliEmcalTrackSelectionAOD, 2);
 	/// \endcond
 };
 
