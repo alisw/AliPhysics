@@ -86,6 +86,7 @@ set(SRCS
     AliPHOSTriggerRawDigit.cxx
     AliPHOSTriggerRawDigiProducer.cxx
     AliPHOSTriggerRawReader.cxx
+    AliPHOSTriggerSTURawStream.cxx
     AliPHOSTRURawReader.cxx
 
    )
