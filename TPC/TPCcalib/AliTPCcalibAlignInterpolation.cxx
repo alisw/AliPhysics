@@ -64,6 +64,8 @@
 #include "TCut.h"
 #include "AliNDLocalRegression.h"
 #include "AliMathBase.h"
+#include "TStyle.h"
+#include "TCanvas.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
 
@@ -875,7 +877,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
     TTree * tree = (TTree*)fdrift->Get("fitTimeStat");
     if (tree==NULL){
       ::Error("LoadDriftCalibration FAILED", "tree fitTimeStat not avaliable in file fitDrift.root");
-    }else{
+    }else{      
       tree->SetBranchAddress("grTRDReg.",&vdriftGraph);
       tree->SetBranchAddress("paramRobust.",&vdriftParam);
       tree->GetEntry(0);
@@ -883,6 +885,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	::Info("LoadDriftCalibration FAILED", "ITS/TRD drift calibration not availalble. Trying ITS/TOF");
 	tree->SetBranchAddress("grTOFReg.",&vdriftGraph);
 	tree->GetEntry(0);
+      }else{
+	::Info("LoadDriftCalibration", "tree fitTimeStat not avaliable in file fitDrift.root");
       }
     }
     
@@ -1010,22 +1014,26 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  Double_t side=-1.+2.*((TMath::Nint(vSec[ipoint])%36)<18);
 	  if ((vZ[ipoint]*side)<-1) xxx[3]=side*0.001; // do not mix z on A side and C side
 	  // apply drift velocity calibration if available
-	  if (ihis>2&& vdriftParam!=NULL){  // if z residuals and vdrift calibration existing
+	  Double_t deltaITS=(vDeltaITS) ? vDeltaITS[ipoint]:0;
+	  Double_t deltaRef=vDelta[ipoint];
+	  
+	  if (ihis>2){  // if z residuals and vdrift calibration existing
 	    Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
 	    Double_t gy    = TMath::Sin(vPhi[ipoint])*localX;
 	    Double_t pvecFit[3];
 	    pvecFit[0]= side;             // z shift (cm)
 	    pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
 	    pvecFit[2]= drift;            // drift length
-	    Double_t expected = (*vdriftParam)[0]+(*vdriftParam)[1]*pvecFit[0]+(*vdriftParam)[2]*pvecFit[1]+(*vdriftParam)[3]*pvecFit[2];
-	    xxx[4]= side*(vDelta[ipoint]*side-(expected+corrTime*drift));
+	    Double_t expected = (vdriftParam!=NULL) ? (*vdriftParam)[0]+(*vdriftParam)[1]*pvecFit[0]+(*vdriftParam)[2]*pvecFit[1]+(*vdriftParam)[3]*pvecFit[2]:0;
+	    deltaRef= side*(vDelta[ipoint]*side-(expected+corrTime*drift));
+	    deltaITS= side*(vDeltaITS[ipoint]*side-(expected+corrTime*drift));
 	  }
 	  clusterCounter++;
 	  if (vDeltaITS){
-	    xxx[4]=vDeltaITS[ipoint];
+	    xxx[4]=deltaITS;
 	    hisToFill[ihis]->Fill(xxx,kFillGapITS);
 	  }
-	  xxx[4]=vDelta[ipoint];
+	  xxx[4]=deltaRef;
 	  hisToFill[ihis]->Fill(xxx,1.);
 	  
 	  Int_t binIndex[5]={0};
@@ -1926,3 +1934,246 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
 }
 
 
+
+void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1){
+  //
+  /*
+    const char * inputFile="ResidualMapFull_1.root"
+    const char * inputTree="deltaRPhiTPCITSTRDDist"
+    Float_t sector0=1, sector1 =4;
+    Float_t theta0=0, theta1=1;
+  */
+  /// 
+  /// Make ND local regression, QA  for later usage
+  /// Parameters:
+
+  // Algorithm:
+  //  1.) Make NDLocal regression fits
+  //  2.) Make regularization (smoothing)
+  //  3.) Make QA trending variable
+  //  4.) Make QA plots
+  //  5.) Export QA trending variables into trending tree
+  //
+  TTreeSRedirector * pcstream = new TTreeSRedirector(TString::Format("%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
+  TTreeSRedirector * pcstreamFit = new TTreeSRedirector(TString::Format("fitTree_%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
+  Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
+  TFile * fdist = TFile::Open(inputFile);
+  if (!fdist){
+    ::Error("MakeNDFit","Intput file %s not accessible\n",inputFile);
+    return;
+  }
+  TTree *treeDist = (TTree*)fdist->Get(inputTree);
+  if (!treeDist){
+    ::Error("MakeNDFit","Intput tree %s not accessible\n",inputTree);
+    return;    
+  }
+  //
+  // 1.) Make NDLocal regression fits
+  //
+  const Double_t pxmin=8.48499984741210938e+01; //param.GetPadRowRadii(0,0)-param.GetPadPitchLength(0,0)/2
+  const Double_t pxmax=2.46600006103515625e+02; //2.46600006103515625e+02param.GetPadRowRadii(36,param.GetNRow(36)-1)+param.GetPadPitchLength(36,param.GetNRow(36)-1)/2.
+  Int_t     ndim=4;
+  Int_t     nbins[4]= {20,  (sector1-sector0-0.1)*15,        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
+  Double_t  xmin[4] = {pxmin,  sector0+0.05,   theta0,                            -2.0};
+  Double_t  xmax[4] = {pxmax, sector1-0.05,   theta1,               2.0};
+  //
+
+  THnF* hN= new THnF("exampleFit","exampleFit", ndim, nbins, xmin,xmax);
+  treeDist->SetAlias("isOK","rms>0&&vecLTM.fElements[1]*binMedian>0");
+  treeDist->SetAlias("delta","vecLTM.fElements[1]");
+  TCut cutFit="isOK";
+  TCut cutAcceptFit=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0-0.5,sector1+0.5,theta0,theta1).Data();
+  TCut cutAcceptDraw=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0,sector1,theta0,theta1).Data();
+  
+  AliNDLocalRegression *fitCorrs[6]={0};
+  for (Int_t icorr=0; icorr<1; icorr++){
+    fitCorrs[icorr]= new  AliNDLocalRegression();
+    fitCorrs[icorr]->SetName(TString::Format("%sFit%d_sec%d_%d_theta%d_%d",inputTree,icorr, Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data());  
+    Int_t hashIndex=fitCorrs[icorr]->GetVisualCorrectionIndex();
+    fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
+    TStopwatch timer;
+    fitCorrs[0]->SetStreamer(pcstream);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"delta:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.05:0.1:3","2:2:2:2",0.0001);
+    timer.Print();
+    AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
+    treeDist->SetAlias(TString::Format("delta_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
+  }
+  //
+  // 2.) Make regularization (smoothing)
+  //    
+  Int_t nDims=4;
+  Int_t indexes[4]={0,1,2,3};
+  Double_t relWeight0[12]={1,4,16,   1,4,16, 1,4,16, 1,4,16};
+  Double_t relWeightC[12]={0.5,4,16,   0.5,4,16, 0.5,4,16, 0.5,4,16};
+  fitCorrs[1]=(AliNDLocalRegression *)fitCorrs[0]->Clone();
+  fitCorrs[1]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, 0);
+  fitCorrs[2]=(AliNDLocalRegression *)fitCorrs[1]->Clone();
+  fitCorrs[2]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, 0);
+  fitCorrs[3]=(AliNDLocalRegression *)fitCorrs[1]->Clone();
+  fitCorrs[4]=(AliNDLocalRegression *)fitCorrs[2]->Clone();
+  fitCorrs[3]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeightC, 0, kTRUE);
+  fitCorrs[4]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeightC, 0, kTRUE);
+  //
+  fitCorrs[1]->SetName(TString::Format("%s_Smooth1",fitCorrs[0]->GetName()).Data());
+  fitCorrs[2]->SetName(TString::Format("%s_Smooth2",fitCorrs[1]->GetName()).Data());
+  fitCorrs[3]->SetName(TString::Format("%s_SmoothConst1",fitCorrs[0]->GetName()).Data());
+  fitCorrs[4]->SetName(TString::Format("%s_SmoothConst2",fitCorrs[1]->GetName()).Data()); 
+  for (Int_t icorr=1; icorr<5; icorr++){
+    Int_t hashIndex=fitCorrs[icorr]->GetVisualCorrectionIndex();
+    AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
+    treeDist->SetAlias(TString::Format("delta_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
+  }  
+  //
+  // 3.) Make QA variables and store fits
+  //
+  gStyle->SetOptFit(1);
+  treeDist->Draw(">>drawlist3",cutFit+cutAcceptDraw,"entrylist");
+  TEntryList *elist = (TEntryList*)gDirectory->Get("drawlist3");
+  treeDist->SetEntryList(elist);
+
+  Double_t quantiles[10]={0.001,0.01,0.05,0.1,0.2, 0.8,0.9,0.99,0.999};
+  Double_t deltas[10]={0};  
+  const char * pchVar[9]={"delta-delta_Fit0",
+			   "delta-delta_Fit1",
+			   "delta-delta_Fit2",
+			   "delta-delta_Fit3",
+			   "delta-delta_Fit4",
+			   "delta_Fit0-delta_Fit1",
+			   "delta_Fit0-delta_Fit2",
+			   "delta_Fit0-delta_Fit3",
+			   "delta_Fit0-delta_Fit4"};
+  const char * pchTittle[9]={"map-fit_{0} (cm)",
+			      "map-fit_{0Reg1} (cm)",
+			      "map-fit_{0Reg2} (cm)",
+			      "map-fit_{0Reg1Const} (cm)",
+			      "map-fit_{0Reg2Const} (cm)",
+			      "fit_{O}-fit_{0Reg1} (cm)",
+			      "fit_{0}-fit_{0Reg2} (cm)",
+			      "fit_{0}-fit_{0Reg1Const} (cm)",
+			      "fit_{0}-fit_{0Reg2Const} (cm)"};
+  TGraph *    grQuantiles[18]={0};  
+  TVectorD    vecRMS1(18);
+  for (Int_t idiff=0; idiff<18; idiff++){
+    Int_t chEntries=0;
+    if (idiff<9){
+      chEntries=treeDist->Draw(pchVar[idiff%9],"1","goff");
+    }
+    if (idiff>=9){
+      chEntries=treeDist->Draw(TString::Format("(%s)/(rms/sqrt(entries))",pchVar[idiff%9]).Data(),"1","goff");
+    }
+    for (Int_t iq=0; iq<10; iq++){
+      deltas[iq]=TMath::KOrdStat(chEntries,treeDist->GetV1(), Int_t(chEntries*quantiles[iq]));
+    }
+    grQuantiles[idiff]=new TGraph(10,quantiles,deltas);
+    grQuantiles[idiff]->SetTitle(pchTittle[idiff%9]);
+    Double_t mean, rms=0;
+    AliMathBase::EvaluateUni(chEntries,treeDist->GetV1(),mean, rms,0.80*chEntries);
+    vecRMS1[idiff]=rms;
+  }
+  vecRMS1.Print();
+  TH1* his=0;
+  TVectorD slopePols1(5);
+  for (Int_t i=0; i<5; i++){
+    treeDist->Draw(TString::Format("delta:delta_Fit%d>>hisQA2D%d",i,i).Data(),cutFit+cutAcceptDraw,"colzgoff"); 
+    his=treeDist->GetHistogram();
+    his->Fit("pol1");
+    slopePols1[i]= his->GetFunction("pol1")->GetParameter(1);
+  }
+
+  TFile * fout = pcstream->GetFile();
+  pcstream->GetFile()->cd();
+  for (Int_t iter=0; iter<5; iter++){
+    fitCorrs[iter]->Write();
+    fitCorrs[iter]->DumpToTree(4, (*pcstreamFit)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
+  }
+  //
+  // 4.) Make standard QA plot   
+  //
+  TCanvas *canvasQA = new TCanvas("canvasQA","canvasQA",1200,1000);
+  canvasQA->Divide(1,3);
+  //
+  // 4.1) delta:fit correaltion
+  canvasQA->cd(1)->SetLogz();
+  treeDist->Draw("delta:delta_Fit0>>hisQA2D",cutFit+cutAcceptDraw,"colzgoff");
+  his=treeDist->GetHistogram();
+  his->GetXaxis()->SetTitle("#Delta_{fit} (cm)");
+  his->GetYaxis()->SetTitle("#Delta_{map} (cm)");
+  his->Fit("pol1");
+  Double_t slopePol1= his->GetFunction("pol1")->GetParameter(1);
+  his->Write("hisQA2D");
+  his->Draw("colz");
+  // 
+  // 4.2) delta-fitReg0 and fitReg0-fitReg1
+  canvasQA->cd(2)->SetLogy();
+  treeDist->SetLineColor(1); treeDist->SetMarkerColor(1);
+  treeDist->Draw("delta-delta_Fit0>>hisQA1D(300)",cutFit+cutAcceptDraw,"goff");
+  his=treeDist->GetHistogram();  
+  his->GetXaxis()->SetTitle("#Delta_{map}-#Delta_{fit} (cm)");
+  his->Fit("gaus");
+  Double_t mean=his->GetMean();
+  Double_t rms=his->GetRMS();
+  Double_t rmsG= his->GetFunction("gaus")->GetParameter(2);
+  //
+  treeDist->GetHistogram()->Write("hisQA1D");
+  treeDist->SetLineColor(2); treeDist->SetMarkerColor(2);
+  treeDist->Draw("delta_Fit0-delta_Fit1>>hisQA1DifFit(300)",cutFit+cutAcceptDraw,"same");
+  his=treeDist->GetHistogram();
+  Double_t meanDiffFit=his->GetMean();
+  Double_t rmsDiffFit=his->GetRMS();
+  treeDist->GetHistogram()->Write("hisQA1DifFit");
+  //
+  // 4.3) (delta-fitReg0) "pull" 
+  treeDist->SetLineColor(1); treeDist->SetMarkerColor(1);
+  canvasQA->cd(3)->SetLogy();
+  treeDist->Draw("(delta_Fit0-delta)/(rms/sqrt(entries))>>hisQAPull",cutFit+cutAcceptDraw,"goff");
+  his=treeDist->GetHistogram();
+  his->Fit("gaus");
+  Double_t meanPull=his->GetMean();
+  Double_t rmsPull=his->GetRMS();
+  Double_t rmsPullG= his->GetFunction("gaus")->GetParameter(2);
+  treeDist->GetHistogram()->Write("hisQAPull");
+  treeDist->SetLineColor(2); treeDist->SetMarkerColor(2);
+  treeDist->Draw("(delta_Fit0-delta_Fit1)/(rms/sqrt(entries))>>hisQAPullDifFit",cutFit+cutAcceptDraw,"same");
+  his=treeDist->GetHistogram();
+  Double_t meanPullDiffFit=his->GetMean();
+  Double_t rmsPullDiffFit=his->GetRMS();
+  treeDist->GetHistogram()->Write("hisQAPullDiffFit");
+
+  canvasQA->SaveAs((TString::Format("%sFit_sec%d_%d_theta%d_%dQA.png",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data()));
+  TObjString input=inputTree;
+  //
+  // 5.) Export trending variables - used for validation of the fit
+  //
+  (*pcstream)<<"NDFitTrending"<<
+    "input.="<<&input<<                // name of the input file
+    "inputTree="<<inputTree<<          // name of the input tree
+    "runNumber="<<runNumber<<          // run number ID
+    "sec0="<<sector0<<                 // range: sector0 
+    "sec1="<<sector1<<                 // range: sector1
+    "theta0="<<theta0<<                // range: theta0
+    "theta1="<<theta1<<                // range: theta1 
+    //                                 // QA plots statistical info
+    "slopePols1.="<<&slopePols1<<      // data:fit - pol1 fit for differnt Regularization
+    "slopePol1="<<slopePol1<<
+    //
+    "mean="<<mean<<                    // mean <value-fitND0>
+    "rms="<<rms<<                      // rms  (value-fitND0>
+    "rmsG="<<rmsG<<                    // gaus fit rms  (value-fitND0>
+    "meanPull="<<meanPull<<            // normalized mean <value-fitND0>
+    "rmsPull="<<rmsPull<<              // normalized error<value-fitND0>
+    "rmsPullG="<<rmsPull<<             // gaus fit normalized error<value-fitND0>
+    "meanDiffFit="<<meanDiffFit<<      //  
+    "rmsDiffFit="<<rmsDiffFit<<
+    "meanPullDiffFit="<<meanPullDiffFit<<
+    "rmsPullDiffFit="<<rmsPullDiffFit<<
+    "vecRMS1.="<<&vecRMS1;  // rms of the diffs of different estimators (Kernles, Regularization)
+  for (Int_t iq=0; iq<18; iq++){
+    (*pcstream)<<"NDFitTrending"<<
+      TString::Format("grQuantiles%d.=",iq).Data()<<grQuantiles[iq];
+  }
+  (*pcstream)<<"NDFitTrending"<<"\n";
+  
+  delete pcstream;
+  delete pcstreamFit;
+  
+}

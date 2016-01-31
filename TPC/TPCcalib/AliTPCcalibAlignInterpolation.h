@@ -41,6 +41,7 @@ public :
   static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime=-1, Int_t stopTime=-1,  Int_t maxStat=1000000, Int_t selHist=-1,const char * residualInfoFile="residualInfo.root");
   static void    FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
   static Bool_t FitDrift(Int_t deltaT=120, Double_t sigmaT=600,  Int_t time0=0, Int_t time1=0);
+  static void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1);
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
   THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}
   THn * GetHisITSTOFDRPhi() const {return fHisITSTOFDRPhi;}
