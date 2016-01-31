@@ -6,7 +6,8 @@
  * track selection in a transparent way for ESD, AOD and Pico Tracks, is declared.
  *
  * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \date Jul 24, 2015
+ * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * \date Jan 30, 2016
  */
 #ifndef ALIEMCALTRACKSELECTION_H_
 #define ALIEMCALTRACKSELECTION_H_
@@ -57,18 +58,18 @@ public:
 	Int_t GetNumberOfCutObjects() const;
 	AliVCuts *GetTrackCuts(Int_t icut);
 
-	TBits GetTrackBitmap() const { return fTrackBitmap; }
-	TObjArray* GetAcceptedTrackBitmaps() const { return fListOfTrackBitmaps; }
+	const TBits& GetTrackBitmap() const { return fTrackBitmap; }
+	const TClonesArray* GetAcceptedTrackBitmaps() const { return fListOfTrackBitmaps; }
 
 	void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
 	void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }
 
 protected:
-	TObjArray *fListOfTracks;		      ///< TObjArray with accepted tracks
-	TObjArray *fListOfTrackBitmaps;   ///< TObjArray with accepted tracks' bit maps
-	TBits      fTrackBitmap;          ///< Bitmap of last accepted/rejected track
-	TObjArray *fListOfCuts;           ///< List of track cut objects
-	Bool_t     fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
+	TObjArray    *fListOfTracks;         ///< TObjArray with accepted tracks
+	TClonesArray *fListOfTrackBitmaps;   ///< TClonesArray with accepted tracks' bit maps
+	TBits         fTrackBitmap;          ///< Bitmap of last accepted/rejected track
+	TObjArray    *fListOfCuts;           ///< List of track cut objects
+	Bool_t        fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
 
 	/// \cond CLASSIMP
 

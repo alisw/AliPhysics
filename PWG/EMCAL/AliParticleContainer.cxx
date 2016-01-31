@@ -159,7 +159,7 @@ void AliParticleContainer::NextEvent()
   if (fEmcalTrackSelection) {
     fFilteredTracks = fEmcalTrackSelection->GetAcceptedTracks(fClArray);
 
-    TObjArray* trackBitmaps = fEmcalTrackSelection->GetAcceptedTrackBitmaps();
+    const TClonesArray* trackBitmaps = fEmcalTrackSelection->GetAcceptedTrackBitmaps();
     TIter nextBitmap(trackBitmaps);
     TBits* bits = 0;
     Int_t i = 0;
