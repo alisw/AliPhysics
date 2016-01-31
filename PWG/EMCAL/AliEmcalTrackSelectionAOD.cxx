@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 #include <TClonesArray.h>
 #include <TBits.h>
 #include <TObjArray.h>
@@ -36,6 +37,8 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD() :
 	fFilterHybridTracks(kFALSE),
 	fFilterTPCTracks(kFALSE)
 {
+  fHybridFilterBits[0] = -1;
+  fHybridFilterBits[1] = -1;
 }
 
 /**
@@ -52,6 +55,8 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(AliVCuts* cuts, UInt_t filt
   fFilterHybridTracks(kFALSE),
   fFilterTPCTracks(kFALSE)
 {
+  fHybridFilterBits[0] = -1;
+  fHybridFilterBits[1] = -1;
   AddTrackCuts(cuts);
 }
 
@@ -67,6 +72,8 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, co
   fFilterHybridTracks(kFALSE),
   fFilterTPCTracks(kFALSE)
 {
+  fHybridFilterBits[0] = -1;
+  fHybridFilterBits[1] = -1;
   GenerateTrackCuts(type, period);
 }
 
@@ -75,22 +82,28 @@ AliEmcalTrackSelectionAOD::AliEmcalTrackSelectionAOD(ETrackFilterType_t type, co
  *
  * \param type Track filtering type
  */
-void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const char* /*period*/)
+void AliEmcalTrackSelectionAOD::GenerateTrackCuts(ETrackFilterType_t type, const char* period)
 {
   switch (type) {
   case kHybridTracks:
+    if (fListOfCuts) fListOfCuts->Clear();
+    fFilterBits = 0;
     fFilterHybridTracks = kTRUE;
     fFilterTPCTracks = kFALSE;
+    GetHybridFilterBits(fHybridFilterBits, period);
+    fSelectionModeAny = kTRUE;
     break;
 
   case kTPCOnlyTracks:
+    if (fListOfCuts) fListOfCuts->Clear();
+    fFilterBits = 0;
     fFilterHybridTracks = kFALSE;
+    fHybridFilterBits[0] = -1;
+    fHybridFilterBits[1] = -1;
     fFilterTPCTracks = kTRUE;
     break;
 
   default:
-    fFilterHybridTracks = kFALSE;
-    fFilterTPCTracks = kFALSE;
     break;
   }
 }
@@ -130,21 +143,28 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
     if(aodt->TestFilterBit(fFilterBits)) fTrackBitmap.SetBitNumber(cutcounter);
     cutcounter++;
   }
-  if(fFilterHybridTracks) {
-    if(aodt->IsHybridGlobalConstrainedGlobal()) fTrackBitmap.SetBitNumber(cutcounter++);
+  if (fFilterHybridTracks) {
+    if (aodt->IsHybridGlobalConstrainedGlobal()) {
+      // If the hybrid filter bits are not provided (fHybridFilterBits[0] == 0) all hybrid tracks will be selected in the same group
+      if (fHybridFilterBits[0] < 0 || aodt->TestFilterBit(BIT(fHybridFilterBits[0]))) fTrackBitmap.SetBitNumber(cutcounter);
+      if (aodt->TestFilterBit(BIT(fHybridFilterBits[1]))) fTrackBitmap.SetBitNumber(cutcounter+1);
+    }
+    cutcounter += 2;
   }
-  if(fFilterTPCTracks) {
-    if(aodt->IsHybridTPCConstrainedGlobal()) fTrackBitmap.SetBitNumber(cutcounter++);
+  if (fFilterTPCTracks) {
+    if(aodt->IsHybridTPCConstrainedGlobal()) fTrackBitmap.SetBitNumber(cutcounter);
+    cutcounter++;
   }
   if (fListOfCuts) {
-    for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-      AliVCuts *trackCuts = static_cast<AliVCuts *>(*cutIter);
-      if(trackCuts->IsA() == AliESDtrackCuts::Class()){
+    for (TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
+      AliVCuts *trackCuts = static_cast<AliVCuts*>(*cutIter);
+      if (trackCuts->IsA() == AliESDtrackCuts::Class()) {
         // If track cuts are AliESDtrackCuts, the track needs to be converted to an AliESDtrack before
         AliESDtrack copyTrack(aodt);
-        if(trackCuts->IsSelected(&copyTrack)) fTrackBitmap.SetBitNumber(cutcounter);
-      } else{
-        if(trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
+        if (trackCuts->IsSelected(&copyTrack)) fTrackBitmap.SetBitNumber(cutcounter);
+      }
+      else{
+        if (trackCuts->IsSelected(aodt)) fTrackBitmap.SetBitNumber(cutcounter);
       }
       cutcounter++;
     }
@@ -153,8 +173,59 @@ bool AliEmcalTrackSelectionAOD::IsTrackAccepted(AliVTrack * const trk)
   if (fSelectionModeAny){
     // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
     return fTrackBitmap.CountBits() > 0 || cutcounter == 0;
-  } else {
+  }
+  else {
     // In case of ALL all of the cuts need to be fulfilled (equivalent to all bits set)
     return fTrackBitmap.CountBits() == cutcounter;
   }
+}
+
+/**
+ * Returns the hybrid filter bits according to a hard-coded look-up table
+ *
+ * \param bits: c-array of 2 elements where the bits are returned
+ * \param period: data taking period
+ * \return true if successful, false otherwise
+ */
+Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString period)
+{
+  period.ToLower();
+  if (period == "lhc10b" || period == "lhc10c" || period == "lhc10d" ||
+      period == "lhc10e" || period == "lhc10h" ||
+      period == "lhc11h" || period == "lhc12a" || period == "lhc12b" ||
+      period == "lhc12c" || period == "lhc12d" || period == "lhc12e" ||
+      period == "lhc12f" || period == "lhc12g" || period == "lhc12h" ||
+      period == "lhc12i" || period == "lhc13b" || period == "lhc13c" ||
+      period == "lhc13d" || period == "lhc13e" || period == "lhc13f" ||
+      period == "lhc13g") {
+    bits[0] = 8;
+    bits[1] = 9;
+  }
+
+  else if (period == "lhc10f7a" || period == "lhc12a15e" || period.BeginsWith("lhc12a17") ||
+      period == "lhc13b4" || period == "lhc13b4_fix" || period == "lhc13b4_plus" ||
+      period.BeginsWith("lhc14a1") || period.BeginsWith("lhc13b2_efix")) {
+    bits[0] = 8;
+    bits[1] = 9;
+  }
+
+  else if (period == "lhc11a" || period == "lhc10hold" || period == "lhc11d") {
+    bits[0] = 8;
+    bits[1] = 4;
+  }
+
+  else if (period.Contains("lhc12a15a") || period == "lhc12a15f" ||
+      period == "lhc12a15g" || period.BeginsWith("lhc11a1")) {
+    bits[0] = 8;
+    bits[1] = 4;
+  }
+
+  else {
+    ::Error("AliEmcalTrackSelectionAOD::GetHybridFilterBits", "Could not find period %s! Hybrid tracks will be selected, but will not be able to distinguish between global and constrained.", period.Data());
+    bits[0] = -1;
+    bits[1] = -1;
+    return kFALSE;
+  }
+
+  return kTRUE;
 }
