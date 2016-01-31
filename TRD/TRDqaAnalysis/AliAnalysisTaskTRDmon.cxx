@@ -233,7 +233,7 @@ void AliAnalysisTaskTRDmon::ConnectInputData(Option_t *){
   if(!esdH){
     AliError("ERROR: Could not get ESDInputHandler");
   } else {
-    fESD = esdH->GetEvent();
+    fESD = (AliESDEvent*)esdH->GetEvent();
     fESDfriend = dynamic_cast<AliESDfriend*> (fESD->FindListObject("AliESDfriend"));
     
   }

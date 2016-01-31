@@ -36,7 +36,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual Bool_t       Notify(const char* path);
     virtual Bool_t       FinishEvent();
     void                 CheckSelectionMask();
-    AliESDEvent         *GetEvent()        const {return fEvent;}
+    AliVEvent         *GetEvent()        const {return (AliVEvent*)fEvent;}
     Option_t            *GetAnalysisType() const {return fAnalysisType;}
     Option_t            *GetDataType() const;
     // Tag cut summary analysis

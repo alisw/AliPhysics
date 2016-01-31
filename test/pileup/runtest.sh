@@ -1,7 +1,7 @@
 #!/bin/bash -l
 # The settings come from ~/.bash_profile
 
-rm -rf *.root *.dat *.log fort* hlt hough raw* *.inp *.o
+rm -rf *.root *.dat *.log fort* hlt hough raw* *.inp *.o GRP *.ps AliHLT*
 ln -s -f ../../DPMJET/nuclear.bin
 aliroot -b -q sim.C      2>&1 | tee sim.log
 mv syswatch.log simwatch.log

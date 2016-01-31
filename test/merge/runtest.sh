@@ -1,7 +1,7 @@
 #!/bin/bash -l
 # The settings come from ~/.bash_profile
 
-rm -rf */*.root */*.dat* */*.log */fort* */hough */hlt */raw* */*~
+rm -rf */*.root */*.dat* */*.log */fort* */hough */hlt */raw* */*~ */GRP */*.ps */AliHLT*
 cd ./backgr
 aliroot -b -q sim.C\(2\) 2>&1 | tee sim.log
 aliroot -b -q rec.C      2>&1 | tee rec.log
