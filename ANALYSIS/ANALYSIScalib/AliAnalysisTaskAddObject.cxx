@@ -94,7 +94,7 @@ void AliAnalysisTaskAddObject::ConnectInputData(Option_t* /*option*/)
 	fESDhandler = dynamic_cast<AliESDInputHandler *>(mgr->GetInputEventHandler());
     
 	if (fESDhandler) {
-		fESDInput = fESDhandler->GetEvent();
+	  fESDInput = (AliESDEvent*)fESDhandler->GetEvent();
 	} else {
 		AliFatal("No ESD input event handler connected") ; 
 	}
@@ -118,7 +118,7 @@ void AliAnalysisTaskAddObject::Exec(Option_t */*option*/)
 	Long64_t entry = fESDhandler->GetReadEntry();
 	AliDebug(2,Form("AliAnalysisTaskAddObject::Exec() %s ==> processing event %lld", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry));
 	//}  
-	fESDInput = fESDhandler->GetEvent();
+	fESDInput = (AliESDEvent*)fESDhandler->GetEvent();
 	if(!fESDInput) {
 		printf("AliAnalysisTaskAddObject::Exec(): no ESD \n");
 		return;
