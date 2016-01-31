@@ -670,7 +670,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
         {          
           // Get the digit that originated this cell cluster
           Int_t   cellPos = emcCells.GetCellPosition (newAbsIdList[i]);
-          Float_t cellEne = emcCells.GetCellAmplitude(newAbsIdList[i]);
           Int_t   idigit  = mapDigitAndCellIndex[cellPos];
           const AliEMCALDigit * dig = (const AliEMCALDigit*)fgDigitsArr->At(idigit);
           
@@ -683,7 +682,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
             Float_t edep       = 0 ;
             Float_t edepTot    = 0 ;
             Float_t mcEDepFrac[4] = {0,0,0,0};
-
+            
             for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
             { // all primaries in digit
               digLabel = dig->GetIparent (jndex+1);
@@ -695,7 +694,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
               else  if ( digLabel == parentList[2] ) mcEDepFrac[2] = edep;
               else  if ( digLabel == parentList[3] ) mcEDepFrac[3] = edep;
             } // all primaries in digit
-        
+            
             // Divide energy deposit by total deposited energy
             // Do not take the stored digit energy since it is smeared and with noise
             // One could go back to the sdigit, but it is simpler to take the added 
@@ -705,11 +704,11 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
             {
               for(Int_t idep = 0; idep < 4; idep++) 
                 mcEDepFrac[idep] /= edepTot;
-
+              
               cellEDepFrac[i] = ec->PackMCEdepFraction(mcEDepFrac);
             }
-          } // select primary label
-        } // at least one primary in cluster, do the cell primary packing
+          } // at least one parent in digit
+        } // at least one parent in cluster, do the cell primary packing
       } // cell cluster loop 
       
       ec->SetCellsAbsId(newAbsIdList);
