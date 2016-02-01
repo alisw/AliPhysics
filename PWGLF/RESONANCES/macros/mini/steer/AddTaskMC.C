@@ -292,7 +292,7 @@ AliRsnMiniAnalysisTask * AddTaskMC
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigRsnMC.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/steer/ConfigRsnMC.C");
    if (!ConfigRsnMC(task, kTRUE, isPP, cutsPair, 
 		    partname.Data(), pdgCode, mass, masslow, massup, nbins, charge1, charge2, 
 		    d1, d2, aodFilterBit, enableMonitor, "NoSIGN") ) return 0x0;

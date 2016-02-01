@@ -158,7 +158,7 @@ void RunGridRsnTrain(TString pluginmode="test",
   Bool_t isAOD049 = 0;
   (aodN==49) ? isAOD049 = kTRUE :  isAOD049 = kFALSE;
   
-  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AnalysisSetup.C");
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/steer/AnalysisSetup.C");
   gROOT->LoadMacro("./AnalysisSetup.C");
   TString options;
   if (isMC) options="MC"; else options="DATA";
