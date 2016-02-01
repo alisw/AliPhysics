@@ -105,9 +105,11 @@ AliAnalysisTaskEmcalJetCDFUE::AliAnalysisTaskEmcalJetCDFUE()
     fTracksCont ( NULL ),
     fCaloClustersCont ( NULL ),
     fTracksContArray ( NULL ),
+    fCaloClustContArray ( NULL ),
     fJet1 ( NULL ),
     fNJets_accepted ( 0 ),
     fNaccPart ( 0 ),
+    fNaccClus ( 0 ),
     fEvPt ( -99.99 ),
     fJet1_sorted_idxvec(),
     fEvent_sorted_idxvec()
@@ -193,6 +195,7 @@ Bool_t AliAnalysisTaskEmcalJetCDFUE::Run()
   Int_t idx_jet_container = 0;
 
   fJetsCont = GetJetContainer ( idx_jet_container );
+  fJetsCont->ResetCurrentID();
 
   if ( !fJetsCont )
       {
@@ -200,28 +203,43 @@ Bool_t AliAnalysisTaskEmcalJetCDFUE::Run()
       return kFALSE;
       }
 
-  // get particles and clusters connected to jets
+  // get particles connected to jets
   fTracksCont = fJetsCont->GetParticleContainer();
-  fTracksCont->SetClassName ( "AliVTrack" );
+  if (fTracksCont)
+    {
+    fTracksCont->ResetCurrentID();
+    fTracksCont->SetClassName ( "AliVTrack" );
 
+    // get array of tracks
+    fTracksContArray = fTracksCont->GetArray();
+
+    // Multiplicity in event - accepted tracks in tracks container
+    fNaccPart = fTracksCont->GetNAcceptedParticles();
+    }
+
+  // get clusters connected to jets
   fCaloClustersCont = fJetsCont->GetClusterContainer();
-  fCaloClustersCont->SetClassName ( "AliVCluster" );
+  if (fCaloClustersCont)
+    {
+    fCaloClustersCont->SetClassName ( "AliVCluster" );
 
-  fNJets_accepted = fJetsCont->GetNJets();          // Number of Jets found in event -
-  // accepted cuts applied by
-  // JetContainer
-  fNaccPart = fTracksCont->GetNAcceptedParticles(); // Multiplicity in event -
-  // accepted tracks in tracks
-  // container
+    // get array of constituents
+    fCaloClustContArray = fCaloClustersCont->GetArray();
+
+    // accepted clusters in cluster container
+    fNaccClus = fCaloClustersCont->GetNAcceptedClusters();
+    }
+
+  // Number of Jets found in event - accepted cuts applied by JetContainer
+  fNJets_accepted = fJetsCont->GetNJets();
 
   // protection
   if ( ( fNJets_accepted < 1 ) || ( fNaccPart < 1 ) )
       {
-      if ( fDebug > 2 )
+      if ( fDebug > 1 )
           {
-          std::cout << "accepted (fNJets || fNPart) < 1" << std::endl;
+          std::cout << "accepted (fNJets || fNPart) == 0" << std::endl;
           }
-
       return kFALSE;
       }
 
@@ -230,25 +248,6 @@ Bool_t AliAnalysisTaskEmcalJetCDFUE::Run()
       std::cout << "fNJets = " << fNJets_accepted << " ; fNPart = " << fNaccPart << std::endl;
       }
 
-  //__________________________________________________________________
-  // Leading Jet
-  fJet1 = fJetsCont->GetLeadingJet(); // internaly checked for AcceptedJet
-
-  if ( !fJet1 )
-      {
-      if ( fDebug > 2 )
-          {
-          std::cout << "LEADING JET NOT FOUND " << std::endl;
-          }
-
-      return kFALSE;
-      }
-
-  if ( fDebug > 1 )
-      {
-      std::cout << "+++++++++++++++++>>>>>>>>> Leading jet found" << std::endl;
-      fJet1->Print();
-      }
 
   //___________________________________________
   // jet1 : Sorting by p_T jet constituents
@@ -260,8 +259,7 @@ Bool_t AliAnalysisTaskEmcalJetCDFUE::Run()
   // sorting the EVENT _ACCEPTED_ tracks by pt
   fEvent_sorted_idxvec = SortTracksPt ( fTracksCont );
 
-  // Run analysis code here, if needed. It will be executed before
-  // FillHistograms().
+  // Run analysis code here, if needed. It will be executed before FillHistograms().
   return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
   }
 

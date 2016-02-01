@@ -17,7 +17,6 @@
 #include <TSystem.h>
 #include <TProfile.h>
 #include <TH1.h>
-#include <TH1F.h>
 #include <TH1D.h>
 #include <TProfile.h>
 #include <TMath.h>
@@ -31,7 +30,6 @@
 #include "AliAnalysisTaskEmcalJet.h"
 
 class TH1;
-class TH2;
 class TProfile;
 class AliAnalysisUtils;
 class AliJetContainer;
@@ -49,14 +47,26 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     void                        UserCreateOutputObjects();
     void                        Terminate ( Option_t *option );
 
+    /// Setting of index of the jet container to be processed
+    /// \param index of jet container
+    void                        SetProcessJetCont (Int_t i) {idx_jetcont = i;}
+
+    /// Get what jet container is set to be processed
+    /// \return index of jer container
+    Int_t                       GetProcessJetCont () {return idx_jetcont;}
+
   protected:
+    void                        ExecOnce();
+    Bool_t                      Run() ;
 
     /// Filling of histograms
     /// \return kTRUE if filling is succesful
     Bool_t                      FillHistograms()   ;
 
-    void                        ExecOnce();
-    Bool_t                      Run() ;
+    /// Sorting of tracks in the event by pt (descending)
+    /// \param index of jet container
+    /// \return true/false for succesful processing
+    Bool_t                      ProcessJetContainer(Int_t idx_jet_container = 0);
 
     /// Sorting of tracks in the event by pt (descending)
     /// \param AliVEvent*
@@ -80,81 +90,164 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     /// \return kTRUE if found
     Bool_t                      IdxInArray ( Int_t index, TArrayI &array );
 
-    TH1D       *fH1;               //!<!  Pt distribution of all jets
-    TH1D       *fH2;               //!<!  Eta distribution of all jets
-    TH1D       *fH3;               //!<!  Phi distribution of all jets
-    TH1D       *fH4;               //!<!  Multiplicity of all jets // 1 unit of multiplicity /bin
-    TH1D       *fH5;               //!<!  Distribution of jets in events
-    TH1D       *fH6;               //!<!  Jet1 Multiplicity Distribution
-    TProfile   *fH7;               //!<!  N(jet1) vs P_{T}(jet1)
+    // Histogram list
+    TH1D      *fH1;                //!<!  Pt distribution of all jets
+    TH1D      *fH2;                //!<!  Eta distribution of all jets
+    TH1D      *fH3;                //!<!  Phi distribution of all jets
 
-    TH1D       *fH8;               //!<!  Momentum distribution for leading jet (fragmentation function)
-    TH1D       *fH8xi;             //!<!  Xi distribution for leading jet (fragmentation function)
+//________________________________________________________________________
+    TH1D      *fH4;                //!<!  Multiplicity of all jets - tracks // 1 unit of multiplicity /bin
+    TH1D      *fH4c;               //!<!  Multiplicity of all jets - all constituents // 1 unit of multiplicity /bin
 
-    TH1D       *fH8_all;           //!<!  Momentum distribution for jets (fragmentation function)
-    TH1D       *fH8xi_all;         //!<!  Xi distribution for jets (fragmentation function)
+//________________________________________________________________________
+    TH1D      *fH5;                //!<!  Distribution of jets in events
 
-    TProfile   *fH9;               //!<!  N vs the Azimuthal Angle from Jet1
-    TProfile   *fH10;              //!<!  P_{T} sum vs the Azimuthal Angle from Jet1
+//________________________________________________________________________
+    TH1D      *fH6;                //!<!  Jet1 Multiplicity Distribution - charged tracks
+    TH1D      *fH6c;               //!<!  Jet1 Multiplicity Distribution - all constituents
 
-    TH1D       *fH9_bin;           //!<!  N vs the Azimuthal Angle from Jet1 - per bin sum
-    TH1D       *fH10_bin;          //!<!  P_{T} sum vs the Azimuthal Angle from Jet1 - per bin sum
+//________________________________________________________________________
+    TProfile  *fH7;                //!<!  N(jet1) vs P_{T}(jet1)
+    TProfile  *fH7all;             //!<!  N(jet1) vs P_{T} - all jets
 
-    TH1D       *fH9_bin_wojet1;    //!<!  N vs the Azimuthal Angle from Jet1 - per bin sum ; WITHOUT JET1 constituents
-    TH1D       *fH10_bin_wojet1;   //!<!  P_{T} sum vs the Azimuthal Angle from Jet1 - per bin sum ; WITHOUT JET1 constituents
+//________________________________________________________________________
+    TH1D      *fH8;                //!<!  Momentum distribution for leading jet (fragmentation function)
+    TH1D      *fH8xi;              //!<!  Xi distribution for leading jet (fragmentation function)
 
+//________________________________________________________________________
+    TH1D      *fH8_all;            //!<!  Momentum distribution for jets (fragmentation function)
+    TH1D      *fH8xi_all;          //!<!  Xi distribution for jets (fragmentation function)
+
+//________________________________________________________________________
     TProfile  *fH15;               //!<!  <p_{T}> track vs the Distance R from Jet1
+
+    TProfile  *fH15_n90;           //!<!  <p_{T}> track vs the Distance R from Jet1 - 90% of particles
+    TProfile  *fH15_n85;           //!<!  <p_{T}> track vs the Distance R from Jet1 - 85% of particles
     TProfile  *fH15_n80;           //!<!  <p_{T}> track vs the Distance R from Jet1 - 80% of particles
+    TProfile  *fH15_n75;           //!<!  <p_{T}> track vs the Distance R from Jet1 - 75% of particles
+    TProfile  *fH15_n70;           //!<!  <p_{T}> track vs the Distance R from Jet1 - 70% of particles
+
+    TProfile  *fH15_pt90;          //!<!  <p_{T}> track vs the Distance R from Jet1 - 80% of Pt
+    TProfile  *fH15_pt85;          //!<!  <p_{T}> track vs the Distance R from Jet1 - 85% of Pt
     TProfile  *fH15_pt80;          //!<!  <p_{T}> track vs the Distance R from Jet1 - 80% of Pt
+    TProfile  *fH15_pt75;          //!<!  <p_{T}> track vs the Distance R from Jet1 - 75% of Pt
+    TProfile  *fH15_pt70;          //!<!  <p_{T}> track vs the Distance R from Jet1 - 70% of Pt
 
-    TH1D      *fH15_bin;           //!<!  p_{T} track vs the Distance R from Jet1
-    TH1D      *fH15_bin_n80;       //!<!  p_{T} track vs the Distance R from Jet1 - 80% of particles
-    TH1D      *fH15_bin_pt80;      //!<!  p_{T} track vs the Distance R from Jet1 - 80% of Pt
+//________________________________________________________________________
+    TProfile  *fH15all;            //!<!  <p_{T}> track vs the Distance R from Jet1
 
-    TH1D      *fH15_bin_all;           //!<!  p_{T} track vs the Distance R from owner jet
-    TH1D      *fH15_bin_n80_all;       //!<!  p_{T} track vs the Distance R from owner jet - 80% of particles
-    TH1D      *fH15_bin_pt80_all;      //!<!  p_{T} track vs the Distance R from owner jet - 80% of Pt
+    TProfile  *fH15all_n90;        //!<!  <p_{T}> track vs the Distance R from Jet1 - 90% of particles
+    TProfile  *fH15all_n85;        //!<!  <p_{T}> track vs the Distance R from Jet1 - 85% of particles
+    TProfile  *fH15all_n80;        //!<!  <p_{T}> track vs the Distance R from Jet1 - 80% of particles
+    TProfile  *fH15all_n75;        //!<!  <p_{T}> track vs the Distance R from Jet1 - 75% of particles
+    TProfile  *fH15all_n70;        //!<!  <p_{T}> track vs the Distance R from Jet1 - 70% of particles
 
+    TProfile  *fH15all_pt90;       //!<!  <p_{T}> track vs the Distance R from Jet1 - 90% of Pt
+    TProfile  *fH15all_pt85;       //!<!  <p_{T}> track vs the Distance R from Jet1 - 85% of Pt
+    TProfile  *fH15all_pt80;       //!<!  <p_{T}> track vs the Distance R from Jet1 - 80% of Pt
+    TProfile  *fH15all_pt75;       //!<!  <p_{T}> track vs the Distance R from Jet1 - 75% of Pt
+    TProfile  *fH15all_pt70;       //!<!  <p_{T}> track vs the Distance R from Jet1 - 70% of Pt
+
+//________________________________________________________________________
+    TH1D      *fH15_bin;           //!<!  p_{T} SUM track vs the Distance R from Jet1
+
+    TH1D      *fH15_bin_n90;       //!<!  p_{T} SUM track vs the Distance R from Jet1 - 90% of particles
+    TH1D      *fH15_bin_n85;       //!<!  p_{T} SUM track vs the Distance R from Jet1 - 85% of particles
+    TH1D      *fH15_bin_n80;       //!<!  p_{T} SUM track vs the Distance R from Jet1 - 80% of particles
+    TH1D      *fH15_bin_n75;       //!<!  p_{T} SUM track vs the Distance R from Jet1 - 75% of particles
+    TH1D      *fH15_bin_n70;       //!<!  p_{T} SUM track vs the Distance R from Jet1 - 70% of particles
+
+    TH1D      *fH15_bin_pt90;      //!<!  p_{T} SUM track vs the Distance R from Jet1 - 80% of Pt
+    TH1D      *fH15_bin_pt85;      //!<!  p_{T} SUM track vs the Distance R from Jet1 - 80% of Pt
+    TH1D      *fH15_bin_pt80;      //!<!  p_{T} SUM track vs the Distance R from Jet1 - 80% of Pt
+    TH1D      *fH15_bin_pt75;      //!<!  p_{T} SUM track vs the Distance R from Jet1 - 80% of Pt
+    TH1D      *fH15_bin_pt70;      //!<!  p_{T} SUM track vs the Distance R from Jet1 - 80% of Pt
+
+//________________________________________________________________________
+    TH1D      *fH15all_bin;       //!<!  p_{T} SUM track vs the Distance R from owner jet
+
+    TH1D      *fH15all_bin_n90;   //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of particles
+    TH1D      *fH15all_bin_n85;   //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of particles
+    TH1D      *fH15all_bin_n80;   //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of particles
+    TH1D      *fH15all_bin_n75;   //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of particles
+    TH1D      *fH15all_bin_n70;   //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of particles
+
+    TH1D      *fH15all_bin_pt90;  //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of Pt
+    TH1D      *fH15all_bin_pt85;  //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of Pt
+    TH1D      *fH15all_bin_pt80;  //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of Pt
+    TH1D      *fH15all_bin_pt75;  //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of Pt
+    TH1D      *fH15all_bin_pt70;  //!<!  p_{T} SUM track vs the Distance R from owner jet - 80% of Pt
+
+//________________________________________________________________________
     TH1D      *fH20;               //!<!  Distribution of R in leading jet
+
+    TH1D      *fH20_n90;           //!<!  Distribution of R in leading jet - 90% of particles
+    TH1D      *fH20_n85;           //!<!  Distribution of R in leading jet - 85% of particles
     TH1D      *fH20_n80;           //!<!  Distribution of R in leading jet - 80% of particles
+    TH1D      *fH20_n75;           //!<!  Distribution of R in leading jet - 75% of particles
+    TH1D      *fH20_n70;           //!<!  Distribution of R in leading jet - 70% of particles
+
+    TH1D      *fH20_pt90;          //!<!  Distribution of R in leading jet - 90% of Pt
+    TH1D      *fH20_pt85;          //!<!  Distribution of R in leading jet - 85% of Pt
     TH1D      *fH20_pt80;          //!<!  Distribution of R in leading jet - 80% of Pt
+    TH1D      *fH20_pt75;          //!<!  Distribution of R in leading jet - 75% of Pt
+    TH1D      *fH20_pt70;          //!<!  Distribution of R in leading jet - 70% of Pt
 
-    TH1D      *fH20_all;               //!<!  Distribution of R in jets
-    TH1D      *fH20_n80_all;           //!<!  Distribution of R in jets - 80% of particles
-    TH1D      *fH20_pt80_all;          //!<!  Distribution of R in jets - 80% of Pt
 
-    TH1D      *fH23jet1;           //!<!  Jet1 Pt Distribution of particles
+//________________________________________________________________________
+    TH1D      *fH20all;           //!<!  Distribution of R in jets
 
+    TH1D      *fH20all_n90;       //!<!  Distribution of R in jets - 80% of particles
+    TH1D      *fH20all_n85;       //!<!  Distribution of R in jets - 80% of particles
+    TH1D      *fH20all_n80;       //!<!  Distribution of R in jets - 80% of particles
+    TH1D      *fH20all_n75;       //!<!  Distribution of R in jets - 80% of particles
+    TH1D      *fH20all_n70;       //!<!  Distribution of R in jets - 80% of particles
+
+    TH1D      *fH20all_pt90;      //!<!  Distribution of R in jets - 80% of Pt
+    TH1D      *fH20all_pt85;      //!<!  Distribution of R in jets - 80% of Pt
+    TH1D      *fH20all_pt80;      //!<!  Distribution of R in jets - 80% of Pt
+    TH1D      *fH20all_pt75;      //!<!  Distribution of R in jets - 80% of Pt
+    TH1D      *fH20all_pt70;      //!<!  Distribution of R in jets - 80% of Pt
+
+//________________________________________________________________________
+    TH1D      *fHg;                //!<!  Distribution of girth (radial girth) g = sum_jet_parts ( r_i * ( pt_i/pt_jet ) )
+
+    TH1D      *fHg_n90;            //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_n85;            //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_n80;            //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_n75;            //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_n70;            //!<!  Distribution of girth (radial girth) g
+
+    TH1D      *fHg_pt90;           //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_pt85;           //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_pt80;           //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_pt75;           //!<!  Distribution of girth (radial girth) g
+    TH1D      *fHg_pt70;           //!<!  Distribution of girth (radial girth) g
+
+//________________________________________________________________________
+    TH1D      *fHptd;                //!<!  Distribution of dispersion d pt_D = sqrt ( sum (pt_i^2) )/sum (pt_i)
+
+    TH1D      *fHptd_n90;            //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_n85;            //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_n80;            //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_n75;            //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_n70;            //!<!  Distribution of dispersion pt_D
+
+    TH1D      *fHptd_pt90;           //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_pt85;           //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_pt80;           //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_pt75;           //!<!  Distribution of dispersion pt_D
+    TH1D      *fHptd_pt70;           //!<!  Distribution of dispersion pt_D
+
+//________________________________________________________________________
+    TProfile  *fH23;               //!<!  Jet1 Size vs P_{T}(jet1)
     TProfile  *fH24;               //!<!  Jet1 Size vs P_{T}(jet1) - 80% of particles
     TProfile  *fH25;               //!<!  Jet1 Size vs P_{T}(jet1) - 80% of Pt
 
-    TProfile  *fH26;               //!<!  N_{chg} vs the Distance R from Jet1
-    TProfile  *fH26_n80;           //!<!  N_{chg} vs the Distance R from Jet1 - 80% of particles
-    TProfile  *fH26_pt80;          //!<!  N_{chg} vs the Distance R from Jet1 - 80% of Pt
-    TProfile  *fH26jet1;           //!<!  N_{chg}(jet1) vs the Distance R from Jet1
-    TProfile  *fH26jet1_n80;       //!<!  N_{chg}(jet1) vs the Distance R from Jet1 - 80% of particles
-    TProfile  *fH26jet1_pt80;      //!<!  N_{chg}(jet1) vs the Distance R from Jet1 - 80% of Pt
-
-    TH1D  *fH26_bin;               //!<!  N_{chg} vs the Distance R from Jet1
-    TH1D  *fH26_n80_bin;           //!<!  N_{chg} vs the Distance R from Jet1 - 80% of particles
-    TH1D  *fH26_pt80_bin;          //!<!  N_{chg} vs the Distance R from Jet1 - 80% of Pt
-    TH1D  *fH26jet1_bin;           //!<!  N_{chg}(jet1) vs the Distance R from Jet1
-    TH1D  *fH26jet1_n80_bin;       //!<!  N_{chg}(jet1) vs the Distance R from Jet1 - 80% of particles
-    TH1D  *fH26jet1_pt80_bin;      //!<!  N_{chg}(jet1) vs the Distance R from Jet1 - 80% of Pt
-
-    TProfile  *fH27;           //!<!  PT_{sum} vs the Distance R from Jet1
-    TProfile  *fH27_n80;       //!<!  PT_{sum} vs the Distance R from Jet1 - 80% of particles
-    TProfile  *fH27_pt80;      //!<!  PT_{sum} vs the Distance R from Jet1 - 80% of Pt
-    TProfile  *fH27jet1;       //!<!  PT_{sum}(jet1) vs the Distance R from Jet1
-    TProfile  *fH27jet1_n80;   //!<!  PT_{sum}(jet1) vs the Distance R from Jet1 - 80% of particles
-    TProfile  *fH27jet1_pt80;  //!<!  PT_{sum}(jet1) vs the Distance R from Jet1 - 80% of Pt
-
-    TH1D  *fH27_bin;           //!<!  PT_{sum} vs the Distance R from Jet1
-    TH1D  *fH27_n80_bin;       //!<!  PT_{sum} vs the Distance R from Jet1 - 80% of particles
-    TH1D  *fH27_pt80_bin;      //!<!  PT_{sum} vs the Distance R from Jet1 - 80% of Pt
-    TH1D  *fH27jet1_bin;       //!<!  PT_{sum}(jet1) vs the Distance R from Jet1
-    TH1D  *fH27jet1_n80_bin;   //!<!  PT_{sum}(jet1) vs the Distance R from Jet1 - 80% of particles
-    TH1D  *fH27jet1_pt80_bin;  //!<!  PT_{sum}(jet1) vs the Distance R from Jet1 - 80% of Pt
+//________________________________________________________________________
+    TProfile  *fH23all;            //!<!  Jet1 Size vs P_{T}(jet)
+    TProfile  *fH24all;            //!<!  Jet1 Size vs P_{T}(jet) - 80% of particles
+    TProfile  *fH25all;            //!<!  Jet1 Size vs P_{T}(jet) - 80% of Pt
 
 
     //_________________________________________________________________________
@@ -162,14 +255,12 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     AliParticleContainer      *fTracksCont;                 //!<! Tracks Container
     AliClusterContainer       *fCaloClustersCont;           //!<! Clusters Container
     TClonesArray              *fTracksContArray;            //!<! the array of tracks from the tracks container
+    TClonesArray              *fCaloClustContArray;         //!<! the array of clusters from the tracks container
 
-    AliEmcalJet               *fJet1;                       //!<! Leading Jet
-    UInt_t                     fNJets_accepted;             ///<  Number of Jets found in event - accepted cuts applied by JetContainer
-    UInt_t                     fNaccPart;                   ///<  Multiplicity in event - accepted tracks in tracks container
-    Double_t                   fEvPt;                       ///<  Scalar sum of pt off all accepted tracks in events
-
-    std::vector<Int_t>         fJet1_sorted_idxvec;         ///< vector of sorted indexes of particles in leading jet
-    std::vector<Int_t>         fEvent_sorted_idxvec;        ///< vector of sorted indexes of accepted tracks in the event
+    Int_t                      idx_jetcont;                 //!<! index of jet container to be processed
+    Int_t                      fNJets_accepted;             //!<! Number of Jets found in event - accepted cuts applied by JetContainer
+    Int_t                      fNaccPart;                   //!<! Multiplicity in event - accepted tracks in tracks container
+    Int_t                      fNaccClus;                   //!<! Multiplicity in event - accepted clusters in cluster container
 
   private:
     /// (pt,index) pair
@@ -181,11 +272,11 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
       bool operator () ( const ptidx_pair &p1, const ptidx_pair &p2 )  { return p1.first > p2.first ; }
       };
 
-    AliAnalysisTaskEmcalJetCDF ( const AliAnalysisTaskEmcalJetCDF & );           // not implemented
-    AliAnalysisTaskEmcalJetCDF &operator= ( const AliAnalysisTaskEmcalJetCDF & ); // not implemented
+    AliAnalysisTaskEmcalJetCDF ( const AliAnalysisTaskEmcalJetCDF& );           // not implemented
+    AliAnalysisTaskEmcalJetCDF &operator= ( const AliAnalysisTaskEmcalJetCDF& ); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef ( AliAnalysisTaskEmcalJetCDF, 2 );
+    ClassDef ( AliAnalysisTaskEmcalJetCDF, 3 );
     /// \endcond
 
   };
