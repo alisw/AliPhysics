@@ -2345,7 +2345,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
     if(fUseExtraTracks)fCommonHistList->Add(fhnK0sEmbConeRef);
-    if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
+    if((fUseExtraTracks == 1) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnK0sEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnLaIncl);
@@ -2354,7 +2354,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
      if(fUseExtraTracks)fCommonHistList->Add(fhnLaEmbConeRef);
-     if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
+     if((fUseExtraTracks == 1) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnLaEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnALaIncl);
@@ -2363,7 +2363,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     if(fBranchEmbeddedJets.Length()){
       if(fUseExtraTracks)fCommonHistList->Add(fhnALaEmbConeRef);
-      if((fUseExtraTracks == kTRUE) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnALaEmbConeStandard);}
+      if((fUseExtraTracks == 1) && (fUseStandard == kTRUE)){fCommonHistList->Add(fhnALaEmbConeStandard);}
     }
 
     fCommonHistList->Add(fhnK0sPC);
@@ -3779,9 +3779,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) // end: cut embedded ratio
 	  {
-	   
+	    if(fMatchMode == 1){
 	    FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);//fetch V0s for matched jets and fill embedding histos
-
+	    }
 	  }
 	//################################end V0 embedding part
 	//################################
@@ -3789,7 +3789,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }//end of fTracksExtra != 0 check, end of embedding part
       
       
-	//#####################End of embedding study################################################################################################
+	//#####################End of embedding study in MatchMode 1################################################################################
 
 
       //############################################################################################################################################
@@ -7392,16 +7392,17 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	   
 	  }	  
 	  
-	}
-	
-	if(jetConeK0EmbStlist->GetSize() == 0){ 	
 	  
-	  Double_t vK0sEmbConeStandard[4] = {jetPt, 0., 0., -100.};
-	  fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
+	  
+	  if(jetConeK0EmbStlist->GetSize() == 0){ 	
+	    
+	    Double_t vK0sEmbConeStandard[4] = {jetPt, 0., 0., -100.};
+	    fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
+	  }
 	}
-	
 	//######
-	//extra V0s	
+	//V0s in embedded jet cones
+	
 	for(Int_t it=0; it<jetConeK0Emblist->GetSize(); ++it){ // loop for K0s in jet cone
 	  
 	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(it));
@@ -7482,7 +7483,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
              Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
 
 	    if (isEmbeddedNeg==kTRUE && isEmbeddedPos==kTRUE) {
-	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem info: PYTHIAEmbedding charged daughters both successfully found with embedding flag!\n");	     
+	      if(fDebug > 2) Printf("AliAnalysisTaskJetChem info: PYTHIAEmbedding charged daughters both successfully found with embedding flag!\n");	     
 	    }
 
 	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
@@ -7502,8 +7503,6 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 
-	    // std::cout<<"MCPt :"<<MCPt<<std::endl;
-
 	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s, trackPt, fEta};
 	    
 	    if(fDebug > 2)std::cout<<" extraonly EmbCone K0s candidate: "<<"invMK0s: "<<invMK0s<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
@@ -7512,9 +7511,9 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
 	  }
 	  
-	}
+	}//end jetConeK0Emblist loop, if list is not empty
 	
-	
+	//case: if list is empty:
 	if(jetConeK0Emblist->GetSize() == 0){ // no K0: increment jet pt spectrum 
 	  
 	  Bool_t incrementJetPt = kTRUE;//jets without K0s will be only filled in TH1F only once, so no increment needed 
