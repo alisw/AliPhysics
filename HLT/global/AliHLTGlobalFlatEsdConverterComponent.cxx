@@ -734,7 +734,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     size_t freeSpaceTotal = maxOutputSize - size;
     size_t freeSpace = freeSpaceTotal;
 
-    err = ( freeSpace < sizeof( AliFlatESDEvent ) );    
+    err = ( freeSpace < sizeof( AliFlatESDFriend ) );    
     if( err ) break;
 
     new (flatFriend) AliFlatESDFriend;
