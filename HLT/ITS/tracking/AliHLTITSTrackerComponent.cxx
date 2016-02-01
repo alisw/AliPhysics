@@ -548,28 +548,34 @@ int AliHLTITSTrackerComponent::DoEvent
     
     blockSize =   ( ( AliHLTUInt8_t * )currOutLabel ) -  ( ( AliHLTUInt8_t * )outPtr );
     
-    outPtr->fCount = 0;
-    
     AliHLTITSTrack *tracks= fTracker->Tracks();
     int nTracks = fTracker->NTracks();
-    
-    for ( int itr = 0; itr < nTracks; itr++ ) {
-      AliHLTITSTrack &t = tracks[itr];
-      //cout<<"SG out:"<<tracksTPCId[t.TPCtrackId()]<<" "<<t.GetLabel()<<endl;
-      if( t.GetLabel()<0 ) continue;
-      int id =  tracksTPCId[t.TPCtrackId()];
+    if (size + blockSize > maxBufferSize)
+    {
+      HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d mc labels are not stored", maxBufferSize, blockSize, nTracks );
+      iResult = -ENOSPC;
+    }
+    else
+    {
+      outPtr->fCount = 0;
+      for ( int itr = 0; itr < nTracks; itr++ ) {
+        AliHLTITSTrack &t = tracks[itr];
+        //cout<<"SG out:"<<tracksTPCId[t.TPCtrackId()]<<" "<<t.GetLabel()<<endl;
+        if( t.GetLabel()<0 ) continue;
+        int id =  tracksTPCId[t.TPCtrackId()];
       
-      if ( size + blockSize + sizeof(AliHLTTrackMCLabel) > maxBufferSize ) {
-	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d mc labels are not stored", maxBufferSize, blockSize, nTracks - itr + 1 );
-	iResult = -ENOSPC;
-	break;
+        if ( size + blockSize + sizeof(AliHLTTrackMCLabel) > maxBufferSize ) {
+	  HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d mc labels are not stored", maxBufferSize, blockSize, nTracks - itr + 1 );
+	  iResult = -ENOSPC;
+	  break;
+        }
+        currOutLabel->fTrackID = id;
+        currOutLabel->fMCLabel = t.GetLabel();
+        blockSize += sizeof(AliHLTTrackMCLabel);
+        currOutLabel++;
+        outPtr->fCount++;
       }
-      currOutLabel->fTrackID = id;
-      currOutLabel->fMCLabel = t.GetLabel();
-      blockSize += sizeof(AliHLTTrackMCLabel);
-      currOutLabel++;
-      outPtr->fCount++;
-    }        
+    }
     if( iResult>=0 && outPtr->fCount>0 ){
       AliHLTComponentBlockData resultData;
       FillBlockData( resultData );
