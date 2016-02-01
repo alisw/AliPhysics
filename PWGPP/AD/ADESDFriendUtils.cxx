@@ -21,7 +21,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBStorage.h"
 #include "ADESDFriendUtils.h"
-#include "AliESDADFriend.h"
+#include "AliESDADfriend.h"
 
 ClassImp(ADESDFriendUtils);
 
