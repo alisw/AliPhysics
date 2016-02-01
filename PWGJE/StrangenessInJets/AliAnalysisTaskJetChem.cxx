@@ -2103,8 +2103,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fhnLaEmbConeRef                  = new THnSparseF("fhnLaEmbConeRef"," emb jet pT; La inv. mass, emb. flags; particle pT; particle #eta",4,binsLaEmbConeRef,xminLaEmbConeRef,xmaxLaEmbConeRef);
 
   Int_t binsLaEmbConeStandard[4] = {19, 200, 120, 200};
-  Double_t xminLaEmbConeStandard[4] = {5.,0.3, 0., -1.};
-  Double_t xmaxLaEmbConeStandard[4] = {100.,0.7, 12., 1.};
+  Double_t xminLaEmbConeStandard[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxLaEmbConeStandard[4] = {100.,1.25, 12., 1.};
   fhnLaEmbConeStandard             = new THnSparseF("fhnLaEmbConeStandard","emb jet pT; La inv. mass, emb. UE V0 subtraction; particle pT; particle #eta",4,binsLaEmbConeStandard,xminLaEmbConeStandard,xmaxLaEmbConeStandard);
 
 
@@ -2129,8 +2129,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fhnALaEmbConeRef                 = new THnSparseF("fhnALaEmbConeRef","emb jet pT; ALa inv. mass, emb. flags; particle pT; particle #eta",4,binsALaEmbConeRef,xminALaEmbConeRef,xmaxALaEmbConeRef);
 
   Int_t binsALaEmbConeStandard[4] = {19, 200, 120, 200};
-  Double_t xminALaEmbConeStandard[4] = {5.,0.3, 0., -1.};
-  Double_t xmaxALaEmbConeStandard[4] = {100.,0.7, 12., 1.};
+  Double_t xminALaEmbConeStandard[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxALaEmbConeStandard[4] = {100.,1.25, 12., 1.};
   fhnALaEmbConeStandard             = new THnSparseF("fhnALaEmbConeStandard","emb jet pT; ALa inv. mass, emb. UE V0 subtraction; particle pT; particle #eta",4,binsALaEmbConeStandard,xminALaEmbConeStandard,xmaxALaEmbConeStandard);
 
 
@@ -5484,18 +5484,29 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Double_t sumPt      = 0.;
 	Bool_t isBadJet     = kFALSE;
 	
+	//std::cout<<" hello!: "<<std::endl;
+
 	if(GetFFRadius()<=0){
 	  GetJetTracksTrackrefs(jettrackList, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
+	  //std::cout<<" hello 2!: "<<std::endl;
+
 	}
 	else GetJetTracksPointing(fTracksGen, jettrackList, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
 	
-	if(GetFFMinNTracks()>0 && jettrackList->GetSize()<=GetFFMinNTracks()){isBadJet = kTRUE; std::cout<<" Generated jet loop: isBadJet - jet rejected! No jettrack list filled! "<<std::endl;}
+	//std::cout<<" hello 3!: "<<std::endl;
+
+	if(GetFFMinNTracks()>0 && jettrackList->GetSize()<=GetFFMinNTracks()){isBadJet = kTRUE;}
 	
 	if(isBadJet){
+	  
+	  if(fDebug >3)std::cout<<" Generated jet loop: isBadJet - jet rejected! No jettrack list filled! "<<std::endl;
+	  
 	  delete jettrackList;
 	  continue; 
 	}
 	
+	//std::cout<<" hello! 4: "<<std::endl;
+
 	// embedding QA after leading pt cut
 	
 	if(!embeddedJet)std::cout<<"Gen. jet loop: no embedded jet existing!! "<<std::endl; 
@@ -5508,11 +5519,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	
 	if(embeddedJet){ 
-	  
+
+	  //std::cout<<" hello 5!: "<<std::endl;
+
+
 	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC); //no!
 	  
 	  if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded){    
-	    
+	    //std::cout<<" hello 6!: "<<std::endl;
+
 	    //Double_t deltaPtMC = jet->Pt() - embeddedJet->Pt();
 	    
 	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC); //no!
@@ -5522,7 +5537,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	//apply both requirements: matching from rec. extra jets to detector level PYTHIA AND particle level PYTHIA
 	if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded && deltaREmbeddedMC <= fCutDeltaREmbedded && 
 	   ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) { // if no embedding: ptFraction = cutFraction = 0
-	  
+
+	  //std::cout<<" hello 7!: "<<std::endl;
+
 	  Double_t genJetPt = embeddedJet->Pt();//jet pt detector level matched to generator level PYTHIA jets
 	  
 	  fh1JetPtEmbGenAfterMatch->Fill(genJetPt);  //no!
