@@ -287,6 +287,7 @@ TList *AliFemtoXiTrackCut::GetOutputList()
   TList *tOutputList = AliFemtoCutMonitorHandler::GetOutputList();  //add all of the typical objects
 
   if(fBuildPurityAidXi) tOutputList->Add(fMinvPurityAidHistoXi);
+  if(fBuildPurityAidV0) tOutputList->Add(fMinvPurityAidHistoV0);
 
   return tOutputList;
 }
