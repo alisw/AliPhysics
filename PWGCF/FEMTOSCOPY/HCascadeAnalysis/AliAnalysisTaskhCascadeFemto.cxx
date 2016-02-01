@@ -760,27 +760,27 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   
  }
 */  
-  // Histos for CF in k*
+// Histos for CF in k*
   int kstarbins = 0;
-  if (fSecondpart == kPion) kstarbins = 1000;
-  else kstarbins = 500;
-
-  fHistpXiSignalRealKstar = new TH2D("fHistpXiSignalRealKstar","",kstarbins,0.,5.,20,0.,100.);
+  float kstarmax = 5.;
+  if (fSecondpart == kPion) {kstarbins = 500; kstarmax=2.5; }
+  else {kstarbins = 500; kstarmax=5; }
+  fHistpXiSignalRealKstar = new TH2D("fHistpXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalRealKstar);
-  fHistapXiSignalRealKstar = new TH2D("fHistapXiSignalRealKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistapXiSignalRealKstar = new TH2D("fHistapXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapXiSignalRealKstar);
-  fHistpaXiSignalRealKstar = new TH2D("fHistpaXiSignalRealKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistpaXiSignalRealKstar = new TH2D("fHistpaXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpaXiSignalRealKstar);
-  fHistapaXiSignalRealKstar = new TH2D("fHistapaXiSignalRealKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistapaXiSignalRealKstar = new TH2D("fHistapaXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapaXiSignalRealKstar);
 
-  fHistpXiSignalBkgKstar = new TH2D("fHistpXiSignalBkgKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistpXiSignalBkgKstar = new TH2D("fHistpXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalBkgKstar);
-  fHistapXiSignalBkgKstar = new TH2D("fHistapXiSignalBkgKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistapXiSignalBkgKstar = new TH2D("fHistapXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapXiSignalBkgKstar);
-  fHistpaXiSignalBkgKstar = new TH2D("fHistpaXiSignalBkgKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistpaXiSignalBkgKstar = new TH2D("fHistpaXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpaXiSignalBkgKstar);
-  fHistapaXiSignalBkgKstar = new TH2D("fHistapaXiSignalBkgKstar","",kstarbins,0.,5.,20,0.,100.);
+  fHistapaXiSignalBkgKstar = new TH2D("fHistapaXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapaXiSignalBkgKstar);
 
   fHistFractionOfXiWithSharedDaughters = new TH2F("fHistFractionOfXiWithSharedDaughters","",200,0.,200.,201,0.,1.005);
@@ -788,58 +788,63 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
 
   // Histos for CF in 
   int detabins = 0;
-  if (fSecondpart == kPion) detabins = 800;
+  float detamin = -2.;
+  float detamax = 2.;
+  int dphibins = 1000;
+  float dphimin = -1.;
+  float dphimax = 1.;
+  if (fSecondpart == kPion) {detabins = 200; detamin = -0.5; detamax = 0.5; dphibins = 500; dphimin = -.5; dphimax = .5; }
   else if (fSecondpart == kProton) detabins = 400;
   else detabins = 200;
+  fHistpXibacDetaSDphiS = new TH2D("fHistpXibacDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);    
 
-  fHistpXibacDetaSDphiS = new TH2D("fHistpXibacDetaSDphiS","",1000,-1,1,detabins,-2.,2.);    
   fOutputContainer->Add(fHistpXibacDetaSDphiS);
-  fHistpXiposDetaSDphiS = new TH2D("fHistpXiposDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistpXiposDetaSDphiS = new TH2D("fHistpXiposDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpXiposDetaSDphiS);
-  fHistpXinegDetaSDphiS = new TH2D("fHistpXinegDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistpXinegDetaSDphiS = new TH2D("fHistpXinegDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpXinegDetaSDphiS);
-  fHistpaXibacDetaSDphiS = new TH2D("fHistpaXibacDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistpaXibacDetaSDphiS = new TH2D("fHistpaXibacDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpaXibacDetaSDphiS);
-  fHistpaXiposDetaSDphiS = new TH2D("fHistpaXiposDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistpaXiposDetaSDphiS = new TH2D("fHistpaXiposDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpaXiposDetaSDphiS);
-  fHistpaXinegDetaSDphiS = new TH2D("fHistpaXinegDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistpaXinegDetaSDphiS = new TH2D("fHistpaXinegDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpaXinegDetaSDphiS);
-  fHistapXibacDetaSDphiS = new TH2D("fHistapXibacDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistapXibacDetaSDphiS = new TH2D("fHistapXibacDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapXibacDetaSDphiS);
-  fHistapXiposDetaSDphiS = new TH2D("fHistapXiposDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistapXiposDetaSDphiS = new TH2D("fHistapXiposDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapXiposDetaSDphiS);
-  fHistapXinegDetaSDphiS = new TH2D("fHistapXinegDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistapXinegDetaSDphiS = new TH2D("fHistapXinegDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapXinegDetaSDphiS);
-  fHistapaXibacDetaSDphiS = new TH2D("fHistapaXibacDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistapaXibacDetaSDphiS = new TH2D("fHistapaXibacDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapaXibacDetaSDphiS);
-  fHistapaXiposDetaSDphiS = new TH2D("fHistapaXiposDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistapaXiposDetaSDphiS = new TH2D("fHistapaXiposDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapaXiposDetaSDphiS);
-  fHistapaXinegDetaSDphiS = new TH2D("fHistapaXinegDetaSDphiS","",1000,-1,1,detabins,-2.,2.);
+  fHistapaXinegDetaSDphiS = new TH2D("fHistapaXinegDetaSDphiS","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapaXinegDetaSDphiS);
 
-  fHistpXibacDetaSDphiSBkg = new TH2D("fHistpXibacDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistpXibacDetaSDphiSBkg = new TH2D("fHistpXibacDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpXibacDetaSDphiSBkg);
-  fHistpXiposDetaSDphiSBkg = new TH2D("fHistpXiposDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistpXiposDetaSDphiSBkg = new TH2D("fHistpXiposDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpXiposDetaSDphiSBkg);
-  fHistpXinegDetaSDphiSBkg = new TH2D("fHistpXinegDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistpXinegDetaSDphiSBkg = new TH2D("fHistpXinegDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpXinegDetaSDphiSBkg);
-  fHistpaXibacDetaSDphiSBkg = new TH2D("fHistpaXibacDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistpaXibacDetaSDphiSBkg = new TH2D("fHistpaXibacDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpaXibacDetaSDphiSBkg);
-  fHistpaXiposDetaSDphiSBkg = new TH2D("fHistpaXiposDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistpaXiposDetaSDphiSBkg = new TH2D("fHistpaXiposDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpaXiposDetaSDphiSBkg);
-  fHistpaXinegDetaSDphiSBkg = new TH2D("fHistpaXinegDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistpaXinegDetaSDphiSBkg = new TH2D("fHistpaXinegDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistpaXinegDetaSDphiSBkg);
-  fHistapXibacDetaSDphiSBkg = new TH2D("fHistapXibacDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistapXibacDetaSDphiSBkg = new TH2D("fHistapXibacDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapXibacDetaSDphiSBkg);
-  fHistapXiposDetaSDphiSBkg = new TH2D("fHistapXiposDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistapXiposDetaSDphiSBkg = new TH2D("fHistapXiposDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapXiposDetaSDphiSBkg);
-  fHistapXinegDetaSDphiSBkg = new TH2D("fHistapXinegDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistapXinegDetaSDphiSBkg = new TH2D("fHistapXinegDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapXinegDetaSDphiSBkg);
-  fHistapaXibacDetaSDphiSBkg = new TH2D("fHistapaXibacDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistapaXibacDetaSDphiSBkg = new TH2D("fHistapaXibacDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapaXibacDetaSDphiSBkg);
-  fHistapaXiposDetaSDphiSBkg = new TH2D("fHistapaXiposDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistapaXiposDetaSDphiSBkg = new TH2D("fHistapaXiposDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapaXiposDetaSDphiSBkg);
-  fHistapaXinegDetaSDphiSBkg = new TH2D("fHistapaXinegDetaSDphiSBkg","",1000,-1,1,detabins,-2.,2.);
+  fHistapaXinegDetaSDphiSBkg = new TH2D("fHistapaXinegDetaSDphiSBkg","",dphibins, dphimin, dphimax, detabins, detamin, detamax);
   fOutputContainer->Add(fHistapaXinegDetaSDphiSBkg);
 
   fHistTrackBufferOverflow = new TH1F("fHistTrackBufferOverflow","",2,0,2);
