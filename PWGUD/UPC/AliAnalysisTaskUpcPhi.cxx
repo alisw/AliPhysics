@@ -792,6 +792,10 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
       	trk->GetImpactParameters(dca[0],dca[1]);
       	Double_t cut_DCAxy = (0.0231+0.0315/TMath::Power(trk->Pt(),1.3));
       	if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+	
+	if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon))>3)continue;
+        if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion))<4)continue;
+	
       }
  
       TrackIndex[nGoodTracks] = itr;
@@ -930,7 +934,8 @@ void AliAnalysisTaskUpcPhi::RunESDMC(AliESDEvent* esd)
     AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
     if(!mcPart) continue;
 
-    if(mcPart->GetMother() >= 0) continue;
+    //if(mcPart->GetMother() >= 0) continue;
+    if(TMath::Abs(mcPart->PdgCode()) > 5000) continue;
 
     TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
     part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
