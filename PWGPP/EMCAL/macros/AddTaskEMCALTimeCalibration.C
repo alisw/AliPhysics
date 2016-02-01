@@ -18,6 +18,8 @@
 /// \param minCellEne: Double_t, minimum cell energy
 /// \param referenceFileName: TString, name of reference file
 /// \param referenceSMFileName: TString, name of reference file for SM by SM calib.
+/// \param badReconstruction: Bool_t, flag to find L1 shift dur to errors in reconstruction
+/// \param fillHeavyHistos: Bool_t, flag to fill heavy histograms with time per channel
 ///
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 ///
@@ -39,7 +41,8 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Bool_t   pileupFromSPDFlag = kFALSE,
 							     TString  referenceFileName = "",//Reference.root
 							     TString  referenceSMFileName = "",//ReferenceSM.root
-							     Bool_t   badReconstruction = kFALSE)
+							     Bool_t   badReconstruction = kFALSE,
+							     Bool_t   fillHeavyHistos = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -74,6 +77,9 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
 
+  if(fillHeavyHistos) taskmbemcal->SwithOnFillHeavyHisto();
+  else taskmbemcal->SwithOffFillHeavyHisto();
+
   // pass1
   taskmbemcal->SetRawTimeHisto(400,400.,800.);
   // pass2
@@ -83,7 +89,7 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
     taskmbemcal->SetPassTimeHisto(800,400.,800.);
     if(badReconstruction) {  //add for runs before LHC15n muon_calo_pass1 in run2
       taskmbemcal->SwitchOnBadReco();
-      taskmbemcal->SetPassTimeHisto(800,-200.,200.);
+      taskmbemcal->SetPassTimeHisto(500,-100.,150.);
     }
   }
 

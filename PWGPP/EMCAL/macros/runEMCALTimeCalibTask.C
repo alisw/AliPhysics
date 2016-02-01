@@ -129,6 +129,7 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
 
   taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
   //taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  //taskmbemcal->SwithOffFillHeavyHisto();
 
   // to load reference histograms run-by-run in pass2
   //taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_LHC15n.root");
