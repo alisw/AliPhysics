@@ -44,6 +44,7 @@ logToFinalDestination=1
 ALIROOT_FORCE_COREDUMP=1
 pretendDelay=0
 copyInputData=0
+lastJobID=
 
 # Those files are expected to be under $ALICE_PHYSICS/PWGPP/scripts. If a version in the current
 # directory exists, it takes precedence.
@@ -104,6 +105,9 @@ generateMC()
 {
   #generate one raw chunk in current directory
   SEED=${JOB_ID}${SGE_TASK_ID}
+  if [ -n "${SLURM_ARRAY_TASK_ID}"]; then
+    SEED=${SLURM_ARRAY_JOB_ID}${SLURM_ARRAY_TASK_ID}
+  fi
   export CONFIG_SEED=${SEED}
   export runNumber=${1}
   OCDBpath=${2}
@@ -164,6 +168,9 @@ goCPass()
   if [[ -z "$jobindex" || "$jobindex" -lt 0 ]]; then
     [[ -n "$LSB_JOBINDEX" ]] && jobindex=$LSB_JOBINDEX
     [[ -n "$SGE_TASK_ID" ]] && jobindex=$SGE_TASK_ID
+    [[ -n "$SLURM_ARRAY_TASK_ID" ]] && jobindex=$SLURM_ARRAY_TASK_ID
+    # FIXME: should here also be a check for <0?
+
     if [[ -z ${jobindex} ]]; then
       echo "no jobindex!"
       alilog_error "goCPass${cpass}() No job index [Paremeters] $*"
@@ -576,7 +583,7 @@ goMergeCPass()
                     $filteredFilesToMerge \
                     $syslogsRecToMerge \
                     $syslogsCalibToMerge; do
-    localList=local.${remoteList}
+    localList=local.${remoteList##*/}
     rm -f "$localList" && touch "$localList"
     while read sourceFile; do
       destinationFile="${PWD}/${sourceFile#${commonOutputPath}}"
@@ -585,13 +592,13 @@ goMergeCPass()
     done < <(cat "$remoteList")
   done
   # Subsequent calls will use the local.* version of those files.
-  calibrationFilesToMerge=local.${calibrationFilesToMerge}
-  filteredFilesToMerge=local.${filteredFilesToMerge}
-  syslogsRecToMerge=local.${syslogsRecToMerge}
-  syslogsCalibToMerge=local.${syslogsCalibToMerge}
+  calibrationFilesToMerge=local.${calibrationFilesToMerge##*/}
+  filteredFilesToMerge=local.${filteredFilesToMerge##*/}
+  syslogsRecToMerge=local.${syslogsRecToMerge##*/}
+  syslogsCalibToMerge=local.${syslogsCalibToMerge##*/}
 
   if [[ "$qaFilesToMerge" != '' ]]; then
-    qaFilesToMerge=local.${qaFilesToMerge}
+    qaFilesToMerge=local.${qaFilesToMerge##*/}
     tmp=$(cat $qaFilesToMerge); echo ${tmp%/*} > ${qaFilesToMerge}.lastMergingStage.txt.list
     qaFilesToMerge=${qaFilesToMerge}.lastMergingStage.txt.list
   fi
@@ -1377,11 +1384,18 @@ submit()
 
   [[ -z ${waitForJOBID} ]] && waitForJOBID=0
 
+  # steer batch farm type via batchCommand in config file
+  batchSystem="SGE"
+  if [[ "$batchCommand" =~ bsub ]]; then
+    batchSystem="LSF"
+  elif [[ "$batchCommand" =~ sbatch ]]; then
+    batchSystem="SLURM"
+  fi
+
   newFarm=$(which qsub|grep "^/usr/bin/qsub")
   
-  batchSystem="SGE"
-
-  if [[ -z "${newFarm}" ]]
+  #if [[ -z "${newFarm}" ]]
+  if [ "$batchSystem" == "LSF" ]
   then
     #old LSF
     # submit it (as job array)
@@ -1401,7 +1415,7 @@ submit()
       fi
       startID=$(expr ${endID} + 1)
     done
-  else 
+  elif [ "$batchSystem" == "SGE" ]; then
     #new SGE farm
     if [[ ${waitForJOBID} =~ "000" ]]; then
       echo ${batchCommand} ${batchFlags} -wd ${commonOutputPath} -b y -v commonOutputPath -N "${JobID}" -t "${startID}-${endID}" -e "${commonOutputPath}/logs/" -o "${commonOutputPath}/logs/" "${command}" "${commandArgs[@]}"
@@ -1410,6 +1424,25 @@ submit()
       echo ${batchCommand} ${batchFlags} -wd ${commonOutputPath} -b y -v commonOutputPath -N "${JobID}" -t "${startID}-${endID}" -hold_jid "${waitForJOBID}" -e "${commonOutputPath}/logs/" -o "${commonOutputPath}/logs/" "${command}" "${commandArgs[@]}"
       ${batchCommand} ${batchFlags} -wd ${commonOutputPath} -b y -v commonOutputPath -N "${JobID}" -t "${startID}-${endID}" -hold_jid "${waitForJOBID}" -e "${commonOutputPath}/logs/" -o "${commonOutputPath}/logs/" "${command}" "${commandArgs[@]}"
     fi
+  elif [ "$batchSystem" == "SLURM" ]; then
+    # ---| in case a wait job is requested add it to the job arguments |-----------
+    jobArgs=""
+    if [[ ! ${waitForJOBID} =~ "000" ]]; then
+      jobArgs="-d afterany:${waitForJOBID}"
+    fi
+
+    # ---| put together the job command and execute it, the job id will be saved |-
+    jobcmd="${batchCommand} ${batchFlags} \
+            -J ${JobID} --array=${startID}-${endID} \
+            -o ${commonOutputPath}/logs/${JobID}.%j.%a.out -e ${commonOutputPath}/logs/${JobID}.%j.%a.err \
+            --export=commonOutputPath \
+            --workdir=${commonOutputPath} \
+            ${jobArgs} \
+            ${command} ${commandArgs[@]}"
+    echo $jobcmd
+    lastJobID=$(eval $jobcmd | tee /dev/tty | awk '{print $4}')
+  else
+    echo "unknown batch system: $batchSystem"
   fi
   return 0
 }
@@ -1644,7 +1677,11 @@ goSubmitBatch()
 
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
       submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB=${JOBID1wait}
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
     fi #end running CPass0
     ################################################################################
@@ -1676,15 +1713,27 @@ goSubmitBatch()
         [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
       done
   
-      submit "calibListCPass0" 1 1 "$LASTJOB" ./benchmark.sh PrintValues calibfile ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass0.job\*.run${runNumber}.done"
+      submit "calibListCPass0" 1 1 "$LASTJOB" "${alirootEnv} ${self}"  PrintValues calibfile ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass0.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB="calibListCPass0"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
-      submit "calibListCPass0" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass0 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${extraOpts[@]}"
-      LASTJOB="calibListCPass0"
+      submit ${JOBID2} 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass0 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${extraOpts[@]}"
+      # ---| set last job id used to submit dependency jobs |-------------------
+      LASTJOB=${JOBID2}
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
       if [[ -n ${generateMC} ]]; then
         submit "mrl${JOBpostfix}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" PrintValues sim ${commonOutputPath}/meta/sim.run${runNumber}.list ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
+        # ---| set last job id used to submit dependency jobs |-------------------
         LASTJOB="mrl${JOBpostfix}"
+        # treat the slurm case which uses the id number not the name
+        # lastJobID is set in 'submit'
+        if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
       fi
 
       echo
@@ -1753,7 +1802,11 @@ goSubmitBatch()
       ################################################################################
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
       submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB=${JOBID4wait}
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
       ################################################################################
 
       echo
@@ -1787,15 +1840,33 @@ goSubmitBatch()
         [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
       done
 
-      submit "calibListCPass1" 1 1 "$LASTJOB" ./benchmark.sh PrintValues calibfile ${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      submit "calibListCPass1" 1 1 "$LASTJOB" "${alirootEnv} ${self}"  PrintValues calibfile ${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB="calibListCPass1"
-      submit "qaListCPass1" 1 1 "$LASTJOB" ./benchmark.sh PrintValues qafile ${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+
+      submit "qaListCPass1" 1 1 "$LASTJOB" "${alirootEnv} ${self}" PrintValues qafile ${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB="qaListCPass1"
-      submit "filteredListCPass1" 1 1 "$LASTJOB" ./benchmark.sh PrintValues filteredTree ${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
+
+      submit "filteredListCPass1" 1 1 "$LASTJOB" "${alirootEnv} ${self}" PrintValues filteredTree ${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB="filteredListCPass1"
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
       submit "${JOBID5}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass1 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list ${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list ${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list "${extraOpts[@]}"
+      # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB=${JOBID5}
+      # treat the slurm case which uses the id number not the name
+      # lastJobID is set in 'submit'
+      if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
       echo
     fi
 
@@ -1820,7 +1891,11 @@ goSubmitBatch()
   #else
     submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass1.run\*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
   #fi
+  # ---| set last job id used to submit dependency jobs |-------------------
   LASTJOB=${JOBID5wait}
+  # treat the slurm case which uses the id number not the name
+  # lastJobID is set in 'submit'
+  if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
   #################################################################################
   echo
@@ -1829,7 +1904,11 @@ goSubmitBatch()
 
   [[ -z ${alirootEnvQA} ]] && alirootEnvQA=$(encSpaces "${alirootEnv}")
   submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnvQA} ${self}" MakeSummary ${configFile} "commonOutputPath=${commonOutputPath}"
+  # ---| set last job id used to submit dependency jobs |-------------------
   LASTJOB=${JOBID6}
+  # treat the slurm case which uses the id number not the name
+  # lastJobID is set in 'submit'
+  if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
   #################################################################################
   
   #restore stdout
