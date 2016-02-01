@@ -155,6 +155,7 @@
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
+#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullpAJets_Eli_Mod+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
