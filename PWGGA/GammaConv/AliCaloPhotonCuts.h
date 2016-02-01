@@ -23,6 +23,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliAODCaloCluster.h"
+#include "AliCalorimeterUtils.h"
 #include <vector>
 
 
@@ -171,7 +172,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        FillClusterCutIndex(Int_t photoncut)            {if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
     void        InitializeEMCAL(AliVEvent *event);
     void        InitializePHOS(AliVEvent *event);
-
+    
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
     void        SetExtendedQA(Int_t extendedQA)                 {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
     void        FillHistogramsExtendedQA(AliVEvent *event);
@@ -232,6 +233,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
+    AliCalorimeterUtils* fEMCALCaloUtils;               // pointer to CalorimeterUtils for EMCal
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
     AliPHOSGeometry*    fGeomPHOS;                      // pointer to PHOS geometry
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
@@ -329,6 +331,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistDispersionAfterQA;                   // dispersion after cluster quality cuts
     TH1F*     fHistNLMBeforeQA;                         // number of local maxima in cluster before acceptance cuts
     TH1F*     fHistNLMAfterQA;                          // number of local maxima in cluster after cluster quality cuts
+    TH2F*     fHistNLMAvsNLMBBeforeQA;                  // number of local maxima in cluster after cluster quality cuts
     TH2F*     fHistNLMVsNCellsAfterQA;                  // number of local maxima vs Ncells in cluster after cluster quality cuts
     TH2F*     fHistNLMVsEAfterQA;                       // number of local maxima vs E in cluster after cluster quality cuts
     //More histograms
