@@ -184,7 +184,7 @@ void RestylePlot(TPad * pad, Int_t pos){
       TH1D *hist = (TH1D*)lc->At(jl);  
       if(hist->GetMarkerColor()==kRed) {
 	maxY[0] = hist->GetBinContent(hist->GetMaximumBin());
-	hist->SetMarkerSize(hist->GetMarkerSize()+0.15);
+	hist->SetMarkerSize(hist->GetMarkerSize()+0.35);
 	hist->GetXaxis()->SetTitle("#Delta#varphi (rad)");
 	hist->GetXaxis()->SetTitleSize(0.05);
 	hist->GetXaxis()->SetTitleOffset(1.00);
@@ -202,7 +202,7 @@ void RestylePlot(TPad * pad, Int_t pos){
       }
       if(hist->GetMarkerColor()==kAzure-2) {
 	maxY[1] = hist->GetBinContent(hist->GetMaximumBin());
-	hist->SetMarkerSize(hist->GetMarkerSize()+0.4);	
+	hist->SetMarkerSize(hist->GetMarkerSize()+0.75);	
 	hist->SetLineColor(kAzure-2);
 	hist->SetLineWidth(1);		
 	nextMeson=2;
@@ -211,7 +211,7 @@ void RestylePlot(TPad * pad, Int_t pos){
       }
       if(hist->GetMarkerColor()==kGreen+3) {
 	maxY[2] = hist->GetBinContent(hist->GetMaximumBin());
-	hist->SetMarkerSize(hist->GetMarkerSize()+0.3);	
+	hist->SetMarkerSize(hist->GetMarkerSize()+0.55);	
 	hist->SetLineColor(kGreen+3);
 	hist->SetLineWidth(1);			
 	nextMeson=3;
