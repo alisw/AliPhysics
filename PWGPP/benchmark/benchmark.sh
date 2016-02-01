@@ -464,6 +464,10 @@ goCPass()
         [[ -f CalibObjects.root ]] && echo "calibfile $outputDir/CalibObjects.root" >> $doneFileTmp  # new name of AliESDfriends_v1.root
         [[ -f AliESDs.root ]] && echo "esd $outputDir/AliESDs.root" >> $doneFileTmp
       fi
+      #report syswatch logs
+      reportDoneFile syswatchRec syswatch_rec.log ${outputDir} >> $doneFileTmp
+      reportDoneFile syswatchCalib syswatch.log ${outputDir} >> $doneFileTmp
+
       # End of CPass0 validation.
     ;;
 
@@ -491,12 +495,16 @@ goCPass()
           [[ -f FilterEvents_Trees.root ]] && echo "filteredTree $outputDir/FilterEvents_Trees.root" >> $doneFileTmp
         fi
       fi
+      #report syswatch logs
+      reportDoneFile syswatchRec syswatch_rec_Outer.log ${outputDir} >> $doneFileTmp
+      reportDoneFile syswatchRec syswatch_rec_Barrel.log ${outputDir} >> $doneFileTmp
+      reportDoneFile syswatchCalib syswatch_calib.log ${outputDir} >> $doneFileTmp
       # End of CPass1 validation.
     ;;
 
   esac
   echo "dir $outputDir" >> $doneFileTmp
-
+  
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
     echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
@@ -543,6 +551,8 @@ goMergeCPass()
   if [[ $cpass == 1 ]]; then
     qaFilesToMerge=$1
     filteredFilesToMerge=$2
+    syslogsRecToMerge=""
+    syslogsCalibToMerge=""
     shift 2
   fi
 
@@ -558,7 +568,9 @@ goMergeCPass()
   # versions.
   for remoteList in $calibrationFilesToMerge \
                     $qaFilesToMerge \
-                    $filteredFilesToMerge; do
+                    $filteredFilesToMerge \
+                    $syslogsRecToMerge \
+                    $syslogsCalibToMerge; do
     localList=local.${remoteList}
     rm -f "$localList" && touch "$localList"
     while read sourceFile; do
@@ -570,6 +582,8 @@ goMergeCPass()
   # Subsequent calls will use the local.* version of those files.
   calibrationFilesToMerge=local.${calibrationFilesToMerge}
   filteredFilesToMerge=local.${filteredFilesToMerge}
+  syslogsRecToMerge=local.${syslogsRecToMerge}
+  syslogsCalibToMerge=local.${syslogsCalibToMerge}
 
   if [[ "$qaFilesToMerge" != '' ]]; then
     qaFilesToMerge=local.${qaFilesToMerge}
@@ -767,6 +781,10 @@ goMergeCPass()
 
   listDir "$batchWorkingDirectory" "after tarball creation in MergeCPass${cpass}"
 
+  #merge the syslogs
+  [[ -f $syslogsRecToMerge ]] && mergeSysLogs syswatch.rec.tree @${syslogsRecToMerge}
+  [[ -f $syslogsCalibToMerge ]] && mergeSysLogs syswatch.calib.tree @${syslogsCalibToMerge}
+
   # Copy all to output dir. Preserve dir structure. stdout will be copied later.
   while read cpdir; do
     copyFileToRemote $cpdir/!(stdout) $outputDir/$cpdir
@@ -797,6 +815,8 @@ goMergeCPass()
       && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> $doneFileTmp
   fi
   echo "dir $outputDir" >> $doneFileTmp
+  reportDoneFile syswatchRec syswatch.rec.tree ${outputDir} >> $doneFileTmp
+  reportDoneFile syswatchCalib syswatch.calib.tree ${outputDir} >> $doneFileTmp
 
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
