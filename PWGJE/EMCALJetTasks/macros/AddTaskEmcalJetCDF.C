@@ -19,7 +19,7 @@
 /// \param Int_t leadhadtype ; 0 = charged, 1 = neutral, 2 = both
 /// \param const char *taskname
 /// \return AliAnalysisTaskEmcalJetCDF* task
-AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
+AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
@@ -30,7 +30,7 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
   Double_t    jetareacut         = 0.001,
   const char *type               = "TPC",      // EMCAL, TPC
   Int_t       leadhadtype        = 0,          // AliJetContainer :: Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
-  const char *taskname           = "JetCDF"
+  const char *taskname           = "CDF"
 //   Int_t       nCentBins          = 1,
 )
   {
@@ -65,7 +65,7 @@ AliAnalysisTaskEmcalJetCDF *AddTaskEmcalJetCDF (
   if ( !rho.IsNull() )     { name += "_" + rho; }
   if ( !acctype.IsNull() ) { name += "_" + acctype; }
 
-  AliAnalysisTaskEmcalJetCDF *jetTask = new AliAnalysisTaskEmcalJetCDF ( name );
+  AliAnalysisTaskEmcalJetCDF* jetTask = new AliAnalysisTaskEmcalJetCDF ( name );
   jetTask->SetCentRange ( 0., 100. );
   jetTask->SetNCentBins ( 1 );
 
