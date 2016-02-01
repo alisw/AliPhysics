@@ -734,7 +734,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     
     _min_vertexZ       = _vertexZMin;
     _max_vertexZ       = _vertexZMax;
-    _width_vertexZ     = 0.1;
+    _width_vertexZ     = 0.5;
     _nBins_vertexZ     = int( 0.5 + ( _max_vertexZ - _min_vertexZ) / _width_vertexZ );
     _nBins_pt_1        = int( 0.5 + ( _max_pt_1 -_min_pt_1 ) / _width_pt_1 );
     _nBins_eta_1       = int( 0.5 + ( _max_eta_1-_min_eta_1 ) / _width_eta_1 );
@@ -962,7 +962,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "m4"; _m4      = createHisto1D(name,name,_nBins_M4, _min_M4, _max_M4, _title_m4, _title_counts);
     name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
     name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
-    name = "zV"; _vertexZ = createHisto1D(name,name,200, -10, 10, "z-Vertex (cm)", _title_counts);
+    name = "zV"; _vertexZ = createHisto1D(name,name,40, -10, 10, "z-Vertex (cm)", _title_counts);
 
     
     name = "etadis_pion_AliHelperPID";          _etadis_pion_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
@@ -1220,8 +1220,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
         
         
         if ( centrality < _centralityMin ||
-            centrality > _centralityMax ||
-            fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
+	     centrality > _centralityMax )
+	     // || fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
         {
             return;
         }
@@ -1244,8 +1244,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     vertexY = vertex->GetY();
                     vertexZ = vertex->GetZ();
                     
-                    //if(TMath::Abs(vertexZ) > 10)
-		    if(TMath::Abs(vertexZ) > 6)
+                    if(TMath::Abs(vertexZ) > 10)
+		    //if(TMath::Abs(vertexZ) > 6)
                     {
                         return;
                     } // Z-Vertex Cut

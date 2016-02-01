@@ -1,19 +1,19 @@
-// Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
-// Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
-//           system:  0: PbPb                 1: pPb
-//      singlesOnly:  0: full correlations    1: singles only
-//       useWeights:  0: no                   1: yes
-// centralityMethod:  3: track count  4: V0 centrality  7: V0A centrality for pPb
-//        chargeSet:  0: ++    1: +-    2: -+    3: --
+//  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
+//  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
+//
+//   PbPb: centralityMethod=4 (V0),   trigger=kFALSE (AliVEvent::kMB).
+//   pPb:  centralityMethod=7 (V0A),  trigger=kTRUE (AliVEvent::kINT7).     
+//   pp:   centralityMethod=???       trigger=??? (AliVEvent::???)
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
-(int    system                  = 0,
- int    singlesOnly             = 0,
- int    useWeights              = 0,
+(
+ int    CentralityGroup         = 1, // 1: 1st group; 2: 2nd group.  Diff Cent Groups dealing w/ memory limit
+ int    singlesOnly             = 1, // 0: full correlations    1: singles only
+ int    useWeights              = 0, // 0: no                   1: yes
  int    useRapidity             = 1,
- int    centralityMethod        = 4,
- int    chargeSet               = 1,
+ int    centralityMethod        = 7, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
+ int    chargeSet               = 1, // 0: ++    1: +-    2: -+    3: --
  double zMin                    = -10.,
  double zMax                    =  10.,
  int    trackFilterBit          = 1, // Global tracks =1; TPConly = 128; Hybrid = 272.
@@ -26,9 +26,9 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  4,
- Bool_t trigger                 = kFALSE,
- int particleID                 = 1, // pion=0, kaon=1, proton=2
+ int nCentrality                =  1,
+ Bool_t trigger                 = kTRUE,
+ int particleID                 = 0, // Pion=0, Kaon=1, Proton=2
  double nSigmaCut               = 3.0,
  int pidType                    = 2, // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
  Bool_t requestTOFPID           = 1,
@@ -45,40 +45,37 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
     
-  //int    nCentrality;
   double minCentrality[10];
   double maxCentrality[10];
     
-  if (system==0) // PbPb
+  if ( particleID == 0 ) // Pion
     {
-      if (centralityMethod == 4)
+      if ( CentralityGroup == 1 )
         {
-	  minCentrality[0] = 0.0;    maxCentrality[0]  = 20.0;
-	  minCentrality[1] = 20.0;   maxCentrality[1]  = 40.;
-	  minCentrality[2] = 40.0;   maxCentrality[2]  = 60.;
-	  minCentrality[3] = 60.0;   maxCentrality[3]  = 80.;
+	  minCentrality[0] = 0;       maxCentrality[0]  = 5.;
+	  minCentrality[1] = 5.;      maxCentrality[1]  = 10.;
+	  minCentrality[2] = 10.;     maxCentrality[2]  = 20.;
+	  minCentrality[3] = 20.;     maxCentrality[3]  = 30.;
+	  minCentrality[4] = 30.;     maxCentrality[4]  = 40.;
         }
-      else
-        {
-	  return 0;
-        }
+      else if ( CentralityGroup == 2 )
+	{
+	  minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
+	  minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
+	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
+	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
+	}
     }
-  else if (system==1) // PbPb  //splited to take care of memory problem
+  else if ( particleID == 1 ) // Kaon
     {
-      if (centralityMethod == 4)
-        {
-	  //minCentrality[0] = 30.0;   maxCentrality[0]  = 40.0;
-	  //minCentrality[1] = 50.0;   maxCentrality[1]  = 60.0;
-	  //minCentrality[2] = 70.0;   maxCentrality[2]  = 80.0;
-            
-	  minCentrality[0] = 10.0;   maxCentrality[0]  = 20.0;
-	  minCentrality[1] = 40.0;   maxCentrality[1]  = 50.0;
-	  minCentrality[2] = 60.0;   maxCentrality[2]  = 70.0;
-        }
-      else
-        {
-	  return 0;
-        }
+	  minCentrality[0] = 0.;      maxCentrality[0]  = 26.7;
+	  minCentrality[1] = 26.7;    maxCentrality[1]  = 53.4;
+	  minCentrality[2] = 53.4;    maxCentrality[2]  = 80.;
+    }
+  else if ( particleID == 2 ) // Proton
+    {
+	  minCentrality[0] = 0.;      maxCentrality[0]  = 40.;
+	  minCentrality[1] = 40.;     maxCentrality[1]  = 80.;
     }
   else
     {
@@ -172,8 +169,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       baseName     +=  "_";
       baseName     +=  particleID;
       listName     =   baseName;
-      taskName     =   baseName;
-        
+      taskName     =   baseName;        
         
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
@@ -282,8 +278,8 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 
       task->SetHelperPID( helperpid );
   
-      if(trigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
-      else task->SelectCollisionCandidates(AliVEvent::kMB);
+      if(trigger) task -> SelectCollisionCandidates(AliVEvent::kINT7); //pPb
+      else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb
         
       cout << "Creating task output container" << endl;
         
@@ -291,7 +287,6 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
 							     Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname));
-
 
       cout << "Add task to analysis manager and connect it to input and output containers" << endl;
         
