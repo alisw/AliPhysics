@@ -215,6 +215,8 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
       }
     }
   }
+  
+  for(Int_t i = 0; i < 7; i++) fhEtaPhiLam0BinPtBin[i] = 0 ;
  
   // Initialize parameters
   InitParameters();
@@ -729,6 +731,21 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
       {
         fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight());
       }
+    }
+    
+    if(lambda0 >=0.3 && lambda0 <= 0.4)
+    {
+      Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
+      Int_t ptbin = -1;
+      for(Int_t ipt = 0; ipt < 7; ipt++)  
+      {
+        if( pt >= ptLimit[ipt] && pt < ptLimit[ipt+1]  )
+        {
+          ptbin = ipt;
+          break;
+        }
+      }
+      if(ptbin >= 0) fhEtaPhiLam0BinPtBin[ptbin]->Fill(eta,phi);
     }
     //printf("Cluster %d, E %2.2f, sm %d, eta %2.2f, phi %2.2f ---> region %d %d\n",cluster->GetID(),cluster->E(),GetModuleNumber(cluster),eta,RadToDeg(phi),etaRegion,phiRegion);
   }
@@ -1900,6 +1917,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         } // TRD
       } // iphi 
     } // ieta
+    
+    Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
+    for(Int_t ipt = 0; ipt < 7; ipt++)
+    {
+      fhEtaPhiLam0BinPtBin[ipt]  = new TH2F
+      (Form("hEtaPhiLam0BinPtBin%d",ipt),
+       Form("#eta vs #phi in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c} and #lambda^{2}_{0}=[0.3,0.4]",
+            ptLimit[ipt],ptLimit[ipt+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEtaPhiLam0BinPtBin[ipt]->SetYTitle("#phi (rad)");
+      fhEtaPhiLam0BinPtBin[ipt]->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhiLam0BinPtBin[ipt]) ;
+    }
   } // regions in EMCal
 
   
