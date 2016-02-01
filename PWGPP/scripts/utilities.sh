@@ -965,6 +965,16 @@ reformatXMLCollection()
   done
 }
 
+reportDoneFile()
+{
+  #print a report on a file if exists
+  #args: tag filename directory
+  local tag=$1
+  local file=$2
+  local dir=$3
+  [[ -r $file ]] && echo "$tag ${dir}/${file}"
+}
+
 #this makes debugging easier:
 #executes the command given as an argument in this environment
 #use case:
