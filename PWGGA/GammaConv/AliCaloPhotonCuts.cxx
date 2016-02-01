@@ -422,7 +422,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistograms->Add(fHistAcceptanceCuts);
 
   // Cluster Cuts
-  fHistClusterIdentificationCuts =new TH1F(Form("ClusterQualityCuts %s",GetCutNumber().Data()),"ClusterQualityCuts",11,-0.5,10.5);
+  fHistClusterIdentificationCuts =new TH2F(Form("ClusterQualityCuts vs E %s",GetCutNumber().Data()),"ClusterQualityCuts",11,-0.5,10.5,500,0,100);
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(2,"timing");
   fHistClusterIdentificationCuts->GetXaxis()->SetBinLabel(3,"track matching");
@@ -920,7 +920,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   
   Int_t cutIndex = 0;
-  if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);
+  if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex,cluster->E());
   cutIndex++;
 
 //   Double_t minR = 999.0;
@@ -988,7 +988,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // Check wether timing is ok
   if (fUseTimeDiff){
     if( (cluster->GetTOF() < fMinTimeDiff || cluster->GetTOF() > fMaxTimeDiff) && !(isMC>0)){
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//1
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
       return kFALSE;
     }
   }  
@@ -1023,20 +1023,20 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 //         //cout << dr << endl;
 //         if(dr2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
 //     //        if(dphi < fMinDistTrackToCluster || deta < fMinDistTrackToCluster){
-//         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//2
+//         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
 //         return kFALSE;
 //         }
 //         
 //       }//loop over tracks
 //     }
 // //    if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
-// //      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//2
+// //      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
 // //      return kFALSE;
 // //    }
 //   }
   if (fIsPureCalo>0 && fVectorMatchedClusterIDs.size()>0){
     if( CheckClusterForTrackMatch(cluster) ){
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//2
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       return kFALSE;
     }
   }
@@ -1044,7 +1044,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   // exotic cell cut --IMPLEMENT LATER---
 //   if(!AcceptanceCuts(photon)){
-//     if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//3
+//     if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//3
 //     return kFALSE;
 //   }
   cutIndex++;//4, next cut
@@ -1052,7 +1052,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // minimum cell energy cut
   if (fUseMinEnergy){
     if(cluster->E() < fMinEnergy){
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//4
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//4
       return kFALSE;
     }
   }  
@@ -1061,7 +1061,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // minimum number of cells
   if (fUseNCells){
     if(cluster->GetNCells() < fMinNCells) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//5
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
       return kFALSE;
     }
   }  
@@ -1070,7 +1070,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // NLM cut
   if (fUseNLM){
     if( nLM < fMinNLM || nLM > fMaxNLM ) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//9
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//9
       return kFALSE;
     }
   }  
@@ -1080,13 +1080,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // M02 cut
   if (fUseM02 == 1){
     if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 ) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//6
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//6
       return kFALSE;
     }
   } else if (fUseM02 ==2 ) {
     if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) || 
       cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) ) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//6
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//6
       return kFALSE;
     }
   }
@@ -1095,7 +1095,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // M20 cut
   if (fUseM20){
     if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 ) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//7
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//7
       return kFALSE;
     }
   }  
@@ -1104,7 +1104,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // dispersion cut
   if (fUseDispersion){
     if( cluster->GetDispersion()> fMaxDispersion) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//8
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//8
       return kFALSE;
     }
   }  
@@ -1112,7 +1112,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   
   
   // DONE with selecting photons
-  if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//10
+  if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//10
 
   // Histos after Cuts
   Float_t clusPos[3]={0,0,0};
