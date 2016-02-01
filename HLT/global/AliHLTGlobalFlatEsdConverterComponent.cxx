@@ -860,7 +860,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
 	int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
 	
-	if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
+	if(iSlice<0 || iSlice>35 || iPartition<0 || iPartition>5){
 	  HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
 	  continue;
 	}
