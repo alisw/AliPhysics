@@ -27,6 +27,7 @@
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskADCalib.h"
+#include "ADESDFriendUtils.h"
 
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
@@ -43,7 +44,7 @@ ClassImp(AliAnalysisTaskADCalib);
 
 AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
   : AliAnalysisTaskSE(name)
-  , fCalibData(NULL)
+  , fADESDFriendUtils(NULL)
   , fList(NULL)
   , fStatus(kOk) {
   fBCRangeTail[0] = 14;
@@ -59,6 +60,9 @@ AliAnalysisTaskADCalib::~AliAnalysisTaskADCalib() {
   if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() == AliAnalysisManager::kProofAnalysis) {
     delete fList;
     fList = NULL;
+
+    delete fADESDFriendUtils;
+    fADESDFriendUtils = NULL;
   }
 }
 
@@ -93,29 +97,11 @@ TString AliAnalysisTaskADCalib::GetHistTitle(Int_t  ch, // offline channel,
 }
 
 void AliAnalysisTaskADCalib::NotifyRun() {
-  // (1) set up the OCDB
-  AliCDBManager *man = AliCDBManager::Instance();
-  if (NULL == man) {
-    AliFatal("CDB manager not found");
+  if (NULL == fADESDFriendUtils) {
+    AliFatal("NULL == fADESDFriendUtils");
     return;
   }
-
-  if (!man->IsDefaultStorageSet())
-    man->SetDefaultStorage("raw://");
-
-  man->SetRun(fCurrentRunNumber);
-
-  // (2) Get the AD calibration data OCDB object (pedestals)
-  AliCDBEntry *entry = man->Get("AD/Calib/Data");
-  if (NULL == entry) {
-    AliFatal("AD/Calib/Data not found");
-    return;
-  }
-  fCalibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
-  if (NULL == fCalibData) {
-    AliFatal("No calibration data from calibration database");
-    return;
-  }
+  fADESDFriendUtils->Init(fCurrentRunNumber);
 }
 
 void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
@@ -138,6 +124,10 @@ void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
       }
     }
   }
+
+  // (3) set up AD ESD friend helper object
+  fADESDFriendUtils = new ADESDFriendUtils;
+
   PostData(1, fList);
 }
 
@@ -164,35 +154,23 @@ void AliAnalysisTaskADCalib::UserExec(Option_t* ) {
     return;
   }
 
+  fADESDFriendUtils->Update(esdADfriend);
+
   TH2 *h = NULL;
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
-    // (1) compute pedestal subtracted ADC values per BC
-    Float_t adcPedSub[21] = { };
-    for (Int_t bc=0; bc<21; ++bc) {
-      adcPedSub[bc]  = Float_t(esdADfriend->GetPedestal(ch, bc));
-      adcPedSub[bc] -= fCalibData->GetPedestal(ch + 16*esdADfriend->GetIntegratorFlag(ch, bc));
-    }
-
-    // (2) reject events with secondary peaks in the charge time series
-    const Float_t threshold = 20.0f;
-    Bool_t isPileUp = kFALSE;
-    for (Int_t bc=13; bc<20 && !isPileUp; ++bc)  
-      isPileUp |= (adcPedSub[bc+1] > adcPedSub[bc] + threshold);
-    
-    if (isPileUp)
+    if (fADESDFriendUtils->IsPileUp(ch))
       continue;
-
+    
     // (3) compute the charge in the tail
     Float_t tail = 0.0f;
-    for (Int_t bc=fBCRangeTail[0], n=fBCRangeTail[1]; bc<=n; ++bc) {
-      tail += adcPedSub[bc];
-    }
+    for (Int_t bc=fBCRangeTail[0], n=fBCRangeTail[1]; bc<=n; ++bc)
+      tail += fADESDFriendUtils->GetADCPedSub(ch, bc);
 
     // (4) fill histograms with charge in BC vs. charge in the tail
     for (Int_t bc=fBCRangeExtrapolation[0], n=fBCRangeExtrapolation[1]; bc<=n; ++bc) {
       const Bool_t  integratorFlag = esdADfriend->GetIntegratorFlag(ch, bc);
       const TString histName = GetHistName(ch, bc, integratorFlag);
-      const Bool_t  ok = FillHist(histName, tail, adcPedSub[bc]);
+      const Bool_t  ok = FillHist(histName, tail, fADESDFriendUtils->GetADCPedSub(ch, bc));
       if (!ok)
 	AliError(Form("FillHist failed for %s", histName.Data()));
     }

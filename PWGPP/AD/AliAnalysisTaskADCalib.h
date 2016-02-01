@@ -11,8 +11,8 @@ class TList;
 class TTree;
 class TH2;
 class TF1;
-class AliADCalibData;
 class AliCDBStorage;
+class ADESDFriendUtils;
 
 #include <TString.h>
 
@@ -57,8 +57,8 @@ private:
   Int_t fBCRangeTail[2];          // BC range for tail charge
   Int_t fBCRangeExtrapolation[2]; // BC range for extrapolated BCs
 
-  AliADCalibData *fCalibData; //! pedestals from OCDB
-  TList          *fList;      //! output histograms
+  ADESDFriendUtils *fADESDFriendUtils; //! AD ESD friend helper 
+  TList            *fList;             //! output histograms
 
   enum EStatusCode_t {
     kOk,
@@ -70,5 +70,5 @@ private:
   } ;
   Int_t fStatus; //! calibration status (after ProcessOutput)
 
-  ClassDef(AliAnalysisTaskADCalib, 1);
+  ClassDef(AliAnalysisTaskADCalib, 2);
 } ;
