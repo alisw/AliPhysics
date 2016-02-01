@@ -551,8 +551,6 @@ goMergeCPass()
   if [[ $cpass == 1 ]]; then
     qaFilesToMerge=$1
     filteredFilesToMerge=$2
-    syslogsRecToMerge=""
-    syslogsCalibToMerge=""
     shift 2
   fi
 
@@ -1027,12 +1025,26 @@ goGenerateMakeflow()
     echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_outputs[*]}"
     echo ; echo
 
+    #CPass0 list of rec syslogs to merge
+    arr_cpass0_rec_syswatch_list[${runNumber}]="cpass0.syswatch.rec.run${runNumber}.list"
+    echo "### Produces the list of CPass0 files to merge (executes locally) ###"
+    echo "${arr_cpass0_rec_syswatch_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass0_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues syswatchRec ${arr_cpass0_rec_syswatch_list[${runNumber}]} ${arr_cpass0_outputs[*]}"
+    echo ; echo
+
+    #CPass0 list of calib syslogs to merge
+    arr_cpass0_calib_syswatch_list[${runNumber}]="cpass0.syswatch.calib.run${runNumber}.list"
+    echo "### Produces the list of CPass0 files to merge (executes locally) ###"
+    echo "${arr_cpass0_calib_syswatch_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass0_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues syswatchCalib ${arr_cpass0_calib_syswatch_list[${runNumber}]} ${arr_cpass0_outputs[*]}"
+    echo ; echo
+
     #CPass0 merging
     echo "### Merges CPass0 files ###"
     #arr_cpass0_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
     arr_cpass0_merged[${runNumber}]="merge.cpass0.run${runNumber}.done"
-    echo "${arr_cpass0_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} ${extraOpts[@]}"" "
+    echo "${arr_cpass0_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_rec_syswatch_list[${runNumber}]} ${arr_cpass0_calib_syswatch_list[${runNumber}]} ${copyFiles[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} syslogsRecToMerge=${arr_cpass0_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass0_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
     # CPass1 list of QA files.
@@ -1056,12 +1068,26 @@ goGenerateMakeflow()
     echo -e "\tLOCAL ./benchmark.sh PrintValues filteredTree ${arr_cpass1_filtered_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
+    #CPass1 list of rec syslogs to merge
+    arr_cpass1_rec_syswatch_list[${runNumber}]="cpass1.syswatch.rec.run${runNumber}.list"
+    echo "### Produces the list of CPass1 files to merge (executes locally) ###"
+    echo "${arr_cpass1_rec_syswatch_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues syswatchRec ${arr_cpass1_rec_syswatch_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
+    echo ; echo
+
+    #CPass1 list of calib syslogs to merge
+    arr_cpass1_calib_syswatch_list[${runNumber}]="cpass1.syswatch.calib.run${runNumber}.list"
+    echo "### Produces the list of CPass1 files to merge (executes locally) ###"
+    echo "${arr_cpass1_calib_syswatch_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass1_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues syswatchCalib ${arr_cpass1_calib_syswatch_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
+    echo ; echo
+
     #CPass1 merging
     #arr_cpass1_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
     arr_cpass1_merged[${runNumber}]="merge.cpass1.run${runNumber}.done"
     echo "### Merges CPass1 files ###"
     echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass1_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass1_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
     #CPass0 wrapped in a profiling tool (valgrind,....)
