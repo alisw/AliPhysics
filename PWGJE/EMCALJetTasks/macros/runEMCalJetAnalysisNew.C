@@ -156,7 +156,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     Float_t  fCellThresh     = 0.05;     // 50 MeV
     UInt_t   iClusterizer    = AliEMCALRecParam::kClusterizerv2;
     Bool_t   bTrackMatch     = kFALSE;
-    Bool_t   bUpdateCellOnly = kFALSE;
+    Bool_t   bUpdateCellOnly = kTRUE;
     Float_t  fEMCtimeMin     = -50e-6;
     Float_t  fEMCtimeMax     =  50e-6;
     Float_t  fEMCtimeCut     =  1e6;
