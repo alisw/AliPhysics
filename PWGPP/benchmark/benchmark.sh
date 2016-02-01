@@ -354,7 +354,8 @@ goCPass()
       if [[ -n "$pretend" ]]; then
         echo "Pretending to run: $runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
         sleep $pretendDelay
-        for fakeOutput in AliESDs.root AliESDfriends.root CalibObjects.root rec.log calib.log; do
+        for fakeOutput in AliESDs.root AliESDfriends.root CalibObjects.root rec.log calib.log \
+            syswatch.log syswatch_rec.log; do
           touch $fakeOutput
         done
       else
@@ -410,6 +411,7 @@ goCPass()
                           QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root \
                           AliESDs_Outer.root AliESDfriends_Outer.root QAresults_outer.root \
                           EventStat_temp_outer.root rec.log calib.log qa.log filtering.log \
+                          syswatch_rec_Barrel.log syswatch_rec_Outer.log syswatch_calib.log \
                           FilterEvents_Trees.root ; do
           touch $fakeOutput
         done
