@@ -205,19 +205,19 @@ Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDat
       CombineTRUSTUDigit(tmpdigit, fTRURawDigitBuffer[fRawIndexesTRU[indcounter]], fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]);
       ConvertRawDigit(outputdata, &tmpdigit, col, row);
       outputsize += sizeof(AliHLTCaloTriggerDataStruct);
-      availableSize += sizeof(AliHLTCaloTriggerDataStruct);
+      availableSize -= sizeof(AliHLTCaloTriggerDataStruct);
       outputdata++;
       ntriggers++;
     } else if(fRawIndexesTRU[indcounter] >= 0){
       ConvertRawDigit(outputdata, &(fTRURawDigitBuffer[fRawIndexesTRU[indcounter]]), col, row);
       outputsize += sizeof(AliHLTCaloTriggerDataStruct);
-      availableSize += sizeof(AliHLTCaloTriggerDataStruct);
+      availableSize -= sizeof(AliHLTCaloTriggerDataStruct);
       outputdata++;
       ntriggers++;
     } else if(fRawIndexesSTU[indcounter] >= 0){
       ConvertRawDigit(outputdata, &(fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]), col, row);
       outputsize += sizeof(AliHLTCaloTriggerDataStruct);
-      availableSize += sizeof(AliHLTCaloTriggerDataStruct);
+      availableSize -= sizeof(AliHLTCaloTriggerDataStruct);
       outputdata++;
       ntriggers++;
     }
