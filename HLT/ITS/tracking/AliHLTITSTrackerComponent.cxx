@@ -559,7 +559,7 @@ int AliHLTITSTrackerComponent::DoEvent
       if( t.GetLabel()<0 ) continue;
       int id =  tracksTPCId[t.TPCtrackId()];
       
-      if ( blockSize + sizeof(AliHLTTrackMCLabel) > maxBufferSize ) {
+      if ( size + blockSize + sizeof(AliHLTTrackMCLabel) > maxBufferSize ) {
 	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d mc labels are not stored", maxBufferSize, blockSize, nTracks - itr + 1 );
 	iResult = -ENOSPC;
 	break;
