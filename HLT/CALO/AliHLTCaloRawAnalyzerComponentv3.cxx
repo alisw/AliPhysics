@@ -214,6 +214,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 
   Int_t blockSize          = -1;
   UInt_t totSize           = 0;
+  UInt_t returnSize        = 0;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
@@ -237,19 +238,27 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
     }
 
     blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
-    //totSize += blockSize; //Keeping track of the used size
-    AliHLTComponentBlockData bdChannelData;
-    FillBlockData( bdChannelData );
-    bdChannelData.fOffset = totSize - blockSize; //FIXME
-    bdChannelData.fSize = blockSize;
-    bdChannelData.fDataType = GetOutputDataType();
-    bdChannelData.fSpecification = iter->fSpecification;
-    outputBlocks.push_back(bdChannelData);
-    outputPtr += blockSize; //Updating position of the output buffer
+    if (blockSize > 0)
+    {
+      //totSize += blockSize; //Keeping track of the used size
+      AliHLTComponentBlockData bdChannelData;
+      FillBlockData( bdChannelData );
+      bdChannelData.fOffset = totSize - blockSize; //FIXME
+      bdChannelData.fSize = blockSize;
+      bdChannelData.fDataType = GetOutputDataType();
+      bdChannelData.fSpecification = iter->fSpecification;
+      outputBlocks.push_back(bdChannelData);
+      outputPtr += blockSize; //Updating position of the output buffer
+      returnSize = totSize;
+    }
+    else
+    {
+      break;
+    }
   }
 
   fCaloEventCount++; 
-  size = totSize; //telling the framework how much buffer space we have used.
+  size = returnSize; //telling the framework how much buffer space we have used.
 
   return 0;
 
@@ -269,6 +278,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
   AliHLTCaloChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(outputPtr); 
   AliHLTCaloChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(outputPtr+sizeof(AliHLTCaloChannelDataHeaderStruct)); 
   totSize += sizeof( AliHLTCaloChannelDataHeaderStruct );
+  if(totSize > size)
+  {
+    HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+    return -1;
+  }
   AliRawReaderMemory rawReaderMemoryPtr;
   rawReaderMemoryPtr.SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
   rawReaderMemoryPtr.SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
