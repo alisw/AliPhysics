@@ -156,7 +156,10 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
 
   if (iResult>=0) {
     size=offset;
-    if (clusterBlocks.size()>0 && !CheckMode(kRegisterClusterBlocks)) {
+    if ( clusterBlocks.size()>0 && CheckMode(kPublishClustersAll) ) { // write out cluster blocks with proper data type
+      for (AliHLTComponentBlockDataList::iterator bd=clusterBlocks.begin(); bd!=clusterBlocks.end(); bd++) {
+	bd->fDataType = (AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC );
+      }
       outputBlocks.insert(outputBlocks.begin(), clusterBlocks.begin(), clusterBlocks.end());
     }
   }
