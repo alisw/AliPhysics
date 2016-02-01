@@ -2203,22 +2203,23 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   Double_t centralityZNA = -1;
 
   //centrality 2015 only C0M, CL0, CL1 supported at the moment 18.01.2016
-  AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(event)->FindListObject("MultSelection");
-  if(MultSelection){
-    centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-    centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    
-  }else{
-    printf("did not find AliMultSelection!");
+  if(Req(kCentrality) || Req(kCentralitySPD)){
+    AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(event)->FindListObject("MultSelection");
+    if(MultSelection){
+      centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+      centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE); 
+    }
+    else
+      printf("did not find AliMultSelection!"); 
   }
-  AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
-
-  //  if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
-  // if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
-  if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
-  if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
-  if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
-  
+  if(Req(kCentralityV0A) || Req(kCentralityV0C) ||Req(kCentralityZNA)){
+    AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
+    //if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
+    //if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+    if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
+    if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
+    if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
+  }
   // Fill AliESDEvent interface specific information
   const AliESDVertex *primVtx = event->GetPrimaryVertex();
   values[AliDielectronVarManager::kXRes]       = primVtx->GetXRes();
