@@ -676,7 +676,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   }while(0);  // End of filling flat ESD structure
 
-
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD event is not stored", maxOutputSize );
   } else {
@@ -689,7 +688,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     outputBlocks.push_back( outBlock );
     fBenchmark.AddOutput(outBlock.fSize);
     size += outBlock.fSize;
-			outsizeEvent = outBlock.fSize;
+    outsizeEvent = outBlock.fSize;
   }
   
 
@@ -831,8 +830,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       err = ( freeSpace < flatTrack->EstimateSize() );
       if( err ) break;
       new (flatTrack) AliFlatESDFriendTrack;
-      
-      freeSpace = freeSpaceTotal - flatFriend->GetSize();
       
       flatTrack->SetSkipBit( 0 );
       flatTrack->SetTrackParamTPCOut( tpcOutTrack );
