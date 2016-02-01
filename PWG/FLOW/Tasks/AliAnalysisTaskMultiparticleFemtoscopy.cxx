@@ -102,6 +102,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fCorrelationFunctionsList(NULL),
  fCorrelationFunctionsFlagsPro(NULL),
  fFillCorrelationFunctions(kFALSE),
+ fNormalizeCorrelationFunctions(kFALSE),
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
@@ -217,6 +218,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fCorrelationFunctionsList(NULL),
  fCorrelationFunctionsFlagsPro(NULL),
  fFillCorrelationFunctions(kFALSE),
+ fNormalizeCorrelationFunctions(kFALSE),
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
@@ -269,12 +271,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserCreateOutputObjects()
  // d) Book all objects;
  // e) Set all flags;
  // f) Trick to avoid name clashes, part 2.
-  
+
  // a) Insanity checks:
  this->InsanityChecksUserCreateOutputObjects();
 
  // b) Trick to avoid name clashes, part 1:
- Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
+ Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
  TH1::AddDirectory(kFALSE);
 
  // c) Book and nest all lists:
@@ -344,30 +346,52 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserExec(Option_t *)
 
 void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
 {
- // Accessing the merged output list.
+ // At the end of the day...
 
+ // a) Get pointer to the grandmother of all lists "fHistList";
+ // b) Get pointers to all objects in "fHistList";
+ // c) Normalize correlation functions;
+ // d) Dump the results.
+
+ // a) Get pointer to the grandmother of all lists:
  fHistList = (TList*)GetOutputData(1);
-
  if(!fHistList){exit(1);}
 
- // TBI normalization, sort out eventually:
- for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
- {
-  for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
-  {
-   if(fBackground[pid1][pid2]){fCorrelationFunctions[pid1][pid2]->Divide(fBackground[pid1][pid2]);}
-  }
- }
+ // b) Get pointers to all objects in "fHistList":
+ this->GetOutputHistograms(fHistList);
 
+ // c) Normalize correlation functions:
+ if(fNormalizeCorrelationFunctions){this->NormalizeCorrelationFunctions();}
+
+ // d) Dump the results:
  //TDirectoryFile *df = new TDirectoryFile("outputMPFanalysis","");
  //df->Add(fHistList);
-
  TFile *f = new TFile("AnalysisResults.root","RECREATE");
  fHistList->Write(fHistList->GetName(),TObject::kSingleKey);
 
  delete f;
 
 } // end of void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
+
+//================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::NormalizeCorrelationFunctions()
+{
+ // Normalize correlation functions with the background.
+
+ for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+ {
+  for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+  {
+   if(fCorrelationFunctions[pid1][pid2] && fCorrelationFunctions[pid1][pid2]->GetEntries() > 0 &&
+      fBackground[pid1][pid2] && fBackground[pid1][pid2]->GetEntries() > 0)
+   {
+    fCorrelationFunctions[pid1][pid2]->Divide(fBackground[pid1][pid2]);
+   } // if(..)
+  } // for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+ } // for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::NormalizeCorrelationFunctions()
 
 //================================================================================================================
 
@@ -922,7 +946,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::V0s(AliVEvent *ave)
    fPseudoRapV0Hist->Fill(aAODv0->PseudoRapV0());
    fPAHist->Fill(aAODv0->Alpha(),aAODv0->PtArmV0());
    // Check sharing:
- 
+
    fUniqueIDHistEBE->Fill(aAODv0->GetPosID());
    fUniqueIDHistEBE->Fill(aAODv0->GetNegID());
 
@@ -1381,7 +1405,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  //  c2) Identified particles;
  //  c3) V0s.
 
- // a) Book the profile holding all the flags for control histograms: TBI stil incomplete 
+ // a) Book the profile holding all the flags for control histograms: TBI stil incomplete
  fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",1,0,1);
  fControlHistogramsFlagsPro->SetTickLength(-0.01,"Y");
  fControlHistogramsFlagsPro->SetMarkerStyle(25);
@@ -1706,7 +1730,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  // b) Book all correlation functions.
 
  // a) Book the profile holding all the flags for correlation functions objects:
- fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",1,0,1);
+ fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",2,0,2);
  fCorrelationFunctionsFlagsPro->SetTickLength(-0.01,"Y");
  fCorrelationFunctionsFlagsPro->SetMarkerStyle(25);
  fCorrelationFunctionsFlagsPro->SetLabelSize(0.04);
@@ -1715,6 +1739,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  fCorrelationFunctionsFlagsPro->SetFillColor(kGray);
  fCorrelationFunctionsFlagsPro->SetLineColor(kBlack);
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(1,"fFillCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(0.5,fFillCorrelationFunctions);
+ fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(2,"fNormalizeCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(1.5,fNormalizeCorrelationFunctions);
  fCorrelationFunctionsList->Add(fCorrelationFunctionsFlagsPro);
 
  if(!fFillCorrelationFunctions){return;} // TBI is this safe?
@@ -1748,7 +1773,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  // Book all the stuff for background objects.
 
  // a) Book the profile holding all the flags for background objects;
- // b) Book all histograms for background.
+ // b) Book all histograms for background;
+ // c) Book buffer objects.
 
  // a) Book the profile holding all the flags for correlation functions objects:
  fBackgroundFlagsPro = new TProfile("fBackgroundFlagsPro","Flags and settings for background histograms",1,0,1);
@@ -1784,6 +1810,13 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
 
+ // c) Book buffer objects:
+ // TBI not sure why I need this here again. Re-think...
+ for(Int_t me=0;me<2;me++) // [0] is buffer for 1st event; [1] for 2nd
+ {
+  fMixedEvents[me] = NULL;
+ }
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
 
 //=======================================================================================================================
@@ -1791,9 +1824,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
 void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, Int_t index)
 {
  // Filter out unique global tracks in AOD and store them in fGlobalTracksAOD[index].
- 
+
  // Remark 0: All global tracks have positive ID, the duplicated TPC-only tracks have -(ID+1);
- // Remark 1: The issue here is that there are apparently two sets of global tracks: a) "normal" and b) constrained to primary vertex. 
+ // Remark 1: The issue here is that there are apparently two sets of global tracks: a) "normal" and b) constrained to primary vertex.
  //           However, only the "normal" global tracks come with positive ID, additionally they can be discriminated simply via: aodTrack->IsGlobalConstrained()
  //           Global constrained tracks have the same negative ID as the TPC-only tracks, both associated with the same "normal global" tracks. E.g. we can have
  //            iTrack: atrack->GetID(): atrack->Pt() atrack->Eta() atrack->Phi()
@@ -1809,11 +1842,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, 
  // Remark 3: There is a performance penalty when fGlobalTracksAOD[1] and fGlobalTracksAOD[2] needed for mixed events are calculated.
  //           Yes, I can get them directly from fGlobalTracksAOD[0], without calling this method for them again. TBI today
 
- for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++) 
+ for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
  {
   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
   if(aodTrack)
-  { 
+  {
    Int_t id = aodTrack->GetID();
    //if(id>=0 && aodTrack->GetFilterMap()>0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this
    if(id>=0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this, it seems that id>=0 is just enough, the second constraint is most likely just an overkill
@@ -2330,13 +2363,129 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
 
  // d) Shift [1] -> [0]:
  // TBI re-think the lines below, there should be a better way...
- fMixedEvents[0] = NULL; // TBI most likely an overkill...
  fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
- fGlobalTracksAOD[1] = NULL; // TBI most likely an overkill...
  fGlobalTracksAOD[1] = (TExMap*)fGlobalTracksAOD[2]->Clone();
 
  // e) Clean [1]:
  fMixedEvents[1] = NULL;
- fGlobalTracksAOD[2]->Delete();
+ fGlobalTracksAOD[2]->Delete(); // TBI or = NULL ?
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList)
+{
+ // Get pointers for everything in the base list "fHistList".
+
+ // a) Get pointer for base list fHistList;
+ // b) Get pointer for profile holding internal flags and set again all flags TBI this profile is not implemented yet;
+ // *) TBI ...
+ // *) Get pointers for correlation functions;
+ // *) Get pointers for background.
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList)";
+
+ // a) Get pointer for base list fHistList and profile holding internal flags;
+ fHistList = histList;
+ if(!fHistList){Fatal(sMethodName.Data(),"fHistList is not around today...");}
+
+ // b) Get pointer for profile holding internal flags and set again all flags TBI this profile is not implemented yet
+ //fInternalFlagsPro = dynamic_cast<TProfile*>(fHistList->FindObject("fInternalFlagsPro")); TBI this was example from MPC
+ //if(!fInternalFlagsPro){Fatal(sMethodName.Data(),"fInternalFlagsPro");} TBI this was example from MPC
+
+ // *) TBI
+ //this->GetPointersFor...;
+
+ // *) Get pointers for correlation functions:
+ this->GetPointersForCorrelationFunctions();
+
+ // *) Get pointers for background:
+ this->GetPointersForBackground();
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions()
+{
+ // Get pointers for correlation functions.
+
+ // a) Get pointer for fCorrelationFunctionsList;
+ // b) Get pointer for fCorrelationFunctionsFlagsPro;
+ // c) Set again all flags;
+ // d) Get pointers for fCorrelationFunctions[10][10].
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions()";
+
+ // a) Get pointer for fCorrelationFunctionsList:
+ fCorrelationFunctionsList = dynamic_cast<TList*>(fHistList->FindObject("Correlation_Functions"));
+ if(!fCorrelationFunctionsList){Fatal(sMethodName.Data(),"fCorrelationFunctionsList");}
+
+ // b) Get pointer for fCorrelationFunctionsFlagsPro:
+ fCorrelationFunctionsFlagsPro = dynamic_cast<TProfile*>(fCorrelationFunctionsList->FindObject("fCorrelationFunctionsFlagsPro"));
+ if(!fCorrelationFunctionsFlagsPro){Fatal(sMethodName.Data(),"fCorrelationFunctionsFlagsPro");}
+
+ // c) Set again all flags:
+ fFillCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(1);
+ fNormalizeCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(2);
+
+ if(!fFillCorrelationFunctions){return;} // TBI is this safe enough
+
+ // d) Get pointers for fCorrelationFunctions[10][10]:
+ const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
+ TString sParticles[2*nParticleSpecies] = {"e^{+}","#mu^{+}","#pi^{+}","K^{+}","p^{+}","e^{-}","#mu^{-}","#pi^{-}","K^{-}","p^{-}"};
+ for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+ {
+  for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+  {
+   fCorrelationFunctions[pid1][pid2] = dynamic_cast<TH1F*>(fCorrelationFunctionsList->FindObject(Form("fCorrelationFunctions[%d][%d]",pid1,pid2)));
+   if(!fCorrelationFunctions[pid1][pid2]){Fatal(sMethodName.Data(),"fCorrelationFunctions[%d][%d]",pid1,pid2);}
+  } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
+ } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions()
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
+{
+ // Get pointers for background.
+
+ // a) Get pointer for fBackgroundList;
+ // b) Get pointer for fBackgroundFlagsPro;
+ // c) Set again all flags;
+ // d) Get pointers for fBackground[10][10].
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()";
+
+ // a) Get pointer for fBackgroundList:
+ fBackgroundList = dynamic_cast<TList*>(fHistList->FindObject("Background"));
+ if(!fBackgroundList){Fatal(sMethodName.Data(),"fBackgroundList");}
+
+ // b) Get pointer for fBackgroundFlagsPro:
+ fBackgroundFlagsPro = dynamic_cast<TProfile*>(fBackgroundList->FindObject("fBackgroundFlagsPro"));
+ if(!fBackgroundFlagsPro){Fatal(sMethodName.Data(),"fBackgroundFlagsPro");}
+
+ // c) Set again all flags:
+ fEstimateBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(1);
+
+ if(!fEstimateBackground){return;} // TBI is this safe enough
+
+ // d) Get pointers for fBackground[10][10]:
+ const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
+ TString sParticles[2*nParticleSpecies] = {"e^{+}","#mu^{+}","#pi^{+}","K^{+}","p^{+}","e^{-}","#mu^{-}","#pi^{-}","K^{-}","p^{-}"};
+ for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+ {
+  for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
+  {
+   fBackground[pid1][pid2] = dynamic_cast<TH1F*>(fBackgroundList->FindObject(Form("fBackground[%d][%d]",pid1,pid2)));
+   if(!fBackground[pid1][pid2]){Fatal(sMethodName.Data(),"fBackground[%d][%d]",pid1,pid2);}
+  } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
+ } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
+
+//=======================================================================================================================
+
+
