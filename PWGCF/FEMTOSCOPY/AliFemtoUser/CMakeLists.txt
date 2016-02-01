@@ -101,6 +101,7 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
   AliFemtoV0TrackCutNSigmaFilter.cxx
+  AliFemtoCutMonitorEventPartCollSize.cxx
 )
 
 # Headers from sources
