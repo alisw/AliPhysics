@@ -61,7 +61,6 @@ AliTLorentzVector::AliTLorentzVector(const TLorentzVector &lorentzvector) :
 //________________________________________________________________________
 AliTLorentzVector::~AliTLorentzVector()
 {
-  TLorentzVector::~TLorentzVector();
 }
 
 //________________________________________________________________________
