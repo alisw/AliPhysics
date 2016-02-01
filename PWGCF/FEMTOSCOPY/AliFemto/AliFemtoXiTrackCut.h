@@ -56,7 +56,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetMinvPurityAidHistoXi(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidXi=true
   TH1D* GetMinvPurityAidHistoXi();
   //--If initiated, fMinvPurityAidHistoXi will be in the output list after all other Xi cut monitors (pass and fail)
-  virtual TList *GetOutputList();  //include fMinvPurityAidHistoXi in the output list 
+  virtual TList *GetOutputList();  //include fMinvPurityAidHistoXi and fMinvPurityAidHistoV0 in the output list if they exist
 
  private:   // here are the quantities I want to cut on...
 
