@@ -91,6 +91,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistExtQA(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
+  fEMCALCaloUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
   fPHOSInitialized(kFALSE),
@@ -178,6 +179,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistDispersionAfterQA(NULL),
   fHistNLMBeforeQA(NULL),
   fHistNLMAfterQA(NULL),
+  fHistNLMAvsNLMBBeforeQA(NULL),
   fHistClusterEnergyvsMod(NULL),
   fHistNCellsBigger100MeVvsMod(NULL),
   fHistNCellsBigger1500MeVvsMod(NULL),
@@ -225,6 +227,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistExtQA(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
+  fEMCALCaloUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
   fPHOSInitialized(kFALSE),
@@ -310,6 +313,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistDispersionAfterQA(NULL),
   fHistNLMBeforeQA(NULL),
   fHistNLMAfterQA(NULL),
+  fHistNLMAvsNLMBBeforeQA(NULL),
   fHistNLMVsNCellsAfterQA(NULL),
   fHistNLMVsEAfterQA(NULL),
   fHistClusterEnergyvsMod(NULL),
@@ -525,6 +529,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistograms->Add(fHistNLMBeforeQA);
   fHistNLMAfterQA = new TH1F(Form("NLM_afterClusterQA %s",GetCutNumber().Data()),"NLM_afterClusterQA",10,0,10);
   fHistograms->Add(fHistNLMAfterQA);
+  fHistNLMAvsNLMBBeforeQA = new TH2F(Form("NLMAvsNLMB_beforeClusterQA %s",GetCutNumber().Data()),"NLMAvsNLMB_beforeClusterQA",10,0,10,10,0,10);
+  fHistograms->Add(fHistNLMAvsNLMBBeforeQA);
   fHistNLMVsNCellsAfterQA = new TH2F(Form("NLM_NCells_afterClusterQA %s",GetCutNumber().Data()),"NLM_NCells_afterClusterQA",10,0,10,50,0,50);
   fHistograms->Add(fHistNLMVsNCellsAfterQA);
   fHistNLMVsEAfterQA = new TH2F(Form("NLM_E_afterClusterQA %s",GetCutNumber().Data()),"NLM_E_afterClusterQA",10,0,10,500,0,50);
@@ -555,6 +561,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistDispersionAfterQA->Sumw2();
     fHistNLMBeforeQA->Sumw2();
     fHistNLMAfterQA->Sumw2();
+    fHistNLMAvsNLMBBeforeQA->Sumw2();
     fHistNLMVsNCellsAfterQA->Sumw2();
     fHistNLMVsEAfterQA->Sumw2();
     if(fExtendedMatchAndQA > 1 || fIsPureCalo > 0){
@@ -733,9 +740,36 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       while ((supply=(AliTenderSupply*)next())) if(supply->IsA()==AliEMCALTenderSupply::Class()) break;
       fEMCALRecUtils = ((AliEMCALTenderSupply*)supply)->GetRecoUtils();
       fEMCALBadChannelsMap = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+      fEMCALCaloUtils = new AliCalorimeterUtils();
+      fEMCALCaloUtils->SetNumberOfCellsFromEMCALBorder(1);
+      fEMCALCaloUtils->SetNumberOfSuperModulesUsed(10);
+      fEMCALCaloUtils->SetLocalMaximaCutE(0.1);
+      fEMCALCaloUtils->SetLocalMaximaCutEDiff(0.03);
+      fEMCALCaloUtils->SwitchOffRecalibration(); 
+      fEMCALCaloUtils->SwitchOffRecalibration(); 
+      fEMCALCaloUtils->SwitchOffRunDepCorrection();
+
+      // Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
+      fEMCALCaloUtils->AccessGeometry(event);
+      // Set the AODB calibration, bad channels etc. parameters at least once
+      fEMCALCaloUtils->AccessOADB(event);
+      fEMCALCaloUtils->InitEMCALGeometry();
+      
     } else if(emcaltender){
       fEMCALRecUtils = ((AliEMCALTenderSupply*)emcaltender->GetEMCALTenderSupply())->GetRecoUtils();
       fEMCALBadChannelsMap = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
+      fEMCALCaloUtils = new AliCalorimeterUtils();
+      fEMCALCaloUtils->SetNumberOfCellsFromEMCALBorder(1);
+      fEMCALCaloUtils->SetNumberOfSuperModulesUsed(10);
+      fEMCALCaloUtils->SetLocalMaximaCutE(0.1);
+      fEMCALCaloUtils->SetLocalMaximaCutEDiff(0.03);
+      fEMCALCaloUtils->SwitchOffRecalibration(); 
+      fEMCALCaloUtils->SwitchOffRunDepCorrection();
+      // Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
+      fEMCALCaloUtils->AccessGeometry(event);
+      // Set the AODB calibration, bad channels etc. parameters at least once
+      fEMCALCaloUtils->AccessOADB(event);
+      fEMCALCaloUtils->InitEMCALGeometry();
     }
     if (fEMCALRecUtils) fEMCALInitialized = kTRUE;
 
@@ -881,6 +915,10 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
 Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, Int_t isMC, Double_t weight)
 {   // Specific Photon Cuts
 
+  // Initialize EMCAL rec utils if not initialized
+  if(!fEMCALInitialized && fClusterType == 1) InitializeEMCAL(event);
+
+  
   Int_t cutIndex = 0;
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);
   cutIndex++;
@@ -915,7 +953,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 //   }
 
   Int_t nLM = GetNumberOfLocalMaxima(cluster, event);
-
+  Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
+//   cout << "mine: " << nLM << "\t Gustavo: " << nLMGustavo << endl;
+  
   // Fill Histos before Cuts
   if(fHistClusterTimevsEBeforeQA) fHistClusterTimevsEBeforeQA->Fill(cluster->GetTOF(), cluster->E(), weight);
 //   if(fHistExoticCellBeforeQA) fHistExoticCellBeforeQA->Fill(cluster->E(), weight);
@@ -926,6 +966,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistM20BeforeQA) fHistM20BeforeQA->Fill(cluster->GetM20(), weight);
   if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion(), weight);
   if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(nLM, weight);
+  if (fHistNLMAvsNLMBBeforeQA) fHistNLMAvsNLMBBeforeQA->Fill(nLM, nLMGustavo, weight);
   if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02(), weight);
 
   AliVCaloCells* cells = NULL;
@@ -1074,9 +1115,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);//10
 
   // Histos after Cuts
-    Float_t clusPos[3]={0,0,0};
-    cluster->GetPosition(clusPos);
-    TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+  Float_t clusPos[3]={0,0,0};
+  cluster->GetPosition(clusPos);
+  TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
   Double_t etaCluster = clusterVector.Eta();
   Double_t phiCluster = clusterVector.Phi();
   if (phiCluster < 0) phiCluster += 2*TMath::Pi();
