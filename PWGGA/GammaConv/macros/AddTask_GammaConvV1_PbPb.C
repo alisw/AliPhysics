@@ -1548,6 +1548,43 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     eventCutArray[ 2] = "56800013"; photonCutArray[ 2] = "03200009500002003220000000"; mesonCutArray[ 2] = "0152306500900000"; // 60-80%
     eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "03200009500002003220000000"; mesonCutArray[ 3] = "0152306500900000"; // 40-80%
     eventCutArray[ 4] = "54900013"; photonCutArray[ 4] = "03200009500002003220000000"; mesonCutArray[ 4] = "0152306500900000"; // 40-90%
+
+  }else  if (trainConfig == 306){ // LHC10h standard, eta 0.9, y = 0.6 
+    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009300002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 0-5%
+    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009300002003220000000"; mesonCutArray[ 1] = "0152304500900000"; // 5-10%
+    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009300002003220000000"; mesonCutArray[ 2] = "0152304500900000"; // 0-10%
+    eventCutArray[ 3] = "51200013"; photonCutArray[ 3] = "00200009300002003220000000"; mesonCutArray[ 3] = "0152304500900000"; // 10-20%
+    eventCutArray[ 4] = "50200013"; photonCutArray[ 4] = "00200009300002003220000000"; mesonCutArray[ 4] = "0152304500900000"; // 0-20%
+  } else if (trainConfig == 307) {  // LHC10h standard, eta 0.9, y = 0.6 
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009300002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 20-40%
+    eventCutArray[ 1] = "54600013"; photonCutArray[ 1] = "00200009300002003220000000"; mesonCutArray[ 1] = "0152306500900000"; // 40-60%
+    eventCutArray[ 2] = "56800013"; photonCutArray[ 2] = "00200009300002003220000000"; mesonCutArray[ 2] = "0152306500900000"; // 60-80%
+    eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "00200009300002003220000000"; mesonCutArray[ 3] = "0152306500900000"; // 40-80%
+    eventCutArray[ 4] = "54900013"; photonCutArray[ 4] = "00200009300002003220000000"; mesonCutArray[ 4] = "0152306500900000"; // 40-90%
+  }else  if (trainConfig == 308){ // LHC10h standard, eta 0.9, y = 0.6 
+    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009400002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 0-5%
+    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009400002003220000000"; mesonCutArray[ 1] = "0152304500900000"; // 5-10%
+    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009400002003220000000"; mesonCutArray[ 2] = "0152304500900000"; // 0-10%
+    eventCutArray[ 3] = "51200013"; photonCutArray[ 3] = "00200009400002003220000000"; mesonCutArray[ 3] = "0152304500900000"; // 10-20%
+    eventCutArray[ 4] = "50200013"; photonCutArray[ 4] = "00200009400002003220000000"; mesonCutArray[ 4] = "0152304500900000"; // 0-20%
+  } else if (trainConfig == 309) { // LHC10h standard, eta 0.9, y = 0.6 
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009400002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 20-40%
+    eventCutArray[ 1] = "54600013"; photonCutArray[ 1] = "00200009400002003220000000"; mesonCutArray[ 1] = "0152306500900000"; // 40-60%
+    eventCutArray[ 2] = "56800013"; photonCutArray[ 2] = "00200009400002003220000000"; mesonCutArray[ 2] = "0152306500900000"; // 60-80%
+    eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "00200009400002003220000000"; mesonCutArray[ 3] = "0152306500900000"; // 40-80%
+    eventCutArray[ 4] = "54900013"; photonCutArray[ 4] = "00200009400002003220000000"; mesonCutArray[ 4] = "0152306500900000"; // 40-90%
+  }else  if (trainConfig == 310){ // LHC10h standard, eta 0.9, y = 0.6 
+    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009500002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 0-5%
+    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009500002003220000000"; mesonCutArray[ 1] = "0152304500900000"; // 5-10%
+    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009500002003220000000"; mesonCutArray[ 2] = "0152304500900000"; // 0-10%
+    eventCutArray[ 3] = "51200013"; photonCutArray[ 3] = "00200009500002003220000000"; mesonCutArray[ 3] = "0152304500900000"; // 10-20%
+    eventCutArray[ 4] = "50200013"; photonCutArray[ 4] = "00200009500002003220000000"; mesonCutArray[ 4] = "0152304500900000"; // 0-20%
+  } else if (trainConfig == 311) {  // LHC10h standard, eta 0.9, y = 0.6 
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009500002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 20-40%
+    eventCutArray[ 1] = "54600013"; photonCutArray[ 1] = "00200009500002003220000000"; mesonCutArray[ 1] = "0152306500900000"; // 40-60%
+    eventCutArray[ 2] = "56800013"; photonCutArray[ 2] = "00200009500002003220000000"; mesonCutArray[ 2] = "0152306500900000"; // 60-80%
+    eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "00200009500002003220000000"; mesonCutArray[ 3] = "0152306500900000"; // 40-80%
+    eventCutArray[ 4] = "54900013"; photonCutArray[ 4] = "00200009500002003220000000"; mesonCutArray[ 4] = "0152306500900000"; // 40-90%
     
     
   } else {
@@ -1832,7 +1869,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
-    if (trainConfig == 300 || trainConfig == 301 || trainConfig == 302  || trainConfig == 303  || trainConfig == 304  || trainConfig == 305 ) 
+    if (trainConfig == 300 || trainConfig == 301 || trainConfig == 302  || trainConfig == 303  || trainConfig == 304  || trainConfig == 305 || 
+	trainConfig == 306 || trainConfig == 307 || trainConfig == 308  || trainConfig == 309  || trainConfig == 310  || trainConfig == 311 ) 
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
     
