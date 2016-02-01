@@ -305,7 +305,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     // Histograms
     TH1F*     fHistCutIndex;                            // bookkeeping for cuts
     TH1F*     fHistAcceptanceCuts;                      // bookkeeping for acceptance cuts
-    TH1F*     fHistClusterIdentificationCuts;           // bookkeeping for cluster identification cuts
+    TH2F*     fHistClusterIdentificationCuts;           // bookkeeping for cluster identification cuts
     
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
