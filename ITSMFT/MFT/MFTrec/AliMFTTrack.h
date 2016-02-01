@@ -53,7 +53,6 @@ public:
 	void AddTrackParamAtCluster(const AliMFTTrackParam &trackParam);
 	TObjArray*    GetTrackParamAtCluster() const;
 	
-	void  FindMCLabel();
 	/// set the corresponding MC track number
 	void  SetMCLabel(Int_t label) {fTrackID = label;}
 	/// return the corresponding MC track number
