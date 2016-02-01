@@ -483,9 +483,9 @@ mergeSysLogs()
   shift
   inputFiles="$@"
   i=0
-  parseListOfFiles "$inputFiles" | while IFS= read x; do
+  parseListOfFiles ${inputFiles[@]} | while IFS= read x; do
     runNumber=$(guessRunNumber "${x}")
-    [[ -z ${runNumber} ]] && echo "run number cannot be guessed for ${x}" && continue
+    [[ -z ${runNumber} ]] && runNumber=0
     gawk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' "${x}"
     (( i++ ))
   done > "${outputFile}"
