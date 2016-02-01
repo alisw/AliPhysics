@@ -37,6 +37,7 @@
 /// 2016.01.18 L1 phases read once at the beginning of lego train
 /// 2016.01.23 revert L1 phase and 100ns shift for runs before LHC15n muon calo pass1
 /// 2016.01.28 correction for L1 phase shift for runs before LHC15n muon calo pass1
+/// 2016.02.02 added flag to fill heavy histograms
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -100,6 +101,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fFineTmax(0),
     fL1PhaseList(0),
     fBadReco(kFALSE),
+    fFillHeavyHisto(kFALSE),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -211,6 +213,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SwitchOnBadReco()  { fBadReco = kTRUE ; }
   void SwitchOffBadReco() { fBadReco = kFALSE ; }
 
+  void SwithOnFillHeavyHisto()  { fFillHeavyHisto = kTRUE ; }
+  void SwithOffFillHeavyHisto() { fFillHeavyHisto = kFALSE ; }
+
   void SetDefaultCuts();
   void LoadReferenceHistos(); //loaded once per period to the memory
 
@@ -282,6 +287,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   TObjArray     *fL1PhaseList;          ///< array with phases for set of runs 
   Bool_t         fBadReco;              ///< flag to apply 100ns shift and L1 shift
+
+  Bool_t         fFillHeavyHisto;       ///< flag to fill heavy histograms
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]

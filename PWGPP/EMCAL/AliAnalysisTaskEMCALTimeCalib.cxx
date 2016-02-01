@@ -96,6 +96,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fFineTmax(0),
   fL1PhaseList(0),
   fBadReco(kFALSE),
+  fFillHeavyHisto(kFALSE),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -485,7 +486,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fhRawTimeSumSqLGBC[i]->SetYTitle("Sum Sq Time");
 
     //histograms with corrected raw time for L1 shift and 100ns
-    if(fBadReco){
+    if(fBadReco && fFillHeavyHisto){
       fhRawCorrTimeVsIdBC[i] = new TH2F(Form("RawCorrTimeVsIdBC%d", i),
 					Form("cell L1 shift and 100ns corrected raw time vs ID for high gain BC %d ", i),
 					nChannels,0.,(Double_t)nChannels,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
@@ -500,7 +501,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     }
 
     //histograms with corrected raw time for L1 shift and 100ns + new L1 phase
-    if(fReferenceRunByRunFileName.Length()!=0){
+    if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto){
       fhTimeVsIdBC[i] = new TH2F(Form("TimeVsIdBC%d", i),
 				 Form("cell time corrected for L1 shift, 100ns and L1 phase vs ID for high gain BC %d ", i),
 				 nChannels,0.,(Double_t)nChannels,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
@@ -566,11 +567,11 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fOutputList->Add(fhRawTimeEntriesLGBC[i]);
     fOutputList->Add(fhRawTimeSumSqLGBC[i]);
 
-    if(fBadReco) {
+    if(fBadReco && fFillHeavyHisto) {
       fOutputList->Add(fhRawCorrTimeVsIdBC[i]);
       fOutputList->Add(fhRawCorrTimeVsIdLGBC[i]);
     }
-    if(fReferenceRunByRunFileName.Length()!=0) {
+    if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto) {
       fOutputList->Add(fhTimeVsIdBC[i]);
       fOutputList->Add(fhTimeVsIdLGBC[i]);
     }
@@ -826,7 +827,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       //end of load additional offset 
       
       //fill the raw time with L1 shift correction and 100ns
-      if(fBadReco && amp>fMinCellEnergy){
+      if(fBadReco && fFillHeavyHisto && amp>fMinCellEnergy){
         if(isHighGain){
 	  fhRawCorrTimeVsIdBC[nBC]->Fill(absId,hkdtime-L1shiftOffset);
 	}else{
@@ -835,7 +836,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       }
 
       //fill time after L1 shift correction and 100ns and new L1 phase
-      if(fReferenceRunByRunFileName.Length()!=0 && amp>fMinCellEnergy){
+      if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto && amp>fMinCellEnergy){
         if(isHighGain){
           fhTimeVsIdBC[nBC]->Fill(absId,hkdtime-L1shiftOffset-offsetPerSM);
         }else{
@@ -1037,6 +1038,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fReferenceFileName="";//Reference.root
   fReferenceRunByRunFileName="";
   fBadReco=kFALSE;
+  fFillHeavyHisto=kFALSE;
   fGeometryName="";//EMCAL_COMPLETE12SMV1_DCAL_8SM
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
@@ -1240,7 +1242,7 @@ const  Double_t upperLimit[]={
   
   TH1C *hRun=new TH1C(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
   Int_t fitResult=0;
-  Double_t minimumValue=10000;
+  Double_t minimumValue=10000.;
   Int_t minimumIndex=-1;
   Double_t meanBC[4];
 
@@ -1259,7 +1261,7 @@ const  Double_t upperLimit[]={
       if(fitResult<0){
 	//hRun->SetBinContent(i,0);//correct it please
 	meanBC[j]=-1;
-	printf("Fit failed for SM %d BC%d\n",i,j);
+	printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBC[j]->Integral(lowerLimit[i],upperLimit[i]));
 	continue;
       } else {
 	fitParameter = f1->GetParameter(0);
@@ -1277,13 +1279,13 @@ const  Double_t upperLimit[]={
     }
 
     if( minimumValue/25-(Int_t)(minimumValue/25)>0.5 ) {
-      L1shift=(Int_t)(minimumValue/25)+1;
+      L1shift=(Int_t)(minimumValue/25.)+1;
     } else {
-      L1shift=(Int_t)(minimumValue/25);
+      L1shift=(Int_t)(minimumValue/25.);
     }
 
 //    if(TMath::Abs(minimumValue/25-(Int_t)(minimumValue/25)-0.5)<0.05)
-//      printf("run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min\%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %f\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25,((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25, meanBC[(minimumIndex+2)%4]/25, meanBC[(minimumIndex+3)%4]/25, L1shift*25);
+//      printf("Run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min\%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25.,((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
 
     totalValue = L1shift<<2 | minimumIndex ;
     //printf("L1 phase %d, L1 shift %d *25ns= %d, L1p+L1s %d, total %d, L1pback %d, L1sback %d\n",minimumIndex,L1shift,L1shift*25,minimumIndex+L1shift,totalValue,totalValue&3,totalValue>>2);
@@ -1294,7 +1296,7 @@ const  Double_t upperLimit[]={
       if( meanBC[(iorder+1)%4] <= meanBC[iorder%4] ) orderTest=kFALSE;
     }
 //    if(!orderTest)
-//      printf("SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
+//      printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
   }
   delete f1;
   TFile *fileNew=new TFile(outputFile.Data(),"update");
