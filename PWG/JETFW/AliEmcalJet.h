@@ -47,6 +47,7 @@ class AliEmcalJet : public AliVParticle
   Bool_t            XvYvZv(Double_t x[3])        const { x[0]=0;x[1]=0;x[2]=0; return 1;                  }
   Double_t          OneOverPt()                  const { return 1./fPt;  }
   Double_t          Phi()                        const { return fPhi;    }
+  Double_t          Phi_0_2pi()                  const { return TVector2::Phi_0_2pi(fPhi);    }
   Double_t          Theta()                      const { return 2*TMath::ATan(TMath::Exp(-fEta));         }
   Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(fM*fM+p*p); }
   Double_t          M()                          const { return fM; }
