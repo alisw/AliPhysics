@@ -1666,8 +1666,11 @@ goSubmitBatch()
         [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
       done
   
-      submit ${JOBID2} 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass0 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} cpass0.calib.run${runNumber}.list "${extraOpts[@]}"
-      LASTJOB=${JOBID2}
+      submit "calibListCPass0" 1 1 "$LASTJOB" ./benchmark.sh PrintValues calibfile ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass0.job\*.run${runNumber}.done"
+      LASTJOB="calibListCPass0"
+
+      submit "calibListCPass0" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass0 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${extraOpts[@]}"
+      LASTJOB="calibListCPass0"
 
       if [[ -n ${generateMC} ]]; then
         submit "mrl${JOBpostfix}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" PrintValues sim ${commonOutputPath}/meta/sim.run${runNumber}.list ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
@@ -1774,7 +1777,14 @@ goSubmitBatch()
         [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
       done
 
-      submit "${JOBID5}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass1 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} cpass1.calib.run${runNumber}.list cpass1.QA.run${runNumber}.lastMergingStage.txt.list cpass1.filtered.run${runNumber}.list "${extraOpts[@]}"
+      submit "calibListCPass1" 1 1 "$LASTJOB" ./benchmark.sh PrintValues calibfile ${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      LASTJOB="calibListCPass1"
+      submit "qaListCPass1" 1 1 "$LASTJOB" ./benchmark.sh PrintValues qafile ${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      LASTJOB="qaListCPass1"
+      submit "filteredListCPass1" 1 1 "$LASTJOB" ./benchmark.sh PrintValues filteredTree ${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.lastMergingStage.txt.list "${commonOutputPath}/meta/cpass1.job\*.run${runNumber}.done"
+      LASTJOB="filteredListCPass1"
+
+      submit "${JOBID5}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass1 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list ${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list ${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list "${extraOpts[@]}"
       LASTJOB=${JOBID5}
       echo
     fi
