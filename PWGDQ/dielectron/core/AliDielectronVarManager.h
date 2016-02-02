@@ -92,18 +92,23 @@ public:
     kPy,                     // py
     kPz,                     // pz
     kPt,                     // transverse momentum
+    kPtMC,                   // MC transverse momentum
     kPtSq,                   // transverse momentum squared
     kP,                      // momentum
+    kPMC,                    // MC momentum
     kXv,                     // vertex position in x
     kYv,                     // vertex position in y
     kZv,                     // vertex position in z
     kOneOverPt,              // 1/pt
     kPhi,                    // phi angle
+    kPhiMC,                  // MC phi angle
     kTheta,                  // theta angle
     kEta,                    // pseudo-rapidity
+    kEtaMC,                  // MC pseudo-rapidity
     kY,                      // rapidity
     kE,                      // energy
     kM,                      // mass
+    kMMC,                    // MC mass
     kCharge,                 // charge
     kNclsITS,                // number of clusters assigned in the ITS
     kITSchi2Cl,              // chi2/cl in the ITS
@@ -633,6 +638,22 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
   values[AliDielectronVarManager::kPdgCode]   = particle->PdgCode();
 
   values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
+
+  if(Req(kPtMC)||Req(kPMC)||Req(kPhiMC)||Req(kEtaMC)){
+    values[AliDielectronVarManager::kPtMC]      = 0;
+    values[AliDielectronVarManager::kPMC]       = 0;
+    values[AliDielectronVarManager::kPhiMC]     = 0;
+    values[AliDielectronVarManager::kEtaMC]     = 0;
+    AliVParticle *mcTrack(0x0);
+    if(AliDielectronMC::Instance()->HasMC())
+      mcTrack = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs(particle->GetLabel()));
+    if(mcTrack){
+      values[AliDielectronVarManager::kPtMC]   = mcTrack->Pt();
+      values[AliDielectronVarManager::kPMC]    = mcTrack->P();
+      values[AliDielectronVarManager::kPhiMC]  = TVector2::Phi_0_2pi(mcTrack->Phi());
+      values[AliDielectronVarManager::kEtaMC]  = mcTrack->Eta();
+    }
+  }
 
 //   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
   for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
@@ -1704,6 +1725,21 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
 	values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
+        // Calculate pair variables for corresponding generated pair
+        if(AliDielectronMC::Instance()->HasMC() && (Req(kMMC)||Req(kPtMC)||Req(kPMC)||Req(kEtaMC)||Req(kPhiMC))){
+          AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetFirstDaughterP() )->GetLabel()));
+          AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetSecondDaughterP())->GetLabel()));
+          if(mcDaughter1 && mcDaughter2){
+            TLorentzVector lv1MC,lv2MC;
+            lv1MC.SetPtEtaPhiM(mcDaughter1->Pt(),mcDaughter1->Eta(),mcDaughter1->Phi(),mElectron);
+            lv2MC.SetPtEtaPhiM(mcDaughter2->Pt(),mcDaughter2->Eta(),mcDaughter2->Phi(),mElectron);
+            values[AliDielectronVarManager::kMMC]   = (lv1MC+lv2MC).M();
+            values[AliDielectronVarManager::kPtMC]  = (lv1MC+lv2MC).Pt();
+            values[AliDielectronVarManager::kPMC]   = (lv1MC+lv2MC).P();
+            values[AliDielectronVarManager::kPhiMC] = TVector2::Phi_0_2pi( (lv1MC+lv2MC).Phi() );
+            values[AliDielectronVarManager::kEtaMC] = (lv1MC+lv2MC).Eta();
+          }
+        }
 	/*
 	//Also not overwritten, still coming from KF particle
 	//where needed to be replaced by independent determination
