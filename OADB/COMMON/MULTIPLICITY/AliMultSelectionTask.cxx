@@ -1203,8 +1203,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ) {
         AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
-	AliWarning(" If this fails, please invoke SetAlternateOADBForEstimators(\"productionname\") to fix!");
         AliWarning(Form(" Will input it automatically for you to %s",lProductionName.Data() ));
+	AliWarning(" If this fails or produces nonsense production names, please invoke:"); 
+	AliWarning("    ::SetAlternateOADBForEstimators(\"productionname\") to override this autodetection!");
         fAlternateOADBForEstimators = lProductionName;
         AliInfo("==================================================");
     }
