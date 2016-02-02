@@ -33,7 +33,7 @@ class CutHandler{
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; mesonCutArray[i] = "";}
     }
 
-    void AddCut(TString eventCut, TString photonCut, TString clusterCut, TString mesonCut){
+    void AddCut(TString eventCut, TString clusterCut, TString mesonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandler: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
       if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandler: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; clusterCutArray[nCuts]=clusterCut; mesonCutArray[nCuts]=mesonCut;

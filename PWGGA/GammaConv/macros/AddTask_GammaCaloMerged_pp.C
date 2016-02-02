@@ -1,3 +1,63 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                       *
+ * Author: Friederike Bock, Daniel Mühlheim                     *
+ * Version 1.0                                 *
+ *                                       *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its    *
+ * documentation strictly for non-commercial purposes is hereby granted    *
+ * without fee, provided that the above copyright notice appears in all    *
+ * copies and that both the copyright notice and this permission notice    *
+ * appear in the supporting documentation. The authors make no claims    *
+ * about the suitability of this software for any purpose. It is      *
+ * provided "as is" without express or implied warranty.               *
+ **************************************************************************/
+
+//***************************************************************************************
+//This AddTask is supposed to set up the main task
+//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaCaloMerged.cxx) for
+//pp together with all supporting classes
+//***************************************************************************************
+
+//***************************************************************************************
+//CutHandler contains all cuts for a certain analysis and trainconfig,
+//it automatically checks length of cutStrings and takes care of the number of added cuts,
+//no specification of the variable 'numberOfCuts' needed anymore.
+//***************************************************************************************
+class CutHandler{
+  public:
+    CutHandler(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; clusterMergedCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; clusterMergedCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString clusterCut, TString clusterMergedCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandler: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || clusterCut.Length()!=19 || clusterMergedCut.Length()!=19 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandler: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; clusterCutArray[nCuts]=clusterCut; clusterMergedCutArray[nCuts]=clusterMergedCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandler: GetEventCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandler: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetClusterMergedCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterMergedCutArray[i]; else {cout << "ERROR in CutHandler: GetClusterMergedCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandler: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* clusterCutArray;
+    TString* clusterMergedCutArray;
+    TString* mesonCutArray;
+};
+
+//***************************************************************************************
+//main function
+//***************************************************************************************
 void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,                  // change different set of cuts
                                   Int_t     isMC                        = 0,                 // run MC
                                   Int_t     enableQAMesonTask           = 0,                 // enable QA in AliAnalysisTaskGammaCalo
@@ -95,26 +155,9 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   task= new AliAnalysisTaskGammaCaloMerged(Form("GammaCaloMerged_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-  // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 2;
-  if ( trainConfig == 18)
-      numberOfCuts = 1;
-  if (trainConfig == 111  || trainConfig == 112 || trainConfig == 113 || trainConfig == 114 || trainConfig == 115 || trainConfig == 116  )
-      numberOfCuts = 3;
-  if (trainConfig == 1    || trainConfig == 2   || trainConfig == 3   || trainConfig == 4   || trainConfig == 5   || trainConfig == 6   ||
-      trainConfig == 11   || trainConfig == 12  || trainConfig == 13  || trainConfig == 14  || trainConfig == 15  || trainConfig == 16  ||
-      trainConfig == 17   || trainConfig == 19  || trainConfig == 20  || trainConfig == 21  || trainConfig == 22 )
-      numberOfCuts = 4;
-  if (trainConfig == 70   || trainConfig == 71  || trainConfig == 72  || trainConfig == 73  || trainConfig == 74  ||
-      trainConfig == 75   || trainConfig == 76  || trainConfig == 77  ||
-      trainConfig == 117  || trainConfig == 118 || trainConfig == 119 || trainConfig == 120 || trainConfig == 121 ||
-      trainConfig == 122  || trainConfig == 40  || trainConfig == 41  || trainConfig == 42  || trainConfig == 43)
-      numberOfCuts = 6;
 
-  TString *eventCutArray          = new TString[numberOfCuts];
-  TString *clusterCutArray        = new TString[numberOfCuts];
-  TString *clusterMergedCutArray  = new TString[numberOfCuts];
-  TString *mesonCutArray          = new TString[numberOfCuts];
+  //create cut handler
+  CutHandler cuts;
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
@@ -123,264 +166,273 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   // ************************************* EMCAL cuts ****************************************************
   // LHC11a
   if (trainConfig == 1){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 1
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
+    cuts.AddCut("00003113","1111100050032200000","1111100050022110001","0163101100000000"); // MB NLM 1
+    cuts.AddCut("00051113","1111100050032200000","1111100050022110001","0163101100000000"); // EMC1 NLM 1
+    cuts.AddCut("00003113","1111100050032200000","1111100050022110002","0163102200000000"); // MB NLM 2
+    cuts.AddCut("00051113","1111100050032200000","1111100050022110002","0163102200000000"); // EMC1 NLM 2
   } else if (trainConfig == 2){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111050032200000"; clusterMergedCutArray[0] = "1111111050022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111050032200000"; clusterMergedCutArray[1] = "1111111050022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 1
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111050032200000"; clusterMergedCutArray[2] = "1111111050022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111050032200000"; clusterMergedCutArray[3] = "1111111050022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
+    cuts.AddCut("00003113","1111111050032200000","1111111050022110001","0163101100000000"); // MB NLM 1
+    cuts.AddCut("00051113","1111111050032200000","1111111050022110001","0163101100000000"); // EMC1 NLM 1
+    cuts.AddCut("00003113","1111111050032200000","1111111050022110002","0163102200000000"); // MB NLM 2
+    cuts.AddCut("00051113","1111111050032200000","1111111050022110002","0163102200000000"); // EMC1 NLM 2
   } else if (trainConfig == 3){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) track matching to cluster
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 1
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110001","0163101100000000"); // MB NLM 1
+    cuts.AddCut("00051113","1111111053032200000","1111111053022110001","0163101100000000"); // EMC1 NLM 1
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110002","0163102200000000"); // MB NLM 2
+    cuts.AddCut("00051113","1111111053032200000","1111111053022110002","0163102200000000"); // EMC1 NLM 2
   } else if (trainConfig == 4){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) track matching to cluster, open M02, no mass cuts, no alpha cuts
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022000001"; mesonCutArray[0] = "0163100000000000"; // MB NLM 1
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022000001"; mesonCutArray[1] = "0163100000000000"; // EMC1 NLM 1
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022000002"; mesonCutArray[2] = "0163100000000000"; // MB NLM 2
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022000002"; mesonCutArray[3] = "0163100000000000"; // EMC1 NLM 2
+    cuts.AddCut("00003113","1111111053032200000","1111111053022000001","0163100000000000"); // MB NLM 1
+    cuts.AddCut("00051113","1111111053032200000","1111111053022000001","0163100000000000"); // EMC1 NLM 1
+    cuts.AddCut("00003113","1111111053032200000","1111111053022000002","0163100000000000"); // MB NLM 2
+    cuts.AddCut("00051113","1111111053032200000","1111111053022000002","0163100000000000"); // EMC1 NLM 2
   } else if (trainConfig == 5){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) track matching to cluster
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110001"; mesonCutArray[0] = "0163100000000000"; // MB NLM 1 no mass, no alpha
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110001"; mesonCutArray[1] = "0163100000000000"; // EMC1 NLM 1 no mass, no alpha
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110001","0163100000000000"); // MB NLM 1 no mass, no alpha
+    cuts.AddCut("00051113","1111111053032200000","1111111053022110001","0163100000000000"); // EMC1 NLM 1 no mass, no alpha
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110002","0163102200000000"); // MB NLM 2
+    cuts.AddCut("00051113","1111111053032200000","1111111053022110002","0163102200000000"); // EMC1 NLM 2
   } else if (trainConfig == 6){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) track matching to cluster without pileup for triggers
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
-    eventCutArray[ 1] = "00051013"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 1
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
-    eventCutArray[ 3] = "00051013"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110001","0163101100000000"); // MB NLM 1
+    cuts.AddCut("00051013","1111111053032200000","1111111053022110001","0163101100000000"); // EMC1 NLM 1
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110002","0163102200000000"); // MB NLM 2
+    cuts.AddCut("00051013","1111111053032200000","1111111053022110002","0163102200000000"); // EMC1 NLM 2
 
   // LHC13g
   } else if (trainConfig == 10){  // EMCAL clusters
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163102200000000"; // INT7
+    cuts.AddCut("00000113","1111100050032200000","1111100050022110001","0163100000000000"); // INT7
+    cuts.AddCut("00000113","1111100050032200000","1111100050022110002","0163102200000000"); // INT7
   } else if (trainConfig == 11){  // EMCAL clusters, 1 NLM
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163100000000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163100000000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110001"; mesonCutArray[2] = "0163100000000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110001"; mesonCutArray[3] = "0163100000000000"; 
+    cuts.AddCut("00000113","1111100050032200000","1111100050022110001","0163100000000000");
+    cuts.AddCut("00052113","1111100050032200000","1111100050022110001","0163100000000000");
+    cuts.AddCut("00085113","1111100050032200000","1111100050022110001","0163100000000000");
+    cuts.AddCut("00083113","1111100050032200000","1111100050022110001","0163100000000000");
   } else if (trainConfig == 12){  // EMCAL clusters, 2 NLM
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110002"; mesonCutArray[0] = "0163102200000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163102200000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163102200000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163102200000000"; 
+    cuts.AddCut("00000113","1111100050032200000","1111100050022110002","0163102200000000");
+    cuts.AddCut("00052113","1111100050032200000","1111100050022110002","0163102200000000");
+    cuts.AddCut("00085113","1111100050032200000","1111100050022110002","0163102200000000");
+    cuts.AddCut("00083113","1111100050032200000","1111100050022110002","0163102200000000");
   } else if (trainConfig == 13){  // EMCAL clusters, 1 NLM 
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111050032200000"; clusterMergedCutArray[0] = "1111111050022110001"; mesonCutArray[0] = "0163100000000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111050032200000"; clusterMergedCutArray[1] = "1111111050022110001"; mesonCutArray[1] = "0163100000000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111050032200000"; clusterMergedCutArray[2] = "1111111050022110001"; mesonCutArray[2] = "0163100000000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111050032200000"; clusterMergedCutArray[3] = "1111111050022110001"; mesonCutArray[3] = "0163100000000000"; 
+    cuts.AddCut("00000113","1111111050032200000","1111111050022110001","0163100000000000");
+    cuts.AddCut("00052113","1111111050032200000","1111111050022110001","0163100000000000");
+    cuts.AddCut("00085113","1111111050032200000","1111111050022110001","0163100000000000");
+    cuts.AddCut("00083113","1111111050032200000","1111111050022110001","0163100000000000");
   } else if (trainConfig == 14){  // EMCAL clusters, 2 NLM
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111050032200000"; clusterMergedCutArray[0] = "1111111050022110002"; mesonCutArray[0] = "0163102200000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111050032200000"; clusterMergedCutArray[1] = "1111111050022110002"; mesonCutArray[1] = "0163102200000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111050032200000"; clusterMergedCutArray[2] = "1111111050022110002"; mesonCutArray[2] = "0163102200000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111050032200000"; clusterMergedCutArray[3] = "1111111050022110002"; mesonCutArray[3] = "0163102200000000"; 
+    cuts.AddCut("00000113","1111111050032200000","1111111050022110002","0163102200000000");
+    cuts.AddCut("00052113","1111111050032200000","1111111050022110002","0163102200000000");
+    cuts.AddCut("00085113","1111111050032200000","1111111050022110002","0163102200000000");
+    cuts.AddCut("00083113","1111111050032200000","1111111050022110002","0163102200000000");
   } else if (trainConfig == 15){  // EMCAL clusters, 1 NLM track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110001"; mesonCutArray[0] = "0163100000000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110001"; mesonCutArray[1] = "0163100000000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110001"; mesonCutArray[3] = "0163100000000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110001","0163100000000000");
+    cuts.AddCut("00052113","1111111053032200000","1111111053022110001","0163100000000000");
+    cuts.AddCut("00085113","1111111053032200000","1111111053022110001","0163100000000000");
+    cuts.AddCut("00083113","1111111053032200000","1111111053022110001","0163100000000000");
   } else if (trainConfig == 16){  // EMCAL clusters, 2 NLM track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110002"; mesonCutArray[0] = "0163102200000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110002"; mesonCutArray[1] = "0163102200000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110002"; mesonCutArray[3] = "0163102200000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110002","0163102200000000");
+    cuts.AddCut("00052113","1111111053032200000","1111111053022110002","0163102200000000");
+    cuts.AddCut("00085113","1111111053032200000","1111111053022110002","0163102200000000");
+    cuts.AddCut("00083113","1111111053032200000","1111111053022110002","0163102200000000");
   } else if (trainConfig == 17){  // EMCAL clusters, 1 NLM mass cuts + TM
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110001"; mesonCutArray[0] = "0163101100000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110001"; mesonCutArray[1] = "0163101100000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163101100000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110001"; mesonCutArray[3] = "0163101100000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110001","0163101100000000");
+    cuts.AddCut("00052113","1111111053032200000","1111111053022110001","0163101100000000");
+    cuts.AddCut("00085113","1111111053032200000","1111111053022110001","0163101100000000");
+    cuts.AddCut("00083113","1111111053032200000","1111111053022110001","0163101100000000");
   } else if (trainConfig == 18){  // EMCAL clusters,  1 NLM
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111050032200000"; clusterMergedCutArray[0] = "1111111050022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
+    cuts.AddCut("00000113","1111111050032200000","1111111050022110001","0163100000000000"); // INT7
   } else if (trainConfig == 19){  // EMCAL clusters, 1 NLM, no M02 cuts, no mass, no alpha
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022000001"; mesonCutArray[0] = "0163100000000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022000001"; mesonCutArray[1] = "0163100000000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022000001"; mesonCutArray[2] = "0163100000000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022000001"; mesonCutArray[3] = "0163100000000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022000001","0163100000000000");
+    cuts.AddCut("00052113","1111111053032200000","1111111053022000001","0163100000000000");
+    cuts.AddCut("00085113","1111111053032200000","1111111053022000001","0163100000000000");
+    cuts.AddCut("00083113","1111111053032200000","1111111053022000001","0163100000000000");
   } else if (trainConfig == 20){  // EMCAL clusters, 2 NLM, no M02 cuts, no mass, no alpha
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022000002"; mesonCutArray[0] = "0163100000000000"; 
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022000002"; mesonCutArray[1] = "0163100000000000"; 
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022000002"; mesonCutArray[2] = "0163100000000000"; 
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022000002"; mesonCutArray[3] = "0163100000000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022000002","0163100000000000");
+    cuts.AddCut("00052113","1111111053032200000","1111111053022000002","0163100000000000");
+    cuts.AddCut("00085113","1111111053032200000","1111111053022000002","0163100000000000");
+    cuts.AddCut("00083113","1111111053032200000","1111111053022000002","0163100000000000");
   } else if (trainConfig == 21){  // EMCAL clusters, 2 NLM track matching to cluster without pileup for triggers
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110002"; mesonCutArray[0] = "0163102200000000"; 
-    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110002"; mesonCutArray[1] = "0163102200000000"; 
-    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; 
-    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110002"; mesonCutArray[3] = "0163102200000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110002","0163102200000000");
+    cuts.AddCut("00052013","1111111053032200000","1111111053022110002","0163102200000000");
+    cuts.AddCut("00085013","1111111053032200000","1111111053022110002","0163102200000000");
+    cuts.AddCut("00083013","1111111053032200000","1111111053022110002","0163102200000000");
   } else if (trainConfig == 22){  // EMCAL clusters, 1 NLM mass cuts + TM, without pileup for triggers
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111053032200000"; clusterMergedCutArray[0] = "1111111053022110001"; mesonCutArray[0] = "0163101100000000"; 
-    eventCutArray[ 1] = "00052013"; clusterCutArray[1] = "1111111053032200000"; clusterMergedCutArray[1] = "1111111053022110001"; mesonCutArray[1] = "0163101100000000"; 
-    eventCutArray[ 2] = "00085013"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163101100000000"; 
-    eventCutArray[ 3] = "00083013"; clusterCutArray[3] = "1111111053032200000"; clusterMergedCutArray[3] = "1111111053022110001"; mesonCutArray[3] = "0163101100000000"; 
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110001","0163101100000000");
+    cuts.AddCut("00052013","1111111053032200000","1111111053022110001","0163101100000000");
+    cuts.AddCut("00085013","1111111053032200000","1111111053022110001","0163101100000000");
+    cuts.AddCut("00083013","1111111053032200000","1111111053022110001","0163101100000000");
 
 // LHC11a variations
   } else if (trainConfig == 40){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00003113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00003113","1111111051032200000","1111111051022110001","0163100000000000"); // INT7
+    cuts.AddCut("00003113","1111111052032200000","1111111052022110001","0163100000000000"); //
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110001","0163100000000000"); //
+    cuts.AddCut("00003113","1111111054032200000","1111111054022110001","0163100000000000"); //
+    cuts.AddCut("00003113","1111111055032200000","1111111055022110001","0163100000000000"); //
+    cuts.AddCut("00003113","1111111056032200000","1111111056022110001","0163100000000000"); //
   } else if (trainConfig == 41){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
-    eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00003113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00003113","1111111051032200000","1111111051022110002","0163102200000000"); // INT7
+    cuts.AddCut("00003113","1111111052032200000","1111111052022110002","0163102200000000"); //
+    cuts.AddCut("00003113","1111111053032200000","1111111053022110002","0163102200000000"); //
+    cuts.AddCut("00003113","1111111054032200000","1111111054022110002","0163102200000000"); //
+    cuts.AddCut("00003113","1111111055032200000","1111111055022110002","0163102200000000"); //
+    cuts.AddCut("00003113","1111111056032200000","1111111056022110002","0163102200000000"); //
   } else if (trainConfig == 42){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110001"; mesonCutArray[0] = "0163100000000000"; // EMC7
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00051113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00051113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00051113","1111111051032200000","1111111051022110001","0163100000000000"); // EMC7
+    cuts.AddCut("00051113","1111111052032200000","1111111052022110001","0163100000000000"); //
+    cuts.AddCut("00051113","1111111053032200000","1111111053022110001","0163100000000000"); //
+    cuts.AddCut("00051113","1111111054032200000","1111111054022110001","0163100000000000"); //
+    cuts.AddCut("00051113","1111111055032200000","1111111055022110001","0163100000000000"); //
+    cuts.AddCut("00051113","1111111056032200000","1111111056022110001","0163100000000000"); //
   } else if (trainConfig == 43){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110002"; mesonCutArray[0] = "0163102200000000"; // EMC7
-    eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00051113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00051113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00051113","1111111051032200000","1111111051022110002","0163102200000000"); // EMC7
+    cuts.AddCut("00051113","1111111052032200000","1111111052022110002","0163102200000000"); //
+    cuts.AddCut("00051113","1111111053032200000","1111111053022110002","0163102200000000"); //
+    cuts.AddCut("00051113","1111111054032200000","1111111054022110002","0163102200000000"); //
+    cuts.AddCut("00051113","1111111055032200000","1111111055022110002","0163102200000000"); //
+    cuts.AddCut("00051113","1111111056032200000","1111111056022110002","0163102200000000"); //
 
 // LHC13g variations
   } else if (trainConfig == 70){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00000113","1111111051032200000","1111111051022110001","0163100000000000"); // INT7
+    cuts.AddCut("00000113","1111111052032200000","1111111052022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111054032200000","1111111054022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111055032200000","1111111055022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111056032200000","1111111056022110001","0163100000000000"); //
   } else if (trainConfig == 71){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00000113","1111111051032200000","1111111051022110002","0163102200000000"); // INT7
+    cuts.AddCut("00000113","1111111052032200000","1111111052022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111053032200000","1111111053022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111054032200000","1111111054022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111055032200000","1111111055022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111056032200000","1111111056022110002","0163102200000000"); //
   } else if (trainConfig == 72){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110001"; mesonCutArray[0] = "0163100000000000"; // EMC7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00052113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00052113","1111111051032200000","1111111051022110001","0163100000000000"); // EMC7
+    cuts.AddCut("00052113","1111111052032200000","1111111052022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111053032200000","1111111053022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111054032200000","1111111054022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111055032200000","1111111055022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111056032200000","1111111056022110001","0163100000000000"); //
   } else if (trainConfig == 73){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110002"; mesonCutArray[0] = "0163102200000000"; // EMC7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00052113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00052113","1111111051032200000","1111111051022110002","0163102200000000"); // EMC7
+    cuts.AddCut("00052113","1111111052032200000","1111111052022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111053032200000","1111111053022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111054032200000","1111111054022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111055032200000","1111111055022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111056032200000","1111111056022110002","0163102200000000"); //
   } else if (trainConfig == 74){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110001"; mesonCutArray[0] = "0163100000000000"; // EG1
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00083113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00083113","1111111051032200000","1111111051022110001","0163100000000000"); // EG1
+    cuts.AddCut("00083113","1111111052032200000","1111111052022110001","0163100000000000"); //
+    cuts.AddCut("00083113","1111111053032200000","1111111053022110001","0163100000000000"); //
+    cuts.AddCut("00083113","1111111054032200000","1111111054022110001","0163100000000000"); //
+    cuts.AddCut("00083113","1111111055032200000","1111111055022110001","0163100000000000"); //
+    cuts.AddCut("00083113","1111111056032200000","1111111056022110001","0163100000000000"); //
   } else if (trainConfig == 75){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110002"; mesonCutArray[0] = "0163102200000000"; // EG2
-    eventCutArray[ 1] = "00083113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00083113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00083113","1111111051032200000","1111111051022110002","0163102200000000"); // EG2
+    cuts.AddCut("00083113","1111111052032200000","1111111052022110002","0163102200000000"); //
+    cuts.AddCut("00083113","1111111053032200000","1111111053022110002","0163102200000000"); //
+    cuts.AddCut("00083113","1111111054032200000","1111111054022110002","0163102200000000"); //
+    cuts.AddCut("00083113","1111111055032200000","1111111055022110002","0163102200000000"); //
+    cuts.AddCut("00083113","1111111056032200000","1111111056022110002","0163102200000000"); //
   } else if (trainConfig == 76){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110001"; mesonCutArray[0] = "0163100000000000"; // EG2
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00085113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00085113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00085113","1111111051032200000","1111111051022110001","0163100000000000"); // EG2
+    cuts.AddCut("00085113","1111111052032200000","1111111052022110001","0163100000000000"); //
+    cuts.AddCut("00085113","1111111053032200000","1111111053022110001","0163100000000000"); //
+    cuts.AddCut("00085113","1111111054032200000","1111111054022110001","0163100000000000"); //
+    cuts.AddCut("00085113","1111111055032200000","1111111055022110001","0163100000000000"); //
+    cuts.AddCut("00085113","1111111056032200000","1111111056022110001","0163100000000000"); //
   } else if (trainConfig == 77){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00085113"; clusterCutArray[0] = "1111111051032200000"; clusterMergedCutArray[0] = "1111111051022110002"; mesonCutArray[0] = "0163102200000000"; // EG2
-    eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111111052032200000"; clusterMergedCutArray[1] = "1111111052022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00085113"; clusterCutArray[2] = "1111111053032200000"; clusterMergedCutArray[2] = "1111111053022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00085113"; clusterCutArray[3] = "1111111054032200000"; clusterMergedCutArray[3] = "1111111054022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00085113"; clusterCutArray[4] = "1111111055032200000"; clusterMergedCutArray[4] = "1111111055022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00085113"; clusterCutArray[5] = "1111111056032200000"; clusterMergedCutArray[5] = "1111111056022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00085113","1111111051032200000","1111111051022110002","0163102200000000"); // EG2
+    cuts.AddCut("00085113","1111111052032200000","1111111052022110002","0163102200000000"); //
+    cuts.AddCut("00085113","1111111053032200000","1111111053022110002","0163102200000000"); //
+    cuts.AddCut("00085113","1111111054032200000","1111111054022110002","0163102200000000"); //
+    cuts.AddCut("00085113","1111111055032200000","1111111055022110002","0163102200000000"); //
+    cuts.AddCut("00085113","1111111056032200000","1111111056022110002","0163102200000000"); //
 
 
 // LHC12
     // default with three cuts
   } else if (trainConfig == 111){  // EMCAL clusters, different triggers no NonLinearity
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032200000"; clusterMergedCutArray[0] = "1111100060022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032200000"; clusterMergedCutArray[1] = "1111100060022110001"; mesonCutArray[1] = "0163100000000000"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032200000"; clusterMergedCutArray[2] = "1111100060022110001"; mesonCutArray[2] = "0163100000000000"; // EMCEG1,
+    cuts.AddCut("00000113","1111100060032200000","1111100060022110001","0163100000000000"); // INT7
+    cuts.AddCut("00052113","1111100060032200000","1111100060022110001","0163100000000000"); // EMC7
+    cuts.AddCut("00081113","1111100060032200000","1111100060022110001","0163100000000000"); // EMCEG1,
   } else if (trainConfig == 112){  // EMCAL clusters, different triggers no NonLinearity
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032200000"; clusterMergedCutArray[0] = "1111100060022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032200000"; clusterMergedCutArray[1] = "1111100060022110002"; mesonCutArray[1] = "0163102200000000"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032200000"; clusterMergedCutArray[2] = "1111100060022110002"; mesonCutArray[2] = "0163102200000000"; // EMCEG1,
+    cuts.AddCut("00000113","1111100060032200000","1111100060022110002","0163102200000000"); // INT7
+    cuts.AddCut("00052113","1111100060032200000","1111100060022110002","0163102200000000"); // EMC7
+    cuts.AddCut("00081113","1111100060032200000","1111100060022110002","0163102200000000"); // EMCEG1,
 
   } else if (trainConfig == 113){  // EMCAL clusters, different triggers with NonLinearity
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032200000"; clusterMergedCutArray[0] = "1111111060022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032200000"; clusterMergedCutArray[1] = "1111111060022110001"; mesonCutArray[1] = "0163100000000000"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032200000"; clusterMergedCutArray[2] = "1111111060022110001"; mesonCutArray[2] = "0163100000000000"; // EMCEG1,
+    cuts.AddCut("00000113","1111111060032200000","1111111060022110001","0163100000000000"); // INT7
+    cuts.AddCut("00052113","1111111060032200000","1111111060022110001","0163100000000000"); // EMC7
+    cuts.AddCut("00081113","1111111060032200000","1111111060022110001","0163100000000000"); // EMCEG1,
   } else if (trainConfig == 114){  // EMCAL clusters, different triggers with NonLinearity
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032200000"; clusterMergedCutArray[0] = "1111111060022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032200000"; clusterMergedCutArray[1] = "1111111060022110002"; mesonCutArray[1] = "0163102200000000"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032200000"; clusterMergedCutArray[2] = "1111111060022110002"; mesonCutArray[2] = "0163102200000000"; // EMCEG1,
+    cuts.AddCut("00000113","1111111060032200000","1111111060022110002","0163102200000000"); // INT7
+    cuts.AddCut("00052113","1111111060032200000","1111111060022110002","0163102200000000"); // EMC7
+    cuts.AddCut("00081113","1111111060032200000","1111111060022110002","0163102200000000"); // EMCEG1,
 
   } else if (trainConfig == 115){  // EMCAL clusters, different triggers with NonLinearity track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032200000"; clusterMergedCutArray[0] = "1111111063022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063032200000"; clusterMergedCutArray[1] = "1111111063022110001"; mesonCutArray[1] = "0163100000000000"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110001"; mesonCutArray[2] = "0163100000000000"; // EMCEG1,
+    cuts.AddCut("00000113","1111111063032200000","1111111063022110001","0163100000000000"); // INT7
+    cuts.AddCut("00052113","1111111063032200000","1111111063022110001","0163100000000000"); // EMC7
+    cuts.AddCut("00081113","1111111063032200000","1111111063022110001","0163100000000000"); // EMCEG1,
   } else if (trainConfig == 116){  // EMCAL clusters, different triggers with NonLinearity track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111063032200000"; clusterMergedCutArray[0] = "1111111063022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111063032200000"; clusterMergedCutArray[1] = "1111111063022110002"; mesonCutArray[1] = "0163102200000000"; // EMC7
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110002"; mesonCutArray[2] = "0163102200000000"; // EMCEG1,
+    cuts.AddCut("00000113","1111111063032200000","1111111063022110002","0163102200000000"); // INT7
+    cuts.AddCut("00052113","1111111063032200000","1111111063022110002","0163102200000000"); // EMC7
+    cuts.AddCut("00081113","1111111063032200000","1111111063022110002","0163102200000000"); // EMCEG1,
 
   } else if (trainConfig == 117){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111061032200000"; clusterMergedCutArray[0] = "1111111061022110001"; mesonCutArray[0] = "0163100000000000"; // INT7
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111062032200000"; clusterMergedCutArray[1] = "11111110620022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111064032200000"; clusterMergedCutArray[3] = "1111111064022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111065032200000"; clusterMergedCutArray[4] = "1111111065022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111111066032200000"; clusterMergedCutArray[5] = "1111111066022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00000113","1111111061032200000","1111111061022110001","0163100000000000"); // INT7
+    cuts.AddCut("00000113","1111111062032200000","1111111062022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111063032200000","1111111063022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111064032200000","1111111064022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111065032200000","1111111065022110001","0163100000000000"); //
+    cuts.AddCut("00000113","1111111066032200000","1111111066022110001","0163100000000000"); //
   } else if (trainConfig == 118){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111061032200000"; clusterMergedCutArray[0] = "1111111061022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
-    eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111062032200000"; clusterMergedCutArray[1] = "1111111062022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1111111064032200000"; clusterMergedCutArray[3] = "1111111064022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111111065032200000"; clusterMergedCutArray[4] = "1111111065022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00000113"; clusterCutArray[5] = "1111111066032200000"; clusterMergedCutArray[5] = "1111111066022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00000113","1111111061032200000","1111111061022110002","0163102200000000"); // INT7
+    cuts.AddCut("00000113","1111111062032200000","1111111062022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111063032200000","1111111063022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111064032200000","1111111064022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111065032200000","1111111065022110002","0163102200000000"); //
+    cuts.AddCut("00000113","1111111066032200000","1111111066022110002","0163102200000000"); //
   } else if (trainConfig == 119){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111061032200000"; clusterMergedCutArray[0] = "1111111061022110001"; mesonCutArray[0] = "0163100000000000"; // EMC7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111062032200000"; clusterMergedCutArray[1] = "1111111062022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111064032200000"; clusterMergedCutArray[3] = "1111111064022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111111065032200000"; clusterMergedCutArray[4] = "1111111065022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00052113"; clusterCutArray[5] = "1111111066032200000"; clusterMergedCutArray[5] = "1111111066022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00052113","1111111061032200000","1111111061022110001","0163100000000000"); // EMC7
+    cuts.AddCut("00052113","1111111062032200000","1111111062022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111063032200000","1111111063022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111064032200000","1111111064022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111065032200000","1111111065022110001","0163100000000000"); //
+    cuts.AddCut("00052113","1111111066032200000","1111111066022110001","0163100000000000"); //
   } else if (trainConfig == 120){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111111061032200000"; clusterMergedCutArray[0] = "1111111061022110002"; mesonCutArray[0] = "0163102200000000"; // EMC7
-    eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111062032200000"; clusterMergedCutArray[1] = "1111111062022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111111064032200000"; clusterMergedCutArray[3] = "1111111064022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00052113"; clusterCutArray[4] = "1111111065032200000"; clusterMergedCutArray[4] = "1111111065022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00052113"; clusterCutArray[5] = "1111111066032200000"; clusterMergedCutArray[5] = "1111111066022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00052113","1111111061032200000","1111111061022110002","0163102200000000"); // EMC7
+    cuts.AddCut("00052113","1111111062032200000","1111111062022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111063032200000","1111111063022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111064032200000","1111111064022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111065032200000","1111111065022110002","0163102200000000"); //
+    cuts.AddCut("00052113","1111111066032200000","1111111066022110002","0163102200000000"); //
   } else if (trainConfig == 121){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111061032200000"; clusterMergedCutArray[0] = "1111111061022110001"; mesonCutArray[0] = "0163100000000000"; // EMCEG1
-    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111062032200000"; clusterMergedCutArray[1] = "1111111062022110001"; mesonCutArray[1] = "0163100000000000"; //
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110001"; mesonCutArray[2] = "0163100000000000"; //
-    eventCutArray[ 3] = "00081113"; clusterCutArray[3] = "1111111064032200000"; clusterMergedCutArray[3] = "1111111064022110001"; mesonCutArray[3] = "0163100000000000"; //
-    eventCutArray[ 4] = "00081113"; clusterCutArray[4] = "1111111065032200000"; clusterMergedCutArray[4] = "1111111065022110001"; mesonCutArray[4] = "0163100000000000"; //
-    eventCutArray[ 5] = "00081113"; clusterCutArray[5] = "1111111066032200000"; clusterMergedCutArray[5] = "1111111066022110001"; mesonCutArray[5] = "0163100000000000"; //
+    cuts.AddCut("00081113","1111111061032200000","1111111061022110001","0163100000000000"); // EMCEG1
+    cuts.AddCut("00081113","1111111062032200000","1111111062022110001","0163100000000000"); //
+    cuts.AddCut("00081113","1111111063032200000","1111111063022110001","0163100000000000"); //
+    cuts.AddCut("00081113","1111111064032200000","1111111064022110001","0163100000000000"); //
+    cuts.AddCut("00081113","1111111065032200000","1111111065022110001","0163100000000000"); //
+    cuts.AddCut("00081113","1111111066032200000","1111111066022110001","0163100000000000"); //
   } else if (trainConfig == 122){  // EMCAL clusters, variation track matching to cluster
-    eventCutArray[ 0] = "00081113"; clusterCutArray[0] = "1111111061032200000"; clusterMergedCutArray[0] = "1111111061022110002"; mesonCutArray[0] = "0163102200000000"; // EMCEG1
-    eventCutArray[ 1] = "00081113"; clusterCutArray[1] = "1111111062032200000"; clusterMergedCutArray[1] = "1111111062022110002"; mesonCutArray[1] = "0163102200000000"; //
-    eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111063032200000"; clusterMergedCutArray[2] = "1111111063022110002"; mesonCutArray[2] = "0163102200000000"; //
-    eventCutArray[ 3] = "00081113"; clusterCutArray[3] = "1111111064032200000"; clusterMergedCutArray[3] = "1111111064022110002"; mesonCutArray[3] = "0163102200000000"; //
-    eventCutArray[ 4] = "00081113"; clusterCutArray[4] = "1111111065032200000"; clusterMergedCutArray[4] = "1111111065022110002"; mesonCutArray[4] = "0163102200000000"; //
-    eventCutArray[ 5] = "00081113"; clusterCutArray[5] = "1111111066032200000"; clusterMergedCutArray[5] = "1111111066022110002"; mesonCutArray[5] = "0163102200000000"; //
+    cuts.AddCut("00081113","1111111061032200000","1111111061022110002","0163102200000000"); // EMCEG1
+    cuts.AddCut("00081113","1111111062032200000","1111111062022110002","0163102200000000"); //
+    cuts.AddCut("00081113","1111111063032200000","1111111063022110002","0163102200000000"); //
+    cuts.AddCut("00081113","1111111064032200000","1111111064022110002","0163102200000000"); //
+    cuts.AddCut("00081113","1111111065032200000","1111111065022110002","0163102200000000"); //
+    cuts.AddCut("00081113","1111111066032200000","1111111066022110002","0163102200000000"); //
 
     // all the cut variations
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandler! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+
+  Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *EventCutList         = new TList();
   TList *ClusterCutList       = new TList();
@@ -436,7 +488,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   AliConversionMesonCuts **analysisMesonCuts    = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-    analysisEventCuts[i] = new AliConvEventCuts();   
+    analysisEventCuts[i] = new AliConvEventCuts();
     
     // definition of weighting input
     TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
@@ -452,20 +504,20 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
-    analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+    analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisClusterMergedCuts[i] = new AliCaloPhotonCuts();
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
-    analysisClusterMergedCuts[i]->InitializeCutsFromCutString(clusterMergedCutArray[i].Data());
+    analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
     ClusterMergedCutList->Add(analysisClusterMergedCuts[i]);
     analysisClusterMergedCuts[i]->SetExtendedQA(enableExtMatchAndQA);
     analysisClusterMergedCuts[i]->SetFillCutHistograms("");
@@ -474,7 +526,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetEnableOpeningAngleCut(kFALSE);
     analysisMesonCuts[i]->SetIsMergedClusterCut(1);
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
