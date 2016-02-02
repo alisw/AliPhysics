@@ -367,8 +367,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //TH2F * fhLam0EMCALRegionMCConvRcut   [4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
 //TH2F * fhLam0EMCALRegionTRDMCConvRcut[4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
   
-  TH2F * fhLam0EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda0 vs  E, in different EMCal regions
-  TH2F * fhEtaPhiLam0BinPtBin[7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
+  TH2F * fhLam0EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda0 vs  Pt, in different EMCal regions
+  TH2F * fhEtaPhiLam0BinPtBin[7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
+  TH2F * fhTimeLam0BinPerSM[20];                    //!<! Cell time, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, per SM,, weight Cell E / Cluster E
+  TH2I * fhColRowLam0BinPtBin[7];                   //!<! Cell hits, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, weight Cell E / Cluster E
+  TH2F * fhCellClusterEFracLam0BinPerSM[20];        //!<! Cell E / Cluster E, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, per SM
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
