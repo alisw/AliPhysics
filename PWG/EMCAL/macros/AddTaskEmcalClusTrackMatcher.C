@@ -1,5 +1,5 @@
-AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(const char *nTracks          = "tracks",
-                                                           const char *nClusters        = "caloClusters",
+AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(const char *nTracks          = "usedefault",
+                                                           const char *nClusters        = "usedefault",
                                                            const Double_t maxDist       = 0.1,
                                                            const Bool_t attachEmcalPart = kFALSE,
                                                            const Bool_t updateClusters  = kTRUE,
@@ -12,24 +12,68 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(const char *nTracks  
   if (!mgr)
   {
     ::Error("AddTaskEmcalClusTrackMatcher", "No analysis manager to connect to.");
-    return NULL;
+    return 0;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
     ::Error("AddTaskEmcalClusTrackMatcher", "This task requires an input event handler");
-    return NULL;
+    return 0;
   }
   
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(Form("ClusTrackMatcher_%s_%s", nTracks, nClusters));
+
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  TString name(Form("ClusTrackMatcher_%s_%s", trackName.Data(), clusName.Data()));
   AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name, createHisto);
-  matcher->AddParticleContainer(nTracks);
-  matcher->AddClusterContainer(nClusters);
+  matcher->AddParticleContainer(trackName);
+  matcher->AddClusterContainer(clusName);
   matcher->SetMaxDistance(maxDist);
   matcher->SetUpdateClusters(updateClusters);
   matcher->SetUpdateTracks(updateTracks);
