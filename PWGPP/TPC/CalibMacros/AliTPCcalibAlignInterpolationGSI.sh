@@ -19,6 +19,9 @@ makeEnvLocal(){
     ali -n 1
     export isBatch=1
     export batchCommand="qsub -cwd  -V "
+    export calgrindCommand="/usr/bin/valgrind --tool=callgrind --log-file=cpu.txt   --num-callers=40 -v  --trace-children=yes aliroot "
+    export valgrindCommand="/usr/bin/valgrind --leak-check=full --leak-resolution=high --num-callers=40 --error-limit=no --show-reachable=yes  --log-file=xxx.txt -v aliroot"
+
 }
 
 makeEnvHera(){
@@ -79,7 +82,8 @@ submitDrift(){
 	echo $wdir `pwd`; 	
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
-	echo source  $balice >  submitDrift.sh
+	echo export runNumber=$arun  >  submitDrift.sh
+	echo source  $balice >>  submitDrift.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(6,$run\\\) >> submitDrift.sh
 	chmod a+x submitDrift.sh  
 	rm -f submitDrift.log
@@ -114,8 +118,12 @@ submitHistogramming(){
 	cd $wdirRun
 	gminTime=`cat submitTime.log  | grep StatInfo.minTime | gawk '{print $2}' | tail -n 1`	
 	gmaxTime=`cat submitTime.log  | grep StatInfo.maxTime | gawk '{print $2}' | tail -n 1`
+	    # define number of bins with approx timeDelta duration
+	nTimeBins=$(( (gmaxTime-gminTime)/timeDelta+1 ))
+	timeDeltaRun=$(( (gmaxTime-gminTime)/nTimeBins ))
+
 	alilog_info "BEGIN:Processing run $arun on batch"
-	for ((itime=$gminTime;itime<$gmaxTime;itime+=$timeDelta));  do   # time loop
+	for ((itime=$gminTime;itime<$gmaxTime;itime+=$timeDeltaRun));  do   # time loop
 	    alilog_info "BEGIN:Processing run $arun at time $itime"
 	    echo $itime; 
 	    wdirTime=$wdirRun/Time$timeDelta_$itime
@@ -134,7 +142,7 @@ submitHistogramming(){
                 ln -sf $wdirRun/fitDrift.root .
 		cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 		echo export mapStartTime=$itime > submitHisto$ihis.sh
-		echo export mapStopTime=$(($itime+$timeDelta)) >> submitHisto$ihis.sh
+		echo export mapStopTime=$(($itime+$timeDeltaRun)) >> submitHisto$ihis.sh
 		echo export runNumber=$arun    >> submitHisto$ihis.sh  
 		echo source  $balice >>submitHisto$ihis.sh
 		echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(1,$ihis,$nTracks\\\) >> submitHisto$ihis.sh
@@ -218,7 +226,7 @@ submitTimeDependentGSI(){
     # we assume that the run.list and residual list is     
     # Parameters now hardwired
     # assuming run.list and residual.list ascii file exist in working directory
-    export timeDelta=1800 ;     # time interval for the map creation
+    export timeDelta=1200 ;     # time interval for the map creation
     export nTracks=100000000;   # limit the number of tracks per time interval - needed in test mode t speed up test
     export driftDeltaT=120;     # make drift update every 120 seconds
     export driftSigmaT=600;     # smoothing  sigma for drift calibration
@@ -297,4 +305,12 @@ submitProfileHis(){
 
 }
 
+
+runCallgrind(){
+    #cd /hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o30012015.callgrind/000245231/Time1448613598/his1/calgrindHis;
+    nohup /usr/bin/valgrind --tool=callgrind --log-file=cpu.txt   --num-callers=40 -v  --trace-children=yes aliroot  -b -q AliTPCcalibAlignInterpolationMacro.C+\(1,1,300000\) &>  calgrindHisto.log & 
+#	cd   /hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o30012015.callgrind/000245231/Time1448613598/his1/calgrindMap
+	nohup /usr/bin/valgrind --tool=callgrind --log-file=cpu.txt   --num-callers=40 -v  --trace-children=yes aliroot  -b -q AliTPCcalibAlignInterpolationMacro.C+\(2,1,2\) &>  calgrindMap.log & 
+	
+}
 
