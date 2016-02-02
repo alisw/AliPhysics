@@ -8,22 +8,21 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TList.h>
-#include <TLorentzVector.h>
 
+#include "AliEmcalJet.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
-#include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
 #include "AliJetContainer.h"
 
-#include "AliAnalysisTaskSAJF.h"
+#include "AliAnalysisTaskEmcalJetSpectraQA.h"
 
-ClassImp(AliAnalysisTaskSAJF)
+ClassImp(AliAnalysisTaskEmcalJetSpectraQA)
 
 //________________________________________________________________________
-AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskSAJF", kTRUE),
+AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSpectraQA", kTRUE),
   fHistoType(1),
   fDefaultClusterEnergy(-1),
   fJetEPaxis(kFALSE),
@@ -58,7 +57,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) : 
+AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(1),
   fDefaultClusterEnergy(-1),
@@ -94,7 +93,7 @@ AliAnalysisTaskSAJF::AliAnalysisTaskSAJF(const char *name) :
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAJF::AllocateTHnSparse()
+void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse()
 {
   Double_t jetRadius = 0.4;
   AliJetContainer *jets = GetJetContainer(0);
@@ -114,7 +113,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     dim++;
 
     if (fJetEPaxis) {
-      title[dim] = "#phi_{jet} - #psi_{RP}";
+      title[dim] = "#phi_{jet} - #psi_{EP}";
       nbins[dim] = fNbins/5;
       min[dim] = 0;
       max[dim] = TMath::Pi();
@@ -134,14 +133,14 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   max[dim] = 2*TMath::Pi();
   dim++;
 
-  title[dim] = "p_{T} (GeV/c)";
+  title[dim] = "#it{p}_{T} (GeV/#it{c})";
   nbins[dim] = fNbins;
   min[dim] = fMinBinPt;
   max[dim] = fMaxBinPt;
   dim++;
 
   if (fIsEmbedded) {
-    title[dim] = "p_{T}^{MC} (GeV/c)";
+    title[dim] = "#it{p}_{T}^{MC} (GeV/#it{c})";
     nbins[dim] = fNbins;
     min[dim] = fMinBinPt;
     max[dim] = fMaxBinPt;
@@ -149,7 +148,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
   }
 
   if (!GetRhoName().IsNull()) {
-    title[dim] = "p_{T}^{corr} (GeV/c)";
+    title[dim] = "#it{p}_{T}^{corr} (GeV/#it{c})";
     nbins[dim] = fNbins;
     min[dim] = -fMaxBinPt/2;
     max[dim] = fMaxBinPt/2;
@@ -158,7 +157,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
 
   // area resolution is about 0.01 (w/ ghost area 0.005)
   // for fNbins = 250 use bin width 0.01
-  title[dim] = "A_{jet}";
+  title[dim] = "#it{A}_{jet}";
   nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
   min[dim] = 0;
   max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
@@ -172,7 +171,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     dim++;
   }
 
-  title[dim] = "Z";
+  title[dim] = "#it{z}_{leading}";
   nbins[dim] = fNbins/5;
   min[dim] = 0;
   max[dim] = 1.0;
@@ -193,7 +192,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
     dim++;
   }
 
-  title[dim] = "p_{T,particle}^{leading} (GeV/c)";
+  title[dim] = "#it{p}_{T,particle}^{leading} (GeV/#it{c})";
   nbins[dim] = fNbins/10*3;
   min[dim] = 0;
   max[dim] = 150;
@@ -206,7 +205,7 @@ void AliAnalysisTaskSAJF::AllocateTHnSparse()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAJF::AllocateTHX()
+void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX()
 {
   fHistJetPtEtaPhi = new TH3*[fNcentBins];
   fHistJetPtArea = new TH2*[fNcentBins];
@@ -356,7 +355,7 @@ void AliAnalysisTaskSAJF::AllocateTHX()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAJF::UserCreateOutputObjects()
+void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 {
   // Create user output.
 
@@ -461,7 +460,7 @@ void AliAnalysisTaskSAJF::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSAJF::FillHistograms()
+Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
 {
   // Fill histograms.
 
@@ -500,8 +499,14 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     Double_t z = GetParallelFraction(leadPart.Vect(), jet);
     if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
 
-    FillJetHisto(fCent, ep, jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt(), jet->MCPt(), corrPt, jet->Area(),
-        jet->NEF(), z, jet->GetNumberOfConstituents(), ptLeading);
+    AliEmcalJetInfo jetInfo(*jet);
+    jetInfo.fCent = fCent;
+    jetInfo.fEP = ep;
+    jetInfo.fCorrPt = corrPt;
+    jetInfo.fZ = z;
+    jetInfo.fLeadingPt = ptLeading;
+
+    FillJetHisto(jetInfo);
 
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
@@ -546,29 +551,28 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
-    Double_t NEF, Double_t z, Int_t n, Double_t leadingpt)
+void AliAnalysisTaskEmcalJetSpectraQA::FillJetHisto(const AliEmcalJetInfo& jet)
 {
   if (fHistoType == 0) {
-    fHistJetPtEtaPhi[fCentBin]->Fill(pt,eta,phi);
-    fHistJetPtArea[fCentBin]->Fill(pt,area);
-    fHistJetPtEP[fCentBin]->Fill(pt,ep);
-    fHistJetPtNEF[fCentBin]->Fill(pt,NEF);
-    fHistJetPtZ[fCentBin]->Fill(pt,z);
-    fHistJetPtLeadingPartPt[fCentBin]->Fill(pt,leadingpt);
+    fHistJetPtEtaPhi[fCentBin]->Fill(jet.Pt(), jet.Eta(), jet.Phi_0_2pi());
+    fHistJetPtArea[fCentBin]->Fill(jet.Pt(), jet.fArea);
+    fHistJetPtEP[fCentBin]->Fill(jet.Pt(), jet.fEP);
+    fHistJetPtNEF[fCentBin]->Fill(jet.Pt(), jet.fNEF);
+    fHistJetPtZ[fCentBin]->Fill(jet.Pt(), jet.fZ);
+    fHistJetPtLeadingPartPt[fCentBin]->Fill(jet.Pt(), jet.fLeadingPt);
     if (fHistJetCorrPtEtaPhi[fCentBin]) {
-      fHistJetCorrPtEtaPhi[fCentBin]->Fill(corrpt,eta,phi);
-      fHistJetCorrPtArea[fCentBin]->Fill(corrpt,area);
-      fHistJetCorrPtEP[fCentBin]->Fill(corrpt,ep);
-      fHistJetCorrPtNEF[fCentBin]->Fill(corrpt,NEF);
-      fHistJetCorrPtZ[fCentBin]->Fill(corrpt,z);
-      fHistJetCorrPtLeadingPartPt[fCentBin]->Fill(corrpt,leadingpt);
-      fHistJetPtCorrPt[fCentBin]->Fill(pt,corrpt);
+      fHistJetCorrPtEtaPhi[fCentBin]->Fill(jet.fCorrPt, jet.Eta(), jet.Phi_0_2pi());
+      fHistJetCorrPtArea[fCentBin]->Fill(jet.fCorrPt, jet.fArea);
+      fHistJetCorrPtEP[fCentBin]->Fill(jet.fCorrPt, jet.fEP);
+      fHistJetCorrPtNEF[fCentBin]->Fill(jet.fCorrPt, jet.fNEF);
+      fHistJetCorrPtZ[fCentBin]->Fill(jet.fCorrPt, jet.fZ);
+      fHistJetCorrPtLeadingPartPt[fCentBin]->Fill(jet.fCorrPt, jet.fLeadingPt);
+      fHistJetPtCorrPt[fCentBin]->Fill(jet.Pt(), jet.fCorrPt);
       if (fIsEmbedded)
-        fHistJetMCPtCorrPt[fCentBin]->Fill(MCpt,corrpt);
+        fHistJetMCPtCorrPt[fCentBin]->Fill(jet.fMCPt, jet.fCorrPt);
     }
     if (fIsEmbedded)
-      fHistJetPtMCPt[fCentBin]->Fill(pt,MCpt);
+      fHistJetPtMCPt[fCentBin]->Fill(jet.Pt(), jet.fMCPt);
   }
   else {
 
@@ -577,33 +581,64 @@ void AliAnalysisTaskSAJF::FillJetHisto(Double_t cent, Double_t ep, Double_t eta,
     for (Int_t i = 0; i < fHistJetObservables->GetNdimensions(); i++) {
       TString title(fHistJetObservables->GetAxis(i)->GetTitle());
       if (title=="Centrality (%)")
-        contents[i] = cent;
-      else if (title=="#phi_{jet} - #psi_{RP}")
-        contents[i] = ep;
+        contents[i] = jet.fCent;
+      else if (title=="#phi_{jet} - #psi_{EP}")
+        contents[i] = jet.fEP;
       else if (title=="#eta_{jet}")
-        contents[i] = eta;
+        contents[i] = jet.Eta();
       else if (title=="#phi_{jet} (rad)")
-        contents[i] = phi;
-      else if (title=="p_{T} (GeV/c)")
-        contents[i] = pt;
-      else if (title=="p_{T}^{MC} (GeV/c)")
-        contents[i] = MCpt;
-      else if (title=="p_{T}^{corr} (GeV/c)")
-        contents[i] = corrpt;
-      else if (title=="A_{jet}")
-        contents[i] = area;
+        contents[i] = jet.Phi_0_2pi();
+      else if (title=="#it{p}_{T} (GeV/#it{c})")
+        contents[i] = jet.Pt();
+      else if (title=="#it{p}_{T}^{MC} (GeV/#it{c})")
+        contents[i] = jet.fMCPt;
+      else if (title=="#it{p}_{T}^{corr} (GeV/#it{c})")
+        contents[i] = jet.fCorrPt;
+      else if (title=="#it{A}_{jet}")
+        contents[i] = jet.fArea;
       else if (title=="NEF")
-        contents[i] = NEF;
-      else if (title=="Z")
-        contents[i] = z;
+        contents[i] = jet.fNEF;
+      else if (title=="#it{z}_{leading}")
+        contents[i] = jet.fZ;
       else if (title=="No. of constituents")
-        contents[i] = n;
-      else if (title=="p_{T,particle}^{leading} (GeV/c)")
-        contents[i] = leadingpt;
+        contents[i] = jet.fNConstituents;
+      else if (title=="#it{p}_{T,particle}^{leading} (GeV/#it{c})")
+        contents[i] = jet.fLeadingPt;
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
 
     fHistJetObservables->Fill(contents);
   }
+}
+
+//________________________________________________________________________
+AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo() :
+  AliTLorentzVector(),
+  fArea(0),
+  fMCPt(0),
+  fNConstituents(0),
+  fNEF(0),
+  fCent(0),
+  fEP(0),
+  fCorrPt(0),
+  fZ(0),
+  fLeadingPt(0)
+{
+}
+
+//________________________________________________________________________
+AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo(const AliEmcalJet& jet) :
+  AliTLorentzVector(),
+  fArea(jet.Area()),
+  fMCPt(jet.MCPt()),
+  fNConstituents(jet.GetNumberOfConstituents()),
+  fNEF(jet.NEF()),
+  fCent(0),
+  fEP(0),
+  fCorrPt(0),
+  fZ(0),
+  fLeadingPt(0)
+{
+  jet.GetMomentum(*this);
 }

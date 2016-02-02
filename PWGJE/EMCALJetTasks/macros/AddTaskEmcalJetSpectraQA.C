@@ -1,8 +1,8 @@
-// AddTaskSAJF.C
+// AddTaskEmcalJetSpectraQA.C
 
-AliAnalysisTaskSAJF* AddTaskSAJF(
-  const char *ntracks            = "Tracks",
-  const char *nclusters          = "CaloClusters",
+AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
+  const char *ntracks            = "usedefault",
+  const char *nclusters          = "usedefault",
   const char *njets              = "Jets",
   const char *nrho               = "Rho",
   Double_t    jetradius          = 0.2,
@@ -18,23 +18,66 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskSAJF", "No analysis manager to connect to.");
-    return NULL;
+    ::Error("AddTaskEmcalJetSpectraQA", "No analysis manager to connect to.");
+    return 0;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
-    ::Error("AddTaskSAJF", "This task requires an input event handler");
-    return NULL;
+    ::Error("AddTaskEmcalJetSpectraQA", "This task requires an input event handler");
+    return 0;
+  }
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
   }
   
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name("AliAnalysisTaskSAJF");
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskEmcalJetSpectraQA");
   if (strcmp(njets,"")) {
     name += "_";
     name += njets;
@@ -51,14 +94,14 @@ AliAnalysisTaskSAJF* AddTaskSAJF(
     name += suffix;
   }
 
-  AliAnalysisTaskSAJF* jetTask = new AliAnalysisTaskSAJF(name);
+  AliAnalysisTaskEmcalJetSpectraQA* jetTask = new AliAnalysisTaskEmcalJetSpectraQA(name);
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  AliParticleContainer *trackCont = jetTask->AddParticleContainer(ntracks);
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
+  AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackName);
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
 
-  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,cutType,jetradius);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets, cutType, jetradius);
   if (jetCont) {
     jetCont->SetRhoName(nrho);
     jetCont->SetPercAreaCut(jetareacut);

@@ -35,6 +35,7 @@ set(SRCS
     AliAnalysisTaskDeltaPt.cxx
     AliAnalysisTaskEmcalJetSample.cxx
     AliAnalysisTaskEmcalJetQA.cxx
+    AliAnalysisTaskEmcalJetSpectraQA.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
     AliAnalysisTaskRhoBase.cxx
@@ -152,7 +153,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
-    UserTasks/AliAnalysisTaskSAJF.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx

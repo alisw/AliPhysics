@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSAJF_H
-#define ALIANALYSISTASKSAJF_H
+#ifndef ALIANALYSISTASKEMCALJETSPECTRAQA_H
+#define ALIANALYSISTASKEMCALJETSPECTRAQA_H
 
 class TH2;
 class TH3;
@@ -7,14 +7,30 @@ class THnSparse;
 
 #include <TH3F.h>
 
+#include "AliTLorentzVector.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
  public:
 
-  AliAnalysisTaskSAJF();
-  AliAnalysisTaskSAJF(const char *name);
-  virtual ~AliAnalysisTaskSAJF() {;}
+  struct AliEmcalJetInfo : public AliTLorentzVector {
+    AliEmcalJetInfo();
+    AliEmcalJetInfo(const AliEmcalJet& jet);
+
+    Double_t fArea;
+    Double_t fMCPt;
+    Double_t fNConstituents;
+    Double_t fNEF;
+    Double_t fCent;
+    Double_t fEP;
+    Double_t fCorrPt;
+    Double_t fZ;
+    Double_t fLeadingPt;
+  };
+
+  AliAnalysisTaskEmcalJetSpectraQA();
+  AliAnalysisTaskEmcalJetSpectraQA(const char *name);
+  virtual ~AliAnalysisTaskEmcalJetSpectraQA() {;}
 
   void                        UserCreateOutputObjects();
 
@@ -27,8 +43,7 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   void                        AllocateTHnSparse();
 
   Bool_t                      FillHistograms();
-  void                        FillJetHisto(Double_t cent, Double_t ep, Double_t eta, Double_t phi, Double_t pt, Double_t MCpt, Double_t corrpt, Double_t area, 
-					   Double_t NEF, Double_t z, Int_t n, Double_t leadingpt);
+  void                        FillJetHisto(const AliEmcalJetInfo& jetInfo);
 
   Int_t                       fHistoType;                   // histogram type (0=TH2, 1=THnSparse)
   Int_t                       fDefaultClusterEnergy;        // default cluster energy
@@ -64,9 +79,9 @@ class AliAnalysisTaskSAJF : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistJetMCPtCorrPt;           //!Jet MCPt vs. corrPt
 
  private:
-  AliAnalysisTaskSAJF(const AliAnalysisTaskSAJF&);            // not implemented
-  AliAnalysisTaskSAJF &operator=(const AliAnalysisTaskSAJF&); // not implemented
+  AliAnalysisTaskEmcalJetSpectraQA(const AliAnalysisTaskEmcalJetSpectraQA&);            // not implemented
+  AliAnalysisTaskEmcalJetSpectraQA &operator=(const AliAnalysisTaskEmcalJetSpectraQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskSAJF, 18) // jet analysis task
+  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 1) // jet spectra QA task
 };
 #endif
