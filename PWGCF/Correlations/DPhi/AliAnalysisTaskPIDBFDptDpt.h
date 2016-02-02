@@ -109,12 +109,12 @@ public:
     virtual     void    SetRequestedCharge_2(int v)     { _requestedCharge_2 = v; }
     virtual     void    SetPtMin1( double v)            { _min_pt_1          = v; }
     virtual     void    SetPtMax1( double v)            { _max_pt_1          = v; }
-    virtual     void    SetEtaMin1(double v)            { _min_eta_1         = v; }
-    virtual     void    SetEtaMax1(double v)            { _max_eta_1         = v; }
+    virtual     void    SetEtaMin1(double v)            { _min_eta_1         = v; } // SetYMin1 acturally 
+    virtual     void    SetEtaMax1(double v)            { _max_eta_1         = v; } // SetYMax1 acturally
     virtual     void    SetPtMin2( double v)            { _min_pt_2          = v; }
     virtual     void    SetPtMax2( double v)            { _max_pt_2          = v; }
-    virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; }
-    virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; }
+    virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; } // SetYMin2 acturally
+    virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; } // SetYMax2 acturally
     virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; }
     virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; }
     virtual     void    SetDcaXYMin(double v)           { _dcaXYMin          = v; }
@@ -185,12 +185,6 @@ protected:
     
     int _tpcnclus;
     double _chi2ndf;
-    
-    //double _min_eta_1;
-    //double _max_eta_1;
-    //double _min_eta_2;
-    //double _max_eta_2;
-    
     
     // event and track wise variables
     
@@ -332,7 +326,9 @@ protected:
     TH1F * _etadis_pion_AliHelperPID;
     TH1F * _ydis_pion_AliHelperPID;
     TH1F * _etadis_without_PID;
-    TH1F * _etadis_before_any_cuts;  
+    TH1F * _ydis_without_PID;
+    TH1F * _etadis_before_any_cuts;
+    TH1F * _ydis_before_any_cuts;
     
     TH1F * _phidis_pion_AliHelperPID;
     TH1F * _phidis_without_PID;

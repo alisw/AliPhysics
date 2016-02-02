@@ -240,7 +240,9 @@ _vertexZ ( 0),
   _etadis_pion_AliHelperPID ( 0),
   _ydis_pion_AliHelperPID ( 0),
   _etadis_without_PID ( 0),
+  _ydis_without_PID ( 0),
   _etadis_before_any_cuts ( 0),
+  _ydis_before_any_cuts ( 0),
   
   _phidis_pion_AliHelperPID ( 0),
   _phidis_without_PID ( 0),
@@ -556,7 +558,9 @@ _Ncluster2  ( 0),
   _etadis_pion_AliHelperPID ( 0),
   _ydis_pion_AliHelperPID ( 0),
   _etadis_without_PID ( 0),
+  _ydis_without_PID ( 0),
   _etadis_before_any_cuts ( 0),
+  _ydis_before_any_cuts ( 0),
   
   _phidis_pion_AliHelperPID ( 0),
   _phidis_without_PID ( 0),
@@ -963,18 +967,17 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
     name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
     name = "zV"; _vertexZ = createHisto1D(name,name,40, -10, 10, "z-Vertex (cm)", _title_counts);
-
     
     name = "etadis_pion_AliHelperPID";          _etadis_pion_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
-    name = "ydis_pion_AliHelperPID";          _ydis_pion_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
+    name = "ydis_pion_AliHelperPID";            _ydis_pion_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
     name = "etadis_without_PID";                _etadis_without_PID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
+    name = "ydis_without_PID";                  _ydis_without_PID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
     name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
-
+    name = "ydis_before_any_cuts";              _ydis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");    
     
     name = "phidis_pion_AliHelperPID";          _phidis_pion_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
     name = "phidis_without_PID";                _phidis_without_PID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-    name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-    
+    name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");    
     
     name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
     name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
@@ -993,8 +996,6 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     
     name = "nsigmakaon_1d";   _nsigmakaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmakaon","counts");
     name = "nsigmaTOFkaon_1d";   _nsigmaTOFkaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmaTOFkaon","counts");
-
-    
     
     name = "msquare_p_pion_AliHelperPID";   _msquare_p_pion_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
     name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
@@ -1244,8 +1245,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     vertexY = vertex->GetY();
                     vertexZ = vertex->GetZ();
                     
-                    if(TMath::Abs(vertexZ) > 10)
-		    //if(TMath::Abs(vertexZ) > 6)
+                    //if(TMath::Abs(vertexZ) > 10)
+		    if(TMath::Abs(vertexZ) > 6)
                     {
                         return;
                     } // Z-Vertex Cut
@@ -1313,15 +1314,24 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    //dcaXY  = t -> DCA();
             //dcaZ   = t -> ZAtDCA();
 
-	    if(charge == 0) continue; //?
-	    
+	    const float mpion = 0.1395701835; // GeV/c2
+	    const float mkaon = 0.493667; // GeV/c2
+	    const float mproton = 0.93827204621; // GeV/c2
+	    if ( particleSpecies == 0 )  mass = mpion;
+	    if ( particleSpecies == 1 )  mass = mkaon;
+	    if ( particleSpecies == 2 )  mass = mproton;
+	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
+
 	    _etadis_before_any_cuts -> Fill( eta );
             _phidis_before_any_cuts -> Fill( phi );
- 
-	    // Kinematics cuts used
-            if( pt < _min_pt_1 || pt > _max_pt_1) continue;
-	    if( eta < _min_eta_1 || eta > _max_eta_1) continue;            
+	    _ydis_before_any_cuts   -> Fill( y );
 
+	    // Kinematics cuts begins:
+	    if(charge == 0) continue; //?
+            if( pt < _min_pt_1 || pt > _max_pt_1) continue;
+	    //if( eta < _min_eta_1 || eta > _max_eta_1) continue;            
+	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
+	    
 	    Double_t pos[3];
 	    t -> GetXYZ(pos);
 	    Double_t DCAX = pos[0] - vertexX;
@@ -1332,10 +1342,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		DCAZ     >  _dcaZMax ||
 		DCAXY    >  _dcaXYMax ) continue;       
 
-	    //if (dcaZ < _dcaZMin || dcaZ > _dcaZMax || dcaXY > _dcaXYMax ) continue; 
-	    
 	    nClus = t -> GetTPCNcls();
-	    if ( nClus < _nClusterMin ) continue;
+	    if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
 	    
 	    _Ncluster1 -> Fill(nClus);
 	    //_Ncluster2->Fill(nClus);   //_Ncluster2 same with _Ncluster1
@@ -1348,13 +1356,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    t0 = fPIDResponse -> GetTOFResponse().GetStartTime(p);
 	    timeTOF -= t0; 
 	    beta = l/timeTOF/c;
-	    //cout  << " Track Length " << l << " T0 " << t0 << " timeTOF " << timeTOF << endl;
-
-	    /*if ( fabs(eta)<0.9 ){
-	      cout  << "  " << l << " " << t0 << "  " << timeTOF << endl;
-	    } else {
-	      cout  << " eta =  " << eta << endl;
-	      }*/
 
 	    msquare = p*p*(1/(beta*beta)-1);
 
@@ -1366,21 +1367,6 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    //_beta_p -> Fill( p, beta );
 	    //_inverse_beta_p -> Fill( p, 1/beta );
 	    //_msquare_p -> Fill( p, msquare );
-            
-	         //for Global tracks
-            //Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( t, (AliPID::EParticleType)AliPID::kElectron));
-            //Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( t, (AliPID::EParticleType)AliPID::kPion));
-            //Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( t, (AliPID::EParticleType)AliPID::kKaon));
-            //Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( t, (AliPID::EParticleType)AliPID::kProton));
-
-	    //cout<<p<<" "<<nsigmapion<<" "<<nsigmakaon<<" "<<nsigmaproton<<" "<<nsigmaelectron<<" "<<endl;
-	    //cout<<fNSigmaCut<<endl;
-
-	    //Jinjin added this block of code to use TOF PID
-	    //Double_t nsigmaTOFelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTOF( t, (AliPID::EParticleType)AliPID::kElectron));
-            //Double_t nsigmaTOFpion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF( t, (AliPID::EParticleType)AliPID::kPion));
-            //Double_t nsigmaTOFkaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF( t, (AliPID::EParticleType)AliPID::kKaon));
-            //Double_t nsigmaTOFproton = TMath::Abs(fPIDResponse->NumberOfSigmasTOF( t, (AliPID::EParticleType)AliPID::kProton));
 
 	    //_nsigmakaon_1d->Fill(nsigmakaon);
 	    //_nsigmaTOFkaon_1d->Fill(nsigmaTOFkaon);
@@ -1388,6 +1374,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    // Eta/phi distribution without any PID cuts
 	    _etadis_without_PID -> Fill( eta );
             _phidis_without_PID -> Fill( phi );
+	    _ydis_without_PID   -> Fill( y );
 
 	    // Eta/phi distribution with TPC cuts without TOF
 	    //if(nsigmakaon < 2)
@@ -1403,10 +1390,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    //	_phidis_withTOF_noTPC->Fill(phi);
 	    //}   
 	    
-	    //if(nsigmaTOFkaon  > 2 || nsigmakaon  > 2 || nsigmaTOFpion < 2 || nsigmaTOFelectron < 2 || nsigmaTOFproton < 2) continue;
-	    
 	    Bool_t TOFPID = fHelperPID -> GetfRequestTOFPID(); 
-	    //cout<<TOFPID<<endl;
 
 	    // PID cuts
 	    Int_t IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE); //returns 0, 1, 2 for pions, kaons, protons, respectively.
@@ -1423,22 +1407,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    //_dedx_p_pion_AliHelperPID -> Fill( p, dedx );
 	    //_beta_p_pion_AliHelperPID -> Fill( p, beta );
 	    //_inverse_beta_p_pion_AliHelperPID -> Fill( p, 1/beta );
-	    //_msquare_p_pion_AliHelperPID -> Fill( p, msquare );
-
-	    const float mpion = 0.1395701835; // GeV/c2
-	    const float mkaon = 0.493667; // GeV/c2
-	    const float mproton = 0.93827204621; // GeV/c2
-	    if ( particleSpecies == 0 )  mass = mpion;
-	    if ( particleSpecies == 1 )  mass = mkaon;
-	    if ( particleSpecies == 2 )  mass = mproton;
-	    //cout  << " mass =  " << mass << endl;
-	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
+	    //_msquare_p_pion_AliHelperPID -> Fill( p, msquare );	    
 	    
             //==== QA ===========================
             _dcaz->Fill(DCAZ);
             _dcaxy->Fill(DCAXY);
             _etadis_pion_AliHelperPID -> Fill( eta );    //Eta/phi distribution after AliHelperPID cuts
-	    _ydis_pion_AliHelperPID -> Fill( y );
+	    _ydis_pion_AliHelperPID   -> Fill( y );
             _phidis_pion_AliHelperPID -> Fill( phi );
             //===================================
             //*************************************************
