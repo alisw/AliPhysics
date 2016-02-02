@@ -341,8 +341,8 @@ void SecondcompClusHits(int nev=-1)
           //
           //Angles determination
 
-          pHit->GetPositionL(xExit,yExit,zExit);
-          pHit->GetPositionL0(xEnt,yEnt,zEnt,tof1);
+		pHit->GetPositionL(xExit,yExit,zExit,gm);
+		pHit->GetPositionL0(xEnt,yEnt,zEnt,tof1,gm);
 
           Double_t dirHit[3]={(xExit-xEnt),(yExit-yEnt),(zExit-zEnt)};
 
@@ -411,8 +411,8 @@ void SecondcompClusHits(int nev=-1)
       	    pHit->Print();
       	    //
       	    double a0,b0,c0,a1,b1,c1,e0;
-      	    pHit->GetPositionL0(a0,b0,c0,e0);
-      	    pHit->GetPositionL(a1,b1,c1);
+      	    pHit->GetPositionL0(a0,b0,c0,e0,gm);
+      	    pHit->GetPositionL(a1,b1,c1,gm);
       	    float cloc[3];
       	    cl->GetLocalXYZ(cloc);
       	    printf("LocH: %e %e %e | %e %e %e\n",a0,b0,c0,a1,b1,c1);

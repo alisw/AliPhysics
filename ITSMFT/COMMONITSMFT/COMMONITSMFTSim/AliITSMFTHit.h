@@ -27,8 +27,6 @@ public:
   AliITSMFTHit(const AliITSMFTHit &h);
   virtual ~AliITSMFTHit() {}
 
-  static void SetGeoManager(AliITSMFTGeomTGeo *gm) {fGeom=gm;}
-
   void SetChip(Int_t mod){fModule=mod;};
   void SetShunt(Int_t shunt);
   void SetPosition(TLorentzVector &x){fX=x.X();fY=x.Y();fZ=x.Z();}
@@ -41,19 +39,24 @@ public:
   void SetMomentum(TLorentzVector &p){fPx=p.Px();fPy=p.Py();fPz=p.Pz();}
 
   Int_t GetChip()  const {return fModule;}
-  
-  void  GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof);
-  void  GetPositionL(Float_t &x,Float_t &y,Float_t &z) {
-     Float_t tf;GetPositionL(x,y,z,tf);
-  }
-  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t) {
-     Float_t xf,yf,zf,tf; GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;t=tf;
-  }
-  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z) {
-     Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);x=xf,y=yf;z=zf;
-  }
-  void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t);
 
+  void GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof,
+		    AliITSMFTGeomTGeo *);
+  void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
+		    AliITSMFTGeomTGeo *g) {
+    Float_t tf;GetPositionL(x,y,z,tf,g);
+  }
+  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,Double_t &t,
+		     AliITSMFTGeomTGeo *g) {
+    Float_t xf,yf,zf,tf; GetPositionL(xf,yf,zf,tf,g);x=xf,y=yf;z=zf;t=tf;
+  }
+  void  GetPositionL(Double_t &x,Double_t &y,Double_t &z,
+		     AliITSMFTGeomTGeo *g) {
+    Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf,g);x=xf,y=yf;z=zf;
+  }
+  void  GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &t,
+		      AliITSMFTGeomTGeo *g);
+  
   void GetPositionG(Float_t &x,Float_t &y,Float_t &z)const {
         // returns the position in the Global frame
      x=fX;y=fY;z=fZ;return;}
@@ -74,8 +77,6 @@ public:
 protected:
    AliITSMFTHit& operator=(const AliITSMFTHit &h);
 
-   static AliITSMFTGeomTGeo *fGeom; //! Geometry manager;
-
    Int_t     fStatus; // Track Status
    Int_t     fModule; // Chip number 
    Float_t   fPx;     // PX of particle at the point of the hit
@@ -89,7 +90,7 @@ protected:
    Float_t   fz0;     // Starting point of this step
    Float_t   ft0;     // Starting point of this step
 
-  ClassDef(AliITSMFTHit,2)  //Hits object
+  ClassDef(AliITSMFTHit,3)  //Hits object
 	 
 }; 
 

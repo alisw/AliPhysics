@@ -13,13 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "TParticle.h"
-
-#include "AliRun.h"
-#include "AliMC.h"
-#include "AliStack.h"
-
-#include "AliITSU.h"
+#include "AliLog.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUHit.h"
 
@@ -57,10 +51,11 @@ AliITSUHit::AliITSUHit(const AliITSUHit &h)
 }
 
 //______________________________________________________________________
-void AliITSUHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,Int_t &det) const
+void AliITSUHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,Int_t &det,
+const AliITSUGeomTGeo *geom) const
 {
   // Returns the layer stave and detector number lables for this
   // ITS chip. Note: indices start from 0!
-  if (!fGeom) { AliFatal("NULL pointer to the geometry!"); return; }
-  ((AliITSUGeomTGeo*)fGeom)->GetChipId(fModule,layer,stave,sstave,mod,det);
+  if (!geom) { AliFatal("NULL pointer to the geometry!"); return; }
+  geom->GetChipId(fModule,layer,stave,sstave,mod,det);
 }  

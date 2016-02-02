@@ -53,9 +53,9 @@ class AliITSMFTChip: public TObject {
     AliITSMFTChip& operator=(const AliITSMFTChip &source);
     
     TObjArray           *fHitsM;     //  Pointer to list of hits on this chip
-    static AliITSMFTGeomTGeo   *fGeomTG;    //! Pointer to geomanager
+    AliITSMFTGeomTGeo   *fGeomTG;    //! Pointer to geomanager
     //
-    ClassDef(AliITSMFTChip,2) // Copy the hits into a more useful order
+    ClassDef(AliITSMFTChip,3) // Copy the hits into a more useful order
 };
 
 inline void AliITSMFTChip::Clear(Option_t *) {fHitsM->Clear();}

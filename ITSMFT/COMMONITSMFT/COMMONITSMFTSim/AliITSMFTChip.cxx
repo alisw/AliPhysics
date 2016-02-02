@@ -27,8 +27,6 @@ using namespace TMath;
 
 ClassImp(AliITSMFTChip)
 
-AliITSMFTGeomTGeo *AliITSMFTChip::fGeomTG = 0;
-
 //_______________________________________________________________________
 //
 // Impementation of class AliITSMFTChip
@@ -40,7 +38,8 @@ AliITSMFTGeomTGeo *AliITSMFTChip::fGeomTG = 0;
 //________________________________________________________________________
 //
 AliITSMFTChip::AliITSMFTChip()
- :fHitsM(0)
+  :fHitsM(0)
+  ,fGeomTG(0)
 {
   // constructor
 }
@@ -48,6 +47,7 @@ AliITSMFTChip::AliITSMFTChip()
 //_________________________________________________________________________
 AliITSMFTChip::AliITSMFTChip(Int_t index, AliITSMFTGeomTGeo* tg)
   :fHitsM(new TObjArray())
+  ,fGeomTG(tg)
 {
   // constructor
   SetIndex(index);
@@ -66,6 +66,7 @@ AliITSMFTChip::~AliITSMFTChip()
 AliITSMFTChip::AliITSMFTChip(const AliITSMFTChip &source)
  :TObject(source)
  ,fHitsM(source.fHitsM)
+ ,fGeomTG(source.fGeomTG)
 {
 //     Copy Constructor 
 }
@@ -141,8 +142,8 @@ Bool_t AliITSMFTChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double
   h1 = (AliITSMFTHit *) (fHitsM->At(hitindex));
   if(h1->StatusEntering()) return kFALSE; // if track entering volume, get index for next step
   de = h1->GetIonization();
-  h1->GetPositionL0(a,c,e,t);
-  h1->GetPositionL(b,d,f);
+  h1->GetPositionL0(a,c,e,t,fGeomTG);
+  h1->GetPositionL(b,d,f,fGeomTG);
   b = b - a;
   d = d - c;
   f = f - e;
@@ -185,8 +186,8 @@ Bool_t AliITSMFTChip::LineSegmentL(Int_t hitindex,Double_t &a,Double_t &b,Double
   } // end if StatusEntering()
     // else stepping
   de = h1->GetIonization();
-  h1->GetPositionL0(a,c,e,tof);
-  h1->GetPositionL(b,d,f);
+  h1->GetPositionL0(a,c,e,tof,fGeomTG);
+  h1->GetPositionL(b,d,f,fGeomTG);
   b = b - a;
   d = d - c;
   f = f - e;
@@ -301,8 +302,8 @@ Bool_t AliITSMFTChip::MedianHitL( AliITSMFTHit *itsHit1,AliITSMFTHit *itsHit2, F
   Float_t x1l,y1l,z1l;
   Float_t x2l,y2l,z2l;
   
-  itsHit1->GetPositionL(x1l,y1l,z1l);
-  itsHit2->GetPositionL(x2l,y2l,z2l);
+  itsHit1->GetPositionL(x1l,y1l,z1l,fGeomTG);
+  itsHit2->GetPositionL(x2l,y2l,z2l,fGeomTG);
   
   yMl = 0.0;
   if((y2l*y1l)<0.) {

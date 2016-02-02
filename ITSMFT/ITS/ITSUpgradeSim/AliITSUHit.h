@@ -14,7 +14,8 @@
 #include "TLorentzVector.h"
 
 #include "AliITSMFTHit.h" 
-#include "AliRun.h"
+
+class AliITSUGeomTGeo;
 
 class AliITSUHit : public AliITSMFTHit {
 
@@ -27,7 +28,7 @@ public:
   virtual ~AliITSUHit() {}
 
   void
-  GetChipID(Int_t &lay,Int_t &stav,Int_t &sstav, Int_t &mod, Int_t &det) const;
+  GetChipID(Int_t &lay,Int_t &stav,Int_t &sstav, Int_t &mod, Int_t &det, const AliITSUGeomTGeo *) const;
 
 protected:
   AliITSUHit& operator=(const AliITSUHit &h);

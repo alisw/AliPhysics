@@ -153,7 +153,6 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fSimInitDone(kFALSE)
 {
   //     The standard Constructor for the ITS class. 
-  AliITSMFTHit::SetGeoManager(fGeomTGeo);
   AliMC* mc = gAlice->GetMCApp();
   if( mc && mc->GetHitLists() ) {
     fHits = new TClonesArray("AliITSUHit",100); // from AliDetector
@@ -444,7 +443,7 @@ void AliITSU::FillChips(TTree *treeH, Int_t /*mask*/)
     Int_t nHits = fHits->GetEntriesFast();
     for (h=0; h<nHits; h++){
       itsHit = (AliITSUHit *)fHits->UncheckedAt(h);
-      itsHit->GetChipID(lay,sta,ssta,mod,chip);
+      itsHit->GetChipID(lay,sta,ssta,mod,chip,fGeomTGeo);
       index = fGeomTGeo->GetChipIndex(lay,sta,ssta,mod,chip); // !!! AliITSHit counts indices from 1!
       itsHit = new( (*fDetHits)[fDetHits->GetEntriesFast()] ) AliITSUHit(*itsHit);
       itsHit->SetUniqueID(h);
@@ -473,7 +472,6 @@ void AliITSU::Hits2SDigits()
   fLoader->LoadSDigits("recreate");
   AliRunLoader* rl = fLoader->GetRunLoader(); 
   //
-  AliITSMFTHit::SetGeoManager(fGeomTGeo);
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     rl->GetEvent(iEvent);
     if (!fLoader->TreeS()) fLoader->MakeTree("S");

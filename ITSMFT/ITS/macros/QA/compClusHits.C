@@ -313,8 +313,8 @@ void compClusHits(int nev=-1)
 	    pHit->Print();
 	    //
 	    double a0,b0,c0,a1,b1,c1,e0;
-	    pHit->GetPositionL0(a0,b0,c0,e0);
-	    pHit->GetPositionL(a1,b1,c1);
+	    pHit->GetPositionL0(a0,b0,c0,e0,gm);
+	    pHit->GetPositionL(a1,b1,c1,gm);
 	    float cloc[3];
 	    cl->GetLocalXYZ(cloc);
 	    printf("LocH: %e %e %e | %e %e %e\n",a0,b0,c0,a1,b1,c1);

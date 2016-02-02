@@ -25,8 +25,6 @@
 
 ClassImp(AliITSMFTHit)
 
-AliITSMFTGeomTGeo *AliITSMFTHit::fGeom = 0;
-
 ////////////////////////////////////////////////////////////////////////
 //
 // At the moment the same functionality/data-members as parent AliITShit
@@ -174,14 +172,15 @@ void AliITSMFTHit::SetShunt(Int_t shunt){
 }
 
 //______________________________________________________________________
-void AliITSMFTHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
+void AliITSMFTHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof,
+				AliITSMFTGeomTGeo *geom)
 {
   // Returns the position and time of flight of this hit in the local
   // coordinates of this chip, and in the units of the Monte Carlo.
   //
-  if (!fGeom) AliFatal("NULL pointer to the geometry!");
+  if (!geom) AliFatal("NULL pointer to the geometry!");
   double g[3]={fX,fY,fZ},l[3];
-  fGeom->GetMatrixSens(fModule)->MasterToLocal(g,l);
+  geom->GetMatrixSens(fModule)->MasterToLocal(g,l);
   x = l[0];
   y = l[1];
   z = l[2];
@@ -190,13 +189,15 @@ void AliITSMFTHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
 }
 
 //______________________________________________________________________
-void AliITSMFTHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof)
+void
+AliITSMFTHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof,
+			    AliITSMFTGeomTGeo *geom)
 {
   // Returns the initial position and time of flight of this hit 
   // in the local coordinates of this chip, and in the units of the 
-  if (!fGeom) AliFatal("NULL pointer to the geometry!");
+  if (!geom) AliFatal("NULL pointer to the geometry!");
   double g[3]={fx0,fy0,fz0},l[3];  
-  fGeom->GetMatrixSens(fModule)->MasterToLocal(g,l);
+  geom->GetMatrixSens(fModule)->MasterToLocal(g,l);
   x = l[0];
   y = l[1];
   z = l[2];
