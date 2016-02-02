@@ -1937,12 +1937,6 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
 
 void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1){
   //
-  /*
-    const char * inputFile="ResidualMapFull_1.root"
-    const char * inputTree="deltaRPhiTPCITSTRDDist"
-    Float_t sector0=1, sector1 =4;
-    Float_t theta0=0, theta1=1;
-  */
   /// 
   /// Make ND local regression, QA  for later usage
   /// Parameters:
@@ -1954,6 +1948,15 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   //  4.) Make QA plots
   //  5.) Export QA trending variables into trending tree
   //
+  /*
+    Example usage:
+    const char * inputFile="ResidualMapFull_1.root"
+    const char * inputTree="deltaRPhiTPCITSTRDDist"
+    Float_t sector0=3, sector1 =5;
+    Float_t theta0=0, theta1=1;
+    AliTPCcalibAlignInterpolation::MakeNDFit(inputFile,inputTree, sector0,sector1, theta0,theta1);
+  */
+
   TTreeSRedirector * pcstream = new TTreeSRedirector(TString::Format("%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
   TTreeSRedirector * pcstreamFit = new TTreeSRedirector(TString::Format("fitTree_%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
@@ -1967,6 +1970,11 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
     ::Error("MakeNDFit","Intput tree %s not accessible\n",inputTree);
     return;    
   }
+  TTree *treeMeta = (TTree*)fdist->Get("metaData");
+  pcstream->GetFile()->cd();
+  TTree *treeMetaCopy =  treeMeta->CopyTree("1");
+  treeMetaCopy->Write("metaData");
+  delete treeMetaCopy;
   //
   // 1.) Make NDLocal regression fits
   //
@@ -2089,6 +2097,8 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   //
   // 4.) Make standard QA plot   
   //
+  gStyle->SetLabelSize(0.06,"XYZ");
+  gStyle->SetTitleSize(0.06,"XYZ");
   TCanvas *canvasQA = new TCanvas("canvasQA","canvasQA",1200,1000);
   canvasQA->Divide(1,3);
   //
@@ -2140,9 +2150,53 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   treeDist->GetHistogram()->Write("hisQAPullDiffFit");
 
   canvasQA->SaveAs((TString::Format("%sFit_sec%d_%d_theta%d_%dQA.png",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data()));
+
+  TCanvas *canvasQAFit = new TCanvas("canvasQAFit","canvasQAFit",1200,1000); 
+  canvasQAFit->SetRightMargin(0.01);
+  canvasQAFit->Divide(1,5,0,0); 
+  treeDist->SetMarkerStyle(25);
+  treeDist->SetMarkerSize(0.5);
+  //
+  {
+    canvasQAFit->cd(1)->SetRightMargin(0.1);
+    treeDist->Draw("delta:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    canvasQAFit->cd(2)->SetRightMargin(0.1);
+    treeDist->Draw("delta-delta_Fit0:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    canvasQAFit->cd(3)->SetRightMargin(0.1);
+    treeDist->Draw("delta-delta_Fit1:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    canvasQAFit->cd(4)->SetRightMargin(0.1);
+    treeDist->Draw("delta-delta_Fit2:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    canvasQAFit->cd(5)->SetRightMargin(0.1);
+    treeDist->Draw("delta_Fit0-delta_Fit2:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+  }
+  canvasQAFit->SaveAs((TString::Format("%sFit_sec%d_%d_theta%d_%dQAFit.png",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data()));
   TObjString input=inputTree;
   //
   // 5.) Export trending variables - used for validation of the fit
+  //
+  treeMeta->Draw("runNumber:selHis:fillCounter:clusterCounter:meanTime:ntracksUsed:startTime:stopTime","1","goffpara");
+  (*pcstream)<<"NDFitTrending"<<               // cp of subset of info from meta data (rest accessible in the metadata tree also avaialble in file)
+    "run="<<treeMeta->GetVal(0)[0]<<      
+    "selHis="<<treeMeta->GetVal(1)[0]<<
+    "fillCounter="<<treeMeta->GetVal(2)[0]<<
+    "clusterCounter="<<treeMeta->GetVal(3)[0]<<
+    "meanTime="<<treeMeta->GetVal(4)[0]<<
+    "ntracksUsed="<<treeMeta->GetVal(5)[0]<<
+    "startTime="<<treeMeta->GetVal(6)[0]<<
+    "stopTime="<<treeMeta->GetVal(7)[0];
+  Int_t entriesCl= treeMeta->Draw("grNcl72.fY:grNcl73.fY:grNcl74.fY:grNcl75.fY","(grNcl72.fX>startTime&&grNcl72.fX<stopTime&&grNcl72.fY!=0)","goffpara");
+  TVectorF vecNcl(8);
+  if (entriesCl>0) {
+    for (Int_t icl=0; icl<4; icl++){
+      vecNcl[icl]=TMath::Median(entriesCl, treeMeta->GetVal(icl));
+    }
+    entriesCl= treeMeta->Draw("grNclUsed72.fY:grNclUsed73.fY:grNclUsed74.fY:grNclUsed75.fY","(grNcl72.fX>startTime&&grNcl72.fX<stopTime&&grNcl72.fY!=0)","goffpara");
+    for (Int_t icl=0; icl<4; icl++){
+      vecNcl[icl+4]=TMath::Median(entriesCl, treeMeta->GetVal(icl));
+    }
+  }
+  (*pcstream)<<"NDFitTrending"<<               // cp of subset of info from meta data (rest accessible in the metadata tree also avaialble in file)
+    "vecNclCounter.="<<&vecNcl;
   //
   (*pcstream)<<"NDFitTrending"<<
     "input.="<<&input<<                // name of the input file
@@ -2172,7 +2226,7 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
       TString::Format("grQuantiles%d.=",iq).Data()<<grQuantiles[iq];
   }
   (*pcstream)<<"NDFitTrending"<<"\n";
-  
+  delete treeMeta;
   delete pcstream;
   delete pcstreamFit;
   
