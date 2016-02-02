@@ -818,8 +818,10 @@ copyFileToRemote() (
         echo "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
           local) mkdir -p "$(dirname "$dst")"
+                 fullsrc=$(get_realpath "$src")
+                 fulldst=$(get_realpath "$dst")
                  printExec cp "$src" "$dst"
-                 if [[ $? != 0 ]]; then
+                 if [[ $? != 0 && "$fullsrc" != "$fulldst" ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
