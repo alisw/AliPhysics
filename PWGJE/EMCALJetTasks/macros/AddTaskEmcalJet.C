@@ -1,7 +1,7 @@
 AliEmcalJetTask* AddTaskEmcalJet(
   const UInt_t type           = AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet | AliEmcalJetTask::kR040Jet,
-  const char *nTracks         = "Tracks",
-  const char *nClusters       = "CaloClusters",
+  const char *nTracks         = "usedefault",
+  const char *nClusters       = "usedefault",
   const Double_t minTrPt      = 0.15,
   const Double_t minClPt      = 0.30,
   const Double_t ghostArea    = 0.005,
@@ -26,12 +26,28 @@ AliEmcalJetTask* AddTaskEmcalJet(
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
     ::Error("AddTaskEmcalJet", "This task requires an input event handler");
     return 0;
   }
   
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
@@ -39,10 +55,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   char *algoString;
   if ((type & AliEmcalJetTask::kKT) != 0) {
     algoString = "KT";
-    //    minJetPt = 0.1;
   } else if ((type & AliEmcalJetTask::kAKT) != 0) {
     algoString = "AKT";
-    //    minJetPt = 1.0;
   }
 
   char *typeString;
@@ -101,16 +115,43 @@ AliEmcalJetTask* AddTaskEmcalJet(
     return 0;
   }
 
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
   TString name;
-  if (*nTracks && *nClusters)
+  if (!trackName.IsNull() && !clusName.IsNull())
     name = TString(Form("%s_%s%s%s_%s_%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,nTracks,pTString,nClusters,ETString,recombSchemeString));
-  else if (!*nClusters)
+                        tag,algoString,typeString,radiusString,trackName.Data(),pTString,clusName.Data(),ETString,recombSchemeString));
+  else if (clusName.IsNull())
     name = TString(Form("%s_%s%s%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,nTracks,pTString,recombSchemeString));
-  else if (!*nTracks)
+                        tag,algoString,typeString,radiusString,trackName.Data(),pTString,recombSchemeString));
+  else if (trackName.IsNull())
     name = TString(Form("%s_%s%s%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,nClusters,ETString,recombSchemeString));
+                        tag,algoString,typeString,radiusString,clusName.Data(),ETString,recombSchemeString));
 
   std::cout << "Jet task name: " << name.Data() << std::endl;
  
@@ -118,8 +159,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   if (mgrTask) return mgrTask;  
 
   AliEmcalJetTask* jetTask = new AliEmcalJetTask(name, useExchangeCont);
-  jetTask->SetTracksName(nTracks);
-  jetTask->SetClusName(nClusters);
+  jetTask->SetTracksName(trackName);
+  jetTask->SetClusName(clusName);
   jetTask->SetJetsName(name);
   jetTask->SetJetType(type);
   jetTask->SetMinJetTrackPt(minTrPt);
@@ -146,8 +187,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   TObjArray* cnt = mgr->GetContainers();
 
   if (useExchangeCont > 0) {
-    if (strcmp(nTracks, "") != 0) {
-      AliAnalysisDataContainer* trackCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nTracks));
+    if (!trackName.IsNull()) {
+      AliAnalysisDataContainer* trackCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(trackName));
       if (trackCont) {
         mgr->ConnectInput(jetTask, 1, trackCont);
       }
@@ -158,8 +199,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   }
 
   if (useExchangeCont > 1) {
-    if (strcmp(nClusters, "") != 0) {
-      AliAnalysisDataContainer* clusCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nClusters));
+    if (!clusName.IsNull()) {
+      AliAnalysisDataContainer* clusCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(clusName));
       if (clusCont) {
         mgr->ConnectInput(jetTask, 2, clusCont);
       }
@@ -174,8 +215,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
 
 
 AliEmcalJetTask* AddTaskEmcalJet(
-  const char *nTracks        = "Tracks",
-  const char *nClusters      = "CaloClusters",
+  const char *nTracks        = "usedefault",
+  const char *nClusters      = "usedefault",
   const Int_t algo           = 1,
   const Double_t radius      = 0.4,
   const Int_t type           = 0,
