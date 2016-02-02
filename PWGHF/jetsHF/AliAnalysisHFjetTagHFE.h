@@ -46,6 +46,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TClonesArray  *ftrack;
   TClonesArray  *fCaloClusters;
   AliPIDResponse *fpidResponse; //!pid response
+
+    Float_t fcentMim; // mim. centrality
+    Float_t fcentMax; // max. centrality
+
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
   TH1                       **fHistClustersPt;          //!Cluster pt spectrum
@@ -100,6 +104,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
   void MakeParticleLevelJet(THnSparse *pJet);
+  void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
+  void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
  private:
 
