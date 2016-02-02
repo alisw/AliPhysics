@@ -11,6 +11,10 @@ AliFemtoEvent* AliFemtoEventReaderAODMultSelection::CopyAODtoFemtoEvent()
 {
   AliFemtoEvent *femto_event = AliFemtoEventReaderAODChain::CopyAODtoFemtoEvent();
 
+  if (femto_event == NULL) {
+    return femto_event;
+  }
+
   AliMultSelection *mult_selection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
   if (mult_selection == NULL) {
     cout << "W-AliFemtoEventReaderAODMultSelection: No AliMultSelection found."
