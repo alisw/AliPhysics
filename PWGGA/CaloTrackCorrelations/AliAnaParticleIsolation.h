@@ -596,10 +596,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCConversionLambda0Rcut[6][2];            //!<! Shower shape of photon conversions, depending on conversion vertex.
   TH2F *   fhMCConversionLambda0RcutTRD[6][2];         //!<! Shower shape of photon conversions, depending on conversion vertex. SM covered by TRD
   
-  TH2F *   fhLam0EMCALRegion   [2][4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
-  TH2F *   fhLam0EMCALRegionTRD[2][4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
-  TH2F *   fhLam0EMCALRegionMCConvRcut   [2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
-  TH2F *   fhLam0EMCALRegionTRDMCConvRcut[2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
+//TH2F *   fhLam0EMCALRegion   [2][4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
+//TH2F *   fhLam0EMCALRegionTRD[2][4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
+//TH2F *   fhLam0EMCALRegionMCConvRcut   [2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
+//TH2F *   fhLam0EMCALRegionTRDMCConvRcut[2][4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
+
+  TH2F *   fhLam0EMCALRegionPerSM[2][4][3][20];          //!<! Cluster lambda0 vs  E, in different EMCal regions
+  TH2F *   fhEtaPhiLam0BinPtBin[2][7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
 
   
   /// Copy constructor not implemented.
@@ -609,7 +612,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,36) ;
+  ClassDef(AliAnaParticleIsolation,37) ;
   /// \endcond
 
 } ;
