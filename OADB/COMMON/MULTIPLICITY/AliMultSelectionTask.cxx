@@ -1191,7 +1191,15 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 
     //Autodetect Period Name
     TString lPeriodName     = GetPeriodNameByRunNumber();
-    TString lProductionName = GetPeriodNameByPath( lPathInput );
+    AliWarning("Autodetecting production name via LPM tag...");
+    TString lProductionName = GetPeriodNameByLPM();
+    if( lProductionName.EqualTo("") ){
+	AliWarning("LPM Tag didn't work, autodetecting via path..."); 
+	lProductionName = GetPeriodNameByPath( lPathInput );
+	if (!lProductionName.Contains("LHC")){
+	   AliWarning("Autodetect via path seems to not have worked?"); 
+	}
+    }
 
     AliWarning("==================================================");
     AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
@@ -1553,6 +1561,49 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
     Bool_t lReturnValue = !(fUtils->IsSPDClusterVsTrackletBG ( event ) );
     return lReturnValue;
 }
+
+//______________________________________________________________________
+TString AliMultSelectionTask::GetPeriodNameByLPM() 
+{
+    //==================================
+    // Setup initial Info
+    Bool_t lLocated = kFALSE;
+    TString lTag = "LPMProductionTag";
+    TString lProductionName = "";
+
+    //==================================
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!handler) return lProductionName; //failed!
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    //==================================
+    // Get Production name
+    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    if(lArrStr->GetEntriesFast()) {
+        TIter iString(lArrStr);
+        TObjString* os=0;
+        Int_t j=0;
+        while ((os=(TObjString*)iString())) {
+            if( os->GetString().Contains(lTag.Data()) ){
+                lLocated = kTRUE;
+                lProductionName = os->GetString().Data();
+                //Remove Label
+                lProductionName.ReplaceAll(lTag.Data(),"");
+                //Remove any remaining whitespace (just in case)
+                lProductionName.ReplaceAll("=","");
+                lProductionName.ReplaceAll(" ","");
+            }
+            j++;
+        }
+    }
+    //Memory cleanup
+    delete lArrStr;
+    //Return production name
+    return lProductionName;
+}
+
 //______________________________________________________________________
 TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
 {
