@@ -7265,17 +7265,17 @@ Double_t AliAnalysisTaskJetChem::AreaCircSegment(Double_t dRadius, Double_t dDis
 void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist)
 
 {//Jet matching cuts (FractionPtEmbedded(MC) = 0.5, DeltaREmb(MC) = 0.75*R) are already applied
-	  
+  
   Float_t jetPt = jet->Pt();//getting smeared (extra) jet pt or true jet pt (unsmeared), to be set in AddTask macro and only for extra only branch!!
   if(fUseExtraJetPt){
-
-     if(fDebug > 2)std::cout<<"Use Extra JetPt:  "<<jetPt<<std::endl;
-
+    
+    if(fDebug > 2)std::cout<<"Use Extra JetPt:  "<<jetPt<<std::endl;
+    
     if(extraJet) jetPt = extraJet->Pt();
-
-
+    
+    
     else {jetPt = 0;  if(fDebug > 2)std::cout<<" ATTENTION!! No extra jet available!!!!! "<<std::endl;
-}
+    }
   }
   
   fh1PtEmbAfterMatch->Fill(jetPt);
@@ -7363,7 +7363,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	//######
 	
-	if(fDebug>2)Printf("%s:%d nK0s total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0list->GetEntries(),GetFFRadius());
+	if(fDebug>2)Printf("%s:%d nK0s total: %d, in emb. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0Emblist->GetEntries(),GetFFRadius());
 
 	if(fUseExtraTracks == 1){//only for extra particles used	
 	  //standard V0s for UE V0 subtraction
@@ -7399,9 +7399,10 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    Double_t vK0sEmbConeStandard[4] = {jetPt, 0., 0., -100.};
 	    fhnK0sEmbConeStandard->Fill(vK0sEmbConeStandard);
 	  }
-	}
+	}// only for extra tracks used
+
 	//######
-	//V0s in embedded jet cones
+	//V0s in embedded jet cones, both extra tracks and extraonly tracks
 	
 	for(Int_t it=0; it<jetConeK0Emblist->GetSize(); ++it){ // loop for K0s in jet cone
 	  
@@ -7590,7 +7591,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	//######
 	
-	if(fDebug>2)Printf("%s:%d nLa total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nLa,jetConeLalist->GetEntries(),GetFFRadius());
+	if(fDebug>2)Printf("%s:%d nLa total: %d, in embedded jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nLa,jetConeLaEmblist->GetEntries(),GetFFRadius());
 	
 
 	if(fUseExtraTracks == 1){//only for extra particles used, V0 UE subtraction method
@@ -7815,7 +7816,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	//######
 	
-	if(fDebug>2)Printf("%s:%d nALa total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nALa,jetConeALalist->GetEntries(),GetFFRadius());
+	if(fDebug>2)Printf("%s:%d nALa total: %d, in embedded jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nALa,jetConeALaEmblist->GetEntries(),GetFFRadius());
 	
 	//standard Antilambdas in jets for UE V0 subtraction
 
