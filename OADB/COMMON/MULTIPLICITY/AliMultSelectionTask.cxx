@@ -1576,6 +1576,7 @@ TString AliMultSelectionTask::GetPeriodNameByLPM()
     AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (!handler) return lProductionName; //failed!
     TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    if (!prodInfoData) return lProductionName; //failed!
     TString lAlirootVersion(prodInfoData->GetTitle());
     
     //==================================
