@@ -546,7 +546,7 @@ goMergeCPass()
   ocdbStorage=$2
   configFile=$3
   export runNumber=$4
-  calibrationFilesToMerge=$5  #can be a non-existent file, will then be produced on the fly
+  calibrationFilesToMerge=$5
   shift 5
 
   # MergeCPass1 takes two more arguments.
