@@ -673,7 +673,7 @@ void THistManager::TokenizeFilename(const char *name, const char *delim, std::ve
 }
 
 //______________________________________________________________________________
-const char *THistManager::basename(const char *path) const {
+TString THistManager::basename(const char *path) const {
 	/*
 	 * Helper function extracting the basename from a given histogram path.
 	 *
@@ -687,7 +687,7 @@ const char *THistManager::basename(const char *path) const {
 }
 
 //______________________________________________________________________________
-const char *THistManager::histname(const char *path) const {
+TString THistManager::histname(const char *path) const {
 	/*
 	 * Helper function extracting the histogram name from a given histogram path.
 	 *
