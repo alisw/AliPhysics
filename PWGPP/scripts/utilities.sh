@@ -763,8 +763,10 @@ copyFileFromRemote() (
       for ((i=1; i<=maxCopyTries; i++)); do
         echo "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
-          local) printExec cp "$src" "$dst"
-                 if [[ $? != 0 ]]; then
+          local) fullsrc=$(get_realpath "$src")
+                 fulldst=$(get_realpath "$dst")
+                 printExec cp "$src" "$dst"
+                 if [[ $? != 0  && "$fullsrc" != "$fulldst" ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
