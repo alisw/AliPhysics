@@ -10,9 +10,15 @@
 
 #include <AliAnalysisTaskSE.h>
 
+#include <vector>
+
+class TArray;
 class THistManager;
+class TList;
 
 class AliAnalysisUtils;
+class AliESDtrackCuts;
+class AliVTrack;
 class AliVEvent;
 
 namespace EMCalTriggerPtAnalysis {
@@ -28,9 +34,16 @@ public:
 
 protected:
   Bool_t FakeVertexSelection2013pA(const AliVEvent * const inputevent) const;
+  void CreatePtBinning(TArrayD& binning) const;
+
+  UChar_t FilterEvent() const;
+  std::vector<const AliVTrack *> FilterTracks() const;
+  void FillEvent(const char *filterstep, double vz);
+  void FillTracks(const char *filterstep, const std::vector<const AliVTrack *> &tracks);
 
 private:
   AliAnalysisUtils          *fAnalysisUtils;
+  AliESDtrackCuts           *fTrackCuts;
   THistManager              *fHistos;
 
   AliAnalysisTaskEventFilter(const AliAnalysisTaskEventFilter&);
