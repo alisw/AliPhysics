@@ -160,7 +160,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     Float_t  fEMCtimeMin     = -50e-6;
     Float_t  fEMCtimeMax     =  50e-6;
     Float_t  fEMCtimeCut     =  1e6;
-    if (strcmp(cRunPeriod, "LHC11h") == 0) {
+    if (sRunPeriod == "LHC11h") {
       fEMCtimeMin = -50e-9;
       fEMCtimeMax = 100e-9;
     }
