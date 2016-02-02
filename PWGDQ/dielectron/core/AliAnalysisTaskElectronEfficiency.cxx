@@ -979,9 +979,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         if(!AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
         Int_t pPDG = part->PdgCode();
         if(TMath::Abs(pPDG) != 11) continue;
+        if(part->Pt() < 0.2 || part->Pt() > 10000.)  continue;
+        if(TMath::Abs(part->Eta()) > 0.8) continue;
         AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
         if(!mother){ Printf("bad mother"); continue; }
-        Bool_t mPrim = mother->Particle()->IsPrimary();
         if(!mother->Particle()->IsPrimary()) continue;
          char buffer [50];
          sprintf(buffer,"%d",TMath::Abs(mother->PdgCode()));
