@@ -87,6 +87,7 @@ fArmPodTree(0x0),
 fTreeSRedirector(0x0),
 fTreeMCrec(0x0),
 fTreeMCgen(0x0),
+fTreeDnchDeta(0x0),
 fTreeMC(0x0),
 fTreedEdxCheck(0x0),
 fTreeBayes(0x0),
@@ -246,6 +247,7 @@ fArmPodTree(0x0),
 fTreeSRedirector(0x0),
 fTreeMCrec(0x0),
 fTreeMCgen(0x0),
+fTreeDnchDeta(0x0),
 fTreeMC(0x0),
 fTreedEdxCheck(0x0),
 fTreeBayes(0x0),
@@ -386,6 +388,12 @@ fHistArmPod(0)
   //
   //         standard constructur which should be used
   //
+   /* fast compilation test
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  .L /u/marsland/PHD/macros/marsland_EbyeRatios/AliAnalysisTaskEbyeIterPID.cxx++
+  .L /hera/alice/marsland/train/trunk/marsland_EbyeRatios/AliAnalysisTaskEbyeIterPID.cxx++
+  */
   cout << "===================================================================================="<< endl;
   cout << "===================================================================================="<< endl;
   cout << "===================================================================================="<< endl;
@@ -419,6 +427,7 @@ fHistArmPod(0)
   DefineOutput(9, TTree::Class());
   DefineOutput(10, TTree::Class());
   DefineOutput(11, TTree::Class());
+  DefineOutput(12, TTree::Class());
   // ==========================================
 
 }
@@ -432,7 +441,7 @@ AliAnalysisTaskEbyeIterPID::~AliAnalysisTaskEbyeIterPID() {
   delete fHistPosEffMatrixRec;   fHistPosEffMatrixRec   = NULL;
   delete fHistNegEffMatrixRec;   fHistNegEffMatrixRec   = NULL;
   delete fHistPosEffMatrixGen;   fHistPosEffMatrixGen   = NULL;
-  delete fHistNegEffMatrixGen;   fHistNegEffMatrixGen   = NULL; 
+  delete fHistNegEffMatrixGen;   fHistNegEffMatrixGen   = NULL;
   delete fHistdEdxTPC;           fHistdEdxTPC           = NULL;
   delete fHistEmptyEvent;        fHistEmptyEvent        = NULL;
   delete fHistCentrality;        fHistCentrality        = NULL;
@@ -571,7 +580,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   Int_t dEdxnBinsClean = Int_t((fdEdxCleanUp-fdEdxDown)/fdEdxBinWidth);
   // 0 --> assumed particle: 0. electron, 1. pion, 2. kaon, 3. proton, 5. deuteron
   // 1 --> sign
-  // 2 --> centrality
+  // 2 --> Centrality
   // 3 --> eta
   // 4 --> momentum
   // 5 --> Expected Sigma of a given track
@@ -581,8 +590,8 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   Int_t   binsExpected[nExpectedbins]  = {   5,   1,  fnCentbinsData,  fnEtaBins,   fnMomBins,   600,   4000};   
   Double_t xminExpected[nExpectedbins] = {  0., -2.,   0.,             fEtaDown,    fMomDown,     1.,   fdEdxDown};
   Double_t xmaxExpected[nExpectedbins] = {  5.,  2.,  80.,             fEtaUp,      fMomUp,      61.,   fdEdxUp};
-  TString axisNameExpected[nExpectedbins]   = {"particleType","sign","centrality"    ,"eta" ,"momentum" ,"ExSigma","ExMean"};
-  TString axisTitleExpected[nExpectedbins]  = {"particleType","sign","centrality [%]","#eta","p (GeV/c)", "#sigma","#mu"};
+  TString axisNameExpected[nExpectedbins]   = {"particleType","sign","Centrality"    ,"eta" ,"momentum" ,"ExSigma","ExMean"};
+  TString axisTitleExpected[nExpectedbins]  = {"particleType","sign","Centrality [%]","#eta","#it{p} (GeV/#it{c})", "#sigma","#mu"};
   fhnExpected = new THnSparseF("hExpected","Expected hists",7,binsExpected,xminExpected,xmaxExpected);
   fhnExpected->GetAxis(2)->Set(fnCentbinsData-1,fxCentBins);
   for (Int_t iaxis=0; iaxis<nExpectedbins;iaxis++){
@@ -593,7 +602,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   //
   // ************************** dEdx histograms ***************************** 
   // 0 --> sign
-  // 1 --> centrality
+  // 1 --> Centrality
   // 2 --> eta
   // 3 --> momentum
   // 4 --> TPC dEdx
@@ -604,8 +613,8 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   Double_t xmaxdEdx[nhistbins] = { 2,  80.,            fEtaUp,      fMomUp,       fdEdxUp};
   fhndEdx= new THnSparseF("hdEdx","Inclusive dEdx Spectrum"  ,nhistbins,binsdEdx,xmindEdx,xmaxdEdx);
   fhndEdx->GetAxis(1)->Set(fnCentbinsData-1,fxCentBins);
-  TString axisNamedEdx[nhistbins]  = {"sign", "centrality", "eta"  ,"momentum"  ,"TPC dEdx"};
-  TString axisTitledEdx[nhistbins] = {"sign" , "cent (%)",   "#eta" ,"p (GeV/#it{c})" ,"TPC d#it{E}/d#it{x} Signal (a.u.)"};
+  TString axisNamedEdx[nhistbins]  = {"sign", "Centrality", "eta"  ,"momentum"  ,"TPC dEdx"};
+  TString axisTitledEdx[nhistbins] = {"sign" , "cent (%)",   "#eta" ,"#it{p} (GeV/#it{c})" ,"TPC d#it{E}/d#it{x} Signal (a.u.)"};
    for (Int_t iaxis=0; iaxis<nhistbins;iaxis++) {
      fhndEdx->GetAxis(iaxis)->SetName(axisNamedEdx[iaxis]);
      fhndEdx->GetAxis(iaxis)->SetTitle(axisTitledEdx[iaxis]);
@@ -614,7 +623,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   //
   // *************** Clean Kaon, Electrons and dEdx histograms ***************** 
   // 0 --> sign
-  // 1 --> centrality
+  // 1 --> Centrality
   // 2 --> eta
   // 3 --> momentum
   // 4 --> TPC dEdx
@@ -638,8 +647,8 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   fhnCleanDe = new THnSparseF("hCleanDe","Clean Deuterons",nhistbins,binsCleanDe,xminCleanDe,xmaxCleanDe);
   fhnCleanDe->GetAxis(1)->Set(fnCentbinsData-1,fxCentBins);
   // Set the branch names
-  TString axisNamedEdxClean[nhistbins]   = {"sign" ,"centrality"     ,"eta"  ,"momentum"  ,"TPC dEdx"};
-  TString axisTitledEdxClean[nhistbins]  = {"sign" ,"centrality [%]" ,"#eta" ,"p (GeV/c)" ,"TPC d#it{E}/d#it{x} Signal (a.u.)"};
+  TString axisNamedEdxClean[nhistbins]   = {"sign" ,"Centrality"     ,"eta"  ,"momentum"  ,"TPC dEdx"};
+  TString axisTitledEdxClean[nhistbins]  = {"sign" ,"Centrality [%]" ,"#eta" ,"#it{p} (GeV/#it{c})" ,"TPC d#it{E}/d#it{x} Signal (a.u.)"};
   for (Int_t iaxis=0; iaxis<nhistbins;iaxis++){
     fhnCleanEl->GetAxis(iaxis)->SetName(axisNamedEdxClean[iaxis]);  fhnCleanEl->GetAxis(iaxis)->SetTitle(axisTitledEdxClean[iaxis]);
     fhnCleanKa->GetAxis(iaxis)->SetName(axisNamedEdxClean[iaxis]);  fhnCleanKa->GetAxis(iaxis)->SetTitle(axisTitledEdxClean[iaxis]);
@@ -649,16 +658,20 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   //
   // ****************** Efficiency matrix histograms ************************ 
   const Int_t ndim=5;
-  Int_t nbins0[ndim]  ={3,9,26 , 16 ,50  };
+  Int_t nbins0[ndim]  ={3,9,50 , 32 ,50  };
   Double_t xmin0[ndim]={0,0,0.2,-0.8,0.  };
-  Double_t xmax0[ndim]={3,9,1.5, 0.8,6.25};
+  Double_t xmax0[ndim]={3,9,3.2, 0.8,6.25};
   if(fEffMatrix){
     fHistPosEffMatrixRec  =new THnF("fHistPosEffMatrixRec","fHistPosEffMatrixRec",ndim, nbins0,xmin0,xmax0);
     fHistNegEffMatrixRec  =new THnF("fHistNegEffMatrixRec","fHistNegEffMatrixRec",ndim, nbins0,xmin0,xmax0);
     fHistPosEffMatrixGen  =new THnF("fHistPosEffMatrixGen","fHistPosEffMatrixGen",ndim, nbins0,xmin0,xmax0);
     fHistNegEffMatrixGen  =new THnF("fHistNegEffMatrixGen","fHistNegEffMatrixGen",ndim, nbins0,xmin0,xmax0);
-    TString axisNameEff[ndim]  = {"particle"      ,"centrality"     ,"momentum"      ,"eta"  ,"phi"};
-    TString axisTitleEff[ndim] = {"particle type" ,"centrality (%)" ,"p_{T} (GeV/c)" ,"#eta" ,"#phi"};
+    fHistPosEffMatrixRec->GetAxis(1)->Set(fnCentbinsData-1,fxCentBins);
+    fHistNegEffMatrixRec->GetAxis(1)->Set(fnCentbinsData-1,fxCentBins);
+    fHistPosEffMatrixGen->GetAxis(1)->Set(fnCentbinsData-1,fxCentBins);
+    fHistNegEffMatrixGen->GetAxis(1)->Set(fnCentbinsData-1,fxCentBins);
+    TString axisNameEff[ndim]  = {"particle"      ,"Centrality"     ,"momentum"      ,"eta"  ,"phi"};
+    TString axisTitleEff[ndim] = {"particle type" ,"Centrality (%)" ,"#it{p}_{T} (GeV/#it{c})" ,"#eta" ,"#phi"};
     for (Int_t iEff=0; iEff<ndim;iEff++){
       fHistPosEffMatrixRec->GetAxis(iEff)->SetName(axisNameEff[iEff]);  fHistPosEffMatrixRec->GetAxis(iEff)->SetTitle(axisTitleEff[iEff]);
       fHistNegEffMatrixRec->GetAxis(iEff)->SetName(axisNameEff[iEff]);  fHistNegEffMatrixRec->GetAxis(iEff)->SetTitle(axisTitleEff[iEff]);
@@ -677,7 +690,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   //
   // ************************* make up for hists ****************************
   fHistArmPod        ->GetXaxis()->SetTitle("#alpha"); fHistArmPod->GetYaxis()->SetTitle("q_{t}"); fHistArmPod->SetMarkerStyle(kFullCircle);
-  fHistCentrality    ->GetXaxis()->SetTitle("centrality (%)"); 
+  fHistCentrality    ->GetXaxis()->SetTitle("Centrality (%)"); 
   fHistVertex        ->GetXaxis()->SetTitle("vertexZ (cm)"); 
 
   //   Add histograms to the TList
@@ -745,6 +758,7 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   fTreeSRedirector = new TTreeSRedirector();
   fTreeMCrec     = ((*fTreeSRedirector)<<"mcRec").GetTree();
   fTreeMCgen     = ((*fTreeSRedirector)<<"mcGen").GetTree();
+  fTreeDnchDeta  = ((*fTreeSRedirector)<<"dnchdeta").GetTree();
   fTreeMC        = ((*fTreeSRedirector)<<"fTreeMC").GetTree();
   fTreedEdxCheck = ((*fTreeSRedirector)<<"dEdxCheck").GetTree();
   fTreeBayes     = ((*fTreeSRedirector)<<"bayes").GetTree();
@@ -762,6 +776,8 @@ void AliAnalysisTaskEbyeIterPID::UserCreateOutputObjects()
   PostData(9, fTreedEdxCheck);
   PostData(10, fTreeBayes);
   PostData(11, fTreeCuts);
+  PostData(12, fTreeDnchDeta);
+
   cout << " ===== Out of UserCreateOutputObjects ===== " << endl;
 
 }
@@ -780,10 +796,10 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   // ========================== See if MC or Real =========================
   // ======================================================================
   // impact parameters to use: 0.0, 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.5
-  // corresponding centrality:  0     5    10    20    30     40     50    60      70    80
+  // corresponding Centrality:  0     5    10    20    30     40     50    60      70    80
   AliMCEvent *mcEvent = 0x0;
   if (eventHandler) mcEvent = eventHandler->MCEvent();
-  // Get impact parameter for the centrality information
+  // Get impact parameter for the Centrality information
   if (mcEvent){
     AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
     if(!genHeader){ 
@@ -793,12 +809,12 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     fMCImpactParameter = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
   }
   
-  if(fRunFastSimulation){
+  if(fMCtrue){
     //
     // ========================== MC =========================
     //
     // impact parameters to use: 0.0, 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.5
-    // corresponding centrality:  0     5    10    20    30     40     50    60      70    80
+    // corresponding Centrality:  0     5    10    20    30     40     50    60      70    80
     //
     Double_t impParArr[10] = {0.0, 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.5};
     if (fMCImpactParameter>=impParArr[0] && fMCImpactParameter<impParArr[1]) fCentrality=0.25;
@@ -810,6 +826,7 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     if (fMCImpactParameter>=impParArr[6] && fMCImpactParameter<impParArr[7]) fCentrality=55.;
     if (fMCImpactParameter>=impParArr[7] && fMCImpactParameter<impParArr[8]) fCentrality=65.;
     if (fMCImpactParameter>=impParArr[8] && fMCImpactParameter<impParArr[9]) fCentrality=75.;
+    if (fMCImpactParameter<=impParArr[0] && fMCImpactParameter>impParArr[9]) fCentrality=-1.;
     //
     // Use file name in Hashing to create unique event ID
     //
@@ -826,7 +843,9 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     cout << " ====================================================================================================== " << endl; 
     fEventCountInFile++; 
     //
-  } else {
+  } 
+  
+  if (!fRunFastSimulation) {
     //
     // ========================== Real =========================
     //
@@ -854,7 +873,7 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
     if (!vertex || !isVertexOk) return;
     else if (TMath::Abs(vertex->GetZ()) > vzCut) return;
     //
-    // =========== centrality definition ============
+    // =========== Centrality definition ============
     //
     TString beamType = fESD->GetBeamType();
     fCentrality = -2;
@@ -889,19 +908,20 @@ void AliAnalysisTaskEbyeIterPID::UserExec(Option_t *)
   // ======================================================================
   //   
   // ==========================  Filling part  ============================
-  if(!fRunFastSimulation){
+  if(fRunFastSimulation) {
+    FastGen();
+    FillDnchDeta();
+  } else {
     if (fdEdxCheck){
       FillTPCdEdxCheck();
     } else {
       if (fMCtrue && !fEffMatrix) FillTPCdEdxMC();           // dEdx fill for the MC   data
       if (fMCtrue && fEffMatrix ) FillTPCdEdxMCEffMatrix();
       FillTPCdEdxReal();                                     // dEdx fill for the real data + fill clean kaons
-      if (!fMCtrue)       FillCleanElectrons();              // dEdx fill for Clean Electrons
-      if (!fMCtrue)       FillCleanPions();                  // Fill Clean Pions and Protons vi Armanteros-Podolanski plot 
+      if (!fMCtrue) FillCleanElectrons();              // dEdx fill for Clean Electrons
+      if (!fMCtrue) FillCleanPions();                  // Fill Clean Pions and Protons vi Armanteros-Podolanski plot 
     }
-  } else {
-    FastGen();
-  }
+  } 
   // ======================================================================
   //   
   // ======================== End of Filling part =========================
@@ -1046,8 +1066,8 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     myBin[1] = fhCent->FindBin(fCentrality)-1;
     myBin[2] = fhPtot->FindBin(fptot)-1;
     signNew  = fSign;
-    if (!fCleanSamplesOnly && fAcceptance)   fIdenTree -> Fill();
-    if (!fCleanSamplesOnly && fFillDeDxTree) fTree     -> Fill(); 
+    if (!fCleanSamplesOnly && !fMCtrue && fAcceptance)   fIdenTree -> Fill();
+    if (!fCleanSamplesOnly && fFillDeDxTree) fTree -> Fill(); 
     // -------------------------------------------------------------- 
     //
     // -------------------------------------------------------------- 
@@ -1083,8 +1103,8 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     // --------------------------------------------------------------
     // Fil the dEdx histograms
     Double_t trackdEdx[5] = {Double_t(fSign),fCentrality, fEta,fptot, fTPCSignal};
-    fhndEdx->Fill(trackdEdx);
-     // --------------------------------------------------------------
+    if(!fEffMatrix) fhndEdx->Fill(trackdEdx);
+    // --------------------------------------------------------------
     //
     // -------------------------------------------------------------- 
     // Get the PID splines
@@ -1143,7 +1163,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxReal()
     if (fdEdxEl>20 || fdEdxPi>20 || fdEdxKa>20 || fdEdxPr>20 || fdEdxDe>20) {
       for (Int_t iPart = 0; iPart< 5; iPart++){
         Double_t weightExpected[7] = {Double_t(iPart),Double_t(fSign),fCentrality,fEta,fptot, exSigma[iPart], exMean[iPart]};
-        fhnExpected->Fill(weightExpected);
+        if(!fEffMatrix) fhnExpected->Fill(weightExpected);
       }
     }
     // -------------------------------------------------------------- 
@@ -1298,7 +1318,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
       "dEdx="     << fTPCSignalMC <<    // dEdx of mc track
       "ptot="     << fptotMC <<         // mc momentum
       "eta="      << fEtaMC <<          // mc eta
-      "cent="     << fCentrality <<     // centrality
+      "cent="     << fCentrality <<     // Centrality
       "sign="     << fSignMC <<         // sign
       "event="    << fEventGIDMC <<
       "el="       << fElMC <<           // electron dEdx
@@ -1313,7 +1333,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
   // ======================================================================
   // ======================================================================
   //   
-  // ========= Efficiency Check Eta momentum and centrality scan ==========
+  // ========= Efficiency Check Eta momentum and Centrality scan ==========
   for (Int_t ieta=0; ieta<fnEtaWinBinsMC; ieta++){
     for (Int_t imom=0; imom<fnMomBinsMC; imom++){
       for (Int_t icent=0; icent<fnCentbinsData-1; icent++){
@@ -1375,7 +1395,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
           if (iPart == 4 ) fDeMC = trackReal->GetTPCsignal();
           if (iPart == 5 ) fMuMC = trackReal->GetTPCsignal();
     
-          // count first moments for given centrality and momentum window
+          // count first moments for given Centrality and momentum window
 	  fptotMC = trackReal->GetInnerParam()->GetP();
           if ( (fCentrality>=fcentDownArr[icent]) 
                && (fCentrality<fcentUpArr[icent]) 
@@ -1404,7 +1424,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
               "run="          << runNumber <<               // run number
               "trCount="      << trCount <<                 // number od identified tracks within the given cent and mom range
               "imom="         << imom <<                    // momentum index
-              "icent="        << icent <<                   // centrality index
+              "icent="        << icent <<                   // Centrality index
               "isample="      << sampleNo <<                // sample id for subsample method
               "dataType="     << dataType <<                // data type either MCrec(0) or MCgen(1)
               "centDown="     << fcentDownArr[icent] <<      // lower edge of cent bin
@@ -1481,7 +1501,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
           "run="          << runNumber <<               // run number
           "trCount="      << trCountgen <<              // number of identified tracks within the given cent and mom range
           "imom="         << imom <<                    // momentum index
-          "icent="        << icent <<                   // centrality index
+          "icent="        << icent <<                   // Centrality index
           "isample="      << sampleNo <<                // sample id for subsample method
           "dataType="     << dataType <<                // data type either MCrec(0) or MCgen(1)
           "centDown="     << fcentDownArr[icent] <<      // lower edge of cent bin
@@ -1504,7 +1524,7 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMC()
           "\n";  
 	} // tree filling
         
-      } // ======= end of centrality loop ======= 
+      } // ======= end of Centrality loop ======= 
     }// ======= end of momentum loop ======= 
   } // ======= end of eta loop =======
   // 
@@ -1533,7 +1553,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
   // ======================================================================
   // ======================================================================
   //   
-  // ========= Efficiency Check Eta momentum and centrality scan ==========
+  // ========= Efficiency Check Eta momentum and Centrality scan ==========
    for (Int_t ieta=0; ieta<fnEtaWinBinsMC; ieta++){
     for (Int_t imom=0; imom<fnMomBinsMC; imom++){
       for (Int_t icent=0; icent<fnCentbinsData-1; icent++){
@@ -1561,7 +1581,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
           if (TMath::Abs(pdg) == 1000010020)  {iPart = 4; fDeMCgen = iPart;} // select de
           if (TMath::Abs(pdg) == 13)          {iPart = 5; fMuMCgen = iPart;} // select mu-
           if (iPart == -10) continue;
-          fptotMCgen = trackMCgen->P();      
+	  fptotMCgen = trackMCgen->P();  
        
           // count first moments
           if ((fCentrality>=fcentDownArr[icent])
@@ -1589,7 +1609,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
           (*fTreeSRedirector)<<"mcGen"<<
           "trCount="      << trCountgen <<              // number of identified tracks within the given cent and mom range
           "imom="         << imom <<                    // momentum index
-          "icent="        << icent <<                   // centrality index
+          "icent="        << icent <<                   // Centrality index
           "isample="      << sampleNo <<                // sample id for subsample method
           "dataType="     << dataType <<                // data type either MCrec(0) or MCgen(1)
           "centDown="     << fcentDownArr[icent] <<      // lower edge of cent bin
@@ -1612,7 +1632,7 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
           "\n";  
 	} // tree filling
         
-      } // ======= end of centrality loop ======= 
+      } // ======= end of Centrality loop ======= 
     }// ======= end of momentum loop ======= 
   } // ======= end of eta loop =======
   // 
@@ -1621,6 +1641,96 @@ void AliAnalysisTaskEbyeIterPID::FastGen()
   // ======================================================================
 
      
+}
+//________________________________________________________________________
+void AliAnalysisTaskEbyeIterPID::FillDnchDeta()
+{
+  
+  //
+  // Fill dEdx information for the TPC and also the clean kaon and protons
+  //
+  cout << " ===== In the FillDnchDeta ===== " << endl;
+  AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+   
+  // =========== get MC event ===========
+  AliMCEvent *mcEvent = 0x0;
+  AliStack   *stack   = 0x0;     // All particles in an MC event
+  if (eventHandler) mcEvent = eventHandler->MCEvent();
+  if (!mcEvent) { Printf("ERROR: Could not retrieve MC event"); if (fMCtrue) return; }
+  if (fMCtrue)  { stack = mcEvent->Stack(); if (!stack) return; }
+  // ======================================================================
+  // ======================================================================
+  //   
+  // ========= Efficiency Check Eta momentum and Centrality scan ==========
+  Double_t etaDownArray[8] ={-0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8};
+  Double_t etaUpArray[8]   ={ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8};
+  Double_t centDownArray[9]={0., 5.,  10., 20., 30., 40., 50., 60., 70.};
+  Double_t centUpArray[9]  ={5., 10., 20., 30., 40., 50., 60., 70., 80.};
+  for (Int_t ieta=0; ieta<8; ieta++){
+    for (Int_t icent=0; icent<9; icent++){
+	
+	AliMCParticle *trackMCgen;
+	Int_t trCount=0,    elCount=0,    piCount=0,    kaCount=0,    prCount=0;
+	for (Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++) {    // track loop
+	  
+	  // initialize the dummy particle id
+	  trackMCgen = (AliMCParticle *)fMCEvent->GetTrack(iTracks);
+	  
+	  // apply primary vertex and eta cut
+	  if (!stack->IsPhysicalPrimary(iTracks)) continue;
+	  if ((trackMCgen->Eta()<-0.8) || (trackMCgen->Eta()>0.8)) continue;
+	  Int_t pdg  = trackMCgen->Particle()->GetPdgCode();
+	  Double_t etaGen  = trackMCgen->Eta();
+	  // skip neutral particles
+	  if ( TMath::Abs(trackMCgen->Charge()) < 0.0001 ) continue; 
+	  
+	  Int_t iPart = -10;
+	  if (TMath::Abs(pdg) == 11)         iPart = 0;  // select el-
+	  if (TMath::Abs(pdg) == 211)        iPart = 1;  // select pi+
+	  if (TMath::Abs(pdg) == 321)        iPart = 2;  // select ka+
+	  if (TMath::Abs(pdg) == 2212)       iPart = 3;  // select pr+
+	  
+	  // count first moments
+	  if ((fCentrality>=centDownArray[icent])
+	    &&(fCentrality<centUpArray[icent])
+	    &&(etaGen>=etaDownArray[ieta])
+	    &&(etaGen<=etaUpArray[ieta])) 
+	  { 
+	    trCount++;
+	    if ( iPart==0   ) elCount++;
+	    if ( iPart==1   ) piCount++;
+	    if ( iPart==2   ) kaCount++;
+	    if ( iPart==3   ) prCount++;
+	  }   
+	  
+	} // ======= end of track loop ======= 
+	
+	// fill tree which contains moments
+	Double_t etaBin  = (TMath::Abs(etaDownArray[ieta])+etaUpArray[ieta]);
+	Double_t centBin = (centDownArray[icent]+centUpArray[icent])/2.;
+	if(!fTreeSRedirector) return;
+        if ( trCount>0 ){   
+          (*fTreeSRedirector)<<"dnchdeta"<<
+          "event="    << fEventCountInFile << 
+          "centbin="  << centBin <<                 // cent bin
+          "etabin="   << etaBin <<                  // eta bin
+          "imppar="   << fMCImpactParameter <<      // impact parameter taken from MC event header
+          "cent="     << fCentrality <<             // impact parameter taken from MC event header
+          "trcount="  << trCount <<                 // number of identified tracks within the given cent and mom range
+          "el="       << elCount <<                 // first moment of pions
+          "pi="       << piCount <<                 // first moment of pions
+          "ka="       << kaCount <<                 // first moment of kaons                 
+          "pr="       << prCount <<                 // first moment of protons
+          "\n";  
+	} // tree filling
+	
+    } // ======= end of Centrality loop ======= 
+  } // ======= end of eta loop =======
+  // 
+  // ======================================================================
+  // 
+  // ======================================================================
+  
 }
 //________________________________________________________________________
 void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMCEffMatrix()
@@ -1672,9 +1782,9 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMCEffMatrix()
     TParticle *trackMC  = stack->Particle(lab);   
     Int_t pdg           = trackMC->GetPdgCode();  
     
-    if (TMath::Abs(pdg) == 211)   fPartID=0; // select pi+
-    if (TMath::Abs(pdg) == 321)   fPartID=1; // select ka+
-    if (TMath::Abs(pdg) == 2212)  fPartID=2; // select pr+
+    if (TMath::Abs(pdg) == 211)   fPartID=0; // select pi
+    if (TMath::Abs(pdg) == 321)   fPartID=1; // select ka
+    if (TMath::Abs(pdg) == 2212)  fPartID=2; // select pr
    
     Double_t xxxRec[5]={fPartID,fCentRec,fpTRec,fEtaRec,fPhiRec};
     if (pdg>0 && fPartID>-1) fHistPosEffMatrixRec->Fill(xxxRec);
@@ -1695,16 +1805,16 @@ void AliAnalysisTaskEbyeIterPID::FillTPCdEdxMCEffMatrix()
     // get track info
     Float_t fpTGen   = trackMCgen->Pt();
     Float_t fYGen    = trackMCgen->Y();
-    Float_t fEtaGen    = trackMCgen->Eta();
+    Float_t fEtaGen  = trackMCgen->Eta();
     Float_t fPhiGen  = trackMCgen->Phi(); 
     Float_t fCentGen = fhCent->FindBin(fCentrality)-1;
     Float_t fPartID  = -100;
         
     // Efficiency matices for individual particles
     Int_t pdg  = trackMCgen->Particle()->GetPdgCode();    
-    if (TMath::Abs(pdg) == 211)   fPartID=0; // select pi+
-    if (TMath::Abs(pdg) == 321)   fPartID=1; // select ka+
-    if (TMath::Abs(pdg) == 2212)  fPartID=2; // select pr+
+    if (TMath::Abs(pdg) == 211)   fPartID=0; // select pi
+    if (TMath::Abs(pdg) == 321)   fPartID=1; // select ka
+    if (TMath::Abs(pdg) == 2212)  fPartID=2; // select pr
    
     Double_t xxxGen[5]={fPartID,fCentGen,fpTGen,fEtaGen,fPhiGen};
     if (pdg>0 && fPartID>-1) fHistPosEffMatrixGen->Fill(xxxGen);
