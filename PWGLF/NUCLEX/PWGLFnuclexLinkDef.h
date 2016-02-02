@@ -9,6 +9,8 @@
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
+/// * NOmega
+#pragma link C++ class AliAnalysisTaskNOmegaLPK+;
 
 /// Nuclei
 /// * DeltaMasses
