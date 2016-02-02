@@ -164,11 +164,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<Double_t>           fvRejCutTheta;
   std::vector<Double_t>           fvRejCutPhiV;
   //Efficiency Histograms
-  TH3F*                           fNgen;
+  TH3F*                           fNgen_Ele;
   std::vector<TH3F*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3F*>              fvReco_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
-  std::vector<TH3F*>              fvReco_Ele_recoObs;           // store reconstructed electrons (N vs pT, eta, phi) per cutset. In reconstructed obervables
-  std::vector<TH3F*>              fvReco_Ele_recoObs_poslabel;  // store also result when using only tracks with positive label, for systematic checks. In reconstructed obervables
+  TH3F*                           fNgen_Pos;
+  std::vector<TH3F*>              fvReco_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3F*>              fvReco_Pos_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
   std::vector<TH3F*>              fvAllPionsForRej;     // testparticles for prefilter efficiency determination.
   std::vector<TH3F*>              fvPionsRejByAllSigns;
   std::vector<TH3F*>              fvPionsRejByUnlike;

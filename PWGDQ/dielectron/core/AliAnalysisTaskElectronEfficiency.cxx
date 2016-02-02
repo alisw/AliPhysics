@@ -112,11 +112,12 @@ fvDoPrefilterEff(),
 fvRejCutMee(),
 fvRejCutTheta(),
 fvRejCutPhiV(),
-fNgen(0x0),
+fNgen_Ele(0x0),
 fvReco_Ele(),
 fvReco_Ele_poslabel(),
-fvReco_Ele_recoObs(),
-fvReco_Ele_recoObs_poslabel(),
+fNgen_Pos(0x0),
+fvReco_Pos(),
+fvReco_Pos_poslabel(),
 fNmeeBins(0),
 fNpteeBins(0),
 fMeeBins(0x0),
@@ -240,11 +241,12 @@ fvDoPrefilterEff(),
 fvRejCutMee(),
 fvRejCutTheta(),
 fvRejCutPhiV(),
-fNgen(0x0),
+fNgen_Ele(0x0),
 fvReco_Ele(),
 fvReco_Ele_poslabel(),
-fvReco_Ele_recoObs(),
-fvReco_Ele_recoObs_poslabel(),
+fNgen_Pos(0x0),
+fvReco_Pos(),
+fvReco_Pos_poslabel(),
 fNmeeBins(0),
 fNpteeBins(0),
 fMeeBins(0x0),
@@ -332,11 +334,12 @@ fNgen_recoObs(0x0)
   fvRejCutPhiV.clear();
   fvReco_Ele.clear();
   fvReco_Ele_poslabel.clear();
+  fvReco_Pos.clear();
+  fvReco_Pos_poslabel.clear();
   fvAllPionsForRej.clear();
   fvPionsRejByAllSigns.clear();
   fvPionsRejByUnlike.clear();
-  fvReco_Ele_recoObs.clear(),
-  fvReco_Ele_recoObs_poslabel.clear(),
+
   
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -469,13 +472,19 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   TList *singleEffList = new TList();
   singleEffList->SetName("electronEfficiency");
   singleEffList->SetOwner();
-  singleEffList->Add(fNgen);
+  singleEffList->Add(fNgen_Ele);
   if(fResArr) singleEffList->Add(fNgen_recoObs);
   
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     singleEffList->Add(fvReco_Ele.at(iCut));
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
     singleEffList->Add(fvReco_Ele_poslabel.at(iCut));
+  singleEffList->Add(fNgen_Pos);
+  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
+    singleEffList->Add(fvReco_Pos.at(iCut));
+  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
+    singleEffList->Add(fvReco_Pos_poslabel.at(iCut));
+  
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
     if(fvDoPrefilterEff.at(iCut)){
       singleEffList->Add(fvAllPionsForRej.at(iCut));
@@ -483,10 +492,6 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       singleEffList->Add(fvPionsRejByUnlike.at(iCut));
     }
   }
-  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
-    singleEffList->Add(fvReco_Ele_recoObs.at(iCut));
-  for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
-    singleEffList->Add(fvReco_Ele_recoObs_poslabel.at(iCut)); 
     
     // be really careful if you need to implement this (see comments in UserExec):
     //    fOutputList->Add(fvReco_Pio.at(iCut));
@@ -711,7 +716,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       Double_t mcPhi = mctrack->Phi();
       if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
       if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
-      fNgen->Fill(mcPt,mcEta,mcPhi);
+      if(mctrack->Charge() < 0) fNgen_Ele->Fill(mcPt,mcEta,mcPhi);
+      else fNgen_Pos->Fill(mcPt,mcEta,mcPhi);
       Bool_t filled(kFALSE),reconstructed(kFALSE);
       for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         fSelectedByCut = 0;
@@ -735,12 +741,13 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           UInt_t cutmask=fvTrackCuts.at(iCut)->IsSelected(track);
           if (cutmask!=selectedMask) continue;
           vecEleCand_perCut.at(iCut).push_back(iTracks);
-      
-          fvReco_Ele.at(iCut)->Fill(mcPt,mcEta,mcPhi);
-          fvReco_Ele_recoObs.at(iCut)->Fill(trackPt,mcEta,mcPhi);
-          if(label > 0) {
-            fvReco_Ele_poslabel.at(iCut)->Fill(mcPt,mcEta,mcPhi);
-            fvReco_Ele_recoObs_poslabel.at(iCut)->Fill(trackPt,mcEta,mcPhi);
+          if(track->Charge() < 0){
+            fvReco_Ele.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+            if(label > 0) fvReco_Ele_poslabel.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+          }
+          else{
+            fvReco_Pos.at(iCut)->Fill(mcPt,mcEta,mcPhi);
+            if(label > 0) fvReco_Pos_poslabel.at(iCut)->Fill(mcPt,mcEta,mcPhi);
           }
           fSelectedByCut|=1<<(iCut); // store bitwise which cut settings the track survived.
           // store infos related to prefilter efficiency
@@ -1393,12 +1400,13 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   hNreco_Ele_poslabel->Sumw2();
   fvReco_Ele.push_back(hNreco_Ele);
   fvReco_Ele_poslabel.push_back(hNreco_Ele_poslabel);
-  TH3F *hNreco_recoObs_Ele = new TH3F(Form("Nreco_Ele_recoObs_%s",name.Data()),Form("Nreco_Ele_recoObs_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-  TH3F *hNreco_recoObs_Ele_poslabel = new TH3F(Form("Nreco_Ele_recoObs_poslabel_%s",name.Data()),Form("Nreco_Ele_recoObs_poslabel_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-  hNreco_recoObs_Ele->Sumw2();
-  hNreco_recoObs_Ele_poslabel->Sumw2();
-  fvReco_Ele_recoObs.push_back(hNreco_recoObs_Ele);
-  fvReco_Ele_recoObs_poslabel.push_back(hNreco_recoObs_Ele_poslabel);
+ 
+  TH3F *hNreco_Pos = new TH3F(Form("Nreco_Pos_%s",name.Data()),Form("Nreco_Pos_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  TH3F *hNreco_Pos_poslabel = new TH3F(Form("Nreco_Pos_poslabel_%s",name.Data()),Form("Nreco_Pos_poslabel_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  hNreco_Pos->Sumw2();
+  hNreco_Pos_poslabel->Sumw2();
+  fvReco_Pos.push_back(hNreco_Pos);
+  fvReco_Pos_poslabel.push_back(hNreco_Pos_poslabel);
   
   // one needs the histogram 'hAllPionsForRej' for each cutInstance independently, because empty events may differ between the cutsets which run together.
   TH3F *hAllPionsForRej = new TH3F(Form("AllPionsForRej_%s",name.Data()),Form("AllPionsForRej_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1440,7 +1448,8 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
 	Printf(" Now running: CreateHistoGen()");
   
   Printf("fNptBins=%i\t fPtBins[1]=%f\t fNetaBins=%i\t fEtaBins[1]=%f\t fNphiBins=%i\t fPhiBins[1]=%f\t ",fNptBins,fPtBins[1],fNetaBins,fEtaBins[1],fNphiBins,fPhiBins[1]);
-  fNgen                     = new TH3F("fNgen","Ngen",                fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fNgen_Ele                 = new TH3F("fNgen_Ele","Ngen_electrons",  fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fNgen_Pos                 = new TH3F("fNgen_Pos","Ngen_positrons",  fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   if(fResArr) fNgen_recoObs = new TH3F("fNgen_recoObs","Ngen_recoObs",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   if(fDoPairing){
     Printf("fNmeeBins=%i\t fMeeBins[1]=%f\t fNpteeBins=%i\t fPteeBins[1]=%f\t ",fNmeeBins,fMeeBins[1],fNpteeBins,fPteeBins[1]);
