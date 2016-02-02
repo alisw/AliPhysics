@@ -34,6 +34,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
     AliAnalysisTaskEmcalJetSample.cxx
+    AliAnalysisTaskEmcalJetQA.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
     AliAnalysisTaskRhoBase.cxx
@@ -95,7 +96,6 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDCA.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
-    UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
@@ -103,6 +103,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
     Tracks/AliAnalysisTaskEMCALDCALTrigger2015.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
+    UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
@@ -152,7 +153,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSAJF.cxx
-    UserTasks/AliAnalysisTaskSAQA.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx

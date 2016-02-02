@@ -27,6 +27,7 @@
 #pragma link C++ class AliJetConstituentTagCopier+;
 #pragma link C++ class AliJetResponseMaker+;
 #pragma link C++ class AliJetTriggerSelectionTask+;
+#pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
@@ -80,7 +81,6 @@
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
 #pragma link C++ class AliAnalysisTaskGammaHadron+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
-#pragma link C++ class AliAnalysisTaskSAQA+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
 #pragma link C++ namespace JETriggerRejectionAna+;
