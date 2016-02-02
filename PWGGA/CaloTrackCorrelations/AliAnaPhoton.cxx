@@ -205,13 +205,17 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
   {  
     for(Int_t iphi = 0; iphi < 3; iphi++) 
     {
-      fhLam0EMCALRegion   [ieta][iphi] = 0;
-      fhLam0EMCALRegionTRD[ieta][iphi] = 0;
-      
-      for(Int_t i = 0; i < 6; i++) 
+//      fhLam0EMCALRegion   [ieta][iphi] = 0;
+//      fhLam0EMCALRegionTRD[ieta][iphi] = 0;
+//      
+//      for(Int_t i = 0; i < 6; i++) 
+//      {
+//        fhLam0EMCALRegionMCConvRcut   [ieta][iphi][i] = 0;
+//        fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][i] = 0;
+//      }
+      for(Int_t ism =0; ism < 20; ism++)
       {
-        fhLam0EMCALRegionMCConvRcut   [ieta][iphi][i] = 0;
-        fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][i] = 0;
+        fhLam0EMCALRegionPerSM[ieta][iphi][ism] = 0; 
       }
     }
   }
@@ -722,15 +726,18 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
     Int_t etaRegion = -1, phiRegion = -1;
     
     GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
-    
     if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
     {
-      fhLam0EMCALRegion[etaRegion][phiRegion]->Fill(pt,lambda0, GetEventWeight());
+      Int_t sm = GetModuleNumber(cluster);
+
+//      fhLam0EMCALRegion[etaRegion][phiRegion]->Fill(pt,lambda0, GetEventWeight());
+//      
+//      if(GetFirstSMCoveredByTRD() >= 0 && sm >= GetFirstSMCoveredByTRD()  )
+//      {
+//        fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight());
+//      }
       
-      if(GetFirstSMCoveredByTRD() >= 0 && GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
-      {
-        fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight());
-      }
+      fhLam0EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda0, GetEventWeight());
     }
     
     if(lambda0 >=0.3 && lambda0 <= 0.4)
@@ -745,7 +752,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
           break;
         }
       }
-      if(ptbin >= 0) fhEtaPhiLam0BinPtBin[ptbin]->Fill(eta,phi);
+      if(ptbin >= 0) fhEtaPhiLam0BinPtBin[ptbin]->Fill(eta, phi, GetEventWeight());
     }
     //printf("Cluster %d, E %2.2f, sm %d, eta %2.2f, phi %2.2f ---> region %d %d\n",cluster->GetID(),cluster->E(),GetModuleNumber(cluster),eta,RadToDeg(phi),etaRegion,phiRegion);
   }
@@ -1897,24 +1904,35 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {  
       for(Int_t iphi = 0; iphi < 3; iphi++) 
       {
-        fhLam0EMCALRegion[ieta][iphi] = 
-        new TH2F(Form("hLam0_eta%d_phi%d",ieta,iphi),
-                 Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d",ieta,iphi),
-                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhLam0EMCALRegion[ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
-        fhLam0EMCALRegion[ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
-        outputContainer->Add(fhLam0EMCALRegion[ieta][iphi]) ;
+//        fhLam0EMCALRegion[ieta][iphi] = 
+//        new TH2F(Form("hLam0_eta%d_phi%d",ieta,iphi),
+//                 Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d",ieta,iphi),
+//                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//        fhLam0EMCALRegion[ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
+//        fhLam0EMCALRegion[ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
+//        outputContainer->Add(fhLam0EMCALRegion[ieta][iphi]) ;
+//        
+//        if(GetFirstSMCoveredByTRD() >= 0)
+//        {
+//          fhLam0EMCALRegionTRD[ieta][iphi] = 
+//          new TH2F(Form("hLam0TRD_eta%d_phi%d",ieta,iphi),
+//                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d, SM covered by TRD",ieta,iphi),
+//                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//          fhLam0EMCALRegionTRD[ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
+//          fhLam0EMCALRegionTRD[ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
+//          outputContainer->Add(fhLam0EMCALRegionTRD[ieta][iphi]) ;
+//        } // TRD
         
-        if(GetFirstSMCoveredByTRD() >= 0)
+        for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++) 
         {
-          fhLam0EMCALRegionTRD[ieta][iphi] = 
-          new TH2F(Form("hLam0TRD_eta%d_phi%d",ieta,iphi),
-                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d, SM covered by TRD",ieta,iphi),
+          fhLam0EMCALRegionPerSM[ieta][iphi][ism] = 
+          new TH2F(Form("hLam0_eta%d_phi%d_sm%d",ieta,iphi,ism),
+                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhLam0EMCALRegionTRD[ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
-          fhLam0EMCALRegionTRD[ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
-          outputContainer->Add(fhLam0EMCALRegionTRD[ieta][iphi]) ;
-        } // TRD
+          fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#lambda_{0}^{2}");
+          fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
+          outputContainer->Add(fhLam0EMCALRegionPerSM[ieta][iphi][ism]) ;
+        }
       } // iphi 
     } // ieta
     
@@ -2372,37 +2390,37 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         } // R cut
       }
       
-      if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
-      {
-        for(Int_t ieta = 0; ieta < 4; ieta++) 
-        {  
-          for(Int_t iphi = 0; iphi < 3; iphi++) 
-          {
-            for(Int_t iR = 0; iR < 6; iR++) 
-            {
-              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR] = 
-              new TH2F(Form("hMCPhotonConversionLambda0_R%d_eta%d_phi%d",iR,ieta,iphi),
-                       Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d",region[iR].Data(),ieta,iphi),
-                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetYTitle("#lambda_{0}^{2}");
-              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-              outputContainer->Add(fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]) ;
-              
-              if(GetFirstSMCoveredByTRD() >= 0)
-              {
-                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR] = 
-                new TH2F(Form("hMCPhotonConversionLambda0TRD_R%d_eta%d_phi%d",iR,ieta,iphi),
-                         Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d, SM covered by TRD",region[iR].Data(),ieta,iphi),
-                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetYTitle("#lambda_{0}^{2}");
-                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-                outputContainer->Add(fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]) ;
-              } // TRD
-
-            } // iR
-          } // iphi 
-        } // ieta
-      } // regions in EMCal
+//      if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+//      {
+//        for(Int_t ieta = 0; ieta < 4; ieta++) 
+//        {  
+//          for(Int_t iphi = 0; iphi < 3; iphi++) 
+//          {
+//            for(Int_t iR = 0; iR < 6; iR++) 
+//            {
+//              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR] = 
+//              new TH2F(Form("hMCPhotonConversionLambda0_R%d_eta%d_phi%d",iR,ieta,iphi),
+//                       Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d",region[iR].Data(),ieta,iphi),
+//                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetYTitle("#lambda_{0}^{2}");
+//              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//              outputContainer->Add(fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]) ;
+//              
+//              if(GetFirstSMCoveredByTRD() >= 0)
+//              {
+//                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR] = 
+//                new TH2F(Form("hMCPhotonConversionLambda0TRD_R%d_eta%d_phi%d",iR,ieta,iphi),
+//                         Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d, SM covered by TRD",region[iR].Data(),ieta,iphi),
+//                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+//                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetYTitle("#lambda_{0}^{2}");
+//                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//                outputContainer->Add(fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]) ;
+//              } // TRD
+//
+//            } // iR
+//          } // iphi 
+//        } // ieta
+//      } // regions in EMCal
       
     } // shower shape
   } // Histos with MC
@@ -2863,29 +2881,29 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
                 if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
                   fhMCConversionLambda0RcutTRD[convR]->Fill(ptcluster,m02,GetEventWeight());
 
-                //
-                // EMCAL SM regions
-                //
-                if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms )
-                {
-                  // Get original cluster, needed to feed the subregion selection method
-                  
-                  Int_t iclus = -1;
-                  AliVCluster *cluster = FindCluster(GetEMCALClusters(),ph->GetCaloLabel(0),iclus);
-
-                  Int_t etaRegion = -1, phiRegion = -1;
-                  
-                  if ( cluster ) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
-                  
-                  if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
-                  {
-                    fhLam0EMCALRegionMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster,m02, GetEventWeight());
-                    
-                    if ( GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD()  )
-                      fhLam0EMCALRegionTRDMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster, m02, GetEventWeight());
-                    
-                  } // region found
-                } // check region
+//                //
+//                // EMCAL SM regions
+//                //
+//                if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms )
+//                {
+//                  // Get original cluster, needed to feed the subregion selection method
+//                  
+//                  Int_t iclus = -1;
+//                  AliVCluster *cluster = FindCluster(GetEMCALClusters(),ph->GetCaloLabel(0),iclus);
+//
+//                  Int_t etaRegion = -1, phiRegion = -1;
+//                  
+//                  if ( cluster ) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+//                  
+//                  if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
+//                  {
+//                    fhLam0EMCALRegionMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster,m02, GetEventWeight());
+//                    
+//                    if ( GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD()  )
+//                      fhLam0EMCALRegionTRDMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster, m02, GetEventWeight());
+//                    
+//                  } // region found
+//                } // check region
               } // conv region
             } // fill Sh Sh histograms
           } // okD
