@@ -164,7 +164,7 @@ void AliParticleContainer::NextEvent()
     TBits* bits = 0;
     Int_t i = 0;
     while ((bits = static_cast<TBits*>(nextBitmap()))) {
-      if (i > fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
+      if (i >= fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
       AliVTrack* vTrack = static_cast<AliVTrack*>(fFilteredTracks->At(i));
       if (!vTrack) {
         fTrackTypes[i] = kRejected;
