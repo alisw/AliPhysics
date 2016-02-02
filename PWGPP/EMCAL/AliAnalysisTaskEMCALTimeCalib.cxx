@@ -372,27 +372,34 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
   const Int_t nChannels = 17664;
   //book histograms
-  fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",fFineNbins, fFineNbins,fFineTmax);
-  fhcalcEvtTime->GetXaxis()->SetTitle("T ");
-  fhcalcEvtTime->GetYaxis()->SetTitle("Counts (a.u.)");
+  if(fFillHeavyHisto){
+    fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",fFineNbins, fFineNbins,fFineTmax);
+    fhcalcEvtTime->GetXaxis()->SetTitle("T ");
+    fhcalcEvtTime->GetYaxis()->SetTitle("Counts (a.u.)");
   
-  fhEvtTimeHeader = new TH1F("fhEvtTimeHeader","event time from header",fFineNbins, fFineNbins,fFineTmax);
-  fhEvtTimeHeader->GetXaxis()->SetTitle("T ");
-  fhEvtTimeHeader->GetYaxis()->SetTitle("Counts (a.u.)");
+    fhEvtTimeHeader = new TH1F("fhEvtTimeHeader","event time from header",fFineNbins, fFineNbins,fFineTmax);
+    fhEvtTimeHeader->GetXaxis()->SetTitle("T ");
+    fhEvtTimeHeader->GetYaxis()->SetTitle("Counts (a.u.)");
 
-  fhEvtTimeDiff = new TH1F("fhEvtTimeDiff","event time difference",fFineNbins, fFineNbins,fFineTmax);
-  fhEvtTimeDiff->GetXaxis()->SetTitle("#Delta T ");
-  fhEvtTimeDiff->GetYaxis()->SetTitle("Counts (a.u.)");
+    fhEvtTimeDiff = new TH1F("fhEvtTimeDiff","event time difference",fFineNbins, fFineNbins,fFineTmax);
+    fhEvtTimeDiff->GetXaxis()->SetTitle("#Delta T ");
+    fhEvtTimeDiff->GetYaxis()->SetTitle("Counts (a.u.)");
+  }
 
   fhEventType = new TH1F("fhEventType","event type",10, 0.,10.);
   fhEventType ->GetXaxis()->SetTitle("Type ");
   fhEventType ->GetYaxis()->SetTitle("Counts (a.u.)");
-  fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
-  fhTcellvsTOFT0HD = new TH2F("hTcellvsTOFT0HD", " T_cell vs TOFT0,HighEnergy", 500,-600.0,+400.0,4*fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+  if(fFillHeavyHisto){
+    fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+    fhTcellvsTOFT0HD = new TH2F("hTcellvsTOFT0HD", " T_cell vs TOFT0,HighEnergy", 500,-600.0,+400.0,4*fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+  }
   fhTcellvsSM = new TH2F("hTcellvsSM", " T_cell vs SM", (Int_t)kNSM,0,(Double_t)kNSM,(Int_t)(fRawTimeNbins/2),fRawTimeMin,fRawTimeMax);
-  fhEneVsAbsIdHG = new TH2F("fhEneVsAbsIdHG", "energy vs ID for HG",1000,0,18000,200,0,10);
-  fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,200,0,40);
-  
+
+  if(fFillHeavyHisto){
+    fhEneVsAbsIdHG = new TH2F("fhEneVsAbsIdHG", "energy vs ID for HG",1000,0,18000,200,0,10);
+    fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,200,0,40);
+  }
+
   for (Int_t i = 0; i < kNBCmask ;  i++)
   {
     //already after correction
@@ -436,11 +443,13 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
     //raw time histograms
     //high gain
-    fhRawTimeVsIdBC[i] = new TH2F(Form("RawTimeVsIdBC%d", i),
-				  Form("cell raw time vs ID for high gain BC %d ", i),
-				  nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
-    fhRawTimeVsIdBC[i]->SetXTitle("AbsId");
-    fhRawTimeVsIdBC[i]->SetYTitle("Time");
+    if(fFillHeavyHisto){
+      fhRawTimeVsIdBC[i] = new TH2F(Form("RawTimeVsIdBC%d", i),
+				    Form("cell raw time vs ID for high gain BC %d ", i),
+				    nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+      fhRawTimeVsIdBC[i]->SetXTitle("AbsId");
+      fhRawTimeVsIdBC[i]->SetYTitle("Time");
+    }
 
     fhRawTimeSumBC[i] = new TH1F(Form("RawTimeSumBC%d", i),
 				 Form("sum of cell raw time for high gain BC %d ", i),
@@ -461,11 +470,13 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fhRawTimeSumSqBC[i]->SetYTitle("Sum Sq Time");
 
     //low gain
-    fhRawTimeVsIdLGBC[i] = new TH2F(Form("RawTimeVsIdLGBC%d", i),
-			      Form("cell raw time vs ID for low gain BC %d ", i),
-				    nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
-    fhRawTimeVsIdLGBC[i]->SetXTitle("AbsId");
-    fhRawTimeVsIdLGBC[i]->SetYTitle("Time");
+    if(fFillHeavyHisto){
+      fhRawTimeVsIdLGBC[i] = new TH2F(Form("RawTimeVsIdLGBC%d", i),
+				      Form("cell raw time vs ID for low gain BC %d ", i),
+				      nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+      fhRawTimeVsIdLGBC[i]->SetXTitle("AbsId");
+      fhRawTimeVsIdLGBC[i]->SetYTitle("Time");
+    }
 
     fhRawTimeSumLGBC[i] = new TH1F(Form("RawTimeSumLGBC%d", i),
 				 Form("sum of cell raw time for low gain BC %d ", i),
@@ -536,16 +547,18 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
   //add histos to list
   fOutputList = new TList();
-  
-  fOutputList->Add(fhcalcEvtTime);
-  fOutputList->Add(fhEvtTimeHeader);
-  fOutputList->Add(fhEvtTimeDiff);
   fOutputList->Add(fhEventType);
-  fOutputList->Add(fhTcellvsTOFT0);
-  fOutputList->Add(fhTcellvsTOFT0HD);
+  if(fFillHeavyHisto){
+    fOutputList->Add(fhcalcEvtTime);
+    fOutputList->Add(fhEvtTimeHeader);
+    fOutputList->Add(fhEvtTimeDiff);
+
+    fOutputList->Add(fhTcellvsTOFT0);
+    fOutputList->Add(fhTcellvsTOFT0HD);
+    fOutputList->Add(fhEneVsAbsIdHG);
+    fOutputList->Add(fhEneVsAbsIdLG);
+  }
   fOutputList->Add(fhTcellvsSM);
-  fOutputList->Add(fhEneVsAbsIdHG);
-  fOutputList->Add(fhEneVsAbsIdLG);
 
   for (Int_t i = 0; i < kNBCmask ;  i++) 
   {
@@ -557,12 +570,15 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fOutputList->Add(fhTimeLGEnt[i]);
     fOutputList->Add(fhTimeLGSum[i]);
 
-    fOutputList->Add(fhRawTimeVsIdBC[i]);
+    if(fFillHeavyHisto) {
+      fOutputList->Add(fhRawTimeVsIdBC[i]);
+      fOutputList->Add(fhRawTimeVsIdLGBC[i]);
+    }
+
     fOutputList->Add(fhRawTimeSumBC[i]);
     fOutputList->Add(fhRawTimeEntriesBC[i]);
     fOutputList->Add(fhRawTimeSumSqBC[i]);
 
-    fOutputList->Add(fhRawTimeVsIdLGBC[i]);
     fOutputList->Add(fhRawTimeSumLGBC[i]);
     fOutputList->Add(fhRawTimeEntriesLGBC[i]);
     fOutputList->Add(fhRawTimeSumSqLGBC[i]);
@@ -604,7 +620,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   //cout<<"T0TOF "<<event->GetT0TOF()<<endl;//bad idea
   //cout<< fEvent->GetTOFHeader()->GetDefaultEventTimeVal()<<endl;
   AliDebug(2,Form("TOF time from header %f ps",event->GetTOFHeader()->GetDefaultEventTimeVal()));
-  fhEvtTimeHeader->Fill(event->GetTOFHeader()->GetDefaultEventTimeVal());
+  if(fFillHeavyHisto) fhEvtTimeHeader->Fill(event->GetTOFHeader()->GetDefaultEventTimeVal());
 
   //fEvent = dynamic_cast<AliESDEvent*>(event);
   if (!event) {
@@ -699,10 +715,12 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
     return;
   }// fi no simple histo present
   
-  fhcalcEvtTime->Fill(calcolot0);
-  if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
-    fhEvtTimeDiff->Fill(calcolot0-event->GetTOFHeader()->GetDefaultEventTimeVal());
-  
+  if(fFillHeavyHisto) {
+    fhcalcEvtTime->Fill(calcolot0);
+    if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
+      fhEvtTimeDiff->Fill(calcolot0-event->GetTOFHeader()->GetDefaultEventTimeVal());
+  }
+
   TRefArray* caloClusters = new TRefArray();
   event->GetEMCALClusters(caloClusters);
   //           	cout << " ###########Bunch Cross nb  = " << event->GetBunchCrossNumber() << endl;
@@ -755,12 +773,12 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       //main histograms with raw time information 
       if(amp>fMinCellEnergy){
 	if(isHighGain){
-	  fhRawTimeVsIdBC[nBC]->Fill(absId,hkdtime);
+	  if(fFillHeavyHisto) fhRawTimeVsIdBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeSumBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeEntriesBC[nBC]->Fill(absId,1.);
 	  fhRawTimeSumSqBC[nBC]->Fill(absId,hkdtime*hkdtime);
 	}else{
-	  fhRawTimeVsIdLGBC[nBC]->Fill(absId,hkdtime);
+	  if(fFillHeavyHisto) fhRawTimeVsIdLGBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeSumLGBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeEntriesLGBC[nBC]->Fill(absId,1.);
 	  fhRawTimeSumSqLGBC[nBC]->Fill(absId,hkdtime*hkdtime);
@@ -777,9 +795,10 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       CheckCellRCU(nSupMod,ieta,iphi);//SM, column, row
 
       fhTcellvsSM->Fill(nSupMod,hkdtime);
-      if(isHighGain==kTRUE) {fhEneVsAbsIdHG->Fill(absId,amp);}
-      else {fhEneVsAbsIdLG->Fill(absId,amp);}
-      
+      if(fFillHeavyHisto) {
+	if(isHighGain==kTRUE) {fhEneVsAbsIdHG->Fill(absId,amp);}
+	else {fhEneVsAbsIdLG->Fill(absId,amp);}
+      }
       fhTimeVsBC->Fill(1.*BunchCrossNumber,hkdtime-timeBCoffset);
       //important remark: We use 'Underflow bin' for absid=0 in OADB for time calibration 
       if(isHighGain==kTRUE){
@@ -850,11 +869,12 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
       }
       
-      if(amp>0.9) {
-	fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
+      if(fFillHeavyHisto) {
+	if(amp>0.9) {
+	  fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
+	}
+	fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM-L1shiftOffset);
       }
-
-      fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM-L1shiftOffset);
 
       hkdtime = hkdtime-timeBCoffset;//time corrected by manual offset (default=0)
       Float_t hkdtimecorr;
