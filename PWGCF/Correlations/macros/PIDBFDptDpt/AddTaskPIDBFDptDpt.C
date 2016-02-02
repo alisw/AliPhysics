@@ -8,27 +8,27 @@
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (
- int    CentralityGroup         = 1, // 1: 1st group; 2: 2nd group.  Diff Cent Groups dealing w/ memory limit
+ int    CentralityGroup         = 1, // 1st,2nd,3rd... group;  Diff Cent Groups dealing w/ memory limit
  int    singlesOnly             = 1, // 0: full correlations    1: singles only
  int    useWeights              = 0, // 0: no                   1: yes
  int    useRapidity             = 1,
- int    centralityMethod        = 7, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
+ int    centralityMethod        = 4, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
  int    chargeSet               = 1, // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -10.,
- double zMax                    =  10.,
+ double zMin                    = -6.,
+ double zMax                    =  6.,
  int    trackFilterBit          = 1, // Global tracks =1; TPConly = 128; Hybrid = 272.
  int    nClusterMin             = 70,
- double eta1Min                 = -0.8,
- double eta1Max                 =  0.8,
- double eta2Min                 = -0.8,
- double eta2Max                 =  0.8,
+ double eta1Min                 = -0.8, // y1min acturally
+ double eta1Max                 =  0.8, // y1max acturally
+ double eta2Min                 = -0.8, // y2min acturally
+ double eta2Max                 =  0.8, // y2max acturally
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  1,
- Bool_t trigger                 = kTRUE,
- int particleID                 = 0, // Pion=0, Kaon=1, Proton=2
+ Bool_t trigger                 = kFALSE,
+ int particleID                 = 1, // Pion=0, Kaon=1, Proton=2
  double nSigmaCut               = 3.0,
  int pidType                    = 2, // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
  Bool_t requestTOFPID           = 1,
@@ -65,17 +65,27 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
 	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
 	}
+      else if ( CentralityGroup == 3 )
+	{
+	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
+	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
+	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
+	}
     }
   else if ( particleID == 1 ) // Kaon
     {
-	  minCentrality[0] = 0.;      maxCentrality[0]  = 26.7;
-	  minCentrality[1] = 26.7;    maxCentrality[1]  = 53.4;
-	  minCentrality[2] = 53.4;    maxCentrality[2]  = 80.;
+	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
+	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
+	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
     }
   else if ( particleID == 2 ) // Proton
     {
-	  minCentrality[0] = 0.;      maxCentrality[0]  = 40.;
-	  minCentrality[1] = 40.;     maxCentrality[1]  = 80.;
+	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
+	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
+	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
     }
   else
     {
@@ -248,12 +258,12 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
       task->SetPtMin1(              ptMin           );
       task->SetPtMax1(              ptMax           );
-      task->SetEtaMin1(             eta1Min          );
-      task->SetEtaMax1(             eta1Max          );
+      task->SetEtaMin1(             eta1Min          ); // SetYMin1 acturally
+      task->SetEtaMax1(             eta1Max          ); // SetYMax1 acturally
       task->SetPtMin2(              ptMin           );
       task->SetPtMax2(              ptMax           );
-      task->SetEtaMin2(             eta2Min          );
-      task->SetEtaMax2(             eta2Max          );
+      task->SetEtaMin2(             eta2Min          ); // SetYMin2 acturally
+      task->SetEtaMax2(             eta2Max          ); // SetYMax2 acturally
       task->SetDcaZMin(             dcaZMin         );
       task->SetDcaZMax(             dcaZMax         );
       task->SetDcaXYMin(            dcaXYMin        );
