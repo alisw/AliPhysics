@@ -66,6 +66,7 @@ set(SRCS
   AliFemtoCorrFctn3DSpherical.cxx
   AliFemtoEventReaderAOD.cxx
   AliFemtoEventReaderAODChain.cxx
+  AliFemtoEventReaderAODMultSelection.cxx
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
@@ -86,7 +87,7 @@ set(SRCS
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
-  AliFemtoDeltaPtPairCut.cxx	
+  AliFemtoDeltaPtPairCut.cxx
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.cxx
   AliFemtoXiTrackCut.cxx
   AliFemtoXiPairCut.cxx
