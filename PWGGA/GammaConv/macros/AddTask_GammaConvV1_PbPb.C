@@ -1506,12 +1506,11 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     eventCutArray[ 3] = "52400023"; photonCutArray[ 3] = "00216609247602002280400000"; mesonCutArray[ 3]= "0152501500000000"; // 20-40%
     eventCutArray[ 4] = "52500023"; photonCutArray[ 4] = "00216609247602002280400000"; mesonCutArray[ 4]= "0152501500000000"; // 20-50%
   } else if (trainConfig == 243){ // Standard cuts with kINT7 trigger
-    eventCutArray[ 0] = "50110013"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[ 0] = "0152201500900000"; //  0-10%
-    eventCutArray[ 1] = "51210013"; photonCutArray[ 1] = "04200009297002003220000000"; mesonCutArray[ 1] = "0152201500900000"; // 10-20%
-    eventCutArray[ 2] = "50210013"; photonCutArray[ 2] = "04200009297002003220000000"; mesonCutArray[ 2] = "0152201500900000"; //  0-20%
-    eventCutArray[ 3] = "55910013"; photonCutArray[ 3] = "04200009297002003220000000"; mesonCutArray[ 3] = "0152201500900000"; // 50-90%
-    eventCutArray[ 4] = "50010013"; photonCutArray[ 4] = "04200009297002003220000000"; mesonCutArray[ 4] = "0152201500900000"; //  0-100%
-
+    eventCutArray[ 0] = "20110113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[ 0] = "0152201500900000"; //  0-10%
+    eventCutArray[ 1] = "21210113"; photonCutArray[ 1] = "00200009227302008250404000"; mesonCutArray[ 1] = "0152201500900000"; // 10-20%
+    eventCutArray[ 2] = "22510113"; photonCutArray[ 2] = "00200009227302008250404000"; mesonCutArray[ 2] = "0152201500900000"; // 20-50%
+    eventCutArray[ 3] = "25910113"; photonCutArray[ 3] = "00200009227302008250404000"; mesonCutArray[ 3] = "0152201500900000"; // 50-90%
+    eventCutArray[ 4] = "20010113"; photonCutArray[ 4] = "00200009227302008250404000"; mesonCutArray[ 4] = "0152201500900000"; //  0-100%
   }else  if (trainConfig == 300){ // LHC10h standard, eta 0.65, y = 0.6 
     eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "03200009300002003220000000"; mesonCutArray[ 0] = "0152304500900000"; // 0-5%
     eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "03200009300002003220000000"; mesonCutArray[ 1] = "0152304500900000"; // 5-10%
