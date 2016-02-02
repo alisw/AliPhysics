@@ -83,6 +83,7 @@ set(SRCS
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
   AliAnalysisTaskSEDStarSpectra.cxx 
+  AliAnalysisTaskSEDStarCharmFraction.cxx
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
   AliMultiDimVector.cxx
