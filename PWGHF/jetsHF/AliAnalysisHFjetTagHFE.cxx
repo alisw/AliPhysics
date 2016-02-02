@@ -71,6 +71,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   ftrack(0),
   fCaloClusters(0),
   fpidResponse(0),
+  fcentMim(0), 
+  fcentMax(10.0), 
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -150,6 +152,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   ftrack(0),
   fCaloClusters(0),
   fpidResponse(0),
+  fcentMim(0), 
+  fcentMax(10.0), 
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -597,6 +601,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   // Run analysis code here, if needed. It will be executed before FillHistograms().
   cout << "Run!" << endl;
 
+  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+
   // centrality
   /*
   Double_t centrality = -1;
@@ -604,17 +610,21 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   centrality = fCentrality->GetCentralityPercentile("V0M");
   */
 
+ 
   Float_t lPercentile = 300; 
-  if(fAOD)fMultSelection = (AliMultSelection * ) fVevent->FindListObject("MultSelection");
+  if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
   if( !fMultSelection) {
    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     AliWarning("AliMultSelection object not found!");
   }else{
    lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
  }
+
   Double_t centrality = -1;
   centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
   cout << "cent = " << centrality << endl; 
+  cout << "cent cut: " << fcentMim << " ; " << fcentMax << endl; 
+  //if(centrality<0.0 || centrality>fcentMax)break;
 
   // vertex
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
@@ -649,8 +659,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
  // analysis
 
-  if(fabs(Zvertex)<10.0)
+  if(fabs(Zvertex)<10.0 && (centrality>fcentMim && centrality<fcentMax)) // event cuts
     {
+     cout << "cent cut = " << centrality << endl; 
 
      // inclusive jet
 
@@ -719,7 +730,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         AliVTrack *track = dynamic_cast<AliVTrack*>(ptrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(track);  // to apply cuts
 
-        cout<< "tarck label = " << track->GetLabel() << endl;
+        //cout<< "tarck label = " << track->GetLabel() << endl;
 
         int MCpdg = 0;
         if(fmcData && track->GetLabel()!=0)
@@ -748,12 +759,18 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         Double_t pz = track->Pz(); 
         Double_t eta = track->Eta(); 
         Double_t phi = track->Phi(); 
+        Double_t d0z0[2]={-999,-999}, cov[3];
+          if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
+        //cout << "DCA = " << d0z0[0] << " ; " << d0z0[1] << endl;
+
 
         fQAHistTrPhi->Fill(phi); // QA
 
         if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; // AOD track level
         //if(pt<0.5)continue;
-        if(fabs(eta>0.6))continue;
+        if(fabs(eta)>0.6)continue;
+        if(fabs(d0z0[0])>3.0)continue;
+        if(fabs(d0z0[1])>3.0)continue;
         if(track->GetTPCNcls() < 80) continue;
         if(atrack->GetITSNcls() < 2) continue;   // AOD track level
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;    // kAny
@@ -771,7 +788,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         // Get TPC nSigma
         Double_t dEdx =-999, fTPCnSigma=-999;
         dEdx = track->GetTPCsignal();
-        fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        //fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron) - 4.0; // temp.correction
 
         if(fTPCnSigma<-1 || fTPCnSigma>3)continue;
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
@@ -795,6 +813,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             /////////////////////////////////////////////
             //Properties of tracks matched to the EMCAL//
             /////////////////////////////////////////////
+      
+            Bool_t fClsTypeEMC = kFALSE;
+            Float_t  emcx[3]; // cluster pos
+            clustMatch->GetPosition(emcx);
+            TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
+            Double_t emcphi = clustpos.Phi();
+            Double_t emceta = clustpos.Eta();
+            if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
+            if(emcphi > 1.39 && emcphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+            if(!fClsTypeEMC)continue;
+
             if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
             
             Double_t clustMatchE = clustMatch->E();
@@ -984,7 +1013,8 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         Double_t ptAsso=-999., nsigma=-999.0, mass=-999., width = -999;
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
 
-        nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kElectron);
+        //nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kElectron);
+        nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kElectron)-4.0; // tempolary until fix dE/dx
         ptAsso = Assotrack->Pt();
         Int_t chargeAsso = Assotrack->Charge();
         Int_t charge = track->Charge();
@@ -999,7 +1029,7 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         //-------loose cut on partner electron
-        if(ptAsso <0.2) continue;
+        if(ptAsso <0.3) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(nsigma < -3 || nsigma > 3) continue;
         
