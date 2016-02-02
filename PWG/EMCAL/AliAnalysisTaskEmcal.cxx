@@ -1189,7 +1189,7 @@ AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n)
   if (tmp.IsNull()) return 0;
 
   AliParticleContainer *cont = 0x0;
-  TString name = TString::Format("%s_%s_Container", GetName(), n);
+  TString name = TString::Format("%s_Container", n);
   cont = new AliParticleContainer(name);
   cont->SetArrayName(n);
   TString contName = cont->GetArrayName();
@@ -1209,7 +1209,7 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n)
   if (tmp.IsNull()) return 0;
 
   AliClusterContainer *cont = 0x0;
-  TString name = TString::Format("%s_%s_Container", GetName(), n);
+  TString name = TString::Format("%s_Container", n);
   cont = new AliClusterContainer(name);
   cont->SetArrayName(n);
 
