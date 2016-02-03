@@ -5324,9 +5324,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	//if(GetFFMinNTracks()>0 && jettrackList->GetSize()<=GetFFMinNTracks()){isBadJet = kTRUE;}
 	
-	if(jettracklist->GetEntries() == 0){
+	if(jettrackList->GetEntries() == 0){
 	  
-	  if(fDebug >2)std::cout<<" Generated jet loop: jettracklist is empty! "<<std::endl;
+	  if(fDebug >2)std::cout<<" Generated jet loop: jettrackList is empty! "<<std::endl;
 	  
 	  delete jettrackList;
 	  continue; 
