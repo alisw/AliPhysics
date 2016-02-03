@@ -12,7 +12,6 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliLocalRhoParameter.h"
-#include "AliPythiaInfo.h"
 
 #include "AliJetContainer.h"
 
@@ -26,7 +25,6 @@ AliJetContainer::AliJetContainer():
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
-  fPythiaInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -56,7 +54,6 @@ AliJetContainer::AliJetContainer():
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
-  fPythiaInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -73,7 +70,6 @@ AliJetContainer::AliJetContainer(const char *name):
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
-  fPythiaInfoName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -103,7 +99,6 @@ AliJetContainer::AliJetContainer(const char *name):
   fRho(0),
   fLocalRho(0),
   fRhoMass(0),
-  fPythiaInfo(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -210,21 +205,6 @@ void AliJetContainer::LoadRhoMass(AliVEvent *event)
     }
   }
 }
-//________________________________________________________________________
-void AliJetContainer::LoadPythiaInfo(AliVEvent *event)
-{
-  // Load parton info
-
-  if (!fPythiaInfoName.IsNull() && !fPythiaInfo) {
-    fPythiaInfo = dynamic_cast<AliPythiaInfo*>(event->FindListObject(fPythiaInfoName));
-    if (!fPythiaInfo) {
-      AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPythiaInfoName.Data()));
-      return;
-    }
-  }
-}
-
-
 
 //________________________________________________________________________
 AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)

@@ -1,6 +1,5 @@
-// $Id$
 //
-// Jet modelling task.
+// Jet modeling task.
 //
 // Author: S.Aiola, C.Loizides
 

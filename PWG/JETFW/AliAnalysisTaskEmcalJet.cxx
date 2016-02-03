@@ -173,7 +173,6 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     cont->SetRunNumber(InputEvent()->GetRunNumber());
     cont->SetArray(InputEvent());
     cont->LoadRho(InputEvent()); 
-    cont->LoadPythiaInfo(InputEvent());
   }
 
   //Get Jets, cuts and rho for first jet container

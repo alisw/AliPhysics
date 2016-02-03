@@ -16,6 +16,7 @@
 #include <TChain.h>
 #include <TKey.h>
 
+#include "AliStack.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
@@ -36,6 +37,7 @@
 #include "AliMCEvent.h"
 #include "AliAnalysisUtils.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalPythiaInfo.h"
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
@@ -88,6 +90,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
+  fGeneratePythiaInfoObject(kFALSE),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -108,6 +111,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
+  fPythiaInfo(0),
   fOutput(0),
   fHistEventCount(0),
   fHistTrialsAfterSel(0),
@@ -175,6 +179,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
+  fGeneratePythiaInfoObject(kFALSE),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -195,6 +200,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
+  fPythiaInfo(0),
   fOutput(0),
   fHistEventCount(0),
   fHistTrialsAfterSel(0),
@@ -641,6 +647,20 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
+{
+  // Load parton info
+
+  if (!fPythiaInfoName.IsNull() && !fPythiaInfo) {
+    fPythiaInfo = dynamic_cast<AliEmcalPythiaInfo*>(event->FindListObject(fPythiaInfoName));
+    if (!fPythiaInfo) {
+      AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fPythiaInfoName.Data()));
+      return;
+    }
+  }
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEmcal::ExecOnce()
 {
   // Init the analysis.
@@ -649,6 +669,8 @@ void AliAnalysisTaskEmcal::ExecOnce()
     AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
     return;
   }
+
+  LoadPythiaInfo(InputEvent());
 
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstance();
@@ -1053,6 +1075,10 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   fVertex[1] = 0;
   fVertex[2] = 0;
   fNVertCont = 0;
+
+  if (fGeneratePythiaInfoObject && MCEvent()) {
+    GeneratePythiaInfoObject(MCEvent());
+  }
 
   const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
   if (vert) {
@@ -1586,4 +1612,32 @@ Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliAODTrack *aodTrack, UInt_t fi
   }
 
   return res;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
+{
+  // Copy some information about the Pythia event in a PythaInfo object
+
+  if (!fPythiaInfo) {
+    fPythiaInfo = new AliEmcalPythiaInfo();
+  }
+
+  AliStack* stack = mcEvent->Stack();
+
+  const Int_t nprim = stack->GetNprimary();
+  // reject if partons are missing from stack for some reason
+  if (nprim < 8) return;
+
+  TParticle *part6 = stack->Particle(6);
+  TParticle *part7 = stack->Particle(7);
+
+  fPythiaInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
+  fPythiaInfo->SetParton6(part6->Pt(), part6->Eta(), part6->Phi(), part6->GetMass());
+
+  fPythiaInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
+  fPythiaInfo->SetParton7(part7->Pt(), part7->Eta(), part7->Phi(), part7->GetMass());
+
+  // TODO: for Leticia
+  // Here you should get the event weight from the mcEvent object and store it in the pythiaInfo object
 }
