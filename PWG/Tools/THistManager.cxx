@@ -616,7 +616,7 @@ TObject *THistManager::FindObject(const char *name) const {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent) return NULL;
-	return parent->FindObject(name);
+	return parent->FindObject(hname);
 }
 
 //______________________________________________________________________________
