@@ -75,6 +75,9 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        AddTrackCuts(AliVCuts *cuts);
   Int_t                       GetNumberOfCutObjects() const;
   AliVCuts                   *GetTrackCuts(Int_t icut);
+  void                        SetAODFilterBits(UInt_t bits)                     { fAODFilterBits   = bits  ; }
+  void                        AddAODFilterBit(UInt_t bit)                       { fAODFilterBits  |= bit   ; }
+  UInt_t                      GetAODFilterBits()                          const { return fAODFilterBits    ; }
 
   void SetSelectionModeAny() { fSelectionModeAny = kTRUE ; }
   void SetSelectionModeAll() { fSelectionModeAny = kFALSE; }
