@@ -237,7 +237,11 @@ goCPass()
 
   logOutputDir=$runpath
   [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> >(tee ${logOutputDir}/stdout)
+  if [[ -z "$dontRedirectStdOutToLog" ]]; then
+    # Redirect all output to both file and console. Save fd 3 to restore later.
+    exec 3>&1
+    exec &> >(tee ${logOutputDir}/stdout)
+  fi
   echo "$0 $*"
 
   ##### MC -- TODO: does this still work? is it really needed during CPass0 only?
@@ -510,7 +514,8 @@ goCPass()
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
     echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
-    exec &> /dev/tty
+    exec 1>&3 3>&-
+    exec 2>&1
     copyFileToRemote stdout $outputDir
   fi
 
@@ -625,7 +630,11 @@ goMergeCPass()
 
   logOutputDir=${runpath}
   [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  [[ -z "$dontRedirectStdOutToLog" ]] && exec &> >(tee ${logOutputDir}/stdout)
+  if [[ -z "$dontRedirectStdOutToLog" ]]; then
+    # Redirect all output to both file and console. Save fd 3 to restore later.
+    exec 3>&1
+    exec &> >(tee ${logOutputDir}/stdout)
+  fi
   echo "$0 $*"
 
   mergingScript="mergeMakeOCDB.byComponent.sh"
@@ -821,7 +830,8 @@ goMergeCPass()
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
     echo "Copying stdout. NOTE: this is the last bit you will see in the log!"
-    exec &> /dev/tty
+    exec 1>&3 3>&-
+    exec 2>&1
     copyFileToRemote stdout $outputDir
   fi
 
@@ -1979,6 +1989,8 @@ goMakeSummary()
   metadir=${commonOutputPath}/meta
   [[ ! -d $metadir ]] && metadir="$PWD"
 
+  # Redirect all output to both file and console. Save fd 3 to restore later.
+  exec 3>&1
   exec &> >(tee ${logTmp})
 
   # Take a snapshot of the current directory. Files already here at this point needn't be copied to
@@ -2206,7 +2218,8 @@ EOF
 
   # Copy stdout to destination.
   echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"
-  exec &> /dev/tty
+  exec 1>&3 3>&-
+  exec 2>&1
   copyFileToRemote $log $outputDir
 
   alilog_info "[END] goMakeSummary() with following parameters $*"
