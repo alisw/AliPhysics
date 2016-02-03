@@ -167,21 +167,6 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pClusterMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pClusterMakerTask->GetClusterContainer(0)->SetClusECut(0.);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
-
-    AliAnalysisTaskEmcalJetQA *pQATaskAfter = AddTaskEmcalJetQA("", "usedefault", "usedefault", "AfterTender");
-    pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.);
-    pQATaskAfter->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskAfter->GetClusterContainer(0)->SetExoticCut(kFALSE);
-    pQATaskAfter->SetHistoBins(200, 0, 30);
-    pQATaskAfter->SelectCollisionCandidates(kPhysSel);
-
-    AliAnalysisTaskEmcalJetQA *pQATaskAfterMaker = AddTaskEmcalJetQA("", "usedefault", "", "AfterClusterMaker");
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusECut(0.);
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
-    pQATaskAfterMaker->SelectCollisionCandidates(kPhysSel);
-    pQATaskAfterMaker->SetHistoBins(200, 0, 30);
-    pQATaskAfterMaker->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
 
   if (bDoFullJets && bDoHadCorr) {
@@ -212,14 +197,14 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   // QA task
   AliAnalysisTaskEmcalJetQA *pQATask = 0;
   if (bDoFullJets) {
-    AliAnalysisTaskEmcalJetQA *pQATask = AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault");
+    pQATask = AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault");
     pQATask->GetClusterContainer(0)->SetClusECut(0.30);
     pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
-    //pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
-    //pQATask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
+    pQATask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
   else {
-    AliAnalysisTaskEmcalJetQA *pQATask = AddTaskEmcalJetQA("usedefault", "", "");
+    pQATask = AddTaskEmcalJetQA("usedefault", "", "");
   }
   pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
   pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
