@@ -63,7 +63,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void AOD(AliAODEvent *aAOD);
   virtual void OnlineMonitoring();
   //  2b) Indirectly:
-  virtual void Background(AliVEvent *ave);
+  virtual void EstimateBackground(AliVEvent *ave);
   virtual void FillControlHistogramsEvent(AliVEvent *ave);
   virtual void FillControlHistogramsParticle(AliVEvent *ave);
   virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *gtrack); // TBI shall I also pass atrack?
@@ -223,6 +223,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *fPtPIDHist[5][2][2];                               //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fEtaPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPhiPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
+  Double_t fInclusiveSigmaCuts[5];                         //! [PID function] see .cxx for detailed documentation
+  Double_t fExclusiveSigmaCuts[5][5];                      //! [PID function][PID exclusive] see .cxx for detailed documentation
 
   // ...
   // 1c) V0s:
@@ -285,7 +287,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  //! do something only for the specified event
   UInt_t fPeriod;                 //! do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,3);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,4);
 
 };
 
