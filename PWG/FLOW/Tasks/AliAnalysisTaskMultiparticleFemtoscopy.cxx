@@ -599,14 +599,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
 
 //================================================================================================================
 
-void AliAnalysisTaskMultiparticleFemtoscopy::Background(AliVEvent *ave)
+void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
 {
  // Estimate background.
 
  // To do:
  // 1) Add support for MC and ESD.
 
- TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Background(AliVEvent *ave)";
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)";
 
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) ...
@@ -652,7 +652,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Background(AliVEvent *ave)
   }
  } // else if(aAOD)
 
-} // void AliAnalysisTaskMultiparticleFemtoscopy::Background(AliVEvent *ave)
+} // void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
 
 //================================================================================================================
 
@@ -829,7 +829,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::MC(AliMCEvent *aMC)
  // Monte Carlo analysis is performed in this method.
 
  // ...
- aMC = NULL; // TBI eliminating warnings temporarily
+ if(aMC)
+ {
+  aMC = NULL; // TBI eliminating warnings temporarily
+ }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::MC(AliMCEvent *aMC)
 
@@ -840,7 +843,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ESD(AliESDEvent *aESD)
  // ESD analysis is performed in this method.
 
  // ...
- aESD = NULL; // TBI eliminating warnings temporarily
+ if(aESD)
+ {
+  aESD = NULL; // TBI eliminating warnings temporarily
+ }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::ESD(AliESDEvent *aESD)
 
@@ -878,7 +884,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::AOD(AliAODEvent *aAOD)
  if(fFillCorrelationFunctions){this->CalculateCorrelationFunctions(aAOD);}
 
  // g) Calculate background:
- if(fEstimateBackground){this->Background(aAOD);} // TBI rename the method for consistency sake...
+ if(fEstimateBackground){this->EstimateBackground(aAOD);}
 
 
  return;
@@ -1045,8 +1051,6 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
  // c) Track quality cuts;
  // d) PID. 
 
- Double_t inc = 1.0; Double_t exl = 3.0; // TBI to be removed eventually
-
  // a) Insanity checks
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)";
  if(!(1 == charge || -1 == charge)){Fatal(sMethodName.Data(),"!(1 == charge || -1 == charge)");}
@@ -1081,7 +1085,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
   Double_t dSigmaTPCPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kPion)));
   Double_t dSigmaTPCKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kKaon)));
   Double_t dSigmaTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kProton)));
-  if(!(dSigmaTPCPion < inc && dSigmaTPCProton > exl && dSigmaTPCKaon > exl)) return kFALSE; // TBI hardwired 3. and 4.
+  // inclusive cuts and exclusive cuts:
+  if(!(dSigmaTPCPion < fInclusiveSigmaCuts[2] && dSigmaTPCProton > fExclusiveSigmaCuts[2][4] && dSigmaTPCKaon > fExclusiveSigmaCuts[2][3])) return kFALSE;
  } // if(gtrack->GetTPCmomentum() <= 0.75) // TBI hardwired 0.75
  else if(gtrack->GetTPCmomentum() >= 0.75 )
  {
@@ -1104,10 +1109,6 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
  // b) Trivial checks;
  // c) Track quality cuts;
  // d) PID. 
-
-
- Double_t inc = 1.0; Double_t exl = 3.0; // TBI to be removed eventually
-
 
  // a) Insanity checks:
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)";
@@ -1143,7 +1144,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
   Double_t dSigmaTPCKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kKaon)));
   Double_t dSigmaTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kProton)));
   Double_t dSigmaTPCPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kPion)));
-  if(!(dSigmaTPCKaon < inc && dSigmaTPCProton > exl && dSigmaTPCPion > exl)) return kFALSE; // TBI hardwired 3. and 4.
+  // inclusive and exclusive cuts:
+  if(!(dSigmaTPCKaon < fInclusiveSigmaCuts[3] && dSigmaTPCProton > fExclusiveSigmaCuts[3][4] && dSigmaTPCPion > fExclusiveSigmaCuts[3][2])) return kFALSE;
  } // if(gtrack->GetTPCmomentum() <= 0.75) // TBI hardwired 0.75
  else if(gtrack->GetTPCmomentum() >= 0.75 )
  {
@@ -1165,10 +1167,6 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t
  // b) Trivial checks;
  // c) Track quality cuts;
  // d) PID. 
-
- 
- Double_t inc = 1.0; Double_t exl = 3.0; // TBI to be removed eventually
-
 
  // a) Insanity checks:
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)";
@@ -1204,7 +1202,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t
   Double_t dSigmaTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kProton)));
   Double_t dSigmaTPCPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kPion)));
   Double_t dSigmaTPCKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(gtrack,(AliPID::kKaon)));
-  if(!(dSigmaTPCProton < inc && dSigmaTPCPion > exl && dSigmaTPCKaon > exl)) return kFALSE; // TBI hardwired 3. and 4.
+  if(!(dSigmaTPCProton < fInclusiveSigmaCuts[4] && dSigmaTPCPion > fExclusiveSigmaCuts[4][2] && dSigmaTPCKaon > fExclusiveSigmaCuts[4][3])) return kFALSE;
  } // if(gtrack->GetTPCmomentum() <= 0.75) // TBI hardwired 0.75
  else if(gtrack->GetTPCmomentum() >= 0.75 )
  {
@@ -1253,6 +1251,21 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForControlHistogram
    }
   }
  } // for(Int_t pid=0;pid<4;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
+
+ // Inclusive sigma cuts:
+ for(Int_t pf=0;pf<5;pf++) // PID function [0=Electron(...),1=Muon(...),2=Pion(...),3=Kaon(...),4=Proton(...)]
+ {
+  fInclusiveSigmaCuts[pf] = 0.;
+ }
+
+ // Exclusive sigma cuts:
+ for(Int_t pf=0;pf<5;pf++) // PID function [0=Electron(...),1=Muon(...),2=Pion(...),3=Kaon(...),4=Proton(...)]
+ {
+  for(Int_t pid=0;pid<5;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
+  {
+   fExclusiveSigmaCuts[pf][pid] = 0.;
+  }
+ }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForControlHistograms()
 
@@ -1389,6 +1402,22 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
   fGlobalTracksAOD[index] = new TExMap();
  }
 
+ // Inclusive sigma cuts:
+ fInclusiveSigmaCuts[2] = 2.; // i.e. in function Pion(...) the inclusive cut for pions is 2 sigma
+ fInclusiveSigmaCuts[3] = 2.; // i.e. in function Kaon(...) the inclusive cut for kaons is 2 sigma
+ fInclusiveSigmaCuts[4] = 2.; // i.e. in function Proton(...) the inclusive cut for protons is 2 sigma
+
+ // Exclusive sigma cuts:
+ // Pion(...)
+ fExclusiveSigmaCuts[2][3] = 4.; // i.e. in function Pion(...) the exclusive cut for kaons is 4 sigma
+ fExclusiveSigmaCuts[2][4] = 4.; // i.e. in function Pion(...) the exclusive cut for protons is 4 sigma
+ // Kaon(...)
+ fExclusiveSigmaCuts[3][2] = 4.; // i.e. in function Kaon(...) the exclusive cut for pions is 4 sigma
+ fExclusiveSigmaCuts[3][4] = 4.; // i.e. in function Kaon(...) the exclusive cut for protons is 4 sigma
+ // Proton(...)
+ fExclusiveSigmaCuts[4][2] = 4.; // i.e. in function Proton(...) the exclusive cut for pions is 4 sigma
+ fExclusiveSigmaCuts[4][3] = 4.; // i.e. in function Proton(...) the exclusive cut for kaons is 4 sigma
+
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
 
 //=======================================================================================================================
@@ -1500,7 +1529,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
   fGetTPCsignalNHist->SetStats(kFALSE);
   fGetTPCsignalNHist->SetFillColor(kBlue-10);
   fGetTPCsignalNHist->GetXaxis()->SetTitle("TPCsignalN");
-  fControlHistogramsNonIdentifiedParticlesList->Add(fGetTPCNclsHist);
+  fControlHistogramsNonIdentifiedParticlesList->Add(fGetTPCsignalNHist);
   fGetITSNclsHist = new TH1I("fGetITSNclsHist","atrack->fGetITSNclsHist()",200,0,200);
   fGetITSNclsHist->SetStats(kFALSE);
   fGetITSNclsHist->SetFillColor(kBlue-10);
@@ -1554,34 +1583,37 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  fControlHistogramsIdentifiedParticlesFlagsPro->SetLineColor(kBlack);
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(1,"fFillControlHistogramsIdentifiedParticles"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(0.5,fFillControlHistogramsIdentifiedParticles);
  fControlHistogramsIdentifiedParticlesList->Add(fControlHistogramsIdentifiedParticlesFlagsPro);
- for(Int_t pid=0;pid<5;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
+ if(fFillControlHistogramsIdentifiedParticles)
  {
-  for(Int_t pa=0;pa<2;pa++) // particle(+q)/antiparticle(-q)
+  for(Int_t pid=0;pid<5;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
   {
-   for(Int_t ps=0;ps<2;ps++) // kPrimary/kFromDecayVtx
+   for(Int_t pa=0;pa<2;pa++) // particle(+q)/antiparticle(-q)
    {
-    fMassPIDHist[pid][pa][ps] = new TH1F(Form("fMassPIDHist[%d][%d][%d]",pid,pa,ps),Form("fMassPIDHist[%d][%d][%d] (%s)",pid,pa,ps,sParticleLabel[pid].Data()),10000,0.,10.);                      
-    fMassPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("m [GeV/c^{2}]");
-    for(Int_t nm=0;nm<5;nm++) // nominal masses 
+    for(Int_t ps=0;ps<2;ps++) // kPrimary/kFromDecayVtx
     {
-     fMassPIDHist[pid][pa][ps]->GetXaxis()->SetBinLabel(fMassPIDHist[pid][pa][ps]->FindBin(dNominalMass[nm]),Form("m_{%s}",sParticleLabel[nm].Data()));
-    }
-    fMassPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
-    fControlHistogramsIdentifiedParticlesList->Add(fMassPIDHist[pid][pa][ps]);
-    fPtPIDHist[pid][pa][ps] = new TH1F(Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),1000,0.,10.);                      
-    fPtPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("p_{T} [TBI units]");
-    fPtPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
-    fControlHistogramsIdentifiedParticlesList->Add(fPtPIDHist[pid][pa][ps]);
-    fEtaPIDHist[pid][pa][ps] = new TH1F(Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),200000,-2.,2.);                      
-    fEtaPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
-    fControlHistogramsIdentifiedParticlesList->Add(fEtaPIDHist[pid][pa][ps]);
-    fPhiPIDHist[pid][pa][ps] = new TH1F(Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),360,0.,TMath::TwoPi());                      
-    fPhiPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("#phi");
-    fPhiPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
-    fControlHistogramsIdentifiedParticlesList->Add(fPhiPIDHist[pid][pa][ps]);
-   } // for(Int_t ps=0;ps<2;ps++) // kPrimary/kFromDecayVtx
-  } // for(Int_t pa=0;pa<2;pa++) // particle(+q)/antiparticle(-q)
- } // for(Int_t pid=0;pid<4;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
+     fMassPIDHist[pid][pa][ps] = new TH1F(Form("fMassPIDHist[%d][%d][%d]",pid,pa,ps),Form("fMassPIDHist[%d][%d][%d] (%s)",pid,pa,ps,sParticleLabel[pid].Data()),10000,0.,10.);
+     fMassPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("m [GeV/c^{2}]");
+     for(Int_t nm=0;nm<5;nm++) // nominal masses
+     {
+      fMassPIDHist[pid][pa][ps]->GetXaxis()->SetBinLabel(fMassPIDHist[pid][pa][ps]->FindBin(dNominalMass[nm]),Form("m_{%s}",sParticleLabel[nm].Data()));
+     }
+     fMassPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
+     fControlHistogramsIdentifiedParticlesList->Add(fMassPIDHist[pid][pa][ps]);
+     fPtPIDHist[pid][pa][ps] = new TH1F(Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),1000,0.,10.);
+     fPtPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("p_{T} [TBI units]");
+     fPtPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
+     fControlHistogramsIdentifiedParticlesList->Add(fPtPIDHist[pid][pa][ps]);
+     fEtaPIDHist[pid][pa][ps] = new TH1F(Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),200000,-2.,2.);
+     fEtaPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
+     fControlHistogramsIdentifiedParticlesList->Add(fEtaPIDHist[pid][pa][ps]);
+     fPhiPIDHist[pid][pa][ps] = new TH1F(Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),360,0.,TMath::TwoPi());
+     fPhiPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("#phi");
+     fPhiPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
+     fControlHistogramsIdentifiedParticlesList->Add(fPhiPIDHist[pid][pa][ps]);
+    } // for(Int_t ps=0;ps<2;ps++) // kPrimary/kFromDecayVtx
+   } // for(Int_t pa=0;pa<2;pa++) // particle(+q)/antiparticle(-q)
+  } // for(Int_t pid=0;pid<4;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
+ } // if(fFillControlHistogramsIdentifiedParticles)
 
  //  c3) V0s:
  // Book the profile holding all the flags for V0s:
@@ -1594,80 +1626,84 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  fControlHistogramsV0sFlagsPro->SetFillColor(kGray);
  fControlHistogramsV0sFlagsPro->SetLineColor(kBlack);
  fControlHistogramsV0sFlagsPro->GetXaxis()->SetBinLabel(1,"fFillControlHistogramsV0s"); fControlHistogramsV0sFlagsPro->Fill(0.5,fFillControlHistogramsV0s);
- fGetNProngsHist = new TH1I("fGetNProngsHist","aAODv0->GetNProngs()",10,0,10);
- fGetNProngsHist->SetStats(kFALSE);
- fGetNProngsHist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fGetNProngsHist);
- // TBI
- fMassK0ShortHist = new TH1F("fMassK0ShortHist","aAODv0->MassK0Short()",1000000,0.,100.);
- //fMassK0ShortHist->SetStats(kFALSE);
- fMassK0ShortHist->SetFillColor(kBlue-10);
- Double_t dMassK0Short = TDatabasePDG::Instance()->GetParticle(310)->Mass(); // nominal mass
- //fMassK0ShortHist->GetXaxis()->SetBinLabel(fMassK0ShortHist->FindBin(dMassK0Short),Form("m_{K_{S}^{0}} = %f",dMassK0Short));
- fMassK0ShortHist->SetBinContent(fMassK0ShortHist->FindBin(dMassK0Short),1e6);
- fControlHistogramsV0sList->Add(fMassK0ShortHist);
- // TBI
- fMassLambdaHist = new TH1F("fMassLambdaHist","aAODv0->MassLambda()",1000000,0.,100.);
- //fMassLambdaHist->SetStats(kFALSE);
- fMassLambdaHist->SetFillColor(kBlue-10);
- Double_t dMassLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass(); // nominal mass
- //fMassLambdaHist->GetXaxis()->SetBinLabel(fMassLambdaHist->FindBin(dMassLambda),Form("m_{#Lambda^{0}} = %f",dMassLambda));
- fMassLambdaHist->SetBinContent(fMassLambdaHist->FindBin(dMassLambda),1e6);
- fControlHistogramsV0sList->Add(fMassLambdaHist);
- // TBI
- fMassAntiLambdaHist = new TH1F("fMassAntiLambdaHist","aAODv0->MassAntiLambda()",1000000,0.,100.);
- //fMassAntiLambdaHist->SetStats(kFALSE);
- fMassAntiLambdaHist->SetFillColor(kBlue-10);
- Double_t dMassAntiLambda = TDatabasePDG::Instance()->GetParticle(-3122)->Mass(); // nominal mass
- //fMassAntiLambdaHist->GetXaxis()->SetBinLabel(fMassAntiLambdaHist->FindBin(dMassAntiLambda),Form("m_{#bar{Lambda}^{0}} = %f",dMassAntiLambda));
- fMassAntiLambdaHist->SetBinContent(fMassAntiLambdaHist->FindBin(dMassAntiLambda),1e6);
- fControlHistogramsV0sList->Add(fMassAntiLambdaHist);
- // TBI
- fOpenAngleV0Hist = new TH1F("fOpenAngleV0Hist","aAODv0->fOpenAngleV0()",10000,-0.044,TMath::Pi()+0.044);
- fOpenAngleV0Hist->SetStats(kFALSE);
- fOpenAngleV0Hist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fOpenAngleV0Hist);
- // TBI
- fRadiusV0Hist = new TH1F("fRadiusV0Hist","aAODv0->fRadiusV0()",10000,0.,1000.);
- fRadiusV0Hist->SetStats(kFALSE);
- fRadiusV0Hist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fRadiusV0Hist);
- // TBI
- fDcaV0ToPrimVertexHist = new TH1F("fDcaV0ToPrimVertexHist","aAODv0->fDcaV0ToPrimVertex()",10000,0.,1000.);
- fDcaV0ToPrimVertexHist->SetStats(kFALSE);
- fDcaV0ToPrimVertexHist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fDcaV0ToPrimVertexHist);
- // TBI
- fMomV0XHist = new TH1F("fMomV0XHist","aAODv0->fMomV0X() = px(+) + px(-)",10000,-1000.,1000.);
- fMomV0XHist->SetStats(kFALSE);
- fMomV0XHist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fMomV0XHist);
- // TBI
- fMomV0YHist = new TH1F("fMomV0YHist","aAODv0->fMomV0Y() = py(+) + py(-)",10000,-1000.,1000.);
- fMomV0YHist->SetStats(kFALSE);
- fMomV0YHist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fMomV0YHist);
- // TBI
- fMomV0ZHist = new TH1F("fMomV0ZHist","aAODv0->fMomV0Z() = pz(+) + pz(-)",10000,-1000.,1000.);
- fMomV0ZHist->SetStats(kFALSE);
- fMomV0ZHist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fMomV0ZHist);
- // TBI
- fPtV0Hist = new TH1F("fPtV0Hist","pow(aAODv0->fPt2V0(),0.5)",10000,0.,100.);
- fPtV0Hist->SetStats(kFALSE);
- fPtV0Hist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fPtV0Hist);
- // TBI
- fPseudoRapV0Hist = new TH1F("fPseudoRapV0Hist","aAODv0->PseudoRapV0()",1000,-10.,10.);
- fPseudoRapV0Hist->SetStats(kFALSE);
- fPseudoRapV0Hist->SetFillColor(kBlue-10);
- fControlHistogramsV0sList->Add(fPseudoRapV0Hist);
- // TBI
- fPAHist = new TH2F("fPAHist","TBI",100,-2.,2.,100,0.,1.);
- fPAHist->SetStats(kFALSE);
- fPAHist->GetXaxis()->SetTitle("#alpha");
- fPAHist->GetYaxis()->SetTitle("p_{T}");
- fControlHistogramsV0sList->Add(fPAHist);
+ fControlHistogramsV0sList->Add(fControlHistogramsV0sFlagsPro);
+ if(fFillControlHistogramsV0s)
+ {
+  fGetNProngsHist = new TH1I("fGetNProngsHist","aAODv0->GetNProngs()",10,0,10);
+  fGetNProngsHist->SetStats(kFALSE);
+  fGetNProngsHist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fGetNProngsHist);
+  // TBI
+  fMassK0ShortHist = new TH1F("fMassK0ShortHist","aAODv0->MassK0Short()",1000000,0.,100.);
+  //fMassK0ShortHist->SetStats(kFALSE);
+  fMassK0ShortHist->SetFillColor(kBlue-10);
+  Double_t dMassK0Short = TDatabasePDG::Instance()->GetParticle(310)->Mass(); // nominal mass
+  //fMassK0ShortHist->GetXaxis()->SetBinLabel(fMassK0ShortHist->FindBin(dMassK0Short),Form("m_{K_{S}^{0}} = %f",dMassK0Short));
+  fMassK0ShortHist->SetBinContent(fMassK0ShortHist->FindBin(dMassK0Short),1e6);
+  fControlHistogramsV0sList->Add(fMassK0ShortHist);
+  // TBI
+  fMassLambdaHist = new TH1F("fMassLambdaHist","aAODv0->MassLambda()",1000000,0.,100.);
+  //fMassLambdaHist->SetStats(kFALSE);
+  fMassLambdaHist->SetFillColor(kBlue-10);
+  Double_t dMassLambda = TDatabasePDG::Instance()->GetParticle(3122)->Mass(); // nominal mass
+  //fMassLambdaHist->GetXaxis()->SetBinLabel(fMassLambdaHist->FindBin(dMassLambda),Form("m_{#Lambda^{0}} = %f",dMassLambda));
+  fMassLambdaHist->SetBinContent(fMassLambdaHist->FindBin(dMassLambda),1e6);
+  fControlHistogramsV0sList->Add(fMassLambdaHist);
+  // TBI
+  fMassAntiLambdaHist = new TH1F("fMassAntiLambdaHist","aAODv0->MassAntiLambda()",1000000,0.,100.);
+  //fMassAntiLambdaHist->SetStats(kFALSE);
+  fMassAntiLambdaHist->SetFillColor(kBlue-10);
+  Double_t dMassAntiLambda = TDatabasePDG::Instance()->GetParticle(-3122)->Mass(); // nominal mass
+  //fMassAntiLambdaHist->GetXaxis()->SetBinLabel(fMassAntiLambdaHist->FindBin(dMassAntiLambda),Form("m_{#bar{Lambda}^{0}} = %f",dMassAntiLambda));
+  fMassAntiLambdaHist->SetBinContent(fMassAntiLambdaHist->FindBin(dMassAntiLambda),1e6);
+  fControlHistogramsV0sList->Add(fMassAntiLambdaHist);
+  // TBI
+  fOpenAngleV0Hist = new TH1F("fOpenAngleV0Hist","aAODv0->fOpenAngleV0()",10000,-0.044,TMath::Pi()+0.044);
+  fOpenAngleV0Hist->SetStats(kFALSE);
+  fOpenAngleV0Hist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fOpenAngleV0Hist);
+  // TBI
+  fRadiusV0Hist = new TH1F("fRadiusV0Hist","aAODv0->fRadiusV0()",10000,0.,1000.);
+  fRadiusV0Hist->SetStats(kFALSE);
+  fRadiusV0Hist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fRadiusV0Hist);
+  // TBI
+  fDcaV0ToPrimVertexHist = new TH1F("fDcaV0ToPrimVertexHist","aAODv0->fDcaV0ToPrimVertex()",10000,0.,1000.);
+  fDcaV0ToPrimVertexHist->SetStats(kFALSE);
+  fDcaV0ToPrimVertexHist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fDcaV0ToPrimVertexHist);
+  // TBI
+  fMomV0XHist = new TH1F("fMomV0XHist","aAODv0->fMomV0X() = px(+) + px(-)",10000,-1000.,1000.);
+  fMomV0XHist->SetStats(kFALSE);
+  fMomV0XHist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fMomV0XHist);
+  // TBI
+  fMomV0YHist = new TH1F("fMomV0YHist","aAODv0->fMomV0Y() = py(+) + py(-)",10000,-1000.,1000.);
+  fMomV0YHist->SetStats(kFALSE);
+  fMomV0YHist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fMomV0YHist);
+  // TBI
+  fMomV0ZHist = new TH1F("fMomV0ZHist","aAODv0->fMomV0Z() = pz(+) + pz(-)",10000,-1000.,1000.);
+  fMomV0ZHist->SetStats(kFALSE);
+  fMomV0ZHist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fMomV0ZHist);
+  // TBI
+  fPtV0Hist = new TH1F("fPtV0Hist","pow(aAODv0->fPt2V0(),0.5)",10000,0.,100.);
+  fPtV0Hist->SetStats(kFALSE);
+  fPtV0Hist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fPtV0Hist);
+  // TBI
+  fPseudoRapV0Hist = new TH1F("fPseudoRapV0Hist","aAODv0->PseudoRapV0()",1000,-10.,10.);
+  fPseudoRapV0Hist->SetStats(kFALSE);
+  fPseudoRapV0Hist->SetFillColor(kBlue-10);
+  fControlHistogramsV0sList->Add(fPseudoRapV0Hist);
+  // TBI
+  fPAHist = new TH2F("fPAHist","TBI",100,-2.,2.,100,0.,1.);
+  fPAHist->SetStats(kFALSE);
+  fPAHist->GetXaxis()->SetTitle("#alpha");
+  fPAHist->GetYaxis()->SetTitle("p_{T}");
+  fControlHistogramsV0sList->Add(fPAHist);
+ } // if(fFillControlHistogramsV0s)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms()
 
@@ -2434,7 +2470,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
 
  // d) Get pointers for fCorrelationFunctions[10][10]:
  const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
- TString sParticles[2*nParticleSpecies] = {"e^{+}","#mu^{+}","#pi^{+}","K^{+}","p^{+}","e^{-}","#mu^{-}","#pi^{-}","K^{-}","p^{-}"};
  for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2474,7 +2509,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
 
  // d) Get pointers for fBackground[10][10]:
  const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
- TString sParticles[2*nParticleSpecies] = {"e^{+}","#mu^{+}","#pi^{+}","K^{+}","p^{+}","e^{-}","#mu^{-}","#pi^{-}","K^{-}","p^{-}"};
  for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
