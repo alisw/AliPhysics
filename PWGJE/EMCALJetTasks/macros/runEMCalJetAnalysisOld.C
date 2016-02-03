@@ -4,11 +4,10 @@ class AliESDInputHandler;
 class AliAODInputHandler;
 class AliVEvent;
 class AliAnalysisManager;
-class AliEmcalPhysicsSelectionTask;
+class AliPhysicsSelectionTask;
 class AliCentralitySelectionTask;
 class AliEmcalSetupTask;
 
-void LoadLibs();
 void LoadMacros();
 
 //______________________________________________________________________________
@@ -28,17 +27,18 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   TString sRunPeriod(cRunPeriod);
   sRunPeriod.ToLower();
 
-  Bool_t bIsPP = kTRUE;
+  AliAnalysisTaskEmcal::BeamType iBeamType = AliAnalysisTaskEmcal::kpp;
 
-  if (sRunPeriod == "lhc10h" || sRunPeriod == "lhc11h" ||
-      sRunPeriod == "lhc12g" || sRunPeriod == "lhc13b" || sRunPeriod == "lhc13c" ||
-      sRunPeriod == "lhc13d" || sRunPeriod == "lhc13e" || sRunPeriod == "lhc13f" ||
-      sRunPeriod == "lhc15o") {
-    bIsPP = kFALSE;
+  if (sRunPeriod == "lhc10h" || sRunPeriod == "lhc11h" || sRunPeriod == "lhc15o") {
+    iBeamType = AliAnalysisTaskEmcal::kAA;
+  }
+  else if (sRunPeriod == "lhc12g" || sRunPeriod == "lhc13b" || sRunPeriod == "lhc13c" ||
+      sRunPeriod == "lhc13d" || sRunPeriod == "lhc13e" || sRunPeriod == "lhc13f") {
+    iBeamType = AliAnalysisTaskEmcal::kpA;
   }
 
   Double_t kGhostArea = 0.01;
-  if (!bIsPP) kGhostArea = 0.005;
+  if (iBeamType != AliAnalysisTaskEmcal::kpp) kGhostArea = 0.005;
 
   const Bool_t   bDoTender            = kTRUE;
   const Bool_t   bDoHadCorr           = kTRUE;
@@ -47,9 +47,8 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   const Double_t kTrackPtCut          = 0.15;
   const Double_t kJetPtCut            = 1.;
   const Double_t kHadCorrF            = 2.;
-  const Int_t    kHistoType           = 1;
-  const UInt_t   kClusterizerType     = AliEMCALRecParam::kClusterizerv2;
-  const Bool_t   bForcePP             = kFALSE;
+
+  const AliAnalysisTaskEmcalJetSpectraQA::EHistoType_t kHistoType = AliAnalysisTaskEmcalJetSpectraQA::kTHnSparse;
 
   enum eDataType { kAod, kEsd };
 
@@ -75,7 +74,6 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   }
   Printf("Setting local analysis for %d files from list %s, max events = %d", iNumFiles, sLocalFiles.Data(), iNumEvents);
 
-  LoadLibs();
   LoadMacros();
 
   TString sTracksName("PicoTracks");
@@ -118,7 +116,7 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   }
 
   // Centrality task
-  if (iDataType == kEsd && !bIsPP) {
+  if (iDataType == kEsd && iBeamType != AliAnalysisTaskEmcal::kpp) {
     AliCentralitySelectionTask *pCentralityTask = AddTaskCentrality(kTRUE);
     pCentralityTask->SelectCollisionCandidates(AliVEvent::kAny);
   }
@@ -153,8 +151,7 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
 
   if (bDoFullJets && bDoTender) {
     // QA task
-    AliAnalysisTaskSAQA *pQATaskBefore = AddTaskSAQA("", sOrigClusName, sCellName, "", "",
-        0, 0, 0, 0., 0., "TPC", "BeforeTender");
+    AliAnalysisTaskEmcalJetQA *pQATaskBefore = AddTaskEmcalJetQA("", sOrigClusName, sCellName, "BeforeTender");
     pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);
     pQATaskBefore->GetClusterContainer(0)->SetClusPtCut(0.);
     pQATaskBefore->SetHistoBins(200, 0, 30);
@@ -176,13 +173,13 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     Bool_t   bReclusterize   = kFALSE;
     Float_t  fSeedThresh     = 0.1;      // 100 MeV
     Float_t  fCellThresh     = 0.05;     // 50 MeV
-    UInt_t   iClusterizer    = 0;
+    UInt_t   iClusterizer    = AliEMCALRecParam::kClusterizerv2;
     Bool_t   bTrackMatch     = kFALSE;
     Bool_t   bUpdateCellOnly = kTRUE;
     Float_t  fEMCtimeMin     = -50e-6;
     Float_t  fEMCtimeMax     =  50e-6;
     Float_t  fEMCtimeCut     =  1e6;
-    if (sRunPeriod == "LHC11h") {
+    if (sRunPeriod == "lhc11h") {
       fEMCtimeMin = -50e-9;
       fEMCtimeMax = 100e-9;
     }
@@ -192,7 +189,7 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
         fCellThresh, iClusterizer, bTrackMatch, bUpdateCellOnly, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut, cPass);
     pTenderTask->SelectCollisionCandidates(kPhysSel);
 
-    AliAnalysisTaskEMCALClusterizeFast *pClusterizerTask = AddTaskClusterizerFast("ClusterizerFast", "", "", kClusterizerType, 
+    AliAnalysisTaskEMCALClusterizeFast *pClusterizerTask = AddTaskClusterizerFast("ClusterizerFast", "", "", iClusterizer,
         fCellThresh, fSeedThresh, fEMCtimeMin, fEMCtimeMax, fEMCtimeCut,
         kFALSE, kFALSE, AliAnalysisTaskEMCALClusterizeFast::kFEEData);
     pClusterizerTask->SelectCollisionCandidates(kPhysSel);
@@ -203,21 +200,18 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
 
     // QA task
-    AliAnalysisTaskSAQA *pQATaskAfter = AddTaskSAQA("", sOrigClusName, sCellName, "", "",
-        0, 0, 0, 0., 0., "TPC", "AfterTender");
+    AliAnalysisTaskEmcalJetQA *pQATaskAfter = AddTaskEmcalJetQA("", sOrigClusName, sCellName, "AfterTender");
     pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.);
     pQATaskAfter->GetClusterContainer(0)->SetClusPtCut(0.);
     pQATaskAfter->GetClusterContainer(0)->SetExoticCut(kFALSE);
     pQATaskAfter->SetHistoBins(200, 0, 30);
     pQATaskAfter->SelectCollisionCandidates(kPhysSel);
 
-    AliAnalysisTaskSAQA *pQATaskAfterMaker = AddTaskSAQA("", sClusName, "", "", "",
-        0, 0, 0, 0., 0., "TPC", "AfterClusterMaker");
+    AliAnalysisTaskEmcalJetQA *pQATaskAfterMaker = AddTaskEmcalJetQA("", sClusName, "", "AfterClusterMaker");
     pQATaskAfterMaker->GetClusterContainer(0)->SetClusECut(0.15);
     pQATaskAfterMaker->GetClusterContainer(0)->SetClusPtCut(0.);
     pQATaskAfterMaker->SetHistoBins(200, 0, 30);
     pQATaskAfterMaker->SelectCollisionCandidates(kPhysSel);
-
   }
 
   if (bDoFullJets && bDoHadCorr) {
@@ -247,14 +241,14 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   }
 
   // QA task
-  AliAnalysisTaskSAQA *pQATask = 0;
+  AliAnalysisTaskEmcalJetQA *pQATask = 0;
   if (bDoFullJets) {
-    pQATask = AddTaskSAQA(sTracksName, sCorrClusName, sCellName, "", "", 0., 0, 0, 0., 0., "TPC");
+    pQATask = AddTaskEmcalJetQA(sTracksName, sCorrClusName, sCellName);
     pQATask->GetClusterContainer(0)->SetClusECut(0.30);
     pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
   }
   else {
-    pQATask = AddTaskSAQA(sTracksName, "", "", "", "", 0., 0, 0, 0., 0., "TPC");
+    pQATask = AddTaskEmcalJetQA(sTracksName, "", "");
   }
   pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
   pQATask->GetParticleContainer(0)->SetClassName("AliPicoTrack");
@@ -267,7 +261,7 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     pChJetTask->SelectCollisionCandidates(kPhysSel);
     sChJetsName = pChJetTask->GetName();
 
-    AliAnalysisTaskSAJF *pSpectraChTask = AddTaskSAJF(sTracksName, "", sChJetsName, "",  kJetRadius, kJetPtCut, 0., "TPC");
+    AliAnalysisTaskEmcalJetSpectraQA *pSpectraChTask = AddTaskEmcalJetSpectraQA(sTracksName, "", sChJetsName, "",  kJetRadius, kJetPtCut, 0., "TPC");
     pSpectraChTask->SetNLeadingJets(1);
     pSpectraChTask->SelectCollisionCandidates(kPhysSel);
     pSpectraChTask->SetHistoType(kHistoType);
@@ -279,7 +273,7 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     pFuJetTask->SelectCollisionCandidates(kPhysSel);   
     sFuJetsName = pFuJetTask->GetName();
 
-    AliAnalysisTaskSAJF *pSpectraFuTask = AddTaskSAJF(sTracksName, sCorrClusName, sFuJetsName, "", kJetRadius, kJetPtCut, 0., "EMCAL"); 
+    AliAnalysisTaskEmcalJetSpectraQA *pSpectraFuTask = AddTaskEmcalJetSpectraQA(sTracksName, sCorrClusName, sFuJetsName, "", kJetRadius, kJetPtCut, 0., "EMCAL");
     pSpectraFuTask->SetNLeadingJets(1);
     pSpectraFuTask->SelectCollisionCandidates(kPhysSel);
     pSpectraFuTask->SetHistoType(kHistoType);
@@ -291,10 +285,8 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     if (!pTask) continue;
     if (pTask->InheritsFrom("AliAnalysisTaskEmcal")) {
       AliAnalysisTaskEmcal *pTaskEmcal = static_cast<AliAnalysisTaskEmcal*>(pTask);
-      if (bForcePP) {
-        Printf("Setting beam type for task %s", pTaskEmcal->GetName());
-        pTaskEmcal->SetForceBeamType(0);
-      }
+      Printf("Setting beam type %d for task %s", iBeamType, pTaskEmcal->GetName());
+      pTaskEmcal->SetForceBeamType(iBeamType);
     }
   }
 
@@ -328,18 +320,6 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   return pMgr;
 }
 
-//______________________________________________________________________________
-void LoadLibs()
-{
-  // load fastjet libraries 3.x
-  gSystem->Load("libCGAL");
-  gSystem->Load("$FASTJET/lib/libfastjet");
-  gSystem->Load("$FASTJET/lib/libsiscone");
-  gSystem->Load("$FASTJET/lib/libsiscone_spherical");
-  gSystem->Load("$FASTJET/lib/libfastjetplugins");
-  gSystem->Load("$FASTJET/lib/libfastjetcontribfragile");
-}
-
 void LoadMacros()
 {
   // Aliroot macros
@@ -360,6 +340,6 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAQA.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskSAJF.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetQA.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSpectraQA.C");
 }
