@@ -439,7 +439,7 @@ void AliAnalysisTaskFlavourJetCorrelations::AngularCorrelationMethod(Bool_t IsBk
 void AliAnalysisTaskFlavourJetCorrelations::CreateResponseMatrix()
 {
     AliJetContainer* JetContRec = GetJetContainer(0);
-    AliJetContainer* JetContGen = GetJetContainer(1);
+    //AliJetContainer* JetContGen = GetJetContainer(1);
 
     Double_t rho = JetContRec->GetRhoVal();
 
@@ -507,7 +507,7 @@ void AliAnalysisTaskFlavourJetCorrelations::GetHFJet(AliEmcalJet*& jet, Bool_t I
     while ((jet = JetCont->GetNextJet()))
     {
         Bool_t OKjet = JetCont->AcceptJet(jet);
-        //if(!OKjet) continue;
+        if(!OKjet) continue;
 
         Int_t JetTag = AliEmcalJet::kD0;
         TString recoDecayClassName("AliAODRecoDecayHF2Prong");
@@ -613,6 +613,12 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
     Bool_t okpp=part->PxPyPz(p);
     Bool_t okpj=jet->PxPyPz(pj);
     
+    if(!okpp || !okpj)
+    {
+        printf("Problems getting momenta\n");
+        return -999;
+    }
+
     //Background Subtraction
     //It corrects the each component of the jet momentum for Z calculation
     
@@ -629,6 +635,12 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
     Double_t p[3],pj[3];
     Bool_t okpp=part->PxPyPz(p);
     Bool_t okpj=jet->PxPyPz(pj);
+
+    if(!okpp || !okpj)
+    {
+        printf("Problems getting momenta\n");
+        return -999;
+    }
 
     return Z(p,pj);
 }
@@ -682,7 +694,6 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nbinspttrack=500;
    Int_t nbinsptjet=200;
    const Int_t nbinsptD=100;
-   const Int_t nbinsz=144;
    const Int_t nbinsphi=200;
    const Int_t nbinseta=100;
    
@@ -691,7 +702,6 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nbinsSpsptjet=200;
    const Int_t nbinsSpsptD=50;
    const Int_t nbinsSpsz=144;
-   const Int_t nbinsSpsphi=100;
     
    const Float_t pttracklims[2]={0.,200.};
    Float_t ptjetlims[2]={-50.,150.};
@@ -866,9 +876,6 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
 
 
     fhPtPion->Fill(softpi->Pt());
-
-
-    Int_t isSB=0;//IsDzeroSideBand(dstar);
 
     Double_t *point=0x0;
     if(!fAnalyseDBkg)
