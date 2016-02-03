@@ -7,8 +7,12 @@ class AliAnalysisManager;
 class AliPhysicsSelectionTask;
 class AliCentralitySelectionTask;
 class AliEmcalSetupTask;
+class AliAnalysisGrid;
 
 void LoadMacros();
+void StartGridAnalysis(AliAnalysisManager* pMgr, const char* uniqueName, const char* cGridMode);
+AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir, const char* gridMode, const char* runNumbers,
+    const char* pattern, TString additionalCode, TString additionalHeaders, Int_t maxFilesPerWorker, Int_t workerTTL, Bool_t isMC);
 
 //______________________________________________________________________________
 AliAnalysisManager* runEMCalJetAnalysisNew(
@@ -17,11 +21,16 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     UInt_t        iNumFiles      = 100,                                     // number of files analyzed locally
     UInt_t        iNumEvents     = 5000,                                    // number of events to be analyzed
     const char   *cRunPeriod     = "LHC11h",                                // set the run period
+    UInt_t        kPhysSel       = AliVEvent::kAnyINT,                      // physics selection
     const char   *cTaskName      = "JetAna",                                // sets name of analysis manager
     const Bool_t  bDoChargedJets = kTRUE,
     const Bool_t  bDoFullJets    = kTRUE,
     const char   *cOCDBpath      = "uselocal",                              // change to "raw://" if running on the grid
-    Bool_t        doNotStart     = kFALSE
+    // 0 = only prepare the analysis manager but do not start the analysis
+    // 1 = prepare the analysis manager and start the analysis
+    // 2 = launch a grid analysis
+    Int_t         iStartAnalysis = 1,
+    const char   *cGridMode      = "test"
 )
 {
   TString sRunPeriod(cRunPeriod);
@@ -79,11 +88,6 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   Printf("Setting local analysis for %d files from list %s, max events = %d", iNumFiles, sLocalFiles.Data(), iNumEvents);
 
   LoadMacros();
-
-  // AliEmcalPhysicsSelection::kEmcalOk, AliEmcalPhysicsSelection::kEmcalH,
-  // AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral,
-  // AliVEvent::kEMCEGA, AliVEvent::kEMCEJE
-  UInt_t kPhysSel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
 
   // Analysis manager
   AliAnalysisManager* pMgr = new AliAnalysisManager(cTaskName);
@@ -270,7 +274,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
   pOutFile->Close();
   delete pOutFile;
 
-  if (!doNotStart) {
+  if (iStartAnalysis == 1) { // start local analysis
     TChain* pChain = 0;
     if (iDataType == kAod) {
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
@@ -284,6 +288,9 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     // start analysis
     Printf("Starting Analysis...");
     pMgr->StartAnalysis("local", pChain, iNumEvents);
+  }
+  else if (iStartAnalysis == 2) {  // start grid analysis
+    StartGridAnalysis(pMgr, cTaskName, cGridMode);
   }
 
   return pMgr;
@@ -305,4 +312,81 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetQA.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSpectraQA.C");
+}
+
+void StartGridAnalysis(AliAnalysisManager* pMgr, const char* uniqueName, const char* cGridMode)
+{
+  Int_t maxFilesPerWorker = 4;
+  Int_t workerTTL = 7200;
+  const char* runNumbers = "180720";
+  const char* pattern = "pass2/AOD/*/AliAOD.root";
+  const char* gridDir = "/alice/data/2012/LHC12c";
+  const char* additionalCXXs = "";
+  const char* additionalHs = "";
+
+  AliAnalysisGrid *plugin = CreateAlienHandler(uniqueName, gridDir, cGridMode, runNumbers, pattern, additionalCXXs, additionalHs, maxFilesPerWorker, workerTTL, kFALSE);
+  pMgr->SetGridHandler(plugin);
+
+  // start analysis
+   Printf("Starting GRID Analysis...");
+   pMgr->SetDebugLevel(0);
+   pMgr->StartAnalysis("grid");
+}
+
+AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir, const char* gridMode, const char* runNumbers,
+    const char* pattern, TString additionalCode, TString additionalHeaders, Int_t maxFilesPerWorker, Int_t workerTTL, Bool_t isMC)
+{
+  TDatime currentTime;
+  TString tmpName(uniqueName);
+
+  // Only add current date and time when not in terminate mode! In this case the exact name has to be supplied by the user
+  if (strcmp(gridMode, "terminate")) {
+    tmpName += "_";
+    tmpName += currentTime.GetDate();
+    tmpName += "_";
+    tmpName += currentTime.GetTime();
+  }
+
+  TString macroName("");
+  TString execName("");
+  TString jdlName("");
+  macroName = Form("%s.C", tmpName.Data());
+  execName = Form("%s.sh", tmpName.Data());
+  jdlName = Form("%s.jdl", tmpName.Data());
+
+  AliAnalysisAlien *plugin = new AliAnalysisAlien();
+  plugin->SetOverwriteMode();
+  plugin->SetRunMode(gridMode);
+
+  // Here you can set the (Ali)PHYSICS version you want to use
+  plugin->SetAliPhysicsVersion("vAN-20160203-1");
+
+  plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
+  plugin->SetDataPattern(pattern); //dir structure in run directory
+
+  if (!isMC) plugin->SetRunPrefix("000");
+
+  plugin->AddRunList(runNumbers);
+
+  plugin->SetGridWorkingDir(Form("work/%s",tmpName.Data()));
+  plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
+
+  plugin->SetAnalysisSource(additionalCode.Data());
+
+  plugin->SetDefaultOutputs(kTRUE);
+  plugin->SetAnalysisMacro(macroName.Data());
+  plugin->SetSplitMaxInputFileNumber(maxFilesPerWorker);
+  plugin->SetExecutable(execName.Data());
+  plugin->SetTTL(workerTTL);
+  plugin->SetInputFormat("xml-single");
+  plugin->SetJDLName(jdlName.Data());
+  plugin->SetPrice(1);
+  plugin->SetSplitMode("se");
+
+  // merging via jdl
+  plugin->SetMergeViaJDL(kTRUE);
+  plugin->SetOneStageMerging(kFALSE);
+  plugin->SetMaxMergeStages(2);
+
+  return plugin;
 }
