@@ -60,7 +60,7 @@
 #include <AliExternalTrackParam.h>
 #include <AliESDpid.h>
 #include <AliCentrality.h>
-#include <AliMultSelection.h>
+#include "AliMultSelection.h"
 #include <AliAODpidUtil.h>
 #include <AliPID.h>
 #include <AliPIDResponse.h>
@@ -478,6 +478,19 @@ public:
     kCentralityV0C,          // event centrality fraction V0C
     kCentralityZNA,          // event centrality fraction ZNA
     kCentralitySPD,          // centrality using SPD (from second layer)
+    //centrality determination for Run 2    
+    kCentralityNew,          //event centrality V0M
+    kCentralityCL0,          //event centrality CL0
+    kCentralityCL1,          //event centrality CL1
+    kCentralitySPDClusters,          //event centrality SPD
+    kCentralitySPDTracklets,          //event centrality SPDTracklets
+    kCentralityCL0plus05,    //event centrality VO AP +0.5%
+    kCentralityCL0minus05,    //event centrality VO AP -0.5%
+    kCentralityCL0plus10,    //event centrality VO AP +1.0%
+    kCentralityCL0minus10,    //event centrality VO AP -1.0%
+    
+    
+    
     kTriggerInclONL,         // online trigger bits fired (inclusive)
     kTriggerInclOFF,         // offline trigger bits fired (inclusive)
     kTriggerExclOFF,         // offline only this trigger bit fired (exclusive)
@@ -2237,25 +2250,43 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   Double_t centralityV0A = -1; 
   Double_t centralityV0C = -1;
   Double_t centralityZNA = -1;
+  //Centrality Run2
 
-  //centrality 2015 only C0M, CL0, CL1 supported at the moment 18.01.2016
-  if(Req(kCentrality) || Req(kCentralitySPD)){
+  Double_t centralityFnew=-1;
+  Double_t centralityCL0=-1;
+  Double_t centralityCL1=-1;
+  Double_t centralitySPDClusters=-1;
+  Double_t centralitySPDTracklets=-1;
+  Double_t centralityCL0plus05=-1;
+  Double_t centralityCL0minus05=-1;
+  Double_t centralityCL0plus10=-1;
+  Double_t centralityCL0minus10=-1;
+  
+  AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
+
+  if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
+  if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+  if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
+  if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
+  if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
+
+  ////centrality 2015
     AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(event)->FindListObject("MultSelection");
-    if(MultSelection){
-      centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-      centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE); 
-    }
-    else
-      printf("did not find AliMultSelection!"); 
+  if(!MultSelection){
+    printf("Did not find AliMultSelection!!! Mostly defined for run2 data");
   }
-  if(Req(kCentralityV0A) || Req(kCentralityV0C) ||Req(kCentralityZNA)){
-    AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
-    //if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
-    //if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
-    if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
-    if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
-    if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
-  }
+  
+  if(MultSelection) centralityFnew = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  if(MultSelection) centralityCL0 = MultSelection->GetMultiplicityPercentile("CL0",kFALSE);
+  if(MultSelection) centralityCL1 = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+  if(MultSelection) centralitySPDClusters = MultSelection->GetMultiplicityPercentile("SPDClustersCorr",kFALSE);
+  if(MultSelection) centralitySPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTrackletsCorr",kFALSE);
+  if(MultSelection) centralityCL0plus05 = MultSelection->GetMultiplicityPercentile("CL0plus05",kFALSE);
+  if(MultSelection) centralityCL0minus05 = MultSelection->GetMultiplicityPercentile("CL0minus05",kFALSE);
+  if(MultSelection) centralityCL0plus10 = MultSelection->GetMultiplicityPercentile("CL0plus10",kFALSE);
+  if(MultSelection) centralityCL0minus10 = MultSelection->GetMultiplicityPercentile("CL0minus10",kFALSE);
+
+ 
   // Fill AliESDEvent interface specific information
   const AliESDVertex *primVtx = event->GetPrimaryVertex();
   values[AliDielectronVarManager::kXRes]       = primVtx->GetXRes();
@@ -2266,6 +2297,17 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
+
+  values[AliDielectronVarManager::kCentralityNew] = centralityFnew;
+  values[AliDielectronVarManager::kCentralityCL0] = centralityCL0;
+  values[AliDielectronVarManager::kCentralityCL1] = centralityCL1;
+  values[AliDielectronVarManager::kCentralitySPDClusters] = centralitySPDClusters;
+  values[AliDielectronVarManager::kCentralitySPDTracklets] = centralitySPDTracklets;
+  values[AliDielectronVarManager::kCentralityCL0plus05] = centralityCL0plus05;
+  values[AliDielectronVarManager::kCentralityCL0minus05] = centralityCL0minus05;
+  values[AliDielectronVarManager::kCentralityCL0plus10] = centralityCL0plus10;
+  values[AliDielectronVarManager::kCentralityCL0minus10] = centralityCL0minus10;
+  
   
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC(); 
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
@@ -2328,23 +2370,68 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
   assert(header&&"Not a standard AOD");
 
+  const AliAODEvent* ev = static_cast<const AliAODEvent*>(event);
+
+
   Double_t centralityF=-1; 
   Double_t centralitySPD=-1; 
   Double_t centralityV0A = -1; 
   Double_t centralityV0C = -1;
   Double_t centralityZNA = -1;
+
+  //Centrality Run2
+
+  Double_t centralityFnew=-1;
+  Double_t centralityCL0=-1;
+  Double_t centralityCL1=-1;
+  Double_t centralitySPDClusters=-1;
+  Double_t centralitySPDTracklets=-1;
+  Double_t centralityCL0plus05=-1;
+  Double_t centralityCL0minus05=-1;
+  Double_t centralityCL0plus10=-1;
+  Double_t centralityCL0minus10=-1;
+
   AliCentrality *aodCentrality = header->GetCentralityP();
   if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
   if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
   if (aodCentrality) centralityV0A = aodCentrality->GetCentralityPercentile("V0A");
   if (aodCentrality) centralityV0C = aodCentrality->GetCentralityPercentile("V0C");
   if (aodCentrality) centralityZNA = aodCentrality->GetCentralityPercentile("ZNA");
+
+  ////centrality 2015
+  AliMultSelection *MultSelection = (AliMultSelection*)ev->FindListObject("MultSelection");
+  if(!MultSelection){
+    printf("Did not find AliMultSelection!!! Mostly defined for run2 data");
+  }
+  if(MultSelection) centralityFnew = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  if(MultSelection) centralityCL0 = MultSelection->GetMultiplicityPercentile("CL0",kFALSE);
+  if(MultSelection) centralityCL1 = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+  if(MultSelection) centralitySPDClusters = MultSelection->GetMultiplicityPercentile("SPDClustersCorr",kFALSE);
+  if(MultSelection) centralitySPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTrackletsCorr",kFALSE);
+  if(MultSelection) centralityCL0plus05 = MultSelection->GetMultiplicityPercentile("CL0plus05",kFALSE);
+  if(MultSelection) centralityCL0minus05 = MultSelection->GetMultiplicityPercentile("CL0minus05",kFALSE);
+  if(MultSelection) centralityCL0plus10 = MultSelection->GetMultiplicityPercentile("CL0plus10",kFALSE);
+  if(MultSelection) centralityCL0minus10 = MultSelection->GetMultiplicityPercentile("CL0minus10",kFALSE);
+
+
+  
+  
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
   values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
 
+  values[AliDielectronVarManager::kCentralityNew] = centralityFnew;
+  values[AliDielectronVarManager::kCentralityCL0] = centralityCL0;
+  values[AliDielectronVarManager::kCentralityCL1] = centralityCL1;
+  values[AliDielectronVarManager::kCentralitySPDClusters] = centralitySPDClusters;
+  values[AliDielectronVarManager::kCentralitySPDTracklets] = centralitySPDTracklets;
+  values[AliDielectronVarManager::kCentralityCL0plus05] = centralityCL0plus05;
+  values[AliDielectronVarManager::kCentralityCL0minus05] = centralityCL0minus05;
+  values[AliDielectronVarManager::kCentralityCL0plus10] = centralityCL0plus10;
+  values[AliDielectronVarManager::kCentralityCL0minus10] = centralityCL0minus10;
+  
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
 
@@ -2938,13 +3025,13 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   if(event->IsA() == AliESDEvent::Class()) {
     const AliESDEvent* esdEv = static_cast<const AliESDEvent*>(event);
     //   }
-  //  AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
-    //if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
+    if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
     //2015 cent    
-     AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
-    if(MultSelection){
-      centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-      }
+    // AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
+    //if(MultSelection){
+    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    // }
   }
   if(event->IsA() == AliAODEvent::Class()) {
     const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
@@ -2952,6 +3039,12 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     assert(header&&"Not a standard AOD");
     AliCentrality *aodCentrality = header->GetCentralityP();
     if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
+        //2015 cent    
+// AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
+    //if(MultSelection){
+    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    // }
+   
   }
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   if(!primVtx) return;

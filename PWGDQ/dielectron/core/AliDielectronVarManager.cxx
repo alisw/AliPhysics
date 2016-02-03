@@ -464,6 +464,18 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityV0C",          "centrality_{V0C}",                                  "(%)"},
   {"CentralityZNA",          "centrality_{ZNA}",                                  "(%)"},
   {"CentralitySPD",          "centrality_{SPD}",                                  "(%)"},
+  {"CentralityNew",             "centrality_{V0M}",                               "(%)"},
+  {"CentralityCL0",              "centrality_{CL0}",                              "(%)"},
+  {"CentralityCL1",              "centrality_{CL1}",                              "(%)"},
+  {"CentralitySPDClusters",      "centrality_{SPDclusters}",                      "(%)"},
+  {"CentralitySPDTracklets",     "centrality_{SPDTracklets}",                     "(%)"},
+  {"CentralityCL0plus05",        "centrality_{V0M AP +0.5%}",                     "(%)"},
+  {"CentralityCL0minus05",       "centrality_{V0M AP -0.5%}",                     "(%)"},
+  {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
+  {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
+  
+
+  
   {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
   {"TriggerInclOFF",         "offline trigger bit (inclusive)",                    ""},
   {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},

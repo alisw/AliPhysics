@@ -49,7 +49,7 @@ public:
      }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
-  void SetCentralityRange(Double_t min, Double_t max) { fCentMin=min; fCentMax=max; }
+  void SetCentralityRange(Double_t min, Double_t max, Bool_t userun2=kFALSE) { fCentMin=min; fCentMax=max;fRun2=userun2;}
   void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
   void SetCutOnNVtxContributorsGloablTPC(TF1* parMin, TF1* parMax) { fparMinVtxContributors=parMin; fparMaxVtxContributors=parMax; }
   void SetRequire2013vertexandevent(Bool_t req13 = kTRUE) {fRequire13sel = req13; }
@@ -82,6 +82,7 @@ private:
   Bool_t   fMultITSTPC;             // if to cut on the ITS TPC multiplicity correlation (Pb-Pb)
   Double_t fCentMin;                // minimum multiplity percentile
   Double_t fCentMax;                // maximum multiplity percentile
+  Bool_t fRun2;                     //using run2 centrality
   EVtxType fVtxType;                // vertex type
   Bool_t fRequire13sel;             //bit to select event and vertex selection proposed for 2013 in 
                                     //https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
