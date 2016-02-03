@@ -9,10 +9,6 @@
 #pragma link off all functions;
 
 // ITS upgrade classes 
-// v0 part >>>
-#pragma link C++ class  AliITSRecPointU+;
-// v0 part <<<
-//
 #pragma link C++ class  AliITSULoader+;
 #pragma link C++ class  AliITSUGeomTGeo+;
 #endif
