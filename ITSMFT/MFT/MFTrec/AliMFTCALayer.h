@@ -15,6 +15,9 @@ public:
   AliMFTCALayer();
   ~AliMFTCALayer() {};
   
+  AliMFTCALayer (const AliMFTCALayer &layer);
+  AliMFTCALayer &operator=(const AliMFTCALayer&);
+  
   AliMFTCALadder *GetLadder(Int_t nl) { return (AliMFTCALadder*)fLadders->At(nl); }
   AliMFTCALadder *GetLadderID(Int_t id);
   

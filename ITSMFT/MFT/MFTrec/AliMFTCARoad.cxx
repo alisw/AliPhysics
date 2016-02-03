@@ -19,8 +19,6 @@ fLayer2(-1),
 fNcellsInLayer()
 {
   
-  //fHits   = new TClonesArray("AliMFTCAHit",   1000);
-  
   for (Int_t i = 0; i < fNDetMax; i++) {
     fHitsInLayer[i] = new TClonesArray("AliMFTCAHit",100);
     fNhitsInLayer[i] = 0;
@@ -31,10 +29,57 @@ fNcellsInLayer()
 }
 
 //___________________________________________________________________________
+AliMFTCARoad::AliMFTCARoad(const AliMFTCARoad &road) :
+TObject(road),
+fNhits(road.fNhits),
+fNHitSta(road.fNHitSta),
+fLength(road.fLength),
+fIsGood(road.fIsGood),
+fLayer1(road.fLayer1),
+fLayer2(road.fLayer2)
+{
+
+  // copy constructor
+  
+  for (Int_t i = 0; i < fNDetMax; i++) {
+    fHitsInLayer[i] = new TClonesArray("AliMFTCAHit",100);
+    fNhitsInLayer[i] = 0;
+    fCellsInLayer[i] = new TClonesArray("AliMFTCACell",10);
+    fNcellsInLayer[i] = 0;
+  }
+
+}
+
+//___________________________________________________________________________
+AliMFTCARoad& AliMFTCARoad::operator=(const AliMFTCARoad& road) 
+{
+
+  // assignment operator
+
+  // check assignement to self
+  if (this == &road) return *this;
+
+  TObject::operator=(road);
+
+  fNhits = road.fNhits;
+  fNHitSta = road.fNHitSta;
+  fLength = road.fLength;
+  fIsGood = road.fIsGood;
+  fLayer1 = road.fLayer1;
+  fLayer2 = road.fLayer2;
+
+  for (Int_t i = 0; i < fNDetMax; i++) {
+    fHitsInLayer[i] = new TClonesArray("AliMFTCAHit",100);
+    fNhitsInLayer[i] = 0;
+    fCellsInLayer[i] = new TClonesArray("AliMFTCACell",10);
+    fNcellsInLayer[i] = 0;
+  }
+
+}
+
+//___________________________________________________________________________
 void AliMFTCARoad::Clear(const Option_t *)
 {
-  
-  //if (fHits) fHits->Clear("C");
   
   for (Int_t i = 0; i < fNDetMax; i++) {
     if (fHitsInLayer[i]) fHitsInLayer[i]->Clear("C");
@@ -56,7 +101,6 @@ void AliMFTCARoad::Clear(const Option_t *)
 void AliMFTCARoad::AddHit(AliMFTCAHit *hit)
 {
   
-  //new ((*fHits)[fNhits++]) AliMFTCAHit(*hit);
   fNhits++;
   Int_t layer = hit->GetLayer();
   new ((*fHitsInLayer[layer])[fNhitsInLayer[layer]++]) AliMFTCAHit(*hit);

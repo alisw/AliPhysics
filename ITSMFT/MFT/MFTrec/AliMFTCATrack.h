@@ -16,8 +16,8 @@ public:
   AliMFTCATrack();
   ~AliMFTCATrack() {};
   
-  // copy constructor
   AliMFTCATrack (const AliMFTCATrack &track);
+  AliMFTCATrack &operator=(const AliMFTCATrack&);
   
   virtual void Clear(Option_t *);
   void AddCell(AliMFTCACell *cell);

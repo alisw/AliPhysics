@@ -67,6 +67,38 @@ fPt(track.fPt)
 
 //___________________________________________________________________________
 
+AliMFTCATrack& AliMFTCATrack::operator=(const AliMFTCATrack& track) 
+{
+
+  // assignment operator
+
+  // check assignement to self
+  if (this == &track) return *this;
+
+  TObject::operator=(track);
+
+  fGID = track.fGID;
+  fNcells = track.fNcells;
+  fStartLayer = track.fStartLayer;
+  fCells = new TClonesArray("AliMFTCACell", fNDetMax);
+  for (Int_t icell = 0; icell < track.fNcells; icell++)
+  fCellGIDarray[icell] = track.fCellGIDarray[icell];
+  fMCflag = track.fMCflag;
+  fVertX = track.fVertX;
+  fVertY = track.fVertY;
+  fVertZ = track.fVertZ;
+  fTheta = track.fTheta;
+  fPhi = track.fPhi;
+  fChiSqX = track.fChiSqX;
+  fChiSqY = track.fChiSqY;
+  fMCindex = track.fMCindex;
+  fChargeSign = track.fChargeSign;
+  fPt = track.fPt;
+
+}
+
+//___________________________________________________________________________
+
 void AliMFTCATrack::Clear(Option_t *) {
   
 }
