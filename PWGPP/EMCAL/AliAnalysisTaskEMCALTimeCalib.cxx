@@ -48,6 +48,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODCaloCells.h"
 #include "AliEMCALGeometry.h"
+#include "AliOADBContainer.h"
 
 #include "AliAnalysisTaskEMCALTimeCalib.h"
 
@@ -97,6 +98,10 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fL1PhaseList(0),
   fBadReco(kFALSE),
   fFillHeavyHisto(kFALSE),
+  fBadChannelMapArray(),
+  fBadChannelMapSet(kFALSE),
+  fSetBadChannelMapSource(0),
+  fBadChannelFileName(),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -306,6 +311,9 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   //set L1 phases for current run
   if(fReferenceRunByRunFileName.Length()!=0)
     SetL1PhaseReferenceForGivenRun();
+
+  // set bad channel map
+  if(!fBadChannelMapSet && fSetBadChannelMapSource>0) LoadBadChannelMap();
 
   return;
 }
@@ -710,11 +718,6 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
     calcolot0=timeTOFtable[0];
   }
 
-  if (!fhcalcEvtTime) {
-    AliWarning("<E> fhcalcEvtTime not available");
-    return;
-  }// fi no simple histo present
-  
   if(fFillHeavyHisto) {
     fhcalcEvtTime->Fill(calcolot0);
     if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
@@ -769,6 +772,16 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       amp        = cells.GetCellAmplitude(absId) ;
       isHighGain = cells.GetCellHighGain(absId);
       //cout<<"cell absID: "<<absId<<" cellTime: "<<hkdtime<<" cellaplit: "<< amp<<endl;	
+      // GEOMETRY tranformations
+      fgeom->GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
+      fgeom->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
+
+      //bad channel check. 0: good channel, 1-5: bad channel
+      if(fSetBadChannelMapSource==1){
+	if(GetEMCALChannelStatus(nSupMod,ieta,iphi)) continue;//printf("bad\n");
+      } else if(fSetBadChannelMapSource==2){
+	if(GetEMCALChannelStatus(absId)) continue;//printf("bad\n");
+      }
 
       //main histograms with raw time information 
       if(amp>fMinCellEnergy){
@@ -786,10 +799,6 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       }
       //fgeom->PrintCellIndexes(absId);
       //fgeom->PrintCellIndexes(absId,1);
-      
-      // GEOMETRY tranformations
-      fgeom->GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
-      fgeom->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
 
       // other histograms for cross-check      
       CheckCellRCU(nSupMod,ieta,iphi);//SM, column, row
@@ -930,8 +939,16 @@ void AliAnalysisTaskEMCALTimeCalib::Terminate(Option_t *)
   
   if(fTOFmaker) delete fTOFmaker;
 
-//  fL1PhaseList->SetOwner();
-//  fL1PhaseList->Delete();
+  if(fL1PhaseList) {
+    fL1PhaseList->SetOwner();
+    fL1PhaseList->Clear();
+    delete fL1PhaseList;
+  }
+
+  if (fBadChannelMapArray) { 
+    fBadChannelMapArray->Clear();
+    delete fBadChannelMapArray;
+  }
 
   if (!fOutputList) 
   {
@@ -1063,6 +1080,11 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
   fMaxTime=20.;
+
+  fBadChannelMapSet=kFALSE;
+  fSetBadChannelMapSource=0;
+  fBadChannelFileName="";
+
   //histograms
   fRawTimeNbins  = 400;  // Raw time settings should be like that all the time
   fRawTimeMin    = 400.; // importent in pass1
@@ -1326,4 +1348,58 @@ const  Double_t upperLimit[]={
 
   file->Close();
   delete file;
+}
+
+//____________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
+{
+  if(fBadChannelMapSet) return;
+  AliOADBContainer *contBC=new AliOADBContainer("");
+  contBC->InitFromFile(Form("%s/EMCALBadChannels.root","alien://$ALICE_PHYSICS/OADB/EMCAL"),"AliEMCALBadChannels"); 
+  printf("contBC %p, ent  %d\n",contBC,contBC->GetNumberOfEntries());
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
+  if(arrayBC) {
+    AliInfo("Remove EMCAL bad cells");
+    fBadChannelMapArray = new TObjArray(kNSM);
+    for (Int_t i=0; i<kNSM; ++i) {
+      TH2I *hbm = (TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+      if (!hbm) {
+	AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+	continue;
+      }
+      hbm->SetDirectory(0);
+      fBadChannelMapArray->AddAt(hbm,i);
+          
+    } // loop over SMs
+  } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      
+  delete contBC;
+  fBadChannelMapSet=kTRUE;
+}  // Bad channel map loaded
+
+//____________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapFile()
+{
+  if(fBadChannelMapSet) return;
+
+  TFile *referenceFile = TFile::Open(fBadChannelFileName.Data());
+  if(referenceFile==0x0) {
+    AliFatal("*** NO bad channel map FILE");
+  }
+
+  TH1F *hbm = (TH1F*)referenceFile->Get("h1");
+  if (!hbm) {
+    AliError("Can not get EMCALBadChannelMap");
+  }
+  fBadChannelMapArray = new TObjArray(1);
+  fBadChannelMapArray->AddAt(hbm,0);
+  fBadChannelMapSet=kTRUE;
+}  // Bad channel map loaded
+
+
+//_____________________________________________________________________
+/// Load Bad Channel Map from different source
+void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMap(){
+  if(fSetBadChannelMapSource==1) LoadBadChannelMapOADB();
+  else if(fSetBadChannelMapSource==2) LoadBadChannelMapFile();
 }
