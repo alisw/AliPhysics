@@ -119,7 +119,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("flagNoTimeFraction", &flagNoTimeFraction[0]);
   ttree->SetBranchAddress("thresholdData", &thresholdData[0]);
   ttree->SetBranchAddress("thresholdOCDB", &thresholdOCDB[0]);
-  
+  cout<<"XXX"<<endl;
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
   Int_t nRuns=ttree->GetEntries();
@@ -224,7 +224,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   fListHist.Add(hThresholdData);
   fListHist.Add(hThresholdOCDB);
   
-  
+  cout<<"XXX"<<endl;
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
   for(Int_t irun=0;irun<nRuns;irun++){
@@ -343,17 +343,17 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	
 	hRatioVZEROADAND->SetBins(goodrun+1,0,goodrun+1);
 	hRatioVZEROADAND->SetBinContent(goodrun+1,rateRatioADV0AND);
-	if(hRatioVZEROADAND!=0)hRatioVZEROADAND->SetBinError(goodrun+1,rateErr/rateRatioADV0AND);
+	if(rateRatioADV0AND!=0)hRatioVZEROADAND->SetBinError(goodrun+1,rateErr/rateRatioADV0AND);
 	hRatioVZEROADAND->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRatioVZEROADOR->SetBins(goodrun+1,0,goodrun+1);
 	hRatioVZEROADOR->SetBinContent(goodrun+1,rateRatioADV0OR);
-	if(hRatioVZEROADOR!=0)hRatioVZEROADOR->SetBinError(goodrun+1,rateErr/rateRatioADV0OR);
+	if(rateRatioADV0OR!=0)hRatioVZEROADOR->SetBinError(goodrun+1,rateErr/rateRatioADV0OR);
 	hRatioVZEROADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRatePhysADAND->SetBins(goodrun+1,0,goodrun+1);
 	hRatePhysADAND->SetBinContent(goodrun+1,rateADAND);
-	if(rateADAND!=0)hRatePhysADAND->SetBinError(goodrun+1,rateErr/ratePhysADAND);
+	if(ratePhysADAND!=0)hRatePhysADAND->SetBinError(goodrun+1,rateErr/ratePhysADAND);
 	hRatePhysADAND->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hRatePhysADOR->SetBins(goodrun+1,0,goodrun+1);
@@ -797,7 +797,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad15->cd();
 
   myHistSetUp(hFlagNoTime);
-  hFlagNoTime->Draw("COLZTEXT");
+  if(hFlagNoTime->Integral()!=0)hFlagNoTime->Draw("COLZTEXT");
  
   c15->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c15->SaveAs(Form("%s/ADQA__FlagNoTime.png",plotDir.Data()));
@@ -836,7 +836,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad7->cd();
 
   myHistSetUp(hMPV);
-  hMPV->Draw("COLZTEXT");
+  if(hMPV->Integral()!=0)hMPV->Draw("COLZTEXT");
  
   c7->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c7->SaveAs(Form("%s/ADQA__MPV.png",plotDir.Data()));
@@ -1012,7 +1012,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad8->cd();
 
   myHistSetUp(hMeanPedestal);
-  hMeanPedestal->Draw("COLZTEXT");
+  if(hMeanPedestal->Integral()!=0)hMeanPedestal->Draw("COLZTEXT");
  
   c8->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c8->SaveAs(Form("%s/ADQA__PedMean.png",plotDir.Data())); 
@@ -1073,7 +1073,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad9->cd();
 
   myHistSetUp(hWidthPedestal);
-  hWidthPedestal->Draw("COLZTEXT");
+  if(hWidthPedestal->Integral()!=0)hWidthPedestal->Draw("COLZTEXT");
  
   c9->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c9->SaveAs(Form("%s/ADQA__PedWidth.png",plotDir.Data())); 
