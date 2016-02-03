@@ -3780,7 +3780,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) // end: cut embedded ratio
 	  {
 	    if(fMatchMode == 1){
-	    FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);//fetch V0s for matched jets and fill embedding histos
+	    FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa);//fetch V0s for matched jets and fill embedding histos
 	    }
 	  }
 	//################################end V0 embedding part
@@ -5576,7 +5576,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
 	  
-	  FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa, mclist);//fill all V0 embedding histos for match mode 2 
+	  FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa);//fill all V0 embedding histos for match mode 2 
 	  
 	  
 	}
@@ -6609,7 +6609,6 @@ void AliAnalysisTaskJetChem::GetTracksInCone(TList* inputlist, TList* outputlist
   jet->PxPyPz(jetMom);
   TVector3 jet3mom(jetMom);
 
-  //if(jetets < jetetscutr)continue;
 
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){//loop over all K0s found in event
 
@@ -6621,7 +6620,7 @@ void AliAnalysisTaskJetChem::GetTracksInCone(TList* inputlist, TList* outputlist
 
     Double_t dR = jet3mom.DeltaR(track3mom);
 
-    if(dR<radius){//fill all the V0s inside cone into outputlist, radius is reutrn value of GetFFRadius() 
+    if(dR<radius){//fill all the V0s inside cone into outputlist, radius is return value of GetFFRadius() 
 
       outputlist->Add(track);
       
@@ -7262,7 +7261,7 @@ Double_t AliAnalysisTaskJetChem::AreaCircSegment(Double_t dRadius, Double_t dDis
 
 
 //_____________________________________________________________________
-void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist)
+void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa)
 
 {//Jet matching cuts (FractionPtEmbedded(MC) = 0.5, DeltaREmb(MC) = 0.75*R) are already applied
   
@@ -7410,57 +7409,27 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  if(!v0) continue;
 	
 	  TString generatorName;
-	  Bool_t isinjected = kFALSE;
+	 
 	  Bool_t   incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	  Double_t invMK0s =0;
 	  Double_t trackPt=0;
 	  Double_t fEta=0;
-	  Int_t negDaughterpdg = 0;
-	  Int_t posDaughterpdg = 0;
-	  Int_t v0Label = -1;
-	  Bool_t fPhysicalPrimary = -1;   //v0 physical primary check
-	  Int_t MCv0PdgCode = 0;
-	  Bool_t mclabelcheck = kFALSE;
-	  Int_t motherType = -1;
-	  Double_t MCPt = 0;
-
 
 	  fEta = v0->Eta();
 	  
 	  CalculateInvMass(v0, kK0, invMK0s, trackPt);  //function to calculate invMass with TLorentzVector class
 	  
-	  if(fUseExtraTracks == -1){//only for extraonly particles used, pdg code checks are done, primary particles are selected
-
-	    Int_t nnum;
-	    Int_t pnum;
-
-	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
-	    if(daughtercheck == kFALSE)continue; 
-
-	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
-	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
-
-	    if (!trackPos || !trackNeg) {
-	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part:: Error:Could not retrieve one of the daughter tracks\n");
-	      continue;
-	    }
-
-	    mclabelcheck = MCLabelCheck(v0, kK0, trackNeg, trackPos, mclist, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
-	    if(mclabelcheck == kFALSE)continue;
-	  }
 	  //=======
 	  //for embedding signal calculation and extraonly particle reference
 	  if(incrementJetPt==kTRUE){
 	    fh1IMK0EmbCone->Fill(jetPt);
 	  }//normalisation by number of selected jets
 	  
-
-	  if(fUseExtraTracks == 1){//only for extra particles used
-	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s,trackPt,fEta};
-	    
-	    
-	    fhnK0sEmbCone->Fill(vK0sEmbCone);
-	  }
+	  Double_t vK0sEmbCone[4] = {jetPt, invMK0s,trackPt,fEta};
+	  
+	  if(fDebug > 2)std::cout<<"EmbCone K0s candidate: "<<"invMK0s: "<<invMK0s<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	  
+	  fhnK0sEmbCone->Fill(vK0sEmbCone);
 	  
 	  //=========
 	  //for particle reference via embedding flags and using the extra particles
@@ -7481,7 +7450,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    }
 
 	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
-             Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+	    Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
 
 	    if (isEmbeddedNeg==kTRUE && isEmbeddedPos==kTRUE) {
 	      if(fDebug > 2) Printf("AliAnalysisTaskJetChem info: PYTHIAEmbedding charged daughters both successfully found with embedding flag!\n");	     
@@ -7501,16 +7470,6 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 
 	  //==========
 
-
-	  if(fUseExtraTracks == -1){//only for extraonly particles used
-
-	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s, trackPt, fEta};
-	    
-	    if(fDebug > 2)std::cout<<" extraonly EmbCone K0s candidate: "<<"invMK0s: "<<invMK0s<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
-	    
-	    
-	    fhnK0sEmbCone->Fill(vK0sEmbCone);
-	  }
 	  
 	}//end jetConeK0Emblist loop, if list is not empty
 	
@@ -7642,62 +7601,30 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  if(!v0) continue;
 	
 	  TString generatorName;
-	  Bool_t isinjected = kFALSE;
+	
 	  Bool_t   incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	  Double_t invMLa =0;
 	  Double_t trackPt=0;
 	  Double_t fEta=0;
-	  Int_t negDaughterpdg = 0;
-	  Int_t posDaughterpdg = 0;
-	  Int_t v0Label = -1;
-	  Bool_t fPhysicalPrimary = -1;   //v0 physical primary check
-	  Int_t MCv0PdgCode = 0;
-	  Bool_t mclabelcheck = kFALSE;
-	  Int_t motherType = -1;
-	  Double_t MCPt = 0;
-
 
 	  fEta = v0->Eta();
 	  
 	  CalculateInvMass(v0, kLambda, invMLa, trackPt);  //function to calculate invMass with TLorentzVector class
 	  
-	  if(fUseExtraTracks == -1){//only for extraonly particles used
-	    
-	    Int_t nnum;
-	    Int_t pnum;
-	    // TList *listmc = fAOD->GetList();
-
-	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
-	    if(daughtercheck == kFALSE)continue; 
-
-	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
-	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
-	    
-	    if (!trackPos || !trackNeg) {
-	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part:: Error:Could not retrieve one of the daughter tracks\n");
-	      continue;
-	    }
-	    
-	    mclabelcheck = MCLabelCheck(v0, kLambda, trackNeg, trackPos, mclist, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
-	    if(mclabelcheck == kFALSE)continue;
-	  }
-
-
-	  //=======
+      	  //=======
 	  //for embedding signal calculation and extraonly particle referenz
 	  if(incrementJetPt==kTRUE){
 	    fh1IMLaEmbCone->Fill(jetPt);
 	  }//normalisation by number of selected jets
 	  
-
-	  if(fUseExtraTracks == 1){//only for extra particles used
-	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
-
-	    if(fDebug > 2)std::cout<<" extra EmbCone Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
-	    
-	    
-	    fhnLaEmbCone->Fill(vLaEmbCone);
-	  }
+	  
+	  Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
+	  
+	  if(fDebug > 2)std::cout<<"EmbCone Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+	  
+	  
+	  fhnLaEmbCone->Fill(vLaEmbCone);
+	  
 	  	
 	  //=========
 	  //for particle referenz via embedding flags and using the extra particles
@@ -7732,14 +7659,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 
 	  //==========
 
-	  if(fUseExtraTracks == -1){//only for extraonly particles used
-	   
-    	    Double_t vLaEmbCone[4] = {jetPt, invMLa, trackPt, fEta};
-	    fhnLaEmbCone->Fill(vLaEmbCone);
-	    
-	    if(fDebug > 2)std::cout<<" extraonly EmbCone Lambda candidate: "<<"invMLa: "<<invMLa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
-	    
-	  }
+	
 	  
 	  
 	}
@@ -7867,46 +7787,17 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  if(!v0) continue;
 	
 	  TString generatorName;
-	  Bool_t isinjected = kFALSE;
+
 	  Bool_t   incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	  Double_t invMALa =0;
 	  Double_t trackPt=0;
 	  Double_t fEta=0;
-	  Int_t negDaughterpdg = 0;
-	  Int_t posDaughterpdg = 0;
-	  Int_t v0Label = -1;
-	  Bool_t fPhysicalPrimary = -1;   //v0 physical primary check
-	  Int_t MCv0PdgCode = 0;
-	  Bool_t mclabelcheck = kFALSE;
-	  Int_t motherType = -1;
-	  Double_t MCPt = 0;
 
 
 	  fEta = v0->Eta();
 	  
 	  CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);  //function to calculate invMass with TLorentzVector class
-	  
-	  if(fUseExtraTracks == -1){//only for extraonly particles used
-	    
-	    Int_t nnum;
-	    Int_t pnum;
-	    //TList *listmc = fAOD->GetList();
-
-	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
-	    if(daughtercheck == kFALSE)continue; 
-
-	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
-	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
-	    
-	    if (!trackPos || !trackNeg) {
-	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part:: Error:Could not retrieve one of the daughter tracks\n");
-	      continue;
-	    }
-	    
-	    mclabelcheck = MCLabelCheck(v0, kAntiLambda, trackNeg, trackPos, mclist, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
-	    if(mclabelcheck == kFALSE)continue;
-	  }
-	  
+	  	  
 	  //=======
 	  //for embedding signal calculation and extraonly particle referenz
 
@@ -7915,12 +7806,12 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  }//normalisation by number of selected jets
 	  
 
-	  if(fUseExtraTracks == 1){//only for extra particles used
 	    Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
-	    if(fDebug > 2)std::cout<<" EmbCone ALambda candidate: "<<"invMALa: "<<invMALa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
+
+	    if(fDebug > 2)std::cout<<"EmbCone ALambda candidate: "<<"invMALa: "<<invMALa<<" trackPt: "<<trackPt<<" fEta: "<<fEta<<std::endl;
 	    
 	    fhnALaEmbCone->Fill(vALaEmbCone);
-	  }
+	 
 	  
 	  //=========
 	  //for particle referenz via embedding flags and using the extra particles
@@ -7955,15 +7846,6 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	  }
 
 	  //==========
-
-
-	  if(fUseExtraTracks == -1){//only for extraonly particles used
-	    	    
-	    Double_t vALaEmbCone[4] = {jetPt, invMALa, trackPt, fEta};//should be MC generated pT?
-	    fhnALaEmbCone->Fill(vALaEmbCone);
-	    	    
-	  }
-
 	 
 	}
 	
