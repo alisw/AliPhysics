@@ -81,9 +81,13 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiOmega"),baryonEnhancement);
     break;
   case 7:
-    numeratorParent = (TH2F*)((TH2F*) out2->FindObject("EtSimulatedSigma"))->Clone("allsigma");
+    numeratorParent = (TH2F*)((TH2F*) out2->FindObject("EtSimulatedSigmaMinus"))->Clone("allsigma");
     numeratorParent->Scale(baryonEnhancement);
-    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiSigma"),baryonEnhancement);
+    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiSigmaMinus"),baryonEnhancement);
+    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedSigmaPlus"),baryonEnhancement);
+    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiSigmaPlus"),baryonEnhancement);
+    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedSigma0"),baryonEnhancement);
+    numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedAntiSigma0"),baryonEnhancement);
     break;
   case 8:
     numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedLambda%s",reweightname->Data())))->Clone("allneutral");
@@ -134,6 +138,17 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
     numeratorParent=(TH2F*) ((TH2F*) out2->FindObject("EtSimulatedPiPlus"))->Clone("chpi");
     numeratorParent->Add((TH2F*) out2->FindObject("EtSimulatedPiMinus"));
     break;
+  case 16:
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtSimulatedLambda",reweightname->Data())))->Clone("lambda");
+    numeratorParent->Scale(lambdaFactor*baryonEnhancement);
+    numeratorParent->Add((TH2F*) out2->FindObject(Form("EtSimulatedAntiLambda",reweightname->Data())),lambdaFactor*baryonEnhancement);
+    break;
+  case 17:
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtReconstructedTPCITSLambdaDaughters",reweightname->Data())))->Clone("lambdadaughters");
+    break;
+  case 18:
+    numeratorParent= (TH2F*)((TH2F*) out2->FindObject(Form("EtReconstructedTPCITSSigmaDaughters",reweightname->Data())))->Clone("sigmadaughters");
+    break;
   }
 
   TH2F *allhad;
@@ -177,14 +192,14 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
   if(eta){
     int lowbin = numeratorParent->GetYaxis()->FindBin(-cut+.001);//make sure we don't accv0entally get the wrong bin
     int highbin = numeratorParent->GetYaxis()->FindBin(cut-.001);
-    cout<<"Projecting from "<<numeratorParent->GetYaxis()->GetBinLowEdge(lowbin)<<" to "<<numeratorParent->GetYaxis()->GetBinLowEdge(highbin+1)<<endl;
+    //cout<<"Projecting from "<<numeratorParent->GetYaxis()->GetBinLowEdge(lowbin)<<" to "<<numeratorParent->GetYaxis()->GetBinLowEdge(highbin+1)<<endl;
     denominator = allhad->ProjectionX("name",lowbin,highbin);
     numerator = numeratorParent->ProjectionX("numerator",lowbin,highbin);
   }
   else{
     int lowbin = allhad->GetXaxis()->FindBin(cut);//make sure we don't accidentally get the wrong bin
     int highbin = allhad->GetXaxis()->GetNbins();
-    cout<<"Projecting from "<<allhad->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<allhad->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
+    //cout<<"Projecting from "<<allhad->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<allhad->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
     numerator = numeratorParent->ProjectionY("name",lowbin,highbin);
     denominator = allhad->ProjectionY("denominator",lowbin,highbin);
   }
@@ -208,7 +223,8 @@ TH1D *GetHisto(float cut = 0.12, char *name, int mycase, bool eta, int color, in
 
 }
 
-void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname = "LHC10d4",TString filename = "rootFiles/LHC11b10a/Et.ESD.new.sim.LHC11b10a.root", bool hadronic = true, bool reweighted = false, float kaonFactor=1.0, float lambdaFactor = 1.0, float baryonEnhancement = 1.0){
+//void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname = "LHC10d4",TString filename = "rootFiles/LHC11b10a/Et.ESD.new.sim.LHC11b10a.root", bool hadronic = true, bool reweighted = false, float kaonFactor=1.0, float lambdaFactor = 1.0, float baryonEnhancement = 1.0){
+void CorrNeutral(char *prodname = "LHC13e1abc Combined HIJING 2.76 TeV Pb+Pb", char *shortprodname = "LHC13e1abc",TString filename = "rootFiles/LHC13e1abcCombined/Et.ESD.simPbPb.EMCal.LHC13e1abc.23Jan2016.root", bool hadronic = true, bool reweighted = false, float kaonFactor=1.0, float lambdaFactor = 1.0, float baryonEnhancement = 1.0){
   file = new TFile(filename.Data());
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -281,6 +297,33 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
 
   TH1D *pt3em = GetHisto(ptcut3,"pt3em",9,false,colorem,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
 
+
+  int colorsigma = TColor::kOrange-3;
+  TH1D *PHOSsigma = GetHisto(0.12,"PHOSsigma",7,true,colorsigma,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *EMCALsigma = GetHisto(0.7,"EMCALsigma",7,true,colorsigma,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt1sigma = GetHisto(ptcut2,"pt1sigma",7,false,colorsigma,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt2sigma = GetHisto(ptcut1,"pt2sigma",7,false,colorsigma,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+
+  int colorlambda = TColor::kMagenta;
+  TH1D *PHOSlambda = GetHisto(0.12,"PHOSlambda",16,true,colorlambda,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *EMCALlambda = GetHisto(0.7,"EMCALlambda",16,true,colorlambda,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt1lambda = GetHisto(ptcut2,"pt1lambda",16,false,colorlambda,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt2lambda = GetHisto(ptcut1,"pt2lambda",16,false,colorlambda,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+
+  phosmarker = 25;
+  emcalmarker = 21;
+  int colorlambdadaughters = TColor::kRed;
+  TH1D *PHOSlambdadaughters = GetHisto(0.12,"PHOSlambdadaughters",17,true,colorlambdadaughters,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *EMCALlambdadaughters = GetHisto(0.7,"EMCALlambdadaughters",17,true,colorlambdadaughters,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt1lambdadaughters = GetHisto(ptcut2,"pt1lambdadaughters",17,false,colorlambdadaughters,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt2lambdadaughters = GetHisto(ptcut1,"pt2lambdadaughters",17,false,colorlambdadaughters,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+
+  int colorsigmadaughters = TColor::kBlue;
+  TH1D *PHOSsigmadaughters = GetHisto(0.12,"PHOSsigmadaughters",18,true,colorsigmadaughters,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *EMCALsigmadaughters = GetHisto(0.7,"EMCALsigmadaughters",18,true,colorsigmadaughters,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt1sigmadaughters = GetHisto(ptcut2,"pt1sigmadaughters",18,false,colorsigmadaughters,phosmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+  TH1D *pt2sigmadaughters = GetHisto(ptcut1,"pt2sigmadaughters",18,false,colorsigmadaughters,emcalmarker,hadronic,reweighted,kaonFactor,lambdaFactor,baryonEnhancement);
+
   PHOStotal->SetMaximum(0.5);
   PHOStotal->SetMinimum(0.0);
   if(hadronic){
@@ -303,6 +346,14 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   EMCALneutralUndet->Draw("same");
   PHOSv0->Draw("same");
   EMCALv0->Draw("same");
+  PHOSsigma->Draw("same");
+  EMCALsigma->Draw("same");
+  PHOSlambda->Draw("same");
+  EMCALlambda->Draw("same");
+  PHOSsigmadaughters->Draw("same");
+  EMCALsigmadaughters->Draw("same");
+  PHOSlambdadaughters->Draw("same");
+  EMCALlambdadaughters->Draw("same");
   if(hadronic){
     PHOSem->Draw("same");
     EMCALem->Draw("same");
@@ -323,6 +374,7 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   leg2->AddEntry(PHOSneutralUndet,"K^{0}_{L},n,#bar{n}");
   leg2->AddEntry(PHOSv0,"#Lambda,#bar{#Lambda},K^{0}_{S}");
   leg2->AddEntry(PHOSchargedsecondary,"#Xi,#Omega");
+  leg2->AddEntry(PHOSsigma,"#Sigma");
   if(hadronic) leg2->AddEntry(PHOSem,"e^{#pm},#gamma,#eta,#pi^{0},#omega");
   leg2->SetFillStyle(0);
   leg2->SetFillColor(0);
@@ -373,8 +425,8 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   }
   weight = weight/totalwidth;
   weightPhos = weightPhos/totalwidthPhos;
-  cout<<"weight = "<<weight<<" weight phos "<<weightPhos<<endl;
-  pt1total->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  //cout<<"weight = "<<weight<<" weight phos "<<weightPhos<<endl;
+  pt1total->GetXaxis()->SetTitle("#eta");
   pt1total->Draw();
   pt2total->Draw("same");
   pt1allneutral->Draw("same");
@@ -385,14 +437,31 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   pt2neutralUndet->Draw("same");
   pt1v0->Draw("same");
   pt2v0->Draw("same");
+  pt1sigma->Draw("same");
+  pt2sigma->Draw("same");
+  pt1lambda->Draw("same");
+  pt2lambda->Draw("same");
+  pt1sigmadaughters->Draw("same");
+  pt2sigmadaughters->Draw("same");
+  pt1lambdadaughters->Draw("same");
+  pt2lambdadaughters->Draw("same");
   if(hadronic){
     pt1em->Draw("same");
     pt2em->Draw("same");
   }
+  cout<<endl<<"Lambda"<<endl;
+  TF1 *funcLambda = new TF1("funcLambda","[0]",-.7,.7);
+  funcLambda->SetParameter(0,0.06);
+  pt1lambda->Fit(funcLambda,"0");
+  cout<<endl<<"Sigma"<<endl<<endl;
+  TF1 *funcSigma = new TF1("funcSigma","[0]",-.7,.7);
+  funcSigma->SetParameter(0,0.06);
+  pt1sigma->Fit(funcSigma,"0");//Sigma
+
   TLatex *tex = new TLatex(-.65,.23,Form("%2.5f#pm%2.5f",func->GetParameter(0),func->GetParError(0)));
   tex->Draw();
   cout<<"corr fac "<<Form("%2.5f\$\\pm\$%2.5f",func->GetParameter(0),func->GetParError(0))<<endl;
-  cout<<"factor "<<Form("%2.5f",1- func->GetParameter(0))<<endl;
+  cout<<prodname<<" ftotal "<<Form("%2.5f +/- %2.5f",1- func->GetParameter(0),func->GetParError(0))<<endl;
   TLegend *leg3 = new TLegend(0.539259,0.801734,0.79575,0.949857);
   leg3->AddEntry(pt1total,"p_{T} cut = 0.1");
   leg3->AddEntry(pt2total,"p_{T} cut = 0.05");
@@ -400,7 +469,7 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   leg3->SetFillColor(0);
   leg3->SetBorderSize(0);
   leg3->SetTextSize(0.0548607);
-  leg3->Draw();
+  //leg3->Draw();
   TLegend *leg4 = new TLegend(0.199016,0.785275,0.455507,0.955343);
   leg4->AddEntry(PHOSv0,"#Lambda,#bar{#Lambda},K^{0}_{S}");
   //leg4->AddEntry(PHOSchargedsecondary,"#Sigma,#bar{#Sigma},#Xi,#bar{#Xi},#Xi^{0},#bar{#Xi^0},#Omega,#bar{#Omega}");
@@ -411,6 +480,7 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   leg4->SetBorderSize(0);
   leg4->SetTextSize(0.0548607);
   //leg4->Draw();
+  leg2->Draw();
 
   float y = 0.0237534;
   if(hadronic) y = 0.158129;
@@ -435,22 +505,35 @@ void CorrNeutral(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortpro
   if(kaonFactor!=1.0||lambdaFactor!=1.0||baryonEnhancement!=1.0){
     Factors = new TString(Form("Lambda%2.2fKaon%2.2fBaryon%2.2f",lambdaFactor,kaonFactor,baryonEnhancement));
   }
-  sprintf(ptnameeps,"pics/f%spt%s.eps",Cut->Data(),Factors->Data());
-  sprintf(ptnamepng,"pics/f%spt%s.png",Cut->Data(),Factors->Data());
-  sprintf(ptnamepdf,"pics/f%spt%s.pdf",Cut->Data(),Factors->Data());
-  sprintf(ptnameC,"pics/f%spt%s.C",Cut->Data(),Factors->Data());
+  sprintf(ptnameeps,"pics/%s/f%spt%s.eps",shortprodname,Cut->Data(),Factors->Data());
+  sprintf(ptnamepng,"pics/%s/f%spt%s.png",shortprodname,Cut->Data(),Factors->Data());
+  sprintf(ptnamepdf,"pics/%s/f%spt%s.pdf",shortprodname,Cut->Data(),Factors->Data());
+  sprintf(ptnameC,"pics/%s/f%spt%s.C",shortprodname,Cut->Data(),Factors->Data());
   sprintf(etanameeps,"pics/%s/f%seta%s.eps",shortprodname,Cut->Data(),Factors->Data());
   sprintf(etanamepng,"pics/%s/f%seta%s.png",shortprodname,Cut->Data(),Factors->Data());
   sprintf(etanamepdf,"pics/f%seta%s.pdf",Cut->Data(),Factors->Data());
   sprintf(etanameC,"pics/f%seta%s.C",Cut->Data(),Factors->Data());
 //   ptpad->SaveAs(ptnameeps);
-//   ptpad->SaveAs(ptnamepng);
+   ptpad->SaveAs(ptnamepng);
 //   ptpad->SaveAs(ptnamepdf);
 //   ptpad->SaveAs(ptnameC);
   etapad->SaveAs(etanameeps);
   etapad->SaveAs(etanamepng);
 //   etapad->SaveAs(etanamepdf);
 //   etapad->SaveAs(etanameC);
+  TCanvas *c2 = new TCanvas("c2","c2",500,400);
+  c2->SetTopMargin(0.03);
+  c2->SetRightMargin(0.03);
+  c2->SetBorderSize(0);
+  c2->SetFillColor(0);
+  c2->SetFillColor(0);
+  c2->SetBorderMode(0);
+  c2->SetFrameFillColor(0);
+  c2->SetFrameBorderMode(0);
+  pt1sigmadaughters->Divide(pt1sigma);
+  pt1lambdadaughters->Divide(pt1lambda);
+  pt1sigmadaughters->Draw("same");
+  pt1lambdadaughters->Draw("same");
   return;
 
   TCanvas *c2 = new TCanvas("c2","c2",500,400);
