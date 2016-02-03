@@ -39,14 +39,11 @@ AliMFTClusterFinder.cxx
 AliMFTClusterQA.cxx
 AliMFTReconstructor.cxx
 AliMFTRecoParam.cxx
-AliMFTTrackerMU.cxx
 AliMFTTracker.cxx
 AliMFTTrackExtrap.cxx
 AliMFTTrackFinder.cxx
 AliMFTTrackReconstructor.cxx
 AliMuonForwardTrack.cxx
-AliMuonForwardTrackFinder.cxx
-AliMuonForwardTrackPair.cxx
 AliMFTTrack.cxx
 AliMFTCARoad.cxx
 AliMFTCAHit.cxx

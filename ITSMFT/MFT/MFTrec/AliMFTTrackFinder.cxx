@@ -180,6 +180,7 @@ void AliMFTTrackFinder::LoadClusters( TClonesArray *clusterArrayFront[AliMFTCons
       AliMFTCluster * cluster = (AliMFTCluster *)clusterArrayFront[iPlane]->At(iCluster);
       caHit->SetPos(cluster->GetX(), cluster->GetY(), cluster->GetZ());
       caHit->SetTrackGID(cluster->GetMCLabel(0),iPlane*2,caLayer->GetNhits()-1,0);
+      caHit->SetMFTClsId(iCluster);
     }
     // Treating BACK face of the plane
     caLayer = GetLayer(iPlane*2+1);
@@ -188,6 +189,7 @@ void AliMFTTrackFinder::LoadClusters( TClonesArray *clusterArrayFront[AliMFTCons
       AliMFTCluster * cluster = (AliMFTCluster *)clusterArrayBack[iPlane]->At(iCluster);
       caHit->SetPos(cluster->GetX(), cluster->GetY(), cluster->GetZ());
       caHit->SetTrackGID(cluster->GetMCLabel(0),iPlane*2+1,caLayer->GetNhits()-1,0);
+      caHit->SetMFTClsId(iCluster);
     }
 
   }
@@ -754,6 +756,7 @@ void AliMFTTrackFinder::CreateCellsR(AliMFTCARoad *road) {
   Int_t trackID1, trackID2, detElemID1, detElemID2;
   Bool_t noCell;
   Double_t h1[3], h2[3], h[3], hx, hy, dR;
+  Int_t mftClsId1, mftClsId2;
   Int_t nCombi = 0;
   
   iL1min = road->GetLayer1();
@@ -771,6 +774,7 @@ void AliMFTTrackFinder::CreateCellsR(AliMFTCARoad *road) {
       h1[0] = hit1->GetPos()[0];
       h1[1] = hit1->GetPos()[1];
       h1[2] = hit1->GetPos()[2];
+      mftClsId1 = hit1->GetMFTClsId();
       noCell = kTRUE;
       iL2 = iL2min;
       while (noCell && (iL2 <= iL2max)) {
@@ -781,11 +785,13 @@ void AliMFTTrackFinder::CreateCellsR(AliMFTCARoad *road) {
           h2[0] = hit2->GetPos()[0];
           h2[1] = hit2->GetPos()[1];
           h2[2] = hit2->GetPos()[2];
+	  mftClsId2 = hit2->GetMFTClsId();
           nCombi++;
           if (RuleSelectCell(h1,h2,iL1)) {
             noCell = kFALSE;
             cell = GetLayer(iL1)->AddCell();
             cell->SetHits(h1,h2,fPlanesZ[iL1],fPlanesZ[iL2]);
+	    cell->SetMFTClsId(mftClsId1,mftClsId2);
             cell->SetLayers(iL1,iL2);
             cell->SetStatus(1);
             trackID1 = hit1->GetTrackGID();
@@ -2611,6 +2617,7 @@ void AliMFTTrackFinder::FindTracks() {
   Int_t lay[nMaxh], trkid[nMaxh], hit[nMaxh], detid[nMaxh];
   Int_t nH1, nH2, nH, iL1, iL2, lay1, lay2, trkid1, trkid2, nptr;
   Int_t hit1, hit2, detid1, detid2, nHitSta;
+  Int_t mftClsId1, mftClsId2;
   Int_t trackGID = 0;
   AliMFTCACell *cell;
   AliMFTCATrack *track;
@@ -2676,8 +2683,7 @@ void AliMFTTrackFinder::FindTracks() {
         h2[0] = GetLayer(iL2)->GetHit(iH2)->GetPos()[0];
         h2[1] = GetLayer(iL2)->GetHit(iH2)->GetPos()[1];
         h2[2] = GetLayer(iL2)->GetHit(iH2)->GetPos()[2];
-        
-
+       
         TVector3 vec(h2[0]-h1[0],h2[1]-h1[1],h2[2]-h1[2]);
 
         if (vec.Theta() < fMaxSegAngle*TMath::DegToRad()) continue;
@@ -2798,6 +2804,7 @@ void AliMFTTrackFinder::FindTracks() {
           htr1[0] = GetLayer(lay1)->GetHit(hit1)->GetPos()[0];
           htr1[1] = GetLayer(lay1)->GetHit(hit1)->GetPos()[1];
           htr1[2] = GetLayer(lay1)->GetHit(hit1)->GetPos()[2];
+	  mftClsId1 = GetLayer(lay1)->GetHit(hit1)->GetMFTClsId();
           
           GetLayer(lay1)->GetHit(hit1)->SetUsed();
           
@@ -2809,12 +2816,14 @@ void AliMFTTrackFinder::FindTracks() {
           htr2[0] = GetLayer(lay2)->GetHit(hit2)->GetPos()[0];
           htr2[1] = GetLayer(lay2)->GetHit(hit2)->GetPos()[1];
           htr2[2] = GetLayer(lay2)->GetHit(hit2)->GetPos()[2];
+	  mftClsId2 = GetLayer(lay2)->GetHit(hit2)->GetMFTClsId();
           
           GetLayer(lay2)->GetHit(hit2)->SetUsed();
-          
+
           // create cells
           cell = GetLayer(lay[iptr-1])->AddCell();
           cell->SetHits(htr1,htr2,fPlanesZ[lay1],fPlanesZ[lay2]);
+	  cell->SetMFTClsId(mftClsId1,mftClsId2);
           cell->SetLayers(lay1,lay2);
           cell->SetStatus(1);
           cell->SetGID(fCellGID++,trkid1,trkid2);

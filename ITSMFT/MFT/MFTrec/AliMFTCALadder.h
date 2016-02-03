@@ -8,7 +8,6 @@
 
 class TClonesArray;
 
-
 //_________________________________________________________________________________
 class AliMFTCALadder : public TObject {
   
@@ -17,6 +16,9 @@ public:
   AliMFTCALadder();
   ~AliMFTCALadder() {};
   
+  AliMFTCALadder (const AliMFTCALadder &ladder);
+  AliMFTCALadder &operator=(const AliMFTCALadder&);
+
   virtual void Clear(const Option_t *);
   void ClearCells();
   

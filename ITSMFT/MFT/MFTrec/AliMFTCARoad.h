@@ -15,11 +15,13 @@ public:
   AliMFTCARoad();
   ~AliMFTCARoad() {};
   
+  AliMFTCARoad (const AliMFTCARoad &road);
+  AliMFTCARoad &operator=(const AliMFTCARoad&);
+  
   void SetID(Int_t id) { fID = id; }
   const Int_t GetID() { return fID; }
   const Int_t GetNhits() { return fNhits; }
   void AddHit(AliMFTCAHit *hit);
-  //AliMFTCAHit *GetHit(Int_t nh)  { return (AliMFTCAHit*)fHits->At(nh); }
   const Int_t GetNhitsInLayer(Int_t nl) { return fNhitsInLayer[nl]; }
   AliMFTCAHit *GetHitInLayer(Int_t nl, Int_t nh) { return (AliMFTCAHit*)fHitsInLayer[nl]->At(nh); }
   void SetNHitSta(Int_t n) { fNHitSta = n; }
@@ -54,7 +56,6 @@ private:
   Int_t fLayer2;                 // last layer
   Int_t fNcellsInLayer[fNDetMax]; // Number of cells per layer
   
-  //TClonesArray *fHits;                    //! Array of hits
   TClonesArray *fHitsInLayer[fNDetMax];   //! Array of hits per layer
   TClonesArray *fCellsInLayer[fNDetMax];  //! Array of cells per layer
   

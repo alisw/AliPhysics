@@ -11,8 +11,8 @@ public:
   AliMFTCACell();
   ~AliMFTCACell() {};
   
-  // copy constructor
   AliMFTCACell (const AliMFTCACell &cell);
+  AliMFTCACell &operator=(const AliMFTCACell&);
   
   virtual void Clear(Option_t *);
   void SetGID(Int_t gid, Int_t trackid1, Int_t trackid2) {
@@ -20,12 +20,14 @@ public:
   void SetStatus(Int_t s) { fStatus = s; }
   void SetHits(Double_t *h1, Double_t *h2, Double_t z1, Double_t z2);
   void SetLayers(Int_t iL1, Int_t iL2) { fLayer[0] = iL1; fLayer[1] = iL2; }
+  void SetMFTClsId(Int_t id1, Int_t id2) { fMFTClsId[0] = id1; fMFTClsId[1] = id2; }
   void SetDetElemID(Int_t id1, Int_t id2) { fDetElemID[0] = id1; fDetElemID[1] = id2; }
   Double_t *GetHit1() { return fHit[0]; }
   Double_t *GetHit2() { return fHit[1]; }
   Double_t *GetHitp1() { return fHitp[0]; }
   Double_t *GetHitp2() { return fHitp[1]; }
   Int_t *GetLayers() { return fLayer; }
+  Int_t *GetMFTClsId() { return fMFTClsId; }
   Int_t *GetDetElemID() { return fDetElemID; }
   TVector3 *GetSeg()  { return fSeg; }
   const Bool_t HasNbL() { return fNNbL > 0 ? kTRUE : kFALSE; }
@@ -91,7 +93,8 @@ private:
   Int_t fNbRgid[100];      // GID of cell right neighbours
   Bool_t fIsMerged;        // True if is from merged cells in the overlaps
   Int_t fDetElemID[2];     // ladders ID
-  
+  Int_t fMFTClsId[2];      // ID of MFT clusters  
+
   ClassDef(AliMFTCACell,1);
   
 };

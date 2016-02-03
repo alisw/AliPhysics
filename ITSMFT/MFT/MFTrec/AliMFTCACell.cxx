@@ -31,6 +31,7 @@ fDetElemID()
       fHitp[i][j] = 0.;
     }
   }
+  fMFTClsId[0] = fMFTClsId[1] = -1;
   
 }
 
@@ -68,7 +69,46 @@ fDetElemID()
   fSeg = new TVector3(fHit[1][0]-fHit[0][0],
                       fHit[1][1]-fHit[0][1],
                       fHit[1][2]-fHit[0][2]);
-  
+  fMFTClsId[0] = cell.fMFTClsId[0];  
+  fMFTClsId[1] = cell.fMFTClsId[1];  
+
+}
+
+//___________________________________________________________________________
+AliMFTCACell& AliMFTCACell::operator=(const AliMFTCACell& cell) 
+{
+
+  // assignment operator
+
+  // check assignement to self
+  if (this == &cell) return *this;
+
+  TObject::operator=(cell);
+
+  fGID = cell.fGID;
+  for (Int_t i = 0; i < cell.fNNbL; i++) fNbLgid[i] = cell.fNbLgid[i];
+  for (Int_t i = 0; i < cell.fNNbR; i++) fNbRgid[i] = cell.fNbRgid[i];
+  for (Int_t i = 0; i < 2; i++) {
+    fTrackGID[i] = cell.fTrackGID[i];
+    fLayer[i] = cell.fLayer[i];
+    fDetElemID[i] = cell.fDetElemID[i];
+    for (Int_t j = 0; j < 3; j++) {
+      fHit[i][j] = cell.fHit[i][j];
+      fHitp[i][j] = cell.fHitp[i][j];
+    }
+  }
+  fSeg = new TVector3(fHit[1][0]-fHit[0][0],
+                      fHit[1][1]-fHit[0][1],
+                      fHit[1][2]-fHit[0][2]);
+  fStatus = cell.fStatus;
+  fUpStat = cell.fUpStat;
+  fIsUsed = cell.fIsUsed;
+  fNNbL = cell.fNNbL;
+  fNNbR = cell.fNNbR;
+  fIsMerged = cell.fIsMerged;
+  fMFTClsId[0] = cell.fMFTClsId[0];  
+  fMFTClsId[1] = cell.fMFTClsId[1];  
+ 
 }
 
 //___________________________________________________________________________

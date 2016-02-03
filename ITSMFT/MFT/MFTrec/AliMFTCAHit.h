@@ -11,8 +11,8 @@ public:
   AliMFTCAHit();
   ~AliMFTCAHit() {};
   
-  // copy constructor
   AliMFTCAHit (const AliMFTCAHit &hit);
+  AliMFTCAHit &operator=(const AliMFTCAHit&);
   
   void SetPos(Double_t x, Double_t y, Double_t z) {
     fPos[0] = x; fPos[1] = y; fPos[2] = z; }
@@ -36,6 +36,9 @@ public:
   void SetInRoad(Int_t i) { fInRoad[fNRoads++] = i; }
   const Int_t GetNRoads() { return fNRoads; }
   const Int_t GetInRoad(Int_t i) { return fInRoad[i]; }
+
+  void SetMFTClsId(Int_t id) { fMFTClsId = id; }
+  const Int_t GetMFTClsId() { return fMFTClsId; }
   
 private:
   
@@ -49,8 +52,9 @@ private:
   Int_t    fInRoad[100];  // index of the roads
   Int_t    fIsFace;       // "0" if on the disk side towards the IP, or "1"
   Int_t    fNInL;         // number of hit in layer
+  Int_t    fMFTClsId;     // ID of MFT cluster, to combine with IsFace()
   
-  ClassDef(AliMFTCAHit,1);
+  ClassDef(AliMFTCAHit,2);
   
 };
 #endif

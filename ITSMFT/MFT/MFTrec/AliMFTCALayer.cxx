@@ -22,6 +22,77 @@ fNladders(0)
 }
 
 //___________________________________________________________________________
+AliMFTCALayer::AliMFTCALayer(const AliMFTCALayer &layer) :
+TObject(layer),
+fID(layer.fID),
+fNhits(layer.fNhits),
+fNcells(layer.fNcells),
+fNladders(layer.fNladders)
+{
+  
+  // copy constructor
+  
+  fCells  = new TClonesArray("AliMFTCACell",  layer.fNcells);
+  fHits   = new TClonesArray("AliMFTCAHit",   layer.fNhits);
+  fLadders  = new TClonesArray("AliMFTCALadder",  layer.fNladders);
+  
+  AliMFTCALadder *caLadder;
+  for (Int_t i = 0; i < layer.fNladders; i++) {
+    caLadder = (AliMFTCALadder*)(layer.fLadders->At(i));
+    new ((*fLadders)[i]) AliMFTCALadder(*caLadder);
+  }
+  AliMFTCACell *caCell;
+  for (Int_t i = 0; i < layer.fNcells; i++) {
+    caCell = (AliMFTCACell*)(layer.fCells->At(i));
+    new ((*fCells)[i]) AliMFTCACell(*caCell);
+  }
+  AliMFTCAHit *caHit;
+  for (Int_t i = 0; i < layer.fNhits; i++) {
+    caHit = (AliMFTCAHit*)(layer.fHits->At(i));
+    new ((*fHits)[i]) AliMFTCAHit(*caHit);
+  }
+
+}
+
+//___________________________________________________________________________
+AliMFTCALayer& AliMFTCALayer::operator=(const AliMFTCALayer& layer) 
+{
+
+  // assignment operator
+
+  // check assignement to self
+  if (this == &layer) return *this;
+
+  TObject::operator=(layer);
+
+  fID = layer.fID;
+  fNhits = layer.fNhits;
+  fNcells = layer.fNcells;
+  fNladders = layer.fNladders;
+
+  fCells  = new TClonesArray("AliMFTCACell",  layer.fNcells);
+  fHits   = new TClonesArray("AliMFTCAHit",   layer.fNhits);
+  fLadders  = new TClonesArray("AliMFTCALadder",  layer.fNladders);
+  
+  AliMFTCALadder *caLadder;
+  for (Int_t i = 0; i < layer.fNladders; i++) {
+    caLadder = (AliMFTCALadder*)(layer.fLadders->At(i));
+    new ((*fLadders)[i]) AliMFTCALadder(*caLadder);
+  }
+  AliMFTCACell *caCell;
+  for (Int_t i = 0; i < layer.fNcells; i++) {
+    caCell = (AliMFTCACell*)(layer.fCells->At(i));
+    new ((*fCells)[i]) AliMFTCACell(*caCell);
+  }
+  AliMFTCAHit *caHit;
+  for (Int_t i = 0; i < layer.fNhits; i++) {
+    caHit = (AliMFTCAHit*)(layer.fHits->At(i));
+    new ((*fHits)[i]) AliMFTCAHit(*caHit);
+  }
+
+}
+
+//___________________________________________________________________________
 void AliMFTCALayer::Clear(const Option_t *) {
   
   if (fCells) fCells->Clear("C");
