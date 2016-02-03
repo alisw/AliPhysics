@@ -1,15 +1,31 @@
+/**
+ * \file AliAnalysisTaskEmcalJetSpectraQA.h
+ * \brief Declaration of class AliAnalysisTaskEmcalJetSpectraQA
+ *
+ * In this header file the class AliAnalysisTaskEmcalJetSpectraQA is declared.
+ * This is a task used to do QA on jet spectra for EMCal jet analysis.
+ *
+ * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * \date Feb 2, 2016
+ */
+
 #ifndef ALIANALYSISTASKEMCALJETSPECTRAQA_H
 #define ALIANALYSISTASKEMCALJETSPECTRAQA_H
 
-class TH2;
-class TH3;
-class THnSparse;
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-#include <TH3F.h>
-
+#include "THistManager.h"
 #include "AliTLorentzVector.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
+/**
+ * \class AliAnalysisTaskEmcalJetSpectraQA
+ * \brief Implementation of a task to perform QA on jet spectra
+ *
+ * Implementation of a task that performs QA on jet spectra
+ * for EMCal jet analysis.
+ */
 class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
  public:
 
@@ -28,60 +44,38 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
     Double_t fLeadingPt;
   };
 
+  enum EHistoType_t {
+    kTH2,
+    kTHnSparse
+  };
+
   AliAnalysisTaskEmcalJetSpectraQA();
   AliAnalysisTaskEmcalJetSpectraQA(const char *name);
   virtual ~AliAnalysisTaskEmcalJetSpectraQA() {;}
 
   void                        UserCreateOutputObjects();
 
-  void                        SetHistoType(Int_t t)               { fHistoType             = t; }
-  void                        SetDefaultClusterEnergy(Int_t d)    { fDefaultClusterEnergy  = d; }
+  void                        SetHistoType(EHistoType_t t)        { fHistoType             = t; }
   void                        SetJetEPaxis(Bool_t b)              { fJetEPaxis             = b; }
 
  protected:
-  void                        AllocateTHX();
-  void                        AllocateTHnSparse();
+  void                        AllocateTHX(AliJetContainer* jets);
+  void                        AllocateTHnSparse(AliJetContainer* jets);
 
   Bool_t                      FillHistograms();
-  void                        FillJetHisto(const AliEmcalJetInfo& jetInfo);
+  void                        FillJetHisto(const AliEmcalJetInfo& jetInfo, AliJetContainer* jets);
 
-  Int_t                       fHistoType;                   // histogram type (0=TH2, 1=THnSparse)
-  Int_t                       fDefaultClusterEnergy;        // default cluster energy
-  Bool_t                      fJetEPaxis;                   // whether a EP-jet axis should be included in the THnSparse
+  EHistoType_t                fHistoType;                   ///< histogram type
+  Bool_t                      fJetEPaxis;                   ///< whether a EP-jet axis should be included in the THnSparse
 
-  TH2                       **fHistRejectionReason;         //!Rejection reason vs. jet pt
-  TH2                       **fHistTracksJetPt;             //!Track pt vs. jet pt
-  TH2                       **fHistClustersJetPt;           //!Cluster pt vs. jet pt
-  TH2                       **fHistTracksPtDist;            //!Track pt vs. distance form jet axis
-  TH2                       **fHistClustersPtDist;          //!Cluster pt vs. distance form jet axis
-  TH3                       **fHistTracksZJetPtJetConst;    //!Track z vs. jet pt vs. no. of jet const
-  TH3                       **fHistClustersZJetPtJetConst;  //!Cluster z vs. jet pt vs. no. of jet const
-  TH2                        *fHistRhoVsCent;               //!Background vs. centrality
-
-  // Inclusive jets histograms
-  THnSparse                  *fHistJetObservables;          //!Jet observables
-
-  // TH2/TH3 versions
-  TH3                       **fHistJetPtEtaPhi;             //!Jet Pt vs. Eta vs. Phi
-  TH2                       **fHistJetPtArea;               //!Jet Pt vs. Area
-  TH2                       **fHistJetPtEP;                 //!Jet Pt vs. event plane
-  TH2                       **fHistJetPtNEF;                //!Jet Pt vs. neutral energy fraction
-  TH2                       **fHistJetPtZ;                  //!Jet Pt vs. z
-  TH2                       **fHistJetPtLeadingPartPt;      //!Jet Pt vs. leading particle pt
-  TH3                       **fHistJetCorrPtEtaPhi;         //!Jet corrPt vs. Eta vs. Phi
-  TH2                       **fHistJetCorrPtArea;           //!Jet corrPt vs. Area
-  TH2                       **fHistJetCorrPtEP;             //!Jet corrPt vs. event plane
-  TH2                       **fHistJetCorrPtNEF;            //!Jet corrPt vs. neutral energy fraction
-  TH2                       **fHistJetCorrPtZ;              //!Jet corrPt vs. z
-  TH2                       **fHistJetCorrPtLeadingPartPt;  //!Jet corrPt vs. leading particle pt
-  TH2                       **fHistJetPtCorrPt;             //!Jet Pt vs. corrPt
-  TH2                       **fHistJetPtMCPt;               //!Jet Pt vs. MCPt
-  TH2                       **fHistJetMCPtCorrPt;           //!Jet MCPt vs. corrPt
+  THistManager                fHistManager;                 //!< Histogram manager
 
  private:
   AliAnalysisTaskEmcalJetSpectraQA(const AliAnalysisTaskEmcalJetSpectraQA&);            // not implemented
   AliAnalysisTaskEmcalJetSpectraQA &operator=(const AliAnalysisTaskEmcalJetSpectraQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 1) // jet spectra QA task
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 1)
+  /// \endcond
 };
 #endif
