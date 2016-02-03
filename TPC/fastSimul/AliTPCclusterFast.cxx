@@ -41,7 +41,7 @@ public:
   void Init();
   
   virtual ~AliTPCclusterFast();
-  void SetParam(Float_t mnprim, Float_t diff, Float_t diffL, Float_t y, Float_t z, Float_t ky, Float_t kz);
+  void SetParam(Float_t mnprim, Float_t diff, Float_t diffL, Float_t y, Float_t z, Float_t ky, Float_t kz, Float_t yCenter, Float_t zCenter);
   static void GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast *clm, AliTPCclusterFast *clp);
   void Digitize();
   Double_t GetQtot(Float_t gain,Float_t thr, Float_t noise, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE);
@@ -63,9 +63,11 @@ public:
   Float_t fQtot;       ///< total charge - Gas gain flucuation taken into account
   //
   Float_t fDiff;       ///< diffusion sigma
-  Float_t fDiffLong;       ///< diffusion sigma longitudinal direction
-  Float_t fY;          ///< y position
-  Float_t fZ;          ///< z postion
+  Float_t fDiffLong;   ///< diffusion sigma longitudinal direction
+  Float_t fY;          ///< y ideal position - center bin
+  Float_t fZ;          ///< z ideal position - center bin
+  Float_t fYCenterBin; ///< y center bin  
+  Float_t fZCenterBin; ///< z center bin  
   Float_t fAngleY;     ///< y angle - tan(y)
   Float_t fAngleZ;     ///< z angle - tan z
   AliTPCclusterFast *fOverlapCluster; //
@@ -141,6 +143,12 @@ AliTPCtrackFast::AliTPCtrackFast():
   fAngleY(0),
   fAngleZ(0),
   fN(0),
+  fBOverlap(kFALSE),          ///< flag generate overlap track
+  fMNprimOverlap(0),     ///< mean number of primary electrons for overlap track
+  fDAngleYOverlap(0),    ///< y angle - tan(y) for overlap track
+  fDAngleZOverlap(0),    ///< z angle - tan z for overlap track
+  fDYOverlap(0),         ///< delta y position of overlap track at row 0 
+  fDZOverlap(0),         ///< delta z position of overlap track at row 0 
   fCl(0),
   fInit(kFALSE)
 {
@@ -174,11 +182,24 @@ void AliTPCtrackFast::MakeTrack(){
     AliTPCclusterFast * clusterp = (AliTPCclusterFast*) fCl->UncheckedAt(TMath::Min(i+1,kMaxRow-1));
     if (!cluster) cluster =   new ((*fCl)[i]) AliTPCclusterFast;
     //
-    Double_t posY = tY-TMath::Nint(tY);
-    Double_t posZ = tZ-TMath::Nint(tZ);
-    cluster->SetParam(fMNprim,fDiff, fDiffLong, posY,posZ,fAngleY,fAngleZ);   // when is the cluster plus parameters done 
+    Float_t yCenter= TMath::Nint(tY);
+    Float_t zCenter= TMath::Nint(tZ);
+
+    Double_t posY = tY-yCenter;
+    Double_t posZ = tZ-zCenter;
+    cluster->SetParam(fMNprim,fDiff, fDiffLong, posY,posZ,fAngleY,fAngleZ,yCenter,zCenter);   // when is the cluster plus parameters done 
     //
     cluster->GenerElectrons(cluster, clusterm, clusterp);
+    if (fBOverlap){   // if we simulate the overlap of tracks
+      AliTPCclusterFast * clusterOverlap = cluster->fOverlapCluster;
+      if (clusterOverlap==NULL){
+	cluster->fOverlapCluster=new AliTPCclusterFast;
+	clusterOverlap=	cluster->fOverlapCluster;
+      }
+      Double_t posYOverlap=posY+fDYOverlap+i*fDAngleYOverlap;
+      Double_t posZOverlap=posZ+fDZOverlap+i*fDAngleZOverlap;
+      clusterOverlap->SetParam(fMNprimOverlap,fDiff, fDiffLong, posYOverlap,posZOverlap,fAngleY+fDAngleYOverlap,fAngleZ+fDAngleZOverlap,yCenter,zCenter); 
+    }
   }
   //
   // 2.) make digitization
@@ -443,9 +464,10 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
 
 
 
-AliTPCclusterFast::AliTPCclusterFast(){
+AliTPCclusterFast::AliTPCclusterFast():
+  fOverlapCluster(0)
+{
   ///
-
   fDigits.ResizeTo(5,7);
 }
 
@@ -471,6 +493,14 @@ void AliTPCclusterFast::Init(){
     fGain[i]=0;
     fSec[i]=0;
   }
+  fDiff=0;       ///< diffusion sigma
+  fDiffLong=0;   ///< diffusion sigma longitudinal direction
+  fY=0;          ///< y ideal position - center bin
+  fZ=0;          ///< z ideal position - center bin
+  fYCenterBin=0; ///< y center bin  
+  fZCenterBin=0; ///< z center bin  
+  fAngleY=0;     ///< y angle - tan(y)
+  fAngleZ=0;     ///< z angle - tan z
 }
 
 
@@ -479,12 +509,15 @@ AliTPCclusterFast::~AliTPCclusterFast(){
 }
 
 
-void AliTPCclusterFast::SetParam(Float_t mnprim, Float_t diff,  Float_t diffL,Float_t y, Float_t z, Float_t ky, Float_t kz){
+void AliTPCclusterFast::SetParam(Float_t mnprim, Float_t diff,  Float_t diffL,Float_t y, Float_t z, Float_t ky, Float_t kz, Float_t yCenter, Float_t zCenter){
   ///
 
   fMNprim = mnprim; fDiff = diff; fDiffLong=diffL;
   fY=y; fZ=z; 
   fAngleY=ky; fAngleZ=kz;
+  fYCenterBin=yCenter;
+  fZCenterBin=zCenter;
+  
 }
 Double_t AliTPCclusterFast::GetNsec(){
   /// Generate number of secondary electrons
