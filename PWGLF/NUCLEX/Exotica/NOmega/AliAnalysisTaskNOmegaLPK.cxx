@@ -89,11 +89,11 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK() :
 	fCountEvent(0),
 	fIsDCA(0),
 	fNAll(0),
-	fFiducialVolMin1(0.2),
+	fFiducialVolMin1(2.0),
 	fFiducialVolMax1(200.),
-	fPosDCAToPVMin1(0.05),
-	fNegDCAToPVMin1(0.05),
-	fDCADaughterMax1(2.0),
+	fPosDCAToPVMin1(2.0),
+	fNegDCAToPVMin1(2.0),
+	fDCADaughterMax1(1.0),
 	fCPAMin1(-1.),
 	fDCAToPVMin1(0.0),
 	fCOADaughterMin1(-1.0),
@@ -136,11 +136,11 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK(const Char_t* name) :
 	fCountEvent(0),
 	fIsDCA(0),
 	fNAll(0),
-	fFiducialVolMin1(0.2),
+	fFiducialVolMin1(2.0),
 	fFiducialVolMax1(200.),
-	fPosDCAToPVMin1(0.05),
-	fNegDCAToPVMin1(0.05),
-	fDCADaughterMax1(2.0),
+	fPosDCAToPVMin1(2.0),
+	fNegDCAToPVMin1(2.0),
+	fDCADaughterMax1(1.0),
 	fCPAMin1(-1.),
 	fDCAToPVMin1(0.0),
 	fCOADaughterMin1(-1.0),
@@ -355,6 +355,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,Int_t &nSelect
 
   //------------------------------------------------------------------------------------------
   // version 4-0-0 (2016/02/01) from 3-3-1
+	// revised 2016/02/03 for train
   // Reconstruct dibaryon from two V0s by ESD class and myself
   // and calculate the invariant mass of dibaryon
   //------------------------------------------------------------------------------------------
@@ -847,6 +848,12 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,Int_t &nSelect
 				fCandidateVariables2[16] = vH.M();
 				fCandidateVariables2[17] = cpaH;
 				fCandidateVariables2[18] = static_cast<Float_t>(IsOnFly);
+				fCandidateVariables2[19] = pDca;
+				fCandidateVariables2[20] = nDca;
+				fCandidateVariables2[21] = coa2PosNeg;
+				fCandidateVariables2[22] = dca2;
+				fCandidateVariables2[23] = xyV02toV01;
+				fCandidateVariables2[24] = rPVtoV0;
 
 				fVariablesTree2->Fill();
 
@@ -901,7 +908,7 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
 
   const char* nameoutput2 = GetOutputSlot(2)->GetContainer()->GetName();
   fVariablesTree2 = new TTree(nameoutput2,"Candidates variables tree");
-  Int_t nVar2 = 19;
+  Int_t nVar2 = 25;
   fCandidateVariables2 = new Float_t [nVar2];
   TString * fCandidateVariableNames2 = new TString[nVar2];
 
@@ -944,6 +951,12 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
 	fCandidateVariableNames2[16]="IMH";// = vH.M();
 	fCandidateVariableNames2[17]="CpaH";// = cpaH;
 	fCandidateVariableNames2[18]="OnFly2";// = static_cast<Float_t>(IsOnFly);
+	fCandidateVariableNames2[19]="DcaPos2";// = pDca;
+	fCandidateVariableNames2[20]="DcaNeg2";// = nDca;
+	fCandidateVariableNames2[21]="Coa2";// = coa2PosNeg;
+	fCandidateVariableNames2[22]="Dca2";// = dca2;
+	fCandidateVariableNames2[23]="xy2";// = xyV02toV01;
+	fCandidateVariableNames2[24]="r2";// = rPVtoV0;
 
   for (Int_t ivar=0; ivar<nVar2; ivar++) {
     fVariablesTree2->Branch(fCandidateVariableNames2[ivar].Data(),&fCandidateVariables2[ivar],Form("%s/f",fCandidateVariableNames2[ivar].Data()));
