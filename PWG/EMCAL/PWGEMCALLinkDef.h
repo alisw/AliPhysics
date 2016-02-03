@@ -49,6 +49,7 @@
 #pragma link C++ class AliEmcalTriggerSelection+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class AliEmcalESDTrackCutsGenerator+;
+#pragma link C++ class AliEmcalPythiaInfo+;
 
 #pragma link C++ class AliEmcalTriggerQAAP+;
 #pragma link C++ class AliEmcalTriggerQATask+;

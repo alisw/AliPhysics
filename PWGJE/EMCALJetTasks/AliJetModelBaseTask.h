@@ -15,8 +15,6 @@
 #ifndef ALIJETMODELBASETASK_H
 #define ALIJETMODELBASETASK_H
 
-// $Id$
-
 class TClonesArray;
 class AliEMCALGeometry;
 class AliVCluster;
@@ -25,7 +23,7 @@ class AliVCaloCells;
 class AliAODMCParticle;
 class AliNamedArrayI;
 class TF2;
-class AliPythiaInfo;
+class AliEmcalPythiaInfo;
 
 #include <TH1F.h>
 #include <TF1.h>
@@ -50,10 +48,10 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetDensitySpectrum(TF1 *f)            { fDensitySpectrum = new TH1F("densitypectrum","densitypectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fDensitySpectrum->Add(f); }
   void                   SetMassDistribution(TH1F *hM);
-  void           	 SetMassDistributionFromFile(TString filename, TString histoname);
-  void           	 SetpTDistributionFromFile(TString filename, TString histoname);
+  void                   SetMassDistributionFromFile(TString filename, TString histoname);
+  void           	       SetpTDistributionFromFile(TString filename, TString histoname);
   void                   SetMassVsPtDistributionFromFile(TString filename, TString histoname);
-  void           	 SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
+  void                	 SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
   void                   SetMassVsPtDistribution(TH2F *hmasspt);
   void                   SetDistributionFromFile(TString filename, TString histoname, Int_t type);
   
@@ -127,8 +125,8 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Float_t                fPhiMax;                 ///< phi maximum value
   Float_t                fPtMin;                  ///< pt minimum value
   Float_t                fPtMax;                  ///< pt maximum value
-  Int_t                   fGenType;               ///<generator type. 0=pythia, 1=qpythia,2=pyquen, 3=herwig6.5 
- Bool_t                 fCopyArray;               ///< whether or not the array will be copied to a new one before modelling
+  Int_t                  fGenType;               ///<generator type. 0=pythia, 1=qpythia,2=pyquen, 3=herwig6.5
+  Bool_t                 fCopyArray;               ///< whether or not the array will be copied to a new one before modelling
   Int_t                  fNClusters;              ///< how many clusters are being processed
   Int_t                  fNCells;                 ///< how many cells are being processed
   Int_t                  fNTracks;                ///< how many tracks are being processed
@@ -158,7 +156,7 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   Int_t                  fMCLabelShift;           //!<! MC label shift
   Bool_t                 fEsdMode;                //!<! ESD/AOD mode
   TList                 *fOutput;                 //!<! output list for QA histograms
-  AliPythiaInfo         *fPythiaInfo;             //!<! Info on original partons:PDG,pt, eta, phi and pythia event weight
+  AliEmcalPythiaInfo    *fPythiaInfo;             //!<! Info on original partons:PDG,pt, eta, phi and pythia event weight
   TH1F                  *fhpTEmb  ;               //!<! embedded tracks pT
   TH1F                  *fhMEmb   ;               //!<! embedded tracks M
   TH1F                  *fhEtaEmb ;               //!<! embedded tracks eta
@@ -171,6 +169,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 13) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 13) // Jet modeling task
 };
 #endif

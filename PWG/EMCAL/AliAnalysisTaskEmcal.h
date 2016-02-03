@@ -20,6 +20,7 @@ class AliVCaloTrigger;
 class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
+class AliEmcalPythiaInfo;
 
 #include "Rtypes.h"
 
@@ -101,8 +102,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
+  void                        SetGeneratePythiaInfoObject(Bool_t b)                 { fGeneratePythiaInfoObject = kTRUE                   ; }
+  void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
+  const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
+  const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
 
  protected:  
+  void                        LoadPythiaInfo(AliVEvent *event);
   void                        SetRejectionReasonLabels(TAxis* axis);
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
   Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
@@ -120,6 +126,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   ULong_t 		                GetTriggerList();
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
+
+  void                        GeneratePythiaInfoObject(AliMCEvent* mcEvent);
 
   // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
@@ -147,6 +155,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static Double_t             fgkEMCalDCalPhiDivide;      //  phi value used to distinguish between DCal and EMCal
 
   // Task configuration
+  TString                     fPythiaInfoName;             // name of pythia info object
   BeamType                    fForceBeamType;              // forced beam type
   Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
   Bool_t                      fInitialized;                // whether or not the task has been already initialized
@@ -186,6 +195,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   ULong_t                     fTriggers;                   // list of fired triggers
   EMCalTriggerMode_t          fEMCalTriggerMode;           // EMCal trigger selection mode
   Bool_t                      fUseNewCentralityEstimation; // Use new centrality estimation (for 2015 data)
+  Bool_t                      fGeneratePythiaInfoObject;   // Generate Pythia info object
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)
@@ -209,6 +219,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fPtHardBin;                  //!event pt hard bin
   Int_t                       fNTrials;                    //!event trials
   Float_t                     fXsection;                   //!x-section from pythia header
+  AliEmcalPythiaInfo         *fPythiaInfo;                 //!event parton info
 
   // Output
   TList                      *fOutput;                     //!output list

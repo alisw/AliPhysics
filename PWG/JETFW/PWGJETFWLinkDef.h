@@ -10,7 +10,6 @@
 #pragma link C++ class AliEmcalJet+;
 #pragma link C++ class AliJetContainer+;
 #pragma link C++ class AliLocalRhoParameter+;
-#pragma link C++ class AliPythiaInfo+;
 #pragma link C++ class AliRhoParameter+;
 
 #endif

@@ -1,4 +1,3 @@
-// $Id$
 //
 // Jet embedding task.
 //
@@ -28,7 +27,7 @@
 #include "AliVEvent.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
-#include "AliPythiaInfo.h"
+#include "AliEmcalPythiaInfo.h"
 #include "AliPythiaRndm.h"
 #include "AliHerwigRndm.h"
 ClassImp(AliJetEmbeddingFromGenTask)
@@ -136,7 +135,7 @@ Bool_t AliJetEmbeddingFromGenTask::ExecOnce()
 
   if(!fPythiaInfoName.IsNull()) {
     if (!(InputEvent()->FindListObject(fPythiaInfoName))) {
-      fPythiaInfo = new AliPythiaInfo("PythiaInfo");
+      fPythiaInfo = new AliEmcalPythiaInfo("PythiaInfo");
       fPythiaInfo->SetName(fPythiaInfoName);
       InputEvent()->AddObject(fPythiaInfo);
     }
@@ -169,14 +168,10 @@ void AliJetEmbeddingFromGenTask::Run()
     TParticle *part7 = stack->Particle(7);
     
     fPythiaInfo->SetPartonFlag6(TMath::Abs(part6->GetPdgCode()));
-    fPythiaInfo->SetPartonPt6(part6->Pt());
-    fPythiaInfo->SetPartonEta6(part6->Eta());
-    fPythiaInfo->SetPartonPhi6(part6->Phi());
+    fPythiaInfo->SetParton6(part6->Pt(), part6->Eta(), part6->Phi(), part6->GetMass());
     
     fPythiaInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
-    fPythiaInfo->SetPartonPt7(part7->Pt());
-    fPythiaInfo->SetPartonEta7(part7->Eta());
-    fPythiaInfo->SetPartonPhi7(part7->Phi());
+    fPythiaInfo->SetParton7(part7->Pt(), part7->Eta(), part7->Phi(), part7->GetMass());
   }
 
   for (Int_t i=0;i<nprim;++i) {

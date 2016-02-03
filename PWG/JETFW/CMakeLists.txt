@@ -32,7 +32,6 @@ set(SRCS
   AliEmcalJet.cxx
   AliJetContainer.cxx
   AliLocalRhoParameter.cxx
-  AliPythiaInfo.cxx
   AliRhoParameter.cxx
   )
 

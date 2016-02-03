@@ -34,7 +34,7 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
-#include "AliPythiaInfo.h"
+#include "AliEmcalPythiaInfo.h"
 #include "TRandom3.h"
 
 
@@ -284,7 +284,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
     } 
  
       if (!(fJetShapeType == kData)) {
-        AliPythiaInfo *partonsInfo = 0x0;
+        const AliEmcalPythiaInfo *partonsInfo = 0x0;
         if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ||(fJetShapeType == kDetEmbPartPythia)){
           AliJetContainer *jetContTrue = GetJetContainer(1);
           AliJetContainer *jetContUS = GetJetContainer(2);
@@ -330,12 +330,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(fraction<fMinFractionShared) continue;
           //InputEvent()->Print();
           if ((fJetShapeType != kPythiaDef) && (fJetShapeType!=kDetEmbPartPythia)) {
-            partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
+            partonsInfo = GetPythiaInfo();
             if(!partonsInfo) return 0;
           }
         }
         else {
-          partonsInfo = (AliPythiaInfo*) jetCont->GetPythiaInfo();
+          partonsInfo = GetPythiaInfo();
           jet2=jet1;
           if(!partonsInfo) return 0;
         }

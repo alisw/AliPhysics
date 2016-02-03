@@ -35,7 +35,7 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
-#include "AliPythiaInfo.h"
+#include "AliEmcalPythiaInfo.h"
 #include "TRandom3.h"
 #include "AliPicoTrack.h"
 #include "AliEmcalJetFinder.h"
@@ -768,8 +768,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     AliEmcalJet *Jet2 = NULL; //Particle Level Jet  
     AliJetContainer *JetCont1= GetJetContainer(0); //Jet Container for Detector Level Pythia
     AliJetContainer *JetCont2= GetJetContainer(1); //Jet Container for Particle Level Pythia
-    AliPythiaInfo *PartonInfo1 = 0x0;
-    AliPythiaInfo *PartonInfo2 = 0x0;
+    //const AliEmcalPythiaInfo *PartonInfo1 = 0x0;
+    //const AliEmcalPythiaInfo *PartonInfo2 = 0x0;
     AliEmcalJetFinder *Reclusterer1; //Object containg Subjets Detector Level 
     AliEmcalJetFinder *Reclusterer2; //Object containg Subjets Particle Level 
     Int_t JetCounter1=0; //Counts number of jets in event

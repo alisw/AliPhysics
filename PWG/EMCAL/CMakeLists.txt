@@ -54,6 +54,7 @@ set(SRCS
   AliEmcalPhysicsSelection.cxx
   AliEmcalPhysicsSelectionTask.cxx
   AliEmcalPicoTrackMaker.cxx
+  AliEmcalPythiaInfo.cxx
   AliEmcalSetupTask.cxx
   AliEmcalTenderTask.cxx
   AliEmcalTrackingQATask.cxx
