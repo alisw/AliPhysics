@@ -276,6 +276,7 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
 
   TString runList = GetRunList(trackerQA);
   TObjArray* runListArr = runList.Tokenize(",");
+  runListArr->Sort();
 
   TString romanNum[10] = {"I","II","III","IV","V","VI","VII","VIII","IX","X"};
 
