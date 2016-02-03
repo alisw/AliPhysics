@@ -148,10 +148,6 @@ class AliMUONTrack : public TObject
   /// return the flag which is kTRUE if that track shares cluster(s) with another
   Bool_t IsConnected() const {return fConnected;}
 
-  /// set the corresponding MC track number of the associated MFT track
-  void  SetMFTMCLabel(Int_t label) {fMFTTrackID = label;}
-  /// return the corresponding MC track number of the associated MFT track
-  Int_t GetMFTMCLabel() const {return fMFTTrackID;}
 
  private:
   
@@ -181,8 +177,6 @@ class AliMUONTrack : public TObject
   
   Int_t fTrackID; ///< Point to the corresponding MC track
   
-  Int_t fMFTTrackID; ///< Point to the corresponding MC track of the associated MFT track
-  
   AliMUONTrackParam* fTrackParamAtVertex; //!<! Track parameters at vertex
   
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
@@ -198,7 +192,7 @@ class AliMUONTrack : public TObject
   void   ComputeMCSCovariances(TMatrixD& mcsCovariances) const;
   
   
-  ClassDef(AliMUONTrack, 12) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 11) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif

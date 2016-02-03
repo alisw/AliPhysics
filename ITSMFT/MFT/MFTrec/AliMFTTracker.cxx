@@ -49,9 +49,6 @@
 #include "AliMFTTrackReconstructor.h"
 #include "AliMUONTrackParam.h"
 
-#define USEMUON
-#define USEMFWD
-
 /// \cond CLASSIMP
 ClassImp(AliMFTTracker);
 /// \endcond
@@ -276,11 +273,8 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
   Short_t trackCharge;
   Double_t caTrackPhi, caTrackThe, caTrackOrg[3], caTrackBegOfAbs[3];
   Double_t Ux, Uy, Uz, Tx, Ty, Tz;
-  AliMUONVCluster *cluster = 0x0;
   Double_t addChi2TrackAtCluster = 0.;
   AliMUONTrackParam trackParamMM, trackParamMM0;
-  AliMUONTrackParam trackParamMMa, trackParamMM0a;
-  AliMUONTrackParam trackParamMMb, trackParamMM0b;
   AliMUONRawCluster *muonCluster = 0x0;
 
   AliMFTCluster *mftCluster[AliMFTConstants::fNMaxPlanes];
@@ -305,17 +299,9 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
   TClonesArray *mftTracks = new TClonesArray("AliMFTCATrack");
   outputTreeMFTTracks->Branch("tracks", &mftTracks);
 
-#ifdef USEMUON
-  TTree *outputTreeMUONTracks = new TTree("MUONTracks", "Tree of MUON tracks");
-  TClonesArray *muonTracks = new TClonesArray("AliMUONTrack");
-  outputTreeMUONTracks->Branch("tracks", &muonTracks);
-#endif
-
-#ifdef USEMFWD
   TTree *outputTreeMuonForwardTracks = new TTree("MuonForwardTracks", "Tree of muon forward racks");
   TClonesArray *mfwdTracks = new TClonesArray("AliMuonForwardTrack");
   outputTreeMuonForwardTracks->Branch("tracks", &mfwdTracks);
-#endif
 
   TTree *outputTreeEvent = new TTree("Events", "Tree of events");
   outputTreeEvent->Branch("fXVertexMC", &fXVertexMC);
@@ -344,41 +330,21 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
     }
     //printf("Muon track %d start chi2: %f , %f , %d \n",iTrack,muonTrack->GetGlobalChi2(),muonTrack->GetGlobalChi2()/muonTrack->GetNDF(),muonTrack->GetNDF());
 
-#ifdef USEMFWD
     if (mfwdTrack) delete mfwdTrack;
     mfwdTrack = new AliMuonForwardTrack(*muonTrack);
-#endif
 
     // go with the track param to the vertex x,y,z (with Branson) or 
     // to vertex z (without Branson)
 
-#ifdef USEMUON
-    trackParamMMa = (*((AliMUONTrackParam*)(muonTrack->GetTrackParamAtCluster()->First())));
-#endif
+    trackParamMM = (*((AliMUONTrackParam*)(mfwdTrack->GetTrackParamAtCluster()->First())));
 
-#ifdef USEMFWD
-    trackParamMMb = (*((AliMUONTrackParam*)(mfwdTrack->GetTrackParamAtCluster()->First())));
-#endif
-
-#ifdef USEMUON
     if (fBransonCorrection) {
-      AliMUONTrackExtrap::ExtrapToVertex(&trackParamMMa,fXExtrapVertex,fYExtrapVertex,fZExtrapVertex,fXExtrapVertexError,fYExtrapVertexError); 
+      AliMUONTrackExtrap::ExtrapToVertex(&trackParamMM,fXExtrapVertex,fYExtrapVertex,fZExtrapVertex,fXExtrapVertexError,fYExtrapVertexError); 
     } else {
-      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamMMa,fZExtrapVertex);
+      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamMM,fZExtrapVertex);
     }
     // copy to save this track param
-    trackParamMM0a = trackParamMMa;
-#endif
-   
-#ifdef USEMFWD
-    if (fBransonCorrection) {
-      AliMUONTrackExtrap::ExtrapToVertex(&trackParamMMb,fXExtrapVertex,fYExtrapVertex,fZExtrapVertex,fXExtrapVertexError,fYExtrapVertexError); 
-    } else {
-      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamMMb,fZExtrapVertex);
-    }
-    // copy to save this track param
-    trackParamMM0b = trackParamMMb;
-#endif
+    trackParamMM0 = trackParamMM;
    
     for (Int_t iTrackMFT = 0 ; iTrackMFT < nTracksMFT; iTrackMFT++) {
       
@@ -480,118 +446,54 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
 	  if (muonTrack) delete muonTrack;
 	  muonTrack = new AliMUONTrack();
 	  AliMUONESDInterface::ESDToMUON(*esdTrack, *muonTrack, kFALSE);
-#ifdef USEMUON
-	  trackParamMMa = trackParamMM0a;
-#endif
-#ifdef USEMFWD
 	  if (mfwdTrack) delete mfwdTrack;
 	  mfwdTrack = new AliMuonForwardTrack(*muonTrack);
-	  trackParamMMb = trackParamMM0b;
-#endif
+	  trackParamMM = trackParamMM0;
 	}
 
 	for (Int_t iptr = 0; iptr < nptr; iptr++) {
 
-#ifdef USEMUON
-	  cluster = new AliMUONRawClusterV2();
-	  cluster->SetFromMFT();
-	  cluster->SetXYZ(xTr[iptr],yTr[iptr],zTr[iptr]);
-	  cluster->SetErrXY(fTrackFinder->GetErrX(),fTrackFinder->GetErrY());
-#endif
-
-#ifdef USEMFWD
-	  cluster->SetErrXY(mftCluster[iptr]->GetErrX(),mftCluster[iptr]->GetErrY());
 	  muonCluster = mftCluster[iptr]->CreateMUONCluster();
 	  //printf("MFTCluster:   %3d   %10.4f   %10.4f   %10.4f   %10.4f   %10.4f   %10.4f   %10.4f   %10.4f   %10.4f \n",iptr,mftCluster[iptr]->GetX(),mftCluster[iptr]->GetY(),mftCluster[iptr]->GetZ(),xTr[iptr],yTr[iptr],zTr[iptr],muonCluster->GetX(),muonCluster->GetY(),muonCluster->GetZ());
-#endif
 
 	  // extrapolation to z
-#ifdef USEMUON
-	  //printf("Extrap to (a): %10.4f \n",cluster->GetZ());
-	  AliMUONTrackExtrap::ExtrapToZCov(&trackParamMMa,cluster->GetZ()); 
-#endif
-
-#ifdef USEMFWD
 	  //printf("Extrap to (b): %10.4f \n",muonCluster->GetZ());
-	  AliMUONTrackExtrap::ExtrapToZCov(&trackParamMMb,muonCluster->GetZ()); 
-#endif
+	  AliMUONTrackExtrap::ExtrapToZCov(&trackParamMM,muonCluster->GetZ()); 
 
 	  // add MCS (Multiple Coulomb Scattering)
 	  // front/back correct ?
 	  if (iptr > 0) {
 	    if (planeID[iptr]%2 == 0) {
 	      // back
-#ifdef USEMUON
-	      AliMUONTrackExtrap::AddMCSEffect(&trackParamMMa,
+	      AliMUONTrackExtrap::AddMCSEffect(&trackParamMM,
 	      (equivalentSilicon+equivalentSiliconBeforeBack)/fRadLengthSi,-1.);
-#endif
-#ifdef USEMFWD
-	      AliMUONTrackExtrap::AddMCSEffect(&trackParamMMb,
-	      (equivalentSilicon+equivalentSiliconBeforeBack)/fRadLengthSi,-1.);
-#endif
 	    } else {
 	      // front
 	      // ... this is zero, anyway ...
-#ifdef USEMUON
-	      AliMUONTrackExtrap::AddMCSEffect(&trackParamMMa,
+	      AliMUONTrackExtrap::AddMCSEffect(&trackParamMM,
 	      (equivalentSilicon+equivalentSiliconBeforeFront)/fRadLengthSi,-1.);
-#endif
-#ifdef USEMFWD
-	      AliMUONTrackExtrap::AddMCSEffect(&trackParamMMb,
-	      (equivalentSilicon+equivalentSiliconBeforeFront)/fRadLengthSi,-1.);
-#endif
 	    }
 	  }
 
-#ifdef USEMUON
-	  //printf("1a (%2d): %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %f\n",iptr,trackParamMMa.GetNonBendingCoor(), trackParamMMa.GetBendingCoor(),trackParamMMa.GetZ(),cluster->GetX(),cluster->GetY(),cluster->GetZ(),trackParamMMa.GetTrackChi2());
-	  addChi2TrackAtCluster = RunKalmanFilter(trackParamMMa,*cluster);
-	  trackParamMMa.SetTrackChi2(trackParamMMa.GetTrackChi2()+addChi2TrackAtCluster);
-#endif
+	  //printf("1b (%2d): %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %f\n",iptr,trackParamMM.GetNonBendingCoor(), trackParamMM.GetBendingCoor(),trackParamMM.GetZ(),muonCluster->GetX(),muonCluster->GetY(),muonCluster->GetZ(),trackParamMM.GetTrackChi2());
+	  addChi2TrackAtCluster = RunKalmanFilter(trackParamMM,*muonCluster);
+	  trackParamMM.SetTrackChi2(trackParamMM.GetTrackChi2()+addChi2TrackAtCluster);
 
-#ifdef USEMFWD
-	  //printf("1b (%2d): %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %f\n",iptr,trackParamMMb.GetNonBendingCoor(), trackParamMMb.GetBendingCoor(),trackParamMMb.GetZ(),muonCluster->GetX(),muonCluster->GetY(),muonCluster->GetZ(),trackParamMMb.GetTrackChi2());
-	  addChi2TrackAtCluster = RunKalmanFilter(trackParamMMb,*muonCluster);
-	  trackParamMMb.SetTrackChi2(trackParamMMb.GetTrackChi2()+addChi2TrackAtCluster);
-#endif
-
-
-#ifdef USEMUON
-	  muonTrack->AddTrackParamAtCluster(trackParamMMa,*cluster,kFALSE);
-	  muonTrack->SetGlobalChi2(trackParamMMa.GetTrackChi2());
-	  muonTrack->SetMFTMCLabel(caTrack->GetMCindex());
-	  //printf("2a: %10.4f  %10.4f  %10.4f  %f\n",trackParamMMa.GetNonBendingCoor(), trackParamMMa.GetBendingCoor(),trackParamMMa.GetZ(),trackParamMMa.GetTrackChi2());
-	  delete cluster;
-#endif
-
-#ifdef USEMFWD
-	  mfwdTrack->AddTrackParamAtMFTCluster(trackParamMMb,*muonCluster,iptr);
-	  mfwdTrack->SetGlobalChi2(trackParamMMb.GetTrackChi2());
+	  mfwdTrack->AddTrackParamAtMFTCluster(trackParamMM,*muonCluster,iptr);
+	  mfwdTrack->SetGlobalChi2(trackParamMM.GetTrackChi2());
 	  mfwdTrack->SetTrackMCId(caTrack->GetMCindex());
-	  //printf("2b: %10.4f  %10.4f  %10.4f  %f\n",trackParamMMb.GetNonBendingCoor(), trackParamMMb.GetBendingCoor(),trackParamMMb.GetZ(),trackParamMMb.GetTrackChi2());
+	  //printf("2b: %10.4f  %10.4f  %10.4f  %f\n",trackParamMM.GetNonBendingCoor(), trackParamMM.GetBendingCoor(),trackParamMM.GetZ(),trackParamMM.GetTrackChi2());
 	  delete muonCluster;
-#endif
 
 	} // end MFT cluster loop
 
 	if (saveAllMatch) {
-#ifdef USEMUON
-	  if (muonTrack->GetNormalizedChi2() < chi2cut) {
-	    //printf("Muon track %2d:%2d end chi2: %f , %f , %d \n",iTrack,iTrackMFT,muonTrack->GetGlobalChi2(),muonTrack->GetGlobalChi2()/muonTrack->GetNDF(),muonTrack->GetNDF());
-	    new ((*muonTracks)[iTrackMatchA++]) AliMUONTrack(*muonTrack);
-	  } else {
-	    //printf("... not matched (a) ... %2d:%2d end chi2: %f , %f , %d \n",iTrack,iTrackMFT,muonTrack->GetGlobalChi2(),muonTrack->GetGlobalChi2()/muonTrack->GetNDF(),muonTrack->GetNDF());
-	  }
-#endif
-
-#ifdef USEMFWD
 	  if (mfwdTrack->GetNormalizedChi2() < chi2cut) {
 	    //printf("Muon forward track %2d:%2d end chi2: %f , %f , %d \n",iTrack,iTrackMFT,mfwdTrack->GetGlobalChi2(),mfwdTrack->GetGlobalChi2()/mfwdTrack->GetNDF(),mfwdTrack->GetNDF());
 	    new ((*mfwdTracks)[iTrackMatchB++]) AliMuonForwardTrack(*mfwdTrack);
 	  } else {
 	    //printf("... not matched (b) ... %2d:%2d end chi2: %f , %f , %d \n",iTrack,iTrackMFT,mfwdTrack->GetGlobalChi2(),mfwdTrack->GetGlobalChi2()/mfwdTrack->GetNDF(),mfwdTrack->GetNDF());
 	  }
-#endif
 	}
 
       } // end save all || match by MC label      
@@ -599,19 +501,10 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
 
     if (!saveAllMatch) {
 
-#ifdef USEMUON
-      //printf("Muon track %d end chi2: %f , %f , %d \n",iTrack,muonTrack->GetGlobalChi2(),muonTrack->GetGlobalChi2()/muonTrack->GetNDF(),muonTrack->GetNDF());
-      if (muonTrack->GetNormalizedChi2() < chi2cut) {
-	new ((*muonTracks)[iTrackMatchA++]) AliMUONTrack(*muonTrack);
-      }
-#endif
-
-#ifdef USEMFWD
       //printf("Muon forward track %d end chi2: %f , %f , %d \n",iTrack,mfwdTrack->GetGlobalChi2(),mfwdTrack->GetGlobalChi2()/mfwdTrack->GetNDF(),mfwdTrack->GetNDF());
       if (mfwdTrack->GetNormalizedChi2() < chi2cut) {
 	new ((*mfwdTracks)[iTrackMatchB++]) AliMuonForwardTrack(*mfwdTrack);
       }
-#endif
 
     }
     /*
@@ -633,14 +526,8 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
 
   outputTreeMFTTracks->Fill();
   outputTreeMFTTracks->Write();
-#ifdef USEMUON
-  outputTreeMUONTracks->Fill();
-  outputTreeMUONTracks->Write();
-#endif
-#ifdef USEMFWD
   outputTreeMuonForwardTracks->Fill();
   outputTreeMuonForwardTracks->Write();
-#endif
   outputTreeMFTCells->Fill();
   outputTreeMFTCells->Write();
   outputTreeEvent->Fill();
@@ -654,14 +541,8 @@ Int_t AliMFTTracker::Clusters2Tracks(AliESDEvent *event) {
   mftCells->Delete();
   delete mftCells;
 
-#ifdef USEMUON
-  muonTracks->Delete();
-  delete muonTracks;
-#endif
-#ifdef USEMFWD
   mfwdTracks->Delete();
   delete mfwdTracks;
-#endif
 
   fTrackFinder->Clear("");
   

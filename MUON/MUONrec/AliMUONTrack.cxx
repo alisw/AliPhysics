@@ -64,7 +64,6 @@ AliMUONTrack::AliMUONTrack()
     fMatchTrigger(-1),
     fChi2MatchTrigger(0.),
     fTrackID(-1),
-    fMFTTrackID(-1),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(0),
     fHitsPatternInTrigChTrk(0),
@@ -90,7 +89,6 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment, Double_t bendingVertexDis
     fMatchTrigger(-1),
     fChi2MatchTrigger(0.),
     fTrackID(-1),
-    fMFTTrackID(-1),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(0),
     fHitsPatternInTrigChTrk(0),
@@ -203,7 +201,6 @@ AliMUONTrack::AliMUONTrack(const AliMUONTrack& track)
     fMatchTrigger(track.fMatchTrigger),
     fChi2MatchTrigger(track.fChi2MatchTrigger),
     fTrackID(track.fTrackID),
-    fMFTTrackID(track.fMFTTrackID),
     fTrackParamAtVertex(0x0),
     fHitsPatternInTrigCh(track.fHitsPatternInTrigCh),
     fHitsPatternInTrigChTrk(track.fHitsPatternInTrigChTrk),
@@ -286,7 +283,6 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& track)
   fMatchTrigger       =  track.fMatchTrigger;
   fChi2MatchTrigger   =  track.fChi2MatchTrigger;
   fTrackID            =  track.fTrackID; 
-  fMFTTrackID         =  track.fMFTTrackID; 
   fHitsPatternInTrigCh = track.fHitsPatternInTrigCh;
   fHitsPatternInTrigChTrk = track.fHitsPatternInTrigChTrk;
   fLocalTrigger        = track.fLocalTrigger;
@@ -329,7 +325,6 @@ void AliMUONTrack::Reset()
   fMatchTrigger = -1;
   fChi2MatchTrigger = 0.;
   fTrackID = -1;
-  fMFTTrackID = -1;
   fHitsPatternInTrigCh = 0;
   fHitsPatternInTrigChTrk = 0;
   fLocalTrigger = 0;
@@ -358,15 +353,6 @@ void AliMUONTrack::AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, A
   /// Link parameters with the associated cluster
   /// If copy=kTRUE: the cluster is copied then passed the trackParam which become its owner 
   ///     otherwise: make sure to do not delete the cluster until it is used by the track
-  
-  // add track param from MFT clusters
-  if (cluster.IsFromMFT()) {
-    AliMUONTrackParam* trackParamAtCluster = new AliMUONTrackParam(trackParam);
-    fTrackParamAtCluster->AddLast(trackParamAtCluster);
-    // sort the array of track parameters
-    fTrackParamAtCluster->Sort();
-    return;
-  }
   
   // check chamber ID of the associated cluster
   if (cluster.GetChamberId() < 0 || cluster.GetChamberId() > AliMUONConstants::NTrackingCh()) {

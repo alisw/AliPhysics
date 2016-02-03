@@ -131,9 +131,6 @@ public:
    void         SetContrib(Int_t i, Int_t j, Float_t contrib);
    void         SetPhysics(Int_t i, Int_t physics);
 
-   virtual Bool_t IsFromMFT() const { return kFALSE; }
-   virtual void SetFromMFT() {};
-
 private:
    Int_t       fIndexMap[50][2];  ///< Indices of digits
    Int_t       fOffsetMap[50][2]; ///< Emmanuel special
