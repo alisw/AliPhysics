@@ -99,6 +99,7 @@ class AliAODPWG4Particle : public AliVParticle {
   // Calorimeter specific param
   virtual Int_t   GetNLM()               const { return fNLM          ; }
   virtual Float_t GetM02()               const { return fM02          ; }
+  virtual Float_t GetM20()               const { return fM20          ; }
   virtual Float_t GetTime()              const { return fTime         ; }
   virtual Int_t   GetNCells()            const { return fNCells       ; }
   virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
@@ -138,6 +139,7 @@ class AliAODPWG4Particle : public AliVParticle {
   // Calorimeter specific param
   virtual void SetNLM   (Int_t   nlm)    { fNLM         = nlm  ; }
   virtual void SetM02   (Float_t m02)    { fM02         = m02  ; }
+  virtual void SetM20   (Float_t m20)    { fM20         = m20  ; }
   virtual void SetTime  (Float_t tim)    { fTime        = tim  ; }
   virtual void SetNCells(Int_t   nce)    { fNCells      = nce  ; }
   virtual void SetSModNumber(Int_t sm)   { fSuperModule = sm   ; }
@@ -181,6 +183,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBadDist ;         ///< Distance to calorimeter bad cell in cell units
   UInt_t     fNLM ;             ///< Store the number of local maxima in calorimeter cluster
   Float_t    fM02 ;             ///< Store the main axis of the calorimeter shower shape
+  Float_t    fM20 ;             ///< Store the second axis of the calorimeter shower shape
   Float_t    fTime;             ///< Store the time of calorimeter cluster or track, nano seconds
   Int_t      fNCells;           ///< Store the number of cells in calorimeter cluster
   Int_t      fSuperModule;      ///< Store the super-module number of calorimeter cluster
@@ -205,13 +208,13 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBtag;             ///< tag particle from B.
 
   /// \cond CLASSIMP
-  ClassDef(AliAODPWG4Particle, 7);
+  ClassDef(AliAODPWG4Particle, 8);
   /// \endcond
 
 };
 
 ///
-/// \return azimuth angle, shift 2pi in case the TLorentz is negative
+/// \return azimuth angle, shift 2pi in case the TLorentzVector::Phi() is negative
 ///
 inline Double_t AliAODPWG4Particle::Phi() const
 {

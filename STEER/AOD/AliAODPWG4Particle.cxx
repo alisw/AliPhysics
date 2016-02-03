@@ -29,7 +29,7 @@ AliAODPWG4Particle::AliAODPWG4Particle() :
 AliVParticle(),
 fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
 fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
-fBadDist(0), fNLM(0), fM02(0),
+fBadDist(0), fNLM(0), fM02(0), fM20(0),
 fTime(0),fNCells(0),fSuperModule(0),
 fDecayTag(0),fIsolated(0), fLeadingParticle(0),
 fIsoConePtLead(), fIsoConeSumPt(),
@@ -64,7 +64,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
   fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
-  fBadDist(0), fNLM(0), fM02(0),
+  fBadDist(0), fNLM(0), fM02(0), fM20(0),
   fTime(0),fNCells(0),fSuperModule(0),
   fDecayTag(0),fIsolated(0), fLeadingParticle(0),
   fIsoConePtLead(), fIsoConeSumPt(),
@@ -98,7 +98,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
   fCaloLabel(), fTrackLabel(),fDetectorTag(-1),
-  fBadDist(0), fNLM(0), fM02(0),
+  fBadDist(0), fNLM(0), fM02(0), fM20(0),
   fTime(0),fNCells(0),fSuperModule(0),
   fDecayTag(0),fIsolated(0), fLeadingParticle(0),
   fIsoConePtLead(), fIsoConeSumPt(),
@@ -146,7 +146,7 @@ AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   AliVParticle(part),
   fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fLabel(part.fLabel),
   fCaloLabel(), fTrackLabel(), fDetectorTag(part.fDetectorTag),
-  fBadDist(part.fBadDist),fNLM(part.fNLM), fM02(part.fM02),
+  fBadDist(part.fBadDist),fNLM(part.fNLM), fM02(part.fM02), fM20(part.fM20),
   fTime(part.fTime),fNCells(part.fNCells),fSuperModule(part.fSuperModule),
   fDecayTag(part.fDecayTag),fIsolated(part.fIsolated), fLeadingParticle(part.fLeadingParticle),
   fDisp(part.fDisp), fTof(part.fTof), fCharged(part.fCharged),
@@ -198,6 +198,7 @@ AliAODPWG4Particle& AliAODPWG4Particle::operator=(const AliAODPWG4Particle & par
     
     fNLM      = part.fNLM;
     fM02      = part.fM02;
+    fM20      = part.fM20;
     fIsolated = part.fIsolated;
     fLeadingParticle =part.fLeadingParticle;
 
@@ -260,7 +261,8 @@ void AliAODPWG4Particle::Print(Option_t* /*option*/) const
   if(fDetectorTag!=2) // Avoid tracks, AliFiducialCut::kCTS
   {
     printf("Calo param: \n");
-    printf("      M02: %2.3f\n",fM02);
+    printf("      M02: %2.2f\n",fM02);
+    printf("      M20: %2.2f\n",fM20);
     printf("      NCell: %d\n",fNCells);
     printf("      Time: %2.3f\n",fTime);
     printf("      SModule: %d\n",fSuperModule);
