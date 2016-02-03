@@ -20,7 +20,6 @@
 /*
 Detailed description
 
-
 */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
@@ -36,7 +35,6 @@ Detailed description
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
 #include "AliTRDTriggerAnalysis.h"
-
 #include "AliDielectronVarManager.h"
 #include "AliDielectronEventCuts.h"
 
@@ -55,6 +53,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fMultITSTPC(kFALSE),
   fCentMin(1.),
   fCentMax(0.),
+  fRun2(kFALSE),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
@@ -90,6 +89,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fMultITSTPC(kFALSE),
   fCentMin(1.),
   fCentMax(0.),
+  fRun2(kFALSE),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
@@ -145,12 +145,25 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
   if (!ev) return kFALSE;
 
   if (fCentMin<fCentMax){
-    AliCentrality *centrality=ev->GetCentrality();
-    Double_t centralityF=-1;
-    if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
-    if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
+    
+    if(fRun2==kFALSE){     
+      AliCentrality *centrality=ev->GetCentrality();
+      Double_t centralityF=-1;
+      if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+      if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
+    }
+    else if(fRun2==kTRUE){
+      Double_t centralityF=-1;
+      //new centrality
+      AliMultSelection *MultSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
+      if ( MultSelection ){
+	centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+	if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
+      } else{
+	AliInfo("Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
+      }
+    }
   }
-
   fkVertex=0x0;
 
   switch(fVtxType){
@@ -300,8 +313,21 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
 
   if (fCentMin<fCentMax){
     AliCentrality *centrality=ev->GetCentrality();
-    Double_t centralityF=-1;
-    if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+    Double_t centralityF=-1;	  
+    if(fRun2==kFALSE){
+      
+      if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+    }else if(fRun2==kTRUE){
+      
+      //new centrality
+      AliMultSelection *MultSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
+      if ( MultSelection ){
+	centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+      } else{
+	AliInfo("Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
+	}
+    }      
+      
     if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
   }
 
