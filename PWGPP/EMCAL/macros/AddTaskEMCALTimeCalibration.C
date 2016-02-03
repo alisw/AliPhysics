@@ -20,6 +20,8 @@
 /// \param referenceSMFileName: TString, name of reference file for SM by SM calib.
 /// \param badReconstruction: Bool_t, flag to find L1 shift dur to errors in reconstruction
 /// \param fillHeavyHistos: Bool_t, flag to fill heavy histograms with time per channel
+/// \param badMapType: Int_t,settype of bad channel map acces
+/// \param badMapFileName: TString, file with bad channels map (absID)
 ///
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 ///
@@ -42,7 +44,9 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     TString  referenceFileName = "",//Reference.root
 							     TString  referenceSMFileName = "",//ReferenceSM.root
 							     Bool_t   badReconstruction = kFALSE,
-							     Bool_t   fillHeavyHistos = kFALSE)
+							     Bool_t   fillHeavyHistos = kFALSE,
+							     Int_t    badMapType = 0,
+							     TString  badMapFileName = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -101,6 +105,11 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   }
   if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
   else taskmbemcal->SwitchOffPileupFromSPD();
+
+  //bad channel map
+  taskmbemcal->SetBadChannelMapSource(badMapType);
+  if(badMapType==2) taskmbemcal->SetBadChannelFileName(badMapFileName);
+
 
   //taskmbemcal->PrintInfo();
 

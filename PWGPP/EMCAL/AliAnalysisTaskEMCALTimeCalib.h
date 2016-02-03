@@ -102,6 +102,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fL1PhaseList(0),
     fBadReco(kFALSE),
     fFillHeavyHisto(kFALSE),
+    fBadChannelMapArray(),
+    fBadChannelMapSet(kFALSE),
+    fSetBadChannelMapSource(0),
+    fBadChannelFileName(),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -165,6 +169,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TString  GetGeometryName()      { return fGeometryName      ; }
   Double_t GetMinTime()           { return fMinTime           ; }
   Double_t GetMaxTime()           { return fMaxTime           ; }
+  TString  GetBadChannelFileName() { return fBadChannelFileName ; }
 
   void SetRunNumber        (Int_t    v) { fRunNumber        = v ; }
   void SetMinClusterEnergy (Double_t v) { fMinClusterEnergy = v ; }
@@ -182,6 +187,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetGeometryName     (TString  v) { fGeometryName     = v ; }
   void SetMinTime          (Double_t v) { fMinTime          = v ; }	   
   void SetMaxTime          (Double_t v) { fMaxTime          = v ; }	
+  void SetBadChannelFileName(TString  v) { fBadChannelFileName = v ; }
 
   //histogram settings
   void SetRawTimeHisto (Int_t nbins,Double_t lower,Double_t upper) { 
@@ -216,11 +222,24 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SwithOnFillHeavyHisto()  { fFillHeavyHisto = kTRUE ; }
   void SwithOffFillHeavyHisto() { fFillHeavyHisto = kFALSE ; }
 
+  void SetBadChannelMapSource(Int_t v) { fSetBadChannelMapSource = v ; }
+  Int_t GetBadChannelMapSource() { return fSetBadChannelMapSource ; }
+
   void SetDefaultCuts();
   void LoadReferenceHistos(); //loaded once per period to the memory
 
   void LoadReferenceRunByRunHistos(); //loaded once to the memory at the beginning, phases for all runs 
   void SetL1PhaseReferenceForGivenRun();//set refernce L1phase per run 
+
+  void LoadBadChannelMap(); //load bad channel map, main
+  void LoadBadChannelMapFile(); //load bad channel map from file
+  void LoadBadChannelMapOADB();//load bad channel map from OADB
+  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 0;}//Channel is ok by default
+  Int_t GetEMCALChannelStatus(Int_t absId) const {
+    if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(0))->GetBinContent(absId+1);
+    else return 0;}//Channel is ok by default
 
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE);
@@ -289,6 +308,12 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Bool_t         fBadReco;              ///< flag to apply 100ns shift and L1 shift
 
   Bool_t         fFillHeavyHisto;       ///< flag to fill heavy histograms
+
+  // bad channel map
+  TObjArray     *fBadChannelMapArray;   ///< bad channel map array
+  Bool_t         fBadChannelMapSet;     ///< flag whether bad channel map is set
+  Int_t          fSetBadChannelMapSource;///< switch to load BC map 0-no BC,1-OADB,2-file
+  TString        fBadChannelFileName ;  //!<! name of file with bad channels
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
