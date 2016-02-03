@@ -32,6 +32,7 @@ set(SRCS
 	AliITSMFTCalibrationPix.cxx
 	AliITSMFTParamList.cxx
 	AliITSMFTSDigit.cxx
+	AliITSMFTDigitPix.cxx
 	AliITSMFTSegmentationPix.cxx
 	AliITSMFTSensMap.cxx
 	AliITSMFTGeomTGeo.cxx

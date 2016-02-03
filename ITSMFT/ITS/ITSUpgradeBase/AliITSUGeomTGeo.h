@@ -38,7 +38,6 @@
 #include <TString.h>
 #include <TObjArray.h>
 #include "AliITSMFTAux.h"
-#include "AliITSMFTSimuParam.h"
 #include "AliITSMFTGeomTGeo.h"
 
 

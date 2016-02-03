@@ -33,7 +33,6 @@ include_directories(${ROOT_INCLUDE_DIR}
 # Sources in alphabetical order
 set(SRCS
      AliITSMFTChip.cxx
-     AliITSMFTDigitPix.cxx
      AliITSMFTHit.cxx
      AliITSMFTSimuParam.cxx
      AliITSMFTSimulation.cxx

@@ -23,7 +23,6 @@ include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/ITS/${MODULE})
 include_directories(${ROOT_INCLUDE_DIR}
   	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT
   	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase

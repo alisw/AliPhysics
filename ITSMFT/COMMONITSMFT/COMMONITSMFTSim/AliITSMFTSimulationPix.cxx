@@ -28,7 +28,6 @@
 #include "AliRun.h"
 #include "AliMagF.h"
 #include "AliMathBase.h"
-#include "AliITSMFTSimuParam.h"
 #include "AliITSMFTSDigit.h"
 #include "AliITSMFTParamList.h"
 #include "AliITSMFTAux.h"

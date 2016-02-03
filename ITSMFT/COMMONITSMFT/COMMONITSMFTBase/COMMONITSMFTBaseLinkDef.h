@@ -8,6 +8,7 @@
 #pragma link C++ class  AliITSMFTCalibrationPix+;
 #pragma link C++ class  AliITSMFTParamList+;
 #pragma link C++ class  AliITSMFTSDigit+;
+#pragma link C++ class  AliITSMFTDigitPix+;
 #pragma link C++ class  AliITSMFTSegmentationPix+;
 #pragma link C++ class  AliITSMFTSensMap+;
 #pragma link C++ class  AliITSMFTGeomTGeo+;

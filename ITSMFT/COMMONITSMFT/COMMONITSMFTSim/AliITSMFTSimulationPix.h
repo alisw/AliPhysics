@@ -12,12 +12,12 @@
 #include "AliITSMFTSimulation.h"
 #include "AliITSMFTSegmentationPix.h"
 #include "AliITSMFTSegmentationPix.h"
+#include "AliITSMFTSimuParam.h"
 
 
 class TH1F;
 class AliITSMFTChip;
 class AliITSMFTSDigit;
-class AliITSMFTSimuParam;
 class AliITSMFTParamList;
 class TH2;
 
