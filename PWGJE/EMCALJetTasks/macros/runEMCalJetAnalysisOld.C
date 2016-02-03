@@ -198,20 +198,6 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     pClusterMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pClusterMakerTask->GetClusterContainer(0)->SetClusECut(0.);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
-
-    // QA task
-    AliAnalysisTaskEmcalJetQA *pQATaskAfter = AddTaskEmcalJetQA("", sOrigClusName, sCellName, "AfterTender");
-    pQATaskAfter->GetClusterContainer(0)->SetClusECut(0.);
-    pQATaskAfter->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskAfter->GetClusterContainer(0)->SetExoticCut(kFALSE);
-    pQATaskAfter->SetHistoBins(200, 0, 30);
-    pQATaskAfter->SelectCollisionCandidates(kPhysSel);
-
-    AliAnalysisTaskEmcalJetQA *pQATaskAfterMaker = AddTaskEmcalJetQA("", sClusName, "", "AfterClusterMaker");
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusECut(0.15);
-    pQATaskAfterMaker->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskAfterMaker->SetHistoBins(200, 0, 30);
-    pQATaskAfterMaker->SelectCollisionCandidates(kPhysSel);
   }
 
   if (bDoFullJets && bDoHadCorr) {
