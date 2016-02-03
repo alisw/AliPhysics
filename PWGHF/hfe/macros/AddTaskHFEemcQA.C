@@ -29,11 +29,25 @@ AliAnalysisTask *AddTaskHFEemcQA(
     char calib[100];
     if(UseTender)
     {
+     if(MimCent==-1 && MaxCent==-1)
+       {  
         sprintf(calib,"wTender");
+       }
+     else
+       {  
+        sprintf(calib,"wTender_%d_%d",MimCent,MaxCent);
+       }
     }
     else
     {
+     if(MimCent==-1 && MaxCent==-1)
+       {  
         sprintf(calib,"woTender");
+      }
+     else
+       {  
+        sprintf(calib,"woTender_%d_%d",MimCent,MaxCent);
+       }
     }
     
     // +++ EMCal MB
