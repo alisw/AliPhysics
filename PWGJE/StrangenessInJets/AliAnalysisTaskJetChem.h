@@ -129,7 +129,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
   Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
   AliAODJet* GetRandomCone(TList* jetlist, Double_t dEtaConeMax, Double_t dDistance) const;
-  void FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* mclist);
+  void FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa);
 
 
   AliAODJet* GetMedianCluster();
