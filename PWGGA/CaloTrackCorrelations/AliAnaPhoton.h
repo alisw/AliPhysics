@@ -359,8 +359,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. 
   TH2F * fhMCConversionVertexTRD;                   //!<! Conversion distance for photon clusters that have at least a contributor from the conversion, SM covered by TRD.
-  TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape of photon conversions, depending on conversion vertex.
-  TH2F * fhMCConversionLambda0RcutTRD[6];           //!<! Shower shape of photon conversions, depending on conversion vertex, SM covered by TRD
+  TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape M02 of photon conversions, depending on conversion vertex.
+  TH2F * fhMCConversionLambda0RcutTRD[6];           //!<! Shower shape M02 of photon conversions, depending on conversion vertex, SM covered by TRD
+  TH2F * fhMCConversionLambda1Rcut[6];              //!<! Shower shape M20 of photon conversions, depending on conversion vertex.
+  TH2F * fhMCConversionLambda1RcutTRD[6];           //!<! Shower shape M20 of photon conversions, depending on conversion vertex, SM covered by TRD
 
 //TH2F * fhLam0EMCALRegion   [4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
 //TH2F * fhLam0EMCALRegionTRD[4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
@@ -368,6 +370,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //TH2F * fhLam0EMCALRegionTRDMCConvRcut[4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
   
   TH2F * fhLam0EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda0 vs  Pt, in different EMCal regions
+  TH2F * fhLam1EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda1 vs  Pt, in different EMCal regions
   TH2F * fhEtaPhiLam0BinPtBin[7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
   TH2F * fhTimeLam0BinPerSM[20];                    //!<! Cell time, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, per SM,, weight Cell E / Cluster E
   TH2I * fhColRowLam0BinPtBin[7];                   //!<! Cell hits, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, weight Cell E / Cluster E

@@ -197,8 +197,10 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
   
   for(Int_t i = 0; i < 6; i++) 
   {
-    fhMCConversionLambda0Rcut[i] = 0;            
-    fhMCConversionLambda0RcutTRD[i] = 0;            
+    fhMCConversionLambda0Rcut   [i] = 0;            
+    fhMCConversionLambda0RcutTRD[i] = 0;          
+    fhMCConversionLambda1Rcut   [i] = 0;            
+    fhMCConversionLambda1RcutTRD[i] = 0;            
   }
   
   for(Int_t ieta = 0; ieta < 4; ieta++) 
@@ -216,6 +218,7 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
       for(Int_t ism =0; ism < 20; ism++)
       {
         fhLam0EMCALRegionPerSM[ieta][iphi][ism] = 0; 
+        fhLam1EMCALRegionPerSM[ieta][iphi][ism] = 0; 
       }
     }
   }
@@ -748,6 +751,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
 //      }
       
       fhLam0EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda0, GetEventWeight());
+      fhLam1EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda1, GetEventWeight());
     }
     
     if(lambda0 >=0.3 && lambda0 <= 0.4)
@@ -2003,6 +2007,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#lambda_{0}^{2}");
           fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
           outputContainer->Add(fhLam0EMCALRegionPerSM[ieta][iphi][ism]) ;
+          
+          fhLam1EMCALRegionPerSM[ieta][iphi][ism] = 
+          new TH2F(Form("hLam1_eta%d_phi%d_sm%d",ieta,iphi,ism),
+                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{1}^{2}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
+                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhLam1EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#lambda_{1}^{2}");
+          fhLam1EMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
+          outputContainer->Add(fhLam1EMCALRegionPerSM[ieta][iphi][ism]) ;
         }
       } // iphi 
     } // ieta
@@ -2474,6 +2486,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCConversionLambda0Rcut[iR]->SetYTitle("#lambda_{0}^{2}");
         fhMCConversionLambda0Rcut[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCConversionLambda0Rcut[iR]) ;
+        
+        fhMCConversionLambda1Rcut[iR] = new TH2F(Form("hMCPhotonConversionLambda1_R%d",iR),
+                                                 Form("cluster from converted photon, #it{p}_{T} vs #lambda_{1}^{2}, conversion in %s",region[iR].Data()),
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhMCConversionLambda1Rcut[iR]->SetYTitle("#lambda_{1}^{2}");
+        fhMCConversionLambda1Rcut[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCConversionLambda1Rcut[iR]) ;
       } // R cut
       
       
@@ -2487,6 +2506,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhMCConversionLambda0RcutTRD[iR]->SetYTitle("#lambda_{0}^{2}");
           fhMCConversionLambda0RcutTRD[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhMCConversionLambda0RcutTRD[iR]) ;
+          
+          fhMCConversionLambda1RcutTRD[iR] = new TH2F(Form("hMCPhotonConversionLambda1TRD_R%d",iR),
+                                                      Form("cluster from converted photon, #it{p}_{T} vs #lambda_{1}^{2}, conversion in %s, SM covered by TRD",region[iR].Data()),
+                                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+          fhMCConversionLambda1RcutTRD[iR]->SetYTitle("#lambda_{1}^{2}");
+          fhMCConversionLambda1RcutTRD[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhMCConversionLambda1RcutTRD[iR]) ;
         } // R cut
       }
       
@@ -2728,6 +2754,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     FillShowerShapeHistograms(calo,tag,maxCellFraction);
     
     aodph.SetM02(calo->GetM02());
+    //aodph.SetM20(calo->GetM20());
     aodph.SetNLM(nMaxima);
     aodph.SetTime(calo->GetTOF()*1e9);
     aodph.SetNCells(calo->GetNCells());
@@ -2966,6 +2993,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             if ( fFillSSHistograms )
             {
               Float_t m02 = ph->GetM02();
+              Float_t m20 = 0;//ph->GetM20();
+              
+              // Change when possible
+              Int_t iclus = -1;
+              AliVCluster *cluster = FindCluster(GetEMCALClusters(),ph->GetCaloLabel(0),iclus);
+              if(cluster) m20 = cluster->GetM20();
+
               Int_t convR = -1;
               if      ( prodR < 75.  ) convR = 0;
               else if ( prodR < 275. ) convR = 1;
@@ -2977,10 +3011,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
               if ( convR >= 0 )
               {
                 fhMCConversionLambda0Rcut[convR]->Fill(ptcluster,m02,GetEventWeight());
+                fhMCConversionLambda1Rcut[convR]->Fill(ptcluster,m20,GetEventWeight());
                 
                 if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
+                {
                   fhMCConversionLambda0RcutTRD[convR]->Fill(ptcluster,m02,GetEventWeight());
-
+                  fhMCConversionLambda1RcutTRD[convR]->Fill(ptcluster,m20,GetEventWeight());
+                }
 //                //
 //                // EMCAL SM regions
 //                //
