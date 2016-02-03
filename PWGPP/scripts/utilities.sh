@@ -8,6 +8,9 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
+# Load alilog4bash.sh from the same directory containing this script.
+source "$(dirname "${BASH_SOURCE[0]}")"/alilog4bash.sh false
+
 PWGPP_runMap="
 2010 108350 139517
 2011 140441 170593
@@ -655,7 +658,7 @@ createUniquePID()
 }
 
 printExec() {
-  echo "[command] [PWD=$PWD]: $*" >&2
+  alilog_info "[command] [PWD=$PWD]: $*" >&2
   "$@"
 }
 
@@ -663,7 +666,7 @@ bigEcho() {
   # Outputs big text to stderr.
   which figlet &> /dev/null \
     && figlet -- "$@" >&2 \
-    || ( printf "\n\n$*\n\n" | tr -d '[[:lower:]]' '[[:upper:]]' >&2 )
+    || ( printf "\n\n$*\n\n" | tr '[[:lower:]]' '[[:upper:]]' >&2 )
   true
 }
 
@@ -759,9 +762,9 @@ copyFileFromRemote() (
       proto="${src%%://*}"
       [[ "$proto" == "$src" ]] && proto=local
       dst="$dstdir/$(basename "$src")"
-      echo "$opname (proto=$proto) started: $src -> $dst"
+      alilog_info "$opname (proto=$proto) started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
-        echo "$opname $src -> $dst attempt $i of $maxCopyTries"
+        alilog_info "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
           local) fullsrc=$(get_realpath "$src")
                  fulldst=$(get_realpath "$dst")
@@ -772,7 +775,7 @@ copyFileFromRemote() (
                  fi ;;
           root)  printExec xrdcp -f "$src" "$dst" ;;
           http*) printExec curl -LsSfo "$dst" "$src" ;;
-          *)     echo "protocol not supported: $proto"
+          *)     alilog_error "protocol not supported: $proto"
                  return 2 ;;
         esac
         if [[ $? == 0 ]]; then
@@ -780,8 +783,8 @@ copyFileFromRemote() (
           break
         fi
       done  # cp attempts
-      [[ $thiserr == 0 ]] && echo "$opname (proto=$proto) OK after $i attempt(s): $src -> $dst" \
-                          || echo "$opname (proto=$proto) FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      [[ $thiserr == 0 ]] && alilog_success "$opname (proto=$proto) OK after $i attempt(s): $src -> $dst" \
+                          || alilog_error   "$opname (proto=$proto) FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
     done 3< <($inputcmd)
     shift
@@ -817,7 +820,7 @@ copyFileToRemote() (
         [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && break
         # TODO use shopt -s nullglob
         [[ ! -r "$src" ]] && echo "$opname $src -> $dst skipping, cannot access source" && thiserr=0 && break
-        echo "$opname $src -> $dst attempt $i of $maxCopyTries"
+        alilog_info "$opname $src -> $dst attempt $i of $maxCopyTries"
         case "$proto" in
           local) mkdir -p "$(dirname "$dst")"
                  fullsrc=$(get_realpath "$src")
@@ -828,7 +831,7 @@ copyFileToRemote() (
                    false
                  fi ;;
           root)  printExec xrdcp -f "$src" "$dst" ;;
-          *)     echo "protocol not supported: $proto"
+          *)     alilog_error "protocol not supported: $proto"
                  return 2 ;;
         esac
         if [[ $? == 0 ]]; then
@@ -836,8 +839,8 @@ copyFileToRemote() (
           break
         fi
       done  # cp attempts
-      [[ $thiserr == 0 ]] && echo "$opname OK after $i attempt(s): $src -> $dst" \
-                          || echo "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      [[ $thiserr == 0 ]] && alilog_success "$opname OK after $i attempt(s): $src -> $dst" \
+                          || alilog_error   "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
     done 3< <($inputcmd)
     shift

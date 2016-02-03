@@ -43,6 +43,9 @@ ALILOG_SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
 # declare -r ALILOG_INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
 declare -r ALILOG_INTERACTIVE_MODE="off"
 
+# Current hostname
+declare -r ALILOG_HOST="$(hostname)"
+
 #--------------------------------------------------------------------------------------------------
 # Begin Help Section
 
@@ -95,7 +98,7 @@ alilog() {
     [[ -z ${alilog_level} ]] && alilog_level="INFO";
     [[ -z ${alilog_color} ]] && alilog_color="${ALILOG_INFO_COLOR}";
 
-    echo -e "${alilog_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${alilog_level}] ${alilog_text} ${ALILOG_DEFAULT_COLOR}";
+    echo -e "${alilog_color}[$(date +"%Y-%m-%d %H:%M:%S %Z")] [${ALILOG_HOST}] [${alilog_level}] ${alilog_text} ${ALILOG_DEFAULT_COLOR}";
     return 0;
 }
 
