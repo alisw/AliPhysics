@@ -68,6 +68,7 @@ public:
   Float_t fZ;          ///< z postion
   Float_t fAngleY;     ///< y angle - tan(y)
   Float_t fAngleZ;     ///< z angle - tan z
+  AliTPCclusterFast *fOverlapCluster; //
   //
   //
   //                   // electron part simul
@@ -91,9 +92,8 @@ public:
 class AliTPCtrackFast: public TObject {
 public:
   AliTPCtrackFast();
-  void Add(AliTPCtrackFast &track2);
   void MakeTrack();
-  static void Simul(const char* simul, Int_t ntracks, Double_t diff);
+  static void Simul(const char* simul, Int_t ntracks, Double_t diff, Bool_t simulOverlap=kTRUE);
   Double_t  CookdEdxNtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxQtot(Double_t f0,Float_t f1);
   Double_t  CookdEdxNtotThr(Double_t f0,Float_t f1, Double_t thr, Int_t dEdxMode);
@@ -110,6 +110,13 @@ public:
   Float_t fDiff;       ///< diffusion
   Float_t fDiffLong;       ///< diffusion sigma longitudinal direction
   Int_t   fN;          ///< number of clusters
+  //  overlap track properties
+  Bool_t  fBOverlap;          ///< flag generate overlap track
+  Float_t fMNprimOverlap;     ///< mean number of primary electrons for overlap track
+  Float_t fDAngleYOverlap;    ///< y angle - tan(y) for overlap track
+  Float_t fDAngleZOverlap;    ///< z angle - tan z for overlap track
+  Float_t fDYOverlap;         ///< delta y position of overlap track at row 0 
+  Float_t fDZOverlap;         ///< delta z position of overlap track at row 0 
   TClonesArray *fCl;   ///< array of clusters
   //
   Bool_t   fInit;      ///< initialization flag
@@ -141,10 +148,6 @@ AliTPCtrackFast::AliTPCtrackFast():
 
 }
 
-void AliTPCtrackFast::Add(AliTPCtrackFast &track2){
-  if (!track2.fInit) return;
-  
-}
 
 
 
@@ -173,7 +176,7 @@ void AliTPCtrackFast::MakeTrack(){
     //
     Double_t posY = tY-TMath::Nint(tY);
     Double_t posZ = tZ-TMath::Nint(tZ);
-    cluster->SetParam(fMNprim,fDiff, fDiffLong, posY,posZ,fAngleY,fAngleZ); 
+    cluster->SetParam(fMNprim,fDiff, fDiffLong, posY,posZ,fAngleY,fAngleZ);   // when is the cluster plus parameters done 
     //
     cluster->GenerElectrons(cluster, clusterm, clusterp);
   }
@@ -402,7 +405,7 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
   return sum1/sum0;
 }
 
-void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFactor){
+void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFactor, Bool_t simulOverlap){
   ///
 
   AliTPCtrackFast fast;
@@ -419,6 +422,15 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
     fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);
     fast.fN  = 159;
+    if (simulOverlap){ //
+      fast.fBOverlap=kTRUE;        // flag generate overlap track
+      fast.fMNprimOverlap=1./(0.00001+gRandom->Rndm()*0.1);        // mean number of primary electrons for overlap track - flat in 1/Q
+      //                                                           // better to get "realistic" q distribution
+      fast.fDAngleYOverlap=(gRandom->Rndm()-0.5)*20./fast.fN;      // y angle - tan(y) for overlap track - for full lenght +-10 bins  
+      fast.fDAngleZOverlap=(gRandom->Rndm()-0.5)*20./fast.fN;      // z angle - tan z for overlap track
+      fast.fDYOverlap=((gRandom->Rndm()-0.5)*5);                   // delta y position of overlap track at row 0 
+      fast.fDZOverlap=((gRandom->Rndm()-0.5)*5);                   // delta z position of overlap track at row 0 
+    }
     fast.MakeTrack();
     if (itr%100==0) printf("%d\n",itr);
     (*pcstream)<<"simulTrack"<<
@@ -490,7 +502,8 @@ Double_t AliTPCclusterFast::GetNsec(){
 
 void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast *clm, AliTPCclusterFast *clp){
   ///
-
+  //
+  //
   const Int_t knMax=1000;
   cl0->fNprim = gRandom->Poisson(cl0->fMNprim);  //number of primary electrons
   // cl0->fNtot=0; //total number of electrons
@@ -504,12 +517,12 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
   //  for (Int_t i=0;i<knMax;i++){ 
   //  cl0->fSec[i]=0;
   //}
-  for (Int_t iprim=0; iprim<cl0->fNprim;iprim++){
+  for (Int_t iprim=0; iprim<cl0->fNprim;iprim++){   // loop over primary electrons
     Float_t dN   =  cl0->GetNsec();
     cl0->fSec[iprim]=dN;
-    Double_t yc = cl0->fY+(gRandom->Rndm()-0.5)*cl0->fAngleY;
-    Double_t zc = cl0->fZ+(gRandom->Rndm()-0.5)*cl0->fAngleZ;
-    Double_t rc = (gRandom->Rndm()-0.5);
+    Double_t rc = (gRandom->Rndm()-0.5);             // primary electrons distributed randomly along pad row
+    Double_t yc = cl0->fY+rc*cl0->fAngleY;           // primary electorns along stright line trajectory +-0.5 bin (pad-row) 
+    Double_t zc = cl0->fZ+rc*cl0->fAngleZ;
 
     for (Int_t isec=0;isec<=dN;isec++){
       //
