@@ -76,8 +76,7 @@ void AddTask_jgronef_PbPb_Matching_2101(){
   // Add task
   mgr->AddTask(task);
 
-  TString stOutputFileName("jgronef_PbPb_Matching_2101_Data.root");
-  if(hasMC){stOutputFileName = "jgronef_PbPb_Matching_2101_MC.root";}
+  TString stOutputFileName("AnalysisResults.root");
 
 
   // Create containers for input
