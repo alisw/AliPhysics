@@ -64,6 +64,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fThreeParticleMixed(0),
   fUseEventCombination(0),
   fUsePP(0),
+  fUEHist_name("TwoPlusOne"),
   fCustomBinning(),
   fAlpha(0.2),
   fUseLeadingPt(1),
@@ -101,7 +102,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos = new TList();
   fListOfHistos->SetOwner(kTRUE); 
 
-  fHistos = new AliTwoPlusOneContainer("AliTwoPlusOneContainer", fCustomBinning, fAlpha);
+  fHistos = new AliTwoPlusOneContainer("AliTwoPlusOneContainer", fUEHist_name, fCustomBinning, fAlpha);
   fHistos->GetData()->SetTrackEtaCut(fTrackEtaCut);
   fHistos->SetUseLeadingPt(fUseLeadingPt);
   fHistos->SetUseAllT1(fUseAllT1);
