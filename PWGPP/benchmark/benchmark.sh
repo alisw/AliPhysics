@@ -81,9 +81,11 @@ main()
   case ${runMode} in
     "CPass0") goCPass0 "$@";;
     "CPass1") goCPass1 "$@";;
+    "CPass2") goCPass2 "$@";;
     "MakeLocalOCDBaccessConfig") goMakeLocalOCDBaccessConfig "$@";;
     "MergeCPass0") goMergeCPass0 "$@";;
     "MergeCPass1") goMergeCPass1 "$@";;
+    "MergeCPass2") goMergeCPass2 "$@";;
     "MakeFilteredTrees") goMakeFilteredTrees "$@";;
     "MakeSummary") goMakeSummary "$@";;
     "run") goSubmitMakeflow "$@";;
@@ -139,6 +141,14 @@ goCPass1() (
   goCPass "${params[@]}" "$@"
 )
 
+goCPass2() (
+  # Wrapper function that calls goCPass with the CPass1 option.
+  declare -a params
+  params=("$1" "$2" "$3" "$4" "$5" "$6" "$7" CPass2)
+  shift 7
+  goCPass "${params[@]}" "$@"
+)
+
 goCPass()
 (
   umask 0002
@@ -150,7 +160,7 @@ goCPass()
   configFile=$5
   export runNumber=$6
   jobindex=$7
-  cpass=$8  # cpass=CPass0 or CPass1
+  cpass=$8  # cpass=CPass0 or CPass1 or CPass2
   shift 8
   extraOpts=("$@")
   cpass=${cpass##*CPass}
@@ -335,6 +345,7 @@ goCPass()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C" ) ;;
+    2) filesCPass=( "" ) ;;
   esac
 
   for file in ${filesCPass[*]}; do
@@ -353,6 +364,7 @@ goCPass()
   case $cpass in
     0) postSetUpActionCPass="$postSetUpActionCPass0" ;;
     1) postSetUpActionCPass="$postSetUpActionCPass1" ;;
+    2) postSetUpActionCPass="$postSetUpActionCPass2" ;;
   esac
   [[ -n "$postSetUpActionCPass" ]] && printExec eval $postSetUpActionCPass
 
@@ -386,9 +398,10 @@ goCPass()
 
       # If OCDB is found here, then create a macro that configures local OCDB access.
       # This step also decompresses the tarball into $PWD/OCDB.
-      [[ -f cpass0.localOCDB.${runNumber}.tgz ]] \
-        && printExec goMakeLocalOCDBaccessConfig cpass0.localOCDB.${runNumber}.tgz \
-        || echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
+      ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+      [[ -f $ocdbTarball ]] \
+        && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
+        || echo "WARNING: file $ocdbTarball not found!"
 
       # Check if CPass0 has produced calibration.
       if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
@@ -454,6 +467,20 @@ goCPass()
 
       # End of CPass1.
     ;;
+    2) 
+      if [[ -n "$pretend" ]]; then
+        echo "Pretending to run: $runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
+        sleep $pretendDelay
+        for fakeOutput in AliESDs.root AliESDfriends.root \
+                          QAresults.root QAresults.root \
+                          EventStat_temp_outer.root rec.log qa.log filtering.log \
+                          syswatch_rec.log AliAOD.root; do
+          touch $fakeOutput
+        done
+      else
+        true
+      fi
+    ;;
 
   esac
 
@@ -463,7 +490,7 @@ goCPass()
   # Note: stdout is not copied, this will happen at the very end.
   printExec rm -f ./$chunkName
   while read cpdir; do
-    printExec copyFileToRemote $cpdir/!(stdout|cpass0*.tgz) $outputDir/$cpdir
+    printExec copyFileToRemote $cpdir/!(stdout|cpass$(($cpass-1))*.tgz) $outputDir/$cpdir
   done < <(find . -type d)
 
   # Validate CPass.
@@ -514,6 +541,15 @@ goCPass()
       reportDoneFile syswatchCalib syswatch_calib.log ${outputDir} >> $doneFileTmp
       # End of CPass1 validation.
     ;;
+    2)
+      #validate CPass2
+      if summarizeLogs * */* | sed -e "s|$PWD|$outputDir|" >> $doneFileTmp; then
+        reportDoneFile esd AliESDs.root $outputDir >> $doneFileTmp
+        reportDoneFile aod AliAOD.root $outputDir >> $doneFileTmp
+        reportDoneFile syswatchRec syswatch_rec.log ${outputDir} >> $doneFileTmp
+        reportDoneFile qafile QA_results.root $outputDir >> $doneFileTmp
+      fi
+    ;;
 
   esac
   echo "dir $outputDir" >> $doneFileTmp
@@ -542,6 +578,10 @@ goMergeCPass1() (
   goMergeCPass CPass1 "$@"
 )
 
+goMergeCPass2() (
+  goMergeCPass CPass2 "$@"
+)
+
 goMergeCPass()
 (
   # Find CPass0 output files and merge them. OCDB is created.
@@ -549,7 +589,7 @@ goMergeCPass()
   # First argument can be either CPass0 or CPass1.
   cpass=$1
   cpass=${cpass##*CPass}
-  [[ $cpass != 0 && $cpass != 1 ]] \
+  [[ $cpass != 0 && $cpass != 1 && $cpass != 2 ]] \
     && echo "FATAL: call goMergeCPass with CPass[0|1] as first param!" && return 1
   shift
 
@@ -608,7 +648,7 @@ goMergeCPass()
 
   [[ -z "$commonOutputPath" ]] && commonOutputPath=$PWD
 
-  # This file signals that everything went fine
+  # This file signals that the job is done, no matter the result
   doneFileBase="merge.cpass${cpass}.run${runNumber}.done"
 
   # We will have two copies of the file. The tmp one is used locally, then it is
@@ -689,6 +729,7 @@ goMergeCPass()
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                          "${trustedQAtrainMacro}" ) ;;
+    2) filesMergeCPass=( "" ) ;;
   esac
 
   for file in ${filesMergeCPass[*]}; do
@@ -705,11 +746,12 @@ goMergeCPass()
 
   # Configure local OCDB storage (a macro is produced). Only used in MergeCPass1 but could be used
   # in CPass0 too. It's harmless in any case.
-  if [[ -f cpass0.localOCDB.${runNumber}.tgz ]]; then
-    printExec goMakeLocalOCDBaccessConfig "cpass0.localOCDB.${runNumber}.tgz"
+  ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+  if [[ -f $ocdbTarball ]]; then
+    printExec goMakeLocalOCDBaccessConfig "$ocdbTarball"
   elif [[ $cpass == 1 ]]; then
     # Print a warning only on CPass1.
-    echo "WARNING: file cpass0.localOCDB.${runNumber}.tgz not found!"
+    echo "WARNING: file $ocdbTarball not found!"
   fi
 
   listDir ".." "before running MergeCPass${cpass} in ${PWD}"
@@ -788,6 +830,16 @@ goMergeCPass()
 
       # End of MergeCPass1.
     ;;
+    2)
+      if [[ -n ${pretend} ]]; then
+        sleep ${pretendDelay}
+        for file in ${qaMergedOutputFileName} \
+                    merge.log trending.root FilterEvents_Trees.root; do
+          touch $file
+        done
+      else
+        true
+      fi
   esac
   
   # Create tarball with OCDB, store on the shared directory, create signal file on batch directory
@@ -1032,10 +1084,20 @@ goGenerateMakeflow()
       echo "${arr_cpass1_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} merge.cpass0.run${runNumber}.done ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass1 \$OUTPATH/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
+      
+      #CPass2
+      #arr_cpass2_outputs[${jobindex}]="${commonOutputPath}/meta/cpass2.job${jobindex}.run${runNumber}.done"
+      arr_cpass2_outputs[${jobindex}]="cpass2.job${jobindex}.run${runNumber}.done"
+      echo "### CPass2 ###"
+      echo "${arr_cpass2_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} merge.cpass1.run${runNumber}.done ${copyFiles[@]}"
+      echo -e "\t${alirootEnv} ./benchmark.sh CPass2 \$OUTPATH/000${runNumber}/cpass2 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
+      echo ; echo
       ((jobindex++))
 
     done< <(grep "/000${runNumber}/" ${inputFileList})
     
+    #######################CPass0############################
+
     #CPass0 list of Calib files to merge
     #arr_cpass0_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list"
     arr_cpass0_calib_list[${runNumber}]="cpass0.calib.run${runNumber}.list"
@@ -1066,6 +1128,8 @@ goGenerateMakeflow()
     echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} syslogsRecToMerge=${arr_cpass0_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass0_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
+    #######################CPass1############################
+
     # CPass1 list of QA files.
     arr_cpass1_QA_files_list[${runNumber}]="cpass1.QA.run${runNumber}.list"
     echo "### Lists CPass1 QA files ###"
@@ -1073,6 +1137,7 @@ goGenerateMakeflow()
     echo -e "\tLOCAL ./benchmark.sh PrintValues qafile ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
+    # CPass1 list of calib files
     #arr_cpass1_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list"
     arr_cpass1_calib_list[${runNumber}]="cpass1.calib.run${runNumber}.list"
     echo "### Lists CPass1 Calib ###"
@@ -1080,6 +1145,7 @@ goGenerateMakeflow()
     echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo ; echo
 
+    # CPass1 list of filtered tree files
     #arr_cpass1_filtered_list[${runNumber}]="${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list"
     arr_cpass1_filtered_list[${runNumber}]="cpass1.filtered.run${runNumber}.list"
     echo "### Lists CPass1 filtered ###"
@@ -1109,6 +1175,55 @@ goGenerateMakeflow()
     echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass1_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass1_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
+    #######################CPass2############################
+
+    # CPass2 list of QA files.
+    arr_cpass2_QA_files_list[${runNumber}]="cpass2.QA.run${runNumber}.list"
+    echo "### Lists CPass2 QA files ###"
+    echo "${arr_cpass2_QA_files_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass2_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues qafile ${arr_cpass2_QA_files_list[${runNumber}]} ${arr_cpass2_outputs[*]}"
+    echo ; echo
+
+    # CPass2 list of calib files
+    #arr_cpass2_calib_list[${runNumber}]="${commonOutputPath}/meta/cpass2.calib.run${runNumber}.list"
+    arr_cpass2_calib_list[${runNumber}]="cpass2.calib.run${runNumber}.list"
+    echo "### Lists CPass2 Calib ###"
+    echo "${arr_cpass2_calib_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass2_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues calibfile ${arr_cpass2_calib_list[${runNumber}]} ${arr_cpass2_outputs[*]}"
+    echo ; echo
+
+    # CPass2 list of filtered tree files
+    #arr_cpass2_filtered_list[${runNumber}]="${commonOutputPath}/meta/cpass2.filtered.run${runNumber}.list"
+    arr_cpass2_filtered_list[${runNumber}]="cpass2.filtered.run${runNumber}.list"
+    echo "### Lists CPass2 filtered ###"
+    echo "${arr_cpass2_filtered_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass2_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues filteredTree ${arr_cpass2_filtered_list[${runNumber}]} ${arr_cpass2_outputs[*]}"
+    echo ; echo
+
+    #CPass2 list of rec syslogs to merge
+    arr_cpass2_rec_syswatch_list[${runNumber}]="cpass2.syswatch.rec.run${runNumber}.list"
+    echo "### Produces the list of CPass2 files to merge (executes locally) ###"
+    echo "${arr_cpass2_rec_syswatch_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass2_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues syswatchRec ${arr_cpass2_rec_syswatch_list[${runNumber}]} ${arr_cpass2_outputs[*]}"
+    echo ; echo
+
+    #CPass2 list of calib syslogs to merge
+    arr_cpass2_calib_syswatch_list[${runNumber}]="cpass2.syswatch.calib.run${runNumber}.list"
+    echo "### Produces the list of CPass2 files to merge (executes locally) ###"
+    echo "${arr_cpass2_calib_syswatch_list[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${arr_cpass2_outputs[*]}"
+    echo -e "\tLOCAL ./benchmark.sh PrintValues syswatchCalib ${arr_cpass2_calib_syswatch_list[${runNumber}]} ${arr_cpass2_outputs[*]}"
+    echo ; echo
+
+    #CPass2 merging
+    #arr_cpass2_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass2.run${runNumber}.done"
+    arr_cpass2_merged[${runNumber}]="merge.cpass2.run${runNumber}.done"
+    echo "### Merges CPass2 files ###"
+    echo "${arr_cpass2_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass2_calib_list[${runNumber}]} ${arr_cpass2_QA_files_list[${runNumber}]} ${arr_cpass2_filtered_list[${runNumber}]} ${copyFiles[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass2 \$OUTPATH/000${runNumber}/cpass2 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass2_calib_list[${runNumber}]} ${arr_cpass2_QA_files_list[${runNumber}]} ${arr_cpass2_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass2_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass2_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
+    echo ; echo
+
+  ############################# DEBUG/profiling ##################################
+
     #CPass0 wrapped in a profiling tool (valgrind,....)
     if [[ -n ${profilingCommand} ]]; then
       inputFile=$(grep -m1 "${runNumber}/" ${inputFileList})
@@ -1127,9 +1242,10 @@ goGenerateMakeflow()
 
   done #runs
 
-  #Summary
+  ############################# Summary ##################################
+
   echo "### Summary ###"
-  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]}"
+  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]} ${arr_cpass2_merged[*]}"
   echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
   echo ; echo
 
