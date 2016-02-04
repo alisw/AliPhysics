@@ -710,12 +710,12 @@ statRemote() (
            path=${path:$((${#host}))}
            while [[ ${path:0:2} == // ]]; do path=${path:1}; done
            xrd "$host" stat "$path" 2>&1 | grep -q Modtime: ;;
-    *)     echo "[statRemote] for file $file: protocol not supported: $proto"
+    *)     alilog_error "[statRemote] for path $file: protocol not supported: $proto"
            return 2 ;;
   esac
   rv=$?
-  echo "[statRemote] file $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD"))" \
-       "$([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
+  alilog_info "[statRemote] path $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD"))" \
+              "$([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
   return $rv
 )
 
@@ -731,11 +731,11 @@ lsRemote() (
            path=${path:$((${#host}))}
            while [[ ${path:0:2} == // ]]; do path=${path:1}; done
            xrd "$host" ls "$path" 2>&1 | grep -v "No such file or directory" | grep -o "${path}.*" ;;
-    *)     echo "[lsRemote] for directory $dir: protocol not supported: $proto" >&2
+    *)     alilog_error "[lsRemote] for directory $dir: protocol not supported: $proto" >&2
            return 2 ;;
   esac
   rv=$?
-  [[ $rv != 0 ]] && echo "[lsRemote] cannot list directory $dir" >&2
+  [[ $rv != 0 ]] && alilog_error "[lsRemote] cannot list directory $dir" >&2
   return $rv
 )
 
