@@ -53,7 +53,7 @@ class AliMTRChEffAnalysis : public TObject {
   Bool_t SetResultsFromWeb ( const char *runList, const char *path, const char* localFileList = "localFileList.txt", const char* outDir = "", const char *directory = "MTR_ChamberEffMap", const char *outputName = "testMTRChamberEff" );
 
   Bool_t WriteMergedToOCDB ( const char* outputCDB = "CDB" ) const;
-  Bool_t DrawSystematicEnvelope ( Bool_t perRPC = kFALSE, Double_t miny = -0.03, Double_t maxy = 0.03 ) const;
+  Bool_t DrawSystematicEnvelope ( Bool_t perRPC = kFALSE ) const;
 
   virtual ~AliMTRChEffAnalysis();
 
