@@ -67,6 +67,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
 
   void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
+  void   SetUEHist_name(const char* ueHist_name) { fUEHist_name = ueHist_name; }
   
   void   SetAlpha(Double_t val){fAlpha = val; }
   void   SetUseLeadingPt(Bool_t flag) { fUseLeadingPt = flag; }
@@ -130,6 +131,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t              fUsePP;                 //0 PbPb collisions; 1 pp collisions
 
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
+    TString fUEHist_name;	   // name of the AliUEHist in the AliTwoPlusOneContainer
     Double_t fAlpha;            //sets the alpha parameter in the container
     Bool_t fUseLeadingPt;        //decides if all particles of a cone are used as trigger particles or only the leading particles within alpha (apply this on near and away side)
     Bool_t fUseAllT1;            //decides if the near side yield is filled for all away side yields or only for the highest one

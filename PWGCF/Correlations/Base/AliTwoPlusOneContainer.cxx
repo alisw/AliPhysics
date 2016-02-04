@@ -40,7 +40,7 @@
 
 ClassImp(AliTwoPlusOneContainer)
 
-AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* binning, Double_t alpha) : 
+AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* uEHist_name, const char* binning, Double_t alpha) : 
   TNamed(name, name),
   fTwoPlusOne(0),
   fAsymmetry(0),
@@ -77,7 +77,7 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   // combine customBinning with defaultBinningStr -> use customBinning where available and otherwise defaultBinningStr
   TString binningStr = AliUEHist::CombineBinning(defaultBinningStr, TString(binning));
 
-  fTwoPlusOne = new AliUEHist("TwoPlusOne", binningStr);
+  fTwoPlusOne = new AliUEHist(uEHist_name, binningStr);
 
   //set minimum and maximum trigger pt values
   fTriggerPt1Min = fTwoPlusOne->GetTrackHist(AliUEHist::kToward)->GetGrid((AliUEHist::CFStep) AliTwoPlusOneContainer::kSameNS)->GetAxis(2)->GetXmin();

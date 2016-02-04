@@ -23,7 +23,7 @@ class TH3F;
 class AliTwoPlusOneContainer : public TNamed
 {
  public:
-  AliTwoPlusOneContainer(const char* name = "AliTwoPlusOneContainer", const char* binning = 0, Double_t alpha = 0.2);
+  AliTwoPlusOneContainer(const char* name = "AliTwoPlusOneContainer", const char* uEHist_name = "TwoPlusOne", const char* binning = 0, Double_t alpha = 0.2);
 
   virtual ~AliTwoPlusOneContainer();
   
