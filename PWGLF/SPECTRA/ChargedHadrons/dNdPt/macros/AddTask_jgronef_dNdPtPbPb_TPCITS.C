@@ -76,8 +76,7 @@ void AddTask_jgronef_dNdPtPbPb_TPCITS(){
   // Add task
   mgr->AddTask(task);
 
-  TString stOutputFileName("jgronef_PbPb_dNdPt_Data.root");
-  if(hasMC){stOutputFileName = "jgronef_PbPb_dNdPt_MC.root";}
+  TString stOutputFileName("AnalysisResults.root");
 
 
   // Create containers for input
