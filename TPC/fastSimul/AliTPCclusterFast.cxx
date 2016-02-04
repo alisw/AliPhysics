@@ -1,27 +1,43 @@
 /// \class AliTPCclusterFast
 ///
-/// ~~~
-/// gSystem->Load("libSTAT");
-/// .x ~/NimStyle.C
+///  Code for the fast MC simulation of the TPC response
 ///
-/// .L $ALICE_ROOT/../src/TPC/fastSimul/AliTPCclusterFast.cxx+
-///
-/// AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
-/// AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
-/// AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
-/// AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);
-///
-/// AliTPCtrackFast::Simul("trackerSimul.root",100);
-/// // AliTPCclusterFast::Simul("cluterSimul.root",20000);
+///  Microscopic simulation includes all features from the FULL MC simulation:
+///    - primary ionization
+///    - secondary inization
+///    - diffusion
+///    - gas gain with fluctuation
+///    - pad and time response fucntion
+///  Usage:
+///    -  fast sensitivity studies - dEdx
+///    -    development of new algorithm
+///    -  resolution studies
+///    -  NEW: double track resolutuion studies - are currently implemented
+///   
+/*
+   Example usage in the test mode: 
+  .x ~/NimStyle.C
+  gSystem->Load("libSTAT");
+  
+  .L $ALICE_ROOT/../src/TPC/fastSimul/AliTPCclusterFast.cxx+
+  
+  AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
+  AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
+  AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
+  AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);  
+  AliTPCtrackFast::Simul("trackerSimul.root",100,0.6);
+
+*/
 /// ~~~
 ///
 ///  Modifications to add:
-///  1. modigy mode ==> dEdxMode
-///  2. Create hardware setup class
-///     (fNoise, fGain, fBRounding, fBAddpedestal, ....)
-///  3. Create arrays of registered hardware setups
-///  4. Extend on the fly functions to use registered hardware setups, identified by ID.
-///      hwMode
+///  0.)   Cluster Unfolding methods (from  (http://arxiv.org/pdf/physics/0306108.pdf) )
+///  1.)   Track unfolding methods
+///  4.)   Create hardware setup class
+///        (fNoise, fGain, fBRounding, fBAddpedestal, ....)
+///  5.)   Create arrays of registered hardware setups
+///  6.)   Extend on the fly functions to use registered hardware setups, identified by ID.
+///        hwMode
 
 #include "TObject.h"
 #include "TF1.h"
@@ -196,6 +212,7 @@ void AliTPCtrackFast::MakeTrack(){
       if (clusterOverlap==NULL){
 	cluster->fOverlapCluster=new AliTPCclusterFast;
 	clusterOverlap=	cluster->fOverlapCluster;
+	clusterOverlap->Init();
       }
       Double_t posYOverlap=posY+fDYOverlap+i*fDAngleYOverlap;
       Double_t posZOverlap=posZ+fDZOverlap+i*fDAngleZOverlap;
@@ -618,32 +635,6 @@ void AliTPCclusterFast::Digitize(){
   //
   //
 }
-
-
-
-// void AliTPCclusterFast::Simul(const char* fname, Int_t npoints){
-//   //
-//   // Calc rms
-//   //
-//   AliTPCclusterFast fast;
-//   TTreeSRedirector cstream(fname);
-//   for (Int_t icl=0; icl<npoints; icl++){
-//     Float_t nprim=(10+20*gRandom->Rndm());
-//     Float_t diff =0.01 +0.35*gRandom->Rndm();
-//     Float_t posY = gRandom->Rndm()-0.5;
-//     Float_t posZ = gRandom->Rndm()-0.5;
-//     //
-//     Float_t ky   = 4.0*(gRandom->Rndm()-0.5);
-//     Float_t kz   = 4.0*(gRandom->Rndm()-0.5);
-//     fast.SetParam(nprim,diff,posY,posZ,ky,kz);
-//     fast.GenerElectrons();
-//     fast.Digitize();
-//     if (icl%10000==0) printf("%d\n",icl);
-//     cstream<<"simul"<<
-//       "s.="<<&fast<<
-//       "\n";
-//   }
-// }
 
 
 Double_t AliTPCclusterFast::GetQtot(Float_t gain, Float_t thr, Float_t noise, Bool_t brounding, Bool_t baddPedestal){
