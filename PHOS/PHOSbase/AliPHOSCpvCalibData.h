@@ -29,8 +29,8 @@ class AliPHOSCpvCalibData: public TNamed {
   void SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value);
 
  protected:
-  Float_t  fADCchannelCpv[AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY];  // width of one CPV ADC channel ([mod][col][row])
-  Float_t  fADCpedestalCpv[AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY]; // value of the CPV ADC pedestal ([mod][col][row])
+  Float_t  fADCchannelCpv[AliPHOSCpvParam::kNModules][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY];  // width of one CPV ADC channel ([mod][col][row])
+  Float_t  fADCpedestalCpv[AliPHOSCpvParam::kNModules][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY]; // value of the CPV ADC pedestal ([mod][col][row])
   //
   ClassDef(AliPHOSCpvCalibData,2)    // CPV Calibration data
 

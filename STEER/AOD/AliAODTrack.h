@@ -264,7 +264,6 @@ class AliAODTrack : public AliVTrack {
   Int_t    GetITSNcls() const; 
   Bool_t   HasPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSClusterMap(),i); }
   Bool_t   HasSharedPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSSharedClusterMap(),i); }
-  UShort_t GetHitsPatternInTrigCh() const { return (UShort_t)((fITSMuonClusterMap&0xff00)>>8); }
   UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; }
   UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
   
@@ -403,7 +402,6 @@ class AliAODTrack : public AliVTrack {
   void SetITSchi2(Double_t ITSchi2)                         {fITSchi2 = ITSchi2;}
   void SetITSClusterMap(UChar_t itsClusMap)                 { fITSMuonClusterMap = (fITSMuonClusterMap&0xffffff00)|(((UInt_t)itsClusMap)&0xff); }
   void SetITSSharedMap(UChar_t map)                         { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)map)&0xff)<<8); }
-  void SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)hitsPatternInTrigCh)&0xff)<<8); }
   void SetMuonClusterMap(UInt_t muonClusMap)                { fITSMuonClusterMap = (fITSMuonClusterMap&0xfc00ffff)|((muonClusMap&0x3ff)<<16); }
   void SetITSMuonClusterMap(UInt_t itsMuonClusMap)          { fITSMuonClusterMap = itsMuonClusMap; }
   void SetMUONtrigHitsMapTrg(UInt_t muonTrigHitsMap) { fMUONtrigHitsMapTrg = muonTrigHitsMap; }
