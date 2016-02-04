@@ -11,7 +11,7 @@ void runGridDeuteronTree(TString mode="terminate", TString fname="DeuteronTreeTe
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
   gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGLFspectra.so");
+  gSystem->Load("libPWGLFnuclex.so");
 
   // Create and configure the alien handler plugin
   AliAnalysisGrid *alienHandler = CreateAlienHandler(mode,fname);
@@ -46,7 +46,7 @@ void runGridDeuteronTree(TString mode="terminate", TString fname="DeuteronTreeTe
 
   // add DPhiCorrelations task from $ALICE_PHYSICS/../src/PWGCF/Correlations/DPhi/AliAnalysisTaskPhiCorrelations[.cxx .h]
   //gROOT->LoadMacro("AliAnalysisTaskPhiCorrelations.cxx+g");
-  gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGLF/SPECTRA/Nuclei/deuteronpA/macros/AddTaskDeuteronTree.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGLF/NUCLEX/Nuclei/DeuteronpA/macros/AddTaskDeuteronTree.C");
 
   AliAnalysisDeuteronTree *taskDeuteronTree = AddTaskDeuteronTree("DeuteronTreeTest");
 
@@ -73,12 +73,12 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",TString fname="testName"
   plugin->SetOverwriteMode();
   plugin->SetExecutableCommand("aliroot -q -b");  
   plugin->SetRunMode(mode.Data());
-  plugin->SetNtestFiles(200);
+  plugin->SetNtestFiles(20);
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   //plugin->SetROOTVersion("v5-34-26");
-  plugin->SetAliROOTVersion("v5-06-42");
-  plugin->SetAliPhysicsVersion("vAN-20151006");
+  plugin->SetAliROOTVersion("v5-07-20");
+  plugin->SetAliPhysicsVersion("vAN-20160203");
   // Declare input data to be processed.
   plugin->SetNrunsPerMaster(100);
   plugin->SetSplitMaxInputFileNumber(15); // 3 in the LEGO trains
