@@ -745,7 +745,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
 }
 
 //________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t miny, Double_t maxy ) const
+Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
 {
   /// Get systematic envelop for merged efficiencies
   if ( ! HasMergedResults() ) return kFALSE;
@@ -845,7 +845,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),pos,pos,1200,800);
     can->Divide(4,2,0,0);
 
-    TObjArray* refCond = static_cast<TObjArray*>(fConditions->UncheckedAt(0));
     for ( Int_t icount=0; icount<2; icount++ ) {
       for ( Int_t ich=0; ich<4; ich++ ) {
         Int_t iplane = 4*icount+ich;
@@ -896,7 +895,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     canSyst->SetLogy();
     TLegend* leg = new TLegend(0.15,0.7,0.9,0.4);
 //    leg->SetHeader(trigOut->GetHistoName(-1,icount,ich,-1,-1,-1));
-    TH1* sumHisto = 0x0;
     TH1* histo[nConditions];
     for ( Int_t icond=0; icond<nConditions; icond++ ) {
       if ( isEmpty[icond] == 1 ) continue;
@@ -1004,13 +1002,15 @@ Double_t AliMTRChEffAnalysis::FitRangesFunc ( Double_t* x, Double_t* par )
 Double_t AliMTRChEffAnalysis::GetAverageStat ( Int_t firstRun, Int_t lastRun, Int_t itype,Bool_t excludePeriphericBoard ) const
 {
   TH1* statHisto = 0x0;
-  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
+
+  UInt_t uFirstRun = (UInt_t)firstRun;
+  UInt_t uLastRun = (UInt_t)lastRun;
 
   TIter next(fOutputs);
   TList* effHistoList = 0x0;
   while ( (effHistoList = static_cast<TList*>(next()) ) ) {
     UInt_t run = effHistoList->GetUniqueID();
-    if ( run < firstRun || run > lastRun ) continue;
+    if ( run < uFirstRun || run > uLastRun ) continue;
     TH1* histo = GetHisto(effHistoList,itype,AliTrigChEffOutput::kAllTracks,0);
 //    if ( ! histo ) continue;
     if ( statHisto ) statHisto->Add(histo);
@@ -1437,7 +1437,6 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
     if ( idetelem < 0 && ichamber >=0 ) idetelem = 11+ichamber;
   }
   TH1* outHisto = 0x0;
-  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
 
   TIter next(fOutputs);
   TList* effHistoList = 0x0;
@@ -1551,15 +1550,16 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
       firstRun = GetRunNumber(firstRun);
       lastRun = GetRunNumber(lastRun);
     }
+    UInt_t uFirstRun = (UInt_t)firstRun;
+    UInt_t uLastRun = (UInt_t)lastRun;
 
     TString filename = "";
 
-    TObjArray* mergedOut = 0x0;
     TIter next(fOutputs);
     TFileMerger fileMerger;
     while ( (effHistoList = static_cast<TList*>(next()) ) ) {
       UInt_t run = effHistoList->GetUniqueID();
-      if ( run < firstRun || run > lastRun ) continue;
+      if ( run < uFirstRun || run > uLastRun ) continue;
       filename = effHistoList->GetName();
       if ( firstRun == lastRun ) continue;
       fileMerger.AddFile(filename.Data(),kFALSE);
