@@ -529,7 +529,7 @@ void AliAnalysisTaskUpcPhi::RunAODtree()
     if( !trk ) continue;
     if(!(trk->TestFilterBit(1<<1))) continue;
 
-      if(!(trk->GetStatus() & AliAODTrack::kITSpureSA) ) continue;
+      //if(!(trk->GetStatus() & AliAODTrack::kITSpureSA) ) continue;
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
       if(trk->GetITSNcls() < 4)continue;
       if(trk->Chi2perNDF() > 2.5)continue;
@@ -781,17 +781,21 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
       
       //if((trk->GetStatus() & AliESDtrack::kITSin) == 0 || (trk->GetStatus() & AliESDtrack::kTPCin))continue; //ITS standalone(what left after global tracking)
       if(!(trk->GetStatus() & AliESDtrack::kITSpureSA) ) continue; //Pure ITS standalone
+      Int_t nPIDpoints = 0;
+      for(Int_t ilayer = 2; ilayer<6; ilayer++) if(trk->HasPointOnITSLayer(ilayer)) nPIDpoints++;
       
       if(!isMC){
       	if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-      	if(trk->GetITSNcls() < 4)continue;
+      	//if(trk->GetITSNcls() < 4)continue;
       	if(trk->GetITSchi2()/trk->GetITSNcls() > 2.5)continue;
-      	if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
+      	//if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))continue;
       
       	Float_t dca[2] = {0.0,0.0};
       	trk->GetImpactParameters(dca[0],dca[1]);
       	Double_t cut_DCAxy = (0.0231+0.0315/TMath::Power(trk->Pt(),1.3));
       	if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+	
+	if(nPIDpoints<2) continue;
 	
 	if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon))>3)continue;
         if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion))<4)continue;
