@@ -944,10 +944,10 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	// TAESOO PWA TREE INFO ---------------------------------------------------
 	if (fDGV0SPD || fDGADSPD) {
-		printf("== This events are double gap ==\n");
+		//printf("== This events are double gap ==\n");
 	}
 	else {
-		printf("== This events are not double gap! ==\n");
+		//printf("== This events are not double gap! ==\n");
 		PostOutputs();
 		return;
 	}
@@ -1133,20 +1133,20 @@ Bool_t AliAnalysisTaskCDPWA::CheckInput()
 	}
 
 	if(!fESDEvent){
-		printf("AliAnalysisTaskCDPWA No valid event\n");
+		//printf("AliAnalysisTaskCDPWA No valid event\n");
 		return kFALSE;
 	}
 
 	fPIDResponse = (AliPIDResponse*)fInputHandler->GetPIDResponse();
 	if(!fPIDResponse) {
-		printf("PIDResponse is not working!!\n");
+		//printf("PIDResponse is not working!!\n");
 		return kFALSE;
 	}
 	//-------------------------------------------------------------------------
 
 	//Check Magnetic Field-----------------------------------------------------
 	if(TMath::Abs(fESDEvent->GetMagneticField()) < 1) {
-		printf("AliAnalysisTaskCDPWA strange Bfield! %f\n", fESDEvent->GetMagneticField());
+		//printf("AliAnalysisTaskCDPWA strange Bfield! %f\n", fESDEvent->GetMagneticField());
 		return kFALSE;
 	}
 	//-------------------------------------------------------------------------
@@ -1167,7 +1167,7 @@ Bool_t AliAnalysisTaskCDPWA::CheckOnlineTrigger(
 	if (ESDevent->IsTriggerClassFired("CINT10-B-NOPF-ALLNOTRD") ||
 			ESDevent->IsTriggerClassFired("C0SMB-B-NOPF-ALLNOTRD")) return kTRUE;
 	else {
-		printf("AliAnalysisTaskCDPWA::CheckOnlineTrigger not passed!");
+		//printf("AliAnalysisTaskCDPWA::CheckOnlineTrigger not passed!");
 		return kFALSE;
 	}
 	
@@ -1226,7 +1226,7 @@ Bool_t AliAnalysisTaskCDPWA::SPDLoc2Glo(const Int_t id, const Double_t *loc,
 	static TGeoHMatrix mat;
 	Int_t vid = AliITSAlignMille2Module::GetVolumeIDFromIndex(id);
 	if (vid<0) {
-		printf("AliCDMesonUtils Did not find module with such ID %d\n",id);
+		//printf("AliCDMesonUtils Did not find module with such ID %d\n",id);
 		return kFALSE;
 	}
 	AliITSAlignMille2Module::SensVolMatrix(vid,&mat);

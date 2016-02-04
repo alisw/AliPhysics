@@ -55,6 +55,7 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 
 	// Add task
 	mgr->AddTask(task);
+	mgr->SetDebugLevel(0);
 
 	// Connect input/output
 	mgr->ConnectInput(task, 0, cinput);
