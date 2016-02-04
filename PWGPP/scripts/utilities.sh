@@ -714,8 +714,7 @@ statRemote() (
            return 2 ;;
   esac
   rv=$?
-  alilog_info "[statRemote] path $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD"))" \
-              "$([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
+  alilog_info "[statRemote] path $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD")) $([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
   return $rv
 )
 
