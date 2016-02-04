@@ -3552,23 +3552,23 @@ Double_t AliConversionCuts::GetCentrality(AliVEvent *event)
    AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
    if(esdEvent){
      TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
-     if ((periodName.CompareTo("LHC15o")==0) || periodName.Contains("LHC15k")){
-       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
-       return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);  // only V0M available so far for 5TeV
-     }else{
-       AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
+     Bool_t newMultFW = kFALSE;
+     if(periodName.Contains("LHC15")) newMultFW = kTRUE;
 
+     if(newMultFW){
+       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
        if(fDetectorCentrality==0){
-         if (fIsHeavyIon==2){
-            return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
-         } else{
-            return fESDCentrality->GetCentralityPercentile("V0M"); // default
-         }
-        }
-        if(fDetectorCentrality==1){
-          return fESDCentrality->GetCentralityPercentile("CL1");
-        }
-     }	
+         if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+         else                           return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+       }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+     }else{
+       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
+       if(fDetectorCentrality==0){
+         if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+         else                           return fESDCentrality->GetCentralityPercentile("V0M"); // default
+       }else if(fDetectorCentrality==1) return fESDCentrality->GetCentralityPercentile("CL1");
+     }
    }
 
    AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
