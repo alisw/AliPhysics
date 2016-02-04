@@ -79,6 +79,7 @@ private:
   Int_t fLoop;         //loop - cf in 2 loops
   Int_t fMaxBin;       //current ( for current sector)  maximal bin
   Int_t fMaxTime;      //current ( for current sector)  maximal time
+  Int_t fMaxTimeBook;  //largest possible maxTime among recoparams
   Int_t fMaxPad;       //current ( for current sector)  maximal pad
   Int_t fSector;      //!current sector
   Int_t fRow;         //!current row
