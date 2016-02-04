@@ -751,20 +751,23 @@ copyFileFromRemote() (
 
   [[ $# == 1 ]] && dstdir=. || dstdir=${!#}
   maxCopyTries=${maxCopyTries-10}
+  sleepRetry=0
   err=0
   opname="[copyFileFromRemote]"
   mkdir -p "$dstdir"
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
-    while read -u 3 src; do
+    while read -u 4 src; do
       thiserr=1
       proto="${src%%://*}"
       [[ "$proto" == "$src" ]] && proto=local
       dst="$dstdir/$(basename "$src")"
       alilog_info "$opname (proto=$proto) started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
-        alilog_info "$opname $src -> $dst attempt $i of $maxCopyTries"
+        [[ $i -gt 1 ]] && alilog_warning "$opname $src -> $dst failed $i out of $maxCopyTries time(s), retrying in $sleepRetry s"
+        sleep $sleepRetry
+        sleepRetry=$((sleepRetry+1))
         case "$proto" in
           local) fullsrc=$(get_realpath "$src")
                  fulldst=$(get_realpath "$dst")
@@ -786,7 +789,7 @@ copyFileFromRemote() (
       [[ $thiserr == 0 ]] && alilog_success "$opname (proto=$proto) OK after $i attempt(s): $src -> $dst" \
                           || alilog_error   "$opname (proto=$proto) FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
-    done 3< <($inputcmd)
+    done 4< <($inputcmd)
     shift
   done
 
@@ -807,20 +810,23 @@ copyFileToRemote() (
   dstdir=${!#}
   maxCopyTries=${maxCopyTries-10}
   proto="${dstdir%%://*}"
+  sleepRetry=0
   err=0
   [[ "$proto" == "$dstdir" ]] && proto=local
   opname="[copyFileToRemote] (proto=$proto)"
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
-    while read -u 3 src; do
+    while read -u 4 src; do
       thiserr=1
       dst="$dstdir/$(basename "$src")"
       for ((i=1; i<=maxCopyTries; i++)); do
         [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && break
         # TODO use shopt -s nullglob
         [[ ! -r "$src" ]] && echo "$opname $src -> $dst skipping, cannot access source" && thiserr=0 && break
-        alilog_info "$opname $src -> $dst attempt $i of $maxCopyTries"
+        [[ $i -gt 1 ]] && alilog_warning "$opname $src -> $dst failed $i out of $maxCopyTries time(s), retrying in $sleepRetry s"
+        sleep $sleepRetry
+        sleepRetry=$((sleepRetry+1))
         case "$proto" in
           local) mkdir -p "$(dirname "$dst")"
                  fullsrc=$(get_realpath "$src")
@@ -842,7 +848,7 @@ copyFileToRemote() (
       [[ $thiserr == 0 ]] && alilog_success "$opname OK after $i attempt(s): $src -> $dst" \
                           || alilog_error   "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
-    done 3< <($inputcmd)
+    done 4< <($inputcmd)
     shift
   done
 
