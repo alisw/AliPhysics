@@ -2032,6 +2032,57 @@ if (cutMode == 5000)
     tag += " without field";
   }
 
+
+//Matching Systematic Uncertainty
+  if ((cutMode >= 2100) && (cutMode <= 2199))
+  {
+    
+    Float_t minNCrossedRowsTPC = 120; 
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
+    Float_t maxFractionSharedTPCCluster = 0.4;    
+    maxChi2PerClusterTPC = 4.0;
+    maxDCAtoVertexXY = 2.4; // cm
+    maxDCAtoVertexZ  = 3.2; // cm
+
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+
+    esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
+
+    esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+    TString tag = "Calculate matching efficiency: TPC only";
+     
+    if (cutMode==2101){
+      esdTrackCuts->SetRequireITSRefit(kTRUE); 
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
+      TString tag = "Calculate matching efficiency: TPC + ITS";
+    }
+    
+    if (cutMode==2102){
+      esdTrackCuts->SetRequireITSRefit(kTRUE); 
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); 
+      TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit";
+    }
+    
+    if (cutMode==2103){
+      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC only";
+    }
+    
+   if (cutMode==2104){
+      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS";
+    }
+
+   
+  } 
+
+
   Printf("Created track cuts for: %s", tag.Data());
 
   return esdTrackCuts;
