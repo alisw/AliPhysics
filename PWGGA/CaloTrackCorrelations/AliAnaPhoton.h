@@ -371,10 +371,24 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F * fhLam0EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda0 vs  Pt, in different EMCal regions
   TH2F * fhLam1EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda1 vs  Pt, in different EMCal regions
-  TH2F * fhEtaPhiLam0BinPtBin[7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
-  TH2F * fhTimeLam0BinPerSM[20];                    //!<! Cell time, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, per SM,, weight Cell E / Cluster E
-  TH2I * fhColRowLam0BinPtBin[7];                   //!<! Cell hits, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, weight Cell E / Cluster E
-  TH2F * fhCellClusterEFracLam0BinPerSM[20];        //!<! Cell E / Cluster E, not maximum cluster cell, for a given l0 bin (0.3-0.4) and different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12, per SM
+  
+  //
+  // Clusters within a shower shape bin, 2 bins [0.23,0.26] (photon) and [0.3,0.4] (tail), if cell weight > 0
+  //
+  TH2F * fhLam1Lam0BinPerSM                [2][20]; //!<! Cluster lambda1, in a l0 bin per SM 
+  TH2F * fhTimeLam0BinPerSM                [2][20]; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM 
+  TH2F * fhTimeLam0BinPerSMWeighted        [2][20]; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
+  TH2F * fhDTimeLam0BinPerSM               [2][20]; //!<! t_max-t_cell, not maximum cluster cell, in a l0 bin per SM 
+  TH2F * fhDTimeLam0BinPerSMWeighted       [2][20]; //!<! t_max-t_cell, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
+  TH2F * fhCellClusterEFracLam0BinPerSM    [2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM  
+  TH2F * fhCellClusterEFracLam0BinPerSMWeighted[2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight  
+  TH2F * fhCellClusterELam0BinPerSM        [2][20]; //!<! Cell E vs cluster pT, not maximum cluster cell, in a l0 bin per SM  
+  TH2F * fhCellClusterELam0BinPerSMWeighted[2][20]; //!<! Cell E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
+
+  // plus different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
+  TH2F * fhEtaPhiLam0BinPtBin              [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins
+  TH2F * fhColRowLam0BinPtBin              [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
+  TH2F * fhColRowLam0BinPtBinWeighted      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins and log weight Cell E / Cluster E 
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
