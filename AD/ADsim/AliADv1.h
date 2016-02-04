@@ -39,6 +39,7 @@ public:
   virtual    void  Init();
   virtual    void  StepManager();
   virtual    void  DisableTunnelStruct() { fADCstruct = kFALSE; }
+  virtual    void  KeepHistory() { fKeepHistory = kTRUE; }
 
   enum ADCPosition_t { kADCInTunnel, kADCInCavern, kADCInBoth};
 
@@ -60,7 +61,9 @@ private:
   //! ADA Geometrical & Optical parameters :
  
   Double_t    fADALightYield;       //! Lightyield in NE102
-  Double_t    fADAPhotoCathodeEfficiency;  
+  Double_t    fADAPhotoCathodeEfficiency; 
+  
+  Bool_t      fKeepHistory; 
 
 
   AliADv1(const AliAD&); 

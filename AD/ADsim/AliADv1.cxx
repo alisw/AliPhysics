@@ -77,7 +77,8 @@ AliADv1::AliADv1() :
   fADCLightYield(93.75),
   fADCPhotoCathodeEfficiency(0.18),
   fADALightYield(93.75),
-  fADAPhotoCathodeEfficiency(0.18)
+  fADAPhotoCathodeEfficiency(0.18),
+  fKeepHistory(kFALSE)
 {
    // Default Constructor
     fHits = 0;
@@ -91,7 +92,8 @@ AliADv1::AliADv1(const char *name, const char *title) :
   fADCLightYield(93.75),
   fADCPhotoCathodeEfficiency(0.18),
   fADALightYield(93.75),
-  fADAPhotoCathodeEfficiency(0.18)
+  fADAPhotoCathodeEfficiency(0.18),
+  fKeepHistory(kFALSE)
 {
    // Standard constructor for AD Detector
   
@@ -1202,9 +1204,10 @@ void AliADv1::StepManager()
       // Set float values
       hits_ad[9]  = tlength_ad;    // track lenght inside ADC or ADA
       hits_ad[10] = eloss_ad;      // energy loss
-      //Int_t track = gAlice->GetMCApp()->GetCurrentTrackNumber();
-      Int_t primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() );
-      AddHit( primary, vol_ad, hits_ad ); // <-- this is in AliAD.cxx
+      Int_t track; 
+      if(fKeepHistory) track = gAlice->GetMCApp()->GetCurrentTrackNumber();
+      else track = gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() );
+      AddHit( track, vol_ad, hits_ad ); // <-- this is in AliAD.cxx
       tlength_ad        = 0.0;
       eloss_ad          = 0.0; 
       nPhotons_ad       = 0;
