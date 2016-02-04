@@ -51,7 +51,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
-#include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 // CORRFW includes
 #include "AliCFContainer.h"
@@ -659,7 +659,8 @@ void AliAnalysisTaskMuonPerformance::UserExec(Option_t * /*option*/)
   }
   
   // get centrality
-  Double_t centrality = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
+  AliMultSelection *multSelection = static_cast<AliMultSelection*>(esd->FindListObject("MultSelection"));
+  Double_t centrality = multSelection ? multSelection->GetMultiplicityPercentile("V0M") : -1.;
   
   // Get reference tracks
   AliMUONRecoCheck rc(esd,mcH);
