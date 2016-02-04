@@ -29,7 +29,7 @@ public:
 
 private:
   
-  Bool_t fBadChannelCpv[AliPHOSCpvParam::kNDDL][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY]; //[mod][col][row]
+  Bool_t fBadChannelCpv[AliPHOSCpvParam::kNModules][AliPHOSCpvParam::kPadPcX][AliPHOSCpvParam::kPadPcY]; //[mod][col][row]
   Int_t fBads;
 
   ClassDef(AliPHOSCpvBadChannelsMap,1)
