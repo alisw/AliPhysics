@@ -776,6 +776,11 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/TPC/testMC \
                          @CMAKE_SOURCE_DIR@/TPC/TPCbase \
                          @CMAKE_SOURCE_DIR@/TPC/TPCutil \
+                         @CMAKE_SOURCE_DIR@/ITSMFT \
+                         @CMAKE_SOURCE_DIR@/ITSMFT/MFT \
+                         @CMAKE_SOURCE_DIR@/ITSMFT/MFT/MFTbase \
+                         @CMAKE_SOURCE_DIR@/ITSMFT/MFT/MFTrec \
+                         @CMAKE_SOURCE_DIR@/ITSMFT/MFT/MFTsim \
                          @CMAKE_SOURCE_DIR@/MUON \
                          @CMAKE_SOURCE_DIR@/MUON/DA \
                          @CMAKE_SOURCE_DIR@/MUON/MUONgeometry \

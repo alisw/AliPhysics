@@ -1,0 +1,26 @@
+29.10.2015
+
+Run simulations for MUON+MFT track merging tests
+------------------------------------------------
+
+After AliRoot installation, copy the file 
+
+ITSMFT/MFT/data/PionKaonKinematics.root 
+
+to the location $ALICE_ROOT/ITSMFT/MFT/data
+
+To run a simulation with <n_events>, 10 JPsi per event decay in two muons 
+and <n_mult> pi/K in the MFT acceptance:
+
+. runMFT.sh <n_mult> <n_events> 1
+
+<n_mult> can go up to 3000
+
+The output file MFT.Tracks.root contains:
+
+- a tree Events with the vertex position per event
+- a tree MFTCells with all cells building the standalone MFT tracks
+- a tree MFTTracks with the standalone MFT tracks
+- a tree MUONTracks with tracks of type AliMUONTrack which have been 
+  prolongated with the clusters of the MFT standalone tracks
+
