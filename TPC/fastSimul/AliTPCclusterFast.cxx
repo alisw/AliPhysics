@@ -43,8 +43,8 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TRandom.h"
-#include "TVectorD.h"
-#include "TMatrixD.h"
+#include "TVectorF.h"
+#include "TMatrixF.h"
 #include "TH1.h"
 #include "AliTPCreco.h"
 #include "TClonesArray.h"
@@ -91,17 +91,17 @@ public:
   //
   //
   //                   // electron part simul
-  TVectorD fSec;       //!< number of secondary electrons
-  TVectorD fPosY;      //!< position y for each electron
-  TVectorD fPosZ;      //!< position z for each electron
-  TVectorD fGain;      //!< gg for each electron
+  TVectorF fSec;       //!< number of secondary electrons
+  TVectorF fPosY;      //!< position y for each electron
+  TVectorF fPosZ;      //!< position z for each electron
+  TVectorF fGain;      //!< gg for each electron
   //
-  TVectorD fStatY;     //!< stat Y
-  TVectorD fStatZ;     //!< stat Y
+  TVectorF fStatY;     //!< stat Y
+  TVectorF fStatZ;     //!< stat Y
   //
   // digitization part
   //
-  TMatrixD fDigits;    ///< response matrix
+  TMatrixF fDigits;    ///< response matrix
   static TF1* fPRF;    ///< Pad response
   static TF1* fTRF;    ///< Time response function
   ClassDef(AliTPCclusterFast,1)  // container for
@@ -212,11 +212,11 @@ void AliTPCtrackFast::MakeTrack(){
       if (clusterOverlap==NULL){
 	cluster->fOverlapCluster=new AliTPCclusterFast;
 	clusterOverlap=	cluster->fOverlapCluster;
-	clusterOverlap->Init();
       }
+      clusterOverlap->Init();
       Double_t posYOverlap=posY+fDYOverlap+i*fDAngleYOverlap;
       Double_t posZOverlap=posZ+fDZOverlap+i*fDAngleZOverlap;
-      clusterOverlap->SetParam(fMNprimOverlap,fDiff, fDiffLong, posYOverlap,posZOverlap,fAngleY+fDAngleYOverlap,fAngleZ+fDAngleZOverlap,yCenter,zCenter); 
+      clusterOverlap->SetParam(fMNprimOverlap,fDiff, fDiffLong, posYOverlap,posZOverlap,fAngleY+fDAngleYOverlap,fAngleZ+fDAngleZOverlap,yCenter,zCenter);      clusterOverlap->GenerElectrons(clusterOverlap, 0, 0);
     }
   }
   //
@@ -584,8 +584,8 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
       Double_t r = gRandom->Gaus(0,cl0->fDiffLong)+rc;
       // choose pad row
       AliTPCclusterFast *cl=cl0;
-      if (r<-0.5 &&cl) cl=clm;
-      if (r>0.5 &&cl)  cl=clp;
+      if (r<-0.5 &&clm) cl=clm;
+      if (r>0.5 &&clp)  cl=clp;
       //
       Double_t gg = -TMath::Log(gRandom->Rndm());
       cl->fPosY[cl->fNtot]=y;
@@ -739,6 +739,8 @@ Double_t AliTPCclusterFast::GetCOG(Int_t dim, Int_t addOverlap, Float_t gain, Fl
   }
   if (dim==0) return sumYW;
   if (dim==1) return sumZW;
+  if (dim==2) return sumW;
+
 }
 
 
