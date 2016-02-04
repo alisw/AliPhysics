@@ -1713,6 +1713,9 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
   TObjArray* obj = new TObjArray;
   obj->SetOwner(kTRUE);
   
+  if (idet == 0 || idet > 9)
+    AliFatal("Value of idet causes problem with uniqueID to avoid double counting");
+  
   if (idet == 1 || idet == 2)
   {
     AliVVZERO* vZero = inputEvent->GetVZEROData();
@@ -1728,8 +1731,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	// rough estimate of multiplicity
 	for (Int_t j=0; j<TMath::Nint(weight); j++)
 	  {
-	    AliDPhiBasicParticle* particle = new AliDPhiBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fit pT = 1.1 and charge = 0
-	    particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + j + i * 1000);
+	    AliDPhiBasicParticle* particle = new AliDPhiBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fix pT = 1.1 and charge = 0
+	    particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + j + i * 1000) * 10 + idet);
 	    
 	    obj->Add(particle);
 	  }
@@ -1756,7 +1759,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	  if (phi>TMath::TwoPi()) phi-=TMath::TwoPi();
 	  
 	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,phi, pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
-	  particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + itrklets);
+	  particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + itrklets) * 10 + idet);
 	  
 	  obj->Add(particle);
        	}      
@@ -1779,7 +1782,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	if (matching < 2) continue;
 	
 	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,track->Phi(), track->Pt(), track->Charge()); 
-	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+	particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iTrack) * 10 + idet);
 	
 	obj->Add(particle);
       }
@@ -1849,7 +1852,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
         // add particle to array
         AliDPhiBasicParticle* particle =
           new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
-        particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+        // NOTE "+ idet" is missing here on purpose as the tracks are the same as in the case of idet == 0
+        particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iTrack) * 10);
         obj->Add(particle);
       }
     }
