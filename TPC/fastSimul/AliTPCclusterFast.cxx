@@ -4,7 +4,7 @@
 /// gSystem->Load("libSTAT");
 /// .x ~/NimStyle.C
 ///
-/// .L $ALICE_ROOT/TPC/fastSimul/AliTPCclusterFast.cxx+
+/// .L $ALICE_ROOT/../src/TPC/fastSimul/AliTPCclusterFast.cxx+
 ///
 /// AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
 /// AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
@@ -48,7 +48,8 @@ public:
   Double_t GetQmax(Float_t gain,Float_t thr, Float_t noise, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE);
   Double_t GetQmaxCorr(Float_t rmsy0, Float_t rmsz0);
   Double_t GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t gain, Float_t thr);
-  
+  Double_t GetCOG(Int_t dim, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE);
+
   Double_t GetNsec();
   //static void Simul(const char* simul, Int_t npoints);
   static Double_t GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1);
@@ -207,6 +208,7 @@ void AliTPCtrackFast::MakeTrack(){
   for (Int_t i=0;i<fN;i++){
     AliTPCclusterFast * cluster = (AliTPCclusterFast*) fCl->UncheckedAt(i);
     cluster->Digitize();
+    if (cluster->fOverlapCluster) cluster->fOverlapCluster->Digitize();
   }
 
 }
@@ -719,7 +721,34 @@ Double_t  AliTPCclusterFast::GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t g
   return corr;
 }
 
-
+Double_t AliTPCclusterFast::GetCOG(Int_t dim, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal){
+  //
+  // calculate COG of cluster without any correction
+  //
+  Float_t sumW=0;
+  Float_t sumYW=0;
+  Float_t sumZW=0;
+  for (Int_t iy=-2;iy<=2;iy++)
+    for (Int_t iz=-2;iz<=2;iz++){      
+      Double_t val = fDigits(iy+2,iz+3);
+      if (addOverlap && fOverlapCluster){
+	val+=fOverlapCluster->fDigits(iy+2,iz+3);
+      }      
+      val+=noise;
+      if (addPedestal) val+=gRandom->Rndm()-0.5;   // add random pedestal assuming mean bias value 0
+      if (val>thr){
+	sumW+=val;
+	sumYW+=iy*val;
+	sumZW+=iz*val;
+      }
+    }
+  if (sumW>0) {
+    sumYW/=sumW;
+    sumZW/=sumW;
+  }
+  if (dim==0) return sumYW;
+  if (dim==1) return sumZW;
+}
 
 
 
