@@ -167,10 +167,6 @@ Bool_t AliEmcalClusterMaker::Run()
         if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
 
         clus->SetIsExotic(exResult);
-
-        if (exResult) {
-          fEnergyExoticClusters->Fill(clus->E());
-        }
       }
       if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
         Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
@@ -179,12 +175,17 @@ Bool_t AliEmcalClusterMaker::Run()
     }
 
     if (fCreateHisto) {
-      fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
-      Float_t pos[3] = {0.};
-      clus->GetPosition(pos);
-      TVector3 vec(pos);
-      fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
-      fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+      if (exResult) {
+        fEnergyExoticClusters->Fill(clus->E());
+      }
+      else {
+        fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
+        Float_t pos[3] = {0.};
+        clus->GetPosition(pos);
+        TVector3 vec(pos);
+        fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+        fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+      }
     }
 
     if (fOutClusters && clusters->AcceptCluster(clus) && !exResult) {
