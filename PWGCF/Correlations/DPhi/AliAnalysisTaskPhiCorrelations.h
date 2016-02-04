@@ -162,6 +162,10 @@ public:
   void SetExclusionRadius(Float_t r) { fExclusionRadius = r; }
   Float_t GetExclusionRadius() const { return fExclusionRadius; }
 
+  // Custom particle arrays
+  void SetCustomParticlesA(const char* customA) { fCustomParticlesA = customA; }
+  void SetCustomParticlesB(const char* customB) { fCustomParticlesB = customB; }
+
 private:
   AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
   AliAnalysisTaskPhiCorrelations&   operator=(const  AliAnalysisTaskPhiCorrelations &det);
@@ -272,8 +276,8 @@ private:
   Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
   TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
   Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
-  Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
-  Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
+  Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets; 6, 7 = arbitrary AliVParticle-TClonesArrays (see SetCustomParticleArrayA())
+  Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets; 6,7 = arbitrary AliVParticle-TClonesArrays (see SetCustomParticleArrayB())
   Bool_t fUseUncheckedCentrality; // use unchecked centrality; default: kFALSE
   Int_t fCheckCertainSpecies;    // make eta,pt distribution of MC particles with the label of fCheckCertainSpecies, by default switched off (value: -1)
   Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
@@ -292,7 +296,11 @@ private:
   Int_t   fJetConstMin;          // minimum number of constituents
   Float_t fExclusionRadius;      // radius around jet in which tracks are rejected
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 59); // Analysis task for delta phi correlations
+  // Variables for arbitrary triggers/associates
+  TString fCustomParticlesA;   // name of TClonesArray of AliVParticle-derived particles attached to fInputEvent
+  TString fCustomParticlesB;   // name of TClonesArray of AliVParticle-derived particles attached to fInputEvent
+
+  ClassDef(AliAnalysisTaskPhiCorrelations, 60); // Analysis task for delta phi correlations
 };
 
 class AliDPhiBasicParticle : public AliVParticle

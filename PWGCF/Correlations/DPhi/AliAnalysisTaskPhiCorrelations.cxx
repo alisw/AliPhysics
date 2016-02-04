@@ -186,7 +186,9 @@ fTrackEtaMax(.9),
 fJetEtaMax(.9),
 fJetPtMin(5.),
 fJetConstMin(0),
-fExclusionRadius(-1.)
+fExclusionRadius(-1.),
+fCustomParticlesA(""),
+fCustomParticlesB("")
 {
   // Default constructor
   // Define input and output slots here
@@ -1108,7 +1110,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
   if (fTriggersFromDetector == 0)
     tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
-  else if (fTriggersFromDetector <= 5)
+  else if (fTriggersFromDetector <= 7)
     tracks=GetParticlesFromDetector(inputEvent,fTriggersFromDetector);
   else
     AliFatal(Form("Invalid setting for fTriggersFromDetector: %d", fTriggersFromDetector));
@@ -1163,7 +1165,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 || fTrackPhiCutEvPlMax > 0.0001)
       tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   }
-  else if (fAssociatedFromDetector <= 5){
+  else if (fAssociatedFromDetector <= 7){
     if(fAssociatedFromDetector != fTriggersFromDetector)
       tracksCorrelate = GetParticlesFromDetector(inputEvent,fAssociatedFromDetector);
   }
@@ -1710,6 +1712,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 {
   //1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets;
   //4 = muon tracks; 5 = global tracks w/o jets
+  //6 = custom particles A; 7 = custom particles B
   TObjArray* obj = new TObjArray;
   obj->SetOwner(kTRUE);
   
@@ -1857,6 +1860,58 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
         obj->Add(particle);
       }
     }
+  else if ( (idet == 6) || (idet == 7) ) // custom particle arrays
+  {
+    TClonesArray* clonesArray = 0;
+    if(idet == 6)
+    {
+      if (fCustomParticlesA=="")
+        AliFatal("Custom particle array A demanded. Use SetCustomParticlesA() to give particle array's name");
+
+      // Get custom particle array
+      clonesArray = dynamic_cast<TClonesArray*> (inputEvent->FindListObject(fCustomParticlesA.Data()));
+      if (!clonesArray)
+      {
+        inputEvent->Print();
+        AliFatal(Form("Cannot find custom particle array A <%s>", fCustomParticlesA.Data()));
+      }
+    }
+    else if(idet == 7)
+    {
+      if (fCustomParticlesB=="")
+        AliFatal("Custom particle array B demanded. Use SetCustomParticlesB() to give particle array's name");
+
+      // Get custom particle array
+      clonesArray = dynamic_cast<TClonesArray*> (inputEvent->FindListObject(fCustomParticlesB.Data()));
+      if (!clonesArray)
+      {
+        inputEvent->Print();
+        AliFatal(Form("Cannot find custom particle array B <%s>", fCustomParticlesB.Data()));
+      }
+    }
+
+    for (Int_t iParticle = 0; iParticle < clonesArray->GetEntries(); iParticle++)
+    {
+      AliVParticle* customParticle = dynamic_cast<AliVParticle*> (clonesArray->At(iParticle));
+
+      if(!customParticle)
+      {
+        AliError(Form("Custom particle in array %s cannot be casted to AliVParticle", ( (idet==6) ? "A" : "B" ) ));
+        continue;
+      }
+
+      // add particle to object array
+      AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(customParticle->Eta(), customParticle->Phi(), customParticle->Pt(), customParticle->Charge());
+
+      // Set custom ID. Should be the same if custom particle A and B are the same
+      if(fCustomParticlesA == fCustomParticlesB)
+        particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iParticle) * 10 + 6);
+      else
+        particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iParticle) * 10 + idet);
+
+      obj->Add(particle);
+    }
+  }
   else
     AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));
 
