@@ -277,6 +277,8 @@ void AddTask_GammaConvFlow_PbPb2(
     eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 57) {
     eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 58) {
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "03200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
