@@ -8,7 +8,7 @@
 #include "AliITSURecoDet.h"
 #include "AliITSUHit.h"
 #include "AliITSUGeomTGeo.h"
-#include "AliITSsegmentation.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliGeomManager.h"
 #include "AliStack.h"
 #include "AliLoader.h"
@@ -228,7 +228,7 @@ void compClusHits(int nev=-1)
 	  }
 	}
 	//------------
-	const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
+	const AliITSMFTSegmentationPix* segm = gm->GetSegmentation(ilr);
 	//
 	cl->GetGlobalXYZ(xyzClGloF);
 	int clsize = cl->GetNPix();
@@ -330,8 +330,8 @@ void compClusHits(int nev=-1)
 	    pHit->Print();
 	    //
 	    double a0,b0,c0,a1,b1,c1,e0;
-	    pHit->GetPositionL0(a0,b0,c0,e0);
-	    pHit->GetPositionL(a1,b1,c1);
+	    pHit->GetPositionL0(a0,b0,c0,e0,gm);
+	    pHit->GetPositionL(a1,b1,c1,gm);
 	    float cloc[3];
 	    cl->GetLocalXYZ(cloc);
 	    printf("LocH: %e %e %e | %e %e %e\n",a0,b0,c0,a1,b1,c1);

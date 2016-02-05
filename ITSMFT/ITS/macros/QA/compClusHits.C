@@ -8,7 +8,7 @@
 #include "AliITSURecoDet.h"
 #include "AliITSUHit.h"
 #include "AliITSUGeomTGeo.h"
-#include "AliITSsegmentation.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliGeomManager.h"
 #include "AliStack.h"
 #include "AliLoader.h"
@@ -222,7 +222,7 @@ void compClusHits(int nev=-1)
 	  }
 	}
 	//------------
-	const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
+	const AliITSMFTSegmentationPix* segm = gm->GetSegmentation(ilr);
 	//
 	cl->GetGlobalXYZ(xyzClGloF);
 	int clsize = cl->GetNPix();
