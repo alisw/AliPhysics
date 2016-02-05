@@ -2703,7 +2703,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	"meanG="<<meanG<<     // mean of the gaus fit
 	"rmsG="<<rmsG<<       // rms of the gaus fit
 	"vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
-	"chi2G="<<chi2G<<"\n";      // chi2 of the gaus fit
+	"chi2G="<<chi2G;      // chi2 of the gaus fit
     }
 
     (*pcstream)<<tname<<
@@ -2726,7 +2726,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     for (Int_t idim=0; idim<ndim; idim++){
       snprintf(aname, 100, "%sMean=",histo->GetAxis(idim)->GetName());
       (*pcstream)<<tname<<
-      aname<<meanVector[idim];      // current bin means
+	aname<<meanVector[idim];      // current bin means
     }
     //
     for (Int_t iIter=0; iIter<ndim; iIter++){
@@ -2736,10 +2736,16 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       snprintf(bname, 100, "%sBin=",histo->GetAxis(idim)->GetName());
       snprintf(cname, 100, "%sCenter=",histo->GetAxis(idim)->GetName());
       (*pcstream)<<tname<<
-      bname<<binVector[idim]<<      // current bin values
-      cname<<centerVector[idim];    // current bin centers
+	bname<<binVector[idim]<<      // current bin values
+	cname<<centerVector[idim];    // current bin centers
+      if (hDump){
+	(*pcstream)<<TString::Format("%sDump", tname).Data()<<
+	  bname<<binVector[idim]<<      // current bin values
+	  cname<<centerVector[idim];    // current bin centers
+       }      
     }
     (*pcstream)<<tname<<"\n";
+    if (hDump)	(*pcstream)<<TString::Format("%sDump", tname).Data()<<"\n";
     // << ------------- do fit
     //
     if (((++fitCount)%fitProgress)==0) {
