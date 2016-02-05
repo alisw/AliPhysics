@@ -2236,7 +2236,7 @@ goMakeSummary()
   echo
   awk 'BEGIN {nFiles=0;nCore=0;} 
   /^calibfile/ {nFiles++;} 
-  /core dumped/ {nCore++i;}
+  /core/ {nCore++i;}
   END {print     "cpass0 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass0.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/rec.log OK/ {nOK++;} 
@@ -2260,7 +2260,7 @@ goMakeSummary()
   echo
   awk 'BEGIN {nFiles=0;nCore=0;} 
   /^calibfile/ {nFiles++;} 
-  /core dumped/ {nCore++;}
+  /core/ {nCore++;}
   END {print     "cpass1 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass1.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/rec.log OK/ {nOK++;} 
@@ -2283,27 +2283,23 @@ goMakeSummary()
 
   echo
   awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^calibfile/ {nFiles++;} 
-  /core dumped/ {nCore++;}
-  END {print     "cpass2 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass2.job*done 2>/dev/null
+  /^aod/ {nFiles++;} 
+  /core/ {nCore++;}
+  END {print     "cpass2 produced "nFiles" aod files, "nCore" core files";}' "$metadir"/cpass2.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /\/rec.log OK/ {nOK++;} 
   /\/rec.log BAD/ {nBAD++;} 
   /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
   END {print     "cpass2 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
   awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/calib.log OK/ {nOK++;} 
-  /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass2 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
+  /\/aod.log OK/ {nOK++;} 
+  /\/aod.log BAD/ {nBAD++;} 
+  END {print "cpass2 aod: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
 
   awk 'BEGIN {nOK=0; nBAD=0; } 
   /merge.log OK/ {nOK++;} 
   /merge.log BAD/ {nBAD++;} 
   END {print "cpass2 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass2*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /ocdb.log OK/ {nOK++;} 
-  /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass2 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass2*done 2>/dev/null
 
   echo
   echo per run stats:
@@ -2385,10 +2381,10 @@ EOF
 
   #make file lists - QA, trending, stacktraces, filtering and calibration
   ### wait for the merging of all runs to be over ###
-  goPrintValues qafile remote.qa.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues qafile remote.cpass1.qa.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues calibfile remote.calib.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues trendingfile remote.trending.list "$metadir"/merge.cpass1.run*.done &>/dev/null
-  goPrintValues filteredTree remote.filtering.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues filteredTree remote.cpass1.filtering.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues dcsTree remote.cpass0.dcsTree.list "$metadir"/merge.cpass0.run*.done &>/dev/null
   goPrintValues dcsTree remote.cpass1.dcsTree.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues stacktrace remote.cpass0.stacktrace.list "$metadir"/*cpass0*done &>/dev/null
@@ -2400,19 +2396,21 @@ EOF
   goPrintValues syswatchRec remote.cpass1.syswatch.rec.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues syswatchCalib remote.cpass1.syswatch.calib.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues syswatchRec remote.cpass2.syswatch.rec.list "$metadir"/merge.cpass2.run*.done &>/dev/null
+  goPrintValues qafile remote.cpass2.qa.list "$metadir"/merge.cpass2.run*.done &>/dev/null
 
   listDir "$PWD" "after goPrintValues"
  
   # Copy all the files to a local dir tree.
-  for remoteList in remote.qa.list \
+  for remoteList in remote.cpass1.qa.list \
                     remote.calib.list \
                     remote.trending.list \
-                    remote.filtering.list \
+                    remote.cpass1.filtering.list \
                     remote.cpass0.dcsTree.list \
                     remote.cpass1.dcsTree.list \
                     remote.cpass0.stacktrace.list \
                     remote.cpass1.stacktrace.list \
                     remote.cpass2.stacktrace.list \
+                    remote.cpass2.qa.list \
                     remote.cpass{0,1,2}.syswatch.rec.list; do
     localList=${remoteList#remote.}
     rm -f "$localList" && touch "$localList"
@@ -2448,7 +2446,8 @@ EOF
 
   listDir "$PWD" "after making summary tree"
 
-  goCreateQAplots "${PWD}/qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/filtering.list" &>createQAplots.log
+  goCreateQAplots "${PWD}/cpass1.qa.list" "${productionID}" "QAplots_CPass1" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/cpass1.filtering.list" &>createQAplots.log
+  goCreateQAplots "${PWD}/cpass2.qa.list" "${productionID}" "QAplots_CPass2" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/cpass2.filtering.list" &>createQAplots.cpass2.log
 
   listDir "$PWD" "after creation of QA plots"
 
