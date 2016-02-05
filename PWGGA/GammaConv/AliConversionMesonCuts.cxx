@@ -264,7 +264,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
 
   // Meson Cuts
   if (fIsMergedClusterCut != 0){
-    fHistoMesonCuts=new TH1F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts",8,-0.5,7.5);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",8,-0.5,7.5, 500, 0, 100);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -275,7 +275,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoMesonCuts);
   } else {
-    fHistoMesonCuts=new TH1F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts",10,-0.5,9.5);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -288,7 +288,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(10,"out");
     fHistograms->Add(fHistoMesonCuts);
 
-    fHistoMesonBGCuts=new TH1F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts",10,-0.5,9.5);
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -657,19 +657,19 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   // Selection of reconstructed Meson candidates
   // Use flag IsSignal in order to fill Fill different
   // histograms for Signal and Background
-  TH1 *hist=0x0;
+  TH2 *hist=0x0;
 
   if(IsSignal){hist=fHistoMesonCuts;}
   else{hist=fHistoMesonBGCuts;}
 
   Int_t cutIndex=0;
 
-  if(hist)hist->Fill(cutIndex);
+  if(hist)hist->Fill(cutIndex, pi0->Pt());
   cutIndex++;
 
   // Undefined Rapidity -> Floating Point exception
   if((pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
-    if(hist)hist->Fill(cutIndex);
+    if(hist)hist->Fill(cutIndex, pi0->Pt());
     cutIndex++;
     if (!IsSignal)cout << "undefined rapidity" << endl;
     return kFALSE;
@@ -678,7 +678,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     // PseudoRapidity Cut --> But we cut on Rapidity !!!
     cutIndex++;
     if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
-      if(hist)hist->Fill(cutIndex);
+      if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
   }
@@ -692,7 +692,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
       Double_t massMax = FunctionMaxMassCut(pi0->E());
   //     cout << "Min mass: " << massMin << "\t max Mass: " << massMax << "\t mass current: " <<  pi0->M()<< "\t E current: " << pi0->E() << endl;
       if (pi0->M() > massMax || pi0->M() < massMin ){
-        if(hist)hist->Fill(cutIndex);
+        if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
     }  
@@ -702,7 +702,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   // Opening Angle Cut
   //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
   if( fEnableMinOpeningAngleCut && pi0->GetOpeningAngle() < fOpeningAngle){
-    if(hist)hist->Fill(cutIndex);
+    if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
 
@@ -710,7 +710,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   if (fMinOpanPtDepCut == kTRUE) fMinOpanCutMeson = fFMinOpanCut->Eval(pi0->Pt());
 
   if (pi0->GetOpeningAngle() < fMinOpanCutMeson){
-    if(hist)hist->Fill(cutIndex);
+    if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
 
@@ -718,7 +718,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   if (fMaxOpanPtDepCut == kTRUE) fMaxOpanCutMeson = fFMaxOpanCut->Eval(pi0->Pt());
 
   if( pi0->GetOpeningAngle() > fMaxOpanCutMeson){
-    if(hist)hist->Fill(cutIndex);
+    if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
   cutIndex++;
@@ -728,14 +728,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   else if (fAlphaPtDepCut == kTRUE) fAlphaCutMeson = fFAlphaCut->Eval(pi0->Pt());
   
   if(abs(pi0->GetAlpha())>fAlphaCutMeson){
-    if(hist)hist->Fill(cutIndex);
+    if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
   cutIndex++;
 
   // Alpha Min Cut
   if(abs(pi0->GetAlpha())<fAlphaMinCutMeson){
-    if(hist)hist->Fill(cutIndex);
+    if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
   cutIndex++;
@@ -748,7 +748,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
     if (fDCAGammaGammaCutOn){
       if (pi0->GetDCABetweenPhotons() > fDCAGammaGammaCut){
-        if(hist)hist->Fill(cutIndex);
+        if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
     }  
@@ -756,7 +756,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
     if (fDCARMesonPrimVtxCutOn){
       if (pi0->GetDCARMotherPrimVtx() > fDCARMesonPrimVtxCut){
-        if(hist)hist->Fill(cutIndex);
+        if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
     }  
@@ -766,7 +766,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
     if (fDCAZMesonPrimVtxCutOn){
       if (abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
-        if(hist)hist->Fill(cutIndex);
+        if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
     }
@@ -777,7 +777,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if (fHistoDCAZMesonPrimVtxAfter)fHistoDCAZMesonPrimVtxAfter->Fill(pi0->M(),pi0->GetDCAZMotherPrimVtx());
   } 
   
-  if(hist)hist->Fill(cutIndex);
+  if(hist)hist->Fill(cutIndex, pi0->Pt());
   return kTRUE;
 }
 
