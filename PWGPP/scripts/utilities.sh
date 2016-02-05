@@ -672,7 +672,8 @@ bigEcho() {
 
 listDir() (
   dir="$(cd "$1"; pwd)"
-  echo ; echo "[listDir] Content of ${dir}${2:+" ($2)"}"
+  echo
+  alilog_info "[listDir] Content of ${dir}${2:+" ($2)"}"
   find "$dir" -ls
   echo
 )
@@ -686,14 +687,15 @@ mkdirLocal() (
     dir=$1
     shift
     if [[ "${dir%%://*}" != "$dir" ]]; then
-      echo "[mkdirLocal] skipping creation of $dir: it is not local"
+      alilog_warning "[mkdirLocal] skipping creation of $dir: it is not local"
       continue
     fi
     mkdir -p "$dir"
     [[ -d "$dir" ]]
     rv=$?
     err=$((err + ($rv & 1)))
-    echo "[mkdirLocal] creation of dir $dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
+    [[ $rv == 0 ]] && alilog_success "[mkdirLocal] creation of dir $dir OK" \
+                   || alilog_fail    "[mkdirLocal] creation of dir $dir FAILED"
   done
   return $((err & 1))
 )
