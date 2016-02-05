@@ -1552,7 +1552,9 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   if(esdEvent){
     TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
     Bool_t newMultFW = kFALSE;
-    if(periodName.Contains("LHC15")) newMultFW = kTRUE;
+    if(periodName.Contains("LHC15") && periodName.CompareTo("LHC15g2") != 0 && !periodName.Contains("LHC15a3a") && 
+       periodName.CompareTo("LHC15g1a") != 0 && !periodName.Contains("LHC15h2") && !periodName.Contains("LHC15h1")
+    ) newMultFW = kTRUE;
 
     if(newMultFW){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
