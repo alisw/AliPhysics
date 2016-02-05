@@ -3,12 +3,12 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h"
-#include "../ITS/UPGRADE/AliITSUClusterPix.h"
-#include "../ITS/UPGRADE/AliITSURecoLayer.h"
-#include "../ITS/UPGRADE/AliITSURecoDet.h"
-#include "../ITS/UPGRADE/AliITSUHit.h"
-#include "../ITS/UPGRADE/AliITSUGeomTGeo.h"
-#include "AliITSsegmentation.h"
+#include "AliITSUClusterPix.h"
+#include "AliITSURecoLayer.h"
+#include "AliITSURecoDet.h"
+#include "AliITSUHit.h"
+#include "AliITSUGeomTGeo.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliGeomManager.h"
 #include "AliStack.h"
 #include "AliLoader.h"
@@ -232,7 +232,7 @@ void compClusHits(int nev=-1)
           }
         }
         //------------
-        const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
+        const AliITSMFTSegmentationPix* segm = gm->GetSegmentation(ilr);
         //
         cl->GetGlobalXYZ(xyzClGloF);
         int clsize = cl->GetNPix();
