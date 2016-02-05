@@ -348,9 +348,10 @@ goCPass()
 
     2) filesCPass=( 
                     "${batchWorkingDirectory}/OCDB.root"
-                    "$ALICE_ROOT/ANALYSIS/macros/AODtrain.C"
                     "$ALICE_ROOT/test/QA/tag.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/AODtrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/rec.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/raw2clust.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/runPPass_pp.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/runPPass_pbpb.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
@@ -489,7 +490,7 @@ goCPass()
         done
       else
         collisionSystem=$(run2collisionSystem "$runNumber")
-        printExec ./runPPass_${collisionSystem}.sh "/$infile" "$runNumber"
+        printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents" "$runNumber"
       fi
     ;;
 
