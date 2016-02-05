@@ -190,11 +190,11 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = TString::Format("%s/fHistClusPosition_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{x} (cm);#it{y} (cm);#it{z} (cm)";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -500, 500, 100, -500, 500, 100, -500, 500);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -500, 500, 50, -500, 500, 50, -500, 500);
 
       histname = TString::Format("%s/fHistClusPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#eta;#phi;#it{E}_{cluster} (GeV)";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -1, 1, 50, 0, TMath::TwoPi(), fNbins, fMinBinPt, fMaxBinPt);
 
       if (fForceBeamType != kpp) {
         histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", cont->GetArrayName().Data(), i);
@@ -418,9 +418,18 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   if (!fCaloCellsName.IsNull()) {
     axistitle[dim] = "No. of cells";
-    nbins[dim] = 5000;
-    min[dim] = -0.5;
-    max[dim] = 10000-0.5;
+
+    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+      nbins[dim] = 5000;
+      min[dim] = -0.5;
+      max[dim] = 10000-0.5;
+    }
+    else {
+      nbins[dim] = 500;
+      min[dim] = -0.5;
+      max[dim] = 500-0.5;
+    }
+
     dim++;
   }
 
