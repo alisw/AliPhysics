@@ -939,7 +939,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       TStopwatch timerFile;
       TString fileNameString(esdArray->At(iesd)->GetName());
       if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
-      TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
+      TFile *esdFile = TFile::Open(fileNameString.Data(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta");
       tree->SetCacheSize(cacheSize);
@@ -1157,7 +1157,7 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
   for (Int_t iesd=0; iesd<nesd; iesd++){
     TString fileNameString(esdArray->At(iesd)->GetName());
     if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
-    TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
+    TFile *esdFile = TFile::Open(fileNameString.Data(),"read");
     if (!esdFile) continue;
     TTree *tree = (TTree*)esdFile->Get("ErrParam"); 
     if (!tree) continue;
@@ -1361,8 +1361,10 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   Int_t timeStamp=0;
   for (Int_t iFile=0; iFile<nFiles; iFile+=skip){
     timer.Start();
-    printf("%d\t%s\n",iFile,array->At(iFile)->GetName());    
-    TFile * f = TFile::Open(array->At(iFile)->GetName());
+    TString fileName = array->At(iFile)->GetName();
+    if (fileName.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
+    printf("%d\t%s\n",iFile,fileName.Data());    
+    TFile * f = TFile::Open(fileName.Data());
     if (f==NULL) continue;
     TTree * treeInfo = (TTree*)f->Get("eventInfo"); 
     if (treeInfo==NULL) continue;
