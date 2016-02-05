@@ -1543,6 +1543,20 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
   return kTRUE;
 }
 
+//-------------------------------------------------------------
+Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(TString period){ 
+
+  if((period.CompareTo("LHC15o")==0)||(period.CompareTo("LHC15k1_plus3")==0)||(period.CompareTo("LHC15k1a1")==0)
+     ||(period.CompareTo("LHC15k1b1")==0)||(period.CompareTo("LHC15k1a2")==0)||(period.CompareTo("LHC15k1a3")==0)
+     ||(period.CompareTo("LHC15k1b2")==0)||(period.CompareTo("LHC15k1b3")==0)||(period.CompareTo("LHC15k1_plus")==0)
+     ||(period.CompareTo("LHC15k1")==0)||(period.CompareTo("LHC15k1_plus2")==0)||(period.CompareTo("LHC15k1_plus21")==0)
+     ||(period.CompareTo("LHC15k1_plus31")==0)||(period.CompareTo("LHC15k1_plus32")==0)){ 
+     return kTRUE;
+  }
+  else{
+     return kFALSE;
+  } 
+}
 
 //-------------------------------------------------------------
 Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
@@ -1551,12 +1565,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   if(esdEvent){
     TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
-    Bool_t newMultFW = kFALSE;
-    if(periodName.Contains("LHC15") && periodName.CompareTo("LHC15g2") != 0 && !periodName.Contains("LHC15a3a") && 
-       periodName.CompareTo("LHC15g1a") != 0 && !periodName.Contains("LHC15h2") && !periodName.Contains("LHC15h1")
-    ) newMultFW = kTRUE;
-
-    if(newMultFW){
+    if(GetUseNewMultiplicityFramework(periodName)){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
