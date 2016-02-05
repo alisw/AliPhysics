@@ -217,15 +217,26 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   }
 
   // (4) make the OCDB calibration TTree
-  TTree *t = MakeCalibObject();
-  if (NULL == t) {
+  TTree *tSat = MakeSaturationCalibObject();
+  if (NULL == tSat) {
+    AliError("Failed to make the AD saturation calibration OCDB object");
     fStatus = kMeasurementError;
     f->Close();
     return;
   }
+
+  // (5) update the gain parameterization
+  AliCDBEntry* gainOCDBObject = UpdateGainParameters(runNumber, tSat);
+  if (NULL == gainOCDBObject) {
+    AliError("Failed to generate the updated AD PM gain OCDB object");
+    fStatus = kMeasurementError;
+    f->Close();
+    return;
+  }
+
   f->Close();
 
-  // (5) update list of histograms
+  // (6) update list of histograms
   TString qaFileName = fileName;
   qaFileName.ReplaceAll(".root", "_ADQA.root");
   TFile *fSave = TFile::Open(qaFileName, "RECREATE");
@@ -233,24 +244,28 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   fSave->Write();
   fSave->Close();
 
-  // (6) store OCDB object
-  // (6a) check for cdbStorage
+  // (7) store OCDB objects
+  // (7a) check for cdbStorage
   if (NULL == cdbStorage) {
     AliError("NULL == cdbStorage");
     fStatus = kStoreError;
     return;
   }
 
-  // (6b) Creation of OCDB metadata and id
+  // (7b) Creation of OCDB metadata and id
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("C. Mayer");
   md->SetBeamPeriod(0);
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetComment("AD Saturation");
-  AliCDBId id("AD/Calib/Saturation", runNumber, AliCDBRunRange::Infinity());
+  AliCDBId idSat ("AD/Calib/Saturation", runNumber, AliCDBRunRange::Infinity());
+  AliCDBId idGain("AD/Calib/PMGains",    runNumber, AliCDBRunRange::Infinity());
 
-  // (6c) put the object into the OCDB storage
-  fStatus = (cdbStorage->Put(t, id, md)
+  // (7c) put the objects into the OCDB storage
+  fStatus = (cdbStorage->Put(tSat, idSat, md) &&
+	     cdbStorage->Put(gainOCDBObject->GetObject(),
+			     idGain,
+			     gainOCDBObject->GetMetaData())
 	     ? kOk
 	     : kStoreError);
 }
@@ -295,7 +310,7 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     xMax = h_pfx->GetXaxis()->GetBinUpEdge(i);
   }
   AliDebug(3, Form("ch=%02d bc=%2d xMax= %.1f", ch, bc, xMax));
-  h_pfx->Fit(f, "WQ", "", 0, xMax);
+  h_pfx->Fit(f, "WQ0", "", 0, xMax);
 
   // update xMax based on the fit function
   xMax = f->GetX(1024.0, 10.0, 590.0);
@@ -327,7 +342,7 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     h_pfx->SetLineWidth(2);
 
     // (3c) fit the new profile and update xMax
-    h_pfx->Fit(f, "WQ", "", 0, xMax);
+    h_pfx->Fit(f, "WQ0", "", 0, xMax);
     xMax = f->GetX(1024.0, 10.0, 590.0);
   }
   return kTRUE;
@@ -337,7 +352,7 @@ Int_t AliAnalysisTaskADCalib::GetStatus() const {
   return fStatus;
 }
 
-TTree* AliAnalysisTaskADCalib::MakeCalibObject() {
+TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
   const Int_t gOffline2Online[16] = {
     15, 13, 11,  9, 14, 12, 10,  8,
      7,  5,  3,  1,  6,  4,  2,  0
@@ -375,9 +390,10 @@ TTree* AliAnalysisTaskADCalib::MakeCalibObject() {
     h1->GetQuantiles(1, chargeQuantiles+ch, &qx);
     delete h1;
   }
-  Double_t meanQuantiles[2] = { 0,0 };
-  meanQuantiles[0] = TMath::Mean(8, chargeQuantiles);
-  meanQuantiles[1] = TMath::Mean(8, chargeQuantiles+8);
+  const Double_t meanQuantiles[2] = { 
+    TMath::Mean(8, chargeQuantiles),
+    TMath::Mean(8, chargeQuantiles+8)
+  };
 
   // (2) compute charge equalization factors
   Float_t chargeEqualizationFactor = 1.0f;
@@ -392,7 +408,7 @@ TTree* AliAnalysisTaskADCalib::MakeCalibObject() {
     chOnline  = gOffline2Online[ch];
 
     chargeEqualizationFactor = meanQuantiles[ch/8]/chargeQuantiles[ch];
-    Printf("quantile[%2d] = %f f=%f", ch, chargeQuantiles[ch], chargeEqualizationFactor);
+    AliInfo(Form("quantile[%2d] = %f f=%f", ch, chargeQuantiles[ch], chargeEqualizationFactor));
 
     for (Int_t bc=0; bc<21; ++bc) {
       TH2* h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 0)));
@@ -434,4 +450,83 @@ TTree* AliAnalysisTaskADCalib::MakeCalibObject() {
   } // next channel
 
   return t;
+}
+
+AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree* tSat)
+{
+  if (NULL == tSat) {
+    AliError("NULL == tSat");
+    return NULL;
+  }
+  // (0) get and set up the OCDB manager
+  AliCDBManager *man = AliCDBManager::Instance();
+  if (NULL == man) {
+    AliFatal("CDB manager not found");
+    return NULL;
+  }
+
+  if (!man->IsDefaultStorageSet())
+    man->SetDefaultStorage("raw://");
+
+  man->SetRun(runNumber);
+
+  // (1a) Get the AD calibration data OCDB object
+  AliCDBEntry *entry = man->Get("AD/Calib/Data");
+  AliADCalibData* calibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
+  if (NULL == calibData) {
+    AliFatal("No calibration data from calibration database");
+    return NULL;
+  }
+
+  // (1b) Get the AD PM gain calibration object (to be updated)
+  entry = man->Get("AD/Calib/PMGains");
+  if (NULL == entry) {
+    AliFatal("AD/Calib/Data not found");
+    return NULL;
+  }
+  TH2* h2Gain = dynamic_cast<TH2*>(entry->GetObject());
+  if (NULL == h2Gain) {
+    AliFatal("No calibration data from calibration database");
+    return NULL;
+  }
+
+  // (2a) compute the mean of the charge equalization factors per side
+  const Int_t n = tSat->Draw("chargeEqualizationFactor", "", "GOFF");
+  if (n != 16) {
+    AliError(Form("Invalid Saturation OCDB object: n=%d != 16", n));
+    return NULL;
+  }
+  Double_t *eqFactors = tSat->GetV1();
+  const Float_t meanEq[2] = {
+    TMath::Mean(8, eqFactors),
+    TMath::Mean(8, eqFactors+8)
+  };
+  AliInfo(Form("meanEq=%.3f %.3f", meanEq[0], meanEq[1]));
+
+  // (2b) extract mip,hv,a,b and compute the mean MIP per side
+  Float_t mip[16] = { 0 };
+  Float_t hv[16]  = { 0 };
+  Float_t a[16]   = { 0 };
+  Float_t b[16]   = { 0 };
+  for (Int_t ch=0; ch<16; ++ch) {
+    a[ch]   = h2Gain->GetBinContent(1+ch, 1);
+    b[ch]   = h2Gain->GetBinContent(1+ch, 2);
+    hv[ch]  = calibData->GetMeanHV(ch);
+    mip[ch] = TMath::Power(hv[ch]/a[ch], b[ch]);
+  }
+  const Float_t meanMIP[2] = {
+    TMath::Mean(8, mip),
+    TMath::Mean(8, mip+8)
+  };
+  AliInfo(Form("meanMIP=%.3f %.3f", meanMIP[0], meanMIP[1]));
+  
+  // (3) update the a and b parameters in such a way to have the same MIP per side for the given HV
+  for (Int_t ch=0; ch<16; ++ch) {
+    a[ch] *= TMath::Power(meanEq[ch/8] * meanMIP[ch/8]/mip[ch], -1./b[ch]);
+    AliInfo(Form("a=%.2f b=%.2f mip=%.3f mip'=%.3f",
+		 a[ch], b[ch], mip[ch], TMath::Power(hv[ch]/a[ch], b[ch])));
+    h2Gain->SetBinContent(1+ch, 1, a[ch]);
+  }
+
+  return entry;
 }
