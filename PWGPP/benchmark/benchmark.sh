@@ -349,6 +349,11 @@ goCPass()
     2) filesCPass=( 
                     "${batchWorkingDirectory}/OCDB.root"
                     "$ALICE_ROOT/test/QA/tag.C"
+                    "${batchWorkingDirectory}/AODtrain.C"
+                    "${batchWorkingDirectory}/rec.C"
+                    "${batchWorkingDirectory}/raw2clust.C"
+                    "${batchWorkingDirectory}/runPPass_pp.sh"
+                    "${batchWorkingDirectory}/runPPass_pbpb.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/AODtrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/rec.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/raw2clust.C"
@@ -1055,6 +1060,12 @@ goGenerateMakeflow()
                runCPass0.sh
                recCPass0.C
                runQA.sh
+               AODtrain.C
+               rec.C
+               raw2clust.C
+               runPPass_pp.sh
+               runPPass_pbpb.sh
+               AODtrain.C
                mergeQAgroups.C )
   for file in ${inputFiles[*]}; do
     [[ -f ${file} ]] && copyFiles+=("${file}")
