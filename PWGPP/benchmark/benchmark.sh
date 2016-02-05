@@ -345,7 +345,17 @@ goCPass()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C" ) ;;
-    2) filesCPass=( "" ) ;;
+
+    2) filesCPass=( 
+                    "${batchWorkingDirectory}/OCDB.root"
+                    "$ALICE_ROOT/ANALYSIS/macros/AODtrain.C"
+                    "$ALICE_ROOT/test/QA/tag.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/rec.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/runPPass_pp.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/runPPass_pbpb.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
+                  ) ;;
   esac
 
   for file in ${filesCPass[*]}; do
@@ -478,7 +488,8 @@ goCPass()
           touch $fakeOutput
         done
       else
-        true
+        collisionSystem=$(run2collisionSystem "$runNumber")
+        printExec ./runPPass_${collisionSystem}.sh "/$infile" "$runNumber"
       fi
     ;;
 
@@ -729,7 +740,17 @@ goMergeCPass()
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                          "${trustedQAtrainMacro}" ) ;;
-    2) filesMergeCPass=( "" ) ;;
+
+    2) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                         "${batchWorkingDirectory}/${qaFilesToMerge}"
+                         "${batchWorkingDirectory}/${filteredFilesToMerge}"
+                         "${batchWorkingDirectory}/OCDB.root"
+                         "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                         "${batchWorkingDirectory}/QAtrain_duo.C"
+                         "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C" ) ;;
   esac
 
   for file in ${filesMergeCPass[*]}; do
@@ -834,11 +855,11 @@ goMergeCPass()
       if [[ -n ${pretend} ]]; then
         sleep ${pretendDelay}
         for file in ${qaMergedOutputFileName} \
-                    merge.log trending.root FilterEvents_Trees.root; do
+                    mergeQA.log; do
           touch $file
         done
       else
-        true
+        printExec aliroot -b -q "QAtrain_duo.C(\"\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
       fi
   esac
   
@@ -2252,6 +2273,30 @@ goMakeSummary()
   /ocdb.log OK/ {nOK++;} 
   /ocdb.log BAD/ {nBAD++;} 
   END {print   "cpass1 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
+
+  echo
+  awk 'BEGIN {nFiles=0;nCore=0;} 
+  /^calibfile/ {nFiles++;} 
+  /core dumped/ {nCore++;}
+  END {print     "cpass2 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass2.job*done 2>/dev/null
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+  /\/rec.log OK/ {nOK++;} 
+  /\/rec.log BAD/ {nBAD++;} 
+  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
+  END {print     "cpass2 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+  /\/calib.log OK/ {nOK++;} 
+  /\/calib.log BAD/ {nBAD++;} 
+  END {print "cpass2 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
+
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+  /merge.log OK/ {nOK++;} 
+  /merge.log BAD/ {nBAD++;} 
+  END {print "cpass2 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass2*done 2>/dev/null
+  awk 'BEGIN {nOK=0; nBAD=0; } 
+  /ocdb.log OK/ {nOK++;} 
+  /ocdb.log BAD/ {nBAD++;} 
+  END {print   "cpass2 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass2*done 2>/dev/null
 
   echo
   echo per run stats:
