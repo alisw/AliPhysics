@@ -2387,11 +2387,13 @@ EOF
   goPrintValues dcsTree remote.cpass1.dcsTree.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues stacktrace remote.cpass0.stacktrace.list "$metadir"/*cpass0*done &>/dev/null
   goPrintValues stacktrace remote.cpass1.stacktrace.list "$metadir"/*cpass1*done &>/dev/null
+  goPrintValues stacktrace remote.cpass2.stacktrace.list "$metadir"/*cpass2*done &>/dev/null
   goPrintValues esd remote.cpass1.esd.list "$metadir"/*cpass1*done &> /dev/null
   goPrintValues syswatchRec remote.cpass0.syswatch.rec.list "$metadir"/merge.cpass0.run*.done &>/dev/null
   goPrintValues syswatchCalib remote.cpass0.syswatch.calib.list "$metadir"/merge.cpass0.run*.done &>/dev/null
   goPrintValues syswatchRec remote.cpass1.syswatch.rec.list "$metadir"/merge.cpass1.run*.done &>/dev/null
   goPrintValues syswatchCalib remote.cpass1.syswatch.calib.list "$metadir"/merge.cpass1.run*.done &>/dev/null
+  goPrintValues syswatchRec remote.cpass2.syswatch.rec.list "$metadir"/merge.cpass2.run*.done &>/dev/null
 
   listDir "$PWD" "after goPrintValues"
  
@@ -2403,7 +2405,9 @@ EOF
                     remote.cpass0.dcsTree.list \
                     remote.cpass1.dcsTree.list \
                     remote.cpass0.stacktrace.list \
-                    remote.cpass1.stacktrace.list; do
+                    remote.cpass1.stacktrace.list \
+                    remote.cpass2.stacktrace.list \
+                    remote.cpass{0,1,2}.syswatch.rec.list; do
     localList=${remoteList#remote.}
     rm -f "$localList" && touch "$localList"
     while read sourceFile; do
@@ -2418,12 +2422,14 @@ EOF
   #summarize the stacktraces
   stackTraceTree @stacktraces.cpass0.list > stacktrace_cpass0.tree
   stackTraceTree @stacktraces.cpass1.list > stacktrace_cpass1.tree
+  stackTraceTree @stacktraces.cpass2.list > stacktrace_cpass2.tree
 
   #merge syslogs
   mergeSysLogs syslog.rec.cpass0.tree @cpass0.syswatch.rec.list
   mergeSysLogs syslog.calib.cpass0.tree @cpass0.syswatch.calib.list
   mergeSysLogs syslog.rec.cpass1.tree @cpass1.syswatch.rec.list
   mergeSysLogs syslog.calib.cpass1.tree @cpass1.syswatch.calib.list
+  mergeSysLogs syslog.rec.cpass2.tree @cpass2.syswatch.rec.list
 
   #merge trending
   rm -f trending.root
