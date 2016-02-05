@@ -2455,13 +2455,10 @@ EOF
   [[ -n ${MAILTO} ]] && cat ${logTmp} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
   # Copy all, recursively, with the exception of snapshotted files already present when this
-  # was called.
-  while read cpdir; do
-    echo ; echo ; echo "==> Copying all from directory $cpdir"
-    [[ "$cpdir" == .  && "$dirSnapshotExclusion" != '' ]] \
-      && copyFileToRemote ./!($dirSnapshotExclusion) $commonOutputPath/ \
-      || copyFileToRemote $cpdir/* $commonOutputPath/$cpdir
-  done < <( find . -type d )
+  # function was called.
+  [[ "$dirSnapshotExclusion" == '' ]] \
+    && xCopyFileToRemote -d $commonOutputPath/ . \
+    || xCopyFileToRemote -d $commonOutputPath/ ./!($dirSnapshotExclusion)
 
   # Copy stdout to destination.
   echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"
