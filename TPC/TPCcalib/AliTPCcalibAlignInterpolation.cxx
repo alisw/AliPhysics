@@ -1051,7 +1051,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	    normDelta[0]=(xxx[0]-xbin[0])/binWidth[0];
 	    normDelta[0]*=normDelta[0];
 	    normDelta[0]/=kernelSigma2[0];
-	    for (Int_t ibin1=-1; ibin1<=1; ibin1++){  //sector
+	    for (Int_t ibin1=0; ibin1<=0; ibin1++){  //sector - (Not defined yet if we should make bin respone functio and unfold later) 
 	      xbin[1]=xbinCenter[1]+ibin1*binWidth[1];
 	      normDelta[1]=(xxx[1]-xbin[1])/binWidth[1];
 	      normDelta[1]*=normDelta[1];
