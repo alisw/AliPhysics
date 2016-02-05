@@ -142,15 +142,17 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(AliJetContainer* jets)
   if (fForceBeamType != kpp) {
     title[dim] = "No. of constituents";
     nbins[dim] = fNbins/2;
-    min[dim] = -0.5;
-    max[dim] = 249.5;
+    Double_t binWidth = 250. / nbins[dim];
+    min[dim] = 0 - binWidth/2;
+    max[dim] = 250. - binWidth/2;
     dim++;
   }
   else {
     title[dim] = "No. of constituents";
     nbins[dim] = fNbins/10;
-    min[dim] = -0.5;
-    max[dim] = 49.5;
+    Double_t binWidth = 50. / nbins[dim];
+    min[dim] = 0 - binWidth/2;
+    max[dim] = 50. - binWidth/2;
     dim++;
   }
 
