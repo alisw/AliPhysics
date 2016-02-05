@@ -12,6 +12,7 @@ class TTree;
 class TH2;
 class TF1;
 class AliCDBStorage;
+class AliCDBEntry;
 class ADESDFriendUtils;
 
 #include <TString.h>
@@ -48,7 +49,8 @@ protected:
   Bool_t  MakeExtrapolationFit(TH2* h, TF1* f, Int_t ch, Int_t bc, Double_t &xMax);
 
 private:
-  TTree*  MakeCalibObject();
+  TTree*       MakeSaturationCalibObject();
+  AliCDBEntry* UpdateGainParameters(Int_t runNumber, TTree *t);
 
   // not implemented:
   AliAnalysisTaskADCalib(const AliAnalysisTaskADCalib&);
