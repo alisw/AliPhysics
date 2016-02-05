@@ -621,7 +621,7 @@ Double_t AliAnalysisTaskEmcalJetQA::GetFcross(AliVCluster *cluster, AliVCaloCell
   Int_t    AbsIdseed  = -1;
   Double_t Eseed      = 0;
   for (Int_t i = 0; i < cluster->GetNCells(); i++) {
-    if (cells->GetCellAmplitude(cluster->GetCellAbsId(i)) > AbsIdseed) {
+    if (cells->GetCellAmplitude(cluster->GetCellAbsId(i)) > Eseed) {
       Eseed     = cells->GetCellAmplitude(cluster->GetCellAbsId(i));
       AbsIdseed = cluster->GetCellAbsId(i);
     }
