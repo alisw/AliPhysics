@@ -353,7 +353,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    }
   }
  } // end of if(bUsePtWeights)
-
+ 
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {

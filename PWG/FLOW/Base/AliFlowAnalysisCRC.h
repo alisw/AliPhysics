@@ -811,7 +811,7 @@ public:
  TH1D* GetCRCZDCCFunHist(Int_t const eg, Int_t const h) const {return this->fCRCZDCCFunHist[eg][h];};
  void SetCRCZDCSpectra(TProfile* const TH, Int_t const eg, Int_t const h) {this->fCRCZDCSpectra[eg][h] = TH;};
  TProfile* GetCRCZDCSpectra(Int_t const eg, Int_t const h) const {return this->fCRCZDCSpectra[eg][h];};
-
+ 
  // 12.c) Covariances:
  void SetCRCZDCCovHist(TH2D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCZDCCovHist[c][eg][h] = TH;};
  TH2D* GetCRCZDCCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCovHist[c][eg][h];};
@@ -1470,7 +1470,7 @@ private:
  TList *fCRC2RunsList[fCRCMaxnRun]; //! list of runs
  TProfile *fCRC2CorPro[fCRCMaxnRun][fCRCMaxnCen][3]; //! correlation profile, [CRCBin][eg]
  TProfile *fCRC2NUAPro[fCRCMaxnRun][fCRCMaxnCen][3][4]; //! NUA terms profile, [CRCBin][eg]
- TH1D *fCRC2CorHist[fCRCMaxnCen][3][2]; //! <<2'>>, [CRCBin][eg]
+ TH1D *fCRC2CorHist[fCRCMaxnCen][3][2]; //! <<2'>>, [centrality][pos,neg,all][corr,spectra]
  TH1D *fCRC2NUAHist[fCRCMaxnCen][3][4]; //! NUA hist
  TProfile *fCRC2CovPro[fCRCMaxnCen][3][3]; //! Cov pro
  TH1D *fCRC2CovHist[fCRCMaxnCen][3][3]; //! Cov hist
