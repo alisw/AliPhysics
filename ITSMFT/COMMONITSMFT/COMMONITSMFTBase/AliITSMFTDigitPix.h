@@ -48,9 +48,9 @@ class AliITSMFTDigitPix: public TObject {
     // set signal in electrons
     void SetSignalPix(Int_t sig) {fSignalPix = sig;}
     void SetROCycle(Int_t cycle) {fROCycle = cycle;}
-    void Print(ostream *os) const; // Class ascii print function
+    void Print(std::ostream *os) const; // Class ascii print function
     void Print(Option_t *option="") const {TObject::Print(option);}
-    void Read(istream *os);  // Class ascii read function
+    void Read(std::istream *os);  // Class ascii read function
     Int_t Read(const char *name) {return TObject::Read(name);}
 
  protected:

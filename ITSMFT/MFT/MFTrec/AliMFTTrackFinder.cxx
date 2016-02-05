@@ -201,7 +201,7 @@ void AliMFTTrackFinder::ReadParam(Char_t *parfile)
   
   AliInfo(Form("Reading Parameter File %s ",parfile));
   
-  ifstream in;
+  std::ifstream in;
   in.open(parfile,std::ios::in);
   
   std::string line;

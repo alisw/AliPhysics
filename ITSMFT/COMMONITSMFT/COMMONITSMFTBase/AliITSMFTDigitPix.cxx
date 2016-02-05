@@ -151,7 +151,7 @@ Int_t AliITSMFTDigitPix::GetListOfTracks(TArrayI &t)
 }
 
 //______________________________________________________________________
-void AliITSMFTDigitPix::Print(ostream *os) const
+void AliITSMFTDigitPix::Print(std::ostream *os) const
 {
     //Standard output format for this class
     Int_t i;
@@ -164,7 +164,7 @@ void AliITSMFTDigitPix::Print(ostream *os) const
 }
 
 //______________________________________________________________________
-void AliITSMFTDigitPix::Read(istream *os)
+void AliITSMFTDigitPix::Read(std::istream *os)
 {
     //Standard input for this class
     Int_t i;
@@ -177,7 +177,7 @@ void AliITSMFTDigitPix::Read(istream *os)
 }
 
 //______________________________________________________________________
-ostream &operator<<(ostream &os,AliITSMFTDigitPix &source)
+std::ostream &operator<<(std::ostream &os,AliITSMFTDigitPix &source)
 {
     // Standard output streaming function.
 
@@ -186,7 +186,7 @@ ostream &operator<<(ostream &os,AliITSMFTDigitPix &source)
 }
 
 //______________________________________________________________________
-istream &operator>>(istream &os,AliITSMFTDigitPix &source)
+std::istream &operator>>(std::istream &os,AliITSMFTDigitPix &source)
 {
     // Standard output streaming function.
 
