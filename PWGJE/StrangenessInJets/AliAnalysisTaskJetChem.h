@@ -105,8 +105,15 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
 
-  enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };  
-  enum { kK0, kLambda, kAntiLambda }; 
+  enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };// v0 rec. type 
+  enum { kK0, kLambda, kAntiLambda };// particletype 
+
+  enum {ktrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, 
+	kTrackAODExtra, kTrackAODExtraonly, kTrackAODExtraCuts, kTrackAODExtraonlyCuts,
+        kTrackAODMCExtraonly,kTrackAODMCExtraonlyCuts, 
+	kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
+	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODMCChargedSecS, kTrackAODMCChargedSecNS, kTrackAOCMCChargedPrimAcceptance};//tracktype
+
 
   static  void   SetProperties(TH3F* h,const char* x, const char* y,const char* z);
 
@@ -268,6 +275,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* jetConeK0EmbStlist;//standard K0s candidates filled in embedding extra branch to subtract for UE V0 contribution
   TList* jetConeLaEmbStlist;//standard Lambda candidates filled in embedding extra branch to subtract for UE V0 contribution
   TList* jetConeALaEmbStlist;//standard Antilambda candidates filled in embedding extra branch to subtract for UE V0 contribution
+
+  TList* jetConeK0EmbMClist;
+  TList* jetConeLaEmbMClist;
+  TList* jetConeALaEmbMClist;
+
   TList* jetPerpConeK0list;
   TList* jetPerpRecCutslist; 
   TList* jetPerpConeK0Emblist;
@@ -286,6 +298,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* fTracksPerpCone;
                                   //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
+  TList* fListK0sMC;                                       //! MC gen PYTHIA K0s list 
   TList* fListK0sStandard;                                 //! K0 list for standard V0s in extra embedded branch
 
   AliPIDResponse *fPIDResponse;	                     // PID
@@ -299,6 +312,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Int_t fLaType;                                           // La cuts
   UInt_t fFilterMaskLa;                                    //! La legs cuts
   TList* fListLa;                                          //! La list 
+  TList* fListLaMC;                                        //! MC gen PYTHIA La list 
   TList* fListLaStandard;                                  //! La standard list for embedding UE V0 subtraction
     
   //AliFragFuncHistosInvMass*  fFFHistosIMLaAllEvt;          //! La pt spec for all events
@@ -309,6 +323,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   UInt_t fFilterMaskALa;                                   //! ALa legs cuts
   TList* fListALa;                                         //! ALa list 
+  TList* fListALaMC;                                       //! MC gen PYTHIA ALa list 
   TList* fListALaStandard;                                 //! ALa list 
 
   TList* fListFeeddownLaCand;                              //! feeddown from Xi (-,0) 
@@ -521,6 +536,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnALaEmbCone;
   THnSparse* fhnALaEmbConeRef;
   THnSparse* fhnALaEmbConeStandard;
+  TH2F*      fh2MCEmbK0sJetPt;
+  TH2F*      fh2MCEmbLaJetPt;
+  TH2F*      fh2MCEmbALaJetPt;
   THnSparse* fhnK0sPC;
   THnSparse* fhnK0sEmbPC;
   THnSparse* fhnLaPC;
