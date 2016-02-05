@@ -701,11 +701,10 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
      wPhiEta = fPhiEtaWeights[cw]->GetBinContent(fPhiEtaWeights[cw]->FindBin(dPhi,dEta));
     }
     if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
-     if(dPt<0.25) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(0.25);
-     if(dPt>0.25 && dPt<3.) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
-     if(dPt>3.) wPhiEta = 1./0.8;
+      if(dPt>0.2 && dPt<20.) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
+      else wPhiEta = 0.;
     }
-
+    
     ptEta[0] = dPt;
     ptEta[1] = dEta;
     // Calculate p_{m*n,k} ('p-vector' for POIs):
@@ -16226,7 +16225,7 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
    fFlowQCIntCorHist[i][j] = NULL;
   }
  }
-
+ 
 } // end of AliFlowAnalysisCRC::InitializeArraysForFlowQC()
 
 //=======================================================================================================================
@@ -17782,14 +17781,14 @@ void AliFlowAnalysisCRC::RecenterCRCQVec()
    Double_t QRe = fCRCQRe[c][0]->GetBinContent(y+1);
    Double_t QIm = fCRCQIm[c][0]->GetBinContent(y+1);
    Int_t M = fCRCMult[c][0]->GetBinContent(y+1);
-
+   
    if(M>0.) {
     fCRCQVecRe[fRunBin][CRBin]->Fill(fCentralityEBE,QRe);
     fCRCQVecIm[fRunBin][CRBin]->Fill(fCentralityEBE,QIm);
    }
   } // end of for (Int_t c=0;c<2;c++)
  } // end of for(Int_t y=0; y<fCRCnEtaBins; y++)
-
+ 
  if(!fCRCQVecWeightsList) {
   cout << " WARNING: no weights provided for Q vector recentering !!! " << endl;
   return;
@@ -17867,7 +17866,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
  Double_t SDQCIm = fZDCQHist[1]->GetBinError(fZDCQHist[1]->FindBin(fCentralityEBE));
  
  Double_t QCReR=0., QCImR=0., QAReR=0., QAImR=0.;
-
+ 
  if(AvQCRe && AvQCIm && QMC>0.) {
   QCReR = QCRe-AvQCRe;
   QCImR = QCIm-AvQCIm;
@@ -17901,7 +17900,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   fCRCZDCQVecACorr[fRunBin][0]->Fill(fCentralityEBE,QAReR);
   fCRCZDCQVecACorr[fRunBin][1]->Fill(fCentralityEBE,QAImR);
  }
-
+ 
  if(QMA>0. && QMC>0.) {
   if( fInvertZDC ) QAReR = -QAReR;
   Double_t EvPlZDCC = TMath::ATan2(QCImR,QCReR);
@@ -17921,7 +17920,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
 {
  Bool_t PassZDCcuts=kTRUE;
-
+ 
  // ZDC-C (eta < -8.8)
  Double_t ZCRe = fZDCFlowVect[0].X();
  Double_t ZCIm = fZDCFlowVect[0].Y();
@@ -17930,13 +17929,13 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
  Double_t ZARe = fZDCFlowVect[1].X();
  Double_t ZAIm = fZDCFlowVect[1].Y();
  Double_t ZAM  = fZDCFlowVect[1].GetMult()/1380.;
-
+ 
  if( fInvertZDC ) ZARe = -ZARe;
  // cut on multiplicity
  if( ZCM<=0. || ZAM<=0. ) PassZDCcuts = kFALSE;
  // exclude ZDC bad runs
  if(fRunNum==137638 || fRunNum==137639 || fRunNum==138469 || fRunNum==139028 || fRunNum==139029) PassZDCcuts = kFALSE;
-
+ 
  // cut on #neutrons
  if( ZCM<fMinMulZN || ZAM<fMinMulZN ) {
   PassZDCcuts = kFALSE;
@@ -17965,7 +17964,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   fhZNQVecCov[2]->Fill(fCentralityEBE,ZCRe*ZAIm);
   fhZNQVecCov[3]->Fill(fCentralityEBE,ZCIm*ZARe);
  }
-
+ 
  return PassZDCcuts;
 }
 
@@ -19022,8 +19021,16 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
    fFlowSPZDCIntPro[3][1]->Fill(fCentralityEBE,ZARe*ZCRe,fCenWeightEbE);
    fFlowSPZDCIntPro[3][2]->Fill(fCentralityEBE,ZAIm*ZCIm,fCenWeightEbE);
   }
-
+  
   // differential flow
+   // ZDC resolution correction
+   FillPtBin = fPtDiffMinPt + PtBinWdith*0.5;
+   fFlowSPZDCCorPro[fCenBin][hr][0]->Fill(FillPtBin,ZARe*ZCRe+ZAIm*ZCIm,fCenWeightEbE);
+   FillPtBin = fPtDiffMinPt + PtBinWdith*1.5;
+   fFlowSPZDCCorPro[fCenBin][hr][0]->Fill(FillPtBin,ZARe*ZCRe,fCenWeightEbE);
+   FillPtBin = fPtDiffMinPt + PtBinWdith*2.5;
+   fFlowSPZDCCorPro[fCenBin][hr][0]->Fill(FillPtBin,ZAIm*ZCIm,fCenWeightEbE);
+   
   for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
    
    FillPtBin = fPtDiffMinPt + PtBinWdith*(pt+0.5);
@@ -19033,14 +19040,6 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
    
    if(qpM<1.) continue;
    
-   // ZDC resolution correction
-   FillPtBin = fPtDiffMinPt + PtBinWdith*0.5;
-   fFlowSPZDCCorPro[fCenBin][hr][0]->Fill(FillPtBin,ZARe*ZCRe+ZAIm*ZCIm,fCenWeightEbE);
-   FillPtBin = fPtDiffMinPt + PtBinWdith*1.5;
-   fFlowSPZDCCorPro[fCenBin][hr][0]->Fill(FillPtBin,ZARe*ZCRe,fCenWeightEbE);
-   FillPtBin = fPtDiffMinPt + PtBinWdith*2.5;
-   fFlowSPZDCCorPro[fCenBin][hr][0]->Fill(FillPtBin,ZAIm*ZCIm,fCenWeightEbE);
-
    if(hr+2==2) {
     Double_t Q1Z = qpRe*(ZARe*ZCRe-ZAIm*ZCIm);
     Double_t Q2Z = qpIm*(ZARe*ZCIm+ZAIm*ZCRe);
@@ -19072,7 +19071,7 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
     fFlowSPZDCCorPro[fCenBin][hr][7]->Fill(FillPtBin,Q3Z/qpM,fCenWeightEbE);
     fFlowSPZDCCorPro[fCenBin][hr][8]->Fill(FillPtBin,Q4Z/qpM,fCenWeightEbE);
    }
-
+   
    if(hr+2==4) {
     Double_t Q1Z = -qpRe*(ZARe*ZAIm*ZCRe*ZCIm);
     fFlowSPZDCCorPro[fCenBin][hr][1]->Fill(FillPtBin,Q1Z/qpM,fCenWeightEbE);
@@ -21192,9 +21191,9 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
  
  for(Int_t hr=0; hr<fFlowNHarm; hr++) {
   for(Int_t j=0; j<fFlowNPro; j++) {
-
+   
    for(Int_t c=1;c<=100.;c++) {
-
+    
     Double_t stats[6]={0.};
     fFlowSPZDCIntPro[hr][j]->GetXaxis()->SetRange(c,c);
     fFlowSPZDCIntPro[hr][j]->GetStats(stats);
@@ -21202,9 +21201,9 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
     Double_t SumWeigSq  = stats[1];
     Double_t SumTwo  = stats[4];
     Double_t SumTwoSq = stats[5];
-
+    
     if(!SumWeig) continue;
-
+    
     Double_t Corr = SumTwo/SumWeig;
     Double_t SqCorr = SumTwoSq/SumWeig;
     Double_t Weig = SumWeig;
@@ -21214,17 +21213,17 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
     if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
     if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
     Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-
+    
     if(CorrErr) {
      fFlowSPZDCIntHist[hr][j]->SetBinContent(c,Corr);
      fFlowSPZDCIntHist[hr][j]->SetBinError(c,CorrErr);
     }
-
+    
    } // end of for(Int_t c=1;c<=100.;c++)
    fFlowSPZDCIntPro[hr][j]->GetXaxis()->SetRange(1.,100.);
   } // end of for(Int_t j=0; j<fFlowNPro; j++)
  } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
-
+ 
  cout << "*************************************" << endl;
  cout << endl;
  
@@ -21328,9 +21327,9 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
  // reference flow
  for(Int_t hr=0; hr<fFlowNHarm; hr++) {
   for(Int_t j=0; j<2; j++) {
-
+   
    for(Int_t pt=1;pt<=100;pt++) {
-
+    
     Double_t stats[6]={0.};
     fFlowQCIntCorPro[hr][j]->GetXaxis()->SetRange(pt,pt);
     fFlowQCIntCorPro[hr][j]->GetStats(stats);
@@ -21338,7 +21337,7 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
     Double_t SumWeigSq  = stats[1];
     Double_t SumTwo  = stats[4];
     Double_t SumTwoSq = stats[5];
-
+    
     if(SumWeig>0.) {
      Double_t Corr = SumTwo/SumWeig;
      Double_t SqCorr = SumTwoSq/SumWeig;
@@ -21354,11 +21353,11 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
       fFlowQCIntCorHist[hr][j]->SetBinError(pt,CorrErr);
      }
     }
-
+    
    } // end of for(Int_t pt=1;pt<=100;pt++)
    fFlowQCIntCorPro[hr][j]->GetXaxis()->SetRange(0.,100.);
   } // end of for(Int_t j=0; j<5; j++)
-
+  
   for(Int_t pt=1; pt<=100; pt++) {
    Double_t QC2    = fFlowQCIntCorHist[hr][0]->GetBinContent(pt);
    Double_t QC2Err = fFlowQCIntCorHist[hr][0]->GetBinError(pt);
@@ -21373,9 +21372,9 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
     fFlowQCIntCorHist[hr][2]->SetBinError(pt,Flow4E);
    }
   }
-
+  
  } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
-
+ 
  cout << "*************************************" << endl;
  cout << endl;
  
@@ -24031,7 +24030,7 @@ void AliFlowAnalysisCRC::GetPointersForFlowSPZDC()
 {
  if(!fCalculateFlowZDC){return;}
  if(!fUseZDC){return;}
-
+ 
  TList *FlowSPZDCList = dynamic_cast<TList*>(fHistList->FindObject("Flow SP ZDC"));
  if (FlowSPZDCList) {
   this->SetFlowSPZDCList(FlowSPZDCList);
@@ -24075,7 +24074,7 @@ void AliFlowAnalysisCRC::GetPointersForFlowSPZDC()
 void AliFlowAnalysisCRC::GetPointersForFlowQC()
 {
  if(!fCalculateFlowQC){return;}
-
+ 
  TList *FlowQCList = dynamic_cast<TList*>(fHistList->FindObject("Flow QC"));
  if (FlowQCList) {
   this->SetFlowQCList(FlowQCList);
@@ -24107,7 +24106,7 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
   if(FlowQCSpectra) { this->SetFlowQCSpectra(FlowQCSpectra,h); }
   else { cout<<"WARNING: FlowQCSpectra is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
  }
-
+ 
  // reference flow
  for(Int_t i=0; i<fFlowNHarm; i++) {
   for(Int_t j=0; j<3; j++) {
@@ -24119,7 +24118,7 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
    else { cout<<"WARNING: FlowQCIntCorHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
   }
  }
-
+ 
 } // end void AliFlowAnalysisCRC::GetPointersForFlowQC()
 
 //=======================================================================================================================
@@ -24128,7 +24127,7 @@ void AliFlowAnalysisCRC::GetPointersForFlowSPVZ()
 {
  if(!fCalculateFlowVZ){return;}
  if(!fUseVZERO){return;}
-
+ 
  TList *FlowSPVZList = dynamic_cast<TList*>(fHistList->FindObject("Flow SP VZ"));
  if (FlowSPVZList) {
   this->SetFlowSPVZList(FlowSPVZList);
@@ -24254,7 +24253,7 @@ void AliFlowAnalysisCRC::GetPointersForVarious()
   TProfile* ZNQVecCov = dynamic_cast<TProfile*>(fVariousList->FindObject(Form("fhZNQVecCov[%d]",c)));
   if(ZNQVecCov) this->SetZNQVecCov(ZNQVecCov,c);
  }
-
+ 
 } // end void AliFlowAnalysisCRC::GetPointersForVarious()
 
 //=======================================================================================================================
@@ -25309,7 +25308,7 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
    fFlowQCList->Add(fFlowQCIntCorHist[i][j]);
   }
  }
-
+ 
 } // end of AliFlowAnalysisCRC::BookEverythingForFlowQC()
 
 //=======================================================================================================================
