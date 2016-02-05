@@ -501,9 +501,11 @@ goCPass()
   # CPass has completed. Copy all created files to the destination (which might be remote).
   # Note: stdout is not copied, this will happen at the very end.
   printExec rm -f ./$chunkName
+  filesToCopy=()
   while read cpdir; do
-    printExec copyFileToRemote $cpdir/!(stdout|cpass$(($cpass-1))*.tgz) $outputDir/$cpdir
+    filesToCopy+=($cpdir/!(stdout|cpass$(($cpass-1))*.tgz))
   done < <(find . -type d)
+  xCopyFileToRemote -d $outputDir/ "${filesToCopy[@]}"
 
   # Validate CPass.
   case $cpass in
@@ -875,10 +877,14 @@ goMergeCPass()
   [[ -f $syslogsRecToMerge ]] && mergeSysLogs syswatch.rec.tree @${syslogsRecToMerge}
   [[ -f $syslogsCalibToMerge ]] && mergeSysLogs syswatch.calib.tree @${syslogsCalibToMerge}
 
-  # Copy all to output dir. Preserve dir structure. stdout will be copied later.
+  # CPass has completed. Copy all created files to the destination (which might be remote).
+  # Note: stdout is not copied, this will happen at the very end.
+  printExec rm -f ./$chunkName
+  filesToCopy=()
   while read cpdir; do
-    copyFileToRemote $cpdir/!(stdout) $outputDir/$cpdir
+    filesToCopy+=($cpdir/!(stdout))
   done < <(find . -type d)
+  xCopyFileToRemote -d $outputDir/ "${filesToCopy[@]}"
 
   # Copy OCDB to meta.
   copyFileToRemote ${batchWorkingDirectory}/${baseTar} $commonOutputPath/meta
