@@ -797,8 +797,8 @@ void AliAnalysisTaskUpcPhi::RunESDtree()
 	
 	if(nPIDpoints<2) continue;
 	
-	if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon))>3)continue;
-        if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion))<4)continue;
+	//if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon))>3)continue;
+        //if(TMath::Abs(fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion))<4)continue;
 	
       }
  
@@ -937,9 +937,17 @@ void AliAnalysisTaskUpcPhi::RunESDMC(AliESDEvent* esd)
   for(Int_t imc=0; imc<mc->GetNumberOfTracks(); imc++) {
     AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
     if(!mcPart) continue;
+    
+    /*/
+    if(mcPart->GetMother() >= 0){
+    	AliMCParticle *mcMother = (AliMCParticle*) mc->GetTrack(mcPart->GetMother());
+    	//if(TMath::Abs(mcPart->PdgCode())== 211)cout<<"Mother PDG = "<<mcMother->PdgCode()<<" Unique ID = "<<(mcPart->Particle())->GetUniqueID()<<endl;
+	if(TMath::Abs(mcMother->PdgCode()) == 321 &&  (mcPart->Particle())->GetUniqueID() != 9)cout<<"PDG part = "<<mcPart->PdgCode()<<" Unique ID = "<<(mcPart->Particle())->GetUniqueID()<<endl;
+	}
+	/*/
 
-    //if(mcPart->GetMother() >= 0) continue;
-    if(TMath::Abs(mcPart->PdgCode()) > 5000) continue;
+    if(mcPart->GetMother() >= 0) continue;
+    //if(TMath::Abs(mcPart->PdgCode()) > 5000) continue;
 
     TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
     part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
