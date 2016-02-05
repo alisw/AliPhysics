@@ -12,13 +12,18 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")"/alilog4bash.sh false
 
 PWGPP_runMap="
-2010 108350 139517
-2011 140441 170593
-2012 171590 193766
-2013 194308 199146
-2014 202369 206695
-2015 208505 999999
-2016 999999 999999
+2010 136833 139517 pbpb
+2010 108350 136832 pp
+2011 165747 170593 pbpb
+2011 140441 165746 pp
+2012 188230 188366 ppb
+2012 171590 193766 pp
+2013 195344 197388 ppb
+2013 197469 197692 pp
+2014 200008 208364 NONE
+2015 244908 246994 pbpb
+2015 224956 244628 pp
+2016 999999 999999 NONE
 "
 
 parseConfig()
@@ -226,15 +231,33 @@ run2year()
 {
   #for a given run print the year.
   #the run-year table is ${PWGPP_runMap} (a string)
-  #one line per year, format: year runMin runMax
+  #one line per year, format: year runMin runMax collisionSystem
   local run=$1
   [[ -z ${run} ]] && return 1
   local year=""
   local runMin=""
   local runMax=""
-  while read year runMin runMax; do
+  local collisionSystem
+  while read year runMin runMax collisionSystem; do
     [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
     [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${year} && break
+  done < <(echo "${PWGPP_runMap}")
+  return 0
+}
+
+run2collisionSystem()
+{
+  #for a given run print the year.
+  #the run-year table is ${PWGPP_runMap} (a string)
+  #one line per year, format: year runMin runMax collisionSystem
+  local run=$1
+  [[ -z ${run} ]] && return 1
+  local year=""
+  local runMin=""
+  local runMax=""
+  while read year runMin runMax collisionSystem; do
+    [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
+    [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${collisionSystem} && break
   done < <(echo "${PWGPP_runMap}")
   return 0
 }
@@ -855,6 +878,60 @@ copyFileToRemote() (
 
   return $((err & 1))
 )
+
+function xCopyFileToRemote() {
+  # Recursive and parallel copy for files. Usage:
+  #   xCopyFileToRemote -w 10 -d proto://host//destpath file1 file2 @list dir...
+  # Where -w is the number of parallel workers (defaults to 15).
+
+  opname="[xCopyFileToRemote]"
+  workers=0
+  while [[ "$1" != -- ]]; do
+    case "$1" in
+      --destdir|-d) dstdir="$2"; shift 2 ;;
+      --workers|-w) workers=$(($2)); shift 2 ;;
+      *) break ;;
+    esac
+  done
+  [[ "$dstdir" == '' ]] && { alilog_error "$opname Missing --destdir" ; exit 1 ; }
+  [[ $workers == 0 ]] && workers=15  # default
+  alilog_info "$opname Copying files to $dstdir using $workers workers"
+
+  # Create a directory of symlinks: readlink will tell us what is each source
+  # file, with respect to the *current* directory. Symlinks are used because
+  # operations on them are atomic.
+  t=$(mktemp -d /tmp/xcp.XXXXX)
+  count=0
+  while [[ $# -gt 0 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read src; do
+      [[ -d "$src" ]] && inputcmd="find $src -type f" || inputcmd="echo $src"
+      while read -u 4 src2; do
+        ln -nfs $src2 $t/$count
+        count=$((count+1))
+      done 4< <($inputcmd)
+    done < <($inputcmd)
+    shift
+  done
+
+  # Start workers.
+  for ((i=0; i<workers; i++)); do
+    ( while [[ 1 ]]; do
+        placeholder=$(find $t -type l -print -quit 2> /dev/null)
+        [[ "$placeholder" == '' ]] && break
+        src=$(readlink $placeholder)
+        rm $placeholder 2> /dev/null || continue
+        copyFileToRemote $src $dstdir/$(dirname $src)
+      done
+    ) &
+  done
+
+  # Do not leave rubbish behind if dying. Kills the whole process group (-$$).
+  trap "rm -rf $t; kill -9 -$$" SIGHUP SIGINT SIGTERM
+
+  wait
+  rm -rf $t
+}
 
 paranoidCp()
 (

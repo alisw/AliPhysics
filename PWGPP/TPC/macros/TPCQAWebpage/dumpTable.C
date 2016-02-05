@@ -173,8 +173,7 @@ void dumpWebRunTable(TTree* tree, const char * tableName  ){
     //
     fprintf(fp,"\t<thead class=\"header\">\n\t\t<tr>\n");
     for (Int_t iheader=0; iheader<ncols; iheader++){
-      // fprintf(fp,"\t\t\t<th class=\"tooltip\" data-tooltip=\"\">%s</th>\n",arrayDescriptor->At(iheader)->GetName());
-      fprintf(fp,"\t\t\t<th class=\"tooltip\" data-tooltip=\"%i\">%s</th>\n",iheader, arrayDescriptor->At(iheader)->GetName());
+      fprintf(fp,"\t\t\t<th class=\"tooltip\" data-tooltip=\"\">%s</th>\n",arrayDescriptor->At(iheader)->GetName());
     }
     fprintf(fp,"\t\t</tr>\n\t</thead>\n");
     fprintf(fp,"\t<tfoot>\n\t\t<tr>\n");
