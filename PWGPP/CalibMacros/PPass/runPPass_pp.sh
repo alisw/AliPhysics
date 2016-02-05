@@ -37,13 +37,13 @@ if [ "$1" == "OCDB" ]; then
     shift
 fi
 
-RECO_ARGS=""
-
 # second argument could be SPLIT, then $2,$3 are reco args
 if [ "$1" == "SPLIT" ]; then
-    RECO_ARGS=",$2,$3"
-    shift 3
+    RECO_ARGS="${2-""}"
+    shift 2
 fi
+
+[[ -n "$RECO_ARGS" ]] && RECO_ARGS=",$RECO_ARGS"
 
 # last argument can be the run number
 if [[ -n "$1" ]]; then
@@ -72,7 +72,7 @@ fi
 
 echo "* Running AliRoot to reconstruct '$CHUNKNAME', extra arguments are '$RECO_ARGS' and run number is $runNumber..."
 echo "rec.C" >&2
-time aliroot -l -b -q -x rec.C\(\"$CHUNKNAME\"$RECO_ARGS\) &> rec.log
+time aliroot -l -b -q -x rec.C\(\"$CHUNKNAME\"$RECO_ARGS\) &> >(tee rec.log)
 mv syswatch.log syswatch_rec.log
 
 exitcode=$?
@@ -172,7 +172,9 @@ if [ -f AODtrain.C ]; then
 
     echo "* Running the FILTERING train..."
     echo "AODtrain.C" >&2
-    time aliroot -b -q  -x AODtrain.C\(\) &> aod.log
+
+    #third argument here is 0 for pp
+    time aliroot -b -q  -x 'AODtrain.C(0,"/cvmfs/alice-ocdb.cern.ch/calibration/data",0)' &> aod.log
 
     exitcode=$?
     echo "Exit code: $exitcode"

@@ -37,13 +37,13 @@ if [ "$1" == "OCDB" ]; then
     shift
 fi
 
-RECO_ARGS=""
-
 # second argument could be SPLIT, then $2,$3 are reco args
 if [ "$1" == "SPLIT" ]; then
-    RECO_ARGS=",$2,$3"
-    shift 3
+    RECO_ARGS="${2-""}"
+    shift 2
 fi
+
+[[ -n "$RECO_ARGS" ]] && RECO_ARGS=",$RECO_ARGS"
 
 # last argument can be the run number
 if [[ -n "$1" ]]; then
@@ -224,7 +224,10 @@ if [ -f AODtrain.C ]; then
     echo "* Running the FILTERING train..."
     echo "AODtrain.C" >&2
     timeStart=`date +%s`
-    time aliroot -b -q  -x AODtrain.C\(\) &> aod.log
+
+    #third argument here is 1 for pbpb
+    time aliroot -b -q  -x 'AODtrain.C(0,"/cvmfs/alice-ocdb.cern.ch/calibration/data",1)' &> aod.log
+    
     exitcode=$?
     timeEnd=`date +%s`
     timeUsed=$(( $timeUsed+$timeEnd-$timeStart ))
