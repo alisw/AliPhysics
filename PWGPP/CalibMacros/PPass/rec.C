@@ -1,4 +1,4 @@
-void rec(const char *filename="raw.root")
+void rec(const char *filename="raw.root", int nevents=-1, const char* ocdb="/cvmfs/alice-ocdb.cern.ch/calibration/data")
 {
   /////////////////////////////////////////////////////////////////////////////////////////
   //
@@ -9,7 +9,7 @@ void rec(const char *filename="raw.root")
   
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("alien://folder=/alice/data/2015/OCDB");
+  man->SetDefaultStorage(ocdb);
 
   AliReconstruction rec;
 
@@ -30,6 +30,9 @@ void rec(const char *filename="raw.root")
   rec.SetWriteAlignmentData();
   rec.SetInput(filename);
   rec.SetUseTrackingErrorsForAlignment("ITS");
+
+  // Set protection against too many events in a chunk (should not happen)
+  if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {
