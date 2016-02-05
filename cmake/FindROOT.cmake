@@ -156,6 +156,15 @@ if(ROOTSYS)
         set(ROOT_HAS_CXX11 FALSE)
     endif()
 
+    # Check if ROOT was built with C++14 support
+    if(ROOT_CXX_FLAGS MATCHES "-std=c\\+\\+14" OR ROOT_CXX_FLAGS MATCHES "-std=c\\+\\+1y")
+        message(STATUS "ROOT was built with C++14 support")
+        set(ROOT_HAS_CXX14 TRUE)
+    else()
+        message(STATUS "ROOT was not built with C++14 support")
+        set(ROOT_HAS_CXX14 FALSE)
+    endif()
+
     # Checking for glibs
     execute_process(COMMAND ${ROOT_CONFIG} --noldflags --glibs OUTPUT_VARIABLE ROOT_GLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
     if(error)
