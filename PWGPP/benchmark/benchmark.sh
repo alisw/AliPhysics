@@ -2245,7 +2245,7 @@ EOF
     localList=${remoteList#remote.}
     rm -f "$localList" && touch "$localList"
     while read sourceFile; do
-      destinationFile="${PWD}/${sourceFile#${baseOutputDirectory}}"
+      destinationFile="${PWD}/${sourceFile#${commonOutputPath}}"
       copyFileFromRemote "$sourceFile" "$(dirname "${destinationFile}")" && \
         echo "$destinationFile" >> "$localList"
     done < <(cat "$remoteList")
