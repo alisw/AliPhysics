@@ -615,8 +615,8 @@ goMergeCPass()
   calibrationFilesToMerge=$5
   shift 5
 
-  # MergeCPass1 takes two more arguments.
-  if [[ $cpass == 1 ]]; then
+  # MergeCPass1 and 2 take two more arguments.
+  if [[ $cpass -ge 1 ]]; then
     qaFilesToMerge=$1
     filteredFilesToMerge=$2
     shift 2
