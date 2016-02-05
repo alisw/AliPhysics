@@ -298,7 +298,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     // eta-distribution of all V0s after Finder selection
     TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        // eta-distribution of all V0s after Finder selection after dEdx cuts
-    TH1F*             fHistodEdxCuts;                       // bookkeeping for dEdx cuts
+    TH2F*             fHistodEdxCuts;                       // bookkeeping for dEdx cuts
     TH2F*             fHistoTPCdEdxbefore;                  // TPC dEdx before cuts
     TH2F*             fHistoTPCdEdxafter;                   // TPC dEdx after cuts
     TH2F*             fHistoTPCdEdxSigbefore;               // TPC Sigma dEdx before cuts
@@ -311,19 +311,19 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoITSSigafter;                    // ITS Sigma after cuts
     TH2F*             fHistoPsiPairDeltaPhiafter;           // TOF Sigma after cuts
     TH1F*             fHistoTrackCuts;                      // bookkeeping for track cuts
-    TH1F*             fHistoPhotonCuts;                     // bookkeeping for photon specific cuts
+    TH2F*             fHistoPhotonCuts;                     // bookkeeping for photon specific cuts
     TH1F*             fHistoInvMassbefore;                  // e+e- inv mass distribution before cuts
     TH2F*             fHistoArmenterosbefore;               // armenteros podolanski plot before cuts
     TH1F*             fHistoInvMassafter;                   // e+e- inv mass distribution after cuts
     TH2F*             fHistoArmenterosafter;                // armenteros podolanski plot after cuts
-    TH1F*             fHistoAcceptanceCuts;                 // bookkeeping for acceptance cuts
+    TH2F*             fHistoAcceptanceCuts;                 // bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
     TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           // Flag for preselection cut used in V0Reader
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,5)
+    ClassDef(AliConversionPhotonCuts,6)
 };
 
 #endif

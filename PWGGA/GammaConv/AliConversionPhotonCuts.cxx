@@ -397,7 +397,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistograms->Add(fHistoTrackCuts);
 
   // Photon Cuts
-  fHistoPhotonCuts=new TH1F(Form("PhotonCuts %s",GetCutNumber().Data()),"PhotonCuts",15,-0.5,14.5);
+  fHistoPhotonCuts=new TH2F(Form("PhotonCuts %s",GetCutNumber().Data()),"PhotonCuts vs p_{T,#gamma}",15,-0.5,14.5,250,0,50);
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(2,"qtcut");
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(3,"chi2");
@@ -427,7 +427,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,250,0,0.25);
   fHistograms->Add(fHistoArmenterosafter);
 
-  fHistoAcceptanceCuts=new TH1F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts",11,-0.5,10.5);
+  fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",11,-0.5,10.5,250,0,50);
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(2,"maxR");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(3,"minR");
@@ -440,7 +440,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistograms->Add(fHistoAcceptanceCuts);
 
   // dEdx Cuts 
-  fHistodEdxCuts=new TH1F(Form("dEdxCuts %s",GetCutNumber().Data()),"dEdxCuts",11,-0.5,10.5);
+  fHistodEdxCuts=new TH2F(Form("dEdxCuts %s",GetCutNumber().Data()),"dEdxCuts vs p_{T,e}",11,-0.5,10.5,250,0,50);
   fHistodEdxCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistodEdxCuts->GetXaxis()->SetBinLabel(2,"TPCelectron");
   fHistodEdxCuts->GetXaxis()->SetBinLabel(3,"TPCpion");
@@ -739,7 +739,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
 Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *event){   // Specific Photon Cuts
 
   Int_t cutIndex = 0;
-  if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex);
+  if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt());
   cutIndex++;
 
   // Fill Histos before Cuts
@@ -749,7 +749,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   // Gamma selection based on QT from Armenteros
   if(fDoQtGammaSelection == kTRUE){
     if(!ArmenterosQtCut(photon)){
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //1
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //1
       return kFALSE;
     }
   }
@@ -758,7 +758,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   // Chi Cut
   if(photon->GetChi2perNDF() > fChi2CutConversion || photon->GetChi2perNDF() <=0){
     {
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //2
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //2
       return kFALSE;
     }
   }
@@ -766,7 +766,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
 
   // Reconstruction Acceptance Cuts
   if(!AcceptanceCuts(photon)){
-    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //3
+    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //3
     return kFALSE;
   }
 
@@ -774,7 +774,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   // Asymmetry Cut
   if(fDoPhotonAsymmetryCut == kTRUE){
     if(!AsymmetryCut(photon,event)){
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //4
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //4
       return kFALSE;
     }
   }
@@ -782,13 +782,13 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   //Check the pid probability
   cutIndex++; //5
   if(!PIDProbabilityCut(photon, event)) {
-    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //5
+    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //5
     return kFALSE;
   }
 
   cutIndex++; //6
   if(!CorrectedTPCClusterCut(photon, event)) {
-    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //6
+    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //6
     return kFALSE;
   }
 
@@ -805,13 +805,13 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
 
   cutIndex++; //7
   if(!PsiPairCut(photon)) {
-    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //7
+    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //7
     return kFALSE;
   }
 
   cutIndex++; //8
   if(!CosinePAngleCut(photon, event)) {
-    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //8
+    if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //8
     return kFALSE;
   }
 
@@ -821,13 +821,13 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
 
     cutIndex++; //9
     if(photonAOD->GetDCArToPrimVtx() > fDCARPrimVtxCut) { //DCA R cut of photon to primary vertex
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //9
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //9
       return kFALSE;
     }
 
     cutIndex++; //10
     if(abs(photonAOD->GetDCAzToPrimVtx()) > fDCAZPrimVtxCut) { //DCA Z cut of photon to primary vertex
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //10
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //10
       return kFALSE;
     }
   } else {
@@ -845,12 +845,12 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
         photonQuality = photonAOD->GetPhotonQuality();
       }	
       if (fDoPhotonQualitySelectionCut && photonQuality != fPhotonQualityCut){
-        if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //11
+        if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
         return kFALSE;
       }	
   } 
   cutIndex++; //12
-  if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex); //11
+  if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
 
   // Histos after Cuts
   if(fHistoInvMassafter)fHistoInvMassafter->Fill(photon->GetMass());
@@ -969,45 +969,45 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   // Exclude certain areas for photon reconstruction
 
   Int_t cutIndex=0;
-  if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+  if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
   cutIndex++;
 
   if(photon->GetConversionRadius()>fMaxR){ // cuts on distance from collision point
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
   if(photon->GetConversionRadius()<fMinR){ // cuts on distance from collision point
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
   if(photon->GetConversionRadius() <= ((abs(photon->GetConversionZ())*fLineCutZRSlope)-fLineCutZValue)){
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   else if (fUseEtaMinCut &&  photon->GetConversionRadius() >= ((abs(photon->GetConversionZ())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
   if(abs(photon->GetConversionZ()) > fMaxZ ){ // cuts out regions where we do not reconstruct
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
 
   if( photon->GetPhotonEta() > (fEtaCut)    || photon->GetPhotonEta() < (-fEtaCut) ){
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   if(fEtaCutMin>-0.1){
     if( photon->GetPhotonEta() < (fEtaCutMin) && photon->GetPhotonEta() > (-fEtaCutMin) ){
-      if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+      if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
       return kFALSE;
     }
   }
@@ -1017,14 +1017,14 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       if (fMinPhiCut < fMaxPhiCut){
         if( photon->GetPhotonPhi() > fMinPhiCut && photon->GetPhotonPhi() < fMaxPhiCut ) {
-          if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+          if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
           return kFALSE;
         }
       } else {
         Double_t photonPhi = photon->GetPhotonPhi();
         if (photon->GetPhotonPhi() < TMath::Pi()) photonPhi = photon->GetPhotonPhi() + 2*TMath::Pi();
         if( photonPhi > fMinPhiCut && photonPhi < fMaxPhiCut+2*TMath::Pi() ) {
-          if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+          if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
           return kFALSE;
         }	
       }	
@@ -1035,12 +1035,12 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 
   
   if(photon->GetPhotonPt()<fPtCut){
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
-  if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex);
+  if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
 
   return kTRUE;
 }
@@ -1176,7 +1176,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
 
   Int_t cutIndex=0;
-  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
   if(fHistoTPCdEdxSigbefore)fHistoTPCdEdxSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
   if(fHistoTPCdEdxbefore)fHistoTPCdEdxbefore->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
   cutIndex++;
@@ -1185,7 +1185,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
       fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine){
 
-      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
       return kFALSE;
     }
     cutIndex++;
@@ -1196,7 +1196,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
       }
     }
@@ -1208,7 +1208,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine &&
         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
       }
     }
@@ -1220,7 +1220,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if(fCurrentTrack->P()<fPIDMinPKaonRejectionLowP ){
       if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
       }
     }
@@ -1230,7 +1230,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
       if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
       }
     }
@@ -1241,7 +1241,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if( fCurrentTrack->P()<fPIDMinPPionRejectionLowP ){
       if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
       }
     }
@@ -1275,7 +1275,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if(fUseTOFpid){
       if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
         fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
       }
     }
@@ -1288,7 +1288,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if(fUseITSpid){
       if(fCurrentTrack->Pt()<=fMaxPtPIDITS){
         if(fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)>fITSPIDnSigmaAboveElectronLine || fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)<fITSPIDnSigmaBelowElectronLine ){
-          if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+          if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
           return kFALSE;
         }
       }  
@@ -1301,13 +1301,13 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   // Apply TRD PID
   if(fDoTRDPID){
     if(!fPIDResponse->IdentifiedAsElectronTRD(fCurrentTrack,fPIDTRDEfficiency)){
-      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
       return kFALSE;
     }
   }
   cutIndex++;
 
-  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex);
+  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
   if(fHistoTPCdEdxSigafter)fHistoTPCdEdxSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
   if(fHistoTPCdEdxafter)fHistoTPCdEdxafter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
   
