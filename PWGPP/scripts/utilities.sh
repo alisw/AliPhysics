@@ -879,6 +879,60 @@ copyFileToRemote() (
   return $((err & 1))
 )
 
+function xCopyFileToRemote() {
+  # Recursive and parallel copy for files. Usage:
+  #   xCopyFileToRemote -w 10 -d proto://host//destpath file1 file2 @list dir...
+  # Where -w is the number of parallel workers (defaults to 15).
+
+  opname="[xCopyFileToRemote]"
+  workers=0
+  while [[ "$1" != -- ]]; do
+    case "$1" in
+      --destdir|-d) dstdir="$2"; shift 2 ;;
+      --workers|-w) workers=$(($2)); shift 2 ;;
+      *) break ;;
+    esac
+  done
+  [[ "$dstdir" == '' ]] && { alilog_error "$opname Missing --destdir" ; exit 1 ; }
+  [[ $workers == 0 ]] && workers=15  # default
+  alilog_info "$opname Copying files to $dstdir using $workers workers"
+
+  # Create a directory of symlinks: readlink will tell us what is each source
+  # file, with respect to the *current* directory. Symlinks are used because
+  # operations on them are atomic.
+  t=$(mktemp -d /tmp/xcp.XXXXX)
+  count=0
+  while [[ $# -gt 0 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read src; do
+      [[ -d "$src" ]] && inputcmd="find $src -type f" || inputcmd="echo $src"
+      while read -u 4 src2; do
+        ln -nfs $src2 $t/$count
+        count=$((count+1))
+      done 4< <($inputcmd)
+    done < <($inputcmd)
+    shift
+  done
+
+  # Start workers.
+  for ((i=0; i<workers; i++)); do
+    ( while [[ 1 ]]; do
+        placeholder=$(find $t -type l -print -quit 2> /dev/null)
+        [[ "$placeholder" == '' ]] && break
+        src=$(readlink $placeholder)
+        rm $placeholder 2> /dev/null || continue
+        copyFileToRemote $src $dstdir/$(dirname $src)
+      done
+    ) &
+  done
+
+  # Do not leave rubbish behind if dying. Kills the whole process group (-$$).
+  trap "rm -rf $t; kill -9 -$$" SIGHUP SIGINT SIGTERM
+
+  wait
+  rm -rf $t
+}
+
 paranoidCp()
 (
   #recursively copy files and directories
