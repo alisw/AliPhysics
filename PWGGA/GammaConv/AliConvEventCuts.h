@@ -184,6 +184,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
+      Bool_t    GetUseNewMultiplicityFramework(TString period); 
       void      GetCorrectEtaShiftFromPeriod(TString periodName);
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent); 
       TClonesArray*     GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);

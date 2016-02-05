@@ -229,6 +229,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    // Event Cuts
    Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
    Double_t GetCentrality(AliVEvent *event);
+   Bool_t GetUseNewMultiplicityFramework(TString period);
    Int_t GetNumberOfContributorsVtx(AliVEvent *event);
    Bool_t VertexZCut(AliVEvent *fInputEvent);
    Bool_t IsTriggerSelected(AliVEvent *fInputEvent);
