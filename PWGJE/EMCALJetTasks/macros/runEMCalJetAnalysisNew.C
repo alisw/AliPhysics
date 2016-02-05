@@ -38,6 +38,9 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
   AliAnalysisTaskEmcal::BeamType iBeamType = AliAnalysisTaskEmcal::kpp;
 
+  Bool_t bIsRun2 = kFALSE;
+  if (sRunPeriod.Length() == 6 && sRunPeriod.BeginsWith("lhc15")) bIsRun2 = kTRUE;
+
   if (sRunPeriod == "lhc10h" || sRunPeriod == "lhc11h" || sRunPeriod == "lhc15o") {
     iBeamType = AliAnalysisTaskEmcal::kAA;
   }
@@ -48,6 +51,8 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
   Double_t kGhostArea = 0.01;
   if (iBeamType != AliAnalysisTaskEmcal::kpp) kGhostArea = 0.005;
+
+  Bool_t bSeparateEMCalDCal = bIsRun2;
 
   AliParticleContainer::SetDefTrackCutsPeriod(sRunPeriod);
 
@@ -125,7 +130,8 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     AliAnalysisTaskEmcalJetQA* pQATaskBefore = AddTaskEmcalJetQA("", "usedefault", "usedefault", "BeforeTender");
     pQATaskBefore->GetClusterContainer(0)->SetClusECut(0.15);
     pQATaskBefore->GetClusterContainer(0)->SetClusPtCut(0.);
-    pQATaskBefore->SetHistoBins(200, 0, 30);
+    pQATaskBefore->SetSeparateEMCalDCal(bSeparateEMCalDCal);
+    pQATaskBefore->SetHistoBins(300, 0, 150);
     pQATaskBefore->SelectCollisionCandidates(kPhysSel);
 
     const char *cPass        = 0;
@@ -167,7 +173,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     bRemExoticClus  = kTRUE;
     iNonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected;
 
-    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, 0, "", 0., kTRUE);
+    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, 0, "", 0., kFALSE);
     pClusterMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pClusterMakerTask->GetClusterContainer(0)->SetClusECut(0.);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
@@ -175,7 +181,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
   if (bDoFullJets && bDoHadCorr) {
     // Cluster-track matcher task
-    AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher("usedefault", "usedefault", 0.1, kFALSE, kTRUE, kTRUE, kTRUE);
+    AliEmcalClusTrackMatcherTask *pMatcherTask = AddTaskEmcalClusTrackMatcher("usedefault", "usedefault", 0.1, kFALSE, kTRUE, kTRUE, kFALSE);
     pMatcherTask->SelectCollisionCandidates(kPhysSel);
     pMatcherTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
     pMatcherTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
@@ -189,31 +195,31 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
     // Hadronic correction task
     AliHadCorrTask *pHadCorrTask = AddTaskHadCorr("usedefault", "usedefault", "",
-        kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kTRUE);
+        kHadCorrF, 0.15, 0.030, 0.015, 0, kTRUE, kFALSE);
     pHadCorrTask->SelectCollisionCandidates(kPhysSel);
     pHadCorrTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
     pHadCorrTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.15);
     pHadCorrTask->GetClusterContainer(0)->SetClusECut(0);
     pHadCorrTask->GetClusterContainer(0)->SetClusPtCut(0.);
-    pHadCorrTask->SetHistoBins(200, 0, 30);
   }
 
   // QA task
   AliAnalysisTaskEmcalJetQA *pQATask = 0;
   if (bDoFullJets) {
     pQATask = AddTaskEmcalJetQA("usedefault", "usedefault", "usedefault");
-    pQATask->GetClusterContainer(0)->SetClusECut(0.30);
+    pQATask->GetClusterContainer(0)->SetClusECut(0.);
     pQATask->GetClusterContainer(0)->SetClusPtCut(0.);
     pQATask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
     pQATask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    pQATask->SetSeparateEMCalDCal(bSeparateEMCalDCal);
   }
   else {
     pQATask = AddTaskEmcalJetQA("usedefault", "", "");
   }
   pQATask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
   pQATask->GetParticleContainer(0)->SetParticlePtCut(0.15);
+  pQATask->SetHistoBins(300, 0, 150);
   pQATask->SelectCollisionCandidates(kPhysSel);
-  pQATask->SetHistoBins(200, 0, 30);
 
   // Charged jet analysis
   if (bDoChargedJets) {
@@ -229,6 +235,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pSpectraChTask->SetNLeadingJets(1);
     pSpectraChTask->SelectCollisionCandidates(kPhysSel);
     pSpectraChTask->SetHistoType(kHistoType);
+    pSpectraChTask->SetHistoBins(200, 0, 200);
   }
 
   // Full jet analysis
@@ -250,6 +257,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     pSpectraFuTask->SetNLeadingJets(1);
     pSpectraFuTask->SelectCollisionCandidates(kPhysSel);
     pSpectraFuTask->SetHistoType(kHistoType);
+    pSpectraFuTask->SetHistoBins(200, 0, 200);
   }
 
   TObjArray *pTopTasks = pMgr->GetTasks();
