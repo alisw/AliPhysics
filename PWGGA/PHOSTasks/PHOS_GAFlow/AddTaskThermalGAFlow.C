@@ -5,14 +5,19 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
    const Int_t fDebug = 0,
    const Int_t fMinCells = 3,
    const Double_t fMinE = 0.3,
-   const Double_t fMinTrackDr = 0.3,
+   const Double_t fMinTrackDr = 0,
    const Double_t fMaxVertexx = 10,
    const Double_t fMinCentrality = -1,
    const Double_t fMaxCentrality = 100,
    const Double_t fCoreRadius = 3.5,
-   const Double_t fMinCoreEnergyRatio = 0.3,
+   const Double_t fMinCoreEnergyRatio = 0.4,
    const Double_t fMinLambdaDisp = 0.3,
    const Double_t fMinCPVStd = 2.5,
+
+   const Int_t fMixVertxbins = 1,
+   const Int_t fMixCentbins = 1,
+   const Int_t fMixEvbins = 1,
+   const Int_t fNptbins = 150,
 //End Default Cuts
 
    const char *tag            = ""
@@ -53,6 +58,11 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
   PHOSGAtask->SetMinCoreEnergyRatio(fMinCoreEnergyRatio);
   PHOSGAtask->SetMinLambdaDisp(fMinLambdaDisp);
   PHOSGAtask->SetMinCPVStd(fMinCPVStd);
+
+  PHOSGAtask->SetMixVertxbins(fMixVertxbins);
+  PHOSGAtask->SetMixCentbins(fMixCentbins);
+  PHOSGAtask->SetMixEvbins(fMixEvbins);
+  PHOSGAtask->SetNptbins(fNptbins);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
