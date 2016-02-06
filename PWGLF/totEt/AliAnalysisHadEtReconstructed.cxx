@@ -503,6 +503,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNegEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNegEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCPosEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCPosEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCLimitedPhiCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCLimitedPhi(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDNegEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDNegEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDPosEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDPosEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDLimitedPhiCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDLimitedPhi(),1.0);
