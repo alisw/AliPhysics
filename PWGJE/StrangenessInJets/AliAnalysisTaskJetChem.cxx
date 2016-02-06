@@ -7580,7 +7580,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	    
 	    fEta = v0st->Eta();
 	    
-	    CalculateInvMass(v0st, kAntiLambda, invMLa, trackPt);  //function to calculate invMass with TLorentzVector class
+	    CalculateInvMass(v0st, kLambda, invMLa, trackPt);  //function to calculate invMass with TLorentzVector class
 	    
 	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
 	    	    
