@@ -2204,9 +2204,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fhnALaEmbConeStandard             = new THnSparseF("fhnALaEmbConeStandard","emb jet pT; ALa inv. mass, emb. UE V0 subtraction; particle pT; particle #eta",4,binsALaEmbConeStandard,xminALaEmbConeStandard,xmaxALaEmbConeStandard);
 
 
-  fh2MCEmbK0sJetPt              = new TH2F("fh2MCEmbK0sJetPt","#it{p^{ch,jet}}_{T}; MC gen. PYTHIA K^{0}_{s} #it{p}_{T}",19,5.,100.,120,0.,12.);
-  fh2MCEmbLaJetPt               = new TH2F("fh2MCEmbLaJetPt","#it{p^{ch,jet}}_{T}; MC gen. PYTHIA #Lambda #it{p}_{T}",19,5.,100.,120,0.,12.);
-  fh2MCEmbALaJetPt              = new TH2F("fh2MCEmbALaJetPt","#it{p^{ch,jet}}_{T}; MC gen. PYTHIA #bar{#Lambda} #it{p}_{T}",19,5.,100.,120,0.,12.);
+  fh2MCEmbK0sJetPt              = new TH2F("fh2MCEmbK0sJetPt","PYTHIA gen. K^{0}_{s} ;#it{p^{ch,jet}}_{T}; MC gen.#it{p}_{T}",19,5.,100.,120,0.,12.);
+  fh2MCEmbLaJetPt               = new TH2F("fh2MCEmbLaJetPt"," PYTHIA gen. #Lambda ;#it{p^{ch,jet}}_{T}; MC gen.#it{p}_{T}",19,5.,100.,120,0.,12.);
+  fh2MCEmbALaJetPt              = new TH2F("fh2MCEmbALaJetPt","PYTHIA gen. #bar{#Lambda};#it{p^{ch,jet}}_{T}; MC gen.#it{p}_{T}",19,5.,100.,120,0.,12.);
 
 
   fh1MCMultiplicityPrimary      = new TH1F("fh1MCMultiplicityPrimary", "MC Primary Particles;NPrimary;Count", 201, -0.5, 200.5);
@@ -7345,7 +7345,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	Double_t genPt = part->Pt();  
 	if(fDebug > 2)std::cout<<" gen. EmbCone K0s candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
 	   
-	fh2MCEmbK0sJetPt->Fill(genPt,jetPt);   
+	fh2MCEmbK0sJetPt->Fill(jetPt,genPt);   
 	
       } 
     } 
@@ -7560,7 +7560,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	Double_t genPt = part->Pt(); 
 	if(fDebug > 2)std::cout<<" gen. EmbCone Lambda candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
 	    
-	fh2MCEmbLaJetPt->Fill(genPt,jetPt);   
+	fh2MCEmbLaJetPt->Fill(jetPt,genPt);   
 	
       } 
     } 
@@ -7776,7 +7776,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	      Double_t genPt = part->Pt();   
 	      if(fDebug > 2)std::cout<<" gen. EmbCone ALambda candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
 	  
-	      fh2MCEmbALaJetPt->Fill(genPt,jetPt);   
+	      fh2MCEmbALaJetPt->Fill(jetPt,genPt);    
 	      
 	    } 
 	  } 
