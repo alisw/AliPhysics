@@ -57,7 +57,7 @@ AliAnalysisTaskChargedJetsHadronCF* AddTaskChargedJetsHadronCF(
   trackCont->SetFilterHybridTracks(kTRUE);
   trackCont->SetParticlePtCut(minTrackPt);
 
-  AliJetContainer *jetCont = jetTask->AddJetContainer(jetArray,0,jetRadius);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(jetArray,6,jetRadius);
   if (jetCont) {
     jetCont->SetRhoName(rhoObject);
     jetCont->SetPercAreaCut(minJetAreaPerc);
