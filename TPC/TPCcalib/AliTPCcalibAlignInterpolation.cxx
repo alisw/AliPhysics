@@ -2233,3 +2233,225 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   delete pcstreamFit;
   
 }
+
+TTree* AliTPCcalibAlignInterpolation::LoadDistortionTrees(const char * maplist){
+  //
+  // Load distortion trees specified in the maplist 
+  // Loading distortion maps as a friend trees used for
+  //    - correction for reference distortions (e.g map at low IR)
+  //    - distortion maps correlation studies
+  //    - distortion maps scaling fitting
+  // 
+  // To obtain run number and TimeBin ID we assume naming convention as used in the calibration procedure. 
+  // This naming convention is hardwired in the code. 
+  //
+  TTree * treeReturn=0;
+  TTree * tree=0;
+  TObjArray* array = TString(gSystem->GetFromPipe(TString::Format("cat %s",maplist).Data())).Tokenize("\n");  
+  TObjArray*arrayOK=new TObjArray(array->GetEntries());
+  for (Int_t i=0; i<array->GetEntries(); i++){
+    printf("%s\n",array->At(i)->GetName());
+    TString fname(array->At(i)->GetName());
+    Int_t index=fname.Index("/000");
+    TString runName(&(fname[index+1]),9);
+    index=fname.Index("/Time");
+    TString timeString(&(fname[index+9]),4);    
+    if (TString(array->At(i)->GetName()).Contains("_0.root")){
+      tree = AliTPCcalibAlignInterpolation::AddFriendDistortionTree(treeReturn,array->At(i)->GetName(),"deltaRPhiTPCITSDist",runName+"_"+timeString+"ITSY");
+    }
+    if (TString(array->At(i)->GetName()).Contains("_1.root")){
+      tree = AliTPCcalibAlignInterpolation::AddFriendDistortionTree(treeReturn,array->At(i)->GetName(),"deltaRPhiTPCITSTRDDist",runName+"_"+timeString+"TRDY");
+    }
+    if (TString(array->At(i)->GetName()).Contains("_2.root")){
+      tree = AliTPCcalibAlignInterpolation::AddFriendDistortionTree(treeReturn,array->At(i)->GetName(),"deltaRPhiTPCITSTOFDist",runName+"_"+timeString+"TOFY");
+    }
+    if (TString(array->At(i)->GetName()).Contains("_3.root")){
+      tree = AliTPCcalibAlignInterpolation::AddFriendDistortionTree(treeReturn,array->At(i)->GetName(),"deltaZTPCITSDist",runName+"_"+timeString+"ITSZ");
+    }
+    if (TString(array->At(i)->GetName()).Contains("_4.root")){
+      tree = AliTPCcalibAlignInterpolation::AddFriendDistortionTree(treeReturn,array->At(i)->GetName(),"deltaZTPCITSTRDDist",runName+"_"+timeString+"TRDZ");
+    }
+    if (TString(array->At(i)->GetName()).Contains("_5.root")){
+      tree = AliTPCcalibAlignInterpolation::AddFriendDistortionTree(treeReturn,array->At(i)->GetName(),"deltaZTPCITSTOFDist",runName+"_"+timeString+"TOFZ");
+    }
+    if (tree) {
+      arrayOK->AddLast(array->At(i));
+      treeReturn=tree;
+    }    
+  } 
+  treeReturn->SetMarkerStyle(25); 
+  treeReturn->SetMarkerSize(0.4);
+  return treeReturn;
+}
+
+
+
+void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, const char* chtree,  Float_t radius, Float_t kZ, const char *figType){
+  // Predefined plot: 
+  //    Draw distortion map comparison
+  //    Compare median and LTM estimator of the mean value of distortion in the bin
+  //
+  
+  // Example usage:
+  /* 
+     const char* chtree="000244918_his1TRDY";    // Low IR one polarity
+     const char* chtree="000246391_his1TRDY";    // Low IR another polarity
+     Float_t radius=100;
+     Float_t kZ=0.1;
+     figType="png"; 
+     AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(tree, chtree, radius,kZ,figType);
+  */
+  if (!tree) {
+    ::Error("DrawEstimatorComparison","Tree not available");
+    return;
+  }
+  if (chtree && tree->GetListOfFriends()->FindObject(chtree)==NULL){
+    ::Error("DrawEstimatorComparison","Ttree %s not available",chtree);
+    return;
+  }
+  gStyle->SetLabelSize(0.07,"XYZ");
+  gStyle->SetTitleSize(0.06,"XYZ");
+  gStyle->SetTitleOffset(1.0,"X");
+  gStyle->SetTitleOffset(0.6,"Y");
+  gStyle->SetTitleOffset(0.4,"Z");
+  gStyle->SetOptTitle(1);
+
+
+  TCanvas * canvasC = new TCanvas("canvasC","canvasC",1400,1000);
+  TPad * pad=0;
+  TPad *pad3 = new TPad("pad1","This is pad1",0.00,0.0,  1,0.33);
+  TPad *pad2 = new TPad("pad2","This is pad2",0.00,0.33, 1,0.66);
+  TPad *pad1 = new TPad("pad3","This is pad3",0.00,0.66, 1,1);
+  pad1->SetBottomMargin(0);
+  pad2->SetBottomMargin(0);
+  pad3->SetBottomMargin(0.15);
+  pad2->SetTopMargin(0);
+  pad3->SetTopMargin(0);
+  pad1->Draw();
+  pad2->Draw();
+  pad3->Draw();
+  pad1->SetGrid(1,1);
+  pad2->SetGrid(1,1);
+  pad3->SetGrid(1,1);
+  if (chtree){
+    pad1->cd();
+    tree->Draw(TString::Format("%s.binMedian:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
+    pad2->cd();
+    tree->Draw(TString::Format("%s.vecLTM.fElements[1]:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
+    pad3->cd();
+    tree->Draw(TString::Format("%s.vecLTM.fElements[1]-%s.binMedian:sectorCenter:RCenter",chtree,chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
+  }else{
+    tree->Draw("binMedian:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
+    pad2->cd();
+    tree->Draw("vecLTM.fElements[1]:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
+    pad3->cd();
+    tree->Draw("binMedian-vecLTM.fElements[1]:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
+  }
+
+  if (figType) canvasC->SaveAs(TString::Format("distortionMap_%s_R%2.0f_kZ%2.2f.%s",chtree,radius,kZ,figType).Data());
+}
+
+
+
+Bool_t  AliTPCcalibAlignInterpolation::DrawScalingComparison(TTree * tree, const char* chRef, const char *chBin0, const char *chBin1,  Float_t R0, Float_t R1, Float_t kZ, const char *figType){
+  ///
+  /// Make predefined plot: 
+  ///    Draw distortion maps comparison and save figure (figType) in current working directory.
+  ///       Fig 1.): Map run/timeBin chBin0 corrected for reference map (chRef)offset 
+  ///       Fig 2.): Map run/timeBin chBin1 corrected for reference map (chRef)offset  
+  ///       Fig 3.): Map (chBin1-chRef)-scale*(chBin0-chRef)
+  /// 
+  /// Input:    
+  ///   \param TTree * tree - input tree with distortion maps and "friend trees" per time bins
+  ///   \param chRef        - reference distortion map
+  ///   \param chBin0       - run or time bin shown in firs row
+  ///   \param chBin1       - run or time bin 
+  /// \return kTRUE if comparison of distortion map possible and figure saved
+  ///    TString::Format("distortionMapScaling_%s_%s_%s_R0%2.0f_R1%2.0f_kZ%2.2f.%s",chBin0,chBin1,chRef,R0,R1,kZ,figType).Data();
+  /// Example usage:
+  /// To be used for systematic studies of TPC distortion. 
+  /// E.g:   
+  /*
+    TTree * tree = AliTPCcalibAlignInterpolation::LoadDistortionTrees("map.list");
+    const char* chRef="000246391_his1TRDY";       // Low IR refernce run for given B-field polarity
+    const char* chBin0="000246980_his1TRDY";      // time bin at the beginnig of the fill
+    const char* chBin1="000246994_his1TRDY";      // time bin at the end of the fill
+    AliTPCcalibAlignInterpolation::DrawScalingComparison(tree, chRef, chBin0, chBin1, 85, 130, 0.1, "png");
+  */
+  //
+  // 0.) Check variables
+  //
+  if (tree==NULL) {
+    ::Error("AliTPCcalibAlignInterpolation::DrawScalingComparison","Tree not set");
+    return kFALSE;
+  }
+  Int_t tentries[3]={0};
+  const char *vars[3]={chRef, chBin0, chBin1};
+  for (Int_t i=0; i<3;i++){
+    tentries[i]=tree->Draw(TString::Format("%s.binMedian",vars[i]),"qptCenter==0","goff", 10000);
+    if (tentries[i]<=0){
+      ::Error("AliTPCcalibAlignInterpolation::DrawScalingComparison","Expression %s  or tree %s not valid ", vars[i], tree->GetName());
+      return kFALSE;
+    }
+  }
+  //
+  // 1.) get scaling factor using A side scaling (OROC scaling on C side more problematic)
+  //
+  Int_t entries = tree->Draw(TString::Format("%s.binMedian-%s.binMedian:%s.binMedian-%s.binMedian", chBin0,chRef, chBin1,chRef).Data(),"qptCenter==0&&kZCenter>0","goff");
+  TGraph * gr0 = new TGraph(entries,tree->GetV1(),tree->GetV2());
+  TGraph * gr1 = new TGraph(entries,tree->GetV2(),tree->GetV1());
+  gr0->Fit("pol1");
+  gr1->Fit("pol1");
+  Double_t slope=(gr0->GetFunction("pol1")->GetParameter(1)+ 1/gr1->GetFunction("pol1")->GetParameter(1))*0.5;  
+  tree->SetAlias("norm0",TString::Format("%f*(%s.binMedian-%s.binMedian)",slope,chBin0,chRef).Data());
+  //
+  // 2. Make plots 
+  //
+  gStyle->SetLabelSize(0.07,"XYZ");
+  gStyle->SetLabelSize(0.03,"Y");
+  gStyle->SetTitleSize(0.06,"XYZ");
+  gStyle->SetTitleSize(0.04,"Y");
+  gStyle->SetTitleOffset(1.0,"X");
+  gStyle->SetTitleOffset(0.5,"Y");
+  gStyle->SetTitleOffset(0.4,"Z");
+  gStyle->SetOptTitle(1);
+  //
+  TCanvas * canvasC = new TCanvas("canvasC","canvasC",1400,1000);
+  TPad * pad=0;
+  TPad *pad3 = new TPad("pad1","This is pad1",0.00,0.0,  1,0.33);
+  TPad *pad2 = new TPad("pad2","This is pad2",0.00,0.33, 1,0.66);
+  TPad *pad1 = new TPad("pad3","This is pad3",0.00,0.66, 1,1);
+  pad1->SetBottomMargin(0);
+  pad2->SetBottomMargin(0);
+  pad3->SetBottomMargin(0.15);
+  pad2->SetTopMargin(0);
+  pad3->SetTopMargin(0);
+  pad1->Draw();
+  pad2->Draw();
+  pad3->Draw();
+  pad1->SetGrid(1,1);
+  pad2->SetGrid(1,1);
+  pad3->SetGrid(1,1);
+  TCut cutAccept=TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&RCenter>%2.0f&&RCenter<%2.0f&&%s.rms>0",kZ,R0,R1,chRef).Data();
+  Int_t isOK=0;
+  const Int_t kMinEntries=100;
+  {
+    pad1->cd();
+    isOK+=tree->Draw(TString::Format("(%s.binMedian-%s.binMedian):sectorCenter:RCenter", chBin0,chRef),cutAccept,"colz")>kMinEntries;
+    pad2->cd();
+    isOK+=tree->Draw(TString::Format("(%s.binMedian-%s.binMedian):sectorCenter:RCenter", chBin1,chRef),cutAccept,"colz")>kMinEntries;
+    pad3->cd();
+    isOK+=tree->Draw(TString::Format("(%s.binMedian-%s.binMedian)-norm0:sectorCenter:RCenter", chBin1,chRef),cutAccept,"colz")>kMinEntries;
+  }
+  if (isOK<3){
+    ::Error("AliTPCcalibAlignInterpolation::DrawScalingComparison","Not enough points in selected region R<%2.0f,%2.0f>", R0,R1);
+    return kFALSE;
+  }
+  if (figType) canvasC->SaveAs(TString::Format("distortionMapScaling_%s_%s_%s_R0%2.0f_R1%2.0f_kZ%2.2f.%s",chBin0,chBin1,chRef,R0,R1,kZ,figType).Data());
+  return kTRUE;
+}
+
+
+
+
+
