@@ -32,7 +32,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskDmesonJetCorrelations.cxx
+    AliAnalysisTaskDmesonJets.cxx
     AliAnalysisTaskEmcalJetFlavourTagExample.cxx
     AliAnalysisTaskEmcalJetHF.cxx
     AliAnalysisTaskEmcalJetV0CF.cxx
