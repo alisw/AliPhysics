@@ -152,6 +152,7 @@ class AliJetContainer : public AliEmcalContainer {
 
  protected:
   void SetEMCALGeometry();
+  void SetAcceptanceCuts();
   
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
   Float_t                     fJetRadius;            //  jet radius

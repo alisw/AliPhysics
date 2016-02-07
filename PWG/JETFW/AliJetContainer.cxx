@@ -157,6 +157,14 @@ void AliJetContainer::SetArray(AliVEvent *event)
 
   AliEmcalContainer::SetArray(event);
 
+  SetAcceptanceCuts();
+}
+
+//________________________________________________________________________
+void AliJetContainer::SetAcceptanceCuts()
+{
+  // Set acceptance
+
   switch (fJetAcceptanceType) {
   case kTPC:
     AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
