@@ -38,6 +38,7 @@
 #include "AliOADBContainer.h"
 #include "AliMagF.h"
 #include "AliAODMCParticle.h"
+#include "AliEPFlattener.h"
 
 // Analysis task to fill histograms with PHOS ESD clusters and cells
 // Authors: Dmitri Peressounko
@@ -52,10 +53,8 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
   fOutputContainer(0x0),
   fEvent(0x0),
   fPHOSEvent(0x0),
-  fRP(0.),
-  fRPV0A(0.),
-  fRPV0C(0.),
-  fHaveTPCRP(0),
+  fV0AFlat(0x0),
+  fV0CFlat(0x0),
   fRunNumber(0),
   fCentrality(0.),
   fCenBin(0),
@@ -256,66 +255,35 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",1.5) ;
   
-/*  
-  if(fEventCounter == 0) {
-    
-======  
-  //Find track with closest extrapolation to cluster
-  AliESDEvent *esd = 0x0 ;
-  Double_t  magF = esd->GetMagneticField();
  
-  Double_t magSign = 1.0;
-  if(magF<0)magSign = -1.0;
-  
-  if (!TGeoGlobalMagField::Instance()->GetField()) {
-    AliError("Margnetic filed was not initialized, use default") ;
-    AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-====
-    
-    
-    
-    
-   OpenInfoCalbration(fEvent->GetRunNumber()) ;
+  if(fEventCounter == 0) {
+    //Get Event Plane flattening
     Int_t run = fEvent->GetRunNumber() ;
-    TFile * fflat = TFile::Open("EP_calib.root") ;
-    gROOT->cd() ;
-    TH1D * tmp = (TH1D*)fflat->Get(Form("TPC_%d_cos2",run)) ;
-printf("Filling EP calibration for run %d \n",run) ;    
-    fTPCflatC2 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("TPC_%d_sin2",run)) ;
-    fTPCflatS2 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("TPC_%d_cos4",run)) ;
-    fTPCflatC4 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("TPC_%d_sin4",run)) ;
-    fTPCflatS4 = new TH1D(*tmp) ;
-printf("...CPV done \n") ;
-    
-    tmp = (TH1D*)fflat->Get(Form("V0A_%d_cos2",run)) ;
-    fV0AflatC2 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("V0A_%d_sin2",run)) ;
-    fV0AflatS2 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("V0A_%d_cos4",run)) ;
-    fV0AflatC4 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("V0A_%d_sin4",run)) ;
-    fV0AflatS4 = new TH1D(*tmp) ;
-printf("...V0A done \n") ;
-    
-    tmp = (TH1D*)fflat->Get(Form("V0C_%d_cos2",run)) ;
-    fV0CflatC2 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("V0C_%d_sin2",run)) ;
-    fV0CflatS2 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("V0C_%d_cos4",run)) ;
-    fV0CflatC4 = new TH1D(*tmp) ;
-    tmp = (TH1D*)fflat->Get(Form("V0C_%d_sin4",run)) ;
-    fV0CflatS4 = new TH1D(*tmp) ;
-    fflat->Close() ;
-printf("...V0C done \n") ;
-    
+    AliOADBContainer flatContainer("phosFlat");
+    flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
+    TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
+    if(!arr){
+      AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
+      arr = (TObjArray*)flatContainer.GetObject(1,"phosFlat"); //default
+    }
+        
+    AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
+//    AliEPFlattener * h = (AliEPFlattener*)arr->At(0) ;  
+//      if(fTPCFlat) delete fTPCFlat ;
+//      fTPCFlat = new AliEPFlattener() ;
+//      fTPCFlat = h ;
+    AliEPFlattener * h = (AliEPFlattener*)arr->At(1) ;  
+    if(fV0AFlat) delete fV0AFlat ;
+    fV0AFlat = new AliEPFlattener() ;
+    fV0AFlat = h ;
+    h = (AliEPFlattener*)arr->At(2) ;  
+    if(fV0CFlat) delete fV0CFlat ;
+    fV0CFlat = new AliEPFlattener() ;
+    fV0CFlat = h ;
+   
     fEventCounter++ ;
   }
-*/
+
   
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
@@ -366,31 +334,41 @@ printf("...V0C done \n") ;
   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",4.5) ;
 
-  if(fCentrality<10.)
+  if(fCentrality<5.)
     fCenBin=0 ;
-  else if(fCentrality<20.)
+  else if(fCentrality<10.)
     fCenBin=1 ;
-  else if(fCentrality<40.)
+  else if(fCentrality<20.)
     fCenBin=2 ;
-  else if(fCentrality<60.)
+  else if(fCentrality<40.)
     fCenBin=3 ;
   else 
     fCenBin=4 ;
 
 
   //reaction plane
-  Double_t rpFull=0.,dPsi=0. ; 
-  fHaveTPCRP=GetTPCEventPlane(rpFull,dPsi);
-   
-  FillHistogram("phiRP",rpFull,fCentrality) ;
-  
-  if(fHaveTPCRP){
-    while(fRP<0)fRP+=TMath::Pi() ;
-    while(fRP>TMath::Pi())fRP-=TMath::Pi() ;
-    FillHistogram("phiRPflat",fRP,fCentrality) ;  
+  AliEventplane *eventPlane = fEvent->GetEventplane();
+  if( ! eventPlane ) { //Event has no event plane
+    PostData(1, fOutputContainer);
+    return;
   }
-  else
-   fRP=0. ; 
+  //V0A
+  const Int_t harmonics = 2; 
+  Double_t qx=0., qy=0.;  
+  Double_t rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent,8, harmonics,qx,qy);
+  //V0C
+  Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
+
+  while(rpV0A<0)rpV0A+=TMath::TwoPi()/harmonics ;
+  while(rpV0A>TMath::TwoPi()/harmonics)rpV0A-=TMath::TwoPi()/harmonics ;
+  rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
+  
+  while(rpV0C<0)rpV0C+=TMath::TwoPi()/harmonics ;
+  while(rpV0C>TMath::TwoPi()/harmonics)rpV0C-=TMath::TwoPi()/harmonics ;
+  rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
+  
+  Double_t rpFull=0.5*(rpV0A+rpV0C) ;  
+  FillHistogram("phiRPflat",rpFull,fCentrality) ;  
   
  
   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
@@ -401,14 +379,12 @@ printf("...V0C done \n") ;
   //We have 10 bins
     
   
-  Int_t irp=Int_t(10.*(fRP)/TMath::Pi());
+  Int_t irp=Int_t(10.*(rpFull)/TMath::Pi());
   if(irp>9)irp=9 ;
 
   if(!fPHOSEvents[zvtx][fCenBin][irp]) 
     fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
   TList * prevPHOS = fPHOSEvents[zvtx][fCenBin][irp] ;
-
-  //  ProcessMC() ;
 
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
@@ -549,7 +525,15 @@ printf("...V0C done \n") ;
       track2.SetP(mom2) ;
       AliFemtoParticle part2(&track2,kgMass) ;
       
-      AliFemtoPair pair(&part1,&part2);
+      //Photons are sorted, try to remove it
+      AliFemtoParticle *a = &part1 ;
+      AliFemtoParticle *b = &part2 ;
+      if(gRandom->Uniform()>0.5){
+        a = &part2 ;
+        b = &part1 ;
+      }
+      
+      AliFemtoPair pair(a,b);
       Double_t qinv= pair.QInv();
       Double_t kT = pair.KT() ;
       TString kTbin="15" ;
@@ -621,14 +605,16 @@ printf("...V0C done \n") ;
         mom2.SetZ(ph2->Pz()) ;
         track2.SetP(mom2) ;
         AliFemtoParticle part2(&track2,kgMass) ;
-      
-        AliFemtoPair pair(&part1,&part2);
-	//Photons are ordered during reconstruction
-	if(gRandom->Uniform()<0.5){
-	   pair.SetTrack1(&part2);
-	   pair.SetTrack2(&part1);
-	}
-        Double_t qinv= pair.QInv();
+       
+	AliFemtoParticle *a = &part1 ;
+        AliFemtoParticle *b = &part2 ;
+        if(gRandom->Uniform()>0.5){
+          a = &part2 ;
+          b = &part1 ;
+        }
+        AliFemtoPair pair(a,b);
+
+	Double_t qinv= pair.QInv();
         Double_t kT = pair.KT() ;
         TString kTbin="15" ;
         if(kT<0.2) kTbin="Kt00-02";
@@ -1102,52 +1088,4 @@ Bool_t AliAnalysisTaskgg::SecondaryPi0Cut(const AliCaloPhoton * ph1, const AliCa
   return kTRUE ;
   
   
-}
-//____________________________________________________________________________
-Bool_t AliAnalysisTaskgg::GetTPCEventPlane(Double_t &epAngle, Double_t &qsubRes){
-
-    Int_t fHarmonics=2; 
-
-    float mQx=0, mQy=0;
-    float mQx1=0, mQy1=0, mQx2=0, mQy2=0;
-    AliAODTrack* track;
-    Double_t weight=1.;
-
-    int nt = InputEvent()->GetNumberOfTracks();
-    Int_t ntracks=0 ;
-    for (int i=0; i<nt; i++){
-      track = (AliAODTrack*)InputEvent()->GetTrack(i) ;
-      if(!SelectTrack(track))
-        continue ;
-      if (track) {
-            Double_t qx=weight*cos(Double_t(fHarmonics)*track->Phi());
-            Double_t qy=weight*sin(Double_t(fHarmonics)*track->Phi());
-
-            mQx += (qx);
-            mQy += (qy);
-	    ntracks++ ;
-      }
-    }
-    
-    TVector2 mQ(mQx,mQy);
-    epAngle=mQ.Phi()/Double_t(fHarmonics);
-   
-    if(ntracks<3)return kFALSE;// <3 -> no subevents
-    return kTRUE;
-}
-//_________________________________________________________________________
-Bool_t AliAnalysisTaskgg::SelectTrack(AliAODTrack * t){
-  //estimate if this track can be used for the RP calculation
-  Float_t pt=t->Pt();
-  if(pt<0.15 || pt>20.)
-    return kFALSE ;
-  if(TMath::Abs(t->Eta())>0.8)
-    return kFALSE ;
-
-  if(!t->IsHybridGlobalConstrainedGlobal()){
-    return kFALSE ;
-  }
-  
-  return kTRUE ;
-
 }

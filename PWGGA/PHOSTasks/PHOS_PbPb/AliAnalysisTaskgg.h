@@ -8,6 +8,7 @@ class THashList ;
 class AliPHOSGeometry;
 class AliCaloPhoton ;
 class AliAODTrack ;
+class AliEPFlattener ;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -33,8 +34,6 @@ private:
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z, Double_t w) const ; //Fill 3D histogram witn name key
 
-  Bool_t GetTPCEventPlane(Double_t &epAngle, Double_t &qsubRes) ;
-  Bool_t SelectTrack(AliAODTrack * t) ;
   
   Int_t ConvertRunNumber(Int_t run) ; 
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
@@ -49,10 +48,8 @@ private:
   TClonesArray* fPHOSEvent ;      //PHOS photons in current event
  
   //Reaction plain for v2
-  Float_t fRP ;       //!Reaction plane calculated with full TPC 
-  Float_t fRPV0A ;    //!Reaction plain calculated with A-side TPC: eta>0.15 
-  Float_t fRPV0C ;    //!Reaction plain calculated with C-side TPC: eta<-0.15
-  Bool_t fHaveTPCRP ; //! Is TPC RP defined?
+  AliEPFlattener * fV0AFlat ; //!
+  AliEPFlattener * fV0CFlat ; //!
   
 
   Int_t fRunNumber ;    //Current run number
