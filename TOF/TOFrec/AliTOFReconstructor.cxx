@@ -122,6 +122,14 @@ AliTOFReconstructor::~AliTOFReconstructor()
   delete fClusterFinder;
   delete fClusterFinderV1;
 }
+void AliTOFReconstructor::GetPidSettings(AliESDpid *esdPID){
+  Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
+  AliInfo(Form(" TOF resolution set in PIDResponse to %f ps",tofResolution));
+  
+  esdPID->GetTOFResponse().SetTimeResolution(tofResolution);
+
+  return;
+}
 
 //_____________________________________________________________________________
 void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
@@ -361,9 +369,9 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
 
   if (!GetRecoParam()) AliFatal("cannot get TOF RECO params");
 
-  Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
   AliTOFT0maker *tofT0maker = new AliTOFT0maker(esdPID);
-  tofT0maker->SetTimeResolution(tofResolution);
+  //Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
+  //tofT0maker->SetTimeResolution(tofResolution); // setting performed now in GetPidSetting in AliReconstructor
   tofT0maker->ComputeT0TOF(event);
   tofT0maker->WriteInESD(event);
   tofT0maker->~AliTOFT0maker();

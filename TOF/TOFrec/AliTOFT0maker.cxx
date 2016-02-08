@@ -126,11 +126,12 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
 
   if(!fPIDesd){
     fPIDesd = new AliESDpid();
+    SetTOFResponse();
     fExternalPIDFlag = kFALSE;
   }
 
   fNmomBins = fPIDesd->GetTOFResponse().GetNmomBins();
-  SetTOFResponse();
+  fTimeResolution = externalPID->GetTOFResponse().GetTimeResolution();
 
   fT0TOF = new AliTOFT0v1(fPIDesd);
 
@@ -223,7 +224,7 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
   fCalculated[8] = t0tof[4]; // real time in s
   fCalculated[9] = t0tof[5]; // cpu time in s
 
-  if(fCalculated[1] < sigmaFill && TMath::Abs(fCalculated[0] - t0fill) < thrGood && fCalculated[1] < fTimeResolution*1.2){
+  if(fCalculated[1] < sigmaFill && TMath::Abs(fCalculated[0] - t0fill) < thrGood && fCalculated[1] < fTimeResolution*1.41){
     fT0sigma=fCalculated[1];
     lT0Current=fCalculated[0];
   }
@@ -232,7 +233,7 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
     fCalculated[5] = sigmaFill;
   }
 
-  if(fCalculated[1] < 1 || fT0sigma > sigmaFill || fCalculated[1] > fTimeResolution* 1.2){
+  if(fCalculated[1] < 1 || fT0sigma > sigmaFill || fCalculated[1] > fTimeResolution* 1.41){
     fT0sigma =1000;
     fCalculated[4] = t0fill;
     fCalculated[5] = sigmaFill;
@@ -281,7 +282,7 @@ Double_t* AliTOFT0maker::ComputeT0TOF(AliESDEvent *esd,Double_t t0time,Double_t 
       Float_t t0bin =-1000*t0tof[0]; // best t0
       Float_t t0binRes =1000*t0tof[1]; // sigma best t0
       
-      if(t0binRes < sigmaFill  && t0binRes < fTimeResolution * 1.2 && TMath::Abs(t0bin - t0fill) < thrGood){
+      if(t0binRes < sigmaFill  && t0binRes < fTimeResolution * 1.41 && TMath::Abs(t0bin - t0fill) < thrGood){
 	// Ok T0
 	if(t0sigma < 1000){
 	  Double_t w1 = 1./t0sigma/t0sigma;

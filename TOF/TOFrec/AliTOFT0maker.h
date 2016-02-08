@@ -35,7 +35,7 @@ public:
   Float_t GetExpectedSigma(Float_t mom, Float_t tof, Float_t mass);
   Double_t  *GetT0p(Float_t p);
   
-  void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;};// TOF timeresolution in [ps]
+  void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;SetTOFResponse();};// TOF timeresolution in [ps]
   Double_t  GetTimeResolution() const {return fTimeResolution;} // Get TOF Time Resolution
   void SetT0FillWidth(Float_t width){if(width > 50) fT0width = width; else fT0width=150;}; // in ps
   
