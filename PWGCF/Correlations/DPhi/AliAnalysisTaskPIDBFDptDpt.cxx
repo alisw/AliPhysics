@@ -1245,8 +1245,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     vertexY = vertex->GetY();
                     vertexZ = vertex->GetZ();
                     
-                    //if(TMath::Abs(vertexZ) > 10)
-		    if(TMath::Abs(vertexZ) > 6)
+                    if(TMath::Abs(vertexZ) > 10)
+		    //if(TMath::Abs(vertexZ) > 6)
                     {
                         return;
                     } // Z-Vertex Cut
