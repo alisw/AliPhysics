@@ -130,7 +130,7 @@ public:
     
     kTPCActiveLength,       // TPC length in active volume
     kTPCGeomLength,         // TPC pT dependent geometrical length
-
+    
     kTrackStatus,            // track status bits
     kFilterBit,              // AOD filter bits
 
@@ -138,31 +138,24 @@ public:
     kTRDntracklets,          // number of TRD tracklets used for tracking/PID TODO: correct getter
     kTRDpidQuality,          // number of TRD tracklets used for PID
     kTRDchi2,                // chi2 in TRD
-    kTRDchi2Trklt,	     // chi2/trklts in TRD
+    kTRDchi2Trklt,	     // chi2/trklts in TRD 
     kTRDprobEle,             // TRD electron pid probability
-    kTRDprobPio,             // TRD pion pid probability
-    kTRDprob2DEle,           // TRD electron pid probability 2D LQ
-    kTRDprob2DPio,           // TRD pion pid probability 2D LQ
-    kTRDprob2DPro,           // TRD proton pid probability 2D LQ
-    kTRDprob3DEle,           // TRD electron pid probability 3D LQ
-    kTRDprob3DPio,           // TRD pion pid probability 3D LQ
-    kTRDprob3DPro,           // TRD proton pid probability 3D LQ
-    kTRDprob7DEle,           // TRD electron pid probability 7D LQ
-    kTRDprob7DPio,           // TRD pion pid probability 7D LQ
-    kTRDprob7DPro,           // TRD proton pid probability 7D LQ
+    kTRDprobPio,             // TRD electron pid probability
+    kTRDprob2DEle,           // TRD electron pid probability 2D LQ 
+    kTRDprob2DPio,           // TRD electron pid probability 2D LQ
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
     kTRDpidEffLeg,           // TRD pid efficiency from conversion electrons
     kTRDsignal,              // TRD signal
     kTRDeta,                 // eta of the track at the entrance of the TRD
     kInTRDacceptance,        // in TRD acceptance
-
+      
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
     kTrackLength,            // Track length
 
 
     kPdgCode,                // PDG code
-    kPdgCodeMother,
+    kPdgCodeMother, 
     kPdgCodeGrandMother,     // PDG code of the grandmother
     kHasCocktailMother,      // true if particle is added via MC generator cocktail (AliDielectronSignal::kDirect)
     kHasCocktailGrandMother, // true if particle is added via MC generator cocktail (AliDielectronSignal::kDirect)
@@ -1132,35 +1125,16 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     Double_t prob[AliPID::kSPECIES]={0.0};
     // switch computation off since it takes 70% of the CPU time for filling all AODtrack variables
     // TODO: find a solution when this is needed (maybe at fill time in histos, CFcontainer and cut selection)
-    // 1D TRD PID
     if( Req(kTRDprobEle) || Req(kTRDprobPio) ){
       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
       values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
       values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
     }
-    // 2D TRD PID
-    if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) || Req(kTRDprob2DPro) ){
+    if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) ){
       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
       values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
       values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
-      values[AliDielectronVarManager::kTRDprob2DPro]    = prob[AliPID::kProton];
     }
-    // 3D TRD PID
-    if( Req(kTRDprob3DEle) || Req(kTRDprob3DPio) || Req(kTRDprob3DPro) ){
-      fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D);
-      values[AliDielectronVarManager::kTRDprob3DEle]    = prob[AliPID::kElectron];
-      values[AliDielectronVarManager::kTRDprob3DPio]    = prob[AliPID::kPion];
-      values[AliDielectronVarManager::kTRDprob3DPro]    = prob[AliPID::kProton];
-    }
-    // 7D TRD PID
-    if( Req(kTRDprob7DEle) || Req(kTRDprob7DPio) || Req(kTRDprob7DPro) ){
-      fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ7D);
-      values[AliDielectronVarManager::kTRDprob7DEle]    = prob[AliPID::kElectron];
-      values[AliDielectronVarManager::kTRDprob7DPio]    = prob[AliPID::kPion];
-      values[AliDielectronVarManager::kTRDprob7DPro]    = prob[AliPID::kProton];
-    }
-
-
     //restore TPC signal if it was changed
     pid->SetTPCsignal(origdEdx);
   }
