@@ -81,10 +81,10 @@ AliAnalysisTaskPHOSPCMgg::AliAnalysisTaskPHOSPCMgg(const char *name)
   fEtaPhoton(0.),
   fiCatPhoton(0),
   fiPhotonMCInfo(0),
-  fMinMass(0.),
-  fMaxMass(0.),
-  fMinKappa(0.),
-  fMaxKappa(0.),
+  fMinMass(-1),
+  fMaxMass(10),
+  fMinKappa(-1),
+  fMaxKappa(100),
   fEventCutArray(0x0),
   fEventCuts(0x0),
   fCutArray(0x0),
@@ -317,14 +317,16 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
   
  
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-//  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
-//	return;
-//  }
-  fPCMEvent = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
-  printf("Is selected=%d, n=%d, n2=%d \n",fV0Reader->IsEventSelected(), fV0Reader->GetNReconstructedGammas(),fPCMEvent->GetEntries()) ;
-return ;
-  
-  
+  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
+	return;
+  }
+
+  //No PCM particles
+  if(!fV0Reader->IsEventSelected()){
+    PostData(1, fOutputContainer);
+    return;  
+  }
+    
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
     Printf("ERROR: Could not retrieve event");
@@ -577,7 +579,7 @@ return ;
   ProcessPCMPhotonCandidates(); 
   Int_t inPCM=fGammaCandidates->GetEntriesFast() ;
   FillHistogram("hCenPCM",fCentrality,inPCM) ;
-  printf("Is selected=%d, n=%d \n",fV0Reader->IsEventSelected(), fV0Reader->GetNReconstructedGammas()) ;
+//  printf("Is selected=%d, n=%d, inPCM=%d \n",fV0Reader->IsEventSelected(), fV0Reader->GetNReconstructedGammas(), inPCM) ;
 
   const Double_t kgMass=0. ;
 	
@@ -671,7 +673,7 @@ return ;
     } // end of loop i2
   } // end of loop i1
   
-  //now mixed
+  //now mixed1
   for (Int_t i1=0; i1<inPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     AliFemtoTrack track1;
@@ -687,8 +689,8 @@ return ;
       for(Int_t i2=0; i2<mixPCM->GetEntriesFast();i2++){
         AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)mixPCM->At(i2) ;
 	
-//	if(!PairCut(ph1,ph2,kDefault))
-//	  continue;
+	if(!PairCut(ph1,ph2,kDefault))
+	  continue;
 	
         AliFemtoTrack track2;
         AliFemtoThreeVector mom2;
@@ -729,6 +731,86 @@ return ;
 	
 	for(Int_t iCut=0; iCut<7; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
+	    continue ;
+	
+           FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
+	   if(TMath::Abs(qo) < 0.05)
+	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
+
+          // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
+          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+   
+          // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
+          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+
+          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+      
+          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+	}
+	
+      } // end of loop i2
+    }
+  } // end of loop i1
+  
+  
+  
+  for (Int_t i1=0; i1<inPCM; i1++) {
+    AliAODConversionPhoton * ph1=(AliAODConversionPhoton*)fPCMEvent->At(i1) ;
+    AliFemtoTrack track1;
+    AliFemtoThreeVector mom1;
+    mom1.SetX(ph1->Px()) ;
+    mom1.SetY(ph1->Py()) ;
+    mom1.SetZ(ph1->Pz()) ;
+    track1.SetP(mom1) ;
+    AliFemtoParticle part1(&track1,kgMass) ;
+    
+    for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
+      TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
+      for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
+        AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
+	
+	if(!PairCut(ph2,ph1,kDefault))
+	  continue;
+	
+        AliFemtoTrack track2;
+        AliFemtoThreeVector mom2;
+        mom2.SetX(ph2->Px()) ;
+        mom2.SetY(ph2->Py()) ;
+        mom2.SetZ(ph2->Pz()) ;
+        track2.SetP(mom2) ;
+        AliFemtoParticle part2(&track2,kgMass) ;
+       
+	AliFemtoParticle *a = &part1 ;
+        AliFemtoParticle *b = &part2 ;
+        if(gRandom->Uniform()>0.5){
+          a = &part2 ;
+          b = &part1 ;
+        }
+        AliFemtoPair pair(a,b);
+
+	Double_t qinv= pair.QInv();
+        Double_t kT = pair.KT() ;
+        TString kTbin="15" ;
+        if(kT<0.2) kTbin="Kt00-02";
+        else if(kT<0.5) kTbin="Kt02-05";
+        else if(kT<1.) kTbin="Kt05-10";
+        else if(kT<1.5) kTbin="Kt10-15";
+        else  kTbin="Kt15-99";
+      
+      Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
+      Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
+      
+      // Yano-Koonin-Podgoretskii Parametrisation 
+      Double_t qP=0., qT=0., q0=0. ;
+      // source rest frame (usually lab frame)
+      pair.QYKPCMS(qP, qT, q0);
+
+      Double_t qPpf=0., qTpf=0., q0pf=0. ;
+      // longitudinal comoving frame
+        pair.QYKPPF(qPpf,qTpf,q0pf) ;
+	
+	for(Int_t iCut=0; iCut<7; iCut++){
+   	  if(!PairCut(ph2,ph1,iCut))
 	    continue ;
 	
            FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
@@ -1181,7 +1263,6 @@ void AliAnalysisTaskPHOSPCMgg::ProcessPCMPhotonCandidates()
     TList *GammaCandidatesStepTwo = new TList();
     Int_t iPCM=0; 
     // Loop over Photon Candidates allocated by ReaderV1
-printf("PCMEvent=%d \n",   fPCMEvent->GetEntriesFast()) ;  
     for(Int_t i = 0; i < fPCMEvent->GetEntriesFast(); i++){
         AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fPCMEvent->At(i);
         if(!PhotonCandidate) continue;
@@ -1235,9 +1316,7 @@ printf("PCMEvent=%d \n",   fPCMEvent->GetEntriesFast()) ;
         }
     }
     
-    
-printf("  StepOne=%d \n",   GammaCandidatesStepOne->GetEntries()) ;  
-    
+        
     if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){
         for(Int_t i = 0;i<GammaCandidatesStepOne->GetEntries();i++){
             AliAODConversionPhoton *PhotonCandidate= (AliAODConversionPhoton*) GammaCandidatesStepOne->At(i);
@@ -1281,7 +1360,6 @@ printf("  StepOne=%d \n",   GammaCandidatesStepOne->GetEntries()) ;
             }
         }
     }
-printf("  StepTwo=%d \n",   GammaCandidatesStepTwo->GetEntries()) ;  
     
     if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
         for(Int_t i = 0;i<GammaCandidatesStepTwo->GetEntries();i++){
@@ -1327,7 +1405,6 @@ printf("  StepTwo=%d \n",   GammaCandidatesStepTwo->GetEntries()) ;
     delete GammaCandidatesStepTwo;
     GammaCandidatesStepTwo = 0x0;
  
-printf(" ---- Finally: %d \n",iPCM) ;    
     
 }
 

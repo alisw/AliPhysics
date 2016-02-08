@@ -142,8 +142,6 @@ void AddTaskPHOSPCMgg(         const char* name = "PHOSPCMgg",
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectInput(task , 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
-
-return ;  
   
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 1;
