@@ -98,6 +98,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
+    if(trainConfig == 101){
+      fV0ReaderV1->SetProduceImpactParamHistograms(kTRUE);
+      fV0ReaderV1->SetEventCuts("00010113"); 
+      fV0ReaderV1->SetConversionCuts("00200009227302008250400000");
+    }
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;

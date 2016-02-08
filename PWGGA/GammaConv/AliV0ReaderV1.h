@@ -116,7 +116,12 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		}
 		Bool_t 							GetProduceV0FindingEfficiency()						{return fProduceV0findingEffi;}
 		TList*							GetV0FindingEfficiencyHistograms()					{return fHistograms;}
-		
+		void 							SetProduceImpactParamHistograms(Bool_t b)				{
+			fProduceImpactParamHistograms = b;
+			if (b) 	AliInfo("Producing additional impact parameter histograms");
+		}
+		Bool_t 							GetProduceImpactParamHistograms()					{return fProduceImpactParamHistograms;}
+		TList*							GetImpactParamHistograms()					        {return fImpactParamHistograms;}
 		Bool_t 							ParticleIsConvertedPhoton(AliStack *MCStack, 
 																  TParticle *particle, 
 																  Double_t etaMax,
@@ -124,6 +129,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 																  Double_t zMax);
 		void 							CreatePureMCHistosForV0FinderEffiESD();	
 		void 							FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0);
+		void 							FillImpactParamHistograms(AliVTrack *ptrack, AliVTrack* ntrack, AliESDv0 *fCurrentV0, AliKFConversionPhoton *fCurrentMotherKF);
 		Bool_t							CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked);
 		Bool_t							CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
@@ -181,8 +187,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		Int_t 				fPtHardBin;					// ptHard bin from file
 		Bool_t				fUseMassToZero;				// switch on setting the mass to 0 for AODConversionPhotons
 		Bool_t				fProduceV0findingEffi;		// enable histograms for V0finding efficiency
+		Bool_t			        fProduceImpactParamHistograms;        	// enable histograms of impact parameters	
 		Float_t				fCurrentInvMassPair;		// Invariant mass of the pair
 		TList				*fHistograms;				// list of histograms for V0 finding efficiency
+		TList				*fImpactParamHistograms;				// list of histograms of impact parameters
 		TH2F				*fHistoMCGammaPtvsR;		// histogram with all converted gammas vs Pt and R (eta < 0.9)
 		TH2F				*fHistoMCGammaPtvsPhi;		// histogram with all converted gammas vs Pt and Phi (eta < 0.9)
 		TH2F				*fHistoMCGammaPtvsEta;		// histogram with all converted gammas vs Pt and Eta
@@ -199,6 +207,29 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		TH2F				*fHistoRecMCGammaMultiPtvsEta;	// histogram with all at least double counted photons vs Pt vs Eta
 		TH1F				*fHistoRecMCGammaMultiR;	// histogram with all at least double counted photons vs R (eta < 0.9)
 		TH1F				*fHistoRecMCGammaMultiPhi;	// histogram with all at least double counted photons vs Phi (eta < 0.9)
+		TH1F				*fHistoPosTrackImpactParamZ;    
+         	TH1F				*fHistoPosTrackImpactParamY;
+         	TH1F				*fHistoPosTrackImpactParamX;
+         	TH2F				*fHistoPosTrackImpactParamZvsPt;
+         	TH2F				*fHistoPosTrackImpactParamYvsPt; 
+         	TH2F				*fHistoPosTrackImpactParamXvsPt; 
+         	TH1F				*fHistoNegTrackImpactParamZ;    
+         	TH1F				*fHistoNegTrackImpactParamY; 
+         	TH1F				*fHistoNegTrackImpactParamX;
+         	TH2F				*fHistoNegTrackImpactParamZvsPt;
+         	TH2F				*fHistoNegTrackImpactParamYvsPt; 
+         	TH2F				*fHistoNegTrackImpactParamXvsPt;
+		TH2F                            *fHistoImpactParamZvsR;            // Impact Parameter z vs conversion radius
+		TH2F                            *fHistoImpactParamZvsR2;           // after cuts
+		TH1F                            *fHistoPt;
+		TH1F                            *fHistoPt2;                     // Pt after Impact parameter and causality cuts
+		TH1F                            *fHistoDCAzPhoton;
+		TH1F                            *fHistoDCAzPhoton2;
+		TH1F                            *fHistoR;                       // conversion radius
+		TH1F                            *fHistoRrecalc;
+		TH1F                            *fHistoRdiff;                   //difference in R between conflict cluster and conversion radius
+		TH1F                            *fHistoImpactParameterStudy;    // info about which cut rejected how many V0s
+   
 		vector<Int_t>		fVectorFoundGammas;			// vector with found MC labels of gammas
 	private:
 		AliV0ReaderV1(AliV0ReaderV1 &original);
