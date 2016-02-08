@@ -3,12 +3,14 @@
 #include <exception>
 #include <iostream>
 #include "AliLog.h"
+#include "AliEventplane.h"
 #include "AliConversionAODBGHandlerRP.h"
 using namespace std;
 #endif
 
 
 // Author Daniel Lohner (Daniel.Lohner@cern.ch)
+// Lucia Leardini (lucia.leardini@cern.ch)
 
 
 ClassImp(AliConversionAODBGHandlerRP);
@@ -20,12 +22,22 @@ AliConversionAODBGHandlerRP::AliConversionAODBGHandlerRP(Bool_t IsHeavyIon,Bool_
   fNEvents(NEvents),
   fBGEventCounter(NULL),
   fNBGEvents(NULL),
+  fNBinsRP(6),
   fNBinsZ(7),
   fNBinsMultiplicity(5+Int_t(fUseChargedTrackMult)),
+  fBinLimitsArrayRP(NULL),
   fBinLimitsArrayZ(NULL),
   fBinLimitsArrayMultiplicity(NULL),
-  fBGPool(fNBinsZ,AliGammaConversionMultiplicityVector(fNBinsMultiplicity,AliGammaConversionBGEventVector(fNEvents)))
+  fBGEvents(fNBinsRP,AliGammaConversionVertexPositionVector(fNBinsZ,AliGammaConversionBGEventVector(fNEvents)))
+//   fBGPool(fNBinsZ,AliGammaConversionMultiplicityVector(fNBinsMultiplicity,AliGammaConversionBGEventVector(fNEvents)))
 {
+  
+  // RP angle Binning  
+  fBinLimitsArrayRP = new Double_t[fNBinsRP+1];
+  for(Int_t i=0; i < fNBinsRP+1; i++){
+    fBinLimitsArrayRP[i] = (i*TMath::Pi()/3)-TMath::Pi();  //i*TMath::Pi()/Double_t(fNBinsRP);
+  }
+
   // Vertex Z Binning
 
   fBinLimitsArrayZ = new Double_t[fNBinsZ+1];
@@ -80,18 +92,24 @@ AliConversionAODBGHandlerRP::AliConversionAODBGHandlerRP(Bool_t IsHeavyIon,Bool_
 //________________________________________________________________________
 AliConversionAODBGHandlerRP::~AliConversionAODBGHandlerRP()
 {
+  if(fBinLimitsArrayRP){
+    delete[] fBinLimitsArrayRP;
+    fBinLimitsArrayRP=0x0;
+  }
+
   if(fBinLimitsArrayZ){
     delete[] fBinLimitsArrayZ;
     fBinLimitsArrayZ=0x0;
   }
+
   if(fBinLimitsArrayMultiplicity){
     delete[] fBinLimitsArrayMultiplicity;
     fBinLimitsArrayMultiplicity=0x0;
   }
 
   if(fBGEventCounter){
-    for(Int_t z=0;z<fNBinsZ;z++){
-        delete[] fBGEventCounter[z];
+    for(Int_t psi = 0; psi < fNBinsRP; psi++){
+      delete[] fBGEventCounter[psi];
     }
     delete[] fBGEventCounter;
     fBGEventCounter = NULL;
@@ -99,20 +117,21 @@ AliConversionAODBGHandlerRP::~AliConversionAODBGHandlerRP()
 
   // Delete pool
 
-  for(Int_t z=0;z<fNBinsZ;z++){
-    for(Int_t m=0;m<fNBinsMultiplicity;m++){
-        for(Int_t eventCounter=0;eventCounter<fNBGEvents[z][m]&&eventCounter<fNEvents;eventCounter++){
+  for(Int_t psi = 0; psi < fNBinsRP; psi++){
+    for(Int_t z = 0; z < fNBinsZ; z++){
+      for(Int_t eventCounter=0; eventCounter < fNBGEvents[psi][z] && eventCounter<fNEvents; eventCounter++){
 
-      for(UInt_t d=0;d<fBGPool[z][m][eventCounter].size();d++){
-          delete (AliAODConversionPhoton*)(fBGPool[z][m][eventCounter][d]);
-      }
-        }
+          for(UInt_t d=0; d < fBGEvents[psi][z][eventCounter].size(); d++){
+            delete (AliAODConversionPhoton*)(fBGEvents[psi][z][eventCounter][d]);
+
+          }
+      }   
     }
   }
 
   if(fNBGEvents){
-    for(Int_t z=0;z<fNBinsZ;z++){
-        delete[] fNBGEvents[z];
+    for(Int_t psi = 0; psi < fNBinsRP; psi++){
+      delete[] fNBGEvents[psi];
     }
     delete[] fNBGEvents;
     fNBGEvents = NULL;
@@ -126,40 +145,62 @@ void AliConversionAODBGHandlerRP::Initialize(){
   // Counter
 
   if(fBGEventCounter == NULL){
-    fBGEventCounter= new Int_t*[fNBinsZ];
+    fBGEventCounter = new Int_t*[fNBinsRP];  
   }
-  for(Int_t z=0;z<fNBinsZ;z++){
-    fBGEventCounter[z]=new Int_t[fNBinsMultiplicity];
+  for(Int_t psi = 0; psi < fNBinsRP; psi++){
+    fBGEventCounter[psi] = new Int_t[fNBinsZ];
   }
-
-  for(Int_t z=0;z<fNBinsZ;z++){
-    for(Int_t m=0;m<fNBinsMultiplicity;m++){
-      fBGEventCounter[z][m]=0;
+  for(Int_t psi = 0; psi < fNBinsRP; psi++){
+    for(Int_t z = 0; z < fNBinsZ; z++){
+      fBGEventCounter[psi][z] = 0;
     }
   }
 
+  
   if(fNBGEvents == NULL){
-    fNBGEvents= new Int_t*[fNBinsZ];
+    fNBGEvents = new Int_t*[fNBinsRP];
   }
-  for(Int_t z=0;z<fNBinsZ;z++){
-    fNBGEvents[z]=new Int_t[fNBinsMultiplicity];
+  for(Int_t psi = 0; psi < fNBinsRP; psi++){
+    fNBGEvents[psi] = new Int_t[fNBinsZ];
   }
-  for(Int_t z=0;z<fNBinsZ;z++){
-    for(Int_t m=0;m<fNBinsMultiplicity;m++){
-      fNBGEvents[z][m]=0;
+  for(Int_t psi = 0; psi < fNBinsRP; psi++){
+    for(Int_t z = 0; z < fNBinsZ; z++){
+      fNBGEvents[psi][z] = 0;
     }
   }
 }
 
 //-------------------------------------------------------------
+Int_t AliConversionAODBGHandlerRP::GetRPBinIndex(Double_t psivalue) const{
+
+  if(fNBinsRP < 2){
+    return 0;
+  }
+
+  if(psivalue<=fBinLimitsArrayRP[0]){
+    return -1;
+  }
+  
+  for(Int_t i = 0; i < fNBinsRP; i++){
+    if(psivalue >= fBinLimitsArrayRP[i] && psivalue <= fBinLimitsArrayRP[i+1]){
+      return i;
+    }
+  }
+  return -1;
+}
+
+//-------------------------------------------------------------
 Int_t AliConversionAODBGHandlerRP::GetZBinIndex(Double_t zvalue) const{
+
+  if(fNBinsZ < 2){
+    return 0;
+  }
 
   if(zvalue<=fBinLimitsArrayZ[0]){
     return -1;
   }
 
-  if(fNBinsZ<2){return 0;}
-  for(Int_t i=0; i<fNBinsZ ;i++){
+  for(Int_t i=0; i < fNBinsZ; i++){
     if(zvalue >= fBinLimitsArrayZ[i] && zvalue <= fBinLimitsArrayZ[i+1]){
       return i;
     }
@@ -169,11 +210,12 @@ Int_t AliConversionAODBGHandlerRP::GetZBinIndex(Double_t zvalue) const{
 
 //-------------------------------------------------------------
 Int_t AliConversionAODBGHandlerRP::GetMultiplicityBinIndex(Int_t multiplicity) const{
-  if(fNBinsMultiplicity<2){
+  
+  if(fNBinsMultiplicity < 2){
     return 0;
   }
 
-  for(Int_t i=0; i<fNBinsMultiplicity ;i++){
+  for(Int_t i=0; i < fNBinsMultiplicity; i++){
     if(multiplicity >= fBinLimitsArrayMultiplicity[i] && multiplicity < fBinLimitsArrayMultiplicity[i+1]){
       return i;
     }
@@ -182,46 +224,44 @@ Int_t AliConversionAODBGHandlerRP::GetMultiplicityBinIndex(Int_t multiplicity) c
 }
 
 //-------------------------------------------------------------
-Bool_t AliConversionAODBGHandlerRP::FindBins(TObjArray * const eventGammas,AliVEvent *fInputEvent,Int_t &zbin,Int_t &mbin){
-  Double_t vertexz=fInputEvent->GetPrimaryVertex()->GetZ();
+Bool_t AliConversionAODBGHandlerRP::FindBins(TObjArray * const eventGammas,AliVEvent *fInputEvent,Int_t &psibin,Int_t &zbin){
+  
+  Double_t eventplaneangle;
+  AliEventplane *EventPlane = fInputEvent->GetEventplane();
+  if(fIsHeavyIon ==1)eventplaneangle = EventPlane->GetEventplane("V0",fInputEvent,2);
+  else eventplaneangle = 0.0;
+  psibin = GetRPBinIndex(eventplaneangle);
+  
+  Double_t vertexz = fInputEvent->GetPrimaryVertex()->GetZ();
   zbin = GetZBinIndex(vertexz);
 
-  Int_t multiplicity=0;
-  if(fUseChargedTrackMult){
-    multiplicity=fInputEvent->GetNumberOfTracks();
-  } else {
-    multiplicity=eventGammas->GetEntries();
-  }
-  mbin = GetMultiplicityBinIndex(multiplicity);
-
-  if(zbin<fNBinsZ&&mbin<fNBinsMultiplicity){
-    if(zbin>=0&&mbin>=0){
+  if(psibin < fNBinsRP && zbin < fNBinsZ){
+    if(psibin >= 0 && zbin >= 0 ){
       return kTRUE;
     }
   }
-  //cout<<Form("Requested BG pool does not exist:  z %i m %i",zbin,mbin)<<endl;
+  //cout<<Form("Requested BG pool does not exist:  z %i m %i",zbin)<<endl;
   return kFALSE;
 }
 
 //-------------------------------------------------------------
-Bool_t AliConversionAODBGHandlerRP::FindBins(TList * const eventGammas,AliVEvent *fInputEvent,Int_t &zbin,Int_t &mbin){
+Bool_t AliConversionAODBGHandlerRP::FindBins(TList * const eventGammas,AliVEvent *fInputEvent,Int_t &psibin,Int_t &zbin){
+  
+  Double_t eventplaneangle;
+  AliEventplane *EventPlane = fInputEvent->GetEventplane();
+  if(fIsHeavyIon ==1)eventplaneangle = EventPlane->GetEventplane("V0",fInputEvent,2);
+  else eventplaneangle = 0.0;
+  psibin = GetRPBinIndex(eventplaneangle);
+  
   Double_t vertexz=fInputEvent->GetPrimaryVertex()->GetZ();
   zbin = GetZBinIndex(vertexz);
 
-  Int_t multiplicity=0;
-  if(fUseChargedTrackMult){
-    multiplicity=fInputEvent->GetNumberOfTracks();
-  } else {
-    multiplicity=eventGammas->GetEntries();
-  }
-  mbin = GetMultiplicityBinIndex(multiplicity);
-
-  if(zbin<fNBinsZ&&mbin<fNBinsMultiplicity){
-    if(zbin>=0&&mbin>=0){
+  if(psibin < fNBinsRP && zbin < fNBinsZ){
+    if(psibin >= 0 && zbin >= 0 ){
       return kTRUE;
     }
   }
-  //cout<<Form("Requested BG pool does not exist:  z %i m %i",zbin,mbin)<<endl;
+  //cout<<Form("Requested BG pool does not exist:  z %i m %i",zbin)<<endl;
   return kFALSE;
 }
 
@@ -231,107 +271,111 @@ void AliConversionAODBGHandlerRP::AddEvent(TObjArray * const eventGammas,AliVEve
 
   if(eventGammas->GetEntriesFast()==0)return;
 
+  Int_t psi;
   Int_t z;
-  Int_t m;
-  if(FindBins(eventGammas,fInputEvent,z,m)){
+
+  if(FindBins(eventGammas,fInputEvent,psi,z)){
     // If Event Stack is full, replace the first entry (First in first out)
-    if(fBGEventCounter[z][m] >= fNEvents){
-      fBGEventCounter[z][m]=0;
+    if(fBGEventCounter[psi][z] >= fNEvents){
+      fBGEventCounter[psi][z] = 0;
     }
 
     // Update number of Events stored
-    if(fNBGEvents[z][m] < fNEvents){
-      fNBGEvents[z][m]++;
+    if(fNBGEvents[psi][z] < fNEvents){
+      fNBGEvents[psi][z]++;
     }
 
-    Int_t eventCounter=fBGEventCounter[z][m];
+    Int_t eventCounter = fBGEventCounter[psi][z];
 
     //clear the vector for old gammas
-    for(UInt_t d=0;d<fBGPool[z][m][eventCounter].size();d++){
-      delete (AliAODConversionPhoton*)(fBGPool[z][m][eventCounter][d]);
+    for(UInt_t d = 0; d < fBGEvents[psi][z][eventCounter].size(); d++){
+      delete (AliAODConversionPhoton*)(fBGEvents[psi][z][eventCounter][d]);
     }
 
-    fBGPool[z][m][eventCounter].clear();
+    fBGEvents[psi][z][eventCounter].clear();
 
     // add the gammas to the vector
-
-    for(Int_t i=0; i< eventGammas->GetEntriesFast();i++){
-      fBGPool[z][m][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
+    for(Int_t i = 0; i < eventGammas->GetEntriesFast(); i++){
+      fBGEvents[psi][z][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
     }
 
-    fBGEventCounter[z][m]++;
+    fBGEventCounter[psi][z]++;
   }
 }
 //-------------------------------------------------------------
 void AliConversionAODBGHandlerRP::AddEvent(TList * const eventGammas,AliVEvent *fInputEvent){
   if(eventGammas->GetEntries()==0)return;
 
+  Int_t psi;
   Int_t z;
-  Int_t m;
-  if(FindBins(eventGammas,fInputEvent,z,m)){
+
+  if(FindBins(eventGammas,fInputEvent,psi,z)){
     // If Event Stack is full, replace the first entry (First in first out)
-    if(fBGEventCounter[z][m] >= fNEvents){
-        fBGEventCounter[z][m]=0;
+    if(fBGEventCounter[psi][z] >= fNEvents){
+        fBGEventCounter[psi][z]=0;
     }
 
     // Update number of Events stored
-    if(fNBGEvents[z][m] < fNEvents){
-      fNBGEvents[z][m]++;
+    if(fNBGEvents[psi][z] < fNEvents){
+      fNBGEvents[psi][z]++;
     }
 
-    Int_t eventCounter=fBGEventCounter[z][m];
+    Int_t eventCounter = fBGEventCounter[psi][z];
 
     //clear the vector for old gammas
-    for(UInt_t d=0;d<fBGPool[z][m][eventCounter].size();d++){
-      delete (AliAODConversionPhoton*)(fBGPool[z][m][eventCounter][d]);
+    for(UInt_t d = 0; d < fBGEvents[psi][z][eventCounter].size(); d++){
+      delete (AliAODConversionPhoton*)(fBGEvents[psi][z][eventCounter][d]);
     }
 
-    fBGPool[z][m][eventCounter].clear();
+    fBGEvents[psi][z][eventCounter].clear();
 
     // add the gammas to the vector
-
-    for(Int_t i=0; i< eventGammas->GetEntries();i++){
-      fBGPool[z][m][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
+    for(Int_t i = 0; i < eventGammas->GetEntries(); i++){
+      fBGEvents[psi][z][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
     }
 
-    fBGEventCounter[z][m]++;
+    fBGEventCounter[psi][z]++;
   }
 }
 
 //-------------------------------------------------------------
 AliGammaConversionPhotonVector* AliConversionAODBGHandlerRP::GetBGGoodGammas(TObjArray * const eventGammas,AliVEvent *fInputEvent,Int_t event){
+  Int_t psibin;
   Int_t zbin;
-  Int_t mbin;
-  if(FindBins(eventGammas,fInputEvent,zbin,mbin)){
-    return &(fBGPool[zbin][mbin][event]);
+
+  if(FindBins(eventGammas,fInputEvent,psibin,zbin)){
+    return &(fBGEvents[psibin][zbin][event]);
   }
   return NULL;
 }
 //-------------------------------------------------------------
 AliGammaConversionPhotonVector* AliConversionAODBGHandlerRP::GetBGGoodGammas(TList * const eventGammas,AliVEvent *fInputEvent,Int_t event){
+  Int_t psibin;
   Int_t zbin;
-  Int_t mbin;
-  if(FindBins(eventGammas,fInputEvent,zbin,mbin)){
-    return &(fBGPool[zbin][mbin][event]);
+
+  if(FindBins(eventGammas,fInputEvent,psibin,zbin)){
+    return &(fBGEvents[psibin][zbin][event]);
   }
   return NULL;
 }
 
 //-------------------------------------------------------------
 Int_t AliConversionAODBGHandlerRP::GetNBGEvents(TObjArray * const eventGammas,AliVEvent *fInputEvent){
+  Int_t psibin;
   Int_t zbin;
-  Int_t mbin;
-  if(FindBins(eventGammas,fInputEvent,zbin,mbin)){
-    return fNBGEvents[zbin][mbin];
+
+  if(FindBins(eventGammas,fInputEvent,psibin,zbin)){
+    return fNBGEvents[psibin][zbin];
   }
   return 0;
 }
 //-------------------------------------------------------------
 Int_t AliConversionAODBGHandlerRP::GetNBGEvents(TList * const eventGammas,AliVEvent *fInputEvent){
+  Int_t psibin;
   Int_t zbin;
-  Int_t mbin;
-  if(FindBins(eventGammas,fInputEvent,zbin,mbin)){
-    return fNBGEvents[zbin][mbin];
+
+  if(FindBins(eventGammas,fInputEvent,psibin,zbin)){
+    return fNBGEvents[psibin][zbin];
   }
   return 0;
 }
