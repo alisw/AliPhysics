@@ -390,6 +390,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhColRowLam0BinPtBin              [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
   TH2F * fhColRowLam0BinPtBinWeighted      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins and log weight Cell E / Cluster E 
   
+  // Shared clusters
+  TH2F * fhLam0PerSMShared                   [12] ; //!<! Cluster lambda0 vs  Pt, for shared clusters, EMCal
+  TH2F * fhLam1PerSMShared                   [12] ; //!<! Cluster lambda1 vs  Pt, for shared clusters, EMCal
+  TH2F * fhTimeLam0BinPerSMShared         [2][12] ; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM, shared SM
+  
+  TH2F * fhEtaPhiLam0BinPtBinSMShared      [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins, SM shared clusters
+  TH2F * fhColRowLam0BinPtBinSMShared      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
+  TH2F * fhEtaPhiPtBinLargeTimeInClusterCell  [7] ; //!<! Cluster eta/phi, with at least one significant cell with large time
+  
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
     
@@ -397,7 +406,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,42) ;
+  ClassDef(AliAnaPhoton,43) ;
   /// \endcond
 
 } ;
