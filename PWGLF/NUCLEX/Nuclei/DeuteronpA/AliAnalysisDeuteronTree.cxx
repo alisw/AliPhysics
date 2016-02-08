@@ -58,6 +58,8 @@ fRapCMSpA(0),
 fUtils(0),
 fTimeStamp(0),
 fCentrality(0),
+fZVertex(0),
+fCL1(0),
 fPtCor(0),
 fPt(0),
 fMom(0),
@@ -96,6 +98,8 @@ fRapCMSpA(0),
 fUtils(0),
 fTimeStamp(0),
 fCentrality(0),
+fZVertex(0),
+fCL1(0),
 fPtCor(0),
 fPt(0),
 fMom(0),
@@ -254,6 +258,8 @@ void AliAnalysisDeuteronTree::UserCreateOutputObjects()
 
     // fTree Branch definitions
     fTree->Branch("fCentrality",&fCentrality,"fCentrality/F");
+    fTree->Branch("fCL1",&fCL1,"fCL1/F");
+    fTree->Branch("fZVertex",&fZVertex,"fZVertex/F");
     fTree->Branch("fTimeStamp",&fTimeStamp,"fTimeStamp/F");
     fTree->Branch("fPtCor",&fPtCor,"fPtCor/F");
     fTree->Branch("fPt",&fPt,"fPt/F");
@@ -327,6 +333,8 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
     if (vertex && isVtxOk) fhZVertex->Fill(vertex->GetZ());
    
     fCentrality = centrality->GetCentralityPercentile("V0A");
+    fCL1 = centrality->GetCentralityPercentile("CL1");
+    fZVertex = vertex->GetZ();
     fhCentrality->Fill(fCentrality);
     
     fTimeStamp = lESDevent->GetTimeStamp();
