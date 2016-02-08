@@ -4,6 +4,7 @@
 class AliVEvent;
 class AliVParticle;
 class AliVCuts;
+class AliTLorentzVector;
 
 #include <TArrayC.h>
 
@@ -28,8 +29,9 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const char *name, const char *period = "");
   virtual ~AliParticleContainer(){;}
 
-  Bool_t                      AcceptParticle(AliVParticle         *vp)       ;
-  Bool_t                      AcceptParticle(Int_t i)                        ;
+  Bool_t                      ApplyKinematicCuts(const AliTLorentzVector& mom);
+  virtual Bool_t              AcceptParticle(AliVParticle* vp)               ;
+  virtual Bool_t              AcceptParticle(Int_t i)                        ;
   Double_t                    GetParticlePtCut()                        const   { return fParticlePtCut  ; }
   Double_t                    GetParticleEtaMin()                       const   { return fParticleMinEta ; }
   Double_t                    GetParticleEtaMax()                       const   { return fParticleMaxEta ; }
