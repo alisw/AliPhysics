@@ -998,13 +998,16 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   
   printf("Meson BG settings \n");
   if (!fDoBG){
-    if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing V0 mult \n");
-    if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG) printf("\t BG scheme: mixing track mult \n");
+    printf("\t No BG estimation \n");
+  } else {
+    if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG & !fBackgroundHandler) printf("\t BG scheme: mixing V0 mult \n");
+    if (!fUseRotationMethodInBG  & fUseTrackMultiplicityForBG & !fBackgroundHandler) printf("\t BG scheme: mixing track mult \n");
     if (fUseRotationMethodInBG )printf("\t BG scheme: rotation \n");
     if (fdoBGProbability) printf("\t -> use BG probability \n");
     if (fBackgroundHandler) printf("\t -> use new BG handler \n");
     printf("\t depth of pool: %d\n", fNumberOfBGEvents);
     if (fUseRotationMethodInBG )printf("\t degree's for BG rotation: %d\n", fnDegreeRotationPMForBG);
+    if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG & fBackgroundHandler) printf("\t BG scheme: event plane angle with V0 mult \n");
   }
 }
 
