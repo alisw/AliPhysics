@@ -187,6 +187,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,IsArmenterosSelected(0)
    ,fUseExtraTracks(0)
    ,fUseExtraJetPt(0)
+   ,fUseEmbeddedJetPt(0)
+
    ,fUseStandard(0)
   // ,fFFHistosIMALaAllEvt(0)        
   // ,fFFHistosIMALaJet(0)           
@@ -515,6 +517,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,IsArmenterosSelected(0)
   ,fUseExtraTracks(0)
   ,fUseExtraJetPt(0)
+  ,fUseEmbeddedJetPt(0)
+
   ,fUseStandard(0) 
     //,fFFHistosIMALaAllEvt(0)        
     //,fFFHistosIMALaJet(0)           
@@ -846,6 +850,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,IsArmenterosSelected(copy.IsArmenterosSelected)
   ,fUseExtraTracks(copy.fUseExtraTracks)
   ,fUseExtraJetPt(copy.fUseExtraJetPt)
+  ,fUseEmbeddedJetPt(copy.fUseEmbeddedJetPt)
+
   ,fUseStandard(copy.fUseStandard)
     //,fFFHistosIMALaAllEvt(copy.fFFHistosIMALaAllEvt)        
     //,fFFHistosIMALaJet(copy.fFFHistosIMALaJet)           
@@ -1181,6 +1187,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     IsArmenterosSelected            = o.IsArmenterosSelected;
     fUseExtraTracks                 = o.fUseExtraTracks;
     fUseExtraJetPt                  = o.fUseExtraJetPt;
+    fUseEmbeddedJetPt               = o.fUseEmbeddedJetPt;
+
     fUseStandard                    = o.fUseStandard;
     // fFFHistosIMALaAllEvt            = o.fFFHistosIMALaAllEvt;        
     // fFFHistosIMALaJet               = o.fFFHistosIMALaJet;           
@@ -3822,8 +3830,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Double_t ptFractionEmbedded = 0; 
 	Double_t deltaREmbedded     = 0;
 	AliAODJet* embeddedJet      = 0; 
-	AliAODJet* extraJet         = 0; // jet from UE + detector levely PYTHIA tracks, only needed in extra branch for particle level PYTHIA jets, just dummy here
-  
+
 	if(fDebug>2)std::cout<<"fBranchEmbeddedJets before index embedded: "<<fBranchEmbeddedJets<<std::endl;
 	
 	if(fBranchEmbeddedJets.Length()){ // find embedded jet
@@ -3873,7 +3880,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) // end: cut embedded ratio
 	  {
 	    if(fMatchMode == 1){
-	    FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa);//fetch V0s for matched jets and fill embedding histos, extraJet only dummy here
+	      FillEmbeddedHistos(embeddedJet, jet, nK0s, nLa, nALa);//fetch V0s for matched jets and fill embedding histos, 'jet' is matched jet here
 	    }
 	  }
 	//################################end V0 embedding part
@@ -5345,13 +5352,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     
     //########generated jets for embedding##############################################################################
     
-  if((fBranchGenJets.Length())&&(fMatchMode == 2)){//match mode needed for V0 histograms, to be running as a seperate wagon for match mode 1 and match mode 2
+  if((fBranchGenJets.Length())&&(fUseExtraTracks == 1)&&(fMatchMode == 2)){//match mode needed for V0 histograms, to be running as a seperate wagon for match mode 1 and match mode 2 and only for extra jet branch
+
     //match mode 1 is for detector level - detector level PYTHIA matching
     //match mode 2 is for detector level - particle level PYTHIA matching, particle jets can be plotted with true jet pT or smeared jet pT (fUseExtraJetPt)
-
-    
+  
     // generated jets
-    for(Int_t ij=0; ij<nGenJets; ++ij){ // gen jets loop
+    for(Int_t ij=0; ij<nGenJets; ++ij){ // gen jets loop, particle level
 	
 	AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsGen->At(ij));
 	if(!jet)continue;
@@ -5365,7 +5372,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	Double_t ptFractionEmbedded   = 0; 
 	Double_t deltaREmbedded       = 0;
 	AliAODJet* embeddedJet        = 0; // jet from detector level PYTHIA tracks 
-	AliAODJet* extraJet           = 0; // jet from UE + detector level PYTHIA tracks
+	AliAODJet* matchedJet         = 0; // jet from UE + detector level PYTHIA tracks
 	
 	if(fBranchEmbeddedJets.Length()){ // find embedded jet
 	  
@@ -5392,19 +5399,19 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    if(indexExtra > -1){
 	      
-	      extraJet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(indexExtra));
+	      matchedJet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(indexExtra));
 	      
 	      ptFractionEmbedded = fRecMatchPtFraction[indexExtra]; 
-	      deltaREmbedded     = embeddedJet->DeltaR((AliVParticle*) (extraJet)); //yes!
+	      deltaREmbedded     = embeddedJet->DeltaR((AliVParticle*) (matchedJet)); //yes!
 	      
-	      if(fDebug > 2)std::cout<<" ij: "<<ij<<" indexExtra: "<<indexExtra<<" ptFractionEmbedded: "<<ptFractionEmbedded<<" deltaREmbedded: "<<deltaREmbedded<<std::endl;//yes! This is the last printed statement
+	      if(fDebug > 2)std::cout<<"In gen. jet loop - jet matching - ij: "<<ij<<" indexExtra: "<<indexExtra<<" ptFractionEmbedded: "<<ptFractionEmbedded<<" deltaREmbedded: "<<deltaREmbedded<<std::endl;//yes! This is the last printed statement
 	
 
 	    }	
 	  }
 	}
 	
-	TList* jettrackList = new TList();
+	TList* jettrackList = new TList();//gen. jets track list
 	Double_t sumPt      = 0.;
 	Bool_t isBadJet     = kFALSE;
 	
@@ -5427,11 +5434,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	// embedding QA after leading pt cut
 	
-	if(!embeddedJet)std::cout<<"Gen. jet loop: no embedded jet existing!! "<<std::endl; 
-	if(!extraJet)std::cout<<"Gen. jet loop: no extra jet existing!! "<<std::endl; 
+	if(!embeddedJet)std::cout<<"Gen. jet loop: no embedded jet (in extra branch) existing!! "<<std::endl; 
+	if(!matchedJet)std::cout<<"Gen. jet loop: no matched jet (in extra branch) existing!! "<<std::endl; 
 
+	//Double_t jetPt = jet->Pt();
 
-        if((fDebug > 2) && embeddedJet && extraJet) cout<<" After leading pt cut: gen jet "<<ij<<" pt "<<jet->Pt()<<" embedded jet pt "<<embeddedJet->Pt()<<" extra jet pt "<<extraJet->Pt()
+        if((fDebug > 2) && embeddedJet && matchedJet) cout<<" After leading pt cut: gen jet "<<ij<<" pt "<<jet->Pt()<<" embedded jet pt "<<embeddedJet->Pt()<<" matched jet pt "<<matchedJet->Pt()
 				      <<" ptFractionEmbeddedMC "<<ptFractionEmbeddedMC<<" dRMC "<<deltaREmbeddedMC
 				      <<" ptFractionEmbedded "<<ptFractionEmbedded<<" dR "<<deltaREmbedded<<endl;     //no!
 	
@@ -5450,14 +5458,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded && deltaREmbeddedMC <= fCutDeltaREmbedded && 
 	   ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) { // if no embedding: ptFraction = cutFraction = 0
 
-	  Double_t genJetPt = embeddedJet->Pt();//jet pt detector level matched to generator level PYTHIA jets
+	  Double_t embJetPt = embeddedJet->Pt();//jet pt detector level (matched to generator level PYTHIA jets)
 	  
-	  fh1JetPtEmbGenAfterMatch->Fill(genJetPt);  //no!
+	  fh1JetPtEmbGenAfterMatch->Fill(embJetPt);  //no!
 	  
-	  if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - genJetPt: "<<genJetPt<<std::endl; 
+	  if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - embJetPt: "<<embJetPt<<std::endl; 
 
 	  //charged tracks as crosscheck to Olivers results	
-	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+	  for(Int_t it=0; it<jettrackList->GetSize(); ++it){
 	  
 	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
 	    if(!trackVP)continue;
@@ -5465,7 +5473,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Float_t jetPt = jet->Pt(); //can be set in extra branch instance of task to smear the particle level jet reference
 	    if(fUseExtraJetPt){
-	      if(extraJet) jetPt = extraJet->Pt();
+	      if(matchedJet) jetPt = matchedJet->Pt();
 	      else jetPt = 0;
 	    }
 	    
@@ -5477,7 +5485,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    if (ij==0) fFFHistosGen->FillFF(trackPt, jetPt, incrementJetPt);
 
-	    fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);
+	    fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);//can be either PYTHIA particle level jet pT, or smeared with matched jet pT
 	   
 	    
 	    delete trackV;
@@ -5486,18 +5494,131 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
 	  
-	  FillEmbeddedHistos(jet, extraJet, nK0s, nLa, nALa);//fill all V0 embedding histos for match mode 2, extraJetPt smearing only for gen. PYTHIA jets 
+	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa);//fill all V0 embedding histos for match mode 2
+
+	  //Fill gen. jet V0s:
 	  
+	  Double_t sumPtK0EmbMC     = 0.;
+	  Bool_t isBadJetK0EmbMC    = kFALSE; // dummy, do not use
+ 
+
+	
+	  if(fListK0sMC->GetEntries() > 0){GetTracksInCone(fListK0sMC, jetConeK0EmbMClist, jet, GetFFRadius(), sumPtK0EmbMC, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0EmbMC);} //reconstructed K0s in cone around jet axis
+	   	
 	  
+	  if(fDebug>2)Printf("%s:%d nK0s total: %d, in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0EmbMClist->GetEntries(),GetFFRadius());
+
+	  if(fUseExtraTracks == 1){//only for extra particles used	
+	    
+	    
+	    //MC gen PYTHIA Antilambdas in jet cone
+	    
+	    
+	    for(int it =0; it<jetConeK0EmbMClist->GetEntries(); it++){//loop over particles
+	      
+	      AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(jetConeK0EmbMClist->At(it));
+	      
+	      if(!part)continue;
+	      Double_t genPt = part->Pt(); 
+	      
+	      Float_t jetPt = jet->Pt(); //can be set in extra branch instance of task to smear the particle level jet reference
+	      if(fUseExtraJetPt){
+		if(matchedJet) jetPt = matchedJet->Pt();
+		else jetPt = 0;
+	      }
+	   
+	      if(fDebug > 2)std::cout<<" gen. EmbCone K0s candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
+	      
+	      fh2MCEmbK0sJetPt->Fill(jetPt,genPt);   
+	      
+	    } 
+	    
+	    
+
+	    //Lambdas in particle level jet cone
+	    jetConeLaEmbMClist->Clear();
+	    
+	    Double_t sumPtLaEmbMC     = 0.;
+	    
+	    Bool_t isBadJetLaEmbMC    = kFALSE; // dummy, do not use
+	    
+	    
+	    if(fMatchMode == 2){
+	      if(fListLaMC->GetEntries() > 0){GetTracksInCone(fListLaMC, jetConeLaEmbMClist, jet, GetFFRadius(), sumPtLaEmbMC, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmbMC);} //reconstructed La in cone around jet axis
+	    } 
+	    
+	    if(fDebug>2)Printf("%s:%d nLa total: %d, in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nLa,jetConeLaEmbMClist->GetEntries(),GetFFRadius());
+	    
+	    
+	    //MC gen PYTHIA Lambdas in jet cone
+	      
+	    
+	    for(int it =0; it<jetConeLaEmbMClist->GetEntries(); it++){//loop over particles
+	      
+	      AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(jetConeLaEmbMClist->At(it));
+	      
+		if(!part)continue;
+		Double_t genPt = part->Pt();
+		
+		Float_t jetPt = jet->Pt(); //can be set in extra branch instance of task to smear the particle level jet reference
+		if(fUseExtraJetPt){
+		  if(matchedJet) jetPt = matchedJet->Pt();
+		  else jetPt = 0;
+		}
+		
+		
+		if(fDebug > 2)std::cout<<" gen. EmbCone Lambda candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
+		
+		fh2MCEmbLaJetPt->Fill(jetPt,genPt);   
+		
+	    } 
+	    
+	    
+	    jetConeALaEmbMClist->Clear();
+	    
+	    Double_t sumPtALaEmbMC     = 0.;
+	    
+	    Bool_t isBadJetALaEmbMC    = kFALSE; // dummy, do not use
+	    
+	    
+	    if(fListALaMC->GetEntries() > 0){GetTracksInCone(fListALaMC, jetConeALaEmbMClist, jet, GetFFRadius(), sumPtALaEmbMC, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmbMC);} //reconstructed La in cone around jet axis
+	    
+	    
+	    if(fDebug>2)Printf("%s:%d nALa total: %d, in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nALa,jetConeALaEmbMClist->GetEntries(),GetFFRadius());
+	    
+	    if(fMatchMode == 2) {//MC gen PYTHIA Antilambdas in jet cone
+	      
+	      for(int it =0; it<jetConeALaEmbMClist->GetEntries(); it++){//loop over particles
+		
+		AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(jetConeALaEmbMClist->At(it));
+		
+		if(!part)continue;
+         
+		Float_t jetPt = jet->Pt(); //can be set in extra branch instance of task to smear the particle level jet reference
+		if(fUseExtraJetPt){
+		  if(matchedJet) jetPt = matchedJet->Pt();
+		  else jetPt = 0;
+		}
+		
+		Double_t genPt = part->Pt();   
+		if(fDebug > 2)std::cout<<" gen. EmbCone ALambda candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
+		
+		fh2MCEmbALaJetPt->Fill(jetPt,genPt);    
+		
+	      } 
+	    }
+	    
+	  } //end extra
 	}
+	
 	delete jettrackList;
-      }
+    }
   }
   
   //########end of generated jets for embedding
   //#########################################################################
   
-  
+ 
   jettracklist->Clear();
   jetConeK0list->Clear();
   jetConeLalist->Clear();
@@ -7217,23 +7338,24 @@ Double_t AliAnalysisTaskJetChem::AreaCircSegment(Double_t dRadius, Double_t dDis
 
 
 //_____________________________________________________________________
-void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliAODJet* extraJet, Int_t nK0s, Int_t nLa, Int_t nALa)
+void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, const AliAODJet* jet, Int_t nK0s, Int_t nLa, Int_t nALa)
 
 {//Jet matching cuts (FractionPtEmbedded(MC) = 0.5, DeltaREmb(MC) = 0.75*R) are already applied
   
-  Float_t jetPt = jet->Pt();//getting smeared (extra) jet pt or true jet pt (unsmeared), to be set in AddTask macro and only for extra branch!!
+  //for extraonly branch the embedded jet is empty and 'jet' is detector level PYTHIA jet
+   
+  Double_t jetPt = 0;
 
-  if(fUseExtraJetPt){
-    
-    if(fDebug > 2)std::cout<<"Use Extra JetPt:  "<<jetPt<<std::endl;
-    
-    if(extraJet) jetPt = extraJet->Pt();
-    
-    else {jetPt = 0;  if(fDebug > 2)std::cout<<" ATTENTION!! No extra jet available!!!!! "<<std::endl;
-    }
-
+  if((fUseExtraTracks == 1)&&(fUseEmbeddedJetPt == kTRUE)){
+  if(jet) jetPt = embeddedJet->Pt();//getting matched jet pt
+  if((fDebug > 2)&&(embeddedJet))std::cout<<"jetPt is embedded JetPt:  "<<jetPt<<std::endl;
   }
-  
+
+  if((fUseExtraTracks == 1)&&(fUseEmbeddedJetPt == kFALSE)){
+  if(jet) jetPt = jet->Pt();//getting matched jet pt
+  if((fDebug > 2)&&(jet))std::cout<<"jetPt is matched JetPt:  "<<jetPt<<std::endl;
+  }
+
   fh1PtEmbAfterMatch->Fill(jetPt);
   
   for(Int_t it=0; it<jettracklist->GetSize(); ++it){
@@ -7311,46 +7433,20 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
   Bool_t isBadJetK0Emb    = kFALSE; // dummy, do not use
   Double_t sumPtK0EmbSt     = 0.;
   Bool_t isBadJetK0EmbSt    = kFALSE; // dummy, do not use
-  Double_t sumPtK0EmbMC     = 0.;
-  Bool_t isBadJetK0EmbMC    = kFALSE; // dummy, do not use
   
   GetTracksInCone(fListK0s, jetConeK0Emblist, jet, GetFFRadius(), sumPtK0Emb, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0Emb); //reconstructed K0s in cone around jet axis
   
   
   if(fListK0sStandard->GetEntries() > 0){GetTracksInCone(fListK0sStandard, jetConeK0EmbStlist, jet, GetFFRadius(), sumPtK0EmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0EmbSt);} //reconstructed K0s in cone around jet axis
   
-  if(fMatchMode == 2){
-    if(fListK0sMC->GetEntries() > 0){GetTracksInCone(fListK0sMC, jetConeK0EmbMClist, jet, GetFFRadius(), sumPtK0EmbMC, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0EmbMC);} //reconstructed K0s in cone around jet axis
-  } 	
-  
+ 
   //######
   
   if(fDebug>2)Printf("%s:%d nK0s total: %d, in emb. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0Emblist->GetEntries(),GetFFRadius());
   if(fDebug>2)Printf("%s:%d nK0s total: %d, standard K0s in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0EmbStlist->GetEntries(),GetFFRadius());
-  if(fDebug>2)Printf("%s:%d nK0s total: %d, in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0EmbMClist->GetEntries(),GetFFRadius());
 
-
-  
   if(fUseExtraTracks == 1){//only for extra particles used	
-    
-    
-    if(fMatchMode == 2){//MC gen PYTHIA Antilambdas in jet cone
       
-      
-      for(int it =0; it<jetConeK0EmbMClist->GetEntries(); it++){//loop over particles
-	      
-	AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(jetConeK0EmbMClist->At(it));
-	      
-	if(!part)continue;
-	Double_t genPt = part->Pt();  
-	if(fDebug > 2)std::cout<<" gen. EmbCone K0s candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
-	   
-	fh2MCEmbK0sJetPt->Fill(jetPt,genPt);   
-	
-      } 
-    } 
-    
-    
     //standard V0s for UE V0 subtraction
     
     for(Int_t it=0; it<jetConeK0EmbStlist->GetSize(); ++it){ // loop for K0s in jet cone
@@ -7508,8 +7604,6 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
   
   jetConeK0Emblist->Clear();
   jetConeK0EmbStlist->Clear();
-  jetConeK0EmbMClist->Clear();
-  
   jetPerpConeK0Emblist->Clear();
   
 
@@ -7520,7 +7614,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
   
   jetConeLaEmblist->Clear();
   jetConeLaEmbStlist->Clear();
-  jetConeLaEmbMClist->Clear();
+  
 
   Double_t sumPtLaEmb     = 0.;
   
@@ -7530,42 +7624,19 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
   Bool_t isBadJetLaEmbSt    = kFALSE; // dummy, do not use
   
-  Double_t sumPtLaEmbMC     = 0.;
-  
-  Bool_t isBadJetLaEmbMC    = kFALSE; // dummy, do not use
-  
+ 
   GetTracksInCone(fListLa, jetConeLaEmblist, jet, GetFFRadius(), sumPtLaEmb, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmb); //reconstructed La in cone around jet axis
   if(fListLaStandard->GetEntries() > 0){GetTracksInCone(fListLaStandard, jetConeLaEmbStlist, jet, GetFFRadius(), sumPtLaEmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmbSt);} //reconstructed La in cone around jet axis of extra jet
   
-  if(fMatchMode == 2){
-    if(fListLaMC->GetEntries() > 0){GetTracksInCone(fListLaMC, jetConeLaEmbMClist, jet, GetFFRadius(), sumPtLaEmbMC, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetLaEmbMC);} //reconstructed La in cone around jet axis
-  } 
-  
+ 
   //######
 	
   if(fDebug>2)Printf("%s:%d nLa total: %d, in embedded jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nLa,jetConeLaEmblist->GetEntries(),GetFFRadius());
   if(fDebug>2)Printf("%s:%d nLa total: %d, standard La in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nLa,jetConeLaEmbStlist->GetEntries(),GetFFRadius());
-  if(fDebug>2)Printf("%s:%d nLa total: %d, in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nLa,jetConeLaEmbMClist->GetEntries(),GetFFRadius());
   
   if(fUseExtraTracks == 1){//only for extra particles used, V0 UE subtraction method
     
-    if(fMatchMode == 2){//MC gen PYTHIA Lambdas in jet cone
-      
-      
-      for(int it =0; it<jetConeLaEmbMClist->GetEntries(); it++){//loop over particles
-	
-	AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(jetConeLaEmbMClist->At(it));
-	
-	if(!part)continue;
-	Double_t genPt = part->Pt(); 
-	if(fDebug > 2)std::cout<<" gen. EmbCone Lambda candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
-	    
-	fh2MCEmbLaJetPt->Fill(jetPt,genPt);   
-	
-      } 
-    } 
-	  //####################
-
+   	  //####################
 
 	  for(Int_t it=0; it<jetConeLaEmbStlist->GetSize(); ++it){ // loop for La in jet cone
 	    
@@ -7731,7 +7802,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	jetConeALaEmblist->Clear();
 	jetConeALaEmbStlist->Clear();
-	jetConeALaEmbMClist->Clear();
+
 
 	Double_t sumPtALaEmb     = 0.;
 	
@@ -7741,45 +7812,23 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* jet, const AliA
 	
 	Bool_t isBadJetALaEmbSt    = kFALSE; // dummy, do not use
 
-	Double_t sumPtALaEmbMC     = 0.;
-	
-	Bool_t isBadJetALaEmbMC    = kFALSE; // dummy, do not use
-	
+
 	GetTracksInCone(fListALa, jetConeALaEmblist, jet, GetFFRadius(), sumPtALaEmb, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmb); //reconstructed ALa in cone around jet axis
 	if(fListALaStandard->GetEntries() > 0){GetTracksInCone(fListALaStandard, jetConeALaEmbStlist, jet, GetFFRadius(), sumPtALaEmbSt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmbSt);}//reconstructed ALa in cone around jet axis
 	
-	if(fMatchMode == 2){
-	  if(fListALaMC->GetEntries() > 0){GetTracksInCone(fListALaMC, jetConeALaEmbMClist, jet, GetFFRadius(), sumPtALaEmbMC, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetALaEmbMC);} //reconstructed La in cone around jet axis
-	} 
+
 
 	//######
 	
 	if(fDebug>2)Printf("%s:%d nALa total: %d, in embedded jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nALa,jetConeALaEmblist->GetEntries(),GetFFRadius());
 	if(fDebug>2)Printf("%s:%d nALa total: %d, standard ALa in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nALa,jetConeALaEmbStlist->GetEntries(),GetFFRadius());
-	if(fDebug>2)Printf("%s:%d nALa total: %d, in gen. jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nALa,jetConeALaEmbMClist->GetEntries(),GetFFRadius());
 
 
 	//standard Antilambdas in jets for UE V0 subtraction
 
 	if(fUseExtraTracks == 1){//only for extra particles used
 
-	  
-	  if(fMatchMode == 2){//MC gen PYTHIA Antilambdas in jet cone
-	    
-	    for(int it =0; it<jetConeALaEmbMClist->GetEntries(); it++){//loop over particles
-	      
-	      AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(jetConeALaEmbMClist->At(it));
-	      
-	      if(!part)continue;
-
-	   
-	      Double_t genPt = part->Pt();   
-	      if(fDebug > 2)std::cout<<" gen. EmbCone ALambda candidate - partPt: "<<genPt<<" jet Pt: "<<jetPt<<std::endl;
-	  
-	      fh2MCEmbALaJetPt->Fill(jetPt,genPt);    
-	      
-	    } 
-	  } 
+       	 
 	  //####################
 
 	  for(Int_t it=0; it<jetConeALaEmbStlist->GetSize(); ++it){ // loop for ALa in jet cone
