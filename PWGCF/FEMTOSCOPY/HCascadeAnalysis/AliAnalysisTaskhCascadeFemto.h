@@ -62,6 +62,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   void SetNEventsToMix(short nevmixing) { fnEventsToMix = nevmixing;}
   void SetMomentumLimitForTOFPID(Float_t momemtumlimitforTOFPID) { fMomemtumLimitForTOFPID = momemtumlimitforTOFPID;} 
   void SetApplyRatioCrRnFindCut(Bool_t kapplycrrowsnfindcut) { fkApplyRatioCrRnFindCut = kapplycrrowsnfindcut;}
+  void SetApplyCrossedRowCut(Bool_t kapplycrrowscut) { fkCutOnCrossedRows = kapplycrrowscut;}
   void SetCutOnTPCIP(Bool_t kcutontpcip) { fkCutOnTPCIP = kcutontpcip;}
   void SetIPCutxy(Float_t ipcutxy) { fIPCutxy = ipcutxy;}
   void SetIPCutz (Float_t ipcutz)  { fIPCutz = ipcutz;}
@@ -70,7 +71,8 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   void SetMinPtCasc(Float_t minptforcasc) { fMinPtForCasc  = minptforcasc;}
   void SetMaxPtCasc(Float_t maxptforcasc) { fMaxPtForCasc  = maxptforcasc;}
   void SetIPCutBac(Float_t ipcutbac) { fIPCutBac = ipcutbac;}
-  void SetApplyYcutCasc(Bool_t applyycutcasc) { fkApplyYcutCasc = applyycutcasc;} 
+  void SetApplyYcutCasc(Bool_t applyycutcasc) { fkApplyYcutCasc = applyycutcasc;}
+ 
   void SetPropagateGlobal(Bool_t propagateglobal) { fkPropagateGlobal = propagateglobal;}
   void SetCutOnttcProp(Bool_t kcutonttcprop) { fkCutOnTtcProp = kcutonttcprop;}
 
@@ -102,6 +104,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
 
   Float_t fMomemtumLimitForTOFPID;
   Bool_t fkApplyRatioCrRnFindCut;
+  Bool_t fkCutOnCrossedRows;
   Bool_t fkCutOnTPCIP;
   Float_t fIPCutxy;
   Float_t fIPCutz;
@@ -139,13 +142,13 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   Int_t     fMaxPMult;
   Int_t     fMaxXiMult;
 
-  Float_t     fPDGXi;
-  Float_t     fPDGOmega;
-  Float_t     fPDGp;
-  Float_t     fPDGL;
-  Float_t     fPDGpi;
-  Float_t     fPDGfirst;
-  Float_t     fPDGsecond;
+  Double_t     fPDGXi;
+  Double_t     fPDGOmega;
+  Double_t     fPDGp;
+  Double_t     fPDGL;
+  Double_t     fPDGpi;
+  Double_t     fPDGfirst;
+  Double_t     fPDGsecond;
 
   int fzVertexBins;
   int fnCentBins;
@@ -171,7 +174,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   TH2F              *fHistpTOFnsigmavsp;                    //!
   TH2F              *fHistpTOFsignalvsp;                    //!
   TH2F              *fHistpTOFsignalvspt;                   //!
-
+  TH2F              *fHistpnsigTOFnsigTPC;                  //!
   TH2F              *fHistpTOFTPCsignalvspt;                //!
   TH2F              *fHistProtonMultvsCent;                 //!
 
@@ -248,7 +251,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   AliAnalysisTaskhCascadeFemto(const AliAnalysisTaskhCascadeFemto&); // not implemented
   AliAnalysisTaskhCascadeFemto& operator=(const AliAnalysisTaskhCascadeFemto&); // not implemented
   //
-  ClassDef(AliAnalysisTaskhCascadeFemto, 4);
+  ClassDef(AliAnalysisTaskhCascadeFemto, 5);
 };
 
 #endif
