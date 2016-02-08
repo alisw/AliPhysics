@@ -73,6 +73,8 @@ private:
     //Variables for Tree
     Float_t fTimeStamp; //
     Float_t fCentrality; //
+    Float_t fZVertex; //
+    Float_t fCL1; // CL1 based centrality, may be more useful for classifying events for mixing?
     Float_t fPtCor; //
     Float_t fPt; //
     Float_t fMom; // Momentum multiplied by charge (saves using one more variable)
