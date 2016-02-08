@@ -455,6 +455,12 @@ Bool_t AliParticleContainer::AcceptParticle(Int_t i)
   AliTLorentzVector mom;
   GetMomentum(mom, i);
 
+  return ApplyKinematicCuts(mom);
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
+{
   if (mom.Pt() < fParticlePtCut) {
     fRejectionReason |= kPtCut;
     return kFALSE;
