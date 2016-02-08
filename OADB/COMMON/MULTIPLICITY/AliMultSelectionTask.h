@@ -30,6 +30,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TH3F;
+class TProfile;
 class TVector3;
 class THnSparse;
 class TObject;
@@ -236,9 +237,25 @@ private:
     Int_t fMC_NchEta05;
     Int_t fMC_NchEta08;
     Int_t fMC_NchEta10;
+    
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     
+    //Simple QA histograms
+    TH1D *fHistQA_V0M; 
+    TH1D *fHistQA_CL0; 
+    TH1D *fHistQA_CL1; 
+    TProfile *fHistQA_TrackletsVsV0M; 
+    TProfile *fHistQA_TrackletsVsCL0; 
+    TProfile *fHistQA_TrackletsVsCL1; 
+    
+    TH1D *fHistQASelected_V0M; 
+    TH1D *fHistQASelected_CL0; 
+    TH1D *fHistQASelected_CL1; 
+    TProfile *fHistQASelected_TrackletsVsV0M; 
+    TProfile *fHistQASelected_TrackletsVsCL0; 
+    TProfile *fHistQASelected_TrackletsVsCL1; 
+
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;
     AliMultInput         *fInput;

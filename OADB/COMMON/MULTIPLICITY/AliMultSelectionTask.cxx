@@ -41,6 +41,7 @@ class AliESDAD; //AD
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TProfile.h"
 #include "TFile.h"
 #include "THnSparse.h"
 #include "TVector3.h"
@@ -164,8 +165,23 @@ AliMultSelectionTask::AliMultSelectionTask()
       fMC_NchEta05(-1),
       fMC_NchEta08(-1),
       fMC_NchEta10(-1),
-//Histos
+      
+      //Histos
       fHistEventCounter(0),
+      fHistQA_V0M(0),
+      fHistQA_CL0(0),
+      fHistQA_CL1(0),
+      fHistQA_TrackletsVsV0M(0),
+      fHistQA_TrackletsVsCL0(0),
+      fHistQA_TrackletsVsCL1(0),
+      fHistQASelected_V0M(0),
+      fHistQASelected_CL0(0),
+      fHistQASelected_CL1(0),
+      fHistQASelected_TrackletsVsV0M(0),
+      fHistQASelected_TrackletsVsCL0(0),
+      fHistQASelected_TrackletsVsCL1(0),
+
+      //Objects
       fOadbMultSelection(0),
       fInput(0)
 //------------------------------------------------
@@ -245,8 +261,23 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fMC_NchEta05(-1),
       fMC_NchEta08(-1),
       fMC_NchEta10(-1),
-//Histos
+      
+      //Histos
       fHistEventCounter(0),
+      fHistQA_V0M(0),
+      fHistQA_CL0(0),
+      fHistQA_CL1(0),
+      fHistQA_TrackletsVsV0M(0),
+      fHistQA_TrackletsVsCL0(0),
+      fHistQA_TrackletsVsCL1(0),
+      fHistQASelected_V0M(0),
+      fHistQASelected_CL0(0),
+      fHistQASelected_CL1(0),
+      fHistQASelected_TrackletsVsV0M(0),
+      fHistQASelected_TrackletsVsCL0(0),
+      fHistQASelected_TrackletsVsCL1(0),
+      
+      //Objects
       fOadbMultSelection(0),
       fInput(0)
 {
@@ -508,6 +539,60 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistEventCounter->GetXaxis()->SetBinLabel(4, "Vtx |z|<10cm");
         fHistEventCounter->GetXaxis()->SetBinLabel(5, "Isn't Pileup (in mult bins)");
         fListHist->Add(fHistEventCounter);
+    }
+
+    //QA Histograms - User-side output for cross-checking
+    if ( !fHistQA_V0M ) {
+        fHistQA_V0M = new TH1D("fHistQA_V0M", ";V0M Percentile;Count", 105,0,105);
+        fListHist->Add(fHistQA_V0M);
+    }
+    if ( !fHistQA_CL0 ) {
+        fHistQA_CL0 = new TH1D("fHistQA_CL0", ";CL0 Percentile;Count", 105,0,105);
+        fListHist->Add(fHistQA_CL0);
+    }
+    if ( !fHistQA_CL1 ) {
+        fHistQA_CL1 = new TH1D("fHistQA_CL1", ";CL1 Percentile;Count", 105,0,105);
+        fListHist->Add(fHistQA_CL1);
+    }
+    //To compare SPD tracklets in data and MC
+    if ( !fHistQA_TrackletsVsV0M ) {
+        fHistQA_TrackletsVsV0M = new TProfile("fHistQA_TrackletsVsV0M", ";V0M Percentile;#LTSPD Tracklets#GT", 105,0,105);
+        fListHist->Add(fHistQA_TrackletsVsV0M);
+    }
+    if ( !fHistQA_TrackletsVsCL0 ) {
+        fHistQA_TrackletsVsCL0 = new TProfile("fHistQA_TrackletsVsCL0", ";CL0 Percentile;#LTSPD Tracklets#GT", 105,0,105);
+        fListHist->Add(fHistQA_TrackletsVsCL0);
+    }
+    if ( !fHistQA_TrackletsVsCL1 ) {
+        fHistQA_TrackletsVsCL1 = new TProfile("fHistQA_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", 105,0,105);
+        fListHist->Add(fHistQA_TrackletsVsCL1);
+    }
+    
+    //Histograms filled with event selection embedded 
+    if ( !fHistQASelected_V0M ) {
+        fHistQASelected_V0M = new TH1D("fHistQASelected_V0M", ";V0M Percentile;Count", 105,0,105);
+        fListHist->Add(fHistQASelected_V0M);
+    }
+    if ( !fHistQASelected_CL0 ) {
+        fHistQASelected_CL0 = new TH1D("fHistQASelected_CL0", ";CL0 Percentile;Count", 105,0,105);
+        fListHist->Add(fHistQASelected_CL0);
+    }
+    if ( !fHistQASelected_CL1 ) {
+        fHistQASelected_CL1 = new TH1D("fHistQASelected_CL1", ";CL1 Percentile;Count", 105,0,105);
+        fListHist->Add(fHistQASelected_CL1);
+    }
+    //To compare SPD tracklets in data and MC
+    if ( !fHistQASelected_TrackletsVsV0M ) {
+        fHistQASelected_TrackletsVsV0M = new TProfile("fHistQASelected_TrackletsVsV0M", ";V0M Percentile;#LTSPD Tracklets#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_TrackletsVsV0M);
+    }
+    if ( !fHistQASelected_TrackletsVsCL0 ) {
+        fHistQASelected_TrackletsVsCL0 = new TProfile("fHistQASelected_TrackletsVsCL0", ";CL0 Percentile;#LTSPD Tracklets#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_TrackletsVsCL0);
+    }
+    if ( !fHistQASelected_TrackletsVsCL1 ) {
+        fHistQASelected_TrackletsVsCL1 = new TProfile("fHistQASelected_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_TrackletsVsCL1);
     }
 
     //List of Histograms: Normal
@@ -1083,6 +1168,35 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }
         }
+
+        //=============================================================================
+        // Fill in quick debug information (available in any execution)
+
+        Float_t lV0M = lSelection->GetMultiplicityPercentile("V0M");
+        Float_t lCL0 = lSelection->GetMultiplicityPercentile("CL0");
+        Float_t lCL1 = lSelection->GetMultiplicityPercentile("CL1");
+        Int_t ltracklets = fnTracklets->GetValueInteger();
+
+        fHistQA_V0M -> Fill( lV0M );
+        fHistQA_CL0 -> Fill( lCL0 );
+        fHistQA_CL1 -> Fill( lCL1 );
+
+        fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
+        fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
+        fHistQA_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
+
+        lV0M = lSelection->GetMultiplicityPercentile("V0M",kTRUE);
+        lCL0 = lSelection->GetMultiplicityPercentile("CL0",kTRUE);
+        lCL1 = lSelection->GetMultiplicityPercentile("CL1",kTRUE);
+
+        fHistQASelected_V0M -> Fill( lV0M );
+        fHistQASelected_CL0 -> Fill( lCL0 );
+        fHistQASelected_CL1 -> Fill( lCL1 );
+
+        fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
+        fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
+        fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
+        //=============================================================================
 
         //Add to AliVEvent
         //if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
