@@ -148,7 +148,11 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   //
   if ( fSelectFractionTPCSharedClusters )
   {
-    Double_t frac = Double_t(aodtrack->GetTPCnclsS()) / Double_t(aodtrack->GetTPCncls());
+    Double_t frac = 0;
+    Float_t ncls  = Float_t(aodtrack->GetTPCncls ());
+    Float_t nclsS = Float_t(aodtrack->GetTPCnclsS());
+    if (  ncls> 0 )  frac =  nclsS / ncls ;
+    
     if (frac > fCutTPCSharedClustersFraction)
     {
       AliDebug(2,Form("\t Reject track, shared cluster fraction %f > %f",frac, fCutTPCSharedClustersFraction));
