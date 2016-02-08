@@ -45,6 +45,9 @@
 // - TH2D to run pipi (new binning for pions)
 // - for identical particle case: _randomization_ code optimized 
 // - small bug fixes (doSkipOver for protons not initialized, doPickOne for Xi not initialized, dphis calculation with analytical method)
+// February 2016
+// - dont use global tracks IP cut for same PID femto analysis, problems in CF (enhancement at low k* seen clearly in MC and data)
+// - propagation of TPC and global tracks gives the same as analytical method but pairs for wich the propagation fails (both) have to be cut out as well
 /////////////////////////////////////////////////////////////////////////
 
 class AliESDVertex;
@@ -116,6 +119,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fDetasMin(0.),
   fMomemtumLimitForTOFPID(0.8),
   fkApplyRatioCrRnFindCut(kFALSE),
+  fkCutOnCrossedRows(kFALSE),
   fkCutOnTPCIP(kFALSE),  
   fIPCutxy(0.1),
   fIPCutz(0.15),
@@ -179,7 +183,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fHistpTOFnsigmavsp(0),
   fHistpTOFsignalvsp(0),
   fHistpTOFsignalvspt(0),
-
+  fHistpnsigTOFnsigTPC(0),
   fHistpTOFTPCsignalvspt(0),
   fHistProtonMultvsCent(0),
 
@@ -287,6 +291,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fDetasMin(0.),
   fMomemtumLimitForTOFPID(0.8),
   fkApplyRatioCrRnFindCut(kFALSE),
+  fkCutOnCrossedRows(kFALSE),
   fkCutOnTPCIP(kFALSE),
   fIPCutxy(0.1),
   fIPCutz(0.15),
@@ -350,7 +355,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fHistpTOFnsigmavsp(0),
   fHistpTOFsignalvsp(0),
   fHistpTOFsignalvspt(0),
-
+  fHistpnsigTOFnsigTPC(0),
   fHistpTOFTPCsignalvspt(0),
   fHistProtonMultvsCent(0),
 
@@ -551,7 +556,8 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   fHistpTOFsignalvspt->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
   fHistpTOFsignalvspt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})"); 
   fOutputContainer->Add(fHistpTOFsignalvspt);
-
+  fHistpnsigTOFnsigTPC = new TH2F("fHistpnsigTOFnsigTPC","",100, -10., 10., 100, -10., 10);
+  fOutputContainer->Add(fHistpnsigTOFnsigTPC);
   fHistpTOFTPCsignalvspt = new TH2F("fHistpTOFTPCsignalvspt","",200, 0., 10., 100, 0., 20);
   fOutputContainer->Add(fHistpTOFTPCsignalvspt);
   fHistProtonMultvsCent = new TH2F("fHistProtonMultvsCent","",400,0.,2000.,10,0.,100.);
@@ -763,24 +769,25 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
 // Histos for CF in k*
   int kstarbins = 0;
   float kstarmax = 5.;
-  if (fSecondpart == kPion) {kstarbins = 500; kstarmax=2.5; }
+  float kstarmin = 0.;
+  if (fSecondpart == kPion) {kstarbins = 500; kstarmax = 2.5; kstarmin = 0.0;}
   else {kstarbins = 500; kstarmax=5; }
-  fHistpXiSignalRealKstar = new TH2D("fHistpXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistpXiSignalRealKstar = new TH2D("fHistpXiSignalRealKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalRealKstar);
-  fHistapXiSignalRealKstar = new TH2D("fHistapXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistapXiSignalRealKstar = new TH2D("fHistapXiSignalRealKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapXiSignalRealKstar);
-  fHistpaXiSignalRealKstar = new TH2D("fHistpaXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistpaXiSignalRealKstar = new TH2D("fHistpaXiSignalRealKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpaXiSignalRealKstar);
-  fHistapaXiSignalRealKstar = new TH2D("fHistapaXiSignalRealKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistapaXiSignalRealKstar = new TH2D("fHistapaXiSignalRealKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapaXiSignalRealKstar);
 
-  fHistpXiSignalBkgKstar = new TH2D("fHistpXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistpXiSignalBkgKstar = new TH2D("fHistpXiSignalBkgKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpXiSignalBkgKstar);
-  fHistapXiSignalBkgKstar = new TH2D("fHistapXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistapXiSignalBkgKstar = new TH2D("fHistapXiSignalBkgKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapXiSignalBkgKstar);
-  fHistpaXiSignalBkgKstar = new TH2D("fHistpaXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistpaXiSignalBkgKstar = new TH2D("fHistpaXiSignalBkgKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistpaXiSignalBkgKstar);
-  fHistapaXiSignalBkgKstar = new TH2D("fHistapaXiSignalBkgKstar","",kstarbins,0.,kstarmax,20,0.,100.);
+  fHistapaXiSignalBkgKstar = new TH2D("fHistapaXiSignalBkgKstar","",kstarbins,kstarmin,kstarmax,20,0.,100.);
   fOutputContainer->Add(fHistapaXiSignalBkgKstar);
 
   fHistFractionOfXiWithSharedDaughters = new TH2F("fHistFractionOfXiWithSharedDaughters","",200,0.,200.,201,0.,1.005);
@@ -1013,7 +1020,35 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
     if (!globaltrack) continue; 
     if (globaltrack->GetID()<0 ) continue;
-    if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) continue; // there are such tracks with no TPC clusters
+    //cout<<" Global track!!  "<<igt<<endl;
+
+/*    if (!globaltrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) { 
+      cout<<"its not a gl track! "<<endl; 
+      if (globaltrack->TestFilterBit(1 << 0)) cout<<" Filter bit of those traks is 0 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 1)) cout<<" Filter bit of those traks is 1 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 2)) cout<<" Filter bit of those traks is 2 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 3)) cout<<" Filter bit of those traks is 3 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 4)) cout<<" Filter bit of those traks is 4 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 5)) cout<<" Filter bit of those traks is 5 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 6)) cout<<" Filter bit of those traks is 6 "<<endl;
+      if (globaltrack->TestFilterBit(1 << 7)) cout<<" Filter bit of those traks is 7 "<<endl;
+*/
+
+    if ( globaltrack->GetTPCNcls()<=0   ) { // such tracks do not have the TPC refit either, filter map is 2 --> ITS constrained
+      //cout<<" No TPC cl for this global track!!  "<<igt<<endl;
+      //bool statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,globaltrack);
+      //if (AliPIDResponse::kDetPidOk == statusTPC) cout<<"But has TPC PID!!!!!"<<endl; 
+      //else cout<<"And no TPC PID info"<<endl; // always when no TPC clusters are present
+      //if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) cout<<" ... and also no tpc refit  "<<globaltrack->GetFilterMap()<<endl;
+      continue;
+    }
+
+    //if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) { cout<<" No tpc refit  "<<globaltrack->GetFilterMap()<<endl; continue;} // there are such tracks with no TPC clusters, redundant
+
+//      if ( !(globaltrack->GetFilterMap()) ) { 
+//        cout<<" No filter map for this global track!!  "<<globaltrack->GetFilterMap()<<endl;
+//        continue;
+//    }
 
     // Check id is not too big for buffer
     if (globaltrack->GetID()>=fTrackBufferSize) {
@@ -1027,18 +1062,13 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 //        continue;
 //    }
 
-    if ( globaltrack->GetTPCNcls()<=0   ) { // such tracks do not have the TPC refit either, filter map is 2 --> ITS constrained
-//      cout<<" No TPC cl for this global track!!  "<<igt<<endl;
-//      if (!globaltrack->IsOn(AliAODTrack::kTPCrefit)) cout<<" ... and also no tpc refit  "<<globaltrack->GetFilterMap()<<endl;
-        continue;
-    }
     //cout<<" The array will contain "<<igt<<" , it contains "<<farrGT[globaltrack->GetID()]<<endl; 
 
     // Warn if we overwrite a track
     if (farrGT[globaltrack->GetID()]>=0) { // Two tracks same id  --> checked that it never happens
-//      cout<<" Array already filled "<<farrGT[globaltrack->GetID()]<<endl;
+//      cout<<" Array already filled "<<farrGT[globaltrack->GetID()]<<endl; // Warning but we dont overwrite
     } else { 
-      farrGT[globaltrack->GetID()] = igt;           // solution adopted in the femto framework
+      farrGT[globaltrack->GetID()] = igt;  // solution adopted in the femto framework, Hans uses pointers
 //    cout<<" Set array, now it contains  "<<farrGT[globaltrack->GetID()]<<endl;
     }
   }
@@ -1074,7 +1104,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
   Double_t dz[2]= {-999.,-999.}; //Double_t covar[3]={-999.,-999.,-999.};
   Double_t dzg[2]= {-999.,-999.}; Double_t covarg[3]={-999.,-999.,-999.};
   AliExternalTrackParam etp1;
-
+  Double_t xyz[3] = {0.,0.,0.};
 
   Float_t rapidity = 0.;
   Short_t charge = -2;
@@ -1082,7 +1112,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
   int pCount = 0;
 
-  Float_t pMomentumTruth[3];
+  Double_t pMomentumTruth[3];
   AliReconstructedProton::MCProtonOrigin_t mcProtonOrigin = AliReconstructedProton::kUnassigned;
 
   Bool_t isP = kFALSE;  // particle
@@ -1095,26 +1125,34 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     track = dynamic_cast<AliAODTrack*>(vtrack);
     if(!track) AliFatal("Not a standard AOD");
 
-    // Take TPC only tracks constrained to the SPD PV during filtering, Filter Bit 7 (128) but PID is not stored --> find the corresponding global track filter bit 1
+    // Take TPC only tracks constrained to the SPD PV during filtering
+    // Filter Bit 7 (1<<7) (Filter Mask 128) but PID is not stored --> find the corresponding global track 
     if(!track->TestFilterBit(AliAODTrack::kTrkTPCOnlyConstrained)) continue; // Bit 7 corresponds to the following cuts (applied to original ESD track, see Ruben presentation 13.02.2014) : 
                                                                              // ncl 50  
                                                                              // dcaxy 2.4 dcaz 3.2 // this cut however is on the global track!! PWGCF meeting (17.02.2014)
                                                                              // no kinks 
                                                                              // chi2percl 4 
                                                                              // dcatovtx2D kTRUE
+    //  if (track->TestFilterBit(1 << 7)) cout<<" Filter bit of those traks is 7 "<<endl;
+    //  if (track->TestFilterBit(128)) cout<<" Filter bit of those traks is 7  "<<endl;
+    //  if (track->P()==0.) cout<<" track has momentum zero!!"<<endl; // never
+
 
     // nTPCCrossedRows = track->GetTPCClusterInfo(2, 1); // The method below is equivalent
     nTPCCrossedRows = track->GetTPCNCrossedRows();
-//    cout<<"Crossed rows dir "<<track->GetTPCNCrossedRows()<<" Crossed rows indir "<<nTPCCrossedRows<<endl;
-//    if(nTPCCrossedRows<70) continue;  
+    nTPCclSp =  track->GetTPCnclsS();
+    nTPCclp = track->GetTPCncls();
 
+    //cout<<"no of crossed rows "<<nTPCCrossedRows<<endl;
+   
+    if (fkCutOnCrossedRows) {
+      if(nTPCCrossedRows<70) continue;  // 0 in MC 2010 AOD
+    } else {
+      if (nTPCclp<70) continue; 
+    }
     rationCrnFind = 0.;
     if (track->GetTPCNclsF()) rationCrnFind = nTPCCrossedRows/track->GetTPCNclsF();   
     if (fkApplyRatioCrRnFindCut) if(rationCrnFind< .8) continue;  
-
-    nTPCclSp =  track->GetTPCnclsS();
-    nTPCclp = track->GetTPCncls();
-    if (nTPCclp<70) continue;
 
     sharedFractionTPCcl = (Float_t) nTPCclSp/nTPCclp; // can be > 1. 
     if (sharedFractionTPCcl>0.) continue; // for protons it is around 4% (after all cuts) 
@@ -1145,15 +1183,14 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     dz[0]= -999.; dz[1] = -999.;
     dzg[0]= -999.; dzg[1] = -999.;
 
-    dz[0] = track->DCA();    // the TPC one should be applied the other biases the CF --> from Maciejs note --> FIXME to be checked 
+    dz[0] = track->DCA();    // the TPC one should be applied the other biases the CF --> from Maciejs note, checked, yes!!!!!!  
     dz[1] = track->ZAtDCA(); // for those two lines check AliAODTrack.h // FIXME these two lines produce shifted distributions, known problem, asked Mac and Marian. 
                                                                         // Btw dont propagate TPC constrained! 
 //    Double_t p[3]; track->GetXYZ(p); // first two elements of p give the same as above, ignore the third, those are original DCA of TPC only tracks (with or w/o constraint?)
 //    cout<<"d xy "<<dz[0]<<"while value is for other "<<p[0]<<endl;
 //    cout<<"d z "<<dz[1]<<"while value is for other "<<p[1]<<endl;
 
-    etp1.CopyFromVTrack(vtrackg); 
-    etp1.PropagateToDCA(vertexmain,bfield,100.,dzg,covarg);    
+    //if (dz[0]==0. || dz[1]==0. ) cout<<"dcaxy "<<dz[0]<<" dcaz "<<dz[1]<<endl; // never
 
     isP = kFALSE;
     isaP = kFALSE;
@@ -1168,6 +1205,10 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       if (TMath::Abs(dz[0])>fIPCutxy ) continue;  // 2.4 proton 1. pion 
       if (TMath::Abs(dz[1])>fIPCutz ) continue;  // 3.2  proton 1. pion
     } else {
+      etp1.CopyFromVTrack(vtrackg);
+      //globaltrack->GetPosition(xyz);
+      // if (xyz[0]*xyz[0]+xyz[1]*xyz[1]+xyz[2]*xyz[2] >3.*3.) {/*cout<<" this track goes bezond 3 cm!! no prop continue!!! "<<endl;*/ continue;} // from Hans code, not sure about it
+      if (!etp1.PropagateToDCA(vertexmain,bfield,100.,dzg,covarg)) { /*cout<<"wrong propagation!!! "<<dzg[0]<<" and  "<<dzg[1]<<endl;*/ continue;}
       if (TMath::Abs(dzg[0])>fIPCutxy ) continue;  // 0.1 proton/pion
       if (TMath::Abs(dzg[1])>fIPCutz ) continue; // 0.15 proton/pion
     }
@@ -1260,7 +1301,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       fHistpTOFnsigmavsp->Fill(track->P(),nsigmaTPCp);
       fHistpTOFsignalvsp->Fill(track->P(),tTOF);  
       fHistpTOFsignalvspt->Fill(track->Pt(),tTOF);
-
+      fHistpnsigTOFnsigTPC->Fill(nsigmaTOFp,nsigmaTPCp);
       fHistpTOFTPCsignalvspt->Fill(track->Pt(),TMath::Sqrt(nsigmaTOFp*nsigmaTOFp+nsigmaTPCp*nsigmaTPCp));
     }
 
@@ -1299,7 +1340,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       fEvt->fReconstructedProton[pCount].isP = kFALSE;
     }
 
-    fEvt->fReconstructedProton[pCount].index = TMath::Abs(globaltrack->GetID());
+    fEvt->fReconstructedProton[pCount].index = globaltrack->GetID();
 //    cout<<" Pos 125 cm before set "<<fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition[0]<<" "<<fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition[1]<<" "<<fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition[2]<<endl;
     if (fkPropagateGlobal) SetSftPosR125(vtrackg, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition); // Hans popagates the TPC tracks, I try both, flag to choose 
     else SetSftPosR125(vtrack, bfield, lBestPrimaryVtxPos, fEvt->fReconstructedProton[pCount].pShiftedGlobalPosition);
@@ -2051,33 +2092,33 @@ void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const Float_t lcentrality) {
                            // happens seldom, maily for primary pions of verz low mom (0.14)
           if (isP&&isXi) {
             if (fFirstpart==kPion && fSecondpart==kXi) {
-              if (dphisneg!=0. && detasneg!=0. && TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
-              if (dphisbac!=0. && detasbac!=0. && TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
+              if (/*dphisneg!=0. && detasneg!=0. &&*/ TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
+              if (/*dphisbac!=0. && detasbac!=0. &&*/ TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
             } else if (fFirstpart==kProton && fSecondpart==kXi) {
-              if (dphispos!=0. && detaspos!=0. && TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
+              if (/*dphispos!=0. && detaspos!=0. &&*/ TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
             }
           } else if (isaP&&isaXi) {
             if (fFirstpart==kPion && fSecondpart==kXi) {
-              if (dphispos!=0. && detaspos!=0. && TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
-              if (dphisbac!=0. && detasbac!=0. && TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
+              if (/*dphispos!=0. && detaspos!=0. &&*/ TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
+              if (/*dphisbac!=0. && detasbac!=0. &&*/ TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
             } else if (fFirstpart==kProton && fSecondpart==kXi) {
-              if (dphisneg!=0. && detasneg!=0. && TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
+              if (/*dphisneg!=0. && detasneg!=0. &&*/ TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
             }
           } else if (isaP&&isXi) {
      
             if (fFirstpart==kPion && fSecondpart==kXi) {
-              if (dphispos!=0. && detaspos!=0. && TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
+              if (/*phispos!=0. && detaspos!=0. &&*/ TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
             } else if (fFirstpart==kProton && fSecondpart==kXi) {
-              if (dphisbac!=0. && detasbac!=0. && TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
-              if (dphisneg!=0. && detasneg!=0. && TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
+              if (/*dphisbac!=0. && detasbac!=0. &&*/ TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
+              if (/*dphisneg!=0. && detasneg!=0. &&*/ TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
             }
 
           } else if (isP&&isaXi) {
             if (fFirstpart==kPion && fSecondpart==kXi) {
-              if (dphisneg!=0. && detasneg!=0. && TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
+              if (/*dphisneg!=0. && detasneg!=0. &&*/ TMath::Abs(dphisneg)<fDphisMin && TMath::Abs(detasneg)<fDetasMin) continue;
             } else if (fFirstpart==kProton && fSecondpart==kXi) {
-              if (dphisbac!=0. && detasbac!=0. && TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
-              if (dphispos!=0. && detaspos!=0. && TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
+              if (/*dphisbac!=0. && detasbac!=0. &&*/ TMath::Abs(dphisbac)<fDphisMin && TMath::Abs(detasbac)<fDetasMin) continue;
+              if (/*dphispos!=0. && detaspos!=0. &&*/ TMath::Abs(dphispos)<fDphisMin && TMath::Abs(detaspos)<fDetasMin) continue;
             }
 
           }
@@ -2091,31 +2132,43 @@ void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const Float_t lcentrality) {
   //          if (TMath::Abs(dphispos)>0.015&&TMath::Abs(detaspos)>0.1) {
             fHistpXiSignalRealKstar->Fill(pairKstar,lcentrality);//}
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistpXibacDetaSDphiS->Fill(dphisbac,detasbac); 
-            if (dphispos!=0.&& detaspos!=0.) fHistpXiposDetaSDphiS->Fill(dphispos,detaspos);
-            if (dphisneg!=0.&& detasneg!=0.) fHistpXinegDetaSDphiS->Fill(dphisneg,detasneg); 
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistpXibacDetaSDphiS->Fill(dphisbac,detasbac); 
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistpXiposDetaSDphiS->Fill(dphispos,detaspos);
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistpXinegDetaSDphiS->Fill(dphisneg,detasneg); 
 //            }
           } else if (isXi&&isaP) {
             fHistapXiSignalRealKstar->Fill(pairKstar,lcentrality);
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistapXibacDetaSDphiS->Fill(dphisbac,detasbac);
-            if (dphispos!=0.&& detaspos!=0.) fHistapXiposDetaSDphiS->Fill(dphispos,detaspos);
-            if (dphisneg!=0.&& detasneg!=0.) fHistapXinegDetaSDphiS->Fill(dphisneg,detasneg);
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistapXibacDetaSDphiS->Fill(dphisbac,detasbac);
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistapXiposDetaSDphiS->Fill(dphispos,detaspos);
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistapXinegDetaSDphiS->Fill(dphisneg,detasneg);
 //            }
           } else if (isaXi&&isP) {
             fHistpaXiSignalRealKstar->Fill(pairKstar,lcentrality);
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistpaXibacDetaSDphiS->Fill(dphisbac,detasbac); 
-            if (dphispos!=0.&& detaspos!=0.) fHistpaXiposDetaSDphiS->Fill(dphispos,detaspos); 
-            if (dphisneg!=0.&& detasneg!=0.) fHistpaXinegDetaSDphiS->Fill(dphisneg,detasneg); 
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistpaXibacDetaSDphiS->Fill(dphisbac,detasbac); 
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistpaXiposDetaSDphiS->Fill(dphispos,detaspos); 
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistpaXinegDetaSDphiS->Fill(dphisneg,detasneg); 
 //            }
           } else if (isaXi&&isaP) {
          //   if (TMath::Abs(dphisneg)>0.015&&TMath::Abs(detasneg)>0.1) { 
             fHistapaXiSignalRealKstar->Fill(pairKstar,lcentrality);//}
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistapaXibacDetaSDphiS->Fill(dphisbac,detasbac); 
-            if (dphispos!=0.&& detaspos!=0.) fHistapaXiposDetaSDphiS->Fill(dphispos,detaspos); 
-            if (dphisneg!=0.&& detasneg!=0.) fHistapaXinegDetaSDphiS->Fill(dphisneg,detasneg);
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistapaXibacDetaSDphiS->Fill(dphisbac,detasbac); 
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistapaXiposDetaSDphiS->Fill(dphispos,detaspos); 
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistapaXinegDetaSDphiS->Fill(dphisneg,detasneg);
 //            }
           }
 
@@ -2130,32 +2183,44 @@ void AliAnalysisTaskhCascadeFemto::DoPairshCasc (const Float_t lcentrality) {
   //          if (TMath::Abs(dphispos)>0.015&&TMath::Abs(detaspos)>0.1) {
             fHistpXiSignalBkgKstar->Fill(pairKstar,lcentrality);//}
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistpXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
-            if (dphispos!=0.&& detaspos!=0.) fHistpXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
-            if (dphisneg!=0.&& detasneg!=0.) fHistpXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistpXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistpXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistpXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
 //            }
           } else if (isXi&&isaP) {
             fHistapXiSignalBkgKstar->Fill(pairKstar,lcentrality);
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistapXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
-            if (dphispos!=0.&& detaspos!=0.) fHistapXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
-            if (dphisneg!=0.&& detasneg!=0.) fHistapXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistapXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
+            // if (dphispos!=0.&& detaspos!=0.)
+            fHistapXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistapXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
 //            }
           } else if (isaXi&&isP) {
             fHistpaXiSignalBkgKstar->Fill(pairKstar,lcentrality);
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistpaXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
-            if (dphispos!=0.&& detaspos!=0.) fHistpaXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
-            if (dphisneg!=0.&& detasneg!=0.) fHistpaXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistpaXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistpaXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistpaXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
 //            }
 
           } else if (isaXi&&isaP) {
   //          if (TMath::Abs(dphisneg)>0.015&&TMath::Abs(detasneg)>0.1) {
             fHistapaXiSignalBkgKstar->Fill(pairKstar,lcentrality);//}
 //            if (pairKstar<0.1) {
-            if (dphisbac!=0.&& detasbac!=0.) fHistapaXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
-            if (dphispos!=0.&& detaspos!=0.) fHistapaXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
-            if (dphisneg!=0.&& detasneg!=0.) fHistapaXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
+            //if (dphisbac!=0.&& detasbac!=0.)
+            fHistapaXibacDetaSDphiSBkg->Fill(dphisbac,detasbac);
+            //if (dphispos!=0.&& detaspos!=0.)
+            fHistapaXiposDetaSDphiSBkg->Fill(dphispos,detaspos);
+            //if (dphisneg!=0.&& detasneg!=0.)
+            fHistapaXinegDetaSDphiSBkg->Fill(dphisneg,detasneg);
 //            }
           }
 
@@ -2226,11 +2291,12 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
 
         //Calculate k* for the pair
         pairKstar = CalculateKstar(fEvt->fReconstructedProton[im].pMomentum, (fEvt+eventNumber)->fReconstructedProton[jn].pMomentum, fPDGsecond,fPDGfirst);
-
-        dphis = CalculateDphiSatR12mAnal(fEvt->fReconstructedProton[im].pCharge, (fEvt+eventNumber)->fReconstructedProton[jn].pCharge, fieldsign,
-                                         fEvt->fReconstructedProton[im].pPt ,    (fEvt+eventNumber)->fReconstructedProton[jn].pPt, 
-                                         fEvt->fReconstructedProton[im].pPhi,    (fEvt+eventNumber)->fReconstructedProton[jn].pPhi, 
-                                         &dphis2);
+        dphis = CalculateDphiSatR12mAnal((fEvt+eventNumber)->fReconstructedProton[jn].pCharge,
+                                          fEvt->fReconstructedProton[im].pCharge, fieldsign, 
+                                         (fEvt+eventNumber)->fReconstructedProton[jn].pPt, 
+                                          fEvt->fReconstructedProton[im].pPt , 
+                                         (fEvt+eventNumber)->fReconstructedProton[jn].pPhi, 
+                                          fEvt->fReconstructedProton[im].pPhi, &dphis2);
 
         //if (eventNumber == 0) cout<<" Dphi with analytical method "<<dphisprop<<endl;
         deta = fEvt->fReconstructedProton[im].pEta-(fEvt+eventNumber)->fReconstructedProton[jn].pEta;
@@ -2248,14 +2314,14 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
           if ( (is1P && is2P) || (is1aP && is2aP)) {
             if (fSecondpart == kProton) {
               if (fkCutOnTtcProp) {
-                if ((dphisprop!=0.) && (detasprop!=0.) && (TMath::Abs(dphisprop)<fDphisMin) && (TMath::Abs(detasprop)<fDetasMin)) continue; 
+                if (/*(dphisprop!=0.) && (detasprop!=0.) &&*/ (TMath::Abs(dphisprop)<fDphisMin) && (TMath::Abs(detasprop)<fDetasMin)) continue; 
               } else {
                 if ((TMath::Abs(dphis)<fDphisMin) && (TMath::Abs(deta)<fDetasMin)) continue;  
               } 
             } else if (fSecondpart == kPion) {
               //if (dphisprop==0. || detasprop==0.) cout<<"Dphiprop or detasprop are 0!!!!! Dphis "<<dphisprop<<" Detas "<<detasprop<<endl;
               if (fkCutOnTtcProp) {
-                if ((dphisprop!=0.) && (detasprop!=0.) && (TMath::Abs((dphisprop))<fDphisMin) && (TMath::Abs(detasprop)<fDetasMin)) continue; 
+                if (/*(dphisprop!=0.) && (detasprop!=0.) &&*/ TMath::Sqrt(dphis*dphis+deta*deta)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue; 
               } else {
                 if (TMath::Sqrt(dphis*dphis+deta*deta)<fDphisMin && TMath::Abs(deta)<fDetasMin) continue; // cut paper
               }
@@ -2264,7 +2330,7 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
         }
         if (eventNumber==0) {//Same event pair histogramming
 
-          // simplest pair cut // FIXME not needed maybe
+          // simplest pair cut // not needed maybe
           if ((fEvt+eventNumber)->fReconstructedProton[jn].index == fEvt->fReconstructedProton[im].index) { 
             // cout<<"In the same event the two particles have the same index!"<<endl; 
             continue;
@@ -2275,18 +2341,18 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
             fHistpXiSignalRealKstar->Fill(pairKstar,lcentrality);
             fHistpXibacDetaSDphiS->Fill(dphis,deta);
             fHistpXiposDetaSDphiS->Fill(dphis2,deta);
-            if ((dphisprop!=0.) && (detasprop!=0.)) fHistpXinegDetaSDphiS->Fill(dphisprop,detasprop);
+            /*if ((dphisprop!=0.) && (detasprop!=0.))*/ fHistpXinegDetaSDphiS->Fill(dphisprop,detasprop);
 
           } else if (is1aP && is2aP) {
             fHistapaXiSignalRealKstar->Fill(pairKstar,lcentrality);
             fHistapaXibacDetaSDphiS->Fill(dphis,deta);
             fHistapaXiposDetaSDphiS->Fill(dphis2,deta);
-            if ((dphisprop!=0.) && (detasprop!=0.)) fHistapaXinegDetaSDphiS->Fill(dphisprop,detasprop); 
+            /*if ((dphisprop!=0.) && (detasprop!=0.))*/ fHistapaXinegDetaSDphiS->Fill(dphisprop,detasprop); 
           } else if ((is1P && is2aP) || (is1aP && is2P)) { // only because we are combining same particles
             fHistpaXiSignalRealKstar->Fill(pairKstar,lcentrality);
             fHistpaXibacDetaSDphiS->Fill(dphis,deta);
             fHistpaXiposDetaSDphiS->Fill(dphis2,deta);
-            if ((dphisprop!=0.) && (detasprop!=0.)) fHistpaXinegDetaSDphiS->Fill(dphisprop,detasprop);
+            /*if ((dphisprop!=0.) && (detasprop!=0.))*/ fHistpaXinegDetaSDphiS->Fill(dphisprop,detasprop);
 
           } 
 
@@ -2297,20 +2363,20 @@ void AliAnalysisTaskhCascadeFemto::DoPairshh (const Float_t lcentrality, int fie
             fHistpXiSignalBkgKstar->Fill(pairKstar,lcentrality);
             fHistpXibacDetaSDphiSBkg->Fill(dphis,deta);
             fHistpXiposDetaSDphiSBkg->Fill(dphis2,deta);
-            if ((dphisprop!=0.) && (detasprop!=0.)) fHistpXinegDetaSDphiSBkg->Fill(dphisprop,detasprop);            
+            /*if ((dphisprop!=0.) && (detasprop!=0.))*/ fHistpXinegDetaSDphiSBkg->Fill(dphisprop,detasprop);            
 
 
           } else if (is1aP && is2aP) {
             fHistapaXiSignalBkgKstar->Fill(pairKstar,lcentrality);
             fHistapaXibacDetaSDphiSBkg->Fill(dphis,deta);
             fHistapaXiposDetaSDphiSBkg->Fill(dphis2,deta);
-            if ((dphisprop!=0.) && (detasprop!=0.)) fHistapaXinegDetaSDphiSBkg->Fill(dphisprop,detasprop);
+            /*if ((dphisprop!=0.) && (detasprop!=0.))*/ fHistapaXinegDetaSDphiSBkg->Fill(dphisprop,detasprop);
 
           } else if ((is1P && is2aP) || (is1aP && is2P)) {
             fHistpaXiSignalBkgKstar->Fill(pairKstar,lcentrality);
             fHistpaXibacDetaSDphiSBkg->Fill(dphis,deta);
             fHistpaXiposDetaSDphiSBkg->Fill(dphis2,deta);
-            if ( (dphisprop!=0.) && (detasprop!=0.)) fHistpaXinegDetaSDphiSBkg->Fill(dphisprop,detasprop);
+            /*if ( (dphisprop!=0.) && (detasprop!=0.))*/ fHistpaXinegDetaSDphiSBkg->Fill(dphisprop,detasprop);
       
           } 
 
