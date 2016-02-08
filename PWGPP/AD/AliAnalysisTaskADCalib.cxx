@@ -391,8 +391,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
     delete h1;
   }
   const Double_t meanQuantiles[2] = { 
-    TMath::Mean(8, chargeQuantiles),
-    TMath::Mean(8, chargeQuantiles+8)
+    (Float_t)TMath::Mean(8, chargeQuantiles),
+    (Float_t)TMath::Mean(8, chargeQuantiles+8)
   };
 
   // (2) compute charge equalization factors
@@ -498,8 +498,8 @@ AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree
   }
   Double_t *eqFactors = tSat->GetV1();
   const Float_t meanEq[2] = {
-    TMath::Mean(8, eqFactors),
-    TMath::Mean(8, eqFactors+8)
+    (Float_t)TMath::Mean(8, eqFactors),
+    (Float_t)TMath::Mean(8, eqFactors+8)
   };
   AliInfo(Form("meanEq=%.3f %.3f", meanEq[0], meanEq[1]));
 
@@ -515,8 +515,8 @@ AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree
     mip[ch] = TMath::Power(hv[ch]/a[ch], b[ch]);
   }
   const Float_t meanMIP[2] = {
-    TMath::Mean(8, mip),
-    TMath::Mean(8, mip+8)
+    (Float_t)TMath::Mean(8, mip),
+    (Float_t)TMath::Mean(8, mip+8)
   };
   AliInfo(Form("meanMIP=%.3f %.3f", meanMIP[0], meanMIP[1]));
   
