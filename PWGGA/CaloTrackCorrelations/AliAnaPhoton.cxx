@@ -2133,7 +2133,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhDTimeLam0BinPerSMWeighted[il0][ism]) ;   
         
         fhCellClusterEFracLam0BinPerSM[il0][ism] = new TH2F
-        (Form("hCellClusterEFracLam0Bin%d_Bin_sm%d",il0,ism),
+        (Form("hCellClusterEFracLam0Bin%d_sm%d",il0,ism),
          Form("#it{p}_{T} vs cell E / cluster E in sm %d, %s, w > 0",ism,l0bin[il0].Data()),
          nptbins,ptmin,ptmax,100,0,1);
         fhCellClusterEFracLam0BinPerSM[il0][ism]->SetYTitle("cell E / cluster E ");
@@ -2141,7 +2141,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhCellClusterEFracLam0BinPerSM[il0][ism]) ;         
 
         fhCellClusterEFracLam0BinPerSMWeighted[il0][ism] = new TH2F
-        (Form("hCellClusterEFracLam0Bin%d_Bin_sm%d_Weighted",il0,ism),
+        (Form("hCellClusterEFracLam0Bin%d_sm%d_Weighted",il0,ism),
          Form("#it{p}_{T} vs cell E / cluster E weighted in sm %d, %s",ism,l0bin[il0].Data()),
          nptbins,ptmin,ptmax,100,0,1);
         fhCellClusterEFracLam0BinPerSMWeighted[il0][ism]->SetYTitle("cell E / cluster E ");
@@ -2149,7 +2149,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhCellClusterEFracLam0BinPerSMWeighted[il0][ism]) ;         
         
         fhCellClusterELam0BinPerSM[il0][ism] = new TH2F
-        (Form("hCellClusterELam0Bin%d_Bin_sm%d",il0,ism),
+        (Form("hCellClusterELam0Bin%d_sm%d",il0,ism),
          Form("#it{p}_{T} vs cell E in sm %d, %s, w > 0",ism,l0bin[il0].Data()),
          nptbins,ptmin,ptmax,500,0,10);
         fhCellClusterELam0BinPerSM[il0][ism]->SetYTitle("cell E (GeV)");
@@ -2157,7 +2157,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhCellClusterELam0BinPerSM[il0][ism]) ;         
         
         fhCellClusterELam0BinPerSMWeighted[il0][ism] = new TH2F
-        (Form("hCellClusterELam0Bin%d_Bin_sm%d_Weighted",il0,ism),
+        (Form("hCellClusterELam0Bin%d_sm%d_Weighted",il0,ism),
          Form("#it{p}_{T} vs cell E  weighted in sm %d, %s",ism,l0bin[il0].Data()),
          nptbins,ptmin,ptmax,500,0,10);
         fhCellClusterELam0BinPerSMWeighted[il0][ism]->SetYTitle("cell E (GeV)");
