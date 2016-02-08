@@ -47,6 +47,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
 		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
                    )
 
@@ -68,6 +69,7 @@ set(SRCS
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
     PHOS_PbPb/AliAnalysisTaskgg.cxx
+    PHOS_PbPb/AliAnalysisTaskPHOSPCMgg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx
