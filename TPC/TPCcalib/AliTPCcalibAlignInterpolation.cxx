@@ -2230,11 +2230,11 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   (*pcstream)<<"NDFitTrending"<<"\n";
   delete treeMeta;
   delete pcstream;
-  delete pcstreamFit;
-  
+  delete pcstreamFit;  
 }
 
-TTree* AliTPCcalibAlignInterpolation::LoadDistortionTrees(const char * maplist){
+
+TTree* AliTPCcalibAlignInterpolation::LoadDistortionTrees(const char * maplist, Int_t cacheSize, Int_t markerStyle, Int_t markerSize){
   //
   // Load distortion trees specified in the maplist 
   // Loading distortion maps as a friend trees used for
@@ -2279,11 +2279,61 @@ TTree* AliTPCcalibAlignInterpolation::LoadDistortionTrees(const char * maplist){
       treeReturn=tree;
     }    
   } 
-  treeReturn->SetMarkerStyle(25); 
-  treeReturn->SetMarkerSize(0.4);
+  treeReturn->SetCacheSize(cacheSize);
+  treeReturn->SetMarkerStyle(markerStyle); 
+  treeReturn->SetMarkerSize(markerSize);
   return treeReturn;
 }
 
+
+Bool_t  AliTPCcalibAlignInterpolation::LoadNDLocalFit(TTree * tree, const char *chTree){
+  ///
+  ///  Load ND local fits. We assume data are organized in particular directory structure, in directories together with input maps
+  ///  
+  ///   
+  /// Input:    
+  ///   \param TTree * tree        - input tree with distortion maps and "friend trees" per time bins
+  ///   \param const char *chTree  - name of the "distortion branch"
+
+  if ( tree->GetListOfFriends()->FindObject(chTree)==NULL){
+    ::Error("AliTPCcalibAlignInterpolation::LoadNDLocal","Tree %s does not exist",chTree);
+    return kFALSE;
+  }
+  TString floc = tree->GetListOfFriends()->FindObject(chTree)->GetTitle();
+  TString fdir = gSystem->DirName(floc);
+  //
+  TObjArray *ndFileList = ( gSystem->GetFromPipe(TString::Format("ls %s/delta*root",fdir.Data()).Data())).Tokenize("\n");
+  
+  if (ndFileList->GetEntries()==0){
+    ::Error(" AliTPCcalibAlignInterpolation::LoadNDLocal","File with NDLocal ",chTree);
+    return kFALSE;
+  }
+  for (Int_t ind=0; ind<ndFileList->GetEntries(); ind++){
+    //
+    TString  fname=ndFileList->At(ind)->GetName();
+    TFile * f = TFile::Open(fname.Data());
+    TList * arrKey = f->GetListOfKeys();
+    for (Int_t ikey=0; ikey<arrKey->GetEntries(); ikey++){
+      TString keyName=arrKey->At(ikey)->GetName();
+      if (keyName.Contains("delta")==0) continue;
+      TObject * o = f->Get(keyName);
+      AliNDLocalRegression * reg  = dynamic_cast<AliNDLocalRegression*>(o);
+      if (reg==NULL){
+	delete o;
+	continue;
+      }
+      TString aliasName = TString::Format("%s.%s",chTree,reg->GetName());
+      aliasName.ReplaceAll("-","Min");
+      ::Info("AliTPCcalibAlignInterpolation::LoadNDLocal","Loaded ND local regression %s/%s as alias %s", fname.Data(), reg->GetName(),aliasName.Data());
+      reg->SetName(aliasName);
+      Int_t hashIndex=reg->GetVisualCorrectionIndex();
+      reg->AddVisualCorrection(reg, hashIndex);      
+      tree->SetAlias(aliasName, TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
+    }
+  }
+  return kTRUE;
+
+}
 
 
 void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, const char* chtree,  Float_t radius, Float_t kZ, const char *figType){
