@@ -29,6 +29,7 @@ public:
   void     SetTimeResolution(Float_t res) { fSigma = res; }
   void     SetTimeZero(Double_t t0) { fTime0=t0; }
   Double_t GetTimeZero() const { return fTime0; }
+  Float_t  GetTimeResolution() const { return fSigma; }
 
   void     SetMaxMismatchProbability(Double_t p) {fPmax=p;}
   Double_t GetMaxMismatchProbability() const {return fPmax;}

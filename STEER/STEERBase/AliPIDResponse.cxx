@@ -2186,10 +2186,10 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	if(flagT0T0){
 	    t0A= vevent->GetT0TOF()[1] - starttimeoffset;
 	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
-        //      t0AC= vevent->GetT0TOF()[0];
-	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-	    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-	    t0AC *= resT0AC*resT0AC;
+	    t0AC= vevent->GetT0TOF()[0] - starttimeoffset;
+	    //t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    //    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    //    t0AC *= resT0AC*resT0AC;
 	}
 
 	Float_t t0t0Best = 0;
@@ -2261,10 +2261,10 @@ void AliPIDResponse::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
 	if(flagT0T0){
 	    t0A= vevent->GetT0TOF()[1] - starttimeoffset;
 	    t0C= vevent->GetT0TOF()[2] - starttimeoffset;
-        //      t0AC= vevent->GetT0TOF()[0];
-	    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
-	    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
-	    t0AC *= resT0AC*resT0AC;
+	    t0AC= vevent->GetT0TOF()[0] - starttimeoffset;
+	    //    t0AC= t0A/resT0A/resT0A + t0C/resT0C/resT0C;
+	    //    resT0AC= 1./TMath::Sqrt(1./resT0A/resT0A + 1./resT0C/resT0C);
+	    //    t0AC *= resT0AC*resT0AC;
 	}
 
 	if(TMath::Abs(t0A) < t0cut && TMath::Abs(t0C) < t0cut && TMath::Abs(t0C-t0A) < 500){
