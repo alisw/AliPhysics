@@ -22,7 +22,8 @@ class AliEmcalContainer : public TObject {
     kAcceptanceCut = 1<<2,
     kMCLabelCut = 1<<3,
     kBitMapCut = 1<<4,
-    // leave bits 4-6 free for future implementations
+    kHFCut = 1<<5,
+    // leave bit 6 free for future implementations
     
     // AliParticleContainer
     kNotHybridTrack = 1<<7,
@@ -30,6 +31,7 @@ class AliEmcalContainer : public TObject {
     kMCGeneratorCut = 1<<9,
     kChargeCut = 1<<10,
     kMinDistanceTPCSectorEdgeCut = 1<<11,
+    // leave bit 12 free for future implementations
 
     // AliClusterContainer
     kIsEMCalCut = 1<<13,
