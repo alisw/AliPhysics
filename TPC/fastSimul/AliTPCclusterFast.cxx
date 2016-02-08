@@ -68,9 +68,13 @@ public:
   Double_t GetQmax(Float_t gain,Float_t thr, Float_t noise, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE);
   Double_t GetQmaxCorr(Float_t rmsy0, Float_t rmsz0);
   Double_t GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t gain, Float_t thr);
-  Double_t GetClusterProperties(TVectorF &param, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE);
-  Double_t GetCOG(Int_t returnType, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE);
+  Double_t GetClusterProperties(TVectorF &param, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE, Int_t skipSample=0);
+  Double_t GetCOG(Int_t returnType, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
+  Double_t GetCOGHit(Int_t returnType);
+  //
   Double_t  GetExpectedRMS(Int_t dim);
+  //Double_t  GetExpectedResolution(Int_t dim);
+
   Double_t GetNsec();
   //static void Simul(const char* simul, Int_t npoints);
   static Double_t GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1);
@@ -101,8 +105,8 @@ public:
   TVectorF fPosZ;      //!< position z for each electron
   TVectorF fGain;      //!< gg for each electron
   //
-  TVectorF fStatY;     //!< stat Y
-  TVectorF fStatZ;     //!< stat Y
+  TVectorF fStatY;     // stat Y
+  TVectorF fStatZ;     // stat Y
   //
   // digitization part
   //
@@ -111,6 +115,7 @@ public:
   Float_t fTRFRMS;     /// time rsponsefunction width
   static TF1* fPRF;    ///< Pad response
   static TF1* fTRF;    ///< Time response function
+  static Float_t fgZSamplingFactor;               // z sample at 10 MHz is 2 time narrower as rphi sample 
   ClassDef(AliTPCclusterFast,1)  // container for
 };
 
@@ -159,7 +164,7 @@ ClassImp(AliTPCtrackFast)
 
 TF1 *AliTPCclusterFast::fPRF=0;
 TF1 *AliTPCclusterFast::fTRF=0;
-
+Float_t AliTPCclusterFast::fgZSamplingFactor=2;
 
 AliTPCtrackFast::AliTPCtrackFast():
   TObject(),
@@ -207,7 +212,7 @@ void AliTPCtrackFast::MakeTrack(){
     if (!cluster) cluster =   new ((*fCl)[i]) AliTPCclusterFast;
     //
     Float_t yCenter= TMath::Nint(tY);
-    Float_t zCenter= TMath::Nint(tZ);
+    Float_t zCenter= TMath::Nint(tZ*0.5)*2;
 
     Double_t posY = tY-yCenter;
     Double_t posZ = tZ-zCenter;
@@ -454,6 +459,14 @@ Double_t  AliTPCtrackFast::CookdEdx(Int_t npoints, Double_t *amp,Double_t f0,Flo
 
 void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFactor, Bool_t simulOverlap){
   ///
+  /// simulation is done in bin size:
+  /// values has to be rescaled:
+  /// bin size = (R=0.75, 1, 1.5  cm, RPhi=0.4 or 0.6 cm, Z=0.26 cm (10 MHz),0.52 cm (5 MHz))   
+  ///
+  /// diffusion is ~ 0.22 cm per sqrt(m) ~ 0.35 cm for full drift
+  /// Simulation is done in 10 MHz scenario
+  ///    5 MHz is obtained skipping the every second sample
+  ///
 
   AliTPCtrackFast fast;
   TTreeSRedirector *pcstream = new TTreeSRedirector(fname,"recreate");
@@ -462,11 +475,12 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
     fast.fMNprim=(10.+100*gRandom->Rndm());
     if (gRandom->Rndm()>0.5) fast.fMNprim=1./(0.00001+gRandom->Rndm()*0.1);
 
-    fast.fDiff =0.01 +0.35*gRandom->Rndm();
+    fast.fDiff =0.01 +0.5*gRandom->Rndm();       
     //    fast.fDiffLong =  fast.fDiff*0.6/1.;
     fast.fDiffLong =  fast.fDiff*diffFactor/1.;
     //
     fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
+    if (gRandom->Rndm()<0.2)  fast.fAngleY   = (gRandom->Rndm()-0.5)*TMath::Pi()/9.;    // admixture of high momenta tracks perpendicular to pad row +-10 degrees
     fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);
     fast.fN  = 159;
     if (simulOverlap){ //
@@ -589,7 +603,7 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
       //
       //
       Double_t y = gRandom->Gaus(0,cl0->fDiff)+yc;
-      Double_t z = gRandom->Gaus(0,cl0->fDiff)+zc;
+      Double_t z = gRandom->Gaus(0,cl0->fDiff*fgZSamplingFactor)+zc;
       Double_t r = gRandom->Gaus(0,cl0->fDiffLong)+rc;
       // choose pad row
       AliTPCclusterFast *cl=cl0;
@@ -603,24 +617,11 @@ void AliTPCclusterFast::GenerElectrons(AliTPCclusterFast *cl0, AliTPCclusterFast
       cl->fQtot+=gg;
       cl->fNtot++;
       //
-      //     cl->sumQ+=gg;
-      //       cl->sumYQ+=gg*y;
-      //       cl->sumY2Q+=gg*y*y;
-      //       cl->sumZQ+=gg*z;
-      //       cl->sumZ2Q+=gg*z*z;
+      //
       if (cl->fNtot>=knMax) continue;
     }
     if (cl0->fNtot>=knMax) break;
   }
-
- //  if (sumQ>0){
-//     fStatY[0]=sumQ;
-//     fStatY[1]=sumYQ/sumQ;
-//     fStatY[2]=sumY2Q/sumQ-fStatY[1]*fStatY[1];
-//     fStatZ[0]=sumQ;
-//     fStatZ[1]=sumZQ/sumQ;
-//     fStatZ[2]=sumZ2Q/sumQ-fStatZ[1]*fStatZ[1];
-//   }
 }
 
 void AliTPCclusterFast::Digitize(){
@@ -632,11 +633,22 @@ void AliTPCclusterFast::Digitize(){
     }
   //
   // Fill digits
+  fStatY*=0;
+  fStatZ*=0;
   for (Int_t iel = 0; iel<fNtot; iel++){
+    Double_t gg=fGain[iel];
+    Double_t y=fPosY[iel];
+    Double_t z=fPosZ[iel];
+    fStatY[0]+=gg;
+    fStatY[1]+=gg*y;
+    fStatY[2]+=gg*y*y;
+    fStatZ[0]+=gg;
+    fStatZ[1]+=gg*z;
+    fStatZ[2]+=gg*z*z;
     for (Int_t di=-2; di<=2;di++)
-      for (Int_t dj=-3; dj<=3;dj++){
-	Float_t fac = fPRF->Eval(di-fPosY[iel])*fTRF->Eval(dj-fPosZ[iel]);
-	fac*=fGain[iel];
+      for (Int_t dj=-3; dj<=3;dj++){	
+	Float_t fac = fPRF->Eval(di-y)*fTRF->Eval(dj-z);
+	fac*=gg;
 	fDigits(2+di,3+dj)+=fac;
       }
   }
@@ -721,7 +733,7 @@ Double_t  AliTPCclusterFast::GetQtotCorr(Float_t rmsy0, Float_t rmsz0, Float_t g
   return corr;
 }
 
-Double_t AliTPCclusterFast::GetClusterProperties(TVectorF &param, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal){
+Double_t AliTPCclusterFast::GetClusterProperties(TVectorF &param, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal, Int_t skipSample){
   //
   // calculate area, COG, RMS and  skeewnes  cluster without any correction
   //
@@ -733,10 +745,12 @@ Double_t AliTPCclusterFast::GetClusterProperties(TVectorF &param, Int_t addOverl
   Float_t sumY3W=0;
   Float_t sumZ3W=0;
   for (Int_t iy=-2;iy<=2;iy++)
-    for (Int_t iz=-2;iz<=2;iz++){      
-      Double_t val = fDigits(iy+2,iz+3);
+    for (Int_t jz=-2;jz<=2;jz+=1+skipSample){      
+      Int_t iz=jz;
+      if (skipSample>0) iz=jz/(1+skipSample);      
+      Double_t val = gain*fDigits(iy+2,jz+3);
       if (addOverlap && fOverlapCluster){
-	val+=fOverlapCluster->fDigits(iy+2,iz+3);
+	val+=gain*fOverlapCluster->fDigits(iy+2,jz+3);
       }      
       val+=noise;
       if (addPedestal) val+=gRandom->Rndm()-0.5;   // add random pedestal assuming mean bias value 0
@@ -753,8 +767,12 @@ Double_t AliTPCclusterFast::GetClusterProperties(TVectorF &param, Int_t addOverl
     sumZW/=sumW;
     sumY2W/=sumW;
     sumZ2W/=sumW;
+    if (skipSample>0){
+      sumZW*=2.;
+      sumZ2W*=4.;
+    }
   }
-  param[0]=sumW;                             // total charge
+  param[0]=sumW/gain;                        // total charge
   param[1]=sumYW;                            // mean y
   param[2]=sumZW;                            // mean z
   param[3]=TMath::Sqrt(sumY2W-sumYW*sumYW);  // rms y
@@ -777,8 +795,10 @@ Double_t AliTPCclusterFast::GetClusterProperties(TVectorF &param, Int_t addOverl
 	sumZ3W+=dz*dz*dz*val;
       }
     }
-  param[5]=sumY3W/sumW;
-  param[6]=sumZ3W/sumW;  
+  if (sumW>0){
+    param[5]=sumY3W/sumW;
+    param[6]=sumZ3W/sumW;  
+  }
 }
 
 Double_t  AliTPCclusterFast::GetExpectedRMS(Int_t dim){
@@ -790,18 +810,33 @@ Double_t  AliTPCclusterFast::GetExpectedRMS(Int_t dim){
   //    formulas 26, 27 
   //          in the code - all variables in is bin size units  - not necessay to normalize to pad length, resp pad width)
   if (dim==1) return TMath::Sqrt(fPRFRMS*fPRFRMS+fDiff*fDiff+fAngleY*fAngleY/12.);
-  if (dim==2) return TMath::Sqrt(fTRFRMS*fTRFRMS+fDiffLong*fDiffLong+fAngleZ*fAngleZ/12.);
+  if (dim==2) return TMath::Sqrt(fTRFRMS*fTRFRMS+fDiff*fDiff*fgZSamplingFactor*fgZSamplingFactor+fAngleZ*fAngleZ/12.);
   return 0;
 }
 
 
-Double_t AliTPCclusterFast::GetCOG(Int_t returnType, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal){
+Double_t AliTPCclusterFast::GetCOG(Int_t returnType, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal, Int_t skipSample){
   //
   //
   //
   TVectorF properties(20);
-  GetClusterProperties(properties, addOverlap, gain, thr, noise,rounding,addPedestal);
+  GetClusterProperties(properties, addOverlap, gain, thr, noise,rounding,addPedestal,skipSample);
   return properties(returnType);
+}
+
+Double_t AliTPCclusterFast::GetCOGHit(Int_t returnType){
+  //
+  // Return COG using hit inforamtion
+  //
+  if (returnType==0) return fStatY[0];
+  Float_t meanY=(fStatY[0]>0)?fStatY[1]/fStatY[0]:0;
+  if (returnType==1) return meanY;   // meanY
+  Float_t meanZ=(fStatZ[0]>0)?fStatZ[1]/fStatZ[0]:0;
+  if (returnType==2) return meanZ;   // mean Z
+  
+  if (returnType==3) return (fStatY[0]>0) ? TMath::Sqrt(fStatY[2]/fStatY[0]-meanY*meanY):0;
+  if (returnType==4) return (fStatZ[0]>0) ? TMath::Sqrt(fStatZ[2]/fStatZ[0]-meanZ*meanZ):0;
+  return 0;
 }
 
 
