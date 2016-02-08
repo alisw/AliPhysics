@@ -1496,7 +1496,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
-      
+  if(fV0Reader && fV0Reader->GetProduceImpactParamHistograms())fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());   
       
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;

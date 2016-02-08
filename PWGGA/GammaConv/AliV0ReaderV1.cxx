@@ -96,8 +96,10 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
   fProduceV0findingEffi(kFALSE),
+  fProduceImpactParamHistograms(kFALSE),
   fCurrentInvMassPair(0),
   fHistograms(NULL),
+  fImpactParamHistograms(NULL),
   fHistoMCGammaPtvsR(NULL),
   fHistoMCGammaPtvsPhi(NULL),
   fHistoMCGammaPtvsEta(NULL),
@@ -114,6 +116,29 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fHistoRecMCGammaMultiPtvsEta(NULL),
   fHistoRecMCGammaMultiR(NULL),
   fHistoRecMCGammaMultiPhi(NULL),
+  fHistoPosTrackImpactParamZ(NULL),
+  fHistoPosTrackImpactParamY(NULL),
+  fHistoPosTrackImpactParamX(NULL),
+  fHistoPosTrackImpactParamZvsPt(NULL),
+  fHistoPosTrackImpactParamYvsPt(NULL),
+  fHistoPosTrackImpactParamXvsPt(NULL),
+  fHistoNegTrackImpactParamZ(NULL),
+  fHistoNegTrackImpactParamY(NULL),
+  fHistoNegTrackImpactParamX(NULL),
+  fHistoNegTrackImpactParamZvsPt(NULL),
+  fHistoNegTrackImpactParamYvsPt(NULL),
+  fHistoNegTrackImpactParamXvsPt(NULL),
+  fHistoImpactParamZvsR(NULL),
+  fHistoImpactParamZvsR2(NULL),
+  fHistoPt(NULL),
+  fHistoPt2(NULL),
+  fHistoDCAzPhoton(NULL),
+  fHistoDCAzPhoton2(NULL),
+  fHistoR(NULL),
+  fHistoRrecalc(NULL),
+  fHistoRdiff(NULL),
+  fHistoImpactParameterStudy(NULL),
+
   fVectorFoundGammas(0)
 {
   // Default constructor
@@ -221,7 +246,99 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFilename.Data());
 	}
 	
-	
+        if(fProduceImpactParamHistograms){
+	  if(fImpactParamHistograms != NULL){
+	        delete fImpactParamHistograms;
+	        fImpactParamHistograms = NULL;
+	  }
+	  if(fImpactParamHistograms==NULL){
+                fImpactParamHistograms = new TList();
+	        fImpactParamHistograms->SetOwner(kTRUE);
+	        fImpactParamHistograms->SetName(Form("ImpactParamHistograms_%s_%s",fEventCuts->GetCutNumber().Data(),fConversionCuts->GetCutNumber().Data()));
+	  }
+	  fHistoPosTrackImpactParamZ = new TH1F("fHistoPosTrackImpactParamZ","",1600,-80,80);
+	  fHistoPosTrackImpactParamZ->SetXTitle("Z (cm)");
+	  fImpactParamHistograms->Add(fHistoPosTrackImpactParamZ);
+	  fHistoPosTrackImpactParamY = new TH1F("fHistoPosTrackImpactParamY","",2000,-100,100);
+	  fHistoPosTrackImpactParamY->SetXTitle("Y (cm)");
+	  fImpactParamHistograms->Add(fHistoPosTrackImpactParamY);
+	  fHistoPosTrackImpactParamX = new TH1F("fHistoPosTrackImpactParamX","",100,-5,5);
+	  fHistoPosTrackImpactParamX->SetXTitle("X (cm)");
+	  fImpactParamHistograms->Add(fHistoPosTrackImpactParamX);
+	  fHistoNegTrackImpactParamZ = new TH1F("fHistoNegTrackImpactParamZ","",1600,-80,80);
+	  fHistoNegTrackImpactParamZ->SetXTitle("Z (cm)");
+	  fImpactParamHistograms->Add(fHistoNegTrackImpactParamZ);
+	  fHistoNegTrackImpactParamY = new TH1F("fHistoNegTrackImpactParamY","",2000,-100,100);
+	  fHistoNegTrackImpactParamY->SetXTitle("Y (cm)");
+	  fImpactParamHistograms->Add(fHistoNegTrackImpactParamY);
+	  fHistoNegTrackImpactParamX = new TH1F("fHistoNegTrackImpactParamX","",100,-5,5);
+	  fHistoNegTrackImpactParamX->SetXTitle("X (cm)");
+	  fImpactParamHistograms->Add(fHistoNegTrackImpactParamX);
+	  fHistoPosTrackImpactParamZvsPt = new TH2F("fHistoPosTrackImpactParamZvsPt","",1600,-80,80,100,0,10);
+	  fHistoPosTrackImpactParamZvsPt->SetXTitle("Z (cm)");
+	  fHistoPosTrackImpactParamZvsPt->SetYTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoPosTrackImpactParamZvsPt);
+	  fHistoPosTrackImpactParamYvsPt = new TH2F("fHistoPosTrackImpactParamYvsPt","",2000,-100,100,100,0,10);
+	  fHistoPosTrackImpactParamYvsPt->SetXTitle("Y (cm)");
+	  fHistoPosTrackImpactParamYvsPt->SetYTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoPosTrackImpactParamYvsPt);
+	  fHistoPosTrackImpactParamXvsPt = new TH2F("fHistoPosTrackImpactParamXvsPt","",100,-5,5,100,0,10);
+	  fHistoPosTrackImpactParamXvsPt->SetXTitle("X (cm)");
+	  fHistoPosTrackImpactParamXvsPt->SetYTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoPosTrackImpactParamXvsPt);
+	  fHistoNegTrackImpactParamZvsPt = new TH2F("fHistoNegTrackImpactParamZvsPt","",1600,80,80,100,0,10);
+	  fHistoNegTrackImpactParamZvsPt->SetXTitle("Z (cm)");
+	  fHistoNegTrackImpactParamZvsPt->SetYTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoNegTrackImpactParamZvsPt);
+	  fHistoNegTrackImpactParamYvsPt = new TH2F("fHistoNegTrackImpactParamYvsPt","",2000,-100,100,100,0,10);
+	  fHistoNegTrackImpactParamYvsPt->SetXTitle("Y (cm)");
+	  fHistoNegTrackImpactParamYvsPt->SetYTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoNegTrackImpactParamYvsPt);
+	  fHistoNegTrackImpactParamXvsPt = new TH2F("fHistoNegTrackImpactParamXvsPt","",100,-5,5,100,0,10);
+	  fHistoNegTrackImpactParamXvsPt->SetXTitle("X (cm)");
+	  fHistoNegTrackImpactParamXvsPt->SetYTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoNegTrackImpactParamXvsPt);
+	  fHistoImpactParamZvsR = new TH2F("fHistoImpactParamZvsR","Before all cuts",1600,-80,80,200,0,200);
+	  fHistoImpactParamZvsR->SetXTitle("Z (cm)");
+	  fHistoImpactParamZvsR->SetYTitle("R (cm)");
+	  fImpactParamHistograms->Add(fHistoImpactParamZvsR);
+	  fHistoImpactParamZvsR2 = new TH2F("fHistoImpactParamZvsR2","After all cuts",1600,-80,80,200,0,200);
+	  fHistoImpactParamZvsR2->SetXTitle("Z (cm)");
+	  fHistoImpactParamZvsR2->SetYTitle("R (cm)");
+	  fImpactParamHistograms->Add(fHistoImpactParamZvsR2);
+	  fHistoPt = new TH1F("fHistoPt","Before all cuts",100,0,10);
+	  fHistoPt->SetXTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoPt);
+	  fHistoPt2 = new TH1F("fHistoPt2","After all cuts",100,0,10);
+	  fHistoPt2->SetXTitle("Pt (GeV)");
+	  fImpactParamHistograms->Add(fHistoPt2);
+	  fHistoDCAzPhoton = new TH1F("fHistoDCAzPhoton","Before all cuts",40,-2,2);
+	  fHistoDCAzPhoton->SetXTitle("DCAz photon (cm)");
+	  fImpactParamHistograms->Add(fHistoDCAzPhoton);
+	  fHistoDCAzPhoton2 = new TH1F("fHistoDCAzPhoton2","After all cuts",40,-2,2);
+	  fHistoDCAzPhoton2->SetXTitle("DCAz photon (cm)");
+	  fImpactParamHistograms->Add(fHistoDCAzPhoton2);
+	  fHistoR = new TH1F("fHistoR","",2000,0,200);
+	  fHistoR->SetXTitle("Conversion radius (cm)");
+	  fImpactParamHistograms->Add(fHistoR);
+	  fHistoRrecalc = new TH1F("fHistoRrecalc","",2000,0,200);
+	  fHistoRrecalc->SetXTitle("conversion radius (cm)");
+	  fImpactParamHistograms->Add(fHistoRrecalc);
+	  fHistoRdiff = new TH1F("fHistoRdiff","",2000,0,200);
+	  fHistoRdiff->SetXTitle("R_conv - R_cluster conflict (cm)");
+	  fImpactParamHistograms->Add(fHistoRdiff);
+	  fHistoImpactParameterStudy = new TH1F("fHistoImpactParameterStudy","",7,0,7);
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(1,"# V0s");
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(2,"two TPC-only tracks");
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(3,"Z cut not passed");
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(4,"Y cut not passed");
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(5,"R>80cm");
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(6,"causality cut not p.");
+          fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(7,"# removed V0s"); // of all V0s
+	  fImpactParamHistograms->Add(fHistoImpactParameterStudy);
+
+	}
+
 	if (fProduceV0findingEffi){
 		TH1::AddDirectory(kFALSE);
 		if(fHistograms != NULL){
@@ -297,9 +414,10 @@ void AliV0ReaderV1::UserCreateOutputObjects()
 		fHistoRecMCGammaMultiPhi		= new TH1F("RecMCconvGammaMulti_Phi","rec MC converted gamma (at least double counted) Phi (|eta| < 0.9)",400,0,2*TMath::Pi());
 		fHistoRecMCGammaMultiPhi->SetXTitle("#phi_{MC} (rad)");
 		fHistograms->Add(fHistoRecMCGammaMultiPhi);
-		
+
 		fVectorFoundGammas.clear();
-	}	
+	}
+	
 
 }
 //________________________________________________________________________
@@ -678,6 +796,8 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
 	//    cout << currentV0Index <<" \t after: \t" <<fCurrentMotherKF->GetPx() << "\t" << fCurrentMotherKF->GetPy() << "\t" << fCurrentMotherKF->GetPz()  << endl;
 
+	if(fProduceImpactParamHistograms) FillImpactParamHistograms(posTrack, negTrack, fCurrentV0, fCurrentMotherKF);  
+	
 	fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kPhotonOut);
 	return fCurrentMotherKF;
 }
@@ -1122,12 +1242,11 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 
 ///_______________________________________________________________________
 void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
-	
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 	Double_t mcProdVtxX 	= primVtxMC->GetX();
 	Double_t mcProdVtxY 	= primVtxMC->GetY();
 	Double_t mcProdVtxZ 	= primVtxMC->GetZ();
-// 	cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
+ 	//cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
 	
 	AliStack *fMCStack= fMCEvent->Stack();	
 	// Loop over all primary MC particle	
@@ -1215,6 +1334,144 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
 		}	
 	}	
 }	
+
+//_________________________________________________________________________________
+void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTrack, AliESDv0 *fCurrentV0, AliKFConversionPhoton *fCurrentMotherKF){
+
+  // cut values
+  Float_t fZmax = 25; //cm
+  Float_t fYmax = 25; //cm
+  Double_t kTPCMargin = 1.0; //cm
+  Int_t kMaxTPCV0Conflicts = 1; //# conflicting clusters tolerated
+
+  //conversion point
+  Double_t convX, convY, convZ;
+  fCurrentV0->GetXYZ(convX,convY,convZ);
+  Double_t convR = TMath::Sqrt(convX*convX+convY*convY);
+  //recalculated conversion point
+  //Double_t convXrecalc=fCurrentMotherKF->GetConversionX(); 
+  //Double_t convYrecalc=fCurrentMotherKF->GetConversionY();  
+  Double_t convRrecalc=fCurrentMotherKF->GetConversionRadius(); 
+
+  //count V0s
+  fHistoImpactParameterStudy->SetBinContent(1, ((fHistoImpactParameterStudy->GetBinContent(1))+1));
+
+  //count V0s with two TPC-only tracks
+  AliESDtrack* positiveTrack =(AliESDtrack*) pTrack;
+  AliESDtrack* negativeTrack =(AliESDtrack*) nTrack;
+  Bool_t TPConly=kFALSE;
+  if (!positiveTrack->IsOn(AliESDtrack::kITSin) && !negativeTrack->IsOn(AliESDtrack::kITSin)){
+    fHistoImpactParameterStudy->SetBinContent(2, ((fHistoImpactParameterStudy->GetBinContent(2))+1));
+    TPConly=kTRUE;
+  }
+
+  Bool_t RemovedByZcut=kFALSE;
+  Bool_t RemovedByYcut=kFALSE;  
+
+  //count V0s which have...
+  if(TPConly){
+    
+    //not passed z cut:    pos.tr.     or           neg.tr. 
+    if(((TMath::Abs(positiveTrack->GetZ()))>fZmax) || ((TMath::Abs(negativeTrack->GetZ()))>fZmax)){
+      fHistoImpactParameterStudy->SetBinContent(3, ((fHistoImpactParameterStudy->GetBinContent(3))+1));
+      RemovedByZcut=kTRUE;  
+    }
+
+    //not passed y cut:     pos.tr.     or           neg.tr.  
+    if(((TMath::Abs(positiveTrack->GetY()))>fYmax) || ((TMath::Abs(negativeTrack->GetY()))>fYmax)){
+      fHistoImpactParameterStudy->SetBinContent(4, ((fHistoImpactParameterStudy->GetBinContent(4))+1));
+      RemovedByYcut=kTRUE;  
+    }
+
+  }
+
+  //causality cut
+  Bool_t RemovedByCausality=kFALSE;
+  AliESDEvent *fESDEvent=dynamic_cast<AliESDEvent*>(fInputEvent);
+  const float rTPC[159]={
+   85.225, 85.975, 86.725, 87.475, 88.225, 88.975, 89.725, 90.475, 91.225, 91.975, 92.725, 93.475, 94.225, 94.975, 95.725,
+   96.475, 97.225, 97.975, 98.725, 99.475,100.225,100.975,101.725,102.475,103.225,103.975,104.725,105.475,106.225,106.975,
+   107.725,108.475,109.225,109.975,110.725,111.475,112.225,112.975,113.725,114.475,115.225,115.975,116.725,117.475,118.225,
+   118.975,119.725,120.475,121.225,121.975,122.725,123.475,124.225,124.975,125.725,126.475,127.225,127.975,128.725,129.475,
+   130.225,130.975,131.725,135.100,136.100,137.100,138.100,139.100,140.100,141.100,142.100,143.100,144.100,145.100,146.100,
+   147.100,148.100,149.100,150.100,151.100,152.100,153.100,154.100,155.100,156.100,157.100,158.100,159.100,160.100,161.100,
+   162.100,163.100,164.100,165.100,166.100,167.100,168.100,169.100,170.100,171.100,172.100,173.100,174.100,175.100,176.100,
+   177.100,178.100,179.100,180.100,181.100,182.100,183.100,184.100,185.100,186.100,187.100,188.100,189.100,190.100,191.100,
+   192.100,193.100,194.100,195.100,196.100,197.100,198.100,199.350,200.850,202.350,203.850,205.350,206.850,208.350,209.850,
+   211.350,212.850,214.350,215.850,217.350,218.850,220.350,221.850,223.350,224.850,226.350,227.850,229.350,230.850,232.350,
+   233.850,235.350,236.850,238.350,239.850,241.350,242.850,244.350,245.850};
+
+  if (convR > 80) {  // conversion within TPC <-> TPC-only tracks
+
+        fHistoImpactParameterStudy->SetBinContent(5, ((fHistoImpactParameterStudy->GetBinContent(5))+1));
+
+	double alpha = TMath::ATan2(convY,convX);    // here one could also use convXrecalc and convYrecalc
+	if (alpha<0) alpha += TMath::Pi()*2;
+	int sec = alpha/(TMath::Pi()/9);
+	alpha = (10.+sec*20.)*TMath::DegToRad();
+	double cs = TMath::Cos(alpha);
+	double sn = TMath::Sin(alpha);
+	double xsV0 = convX*cs - convY*sn;        // here one could also use convXrecalc and convYrecalc
+
+	for (int it=2;it--;) {
+	  int trId = fCurrentV0->GetIndex(it);
+	  AliESDtrack* tr = fESDEvent->GetTrack(trId);
+	  const TBits& bits = tr->GetTPCClusterMap();
+	  int nConflict = 0;
+	  for (int ic=0;ic<159;ic++) {
+	    if (rTPC[ic]>(xsV0-kTPCMargin)) break;           // - not + ? 
+	    if (bits.TestBitNumber(ic)){ 
+	       nConflict++;		
+	       fHistoRdiff->Fill(xsV0-rTPC[ic]);
+	    }
+	    if (nConflict>kMaxTPCV0Conflicts) {
+	      fHistoImpactParameterStudy->SetBinContent(6, ((fHistoImpactParameterStudy->GetBinContent(6))+1));
+	      RemovedByCausality=kTRUE;
+	      break;
+	    }
+	  }
+	}
+   }
+
+  //not passed y or z o causality cut:
+ Bool_t RemovedByAnyCut=kFALSE;
+  if(RemovedByZcut||RemovedByYcut||RemovedByCausality){
+      fHistoImpactParameterStudy->SetBinContent(7, ((fHistoImpactParameterStudy->GetBinContent(7))+1));
+      RemovedByAnyCut=kTRUE;
+  }
+
+  fHistoPosTrackImpactParamZ->Fill(positiveTrack->GetZ()); 
+  fHistoPosTrackImpactParamY->Fill(positiveTrack->GetY());
+  fHistoPosTrackImpactParamX->Fill(positiveTrack->GetX());
+  fHistoPosTrackImpactParamZvsPt->Fill(positiveTrack->GetZ(), positiveTrack->Pt()); 
+  fHistoPosTrackImpactParamYvsPt->Fill(positiveTrack->GetY(), positiveTrack->Pt());	  
+  fHistoPosTrackImpactParamXvsPt->Fill(positiveTrack->GetX(), positiveTrack->Pt()); 
+  fHistoNegTrackImpactParamZ->Fill(negativeTrack->GetZ());  
+  fHistoNegTrackImpactParamY->Fill(negativeTrack->GetY());
+  fHistoNegTrackImpactParamX->Fill(negativeTrack->GetX());
+  fHistoNegTrackImpactParamZvsPt->Fill(negativeTrack->GetZ(), negativeTrack->Pt());  
+  fHistoNegTrackImpactParamYvsPt->Fill(negativeTrack->GetY(), negativeTrack->Pt());
+  fHistoNegTrackImpactParamXvsPt->Fill(negativeTrack->GetX(), negativeTrack->Pt());
+
+  fHistoR->Fill(convR);
+  fHistoRrecalc->Fill(convRrecalc);
+  fHistoPt->Fill(positiveTrack->Pt());
+  fHistoImpactParamZvsR->Fill(positiveTrack->GetZ(),convR);
+  //Float_t *DCAzPhoton;
+  Float_t DCAzPhoton;
+  const AliVVertex *PrimVertex = fInputEvent->GetPrimaryVertex();
+  AliAODConversionPhoton* fCurrentMother=(AliAODConversionPhoton*)fCurrentMotherKF;
+  //AliAODConversionPhoton *fCurrentMother=dynamic_cast<AliAODConversionPhoton*>(fCurrentMotherKF);
+  //fCurrentMotherKF->GetDistanceOfClossetApproachToPrimVtx(PrimVertex, DCAzPhoton);
+  DCAzPhoton = fCurrentMother->GetDCAzToPrimVtx();
+  fHistoDCAzPhoton->Fill(DCAzPhoton);
+  if(!RemovedByAnyCut) {
+	  fHistoPt2->Fill(positiveTrack->Pt());
+	  fHistoImpactParamZvsR2->Fill(positiveTrack->GetZ(),convR);
+	  fHistoDCAzPhoton2->Fill(DCAzPhoton);
+  }
+
+}
 
 //_________________________________________________________________________________
 Bool_t AliV0ReaderV1::CheckVectorOnly(vector<Int_t> &vec, Int_t tobechecked)
