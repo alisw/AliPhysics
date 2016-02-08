@@ -174,7 +174,10 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  int ddlno=768;
 	  if (part>1) ddlno+=72+4*slice+(part-2);
 	  else ddlno+=2*slice+part;
-	  arg.Form("-datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", slice, slice, part, part);
+
+	  // arg.Form("-datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", slice, slice, part, part);
+	  arg.Form("-dataspec 0x%02x%02x%02x%02x", slice, slice, part, part); // publish also unpacked clusters, not only raw data
+
 	  handler->CreateConfiguration(publisher.Data(), "BlockFilter", "TPC-DP" , arg.Data());
 	  if (sinkRawData.Length()>0) sinkRawData+=" ";
 	  sinkRawData+=publisher;
