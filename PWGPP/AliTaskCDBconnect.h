@@ -32,7 +32,8 @@ public:
   AliGRPManager*            GetGRPManager() const {return (AliGRPManager*)fGRPManager;}
   virtual void              Exec(Option_t *option);
   virtual void              CreateOutputObjects();
-  void                      SetSpecificStorage(const char* calibType, const char* dbString);
+  void                      SetSpecificStorage(const char* calibType, const char* dbString,
+                                               Int_t version = -1, Int_t subVersion = -1);
     
   ClassDef(AliTaskCDBconnect,2)  // Class giving CDB connectivity
 };
