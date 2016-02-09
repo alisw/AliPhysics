@@ -18,7 +18,6 @@
 #include "AliJCorrelations.h"
 #include "AliJDataManager.h"
 
-#include "AliJCorrelations.h"
 #include "AliJHistos.h"
 #include "AliJBaseTrack.h"
 #include "AliJCard.h"
@@ -54,11 +53,14 @@ AliJCorrelations::AliJCorrelations( AliJCard *cardIn, AliJHistos *histosIn) :
   fptaBin(0),
   fPhiTrigger(0),
   fPhiAssoc(0),
+  fEtaTrigger(0),
+  fEtaAssoc(0),
   fDeltaPhi(0),
   fDeltaPhiPiPi(0),
   fDeltaEta(0),
   fXlong(0),
   fNearSide(true),
+  fNearSide3D(true),
   fEtaGapBin(0),
   fPhiGapBinNear(0),
   fPhiGapBinAway(0),
@@ -116,11 +118,14 @@ AliJCorrelations::AliJCorrelations() :
   fptaBin(0),
   fPhiTrigger(0),
   fPhiAssoc(0),
+  fEtaTrigger(0),
+  fEtaAssoc(0),
   fDeltaPhi(0),
   fDeltaPhiPiPi(0),
   fDeltaEta(0),
   fXlong(0),
   fNearSide(true),
+  fNearSide3D(true),
   fEtaGapBin(0),
   fPhiGapBinNear(0),
   fPhiGapBinAway(0),
@@ -154,11 +159,14 @@ AliJCorrelations::AliJCorrelations(const AliJCorrelations& in) :
   fptaBin(in.fptaBin),
   fPhiTrigger(in.fPhiTrigger),
   fPhiAssoc(in.fPhiAssoc),
+  fEtaTrigger(in.fEtaTrigger),
+  fEtaAssoc(in.fEtaAssoc),
   fDeltaPhi(in.fDeltaPhi),
   fDeltaPhiPiPi(in.fDeltaPhiPiPi),
   fDeltaEta(in.fDeltaEta),
   fXlong(in.fXlong),
   fNearSide(in.fNearSide),
+  fNearSide3D(in.fNearSide3D),
   fEtaGapBin(in.fEtaGapBin),
   fPhiGapBinNear(in.fPhiGapBinNear),
   fPhiGapBinAway(in.fPhiGapBinAway),
@@ -196,11 +204,14 @@ AliJCorrelations& AliJCorrelations::operator=(const AliJCorrelations& in){
   fptaBin = in.fptaBin;
   fPhiTrigger = in.fPhiTrigger;
   fPhiAssoc = in.fPhiAssoc;
+  fEtaTrigger = in.fEtaTrigger;
+  fEtaAssoc = in.fEtaAssoc;
   fDeltaPhi = in.fDeltaPhi;
   fDeltaPhiPiPi = in.fDeltaPhiPiPi;
   fDeltaEta = in.fDeltaEta;
   fXlong = in.fXlong;
   fNearSide = in.fNearSide;
+  fNearSide3D = in.fNearSide3D;
   fEtaGapBin = in.fEtaGapBin;
   fPhiGapBinNear = in.fPhiGapBinNear;
   fPhiGapBinAway = in.fPhiGapBinAway;
@@ -270,6 +281,8 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   
   fIsIsolatedTrigger =  ftk1->GetIsIsolated()>0  ? true : false; //FK// trigger particle is isolated hadron
   
+  TLorentzVector vTrigger = ftk1->GetLorentzVector(), vAssoc = ftk2->GetLorentzVector();    // Lorentz vectors for trigger and associated particles
+  
   //phit= ftk1->Phi();                                 //for RP
   fpttBin       = ftk1->GetTriggBin();
   fptaBin       = ftk2->GetAssocBin();
@@ -278,10 +291,13 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   fDeltaPhi     = DeltaPhi(fPhiTrigger, fPhiAssoc);  //radians
   fDeltaPhiPiPi = atan2(sin(fPhiTrigger-fPhiAssoc), cos(fPhiTrigger-fPhiAssoc));
   fDeltaEta     = ftk1->Eta() - ftk2->Eta();
+  fEtaTrigger   = ftk1->Eta();
+  fEtaAssoc     = ftk2->Eta();
   //double dEtaFar   = ftk1->Eta() + ftk2->Eta();
   
-  fNearSide     = cos(fPhiTrigger-fPhiAssoc) > 0 ? true : false;
-  
+  fNearSide     = cos(fPhiTrigger-fPhiAssoc) > 0 ? true : false;  // Traditional near side definition using deltaPhi
+  fNearSide3D   = vTrigger.Vect().Dot(vAssoc.Vect()) > 0 ? true : false; // Near side definition using half ball around the trigger
+
   fEtaGapBin = fcard->GetBin( kEtaGapType, fabs(fDeltaEta));
   fPhiGapBinNear = fcard->GetBin( kEtaGapType, fabs(fDeltaPhiPiPi) );
   fPhiGapBinAway = fcard->GetBin( kEtaGapType, fabs(fDeltaPhi-kJPi) ); //here the angle must be 0-2pi and not (-pi,pi)
@@ -289,7 +305,7 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   fRGapBinAway   = fcard->GetBin( kRGapType, sqrt(pow(fDeltaPhi-kJPi,2)+fDeltaEta*fDeltaEta) );
   fCentralityBin = CentBin;
   
-  TLorentzVector vTrigger = ftk1->GetLorentzVector(), vAssoc = ftk2->GetLorentzVector();    // Lorentz vectors for trigger and associated particles
+  
   fXlong = vTrigger.Vect().Dot(vAssoc.Vect())/pow(vTrigger.P(),2);
   fXlongBin = fcard->GetBin(kXeType, TMath::Abs(fXlong));
   
@@ -411,209 +427,291 @@ void AliJCorrelations::FillXeHistograms(fillType fTyp)
   }
 }
 
+/*
+ *  Find out the bin index based on the associated binning type and trigger and asociated vectors
+ *
+ *  int assocType = Associated particle binning type. 0 = klong, 1 = xlong, 2 = pta
+ *  TLorentzVector *vTrigger = vector for trigger particle
+ *  TLorentzVector *vAssoc = vector for associated particle
+ *
+ */
+int AliJCorrelations::GetBinIndex(int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc)
+{
+ 
+  // Find out the correct bin to fill the value. Require that we are in the near side.
+  // Notice, that the 3D near side requirement can be written as a dot product between trigger and associated particles
+  // If the dot product is negative, the associated particle must be on the away side
+  // For the pTa bins a traditional near side definition is used
+  int iBin = -1;
+  if(assocType == 0){ // klong bin
+    iBin = fcard->GetBin(kLongType, vTrigger->Vect().Dot(vAssoc->Vect())/vTrigger->P());
+  } else if (assocType == 1){ // xlong bin
+    iBin = fcard->GetBin(kXeType, vTrigger->Vect().Dot(vAssoc->Vect())/pow(vTrigger->P(),2) );
+  } else { // pta bin
+    if(cos(vTrigger->Phi()-vAssoc->Phi()) > 0) iBin = fptaBin;
+  }
+  
+  return iBin;
+}
+
+/*
+ * Method for filling the jT and invariant mass histograms
+ *
+ *  fillType fTyp = Tell what kind of particles are filled (real events vs. mixed events)
+ *  int assocType = Associated particle binning type. 0 = klong, 1 = xlong, 2 = pta
+ *  TLorentzVector *vTrigger = vector for trigger particle
+ *  TLorentzVector *vAssoc = vector for associated particle
+ *  AliJTH1D &hDistribution = main jT histogram
+ *  AliJTH1D &hDistributionLikeSign = jT histogram for the like sign pairs
+ *  AliJTH1D &hDistributionUnlikeSign = jT histogram for the unlike sign pairs
+ *  AliJTH1D &hInvariantMass = invariant mass histogram
+ *  AliJTH1D &hInvariantMassLikeSign = invariant mass histogram for the like sign pairs
+ *  AliJTH1D &hInvariantMassUnlikeSign = invariant mass histogram for the unlike sign pairs
+ *
+ */
+void AliJCorrelations::FillJtDistributionHistograms(fillType fTyp, int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hDistribution, AliJTH1D &hDistributionLikeSign, AliJTH1D &hDistributionUnlikeSign, AliJTH1D &hInvariantMass, AliJTH1D &hInvariantMassLikeSign, AliJTH1D &hInvariantMassUnlikeSign)
+{
+  
+  // Calculate jT, invariant mass and the correction factor for jT
+  double jt = vAssoc->Perp(vTrigger->Vect());
+  double weight = jt > 1e-3 ? fGeometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
+  double invariantMass = sqrt(2*(vTrigger->P()*vAssoc->P()-vTrigger->Vect().Dot(vAssoc->Vect())));
+  
+  // Find out the correct bin to fill the value
+  int iBin = GetBinIndex(assocType, vTrigger, vAssoc);
+  
+  // Fill the calculated values to histograms
+  if(iBin>=0){
+    hDistribution[fTyp][fCentralityBin][fpttBin][iBin]->Fill(jt, weight);
+    hInvariantMass[fTyp][fCentralityBin][fpttBin][iBin]->Fill(invariantMass);
+    
+    // Fill also the signed distributions
+    if(fIsLikeSign){
+      hDistributionLikeSign[fTyp][fCentralityBin][fpttBin][iBin]->Fill(jt, weight);
+      hInvariantMassLikeSign[fTyp][fCentralityBin][fpttBin][iBin]->Fill(invariantMass);
+    } else {
+      hDistributionUnlikeSign[fTyp][fCentralityBin][fpttBin][iBin]->Fill(jt, weight);
+      hInvariantMassUnlikeSign[fTyp][fCentralityBin][fpttBin][iBin]->Fill(invariantMass);
+    }
+  }
+  
+}
+
+/*
+ * Method for filling all the necessary background histograms for a background estimation method
+ *
+ *  int assocType = Associated particle binning type. 0 = klong, 1 = xlong, 2 = pta
+ *  int gapType = Used gap type for background. 0 = eta gap, 1 = R gap, 2 = phi gap
+ *  TLorentzVector *vTrigger = trigger particle used for the background estimation
+ *  TLorentzVector *vAssoc = associated particle used for the background estimation
+ *  AliJTH1D &hBackground = main background histogram
+ *  AliJTH1D &hBackgroundLikeSign = background histogram for the like sign pairs
+ *  AliJTH1D &hBackgroundUnlikeSign = background histogram for the unlike sign pairs
+ *  AliJTH1D &hPtAssoc = associated particle pT distribution
+ *  AliJTH2D &hBackground2D = two dimensional quality control histogram
+ *  bool fill2DBackground = Switch for quality control histograms. False = do not fill, true = fill
+ *
+ */
+void AliJCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hBackground, AliJTH1D &hBackgroundLikeSign, AliJTH1D &hBackgroundUnlikeSign, AliJTH1D &hPtAssoc, AliJTH2D &hBackground2D, bool fill2DBackground)
+{
+  
+  // Choose the correct bin based on associated binning type
+  int iBin = GetBinIndex(assocType, vTrigger, vAssoc);
+  
+  // Choose the correct gap based on the gap type
+  int maxGap = -1;
+  if(gapType == 0){ // eta gap
+    maxGap = fEtaGapBin;
+  } else if (gapType == 1){ // R gap
+    maxGap = fRGapBinNear;
+  } else { // phi gap
+    maxGap = fPhiGapBinNear;
+  }
+  
+  // Calculate the jt for the background pair
+  double jt = vAssoc->Perp(vTrigger->Vect());
+  
+  // Find the acceptance correction for the pair
+  double dEtaRndm = vTrigger->Eta() - vAssoc->Eta();
+  double geoAccCorrRndm = fsamplingMethod == 0  ? GetGeoAccCorrFlat(dEtaRndm) : GetGeoAccCorrIncl(dEtaRndm);
+  
+  // Find the phi difference in the interval ]-Pi,Pi]
+  double dPhiRndm = atan2(sin(vTrigger->Phi()-vAssoc->Phi()), cos(vTrigger->Phi()-vAssoc->Phi()));
+  
+  // Fill the background histograms
+  if(iBin>=0){ //
+    if(jt>1e-3) { //here we used and BgFidCut
+      for(int iGap=0; iGap<=maxGap; iGap++){
+        hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+        if(fill2DBackground) hBackground2D[fCentralityBin][iGap][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, geoAccCorrRndm * fTrackPairEfficiency);
+        hPtAssoc[fCentralityBin][iGap][fpttBin][iBin]->Fill(fpta, fTrackPairEfficiency);
+        
+        // Fill the background histogram for signed pairs
+        if(fIsLikeSign){
+          hBackgroundLikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+        } else {
+          hBackgroundUnlikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+        }
+      }
+    }
+  }
+}
+
+/*
+ *  Method for filling all the histograms needed in the jT analysis
+ *
+ *  fillType ftyp = Tell what kind of particles are filled (real events vs. mixed events)
+ *  AliJBaseTrack *ftk1 = Track information for the trigger particle
+ *  AliJBaseTrack *ftk2 = Track information for the associated particle
+ *  bool fill2DBackground = Switch for quality control histograms. False = do not fill, true = fill
+ *
+ */
 void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2, bool fill2DBackground)
 {
   // This method fills the jT and pout histograms
   
-  double pout      = fabs(fpta*sin(fPhiTrigger-fPhiAssoc));
+  double pout = fabs(fpta*sin(fPhiTrigger-fPhiAssoc));
   
-  if(fNearSide) {
+  // Fill the distributions only if the near side definition is fullfilled
+  if(fNearSide || fNearSide3D) {
     
     TLorentzVector vTrigger = ftk1->GetLorentzVector(), vAssoc = ftk2->GetLorentzVector();   // Lorentz vectors for tracks
     
-    double jt = vAssoc.Perp(vTrigger.Vect());
-    double weight = jt > 1e-3 ? fGeometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
+    /*
+     *  Arguments for the distribution histogram filler
+     *
+     *  1)  fillType fTyp = Tell what kind of particles are filled (real events vs. mixed events)
+     *  2)  int assocType = Associated particle binning type. 0 = klong, 1 = xlong, 2 = pta
+     *  3)  TLorentzVector *vTrigger = vector for trigger particle
+     *  4)  TLorentzVector *vAssoc = vector for associated particle
+     *  5)  AliJTH1D &hDistribution = main jT histogram
+     *  6)  AliJTH1D &hDistributionLikeSign = jT histogram for the like sign pairs
+     *  7)  AliJTH1D &hDistributionUnlikeSign = jT histogram for the unlike sign pairs
+     *  8)  AliJTH1D &hInvariantMass = invariant mass histogram
+     *  9)  AliJTH1D &hInvariantMassLikeSign = invariant mass histogram for the like sign pairs
+     *  10) AliJTH1D &hInvariantMassUnlikeSign = invariant mass histogram for the unlike sign pairs
+     *
+     */
     
-    int iKlongBin = fcard->GetBin(kLongType, vTrigger.Vect().Dot(vAssoc.Vect())/vTrigger.P());
-    double invariantMass = sqrt(2*(vTrigger.P()*vAssoc.P()-vTrigger.Vect().Dot(vAssoc.Vect())));
-    if(iKlongBin>=0){
-      fhistos->fhJTKlong[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(jt, weight);
-      fhistos->fhInvariantMassKlong[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(invariantMass);
-
-      // Fill also the signed distributions
-      if(fIsLikeSign){
-        fhistos->fhJTKlongLikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(jt, weight);
-        fhistos->fhInvariantMassKlongLikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(invariantMass);
-      } else {
-        fhistos->fhJTKlongUnlikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(jt, weight);
-        fhistos->fhInvariantMassKlongUnlikeSign[fTyp][fCentralityBin][fpttBin][iKlongBin]->Fill(invariantMass);
-      }
-    }
-    if(fXlongBin>=0){
-      fhistos->fhJT[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(jt, weight);
-      fhistos->fhInvariantMassXe[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(invariantMass);
-
-      // Fill also the signed distributions
-      if(fIsLikeSign){
-        fhistos->fhJTLikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(jt, weight);
-        fhistos->fhInvariantMassXeLikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(invariantMass);
-      } else {
-        fhistos->fhJTUnlikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(jt, weight);
-        fhistos->fhInvariantMassXeUnlikeSign[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(invariantMass);
-      }
-    }
-    if(fptaBin>=0){
-      fhistos->fhJTPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(jt, weight);
-      fhistos->fhInvariantMassPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(invariantMass);
-
-      // Fill also the signed distributions
-      if(fIsLikeSign){
-        fhistos->fhJTPtaLikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(jt, weight);
-        fhistos->fhInvariantMassPtaLikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(invariantMass);
-      } else {
-        fhistos->fhJTPtaUnlikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(jt, weight);
-        fhistos->fhInvariantMassPtaUnlikeSign[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(invariantMass);
-      }
-    }
+    // Fill the jT histograms for klong binning. Require 3D near side
+    if(fNearSide3D) FillJtDistributionHistograms(fTyp,0,&vTrigger,&vAssoc,fhistos->fhJTKlong,fhistos->fhJTKlongLikeSign,fhistos->fhJTKlongUnlikeSign,fhistos->fhInvariantMassKlong,fhistos->fhInvariantMassKlongLikeSign,fhistos->fhInvariantMassKlongUnlikeSign);
     
-    TLorentzVector vAssocRndm;
-    TLorentzVector vAssocRndmRgap;
-    TLorentzVector vThrustRndm;
+    // Fill the jT histograms for xlong binning. Require 3D near side
+    if(fNearSide3D) FillJtDistributionHistograms(fTyp,1,&vTrigger,&vAssoc,fhistos->fhJT,fhistos->fhJTLikeSign,fhistos->fhJTUnlikeSign,fhistos->fhInvariantMassXe,fhistos->fhInvariantMassXeLikeSign,fhistos->fhInvariantMassXeUnlikeSign);
+    
+    // Fill the jT histograms for pta binning. Require traditional near side
+    if(fNearSide) FillJtDistributionHistograms(fTyp,2,&vTrigger,&vAssoc,fhistos->fhJTPta,fhistos->fhJTPtaLikeSign,fhistos->fhJTPtaUnlikeSign,fhistos->fhInvariantMassPta,fhistos->fhInvariantMassPtaLikeSign,fhistos->fhInvariantMassPtaUnlikeSign);
     
     //-------------------------------------
-    // Rapidity Gap background
+    // Rapidity/R/Phi Gap background
     // ------------------------------------
+    
+    // Vectors for randomized background particles
+    TLorentzVector vAssocRndm;
+    TLorentzVector vAssocRndmRgap;
+    TLorentzVector vAssocRndmPhiGap;
+    TLorentzVector vThrustRndm;
+    TLorentzVector vThrustRndmRgap;
+    TLorentzVector vThrustRndmPhiGap;
+    
+    // Variables for randomized eta and phi
     double etaTriggRndm, etaAssocRndm;
-    double dphiAssocRndm = 0;
+    double phiTriggRndm, phiAssocRndm;
 
-    if(fTyp==kReal && ( fEtaGapBin >=0 || fRGapBinNear >=0 ) ){
+    // Only do the randomization, if there is a background pair according to at least one of the background methods
+    if(fTyp==kReal && ( fEtaGapBin >=0 || fRGapBinNear >=0 || fPhiGapBinNear >=0  ) ){
       for(int iEtaGap=0; iEtaGap<=fEtaGapBin; iEtaGap++) fhistos->fhPtaEtaGapN[fCentralityBin][iEtaGap][fpttBin]->Fill(fpta, fTrackPairEfficiency);
       for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++) fhistos->fhPtaRGapN[fCentralityBin][iRGap][fpttBin]->Fill(fpta, fTrackPairEfficiency);
-      for(int itrial=0; itrial<20; itrial++){  //For each high eta gap track generate ten others
+      for(int itrial=0; itrial<20; itrial++){  //For each high gap track generate twenty others
         
-        if(fsamplingMethod == 0){
+        // Randomize the vectors for the background pair
+        
+        if(fsamplingMethod == 0){ // Flat sampling
+          
+          // Randomize eta
           etaTriggRndm  = frandom->Uniform(-fmaxEtaRange, fmaxEtaRange);
           etaAssocRndm  = frandom->Uniform(-fmaxEtaRange, fmaxEtaRange);
-        } else {
+          
+          // Randomize phi
+          phiTriggRndm = kJPi * frandom->Uniform(-1, 1);
+          phiAssocRndm = kJPi * frandom->Uniform(-1, 1);
+          
+        } else { // Inclusive sampling
+          
+          // Randomize eta
           etaTriggRndm  = fhistos->fhIetaTriggFromFile[fCentralityBin][fpttBin]->GetRandom();
           etaAssocRndm  = fhistos->fhIetaAssocFromFile[fCentralityBin][fptaBin]->GetRandom();
+          
+          // Randomize phi
+          phiTriggRndm = fhistos->fhIphiTriggFromFile[fCentralityBin][fpttBin]->GetRandom();
+          phiAssocRndm = fhistos->fhIphiAssocFromFile[fCentralityBin][fptaBin]->GetRandom();
         }
-        if( fEtaGapBin >=0 || fRGapBinNear >=0 ) {
-          if( fsamplingMethod == 0) {
-            dphiAssocRndm = kJPi * frandom->Uniform(-0.5, 0.5);
-          } else {
-            dphiAssocRndm = fhistos->fhIphiAssocFromFile[fCentralityBin][fptaBin]->GetRandom();
-          }
-          vAssocRndmRgap.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiTrigger + dphiAssocRndm, 0); // Randomize eta and phi
-          vAssocRndm.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0); // Randomize only eta
-        } else {
-          vAssocRndmRgap.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0); //set randomized assoc  TLorentz vector
-          vAssocRndm.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0); //set randomized assoc  TLorentz vector
-        }
-        
-        vThrustRndm.SetPtEtaPhiM(vTrigger.Pt(),etaTriggRndm, fPhiTrigger, 0);
-        
-        double dEtaRndm = etaTriggRndm - etaAssocRndm;
-        double geoAccCorrRndm = (fsamplingMethod == 0 || fPhiGapBinNear<0 ) ? GetGeoAccCorrFlat(dEtaRndm) : GetGeoAccCorrIncl(dEtaRndm);
-        
-        jt = vAssocRndm.Perp(vThrustRndm.Vect());
-        double jtRgap = vAssocRndmRgap.Perp(vThrustRndm.Vect());
-        
-        // Klong bins
-        int jKlongBin = fcard->GetBin(kLongType, vThrustRndm.Vect().Dot(vAssocRndm.Vect())/vThrustRndm.P());
-        if(jKlongBin>=0){ // 
-          if(jt>1e-3) { //here we used and BgFidCut
-            for(int iEtaGap=0; iEtaGap<=fEtaGapBin; iEtaGap++){
-              fhistos->fhJTKlongBg[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              if(fill2DBackground) fhistos->fhDphiDetaKlong[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocKlong[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(fpta, fTrackPairEfficiency);
 
-              // Fill the background histogram for signed pairs
-              if(fIsLikeSign){
-                fhistos->fhJTKlongBgLikeSign[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              } else {
-                fhistos->fhJTKlongBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][jKlongBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              }
-            }
-          }
-        }
-        int iKlongBinRgap = fcard->GetBin(kLongType, vThrustRndm.Vect().Dot(vAssocRndmRgap.Vect())/vThrustRndm.P());
-        if (iKlongBinRgap>=0){
-          if(jtRgap>1e-3){
-            for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
-              fhistos->fhJTKlongBgR[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              if(fill2DBackground) fhistos->fhDphiDetaKlongR[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocKlongR[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(fpta, fTrackPairEfficiency);
-              
-              // Fill the background histogram for signed pairs
-              if(fIsLikeSign){
-                fhistos->fhJTKlongBgRLikeSign[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              } else {
-                fhistos->fhJTKlongBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][iKlongBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              }
-            }
-          }
-        }
+        // Set up randomized trigger and associated vectors for different background scenarios
+        vThrustRndm.SetPtEtaPhiM(vTrigger.Pt(),etaTriggRndm, fPhiTrigger, 0);  // Trigger with only eta randomized
+        vAssocRndm.SetPtEtaPhiM(fpta, etaAssocRndm, fPhiAssoc, 0);             // Associated with only eta randomized
         
-        // xlong bins
-        int iXeBin = fcard->GetBin(kXeType, vThrustRndm.Vect().Dot(vAssocRndm.Vect())/pow(vThrustRndm.P(),2) );
-        if(iXeBin>=0){
-          if(jt>1e-3) { //here we used and BgFidCut
-            for(int iEtaGap=0; iEtaGap<=fEtaGapBin; iEtaGap++){
-              fhistos->fhJTBg[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              if(fill2DBackground) fhistos->fhDphiDetaXe[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocXe[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(fpta, fTrackPairEfficiency);
-
-              // Fill the background histograms for signed pairs
-              if(fIsLikeSign){
-                fhistos->fhJTBgLikeSign[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              } else {
-                fhistos->fhJTBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][iXeBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              }
-            }
-          }
-        }
-        int iXeBinRgap = fcard->GetBin(kXeType, vThrustRndm.Vect().Dot(vAssocRndmRgap.Vect())/pow(vThrustRndm.P(),2) );
-        if(iXeBinRgap>=0){
-          if(jtRgap>1e-3){
-            for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
-              fhistos->fhJTBgR[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              if(fill2DBackground) fhistos->fhDphiDetaXeR[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocXeR[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(fpta, fTrackPairEfficiency);
-              
-              // Fill the background histograms for signed pairs
-              if(fIsLikeSign){
-                fhistos->fhJTBgRLikeSign[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              } else {
-                fhistos->fhJTBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][iXeBinRgap]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              }
-            }
-          }
-        }
+        vThrustRndmRgap.SetPtEtaPhiM(vTrigger.Pt(),etaTriggRndm, phiTriggRndm, 0);  // Trigger with eta and phi randomized
+        vAssocRndmRgap.SetPtEtaPhiM(fpta, etaAssocRndm, phiAssocRndm, 0);           // Associated with eta and phi randomized
         
-        // pta bins
-        if(fptaBin>=0){
-          if(jt>1e-3) { //here we used and BgFidCut
-            for(int iEtaGap=0; iEtaGap<=fEtaGapBin; iEtaGap++){
-              fhistos->fhJTPtaBg[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              if(fill2DBackground) fhistos->fhDphiDetaPta[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocPta[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(fpta, fTrackPairEfficiency);
-
-              //Fill the background histograms for signed pairs
-              if(fIsLikeSign){
-                fhistos->fhJTPtaBgLikeSign[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              } else {
-                fhistos->fhJTPtaBgUnlikeSign[fCentralityBin][iEtaGap][fpttBin][fptaBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-              }
-            }
-          } // if jt > 1e-3
-          if(jtRgap>1e-3){
-            for(int iRGap=0; iRGap<=fRGapBinNear; iRGap++){
-              fhistos->fhJTPtaBgR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              if(fill2DBackground) fhistos->fhDphiDetaPtaR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(dEtaRndm, dphiAssocRndm, geoAccCorrRndm * fTrackPairEfficiency);
-              fhistos->fhBgAssocPtaR[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(fpta, fTrackPairEfficiency);
-              
-              //Fill the background histograms for signed pairs
-              if(fIsLikeSign){
-                fhistos->fhJTPtaBgRLikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              } else {
-                fhistos->fhJTPtaBgRUnlikeSign[fCentralityBin][iRGap][fpttBin][fptaBin]->Fill(jtRgap, geoAccCorrRndm * fTrackPairEfficiency/jtRgap);
-              }
-            } // RGap
-          } // if jtRgap > 1e-3
-        } // if fptaBin >= 0
-      } //trials
-    } // Eta Gap Random
+        vThrustRndmPhiGap.SetPtEtaPhiM(vTrigger.Pt(),fEtaTrigger, phiTriggRndm, 0);  // Trigger with only phi randomized
+        vAssocRndmPhiGap.SetPtEtaPhiM(fpta, fEtaAssoc, phiAssocRndm, 0);             // Associated with only phi randomized
+        
+        /*
+         * Arguments for the background histogram filler
+         *
+         *  1)  int assocType = Associated particle binning type. 0 = klong, 1 = xlong, 2 = pta
+         *  2)  int gapType = Used gap type for background. 0 = eta gap, 1 = R gap, 2 = phi gap
+         *  3)  TLorentzVector *vTrigger = trigger particle used for the background estimation
+         *  4)  TLorentzVector *vAssoc = associated particle used for the background estimation
+         *  5)  AliJTH1D &hBackground = main background histogram
+         *  6)  AliJTH1D &hBackgroundLikeSign = background histogram for the like sign pairs
+         *  7)  AliJTH1D &hBackgroundUnlikeSign = background histogram for the unlike sign pairs
+         *  8)  AliJTH1D &hPtAssoc = associated particle pT distribution
+         *  9)  AliJTH2D &hBackground2D = two dimensional quality control histogram
+         *  10) bool fill2DBackground = Switch for quality control histograms. False = do not fill, true = fill
+         *
+         */
+        
+        // Only fill background histograms in klong and xlong bins if the original pair was in the 3D near side. Note the the background histogram filler method also checks, that the nexly generated pair must be in the 3D near side.
+        if(fNearSide3D){
+          
+          // Fill background histograms for klong binning, eta gap
+          FillJtBackgroundHistograms(0,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTKlongBg,fhistos->fhJTKlongBgLikeSign,fhistos->fhJTKlongBgUnlikeSign,fhistos->fhBgAssocKlong,fhistos->fhDphiDetaKlong,fill2DBackground);
+          
+          // Fill background histograms for klong binning, R gap
+          FillJtBackgroundHistograms(0,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTKlongBgR,fhistos->fhJTKlongBgRLikeSign,fhistos->fhJTKlongBgRUnlikeSign,fhistos->fhBgAssocKlongR,fhistos->fhDphiDetaKlongR,fill2DBackground);
+          
+          // Fill background histograms for klong binning, phi gap
+          FillJtBackgroundHistograms(0,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTKlongBgPhi,fhistos->fhJTKlongBgPhiLikeSign,fhistos->fhJTKlongBgPhiUnlikeSign,fhistos->fhBgAssocKlongPhi,fhistos->fhDphiDetaKlongPhi,fill2DBackground);
+          
+          // Fill background histograms for xlong binning, eta gap
+          FillJtBackgroundHistograms(1,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTBg,fhistos->fhJTBgLikeSign,fhistos->fhJTBgUnlikeSign,fhistos->fhBgAssocXe,fhistos->fhDphiDetaXe,fill2DBackground);
+          
+          // Fill background histograms for xlong binning, R gap
+          FillJtBackgroundHistograms(1,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTBgR,fhistos->fhJTBgRLikeSign,fhistos->fhJTBgRUnlikeSign,fhistos->fhBgAssocXeR,fhistos->fhDphiDetaXeR,fill2DBackground);
+          
+          // Fill background histograms for xlong binning, phi gap
+          FillJtBackgroundHistograms(1,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTBgPhi,fhistos->fhJTBgPhiLikeSign,fhistos->fhJTBgPhiUnlikeSign,fhistos->fhBgAssocXePhi,fhistos->fhDphiDetaXePhi,fill2DBackground);
+          
+        } // 3D near side check
+        
+        // Only fill the pTa background histograms, if the original pair was in traditional near side. Note that the background histogram filler method also checks, that the newly generated pair is on the traditional near side.
+        if(fNearSide){
+          
+          // Fill background histograms for pta binning, eta gap
+          FillJtBackgroundHistograms(2,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTPtaBg,fhistos->fhJTPtaBgLikeSign,fhistos->fhJTPtaBgUnlikeSign,fhistos->fhBgAssocPta,fhistos->fhDphiDetaPta,fill2DBackground);
+          
+          // Fill background histograms for pta binning, R gap
+          FillJtBackgroundHistograms(2,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTPtaBgR,fhistos->fhJTPtaBgRLikeSign,fhistos->fhJTPtaBgRUnlikeSign,fhistos->fhBgAssocPtaR,fhistos->fhDphiDetaPtaR,fill2DBackground);
+          
+          // Fill background histograms for pta binning, phi gap
+          FillJtBackgroundHistograms(2,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTPtaBgPhi,fhistos->fhJTPtaBgPhiLikeSign,fhistos->fhJTPtaBgPhiUnlikeSign,fhistos->fhBgAssocPtaPhi,fhistos->fhDphiDetaPtaPhi,fill2DBackground);
+          
+        } // Traditional near side check
+        
+      } // trials
+    } // background randomization
     
     
   } else {
@@ -628,13 +726,20 @@ void AliJCorrelations::FillDeltaEtaHistograms(fillType fTyp, int ZBin)
   if( fNearSide ){ //one could check the phiGapBin, but in the pi/2 <1.6 and thus phiGap is always>-1
     if( fTyp == 0 ) {
       fhistos->fhDEtaNear[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
-      if(fXlongBin>=0) fhistos->fhDEtaNearXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
     } else {
       fhistos->fhDEtaNearM[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
-      if(fXlongBin>=0) fhistos->fhDEtaNearMXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
     }
   } else {
     if(fPhiGapBinAway<=3) fhistos->fhDEtaFar[fTyp][fCentralityBin][fpttBin]->Fill( fDeltaEta, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
+  }
+  
+  // Different near side definition for xlong bins
+  if( fNearSide3D ){
+    if( fTyp == 0 ) {
+      if(fPhiGapBinNear>=0 && fXlongBin >= 0) fhistos->fhDEtaNearXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
+    } else {
+      if(fPhiGapBinNear>=0 && fXlongBin >= 0) fhistos->fhDEtaNearMXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
+    }
   }
 }
 
@@ -646,7 +751,9 @@ void AliJCorrelations::FillDeltaPhiHistograms(fillType fTyp)
   // This induced improper errors - subtraction of not-independent entries
   
   fhistos->fhDphiAssoc[fTyp][fCentralityBin][fEtaGapBin][fpttBin][fptaBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection * fTrackPairEfficiency);
-  if(fXlongBin>=0) fhistos->fhDphiAssocXEbin[fTyp][fCentralityBin][fEtaGapBin][fpttBin][fXlongBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection * fTrackPairEfficiency);
+  
+  // Require near side for xlong bins, since xlong is only defined in the near side
+  if(fXlongBin>=0 && fNearSide3D) fhistos->fhDphiAssocXEbin[fTyp][fCentralityBin][fEtaGapBin][fpttBin][fXlongBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection * fTrackPairEfficiency);
   
   if(fIsIsolatedTrigger) fhistos->fhDphiAssocIsolTrigg[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection * fTrackPairEfficiency); //FK//
 }
