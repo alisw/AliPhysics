@@ -1,3 +1,31 @@
+class CutHandlerConv{
+  public:
+    CutHandlerConv(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+    TString* mesonCutArray;
+};
+
 void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,                    // change different set of cuts
                               Int_t   isMC                            = 0,                    // run MC
                               Int_t   enableQAMesonTask               = 0,                    // enable meson QA in AliAnalysisTaskGammaConvV1
@@ -123,584 +151,583 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 4;
-  if ( trainConfig == 70) numberOfCuts = 2;
-  if ( trainConfig == 100) numberOfCuts = 5;
   
-  TString *eventCutArray    = new TString[numberOfCuts];
-  TString *photonCutArray   = new TString[numberOfCuts];
-  TString *mesonCutArray    = new TString[numberOfCuts];
-  TString *clusterCutArray  = new TString[numberOfCuts];
+  CutHandlerConv cuts;
   
   if(trainConfig == 1){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
-    eventCutArray[ 1] = "00012113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009326000003800000000"; mesonCutArray[2] = "0163103100900000"; //standard cut Gamma pp 2-76TeV
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009366000003800000000"; mesonCutArray[3] = "0163103100900000"; //standard cut Gamma pp 2-76TeV
+    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+    cuts.AddCut("00012113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+    cuts.AddCut("00000113", "00200009326000003800000000", "0163103100900000"); //standard cut Gamma pp 2-76TeV
+    cuts.AddCut("00000113", "00200009366000003800000000", "0163103100900000"); //standard cut Gamma pp 2-76TeV
   } else if (trainConfig == 2) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
-    eventCutArray[ 1] = "00012123"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009326000003800000000"; mesonCutArray[2] = "0163103100900000"; //standard cut Gamma pp 2-76TeV , only boxes
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009366000003800000000"; mesonCutArray[3] = "0163103100900000"; //standard cut Gamma pp 2-76TeV 
+    cuts.AddCut("00000123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , only boxes
+    cuts.AddCut("00012123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
+    cuts.AddCut("00000123", "00200009326000003800000000", "0163103100900000"); //standard cut Gamma pp 2-76TeV , only boxes
+    cuts.AddCut("00000123", "00200009366000003800000000", "0163103100900000"); //standard cut Gamma pp 2-76TeV 
   } else if (trainConfig == 3) {
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
-    eventCutArray[ 1] = "00013113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
-    eventCutArray[ 2] = "00003123"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
-    eventCutArray[ 3] = "00013123"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
+    cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+    cuts.AddCut("00013113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
+    cuts.AddCut("00003123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+    cuts.AddCut("00013123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
   } else if (trainConfig == 4) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009366300003800020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 1
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009366300003800030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 2
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009366300003800040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 3
+    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
+    cuts.AddCut("00000113", "00200009366300003800020000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , photon quality 1
+    cuts.AddCut("00000113", "00200009366300003800030000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , photon quality 2
+    cuts.AddCut("00000113", "00200009366300003800040000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , photon quality 3
   } else if (trainConfig == 5) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00700009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00700009366300003800020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 1, min R = 35 cm
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00700009366300003800030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 2, min R = 35 cm
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00700009366300003800040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 3, min R = 35 cm
+    cuts.AddCut("00000113", "00700009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
+    cuts.AddCut("00000113", "00700009366300003800020000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , photon quality 1, min R = 35 cm
+    cuts.AddCut("00000113", "00700009366300003800030000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , photon quality 2, min R = 35 cm
+    cuts.AddCut("00000113", "00700009366300003800040000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , photon quality 3, min R = 35 cm
   } else if (trainConfig == 6) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200008366300003200000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, all photon qualities
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200008366300003200020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 1
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200008366300003200030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 2
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200008366300003200040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 3   
+    cuts.AddCut("00000113", "00200008366300003200000000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, all photon qualities
+    cuts.AddCut("00000113", "00200008366300003200020000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 1
+    cuts.AddCut("00000113", "00200008366300003200030000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 2
+    cuts.AddCut("00000113", "00200008366300003200040000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 3   
   } else if (trainConfig == 7) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00700008366300003200000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, all photon qualities, min R = 35 cm
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00700008366300003200020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 1, min R = 35 cm
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00700008366300003200030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 2, min R = 35 cm
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00700008366300003200040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 3, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300003200000000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, all photon qualities, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300003200020000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 1, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300003200030000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 2, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300003200040000", "0163103100900000"); //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 3, min R = 35 cm
   } else if (trainConfig == 8) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200008366300000200000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 7TeV, all photon qualities
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200008366300000200020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 7TeV, photon quality 1
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200008366300000200030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 7TeV, photon quality 2
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200008366300000200040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 7TeV, photon quality 3   
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //standard cut Pi0 pp 7TeV, all photon qualities
+    cuts.AddCut("00000113", "00200008366300000200020000", "0163103100900000"); //standard cut Pi0 pp 7TeV, photon quality 1
+    cuts.AddCut("00000113", "00200008366300000200030000", "0163103100900000"); //standard cut Pi0 pp 7TeV, photon quality 2
+    cuts.AddCut("00000113", "00200008366300000200040000", "0163103100900000"); //standard cut Pi0 pp 7TeV, photon quality 3   
   } else if (trainConfig == 9) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00700008366300000200000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 7TeV, all photon qualities, min R = 35 cm
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00700008366300000200020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 7TeV, photon quality 1, min R = 35 cm
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00700008366300000200030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 7TeV, photon quality 2, min R = 35 cm
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00700008366300000200040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 7TeV, photon quality 3, min R = 35 cm	   
+    cuts.AddCut("00000113", "00700008366300000200000000", "0163103100900000"); //standard cut Pi0 pp 7TeV, all photon qualities, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300000200020000", "0163103100900000"); //standard cut Pi0 pp 7TeV, photon quality 1, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300000200030000", "0163103100900000"); //standard cut Pi0 pp 7TeV, photon quality 2, min R = 35 cm
+    cuts.AddCut("00000113", "00700008366300000200040000", "0163103100900000"); //standard cut Pi0 pp 7TeV, photon quality 3, min R = 35 cm	   
   } else if (trainConfig == 10) {
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
-    eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00200009366300003800020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 1
-    eventCutArray[ 2] = "00003113"; photonCutArray[ 2] = "00200009366300003800030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 2
-    eventCutArray[ 3] = "00003113"; photonCutArray[ 3] = "00200009366300003800040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 3
+    cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
+    cuts.AddCut("00003113", "00200009366300003800020000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , photon quality 1
+    cuts.AddCut("00003113", "00200009366300003800030000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , photon quality 2
+    cuts.AddCut("00003113", "00200009366300003800040000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , photon quality 3
   } else if (trainConfig == 11) {
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00700009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
-    eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00700009366300003800020000"; mesonCutArray[1] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 1, min R = 35 cm
-    eventCutArray[ 2] = "00003113"; photonCutArray[ 2] = "00700009366300003800030000"; mesonCutArray[2] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 2, min R = 35 cm
-    eventCutArray[ 3] = "00003113"; photonCutArray[ 3] = "00700009366300003800040000"; mesonCutArray[3] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 3, min R = 35 cm
+    cuts.AddCut("00003113", "00700009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
+    cuts.AddCut("00003113", "00700009366300003800020000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , photon quality 1, min R = 35 cm
+    cuts.AddCut("00003113", "00700009366300003800030000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , photon quality 2, min R = 35 cm
+    cuts.AddCut("00003113", "00700009366300003800040000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , photon quality 3, min R = 35 cm
   } else if (trainConfig == 12) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; //standard cut LHC11h pp 2.76TeV 
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "03200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; //variation eta 0.65
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "04200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; //variation eta 0.75
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009295002008250400000"; mesonCutArray[3] = "0152506500000000"; //variation pion p dEdx 0.3-5.
+    cuts.AddCut("00000113", "00200009297002008250400000", "0152506500000000"); //standard cut LHC11h pp 2.76TeV 
+    cuts.AddCut("00000113", "03200009297002008250400000", "0152506500000000"); //variation eta 0.65
+    cuts.AddCut("00000113", "04200009297002008250400000", "0152506500000000"); //variation eta 0.75
+    cuts.AddCut("00000113", "00200009295002008250400000", "0152506500000000"); //variation pion p dEdx 0.3-5.
   } else if (trainConfig == 13) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; //standard cut LHC11h pp 2.76TeV 
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "03200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; //variation eta 0.65
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "04200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; //variation eta 0.75
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009295002008250400000"; mesonCutArray[3] = "0152506500000000"; //variation pion p dEdx 0.3-5.
+    cuts.AddCut("00000123", "00200009297002008250400000", "0152506500000000"); //standard cut LHC11h pp 2.76TeV 
+    cuts.AddCut("00000123", "03200009297002008250400000", "0152506500000000"); //variation eta 0.65
+    cuts.AddCut("00000123", "04200009297002008250400000", "0152506500000000"); //variation eta 0.75
+    cuts.AddCut("00000123", "00200009295002008250400000", "0152506500000000"); //variation pion p dEdx 0.3-5.
   } else if (trainConfig == 14) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200049297002008250400000"; mesonCutArray[0] = "0152506500000000"; //variation pt 0.075 
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200019297002008250400000"; mesonCutArray[1] = "0152506500000000"; //variation pt 0.1
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200006297002008250400000"; mesonCutArray[2] = "0152506500000000"; //variation TPC cls 0.7
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200008297002008250400000"; mesonCutArray[3] = "0152506500000000"; //variation TPC cls 0.35 
+    cuts.AddCut("00000113", "00200049297002008250400000", "0152506500000000"); //variation pt 0.075 
+    cuts.AddCut("00000113", "00200019297002008250400000", "0152506500000000"); //variation pt 0.1
+    cuts.AddCut("00000113", "00200006297002008250400000", "0152506500000000"); //variation TPC cls 0.7
+    cuts.AddCut("00000113", "00200008297002008250400000", "0152506500000000"); //variation TPC cls 0.35 
   } else if (trainConfig == 15) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200049297002008250400000"; mesonCutArray[0] = "0152506500000000"; //variation pt 0.075 
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200019297002008250400000"; mesonCutArray[1] = "0152506500000000"; //variation pt 0.1
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006297002008250400000"; mesonCutArray[2] = "0152506500000000"; //variation TPC cls 0.7
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200008297002008250400000"; mesonCutArray[3] = "0152506500000000"; //variation TPC cls 0.35 
+    cuts.AddCut("00000123", "00200049297002008250400000", "0152506500000000"); //variation pt 0.075 
+    cuts.AddCut("00000123", "00200019297002008250400000", "0152506500000000"); //variation pt 0.1
+    cuts.AddCut("00000123", "00200006297002008250400000", "0152506500000000"); //variation TPC cls 0.7
+    cuts.AddCut("00000123", "00200008297002008250400000", "0152506500000000"); //variation TPC cls 0.35 
   } else if (trainConfig == 16) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009397002008250400000"; mesonCutArray[0] = "0152506500000000"; //variation edEdx -4,5
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009697002008250400000"; mesonCutArray[1] = "0152506500000000"; //variation edEdx -2.5,4
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009297003008250400000"; mesonCutArray[2] = "0152506500000000"; //variation TOF el. PID -3,5
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009297004008250400000"; mesonCutArray[3] = "0152506500000000"; //variation TOF el. PID -2,3
+    cuts.AddCut("00000113", "00200009397002008250400000", "0152506500000000"); //variation edEdx -4,5
+    cuts.AddCut("00000113", "00200009697002008250400000", "0152506500000000"); //variation edEdx -2.5,4
+    cuts.AddCut("00000113", "00200009297003008250400000", "0152506500000000"); //variation TOF el. PID -3,5
+    cuts.AddCut("00000113", "00200009297004008250400000", "0152506500000000"); //variation TOF el. PID -2,3
   } else if (trainConfig == 17) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009397002008250400000"; mesonCutArray[0] = "0152506500000000"; //variation edEdx -4,5
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009697002008250400000"; mesonCutArray[1] = "0152506500000000"; //variation edEdx -2.5,4
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009297003008250400000"; mesonCutArray[2] = "0152506500000000"; //variation TOF el. PID -3,5
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009297004008250400000"; mesonCutArray[3] = "0152506500000000"; //variation TOF el. PID -2,3
+    cuts.AddCut("00000123", "00200009397002008250400000", "0152506500000000"); //variation edEdx -4,5
+    cuts.AddCut("00000123", "00200009697002008250400000", "0152506500000000"); //variation edEdx -2.5,4
+    cuts.AddCut("00000123", "00200009297003008250400000", "0152506500000000"); //variation TOF el. PID -3,5
+    cuts.AddCut("00000123", "00200009297004008250400000", "0152506500000000"); //variation TOF el. PID -2,3
   } else if (trainConfig == 18) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009297002009250400000"; mesonCutArray[0] = "0152506500000000"; //variation qt 0.03
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009297002002250400000"; mesonCutArray[1] = "0152506500000000"; //variation qt 0.07 no2D
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009297002008150400000"; mesonCutArray[2] = "0152506500000000"; //variation chi2 50.
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009297002008850400000"; mesonCutArray[3] = "0152506500000000"; //variation chi2 20.
+    cuts.AddCut("00000113", "00200009297002009250400000", "0152506500000000"); //variation qt 0.03
+    cuts.AddCut("00000113", "00200009297002002250400000", "0152506500000000"); //variation qt 0.07 no2D
+    cuts.AddCut("00000113", "00200009297002008150400000", "0152506500000000"); //variation chi2 50.
+    cuts.AddCut("00000113", "00200009297002008850400000", "0152506500000000"); //variation chi2 20.
   } else if (trainConfig == 19) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009297002009250400000"; mesonCutArray[0] = "0152506500000000"; //variation qt 0.03
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009297002002250400000"; mesonCutArray[1] = "0152506500000000"; //variation qt 0.07 no2D
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009297002008150400000"; mesonCutArray[2] = "0152506500000000"; //variation chi2 50.
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009297002008850400000"; mesonCutArray[3] = "0152506500000000"; //variation chi2 20.
+    cuts.AddCut("00000123", "00200009297002009250400000", "0152506500000000"); //variation qt 0.03
+    cuts.AddCut("00000123", "00200009297002002250400000", "0152506500000000"); //variation qt 0.07 no2D
+    cuts.AddCut("00000123", "00200009297002008150400000", "0152506500000000"); //variation chi2 50.
+    cuts.AddCut("00000123", "00200009297002008850400000", "0152506500000000"); //variation chi2 20.
   } else if (trainConfig == 20) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009297002008260400000"; mesonCutArray[0] = "0152506500000000"; //variation psi pair 0.05
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009297002008280400000"; mesonCutArray[1] = "0152506500000000"; //variation psi pair 0.2
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009297002008250000000"; mesonCutArray[2] = "0152506500000000"; //variation cosPA -1
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152505500000000"; //variation alpha 0.75
+    cuts.AddCut("00000113", "00200009297002008260400000", "0152506500000000"); //variation psi pair 0.05
+    cuts.AddCut("00000113", "00200009297002008280400000", "0152506500000000"); //variation psi pair 0.2
+    cuts.AddCut("00000113", "00200009297002008250000000", "0152506500000000"); //variation cosPA -1
+    cuts.AddCut("00000113", "00200009297002008250400000", "0152505500000000"); //variation alpha 0.75
   } else if (trainConfig == 21) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009297002008260400000"; mesonCutArray[0] = "0152506500000000"; //variation psi pair 0.05
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009297002008280400000"; mesonCutArray[1] = "0152506500000000"; //variation psi pair 0.2
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009297002008250000000"; mesonCutArray[2] = "0152506500000000"; //variation cosPA -1
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152505500000000"; //variation alpha 0.75
+    cuts.AddCut("00000123", "00200009297002008260400000", "0152506500000000"); //variation psi pair 0.05
+    cuts.AddCut("00000123", "00200009297002008280400000", "0152506500000000"); //variation psi pair 0.2
+    cuts.AddCut("00000123", "00200009297002008250000000", "0152506500000000"); //variation cosPA -1
+    cuts.AddCut("00000123", "00200009297002008250400000", "0152505500000000"); //variation alpha 0.75
   } else if (trainConfig == 22) {
-    eventCutArray[ 0] = "00040113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kTRD
-    eventCutArray[ 1] = "00050113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kEMC
-    eventCutArray[ 2] = "00060113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kPHI
-    eventCutArray[ 3] = "00070113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kHighMult
+    cuts.AddCut("00040113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD
+    cuts.AddCut("00050113", "00200009297002008250400000", "0152506500000000"); // trigger kEMC
+    cuts.AddCut("00060113", "00200009297002008250400000", "0152506500000000"); // trigger kPHI
+    cuts.AddCut("00070113", "00200009297002008250400000", "0152506500000000"); // trigger kHighMult
   } else if (trainConfig == 23) {
-    eventCutArray[ 0] = "00080113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kEMCEGA
-    eventCutArray[ 1] = "00090113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kEMCEJE
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // minimum bias
-    eventCutArray[ 3] = "00011113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kINT8
+    cuts.AddCut("00080113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEGA
+    cuts.AddCut("00090113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJE
+    cuts.AddCut("00000113", "00200009297002008250400000", "0152506500000000"); // minimum bias
+    cuts.AddCut("00011113", "00200009297002008250400000", "0152506500000000"); // trigger kINT8
   } else if (trainConfig == 24) {
-    eventCutArray[ 0] = "00042113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kTRD CINT8 HEE
-    eventCutArray[ 1] = "00044113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kTRD CINT8 HSE
-    eventCutArray[ 2] = "00046113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kTRD CINT8 HJE
-    eventCutArray[ 3] = "00048113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kTRD CINT8 HQU
+    cuts.AddCut("00042113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT8 HEE
+    cuts.AddCut("00044113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT8 HSE
+    cuts.AddCut("00046113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT8 HJE
+    cuts.AddCut("00048113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT8 HQU
   } else if (trainConfig == 25) {
-    eventCutArray[ 0] = "00041113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kTRD CINT7 HEE
-    eventCutArray[ 1] = "00043113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kTRD CINT7 HSE
-    eventCutArray[ 2] = "00045113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kTRD CINT7 HJE
-    eventCutArray[ 3] = "00047113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kTRD CINT7 HQU
+    cuts.AddCut("00041113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT7 HEE
+    cuts.AddCut("00043113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT7 HSE
+    cuts.AddCut("00045113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT7 HJE
+    cuts.AddCut("00047113", "00200009297002008250400000", "0152506500000000"); // trigger kTRD CINT7 HQU
   } else if (trainConfig == 26) {
-    eventCutArray[ 0] = "00052113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kEMC7
-    eventCutArray[ 1] = "00053113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kEMC8
-    eventCutArray[ 2] = "00062113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kPHI7
-    eventCutArray[ 3] = "00063113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kPHI8
+    cuts.AddCut("00052113", "00200009297002008250400000", "0152506500000000"); // trigger kEMC7
+    cuts.AddCut("00053113", "00200009297002008250400000", "0152506500000000"); // trigger kEMC8
+    cuts.AddCut("00062113", "00200009297002008250400000", "0152506500000000"); // trigger kPHI7
+    cuts.AddCut("00063113", "00200009297002008250400000", "0152506500000000"); // trigger kPHI8
   } else if (trainConfig == 27) {
-    eventCutArray[ 0] = "00051113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kEMC1
-    eventCutArray[ 1] = "00071113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kSHM1
-    eventCutArray[ 2] = "00072113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kSHM7
-    eventCutArray[ 3] = "00073113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kSHM8
+    cuts.AddCut("00051113", "00200009297002008250400000", "0152506500000000"); // trigger kEMC1
+    cuts.AddCut("00071113", "00200009297002008250400000", "0152506500000000"); // trigger kSHM1
+    cuts.AddCut("00072113", "00200009297002008250400000", "0152506500000000"); // trigger kSHM7
+    cuts.AddCut("00073113", "00200009297002008250400000", "0152506500000000"); // trigger kSHM8
   } else if (trainConfig == 28) {
-    eventCutArray[ 0] = "00081113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kEMCEGA + CINT7
-    eventCutArray[ 1] = "00082113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kEMCEGA + CINT8
-    eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kEMCEG1 + CINT7
-    eventCutArray[ 3] = "00084113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kEMCEG1 + CINT8
+    cuts.AddCut("00081113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEGA + CINT7
+    cuts.AddCut("00082113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEGA + CINT8
+    cuts.AddCut("00083113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEG1 + CINT7
+    cuts.AddCut("00084113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEG1 + CINT8
   } else if (trainConfig == 29) {
-    eventCutArray[ 0] = "00085113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kEMCEG2 + CINT7
-    eventCutArray[ 1] = "00086113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kEMCEG2 + CINT8
-    eventCutArray[ 2] = "00091113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kEMCEJE + CINT7
-    eventCutArray[ 3] = "00092113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kEMCEJE + CINT8
+    cuts.AddCut("00085113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEG2 + CINT7
+    cuts.AddCut("00086113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEG2 + CINT8
+    cuts.AddCut("00091113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJE + CINT7
+    cuts.AddCut("00092113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJE + CINT8
   } else if (trainConfig == 30) {
-    eventCutArray[ 0] = "00093113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; // trigger kEMCEJ1 + CINT7
-    eventCutArray[ 1] = "00094113"; photonCutArray[ 1] = "00200009297002008250400000"; mesonCutArray[1] = "0152506500000000"; // trigger kEMCEJ1 + CINT8
-    eventCutArray[ 2] = "00095113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152506500000000"; // trigger kEMCEJ2 + CINT7
-    eventCutArray[ 3] = "00096113"; photonCutArray[ 3] = "00200009297002008250400000"; mesonCutArray[3] = "0152506500000000"; // trigger kEMCEJ2 + CINT8		
+    cuts.AddCut("00093113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJ1 + CINT7
+    cuts.AddCut("00094113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJ1 + CINT8
+    cuts.AddCut("00095113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJ2 + CINT7
+    cuts.AddCut("00096113", "00200009297002008250400000", "0152506500000000"); // trigger kEMCEJ2 + CINT8		
   } else if (trainConfig == 31) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; //new standard cut for pp 8 TeV
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009357002008250400000"; mesonCutArray[1] = "0152106500000000"; //variation edEdx -4,5
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009657002008250400000"; mesonCutArray[2] = "0152106500000000"; //variation edEdx -2.5,4
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009255002008250400000"; mesonCutArray[3] = "0152106500000000"; //variation pion p dEdx 0.3-5.
+    cuts.AddCut("00000113", "00200009257002008250400000", "0152106500000000"); //new standard cut for pp 8 TeV
+    cuts.AddCut("00000113", "00200009357002008250400000", "0152106500000000"); //variation edEdx -4,5
+    cuts.AddCut("00000113", "00200009657002008250400000", "0152106500000000"); //variation edEdx -2.5,4
+    cuts.AddCut("00000113", "00200009255002008250400000", "0152106500000000"); //variation pion p dEdx 0.3-5.
   } else if (trainConfig == 32) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; //new standard cut for pp 8 TeV
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009357002008250400000"; mesonCutArray[1] = "0152106500000000"; //variation edEdx -4,5
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009657002008250400000"; mesonCutArray[2] = "0152106500000000"; //variation edEdx -2.5,4
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009255002008250400000"; mesonCutArray[3] = "0152106500000000"; //variation pion p dEdx 0.3-5.
+    cuts.AddCut("00000123", "00200009257002008250400000", "0152106500000000"); //new standard cut for pp 8 TeV
+    cuts.AddCut("00000123", "00200009357002008250400000", "0152106500000000"); //variation edEdx -4,5
+    cuts.AddCut("00000123", "00200009657002008250400000", "0152106500000000"); //variation edEdx -2.5,4
+    cuts.AddCut("00000123", "00200009255002008250400000", "0152106500000000"); //variation pion p dEdx 0.3-5.
   } else if (trainConfig == 33) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200049257002008250400000"; mesonCutArray[0] = "0152106500000000"; //variation pt 0.075 
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200019257002008250400000"; mesonCutArray[1] = "0152106500000000"; //variation pt 0.1
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200006257002008250400000"; mesonCutArray[2] = "0152106500000000"; //variation TPC cls 0.7
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200008257002008250400000"; mesonCutArray[3] = "0152106500000000"; //variation TPC cls 0.35 
+    cuts.AddCut("00000113", "00200049257002008250400000", "0152106500000000"); //variation pt 0.075 
+    cuts.AddCut("00000113", "00200019257002008250400000", "0152106500000000"); //variation pt 0.1
+    cuts.AddCut("00000113", "00200006257002008250400000", "0152106500000000"); //variation TPC cls 0.7
+    cuts.AddCut("00000113", "00200008257002008250400000", "0152106500000000"); //variation TPC cls 0.35 
   } else if (trainConfig == 34) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200049257002008250400000"; mesonCutArray[0] = "0152106500000000"; //variation pt 0.075 
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200019257002008250400000"; mesonCutArray[1] = "0152106500000000"; //variation pt 0.1
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006257002008250400000"; mesonCutArray[2] = "0152106500000000"; //variation TPC cls 0.7
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200008257002008250400000"; mesonCutArray[3] = "0152106500000000"; //variation TPC cls 0.35 
+    cuts.AddCut("00000123", "00200049257002008250400000", "0152106500000000"); //variation pt 0.075 
+    cuts.AddCut("00000123", "00200019257002008250400000", "0152106500000000"); //variation pt 0.1
+    cuts.AddCut("00000123", "00200006257002008250400000", "0152106500000000"); //variation TPC cls 0.7
+    cuts.AddCut("00000123", "00200008257002008250400000", "0152106500000000"); //variation TPC cls 0.35 
   } else if (trainConfig == 35) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227002008250400000"; mesonCutArray[0] = "0152106500000000"; //variation pidEdx 1,-10
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009237002008250400000"; mesonCutArray[1] = "0152106500000000"; //variation pidEdx 2.5,-10
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152106500000000"; //variation pidEdx 3,-10
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[3] = "0152106500000000"; //variation pion p dEdx 0.5-5
+    cuts.AddCut("00000113", "00200009227002008250400000", "0152106500000000"); //variation pidEdx 1,-10
+    cuts.AddCut("00000113", "00200009237002008250400000", "0152106500000000"); //variation pidEdx 2.5,-10
+    cuts.AddCut("00000113", "00200009297002008250400000", "0152106500000000"); //variation pidEdx 3,-10
+    cuts.AddCut("00000113", "00200009250002008250400000", "0152106500000000"); //variation pion p dEdx 0.5-5
   } else if (trainConfig == 36) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227002008250400000"; mesonCutArray[0] = "0152106500000000"; //variation pidEdx 1,-10
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009237002008250400000"; mesonCutArray[1] = "0152106500000000"; //variation pidEdx 2.5,-10
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009297002008250400000"; mesonCutArray[2] = "0152106500000000"; //variation pidEdx 3,-10
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009250002008250400000"; mesonCutArray[3] = "0152106500000000"; //variation pion p dEdx 0.5-5
+    cuts.AddCut("00000123", "00200009227002008250400000", "0152106500000000"); //variation pidEdx 1,-10
+    cuts.AddCut("00000123", "00200009237002008250400000", "0152106500000000"); //variation pidEdx 2.5,-10
+    cuts.AddCut("00000123", "00200009297002008250400000", "0152106500000000"); //variation pidEdx 3,-10
+    cuts.AddCut("00000123", "00200009250002008250400000", "0152106500000000"); //variation pion p dEdx 0.5-5
   } else if (trainConfig == 37) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257002009250400000"; mesonCutArray[0] = "0152106500000000"; //variation qt 0.03
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009257002002250400000"; mesonCutArray[1] = "0152106500000000"; //variation qt 0.07 no2D
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009257002008150400000"; mesonCutArray[2] = "0152106500000000"; //variation chi2 50.
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009257002008850400000"; mesonCutArray[3] = "0152106500000000"; //variation chi2 20.
+    cuts.AddCut("00000113", "00200009257002009250400000", "0152106500000000"); //variation qt 0.03
+    cuts.AddCut("00000113", "00200009257002002250400000", "0152106500000000"); //variation qt 0.07 no2D
+    cuts.AddCut("00000113", "00200009257002008150400000", "0152106500000000"); //variation chi2 50.
+    cuts.AddCut("00000113", "00200009257002008850400000", "0152106500000000"); //variation chi2 20.
   } else if (trainConfig == 38) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009257002009250400000"; mesonCutArray[0] = "0152106500000000"; //variation qt 0.03
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009257002002250400000"; mesonCutArray[1] = "0152106500000000"; //variation qt 0.07 no2D
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009257002008150400000"; mesonCutArray[2] = "0152106500000000"; //variation chi2 50.
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009257002008850400000"; mesonCutArray[3] = "0152106500000000"; //variation chi2 20.
+    cuts.AddCut("00000123", "00200009257002009250400000", "0152106500000000"); //variation qt 0.03
+    cuts.AddCut("00000123", "00200009257002002250400000", "0152106500000000"); //variation qt 0.07 no2D
+    cuts.AddCut("00000123", "00200009257002008150400000", "0152106500000000"); //variation chi2 50.
+    cuts.AddCut("00000123", "00200009257002008850400000", "0152106500000000"); //variation chi2 20.
   } else if (trainConfig == 39) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257002008260400000"; mesonCutArray[0] = "0152106500000000"; //variation psi pair 0.05
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009257002008280400000"; mesonCutArray[1] = "0152106500000000"; //variation psi pair 0.2
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009257002008250000000"; mesonCutArray[2] = "0152106500000000"; //variation cosPA -1
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009257002008250600000"; mesonCutArray[3] = "0152106500000000"; //variation cosPA 0.9
+    cuts.AddCut("00000113", "00200009257002008260400000", "0152106500000000"); //variation psi pair 0.05
+    cuts.AddCut("00000113", "00200009257002008280400000", "0152106500000000"); //variation psi pair 0.2
+    cuts.AddCut("00000113", "00200009257002008250000000", "0152106500000000"); //variation cosPA -1
+    cuts.AddCut("00000113", "00200009257002008250600000", "0152106500000000"); //variation cosPA 0.9
   } else if (trainConfig == 40) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009257002008260400000"; mesonCutArray[0] = "0152106500000000"; //variation psi pair 0.05
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009257002008280400000"; mesonCutArray[1] = "0152106500000000"; //variation psi pair 0.2
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009257002008250000000"; mesonCutArray[2] = "0152106500000000"; //variation cosPA -1
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009257002008250600000"; mesonCutArray[3] = "0152106500000000"; //variation cosPA 0.9
+    cuts.AddCut("00000123", "00200009257002008260400000", "0152106500000000"); //variation psi pair 0.05
+    cuts.AddCut("00000123", "00200009257002008280400000", "0152106500000000"); //variation psi pair 0.2
+    cuts.AddCut("00000123", "00200009257002008250000000", "0152106500000000"); //variation cosPA -1
+    cuts.AddCut("00000123", "00200009257002008250600000", "0152106500000000"); //variation cosPA 0.9
   } else if (trainConfig == 41) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257002008950400000"; mesonCutArray[0] = "0152106500000000"; //variation chi2 15
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009257002008230400000"; mesonCutArray[1] = "0152106500000000"; //variation psi pair 0.035
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152105500000000"; //variation alpha 0.75
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152107500000000"; //variation alpha 0.85
+    cuts.AddCut("00000113", "00200009257002008950400000", "0152106500000000"); //variation chi2 15
+    cuts.AddCut("00000113", "00200009257002008230400000", "0152106500000000"); //variation psi pair 0.035
+    cuts.AddCut("00000113", "00200009257002008250400000", "0152105500000000"); //variation alpha 0.75
+    cuts.AddCut("00000113", "00200009257002008250400000", "0152107500000000"); //variation alpha 0.85
   } else if (trainConfig == 42) { //added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009257002008950400000"; mesonCutArray[0] = "0152106500000000"; //variation chi2 15
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009257002008230400000"; mesonCutArray[1] = "0152106500000000"; //variation psi pair 0.035
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152105500000000"; //variation alpha 0.75
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152107500000000"; //variation alpha 0.85
+    cuts.AddCut("00000123", "00200009257002008950400000", "0152106500000000"); //variation chi2 15
+    cuts.AddCut("00000123", "00200009257002008230400000", "0152106500000000"); //variation psi pair 0.035
+    cuts.AddCut("00000123", "00200009257002008250400000", "0152105500000000"); //variation alpha 0.75
+    cuts.AddCut("00000123", "00200009257002008250400000", "0152107500000000"); //variation alpha 0.85
   } else if (trainConfig == 43) {
-    eventCutArray[ 0] = "00040113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kTRD with y 0.8
-    eventCutArray[ 1] = "00050113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kEMC with y 0.8
-    eventCutArray[ 2] = "00060113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kPHI with y 0.8
-    eventCutArray[ 3] = "00070113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kHighMult with y 0.8
+    cuts.AddCut("00040113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD with y 0.8
+    cuts.AddCut("00050113", "00200009257002008250400000", "0152106500000000"); // trigger kEMC with y 0.8
+    cuts.AddCut("00060113", "00200009257002008250400000", "0152106500000000"); // trigger kPHI with y 0.8
+    cuts.AddCut("00070113", "00200009257002008250400000", "0152106500000000"); // trigger kHighMult with y 0.8
   } else if (trainConfig == 44) {
-    eventCutArray[ 0] = "00080113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kEMCEGA with y 0.8
-    eventCutArray[ 1] = "00090113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kEMCEJE with y 0.8
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // minimum bias with y 0.8
-    eventCutArray[ 3] = "00011113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kINT8 with y 0.8
+    cuts.AddCut("00080113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEGA with y 0.8
+    cuts.AddCut("00090113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJE with y 0.8
+    cuts.AddCut("00000113", "00200009257002008250400000", "0152106500000000"); // minimum bias with y 0.8
+    cuts.AddCut("00011113", "00200009257002008250400000", "0152106500000000"); // trigger kINT8 with y 0.8
   } else if (trainConfig == 45) {
-    eventCutArray[ 0] = "00042113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kTRD CINT8 HEE
-    eventCutArray[ 1] = "00044113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kTRD CINT8 HSE
-    eventCutArray[ 2] = "00046113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kTRD CINT8 HJE
-    eventCutArray[ 3] = "00048113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kTRD CINT8 HQU
+    cuts.AddCut("00042113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT8 HEE
+    cuts.AddCut("00044113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT8 HSE
+    cuts.AddCut("00046113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT8 HJE
+    cuts.AddCut("00048113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT8 HQU
   } else if (trainConfig == 46) {
-    eventCutArray[ 0] = "00041113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kTRD CINT7 HEE
-    eventCutArray[ 1] = "00043113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kTRD CINT7 HSE
-    eventCutArray[ 2] = "00045113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kTRD CINT7 HJE
-    eventCutArray[ 3] = "00047113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kTRD CINT7 HQU
+    cuts.AddCut("00041113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT7 HEE
+    cuts.AddCut("00043113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT7 HSE
+    cuts.AddCut("00045113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT7 HJE
+    cuts.AddCut("00047113", "00200009257002008250400000", "0152106500000000"); // trigger kTRD CINT7 HQU
   } else if (trainConfig == 47) {
-    eventCutArray[ 0] = "00052113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kEMC7
-    eventCutArray[ 1] = "00053113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kEMC8
-    eventCutArray[ 2] = "00062113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kPHI7
-    eventCutArray[ 3] = "00063113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kPHI8
+    cuts.AddCut("00052113", "00200009257002008250400000", "0152106500000000"); // trigger kEMC7
+    cuts.AddCut("00053113", "00200009257002008250400000", "0152106500000000"); // trigger kEMC8
+    cuts.AddCut("00062113", "00200009257002008250400000", "0152106500000000"); // trigger kPHI7
+    cuts.AddCut("00063113", "00200009257002008250400000", "0152106500000000"); // trigger kPHI8
   } else if (trainConfig == 48) {
-    eventCutArray[ 0] = "00051113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kEMC1
-    eventCutArray[ 1] = "00071113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kSHM1
-    eventCutArray[ 2] = "00072113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kSHM7
-    eventCutArray[ 3] = "00073113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kSHM8
+    cuts.AddCut("00051113", "00200009257002008250400000", "0152106500000000"); // trigger kEMC1
+    cuts.AddCut("00071113", "00200009257002008250400000", "0152106500000000"); // trigger kSHM1
+    cuts.AddCut("00072113", "00200009257002008250400000", "0152106500000000"); // trigger kSHM7
+    cuts.AddCut("00073113", "00200009257002008250400000", "0152106500000000"); // trigger kSHM8
   } else if (trainConfig == 49) {
-    eventCutArray[ 0] = "00081113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kEMCEGA + CINT7
-    eventCutArray[ 1] = "00082113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kEMCEGA + CINT8
-    eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kEMCEG1 + CINT7
-    eventCutArray[ 3] = "00084113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kEMCEG1 + CINT8
+    cuts.AddCut("00081113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEGA + CINT7
+    cuts.AddCut("00082113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEGA + CINT8
+    cuts.AddCut("00083113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEG1 + CINT7
+    cuts.AddCut("00084113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEG1 + CINT8
   } else if (trainConfig == 50) {
-    eventCutArray[ 0] = "00085113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kEMCEG2 + CINT7
-    eventCutArray[ 1] = "00086113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kEMCEG2 + CINT8
-    eventCutArray[ 2] = "00091113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kEMCEJE + CINT7
-    eventCutArray[ 3] = "00092113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kEMCEJE + CINT8
+    cuts.AddCut("00085113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEG2 + CINT7
+    cuts.AddCut("00086113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEG2 + CINT8
+    cuts.AddCut("00091113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJE + CINT7
+    cuts.AddCut("00092113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJE + CINT8
   } else if (trainConfig == 51) {
-    eventCutArray[ 0] = "00093113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; // trigger kEMCEJ1 + CINT7
-    eventCutArray[ 1] = "00094113"; photonCutArray[ 1] = "00200009257002008250400000"; mesonCutArray[1] = "0152106500000000"; // trigger kEMCEJ1 + CINT8
-    eventCutArray[ 2] = "00095113"; photonCutArray[ 2] = "00200009257002008250400000"; mesonCutArray[2] = "0152106500000000"; // trigger kEMCEJ2 + CINT7
-    eventCutArray[ 3] = "00096113"; photonCutArray[ 3] = "00200009257002008250400000"; mesonCutArray[3] = "0152106500000000"; // trigger kEMCEJ2 + CINT8		
+    cuts.AddCut("00093113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJ1 + CINT7
+    cuts.AddCut("00094113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJ1 + CINT8
+    cuts.AddCut("00095113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJ2 + CINT7
+    cuts.AddCut("00096113", "00200009257002008250400000", "0152106500000000"); // trigger kEMCEJ2 + CINT8		
   } else if (trainConfig == 52) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00042113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kTRD CINT8 HEE
-    eventCutArray[ 1] = "00044113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kTRD CINT8 HSE
-    eventCutArray[ 2] = "00046113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kTRD CINT8 HJE
-    eventCutArray[ 3] = "00048113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kTRD CINT8 HQU
+    cuts.AddCut("00042113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT8 HEE
+    cuts.AddCut("00044113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT8 HSE
+    cuts.AddCut("00046113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT8 HJE
+    cuts.AddCut("00048113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT8 HQU
   } else if (trainConfig == 53) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00041113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kTRD CINT7 HEE
-    eventCutArray[ 1] = "00043113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kTRD CINT7 HSE
-    eventCutArray[ 2] = "00045113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kTRD CINT7 HJE
-    eventCutArray[ 3] = "00047113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kTRD CINT7 HQU
+    cuts.AddCut("00041113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT7 HEE
+    cuts.AddCut("00043113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT7 HSE
+    cuts.AddCut("00045113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT7 HJE
+    cuts.AddCut("00047113", "00200009366300003800000000", "0163103100900000"); // trigger kTRD CINT7 HQU
   } else if (trainConfig == 54) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00052113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kEMC7
-    eventCutArray[ 1] = "00053113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kEMC8
-    eventCutArray[ 2] = "00062113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kPHI7
-    eventCutArray[ 3] = "00063113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kPHI8
+    cuts.AddCut("00052113", "00200009366300003800000000", "0163103100900000"); // trigger kEMC7
+    cuts.AddCut("00053113", "00200009366300003800000000", "0163103100900000"); // trigger kEMC8
+    cuts.AddCut("00062113", "00200009366300003800000000", "0163103100900000"); // trigger kPHI7
+    cuts.AddCut("00063113", "00200009366300003800000000", "0163103100900000"); // trigger kPHI8
   } else if (trainConfig == 55) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00051113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kEMC1
-    eventCutArray[ 1] = "00071113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kSHM1
-    eventCutArray[ 2] = "00072113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kSHM7
-    eventCutArray[ 3] = "00073113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kSHM8
+    cuts.AddCut("00051113", "00200009366300003800000000", "0163103100900000"); // trigger kEMC1
+    cuts.AddCut("00071113", "00200009366300003800000000", "0163103100900000"); // trigger kSHM1
+    cuts.AddCut("00072113", "00200009366300003800000000", "0163103100900000"); // trigger kSHM7
+    cuts.AddCut("00073113", "00200009366300003800000000", "0163103100900000"); // trigger kSHM8
   } else if (trainConfig == 56) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00081113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kEMCEGA + CINT7
-    eventCutArray[ 1] = "00082113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kEMCEGA + CINT8
-    eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kEMCEG1 + CINT7
-    eventCutArray[ 3] = "00084113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kEMCEG1 + CINT8
+    cuts.AddCut("00081113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEGA + CINT7
+    cuts.AddCut("00082113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEGA + CINT8
+    cuts.AddCut("00083113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEG1 + CINT7
+    cuts.AddCut("00084113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEG1 + CINT8
   } else if (trainConfig == 57) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00085113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kEMCEG2 + CINT7
-    eventCutArray[ 1] = "00086113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kEMCEG2 + CINT8
-    eventCutArray[ 2] = "00091113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kEMCEJE + CINT7
-    eventCutArray[ 3] = "00092113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kEMCEJE + CINT8
+    cuts.AddCut("00085113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEG2 + CINT7
+    cuts.AddCut("00086113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEG2 + CINT8
+    cuts.AddCut("00091113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEJE + CINT7
+    cuts.AddCut("00092113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEJE + CINT8
   } else if (trainConfig == 58) { //pp 2.76TeV cuts
-    eventCutArray[ 0] = "00093113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; // trigger kEMCEJ1 + CINT7
-    eventCutArray[ 1] = "00094113"; photonCutArray[ 1] = "00200009366300003800000000"; mesonCutArray[1] = "0163103100900000"; // trigger kEMCEJ1 + CINT8
-    eventCutArray[ 2] = "00095113"; photonCutArray[ 2] = "00200009366300003800000000"; mesonCutArray[2] = "0163103100900000"; // trigger kEMCEJ2 + CINT7
-    eventCutArray[ 3] = "00096113"; photonCutArray[ 3] = "00200009366300003800000000"; mesonCutArray[3] = "0163103100900000"; // trigger kEMCEJ2 + CINT8		
+    cuts.AddCut("00093113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEJ1 + CINT7
+    cuts.AddCut("00094113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEJ1 + CINT8
+    cuts.AddCut("00095113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEJ2 + CINT7
+    cuts.AddCut("00096113", "00200009366300003800000000", "0163103100900000"); // trigger kEMCEJ2 + CINT8		
   } else if (trainConfig == 59) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152103500000000"; //alpha meson 1
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009217302008250400000"; mesonCutArray[1] = "0152106500000000"; //pion 0-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152106500000000"; //pion 1-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009287302008250400000"; mesonCutArray[3] = "0152106500000000"; //pion 2-sigma cut for 0.4GeV<p<3.5GeV above   1-sigma
+    cuts.AddCut("00000113", "00200009257002008250400000", "0152103500000000"); //alpha meson 1
+    cuts.AddCut("00000113", "00200009217302008250400000", "0152106500000000"); //pion 0-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152106500000000"); //pion 1-sigma cut for 0.4GeV<p<3.5GeV above -10-sigma
+    cuts.AddCut("00000113", "00200009287302008250400000", "0152106500000000"); //pion 2-sigma cut for 0.4GeV<p<3.5GeV above   1-sigma
   } else if (trainConfig == 60) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152107500000000"; //variation alpha 0.85
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200049227302008250400000"; mesonCutArray[2] = "0152103500000000"; //variation single pt 0.075
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200019227302008250400000"; mesonCutArray[3] = "0152103500000000"; //variation single pt 0.1
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152107500000000"); //variation alpha 0.85
+    cuts.AddCut("00000113", "00200049227302008250400000", "0152103500000000"); //variation single pt 0.075
+    cuts.AddCut("00000113", "00200019227302008250400000", "0152103500000000"); //variation single pt 0.1
   } else if (trainConfig == 61) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152107500000000"; //variation alpha 0.85
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200049227302008250400000"; mesonCutArray[2] = "0152103500000000"; //variation single pt 0.075
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200019227302008250400000"; mesonCutArray[3] = "0152103500000000"; //variation single pt 0.1
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152107500000000"); //variation alpha 0.85
+    cuts.AddCut("00000123", "00200049227302008250400000", "0152103500000000"); //variation single pt 0.075
+    cuts.AddCut("00000123", "00200019227302008250400000", "0152103500000000"); //variation single pt 0.1
   } else if (trainConfig == 62) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200006227302008250400000"; mesonCutArray[0] = "0152103500000000"; //variation 70% TPC Cluster
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200008227302008250400000"; mesonCutArray[1] = "0152103500000000"; //variation 35% TPC Cluster
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327302008250400000"; mesonCutArray[2] = "0152103500000000"; //variation dE/dx e -4<sigma<5
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009627302008250400000"; mesonCutArray[3] = "0152103500000000"; //variation dE/dx e -2.5<sigma<4
+    cuts.AddCut("00000113", "00200006227302008250400000", "0152103500000000"); //variation 70% TPC Cluster
+    cuts.AddCut("00000113", "00200008227302008250400000", "0152103500000000"); //variation 35% TPC Cluster
+    cuts.AddCut("00000113", "00200009327302008250400000", "0152103500000000"); //variation dE/dx e -4<sigma<5
+    cuts.AddCut("00000113", "00200009627302008250400000", "0152103500000000"); //variation dE/dx e -2.5<sigma<4
   } else if (trainConfig == 63) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200006227302008250400000"; mesonCutArray[0] = "0152103500000000"; //variation 70% TPC Cluster
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200008227302008250400000"; mesonCutArray[1] = "0152103500000000"; //variation 35% TPC Cluster
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009327302008250400000"; mesonCutArray[2] = "0152103500000000"; //variation dE/dx e -4<sigma<5
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009627302008250400000"; mesonCutArray[3] = "0152103500000000"; //variation dE/dx e -2.5<sigma<4
+    cuts.AddCut("00000123", "00200006227302008250400000", "0152103500000000"); //variation 70% TPC Cluster
+    cuts.AddCut("00000123", "00200008227302008250400000", "0152103500000000"); //variation 35% TPC Cluster
+    cuts.AddCut("00000123", "00200009327302008250400000", "0152103500000000"); //variation dE/dx e -4<sigma<5
+    cuts.AddCut("00000123", "00200009627302008250400000", "0152103500000000"); //variation dE/dx e -2.5<sigma<4
   } else if (trainConfig == 64) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009225302008250400000"; mesonCutArray[0] = "0152103500000000"; //variation min p 0.3GeV pion line
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009220302008250400000"; mesonCutArray[1] = "0152103500000000"; //variation min p 0.5GeV pion line
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227102008250400000"; mesonCutArray[2] = "0152103500000000"; //variation max p 5GeV pion line
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009217302008250400000"; mesonCutArray[3] = "0152103500000000"; //variation nsigma>0 pion line
+    cuts.AddCut("00000113", "00200009225302008250400000", "0152103500000000"); //variation min p 0.3GeV pion line
+    cuts.AddCut("00000113", "00200009220302008250400000", "0152103500000000"); //variation min p 0.5GeV pion line
+    cuts.AddCut("00000113", "00200009227102008250400000", "0152103500000000"); //variation max p 5GeV pion line
+    cuts.AddCut("00000113", "00200009217302008250400000", "0152103500000000"); //variation nsigma>0 pion line
   } else if (trainConfig == 65) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009225302008250400000"; mesonCutArray[0] = "0152103500000000"; //variation min p 0.3GeV pion line
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009220302008250400000"; mesonCutArray[1] = "0152103500000000"; //variation min p 0.5GeV pion line
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227102008250400000"; mesonCutArray[2] = "0152103500000000"; //variation max p 5GeV pion line
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009217302008250400000"; mesonCutArray[3] = "0152103500000000"; //variation nsigma>0 pion line
+    cuts.AddCut("00000123", "00200009225302008250400000", "0152103500000000"); //variation min p 0.3GeV pion line
+    cuts.AddCut("00000123", "00200009220302008250400000", "0152103500000000"); //variation min p 0.5GeV pion line
+    cuts.AddCut("00000123", "00200009227102008250400000", "0152103500000000"); //variation max p 5GeV pion line
+    cuts.AddCut("00000123", "00200009217302008250400000", "0152103500000000"); //variation nsigma>0 pion line
   } else if (trainConfig == 66) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257302008250400000"; mesonCutArray[0] = "0152103500000000"; //variation nsigma>2 pion line
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302002250400000"; mesonCutArray[1] = "0152103500000000"; //variation max qt 0.07 1D
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302009250400000"; mesonCutArray[2] = "0152103500000000"; //variation max qt 0.03 2D
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302003250400000"; mesonCutArray[3] = "0152103500000000"; //variation max qt 0.05 1D
+    cuts.AddCut("00000113", "00200009257302008250400000", "0152103500000000"); //variation nsigma>2 pion line
+    cuts.AddCut("00000113", "00200009227302002250400000", "0152103500000000"); //variation max qt 0.07 1D
+    cuts.AddCut("00000113", "00200009227302009250400000", "0152103500000000"); //variation max qt 0.03 2D
+    cuts.AddCut("00000113", "00200009227302003250400000", "0152103500000000"); //variation max qt 0.05 1D
   } else if (trainConfig == 67) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009257302008250400000"; mesonCutArray[0] = "0152103500000000"; //variation nsigma>2 pion line
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302002250400000"; mesonCutArray[1] = "0152103500000000"; //variation max qt 0.07 1D
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302009250400000"; mesonCutArray[2] = "0152103500000000"; //variation max qt 0.03 2D
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302003250400000"; mesonCutArray[3] = "0152103500000000"; //variation max qt 0.05 1D
+    cuts.AddCut("00000123", "00200009257302008250400000", "0152103500000000"); //variation nsigma>2 pion line
+    cuts.AddCut("00000123", "00200009227302002250400000", "0152103500000000"); //variation max qt 0.07 1D
+    cuts.AddCut("00000123", "00200009227302009250400000", "0152103500000000"); //variation max qt 0.03 2D
+    cuts.AddCut("00000123", "00200009227302003250400000", "0152103500000000"); //variation max qt 0.05 1D
   } else if (trainConfig == 68) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008180400000"; mesonCutArray[0] = "0152103500000000"; //variation chi2 50 psi pair 0.2 2D
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302008210400000"; mesonCutArray[1] = "0152103500000000"; //variation chi2 30 psi pair 0.1 1D
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302008860400000"; mesonCutArray[2] = "0152103500000000"; //variation chi2 20 psi pair 0.05 2D
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0252103500000000"; //variation BG scheme track mult
+    cuts.AddCut("00000113", "00200009227302008180400000", "0152103500000000"); //variation chi2 50 psi pair 0.2 2D
+    cuts.AddCut("00000113", "00200009227302008210400000", "0152103500000000"); //variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00000113", "00200009227302008860400000", "0152103500000000"); //variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00000113", "00200009227302008250400000", "0252103500000000"); //variation BG scheme track mult
   } else if (trainConfig == 69) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008180400000"; mesonCutArray[0] = "0152103500000000"; //variation chi2 50 psi pair 0.2 2D
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008210400000"; mesonCutArray[1] = "0152103500000000"; //variation chi2 30 psi pair 0.1 1D
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302008860400000"; mesonCutArray[2] = "0152103500000000"; //variation chi2 20 psi pair 0.05 2D
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0252103500000000"; //variation BG scheme track mult
+    cuts.AddCut("00000123", "00200009227302008180400000", "0152103500000000"); //variation chi2 50 psi pair 0.2 2D
+    cuts.AddCut("00000123", "00200009227302008210400000", "0152103500000000"); //variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00000123", "00200009227302008860400000", "0152103500000000"); //variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00000123", "00200009227302008250400000", "0252103500000000"); //variation BG scheme track mult
   } else if (trainConfig == 70) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //New standard cut for eta analysis
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
   } else if (trainConfig == 71) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha/opan Max
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000002"); //variation alpha/opan Max
   } else if (trainConfig == 72) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha 0.85
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max				
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152101500000000"); //variation alpha 0.85
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max				
   } else if (trainConfig == 73) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302008250404000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302008250404000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000000"; //double counting
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //double counting
   } else if (trainConfig == 74) {//added signals
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008250404000"; mesonCutArray[1] = "0152101500000000"; //variation alpha 0.85
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302008250404000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000000"; //double counting	
-    } else if (trainConfig == 75) { //pp 8TeV cuts
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta/pi0 analysis
-    eventCutArray[ 1] = "00005211"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; // trigger kEMC7
-    eventCutArray[ 2] = "00006211"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; // trigger kPHI7
-    eventCutArray[ 3] = "00008111"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; // trigger kEMCEGA + CINT7
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152101500000000"); //variation alpha 0.85
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00000123", "00200009227302008250400000", "0152101500000000"); //double counting	
+  } else if (trainConfig == 75) { //pp 8TeV cuts
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta/pi0 analysis
+    cuts.AddCut("00005211", "00200009227302008250400000", "0152103500000000"); // trigger kEMC7
+    cuts.AddCut("00006211", "00200009227302008250400000", "0152103500000000"); // trigger kPHI7
+    cuts.AddCut("00008111", "00200009227302008250400000", "0152103500000000"); // trigger kEMCEGA + CINT7
+  } else if (trainConfig == 76) { //pp 8TeV cuts with kappa
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta/pi0 analysis kappa 0-2.5
+    cuts.AddCut("00000113", "00200009327302008250400000", "0152103500000000"); // kappa 0-2.0
+    cuts.AddCut("00000113", "00200009427302008250400000", "0152103500000000"); // kappa 0-1.5
+    cuts.AddCut("00000113", "00200009527302008250400000", "0152103500000000"); // kappa 0-1.0
     //---------systematic studies July 2015--------------------------//
   } else if (trainConfig == 80) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302008250404000"; mesonCutArray[1] = "0152106500000000"; // alpha variation 0.8		
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302008250404000"; mesonCutArray[2] = "0152103500000000"; // alpha variation  1
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200049227302008250404000"; mesonCutArray[3] = "0152101500000000"; // single pT cut 0.075
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152106500000000"); // alpha variation 0.8		
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152103500000000"); // alpha variation  1
+    cuts.AddCut("00000113", "00200049227302008250404000", "0152101500000000"); // single pT cut 0.075
   } else if (trainConfig == 81) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008250404000"; mesonCutArray[1] = "0152106500000000"; // alpha variation  0.8
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302008250404000"; mesonCutArray[2] = "0152103500000000"; // alpha variation  1
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200049227302008250404000"; mesonCutArray[3] = "0152101500000000"; // single pT cut 0.075
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152106500000000"); // alpha variation  0.8
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152103500000000"); // alpha variation  1
+    cuts.AddCut("00000123", "00200049227302008250404000", "0152101500000000"); // single pT cut 0.075
   } else if (trainConfig == 82) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200019227302008250404000"; mesonCutArray[0] = "0152101500000000"; // single pT cut 0.1
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200008227302008250404000"; mesonCutArray[1] = "0152101500000000"; // TPC cls 0.35	
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200006227302008250404000"; mesonCutArray[2] = "0152101500000000"; // TPC cls 0.7
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302009250404000"; mesonCutArray[3] = "0152101500000000"; // qT cut 0.03 2D
+    cuts.AddCut("00000113", "00200019227302008250404000", "0152101500000000"); // single pT cut 0.1
+    cuts.AddCut("00000113", "00200008227302008250404000", "0152101500000000"); // TPC cls 0.35	
+    cuts.AddCut("00000113", "00200006227302008250404000", "0152101500000000"); // TPC cls 0.7
+    cuts.AddCut("00000113", "00200009227302009250404000", "0152101500000000"); // qT cut 0.03 2D
   } else if (trainConfig == 83) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200019227302008250404000"; mesonCutArray[0] = "0152101500000000"; // single pT cut 0.1
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200008227302008250404000"; mesonCutArray[1] = "0152101500000000"; // TPC cls 0.35
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006227302008250404000"; mesonCutArray[2] = "0152101500000000"; // TPC cls 0.7
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302009250404000"; mesonCutArray[3] = "0152101500000000"; // qT cut 0.03 2D
+    cuts.AddCut("00000123", "00200019227302008250404000", "0152101500000000"); // single pT cut 0.1
+    cuts.AddCut("00000123", "00200008227302008250404000", "0152101500000000"); // TPC cls 0.35
+    cuts.AddCut("00000123", "00200006227302008250404000", "0152101500000000"); // TPC cls 0.7
+    cuts.AddCut("00000123", "00200009227302009250404000", "0152101500000000"); // qT cut 0.03 2D
   } else if (trainConfig == 84) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008210404000"; mesonCutArray[0] = "0152101500000000"; // variation chi2 30 psi pair 0.1 1D
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D	
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
+    cuts.AddCut("00000113", "00200009227302008210404000", "0152101500000000"); // variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00000113", "00200009227302008180404000", "0152101500000000"); // variation chi2 50 psi pair 0.2 2D	
+    cuts.AddCut("00000113", "00200009227302008860404000", "0152101500000000"); // variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00000113", "00200009227302009250404000", "0252101500000000"); // variation BG scheme track mult
   } else if (trainConfig == 85) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008210404000"; mesonCutArray[0] = "0152101500000000"; // variation chi2 30 psi pair 0.1 1D
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200008227302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006227302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
+    cuts.AddCut("00000123", "00200009227302008210404000", "0152101500000000"); // variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00000123", "00200008227302008180404000", "0152101500000000"); // variation chi2 50 psi pair 0.2 2D
+    cuts.AddCut("00000123", "00200006227302008860404000", "0152101500000000"); // variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00000123", "00200009227302009250404000", "0252101500000000"); // variation BG scheme track mult
   } else if (trainConfig == 86) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302002250404000"; mesonCutArray[1] = "0152101500000000"; // qT		
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302009250404000"; mesonCutArray[2] = "0152101500000000"; // qT
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302008250004000"; mesonCutArray[3] = "0152101500000000"; // cosPA
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000113", "00200009227302002250404000", "0152101500000000"); // qT		
+    cuts.AddCut("00000113", "00200009227302009250404000", "0152101500000000"); // qT
+    cuts.AddCut("00000113", "00200009227302008250004000", "0152101500000000"); // cosPA
   } else if (trainConfig == 87) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302002250404000"; mesonCutArray[1] = "0152101500000000"; // qT
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302009250404000"; mesonCutArray[2] = "0152101500000000"; // qT
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250004000"; mesonCutArray[3] = "0152101500000000"; // cosPA
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000123", "00200009227302002250404000", "0152101500000000"); // qT
+    cuts.AddCut("00000123", "00200009227302009250404000", "0152101500000000"); // qT
+    cuts.AddCut("00000123", "00200009227302008250004000", "0152101500000000"); // cosPA
     //---------systematic studies Agost 2015 with dEdx--------------------------//
   } else if (trainConfig == 90) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009217302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009217302008250404000"; mesonCutArray[1] = "0152106500000000"; // alpha variation 0.8		
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009217302008250404000"; mesonCutArray[2] = "0152103500000000"; // alpha variation  1
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200049217302008250404000"; mesonCutArray[3] = "0152101500000000"; // single pT cut 0.075
+    cuts.AddCut("00000113", "00200009217302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000113", "00200009217302008250404000", "0152106500000000"); // alpha variation 0.8		
+    cuts.AddCut("00000113", "00200009217302008250404000", "0152103500000000"); // alpha variation  1
+    cuts.AddCut("00000113", "00200049217302008250404000", "0152101500000000"); // single pT cut 0.075
   } else if (trainConfig == 91) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009217302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009217302008250404000"; mesonCutArray[1] = "0152106500000000"; // alpha variation  0.8
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009217302008250404000"; mesonCutArray[2] = "0152103500000000"; // alpha variation  1
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200049217302008250404000"; mesonCutArray[3] = "0152101500000000"; // single pT cut 0.075
+    cuts.AddCut("00000123", "00200009217302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000123", "00200009217302008250404000", "0152106500000000"); // alpha variation  0.8
+    cuts.AddCut("00000123", "00200009217302008250404000", "0152103500000000"); // alpha variation  1
+    cuts.AddCut("00000123", "00200049217302008250404000", "0152101500000000"); // single pT cut 0.075
   } else if (trainConfig == 92) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200019217302008250404000"; mesonCutArray[0] = "0152101500000000"; // single pT cut 0.1
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200008217302008250404000"; mesonCutArray[1] = "0152101500000000"; // TPC cls 0.35	
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200006217302008250404000"; mesonCutArray[2] = "0152101500000000"; // TPC cls 0.7
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009217302009250404000"; mesonCutArray[3] = "0152101500000000"; // qT cut 0.03 2D
+    cuts.AddCut("00000113", "00200019217302008250404000", "0152101500000000"); // single pT cut 0.1
+    cuts.AddCut("00000113", "00200008217302008250404000", "0152101500000000"); // TPC cls 0.35	
+    cuts.AddCut("00000113", "00200006217302008250404000", "0152101500000000"); // TPC cls 0.7
+    cuts.AddCut("00000113", "00200009217302009250404000", "0152101500000000"); // qT cut 0.03 2D
   } else if (trainConfig == 93) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200019217302008250404000"; mesonCutArray[0] = "0152101500000000"; // single pT cut 0.1
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200008217302008250404000"; mesonCutArray[1] = "0152101500000000"; // TPC cls 0.35
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006217302008250404000"; mesonCutArray[2] = "0152101500000000"; // TPC cls 0.7
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009217302009250404000"; mesonCutArray[3] = "0152101500000000"; // qT cut 0.03 2D
+    cuts.AddCut("00000123", "00200019217302008250404000", "0152101500000000"); // single pT cut 0.1
+    cuts.AddCut("00000123", "00200008217302008250404000", "0152101500000000"); // TPC cls 0.35
+    cuts.AddCut("00000123", "00200006217302008250404000", "0152101500000000"); // TPC cls 0.7
+    cuts.AddCut("00000123", "00200009217302009250404000", "0152101500000000"); // qT cut 0.03 2D
   } else if (trainConfig == 94) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009217302008210404000"; mesonCutArray[0] = "0152101500000000"; // variation chi2 30 psi pair 0.1 1D
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009217302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D	
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009217302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009217302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
+    cuts.AddCut("00000113", "00200009217302008210404000", "0152101500000000"); // variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00000113", "00200009217302008180404000", "0152101500000000"); // variation chi2 50 psi pair 0.2 2D	
+    cuts.AddCut("00000113", "00200009217302008860404000", "0152101500000000"); // variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00000113", "00200009217302009250404000", "0252101500000000"); // variation BG scheme track mult
   } else if (trainConfig == 95) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009217302008210404000"; mesonCutArray[0] = "0152101500000000"; // variation chi2 30 psi pair 0.1 1D
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009217302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009217302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009217302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
+    cuts.AddCut("00000123", "00200009217302008210404000", "0152101500000000"); // variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00000123", "00200009217302008180404000", "0152101500000000"); // variation chi2 50 psi pair 0.2 2D
+    cuts.AddCut("00000123", "00200009217302008860404000", "0152101500000000"); // variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00000123", "00200009217302009250404000", "0252101500000000"); // variation BG scheme track mult
   } else if (trainConfig == 96) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009217302002250404000"; mesonCutArray[1] = "0152101500000000"; // qT		
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009217302009250404000"; mesonCutArray[2] = "0152101500000000"; // qT
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009217302008250004000"; mesonCutArray[3] = "0152101500000000"; // cosPA
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000113", "00200009217302002250404000", "0152101500000000"); // qT		
+    cuts.AddCut("00000113", "00200009217302009250404000", "0152101500000000"); // qT
+    cuts.AddCut("00000113", "00200009217302008250004000", "0152101500000000"); // cosPA
   } else if (trainConfig == 97) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009217302002250404000"; mesonCutArray[1] = "0152101500000000"; // qT
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009217302009250404000"; mesonCutArray[2] = "0152101500000000"; // qT
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009217302008250004000"; mesonCutArray[3] = "0152101500000000"; // cosPA
+    cuts.AddCut("00000123", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
+    cuts.AddCut("00000123", "00200009217302002250404000", "0152101500000000"); // qT
+    cuts.AddCut("00000123", "00200009217302009250404000", "0152101500000000"); // qT
+    cuts.AddCut("00000123", "00200009217302008250004000", "0152101500000000"); // cosPA
   } else if (trainConfig == 98) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009317302008250404000"; mesonCutArray[0] = "0152101500000000"; //dEdx variation
-    eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009617302008250404000"; mesonCutArray[1] = "0152101500000000"; //dEdx variation
-    eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009215302008250404000"; mesonCutArray[2] = "0152101500000000"; //dEdx variation
-    eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009210302008250404000"; mesonCutArray[3] = "0152101500000000"; //dEdx variation
+    cuts.AddCut("00000113", "00200009317302008250404000", "0152101500000000"); //dEdx variation
+    cuts.AddCut("00000113", "00200009617302008250404000", "0152101500000000"); //dEdx variation
+    cuts.AddCut("00000113", "00200009215302008250404000", "0152101500000000"); //dEdx variation
+    cuts.AddCut("00000113", "00200009210302008250404000", "0152101500000000"); //dEdx variation
   } else if (trainConfig == 99) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009317302008250404000"; mesonCutArray[0] = "0152101500000000"; //dEdx variation
-    eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009617302008250404000"; mesonCutArray[1] = "0152101500000000"; //dEdx variation
-    eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009215302008250404000"; mesonCutArray[2] = "0152101500000000"; //dEdx variation
-    eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009210302008250404000"; mesonCutArray[3] = "0152101500000000"; //dEdx variation
+    cuts.AddCut("00000123", "00200009317302008250404000", "0152101500000000"); //dEdx variation
+    cuts.AddCut("00000123", "00200009617302008250404000", "0152101500000000"); //dEdx variation
+    cuts.AddCut("00000123", "00200009215302008250404000", "0152101500000000"); //dEdx variation
+    cuts.AddCut("00000123", "00200009210302008250404000", "0152101500000000"); //dEdx variation
   } else if (trainConfig == 100) { // MB
-    eventCutArray[ 0] = "00100113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; // 0 -2
-    eventCutArray[ 1] = "01200113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; // 2 -5
-    eventCutArray[ 2] = "02300113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; // 5 -10
-    eventCutArray[ 3] = "03400113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; // 10-30
-    eventCutArray[ 4] = "04500113"; photonCutArray[ 4] = "00200009227302008250400000"; mesonCutArray[4] = "0152103500000000"; // 30-100
+    cuts.AddCut("00100113", "00200009227302008250400000", "0152103500000000"); // 0 -2
+    cuts.AddCut("01200113", "00200009227302008250400000", "0152103500000000"); // 2 -5
+    cuts.AddCut("02300113", "00200009227302008250400000", "0152103500000000"); // 5 -10
+    cuts.AddCut("03400113", "00200009227302008250400000", "0152103500000000"); // 10-30
+    cuts.AddCut("04500113", "00200009227302008250400000", "0152103500000000"); // 30-100
   } else if (trainConfig == 101) {  // like trainConfig 71, just with special trigger kINT7
-    eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00010113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00010113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00010113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 102) {  // like trainConfig 71, except with smearing added to meson cut
-    eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500900000"; //New standard cut for eta analysis
-    eventCutArray[ 1] = "00010113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500900000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00010113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500900000"; //variation alpha
-    eventCutArray[ 3] = "00010113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500900002"; //variation alpha opan max
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500900000"); //New standard cut for eta analysis
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500900000"); //variation alpha pT dependent
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152109500900000"); //variation alpha
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500900002"); //variation alpha opan max
   } else if (trainConfig == 103) {  // for V0 High-Mult trigger by HM
-    eventCutArray[ 0] = "00074113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //standard cut
-    eventCutArray[ 1] = "00074113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00074113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00074113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+    cuts.AddCut("00074113", "00200009227302008250400000", "0152103500000000"); //standard cut
+    cuts.AddCut("00074113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00074113", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00074113", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 104) {  // for SPD High-Mult trigger by HM
-    eventCutArray[ 0] = "00075113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //standard cut
-    eventCutArray[ 1] = "00075113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00075113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00075113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+    cuts.AddCut("00075113", "00200009227302008250400000", "0152103500000000"); //standard cut
+    cuts.AddCut("00075113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00075113", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00075113", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 105) {  // check # of entries w/ pileup rejection cut for V0HM
-    eventCutArray[ 0] = "00074013"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //standard cut
-    eventCutArray[ 1] = "00074013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00074013"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00074013"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+    cuts.AddCut("00074013", "00200009227302008250400000", "0152103500000000"); //standard cut
+    cuts.AddCut("00074013", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00074013", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00074013", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 106) {  // check # of entries w/o pileup rejection cut for SPHM
-    eventCutArray[ 0] = "00075013"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //standard cut
-    eventCutArray[ 1] = "00075013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152101500000000"; //variation alpha pT dependent
-    eventCutArray[ 2] = "00075013"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-    eventCutArray[ 3] = "00075013"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000002"; //variation alpha opan max
+    cuts.AddCut("00075013", "00200009227302008250400000", "0152103500000000"); //standard cut
+    cuts.AddCut("00075013", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00075013", "00200009227302008250400000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00075013", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 107) { //LHC11a
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //WSDD test with triggers INT1
-    eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //WSDD test with triggers EMC1
-    eventCutArray[ 2] = "00051113"; photonCutArray[ 2] = "00202209227302008250400000"; mesonCutArray[2] = "0152103500000000"; //WSDD test with triggers EMC1 restricted wide EMC range
-    eventCutArray[ 3] = "00051113"; photonCutArray[ 3] = "00204409227302008250400000"; mesonCutArray[3] = "0152103500000000"; //WSDD test with triggers EMC1 restricted tight EMC range
+    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers INT1
+    cuts.AddCut("00051113", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1
+    cuts.AddCut("00051113", "00202209227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted wide EMC range
+    cuts.AddCut("00051113", "00204409227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted tight EMC range
     clusterCutArray[0] = "1111121050032220000";
     clusterCutArray[1] = "1111121050032220000";
     clusterCutArray[2] = "1111121050032220000";
     clusterCutArray[3] = "1111121050032220000";
   } else if (trainConfig == 108) { //LHC13g full acceptance
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
-    eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
-    eventCutArray[ 2] = "00085113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
-    eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //INT7
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000"); //EMC7
+    cuts.AddCut("00085113", "00200009227302008250400000", "0152103500000000"); //EG2
+    cuts.AddCut("00083113", "00200009227302008250400000", "0152103500000000"); //EG1
     clusterCutArray[0] = "1111121060032220000";
     clusterCutArray[1] = "1111121060032220000";
     clusterCutArray[2] = "1111121060032220000";
     clusterCutArray[3] = "1111121060032220000";
   } else if (trainConfig == 109) { //LHC13g loose EMC acceptance for PCM photons
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00202209227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
-    eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00202209227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
-    eventCutArray[ 2] = "00085113"; photonCutArray[ 2] = "00202209227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
-    eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00202209227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    cuts.AddCut("00000113", "00202209227302008250400000", "0152103500000000"); //INT7
+    cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000"); //EMC7
+    cuts.AddCut("00085113", "00202209227302008250400000", "0152103500000000"); //EG2
+    cuts.AddCut("00083113", "00202209227302008250400000", "0152103500000000"); //EG1
     clusterCutArray[0] = "1111121060032220000";
     clusterCutArray[1] = "1111121060032220000";
     clusterCutArray[2] = "1111121060032220000";
     clusterCutArray[3] = "1111121060032220000";    
   } else if (trainConfig == 110) { //LHC13g tight EMC acceptance for PCM photons
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00204409227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
-    eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00204409227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
-    eventCutArray[ 2] = "00085113"; photonCutArray[ 2] = "00204409227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
-    eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00204409227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    cuts.AddCut("00000113", "00204409227302008250400000", "0152103500000000"); //INT7
+    cuts.AddCut("00052113", "00204409227302008250400000", "0152103500000000"); //EMC7
+    cuts.AddCut("00085113", "00204409227302008250400000", "0152103500000000"); //EG2
+    cuts.AddCut("00083113", "00204409227302008250400000", "0152103500000000"); //EG1
     clusterCutArray[0] = "1111121060032220000";
     clusterCutArray[1] = "1111121060032220000";
     clusterCutArray[2] = "1111121060032220000";
     clusterCutArray[3] = "1111121060032220000";    
   } else if (trainConfig == 111) { //LHC11a
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //WSDD test with triggers INT1
-    eventCutArray[ 1] = "00051013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //WSDD test with triggers EMC1
-    eventCutArray[ 2] = "00051013"; photonCutArray[ 2] = "00202209227302008250400000"; mesonCutArray[2] = "0152103500000000"; //WSDD test with triggers EMC1 restricted wide EMC range
-    eventCutArray[ 3] = "00051013"; photonCutArray[ 3] = "00204409227302008250400000"; mesonCutArray[3] = "0152103500000000"; //WSDD test with triggers EMC1 restricted tight EMC range
+    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers INT1
+    cuts.AddCut("00051013", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1
+    cuts.AddCut("00051013", "00202209227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted wide EMC range
+    cuts.AddCut("00051013", "00204409227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted tight EMC range
     clusterCutArray[0] = "1111121050032220000";
     clusterCutArray[1] = "1111121050032220000";
     clusterCutArray[2] = "1111121050032220000";
     clusterCutArray[3] = "1111121050032220000";
   } else if (trainConfig == 112) { //LHC13g full acceptance
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
-    eventCutArray[ 1] = "00052013"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
-    eventCutArray[ 2] = "00085013"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
-    eventCutArray[ 3] = "00083013"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //INT7
+    cuts.AddCut("00052013", "00200009227302008250400000", "0152103500000000"); //EMC7
+    cuts.AddCut("00085013", "00200009227302008250400000", "0152103500000000"); //EG2
+    cuts.AddCut("00083013", "00200009227302008250400000", "0152103500000000"); //EG1
     clusterCutArray[0] = "1111121060032220000";
     clusterCutArray[1] = "1111121060032220000";
     clusterCutArray[2] = "1111121060032220000";
     clusterCutArray[3] = "1111121060032220000";
   } else if (trainConfig == 113) { //LHC13g loose EMC acceptance for PCM photons
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00202209227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
-    eventCutArray[ 1] = "00052013"; photonCutArray[ 1] = "00202209227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
-    eventCutArray[ 2] = "00085013"; photonCutArray[ 2] = "00202209227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
-    eventCutArray[ 3] = "00083013"; photonCutArray[ 3] = "00202209227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    cuts.AddCut("00000113", "00202209227302008250400000", "0152103500000000"); //INT7
+    cuts.AddCut("00052013", "00202209227302008250400000", "0152103500000000"); //EMC7
+    cuts.AddCut("00085013", "00202209227302008250400000", "0152103500000000"); //EG2
+    cuts.AddCut("00083013", "00202209227302008250400000", "0152103500000000"); //EG1
     clusterCutArray[0] = "1111121060032220000";
     clusterCutArray[1] = "1111121060032220000";
     clusterCutArray[2] = "1111121060032220000";
     clusterCutArray[3] = "1111121060032220000";    
   } else if (trainConfig == 114) { //LHC13g tight EMC acceptance for PCM photons
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00204409227302008250400000"; mesonCutArray[0] = "0152103500000000"; //INT7
-    eventCutArray[ 1] = "00052013"; photonCutArray[ 1] = "00204409227302008250400000"; mesonCutArray[1] = "0152103500000000"; //EMC7
-    eventCutArray[ 2] = "00085013"; photonCutArray[ 2] = "00204409227302008250400000"; mesonCutArray[2] = "0152103500000000"; //EG2
-    eventCutArray[ 3] = "00083013"; photonCutArray[ 3] = "00204409227302008250400000"; mesonCutArray[3] = "0152103500000000"; //EG1
+    cuts.AddCut("00000113", "00204409227302008250400000", "0152103500000000"); //INT7
+    cuts.AddCut("00052013", "00204409227302008250400000", "0152103500000000"); //EMC7
+    cuts.AddCut("00085013", "00204409227302008250400000", "0152103500000000"); //EG2
+    cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000"); //EG1
     clusterCutArray[0] = "1111121060032220000";
     clusterCutArray[1] = "1111121060032220000";
     clusterCutArray[2] = "1111121060032220000";
@@ -711,7 +738,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+  
+	if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
 
+  Int_t numberOfCuts = cuts.GetNCuts(); 
+   
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
@@ -808,8 +844,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+	analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+	
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
@@ -822,7 +858,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     }  
     
     analysisCuts[i]               = new AliConversionPhotonCuts();
-    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+    if (trainConfig == 76 ){
+      analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
+	}
+      analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     
     if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
@@ -831,7 +870,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisMesonCuts[i]          = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");		
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);

@@ -1,3 +1,31 @@
+class CutHandlerConv{
+  public:
+    CutHandlerConv(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+    TString* mesonCutArray;
+};
+
 void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change different set of cuts
 				Int_t 		isMC   						= 0,								// run MC
 				Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
@@ -125,65 +153,71 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
-	Int_t numberOfCuts = 1;
 	
-	TString *eventCutArray = new TString[numberOfCuts];
-	TString *photonCutArray = new TString[numberOfCuts];
-	TString *mesonCutArray = new TString[numberOfCuts];
+	CutHandlerConv cuts;
+	
 	Bool_t doEtaShiftIndCuts = kFALSE;
 	TString stringShift = "";
 	
 	if(trainConfig == 1){
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009317200003290000000"; mesonCutArray[ 0] = "0162103500900000"; 
+		cuts.AddCut("80000113", "00200009317200003290000000", "0162103500900000"); 
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";
+		cuts.AddCut("80000113", "00200009217000008260400000", "0162103500900000");
 	} else if (trainConfig == 3) {   
-		eventCutArray[ 0] = "80200113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";      
+		cuts.AddCut("80200113", "00200009217000008260400000", "0162103500900000");      
 	} else if (trainConfig == 4) {   
-		eventCutArray[ 0] = "82400113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
+		cuts.AddCut("82400113", "00200009217000008260400000", "0162103500900000");         
 	} else if (trainConfig == 5) {   
-		eventCutArray[ 0] = "84600113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
+		cuts.AddCut("84600113", "00200009217000008260400000", "0162103500900000");         
 	} else if (trainConfig == 6) {   
-		eventCutArray[ 0] = "86800113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";      
+		cuts.AddCut("86800113", "00200009217000008260400000", "0162103500900000");      
 	} else if (trainConfig == 7) {   
-		eventCutArray[ 0] = "86000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
+		cuts.AddCut("86000113", "00200009217000008260400000", "0162103500900000");         
 	} else if (trainConfig == 8) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00900009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 7.5cm   
+		cuts.AddCut("80000113", "00900009217000008260400000", "0162103500900000");    //RCut 7.5cm   
 	} else if (trainConfig == 9) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00500009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 10cm     
+		cuts.AddCut("80000113", "00500009217000008260400000", "0162103500900000");    //RCut 10cm     
 	} else if (trainConfig == 10) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00800009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 12.5cm    
+		cuts.AddCut("80000113", "00800009217000008260400000", "0162103500900000");    //RCut 12.5cm    
 	} else if (trainConfig == 11) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00600009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 20cm    
+		cuts.AddCut("80000113", "00600009217000008260400000", "0162103500900000");    //RCut 20cm    
 	} else if (trainConfig == 12) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00700009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 35cm    
+		cuts.AddCut("80000113", "00700009217000008260400000", "0162103500900000");    //RCut 35cm    
 	} else if (trainConfig == 13) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //standard, opening angle =0.0   
+		cuts.AddCut("80000113", "00200009217000008260400000", "0162103500900000");    //standard, opening angle =0.0   
 	} else if (trainConfig == 14) {   
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";   //standard, opening angle =0.0  
+		cuts.AddCut("80000123", "00200009217000008260400000", "0162103500900000");   //standard, opening angle =0.0  
 	} else if (trainConfig == 15) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500900000";   //standard, nodEdx, alpha 1 MB
+		cuts.AddCut("80000113", "00200009000000008260404000", "0162101500900000");   //standard, nodEdx, alpha 1 MB
 	} else if (trainConfig == 16) {   
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500900000";   //standard, nodEdx, alpha 1 AddSignal Pi0
+		cuts.AddCut("80000123", "00200009000000008260404000", "0162101500900000");   //standard, nodEdx, alpha 1 AddSignal Pi0
 	} else if (trainConfig == 17) {   
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 MB Eta 
+		cuts.AddCut("80000113", "00200009000000008260404000", "0162101500000000");   //standard, nodEdx, alpha 1 MB Eta 
 	} else if (trainConfig == 18) {   
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 AddSignal Eta
+		cuts.AddCut("80000123", "00200009000000008260404000", "0162101500000000");   //standard, nodEdx, alpha 1 AddSignal Eta
 	} else if (trainConfig == 19) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, alpha 1
+		cuts.AddCut("80000113", "00200009217000008260404000", "0162101500000000");   //standard, alpha 1
 	} else if (trainConfig == 20) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";   //standard
+		cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");   //standard
 	} else if (trainConfig == 21) {
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";   //standard
+		cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");   //standard
 	} else if (trainConfig == 22) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";   //standard Eta
+		cuts.AddCut("80000113", "00200009217000008260404000", "0162103500000000");   //standard Eta
 	} else if (trainConfig == 23) {
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";   //standard Eta
+		cuts.AddCut("80000123", "00200009217000008260404000", "0162103500000000");   //standard Eta
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
+	if(!cuts.AreValid()){
+		cout << "\n\n****************************************************" << endl;
+		cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+		cout << "****************************************************\n\n" << endl;
+		return;
+	}
 
+	Int_t numberOfCuts = cuts.GetNCuts();
+	
 	TList *EventCutList = new TList();
 	TList *ConvCutList = new TList();
 	TList *MesonCutList = new TList();
@@ -260,7 +294,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 
-		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+		analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisEventCuts[i]->SetEtaShift(stringShift);
@@ -270,7 +304,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
-		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		if (trainConfig == 15 || trainConfig==16 || trainConfig==17  || trainConfig==18) {
 		        analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
@@ -282,7 +316,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		if (trainConfig ==13 || trainConfig ==14){
 		  analysisMesonCuts[i]->SetOpeningAngleCut(0.000);		  
 		}
-		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+		analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
