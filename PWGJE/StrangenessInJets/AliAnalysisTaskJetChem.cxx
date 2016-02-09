@@ -5917,6 +5917,9 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
       if((particletype == kK0)&&(pdgCode != 310))continue;
       if((particletype == kLambda)&&(pdgCode != 3122))continue;
       if((particletype == kAntiLambda)&&(pdgCode != -3122))continue;
+
+      if(fDebug > 4)std::cout<<"MC stack extra particles pdgCode: "<<pdgCode<<std::endl;
+
       Double_t fEta = part->Eta();      
 
       if(TMath::Abs(fEta) > fCutEta) continue;
