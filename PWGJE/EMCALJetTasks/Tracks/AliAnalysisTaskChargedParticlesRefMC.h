@@ -62,6 +62,9 @@ public:
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
   void                        SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
+  void                        SwitchoffSPDCut() { fSwitchoffSPDcut = true; }
+  void                        SwitchoffITSCut() { fSwitchoffITScut = true; }
+
 protected:
   void                        CreateOldPtBinning(TArrayD &binning) const;
   void                        CreateNewPtBinning(TArrayD &binning) const;
@@ -89,6 +92,9 @@ protected:
   Int_t                           fPtHardBin;                 ///< event pt hard bin
   Int_t                           fNTrials;                   ///< event trials
   Float_t                         fXsection;                  ///< x-section from pythia header
+
+  Bool_t                          fSwitchoffSPDcut;           ///< Switch off SPD cut
+  Bool_t                          fSwitchoffITScut;           ///< Switch off ITS cut completely (no refit, no cluster requirement)
 
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
