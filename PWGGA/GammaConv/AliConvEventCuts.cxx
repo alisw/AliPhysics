@@ -848,6 +848,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
     printf("%d",fCuts[ic]);
   }
   printf("\n\n");
+  TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+  printf("Period: %s \n", periodName.Data());
 
   if (fIsHeavyIon == 0) {
     printf("Running in pp mode \n");
