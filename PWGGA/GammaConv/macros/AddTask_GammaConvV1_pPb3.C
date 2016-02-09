@@ -1,3 +1,31 @@
+class CutHandlerConv{
+  public:
+    CutHandlerConv(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+    TString* mesonCutArray;
+};
+
 void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change different set of cuts
 					Int_t 		isMC   						= 0,								// run MC
 					Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
@@ -120,29 +148,36 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
-	Int_t numberOfCuts = 4;
-
-	TString *eventCutArray = new TString[numberOfCuts];
-	TString *photonCutArray = new TString[numberOfCuts];
-	TString *mesonCutArray = new TString[numberOfCuts];
+	
+	CutHandlerConv cuts;
+	
 	Bool_t doEtaShiftIndCuts = kFALSE;
 	TString stringShift = "";
 	
 	if (trainConfig == 1) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "0162103500900000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 2] = "80000113"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "0162103500900000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 3] = "80000113"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "0162103500900000";  // only photon quality 3  //offline V0Finder
+		cuts.AddCut("80000113", "10200009217000008260400000", "0162103500900000");  // all Photon Qualities  //offline V0Finder
+		cuts.AddCut("80000113", "10200009217000008260420000", "0162103500900000");  // only photon quality 1  //offline V0Finder
+		cuts.AddCut("80000113", "10200009217000008260430000", "0162103500900000");  // only photon quality 2  //offline V0Finder
+		cuts.AddCut("80000113", "10200009217000008260440000", "0162103500900000");  // only photon quality 3  //offline V0Finder
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "0162103500900000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 2] = "80000123"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "0162103500900000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 3] = "80000123"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "0162103500900000";  // only photon quality 3  //offline V0Finder
+		cuts.AddCut("80000123", "10200009217000008260400000", "0162103500900000");  // all Photon Qualities  //offline V0Finder
+		cuts.AddCut("80000123", "10200009217000008260420000", "0162103500900000");  // only photon quality 1  //offline V0Finder
+		cuts.AddCut("80000123", "10200009217000008260430000", "0162103500900000");  // only photon quality 2  //offline V0Finder
+		cuts.AddCut("80000123", "10200009217000008260440000", "0162103500900000");  // only photon quality 3  //offline V0Finder
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
+	
+	if(!cuts.AreValid()){
+		cout << "\n\n****************************************************" << endl;
+		cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+		cout << "****************************************************\n\n" << endl;
+		return;
+	}
 
+	Int_t numberOfCuts = cuts.GetNCuts(); 
+	
 	TList *EventCutList = new TList();
 	TList *ConvCutList = new TList();
 	TList *MesonCutList = new TList();
@@ -196,7 +231,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
 		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+		analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisEventCuts[i]->SetEtaShift(stringShift);
@@ -210,13 +245,13 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
-		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
-		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+		analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
