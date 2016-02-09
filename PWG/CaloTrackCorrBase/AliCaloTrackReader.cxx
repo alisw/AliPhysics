@@ -1768,7 +1768,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if( fSmearShowerShape  && clus->GetNCells() > 2)
   {
     AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
-    clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+//    clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+    if(iclus%3 == 0) clus->SetM02( clus->GetM02() + fRandom.Landau(0.05, fSmearShowerShapeWidth) );     //fSmearShowerShapeWidth = 0.035
     //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
     AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
   }
