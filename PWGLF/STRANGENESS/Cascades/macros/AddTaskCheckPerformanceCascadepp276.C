@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////
 
 AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276( TString  collidingSystem        = "pp",
+                                                                                  Bool_t   lSwitchINT7            = kFALSE,
                                                                                   Int_t    minnTPCcls             = 70,
                                                                                   Float_t  vtxlim                 = 10.,
                                                                                   Float_t  vtxlimmin              = 0.,
@@ -61,8 +62,9 @@ AliAnalysisTaskCheckPerformanceCascadepp276 *AddTaskCheckPerformanceCascadepp276
    AliAnalysisTaskCheckPerformanceCascadepp276 *taskCheckPerfCascadepp276 = new AliAnalysisTaskCheckPerformanceCascadepp276(tasknameperf);
      taskCheckPerfCascadepp276->SetAnalysisType               (type);                   // "ESD" or "AOD"
      taskCheckPerfCascadepp276->SetCollidingSystem            (collidingSystem);        // choose the collidiond system to run on: "pp" and "pPb"
+     taskCheckPerfCascadepp276->SetINT7Trigger                (lSwitchINT7);            // choose for "pp" system the trigger class for physics sel.: kTRUE=="kINT7", kFALSE=="kMB"
      taskCheckPerfCascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
-     taskCheckPerfCascadepp276->SetSDDSelection               (ksddselection);        // choose if apply SDD event selection
+     taskCheckPerfCascadepp276->SetSDDSelection               (ksddselection);          // choose if apply SDD event selection
      taskCheckPerfCascadepp276->SetQualityCutZprimVtxPos      (kTRUE);                  // choose if apply Z vtx PV position event selection
      taskCheckPerfCascadepp276->SetRejectEventPileUp          (kTRUE);                  // choose if apply no Pileup event selection
      taskCheckPerfCascadepp276->SetQualityCutNoTPConlyPrimVtx (kTRUE);                  // choose if apply no TPC only event selection

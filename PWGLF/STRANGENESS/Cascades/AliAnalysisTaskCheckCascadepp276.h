@@ -55,6 +55,7 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
   
   void SetAnalysisType               (const char* analysisType          = "ESD"  ) { fAnalysisType                = analysisType;               }
   void SetCollidingSystem            (const char* collidingSystem       = "pp"   ) { fCollidingSystem             = collidingSystem;            }
+  void SetINT7Trigger                (Bool_t lSwitchINT7                = kTRUE  ) { fkSwitchINT7                 = lSwitchINT7;                }
   void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = kFALSE ) { fkRerunV0CascVertexers       = rerunV0CascVertexers;       }
   void SetSDDSelection               (Bool_t sddOnSelection             = kTRUE  ) { fkSDDSelectionOn             = sddOnSelection;             }
   void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE  ) { fkQualityCutZprimVtxPos      = qualityCutZprimVtxPos;      }
@@ -93,11 +94,11 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
 
 
         TString          fAnalysisType;                  // "ESD" or "AOD" analysis type	
-       // TString          fCollidingSystem;               // "pPb" or "pp" colliding system
         AliESDtrackCuts  *fESDtrackCuts;                 // ESD track cuts used for primary track definition
        // AliPIDResponse   *fPIDResponse;                  //! PID response object
         AliAnalysisUtils *fUtils;                        // analysis utils (for pA vertex selection)
         TString          fCollidingSystem;               // "pPb" or "pp" colliding system
+        Bool_t           fkSwitchINT7;                   // if true, skip FASTOnly (default FALSE)
         AliPIDResponse   *fPIDResponse;                  //! PID response object
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers

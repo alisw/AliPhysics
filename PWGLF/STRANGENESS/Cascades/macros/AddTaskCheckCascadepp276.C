@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////
 
 AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( TString  collidingSystem        = "pp",
+                                                            Bool_t lSwitchINT7              = kFALSE,
                                                             Int_t    minnTPCcls             = 70,
                                                             Float_t  vtxlim                 = 10.0,
                                                             Float_t  vtxlimmin              = 0.0,
@@ -60,7 +61,8 @@ AliAnalysisTaskCheckCascadepp276 *AddTaskCheckCascadepp276( TString  collidingSy
 
    AliAnalysisTaskCheckCascadepp276 *taskcheckcascadepp276 = new AliAnalysisTaskCheckCascadepp276(taskname);
      taskcheckcascadepp276->SetAnalysisType               (type);                   // "ESD" or "AOD"
-     taskcheckcascadepp276->SetCollidingSystem            (collidingSystem);        // choose the collidiond system to run on: "pp" and "pPb"
+     taskcheckcascadepp276->SetCollidingSystem            (collidingSystem);        // choose the collision system to run on: "pp" and "pPb"
+     taskcheckcascadepp276->SetINT7Trigger                (lSwitchINT7);            // choose for "pp" system the trigger class for physics sel.: kTRUE=="kINT7", kFALSE=="kMB"
      taskcheckcascadepp276->SetRelaunchV0CascVertexers    (krelaunchvertexers);     // choose if reconstruct the vertex of V0 in the cascades
      taskcheckcascadepp276->SetSDDSelection               (ksddselection);          // choose if apply SDD event selection
      taskcheckcascadepp276->SetWithSDDOn                  (kwithsdd);               // choose which SDD selection apply [if kTRUE select SDDon events]

@@ -54,6 +54,8 @@
 //               - Added the parameter fCollidingSystem, to distingish between pp and pPb procedures
 //               Aug 2015
 //               - Clarify the usage of SDD selection after the introduction of fCollifingSystem
+//               Feb 2015
+//               - Added the possibility to select events in the class kINT7 for the pp@13TeV analysis through "fkSwitchINT7"
 //
 //             
 //
@@ -119,6 +121,7 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276()
     fESDtrackCuts               (0),
     fUtils                      (0),
     fCollidingSystem            ("pp"),
+    fkSwitchINT7                (kTRUE),
     fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
     fkSDDSelectionOn            (kTRUE),
@@ -215,6 +218,7 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *n
     fESDtrackCuts               (0), 
     fUtils                      (0),
     fCollidingSystem            ("pp"),
+    fkSwitchINT7                (kTRUE),
     fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
     fkSDDSelectionOn            (kTRUE),
@@ -1156,9 +1160,10 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
   // - Selection for ESD and AOD
   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
-  if      (fCollidingSystem == "pp" ) isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+  if      (fCollidingSystem == "pp" && !fkSwitchINT7) isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+  else if (fCollidingSystem == "pp" && fkSwitchINT7)  isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
   else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-  if(! isSelected){
+  if (! isSelected){
       PostData(1, fListHistCascade);
       PostData(2, fCFContCascadePIDXiMinus);
       PostData(3, fCFContCascadePIDXiPlus);
