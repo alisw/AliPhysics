@@ -453,6 +453,8 @@ validateLog()
             ': comando non trovato'
             'core dumped'
             'core file'
+            'Exception catched'
+            'core\.'
   )
 
   warningConditions=(
