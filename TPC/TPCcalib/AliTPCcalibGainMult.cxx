@@ -2048,7 +2048,7 @@ Double_t AliTPCcalibGainMult::GetTruncatedMeanPosition(Double_t q0, Double_t q1,
   //       for some reason fraction is roghly the same therefore we keep scaling win n padrows 
   //         
   const Int_t row1=63;
-  const Int_t row2=64+36;
+  const Int_t row2=64+63;
   const Int_t nRows=kMaxRow;
   Double_t qmean=(q0+q1+q2)/3.;
   Double_t wmean=(q0*row1+q1*(row2-row1)+q2*(nRows-row2))/nRows;
