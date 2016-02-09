@@ -330,7 +330,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(jetContRec) {
       jetContRec->ConnectParticleContainer(trackCont);
       jetContRec->SetPercAreaCut(acut);//0.6
-      jetContRec->SetPythiaInfoName("PythiaInfo");
+      //jetContRec->SetPythiaInfoName("PythiaInfo");
       jetContRec->SetMaxTrackPt(1000);
       jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
       jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
@@ -340,7 +340,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(jetContTrue) {
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(acut);//0.6
-      jetContTrue->SetPythiaInfoName("PythiaInfo");
+      //jetContTrue->SetPythiaInfoName("PythiaInfo");
       jetContTrue->SetMaxTrackPt(1000);
       jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
       jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
@@ -350,8 +350,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    jetContRecKT = task->AddJetContainer(ktJetFinderName,"TPC",jetRadius);
    if(jetContRecKT) {
       jetContRecKT->ConnectParticleContainer(trackCont);
-      //?//jetContRecKT->SetPercAreaCut(acut);//0.6
-      jetContRecKT->SetPythiaInfoName("PythiaInfo");
+      jetContRecKT->SetPercAreaCut(acut);//0.6
+      //jetContRecKT->SetPythiaInfoName("PythiaInfo");
       jetContRecKT->SetMaxTrackPt(1000);
       jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
       jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
@@ -360,8 +360,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    jetContTrueKT = task->AddJetContainer(ktJetFinderNameMC,"TPC",jetRadius);
    if(jetContTrueKT) {
       jetContTrueKT->ConnectParticleContainer(trackContTrue);
-      //?//jetContTrueKT->SetPercAreaCut(acut);//0.6
-      jetContTrueKT->SetPythiaInfoName("PythiaInfo");
+      jetContTrueKT->SetPercAreaCut(acut);//0.6
+      //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
       jetContTrueKT->SetMaxTrackPt(1000);
       jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
       jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
@@ -564,13 +564,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKTxx,jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,
        Form("JetAKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0,0,0);
 
-      jetFinderTask->SetFilterHybridTracks(kTRUE);
+      jetFinderTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
 
       //KT DETECTOR LEVEL
       jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,       Form("JetKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0);
       jetFinderRhoKT->SetMinJetPt(0);
 
-      jetFinderRhoKT->SetFilterHybridTracks(kTRUE);
+      jetFinderRhoKT->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
    }
 
    //____________________________________________________________________
@@ -584,13 +584,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //ANTIKT GENERATOR LEVEL
       jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetAKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,bIsPrimary,0); 
 
-      if(typeOfAnal == kEff) jetFinderTaskMC->SelectPhysicalPrimaries(kTRUE);
+      if(typeOfAnal == kEff) jetFinderTaskMC->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE);
 
       //KT GENERATOR LEVEL
       jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,bIsPrimary,0); 
       jetFinderRhoKTMC->SetMinJetPt(0);
 
-      if(typeOfAnal == kEff) jetFinderRhoKTMC->SelectPhysicalPrimaries(kTRUE);
+      if(typeOfAnal == kEff) jetFinderRhoKTMC->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE);
  
       if(typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl){ //EFFICIENCY OR EMBEDDING 
          //Tagger - find closest generator level and reconstructed level jets    
@@ -702,7 +702,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       if(jetContRec) {
          jetContRec->ConnectParticleContainer(trackCont);
          jetContRec->SetPercAreaCut(acut);//0.6
-         jetContRec->SetPythiaInfoName("PythiaInfo");
+         //jetContRec->SetPythiaInfoName("PythiaInfo");
          jetContRec->SetMaxTrackPt(1000);
          jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
@@ -712,7 +712,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       if(jetContTrue) {
          jetContTrue->ConnectParticleContainer(trackContTrue);
          jetContTrue->SetPercAreaCut(acut);//0.6
-         jetContTrue->SetPythiaInfoName("PythiaInfo");
+         //jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMaxTrackPt(1000);
          jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
@@ -722,8 +722,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContRecKT = task->AddJetContainer(jetFinderRhoKT->GetName(),"TPC",jetRadius);
       if(jetContRecKT) {
          jetContRecKT->ConnectParticleContainer(trackCont);
-         //?//jetContRecKT->SetPercAreaCut(acut);//0.6
-         jetContRecKT->SetPythiaInfoName("PythiaInfo");
+         jetContRecKT->SetPercAreaCut(acut);//0.6
+         //jetContRecKT->SetPythiaInfoName("PythiaInfo");
          jetContRecKT->SetMaxTrackPt(1000);
          jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
@@ -732,8 +732,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContTrueKT = task->AddJetContainer(jetFinderRhoKTMC->GetName(),"TPC",jetRadius);
       if(jetContTrueKT) {
          jetContTrueKT->ConnectParticleContainer(trackContTrue);
-         //?//jetContTrueKT->SetPercAreaCut(acut);//0.6
-         jetContTrueKT->SetPythiaInfoName("PythiaInfo");
+         jetContTrueKT->SetPercAreaCut(acut);//0.6
+         //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
          jetContTrueKT->SetMaxTrackPt(1000);
          jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
@@ -747,7 +747,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       if(jetContTrue){
          jetContTrue->ConnectParticleContainer(trackContTrue);
          jetContTrue->SetPercAreaCut(acut);//0.6
-         jetContTrue->SetPythiaInfoName("PythiaInfo");
+         //jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMaxTrackPt(1000);
          jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
@@ -756,8 +756,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContTrueKT = task->AddJetContainer(jetFinderRhoKTMC->GetName(),"TPC",jetRadius);
       if(jetContTrueKT){
          jetContTrueKT->ConnectParticleContainer(trackContTrue);
-         //?//jetContTrueKT->SetPercAreaCut(acut);//0.6
-         jetContTrueKT->SetPythiaInfoName("PythiaInfo");
+         jetContTrueKT->SetPercAreaCut(acut);//0.6
+         //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
          jetContTrueKT->SetMaxTrackPt(1000);
          jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
