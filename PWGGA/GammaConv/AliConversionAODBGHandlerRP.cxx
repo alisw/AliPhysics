@@ -1,3 +1,19 @@
+/**************************************************************************
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                           *
+* Authors: Daniel Lohner (Daniel.Lohner@cern.ch), *
+*          Lucia Leardini (lucia.leardini@cern.ch)*
+* Version 1.0                  *
+*                    *
+* Permission to use, copy, modify and distribute this software and its    *
+* documentation strictly for non-commercial purposes is hereby granted    *
+* without fee, provided that the above copyright notice appears in all    *
+* copies and that both the copyright notice and this permission notice    *
+* appear in the supporting documentation. The authors make no claims    *
+* about the suitability of this software for any purpose. It is    *
+* provided "as is" without express or implied warranty.      *
+**************************************************************************/
+
 #if !defined( __CINT__) || defined(__MAKECINT__)
 
 #include <exception>
@@ -7,11 +23,6 @@
 #include "AliConversionAODBGHandlerRP.h"
 using namespace std;
 #endif
-
-
-// Author Daniel Lohner (Daniel.Lohner@cern.ch)
-// Lucia Leardini (lucia.leardini@cern.ch)
-
 
 ClassImp(AliConversionAODBGHandlerRP);
 
