@@ -4,19 +4,17 @@ void setlookUpTable()
   // Arguments:
 
   TString DBFolder;
-  Int_t firstRun   =  0;
+  Int_t firstRun   =  247000;
   Int_t lastRun    = AliCDBRunRange::Infinity();
   Int_t beamPeriod =  1;
   char* objFormat = "T0 Lookup Table";
 
   AliT0CalibData *calibda=new AliT0CalibData("T0");
 
-//  calibda->ReadAsciiLookup("lookUpTable.txt");
-  calibda->ReadAsciiLookup("lookup_run2.txt");
+  calibda->ReadAsciiLookup("Lookuptable-9-02-2016-FIT.txt");
   cout<<" @@@@ TRM "<<calibda->GetNumberOfTRMs()<<endl;
   //Store calibration data into database
-  // AliCDBManager::Instance()->SetDefaultStorage("local:///scratch/alla/alice/Aug10/TestCDB");
-   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
    
   //  AliCDBManager::Instance()->SetSpecificStorage("T0",DBFolder.Data());
 

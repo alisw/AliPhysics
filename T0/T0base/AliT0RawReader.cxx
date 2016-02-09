@@ -107,7 +107,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t time=0,  itdc=0, ichannel=0, uu; 
   Int_t numberOfWordsInTRM=0, iTRM=0;
   Int_t tdcTime, koef,hit=0;
-  Int_t koefhits[220];
+  Int_t koefhits[250];
   Int_t trm_chain_header =  0x00000000;
   Int_t  trm_chain_trailer =  0x10000000;
   
@@ -116,7 +116,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t header;
   Int_t fNTRM = fParam->GetNumberOfTRMs();
   if (fPrintout) cout<<" Number of TRMs "<<fNTRM<<endl;
-  for ( Int_t k=0; k<220; k++) {
+  for ( Int_t k=0; k<250; k++) {
     koefhits[k]=0;
     for ( Int_t jj=0; jj<5; jj++) {
       fAllData[k][jj]=0;
