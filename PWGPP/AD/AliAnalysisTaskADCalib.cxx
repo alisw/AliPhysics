@@ -259,7 +259,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetComment("AD Saturation");
   AliCDBId idSat ("AD/Calib/Saturation", runNumber, AliCDBRunRange::Infinity());
-  AliCDBId idGain("AD/Calib/PMGains",    runNumber, AliCDBRunRange::Infinity());
+  AliCDBId idGain("AD/Calib/PMGains",    runNumber, runNumber);
 
   // (7c) put the objects into the OCDB storage
   fStatus = (cdbStorage->Put(tSat, idSat, md) &&
