@@ -296,6 +296,11 @@ public:
   
   virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const 
   { return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
+
+  virtual Int_t          GetModuleNumberCellIndexesAbsCaloMap(Int_t absId, Int_t calo, 
+                                                              Int_t & icol, Int_t & irow, Int_t &iRCU,
+                                                              Int_t & icolAbs, Int_t & irowAbs) const 
+  { return fCaloUtils->GetModuleNumberCellIndexesAbsCaloMap(absId, calo, icol, irow,iRCU,icolAbs,irowAbs) ; }
   
   virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const 
   { return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent())          ; }
@@ -405,7 +410,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,26) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,27) ;
   /// \endcond
 
 } ;

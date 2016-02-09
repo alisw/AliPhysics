@@ -1167,6 +1167,54 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, Int_t calo,
   return -1;
 }
 
+//___________________________________________________________________________________________________
+/// Same as GetModuleCellIndexes, but add an additional shift in col/row to have continuous 
+/// cell distribution from supermodule to supermodule.
+//___________________________________________________________________________________________________
+Int_t AliCalorimeterUtils::GetModuleNumberCellIndexesAbsCaloMap(Int_t absId    , Int_t calo,
+                                                                Int_t & icol   , Int_t & irow   , Int_t & iRCU, 
+                                                                Int_t & icolAbs, Int_t & irowAbs) const
+{
+  Int_t imod = GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU);
+
+  icolAbs = icol;
+  irowAbs = irow;
+  
+  //
+  // PHOS
+  //
+  if(calo == kPHOS) 
+  {    
+    irowAbs = irow + 64 * imod;
+
+    return imod;
+  }
+  //
+  // EMCal/DCal
+  //
+  else
+  {
+    //
+    // Shift collumns in even SM
+    Int_t shiftEta = 48;
+    
+    // Shift collumn even more due to smaller acceptance of DCal collumns
+    if ( imod >  11 && imod < 18) shiftEta+=48/3;
+    
+    icolAbs = (imod % 2) ? icol + shiftEta : icol;	
+    
+    //
+    // Shift rows per sector
+    irowAbs = irow + 24 * Int_t(imod / 2); 
+    
+    // Shift row less due to smaller acceptance of SM 10 and 11 to count DCal rows
+    if ( imod >  11 && imod < 20) irowAbs -= (2*24 / 3);
+    
+    return imod ;
+  }
+}
+
+
 //___________________________________________________________________________________________
 ///  Find the number of local maxima in cluster.
 //___________________________________________________________________________________________
