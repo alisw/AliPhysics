@@ -63,12 +63,13 @@ public:
   void CreateRunByRunHistos(int runID, int runcounter) const;
   
   void ReadInclusiveHistos(const char *inclusFileName);
-  bool Is2DHistosEnabled() { return fenable2DHistos; }
-  void Set2DHistoCreate(bool isenable) { fenable2DHistos = isenable; } 
 
+  bool Is2DHistosEnabled(){ return fenable2DHistos; }
+  void Set2DHistoCreate(bool isenable) { fenable2DHistos = isenable; }
+  
 public:
   AliJCard  *fCard;       // card
-
+  
   AliJHistManager * fHMG; // Histogram manager
   AliJBin fCentBin;       // Bin of Centrality
   AliJBin fVtxBin;        // Bin of Z-vertex Bin
@@ -83,14 +84,14 @@ public:
   AliJBin fTypBin;        // Bin of type ( data, mixed ), but is being used for any 2 dimension
   AliJBin fTypBin3;       // Bin of type3, is being used for any 3 dimension
   AliJBin fPairPtBin;     // Bin of pT pair
-
+  
   AliJTProfile fhMixStat; // comment me
-
+  
   //==Pt stat. fcorrelations ===============================================
   AliJTH1D fTestHist; // test only, remove it not needed
   AliJTH1D fhPtNear; // comment me
   AliJTH1D fhPtFar ; // comment me
-
+  
   //assorted
   AliJTH1D fhPhi; // comment me
   AliJTH1D fhDphiAssoc; // comment me
@@ -98,23 +99,29 @@ public:
   //2D
   AliJTH2D fhDphiAssoc2DIAA; // comment me
   AliJTH2D fhDphiAssoc2D; // comment me
-
+  
   // JV // 2D dphi deta histos to study better the background
-  AliJTH2D fhDphiDetaKlong;  // 2D histogram from deltaPhi-deltaEta plane in klong and eta gap bins
-  AliJTH2D fhDphiDetaKlongR; // 2D histogram from deltaPhi-deltaEta plane in klong and R gap bins
-  AliJTH2D fhDphiDetaXe;     // 2D histogram from deltaPhi-deltaEta plane in xlong and eta gap bins
-  AliJTH2D fhDphiDetaXeR;    // 2D histogram from deltaPhi-deltaEta plane in xlong and R gap bins
-  AliJTH2D fhDphiDetaPta;    // 2D histogram from deltaPhi-deltaEta plane in pta and eta gap bins
-  AliJTH2D fhDphiDetaPtaR;   // 2D histogram from deltaPhi-deltaEta plane in pta and R gap bins
-
+  AliJTH2D fhDphiDetaKlong;    // 2D histogram from deltaPhi-deltaEta plane in klong and eta gap bins
+  AliJTH2D fhDphiDetaKlongR;   // 2D histogram from deltaPhi-deltaEta plane in klong and R gap bins
+  AliJTH2D fhDphiDetaKlongPhi; // 2D histogram from deltaPhi-deltaEta plane in klong and R gap bins
+  AliJTH2D fhDphiDetaXe;       // 2D histogram from deltaPhi-deltaEta plane in xlong and eta gap bins
+  AliJTH2D fhDphiDetaXeR;      // 2D histogram from deltaPhi-deltaEta plane in xlong and R gap bins
+  AliJTH2D fhDphiDetaXePhi;    // 2D histogram from deltaPhi-deltaEta plane in xlong and R gap bins
+  AliJTH2D fhDphiDetaPta;      // 2D histogram from deltaPhi-deltaEta plane in pta and eta gap bins
+  AliJTH2D fhDphiDetaPtaR;     // 2D histogram from deltaPhi-deltaEta plane in pta and R gap bins
+  AliJTH2D fhDphiDetaPtaPhi;   // 2D histogram from deltaPhi-deltaEta plane in pta and R gap bins
+  
   // JV // pTa distributions in background bins
-  AliJTH1D fhBgAssocKlong;   // background pta distribution in klong and eta gap bins
-  AliJTH1D fhBgAssocKlongR;  // background pta distribution in klong and R gap bins
-  AliJTH1D fhBgAssocXe;      // background pta distribution in xlong and eta gap bins
-  AliJTH1D fhBgAssocXeR;     // background pta distribution in xlong and R gap bins
-  AliJTH1D fhBgAssocPta;     // background pta distribution in pta and eta gap bins
-  AliJTH1D fhBgAssocPtaR;    // background pta distribution in pta and R gap bins
-
+  AliJTH1D fhBgAssocKlong;    // background pta distribution in klong and eta gap bins
+  AliJTH1D fhBgAssocKlongR;   // background pta distribution in klong and R gap bins
+  AliJTH1D fhBgAssocKlongPhi; // background pta distribution in klong and phi gap bins
+  AliJTH1D fhBgAssocXe;       // background pta distribution in xlong and eta gap bins
+  AliJTH1D fhBgAssocXeR;      // background pta distribution in xlong and R gap bins
+  AliJTH1D fhBgAssocXePhi;    // background pta distribution in xlong and phi gap bins
+  AliJTH1D fhBgAssocPta;      // background pta distribution in pta and eta gap bins
+  AliJTH1D fhBgAssocPtaR;     // background pta distribution in pta and R gap bins
+  AliJTH1D fhBgAssocPtaPhi;   // background pta distribution in pta and phi gap bins
+  
   // JV // Invariant mass histograms
   AliJTH1D fhInvariantMassXe;    // Invariant mass histogram in xlong bins
   AliJTH1D fhInvariantMassKlong; // Invariant mass histogram in klong bins
@@ -138,26 +145,26 @@ public:
   AliJTH1D fhPtaRGapN; //FK// pta spectrum with Eta Gap
   AliJTH1D fhPtAssocUEIsolTrigg; //FK// trigger isolated hadron
   AliJTH1D fhPtAssocN, fhPtAssocF; // comment needed
-
+  
   //cosThetaStar
   AliJTH1D fhCosThetaStar; // comment me
   AliJTH2D fhCMSrap;           // comment me
   AliJTProfile fpCMSrap; // comment me
   AliJTH1D fhInvMass, fhPairPtMass, fhPairDPhi, fhPairDpT; // comment me
   AliJTH1D fhPairPtDphi, fhPairPt; // comment me
-
+  
   AliJTH1D fhDEtaNear; // comment me
   AliJTH1D fhDEtaNearM; // comment me
   AliJTH1D fhDEtaNearXEbin; // comment me
   AliJTH1D fhDEtaNearMXEbin; // comment me
-
+  
   AliJTH1D fhDRNearPt; // comment me
   AliJTH1D fhDRFarPt; // comment me
   AliJTH1D fhDRNearPtMoon; // comment me
   AliJTH1D fhDRFarPtMoon; // comment me
   AliJTH1D fhDRNearPtMoonM; // comment me
   AliJTH1D fhDRFarPtMoonM ; // comment me
-
+  
   //AliJTH1D *hDEtaUE;
   AliJTH1D fhDEtaFar; // comment me
   AliJTH1D fhIphiTrigg; // comment me
@@ -170,7 +177,7 @@ public:
   AliJTH1D fhTriggMult; // comment me
   AliJTH1D fhAssocPtBin; // comment me
   //TH1D *hInvMassLike[2][kMaxNoCentrBin][kPtDim], *hInvMassUnLike[2][kMaxNoCentrBin][kPtDim];
-
+  
   //==================================================
   // xe slopes - done manually for the pp purpose only
   // you have to determine 7 trigger bins
@@ -179,46 +186,61 @@ public:
   AliJTH1D     fhPoutF; // comment me
   AliJTH1D	   fhxEPtBin; // all=0,near=1,far=2
 
+  //==================================================
+  // jT histograms, disributions and background
+  //==================================================
+  
   // jT distribution and background in xlong bins
-  AliJTH1D     fhJT;     // jt distribution in xlong bins
-  AliJTH1D     fhJTBg;   // eta gap background in xlong bins
-  AliJTH1D     fhJTBgR;  // R-gap background in xlong bins
+  AliJTH1D     fhJT;      // jt distribution in xlong bins
+  AliJTH1D     fhJTBg;    // eta gap background in xlong bins
+  AliJTH1D     fhJTBgR;   // R gap background in xlong bins
+  AliJTH1D     fhJTBgPhi; // phi gap background in xlong bins
+ 
+  AliJTH1D     fhJTLikeSign;      // jt distribution for like sign pairs
+  AliJTH1D     fhJTBgLikeSign;    // eta gap background for like sign pair
+  AliJTH1D     fhJTBgRLikeSign;   // R gap background for like sign pairs
+  AliJTH1D     fhJTBgPhiLikeSign; // phi gap background for like sign pairs
 
-  AliJTH1D     fhJTLikeSign;     // jt distribution for like sign pairs
-  AliJTH1D     fhJTBgLikeSign;   // eta gap background for like sign pair
-  AliJTH1D     fhJTBgRLikeSign;  // R-gap background for like sign pairs
-
-  AliJTH1D     fhJTUnlikeSign;     // jt distribution for unlike sign pairs
-  AliJTH1D     fhJTBgUnlikeSign;   // eta gap background for unlike sign pair
-  AliJTH1D     fhJTBgRUnlikeSign;  // R-gap background for unlike sign pairs
+  AliJTH1D     fhJTUnlikeSign;      // jt distribution for unlike sign pairs
+  AliJTH1D     fhJTBgUnlikeSign;    // eta gap background for unlike sign pair
+  AliJTH1D     fhJTBgRUnlikeSign;   // R gap background for unlike sign pairs
+  AliJTH1D     fhJTBgPhiUnlikeSign; // phi gap background for unlike sign pairs
 
   // jT distribution and background in klong bins
-  AliJTH1D     fhJTKlong;     // jT distribution in klong bins
-  AliJTH1D     fhJTKlongBg;   // eta gap background in klong bins
-  AliJTH1D     fhJTKlongBgR;  // R-gap background in klong bins
+  AliJTH1D     fhJTKlong;      // jT distribution in klong bins
+  AliJTH1D     fhJTKlongBg;    // eta gap background in klong bins
+  AliJTH1D     fhJTKlongBgR;   // R gap background in klong bins
+  AliJTH1D     fhJTKlongBgPhi; // phi gap background in klong bins
+ 
+  AliJTH1D     fhJTKlongLikeSign;      // jt distribution for like sign pairs
+  AliJTH1D     fhJTKlongBgLikeSign;    // eta gap background for like sign pair
+  AliJTH1D     fhJTKlongBgRLikeSign;   // R gap background for like sign pairs
+  AliJTH1D     fhJTKlongBgPhiLikeSign; // R-gap background for like sign pairs
 
-  AliJTH1D     fhJTKlongLikeSign;     // jt distribution for like sign pairs
-  AliJTH1D     fhJTKlongBgLikeSign;   // eta gap background for like sign pair
-  AliJTH1D     fhJTKlongBgRLikeSign;  // R-gap background for like sign pairs
-
-  AliJTH1D     fhJTKlongUnlikeSign;     // jt distribution for unlike sign pairs
-  AliJTH1D     fhJTKlongBgUnlikeSign;   // eta gap background for unlike sign pair
-  AliJTH1D     fhJTKlongBgRUnlikeSign;  // R-gap background for unlike sign pairs
+  AliJTH1D     fhJTKlongUnlikeSign;      // jt distribution for unlike sign pairs
+  AliJTH1D     fhJTKlongBgUnlikeSign;    // eta gap background for unlike sign pair
+  AliJTH1D     fhJTKlongBgRUnlikeSign;   // R gap background for unlike sign pairs
+  AliJTH1D     fhJTKlongBgPhiUnlikeSign; // phi gap background for unlike sign pairs
 
   // jT distribution and background in pta bins
-  AliJTH1D     fhJTPta;     // jT distribution in pTa bins
-  AliJTH1D     fhJTPtaBg;   // eta gap background in pTa bins
-  AliJTH1D     fhJTPtaBgR;  // R-gap background in pTa bins
+  AliJTH1D     fhJTPta;      // jT distribution in pTa bins
+  AliJTH1D     fhJTPtaBg;    // eta gap background in pTa bins
+  AliJTH1D     fhJTPtaBgR;   // R gap background in pTa bins
+  AliJTH1D     fhJTPtaBgPhi; // phi gap background in pTa bins
+ 
+  AliJTH1D     fhJTPtaLikeSign;      // jt distribution for like sign pairs
+  AliJTH1D     fhJTPtaBgLikeSign;    // eta gap background for like sign pair
+  AliJTH1D     fhJTPtaBgRLikeSign;   // R gap background for like sign pairs
+  AliJTH1D     fhJTPtaBgPhiLikeSign; // Rphi gap background for like sign pairs
 
-  AliJTH1D     fhJTPtaLikeSign;     // jt distribution for like sign pairs
-  AliJTH1D     fhJTPtaBgLikeSign;   // eta gap background for like sign pair
-  AliJTH1D     fhJTPtaBgRLikeSign;  // R-gap background for like sign pairs
-
-  AliJTH1D     fhJTPtaUnlikeSign;     // jt distribution for unlike sign pairs
-  AliJTH1D     fhJTPtaBgUnlikeSign;   // eta gap background for unlike sign pair
-  AliJTH1D     fhJTPtaBgRUnlikeSign;  // R-gap background for unlike sign pairs
-
+  AliJTH1D     fhJTPtaUnlikeSign;      // jt distribution for unlike sign pairs
+  AliJTH1D     fhJTPtaBgUnlikeSign;    // eta gap background for unlike sign pair
+  AliJTH1D     fhJTPtaBgRUnlikeSign;   // R gap background for unlike sign pairs
+  AliJTH1D     fhJTPtaBgPhiUnlikeSign; // phi gap background for unlike sign pairs
+  
+  //==================================================
   //FK//mix2    inclusve spectra
+  //==================================================
 
   AliJHistManager * fHmgInclusive;
   AliJTH1D fhIetaTriggFromFile; //FK//mix2
@@ -226,9 +248,9 @@ public:
   AliJTH1D fhIphiTriggFromFile  ;//FK//mix2
   AliJTH1D fhIphiAssocFromFile  ;//FK//mix2
   AliJTH1D fhDphiAssocMixFromFile  ;//FK//mix2
-
+  
   TH1D *fhDEtaNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // comment me
-
+  
   //===================================================
   // Event/Track histograms
   //===================================================
@@ -246,7 +268,7 @@ public:
   AliJTH1D fhAssocMult; // comment me
   AliJTH1D fhChargedMult, fhChargedMultCut; // comment me
   AliJTH2D fhChargedMultCent; // comment me
-
+  
   // XAliJT histogrmas
   AliJTH1D     fhXt;  // comment needed
   AliJTH1D     fhXtWeighted; // comment needed
@@ -256,9 +278,9 @@ public:
   AliJTProfile fhConeActivityIsolated;  // activity for isolated triggers
   AliJTProfile fhPerpConeActivity;      // pT sum in cone perpendicular to the leading particle
   AliJTProfile fhPerpConeActivityIsolated;  // same as above but for isolated leading particle
-
+  
   AliJTH1D  fhV0AMult; // comment needed
-
+  
   AliJTH1D fhZVertRaw; // comment me
   AliJTH1D fhZVertRawErr; // comment me
   AliJTH1D fhZVert; // comment me
@@ -266,10 +288,10 @@ public:
   AliJTH1D fhiCentr; // comment me
   AliJTH1D fhEventPerRun; // comment me
   AliJTH2D fhVertexZTriggVtx; // comment me
-
+  
   AliJTH1D fhIsolatedLPpt; // comment me
   AliJTH1D fhBkgActivity; // comment me
-
+  
   // D.J
   //===================================================
   // Jet with LP Histograms
@@ -282,36 +304,36 @@ public:
   AliJTH1D fhLPJetEtaPTt; // comment me
   AliJTH1D fhLPJetRapidityPTt; // comment me
   AliJTH1D fhLPJetMassPTt; // comment me
-
+  
   AliJTH1D fhLeadingJetWLPPTt; // comment me
-
+  
   AliJTH1D fhJetPt; // comment me
   AliJTH1D fhLeadingJetPt; // comment me
   AliJTH1D fhLeadingJetWLPPt; // comment me
-
+  
   AliJTH1D fhJetAssymPTt; // comment me
   AliJTH1D fhJetMassPTt; // comment me
   AliJTH1D fhJetUEPt; // comment me
-
+  
   //===================================================
   // Jet Histograms
   //===================================================
   AliJTH1D fhJetDphi; // comment me
   AliJTH1D fhJetDeta; // comment me
   AliJTH1D fhJetMultPt; // comment me
-
+  
   //==================================================
   // Background study
   //==================================================
   AliJTH1D fhJetRho; // comment me
   AliJTH1D fhJetRhoSigma; // comment me
-
+  
   AliJTH1D fhJetPartMult; // comment me
-
+  
   AliJTH1D fhRecoDiJetM; // comment me
   AliJTH1D fhRecoDiJetdPhi; // comment me
   AliJTH1D fhRecoDiJetkT; // comment me
-
+  
   //===================================================
   // parton 71 Histogram
   //===================================================
@@ -321,7 +343,7 @@ public:
   AliJTH1D fhNTracksInStringGroupFrom; // comment me
   AliJTH1D fhRapidity71From; // comment me
   AliJTH1D fhPt71From; // comment me
-
+  
   //===================================================
   // PHENIX histograms
   //===================================================
@@ -333,7 +355,7 @@ public:
 
 
   AliJTH1D fhTrackSelection; // checking bit convention
-
+  
   // Manual bin definitions
   int fNJacek;        // Number of bins in Jacek binning
   double *fPttJacek;  // Bin borders in Jacek binning
@@ -341,19 +363,19 @@ public:
   double *fEta;       // Bin borders in eta binning
   int fNJanFiete;     // Number of bins in JanFiete binning
   double *fJanFiete;  // Bin borders in JanFiete binning
-
+  
   // additional histos
   AliJTH1D fhEvents; // comment needed
   AliJTH1D fhEventTrigger; // comment needed
-
+  
 protected:
   double fmaxEtaRange;                       // maximum eta range
   double fmaxTriggEtaRange;                  // should be the same as above. Use for GeoAccCorr
   double ftriggFiducCut;                     // fiducial cut for the trigger part in eta. Not in use I think (Jan)
-  int fnUE, fnUEfar;                           // logarithmic binning for some pT and UE histos
-  double fUEBinsx[101], fUEBinsxFar[101];      // logarithmic bins for the underlaying event
-  double fLowRange, fHighRange;                // lower and upper range for dphi histos
-  bool fenable2DHistos;
+  int fnUE, fnUEfar;                         // logarithmic binning for some pT and UE histos
+  double fUEBinsx[101], fUEBinsxFar[101];    // logarithmic bins for the underlaying event
+  double fLowRange, fHighRange;              // lower and upper range for dphi histos
+  bool fenable2DHistos;                      // enable the filling of two dimensional histograms
 };
 
 #endif
