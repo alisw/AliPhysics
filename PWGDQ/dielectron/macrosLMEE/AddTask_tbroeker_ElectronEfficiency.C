@@ -1,7 +1,6 @@
 AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_tbroeker_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
-                                                     TString resolutionfile = "",
                                                      Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree'! (needed for LEGO trains)
                                                      )
 {
@@ -44,11 +43,11 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   
-  if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
-    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-    TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
-    task->SetResolution(arr);
-  }
+//   if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+//     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+//     TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
+//     task->SetResolution(arr);
+//   }
   
   SetupMCSignals(task);
   //event related

@@ -122,9 +122,12 @@ fNmeeBins(0),
 fNpteeBins(0),
 fMeeBins(0x0),
 fPteeBins(0x0),
-fNgenPairs(0x0),
-fvRecoPairs(),
-fvRecoPairs_poslabel(),
+fNgenPairs_sameMother(0x0),
+fvRecoPairs_sameMother(),
+fvRecoPairs_poslabel_sameMother(),
+fNgenPairs_diffMothers(0x0),
+fvRecoPairs_diffMothers(),
+fvRecoPairs_poslabel_diffMothers(),
 fCalcResolution(kFALSE),
 fPtGen_PtRec(0x0),
 fPtGen_PtRec_poslabel(0x0),
@@ -135,13 +138,6 @@ fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
-fCharmElectrons(0x0),
-fCharmPositrons(0x0),
-fBeautyElectrons(0x0),
-fBeautyPositrons(0x0),
-fNHFgenPairs(0x0),
-fvHFrecoPairs(),
-fvHFrecoPairs_poslabel(),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
@@ -191,9 +187,7 @@ pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
 fSelectedByCut(0),
-fSelectedByExtraCut(0),
-fResArr(0x0),
-fNgen_recoObs(0x0)
+fSelectedByExtraCut(0)
 {
   /// Default Constructor
 }
@@ -251,9 +245,12 @@ fNmeeBins(0),
 fNpteeBins(0),
 fMeeBins(0x0),
 fPteeBins(0x0),
-fNgenPairs(0x0),
-fvRecoPairs(),
-fvRecoPairs_poslabel(),
+fNgenPairs_sameMother(0x0),
+fvRecoPairs_sameMother(),
+fvRecoPairs_poslabel_sameMother(),
+fNgenPairs_diffMothers(0x0),
+fvRecoPairs_diffMothers(),
+fvRecoPairs_poslabel_diffMothers(),
 fCalcResolution(kFALSE),
 fPtGen_PtRec(0x0),
 fPtGen_PtRec_poslabel(0x0),
@@ -264,13 +261,6 @@ fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
-fCharmElectrons(0x0),
-fCharmPositrons(0x0),
-fBeautyElectrons(0x0),
-fBeautyPositrons(0x0),
-fNHFgenPairs(0x0),
-fvHFrecoPairs(),
-fvHFrecoPairs_poslabel(),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
@@ -320,9 +310,7 @@ pxMC(-1.),
 pyMC(-1.),
 pzMC(-1.),
 fSelectedByCut(0),
-fSelectedByExtraCut(0),
-fResArr(0x0),
-fNgen_recoObs(0x0)
+fSelectedByExtraCut(0)
 {
   /// Constructor
   
@@ -390,16 +378,22 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     pairEffList = new TList();
     pairEffList->SetName("pairEfficiency");
     pairEffList->SetOwner();
-    pairEffList->Add(fNgenPairs);
-    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
-      pairEffList->Add(fvRecoPairs.at(iCut));
-    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
-      pairEffList->Add(fvRecoPairs_poslabel.at(iCut));
-    pairEffList->Add(fNHFgenPairs);
-    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
-      pairEffList->Add(fvHFrecoPairs.at(iCut));
-    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
-      pairEffList->Add(fvHFrecoPairs_poslabel.at(iCut));
+    
+    TList *lSameMother = new TList();
+    lSameMother->SetName("sameMother");
+    lSameMother->SetOwner();
+    lSameMother->Add(fNgenPairs_sameMother);
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lSameMother->Add(fvRecoPairs_sameMother.at(iCut));
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lSameMother->Add(fvRecoPairs_poslabel_sameMother.at(iCut));
+    pairEffList->Add(lSameMother);
+    
+    TList *lDiffMothers = new TList();
+    lDiffMothers->SetName("differentMothers");
+    lDiffMothers->SetOwner();
+    lDiffMothers->Add(fNgenPairs_diffMothers);
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lDiffMothers->Add(fvRecoPairs_diffMothers.at(iCut));
+    for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lDiffMothers->Add(fvRecoPairs_poslabel_diffMothers.at(iCut));
+    pairEffList->Add(lDiffMothers);
   }
   
   TList *resolutionList(0x0);
@@ -473,7 +467,6 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   singleEffList->SetName("electronEfficiency");
   singleEffList->SetOwner();
   singleEffList->Add(fNgen_Ele);
-  if(fResArr) singleEffList->Add(fNgen_recoObs);
   
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     singleEffList->Add(fvReco_Ele.at(iCut));
@@ -505,12 +498,6 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   if(singleEffList)  fOutputList->Add(singleEffList);
   if(pairEffList)    fOutputList->Add(pairEffList);
   if(resolutionList) fOutputList->Add(resolutionList);
-  
-  fCharmElectrons  = new TH1F("charmElectrons", "",6,-0.5,5.5); fOutputList->Add(fCharmElectrons);  fCharmElectrons ->Sumw2();
-  fCharmPositrons  = new TH1F("charmPositrons", "",6,-0.5,5.5); fOutputList->Add(fCharmPositrons);  fCharmPositrons ->Sumw2();
-  fBeautyElectrons = new TH1F("beautyElectrons","",6,-0.5,5.5); fOutputList->Add(fBeautyElectrons); fBeautyElectrons->Sumw2();
-  fBeautyPositrons = new TH1F("beautyPositrons","",6,-0.5,5.5); fOutputList->Add(fBeautyPositrons); fBeautyPositrons->Sumw2();
-  
 
   PostData(1, fOutputList);
   
@@ -718,17 +705,14 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
       if(mctrack->Charge() < 0) fNgen_Ele->Fill(mcPt,mcEta,mcPhi);
       else fNgen_Pos->Fill(mcPt,mcEta,mcPhi);
-      Bool_t filled(kFALSE),reconstructed(kFALSE);
       for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         fSelectedByCut = 0;
         fSelectedByExtraCut = 0;
-        reconstructed = kFALSE;
         AliESDtrack* track = fESD->GetTrack(iTracks);
         if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
         Int_t label = track->GetLabel();
         Int_t abslabel = TMath::Abs( track->GetLabel() );
         if(abslabel != iMCtrack) continue;
-        reconstructed = kTRUE;
         
         Double_t trackPt  = track->Pt();
         Double_t trackEta = track->Eta();
@@ -763,11 +747,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
         } // cut loop
         if(fSelectedByCut==0) continue;// only go on if the track survived at least 1 of the cut settings!
-        if(fNgen_recoObs && !filled){ 
-          //fNgen_recoObs->Fill(trackPt,trackEta,trackPhi); 
-          fNgen_recoObs->Fill(trackPt,mcEta,mcPhi); 
-          filled = kTRUE;
-        }
         
         // get track information
         // feel free to add more information to the tree, some more variables are already defined as branches...
@@ -889,19 +868,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(73)))->Fill(pdgmotherT, pdggrandmotherT);//hPdgCodeM_GM
         } //fSupportedCutInstance
       } // reco track loop
-      if(fNgen_recoObs && !filled){
-        TH1D *hisSlice(0x0);
-        TH2D *hDeltaPtvsPt = static_cast<TH2D*> (fResArr->At(0));
-        // Get The pt slice histogram which also contains its langau fit (in some input file versions)
-        Int_t histIndex = TMath::Min( hDeltaPtvsPt->GetXaxis()->FindBin(mcPt), fResArr->GetLast() );
-        if (histIndex<1) histIndex=1; // lowest p-bin currently starts at 100 MeV
-        hisSlice = static_cast<TH1D*> (fResArr->At(histIndex));
-        // get smear parameter via random selection from the p slices retreived from the deltaP/P plot
-        Double_t smearing(1.);
-        smearing = (hisSlice) ? hisSlice->GetRandom() : gRandom->Gaus(1,mcPt*sqrt(0.004*0.004 + (0.012*mcPt)*(0.012*mcPt))) / mcPt;
-        mcPt = mcPt * smearing;
-        fNgen_recoObs->Fill(mcPt,mcEta,mcPhi); 
-      }
     } // mc track loop
     
     //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(2)))->Fill(centralityF,0);//hNTrksEvent_cent
@@ -909,161 +875,95 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     if(atleastOnePrefilterSetting && atleastOneEleExtraSelected) CalcPrefilterEff(mcEvent, vecEleCand_perCut, fvAtleastOneEleExtra_perCut);
     
     if(fDoPairing){  // calculate pair efficiency from signal pairs
-      TLorentzVector d1,d2;
-      Int_t lab1,lab2;
-      Double_t mee(-1.),ptee(-1.);
-      for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
-        AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
-        if(!mother) { Printf("bad mother"); continue; }
-        Int_t mPDG = TMath::Abs(mother->PdgCode());
-        if( !(mPDG==111||mPDG==221||mPDG==331||mPDG==113||mPDG==223||mPDG==333||mPDG==443) ) continue;
-        if(!mother->Particle()->IsPrimary()) continue;
-        AliMCParticle *dau(0x0);
-        lab1 = -1; lab2 = -1;
-        for(Int_t iDau = mother->GetFirstDaughter(); iDau <= mother->GetLastDaughter(); ++iDau){
-          dau = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iDau));
-          if(!dau) { Printf("bad daughter"); break; }
-          if(TMath::Abs(dau->PdgCode()) != 11) continue;
-          Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
-          mcPt = dau->Pt(); mcEta = dau->Eta(); mcPhi = dau->Phi();
-          if(mcPt  <  0.2  || mcPt  > 10000.)  continue;
-          if(mcEta < -0.8  || mcEta > 0.8) continue;
-          //if(!fStack->IsPhysicalPrimary(iDau)) continue;
-          if(dau->PdgCode() ==  11){ d1.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab1 = iDau; }
-          if(dau->PdgCode() == -11){ d2.SetPtEtaPhiM(mcPt,mcEta,mcPhi,0.0005109989); lab2 = iDau; }
-        }
-        if(lab1 < 0 || lab2 < 0 || lab1 == lab2) continue;
-        mee  = (d1+d2).M();
-        ptee = (d1+d2).Pt();
-        fNgenPairs->Fill(mee,ptee);
-        std::vector<AliESDtrack*> tracks1,tracks2;
-        
-        for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
-          AliESDtrack *track = fESD->GetTrack(iTracks);
-          if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }  
-          if(TMath::Abs(track->GetLabel()) == lab1) tracks1.push_back(track); 
-          if(TMath::Abs(track->GetLabel()) == lab2) tracks2.push_back(track);
-        }
-        if(tracks1.size() == 0 || tracks2.size() == 0) continue;
-        std::vector<UInt_t> cutmasks1(tracks1.size(),0),cutmasks2(tracks2.size(),0);
-        Bool_t sel1(kFALSE),sel2(kFALSE);
-        Bool_t posLab1(kFALSE),posLab2(kFALSE);
+      for(Int_t iMC1 = 0; iMC1 < nMCtracks; iMC1++){
+        AliMCParticle *p1 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(iMC1));
+        if(!p1){ Printf("no MCtrack: %d", iMC1); continue; }
+        if(p1->PdgCode() != 11) continue;
+        if(!(mcEvent->GetTrack(p1->GetMother()))) continue;
+        if(!AliDielectronMC::Instance()->IsMCTruth(iMC1, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
+        if(mcEvent->GetTrack(p1->GetMother())->PdgCode() == 22) continue;
+        Double_t mcPt1(p1->Pt()),mcEta1(p1->Eta()),mcPhi1(p1->Phi());
+        if(mcPt1  <  0.2 || TMath::Abs(mcEta1) > 0.8)  continue;
+        TLorentzVector l1;
+        l1.SetPtEtaPhiM(mcPt1,mcEta1,mcPhi1,0.0005109989);
+        for(Int_t iMC2 = 0; iMC2 < nMCtracks; iMC2++){
+          if(iMC1 == iMC2) continue;
+          AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(iMC2));
+          if(!p2){ Printf("no MCtrack: %d", iMC2); continue; }
+          if(p2->PdgCode() != -11) continue;
+          if(!(mcEvent->GetTrack(p2->GetMother()))) continue;
+          if(!AliDielectronMC::Instance()->IsMCTruth(iMC2, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
+          if(mcEvent->GetTrack(p2->GetMother())->PdgCode() == 22) continue;
+          Double_t mcPt2(p2->Pt()),mcEta2(p2->Eta()),mcPhi2(p2->Phi());
+          if(mcPt2 < 0.2 || TMath::Abs(mcEta2) > 0.8)  continue;
+          TLorentzVector l2;
+          l2.SetPtEtaPhiM(mcPt2,mcEta2,mcPhi2,0.0005109989);
+          Double_t mee((l1+l2).M()),ptee((l1+l2).Pt());
+          if(p1->GetMother() == p2->GetMother())
+            fNgenPairs_sameMother->Fill(mee,ptee);
+          else
+            fNgenPairs_diffMothers->Fill(mee,ptee);
+        } // positron loop  
+      } // electron loop     
+      
+      for(Int_t iTrack1 = 0; iTrack1 < fESD->GetNumberOfTracks(); iTrack1++){
+        AliESDtrack *track1 = fESD->GetTrack(iTrack1);
+        if(!track1){ Printf("ERROR: Could not receive track1 %d", iTrack1); continue; }  
+        Int_t label1 = track1->GetLabel();
+        AliMCParticle *p1 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label1)));
+        if(!p1){ Printf("no MCtrack: %d", TMath::Abs(label1)); continue; }
+        if(p1->PdgCode() != 11) continue;
+        if(!(mcEvent->GetTrack(p1->GetMother()))) continue;
+        if(!AliDielectronMC::Instance()->IsMCTruth(TMath::Abs(label1), (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
+        if(mcEvent->GetTrack(p1->GetMother())->PdgCode() == 22) continue;
+        Double_t mcPt1(p1->Pt()),mcEta1(p1->Eta()),mcPhi1(p1->Phi());
+        if(mcPt1  <  0.2  || mcPt1  > 10000. || TMath::Abs(mcEta1) > 0.8)  continue;
+        Bool_t rec1(kFALSE),recArr1[GetNCutsets()] = {kFALSE};
         for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
           //cutting logic taken from AliDielectron::FillTrackArrays()
           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
-          //apply track cuts
-          for(std::vector<AliESDtrack*>::iterator it = tracks1.begin(); it != tracks1.end(); ++it)
-            if(fvTrackCuts.at(iCut)->IsSelected(*it) == selectedMask){ 
-              sel1 = kTRUE;
-              if((*it)->GetLabel() > 0) posLab1 = kTRUE;
+          UInt_t cutMask=fvTrackCuts.at(iCut)->IsSelected(track1);
+          recArr1[iCut] = selectedMask == cutMask ? kTRUE : kFALSE;
+          if(selectedMask == cutMask) rec1 = kTRUE;
+        } // cut loop
+        if(!rec1) continue;
+        TLorentzVector l1;
+        l1.SetPtEtaPhiM(mcPt1,mcEta1,mcPhi1,0.0005109989);     
+        for(Int_t iTrack2 = 0; iTrack2 < fESD->GetNumberOfTracks(); iTrack2++){
+          if(iTrack1 == iTrack2) continue;
+          AliESDtrack *track2 = fESD->GetTrack(iTrack2);
+          if(!track2){ Printf("ERROR: Could not receive track2 %d", iTrack2); continue; }  
+          Int_t label2 = track2->GetLabel();
+          AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label2)));
+          if(!p2){ Printf("no MCtrack: %d", TMath::Abs(label2)); continue; }
+          if(p2->PdgCode() != 11) continue;
+          if(!(mcEvent->GetTrack(p2->GetMother()))) continue;
+          if(!AliDielectronMC::Instance()->IsMCTruth(TMath::Abs(label2), (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
+          if(mcEvent->GetTrack(p2->GetMother())->PdgCode() == 22) continue;
+          Double_t mcPt2(p2->Pt()),mcEta2(p2->Eta()),mcPhi2(p2->Phi());
+          if(mcPt2  <  0.2  || mcPt2  > 10000. || TMath::Abs(mcEta2) > 0.8)  continue;
+          TLorentzVector l2;
+          l2.SetPtEtaPhiM(mcPt2,mcEta2,mcPhi2,0.0005109989);
+          Double_t mee((l1+l2).M()),ptee((l1+l2).Pt());
+          for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
+            //cutting logic taken from AliDielectron::FillTrackArrays()
+            UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
+            UInt_t cutMask=fvTrackCuts.at(iCut)->IsSelected(track2);
+            if(!(selectedMask == cutMask && recArr1[iCut])) continue;
+            if(p1->GetMother() == p2->GetMother()){
+              fvRecoPairs_sameMother.at(iCut)->Fill(mee,ptee);
+              if(label1 > 0 && label2 > 0) 
+                fvRecoPairs_poslabel_sameMother.at(iCut)->Fill(mee,ptee);
             }
-          for(std::vector<AliESDtrack*>::iterator it = tracks2.begin(); it != tracks2.end(); ++it)
-            if(fvTrackCuts.at(iCut)->IsSelected(*it) == selectedMask){ 
-              sel2 = kTRUE; 
-              if((*it)->GetLabel() > 0) posLab2 = kTRUE;          
+            else{
+              fvRecoPairs_diffMothers.at(iCut)->Fill(mee,ptee);
+              if(label1 > 0 && label2 > 0) 
+                fvRecoPairs_poslabel_diffMothers.at(iCut)->Fill(mee,ptee);
             }
-          if(sel1 && sel2){ 
-            fvRecoPairs.at(iCut)->Fill(mee,ptee);
-            if(posLab1 && posLab2) fvRecoPairs_poslabel.at(iCut)->Fill(mee,ptee);
-          }
-        }
-        tracks1.clear(); cutmasks1.erase(cutmasks1.begin(),cutmasks1.end());
-        tracks2.clear(); cutmasks2.erase(cutmasks2.begin(),cutmasks2.end());        
-      }
-      std::vector<TLorentzVector> ce,cp,be,bp;
-      std::vector< std::vector<Bool_t> > rec_ce,rec_cp,rec_be,rec_bp;
-      std::vector< std::vector<Bool_t> > recpl_ce,recpl_cp,recpl_be,recpl_bp;
-      for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
-        AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
-        if(!part){ Printf("bad part"); continue; }
-        if(!AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
-        Int_t pPDG = part->PdgCode();
-        if(TMath::Abs(pPDG) != 11) continue;
-        if(part->Pt() < 0.2 || part->Pt() > 10000.)  continue;
-        if(TMath::Abs(part->Eta()) > 0.8) continue;
-        AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
-        if(!mother){ Printf("bad mother"); continue; }
-        if(!mother->Particle()->IsPrimary()) continue;
-         char buffer [50];
-         sprintf(buffer,"%d",TMath::Abs(mother->PdgCode()));
-         TString sPDG(buffer);
-         if(sPDG.Length()<3) continue;
-         Bool_t isCharm(kFALSE),isBeauty(kFALSE);
-         if(sPDG(sPDG.Length()-3) == '4' && sPDG(sPDG.Length()-2) != '4') isCharm  = kTRUE;
-         if(sPDG(sPDG.Length()-3) == '5' && sPDG(sPDG.Length()-2) != '5') isBeauty = kTRUE;
-         if(!(isCharm || isBeauty)) continue;
-         TLorentzVector v; 
-         v.SetPtEtaPhiM(part->Pt(),part->Eta(),part->Phi(),0.0005109989);
-         std::vector<Bool_t> rec_part(GetNCutsets(),kFALSE),recpl_part(GetNCutsets(),kFALSE);
-         std::vector<AliESDtrack*> vtracks;
-         for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
-           AliESDtrack *track = fESD->GetTrack(iTracks);
-           if(!track){ Printf("ERROR: Could not receive track %d", iTracks); continue; }  
-           if(TMath::Abs(track->GetLabel()) == iMCtrack) vtracks.push_back(track); 
-         }
-         for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
-           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
-           for(UInt_t i = 0; i < vtracks.size(); ++i){
-             if(fvTrackCuts.at(iCut)->IsSelected(vtracks.at(i)) == selectedMask){
-               rec_part.at(iCut) = kTRUE;
-               if(vtracks.at(i)->GetLabel() > 0) recpl_part.at(iCut) = kTRUE;
-             }
-           }
-         }
-         if(isCharm){
-           if(pPDG == -11){ 
-             cp.push_back(v);
-             rec_cp.push_back(rec_part);
-             recpl_cp.push_back(recpl_part);
-           }
-           else{
-             ce.push_back(v);
-             rec_ce.push_back(rec_part);
-             recpl_ce.push_back(recpl_part);
-           }
-         }
-         if(isBeauty){
-           if(pPDG == -11){ 
-             bp.push_back(v);
-             rec_bp.push_back(rec_part);
-             recpl_bp.push_back(recpl_part);
-           }
-           else{
-             be.push_back(v);
-             rec_be.push_back(rec_part);
-             recpl_be.push_back(recpl_part);
-           }
-         }
-      }
-      fCharmElectrons->Fill(ce.size());
-      fCharmPositrons->Fill(cp.size());
-      fBeautyElectrons->Fill(be.size());
-      fBeautyPositrons->Fill(bp.size());
-      if(ce.size() > 0 && cp.size() > 0){
-        UInt_t iSize = ce.size() <= cp.size() ? ce.size() : cp.size();
-        for(UInt_t iv = 0; iv < iSize; ++iv){
-          Double_t m  = (ce.at(iv) + cp.at(iv)).M();
-          Double_t pt = (ce.at(iv) + cp.at(iv)).Pt();
-          fNHFgenPairs->Fill(m,pt);
-          for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
-            if(rec_ce.at(iv).at(iCut)   && rec_cp.at(iv).at(iCut)  ) fvHFrecoPairs         .at(iCut)->Fill(m,pt);
-            if(recpl_ce.at(iv).at(iCut) && recpl_cp.at(iv).at(iCut)) fvHFrecoPairs_poslabel.at(iCut)->Fill(m,pt);
-          }
-        }
-      }
-      if(be.size() > 0 && bp.size() > 0){
-        UInt_t iSize = be.size() <= bp.size() ? be.size() : bp.size();
-        for(UInt_t iv = 0; iv < iSize; ++iv){
-          Double_t m  = (be.at(iv) + bp.at(iv)).M();
-          Double_t pt = (be.at(iv) + bp.at(iv)).Pt();
-          fNHFgenPairs->Fill(m,pt);
-          for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
-            if(rec_be.at(iv).at(iCut)   && rec_bp.at(iv).at(iCut)  ) fvHFrecoPairs         .at(iCut)->Fill(m,pt);
-            if(recpl_be.at(iv).at(iCut) && recpl_bp.at(iv).at(iCut)) fvHFrecoPairs_poslabel.at(iCut)->Fill(m,pt);
-          }
-        }
-      }
-    }
+          } // cut loop
+        } // positron loop 
+      } // electron loop
+    } // end of pair efficiency calculation
     
     if(fCalcResolution && fResolutionCuts){ // calculate electron pt resolution
       UInt_t selectedMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
@@ -1420,19 +1320,21 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   
   
   if(fDoPairing){
-    TH2F *hNrecoPairs          = new TH2F(Form("NrecoPairs_%s",         name.Data()),Form("NrecoPairs_%s",         name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    TH2F *hNrecoPairs_poslabel = new TH2F(Form("NrecoPairs_poslabel_%s",name.Data()),Form("NrecoPairs_poslabel_%s",name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    hNrecoPairs->Sumw2();
-    hNrecoPairs_poslabel->Sumw2();
-    fvRecoPairs         .push_back(hNrecoPairs);
-    fvRecoPairs_poslabel.push_back(hNrecoPairs_poslabel);
+    TH2F *hNrecoPairs_sameMother          = new TH2F(Form("NrecoPairs_sameMother_%s",         name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    hNrecoPairs_sameMother->Sumw2();
+    fvRecoPairs_sameMother          .push_back(hNrecoPairs_sameMother);
     
-    TH2F *hNHFrecoPairs          = new TH2F(Form("NHFrecoPairs_%s",         name.Data()),Form("NHFrecoPairs_%s",         name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    TH2F *hNHFrecoPairs_poslabel = new TH2F(Form("NHFrecoPairs_poslabel_%s",name.Data()),Form("NHFrecoPairs_poslabel_%s",name.Data()),fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    hNHFrecoPairs->Sumw2();
-    hNHFrecoPairs_poslabel->Sumw2();
-    fvHFrecoPairs.push_back(hNHFrecoPairs);
-    fvHFrecoPairs_poslabel.push_back(hNHFrecoPairs_poslabel);
+    TH2F *hNrecoPairs_poslabel_sameMother = new TH2F(Form("NrecoPairs_poslabel_sameMother_%s",name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    hNrecoPairs_poslabel_sameMother->Sumw2();
+    fvRecoPairs_poslabel_sameMother .push_back(hNrecoPairs_poslabel_sameMother);
+    
+    TH2F *hNrecoPairs_diffMothers          = new TH2F(Form("NrecoPairs_differentMothers_%s",         name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    hNrecoPairs_diffMothers->Sumw2();
+    fvRecoPairs_diffMothers         .push_back(hNrecoPairs_diffMothers);    
+    
+    TH2F *hNrecoPairs_poslabel_diffMothers = new TH2F(Form("NrecoPairs_poslabel_differentMothers_%s",name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    hNrecoPairs_poslabel_diffMothers->Sumw2(); 
+    fvRecoPairs_poslabel_diffMothers.push_back(hNrecoPairs_poslabel_diffMothers);    
   }
   // be really careful if you need to implement this (see comments in UserExec):
   //  TH3F *hNreco_Pio = new TH3F(Form("Nreco_Pio_%s",name.Data()),Form("Nreco_Pio_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1449,13 +1351,12 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
 	Printf(" Now running: CreateHistoGen()");
   
   Printf("fNptBins=%i\t fPtBins[1]=%f\t fNetaBins=%i\t fEtaBins[1]=%f\t fNphiBins=%i\t fPhiBins[1]=%f\t ",fNptBins,fPtBins[1],fNetaBins,fEtaBins[1],fNphiBins,fPhiBins[1]);
-  fNgen_Ele                 = new TH3F("fNgen_Ele","Ngen_electrons",  fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-  fNgen_Pos                 = new TH3F("fNgen_Pos","Ngen_positrons",  fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-  if(fResArr) fNgen_recoObs = new TH3F("fNgen_recoObs","Ngen_recoObs",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fNgen_Ele                 = new TH3F("fNgen_electrons","Ngen_electrons",  fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+  fNgen_Pos                 = new TH3F("fNgen_positrons","Ngen_positrons",  fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   if(fDoPairing){
     Printf("fNmeeBins=%i\t fMeeBins[1]=%f\t fNpteeBins=%i\t fPteeBins[1]=%f\t ",fNmeeBins,fMeeBins[1],fNpteeBins,fPteeBins[1]);
-    fNgenPairs = new TH2F("NgenPairs","NgenPairs",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    fNHFgenPairs = new TH2F("NHFgenPairs","NgenPairs",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    fNgenPairs_sameMother  = new TH2F("NgenPairs_sameMother","",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
+    fNgenPairs_diffMothers = new TH2F("NgenPairs_differentMothers","",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
   }
 }
 
