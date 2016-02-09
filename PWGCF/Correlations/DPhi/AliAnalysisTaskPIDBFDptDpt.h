@@ -97,6 +97,7 @@ public:
     virtual     void    SetRejectPairConversion(int v)      { _rejectPairConversion = v; }
     virtual     void    SetVertexZMin(double v)             { _vertexZMin           = v; }
     virtual     void    SetVertexZMax(double v)             { _vertexZMax           = v; }
+    virtual     void    SetVertexZWidth(double v)           { _vertexZWidth         = v; }
     virtual     void    SetVertexXYMin(double v)            { _vertexXYMin          = v; }
     virtual     void    SetVertexXYMax(double v)            { _vertexXYMax          = v; }
     virtual     void    SetCentralityMethod(int v)          { _centralityMethod     = v; }
@@ -166,6 +167,7 @@ protected:
     int      _rejectPairConversion;
     double   _vertexZMin;
     double   _vertexZMax;
+    double   _vertexZWidth;
     double   _vertexXYMin;
     double   _vertexXYMax;
     int      _centralityMethod;
@@ -323,14 +325,22 @@ protected:
     TH1F * _nsigmakaon_1d;
     TH1F * _nsigmaTOFkaon_1d;
     
-    TH1F * _etadis_pion_AliHelperPID;
-    TH1F * _ydis_pion_AliHelperPID;
+    TH1F * _etadis_POI_AliHelperPID;
+    TH1F * _ydis_POI_AliHelperPID;
     TH1F * _etadis_without_PID;
     TH1F * _ydis_without_PID;
     TH1F * _etadis_before_any_cuts;
     TH1F * _ydis_before_any_cuts;
+
+    TH3F * _vZ_y_Pt_before_any_cuts;
+    TH3F * _vZ_y_Pt_without_PID;
+    TH3F * _vZ_y_Pt_POI_AliHelperPID;
+
+    TH3F * _vZ_y_eta_before_any_cuts;
+    TH3F * _vZ_y_eta_without_PID;
+    TH3F * _vZ_y_eta_POI_AliHelperPID;
     
-    TH1F * _phidis_pion_AliHelperPID;
+    TH1F * _phidis_POI_AliHelperPID;
     TH1F * _phidis_without_PID;
     TH1F * _phidis_before_any_cuts;
     
@@ -338,19 +348,19 @@ protected:
     TH1F * _dcaxy;
 
     TH2F *  _dedx_p;
-    TH2F *  _dedx_p_pion_AliHelperPID;
+    TH2F *  _dedx_p_POI_AliHelperPID;
     TH2F *  _dedx_p_AliHelperPID_no_Undefined;
     
     TH2F *  _beta_p;
-    TH2F *  _beta_p_pion_AliHelperPID;
+    TH2F *  _beta_p_POI_AliHelperPID;
     TH2F *  _beta_p_AliHelperPID_no_Undefined;
     
     TH2F *  _inverse_beta_p;
-    TH2F *  _inverse_beta_p_pion_AliHelperPID;
+    TH2F *  _inverse_beta_p_POI_AliHelperPID;
     TH2F *  _inverse_beta_p_AliHelperPID_no_Undefined;
     
     TH2F *  _msquare_p;
-    TH2F *  _msquare_p_pion_AliHelperPID;
+    TH2F *  _msquare_p_POI_AliHelperPID;
     TH2F *  _msquare_p_AliHelperPID_no_Undefined;
     
     // PARTICLE 1 (satisfies filter 1)
