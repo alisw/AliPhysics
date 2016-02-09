@@ -56,6 +56,7 @@ Int_t charge = 0; // 0 selects + and -, -1 and +1 selects - or + muons respectiv
 Bool_t moreTrackCandidates = kFALSE;
 
 THashList *runWeights = 0x0;
+TString gObjNameExtension = "";
 
 
 void PlotMuonEfficiencyVsX(TString var, TString fileNameData, TString fileNameSave, Bool_t saveEdges, Bool_t print, Bool_t draw);
@@ -96,10 +97,13 @@ void SetRunLabel(TObjArray& array, Int_t irun, const TList& runs);
 //---------------------------------------------------------------------------
 void MuonTrackingEfficiency(TString runList = "runList.txt",
                             TString fileNameWeights = "",
+                            TString objNameExtension = "",
                             TString fileNameData ="AnalysisResults.root",
                             TString fileNameSave = "efficiency_new.root")
 {
   /// main function to compute, print and plot efficiencies
+  
+  gObjNameExtension = objNameExtension;
   
   PlotMuonEfficiencyVsX("centrality", fileNameData, fileNameSave, kFALSE, kFALSE, kTRUE);
   PlotMuonEfficiencyVsX("pt", fileNameData, fileNameSave, kFALSE, kFALSE, kTRUE);
@@ -153,8 +157,8 @@ void PlotMuonEfficiencyVsX(TString var, TString fileNameData, TString fileNameSa
     printf("cannot open file %s \n",fileNameData.Data());
     return;
   }
-  TList *listTT = static_cast<TList*>(file->FindObjectAny("TotalTracksPerChamber"));
-  TList *listTD = static_cast<TList*>(file->FindObjectAny("TracksDetectedPerChamber"));
+  TList *listTT = static_cast<TList*>(file->FindObjectAny(Form("TotalTracksPerChamber%s", gObjNameExtension.Data())));
+  TList *listTD = static_cast<TList*>(file->FindObjectAny(Form("TracksDetectedPerChamber%s", gObjNameExtension.Data())));
   THnSparse *TT = static_cast<THnSparse*>(listTT->At(10));
   THnSparse *TD = static_cast<THnSparse*>(listTD->At(10));
   
@@ -412,8 +416,8 @@ void PlotMuonEfficiencyVsXY(TString xVar, TString yVar, TString fileNameData, TS
     printf("cannot open file %s\n",fileNameData.Data());
     return;
   }
-  TList *listTT = static_cast<TList*>(file->FindObjectAny("TotalTracksPerChamber"));
-  TList *listTD = static_cast<TList*>(file->FindObjectAny("TracksDetectedPerChamber"));
+  TList *listTT = static_cast<TList*>(file->FindObjectAny(Form("TotalTracksPerChamber%s", gObjNameExtension.Data())));
+  TList *listTD = static_cast<TList*>(file->FindObjectAny(Form("TracksDetectedPerChamber%s", gObjNameExtension.Data())));
   THnSparse *TT = static_cast<THnSparse*>(listTT->At(10));
   THnSparse *TD = static_cast<THnSparse*>(listTD->At(10));
   
@@ -545,8 +549,8 @@ void PlotMuonEfficiency(TString fileNameData, TString fileNameSave, Bool_t saveE
     printf("cannot open file %s \n",fileNameData.Data());
     return;
   }
-  TList *listTT = static_cast<TList*>(file->FindObjectAny("TotalTracksPerChamber"));
-  TList *listTD = static_cast<TList*>(file->FindObjectAny("TracksDetectedPerChamber"));
+  TList *listTT = static_cast<TList*>(file->FindObjectAny(Form("TotalTracksPerChamber%s", gObjNameExtension.Data())));
+  TList *listTD = static_cast<TList*>(file->FindObjectAny(Form("TracksDetectedPerChamber%s", gObjNameExtension.Data())));
   THnSparse *TT = static_cast<THnSparse*>(listTT->At(10));
   THnSparse *TD = static_cast<THnSparse*>(listTD->At(10));
   
@@ -886,8 +890,8 @@ void PlotMuonEfficiencyPerDE(TString fileNameData, TString fileNameSave, Bool_t 
     printf("cannot open file %s \n",fileNameData.Data());
     return;
   }
-  TList *listTT = static_cast<TList*>(file->FindObjectAny("TotalTracksPerChamber"));
-  TList *listTD = static_cast<TList*>(file->FindObjectAny("TracksDetectedPerChamber"));
+  TList *listTT = static_cast<TList*>(file->FindObjectAny(Form("TotalTracksPerChamber%s", gObjNameExtension.Data())));
+  TList *listTD = static_cast<TList*>(file->FindObjectAny(Form("TracksDetectedPerChamber%s", gObjNameExtension.Data())));
   
   // output graph arrays
   TObjArray chamberVsDEGraphs; // 10 graphs: 1 for each chamber
@@ -1799,7 +1803,7 @@ void LoadRunWeights(TString fileName)
   
   ifstream inFile(fileName.Data());
   if (!inFile.is_open()) {
-    printf("cannot open file %s", fileName.Data());
+    printf("cannot open file %s\n", fileName.Data());
     return;
   }
   
