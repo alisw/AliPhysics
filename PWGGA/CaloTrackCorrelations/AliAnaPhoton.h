@@ -397,7 +397,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F * fhEtaPhiLam0BinPtBinSMShared      [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins, SM shared clusters
   TH2F * fhColRowLam0BinPtBinSMShared      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
-  TH2F * fhEtaPhiPtBinLargeTimeInClusterCell  [7] ; //!<! Cluster eta/phi, with at least one significant cell with large time
+  TH2F * fhEtaPhiLargeTimeInClusterCell    [2][7] ; //!<! Cluster eta/phi, with at least one significant cell with large time
+  TH2F * fhCellIndexDiffLargeTimeInClusterCell[2][7] ; //!<! Cell in cluster, row or column minus max row or colum, maximum difference vs cell energy.
+
+  TH2F * fhLam0PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
+  TH2F * fhLam1PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
+  TH2F * fhLam0PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda0 vs  Pt, when any secondary cell has t > 50 ns, in different SM
+  TH2F * fhLam1PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, in different SM
+  TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
+  TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
