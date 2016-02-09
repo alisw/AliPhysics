@@ -6,6 +6,8 @@
 #include "AliAODConversionPhoton.h"
 #include "TObjArray.h"
 #include "TList.h"
+#include <vector>
+
 using namespace std;
 
 // typedef vector<AliAODConversionPhoton*> AliGammaConversionPhotonVector;   				// Vector containing photons
