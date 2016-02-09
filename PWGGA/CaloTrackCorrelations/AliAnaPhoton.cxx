@@ -252,7 +252,8 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
     {
       fhEtaPhiLam0BinPtBinSMShared      [il0][i] = 0 ;
       fhColRowLam0BinPtBinSMShared      [il0][i] = 0 ;              
-      fhEtaPhiPtBinLargeTimeInClusterCell    [i] = 0 ;              
+      fhEtaPhiLargeTimeInClusterCell    [il0][i] = 0 ;    
+      fhCellIndexDiffLargeTimeInClusterCell[il0][i] = 0 ;
     }
     
     for(Int_t ism =0; ism < 12; ism++)
@@ -261,6 +262,16 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
       fhLam0PerSMShared            [ism] = 0;
       fhLam1PerSMShared            [ism] = 0;
     }
+  }
+  
+  for(Int_t ism =0; ism < 20; ism++)
+  {
+    fhLam0PerSM                      [ism] = 0;
+    fhLam1PerSM                      [ism] = 0;
+    fhLam0PerSMLargeTimeInClusterCell[ism] = 0;
+    fhLam1PerSMLargeTimeInClusterCell[ism] = 0;
+    fhLam0PerSMSPDPileUp             [ism] = 0;
+    fhLam1PerSMSPDPileUp             [ism] = 0; 
   }
   
   // Initialize parameters
@@ -760,25 +771,34 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
   }
   
   //
-  // EMCAL SM regions
+  // EMCal SM regions
   //
   if(cluster->IsEMCAL() && fFillEMCALRegionSSHistograms)
   {
     Int_t sm = GetModuleNumber(cluster);
-
+    
     Bool_t shared = GetCaloUtils()->IsClusterSharedByTwoSuperModules(GetEMCALGeometry(),cluster);
+    
+    fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight());
+    fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight());
+    
+    if(GetReader()->IsPileUpFromSPD())
+    {
+      fhLam0PerSMSPDPileUp[sm]->Fill(pt, lambda0, GetEventWeight());
+      fhLam1PerSMSPDPileUp[sm]->Fill(pt, lambda1, GetEventWeight());      
+    }
     
     Int_t etaRegion = -1, phiRegion = -1;
     GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
     if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
     {
-
-//      fhLam0EMCALRegion[etaRegion][phiRegion]->Fill(pt,lambda0, GetEventWeight());
-//      
-//      if(GetFirstSMCoveredByTRD() >= 0 && sm >= GetFirstSMCoveredByTRD()  )
-//      {
-//        fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight());
-//      }
+      
+      //      fhLam0EMCALRegion[etaRegion][phiRegion]->Fill(pt,lambda0, GetEventWeight());
+      //      
+      //      if(GetFirstSMCoveredByTRD() >= 0 && sm >= GetFirstSMCoveredByTRD()  )
+      //      {
+      //        fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight());
+      //      }
       
       fhLam0EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda0, GetEventWeight());
       fhLam1EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda1, GetEventWeight());
@@ -790,120 +810,130 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
       }
     }
     
+    // Define l0 bin and cluster pt bin 
     Int_t l0bin = -1;
     if     ( lambda0 >=0.30 && lambda0 <= 0.40 ) l0bin = 1;
     else if( lambda0 >=0.23 && lambda0 <= 0.26 ) l0bin = 0;
-      
+    
+    Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
+    Int_t ptbin = -1;
+    for(Int_t ipt = 0; ipt < 7; ipt++)  
+    {
+      if( pt >= ptLimit[ipt] && pt < ptLimit[ipt+1]  )
+      {
+        ptbin = ipt;
+        break;
+      }
+    }
+    
     if(l0bin!=-1)
     {
       fhLam1Lam0BinPerSM[l0bin][sm]->Fill(pt,lambda1); 
-      
-      Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
-      Int_t ptbin = -1;
-      for(Int_t ipt = 0; ipt < 7; ipt++)  
-      {
-        if( pt >= ptLimit[ipt] && pt < ptLimit[ipt+1]  )
-        {
-          ptbin = ipt;
-          break;
-        }
-      }
       
       if(ptbin >= 0) 
       {
         fhEtaPhiLam0BinPtBin[l0bin][ptbin]->Fill(eta, phi, GetEventWeight());
         if(shared) fhEtaPhiLam0BinPtBinSMShared[l0bin][ptbin]->Fill(eta, phi, GetEventWeight());
       }
+    }
+    
+    // 
+    // Histograms with time of secondary cells, only if they contribute with a non null 
+    // weight to the shower shape
+    //
+    AliVCaloCells* cells = GetReader()->GetEMCALCells();
+    
+    Int_t    bc          = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+    
+    // Cell max in cluster
+    Float_t  maxCellFraction = 0;
+    Int_t    absIdMax    = GetCaloUtils()->GetMaxEnergyCell(cells, cluster, maxCellFraction);
+    Float_t  cellEMax    = cells->GetCellAmplitude(absIdMax);
+    Double_t cellTimeMax = cells->GetCellTime(absIdMax);
+    
+    Int_t    icolMax     = -1, icolMaxAbs = -1;
+    Int_t    irowMax     = -1, irowMaxAbs = -1;
+    Int_t    iRCUMax     = -1;
+    Int_t    nModuleMax  = GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icolMax, irowMax, iRCUMax, icolMaxAbs,irowMaxAbs);
+    
+    GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absIdMax,bc,cellEMax,cellTimeMax,cells);
+    cellTimeMax*=1e9;
+    
+    //
+    // Cluster cell loop, select only secondary cells with enough contribution to cluster
+    //
+    Bool_t largeTime = kFALSE;
+    for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
+    {
+      Int_t    absId   = cluster->GetCellAbsId(icell);
       
-      // Time of secondary cells, only if they contribute with a non null 
-      // weight to the shower shape
-      AliVCaloCells* cells = GetReader()->GetEMCALCells();
+      if ( absId == absIdMax ) continue;
       
-      Int_t    bc          = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+      Float_t  cellE    = cells->GetCellAmplitude(absId);
+      Double_t cellTime = cells->GetCellTime(absId);
       
-      // Cell max in cluster
-      Float_t  maxCellFraction = 0;
-      Int_t    absIdMax    = GetCaloUtils()->GetMaxEnergyCell(cells, cluster, maxCellFraction);
-      Float_t  cellEMax    = cells->GetCellAmplitude(absIdMax);
-      Double_t cellTimeMax = cells->GetCellTime(absIdMax);
+      GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,cellE,cellTime,cells);
+      cellTime*=1e9;
       
-      GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absIdMax,bc,cellEMax,cellTimeMax,cells);
-      cellTimeMax*=1e9;
-      Bool_t largeTime = kFALSE;
-      for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
+      Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(cellE,cluster->E());
+      
+      //printf("Cluster E %2.2f, cell E %2.2f, time %2.2f, weight %2.3f\n",cluster->E(),cellE,cellTime,weight);
+      if(weight < 0.01) continue;
+      
+      if ( TMath::Abs(cellTime) > 50 ) 
+        largeTime = kTRUE;
+      
+      if ( l0bin == -1 ) continue;
+      
+      Int_t   icol     = -1, icolAbs = -1;
+      Int_t   irow     = -1, irowAbs = -1;
+      Int_t   iRCU     = -1;
+      Int_t   nModule  = GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+      
+      if(ptbin >= 0 && largeTime)
       {
-        Int_t    absId   = cluster->GetCellAbsId(icell);
-
-        if ( absId == absIdMax ) continue;
-
-        Float_t  cellE    = cells->GetCellAmplitude(absId);
-        Double_t cellTime = cells->GetCellTime(absId);
-
-        GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,cellE,cellTime,cells);
-        cellTime*=1e9;
-        
-        Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(cellE,cluster->E());
-        
-        //printf("Cluster E %2.2f, cell E %2.2f, time %2.2f, weight %2.3f\n",cluster->E(),cellE,cellTime,weight);
-        if(weight < 0.01) continue;
-
-        fhTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTime,        GetEventWeight());
-        fhTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTime, weight*GetEventWeight());
-        
-        if ( TMath::Abs(cellTime) > 50 ) largeTime = kTRUE;
-        
-        fhDTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTimeMax-cellTime,        GetEventWeight());
-        fhDTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTimeMax-cellTime, weight*GetEventWeight());
-        
-        fhCellClusterEFracLam0BinPerSM        [l0bin][sm]->Fill(pt, cellE/cluster->E(),        GetEventWeight());
-        fhCellClusterEFracLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE/cluster->E(), weight*GetEventWeight());        
-        
-        fhCellClusterELam0BinPerSM        [l0bin][sm]->Fill(pt, cellE,        GetEventWeight());
-        fhCellClusterELam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE, weight*GetEventWeight());
-        
-        if(shared)
-          fhTimeLam0BinPerSMShared[l0bin][sm]->Fill(pt, cellTime, GetEventWeight());
-        
-        Int_t   icol     = -1;
-        Int_t   irow     = -1;
-        Int_t   iRCU     = -1;
-        Int_t   nModule  = GetModuleNumberCellIndexes(absId,GetCalorimeter(), icol, irow, iRCU);
-        
-        Int_t   icols = icol;
-        Int_t   irows = irow;
-        
-        if ( GetCalorimeter() == kEMCAL)
-        {
-          //
-          // Shift collumns in even SM
-          Int_t shiftEta = 48;
-          
-          // Shift collumn even more due to smaller acceptance of DCal collumns
-          if ( nModule >  11 && nModule < 18) shiftEta+=48/3;
-          
-          icols = (nModule % 2) ? icol + shiftEta : icol;	
-          
-          //
-          // Shift rows per sector
-          irows = irow + 24 * Int_t(nModule / 2); 
-          
-          // Shift row less due to smaller acceptance of SM 10 and 11 to count DCal rows
-          if ( nModule >  11 && nModule < 20) irows -= (2*24 / 3);
-        }
-                
-        if(ptbin >= 0) 
-        {
-          fhColRowLam0BinPtBin        [l0bin][ptbin]->Fill(icols, irows,        GetEventWeight());
-          fhColRowLam0BinPtBinWeighted[l0bin][ptbin]->Fill(icols, irows, weight*GetEventWeight());
-          if(shared)  fhColRowLam0BinPtBinSMShared[l0bin][ptbin]->Fill(icols, irows, GetEventWeight());
-        }
+        Int_t colDiff = TMath::Abs(icolMaxAbs - icolAbs);
+        Int_t rowDiff = TMath::Abs(irowMaxAbs - irowAbs);
+        Int_t diff = colDiff;
+        if(rowDiff > colDiff) diff = rowDiff;
+        fhCellIndexDiffLargeTimeInClusterCell[l0bin][ptbin]->Fill(cellE,diff) ;
       }
       
-      if ( largeTime ) fhEtaPhiPtBinLargeTimeInClusterCell[ptbin]->Fill(eta, phi, GetEventWeight());
+      fhTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTime,        GetEventWeight());
+      fhTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTime, weight*GetEventWeight());
       
+      fhDTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTimeMax-cellTime,        GetEventWeight());
+      fhDTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTimeMax-cellTime, weight*GetEventWeight());
+      
+      fhCellClusterEFracLam0BinPerSM        [l0bin][sm]->Fill(pt, cellE/cluster->E(),        GetEventWeight());
+      fhCellClusterEFracLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE/cluster->E(), weight*GetEventWeight());        
+      
+      fhCellClusterELam0BinPerSM        [l0bin][sm]->Fill(pt, cellE,        GetEventWeight());
+      fhCellClusterELam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE, weight*GetEventWeight());
+      
+      if(shared)
+        fhTimeLam0BinPerSMShared[l0bin][sm]->Fill(pt, cellTime, GetEventWeight());
+      
+      if(ptbin >= 0) 
+      {
+        fhColRowLam0BinPtBin        [l0bin][ptbin]->Fill(icolAbs, irowAbs,        GetEventWeight());
+        fhColRowLam0BinPtBinWeighted[l0bin][ptbin]->Fill(icolAbs, irowAbs, weight*GetEventWeight());
+        if(shared)  fhColRowLam0BinPtBinSMShared[l0bin][ptbin]->Fill(icolAbs, irowAbs, GetEventWeight());
+      }
+      
+    } // cluster cell loop
+    
+    if ( largeTime ) 
+    {
+      if(l0bin != -1 && ptbin >= 0 ) 
+        fhEtaPhiLargeTimeInClusterCell[l0bin][ptbin]->Fill(eta, phi, GetEventWeight());
+      
+      fhLam0PerSMLargeTimeInClusterCell[sm]->Fill(pt, lambda0, GetEventWeight());
+      fhLam1PerSMLargeTimeInClusterCell[sm]->Fill(pt, lambda1, GetEventWeight());
     }
+    
     //printf("Cluster %d, E %2.2f, sm %d, eta %2.2f, phi %2.2f ---> region %d %d\n",cluster->GetID(),cluster->E(),GetModuleNumber(cluster),eta,RadToDeg(phi),etaRegion,phiRegion);
-  }
+  } // Check EMCal SM and regions
   
   Float_t l0   = 0., l1   = 0.;
   Float_t dispp= 0., dEta = 0., dPhi    = 0.;
@@ -2125,7 +2155,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinWeighted[il0][ipt]) ;
-
+        
         fhEtaPhiLam0BinPtBinSMShared[il0][ipt]  = new TH2F
         (Form("hEtaPhiLam0Bin%d_PtBin%d_SMShared",il0,ipt),
          Form("#eta vs #phi in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s",
@@ -2144,18 +2174,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhColRowLam0BinPtBinSMShared[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinSMShared[il0][ipt]) ;  
         
-        if(il0)
-        {
-          fhEtaPhiPtBinLargeTimeInClusterCell[ipt]  = new TH2F
-          (Form("hEtaPhi_PtBin%d_LargeTimeInClusterCell",ipt),
-           Form("#eta vs #phi in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, 1 cell t > 50 ns",
-                ptLimit[ipt],ptLimit[ipt+1]),
-           netabins,etamin,etamax,nphibins,phimin,phimax);
-          fhEtaPhiPtBinLargeTimeInClusterCell[ipt]->SetYTitle("#phi (rad)");
-          fhEtaPhiPtBinLargeTimeInClusterCell[ipt]->SetXTitle("#eta");
-          outputContainer->Add(fhEtaPhiPtBinLargeTimeInClusterCell[ipt]) ;
-        }
-
+        fhEtaPhiLargeTimeInClusterCell[il0][ipt]  = new TH2F
+        (Form("hEtaPhiLam0Bin%d_PtBin%d_LargeTimeInClusterCell",il0,ipt),
+         Form("#eta vs #phi in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, secondary cell t > 50 ns, %s",
+              ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
+         netabins,etamin,etamax,nphibins,phimin,phimax);
+        fhEtaPhiLargeTimeInClusterCell[il0][ipt]->SetYTitle("#phi (rad)");
+        fhEtaPhiLargeTimeInClusterCell[il0][ipt]->SetXTitle("#eta");
+        outputContainer->Add(fhEtaPhiLargeTimeInClusterCell[il0][ipt]) ;
+        
+        fhCellIndexDiffLargeTimeInClusterCell[il0][ipt]  = new TH2F
+        (Form("hCellIndexDiffLam0Bin%d_PtBin%d_LargeTimeInClusterCell",il0,ipt),
+         Form("row/col_cell-row/coll_cellMax vs cellE, in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, secondary cell t > 50 ns, %s",
+              ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
+         200,0,10,20,0,20);
+        fhCellIndexDiffLargeTimeInClusterCell[il0][ipt]->SetYTitle("index - index_{Max}");
+        fhCellIndexDiffLargeTimeInClusterCell[il0][ipt]->SetXTitle("E_{cell} (GeV)");
+        outputContainer->Add(fhCellIndexDiffLargeTimeInClusterCell[il0][ipt]) ;
       } // pt bin
       
       for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++)
@@ -2207,7 +2242,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhCellClusterEFracLam0BinPerSM[il0][ism]->SetYTitle("cell E / cluster E ");
         fhCellClusterEFracLam0BinPerSM[il0][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhCellClusterEFracLam0BinPerSM[il0][ism]) ;         
-
+        
         fhCellClusterEFracLam0BinPerSMWeighted[il0][ism] = new TH2F
         (Form("hCellClusterEFracLam0Bin%d_sm%d_Weighted",il0,ism),
          Form("#it{p}_{T} vs cell E / cluster E weighted in sm %d, %s",ism,l0bin[il0].Data()),
@@ -2240,30 +2275,81 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
            nptbins,ptmin,ptmax,ntimebins,timemin,timemax);
           fhTimeLam0BinPerSMShared[il0][ism]->SetYTitle("cell time (ns)");
           fhTimeLam0BinPerSMShared[il0][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhTimeLam0BinPerSMShared[il0][ism]) ;   
-          
-          if(il0)
-          {
-            fhLam0PerSMShared[ism] = new TH2F
-            (Form("hLam0_sm%d_SMShared",ism),
-             Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d, SM shared",ism),
-             nptbins,ptmin,ptmax,40,0,0.4);
-            fhLam0PerSMShared[ism]->SetYTitle("#lambda^{2}_{0}");
-            fhLam0PerSMShared[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhLam0PerSMShared[ism]) ;             
-            
-            fhLam1PerSMShared[ism] = new TH2F
-            (Form("hLam1_sm%d_SMShared",ism),
-             Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, SM shared",ism),
-             nptbins,ptmin,ptmax,40,0,0.4);
-            fhLam1PerSMShared[ism]->SetYTitle("#lambda^{2}_{1}");
-            fhLam1PerSMShared[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhLam1PerSMShared[ism]) ;   
-          }
+          outputContainer->Add(fhTimeLam0BinPerSMShared[il0][ism]) ;             
         } // Run 1 SM
-        
       } // sm
     } // l0 bin 
+    
+    for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++)
+    {
+      fhLam0PerSM[ism] = new TH2F
+      (Form("hLam0_sm%d",ism),
+       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d",ism),
+       nptbins,ptmin,ptmax,40,0,0.4);
+      fhLam0PerSM[ism]->SetYTitle("#lambda^{2}_{0}");
+      fhLam0PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam0PerSM[ism]) ;             
+      
+      fhLam1PerSM[ism] = new TH2F
+      (Form("hLam1_sm%d",ism),
+       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d",ism),
+       nptbins,ptmin,ptmax,40,0,0.4);
+      fhLam1PerSM[ism]->SetYTitle("#lambda^{2}_{1}");
+      fhLam1PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam1PerSM[ism]) ;   
+      
+      fhLam0PerSMLargeTimeInClusterCell[ism] = new TH2F
+      (Form("hLam0_sm%d_LargeTimeInClusterCell",ism),
+       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d,|t_{secondary cell}| > 50 ns",ism),
+       nptbins,ptmin,ptmax,40,0,0.4);
+      fhLam0PerSMLargeTimeInClusterCell[ism]->SetYTitle("#lambda^{2}_{0}");
+      fhLam0PerSMLargeTimeInClusterCell[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam0PerSMLargeTimeInClusterCell[ism]) ;             
+      
+      fhLam1PerSMLargeTimeInClusterCell[ism] = new TH2F
+      (Form("hLam1_sm%d_LargeTimeInClusterCell",ism),
+       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, |t_{secondary cell}| > 50 ns",ism),
+       nptbins,ptmin,ptmax,40,0,0.4);
+      fhLam1PerSMLargeTimeInClusterCell[ism]->SetYTitle("#lambda^{2}_{1}");
+      fhLam1PerSMLargeTimeInClusterCell[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam1PerSMLargeTimeInClusterCell[ism]) ;   
+      
+      fhLam0PerSMSPDPileUp[ism] = new TH2F
+      (Form("hLam0_sm%d_SPDPileUp",ism),
+       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d, Pile-up event SPD",ism),
+       nptbins,ptmin,ptmax,40,0,0.4);
+      fhLam0PerSMSPDPileUp[ism]->SetYTitle("#lambda^{2}_{0}");
+      fhLam0PerSMSPDPileUp[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam0PerSMSPDPileUp[ism]) ;             
+      
+      fhLam1PerSMSPDPileUp[ism] = new TH2F
+      (Form("hLam1_sm%d_SPDPileUp",ism),
+       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, Pile-up event SPD",ism),
+       nptbins,ptmin,ptmax,40,0,0.4);
+      fhLam1PerSMSPDPileUp[ism]->SetYTitle("#lambda^{2}_{1}");
+      fhLam1PerSMSPDPileUp[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam1PerSMSPDPileUp[ism]) ;   
+      
+      if(ism < 12)
+      {
+        fhLam0PerSMShared[ism] = new TH2F
+        (Form("hLam0_sm%d_SMShared",ism),
+         Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d, SM shared",ism),
+         nptbins,ptmin,ptmax,40,0,0.4);
+        fhLam0PerSMShared[ism]->SetYTitle("#lambda^{2}_{0}");
+        fhLam0PerSMShared[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhLam0PerSMShared[ism]) ;             
+        
+        fhLam1PerSMShared[ism] = new TH2F
+        (Form("hLam1_sm%d_SMShared",ism),
+         Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, SM shared",ism),
+         nptbins,ptmin,ptmax,40,0,0.4);
+        fhLam1PerSMShared[ism]->SetYTitle("#lambda^{2}_{1}");
+        fhLam1PerSMShared[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhLam1PerSMShared[ism]) ;   
+      } // run1
+    } // sm
+    
   } // regions in EMCal
 
   
