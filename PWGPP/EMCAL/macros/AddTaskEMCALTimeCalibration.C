@@ -85,7 +85,8 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   else taskmbemcal->SwithOffFillHeavyHisto();
 
   // pass1
-  taskmbemcal->SetRawTimeHisto(400,400.,800.);
+  taskmbemcal->SetRawTimeHisto(200,400.,800.);
+  taskmbemcal->SetPassTimeHisto (200,400.,800.);
   // pass2
   if(referenceSMFileName.Length()!=0){
     taskmbemcal->SetReferenceRunByRunFileName(referenceSMFileName);
