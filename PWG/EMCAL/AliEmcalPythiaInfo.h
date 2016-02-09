@@ -23,9 +23,10 @@
  * This class is used to store some information
  * about a Pythia event (also for embedding)
  *
- * \author Leticia Conqueiro <leticia.cunqueiro.mendez@cern.ch>
+ * \author Leticia Cunqueiro <leticia.cunqueiro.mendez@cern.ch>,Muenster University
  * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
- */
+ * \author Davide Caffari <davide.caffarri@cern.ch>,Cern 
+*/
 class AliEmcalPythiaInfo : public TNamed{
 
  public:

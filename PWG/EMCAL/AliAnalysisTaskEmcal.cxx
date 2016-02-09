@@ -1638,6 +1638,10 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
   fPythiaInfo->SetPartonFlag7(TMath::Abs(part7->GetPdgCode()));
   fPythiaInfo->SetParton7(part7->Pt(), part7->Eta(), part7->Phi(), part7->GetMass());
 
-  // TODO: for Leticia
-  // Here you should get the event weight from the mcEvent object and store it in the pythiaInfo object
+  AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
+  if(pythiaGenHeader){ 
+    Float_t ptWeight=pythiaGenHeader->EventWeight(); 
+    fPythiaInfo->SetPythiaEventWeight(ptWeight);}
+
+  
 }
