@@ -1007,7 +1007,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  if (vR[ipoint]<=0 || vDelta[ipoint]<-990.) continue;
 	  Double_t sector=9.*vPhi[ipoint]/TMath::Pi();
 	  if (sector<0) sector+=18;
-	  Double_t deltaPhi=vPhi[ipoint]-TMath::Pi()*(int(sector)+0.5)/9.;
+	  Double_t deltaPhi=vPhi[ipoint]-TMath::Pi()*(Int_t(sector)+0.5)/9.;
 	  Double_t localX = TMath::Cos(deltaPhi)*vR[ipoint];
 	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   vZ[ipoint]/localX, vDelta[ipoint]};
 	  if (TMath::Abs(xxx[4])<0.000001) continue;
@@ -1983,7 +1983,7 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   const Double_t pxmin=8.48499984741210938e+01; //param.GetPadRowRadii(0,0)-param.GetPadPitchLength(0,0)/2
   const Double_t pxmax=2.46600006103515625e+02; //2.46600006103515625e+02param.GetPadRowRadii(36,param.GetNRow(36)-1)+param.GetPadPitchLength(36,param.GetNRow(36)-1)/2.
   Int_t     ndim=4;
-  Int_t     nbins[4]= {20,  (Int_t)((sector1-sector0-0.1)*15),        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
+  Int_t     nbins[4]= {30,  (Int_t)((sector1-sector0-0.1)*15),        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
   Double_t  xmin[4] = {pxmin,  sector0+0.05,   theta0,                            -2.0};
   Double_t  xmax[4] = {pxmax, sector1-0.05,   theta1,               2.0};
   //
@@ -2003,7 +2003,7 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
     fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
     TStopwatch timer;
     fitCorrs[0]->SetStreamer(pcstream);
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"delta:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.05:0.1:3","2:2:2:2",0.0001);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"delta:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"3:0.05:0.1:1","2:2:2:2",0.0001);
     timer.Print();
     AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
     treeDist->SetAlias(TString::Format("delta_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
@@ -2329,6 +2329,8 @@ Bool_t  AliTPCcalibAlignInterpolation::LoadNDLocalFit(TTree * tree, const char *
       Int_t hashIndex=reg->GetVisualCorrectionIndex();
       reg->AddVisualCorrection(reg, hashIndex);      
       tree->SetAlias(aliasName, TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
+      tree->SetAlias(aliasName+"L", TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)-(AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter-2)+AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+2))*0.5",hashIndex).Data());
+      tree->SetAlias(aliasName+"M", TString::Format("(AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter-2)+AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+2))*0.5",hashIndex).Data());
     }
   }
   return kTRUE;
