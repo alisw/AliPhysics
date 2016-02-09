@@ -2126,7 +2126,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
     for (Int_t secType=0; secType<2; secType++){  //loop over inner or outer sector
       // cache experimantal tuning factor for the different chamber type 
       const Float_t ampfactor = (secType==0)?factorIROC:factorOROC;
-      std::cout << " ampfactor = " << ampfactor << std::endl;
+//       std::cout << " ampfactor = " << ampfactor << std::endl;
       //
       for (Int_t sec = 0;sec<fkNOS;sec++){        //loop overs sectors
         //
@@ -2146,7 +2146,11 @@ void  AliTPCtracker::ApplyTailCancellation(){
         {
           continue;
         }
-        
+
+        // set time range from graph
+        const Int_t timeRangeMax=graphRes[0]?graphRes[0]->GetN():600;
+//         std::cout << " timeRangeMax = " << timeRangeMax << std::endl;
+
         AliTPCtrackerSector &sector= (secType==0)?fInnerSec[sec]:fOuterSec[sec];  
         Int_t nrows     = sector.GetNRows();                                       // number of rows
         Int_t nclSector = sector.GetNClInSector(iside);                            // ncl per sector to be used for debugging
@@ -2207,7 +2211,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
 	      if (dpad>4) continue;           // no contribution if far away in pad direction
 
 	      // RS no point in iterating further with sorted clusters once large distance reached
-              if (cl0->GetTimeBin()-cl1->GetTimeBin()>600) continue; // out of the range of response function
+              if (cl0->GetTimeBin()-cl1->GetTimeBin()>=timeRangeMax) continue; // out of the range of response function
 
 	      // RS: what about dpad=4?
               if (dpad<4) nclPad++;           // count ncl for every pad for debugging
