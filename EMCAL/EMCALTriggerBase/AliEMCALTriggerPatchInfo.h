@@ -171,6 +171,17 @@ class AliEMCALTriggerPatchInfo: public TObject {
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
   /**
+   * Get the transverse energy of the patch
+   * @return Transverse energy of the patch
+   */
+  Double_t GetPatchET() const { return GetET(GetPatchE()); }
+  /**
+   * Get the online transverse energy of the patch
+   * @return online transverse energy of the patch
+   */
+  Double_t GetPatchETfromADCAmp() const { return GetET(GetADCAmpGeVRough()); }
+
+  /**
    * Get the starting row of the patch
    * @return Starting row of the patch
    */
@@ -453,6 +464,7 @@ class AliEMCALTriggerPatchInfo: public TObject {
  protected:
   //TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
   Double_t GetPhiTransform(Double_t phiin) const;
+  Double_t GetET(Double_t energy) const;
 
   TLorentzVector    fCenterGeo;                     ///< geometrical center
   TLorentzVector    fCenterMass;                    ///< CM

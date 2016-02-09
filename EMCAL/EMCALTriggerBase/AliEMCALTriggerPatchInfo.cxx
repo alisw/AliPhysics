@@ -267,3 +267,8 @@ Double_t AliEMCALTriggerPatchInfo::GetPhiTransform(Double_t phiin) const{
   if(phiin < 0) return phiin + TMath::TwoPi();
   return phiin;
 }
+
+Double_t AliEMCALTriggerPatchInfo::GetET(Double_t energy) const {
+  TLorentzVector en(fCenterGeo.Px(), fCenterGeo.Py(), fCenterGeo.Pz(), energy);
+  return en.Et();
+}
