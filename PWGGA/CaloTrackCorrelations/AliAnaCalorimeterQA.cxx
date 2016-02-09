@@ -443,8 +443,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     eCellsInModule[imod] = 0.;
   }
   
-  Int_t    icol   = -1;
-  Int_t    irow   = -1;
+  Int_t    icol   = -1, icolAbs = -1;
+  Int_t    irow   = -1, irowAbs = -1;
   Int_t    iRCU   = -1;
   Float_t  amp    = 0.;
   Double_t time   = 0.;
@@ -459,9 +459,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
     AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
    
-    Int_t nModule = GetModuleNumberCellIndexes(cells->GetCellNumber(iCell),GetCalorimeter(), icol, irow, iRCU);
+    Int_t nModule = GetModuleNumberCellIndexesAbsCaloMap(cells->GetCellNumber(iCell),GetCalorimeter(), 
+                                                         icol   , irow, iRCU,
+                                                         icolAbs, irowAbs    );
     
-    AliDebug(2,Form("\t module %d, column %d, row %d", nModule,icol,irow));
+    AliDebug(2,Form("\t module %d, column %d (%d), row %d (%d)", nModule,icolAbs,icol,irowAbs,irow));
     
     if(nModule < fNModules) 
     {	
@@ -524,39 +526,13 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 
         if(!fStudyWeight) eCellsInModule[nModule]+=amp ;
         
-        Int_t icols = icol;
-        Int_t irows = irow;
-        
-        if ( GetCalorimeter() == kEMCAL)
-        {
-          //
-          // Shift collumns in even SM
-          Int_t shiftEta = fNMaxCols;
-
-          // Shift collumn even more due to smaller acceptance of DCal collumns
-          if ( nModule >  11 && nModule < 18) shiftEta+=fNMaxCols/3;
-          
-          icols = (nModule % 2) ? icol + shiftEta : icol;	
-          
-          //
-          // Shift rows per sector
-          irows = irow + fNMaxRows * Int_t(nModule / 2); 
-          
-          // Shift row less due to smaller acceptance of SM 10 and 11 to count DCal rows
-          if ( nModule >  11 && nModule < 20) irows -= (2*fNMaxRows / 3);
-        }
-        else // PHOS
-        {
-          irows = irow + fNMaxRows * nModule;
-        }
-                
-        fhGridCells ->Fill(icols, irows, GetEventWeight());
-        fhGridCellsE->Fill(icols, irows, amp             );
+        fhGridCells ->Fill(icolAbs, irowAbs, GetEventWeight());
+        fhGridCellsE->Fill(icolAbs, irowAbs, amp             );
         
         if(!highG)
         {
-          fhGridCellsLowGain ->Fill(icols, irows, GetEventWeight());
-          fhGridCellsELowGain->Fill(icols, irows, amp             );
+          fhGridCellsLowGain ->Fill(icolAbs, irowAbs, GetEventWeight());
+          fhGridCellsELowGain->Fill(icolAbs, irowAbs, amp             );
         }
         
         if(fFillAllCellTimeHisto)
@@ -571,8 +547,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           fhTimeId ->Fill(time, id  , GetEventWeight());
           fhTimeAmp->Fill(amp , time, GetEventWeight());
             
-          fhGridCellsTime->Fill(icols, irows, time);
-          if(!highG) fhGridCellsTimeLowGain->Fill(icols, irows, time);
+          fhGridCellsTime->Fill(icolAbs, irowAbs, time);
+          if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
             
           fhTimeMod->Fill(time, nModule, GetEventWeight());
           fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
