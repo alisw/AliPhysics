@@ -38,6 +38,8 @@
 /// 2016.01.23 revert L1 phase and 100ns shift for runs before LHC15n muon calo pass1
 /// 2016.01.28 correction for L1 phase shift for runs before LHC15n muon calo pass1
 /// 2016.02.02 added flag to fill heavy histograms
+/// 2016.02.03 added bad channel map
+/// 2016.02.08 added control histograms for low gain separatelly
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -96,6 +98,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fEnergyNbins  (0),
     fEnergyMin(0),
     fEnergyMax(0),
+    fEnergyLGNbins  (0),
+    fEnergyLGMin(0),
+    fEnergyLGMax(0),
     fFineNbins(0),
     fFineTmin(0),
     fFineTmax(0),
@@ -128,6 +133,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhRefRuns(0),
     fhTimeDsup(),
     fhTimeDsupBC(),
+    fhTimeDsupLG(),
+    fhTimeDsupLGBC(),
     fhRawTimeVsIdBC(),
     fhRawTimeSumBC(),
     fhRawTimeEntriesBC(),
@@ -200,11 +207,17 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fPassTimeMin = lower ;
     fPassTimeMax = upper ;
   }
-  void SetEnergyHisto (Int_t nbins,Double_t lower,Double_t upper) { 
+  void SetEnergyHistoHG (Int_t nbins,Double_t lower,Double_t upper) { 
     fEnergyNbins = nbins;
     fEnergyMin = lower ;
     fEnergyMax = upper ;
   }
+  void SetEnergyHistoLG (Int_t nbins,Double_t lower,Double_t upper) { 
+    fEnergyLGNbins = nbins;
+    fEnergyLGMin = lower ;
+    fEnergyLGMax = upper ;
+  }
+
   void SetFineT0Histo (Int_t nbins,Double_t lower,Double_t upper) { 
     fFineNbins = nbins;
     fFineTmin = lower ;
@@ -297,9 +310,12 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Int_t          fPassTimeNbins;        ///< number of bins of histo with time in passX
   Double_t       fPassTimeMin  ;        ///< lower range of histo with time in passX
   Double_t       fPassTimeMax  ;        ///< upper range of histo with time in passX
-  Int_t          fEnergyNbins  ;        ///< number of bins of histo with energy
-  Double_t       fEnergyMin    ;        ///< lower range of histo with energy	
-  Double_t       fEnergyMax    ;        ///< upper range of histo with energy   
+  Int_t          fEnergyNbins  ;        ///< number of bins of histo with energy HG
+  Double_t       fEnergyMin    ;        ///< lower range of histo with energy	 HG
+  Double_t       fEnergyMax    ;        ///< upper range of histo with energy    HG
+  Int_t          fEnergyLGNbins;        ///< number of bins of histo with energy LG
+  Double_t       fEnergyLGMin  ;        ///< lower range of histo with energy	 LG
+  Double_t       fEnergyLGMax  ;        ///< upper range of histo with energy    LG
   Int_t          fFineNbins    ;        ///< number of bins of histo with T0 time
   Double_t       fFineTmin     ;        ///< lower range of histo with T0 time
   Double_t       fFineTmax     ;        ///< upper range of histo with T0 time
@@ -344,8 +360,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1C		*fhRefRuns; ///< 20 entries per run: nSM
 
   // control histos
-  TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
-  TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4
+  TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM high gain
+  TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4 high gain
+  TH2F		*fhTimeDsupLG  [kNSM];            //!<! 20 SM low gain
+  TH2F		*fhTimeDsupLGBC[kNSM][kNBCmask];  //!<! 20 x 4 low gain
 
   //main histos for raw time
   TH2F          *fhRawTimeVsIdBC     [kNBCmask]; //!<! 4 BCmask HG
