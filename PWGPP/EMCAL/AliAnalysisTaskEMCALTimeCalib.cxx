@@ -92,6 +92,9 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fEnergyNbins  (0),
   fEnergyMin(0),
   fEnergyMax(0),
+  fEnergyLGNbins  (0),
+  fEnergyLGMin(0),
+  fEnergyLGMax(0),
   fFineNbins(0),
   fFineTmin(0),
   fFineTmax(0),
@@ -124,6 +127,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhRefRuns(0),
   fhTimeDsup(),
   fhTimeDsupBC(),
+  fhTimeDsupLG(),
+  fhTimeDsupLGBC(),
   fhRawTimeVsIdBC(),
   fhRawTimeSumBC(),
   fhRawTimeEntriesBC(),
@@ -536,18 +541,30 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
     for (Int_t j = 0; j < kNSM ;  j++) 
     {
+      //High gain
       //fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,2200,-350.0,750.0);
-      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E, high gain, BC %d",j,i),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
       fhTimeDsupBC[j][i]->SetYTitle(" Time (ns) "); 
       fhTimeDsupBC[j][i]->SetXTitle(" E (GeV) "); 
+
+      //low gain
+      fhTimeDsupLGBC[j][i]= new TH2F(Form("SupMod%dBC%dLG",j,i), Form("SupMod %d time_vs_E, low gain, BC %d",j,i),fEnergyLGNbins,fEnergyLGMin,fEnergyLGMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhTimeDsupLGBC[j][i]->SetYTitle(" Time (ns) "); 
+      fhTimeDsupLGBC[j][i]->SetXTitle(" E (GeV) "); 
     }
   }
 
   for (Int_t jj = 0; jj < kNSM ;  jj++) 
   {
-    fhTimeDsup[jj] =  new TH2F(Form("SupMod%d",jj), Form("SupMod %d time_vs_E ",jj),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+    //high gain
+    fhTimeDsup[jj] =  new TH2F(Form("SupMod%d",jj), Form("SupMod %d time_vs_E, high gain",jj),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
     fhTimeDsup[jj]->SetYTitle(" Time (ns) "); 
     fhTimeDsup[jj]->SetXTitle(" E (GeV) "); 
+
+    //low gain
+    fhTimeDsupLG[jj] =  new TH2F(Form("SupMod%dLG",jj), Form("SupMod %d time_vs_E, low gain ",jj),fEnergyLGNbins,fEnergyLGMin,fEnergyLGMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+    fhTimeDsupLG[jj]->SetYTitle(" Time (ns) "); 
+    fhTimeDsupLG[jj]->SetXTitle(" E (GeV) "); 
   }
   
   fhTimeVsBC = new TH2F("TimeVsBC"," SupMod time_vs_BC ", 4001,-0.5,4000.5,(Int_t)(fRawTimeNbins/2.),fRawTimeMin,fRawTimeMax); 
@@ -602,12 +619,14 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
     for (Int_t j = 0; j < kNSM ;  j++){
       fOutputList->Add(fhTimeDsupBC[j][i]);
+      fOutputList->Add(fhTimeDsupLGBC[j][i]);
     }
   }
   
   for (Int_t j = 0; j < kNSM ;  j++)
   {
     fOutputList->Add(fhTimeDsup[j]);
+    fOutputList->Add(fhTimeDsupLG[j]);
   }
 	
   fOutputList->Add(fhTimeVsBC);
@@ -740,7 +759,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   nBC = BunchCrossNumber%4;
   //Int_t nTriggerMask =event->GetTriggerMask();
   //	cout << " nBC " << nBC << " nTriggerMask " << nTriggerMask<< endl;
-  Float_t timeBCoffset = 0.; //manual offest
+  Float_t timeBCoffset = 0.; //manual offset
   //	if( nBC%4 ==0 || nBC%4==1) timeBCoffset = 100.; // correction was for LHC11 when BC was not corrected
   
   Int_t nclus = caloClusters->GetEntries();
@@ -873,9 +892,14 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       }
 
       //other control histograms
-      if(amp>0.5) {					
-	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
-	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+      if(amp>0.5) {
+	if(isHighGain){				
+	  fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	  fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	}else{
+	  fhTimeDsupLG[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	  fhTimeDsupLGBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	}
       }
       
       if(fFillHeavyHisto) {
@@ -902,8 +926,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
 
         //correction in 2015 for wrong L1 phase and L1 shift
-	if(offsetPerSM != 0) hkdtime = hkdtime - offsetPerSM;
-	if(L1shiftOffset != 0) hkdtime = hkdtime - L1shiftOffset;
+	hkdtime = hkdtime - offsetPerSM - L1shiftOffset;
 
 	if(isHighGain){
 	  fhTimeEnt[nBC]->Fill(absId,1.);
@@ -1092,9 +1115,12 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fPassTimeNbins = 1000; // in pass2 should be (400,400,800)
   fPassTimeMin   = -250.;// in pass3 should be (1000,-250,250)
   fPassTimeMax   = 250.;
-  fEnergyNbins   = 500;  // default settings
+  fEnergyNbins   = 100;  // default settings was 500
   fEnergyMin     = 0.;
   fEnergyMax     = 20.;
+  fEnergyLGNbins = 200;  // default settings
+  fEnergyLGMin   = 0.;
+  fEnergyLGMax   = 100.;
   fFineNbins     = 90; //was 4500 for T0 time studies
   fFineTmin      = -500;
   fFineTmax      = 400;
@@ -1314,7 +1340,7 @@ const  Double_t upperLimit[]={
       }
       meanBC[j]=fitParameter;
 	
-      if(fitParameter<minimumValue){
+      if(fitParameter>0 && fitParameter<minimumValue){
 	minimumValue = fitParameter;
 	minimumIndex = j;
       }
@@ -1326,8 +1352,8 @@ const  Double_t upperLimit[]={
       L1shift=(Int_t)(minimumValue/25.);
     }
 
-//    if(TMath::Abs(minimumValue/25-(Int_t)(minimumValue/25)-0.5)<0.05)
-//      printf("Run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min\%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25.,((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
+    if(TMath::Abs(minimumValue/25-(Int_t)(minimumValue/25)-0.5)<0.05)
+      printf("Run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min%%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25., (Int_t)((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
 
     totalValue = L1shift<<2 | minimumIndex ;
     //printf("L1 phase %d, L1 shift %d *25ns= %d, L1p+L1s %d, total %d, L1pback %d, L1sback %d\n",minimumIndex,L1shift,L1shift*25,minimumIndex+L1shift,totalValue,totalValue&3,totalValue>>2);
@@ -1337,8 +1363,8 @@ const  Double_t upperLimit[]={
     for(iorder=minimumIndex;iorder<minimumIndex+4-1;iorder++){
       if( meanBC[(iorder+1)%4] <= meanBC[iorder%4] ) orderTest=kFALSE;
     }
-//    if(!orderTest)
-//      printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
+    if(!orderTest)
+      printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
   }
   delete f1;
   TFile *fileNew=new TFile(outputFile.Data(),"update");
