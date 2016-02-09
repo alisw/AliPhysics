@@ -51,7 +51,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fGeometry(NULL),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
-    fEtaSign(1)
+    fEtaSign(1),
+    fSwitchoffSPDcut(kFALSE),
+    fSwitchoffITScut(kFALSE)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -75,7 +77,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fGeometry(NULL),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
-    fEtaSign(1)
+    fEtaSign(1),
+    fSwitchoffSPDcut(kFALSE),
+    fSwitchoffITScut(kFALSE)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -92,7 +96,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
  * Destuctor
  */
 AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
-  if(fTrackCuts) delete fTrackCuts;
+  //if(fTrackCuts) delete fTrackCuts;
   if(fAnalysisUtil) delete fAnalysisUtil;
   if(fHistos) delete fHistos;
 }
@@ -104,9 +108,17 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
   fAnalysisUtil = new AliAnalysisUtils;
 
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
+  fTrackCuts->DefineHistograms(kRed);
   fTrackCuts->SetName("Standard Track cuts");
   fTrackCuts->SetMinNCrossedRowsTPC(120);
   fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+  if(fSwitchoffSPDcut || fSwitchoffITScut){
+    fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+  }
+  if(fSwitchoffITScut){
+    fTrackCuts->SetRequireITSRefit(kFALSE);           // Allows also TPC-only tracks
+    fTrackCuts->SetMinNClustersITS(0);
+  }
 
   TArrayD oldbinning, newbinning;
   CreateOldPtBinning(oldbinning);
@@ -214,6 +226,7 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
           );
     }
   }
+  fHistos->GetListOfHistograms()->Add(fTrackCuts);
   PostData(1, fHistos->GetListOfHistograms());
 }
 
