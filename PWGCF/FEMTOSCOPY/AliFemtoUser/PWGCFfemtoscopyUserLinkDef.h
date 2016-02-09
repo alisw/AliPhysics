@@ -94,3 +94,5 @@
 #pragma link C++ class AliFemtoV0TrackCutNSigmaFilter+;
 
 #pragma link C++ class AliFemtoCutMonitorEventPartCollSize+;
+
+#pragma link C++ class Faddeeva+;
