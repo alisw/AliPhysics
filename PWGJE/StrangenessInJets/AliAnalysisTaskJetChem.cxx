@@ -5902,14 +5902,14 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
     if(!aodExtraMCparticles){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): aodExtraMCparticles array not found!!!!"<<std::endl; return iCount;}
 
 
-    if(fDebug > 2)std::cout<<"aodExtraMCparticles->GetEntries(): "<<aodExtraMCparticles->GetEntries()<<std::endl;
+    if(fDebug > 2){std::cout<<"aodExtraMCparticles->GetEntries(): "<<aodExtraMCparticles->GetEntries()<<std::endl;}
 
     for(int it =0; it<aodExtraMCparticles->GetEntries(); it++){//loop over particles
 
       AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(aodExtraMCparticles->At(it));
 
-      if(!part)continue;
-      if(!part->IsPhysicalPrimary())continue;
+      if(!part){std::cout<<"MC stack extra particle does not exist!!"<<std::endl;continue;}
+      if(!part->IsPhysicalPrimary()){std::cout<<"MC stack extra particle fails IsPrimaryParticle check!!"<<std::endl;continue;}
      
       Int_t pdgCode = part->GetPdgCode();
 
