@@ -55,7 +55,7 @@ void rec(const char *filename="raw.root", int nevents=-1, const char* ocdb="/cvm
   rec.SetStopOnError(kFALSE);
 
   // Delete recpoints
-  rec->SetDeleteRecPoints("TPC TRD");
+  rec.SetDeleteRecPoints("TPC TRD");
 
   // Set 100% of friends
   // rec.SetFractionFriends(2.0);
