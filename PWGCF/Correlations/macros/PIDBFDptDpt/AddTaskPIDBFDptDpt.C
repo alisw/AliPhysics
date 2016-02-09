@@ -14,9 +14,10 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  int    useRapidity             = 1,
  int    centralityMethod        = 4, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
  int    chargeSet               = 1, // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -6.,
- double zMax                    =  6.,
- int    trackFilterBit          = 1, // Global tracks =1; TPConly = 128; Hybrid = 272.
+ double zMin                    = -10.,
+ double zMax                    =  10.,
+ double vZwidth                 = 0.5,
+ int    trackFilterBit          = 272, // Global tracks =1; TPConly = 128; Hybrid = 272.
  int    nClusterMin             = 70,
  double eta1Min                 = -0.8, // y1min acturally
  double eta1Max                 =  0.8, // y1max acturally
@@ -52,11 +53,10 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     {
       if ( CentralityGroup == 1 )
         {
-	  minCentrality[0] = 0;       maxCentrality[0]  = 5.;
-	  minCentrality[1] = 5.;      maxCentrality[1]  = 10.;
-	  minCentrality[2] = 10.;     maxCentrality[2]  = 20.;
-	  minCentrality[3] = 20.;     maxCentrality[3]  = 30.;
-	  minCentrality[4] = 30.;     maxCentrality[4]  = 40.;
+	  minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+	  minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+	  minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+	  minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
         }
       else if ( CentralityGroup == 2 )
 	{
@@ -75,17 +75,51 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     }
   else if ( particleID == 1 ) // Kaon
     {
+      if ( CentralityGroup == 1 )
+        {
+	  minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+	  minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+	  minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+	  minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+        }
+      else if ( CentralityGroup == 2 )
+	{
+	  minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
+	  minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
+	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
+	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
+	}
+      else if ( CentralityGroup == 3 )
+	{
 	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
 	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
 	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
 	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
+	}
     }
   else if ( particleID == 2 ) // Proton
     {
+      if ( CentralityGroup == 1 )
+        {
+	  minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+	  minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+	  minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+	  minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+        }
+      else if ( CentralityGroup == 2 )
+	{
+	  minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
+	  minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
+	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
+	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
+	}
+      else if ( CentralityGroup == 3 )
+	{
 	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
 	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
 	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
 	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
+	}
     }
   else
     {
@@ -252,6 +286,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetRejectPairConversion(rejectPairConversion);
       task->SetVertexZMin(          zMin            );
       task->SetVertexZMax(          zMax            );
+      task->SetVertexZWidth(        vZwidth         );
       task->SetVertexXYMin(         -1.            );
       task->SetVertexXYMax(          1.            );
       task->SetCentralityMethod(    centralityMethod);
@@ -267,7 +302,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetDcaZMin(             dcaZMin         );
       task->SetDcaZMax(             dcaZMax         );
       task->SetDcaXYMin(            dcaXYMin        );
-      task->SetDcaXYMax(            dcaXYMax        ); //checking by prp
+      task->SetDcaXYMax(            dcaXYMax        );
       task->SetDedxMin(             dedxMin         );
       task->SetDedxMax(             dedxMax         );
       task->SetNClusterMin(         nClusterMin     );
