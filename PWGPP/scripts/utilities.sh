@@ -777,6 +777,8 @@ copyFileFromRemote() (
   maxCopyTries=${maxCopyTries-10}
   sleepRetry=0
   err=0
+  timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  $timeoutPrefix true || timeoutPrefix=
   opname="[copyFileFromRemote]"
   mkdir -p "$dstdir"
 
@@ -795,13 +797,13 @@ copyFileFromRemote() (
         case "$proto" in
           local) fullsrc=$(get_realpath "$src")
                  fulldst=$(get_realpath "$dst")
-                 printExec cp "$src" "$dst"
+                 printExec $timeoutPrefix cp "$src" "$dst"
                  if [[ $? != 0  && "$fullsrc" != "$fulldst" ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
-          root)  printExec xrdcp -f "$src" "$dst" ;;
-          http*) printExec curl -LsSfo "$dst" "$src" ;;
+          root)  printExec $timeoutPrefix xrdcp -f "$src" "$dst" ;;
+          http*) printExec $timeoutPrefix curl -LsSfo "$dst" "$src" ;;
           *)     alilog_error "protocol not supported: $proto"
                  return 2 ;;
         esac
@@ -836,6 +838,8 @@ copyFileToRemote() (
   proto="${dstdir%%://*}"
   sleepRetry=0
   err=0
+  timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  $timeoutPrefix true || timeoutPrefix=
   [[ "$proto" == "$dstdir" ]] && proto=local
   opname="[copyFileToRemote] (proto=$proto)"
 
@@ -855,12 +859,12 @@ copyFileToRemote() (
           local) mkdir -p "$(dirname "$dst")"
                  fullsrc=$(get_realpath "$src")
                  fulldst=$(get_realpath "$dst")
-                 printExec cp "$src" "$dst"
+                 printExec $timeoutPrefix cp "$src" "$dst"
                  if [[ $? != 0 && "$fullsrc" != "$fulldst" ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
-          root)  printExec xrdcp -f "$src" "$dst" ;;
+          root)  printExec $timeoutPrefix xrdcp -f "$src" "$dst" ;;
           *)     alilog_error "protocol not supported: $proto"
                  return 2 ;;
         esac
