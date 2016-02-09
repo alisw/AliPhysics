@@ -82,6 +82,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWriteTree(Bool_t write)                    {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)    {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
+  void          SetResolution(TObjArray *arr)                 {fResArr=arr;}
+  
   
   void          AddSignalMC(AliDielectronSignalMC* signal);   // use the functionality from AliDielectronSignalMC & AliDielectronMC to choose electron sources.
   void          SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -179,14 +181,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Int_t                           fNpteeBins;
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
   Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
-  
-  TH2F*                           fNgenPairs_sameMother;
-  std::vector<TH2F*>              fvRecoPairs_sameMother;
-  std::vector<TH2F*>              fvRecoPairs_poslabel_sameMother;
-  TH2F*                           fNgenPairs_diffMothers;
-  std::vector<TH2F*>              fvRecoPairs_diffMothers;
-  std::vector<TH2F*>              fvRecoPairs_poslabel_diffMothers;
-  
+  TH2F*                           fNgenPairs;
+  std::vector<TH2F*>              fvRecoPairs;
+  std::vector<TH2F*>              fvRecoPairs_poslabel;
   
   Bool_t                          fCalcResolution;
   TH2F*                           fPtGen_PtRec;
@@ -198,7 +195,17 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec;
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec_poslabel;
   AliAnalysisFilter*              fResolutionCuts;
-
+  
+  TH1F*                           fCharmElectrons;
+  TH1F*                           fCharmPositrons;
+  TH1F*                           fBeautyElectrons;
+  TH1F*                           fBeautyPositrons;
+  
+  TH2F*                           fNHFgenPairs;
+  std::vector<TH2F*>              fvHFrecoPairs;
+  std::vector<TH2F*>              fvHFrecoPairs_poslabel;
+  
+  
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   
   TH1D*                           fEventStat;               // ! Histogram with event statistics
@@ -255,6 +262,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   UInt_t    fSelectedByCut; // bit mask
   UInt_t    fSelectedByExtraCut; // bit mask
   
+  TObjArray *fResArr;
+  TH3F      *fNgen_recoObs;
   //protected:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kEventStatBins};
 
