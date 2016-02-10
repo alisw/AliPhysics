@@ -37,21 +37,24 @@ if [ "$1" == "OCDB" ]; then
     shift
 fi
 
-# second argument could be SPLIT, then $2,$3 are reco args
+# second argument could be SPLIT, then 
+# then:
+#   $2 - nEvents to reconstruct
+#   $3 - runNumber
+#   $4 - ocdbPath
 if [ "$1" == "SPLIT" ]; then
-    RECO_ARGS="${2-""}"
+    nEvents=${2-"-1"}
+    runNumber=${3-""}
+    ocdbPath=${4-""}
     shift 2
 fi
 
-[[ -n "$RECO_ARGS" ]] && RECO_ARGS=",$RECO_ARGS"
-
-# last argument can be the run number
-if [[ -n "$1" ]]; then
-  [[ "$1" =~ ^[0-9][0-9]*$ ]] && runNumber="$1"
-else
-  runNumber=$(echo $CHUNKNAME | cut -d "/" -f 6 | grep -e '000[0-9][0-9]*' | sed 's/^0*//')
-fi
+[[ -z $runNumber ]] && runNumber=$(echo $CHUNKNAME | cut -d "/" -f 6 | grep -e '000[0-9][0-9]*' | sed 's/^0*//')
 [[ -z $runNumber ]] && runNumber="${CHUNKNAME:2:9}"
+
+echo "runNumber=$runNumber"
+echo "ocdbPath=$ocdbPath"
+echo "nEvents=$nEvents"
 
 if [ "${CHUNKNAME:0:1}" = "/" ]; then
     FILENAME=${CHUNKNAME##*/}
@@ -70,9 +73,9 @@ if [ -f "wn.xml" ]; then
     CHUNKNAME="collection://wn.xml"
 fi
 
-echo "* Running AliRoot to reconstruct '$CHUNKNAME', extra arguments are '$RECO_ARGS' and run number is $runNumber..."
+echo "aliroot -l -b -q -x rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\") &> >(tee rec.log)"
 echo "rec.C" >&2
-time aliroot -l -b -q -x rec.C\(\"$CHUNKNAME\"$RECO_ARGS\) &> >(tee rec.log)
+time aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\")" &> >(tee rec.log)
 mv syswatch.log syswatch_rec.log
 
 exitcode=$?
@@ -138,9 +141,9 @@ if [ -f QAtrain_duo.C ]; then
     for grp in 0 1 2 3 4; do
         export QAGROUP=$grp
 	    echo "* Running QA for tasks group $QAGROUP"
-	    echo executing aliroot -b -q -x "QAtrain_duo.C(\"_grp$grp\",$runNumber)"
+	    echo executing aliroot -b -q -x "QAtrain_duo.C(\"_grp$grp\",$runNumber,0,0,\"$ocdbPath\")"
         echo "QAtrain_duo.C / grp$grp" >&2
-	    time aliroot -b -q -x "QAtrain_duo.C(\"_grp$grp\",$runNumber)" &> qa_grp$grp.log
+	    time aliroot -b -q -x "QAtrain_duo.C(\"_grp$grp\",$runNumber,0,0,\"$ocdbPath\")" &> qa_grp$grp.log
 
     	exitcode=$?
 	    echo "Exit code: $exitcode"
@@ -174,7 +177,7 @@ if [ -f AODtrain.C ]; then
     echo "AODtrain.C" >&2
 
     #third argument here is 0 for pp
-    time aliroot -b -q  -x 'AODtrain.C(0,"/cvmfs/alice-ocdb.cern.ch/calibration/data",0)' &> aod.log
+    time aliroot -b -q  -x "AODtrain.C(0,\"$ocdbPath\",0)" &> aod.log
 
     exitcode=$?
     echo "Exit code: $exitcode"
