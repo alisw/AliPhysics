@@ -160,9 +160,6 @@ void AddTask_GammaConvFlow_PbPb2(
   for(Int_t i=0;i<NFilterBins;i++){
     AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
     POIfilterVZERO->SetMassMin(NFilterBinValues[i]); POIfilterVZERO->SetMassMax(NFilterBinValues[i+1]);
-    POIfilterVZERO->SetEtaMin(-0.65);
-    POIfilterVZERO->SetEtaMax(0.65);
-//     POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
     
     if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
     AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), i), "Qa", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
