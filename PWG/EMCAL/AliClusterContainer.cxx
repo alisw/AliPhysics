@@ -15,14 +15,13 @@ ClassImp(AliClusterContainer)
 
 //________________________________________________________________________
 AliClusterContainer::AliClusterContainer():
-  AliEmcalContainer("AliClusterContainer"),
+  AliEmcalContainer(),
   fClusPtCut(0.),
   fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
-  fClusterBitMap(0),
-  fMCClusterBitMap(0),
-  fMinMCLabel(0),
+  fMinMCLabel(-1),
+  fMaxMCLabel(-1),
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1)
 {
@@ -42,9 +41,8 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fClusECut(0.15),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
-  fClusterBitMap(0),
-  fMCClusterBitMap(0),
-  fMinMCLabel(0),
+  fMinMCLabel(-1),
+  fMaxMCLabel(-1),
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1)
 {
@@ -278,19 +276,19 @@ Bool_t AliClusterContainer::AcceptCluster(AliVCluster *clus)
     return kFALSE;
   }
 
-  if (clus->GetLabel() > fMinMCLabel) {
-    if (clus->TestBits(fMCClusterBitMap) != (Int_t)fMCClusterBitMap) {
-      AliDebug(2,"MC Cluster not accepted because of MC bit map.");
-      fRejectionReason |= kBitMapCut;
-      return kFALSE;
-    }
+  if (clus->TestBits(fBitMap) != (Int_t)fBitMap) {
+    fRejectionReason |= kBitMapCut;
+    return kFALSE;
   }
-  else {
-    if (clus->TestBits(fClusterBitMap) != (Int_t)fClusterBitMap) {
-      AliDebug(2,"Cluster not accepted because of bit map.");
-      fRejectionReason |= kBitMapCut;
-      return kFALSE;
-    }
+
+  if (fMinMCLabel >= 0 && TMath::Abs(clus->GetLabel()) > fMinMCLabel) {
+    fRejectionReason |= kMCLabelCut;
+    return kFALSE;
+  }
+
+  if (fMaxMCLabel >= 0 && TMath::Abs(clus->GetLabel()) < fMaxMCLabel) {
+    fRejectionReason |= kMCLabelCut;
+    return kFALSE;
   }
 
   if (clus->GetTOF() > fClusTimeCutUp || clus->GetTOF() < fClusTimeCutLow) {
@@ -342,6 +340,29 @@ Int_t AliClusterContainer::GetNAcceptedClusters()
 }
 
 //________________________________________________________________________
+Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
+{
+  if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
+    return fUserDefEnergyCut[t];
+  }
+  else {
+    return fClusECut;
+  }
+}
+
+//________________________________________________________________________
+void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
+{
+  if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
+    fUserDefEnergyCut[t] = cut;
+  }
+  else {
+    fClusECut = cut;
+  }
+}
+
+
+//________________________________________________________________________
 void AliClusterContainer::SetClassName(const char *clname)
 {
   // Set the class name
@@ -349,4 +370,24 @@ void AliClusterContainer::SetClassName(const char *clname)
   TClass cls(clname);
   if (cls.InheritsFrom("AliVCluster")) fClassName = clname;
   else AliError(Form("Unable to set class name %s for a AliClusterContainer, it must inherits from AliVCluster!",clname));
+}
+
+//________________________________________________________________________
+const char* AliClusterContainer::GetTitle() const
+{
+  static TString clusterString;
+
+  Double_t Ecut = GetClusUserDefEnergyCut(GetDefaultClusterEnergy());
+
+  if (Ecut == 0) {
+    clusterString = TString::Format("%s_E0000", GetArrayName().Data());
+  }
+  else if (Ecut < 1.0) {
+    clusterString = TString::Format("%s_E0%3.0f", GetArrayName().Data(), Ecut*1000.0);
+  }
+  else {
+    clusterString = TString::Format("%s_E%4.0f", GetArrayName().Data(), Ecut*1000.0);
+  }
+
+  return clusterString.Data();
 }

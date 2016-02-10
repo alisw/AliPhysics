@@ -54,14 +54,13 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetArray(AliVEvent *event);
 
   void                        SetClassName(const char *clname);
-  void                        SetMCTrackBitMap(UInt_t m)                        { fMCTrackBitMap   = m ; }
-  void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s ; }
-  void                        SetMinMCLabelAccept(Int_t s)                      { fMinMCLabelAccept= s ; }
   void                        SetParticlePtCut(Double_t cut)                    { fParticlePtCut = cut ; }
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
   void                        SetParticlePhiLimits(Double_t min, Double_t max, Double_t offset=0.)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; fPhiOffset = offset;}
   void                        SetMinDistanceTPCSectorEdge(Double_t min)         { fMinDistanceTPCSectorEdge = min; }
-  void                        SetTrackBitMap(UInt_t m)                          { fTrackBitMap     = m ; }
+  void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
+  void                        SetMaxMCLabel(Int_t s)                            { fMaxMCLabel      = s   ; }
+  void                        SetMCLabelRange(Int_t min, Int_t max)             { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
   void                        SetMCFlag(UInt_t m)                               { fMCFlag          = m ; }
   void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
   void                        SetGeneratorIndex(Short_t i)                      { fGeneratorIndex = i  ; }
@@ -87,6 +86,8 @@ class AliParticleContainer : public AliEmcalContainer {
   static void                 SetDefTrackCutsPeriod(const char* period)       { fgDefTrackCutsPeriod = period; }
   static TString              GetDefTrackCutsPeriod()                         { return fgDefTrackCutsPeriod  ; }
 
+  const char*                 GetTitle() const;
+
  protected:
   static TString              fgDefTrackCutsPeriod;           //!default period string used to generate track cuts
 
@@ -97,10 +98,8 @@ class AliParticleContainer : public AliEmcalContainer {
   Double_t                    fParticleMaxPhi;                // cut on particle phi
   Double_t                    fPhiOffset;                     // phi offset
   Double_t                    fMinDistanceTPCSectorEdge;      // require minimum distance to edge of TPC sector edge
-  UInt_t                      fTrackBitMap;                   // bit map of accepted tracks (non MC)
-  UInt_t                      fMCTrackBitMap;                 // bit map of accepted MC tracks
-  Int_t                       fMinMCLabel;                    // minimum MC label value for the tracks/clusters being considered MC particles
-  Int_t                       fMinMCLabelAccept;              // minimum MC label value to accept particle
+  Int_t                       fMinMCLabel;                    // minimum MC label
+  Int_t                       fMaxMCLabel;                    // maximum MC label
   UInt_t                      fMCFlag;                        // select MC particles with flags
   Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
   Short_t                     fCharge;                        // select particles with charge=fCharge

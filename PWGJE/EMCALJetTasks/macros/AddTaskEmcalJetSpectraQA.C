@@ -3,13 +3,8 @@
 AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
   const char *ntracks            = "usedefault",
   const char *nclusters          = "usedefault",
-  const char *njets              = "Jets",
-  const char *nrho               = "Rho",
-  Double_t    jetradius          = 0.2,
-  Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.557,
-  const char *cutType            = "TPCfid",
-  Int_t       leadhadtype        = 0,
+  Double_t    trackPtCut         = 0.15,
+  Double_t    clusECut           = 0.30,
   const char *suffix             = ""
 )
 {  
@@ -78,17 +73,6 @@ AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
   }
 
   TString name("AliAnalysisTaskEmcalJetSpectraQA");
-  if (strcmp(njets,"")) {
-    name += "_";
-    name += njets;
-  }
-  if (strcmp(nrho,"")) {
-    name += "_";
-    name += nrho;
-  }
-  name += "_";
-  name += cutType;
-
   if (strcmp(suffix,"")) {
     name += "_";
     name += suffix;
@@ -99,18 +83,13 @@ AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
   jetTask->SetNeedEmcalGeom(kFALSE);
 
   AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackName);
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
+  trackCont->SetParticlePtCut(trackPtCut);
 
-  AliJetContainer *jetCont = jetTask->AddJetContainer(njets, cutType, jetradius);
-  if (jetCont) {
-    jetCont->SetRhoName(nrho);
-    jetCont->SetPercAreaCut(jetareacut);
-    jetCont->SetJetPtCut(jetptcut);
-    jetCont->ConnectParticleContainer(trackCont);
-    jetCont->ConnectClusterContainer(clusterCont);
-    jetCont->SetLeadingHadronType(leadhadtype);
-    jetCont->SetMaxTrackPt(1000);
-  }
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
+  clusterCont->SetClusECut(0.);
+  clusterCont->SetClusPtCut(0.);
+  clusterCont->SetClusHadCorrEnergyCut(clusECut);
+  clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

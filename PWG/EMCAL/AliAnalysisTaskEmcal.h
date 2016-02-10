@@ -13,8 +13,6 @@ class AliVCaloCells;
 class TH1;
 class TProfile;
 class AliEMCALGeometry;
-class AliParticleContainer;
-class AliClusterContainer;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
@@ -23,6 +21,9 @@ class AliAODTrack;
 class AliEmcalPythiaInfo;
 
 #include "Rtypes.h"
+
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskSE.h"
 
@@ -59,11 +60,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskEmcal();
-  AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE); 
+  AliAnalysisTaskEmcal(const char *name, Bool_t histo=kFALSE);
   virtual ~AliAnalysisTaskEmcal();
 
   AliParticleContainer       *AddParticleContainer(const char *n);
   AliClusterContainer        *AddClusterContainer(const char *n);
+  void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.Add(cont)                        ; }
+  void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }
   AliParticleContainer       *GetParticleContainer(Int_t i=0)         const;
   AliClusterContainer        *GetClusterContainer(Int_t i=0)          const;
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
