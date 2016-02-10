@@ -12,6 +12,10 @@
 #include <TGPack.h>
 #include <TBrowser.h>
 
+#include <iostream>
+
+using namespace std;
+
 //______________________________________________________________________________
 // Full description of AliEveMultiView
 //
@@ -27,13 +31,13 @@ AliEveMultiView* AliEveMultiView::Instance()
     return fgInstance;
 }
 
-AliEveMultiView::AliEveMultiView(Bool_t setMuonView) :
-fRPhiMgr(0), fRhoZMgr(0), fMuonMgr(0),
-f3DView(0), fRPhiView(0), fRhoZView(0), fMuonView(0),
-fRPhiGeomScene(0), fRhoZGeomScene(0), fMuonGeomScene(0),
-fRPhiEventScene(0), fRhoZEventScene(0), fMuonEventScene(0),
+AliEveMultiView::AliEveMultiView() :
+fRPhiMgr(0), fRhoZMgr(0),
+f3DView(0), fRPhiView(0), fRhoZView(0),
+fRPhiGeomScene(0), fRhoZGeomScene(0),
+fRPhiEventScene(0), fRhoZEventScene(0),
 fGeomGentle(0), fGeomGentleRPhi(0), fGeomGentleRhoZ(0),
-fGeomGentleTrd(0),fGeomGentleEmcal(0),fGeomGentleZdc(0), fGeomGentleMuon(0), fIsMuonView(kFALSE),
+fGeomGentleTrd(0),
 fPack(0)
 {
     // Constructor --- creates required scenes, projection managers
@@ -50,16 +54,10 @@ fPack(0)
                                           "Scene holding projected geometry for the RPhi view.");
     fRhoZGeomScene  = gEve->SpawnNewScene("RhoZ Geometry",
                                           "Scene holding projected geometry for the RhoZ view.");
-    fMuonGeomScene  = gEve->SpawnNewScene("Muon Geometry",
-                                          "Scene holding projected geometry for the Muon view.");
     fRPhiEventScene = gEve->SpawnNewScene("RPhi Event Data",
                                           "Scene holding projected event-data for the RPhi view.");
     fRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
                                           "Scene holding projected event-data for the RhoZ view.");
-    fMuonEventScene = gEve->SpawnNewScene("Muon Event Data",
-                                          "Scene holding projected event-data for the Muon view.");
-    
-    fIsMuonView = setMuonView;
     
     // Projection managers
     //=====================
@@ -100,25 +98,6 @@ fPack(0)
         fRhoZGeomScene->AddElement(a);
     }
     
-    if(fIsMuonView)
-    {
-        fMuonMgr = new TEveProjectionManager();
-        fMuonMgr->SetProjection(TEveProjection::kPT_RhoZ);
-        gEve->AddToListTree(fMuonMgr, kFALSE);
-        
-        if(showAxes)
-        {
-            TEveProjectionAxes* a = new TEveProjectionAxes(fMuonMgr);
-            a->SetMainColor(kWhite);
-            a->SetTitle("Rho-Z Muon");
-            a->SetTitleSize(0.05);
-            a->SetTitleFont(102);
-            a->SetLabelSize(0.025);
-            a->SetLabelFont(102);
-            fMuonGeomScene->AddElement(a);
-        }
-    }
-    
     // Viewers
     //=========
     
@@ -151,15 +130,6 @@ fPack(0)
     fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
     fRhoZView->AddScene(fRhoZGeomScene);
     fRhoZView->AddScene(fRhoZEventScene);
-    
-    if(fIsMuonView)
-    {
-        pack->NewSlot()->MakeCurrent(); // new slot from pack
-        fMuonView = gEve->SpawnNewViewer("RhoZ View Muon", "");
-        fMuonView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-        fMuonView->AddScene(fMuonGeomScene);
-        fMuonView->AddScene(fMuonEventScene);
-    }
 }
 
 AliEveMultiView::~AliEveMultiView()
@@ -172,24 +142,20 @@ AliEveMultiView::~AliEveMultiView()
     
     delete	fRPhiMgr;
     delete fRhoZMgr;
-    delete fMuonMgr;
-    
 }
 
 //-------------------------------------------------------------------------
 
-void AliEveMultiView::InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz, TEveGeoShape* gmuon)
+void AliEveMultiView::InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz)
 {
     // Initialize gentle geometry.
     
     fGeomGentle     = g3d;
     fGeomGentleRPhi = grphi; fGeomGentleRPhi->IncDenyDestroy();
     fGeomGentleRhoZ = grhoz; fGeomGentleRhoZ->IncDenyDestroy();
-    if(fIsMuonView) { fGeomGentleMuon = gmuon; fGeomGentleMuon->IncDenyDestroy(); }
     
     ImportGeomRPhi(fGeomGentleRPhi);
     ImportGeomRhoZ(fGeomGentleRhoZ);
-    if(fIsMuonView) ImportGeomMuon(fGeomGentleMuon);
 }
 
 void AliEveMultiView::InitGeomGentleTrd(TEveGeoShape* gtrd)
@@ -199,38 +165,13 @@ void AliEveMultiView::InitGeomGentleTrd(TEveGeoShape* gtrd)
     fGeomGentleTrd = gtrd;
     ImportGeomRPhi(fGeomGentleTrd);
     ImportGeomRhoZ(fGeomGentleTrd);
-    if(fIsMuonView) ImportGeomMuon(fGeomGentleTrd);
 }
 
-void AliEveMultiView::InitGeomGentleEmcal(TEveGeoShape* gemcal)
+void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool rPhi, bool rhoZ)
 {
-    // Initialize gentle geometry EMCal.
-    
-    fGeomGentleEmcal = gemcal;
-    ImportGeomRPhi(fGeomGentleEmcal);
-    ImportGeomRhoZ(fGeomGentleEmcal);
-    if(fIsMuonView) ImportGeomMuon(fGeomGentleEmcal);
-}
-
-void AliEveMultiView::InitGeomGentleZdc(TEveGeoShape* gzdc)
-{
-    // Initialize gentle geometry ZDC.
-    
-    fGeomGentleZdc = gzdc;
-    ImportGeomRPhi(fGeomGentleZdc);
-    ImportGeomRhoZ(fGeomGentleZdc);
-    if(fIsMuonView) ImportGeomMuon(fGeomGentleZdc);
-}
-
-void AliEveMultiView::InitGeomGentleMuon(TEveGeoShape* gmuon, Bool_t showRPhi, Bool_t showRhoZ, Bool_t showMuon)
-{
-    // Initialize gentle geometry for MUON.
-    
-    fGeomGentleMuon = gmuon;
-    if (showRPhi) ImportGeomRPhi(fGeomGentleMuon);
-    if (showRhoZ) ImportGeomRhoZ(fGeomGentleMuon);
-    if (showMuon && fIsMuonView) ImportGeomMuon(fGeomGentleMuon);
-    
+    fGeomVector.push_back(geom);
+    if(rPhi) ImportGeomRPhi(geom);
+    if(rhoZ) ImportGeomRhoZ(geom);
 }
 
 //-------------------------------------------------------------------------
@@ -241,8 +182,6 @@ void AliEveMultiView::SetDepth(Float_t d)
     
     fRPhiMgr->SetCurrentDepth(d);
     fRhoZMgr->SetCurrentDepth(d);
-    if(fIsMuonView) fMuonMgr->SetCurrentDepth(d);
-    
 }
 
 //-------------------------------------------------------------------------
@@ -261,13 +200,6 @@ void AliEveMultiView::ImportGeomRhoZ(TEveElement* el)
     fRhoZMgr->ImportElements(el, fRhoZGeomScene);
 }
 
-void AliEveMultiView::ImportGeomMuon(TEveElement* el)
-{
-    // Import el into muon geometry scene.
-    
-    if(fIsMuonView) fMuonMgr->ImportElements(el, fMuonGeomScene);
-}
-
 void AliEveMultiView::ImportEventRPhi(TEveElement* el)
 {
     // Import el into r-phi event scene.
@@ -282,13 +214,6 @@ void AliEveMultiView::ImportEventRhoZ(TEveElement* el)
     fRhoZMgr->ImportElements(el, fRhoZEventScene);
 }
 
-void AliEveMultiView::ImportEventMuon(TEveElement* el)
-{
-    // Import el into muon event scene.
-    
-    if(fIsMuonView) fMuonMgr->ImportElements(el, fMuonEventScene);
-}
-
 void AliEveMultiView::DestroyEventRPhi()
 {
     // Destroy all elements in r-phi event scene.
@@ -301,13 +226,6 @@ void AliEveMultiView::DestroyEventRhoZ()
     // Destroy all elements in rho-z event scene.
     
     fRhoZEventScene->DestroyElements();
-}
-
-void AliEveMultiView::DestroyEventMuon()
-{
-    // Destroy all elements in rho-z event scene.
-    
-    if(fIsMuonView) fMuonEventScene->DestroyElements();
 }
 
 
@@ -325,13 +243,6 @@ void AliEveMultiView::SetCenterRhoZ(Double_t x, Double_t y, Double_t z)
     // Set center of rho-z manager.
     
     fRhoZMgr->SetCenter(x, y, z);
-}
-
-void AliEveMultiView::SetCenterMuon(Double_t x, Double_t y, Double_t z)
-{
-    // Set center of rho-z manager.
-    
-    if(fIsMuonView) fMuonMgr->SetCenter(x, y, z);
 }
 
 void AliEveMultiView::DestroyAllGeometries()
@@ -352,27 +263,20 @@ void AliEveMultiView::DestroyAllGeometries()
         gEve->RemoveElement(fGeomGentleRhoZ,gEve->GetGlobalScene());
         fGeomGentleRhoZ = 0;
     }
-    if(fGeomGentleMuon){
-        fGeomGentleMuon->DestroyElements();
-        gEve->RemoveElement(fGeomGentleMuon,gEve->GetGlobalScene());
-        fGeomGentleMuon = 0;
-    }
     if(fGeomGentleTrd){
         fGeomGentleTrd->DestroyElements();
         gEve->RemoveElement(fGeomGentleTrd,gEve->GetGlobalScene());
         fGeomGentleTrd = 0;
     }
-    if(fGeomGentleEmcal){
-        fGeomGentleEmcal->DestroyElements();
-        gEve->RemoveElement(fGeomGentleEmcal,gEve->GetGlobalScene());
-        fGeomGentleEmcal = 0;
+        
+    for(int i=0;i<fGeomVector.size();i++)
+    {
+        if(fGeomVector[i])
+        {
+            fGeomVector[i]->DestroyElements();
+            gEve->RemoveElement(fGeomVector[i],gEve->GetGlobalScene());
+            fGeomVector[i] = 0;
+        }
     }
-    if(fGeomGentleZdc){
-        fGeomGentleZdc->DestroyElements();
-        gEve->RemoveElement(fGeomGentleZdc,gEve->GetGlobalScene());
-        fGeomGentleZdc = 0;
-    }
-//    if(fIsMuonView) fGeomGentleMuon->DestroyElements();
-    
 }
 

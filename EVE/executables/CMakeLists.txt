@@ -18,7 +18,7 @@
 # Module include folder
 include_directories(
                     ${AliRoot_SOURCE_DIR}/EVE/alieve_main
-                    ${AliRoot_SOURCE_DIR}/EVE/aliconvertertest
+                    ${AliRoot_SOURCE_DIR}/EVE/aliceToJson
                    )
 
 # Additional include folders in alphabetical order
@@ -38,8 +38,8 @@ include_directories(
                    )
 
 # aliconvertertest executable
-add_executable(aliconvertertest aliconvertertest.cxx)
-    target_link_libraries(aliconvertertest ConverterJSON STEERBase STEER ESD)
+add_executable(aliceToJson aliceToJson.cxx)
+    target_link_libraries(aliceToJson ConverterJSON STEERBase STEER ESD)
 
 # alieve executable
 add_executable(alieve alieve_main.cxx)
@@ -51,4 +51,4 @@ if(ZEROMQ_FOUND)
 endif(ZEROMQ_FOUND)
 
 # Installation
-install(TARGETS alieve aliconvertertest RUNTIME DESTINATION bin)
+install(TARGETS alieve aliceToJson RUNTIME DESTINATION bin)

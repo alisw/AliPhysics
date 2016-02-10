@@ -1,9 +1,10 @@
 #include "AliExternalFormatConverter.h"
 
 
-int main(int argv, char* argc[]){
+int main(int argv, char* argc[])
+{
     if (argv != 4){
-        std::cout << "Usage:\naliconvertertest <event_numer> <input_path> <output_path>" << std::endl;
+        std::cout << "Usage:\naliceToJson <event_numer> <input_path> <output_path>" << std::endl;
         return(EXIT_FAILURE);
     }
     Int_t entry = atoi(argc[1]); // Event number

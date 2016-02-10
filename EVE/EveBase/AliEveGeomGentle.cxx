@@ -42,7 +42,7 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentle(bool register_as_global)
     elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
     
     for (int i=0; i<5; i++) {
-        elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainColor(fSettings.GetValue("PHOS.color",593));
+        elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainColor(fSettings.GetValue("PHS.color",593));
         elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainTransparency(70);
     }
     
@@ -56,7 +56,7 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentle(bool register_as_global)
     TEveElement* elHMPID = gsre->FindChild("HMPID");
     
     for (int i=0; i<7; i++) {
-        elHMPID->FindChild(Form("HMPID_%i",i))->SetMainColor(fSettings.GetValue("HMPID.color",5));
+        elHMPID->FindChild(Form("HMPID_%i",i))->SetMainColor(fSettings.GetValue("HMP.color",5));
         elHMPID->FindChild(Form("HMPID_%i",i))->SetMainTransparency(80);
     }
     
@@ -67,16 +67,16 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentle(bool register_as_global)
     TEveElement* elIT34_1 = elITS_Dets->FindChild("IT34_1");
     TEveElement* elIT56_1 = elITS_Dets->FindChild("IT56_1");
     
-    elIT12_1->SetMainColor(fSettings.GetValue("ITS.SPD.color",924));
-    elIT34_1->SetMainColor(fSettings.GetValue("ITS.SDD.color",925));
-    elIT56_1->SetMainColor(fSettings.GetValue("ITS.SSD.color",926));
+    elIT12_1->SetMainColor(fSettings.GetValue("SPD.color",924));
+    elIT34_1->SetMainColor(fSettings.GetValue("SDD.color",925));
+    elIT56_1->SetMainColor(fSettings.GetValue("SSD.color",926));
     
     // set TOF color
     TEveElement* elTRD_TOF = gsre->FindChild("TRD+TOF");
     TEveElement* elB076_1 = elTRD_TOF->FindChild("B076_1");
     TEveElement* elBREF_1 = elTRD_TOF->FindChild("BREF_1");
     elB076_1->SetMainColor(fSettings.GetValue("TOF.color",930));
-    elBREF_1->SetMainColor(fSettings.GetValue("TRD.ref.color",929));
+    elBREF_1->SetMainColor(fSettings.GetValue("TRD.color",929));
     
     	
     // finish
@@ -100,7 +100,7 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRphi()
     elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
     
     for (int i=0;i<5;i++) {
-        elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainColor(fSettings.GetValue("PHOS.color",593));
+        elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainColor(fSettings.GetValue("PHS.color",593));
         elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainTransparency(70);
     }
 
@@ -125,7 +125,7 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRphi()
     TEveElement* elHMPID = gsre->FindChild("HMPID");
     
     for (int i=0; i<7; i++) {
-        elHMPID->FindChild(Form("HMPID_%i",i))->SetMainColor(fSettings.GetValue("HMPID.color",5));
+        elHMPID->FindChild(Form("HMPID_%i",i))->SetMainColor(fSettings.GetValue("HMP.color",5));
         elHMPID->FindChild(Form("HMPID_%i",i))->SetMainTransparency(80);
     }
 
@@ -136,16 +136,16 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRphi()
     TEveElement* elIT34_1 = elITS_Dets->FindChild("IT34_1");
     TEveElement* elIT56_1 = elITS_Dets->FindChild("IT56_1");
     
-    elIT12_1->SetMainColor(fSettings.GetValue("ITS.SPD.color",924));
-    elIT34_1->SetMainColor(fSettings.GetValue("ITS.SDD.color",925));
-    elIT56_1->SetMainColor(fSettings.GetValue("ITS.SSD.color",926));
+    elIT12_1->SetMainColor(fSettings.GetValue("SPD.color",924));
+    elIT34_1->SetMainColor(fSettings.GetValue("SDD.color",925));
+    elIT56_1->SetMainColor(fSettings.GetValue("SSD.color",926));
     
     // set TOF color
     TEveElement* elTRD_TOF = gsre->FindChild("TRD+TOF");
     TEveElement* elB076_1 = elTRD_TOF->FindChild("B076_1");
     TEveElement* elBREF_1 = elTRD_TOF->FindChild("BREF_1");
     elB076_1->SetMainColor(fSettings.GetValue("TOF.color",930));
-    elBREF_1->SetMainColor(fSettings.GetValue("TRD.ref.color",929));
+    elBREF_1->SetMainColor(fSettings.GetValue("TRD.color",929));
 
     
     return gsre;
@@ -163,7 +163,7 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRhoz()
     elPHOS->FindChild("PHOS_5")->SetRnrState(kFALSE);
 
     for (int i=0; i<5; i++) {
-        elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainColor(fSettings.GetValue("PHOS.color",593));
+        elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainColor(fSettings.GetValue("PHS.color",593));
         elPHOS->FindChild(Form("PHOS_%i",i+1))->SetMainTransparency(70);
     }
     
@@ -177,7 +177,7 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRhoz()
     TEveElement* elHMPID = gsre->FindChild("HMPID");
     
     for(int i=0;i<7;i++){
-        elHMPID->FindChild(Form("HMPID_%i",i))->SetMainColor(fSettings.GetValue("HMPID.color",5));
+        elHMPID->FindChild(Form("HMPID_%i",i))->SetMainColor(fSettings.GetValue("HMP.color",5));
         elHMPID->FindChild(Form("HMPID_%i",i))->SetMainTransparency(80);
     }
     
@@ -188,16 +188,16 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleRhoz()
     TEveElement* elIT34_1 = elITS_Dets->FindChild("IT34_1");
     TEveElement* elIT56_1 = elITS_Dets->FindChild("IT56_1");
     
-    elIT12_1->SetMainColor(fSettings.GetValue("ITS.SPD.color",924));
-    elIT34_1->SetMainColor(fSettings.GetValue("ITS.SDD.color",925));
-    elIT56_1->SetMainColor(fSettings.GetValue("ITS.SSD.color",926));
+    elIT12_1->SetMainColor(fSettings.GetValue("SPD.color",924));
+    elIT34_1->SetMainColor(fSettings.GetValue("SDD.color",925));
+    elIT56_1->SetMainColor(fSettings.GetValue("SSD.color",926));
     
     // set TOF color
     TEveElement* elTRD_TOF = gsre->FindChild("TRD+TOF");
     TEveElement* elB076_1 = elTRD_TOF->FindChild("B076_1");
     TEveElement* elBREF_1 = elTRD_TOF->FindChild("BREF_1");
     elB076_1->SetMainColor(fSettings.GetValue("TOF.color",930));
-    elBREF_1->SetMainColor(fSettings.GetValue("TRD.ref.color",929));
+    elBREF_1->SetMainColor(fSettings.GetValue("TRD.color",929));
     
     return gsre;
 }
@@ -241,71 +241,27 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleTRD()
     return gsre;
 }
 
-TEveGeoShape* AliEveGeomGentle::GetGeomGentleEMCAL()
+TEveGeoShape* AliEveGeomGentle::GetSimpleGeom(char* detector)
 {
-    TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo_emcal.root");
-    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle EMCAL");
+    TFile f(Form("$ALICE_ROOT/EVE/resources/geometry/simple_geom_%s.root",detector));
+    cout<<"Loading:"<<Form("$ALICE_ROOT/EVE/resources/geometry/simple_geom_%s.root",detector)<<endl;
+    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get(detector);
     TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
     gEve->AddGlobalElement(gsre);
     f.Close();
     
-    // Fix visibility, color and transparency
-    gsre->SetRnrSelf(kTRUE);
-    gsre->SetMainColor(fSettings.GetValue("EMCAL.color", 953));
-    gsre->SetMainTransparency(70);
+    DrawDeep(gsre,
+             fSettings.GetValue(Form("%s.color",detector),kRed),
+             fSettings.GetValue(Form("%s.trans",detector),80),
+             fSettings.GetValue(Form("%s.line",detector),false));
     
-    return gsre;
-}
-
-TEveGeoShape* AliEveGeomGentle::GetGeomGentleZDC()
-{
-    TFile f1("$ALICE_ROOT/EVE/resources/geometry/gentle_geom_zdca.root");
-    TFile f2("$ALICE_ROOT/EVE/resources/geometry/gentle_geom_zdcc.root");
-    TEveGeoShapeExtract* gse1 = (TEveGeoShapeExtract*) f1.Get("Gentle ZDCA");
-    TEveGeoShapeExtract* gse2 = (TEveGeoShapeExtract*) f2.Get("Gentle ZDCC");
-    TEveGeoShape* gsre1 = TEveGeoShape::ImportShapeExtract(gse1);
-    TEveGeoShape* gsre2 = TEveGeoShape::ImportShapeExtract(gse2);
-    gEve->AddGlobalElement(gsre1);
-    gEve->AddGlobalElement(gsre2);
-    f1.Close();
-    f2.Close();
-    
-    // Fix visibility, color and transparency
-    gsre1->SetRnrSelf(kTRUE);
-    gsre1->SetMainColor(fSettings.GetValue("EMCAL.color", 953));
-    gsre1->SetMainTransparency(70);
-    
-    gsre2->SetRnrSelf(kTRUE);
-    gsre2->SetMainColor(fSettings.GetValue("EMCAL.color", 953));
-    gsre2->SetMainTransparency(70);
-    
-    TEveGeoShape *zdc = new TEveGeoShape("ZDC");
-    zdc->AddElement(gsre1);
-    zdc->AddElement(gsre2);
-    
-    return zdc;
-}
-
-TEveGeoShape* AliEveGeomGentle::GetGeomGentleMUON(bool updateScene)
-{
-    TFile f("$ALICE_ROOT/EVE/resources/geometry/gentle_geo_muon.root");
-    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle MUON");
-    TEveGeoShape* gsre = TEveGeoShape::ImportShapeExtract(gse);
-    gEve->AddGlobalElement(gsre);
-    f.Close();
-    
-    DrawDeep(gsre);
-    
-    if ( updateScene ) {
-        TGLViewer* v = gEve->GetDefaultGLViewer();
-        v->UpdateScene();
-    }
+    gEve->GetDefaultGLViewer()->UpdateScene();
     
     return gsre;
 }
 
 
-void AliEveGeomGentle::DrawDeep(TEveGeoShape *gsre)
+void AliEveGeomGentle::DrawDeep(TEveGeoShape *gsre,Color_t color, Char_t transparency, bool drawLine)
 {
     if(gsre->HasChildren())
     {
@@ -313,14 +269,18 @@ void AliEveGeomGentle::DrawDeep(TEveGeoShape *gsre)
         for (TEveElement::List_i i = gsre->BeginChildren(); i != gsre->EndChildren(); ++i)
         {
             TEveGeoShape* lvl = (TEveGeoShape*) *i;
-            DrawDeep(lvl);
+            DrawDeep(lvl,color,transparency,drawLine);
         }
     }
     else
     {
+        gsre->Print();
+        cout<<"SetMainColor:"<<color<<endl;
         gsre->SetRnrSelf(kTRUE);
-        gsre->SetMainColor(fSettings.GetValue("MUON.color",920));
-        gsre->SetMainTransparency(80);
+        gsre->SetMainColor(color);
+        gsre->SetLineColor(color);
+        gsre->SetDrawFrame(drawLine);
+        gsre->SetMainTransparency(transparency);
     }
 }
 

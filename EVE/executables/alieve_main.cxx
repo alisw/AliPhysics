@@ -7,14 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 #include <AliEveConfigManager.h>
-
-#include <TInterpreter.h>
-#include <TRint.h>
-#include <TROOT.h>
-#include <TPRegexp.h>
-#include <TSystem.h>
-#include <TError.h>
-#include <RVersion.h>
+#include <AliEveInit.h>
 
 #include <AliLog.h>
 
@@ -24,11 +17,17 @@
 #include <TEveBrowser.h>
 #include <TEveViewer.h>
 
+#include <TInterpreter.h>
+#include <TRint.h>
+#include <TROOT.h>
+#include <TPRegexp.h>
+#include <TSystem.h>
+#include <TError.h>
+
+#include <RVersion.h>
 #include <Getline.h>
-
-#include "AliEveInit.h"
-
 #include <iostream>
+
 using namespace std;
 
 int main(int argc, char **argv)

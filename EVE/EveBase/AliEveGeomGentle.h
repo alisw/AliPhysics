@@ -18,17 +18,16 @@ public:
     AliEveGeomGentle();
     ~AliEveGeomGentle();
     
+    TEveGeoShape* GetSimpleGeom(char* detector);
+    
     TEveGeoShape* GetGeomGentle(bool register_as_global=kTRUE);
     TEveGeoShape* GetGeomGentleRphi();
     TEveGeoShape* GetGeomGentleRhoz();
     TEveGeoShape* GetGeomGentleTRD();
-    TEveGeoShape* GetGeomGentleEMCAL();
-    TEveGeoShape* GetGeomGentleZDC();
-    TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE);
 
 private:
     TEnv fSettings;
-    void DrawDeep(TEveGeoShape *gsre);
+    void DrawDeep(TEveGeoShape *gsre, Color_t color, Char_t transparency, bool drawLine);
 };
 
 

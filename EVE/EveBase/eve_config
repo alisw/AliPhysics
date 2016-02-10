@@ -55,17 +55,31 @@ primary.vertex.spd.cross:               0
 momentum.histograms.show:               0
 momentum.histograms.all.events.show:    0
 
-PHOS.color:                             953
+PHS.color:                              53
 TPC.color:                              3
-HMPID.color:                            5
+HMP.color:                              5
 TRD.color:                              920
-TRD.ref.color:                          929
-MUON.color:                             920
-EMCAL.color:                            953
-ITS.SPD.color:                          924
-ITS.SDD.color:                          925
-ITS.SSD.color:                          926
+MCH.color:                              920
+EMC.color:                              53
+ACO.color:                              920
+SPD.color:                              924
+SDD.color:                              925
+SSD.color:                              926
 TOF.color:                              930
+
+PHS.trans:                              80
+TPC.trans:                              80
+HMP.trans:                              80
+TRD.trans:                              80
+MCH.trans:                              80
+EMC.trans:                              80
+ACO.trans:                              50
+SPD.trans:                              80
+SDD.trans:                              80
+SSD.trans:                              80
+TOF.trans:                              80
+
+MCH.line:                               1
 
 clusters.show:                          0
 kinks.show:                             0

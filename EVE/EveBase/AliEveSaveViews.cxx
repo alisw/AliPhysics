@@ -301,7 +301,7 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
     }
     
     TEveViewerList* viewers = gEve->GetViewers();
-    int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
+    int Nviewers = viewers->NumChildren()-2; // remark: 3D view is counted twice
     
     int width = 3840;
     int height= 2160;

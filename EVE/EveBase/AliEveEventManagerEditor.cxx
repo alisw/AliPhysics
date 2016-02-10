@@ -361,13 +361,12 @@ void AliEveEventManagerWindow::DoRefresh()
     mv->SetDepth(-10);
     mv->InitGeomGentle(geomGentle->GetGeomGentle(),
                        geomGentle->GetGeomGentleRphi(),
-                       geomGentle->GetGeomGentleRhoz(),
-                       0);
+                       geomGentle->GetGeomGentleRhoz());
     
     mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
-    mv->InitGeomGentleEmcal(geomGentle->GetGeomGentleEMCAL());
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
     if(settings.GetValue("MUON.show", true)){
-        mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true), kFALSE, kTRUE, kFALSE);
+        mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false,true);
     }
     mv->SetDepth(0);
     

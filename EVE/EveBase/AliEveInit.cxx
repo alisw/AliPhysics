@@ -6,54 +6,29 @@
 //
 //
 
-#include "AliEveInit.h"
-
-#include <TString.h>
-#include <TGrid.h>
-#include <TSystem.h>
-#include <TROOT.h>
-#include <TInterpreter.h>
-#include <TMath.h>
-#include <TGListTree.h>
-#include <TEveVSDStructs.h>
-#include <TEveManager.h>
-#include <TEveTrackPropagator.h>
-#include <TEnv.h>
-#include <TEveWindowManager.h>
-#include <TGTab.h>
-#include <TTimeStamp.h>
-#include <TPRegexp.h>
-#include <TFolder.h>
-#include <TSystemDirectory.h>
-#include <TGButton.h>
-#include <TGFileBrowser.h>
-#include <TEveMacro.h>
-#include <TGTab.h>
-#include <TGWindow.h>
-
-#include <AliESDtrackCuts.h>
-#include <AliESDEvent.h>
-#include <AliESDfriend.h>
-#include <AliESDtrack.h>
-#include <AliESDfriendTrack.h>
-#include <AliExternalTrackParam.h>
-#include <AliLog.h>
-
-#include <AliEveTrack.h>
+#include <AliEveInit.h>
 #include <AliEveTrackCounter.h>
-#include <AliEveMagField.h>
-#include <AliEveEtaPtView.h>
 #include <AliEveEventManagerEditor.h>
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
 #include <AliEveMacro.h>
-#include <AliEveEventSelectorWindow.h>
 #include <AliEveGeomGentle.h>
 #include <AliEveDataSourceOffline.h>
 #include <AliEveDataSourceHLTZMQ.h>
 #include <AliEveEventManager.h>
 
 #include <AliCDBManager.h>
+
+#include <TGrid.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
+#include <TEveWindowManager.h>
+#include <TGTab.h>
+#include <TPRegexp.h>
+#include <TFolder.h>
+#include <TSystemDirectory.h>
+#include <TGFileBrowser.h>
+#include <TEveMacro.h>
 
 #include <iostream>
 
@@ -74,6 +49,8 @@ fPath(path)
     
     TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
     
+    const int nDetectors = 2;
+    const char* detectors[nDetectors] = {"ACO","MCH"};
     
     Info("AliEveInit",Form("\n\nOCDB path:%s\n\n",ocdbStorage.Data()));
     
@@ -106,27 +83,24 @@ fPath(path)
     // Geometry, scenes, projections and viewers
     //==============================================================================
     
-    AliEveMultiView *mv = new AliEveMultiView(false);
+    AliEveMultiView *mv = new AliEveMultiView();
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
     
     mv->SetDepth(-10);
     
     mv->InitGeomGentle(geomGentle->GetGeomGentle(),
                        geomGentle->GetGeomGentleRphi(),
-                       geomGentle->GetGeomGentleRhoz(),
-                       0/*geomGentle->GetGeomGentleRhoz()*/);
+                       geomGentle->GetGeomGentleRhoz());
     
     mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
-    mv->InitGeomGentleEmcal(geomGentle->GetGeomGentleEMCAL());
-    //    mv->InitGeomGentleZdc(geomGentle->GetGeomGentleZDC());
+    
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("ACO"));
     
     if(settings.GetValue("MUON.show", true)){
-        mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true), kFALSE, kTRUE, kFALSE);
+        mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false);
     }
     mv->SetDepth(0);
-    
-    //    AliEveEtaPtView *epview = new AliEveEtaPtView();
-    //    epview->InitGeom();
     
     AddMacros();
     
@@ -216,8 +190,6 @@ fPath(path)
 void AliEveInit::Init()
 {
     Info("AliEveInit","Adding standard macros");
-    //    TEveUtil::AssertMacro("VizDB_scan.C");
-    //    gSystem->ProcessEvents();
     
     AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
     
@@ -293,14 +265,7 @@ void AliEveInit::AddMacros()
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw",     "", drawRawData));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw",   "", drawRawData));
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw",  "", drawRawData));
-    
-    // default appearance:
-    //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "", kTRUE));
-    
-    // preset for cosmics:
-    //  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C", "esd_tracks_by_category",  "kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kGreen,kFALSE", kTRUE));
-    
-    
+
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
     
     exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "its_clusters.C", "its_clusters","",     drawClusters));
