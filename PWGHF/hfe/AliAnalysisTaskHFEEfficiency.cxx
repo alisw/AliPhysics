@@ -146,9 +146,9 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency(const char *name)
 ,fminTOFnSigma(-2)
 ,fmaxTOFnSigma(2)
 ,fTPCS(0)
-
-//,fhHFStackBeauty(0)
-//,fhHFStackCharm(0)
+,fULS(0)
+,fLS(0)
+,Rconv_pT(0)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -242,8 +242,6 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fcocktail(0)
 ,WeightsForEnhanced(0)
 ,fNoEventsStackHFE(0)
-//,fhHFStackBeauty(0)
-//,fhHFStackCharm(0)
 ,fminITSnsigmaLowpT(-1)
 ,fmaxITSnsigmaLowpT(1)
 ,fminITSnsigmaHighpT(-2)
@@ -255,7 +253,9 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fminTOFnSigma(-2)
 ,fmaxTOFnSigma(2)
 ,fTPCS(0)
-
+,fULS(0)
+,fLS(0)
+,Rconv_pT(0)
 {
 
     fPID = new AliHFEpid("hfePid");
@@ -787,7 +787,6 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
 void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
 {
     
-    //cout << "==============mmmhh================" << endl;
 
     
     AliDebug(3, "Creating Output Objects");
