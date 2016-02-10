@@ -230,7 +230,8 @@ int main(Int_t argc, const char **argv)
   UChar_t channelId;
   UShort_t charge;
 
-  const char* prefixDA = "MUONTRKPEDda"; // program prefix
+  //2015-02-08  const char* prefixDA = "MUONTRKPEDda"; // program prefix
+  const char* prefixDA = "MCHPEDda"; // program prefix
   const char* prefixLDC = getenv("DATE_ROLE_NAME"); // LDC name
   if(prefixLDC == NULL)  prefixLDC ="MCH" ;
   printf("%s : -------- Begin execution : %s --------  \n",prefixLDC,prefixDA); 
@@ -263,7 +264,10 @@ int main(Int_t argc, const char **argv)
       char line[80];
       sprintf(dbfile,"mutrkpedvalues");
       status=daqDA_DB_getFile(dbfile,dbfile);
-      if(status) {printf(" !!! Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
+      if(status) {fprintf(stderr," !!! ERROR  : input file %s is missing, status = %d\n",dbfile,status);
+	fprintf(stderr,"\n%s : -------- %s ending in ERROR !!!! -------- (status= %d) \n",prefixLDC,prefixDA,-1);
+	return -1; }
+ 
       ifstream filein(dbfile,ios::in);
       filein >> line >> nConfig ; cout << "mutrkpedvalues: " << line << nConfig << "  "  ;
       filein >> line >> nEvthres ; if(nEvthres !=0)nEvthreshold=nEvthres;  cout << line << nEvthreshold << "  " ; 
@@ -285,7 +289,9 @@ int main(Int_t argc, const char **argv)
     {
       sprintf(dbfile,"config_%s",getenv("DATE_ROLE_NAME"));
       status=daqDA_DB_getFile(dbfile,dbfile);
-      if(status) {printf(" !!! Failed  : Configuration file %s is missing, status = %d\n",dbfile,status); return -1; }
+      if(status) {fprintf(stderr," !!! ERROR  : Configuration file %s is missing, status = %d\n",dbfile,status);
+	fprintf(stderr,"\n%s : -------- %s ending in ERROR !!!! -------- (status= %d) \n",prefixLDC,prefixDA,-1);
+	return -1; }
       muonPedestal->LoadConfig(dbfile);  
     } 
 
@@ -340,9 +346,12 @@ int main(Int_t argc, const char **argv)
       int eventParityErrors = 0;
       int eventPaddingErrors = 0;
       int eventTokenlostErrors = 0;
+
       rawStream->First();
       do
 	{
+//**	  if (rawStream->GetDDL()== 8 ) { 
+
 	  if (rawStream->IsErrorMessage()) eventIsErrorMessage = kTRUE;
 	  eventGlitchErrors += rawStream->GetGlitchErrors();
 	  eventParityErrors += rawStream->GetParityErrors();
@@ -377,9 +386,11 @@ int main(Int_t argc, const char **argv)
 		    }
 		}
 	    }
+ //**	  }  //  if (rawStream->GetDDL()== 8 ) {
 	} while(rawStream->NextDDL()); 
 
       AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
+
       if (!eventIsErrorMessage) 
 	{
 	  // Good events (no error) -> compute pedestal for all channels
@@ -513,12 +524,18 @@ int main(Int_t argc, const char **argv)
   detail=Form("\n%s : Nb of events without errors = %d",prefixLDC,nEvents-nEventsRecovered) ;                cout << detail; filcout << detail ;
   detail=Form("\n%s : Nb of used events           = %d (threshold= %d)\n\n",prefixLDC,nEvents,nEvthreshold); cout << detail; filcout << detail ;
 
+  //2015-01-22  create filerror.txt file for checking (should be removed later) 
+  //2015-01-22  FILE *fp;
+  //2015-01-22  fp= fopen("filerror.txt","w+");
   // Writing Token Error table
   if(nTokenlostErrors)
     {
-      detail=Form("%s : Warning: Token Lost occurence \n",prefixLDC);
-      printf("%s",detail);
+      detail=Form("%s : Error : Token Lost occurence \n",prefixLDC);
       filcout <<  detail ;
+      //2015-01-22      printf("%s",detail);
+      //2015-01-22      cerr << "ERROR :  " << detail;
+      fprintf(stderr,"%s",detail);
+      //2015-01-22      fprintf(fp,"%s",detail);
       for ( Int_t i=0 ; i<20 ; i++) 
 	{ 
 	  for ( Int_t j=4 ; j<14 ; j++) 
@@ -528,14 +545,16 @@ int main(Int_t argc, const char **argv)
 		  Int_t tab=tabTokenError[i][j];
 		  Int_t frt=j/2-1;
 		  Int_t station = i/4 +1;
-		  if( j % 2 == 0)detail=Form("%s : in DDL= %d (station %d) and FRT%d ( Up ) => %d Token errors (address = 0x%X0000)",prefixLDC,2560+i,station,frt,tab,j);
-		  else detail=Form("%s : in DDL= %d (station %d) and FRT%d (Down) => %d Token errors (address = 0x%X0000)",prefixLDC,2560+i,station,frt,tab,j);
-		  printf("%s\n",detail);
+		  if( j % 2 == 0)detail=Form("%s : Error : in DDL= %d (station %d) and FRT%d ( Up ) => %d Token errors (address = 0x%X0000)",prefixLDC,2560+i,station,frt,tab,j);
+		  else detail=Form("%s : Error : in DDL= %d (station %d) and FRT%d (Down) => %d Token errors (address = 0x%X0000)",prefixLDC,2560+i,station,frt,tab,j);
+		  //2015-01-22		  printf("%s\n",detail);
+		  fprintf(stderr,"%s\n",detail);
 		  filcout <<  detail << endl;
 		}
 	    }
 	}
     }
+  //2015-01-22  fclose(fp);
 
   if (!shuttleFile.IsNull())  
     {
@@ -560,14 +579,16 @@ int main(Int_t argc, const char **argv)
   cout << endl; 
   status1 = daqDA_FES_storeFile(shuttleFile.Data(),"PEDESTALS");
   if (status1) { detail=Form("%s: !!! ERROR: Failed to export pedestal file : %s to FES \n",prefixLDC,shuttleFile.Data()); 
-    printf("%s",detail); filcout << detail ; status= -1; }
+    //2015-01-22    printf("%s",detail); filcout << detail ; status= -1; }
+    fprintf(stderr,"%s",detail); filcout << detail ; status= -1; }
 
   // Transferring configuration file to FES  (be sure that env variable DAQDALIB_PATH is set)
   if(nConfig) 
     { cout << endl; 
       status1 = daqDA_FES_storeFile(dbfile,"CONFIG");
       if (status1) { detail=Form("%s: !!! ERROR: Failed to export configuration file : %s to FES \n",prefixLDC,dbfile); 
-	printf("%s",detail); filcout << detail ; status=-1; }
+	//2015-01-22	printf("%s",detail); filcout << detail ; status=-1; }
+	fprintf(stderr,"%s",detail); filcout << detail ; status=-1; }
     }
 
   filcout.close();
@@ -606,7 +627,7 @@ int main(Int_t argc, const char **argv)
     
 
   if(!status)printf("\n%s : -------- End execution : %s -------- (status= %d) \n",prefixLDC,prefixDA,status);
-  else { printf("\n%s : -------- %s ending in ERROR !!!! -------- (status= %d) \n",prefixLDC,prefixDA,status);}
+  else { fprintf(stderr,"\n%s : -------- %s ending in ERROR !!!! -------- (status= %d) \n",prefixLDC,prefixDA,status);}
   timers.Stop();
   printf("\n Execution time : R:%7.2fs C:%7.2fs\n",timers.RealTime(), timers.CpuTime());
   return status;
