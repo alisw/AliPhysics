@@ -29,6 +29,7 @@
 #include <TSystemDirectory.h>
 #include <TGFileBrowser.h>
 #include <TEveMacro.h>
+#include <TEveBrowser.h>
 
 #include <iostream>
 
@@ -86,21 +87,15 @@ fPath(path)
     AliEveMultiView *mv = new AliEveMultiView();
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
     
-    mv->SetDepth(-10);
-    
-    mv->InitGeomGentle(geomGentle->GetGeomGentle(),
-                       geomGentle->GetGeomGentleRphi(),
-                       geomGentle->GetGeomGentleRhoz());
-    
-    mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
-    
+    mv->InitSimpleGeom(geomGentle->GetGeomGentleRphi(),true,false); // special geometry for RPhi projection
+    mv->InitSimpleGeom(geomGentle->GetGeomGentle(),false,true);     // to be replaced by per-detector geometries
     mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
     mv->InitSimpleGeom(geomGentle->GetSimpleGeom("ACO"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TRD"));
     
     if(settings.GetValue("MUON.show", true)){
         mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false);
     }
-    mv->SetDepth(0);
     
     AddMacros();
     

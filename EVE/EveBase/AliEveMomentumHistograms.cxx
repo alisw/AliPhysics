@@ -15,7 +15,9 @@
 #include <TH2.h>
 #include <TEveLegoEventHandler.h>
 #include <TEveManager.h>
+#include <TEveBrowser.h>
 #include <TEveTrans.h>
+#include <TEveProjectionAxes.h>
 
 AliEveMomentumHistograms::AliEveMomentumHistograms()
 {

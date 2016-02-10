@@ -16,6 +16,7 @@
 
 #include <AliESDEvent.h>
 
+#include <TEveProjectionAxes.h>
 #include <TVirtualPad.h>
 #include <TColor.h>
 #include <TEveGValuators.h>
@@ -23,8 +24,8 @@
 #include <TGTextView.h>
 #include <TGLabel.h>
 #include <TSystem.h>
-
 #include <TTimeStamp.h>
+
 #include <AliRawReader.h>
 #include <AliDAQ.h>
 #include <AliRawEventHeaderBase.h>
@@ -358,17 +359,16 @@ void AliEveEventManagerWindow::DoRefresh()
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
     
     mv->DestroyAllGeometries();
-    mv->SetDepth(-10);
-    mv->InitGeomGentle(geomGentle->GetGeomGentle(),
-                       geomGentle->GetGeomGentleRphi(),
-                       geomGentle->GetGeomGentleRhoz());
     
-    mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
+    mv->InitSimpleGeom(geomGentle->GetGeomGentleRphi(),true,false); // special geometry for RPhi projection
+    mv->InitSimpleGeom(geomGentle->GetGeomGentle(),false,true);     // to be replaced by per-detector geometries
     mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("ACO"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TRD"));
+    
     if(settings.GetValue("MUON.show", true)){
         mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false,true);
     }
-    mv->SetDepth(0);
     
     TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
     TEveScene *rhoZScene = AliEveMultiView::Instance()->GetRhoZScene();

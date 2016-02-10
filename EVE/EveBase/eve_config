@@ -65,7 +65,7 @@ ACO.color:                              920
 SPD.color:                              924
 SDD.color:                              925
 SSD.color:                              926
-TOF.color:                              930
+TOF.color:                              634
 
 PHS.trans:                              80
 TPC.trans:                              80

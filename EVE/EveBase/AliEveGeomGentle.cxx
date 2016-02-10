@@ -251,8 +251,8 @@ TEveGeoShape* AliEveGeomGentle::GetSimpleGeom(char* detector)
     f.Close();
     
     DrawDeep(gsre,
-             fSettings.GetValue(Form("%s.color",detector),kRed),
-             fSettings.GetValue(Form("%s.trans",detector),80),
+             fSettings.GetValue(Form("%s.color",detector),-1),
+             fSettings.GetValue(Form("%s.trans",detector),-1),
              fSettings.GetValue(Form("%s.line",detector),false));
     
     gEve->GetDefaultGLViewer()->UpdateScene();
@@ -274,13 +274,11 @@ void AliEveGeomGentle::DrawDeep(TEveGeoShape *gsre,Color_t color, Char_t transpa
     }
     else
     {
-        gsre->Print();
-        cout<<"SetMainColor:"<<color<<endl;
         gsre->SetRnrSelf(kTRUE);
-        gsre->SetMainColor(color);
-        gsre->SetLineColor(color);
+        if(color>=0) gsre->SetMainColor(color);
+        if(color>=0) gsre->SetLineColor(color);
         gsre->SetDrawFrame(drawLine);
-        gsre->SetMainTransparency(transparency);
+        if(transparency>=0) gsre->SetMainTransparency(transparency);
     }
 }
 

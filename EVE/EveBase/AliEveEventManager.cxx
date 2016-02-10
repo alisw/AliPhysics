@@ -34,6 +34,7 @@
 
 #include <TEveElement.h>
 #include <TEveManager.h>
+#include <TEveBrowser.h>
 #include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TTimeStamp.h>
