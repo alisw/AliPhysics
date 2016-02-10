@@ -2441,7 +2441,8 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 
   printf("NonLinearity Correction: \n");
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
-  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %i \n", fSwitchNonLinearity, periodName.Data(), fCurrentMC );
+  if (periodName.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(periodName);
+  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %o \n", fSwitchNonLinearity, periodName.Data(), fCurrentMC );
   else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
   
 }
@@ -3255,7 +3256,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     return;
   }
 
-  if(isMC>0 && fCurrentMC==kNoMC){
+  if(fCurrentMC==kNoMC){
     AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
     if( V0Reader == NULL ){
       AliFatal(Form("No V0Reader called '%s' could be found within AliCaloPhotonCuts::CorrectEMCalNonLinearity",fV0ReaderName.Data()));
@@ -3263,7 +3264,11 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     }
     fPeriodName = V0Reader->GetPeriodName();
     fCurrentMC = FindEnumForMCSet(fPeriodName);
+    
+    printf("AliCaloPhotonCuts:Period name has been set to %s, period-enum: %o\n",fPeriodName.Data(),fCurrentMC ) ;
   }
+  
+    
   Bool_t fPeriodNameAvailable = kTRUE;
 
   switch(fSwitchNonLinearity){
