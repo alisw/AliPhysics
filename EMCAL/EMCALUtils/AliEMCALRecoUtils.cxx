@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliEMCALRecoUtils.cxx | Sun Dec 8 06:56:48 2013 +0100 | Constantin Loizides  $ */
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Class AliEMCALRecoUtils
@@ -66,7 +64,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
-  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       
+  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       
   fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
@@ -113,6 +111,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
+  fConstantTimeShift(reco.fConstantTimeShift),  
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(reco.fEMCALTimeRecalibrationFactors),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
@@ -177,7 +176,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fRecalibration             = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
 
-  fTimeRecalibration             = reco.fTimeRecalibration;
+  fConstantTimeShift         = reco.fConstantTimeShift;
+  fTimeRecalibration         = reco.fTimeRecalibration;
   fEMCALTimeRecalibrationFactors = reco.fEMCALTimeRecalibrationFactors;
 
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
@@ -356,6 +356,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   
   // Recalibrate time
   time = cells->GetCellTime(absID);
+  time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
   
   RecalibrateCellTime(absID,bc,time);
   
@@ -1345,7 +1346,8 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Double_t time = cells->GetCellTime(absIdMax);
   if (!fCellsRecalibrated && IsTimeRecalibrationOn())
     RecalibrateCellTime(absIdMax,bc,time);
-
+  time-=fConstantTimeShift*1e-9; // only in case of Run1 old simulations
+  
   //Recalibrate time with L1 phase 
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn())
     RecalibrateCellTimeL1Phase(imod, bc, time);

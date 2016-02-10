@@ -155,6 +155,8 @@ public:
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
   // Time Recalibration  
+  void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
+
   void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time) const;
   
   Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
@@ -394,6 +396,7 @@ private:
   TObjArray* fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
     
   // Time Recalibration 
+  Float_t    fConstantTimeShift;             //  Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
   Bool_t     fTimeRecalibration;             // Switch on or off the time recalibration
   TObjArray* fEMCALTimeRecalibrationFactors; // Array of histograms with map of time recalibration factors, EMCAL
 
@@ -460,7 +463,7 @@ private:
   Bool_t     fCutRequireITSStandAlone;   // Require ITSStandAlone
   Bool_t     fCutRequireITSpureSA;       // ITS pure standalone tracks
   
-  ClassDef(AliEMCALRecoUtils, 23)
+  ClassDef(AliEMCALRecoUtils, 24)
 };
 #endif // ALIEMCALRECOUTILS_H
 
