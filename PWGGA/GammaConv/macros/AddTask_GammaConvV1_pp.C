@@ -1,29 +1,67 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: Friederike Bock, Lucia Leardini                                *
+ * Version 1.0                                                            *
+ *                                                                        *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//***************************************************************************************
+//This AddTask is supposed to set up the main task
+//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaConvV1.cxx) for
+//pp together with all supporting classes
+//***************************************************************************************
+
+//***************************************************************************************
+//CutHandler contains all cuts for a certain analysis and trainconfig,
+//it automatically checks length of cutStrings and takes care of the number of added cuts,
+//no specification of the variable 'numberOfCuts' needed anymore.
+//***************************************************************************************
+
 class CutHandlerConv{
   public:
     CutHandlerConv(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
 
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
       if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
+      nCuts++;
+      return;
+    }
+
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetClusterCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
     TString* eventCutArray;
     TString* photonCutArray;
     TString* mesonCutArray;
+    TString* clusterCutArray;
 };
 
 void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,                    // change different set of cuts
@@ -666,78 +704,45 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00075013", "00200009227302008250400000", "0152109500000000"); //variation alpha
     cuts.AddCut("00075013", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 107) { //LHC11a
-    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers INT1
-    cuts.AddCut("00051113", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1
-    cuts.AddCut("00051113", "00202209227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted wide EMC range
-    cuts.AddCut("00051113", "00204409227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted tight EMC range
-    clusterCutArray[0] = "1111121050032220000";
-    clusterCutArray[1] = "1111121050032220000";
-    clusterCutArray[2] = "1111121050032220000";
-    clusterCutArray[3] = "1111121050032220000";
+    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers INT1
+    cuts.AddCut("00051113", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1
+    cuts.AddCut("00051113", "00202209227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted wide EMC range
+    cuts.AddCut("00051113", "00204409227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted tight EMC range
   } else if (trainConfig == 108) { //LHC13g full acceptance
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //INT7
-    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000"); //EMC7
-    cuts.AddCut("00085113", "00200009227302008250400000", "0152103500000000"); //EG2
-    cuts.AddCut("00083113", "00200009227302008250400000", "0152103500000000"); //EG1
-    clusterCutArray[0] = "1111121060032220000";
-    clusterCutArray[1] = "1111121060032220000";
-    clusterCutArray[2] = "1111121060032220000";
-    clusterCutArray[3] = "1111121060032220000";
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //INT7
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
+    cuts.AddCut("00085113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG2
+    cuts.AddCut("00083113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG1
   } else if (trainConfig == 109) { //LHC13g loose EMC acceptance for PCM photons
-    cuts.AddCut("00000113", "00202209227302008250400000", "0152103500000000"); //INT7
-    cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000"); //EMC7
-    cuts.AddCut("00085113", "00202209227302008250400000", "0152103500000000"); //EG2
-    cuts.AddCut("00083113", "00202209227302008250400000", "0152103500000000"); //EG1
-    clusterCutArray[0] = "1111121060032220000";
-    clusterCutArray[1] = "1111121060032220000";
-    clusterCutArray[2] = "1111121060032220000";
-    clusterCutArray[3] = "1111121060032220000";    
+    cuts.AddCut("00000113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //INT7
+    cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
+    cuts.AddCut("00085113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG2
+    cuts.AddCut("00083113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG1
   } else if (trainConfig == 110) { //LHC13g tight EMC acceptance for PCM photons
-    cuts.AddCut("00000113", "00204409227302008250400000", "0152103500000000"); //INT7
-    cuts.AddCut("00052113", "00204409227302008250400000", "0152103500000000"); //EMC7
-    cuts.AddCut("00085113", "00204409227302008250400000", "0152103500000000"); //EG2
-    cuts.AddCut("00083113", "00204409227302008250400000", "0152103500000000"); //EG1
-    clusterCutArray[0] = "1111121060032220000";
-    clusterCutArray[1] = "1111121060032220000";
-    clusterCutArray[2] = "1111121060032220000";
-    clusterCutArray[3] = "1111121060032220000";    
+    cuts.AddCut("00000113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //INT7
+    cuts.AddCut("00052113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
+    cuts.AddCut("00085113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG2
+    cuts.AddCut("00083113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG1
   } else if (trainConfig == 111) { //LHC11a
-    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers INT1
-    cuts.AddCut("00051013", "00200009227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1
-    cuts.AddCut("00051013", "00202209227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted wide EMC range
-    cuts.AddCut("00051013", "00204409227302008250400000", "0152103500000000"); //WSDD test with triggers EMC1 restricted tight EMC range
-    clusterCutArray[0] = "1111121050032220000";
-    clusterCutArray[1] = "1111121050032220000";
-    clusterCutArray[2] = "1111121050032220000";
-    clusterCutArray[3] = "1111121050032220000";
+    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers INT1
+    cuts.AddCut("00051013", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1
+    cuts.AddCut("00051013", "00202209227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted wide EMC range
+    cuts.AddCut("00051013", "00204409227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted tight EMC range
   } else if (trainConfig == 112) { //LHC13g full acceptance
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //INT7
-    cuts.AddCut("00052013", "00200009227302008250400000", "0152103500000000"); //EMC7
-    cuts.AddCut("00085013", "00200009227302008250400000", "0152103500000000"); //EG2
-    cuts.AddCut("00083013", "00200009227302008250400000", "0152103500000000"); //EG1
-    clusterCutArray[0] = "1111121060032220000";
-    clusterCutArray[1] = "1111121060032220000";
-    clusterCutArray[2] = "1111121060032220000";
-    clusterCutArray[3] = "1111121060032220000";
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //INT7
+    cuts.AddCut("00052013", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
+    cuts.AddCut("00085013", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG2
+    cuts.AddCut("00083013", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG1
   } else if (trainConfig == 113) { //LHC13g loose EMC acceptance for PCM photons
-    cuts.AddCut("00000113", "00202209227302008250400000", "0152103500000000"); //INT7
-    cuts.AddCut("00052013", "00202209227302008250400000", "0152103500000000"); //EMC7
-    cuts.AddCut("00085013", "00202209227302008250400000", "0152103500000000"); //EG2
-    cuts.AddCut("00083013", "00202209227302008250400000", "0152103500000000"); //EG1
-    clusterCutArray[0] = "1111121060032220000";
-    clusterCutArray[1] = "1111121060032220000";
-    clusterCutArray[2] = "1111121060032220000";
-    clusterCutArray[3] = "1111121060032220000";    
+    cuts.AddCut("00000113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //INT7
+    cuts.AddCut("00052013", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
+    cuts.AddCut("00085013", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG2
+    cuts.AddCut("00083013", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG1
   } else if (trainConfig == 114) { //LHC13g tight EMC acceptance for PCM photons
-    cuts.AddCut("00000113", "00204409227302008250400000", "0152103500000000"); //INT7
-    cuts.AddCut("00052013", "00204409227302008250400000", "0152103500000000"); //EMC7
-    cuts.AddCut("00085013", "00204409227302008250400000", "0152103500000000"); //EG2
-    cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000"); //EG1
-    clusterCutArray[0] = "1111121060032220000";
-    clusterCutArray[1] = "1111121060032220000";
-    clusterCutArray[2] = "1111121060032220000";
-    clusterCutArray[3] = "1111121060032220000";    
-
+    cuts.AddCut("00000113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //INT7
+    cuts.AddCut("00052013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
+    cuts.AddCut("00085013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG2
+    cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG1
     
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -812,7 +817,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]          = new AliConvEventCuts();
     TString fitNamePi0            = Form("Pi0_Fit_Data_%s",energy.Data());
     TString fitNameEta            = Form("Eta_Fit_Data_%s",energy.Data());
-    TString fAddedSignalString    = eventCutArray[i];
+    TString fAddedSignalString    = (cuts.GetEventCut(i)).Data();
     fAddedSignalString            = fAddedSignalString(6,1);
     Bool_t fAddedSignal           = kFALSE;
     if (fAddedSignalString.CompareTo("2") == 0) 
@@ -832,7 +837,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
 
     TString dataInputMultHisto    = "";
     TString mcInputMultHisto      = "";
-    TString triggerString         = eventCutArray[i];
+    TString triggerString         = (cuts.GetEventCut(i)).Data();
     triggerString                 = triggerString(3,2);
     if (triggerString.CompareTo("03")==0) 
       triggerString               = "00";
@@ -849,7 +854,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-	analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
 	
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -857,7 +862,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     if (trainConfig > 106 && trainConfig < 115){
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
-        analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+        analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
         analysisClusterCuts[i]->SetFillCutHistograms("");   
     }  
@@ -865,7 +870,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisCuts[i]               = new AliConversionPhotonCuts();
     if (trainConfig == 76 ){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
-	}
+    }
       analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     
     if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
