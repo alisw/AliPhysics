@@ -17,14 +17,16 @@
 // stores TPC PID quantities in a THnSparse
 //
 //  Author:
-//  Yvonne Pachmayer <pachmay@physi.uni-heidelberg.de>
+//  Benjamin Hess <Benjamin-Andreas.Hess@Uni-Tuebingen.de>
+//  Jens Wiechula <Jens.Wiechula@cern.ch>
 //
 
 #ifndef ALITPCCALIBRESIDUALPID_H
 #define ALITPCCALIBRESIDUALPID_H
 #include "AliAnalysisTaskSE.h"
 
-#include <TTreeStream.h>
+#include "TTreeStream.h"
+#include "TString.h"
 #include "AliInputEventHandler.h"
 
 class TArrayF;
@@ -57,7 +59,7 @@ class TObjArray;
 
 class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
  public:
-  enum FitType { kAleph = 0, kLund = 1, kSaturatedLund = 2, kAlephWithAdditionalParam = 3 };
+  enum FitType { kAleph = 0, kLund = 1, kSaturatedLund = 2, kAlephWithAdditionalParam = 3, kAlephExternal=4 };
   enum kParticle { kElectron = 0, kPion, kKaon, kProton };
   AliTPCcalibResidualPID();
   AliTPCcalibResidualPID(const char *name);
@@ -113,6 +115,9 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   //
   // static functions for postprocessing
   //
+  Bool_t ProcessV0Tree(TTree* tree, THnSparseF* h, const Int_t recoPass=4, const TString runList="", const Bool_t excludeRuns=kFALSE);
+  THnSparseF* ProcessV0TreeFile(TString filePathName, const Int_t recoPass=4, const TString runList="", const Bool_t excludeRuns=kFALSE);
+
   static Double_t* ExtractResidualPID(THnSparseF * histPidQA,
                                       const Bool_t useV0s = kTRUE,
                                       const Char_t * outFile = "out.root",
@@ -151,8 +156,9 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
   
-  void  BinLogAxis(const THnSparseF *h, Int_t axisNumber);
-  void  SetAxisNamesFromTitle(const THnSparseF *h);
+  static void BinLogAxis(THnSparseF *h, Int_t axisNumber);
+  static THnSparseF* InitialisePIDQAHist(TString name, TString title);
+  static void  SetAxisNamesFromTitle(const THnSparseF *h);
 
   static void FitSlicesY(TH2 *hist, Double_t heightFractionForRange, Int_t cutThreshold, TString fitOption, TObjArray *arr);
 

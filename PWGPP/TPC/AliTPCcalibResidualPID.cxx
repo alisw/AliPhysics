@@ -221,37 +221,37 @@ AliTPCcalibResidualPID::~AliTPCcalibResidualPID()
 {
   delete fOutputContainer;
   fOutputContainer = 0;
-  
+
   delete fQAList;
   fQAList = 0;
-  
+
   /*
   delete fTreeV0El;
   fTreeV0El = 0;
-  
+
   delete fTreeV0Pi;
   fTreeV0Pi = 0;
-  
+
   delete fTreeV0Pr;
   fTreeV0Pr = 0;
   */
-  
+
   delete fESDtrackCuts;
   fESDtrackCuts = 0;
-  
+
   delete fESDtrackCutsV0;
   fESDtrackCutsV0 = 0;
-  
+
   delete fV0KineCuts;
   fV0KineCuts = 0;
-  
+
   delete [] fV0tags;
   fV0tags = 0;
   fNumTagsStored = 0;
-  
+
   delete [] fV0motherIndex;
   fV0motherIndex = 0;
-  
+
   delete [] fV0motherPDG;
   fV0motherPDG = 0;
 }
@@ -265,45 +265,24 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     printf("Inputhandler not available \n");
   else
     fPIDResponse = inputHandler->GetPIDResponse();
-  
+
   // THnSparse binning
   const Int_t kNdim = 9;
   //v0id,  dEdx,  TPCsigele,  TPCsigpion,  TOFbit,  eta, TPCclus, centr, p
   Int_t bins[kNdim] =    {    4,    250,    200,    200,          8,    20,        50,   20,   100};
   Double_t xmin[kNdim] = {  0.5,     30,   -10.,   -10.,       -1.5,   -1.,       60.,   0.,   0.1};
   Double_t xmax[kNdim] = {  4.5,   500.,    10.,    10.,        6.5,    1.,      160.,  100,   4};
-  fThnspTpc= new THnSparseF("tpcsignals", "TPC signal;v0id;tpc signal;tpcsigele;tpcsigpion;tofbit;eta;tpcclus;centr;p (GeV/c);", kNdim, bins, xmin, xmax);
+  fThnspTpc= new THnSparseF("tpcsignals", "TPC signal;v0id;tpc signal;tpcsigele;tpcsigpion;tofbit;eta;tpcclus;centr;p (GeV/c)", kNdim, bins, xmin, xmax);
   SetAxisNamesFromTitle(fThnspTpc);
   BinLogAxis(fThnspTpc, 8);
 
-  //
-  // 0.ptot, 1.tpcSig, 2.particle ID, 3. assumed particle, 4. nSigmaTPC (4x), 5. nSigmaTOF (4x), 6. centrality
-  // Concerning 2 (particle ID): 
-  // - in case of MC: Contains MC ID. Bin 1-4 (<=> Slot 0-3): el, pi, ka, pr
-  // - in case of data: Contains V0 particles + bin with all others: Bin 1-4 (<=> Slot 0-3): All non-V0s, V0-el, V0-pi, V0-pr
-  //
-      
-  Int_t    binsHistQA[7] = {135, 1980,    4,    5, 40, 10,   40};
-  Double_t xminHistQA[7] = {0.1,   20, -0.5, -0.5, -10, -5,   0.};
-  Double_t xmaxHistQA[7] = {50., 2000,  3.5,  4.5,  10,  5, 20000};
-  fHistPidQA = new THnSparseF("fHistPidQA","PID QA;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
-  SetAxisNamesFromTitle(fHistPidQA);
-  BinLogAxis(fHistPidQA, 0);
+  fHistPidQA = InitialisePIDQAHist("fHistPidQA","PID QA");
 
-  //
-  fHistPidQAshort  = new THnSparseF("fHistPidQAshort" ,"PID QA -- short pads;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
-  fHistPidQAmedium = new THnSparseF("fHistPidQAmedium","PID QA -- med pads;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
-  fHistPidQAlong   = new THnSparseF("fHistPidQAlong"  ,"PID QA -- long pads;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
-  fHistPidQAoroc   = new THnSparseF("fHistPidQAoroc"  ,"PID QA -- oroc;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
-  SetAxisNamesFromTitle(fHistPidQAshort);
-  SetAxisNamesFromTitle(fHistPidQAmedium);
-  SetAxisNamesFromTitle(fHistPidQAlong);
-  SetAxisNamesFromTitle(fHistPidQAoroc);
-  BinLogAxis(fHistPidQAshort, 0);
-  BinLogAxis(fHistPidQAmedium, 0);
-  BinLogAxis(fHistPidQAlong, 0);
-  BinLogAxis(fHistPidQAoroc, 0);
-  //
+  fHistPidQAshort  = InitialisePIDQAHist("fHistPidQAshort" ,"PID QA -- short pads");
+  fHistPidQAmedium = InitialisePIDQAHist("fHistPidQAmedium","PID QA -- med pads");
+  fHistPidQAlong   = InitialisePIDQAHist("fHistPidQAlong"  ,"PID QA -- long pads");
+  fHistPidQAoroc   = InitialisePIDQAHist("fHistPidQAoroc"  ,"PID QA -- oroc");
+
   fOutputContainer = new TObjArray(2);
   fOutputContainer->SetName(GetName());
   fOutputContainer->SetOwner();
@@ -314,35 +293,35 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
   if(fProduceAllPadTypes || fProduceMediumPads)fOutputContainer->Add(fHistPidQAmedium);
   if(fProduceAllPadTypes || fProduceLongPads)fOutputContainer->Add(fHistPidQAlong);
   if(fProduceAllPadTypes || fProduceOroc)fOutputContainer->Add(fHistPidQAoroc);
-  
+
   // V0 Kine cuts 
   fV0KineCuts = new AliESDv0KineCuts;
   fV0KineCuts->SetGammaCutChi2NDF(5.);
-  
+
   if (fCutOnProdRadiusForV0el) {
     // Only accept V0el with prod. radius within 45 cm -> PID will by systematically biased for larger values!
     Float_t gammaProdVertexRadiusCuts[2] = { 3.0, 45. }; 
     fV0KineCuts->SetGammaCutVertexR(&gammaProdVertexRadiusCuts[0]);
   }
-  
-  
+
+
   if (fWriteAdditionalOutput) {
     fQAList = new TObjArray(4);
     fQAList->SetName(GetName());
     fQAList->SetOwner();
-    
+
     fhInvMassGamma      = new TH1F("fhInvMassGamma", "Invariant Mass of gammas; m_{ee} (GeV/#it{c}^{2}); Entries", 200, 0., 0.2);
     fhInvMassK0s        = new TH1F("fhInvMassK0s", "Invariant Mass of K0s; m_{#pi#pi} (GeV/#it{c}^{2}); Entries;", 200, 0.45, 0.55);
     fhInvMassLambda     = new TH1F("fhInvMassLambda", "Invariant Mass of lambdas; m_{p#pi^{-}} (GeV/#it{c}^{2}); Entries", 200, 1.05, 1.15);
     fhInvMassAntiLambda = new TH1F("fhInvMassAntiLambda", "Invariant Mass of anti-lambdas; m_{#pi^{+}#bar{p}} (GeV/#it{c}^{2}); Entries",
                                   200, 1.05, 1.15);
-    
+
     fQAList->Add(fhInvMassGamma);
     fQAList->Add(fhInvMassK0s);
     fQAList->Add(fhInvMassLambda);
     fQAList->Add(fhInvMassAntiLambda);
-    
-    
+
+
     fhArmenterosAll = new TH2F("fhArmenterosAll",
                               "Armenteros plot all V0s;#alpha = (#it{p}^{+}_{L}-#it{p}^{-}_{L})/(#it{p}^{+}_{L}+#it{p}^{-}_{L});#it{q}_{T} (GeV/#it{c})",
                               200, -1., 1., 200, 0., 0.4);
@@ -364,21 +343,21 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fQAList->Add(fhArmenterosK0s);
     fQAList->Add(fhArmenterosLambda);
     fQAList->Add(fhArmenterosAntiLambda);
-    
-    
+
+
     const Int_t dimQASharedClusters = 4;
     const TString axisTitles[dimQASharedClusters] = { "#it{p}_{TPC} (GeV/#it{c})", "#it{#Delta'}", "#it{N}_{shared cl}", "Pad row"};
     Int_t    binsHistQASharedClusters[dimQASharedClusters] = { 100,  100, 160, 160};
     Double_t xminHistQASharedClusters[dimQASharedClusters] = { 0.3, 0.5,  0,   -1};
     Double_t xmaxHistQASharedClusters[dimQASharedClusters] = { 20,  1.5, 160, 159};
-    
+
     fHistSharedClusQAV0Pi = new THnSparseF("fHistSharedClusQAV0Pi" ,"PID QA shared clusters - V0 pi", dimQASharedClusters,
                                           binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
     BinLogAxis(fHistSharedClusQAV0Pi, 0);
     for (Int_t i = 0; i < dimQASharedClusters; i++)
       fHistSharedClusQAV0Pi->GetAxis(i)->SetTitle(axisTitles[i].Data());
     fQAList->Add(fHistSharedClusQAV0Pi);
-    
+
     fHistSharedClusQAV0Pr = new THnSparseF("fHistSharedClusQAV0Pr" ,"PID QA shared clusters - V0 pr", dimQASharedClusters,
                                           binsHistQASharedClusters, xminHistQASharedClusters, xmaxHistQASharedClusters);
     BinLogAxis(fHistSharedClusQAV0Pr, 0);
@@ -392,7 +371,7 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     for (Int_t i = 0; i < dimQASharedClusters; i++)
       fHistSharedClusQAV0Pi->GetAxis(i)->SetTitle(axisTitles[i].Data());
     fQAList->Add(fHistSharedClusQAV0El);
-    
+
     OpenFile(3);
     fTreeV0El = new TTree("treeV0El", "V0 el together with info from closest neighbour");
     fTreeV0El->Branch("dEdx_tr", &fTree_dEdx_tr);
@@ -410,7 +389,7 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fTreeV0El->Branch("tanTheta_vs", &fTree_tanTheta_vs);
     fTreeV0El->Branch("distance_nb", &fTree_distance_nb);
     fTreeV0El->Branch("distance_vs", &fTree_distance_vs);
-    
+
     OpenFile(4);
     fTreeV0Pi = new TTree("treeV0Pi", "V0 pi together with info from closest neighbour");
     fTreeV0Pi->Branch("dEdx_tr", &fTree_dEdx_tr);
@@ -428,7 +407,7 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fTreeV0Pi->Branch("tanTheta_vs", &fTree_tanTheta_vs);
     fTreeV0Pi->Branch("distance_nb", &fTree_distance_nb);
     fTreeV0Pi->Branch("distance_vs", &fTree_distance_vs);
-    
+
     OpenFile(5);
     fTreeV0Pr = new TTree("treeV0Pr", "V0 pr together with info from closest neighbour");
     fTreeV0Pr->Branch("dEdx_tr", &fTree_dEdx_tr);
@@ -447,7 +426,7 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
     fTreeV0Pr->Branch("distance_nb", &fTree_distance_nb);
     fTreeV0Pr->Branch("distance_vs", &fTree_distance_vs);
   }
-  
+
   PostData(1,fOutputContainer);
   if (fWriteAdditionalOutput) {
     PostData(2,fQAList);
@@ -468,7 +447,7 @@ void AliTPCcalibResidualPID::UserExec(Option_t *)
       printf("ERROR: Could not get ESDInputHandler \n");
     }
     else fESD = (AliESDEvent*)esdH->GetEvent();
-    
+
     // If MC, forward MCevent
     fMC = dynamic_cast<AliMCEvent*>(MCEvent());
     //
@@ -484,11 +463,34 @@ void AliTPCcalibResidualPID::UserExec(Option_t *)
 }
 
 
+//________________________________________________________________________
+THnSparseF* AliTPCcalibResidualPID::InitialisePIDQAHist(TString name, TString title)
+{
+  // Initialise a pidQA histo
+
+  //
+  // 0.ptot, 1.tpcSig, 2.particle ID, 3. assumed particle, 4. nSigmaTPC (4x), 5. nSigmaTOF (4x), 6. centrality
+  // Concerning 2 (particle ID):
+  // - in case of MC: Contains MC ID. Bin 1-4 (<=> Slot 0-3): el, pi, ka, pr
+  // - in case of data: Contains V0 particles + bin with all others: Bin 1-4 (<=> Slot 0-3): All non-V0s, V0-el, V0-pi, V0-pr
+  //
+  title.Append(";p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality");
+  const Int_t kNdim = 7;
+  Int_t    binsHistQA[kNdim] = {135, 1980,    4,    5, 40, 10,   40};
+  Double_t xminHistQA[kNdim] = {0.1,   20, -0.5, -0.5, -10, -5,   0.};
+  Double_t xmaxHistQA[kNdim] = {50., 2000,  3.5,  4.5,  10,  5, 20000};
+  THnSparseF* h = new THnSparseF(name.Data(), title.Data(), kNdim, binsHistQA, xminHistQA, xmaxHistQA);
+  BinLogAxis(h, 0);
+  SetAxisNamesFromTitle(h);
+
+  return h;
+}
+
 
 //________________________________________________________________________
 void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEvent)
 {
-  
+
   //called for each event
   if (!esdEvent) {
     Printf("ERROR: esdEvent not available"); 
@@ -507,33 +509,33 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
 
   if (!GetVertexIsOk(esdEvent))
     return;
-  
+
   const AliESDVertex* fESDvertex = esdEvent->GetPrimaryVertexTracks(); 
   if (!fESDvertex)
     return;
-  
+
   Int_t ncontr = fESDvertex->GetNContributors();
-  
+
   if (ncontr <= 0)
     return;
 
   // Fill V0 arrays with V0s
   FillV0PIDlist(esdEvent);
-  
+
   // Array with flags wheter QA for this V0 was already done or not
   const Int_t numV0s = esdEvent->GetNumberOfV0s();
   Bool_t v0QAadded[numV0s];
   for (Int_t i = 0; i < numV0s; i++)
     v0QAadded[i] = kFALSE;
-  
+
   Int_t nTotTracks = esdEvent->GetNumberOfTracks();
   const Int_t nTotESDTracks = esdEvent->GetNumberOfESDTracks();
-  
+
   const Double_t magField = esdEvent->GetMagneticField();
-  
+
   Bool_t etaCorrAvail = fPIDResponse->UseTPCEtaCorrection();
   Bool_t multCorrAvail = fPIDResponse->UseTPCMultiplicityCorrection();
-  
+
   for (Int_t iTracks = 0; iTracks < nTotTracks; iTracks++){//begin track loop 
     AliESDtrack *trackESD = esdEvent->GetTrack(iTracks);
     if(!trackESD) {
@@ -542,7 +544,7 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     }
     if((TMath::Abs(trackESD->Eta())) > 0.9)
       continue;
-    
+
      // Do not distinguish positively and negatively charged V0's
     Char_t v0tagAllCharges = TMath::Abs(GetV0tag(iTracks));
     if (v0tagAllCharges == -99) {
@@ -550,16 +552,16 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
                     fV0tags != 0x0));
       continue;
     }
-    
+
     Bool_t isV0el = v0tagAllCharges == 14;
     Bool_t isV0pi = v0tagAllCharges == 15;
     Bool_t isV0pr = v0tagAllCharges == 16;
     Bool_t isV0 = isV0el || isV0pi || isV0pr;
-    
+
     if (mcEvent && fUseMCinfo) {
       // For MC, do not look for V0s, i.e. demand the non-V0 track cuts
       if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(trackESD)) continue;
-      
+
       if (fUseTPCCutMIGeo) {
         // If cut on geometry is active, don't cut on number of clusters, since such a cut is already included.
         if (!TPCCutMIGeo(trackESD, esdEvent))
@@ -582,7 +584,7 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
         if (fESDtrackCuts && !fESDtrackCuts->AcceptTrack(trackESD))
           continue;
       }
-        
+
       if (fUseTPCCutMIGeo) {
         // If cut on geometry is active, don't cut on number of clusters, since such a cut is already included.
         if (!isV0) {
@@ -613,24 +615,24 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     Int_t precdefault=CompareFloat(precin,-1);
     if(precdefault==1) continue; // momentum cut
     //
-    
+
     AliMCParticle* mcTrack = 0x0;
     Int_t particleID = -1;
     Int_t v0id = 0;
-    
+
     if (mcEvent && fUseMCinfo) {
       // MC - particle ID = MC ID
       Int_t label = trackESD->GetLabel();
-      
+
       if (label < 0)
         continue; // If MC is available, reject tracks with negative ESD label
-        
+
       mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
       if (!mcTrack) {
         Printf("ERROR: Could not receive mcTrack with label %d for track %d", label, iTracks);
         continue;
       }
-      
+
       /*// Only accept MC primaries
       if (!mcEvent->Stack()->IsPhysicalPrimary(TMath::Abs(label))) {
         continue;
@@ -1086,6 +1088,270 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
 
 
 //________________________________________________________________________
+Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const Int_t recoPass/*=4*/,
+                                             const TString runList/*=""*/, const Bool_t excludeRuns/*=kFALSE*/)
+{
+  // Fill tracks from tree into h. Returns kTRUE on success.
+  // recoPass is required to propbely initialise the AliPIDResponse
+  // runList can either be a whith or black list of runs, ignored if empty
+  // if excludeRuns is false runList is a whitelist, otherwise a blacklist
+  if (!tree)
+    return kFALSE;
+
+  if (!h) {
+    Printf("Error - ProcessV0Tree: No THnSparse!");
+    return kFALSE;
+  }
+
+  //set up the PID response
+  if (!fPIDResponse) {
+    fPIDResponse=new AliPIDResponse;
+    fPIDResponse->SetOADBPath("$ALICE_PHYSICS/OADB");
+    delete fESD;
+    fESD = new AliESDEvent;
+    fESD->CreateStdContent();
+  }
+
+  TClonesArray *arrTracks=(TClonesArray*)fESD->GetList()->FindObject("Tracks");
+
+  // Tree name is important to assign PID
+  TString treeName = tree->GetName();
+  Bool_t isTreeK0 = treeName.CompareTo("treeK0", TString::kIgnoreCase) == 0;
+  Bool_t isTreeGamma = treeName.CompareTo("treeGamma", TString::kIgnoreCase) == 0;
+  Bool_t isTreeALambda = treeName.CompareTo("treeALambda", TString::kIgnoreCase) == 0;
+  Bool_t isTreeLambda = treeName.CompareTo("treeLambda", TString::kIgnoreCase) == 0;
+
+  if (!isTreeK0 && !isTreeGamma && !isTreeALambda && !isTreeLambda) {
+    Printf("Error - ProcessV0Tree: Unknown tree type \"%s\"!", treeName.Data());
+    return kFALSE;
+  }
+
+  const Int_t numCases = 5;
+  Double_t tpcQA[numCases];
+  Double_t tofQA[numCases];
+  for (Int_t i = 0; i < numCases; i++) {
+    tpcQA[i] = 0.;
+    tofQA[i] = 0.;
+  }
+
+  const Int_t nTotESDTracks = -1;
+
+  Int_t particleID = -1;
+  AliPID::EParticleType alicePID=AliPID::kUnknown;
+
+  Long64_t nTreeEntries = tree->GetEntriesFast();
+  Double_t tpcsignal = -1.;
+  Double_t tanTheta = -999.;
+  Double_t precin = -1.;
+  AliESDtrack* trk = 0x0;
+  AliESDtrack* trk0 = 0x0;
+  AliESDtrack* trk1 = 0x0;
+  Int_t runNumber = -1;
+  Int_t runNumberFirst = -1;
+  Int_t ntracks   = -1;
+
+  tree->SetBranchStatus("*", 0);
+  tree->SetBranchStatus("runNumber", 1);
+  tree->SetBranchStatus("ntracks", 1);
+  tree->SetBranchStatus("track0.*", 1);
+  tree->SetBranchStatus("track1.*", 1);
+  tree->SetBranchAddress("runNumber",&runNumber);
+  tree->SetBranchAddress("ntracks"  ,&ntracks  );
+  tree->SetBranchAddress("track0."  ,&trk0     );
+  tree->SetBranchAddress("track1."  ,&trk1     );
+
+  // Should be faster, but does not work for unknown reason
+  //tree->SetBranchAddress(Form("track%d.fTPCsignal", track), &tpcsignal);
+  //tree->SetBranchAddress(Form("track%d.fIp.fP[3]", track), &tanTheta);
+  //tree->SetBranchAddress(Form("track%d.fIp.P()", track), &precin);
+
+  // ===| set up run exclusion map |============================================
+  TExMap runMap;
+  if (!runList.IsNull()) {
+    TObjArray *arr = runList.Tokenize(",; ");
+    for (Int_t irun=0; irun<arr->GetEntriesFast(); ++irun) {
+      const TString &runStr=((TObjString*)arr->At(irun))->String();
+      if (!runStr.IsDigit()) continue;
+      runMap.Add(runStr.Atoi(), 1);
+    }
+    delete arr;
+  }
+
+  for (Long64_t i = 0; i < nTreeEntries; i++) {
+    tree->GetEntry(i);
+    // skip runs
+    if (!(runMap.GetValue(runNumber)^excludeRuns)) continue;
+
+    // set dummy esd track multiplicity
+    arrTracks->Clear();
+    arrTracks->ConstructedAt(ntracks);
+
+    // initialise PID response
+    // assume that we can load from the OADB only for the first run number
+    // which means that the trees are merged per run or per period
+
+    Bool_t init=kFALSE;
+    if (runNumberFirst<0) {
+      runNumberFirst=runNumber;
+      init=kTRUE;
+    }
+    fPIDResponse->InitialiseEvent(fESD, recoPass, runNumberFirst);
+    //if (init) {
+      //fPIDResponse->GetTPCResponse().GetTransferFunctionParameters().Print();
+    //}
+
+    for (Int_t track = 0; track < 2; track++) {
+      trk=trk0;
+      if (track==1) {
+        trk=trk1;
+      }
+
+      if (!trk)
+        continue;
+
+      //tpcsignal = trk->fTPCsignal;
+      //tanTheta = trk->fIp->fP[3];
+      //precin = trk->fIp->P();
+      tpcsignal = trk->GetTPCsignal();
+      tanTheta = trk->GetInnerParam()->GetParameter()[3];
+      precin = trk->GetInnerParam()->P();
+
+      //if (TMath::Abs(tanTheta-.7)>0.2) continue;
+      // track == 0 is the positive particle, track == 1 the negative.
+      // Combine this with the tree name to determine the particle ID.
+
+      if (isTreeK0) {
+        particleID = 2; //pion
+        alicePID=AliPID::kPion;
+      } else if (isTreeGamma) {
+        particleID = 1; // electron
+        alicePID=AliPID::kElectron;
+      } else if (isTreeLambda) {
+        if (track == 0) {
+          particleID = 3; // proton
+          alicePID=AliPID::kProton;
+        } else {
+          particleID = 2; // pion
+          alicePID=AliPID::kPion;
+        }
+      }
+      else if (isTreeALambda) {
+        if (track == 0) {
+          particleID = 2; // pion
+          alicePID=AliPID::kPion;
+        } else {
+          particleID = 3; // proton
+          alicePID=AliPID::kProton;
+        }
+      }
+
+      // make signal correction for transfer function and BB shape
+      // TODO: Perhaps this should be steerable
+      //const Double_t corrTransferBB = fPIDResponse->GetTPCResponse().GetCombinedTransferFunctionBBCorrection(trk, alicePID);
+      //const Double_t corrTransferBB = fPIDResponse->GetTPCResponse().GetTransferFunctionCorrection(trk);
+      //printf("signal: %.2f/%.2f = %.2f\n", tpcsignal, corrTransferBB, tpcsignal/corrTransferBB);
+      //tpcsignal/=corrTransferBB;
+
+      Double_t processedTPCsignal[5] = { tpcsignal, tpcsignal, tpcsignal, tpcsignal, tpcsignal };
+      /*
+      if (fCorrectdEdxEtaDependence && fNumEtaCorrReqErrorsIssued < 23 && !etaCorrAvail) {
+        AliError("TPC eta correction requested, but was not activated in PID response (most likely not available)!");
+        fNumEtaCorrReqErrorsIssued++;
+        if (fNumEtaCorrReqErrorsIssued == 23)
+          AliError("Ignoring this error from now on!");
+      }
+
+      if (fCorrectdEdxMultiplicityDependence && fNumMultCorrReqErrorsIssued < 23 && !multCorrAvail) {
+        AliError("TPC multiplicity correction requested, but was not activated in PID response (most likely not available)!");
+        fNumMultCorrReqErrorsIssued++;
+        if (fNumMultCorrReqErrorsIssued == 23)
+          AliError("Ignoring this error from now on!");
+      }
+
+      if (fCorrectdEdxEtaDependence && etaCorrAvail && fCorrectdEdxMultiplicityDependence && multCorrAvail) {
+        processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
+                                                                                                      AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
+                                                                                                      AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
+                                                                                                      AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
+                                                                                                      AliTPCPIDResponse::kdEdxDefault);
+      }
+      else if (fCorrectdEdxEtaDependence && etaCorrAvail) {
+        processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kElectron,
+                                                                                        AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kPion,
+                                                                                        AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kKaon,
+                                                                                        AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kProton,
+                                                                                        AliTPCPIDResponse::kdEdxDefault);
+      }
+      else if (fCorrectdEdxMultiplicityDependence && multCorrAvail) {
+        processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
+                                                                                                AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
+                                                                                                AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
+                                                                                                AliTPCPIDResponse::kdEdxDefault);
+        processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
+                                                                                                AliTPCPIDResponse::kdEdxDefault);
+      }
+      */
+
+      // id 5 is just again Kaons in restricted eta range
+      processedTPCsignal[4] = processedTPCsignal[2];
+
+      for(Int_t iPart = 0; iPart < numCases; iPart++) {
+        // Only accept "Kaons" within |eta| < 0.2 for index 4 (eta ~ tanTheta in this eta range)
+        if (iPart == 4 && abs(tanTheta) > 0.2)
+          continue;
+
+        Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], (Double_t)particleID, (Double_t)iPart, tpcQA[iPart], tofQA[iPart],
+                                (Double_t)nTotESDTracks};
+        h->Fill(vecHistQA);
+      }
+    }
+  }
+
+  return kTRUE;
+}
+
+
+//________________________________________________________________________
+THnSparseF* AliTPCcalibResidualPID::ProcessV0TreeFile(TString filePathName, const Int_t recoPass/*=4*/,
+                                                      const TString runList/*=""*/, const Bool_t excludeRuns/*=kFALSE*/)
+{
+  // Open file and fill tracks from trees into a new THnSparse. Finally, returns it.
+
+  TFile* f = TFile::Open(filePathName.Data(), "READ");
+  if (!f) {
+    Printf("Error - ProcessV0TreeFile: Cannot open file \"%s\"!", filePathName.Data());
+    return 0x0;
+  }
+
+  THnSparseF* h = InitialisePIDQAHist("fHistPidQA","PID QA");
+
+  TTree* tree = 0x0;
+  const Int_t numTrees = 4;
+  const TString treeNames[numTrees] = { "treeK0", "treeGamma", "treeLambda", "treeALambda" };
+  for (Int_t i = 0; i < numTrees; i++) {
+    Printf("Processing tree \"%s\"....", treeNames[i].Data());
+    tree = (TTree*)f->Get(treeNames[i].Data());
+    if (tree)
+      tree->SetName(treeNames[i].Data());
+    ProcessV0Tree(tree, h, recoPass, runList, excludeRuns);
+  }
+
+  f->Close();
+  delete f;
+
+  return h;
+}
+
+
+//________________________________________________________________________
 Int_t  AliTPCcalibResidualPID::CompareFloat(Float_t f1, Float_t f2) const
 {
     //compares if the Float_t f1 is equal with f2 and returns 1 if true and 0 if false
@@ -1112,7 +1378,8 @@ void AliTPCcalibResidualPID::Terminate(const Option_t *)
 
 
 //________________________________________________________________________
-void AliTPCcalibResidualPID::BinLogAxis(const THnSparseF *h, Int_t axisNumber) {
+void AliTPCcalibResidualPID::BinLogAxis(THnSparseF *h, Int_t axisNumber)
+{
   //
   // Method for the correct logarithmic binning of histograms
   //
@@ -2931,46 +3198,52 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
   graphKaonTPC->GetXaxis()->SetTitleOffset(1.0);
   graphKaonTPC->Draw("ap");
   
+  Bool_t kaonGraphHasDataPoints = kTRUE;
   if (graphKaonTPC->GetN() <= 0)  {
-    Printf("ERROR - GetResponseFunctions: Kaon graph has no data points!");
-    
-    return 0x0;
+    Printf("WARNING - GetResponseFunctions: Kaon graph has no data points! Kaon splines will just be pure BB without low-p correction!");
+    kaonGraphHasDataPoints = kFALSE;
   }
   graphKaonTPC->Sort(); // Sort points along x. Next, the very first point will be used to determine the starting point of the correction function
-  
+
   TF1 * funcCorrKaon = 0x0;
-  
-  if (isMC) {
-    funcCorrKaon = new TF1("funcCorrKaon", fitFuncString.Data(), TMath::Max(graphKaonTPC->GetX()[0], 0.25), isPPb ? 3.44 : 1.981);
-    graphKaonTPC->Fit(funcCorrKaon, "QREX0M");
+
+  if (!kaonGraphHasDataPoints) {
+    // Just take dummy correction function, which is constant at zero (= no correction)
+    funcCorrKaon = new TF1("funcCorrKaon", "0", 0.1, 1);
   }
   else {
-    // In case of data there are sometimes problems to fit the shape with one function (could describe the overall deviation,
-    // but will not cover all the details).
-    // Nevertheless, this shape (including most of the "details") can be fitted with the following approach with two functions
-    TF1 * funcCorrKaon1 = new TF1("funcCorrKaon1", fitFuncString.Data(),
-                                  TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981); 
-    graphKaonTPC->Fit(funcCorrKaon1, "QREX0M", "same", TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0);
-    
-    TF1 * funcCorrKaon2 = new TF1("funcCorrKaon2", fitFuncString2.Data(), TMath::Max(graphKaonTPC->GetX()[0], 0.25),  1.981);
-    graphKaonTPC->Fit(funcCorrKaon2, "QREX0M", "same", (isMC ? 1.981 : 1.0), 1.981);
-    
-    funcCorrKaon = new TF1("funcCorrKaon",
-                           "funcCorrKaon1 * 0.5*(1.+TMath::Erf((1 - x) / 0.1)) + ([0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x+[6]*x*x*x*x*x*x) * 0.5*(1.+TMath::Erf((x - 1) / 0.1))",
-                           TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981);
-  
-    for (Int_t i = funcCorrKaon1->GetNpar(), j = 0; i < funcCorrKaon1->GetNpar() + funcCorrKaon2->GetNpar(); i++, j++) {
-      funcCorrKaon->SetParameter(j, funcCorrKaon2->GetParameter(j));
+    if (isMC) {
+      funcCorrKaon = new TF1("funcCorrKaon", fitFuncString.Data(), TMath::Max(graphKaonTPC->GetX()[0], 0.25), isPPb ? 3.44 : 1.981);
+      graphKaonTPC->Fit(funcCorrKaon, "QREX0M");
     }
-    funcCorrKaon->SetLineColor(kRed);
-    funcCorrKaon->GetHistogram()->DrawClone("csame");
-    //funcCorrKaon->Draw("same");
+    else {
+      // In case of data there are sometimes problems to fit the shape with one function (could describe the overall deviation,
+      // but will not cover all the details).
+      // Nevertheless, this shape (including most of the "details") can be fitted with the following approach with two functions
+      TF1 * funcCorrKaon1 = new TF1("funcCorrKaon1", fitFuncString.Data(),
+                                    TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981); 
+      graphKaonTPC->Fit(funcCorrKaon1, "QREX0M", "same", TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0);
+
+      TF1 * funcCorrKaon2 = new TF1("funcCorrKaon2", fitFuncString2.Data(), TMath::Max(graphKaonTPC->GetX()[0], 0.25),  1.981);
+      graphKaonTPC->Fit(funcCorrKaon2, "QREX0M", "same", (isMC ? 1.981 : 1.0), 1.981);
+
+      funcCorrKaon = new TF1("funcCorrKaon",
+                             "funcCorrKaon1 * 0.5*(1.+TMath::Erf((1 - x) / 0.1)) + ([0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x+[6]*x*x*x*x*x*x) * 0.5*(1.+TMath::Erf((x - 1) / 0.1))",
+                             TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981);
+
+      for (Int_t i = funcCorrKaon1->GetNpar(), j = 0; i < funcCorrKaon1->GetNpar() + funcCorrKaon2->GetNpar(); i++, j++) {
+        funcCorrKaon->SetParameter(j, funcCorrKaon2->GetParameter(j));
+      }
+      funcCorrKaon->SetLineColor(kRed);
+      funcCorrKaon->GetHistogram()->DrawClone("csame");
+      //funcCorrKaon->Draw("same");
+    }
+    /*TODO
+    TF1 * funcCorrKaon = new TF1("funcCorrKaon", fitFuncString.Data(),//TODO BEN was fitFuncString2
+                                 TMath::Max(graphKaonTPC->GetX()[0], 0.25), (isMC ? 1.981 : 1.0)); //TODO BEN was 0.79 for data and 1.45 for MC
+    graphKaonTPC->Fit(funcCorrKaon, "QREX0M");
+    */
   }
-  /*TODO
-  TF1 * funcCorrKaon = new TF1("funcCorrKaon", fitFuncString.Data(),//TODO BEN was fitFuncString2
-                               TMath::Max(graphKaonTPC->GetX()[0], 0.25), (isMC ? 1.981 : 1.0)); //TODO BEN was 0.79 for data and 1.45 for MC
-  graphKaonTPC->Fit(funcCorrKaon, "QREX0M");
-  */
   //
   // 3. extract pion corrections
   //
@@ -3318,6 +3591,22 @@ TF1* AliTPCcalibResidualPID::FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t i
     // Fix parameter 5 to original value of unity
     funcBB->FixParameter(5, 1); 
     
+    for (Int_t i = 0; i < nPar; i++)
+      parametersBBForward[i] = parametersBB[i];
+  }
+  else if (fitType == AliTPCcalibResidualPID::kAlephExternal) {
+    printf("Fit function: Aleph from AliExternalTrackParam\n");
+    printf("****WARNING: Fit settings not tuned for this fit function, only for saturated Lund!\n");
+
+    // NOTE: This form is equivalent to the original form, but with parameter [2] redefined for better numerical stability.
+    // The additional parameter [5] has been introduced later and is unity originally. It seems not to be needed and is, thus,
+    // fixed to unity
+    funcBB = new TF1("funcAleph",
+                     "AliExternalTrackParam::BetheBlochAleph(x,[0],[1],[2],[3],[4])", from, to);
+    Double_t parametersBB[nPar] = {0.0851148*50, 9.25771, 2.6558e-05, 2.32742, 1.83039, 0};
+
+    funcBB->SetParameters(parametersBB);
+
     for (Int_t i = 0; i < nPar; i++)
       parametersBBForward[i] = parametersBB[i];
   }
