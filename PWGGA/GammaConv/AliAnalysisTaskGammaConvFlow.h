@@ -80,6 +80,7 @@ public:
     void                                 ProcessPhotonCandidatesforV2();
     void                                 SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
     void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
+    void                                 SetFilterVariable(Int_t FilterVariable, Double_t MinFilter, Double_t MaxFilter) { fFilterVariable = FilterVariable; fMinFilter = MinFilter; fMaxFilter = MaxFilter;}
     
     
 protected:
@@ -183,6 +184,9 @@ protected:
   Float_t               fMaxMass;                        //
   Float_t               fMinKappa;                       //
   Float_t               fMaxKappa;                       //
+  Int_t                  fFilterVariable;                //
+  Double_t               fMinFilter;                      //
+  Double_t               fMaxFilter;                      //
 
     
 private:

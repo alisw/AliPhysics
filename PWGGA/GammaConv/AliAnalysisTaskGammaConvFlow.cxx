@@ -150,6 +150,9 @@ fMinMass(-1),
 fMaxMass(10),
 fMinKappa(-1),
 fMaxKappa(100),
+fFilterVariable(0),
+fMinFilter(0),
+fMaxFilter(0),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
@@ -245,6 +248,9 @@ fMinMass(-1),
 fMaxMass(10),
 fMinKappa(-1),
 fMaxKappa(100),
+fFilterVariable(0),
+fMinFilter(0),
+fMaxFilter(0),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
@@ -314,6 +320,10 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	cc->SetNbinsQ(500);
 	cc->SetQMin(0.0);
 	cc->SetQMax(3.0);
+  
+  cc->SetMassMin(fMinFilter);
+  cc->SetMassMax(fMaxFilter);
+  cc->SetNbinsMass(100);
 
 	// Array of current cut's gammas
 	fGammaCandidates = new TList();
@@ -427,6 +437,8 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
     
     hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt_after","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
     fESDList[iCut]->Add(hKappaTPC_after[iCut]);
+    
+    //2d histogram filling the cut and value - control check for selections
 		
 		if (fDoPhotonQA == 2){
 			fPhotonDCAList[iCut] = new TList();
@@ -831,7 +843,14 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
     AliFlowTrack *sTrack = new AliFlowTrack();
 		sTrack->SetForRPSelection(kFALSE);
 		sTrack->SetForPOISelection(kTRUE);
-		sTrack->SetMass(263732);
+    
+    if(fFilterVariable==1){//using mass for POI selections
+      sTrack->SetMass(gammaForv2->GetInvMassPair());
+    }else if(fFilterVariable==2){//using Kappa for POI selections
+      sTrack->SetMass(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent));
+    }else{//no additional POI selection
+      sTrack->SetMass(123456);
+    }
 		sTrack->SetPt(gammaForv2->Pt());
 		sTrack->SetPhi(gammaForv2->GetPhotonPhi());
 		sTrack->SetEta(gammaForv2->GetPhotonEta());
