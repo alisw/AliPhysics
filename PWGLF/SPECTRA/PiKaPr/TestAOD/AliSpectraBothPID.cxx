@@ -9,15 +9,18 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliSpectraBothTrackCuts.h"
+#include "AliTOFGeometry.h"
+#include "AliESDtrack.h"	
 
 ClassImp(AliSpectraBothPID)
 
-AliSpectraBothPID::AliSpectraBothPID() : TNamed("PID", "PID object"), fPIDType(kNSigmacircleTPCTOF), fNSigmaPID(3), fPIDResponse(0),fshiftTPC(0),fshiftTOF(0) 
+AliSpectraBothPID::AliSpectraBothPID() : TNamed("PID", "PID object"), fPIDType(kNSigmacircleTPCTOF), fNSigmaPID(3), fPIDResponse(0),fshiftTPC(0),fshiftTOF(0),foldT0(0),fNoldT0bins(-1) 
+
 {
 
 }
 
-AliSpectraBothPID::AliSpectraBothPID(BothPIDType_t pidType) : TNamed("PID", "PID object"), fPIDType(pidType), fNSigmaPID(3), fPIDResponse(0), fshiftTPC(0),fshiftTOF(0)
+AliSpectraBothPID::AliSpectraBothPID(BothPIDType_t pidType) : TNamed("PID", "PID object"), fPIDType(pidType), fNSigmaPID(3), fPIDResponse(0), fshiftTPC(0),fshiftTOF(0),fNoldT0bins(-1) 
 {
 
 
@@ -72,8 +75,7 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
   	{
     
    		 hman->GetPIDHistogram(kHistPIDTOF)->Fill(track->P(),(track->GetTOFsignal()/100)*track->Charge()); // PID histo
-    
-    
+    			
     //TOF	 	 
 		if(ycut[0]&&trackCuts->CheckTOFMatchingParticleType(kSpPion)&&track->Pt()>=trackCuts->GetPtTOFMatchingPion())
     		{
@@ -81,6 +83,13 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
 			nsigmaTPCTOFkPion = TMath::Sqrt((nsigmaTPCkPion*nsigmaTPCkPion+nsigmaTOFkPion*nsigmaTOFkPion)/2.0);
     			hman->GetPtHistogram(kHistNSigPionPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkPion );
   			hman->GetPtHistogram(kHistNSigPionPtTPCTOF)->Fill(track->Pt()*track->Charge(),nsigmaTPCTOFkPion);
+			if(fNoldT0bins>0.0)
+			{
+				Float_t missmatch=GetMissMatchNsigma(track, AliPID::kPion);
+				hman->GetPtHistogram(kHistNSigPionPtTOFmissmatch)->Fill(track->Pt()*track->Charge(),missmatch);
+			
+			}
+
 			if(idGen==kSpPion)
 			{
 				hman->GetPtHistogram(kHistNSigTruePionPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkPion );
@@ -95,6 +104,13 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
 
    	 		hman->GetPtHistogram(kHistNSigKaonPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkKaon );	 
   			hman->GetPtHistogram(kHistNSigKaonPtTPCTOF)->Fill(track->Pt()*track->Charge(),nsigmaTPCTOFkKaon);
+			if(fNoldT0bins>0.0)
+			{
+				Float_t missmatch=GetMissMatchNsigma(track, AliPID::kKaon);
+				hman->GetPtHistogram(kHistNSigKaonPtTOFmissmatch)->Fill(track->Pt()*track->Charge(),missmatch);
+			
+			}
+
 			if(idGen==kSpKaon)
 			{
 				hman->GetPtHistogram(kHistNSigTrueKaonPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkKaon );
@@ -109,6 +125,13 @@ void AliSpectraBothPID::FillQAHistos(AliSpectraBothHistoManager * hman, AliVTrac
 			
     			hman->GetPtHistogram(kHistNSigProtonPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkProton );
   			hman->GetPtHistogram(kHistNSigProtonPtTPCTOF)->Fill(track->Pt()*track->Charge(),nsigmaTPCTOFkProton);
+			if(fNoldT0bins>0.0)
+			{
+				Float_t missmatch=GetMissMatchNsigma(track, AliPID::kProton);
+				hman->GetPtHistogram(kHistNSigProtonPtTOFmissmatch)->Fill(track->Pt()*track->Charge(),missmatch);
+			
+			}
+
 			if(idGen==kSpProton)
 			{
 				hman->GetPtHistogram(kHistNSigTrueProtonPtTOF)->Fill(track->Pt()*track->Charge(),nsigmaTOFkProton );
@@ -427,4 +450,67 @@ Long64_t AliSpectraBothPID::Merge(TCollection* list)
   Printf("OK");
   return count+1;
 }
+//________________________________________________________________________________________________
+void AliSpectraBothPID::SetoldT0()
+{
+	if(!fPIDResponse) 
+  	{
+    		AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+   		 AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+    		fPIDResponse = inputHandler->GetPIDResponse();
+  	}
+	Int_t bin=fPIDResponse->GetTOFResponse().GetMomBin(1.0);
+	Int_t nbins=fPIDResponse->GetTOFResponse().GetNmomBins();
+	if(fNoldT0bins>0&&fNoldT0bins!=nbins)
+		delete foldT0;
+	if(!foldT0)
+	{
+		fNoldT0bins=nbins;
+		foldT0= new Float_t[fNoldT0bins];
+	}
+	//else
+	//	Printf("TOF1 %lf",foldT0[bin]);	
+	for (int k=0;k<fNoldT0bins;k++)
+	{
+			foldT0[k]=fPIDResponse->GetTOFResponse().GetT0bin(k);
+	}
+	//Printf("TOF2 %lf",foldT0[bin]);
+}
+//___________________________________________________________________________________________________________
+Float_t AliSpectraBothPID::GetMissMatchNsigma(AliVTrack* track,AliPID::EParticleType type)
+{
+	AliESDtrack* trackESD=dynamic_cast<AliESDtrack*>(track);
+	
+	Float_t timeexp=-1e8;
+	if(trackESD)
+	{
+		int index=trackESD->GetTOFCalChannel();
 
+		AliTOFGeometry tofGeo;
+			Float_t c = TMath::C() * 1.e2 / 1.e12; /* cm/ps */
+		Float_t c_1 = 1. / c;
+		Int_t det[5];
+	  	Float_t length, timeexp, pos[3];
+  
+ 			 /* compute length and expected time */
+	 	tofGeo.GetVolumeIndices(index, det);
+		tofGeo.GetPosPar(det, pos);
+		length = 0.;
+		for (Int_t i = 0; i < 3; i++) 
+			length += pos[i] * pos[i];
+		length = TMath::Sqrt(length);
+  		timeexp = length * c_1;
+	}
+	else
+		timeexp =track->GetTOFsignal();
+
+	Float_t expTime=fPIDResponse->GetTOFResponse().GetExpectedSignal(track,type);
+	Float_t expres=fPIDResponse->GetTOFResponse().GetExpectedSigma(track->P(),expTime,AliPID::ParticleMassZ(type));
+	Int_t bin=fPIDResponse->GetTOFResponse().GetMomBin(track->P());
+
+	Float_t startTime=foldT0[bin];
+	if(expres>0.0)
+		return (timeexp-startTime-expTime)/expres;
+	else
+		return 0.0;
+}
