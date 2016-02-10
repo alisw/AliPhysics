@@ -1987,7 +1987,7 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamber(Int_t padRegion/*=1*/, Bool
   delete histGainSec;
   return gr;
 }
-TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/, Bool_t /*plotQA=kFALSE*/)
+TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/, Bool_t /*plotQA=kFALSE*/, TObjArray *arrQA/*=0x0*/)
 {
   //
   // Extract gain variations per chamger for 'padRegion'
@@ -2004,15 +2004,32 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/
   //
   TH2D * histGainSec = fHistGainSector->Projection(0,1);
   TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.6,4,markers[padRegion],colors[padRegion]);
-  delete histGainSec;
-  Double_t median = TMath::Median(gr->GetN(),gr->GetY());
+  const char* names[3]={"SHORT","MEDIUM","LONG"};
+  const Double_t median = TMath::Median(gr->GetN(),gr->GetY());
+
+  // ---| QA histograms |---
+  if (arrQA) {
+    // --- Qmax ---
+    histGainSec->SetName(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL_QA",names[padRegion]));
+    histGainSec->SetTitle(Form("Per chamber calibration %s;chamber;d#it{E}/d#it{x} (arb. unit)",names[padRegion]));
+    arrQA->Add(histGainSec);
+
+    // --- scale axis ---
+    if (median>0) {
+      TAxis *a=histGainSec->GetYaxis();
+      a->SetLimits(a->GetXmin()/median, a->GetXmax()/median);
+    }
+
+  } else {
+    delete histGainSec;
+  }
+
   if (median>0){
     for (Int_t i=0; i<gr->GetN();i++) {
       gr->GetY()[i]/=median;
       gr->SetPointError(i,gr->GetErrorX(i),gr->GetErrorY(i)/median);
-    }    
+    }
   }
-  const char* names[3]={"SHORT","MEDIUM","LONG"};
   gr->SetNameTitle(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[padRegion]),Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[padRegion]));
   return gr;
 }
