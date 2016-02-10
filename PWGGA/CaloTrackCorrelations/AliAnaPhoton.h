@@ -81,6 +81,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
+  void         SetConstantTimeShift(Float_t shift)    { fConstantTimeShift     = shift  ; }
+  
   // Analysis parameters setters getters
     
   // ** Cluster selection methods **
@@ -164,6 +166,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
+  
+  Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
   
   //
   // Histograms
