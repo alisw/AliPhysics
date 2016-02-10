@@ -1180,7 +1180,7 @@ Bool_t AliTPCcalibResidualPID::ProcessV0Tree(TTree* tree, THnSparseF* h, const I
   for (Long64_t i = 0; i < nTreeEntries; i++) {
     tree->GetEntry(i);
     // skip runs
-    if (!(runMap.GetValue(runNumber)^excludeRuns)) continue;
+    if (runMap.GetSize() && !(runMap.GetValue(runNumber)^excludeRuns)) continue;
 
     // set dummy esd track multiplicity
     arrTracks->Clear();
