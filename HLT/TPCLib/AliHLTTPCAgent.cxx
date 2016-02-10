@@ -162,10 +162,13 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     handler->CreateConfiguration("TPC-DP", "TPCDataPublisher", NULL , arg.Data());
 
+    if (bPublishRaw) {
+      hwcfemuInput = "TPC-DP";
+    }
+
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       for (int part=iMinPart; part<=iMaxPart; part++) {
 	TString publisher;
-
 	// digit publisher components
 	publisher.Form("TPC-DP_%02d_%d", slice, part);
 	if (bPublishRaw) {
@@ -184,21 +187,20 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	} else {
 	  arg.Form("-slice %d -partition %d", slice, part);
 	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
+	  if (hwcfemuInput.Length()>0) hwcfemuInput+=" ";
+	  hwcfemuInput+=publisher;
 	}
-
-	if (hwcfemuInput.Length()>0) hwcfemuInput+=" ";
-	hwcfemuInput+=publisher;
       }
     }
 
-	// Hardware CF emulator
-	TString hwcfemu;
-	hwcfemu.Form("TPC-HWCFEmu");
-	arg="";
-	if (!bPublishRaw) arg+=" -do-mc 1";
-	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", hwcfemuInput.Data(), arg.Data());
-	if (hwclustOutput.Length()>0) hwclustOutput+=" ";
-	hwclustOutput+=hwcfemu;
+    // Hardware CF emulator
+    TString hwcfemu;
+    hwcfemu.Form("TPC-HWCFEmu");
+    arg="";
+    if (!bPublishRaw) arg+=" -do-mc 1";
+    handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", hwcfemuInput.Data(), arg.Data());
+    if (hwclustOutput.Length()>0) hwclustOutput+=" ";
+    hwclustOutput+=hwcfemu;
  
     TString hwcfDecoder = "TPC-HWCFDecoder";
     handler->CreateConfiguration(hwcfDecoder.Data(), "TPCHWClusterDecoder",hwclustOutput.Data(), "");
