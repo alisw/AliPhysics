@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE ESD)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folders
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})

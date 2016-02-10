@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE TDPMjet)
+set(MODULE TDPMjet)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})

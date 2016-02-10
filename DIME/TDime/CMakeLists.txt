@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE TDime)
+set(MODULE TDime)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/DIME/${MODULE}
