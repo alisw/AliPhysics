@@ -26,6 +26,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "THistManager.h"
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -257,10 +258,11 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     TClonesArray              *fTracksContArray;            //!<! the array of tracks from the tracks container
     TClonesArray              *fCaloClustContArray;         //!<! the array of clusters from the tracks container
 
-    Int_t                      idx_jetcont;                 //!<! index of jet container to be processed
-    Int_t                      fNJets_accepted;             //!<! Number of Jets found in event - accepted cuts applied by JetContainer
-    Int_t                      fNaccPart;                   //!<! Multiplicity in event - accepted tracks in tracks container
-    Int_t                      fNaccClus;                   //!<! Multiplicity in event - accepted clusters in cluster container
+    Int_t                      idx_jetcont;                 ///< index of jet container to be processed
+    Int_t                      fNJets_accepted;             ///< Number of Jets found in event - accepted cuts applied by JetContainer
+    Int_t                      fNaccPart;                   ///< Multiplicity in event - accepted tracks in tracks container
+    Int_t                      fNaccClus;                   ///< Multiplicity in event - accepted clusters in cluster container
+    THistManager               fHistManager;                ///< Histogram manager
 
   private:
     /// (pt,index) pair
