@@ -139,6 +139,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
     
   void           SetOADBFilePath(TString path)                  { fOADBFilePath      = path    ; }
   
+  void           SetConstantTimeShift(Float_t shift)            { fConstantTimeShift = shift   ; }
+  
   // Centrality selection
   
   AliCentrality* GetCentrality()                          const { return InputEvent()->GetCentrality() ; } 
@@ -239,7 +241,8 @@ private:
   Bool_t                 fOADBSet ;                ///<  AODB parameters already set
   Bool_t                 fAccessOADB ;             ///<  Get calibration from OADB for EMCAL
   TString                fOADBFilePath ;           ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change
-    
+  Float_t                fConstantTimeShift;       ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
+ 
   // Centrality
   TString                fCentralityClass;         ///<  Name of selected centrality class     
   Float_t                fCentralityBin[2];        ///<  Minimum and maximum value of the centrality for the analysis
@@ -260,7 +263,7 @@ private:
 
   
   Bool_t                 fInputFromFilter ;        ///<  Get the input from AODs from the filter.
-  
+    
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
     

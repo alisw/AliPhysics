@@ -81,6 +81,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
+, fConstantTimeShift(0)
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
 , fCentralityClass(""),   fUseAliCentrality(0),       fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
@@ -120,6 +121,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
+, fConstantTimeShift(0)
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
 , fCentralityClass(""),     fUseAliCentrality(0),      fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
@@ -611,6 +613,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     // Get cell values, recalibrate and not include bad channels found in analysis, nor cells with too low energy, nor exotic cell
     id = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
+    time-=fConstantTimeShift*1e-9; // only in case of simulations done before 2015
     
     // Do not include cells with too low energy, nor exotic cell
     if( amp  < fRecParam->GetMinECut() ||
@@ -1304,6 +1307,8 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
     
     Int_t absID   = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(absID,bc,ecell,tcell,cells);
+    tcell-=fConstantTimeShift*1e-9;// Only for MC simulations done before 2015
+    
     if(accept && !fRecoUtils->IsExoticCell(absID,cells,bc)) totCellE += ecell;
   }
   
