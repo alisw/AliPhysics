@@ -55,6 +55,7 @@ fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0), fFillOnlySimpleSSHisto(1),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fPrimaryMom(),               fProdVertex(),
+fConstantTimeShift(0),
 // Histograms
 
 // Control histograms
@@ -339,6 +340,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
   Double_t tof = calo->GetTOF()*1e9;
+  if(tof > 400) tof-=fConstantTimeShift; // only for MC, rest shift = 0
+  
   if(tof < fTimeCutMin || tof > fTimeCutMax) return kFALSE;
   
   AliDebug(2,Form("\t Cluster %d Pass Time Cut",calo->GetID()));
@@ -649,6 +652,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 {
   Float_t pt   = fMomentum.Pt();
   Float_t time = cluster->GetTOF()*1.e9;
+  if ( time > 400 ) time-=fConstantTimeShift; // Only for MC, rest shift = 0
   
   AliVEvent * event = GetReader()->GetInputEvent();
   
@@ -682,6 +686,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
       
       GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,amp,tcell,cells);
       tcell*=1e9;
+      tcell-=fConstantTimeShift;
       
       Float_t diff = (time-tcell);
       
@@ -866,6 +871,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
 
       GetCaloUtils()->GetEMCALRecoUtils()->AcceptCalibrateCell(absId,bc,cellE,cellTime,cells);
       cellTime*=1e9;
+      cellTime-=fConstantTimeShift;
       
       enerList[icell] = cellE;
       timeList[icell] = cellTime;
@@ -3097,7 +3103,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     aodph.SetM02(calo->GetM02());
     //aodph.SetM20(calo->GetM20());
     aodph.SetNLM(nMaxima);
-    aodph.SetTime(calo->GetTOF()*1e9);
+    
+    Float_t time = calo->GetTOF()*1e9;
+    if(time > 400) time-=fConstantTimeShift; // in case of clusterizer running before (calibrate clusters not cells)
+    aodph.SetTime(time);
+    
     aodph.SetNCells(calo->GetNCells());
     Int_t nSM = GetModuleNumber(calo);
     aodph.SetSModNumber(nSM);
@@ -3153,7 +3163,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Few more control histograms for selected clusters
     fhMaxCellDiffClusterE->Fill(en, maxCellFraction    , GetEventWeight());
     fhNCellsE            ->Fill(en, calo->GetNCells()  , GetEventWeight());
-    fhTimePt             ->Fill(pt, calo->GetTOF()*1.e9, GetEventWeight());
+    fhTimePt             ->Fill(pt, time               , GetEventWeight());
     
     if(cells)
     {
