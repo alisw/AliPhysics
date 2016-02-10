@@ -1,18 +1,19 @@
 AliEmcalJetTask* AddTaskEmcalJet(
-  const UInt_t type           = AliEmcalJetTask::kAKT | AliEmcalJetTask::kFullJet | AliEmcalJetTask::kR040Jet,
-  const char *nTracks         = "usedefault",
-  const char *nClusters       = "usedefault",
-  const Double_t minTrPt      = 0.15,
-  const Double_t minClPt      = 0.30,
-  const Double_t ghostArea    = 0.005,
-  const Double_t radius       = 0.4,
-  const Int_t recombScheme    = 1,
-  const char *tag             = "Jet",
-  const Double_t minJetPt     = 0.,
-  const Bool_t selectPhysPrim = kFALSE,
-  const Bool_t lockTask       = kTRUE,
-  const Int_t useExchangeCont = 0,
-  const Bool_t bFillGhosts    = kFALSE
+  const char *nTracks                        = "usedefault",
+  const char *nClusters                      = "usedefault",
+  const Int_t algo                           = 1,                // 1 = AKT, 0 = KT
+  const Double_t radius                      = 0.4,
+  const AliJetContainer::EJetType_t jetType  = AliJetContainer::kFullJet,
+  const Double_t minTrPt                     = 0.15,
+  const Double_t minClPt                     = 0.30,
+  const Double_t ghostArea                   = 0.005,
+  const AliJetContainer::ERecoScheme_t recoSch = AliJetContainer::pt_scheme,
+  const char *tag                            = "Jet",
+  const Double_t minJetPt                    = 0.,
+  const Bool_t selectPhysPrim                = kFALSE,
+  const Bool_t lockTask                      = kTRUE,
+  const Int_t useExchangeCont                = 0,
+  const Bool_t bFillGhosts                   = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -52,69 +53,6 @@ AliEmcalJetTask* AddTaskEmcalJet(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  char *algoString;
-  if ((type & AliEmcalJetTask::kKT) != 0) {
-    algoString = "KT";
-  } else if ((type & AliEmcalJetTask::kAKT) != 0) {
-    algoString = "AKT";
-  }
-
-  char *typeString;
-  if ((type & AliEmcalJetTask::kFullJet) != 0)
-    typeString = "Full";
-  else if ((type & AliEmcalJetTask::kChargedJet) != 0)
-    typeString = "Charged";
-  else if ((type & AliEmcalJetTask::kNeutralJet) != 0)
-    typeString = "Neutral";
-
-  char radiusString[200];
-  if ((type & AliEmcalJetTask::kR020Jet) != 0)
-    sprintf(radiusString,"R020");
-  else if ((type & AliEmcalJetTask::kR030Jet) != 0)
-    sprintf(radiusString,"R030");
-  else if ((type & AliEmcalJetTask::kR040Jet) != 0)
-    sprintf(radiusString,"R040");
-  else
-    sprintf(radiusString,"R%03.0f",radius*100.0);
-
-  char pTString[200];
-  if (minTrPt==0)
-    sprintf(pTString,"pT0000");
-  else if (minTrPt<1.0)
-    sprintf(pTString,"pT0%3.0f",minTrPt*1000.0);
-  else if (minTrPt>=1.0)
-    sprintf(pTString,"pT%4.0f",minTrPt*1000.0);
-
-  char ETString[200];
-  if (minClPt==0)
-    sprintf(ETString,"ET0000");
-  else if (minClPt<1.0)
-    sprintf(ETString,"ET0%3.0f",minClPt*1000.0);
-  else if (minClPt>=1.0)
-    sprintf(ETString,"ET%4.0f",minClPt*1000.0);  
-
-  char recombSchemeString[200];
-  if(recombScheme==0)
-    sprintf(recombSchemeString,"%s","E_scheme");
-  else if(recombScheme==1)
-    sprintf(recombSchemeString,"%s","pt_scheme");
-  else if(recombScheme==2)
-    sprintf(recombSchemeString,"%s","pt2_scheme");
-  else if(recombScheme==3)
-    sprintf(recombSchemeString,"%s","Et_scheme");
-  else if(recombScheme==4)
-    sprintf(recombSchemeString,"%s","Et2_scheme");
-  else if(recombScheme==5)
-    sprintf(recombSchemeString,"%s","BIpt_scheme");
-  else if(recombScheme==6)
-    sprintf(recombSchemeString,"%s","BIpt2_scheme");
-  else if(recombScheme==99)
-    sprintf(recombSchemeString,"%s","ext_scheme");
-  else {
-    ::Error("AddTaskEmcalJet", "Recombination scheme not recognized.");
-    return 0;
-  }
-
   TString trackName(nTracks);
   TString clusName(nClusters);
 
@@ -142,35 +80,50 @@ AliEmcalJetTask* AddTaskEmcalJet(
     }
   }
 
-  TString name;
-  if (!trackName.IsNull() && !clusName.IsNull())
-    name = TString(Form("%s_%s%s%s_%s_%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,trackName.Data(),pTString,clusName.Data(),ETString,recombSchemeString));
-  else if (clusName.IsNull())
-    name = TString(Form("%s_%s%s%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,trackName.Data(),pTString,recombSchemeString));
-  else if (trackName.IsNull())
-    name = TString(Form("%s_%s%s%s_%s_%s_%s",
-                        tag,algoString,typeString,radiusString,clusName.Data(),ETString,recombSchemeString));
+  AliParticleContainer* partCont = 0;
+  if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+    partCont->SelectPhysicalPrimaries(selectPhysPrim);
+    partCont->SetParticlePtCut(minTrPt);
+  }
 
-  std::cout << "Jet task name: " << name.Data() << std::endl;
+  AliClusterContainer* clusCont = 0;
+  if (!clusName.IsNull()) {
+    clusCont = new AliClusterContainer(clusName);
+    clusCont->SetClusECut(0.);
+    clusCont->SetClusPtCut(0.);
+    clusCont->SetClusHadCorrEnergyCut(minClPt);
+    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+
+  AliJetContainer::EJetAlgo_t jetAlgo;
+  if (algo == 0) {
+    jetAlgo = AliJetContainer::kt_algorithm;
+  }
+  else {
+    jetAlgo = AliJetContainer::antikt_algorithm;
+  }
+
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, recoSch, radius, partCont, clusCont, tag);
+
+  Printf("Jet task name: %s", name.Data());
  
   AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
   if (mgrTask) return mgrTask;  
 
   AliEmcalJetTask* jetTask = new AliEmcalJetTask(name, useExchangeCont);
+  jetTask->SetJetType(jetType);
+  jetTask->SetJetAlgo(jetAlgo);
+  jetTask->SetRecombScheme(recoSch);
+  jetTask->SetRadius(radius);
+  if (partCont) jetTask->AdoptParticleContainer(partCont);
+  if (clusCont) jetTask->AdoptClusterContainer(clusCont);
   jetTask->SetTracksName(trackName);
   jetTask->SetClusName(clusName);
-  jetTask->SetJetsName(name);
-  jetTask->SetJetType(type);
-  jetTask->SetMinJetTrackPt(minTrPt);
-  jetTask->SetMinJetClusPt(minClPt);
+  jetTask->SetJetsName(tag);
   jetTask->SetMinJetPt(minJetPt);
-  if ((type & (AliEmcalJetTask::kRX1Jet|AliEmcalJetTask::kRX2Jet|AliEmcalJetTask::kRX3Jet)) != 0)
-    jetTask->SetRadius(radius);
   jetTask->SetGhostArea(ghostArea);
-  jetTask->SetRecombScheme(recombScheme);
-  if (jetTask->GetParticleContainer(0)) jetTask->GetParticleContainer(0)->SelectPhysicalPrimaries(selectPhysPrim);
+
   if (bFillGhosts) jetTask->SetFillGhost();
   if (lockTask) jetTask->SetLocked();
 
@@ -211,54 +164,4 @@ AliEmcalJetTask* AddTaskEmcalJet(
   }
 
   return jetTask;
-}
-
-
-AliEmcalJetTask* AddTaskEmcalJet(
-  const char *nTracks        = "usedefault",
-  const char *nClusters      = "usedefault",
-  const Int_t algo           = 1,
-  const Double_t radius      = 0.4,
-  const Int_t type           = 0,
-  const Double_t minTrPt     = 0.15,
-  const Double_t minClPt     = 0.30,
-  const Double_t ghostArea   = 0.005,
-  const Int_t recombScheme   = 1,
-  const char *tag            = "Jet",
-  const Double_t minJetPt    = 0.,
-  const Bool_t selectPhysPrim = kFALSE,
-  const Bool_t lockTask       = kTRUE,
-  const Int_t useExchangeCont = 0,
-  const Bool_t bFillGhosts    = kFALSE
-)
-{  
-  UInt_t jetType = 0;
-
-  if (algo == 0) 
-    jetType |= AliEmcalJetTask::kKT; 
-  else 
-    jetType |= AliEmcalJetTask::kAKT;
-
-  if (type==0)
-    jetType |= AliEmcalJetTask::kFullJet; 
-  else if (type==1) 
-    jetType |= AliEmcalJetTask::kChargedJet; 
-  else if (type==2) 
-    jetType |= AliEmcalJetTask::kNeutralJet;
-
-  if (radius==0.2) 
-    jetType |= AliEmcalJetTask::kR020Jet; 
-  else if (radius==0.3) 
-    jetType |= AliEmcalJetTask::kR030Jet;
-  else if (radius==0.4) 
-    jetType |= AliEmcalJetTask::kR040Jet;
-  else
-    jetType |= AliEmcalJetTask::kRX1Jet;
-
-  if (ghostArea<=0) {
-    ::Error("AddTaskEmcalJet","Ghost area set to 0, check your settings (try 0.005)");
-    return 0;
-  }
-
-  return AddTaskEmcalJet(jetType, nTracks, nClusters, minTrPt, minClPt, ghostArea, radius, recombScheme, tag, minJetPt, selectPhysPrim, lockTask, useExchangeCont, bFillGhosts);
 }

@@ -19,7 +19,7 @@ ClassImp(AliJetContainer)
 
 //________________________________________________________________________
 AliJetContainer::AliJetContainer():
-  AliEmcalContainer("AliJetContainer"),
+  AliEmcalContainer(),
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
@@ -46,7 +46,6 @@ AliJetContainer::AliJetContainer():
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fMinNConstituents(-1),
-  fJetBitMap(0),
   fJetTrigger(0),
   fTagStatus(-1),
   fParticleContainer(0),
@@ -91,7 +90,6 @@ AliJetContainer::AliJetContainer(const char *name):
   fLeadingHadronType(0),
   fNLeadingJets(1),
   fMinNConstituents(-1),
-  fJetBitMap(0),
   fJetTrigger(0),
   fTagStatus(-1),
   fParticleContainer(0),
@@ -103,6 +101,51 @@ AliJetContainer::AliJetContainer(const char *name):
   fRunNumber(0)
 {
   // Standard constructor.
+
+  fClassName = "AliEmcalJet";
+}
+
+//________________________________________________________________________
+AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
+    AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
+  AliEmcalContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  fJetAcceptanceType(kUser),
+  fJetRadius(radius),
+  fRhoName(),
+  fLocalRhoName(),
+  fRhoMassName(),
+  fFlavourSelection(0),
+  fPtBiasJetTrack(0),
+  fPtBiasJetClus(0),
+  fJetPtCut(0.),
+  fJetPtCutMax(999.),
+  fJetAreaCut(-1),
+  fAreaEmcCut(-1),
+  fJetMinEta(-0.9),
+  fJetMaxEta(0.9),
+  fJetMinPhi(0.),
+  fJetMaxPhi(0.),
+  fPhiOffset(0.),
+  fMaxClusterPt(1000),
+  fMaxTrackPt(100),
+  fZLeadingEmcCut(10.),
+  fZLeadingChCut(10.),
+  fNEFMinCut(-10.),
+  fNEFMaxCut(10.),
+  fLeadingHadronType(0),
+  fNLeadingJets(1),
+  fMinNConstituents(-1),
+  fJetTrigger(0),
+  fTagStatus(-1),
+  fParticleContainer(partCont),
+  fClusterContainer(clusCont),
+  fRho(0),
+  fLocalRho(0),
+  fRhoMass(0),
+  fGeom(0),
+  fRunNumber(0)
+{
+  // Constructor.
 
   fClassName = "AliEmcalJet";
 }
@@ -445,8 +488,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     return kFALSE;
   }
 
-
-  if (jet->TestBits(fJetBitMap) != (Int_t)fJetBitMap) {
+  if (jet->TestBits(fBitMap) != (Int_t)fBitMap) {
     AliDebug(11,"Cut rejecting jet: Bit map");
     fRejectionReason |= kBitMapCut;
     return kFALSE;
@@ -614,7 +656,6 @@ Double_t AliJetContainer::GetZLeadingCharged(const AliEmcalJet *jet) const
 //________________________________________________________________________
 Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
 {
-
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
 
   if(pJetSq>1e-6)
@@ -791,19 +832,97 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
   return fraction;
 }
 
-//__________________________________________________________________________________________________
-Bool_t AliJetContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist) const
+//________________________________________________________________________
+TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
 {
-  // Helper function to calculate the distance between two jets or a jet and a particle
-  if(!part1) return kFALSE;
-  if(!part2) return kFALSE;
-  Double_t dPhi = TMath::Abs(part1->Phi() - part2->Phi());
-  Double_t dEta = TMath::Abs(part1->Eta() - part2->Eta());
-  Double_t dpT  = TMath::Abs(part1->Pt() - part2->Pt());
-  dPhi = TVector2::Phi_mpi_pi(dPhi);
-  if (dPhi > dist) return kFALSE;
-  if (dEta > dist) return kFALSE;
-  if (dpT  > dist) return kFALSE;
-  return kTRUE;
+  TString algoString;
+  switch (jetAlgo)
+  {
+  case kt_algorithm:
+    algoString = "KT";
+    break;
+  case antikt_algorithm:
+    algoString = "AKT";
+    break;
+  default:
+    algoString = "";
+  }
+
+  TString typeString;
+  switch (jetType) {
+  case kFullJet:
+    typeString = "Full";
+    break;
+  case kChargedJet:
+    typeString = "Charged";
+    break;
+  case kNeutralJet:
+    typeString = "Neutral";
+    break;
+  }
+
+  TString radiusString = TString::Format("R%03.0f", radius*100.0);
+
+  TString trackString;
+  if (jetType != kNeutralJet && partCont) {
+    trackString = "_" + TString(partCont->GetTitle());
+  }
+
+  TString clusterString;
+  if (jetType != kChargedJet && clusCont) {
+    clusterString = "_" + TString(clusCont->GetTitle());
+  }
+
+  TString recombSchemeString;
+  switch (recoScheme) {
+  case E_scheme:
+    recombSchemeString = "E_scheme";
+    break;
+  case pt_scheme:
+    recombSchemeString = "pt_scheme";
+    break;
+  case pt2_scheme:
+    recombSchemeString = "pt2_scheme";
+    break;
+  case Et_scheme:
+    recombSchemeString = "Et_scheme";
+    break;
+  case Et2_scheme:
+    recombSchemeString = "Et2_scheme";
+    break;
+  case BIpt_scheme:
+    recombSchemeString = "BIpt_scheme";
+    break;
+  case BIpt2_scheme:
+    recombSchemeString = "BIpt2_scheme";
+    break;
+  case external_scheme:
+    recombSchemeString = "ext_scheme";
+    break;
+  default:
+    ::Error("AliJetContainer::GenerateJetName", "Recombination %d scheme not recognized.", recoScheme);
+  }
+
+  TString name = TString::Format("%s_%s%s%s%s%s_%s",
+      tag.Data(), algoString.Data(), typeString.Data(), radiusString.Data(), trackString.Data(), clusterString.Data(), recombSchemeString.Data());
+
+  return name;
 }
 
+//________________________________________________________________________
+const char* AliJetContainer::GetTitle() const
+{
+  static TString jetString;
+
+  if (GetJetPtCut() == 0) {
+    jetString = TString::Format("_%s_pT0000", GetArrayName().Data());
+  }
+  else if (GetJetPtCut() < 1.0) {
+    jetString = TString::Format("_%s_pT0%3.0f", GetArrayName().Data(), GetJetPtCut()*1000.0);
+  }
+  else {
+    jetString = TString::Format("_%s_pT%4.0f", GetArrayName().Data(), GetJetPtCut()*1000.0);
+  }
+
+  return jetString.Data();
+}
