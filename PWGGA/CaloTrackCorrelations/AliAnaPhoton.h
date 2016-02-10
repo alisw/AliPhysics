@@ -381,7 +381,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhDTimeLam0BinPerSM               [2][20]; //!<! t_max-t_cell, not maximum cluster cell, in a l0 bin per SM 
   TH2F * fhDTimeLam0BinPerSMWeighted       [2][20]; //!<! t_max-t_cell, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
   TH2F * fhCellClusterEFracLam0BinPerSM    [2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM  
-  TH2F * fhCellClusterEFracLam0BinPerSMWeighted[2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight  
+//TH2F * fhCellClusterEFracLam0BinPerSMWeighted[2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight  
   TH2F * fhCellClusterELam0BinPerSM        [2][20]; //!<! Cell E vs cluster pT, not maximum cluster cell, in a l0 bin per SM  
   TH2F * fhCellClusterELam0BinPerSMWeighted[2][20]; //!<! Cell E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
 
@@ -389,23 +389,28 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiLam0BinPtBin              [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins
   TH2F * fhColRowLam0BinPtBin              [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
   TH2F * fhColRowLam0BinPtBinWeighted      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins and log weight Cell E / Cluster E 
-  
-  // Shared clusters
-  TH2F * fhLam0PerSMShared                   [12] ; //!<! Cluster lambda0 vs  Pt, for shared clusters, EMCal
-  TH2F * fhLam1PerSMShared                   [12] ; //!<! Cluster lambda1 vs  Pt, for shared clusters, EMCal
-  TH2F * fhTimeLam0BinPerSMShared         [2][12] ; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM, shared SM
-  
-  TH2F * fhEtaPhiLam0BinPtBinSMShared      [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins, SM shared clusters
-  TH2F * fhColRowLam0BinPtBinSMShared      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
-  TH2F * fhEtaPhiLargeTimeInClusterCell    [2][7] ; //!<! Cluster eta/phi, with at least one significant cell with large time
-  TH2F * fhCellIndexDiffLargeTimeInClusterCell[2][7] ; //!<! Cell in cluster, row or column minus max row or colum, maximum difference vs cell energy.
+  TH2F * fhCellClusterIndexEAndTime        [2][7] ; //!<! Cell in Cluster index (low index high energy, high index low energy) vs cell Time  
 
+//  // Shared clusters
+//  TH2F * fhLam0PerSMShared                   [12] ; //!<! Cluster lambda0 vs  Pt, for shared clusters, EMCal
+//  TH2F * fhLam1PerSMShared                   [12] ; //!<! Cluster lambda1 vs  Pt, for shared clusters, EMCal
+//  TH2F * fhTimeLam0BinPerSMShared         [2][12] ; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM, shared SM
+//  
+//  TH2F * fhEtaPhiLam0BinPtBinSMShared      [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins, SM shared clusters
+//  TH2F * fhColRowLam0BinPtBinSMShared      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
+  
+  // Cells with large time
+  TH2F * fhEtaPhiLargeTimeInClusterCell    [2][7] ; //!<! Cluster eta/phi, with at least one significant cell with large time
+  TH2F * fhCellClusterEFracLam0BinPerSMLargeTime [2][20]; //!<! Cell in Cluster E cell / Ecluster vs cluster pT, with large time
+  TH2F * fhCellClusterELam0BinPerSMLargeTime     [2][20]; //!<! Cell in Cluster E cell vs cluster pT, with large time
+  TH2F * fhCellClusterIndexELam0BinPerSMLargeTime[2][20]; //!<! Cell in Cluster index (low index high energy, high index low energy) vs cluster pT, with large time  
+  
   TH2F * fhLam0PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
   TH2F * fhLam1PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
   TH2F * fhLam0PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda0 vs  Pt, when any secondary cell has t > 50 ns, in different SM
   TH2F * fhLam1PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, in different SM
-  TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
-  TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
+//  TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
+//  TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
