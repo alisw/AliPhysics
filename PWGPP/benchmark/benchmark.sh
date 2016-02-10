@@ -495,7 +495,7 @@ goCPass()
         done
       else
         collisionSystem=$(run2collisionSystem "$runNumber")
-        printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents,\"$ocdbPath\"" "$runNumber"
+        printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents" "$runNumber" "$ocdbPath"
       fi
     ;;
 
