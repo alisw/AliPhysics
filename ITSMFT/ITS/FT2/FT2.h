@@ -3,7 +3,7 @@
 #include <TObject.h>
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
-#include "AliITSUAux.h"
+#include "AliITSMFTAux.h"
 #include "AliESDpid.h"
 #include "AliPIDResponse.h"
 #include "AliITSURecoLayer.h"

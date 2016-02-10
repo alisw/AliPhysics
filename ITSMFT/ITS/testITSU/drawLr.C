@@ -42,7 +42,7 @@ void drawLr(int layMin=1,int layMax=1)
 
   for (Int_t lay=layMin;lay<=layMax;lay++) {
     //
-    AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)segmArr->At(gm->GetLayerChipTypeID(lay));
+    AliITSMFTSegmentationPix* segm = (AliITSMFTSegmentationPix*)segmArr->At(gm->GetLayerChipTypeID(lay));
     for (int ild=0;ild<gm->GetNLadders(lay);ild++) {
     
       // Sensor Matrices

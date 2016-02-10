@@ -36,7 +36,7 @@ ClassImp(FT2)
 
 TH2F* hfake = 0;
 
-using namespace AliITSUAux;
+using namespace AliITSMFTAux;
 
 float FT2::fgMaxStepTGeo = 1.0;
 

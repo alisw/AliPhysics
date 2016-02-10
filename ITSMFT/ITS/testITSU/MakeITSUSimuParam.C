@@ -22,7 +22,7 @@ AliITSUSimuParam*  MakeITSUSimuParam_1stDigital();//
 
 
 
-void SetPSFParams(TString pixType, AliITSUParamList* parData);
+void SetPSFParams(TString pixType, AliITSMFTParamList* parData);
 
 // To turn noise generation ON set these values to 1
 const int kAddNoise = -1;
@@ -180,10 +180,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26",parData);
@@ -213,7 +213,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26",parData);
@@ -243,7 +243,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map( Int_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26",parData);
@@ -295,10 +295,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31",parData);
@@ -329,7 +329,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31",parData);
@@ -362,7 +362,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31", parData );
@@ -413,10 +413,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad",parData);
@@ -447,7 +447,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad",parData);
@@ -480,7 +480,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad", parData );
@@ -530,10 +530,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_300kRad3e12neq",parData);
@@ -564,7 +564,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_300kRad3e12neq",parData);
@@ -597,7 +597,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map300kRad3e12( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_300kRad3e12neq", parData );
@@ -648,10 +648,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad1e13neq",parData);
@@ -682,7 +682,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad1e13neq",parData);
@@ -715,7 +715,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32terP31Map1MRad1e13( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32terP31");
     SetPSFParams("hProfPSD_M32terP31_1MRad1e13neq", parData );
@@ -768,10 +768,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq",parData);
@@ -801,7 +801,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq",parData);
@@ -831,7 +831,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq",parData);
@@ -883,10 +883,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq",parData);
@@ -916,7 +916,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq",parData);
@@ -946,7 +946,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq",parData);
@@ -1000,10 +1000,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq_20deg",parData);
@@ -1033,7 +1033,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq_20deg",parData);
@@ -1063,7 +1063,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map1MRad1e13_20deg( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_1MRad1e13neq_20deg",parData);
@@ -1116,10 +1116,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     if(sncut < 5 || sncut > 10 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro header! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq_20deg",parData);
@@ -1149,7 +1149,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq_20deg",parData);
@@ -1179,7 +1179,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26Map300kRad3e12_20deg( Double_t sncut)
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams("hProfPSD_M32P26_300kRad3e12neq_20deg",parData);
@@ -1240,10 +1240,10 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     if(sncut != 5 ) {printf("---> ERROR ERROR ERROR requested SNcut: %d is not valid... Check the macro! \n",sncut); return;}
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams(histoName,parData);
@@ -1273,7 +1273,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=1
     parData->SetNameTitle("Monopix_seg1","PSF map for M32P26");
     SetPSFParams(histoName,parData);
@@ -1303,7 +1303,7 @@ AliITSUSimuParam* MakeITSUSimuParam_M32P26MapRecenteredBroadened(Double_t broade
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=2
     parData->SetNameTitle("Monopix_seg2","PSF map for M32P26");
     SetPSFParams(histoName,parData);
@@ -1353,10 +1353,10 @@ AliITSUSimuParam* MakeITSUSimuParam_1stDigital()
     for (int ilr=kNLayers;ilr--;) itsSimuParam->SetLrROCycleShift(kROShifts[ilr],ilr);
     //
     // Add spread function parameterization data
-    AliITSUParamList* parData = 0;
+    AliITSMFTParamList* parData = 0;
     //
     //------------------------ parameterization data for segmentation 0 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(0);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","First digital param");
     //
@@ -1377,7 +1377,7 @@ AliITSUSimuParam* MakeITSUSimuParam_1stDigital()
     //
     //
     //------------------------ parameterization data for segmentation 1 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(1);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","First digital param");
     //
@@ -1399,7 +1399,7 @@ AliITSUSimuParam* MakeITSUSimuParam_1stDigital()
     //
     //
     //------------------------ parameterization data for segmentation 2 ----------------------
-    parData = new AliITSUParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
+    parData = new AliITSMFTParamList(AliITSUSimulationPix::kNReservedParams);   // no custom params are needed
     parData->SetUniqueID(2);                                              // this is a function for detId=0
     parData->SetNameTitle("Monopix_seg1","First digital param");
     //
@@ -1429,7 +1429,7 @@ AliITSUSimuParam* MakeITSUSimuParam_1stDigital()
 
 
 //_______________________________________________________________
-void SetPSFParams(TString pixType, AliITSUParamList* parData )
+void SetPSFParams(TString pixType, AliITSMFTParamList* parData )
 {
     //
     // Reads the PSF map and sets the parameters

@@ -18,8 +18,8 @@
   #include <AliLoader.h>
   #include <AliGeomManager.h>
   #include <AliITSUGeomTGeo.h>
-  #include <AliITSUDigitPix.h>
-  #include <AliITSUSegmentationPix.h>
+  #include <AliITSMFTDigitPix.h>
+  #include <AliITSMFTSegmentationPix.h>
  
   #include "AliITSUSuze02.h"
 
@@ -133,10 +133,10 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
 
   //DIGITS INIT
   TTree * digTree = 0x0; 
-  TClonesArray *digArr = new TClonesArray("AliITSUDigitPix"); 
+  TClonesArray *digArr = new TClonesArray("AliITSMFTDigitPix"); 
   
   TTree * digTreeQED = 0x0;
-  TClonesArray *digArrQED = new TClonesArray("AliITSUDigitPix");
+  TClonesArray *digArrQED = new TClonesArray("AliITSMFTDigitPix");
   TDirectoryFile* EventDirectoryQED = 0x0;
   TFile* DigitsFileQED = 0x0;
   
@@ -264,7 +264,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
         ndigQED = digArrQED->GetEntries();
       }
       //Int_t detType = gm->GetChipChipTypeID(imod);
-      //AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)gm->GetSegmentationByID(detType);
+      //AliITSMFTSegmentationPix* segm = (AliITSMFTSegmentationPix*)gm->GetSegmentationByID(detType);
       Int_t lay,sta,det;
       Int_t ndig  = digArr->GetEntries();
       
@@ -292,7 +292,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
 
       nWindows=0;
       for(Int_t idig=0;idig<ndig;idig++) {
-        AliITSUDigitPix *pDig = (AliITSUDigitPix*)digArr->At(idig);
+        AliITSMFTDigitPix *pDig = (AliITSMFTDigitPix*)digArr->At(idig);
         if(pDig->GetROCycle()!=Cycle) continue; //selection of the hits from a given RO cycle
         if((CollectMode==-1 && pDig->GetHit(0)!=-1) || (CollectMode==1 && pDig->GetHit(0)==-1)) continue; // selection between noise and signal or both
         ndig_in_cycle++; 
@@ -304,7 +304,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
       
       if(AddQED){
         for(Int_t idig=0;idig<ndigQED;idig++) {
-          AliITSUDigitPix *pDig = (AliITSUDigitPix*)digArrQED->At(idig);
+          AliITSMFTDigitPix *pDig = (AliITSMFTDigitPix*)digArrQED->At(idig);
           if(pDig->GetROCycle()!=Cycle) continue; //selection of the hits from a given RO cycle
           ndig_in_cycle++; 
           ColAddress=pDig->GetCoord1();

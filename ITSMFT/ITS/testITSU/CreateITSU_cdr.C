@@ -3,7 +3,7 @@
 #endif
 
 //---------------------------------------
-Int_t getNStaves(AliITSUSegmentationPix* seg, double tilt, double r0, double minOvl);
+Int_t getNStaves(AliITSMFTSegmentationPix* seg, double tilt, double r0, double minOvl);
 
 void CreateITSU()
 {
@@ -26,7 +26,7 @@ void CreateITSU()
   const double kReadOutEdge = 0.2;   // width of the readout edge (passive bottom)
   const double kGuardRing   = 50e-4; // width of passive area on left/right/top of the sensor
   // create segmentations:
-  AliITSUSegmentationPix* seg0 = new AliITSUSegmentationPix(0,        // segID (0:9)
+  AliITSMFTSegmentationPix* seg0 = new AliITSMFTSegmentationPix(0,        // segID (0:9)
 							    kNChips,  // chips per module
 							    kNChips*kNCol,    // ncols (total for module)
 							    kNRow,    // nrows
@@ -39,10 +39,10 @@ void CreateITSU()
 							    kGuardRing, // right
 							    kGuardRing, // top
 							    kReadOutEdge  // bottom
-							    );    // see AliITSUSegmentationPix.h for extra options
+							    );    // see AliITSMFTSegmentationPix.h for extra options
   seg0->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
   //
-  AliITSUSegmentationPix* seg1 = new AliITSUSegmentationPix(1,        // segID (0:9)
+  AliITSMFTSegmentationPix* seg1 = new AliITSMFTSegmentationPix(1,        // segID (0:9)
 							    kNChips,  // chips per module
 							    kNChips*kNCol,    // ncols (total for module)
 							    2*kNRow,    // nrows for oute layers
@@ -55,7 +55,7 @@ void CreateITSU()
 							    kGuardRing, // right
 							    kReadOutEdge, // top   !!! readout from both sides
 							    kReadOutEdge  // bottom
-							    );    // see AliITSUSegmentationPix.h for extra options
+							    );    // see AliITSMFTSegmentationPix.h for extra options
   seg1->Store(AliITSUGeomTGeo::GetITSsegmentationFileName());
   //
   seg0->Print();
@@ -65,7 +65,7 @@ void CreateITSU()
   const double kPhi0 = 0.;  // az.angle of 1st stave
   const double kTilt = -10.; // tilt in degrees
   double dzLr,rLr,ovlA,xActProj;
-  AliITSUSegmentationPix* seg=0;
+  AliITSMFTSegmentationPix* seg=0;
   int nStaveLr,nModPerStaveLr,idLr;
   //      virtual void   DefineLayerTurbo(const Int_t nlay, const Double_t r,  const Double_t zlen, const Int_t nladd,   const Int_t nmod, const Double_t width,
   //				  const Double_t tilt,   const Double_t lthick = 0.,    const Double_t dthick = 0.,   const UInt_t detType=0);
@@ -149,7 +149,7 @@ void CreateITSU()
   //  
 }
 
-Int_t getNStaves(AliITSUSegmentationPix* seg, double tilt, double r0, double minOvl)
+Int_t getNStaves(AliITSMFTSegmentationPix* seg, double tilt, double r0, double minOvl)
 {
   double dphi = (90.-tilt)*TMath::DegToRad();
   double cs = TMath::Cos(dphi);

@@ -9,10 +9,10 @@
 #include "AliRun.h"
 #include "AliLoader.h"
 #include "AliITSUGeomTGeo.h"
-#include "AliITSUSegmentationPix.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliITSUSDigit.h"
-#include "AliITSUDigitPix.h"
-#include "AliITSUSensMap.h"
+#include "AliITSMFTDigitPix.h"
+#include "AliITSMFTSensMap.h"
 #endif
 
 PixConv converter;
@@ -37,7 +37,7 @@ void digits2raw(const char* dataDir="./",int nev=-1,int evStart=0)
 
   //DIGITS INIT
   TTree * digTree = 0x0;
-  TClonesArray *digArr= new TClonesArray("AliITSUDigitPix");
+  TClonesArray *digArr= new TClonesArray("AliITSMFTDigitPix");
 
   int nevTot = (Int_t)runLoader->GetNumberOfEvents(), nhitTot=0;
   printf("N Events : %i \n",nevTot);
@@ -102,7 +102,7 @@ void digits2raw(const char* dataDir="./",int nev=-1,int evStart=0)
 	      converter.ResetMap();
 	      //
 	      for (int idig=0;idig<ndig;idig++) {
-		AliITSUDigitPix *pDig = (AliITSUDigitPix*)digArr->At(idig);
+		AliITSMFTDigitPix *pDig = (AliITSMFTDigitPix*)digArr->At(idig);
 		rowcol[idig] = (pDig->GetCoord2()<<16)+(pDig->GetCoord1());
 		//		printf("#%3d digit, col:%4d/row:%4d ROCycle:%d signal: %.2d\n",idig,pDig->GetCoord1(),pDig->GetCoord2(),pDig->GetROCycle(),pDig->GetSignalPix()); 
 	      }

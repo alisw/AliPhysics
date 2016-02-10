@@ -59,7 +59,7 @@
 #include "../ITS/UPGRADE/AliITSUGeomTGeo.h"
 #include "../ITS/UPGRADE/AliITSUClusterPix.h"
 #include "../ITS/UPGRADE/AliITSUTrackCond.h"
-#include "../ITS/UPGRADE/AliITSUAux.h"
+#include "../ITS/UPGRADE/AliITSMFTAux.h"
 #include <TGeoManager.h>
 #include <TTree.h>
 
@@ -681,7 +681,7 @@ void AliTaskITSUPerf::BuildMCInfo()
 	if (fail) mcStatus |= BIT(kTrCondFail);
 	//
 	/*
-	int nlr = AliITSUAux::NumberOfBitsSet(patt);	
+	int nlr = AliITSMFTAux::NumberOfBitsSet(patt);	
 	AliMCParticle *part  = (AliMCParticle*)fMCEvent->GetTrack(itr);
 	double etaMC = part->Eta();
 	if (etaMC>=fEtaMin && etaMC<=fEtaMax && nlr) {
