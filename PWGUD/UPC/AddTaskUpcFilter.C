@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcFilterSemiforward *AddTaskUpcFilter() {
+AliAnalysisTaskUpcFilter *AddTaskUpcFilter() {
  
   //--- get the current analysis manager ---//
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
