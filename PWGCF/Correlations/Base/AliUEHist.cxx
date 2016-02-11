@@ -184,6 +184,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
     AliFatal(Form("Invalid histogram requested: %s", reqHist));
   
   UInt_t initRegions = fkRegions;
+  UInt_t nSteps = fgkCFSteps;
   
   if (axis == 0)
   {
@@ -236,6 +237,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   {
     nTrackVars = 7;
     initRegions = 1;
+    nSteps = 15;
 
     iTrackBin[0] = nDeltaEtaBins;
     trackBins[0] = deltaEtaBins;
@@ -263,11 +265,11 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   for (UInt_t i=0; i<initRegions; i++)
   {
     if (axis >= 2 && useAliTHn == 1)
-      fTrackHist[i] = new AliTHn(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
+      fTrackHist[i] = new AliTHn(Form("fTrackHist_%d", i), title, nSteps, nTrackVars, iTrackBin);
     else if (axis >= 2 && useAliTHn == 2)
-      fTrackHist[i] = new AliTHnD(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
+      fTrackHist[i] = new AliTHnD(Form("fTrackHist_%d", i), title, nSteps, nTrackVars, iTrackBin);
     else
-      fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
+      fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, nSteps, nTrackVars, iTrackBin);
     
     for (Int_t j=0; j<nTrackVars; j++)
     {
@@ -297,7 +299,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
     nEventVars = 4;
     iEventBin[3] = iTrackBin[6];
   }
-  fEventHist = new AliCFContainer("fEventHist", title, fgkCFSteps, nEventVars, iEventBin);
+  fEventHist = new AliCFContainer("fEventHist", title, nSteps, nEventVars, iEventBin);
   
   fEventHist->SetBinLimits(0, trackBins[2]);
   fEventHist->SetVarTitle(0, trackAxisTitle[2]);
@@ -445,7 +447,7 @@ void AliUEHist::SetStepNames(AliCFContainer* container)
 {
   // sets the names of the correction steps
   
-  for (Int_t i=0; i<fgkCFSteps; i++)
+  for (Int_t i=0; i<container->GetNStep(); i++)
     container->SetStepTitle(i, GetStepTitle((CFStep) i));
 }
 
@@ -2730,7 +2732,7 @@ const char* AliUEHist::GetStepTitle(CFStep step)
       return "Corrected for efficiency on-the-fly";
   }
   
-  return 0;
+  return "";
 }
 
 //____________________________________________________________________
