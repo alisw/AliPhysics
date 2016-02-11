@@ -27,6 +27,7 @@
 
 /* $Id: */
 
+#include "Riostream.h"
 #include <iostream>
 #include "TH2.h"
 #include "TH3.h"
@@ -47,6 +48,7 @@
 #include "TPDGCode.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h" 
+#include "AliAODHeader.h" 
 #include "AliAODInputHandler.h" 
 #include "AliESDEvent.h"
 #include "AliGenPythiaEventHeader.h"
@@ -3003,12 +3005,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   Int_t nTGen = 0;
 
   if(fMatchMode == 2){
-  nTGen = GetListOfTracks(fTracksGen,kTrackAODMCChargedAcceptance);
-  if(nTGen>=0) nGenPart = fTracksGen->GetEntries();
-  if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
-  if(nGenPart != nTGen) Printf("%s:%d Mismatch selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+    fTracksGen->Clear();
+    nTGen = GetListOfTracks(fTracksGen,kTrackAODMCExtraonlyChargedCuts);
+    if(nTGen>=0) nGenPart = fTracksGen->GetEntries();
+    if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+    if(nGenPart != nTGen) Printf("%s:%d Mismatch selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
   }
-
 
   //fetch V0 candidates
 
@@ -3019,7 +3021,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(fUseExtraTracks == 1)    { nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption, all V0 cuts are applied int his function
     if(fUseStandard){nK0sStandard = GetListOfV0s(fListK0sStandard,fK0Type,kK0,kTrackAODCuts,myPrimaryVertex,fAOD);}//fill standard tracks for UE V0 subtraction with PYTHIA Embedding
-    if(fMatchMode == 2){nK0sMC= GetListOfV0s(fListK0sMC,fK0Type,kK0,kTrackAODMCExtraonlyCuts,myPrimaryVertex,fAOD);}//fill MC K0s in PYTHIA Embedding
+    if(fMatchMode == 2){nK0sMC= GetListOfV0s(fListK0sMC,fK0Type,kK0,kV0AODMCExtraonlyCuts,myPrimaryVertex,fAOD);}//fill MC K0s in PYTHIA Embedding
   }
 
   if(fUseExtraTracks == -1)     nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
@@ -3047,7 +3049,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   if(fUseExtraTracks ==  1)      { nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
     if(fUseStandard == kTRUE){nLaStandard = GetListOfV0s(fListLaStandard,fLaType,kLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
-    if(fMatchMode == 2){nLaMC= GetListOfV0s(fListLaMC,fLaType,kLambda,kTrackAODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
+    if(fMatchMode == 2){nLaMC= GetListOfV0s(fListLaMC,fLaType,kLambda,kV0AODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
   }
   
   if(fUseExtraTracks == -1)      nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
@@ -3065,7 +3067,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(fUseExtraTracks ==  1)    { nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
    if(fUseStandard == kTRUE){nALaStandard = GetListOfV0s(fListALaStandard,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
-   if(fMatchMode == 2){nALaMC= GetListOfV0s(fListALaMC,fALaType,kAntiLambda,kTrackAODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
+   if(fMatchMode == 2){nALaMC= GetListOfV0s(fListALaMC,fALaType,kAntiLambda,kV0AODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
   }
   if(fUseExtraTracks == -1)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
   if(fUseExtraTracks ==  0)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard tracks of event, no embedded tracks
@@ -5653,6 +5655,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   fTracksRecCutsRC->Clear();
   fTracksRecCuts->Clear();
   fTracksPerpCone->Clear();
+  fTracksGen->Clear();
   fJetsRecCuts->Clear();
   fJetsGen->Clear();
   fJetsEmbedded->Clear();
@@ -5894,7 +5897,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
   //##############################################################################################################
 
-  if(tracktype==kTrackAODMCExtraonlyCuts){//carried out only for Match Mode 2: particle to detector level matching
+  if(tracktype==kV0AODMCExtraonlyCuts){//carried out only for Match Mode 2: particle to detector level matching
 
     TClonesArray *aodExtraMCparticles = 0x0;
         
