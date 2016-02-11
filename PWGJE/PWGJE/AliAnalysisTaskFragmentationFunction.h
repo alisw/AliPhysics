@@ -199,6 +199,10 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetCutFractionPtEmbedded(Float_t cut = 0) { fCutFractionPtEmbedded = cut; }
   virtual void   SetUseEmbeddedJetAxis(Bool_t b = kTRUE)   { fUseEmbeddedJetAxis = b; }
   virtual void   SetUseEmbeddedJetPt(Bool_t  b = kTRUE)    { fUseEmbeddedJetPt   = b; }
+  virtual void   SetCutDeltaREmbedded(Float_t cut)             { fCutDeltaREmbedded = cut; }
+  virtual void   SetUseEmbeddedExOnlyMinPtL(Bool_t b = kTRUE)  { fUseEmbeddedExOnlyMinPtL = b; }
+  virtual void   SetUseExtraJetPt(Bool_t b = kTRUE)            { fUseExtraJetPt = b; }
+
 
   virtual void   UseAODInputJets(Bool_t b) {fUseAODInputJets = b;}  
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
@@ -297,7 +301,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   // Consts
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, 
-	kTrackAODExtra, kTrackAODExtraonly, kTrackAODExtraCuts, kTrackAODExtraonlyCuts, 
+	kTrackAODExtra, kTrackAODExtraonly, kTrackAODExtraCuts, kTrackAODExtraonlyCuts,
+        kTrackAODMCExtraonlyCharged,kTrackAODMCExtraonlyChargedCuts, 
 	kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
 	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODMCChargedSecS, kTrackAODMCChargedSecNS, kTrackAOCMCChargedPrimAcceptance};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance,kJetsEmbedded};
@@ -343,11 +348,14 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fTrackPhiMin;   // track phi cut
   Float_t fTrackPhiMax;   // track phi cut
   
-  Int_t   fUseExtraTracks;         // +/- 1: embedded extra/extra only tracks, default: 0 (ignore extra tracks)
-  Int_t   fUseExtraTracksBgr;      // +/- 1: background: use embedded extra/extra only tracks, default: 0 (ignore extra tracks)
-  Float_t fCutFractionPtEmbedded;  // cut on ratio of embedded pt found in jet
-  Bool_t  fUseEmbeddedJetAxis;     // use axis of embedded jet for FF
-  Bool_t  fUseEmbeddedJetPt;       // use axis of embedded jet for FF
+  Int_t   fUseExtraTracks;          // +/- 1: embedded extra/extra only tracks, default: 0 (ignore extra tracks)
+  Int_t   fUseExtraTracksBgr;       // +/- 1: background: use embedded extra/extra only tracks, default: 0 (ignore extra tracks)
+  Float_t fCutFractionPtEmbedded;   // cut on ratio of embedded pt found in jet
+  Bool_t  fUseEmbeddedJetAxis;      // use axis of embedded jet for FF
+  Bool_t  fUseEmbeddedJetPt;        // use axis of embedded jet for FF
+  Bool_t  fCutDeltaREmbedded;       // cut dR rec-embedded jet
+  Bool_t  fUseEmbeddedExOnlyMinPtL; // jet constituent cut only on true constituents  
+  Bool_t  fUseExtraJetPt;           // for MC use jet of matching extra jet (= data + MC tracks)  
 
   // jet cuts
   Float_t fJetPtCut;      // jet transverse momentum cut
@@ -384,6 +392,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TList* fJetsGen;        //! jets from generated tracks
   TList* fJetsRecEff;     //! jets used for reconstruction efficiency histos 
   TList* fJetsEmbedded;   //! jets used for embedding
+  TList* fJetsEmbeddedMC; //! jets used for embedding
 
   TList* fBckgJetsRec;      //! jets from reconstructed tracks
   TList* fBckgJetsRecCuts;  //! jets from reonstructed tracks after jet cuts
@@ -499,12 +508,20 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F  *fh1BckgMult4; //! background multiplicity
 
   // embedding
-  TH1F* fh1FractionPtEmbedded;         //! ratio embedded pt in rec jet to embedded jet pt 
+  TH1F* fh1FractionPtEmbedded;             //! ratio embedded pt in rec jet to embedded jet pt 
+  TH2F* fh2FractionPtVsDeltaREmbedded;     //! ratio embedded pt 
+  TH2F* fh2FractionPtVsEmbeddedJetPt;      //! ratio embedded pt
+  TH2F* fh2FractionPtVsEmbeddedJetArea;    //! ratio embedded pt
+  TH2F* fh2FractionPtVsEmbeddedJetNConst;  //! ratio embedded pt
   TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
+  TH2F* fh2DeltaPtVsDeltaREmbedded;    //! dR vs delta pt rec - embedded jet
   TH2F*	fh2DeltaPtVsJetPtEmbedded;     //! delta pt rec - embedded jet
   TH2F*	fh2DeltaPtVsRecJetPtEmbedded;  //! delta pt rec - embedded jet
   TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
 
+  TH1F* fh1FractionPtEmbeddedMC;         //! MC ratio embedded pt in rec jet to embedded jet pt 
+  TH2F* fh2FractionPtVsEmbeddedJetPtMC;  //! MC ratio embedded pt
+  TH1F* fh1DeltaREmbeddedMC;             //! MC delta R  rec - embedded jet
 
   AliFragFuncQATrackHistos* fQABckgHisto0RecCuts;  //! track QA: reconstructed tracks after cuts
   AliFragFuncQATrackHistos* fQABckgHisto0Gen;      //! track QA: generated tracks
@@ -557,7 +574,6 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TProfile* fProNtracksLeadingJetRecSecSsc; //! jet shape 
   TProfile* fProDelRPtSumRecSecSsc[5];      //! jet shape 
   
-
   TRandom3*                   fRandom;          // TRandom3 for background estimation 
 
   ClassDef(AliAnalysisTaskFragmentationFunction, 12);
