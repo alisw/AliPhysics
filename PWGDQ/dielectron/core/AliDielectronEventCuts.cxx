@@ -130,7 +130,7 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
   // check the cuts
   //
   
-  if(event->IsA() == AliESDEvent::Class()) return IsSelectedESD(event);
+  if(event->IsA() == AliESDEvent::Class())      return IsSelectedESD(event);
   else if(event->IsA() == AliAODEvent::Class()) return IsSelectedAOD(event);
   else return kFALSE;
 }
@@ -146,7 +146,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
 
   if (fCentMin<fCentMax){
     
-    if(fRun2==kFALSE){     
+    if(fRun2==kFALSE){
       AliCentrality *centrality=ev->GetCentrality();
       Double_t centralityF=-1;
       if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
@@ -155,12 +155,12 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
     else if(fRun2==kTRUE){
       Double_t centralityF=-1;
       //new centrality
-      AliMultSelection *MultSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
-      if ( MultSelection ){
-	centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+      AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
+      if ( multSelection ){
+	centralityF = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
 	if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
       } else{
-	AliInfo("Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
+	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
       }
     }
   }
@@ -320,11 +320,11 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     }else if(fRun2==kTRUE){
       
       //new centrality
-      AliMultSelection *MultSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
-      if ( MultSelection ){
-	centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+      AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
+      if ( multSelection ){
+	centralityF = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
       } else{
-	AliInfo("Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
+	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
 	}
     }      
       
