@@ -478,7 +478,7 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
 		Bool_t localPF = kTRUE;
 		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
 		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,11);
-		fCharges[i] = esdADfriend->GetPedestal(i,11);
+		if(esdADfriend->GetBBFlag(i,11))fCharges[i] = esdADfriend->GetPedestal(i,11);
 		((TH2F*)(list->At(32)))->Fill(i,fCharges[i]);
 		if(localPF)((TH2F*)(list->At(33)))->Fill(i,fCharges[i]);
 		
