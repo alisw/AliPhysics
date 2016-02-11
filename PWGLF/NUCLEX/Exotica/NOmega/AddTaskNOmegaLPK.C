@@ -59,11 +59,11 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
 
   // Create and configure the task
 
-  TString tskname = "NOmegaLPK";
-  tskname.Append(Form("%s",suffix.Data()));
-  AliAnalysisTaskNOmegaLPK *task = new AliAnalysisTaskNOmegaLPK("AliAnalysisTaskNOmegaLPK");
+  TString taskname = "NOmegaLPK";
+	TString combinedName;
+	combinedName.Form("NOmegaLPK%s", suffix.Data());
+  AliAnalysisTaskNOmegaLPK *task = new AliAnalysisTaskNOmegaLPK(combinedName);
   task->SetMC(readMC);
-  
   mgr->AddTask(task);
   
   // Create ONLY the output containers for the data produced by the task.
@@ -74,9 +74,9 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
   
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Vertex", TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("Vertex_%s",combinedName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectOutput(task, 1, coutput1);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("VertexSelf", TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("VertexSelf_%s",combinedName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 //  coutput2->SetSpecialOutput();
   mgr->ConnectOutput(task, 2, coutput2);
 
