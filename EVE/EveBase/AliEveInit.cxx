@@ -87,11 +87,20 @@ fPath(path)
     AliEveMultiView *mv = new AliEveMultiView();
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
     
-    mv->InitSimpleGeom(geomGentle->GetGeomGentleRphi(),true,false); // special geometry for RPhi projection
-    mv->InitSimpleGeom(geomGentle->GetGeomGentle(),false,true);     // to be replaced by per-detector geometries
+//    mv->InitSimpleGeom(geomGentle->GetGeomGentle(true),true,false); // special geometry for RPhi projection
+//    mv->InitSimpleGeom(geomGentle->GetGeomGentle(),false,true);     // to be replaced by per-detector geometries
     mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
     mv->InitSimpleGeom(geomGentle->GetSimpleGeom("ACO"));
     mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TRD"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SPD"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SDD"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SSD"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TOF"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TPC"),false); // standard TPC for 3D and Rho-Z views only
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false); // special TPC geom from R-Phi view
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("PHS"));
+    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("HMP"));
+    
     
     if(settings.GetValue("MUON.show", true)){
         mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false);

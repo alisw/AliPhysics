@@ -79,7 +79,9 @@ SDD.trans:                              80
 SSD.trans:                              80
 TOF.trans:                              80
 
-MCH.line:                               1
+MCH.line.color:                         920
+TPC.line.color:                         1
+HMP.line.color:                         1
 
 clusters.show:                          0
 kinks.show:                             0

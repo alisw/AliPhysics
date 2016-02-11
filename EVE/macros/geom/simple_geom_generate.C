@@ -15,8 +15,8 @@ using namespace std;
 
 #endif
 
-const int nDetectors = 3;
-const char* detectorsList[nDetectors] = {"ACO","MCH","EMC"};
+const int nDetectors = 10;
+const char* detectorsList[nDetectors] = {"ACO","MCH","EMC","TPC","SPD","SDD","SSD","TOF","PHS","HMP"};
 
 void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax,TObjArray *list)
 {
@@ -44,8 +44,13 @@ void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax,T
     }
 }
 
-void simple_geom_generate(char *detectorName="ALL", int runNumber=0)
+void simple_geom_generate(char *detectorName="", int runNumber=0)
 {
+    if(strcmp(detectorName,"")==0){
+        cout<<"Give name of the detector as a first argument!"<<endl;
+        return;
+    }
+    
     // load geometry library
     gSystem->Load("libGeom");
     
