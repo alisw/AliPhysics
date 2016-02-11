@@ -115,6 +115,11 @@ class TStatToolkit : public TObject
   //
  static  void TestGausFit(Int_t nhistos=5000);
  static  void CheckTreeAliases(TTree * tree, Int_t ncheck);
+ //
+ // min, max, mean ...
+ static void GetMinMax(const double* arr, int n, double &minVal, double &maxVal);
+ static void GetMinMaxMean(const double* arr, int n, double &minVal, double &maxVal, double &meanVal);
+
  ClassDef(TStatToolkit,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  
 };

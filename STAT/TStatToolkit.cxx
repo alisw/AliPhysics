@@ -53,7 +53,7 @@
 #include "AliSysInfo.h"
 #include "TStopwatch.h"
 #include "TStatToolkit.h"
-
+#include <limits>
 
 using std::cout;
 using std::cerr;
@@ -2772,4 +2772,33 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     if (i && (i%prc)==0) printf("Done %d%%\n",int(float(100*i)/prc));
   }
   */
+}
+
+//___________________________________________________________
+void TStatToolkit::GetMinMax(const double* arr, int n, double &minVal, double &maxVal)
+{
+  // find min, max entries in the array in a single loop
+  minVal =  DBL_MAX;
+  maxVal = -DBL_MAX;
+  for (int i=n;i--;) {
+    double val = arr[i];
+    if (val<minVal) minVal = val;
+    if (val>maxVal) maxVal = val;
+  }
+}
+
+//___________________________________________________________
+void TStatToolkit::GetMinMaxMean(const double* arr, int n, double &minVal, double &maxVal, double &meanVal)
+{
+  // find min, max entries in the array in a single loop
+  minVal =  DBL_MAX;
+  maxVal = -DBL_MAX;
+  meanVal = 0;
+  for (int i=n;i--;) {
+    double val = arr[i];
+    if (val<minVal) minVal = val;
+    if (val>maxVal) maxVal = val;
+    meanVal += val;
+  }
+  if (n) meanVal /= n;
 }
