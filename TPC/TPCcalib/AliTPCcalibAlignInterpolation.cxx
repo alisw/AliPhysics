@@ -1504,6 +1504,11 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
   //
   //
+  if (deltaT<=0 || sigmaT<=0){
+    ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %d and sigmaT", deltaT, sigmaT);
+    return kFALSE;
+  }
+ 
   TChain * chainDelta = AliXRDPROOFtoolkit::MakeChain("residual.list","delta",0,-1);
   entriesAll = chainDelta->GetEntries();
   if (entriesAll<kMinEntries) {
@@ -1860,8 +1865,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   AliNDLocalRegression * pfitTOF = new  AliNDLocalRegression("pfitTOF","pfitTOF");
   pfitTRD->SetHistogram((THn*)(hN->Clone()));
   pfitTOF->SetHistogram((THn*)(hN->Clone()));
-  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%d",sigmaT),"2:2",0.0001);
-  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%d",sigmaT),"2:2",0.0001);
+  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%f",sigmaT),"2:2",0.0001);
+  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%f",sigmaT),"2:2",0.0001);
   AliNDLocalRegression::AddVisualCorrection(pfitTRD,104);
   AliNDLocalRegression::AddVisualCorrection(pfitTOF,204);  
   //
@@ -2234,7 +2239,7 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
 }
 
 
-TTree* AliTPCcalibAlignInterpolation::LoadDistortionTrees(const char * maplist, Int_t cacheSize, Int_t markerStyle, Int_t markerSize){
+TTree* AliTPCcalibAlignInterpolation::LoadDistortionTrees(const char * maplist, Int_t cacheSize, Int_t markerStyle, Float_t markerSize){
   //
   // Load distortion trees specified in the maplist 
   // Loading distortion maps as a friend trees used for
