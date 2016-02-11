@@ -99,6 +99,7 @@ public:
    virtual void SetLaType(Int_t i){ fLaType = i; }
    virtual void SetALaType(Int_t i){ fALaType = i; }
    virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
+   virtual void   SetQAMode(Bool_t qa) { fQAMode = qa; }
 
    Float_t  GetFFRadius() const { return fFFRadius; }
    Bool_t DaughterTrackCheck(AliAODv0* v0, Int_t& nnum, Int_t& pnum);
@@ -126,6 +127,7 @@ public:
 private:
 
    AliESDEvent    *fESD;        //! ESD object
+   Bool_t fQAMode;              
    AliAODEvent    *fAODout;     //! AOD out
    AliAODEvent    *fAODevent;   //! AOD in
    AliAODEvent    *fAODeventJets; //! AOD in jets
