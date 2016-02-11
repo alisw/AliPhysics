@@ -348,6 +348,7 @@ goCPass()
 
     2) filesCPass=( 
                     "${batchWorkingDirectory}/OCDB.root"
+                    "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz"
                     "$ALICE_ROOT/test/QA/tag.C"
                     "${batchWorkingDirectory}/AODtrain.C"
                     "${batchWorkingDirectory}/rec.C"
@@ -375,6 +376,17 @@ goCPass()
   # Monkey patching: emove spaces from around arguments to root macros. For example this sometimes
   # is known to fail: root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
+
+  # Procure OCDB.
+  echo "Downloading OCDB produced during CPass0 for run $runNumber"
+  copyFileFromRemote $commonOutputPath/meta/cpass$(($cpass-1)).localOCDB.${runNumber}.tgz $PWD
+
+  # If OCDB is found here, then create a macro that configures local OCDB access.
+  # This step also decompresses the tarball into $PWD/OCDB.
+  ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+  [[ -f $ocdbTarball ]] \
+    && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
+    || echo "WARNING: file $ocdbTarball not found!"
 
   # A post-setup action (different for CPass0/1) can be defined. Here it is executed.
   case $cpass in
@@ -408,21 +420,10 @@ goCPass()
     1)
       # This is CPass1.
 
-      # Procure OCDB.
-      echo "Downloading OCDB produced during CPass0 for run $runNumber"
-      copyFileFromRemote $commonOutputPath/meta/cpass0.localOCDB.${runNumber}.tgz $PWD
-
-      # If OCDB is found here, then create a macro that configures local OCDB access.
-      # This step also decompresses the tarball into $PWD/OCDB.
-      ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
-      [[ -f $ocdbTarball ]] \
-        && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
-        || echo "WARNING: file $ocdbTarball not found!"
-
-      # Check if CPass0 has produced calibration.
+      # Check if previous pass has produced calibration.
       if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
         touch $doneFileTmp
-        echo "CPass0 produced no calibration! Exiting..." >> $doneFileTmp
+        echo "CPass$(($cpass-1)) produced no calibration! Exiting..." >> $doneFileTmp
         copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
         return 1
       fi
@@ -484,6 +485,14 @@ goCPass()
       # End of CPass1.
     ;;
     2) 
+      # Check if previous pass has produced calibration.
+      if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
+        touch $doneFileTmp
+        echo "CPass$(($cpass-1)) produced no calibration! Exiting..." >> $doneFileTmp
+        copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
+        return 1
+      fi
+
       if [[ -n "$pretend" ]]; then
         echo "Pretending to run: $runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
         sleep $pretendDelay
@@ -779,7 +788,7 @@ goMergeCPass()
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
   if [[ -f $ocdbTarball ]]; then
     printExec goMakeLocalOCDBaccessConfig "$ocdbTarball"
-  elif [[ $cpass == 1 ]]; then
+  elif [[ $cpass -ge 1 ]]; then
     # Print a warning only on CPass1.
     echo "WARNING: file $ocdbTarball not found!"
   fi
