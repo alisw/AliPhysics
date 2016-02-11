@@ -92,6 +92,8 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 					cout << "setting z vertex cut = " << fzvtxCut << endl;};
   void SetSCptdep( Bool_t isSCptdep){ IsSCptdep = isSCptdep;
 					cout << "setting : SCpt dep = " << isSCptdep << endl;};
+  void SetParticleCharge( int charge ){ fPcharge = charge;
+					cout << "setting particle charge = " << charge << endl;};
 //  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
 
@@ -104,6 +106,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   int fFilterBit; 
   int fEffMode;
   int fEffFilterBit;
+  int fPcharge;
   double fEta_min;
   double fEta_max;
   double fPt_min;
