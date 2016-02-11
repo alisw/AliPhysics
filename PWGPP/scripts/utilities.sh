@@ -756,7 +756,9 @@ lsRemote() (
            host=${path%%/*}
            path=${path:$((${#host}))}
            while [[ ${path:0:2} == // ]]; do path=${path:1}; done
-           xrd "$host" ls "$path" 2>&1 | grep -v "No such file or directory" | grep -o "${path}.*" ;;
+           xrd "$host" ls "$path" 2>&1 | grep -v "No such file or directory" | \
+                                         grep -o "${path}.*" | \
+                                         sed -e 's|^\(.*\)$|'$proto://$host/'\1|' ;;
     *)     alilog_error "[lsRemote] for directory $dir: protocol not supported: $proto" >&2
            return 2 ;;
   esac
