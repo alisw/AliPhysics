@@ -887,16 +887,29 @@ copyFileToRemote() (
   return $((err & 1))
 )
 
-function xCopyFileToRemote() {
+function xCopy() {
   # Recursive and parallel copy for files. Usage:
-  #   xCopyFileToRemote -w 10 -d proto://host//destpath file1 file2 @list dir...
-  # Where -w is the number of parallel workers (defaults to 15).
+  #   xCopy -w 10 -d proto://host//destpath file1 file2 @list dir...
+  # Where:
+  #   -d is the destination directory (can be local, or remote)
+  #   -w is the number of parallel workers (defaults to 15)
+  #   -f does not preserve the source dir structure and copies all flat to destpath
+  #   -c skips copy if local source does not exist
+  #   -C skips copy if local destination already exists
+  # Note that if one of the sources is a local directory, it will be inspected recursively. This
+  # does not apply to remote directories instead.
 
-  opname="[xCopyFileToRemote]"
+  opname="[xCopy]"
   workers=0
+  flat=0
+  checklocalsrc=0
+  checklocaldest=0
   while [[ "$1" != -- ]]; do
     case "$1" in
       --destdir|-d) dstdir="$2"; shift 2 ;;
+      --flat|-f) flat=1; shift ;;
+      --check-local-src|-c) checklocalsrc=1; shift ;;
+      --check-local-dest|-C) checklocaldest=1; shift ;;
       --workers|-w) workers=$(($2)); shift 2 ;;
       *) break ;;
     esac
@@ -904,6 +917,7 @@ function xCopyFileToRemote() {
   [[ "$dstdir" == '' ]] && { alilog_error "$opname Missing --destdir" ; exit 1 ; }
   [[ $workers == 0 ]] && workers=15  # default
   alilog_info "$opname Copying files to $dstdir using $workers workers"
+  [[ "${dstdir%%://*}" == "$dstdir" ]] && copyFunc=copyFileFromRemote || copyFunc=copyFileToRemote
 
   # Create a directory of symlinks: readlink will tell us what is each source
   # file, with respect to the *current* directory. Symlinks are used because
@@ -913,8 +927,11 @@ function xCopyFileToRemote() {
   while [[ $# -gt 0 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
     while read src; do
-      [[ -d "$src" ]] && inputcmd="find $src -type f" || inputcmd="echo $src"
+      [[ "${src%%://*}" == "$src" && -d "$src" ]] && inputcmd="find $src -type f" \
+                                                  || inputcmd="echo $src"
       while read -u 4 src2; do
+        [[ $checklocalsrc == 1 && "${src2%%://*}" == "$src2" && ! -f "${src2}" ]] \
+          && { alilog_warning "Skipping local nonexisting source $src2" ; continue ; }
         ln -nfs $src2 $t/$count
         count=$((count+1))
       done 4< <($inputcmd)
@@ -929,7 +946,11 @@ function xCopyFileToRemote() {
         [[ "$placeholder" == '' ]] && break
         src=$(readlink $placeholder)
         rm $placeholder 2> /dev/null || continue
-        copyFileToRemote $src $dstdir/$(dirname $src)
+        dstdir_flat=$dstdir/$([[ $flat == 0 ]] && dirname $src)
+        [[ $copyFunc == copyFileFromRemote && $checklocaldest == 1 \
+                                           && -f $dstdir_flat/$(basename $src) ]] \
+          && { alilog_warning "Skipping $src: local destination exists" ; continue ; }
+        $copyFunc $src $dstdir_flat
       done
     ) &
   done
