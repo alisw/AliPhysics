@@ -376,10 +376,6 @@ goCPass()
   # is known to fail: root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
-  # Procure OCDB.
-  echo "Downloading OCDB produced during CPass0 for run $runNumber"
-  copyFileFromRemote $commonOutputPath/meta/cpass$(($cpass-1)).localOCDB.${runNumber}.tgz $PWD
-
   # If OCDB is found here, then create a macro that configures local OCDB access.
   # This step also decompresses the tarball into $PWD/OCDB.
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
