@@ -337,18 +337,16 @@ goCPass()
                     "${batchWorkingDirectory}/QAtrain_duo.C"
                     "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                     "${batchWorkingDirectory}/${configFile}"
-                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                     "${batchWorkingDirectory}/OCDB.root"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C" ) ;;
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz" ) ;;
 
-    2) filesCPass=( 
-                    "${batchWorkingDirectory}/OCDB.root"
-                    "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz"
+    2) filesCPass=( "${batchWorkingDirectory}/OCDB.root"
                     "$ALICE_ROOT/test/QA/tag.C"
                     "${batchWorkingDirectory}/AODtrain.C"
                     "${batchWorkingDirectory}/rec.C"
@@ -362,13 +360,14 @@ goCPass()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/runPPass_pbpb.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
-                  ) ;;
+                    "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz" ) ;;
   esac
 
+  # -c: check if local source exists; -C: do not copy if local dest exists already
+  # -f: copy all in the same dest dir (flat copy)
+  xCopy -f -c -C -d . "${filesCPass[@]}"
   for file in ${filesCPass[*]}; do
-    [[ ! -f ${file##*/} && -f ${file} ]] && printExec cp -f $file . \
-                                         && [[ ${file##*/} =~ .*\.sh ]] \
-                                         && printExec chmod +x ${file##*/}
+    [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
   done
 
   listDir "$PWD" "before running CPass${cpass}"
@@ -519,7 +518,7 @@ goCPass()
   while read cpdir; do
     filesToCopy+=($cpdir/!(stdout|cpass$(($cpass-1))*.tgz))
   done < <(find . -type d)
-  xCopyFileToRemote -d $outputDir/ "${filesToCopy[@]}"
+  xCopy -d $outputDir/ "${filesToCopy[@]}"
 
   # Validate CPass.
   case $cpass in
@@ -899,7 +898,7 @@ goMergeCPass()
   while read cpdir; do
     filesToCopy+=($cpdir/!(stdout))
   done < <(find . -type d)
-  xCopyFileToRemote -d $outputDir/ "${filesToCopy[@]}"
+  xCopy -d $outputDir/ "${filesToCopy[@]}"
 
   # Copy OCDB to meta.
   copyFileToRemote ${batchWorkingDirectory}/${baseTar} $commonOutputPath/meta
@@ -2483,8 +2482,8 @@ EOF
   # Copy all, recursively, with the exception of snapshotted files already present when this
   # function was called.
   [[ "$dirSnapshotExclusion" == '' ]] \
-    && xCopyFileToRemote -d $commonOutputPath/ . \
-    || xCopyFileToRemote -d $commonOutputPath/ ./!($dirSnapshotExclusion)
+    && xCopy -d $commonOutputPath/ . \
+    || xCopy -d $commonOutputPath/ ./!($dirSnapshotExclusion)
 
   # Copy stdout to destination.
   echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"
