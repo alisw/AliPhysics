@@ -1883,8 +1883,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   AliNDLocalRegression * pfitTOF = new  AliNDLocalRegression("pfitTOF","pfitTOF");
   pfitTRD->SetHistogram((THn*)(hN->Clone()));
   pfitTOF->SetHistogram((THn*)(hN->Clone()));
-  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%d",int(sigmaT)),"2:2",0.0001);
-  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%d",int(sigmaT)),"2:2",0.0001);
+  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%f",sigmaT),"2:2",0.0001);
+  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%f",sigmaT),"2:2",0.0001);
   AliNDLocalRegression::AddVisualCorrection(pfitTRD,104);
   AliNDLocalRegression::AddVisualCorrection(pfitTOF,204);  
   //
