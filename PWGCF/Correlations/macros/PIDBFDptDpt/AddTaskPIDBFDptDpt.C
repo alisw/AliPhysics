@@ -1,9 +1,9 @@
 //  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
 //  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
 //
-//   PbPb: centralityMethod=4 (V0),   trigger=kFALSE (AliVEvent::kMB).
-//   pPb:  centralityMethod=7 (V0A),  trigger=kTRUE (AliVEvent::kINT7).     
-//   pp:   centralityMethod=???       trigger=??? (AliVEvent::???)
+//   PbPb 10h AOD160 2.76TeV:           centralityMethod=4 (V0),   trigger=kFALSE (AliVEvent::kMB).
+//   pPb  13b_pass3 13c_pass2 5.02TeV:  centralityMethod=7 (V0A),  trigger=kTRUE (AliVEvent::kINT7).     
+//   pp   201?:                         centralityMethod=???       trigger=??? (AliVEvent::???)
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
@@ -11,18 +11,20 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  int    CentralityGroup         = 1, // 1st,2nd,3rd... group;  Diff Cent Groups dealing w/ memory limit
  int    singlesOnly             = 1, // 0: full correlations    1: singles only
  int    useWeights              = 0, // 0: no                   1: yes
- int    useRapidity             = 1,
+ int    useRapidity             = 1, // 0: no                   1: yes
  int    centralityMethod        = 4, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
  int    chargeSet               = 1, // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -10.,
- double zMax                    =  10.,
- double vZwidth                 = 0.5,
- int    trackFilterBit          = 272, // Global tracks =1; TPConly = 128; Hybrid = 272.
+ double zMin                    = -10., // |zMin| should = zMax due to the design of the code
+ double zMax                    =  10., // set vertexZ cut   
+ double vZwidth                 = 0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
+ int    trackFilterBit          = 1, // PbPb2010(Global=1;TPConly=128;Hybrid=272); pPb2013(Global=?;TPConly=?;Hybrid=768); pp(Global=?;TPConly=?; Hybrid=?)
  int    nClusterMin             = 70,
- double eta1Min                 = -0.8, // y1min acturally
- double eta1Max                 =  0.8, // y1max acturally
- double eta2Min                 = -0.8, // y2min acturally
- double eta2Max                 =  0.8, // y2max acturally
+ double ptMin                   =  0.2,
+ double ptMax                   =  2.0,
+ double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
+ double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
+ double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
+ double eta2Max                 =  0.8, // set y2max acturally if useRapidity==1
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
@@ -31,7 +33,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  Bool_t trigger                 = kFALSE,
  int particleID                 = 1, // Pion=0, Kaon=1, Proton=2
  double nSigmaCut               = 3.0,
- int pidType                    = 2, // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+ int pidType                    = 2, // kNSigmaTPC=0, kNSigmaTOF=1, kNSigmaTPCTOF=2
  Bool_t requestTOFPID           = 1,
  double ptTOFPID                = 0.5,
  Bool_t isMC                    = 0,
@@ -125,8 +127,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     {
       return 0;
     }
-  double ptMin                  =  0.2;
-  double ptMax                  =  2.0;
+  
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    requestedCharge1       =  1; //default
