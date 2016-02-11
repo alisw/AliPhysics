@@ -105,7 +105,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
 
-  enum { kV0TypeUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim, kTrackAODMCExtraonlyCuts};// v0 rec. type 
+  enum { kV0TypeUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim, kV0AODMCExtraonlyCuts};// v0 rec. type 
   enum { kK0, kLambda, kAntiLambda };// particletype 
 
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts,                                       
