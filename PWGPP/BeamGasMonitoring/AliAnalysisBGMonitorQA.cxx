@@ -77,20 +77,17 @@ void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
         AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 
         if (esdH) {
-          fEvent = esdH->GetEvent();
-          if(fEvent) {
-            fEventfriend = fEvent->FindFriend();
-            if (!fEventfriend){
-              AliError("No friend found");
+            fEvent = esdH->GetEvent();
+            if(fEvent) {
+                fEventfriend = fEvent->FindFriend();
+                if (!fEventfriend){
+                    AliError("No friend found");
+                }
             }
-          }
         } else {
-            Printf("ERROR: Could not get ESDInputHandler");
+            Printf("ERROR: Could not get InputHandler");
         }
     }
-  } else {
-    Printf("ERROR: Could not get InputHandler");
-  }
 }
 
 //________________________________________________________________________
