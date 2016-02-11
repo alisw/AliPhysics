@@ -809,7 +809,6 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
       //get particle
       AliVParticle *p2 = 0x0;
       if(bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
-      else p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, fParticleContainer->GetArray()));
       iFound = 0;
       for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
         if(!bgeom && idx == jet1->TrackAt(icf) && iFound==0 ) {
