@@ -567,6 +567,7 @@ goCPass()
         reportDoneFile aod AliAOD.root $outputDir >> $doneFileTmp
         reportDoneFile syswatchRec syswatch_rec.log ${outputDir} >> $doneFileTmp
         reportDoneFile qafile QA_results.root $outputDir >> $doneFileTmp
+        reportDoneFile qafile QAresults.root $outputDir >> $doneFileTmp
       fi
     ;;
 
