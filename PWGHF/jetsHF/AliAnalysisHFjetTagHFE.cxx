@@ -72,7 +72,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fCaloClusters(0),
   fpidResponse(0),
   fcentMim(0), 
-  fcentMax(10.0), 
+  fcentMax(999.0), 
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -153,7 +153,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fCaloClusters(0),
   fpidResponse(0),
   fcentMim(0), 
-  fcentMax(10.0), 
+  fcentMax(999.0), 
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -636,9 +636,19 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   //PID initialised//
   //AliPIDResponse *fpidResponse = fInputHandler->GetPIDResponse();
   fpidResponse = fInputHandler->GetPIDResponse();
+
   // track
   ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-  int ntracks = ftrack->GetEntries();
+  int ntracks = 0;
+  if(ftrack)
+    {
+     ntracks = ftrack->GetEntries();
+    }
+  else
+   {
+     ntracks = fAOD->GetNumberOfTracks();
+   }
+
   // EMCal
   TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters")); 
 
@@ -726,7 +736,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
     for (Int_t itrack = 0; itrack < ntracks; itrack++) {
 
-        AliVParticle* ptrack = dynamic_cast<AliVTrack*>(ftrack->At(itrack));
+        AliVParticle* ptrack = 0x0;
+        if(ftrack)ptrack = dynamic_cast<AliVTrack*>(ftrack->At(itrack));
+        if(!ftrack)ptrack = fAOD->GetTrack(itrack);
         AliVTrack *track = dynamic_cast<AliVTrack*>(ptrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(track);  // to apply cuts
 
@@ -806,8 +818,16 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         AliVCluster *clustMatch=0x0;
         //if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
         //clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
-        clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters->At(EMCalIndex));  // here
-        
+        if(fCaloClusters)
+           {
+            clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters->At(EMCalIndex));  // updated by tender 
+           }
+        else
+          {
+            clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
+          }
+           
+
         if(clustMatch && clustMatch->IsEMCAL())
         {
             /////////////////////////////////////////////
@@ -991,13 +1011,27 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
     
     Int_t ntracks = -999;
     //if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-    ntracks = ftrack->GetEntries();
-    
+    if(ftrack)
+      {
+       ntracks = ftrack->GetEntries();
+      }
+    else
+      {
+       ntracks = fAOD->GetNumberOfTracks();
+      }     
+
     for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
         AliVParticle* VAssotrack = 0x0;
         //if(!fUseTender) VAssotrack  = fVevent->GetTrack(jtrack);
-        VAssotrack = dynamic_cast<AliVTrack*>(ftrack->At(jtrack)); //take tracks from Tender list
-        
+        if(ftrack)
+          {
+           VAssotrack = dynamic_cast<AliVTrack*>(ftrack->At(jtrack)); //take tracks from Tender list
+          }        
+        else
+          { 
+           VAssotrack  = fAOD->GetTrack(jtrack);
+          }
+ 
         if (!VAssotrack) {
             printf("ERROR: Could not receive track %d\n", jtrack);
             continue;
