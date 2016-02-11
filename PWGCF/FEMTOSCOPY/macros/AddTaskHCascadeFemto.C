@@ -35,7 +35,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Float_t cutipbac = 0.1,     //0.03,
                                                      Bool_t kapplyycutcasc = kFALSE,
                                                      Bool_t kpropagateglobal = kTRUE,
-                                                     Bool_t kcutonttcprop = kFALSE,
+                                                     Bool_t kpropagatefixedr = kFALSE,
                                                      Bool_t kcutonttcprop = kFALSE,
                                                      const char* outlistsubwagon = ""  // "pXi"
                                                    ) {
