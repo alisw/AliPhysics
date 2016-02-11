@@ -1306,12 +1306,18 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   chainInfo->SetEstimate(neventsAll);
   chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");          
   //
-  Long64_t minTime=TMath::MinElement(neventsAll,chainInfo->GetV1());
-  Long64_t maxTime=TMath::MaxElement(neventsAll,chainInfo->GetV1());
-  Double_t meanTime=TMath::Mean(neventsAll,chainInfo->GetV1());
-  Double_t minGID=128*TMath::MinElement(neventsAll,chainInfo->GetV2());
-  Double_t maxGID=128*TMath::MaxElement(neventsAll,chainInfo->GetV2());
-  Double_t meanGID=128*TMath::Mean(neventsAll,chainInfo->GetV2());    
+  Long64_t minTime=0,maxTime=0;
+  double minGID=0,maxGID=0,meanGID=0,meanTime=0;
+  if (neventsAll) {
+    double minTimeD=0,maxTimeD=0;
+    TStatToolkit::GetMinMaxMean(chainInfo->GetV1(),neventsAll,minTimeD,maxTimeD, meanTime);
+    minTime = minTimeD;
+    maxTime = maxTimeD;
+    TStatToolkit::GetMinMaxMean(chainInfo->GetV2(),neventsAll,minGID,maxGID, meanGID);
+    minGID*=128;
+    maxGID*=128;
+    meanGID*=128;
+  }
   (*pcstream)<<"summary1"<<
     "id="<<id<<                // chain id - usually should be run number
     "nevents="<<neventsAll<<   // total number of events
@@ -1452,15 +1458,15 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
 
 
 
-Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  Int_t time0, Int_t time1){
+Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, double time0, double_t time1){
   //
   //  Fit time dependence of the drift velocity for ITS-TRD and ITS-TOF scenario
   /*  Intput:
         "residual.list"   - ascii file with files assumed to be in working directory
-        Int_t deltaT      - time binning for drift velocity
-        Double_t sigmaT   - kernel width for time smoothing
-        Int_t time0       - starting time for drift velocity calculation
-        Int_t time1       - stop time for drift velocty calculation
+        double deltaT     - time binning for drift velocity
+        double sigmaT     - kernel width for time smoothing
+        double time0      - starting time for drift velocity calculation
+        double time1      - stop time for drift velocty calculation
         * in case time0 and time1 not specified - full time range in the selected sample used (time0=minTime, time1=maxTime)
       Output:
         "fitDrift.root"   - small file with the drift velocity calibration created  
@@ -1521,8 +1527,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
     TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1);
     chainInfo->SetEstimate(chainInfo->GetEntries());
     Int_t entries = chainInfo->Draw("timeStamp","","goff",maxEntries);
-    time1= TMath::MaxElement(entries,chainInfo->GetV1());
-    time0= TMath::MinElement(entries,chainInfo->GetV1());
+    if (entries) TStatToolkit::GetMinMax(chainInfo->GetV1(),entries,time0,time1);
   }
   // 0.) Cache variables:  to be done using loop
   //     Variables to cache:
@@ -1689,17 +1694,20 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
       if (nTRDBC>kMinEntries*0.1){	fitterTRDBC->EvalRobust(robFraction);	   fitterTRDBC->GetParameters(paramTRDBC);}
       if (nTOFBC>kMinEntries*0.1){	fitterTOFBC->EvalRobust(robFraction);	   fitterTOFBC->GetParameters(paramTOFBC); }
       //
-      TGraphErrors * grDeltaZ[12];
-      TGraphErrors * grRMSZ[12];
-      TVectorD * fitDeltaZ[12];
+      TGraphErrors * grDeltaZ[12] = {0};
+      TGraphErrors * grRMSZ[12] = {0};
+      TVectorD * fitDeltaZ[12] = {0};
       TObjArray fitArray(3);
       for (Int_t ihis=0; ihis<12; ihis++){
 	hisDeltaZ[ihis]->FitSlicesY(0,0,-1,0,"QNR",&fitArray);
 	grDeltaZ[ihis] = new TGraphErrors(((TH1D*)fitArray.At(1)));
 	grRMSZ[ihis]   = new TGraphErrors(((TH1D*)fitArray.At(2)));
-	fitDeltaZ[ihis]=new TVectorD(2);
+	fitDeltaZ[ihis] = new TVectorD(2);
 	grDeltaZ[ihis]->Fit(fpol1,"q","q");
 	fpol1->GetParameters(fitDeltaZ[ihis]->GetMatrixArray());
+	fitArray.Delete();
+	delete hisDeltaZ[ihis];
+	hisDeltaZ[ihis] = 0;
       }
 
       delete fitterRobust;    
@@ -1733,6 +1741,9 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
 	  TString::Format("grDeltaZ%d.=",ihis).Data()<<grDeltaZ[ihis]<<     // residual histogram drift fit - mean 
 	  TString::Format("grRMSZ%d.=",ihis).Data()<<grDeltaZ[ihis]<<       //  residual histogram drift fit - rms
 	  TString::Format("fitDeltaZ%d.=",ihis).Data()<<fitDeltaZ[ihis];     //  residual histogram drift fit - linear fit
+	delete grDeltaZ[ihis];
+	delete grRMSZ[ihis];
+	delete fitDeltaZ[ihis];
       }
       (*pcstream)<<"robustFit"<<	
 	"\n";    
@@ -1740,6 +1751,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
     // delete pcstream;  
     //pcstream = new TTreeSRedirector("fitDrift.root","update");
   }
+  delete fpol1;
   //
   TTree * treeRobust= (TTree*)(pcstream->GetFile()->Get("robustFit"));  
   Int_t entriesR= treeRobust->Draw("paramRobust.fElements[0]:paramRobust.fElements[1]:paramRobust.fElements[2]:paramRobust.fElements[3]","","goffPara");
@@ -1768,9 +1780,12 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   //TLinearFitter *fitterTOF= new TLinearFitter(nParam,TString::Format("hyp%d",nParam+1).Data());
   //
   TObjArray arrayFit(3);
+  TH2F hisTRD("hisTRD","hisTRD",nTimeBins,time0,time1,100,-0.02,0.02);
+  TH2F hisTOF("hisTOF","hisTOF",nTimeBins,time0,time1,100,-0.02,0.02);
+
   for (Int_t iter=0; iter<10; iter++){
-    TH2 *hisTRD=new TH2F("hisTRD","hisTRD",nTimeBins,time0,time1,100,-0.02,0.02);
-    TH2 *hisTOF=new TH2F("hisTOF","hisTOF",nTimeBins,time0,time1,100,-0.02,0.02);
+    hisTRD.Reset();
+    hisTOF.Reset();
     for (Int_t ipoint=0; ipoint<entriesFit; ipoint++){
       if (ipoint%10!=iter) continue;  // points correlated - can be skipped
       Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
@@ -1791,27 +1806,29 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
       //
       if ( dTOF!=0. &&TMath::Abs(dTOF-expected)<kMaxDist1) {
 	//      fitterTOF->AddPoint(pvecFit,dTOF,1);
-	hisTOF->Fill(time,(dTOF-expected)/drift,drift/kMaxZ); 
+	hisTOF.Fill(time,(dTOF-expected)/drift,drift/kMaxZ); 
       }
       if ( dTRD!=0. &&TMath::Abs(dTRD-expected)<kMaxDist1) {
 	//fitterTOF->AddPoint(pvecFit,dTRD,1);	
-	hisTRD->Fill(time,(dTRD-expected)/drift,drift/kMaxZ); 
+	hisTRD.Fill(time,(dTRD-expected)/drift,drift/kMaxZ); 
       }    
     }
     printf("iter=%d\n",iter);
     TGraphErrors *grTRD=NULL, *grTOF=NULL;
     TGraphErrors *grTRD2=NULL, *grTOF2=NULL;
-    Int_t nclTRD=hisTRD->GetEntries();
-    Int_t nclTOF=hisTOF->GetEntries();
+    Int_t nclTRD=hisTRD.GetEntries();
+    Int_t nclTOF=hisTOF.GetEntries();
     if (nclTRD>kMinEntries){
-      hisTRD->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+      hisTRD.FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
       grTRD = new TGraphErrors((TH1D*)arrayFit.At(1));
       grTRD2 = new TGraphErrors((TH1D*)arrayFit.At(2));
+      arrayFit.Delete();
     }
     if (nclTOF>kMinEntries){
-      hisTOF->FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
+      hisTOF.FitSlicesY(0,0,-1,0,"QNR",&arrayFit);
       grTOF  = new TGraphErrors((TH1D*)arrayFit.At(1));
       grTOF2 = new TGraphErrors((TH1D*)arrayFit.At(2));
+      arrayFit.Delete();
     }
     if (grTRD==NULL) {
       grTRD=grTOF; // we should have at minimum one of the histograms not empty
@@ -1848,8 +1865,9 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   TTree * treeFit= (TTree*)(pcstream->GetFile()->Get("fitTime"));  
   Int_t entriesGr = treeFit->Draw("grTRD.fY:grTOF.fY:grTRD.fX:Iteration$","1","goffpara");
   Int_t nbins = TMath::MaxElement(entriesGr, treeFit->GetV4())+1;  
-  Double_t dtime0= TMath::MinElement(entriesGr, treeFit->GetV3());
-  Double_t dtime1= TMath::MaxElement(entriesGr, treeFit->GetV3());
+
+  Double_t dtime0=0,dtime1=0;
+  if (entriesGr) TStatToolkit::GetMinMax(treeFit->GetV3(),entriesGr,dtime0,dtime1);
   Int_t ngraphs =entriesGr/nbins;
   //
   // 3.a) local regression fit
@@ -1865,8 +1883,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   AliNDLocalRegression * pfitTOF = new  AliNDLocalRegression("pfitTOF","pfitTOF");
   pfitTRD->SetHistogram((THn*)(hN->Clone()));
   pfitTOF->SetHistogram((THn*)(hN->Clone()));
-  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%f",sigmaT),"2:2",0.0001);
-  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%f",sigmaT),"2:2",0.0001);
+  pfitTRD->MakeFit(treeFit, "grTRD.fY:grTRD.fEY+0.01", "grTRD.fX",cutTRD, TString::Format("(grTRD.fX/grTRD.fX)+%d",int(sigmaT)),"2:2",0.0001);
+  pfitTOF->MakeFit(treeFit, "grTOF.fY:grTOF.fEY+0.01", "grTOF.fX",cutTOF, TString::Format("(grTRD.fX/grTRD.fX)+%d",int(sigmaT)),"2:2",0.0001);
   AliNDLocalRegression::AddVisualCorrection(pfitTRD,104);
   AliNDLocalRegression::AddVisualCorrection(pfitTOF,204);  
   //
@@ -1935,6 +1953,14 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(Int_t deltaT, Double_t sigmaT,  I
   delete grregTOF;
   delete grregQA;
   
+  delete deltaTOF;
+  delete deltaTRD;
+  delete vecZ;
+  delete vecR;
+  delete vecSec;
+  delete vecPhi;
+  delete vecTime;
+  delete vecTOFBC;
 
   delete pcstream;   
   return kTRUE;
@@ -2310,7 +2336,7 @@ Bool_t  AliTPCcalibAlignInterpolation::LoadNDLocalFit(TTree * tree, const char *
   TObjArray *ndFileList = ( gSystem->GetFromPipe(TString::Format("ls %s/delta*root",fdir.Data()).Data())).Tokenize("\n");
   
   if (ndFileList->GetEntries()==0){
-    ::Error(" AliTPCcalibAlignInterpolation::LoadNDLocal","File with NDLocal ",chTree);
+    ::Error(" AliTPCcalibAlignInterpolation::LoadNDLocal","File with NDLocal %s",chTree);
     return kFALSE;
   }
   for (Int_t ind=0; ind<ndFileList->GetEntries(); ind++){
