@@ -23,7 +23,8 @@ add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
 
 #Module
-set (MODULE PWGPP)
+set(MODULE PWGPP)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGPP)

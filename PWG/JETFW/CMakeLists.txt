@@ -14,6 +14,7 @@
 # **************************************************************************
 
 set(MODULE PWGJETFW)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(
