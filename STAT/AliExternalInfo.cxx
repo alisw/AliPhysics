@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <ctime>
 
+#include "AliLog.h"
+
 #include "AliExternalInfo.h"
 
 #include "TObjArray.h"
@@ -14,18 +16,24 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TChain.h"
+#include "TMath.h"
 
 ClassImp(AliExternalInfo)
 
+const TString AliExternalInfo::fgkDefaultConfig="$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg";
+
 AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLocation/*, Bool_t copyToLocalStorage*/) :
                                 /*fCopyDataToLocalStorage(copyToLocalStorage),*/
+                                TObject(),
                                 fConfigLocation(configLocation),
                                 fLocalStorageDirectory(localStorageDirectory),
-                                fLocationTimeOutMap()
+                                fLocationTimeOutMap(),
+                                fTree(0x0),
+                                fChain(new TChain()),
+                                fChainMap(),
+                                fMaxCacheSize(-1)
 {
   ReadConfig();
-  fTree = 0x0;
-  fChain = new TChain();
 }
 
 AliExternalInfo::~AliExternalInfo() {}
@@ -35,7 +43,23 @@ AliExternalInfo::~AliExternalInfo() {}
 /// Use the format which is in the config.cfg by default. Adding ressources like the ones already
 /// there should work without problems.
 void AliExternalInfo::ReadConfig(){
-  std::ifstream configFile(gSystem->ExpandPathName(fConfigLocation.Data()));
+  TString configFileName=gSystem->ExpandPathName(fConfigLocation.Data());
+  if (gSystem->AccessPathName(configFileName)) {
+    AliError(TString::Format("Could not find config file '%s'", configFileName.Data()));
+    const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
+    if (defaultConfigFileName!=configFileName) {
+      AliError("Using default config file instead");
+      configFileName=defaultConfigFileName;
+    }
+  }
+
+  std::ifstream configFile(configFileName);
+  if (!configFile.is_open()) {
+    AliError(TString::Format("Could not open config file '%s'", configFileName.Data()));
+    return;
+  }
+
+  //
   std::string line;
   while (std::getline(configFile, line)){
     TString temp_line(line.c_str()); // Use TString for easier handling
@@ -83,7 +107,7 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
    Int_t firstDotOfType(type.First('.') + 1);
    Int_t lastCharOfType(type.Length() - 1);
    detector = type(firstDotOfType, lastCharOfType) + "_";
-   std::cout << "DETECTOR: " << detector << std::endl;
+//    std::cout << "DETECTOR: " << detector << std::endl;
   }
 
   rootFileName = fLocationTimeOutMap[type + ".filename"];
@@ -91,10 +115,10 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
 
   // Create the local path where to store the information of the resource
   internalLocation += pathStructure;
-  std::cout << "Information will be stored/retrieved in/from " << internalLocation << std::endl;
+  AliInfo(TString::Format("Information will be stored/retrieved in/from %s", internalLocation.Data()));
 
   if (!(period.Last('*') == period.Length() - 1) || !(pass.Last('*') == pass.Length() - 1) || period.Length() == 0){
-    std::cout << "mkdir " << internalLocation.Data() << std::endl;
+//     std::cout << "mkdir " << internalLocation.Data() << std::endl;
     gSystem->mkdir(internalLocation.Data(), kTRUE);
   }
 
@@ -113,7 +137,7 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
 /// the class definition as an abbrevation
 /// \return If downloading and creation of tree was successful true, else false
 Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
-  std::cout << "Caching of " << period << " " << pass << " from " << type << " in start path " << fLocalStorageDirectory << std::endl;
+  AliInfo(TString::Format("Caching of %s %s from %s in start path %s", period.Data(), pass.Data(), type.Data(), fLocalStorageDirectory.Data()));
 
   // initialization of local variables
   TString internalFilename = ""; // Resulting path to the file
@@ -138,46 +162,26 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
     // Download resources in the form of .root files in a tree
     if (resourceIsTree == kTRUE){
       externalLocation += pathStructure + rootFileName;
-      std::cout << "Information retrieved from: " << externalLocation << std::endl;
+      AliInfo(TString::Format("Information retrieved from: %s", externalLocation.Data()));
 
       // Check if external location is a http address or locally accessible
-      std::cout << externalLocation(0, 4) << std::endl;
-      if (externalLocation(0, 4) == "http"){
-        std::cout << "HTTP address, download from the internet" << std::endl;
-        TWebFile webfile(externalLocation);
-        if (!webfile.IsZombie()){ // Checks if webresource is available
-          if (webfile.Cp(internalFilename)) {
-            std::cout << "Caching successful" << std::endl;
-            return kTRUE;
-          }
-          else {
-            std::cout << "Copying to internal location failed" << std::endl;
-            return kFALSE;
-          }
+//       std::cout << externalLocation(0, 4) << std::endl;
+      TFile *file = TFile::Open(externalLocation);
+      if (file && !file->IsZombie()){ // Checks if webresource is available
+        if (file->Cp(internalFilename)) {
+          AliInfo("Caching successful");
+          return kTRUE;
         }
         else {
-          std::cout << "Ressource not available" << std::endl;
+          AliError("Copying to internal location failed");
           return kFALSE;
         }
       }
       else {
-        std::cout << "Internal address, download locally" << std::endl;
-        TFile file(externalLocation);
-        if (!file.IsZombie()){ // Checks if webresource is available
-          if (file.Cp(internalFilename)) {
-            std::cout << "Caching successful" << std::endl;
-            return kTRUE;
-          }
-          else {
-            std::cout << "Copying to internal location failed" << std::endl;
-            return kFALSE;
-          }
-        }
-        else {
-          std::cout << "Ressource not available" << std::endl;
-          return kFALSE;
-        }
+        AliError("Ressource not available");
+        return kFALSE;
       }
+      delete file;
     }
     else {
       //Set up external path with period and pass if necessary
@@ -197,14 +201,19 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
       // Store it in a tree inside a root file
       TTree tree(treeName, treeName);
 
-      if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) std::cout << "-- Successfully read in tree" << std::endl;
-      else std::cout << "-- Error while reading tree" << std::endl;
+      if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) {
+        AliInfo("-- Successfully read in tree");
+      }
+      else {
+        AliError("-- Error while reading tree");
+        return kFALSE;
+      }
 
       TFile tempfile(internalFilename, "RECREATE");
       tempfile.cd();
       tree.Write();
       tempfile.Close();
-      std::cout << "Write tree to file: " << internalFilename << std::endl;
+      AliInfo(TString::Format("Write tree to file: %s", internalFilename.Data()));
       return kTRUE;
     }
   }
@@ -212,6 +221,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
     return kTRUE;
   }
 }
+
 /// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
 /// \param period Period, e.g. 'LHC15f'
 /// \param pass E.g. 'pass2' or 'passMC'
@@ -243,10 +253,33 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
 
   // Creating and returning the tree from the file
   TFile* treefile = new TFile(internalFilename.Data());
-  tree = dynamic_cast<TTree*>( treefile->Get(treeName));
-  if (tree != 0x0) {std::cout << "-- Successfully read in tree" << std::endl;}
-  else std::cout << "-- Error while reading tree" << std::endl;
-  AddTree(tree, type);
+
+  // ---| loop over possible tree names |---
+  TObjArray *arr = treeName.Tokenize(",");
+  for (Int_t iname=0; iname<arr->GetEntriesFast(); ++iname) {
+    tree = dynamic_cast<TTree*>( treefile->Get(arr->At(iname)->GetName()) );
+    if (tree) break;
+  }
+  delete arr;
+
+  if (tree != 0x0) {
+    AliInfo("-- Successfully read in tree");
+    AddTree(tree, type);
+  } else {
+    AliError("Error while reading tree");
+  }
+
+  const TString cacheSize=fLocationTimeOutMap[type + ".CacheSize"];
+  Long64_t cache=cacheSize.Atoll();
+  if (fMaxCacheSize>0) {
+    if (cache>0) {
+      cache=TMath::Min(fMaxCacheSize, cache);
+    } else {
+      cache=fMaxCacheSize;
+    }
+  }
+  if (cache>0) tree->SetCacheSize(cache);
+
   return tree;
 }
 
@@ -274,13 +307,25 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
 
   TString files=gSystem->GetFromPipe(cmd.Data());
   TObjArray *arrFiles=files.Tokenize("\n");
-  std::cout << "Files to add to chain: " << files << std::endl;
+  AliInfo(TString::Format("Files to add to chain: %s", files.Data()));
 
   //function to get tree namee based on type
   chain=new TChain(treeName.Data());
   for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile) {
     chain->AddFile(arrFiles->At(ifile)->GetName());
   }
+
+  const TString cacheSize=fLocationTimeOutMap[type + ".CacheSize"];
+  Long64_t cache=cacheSize.Atoll();
+  if (fMaxCacheSize>0) {
+    if (cache>0) {
+      cache=TMath::Min(fMaxCacheSize, cache);
+    } else {
+      cache=fMaxCacheSize;
+    }
+  }
+  if (cache>0) chain->SetCacheSize(cache);
+
   AddChain(type, period, pass);
   delete arrFiles;
   return chain;
@@ -309,7 +354,7 @@ Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
   if (fTree == 0x0) fTree = dynamic_cast<TTree*>(tree->Clone());
   fTree->AddFriend(tree, name);
 
-  std::cout << "Added as friend with the name: " << name << std::endl;
+  AliInfo(TString::Format("Added as friend with the name: %s",name.Data()));
   return kTRUE;
 }
 /// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
@@ -329,8 +374,8 @@ Bool_t AliExternalInfo::AddChain(TString type, TString period, TString pass){
 
   // Setting up all the local variables
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
-  std::cout << "Add to internal Chain: " << internalFilename << std::endl;
-  std::cout << "with tree name: " << treeName << std::endl;
+  AliInfo(TString::Format("Add to internal Chain: %s", internalFilename.Data()));
+  AliInfo(TString::Format("with tree name: %s",        treeName.Data()));
   fChain->AddFile(internalFilename.Data(), TChain::kBigNumber, treeName);
 
   return kTRUE;
@@ -393,7 +438,7 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
 
   // std::cout << "-- Check, if " << file << " is already there" << std::endl;
   if (gSystem->AccessPathName(file.Data()) == kTRUE) {
-    std::cout << "-- File not found locally --> Caching from remote" << std::endl;
+    AliInfo("-- File not found locally --> Caching from remote");
     return kTRUE;
   }
   else {
@@ -404,11 +449,11 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
     long int timeFileModified = st.st_mtime;
     // std::cout << "------ File is " << timeNow - timeFileModified << " seconds old" << std::endl;
     if (timeNow - timeFileModified < timeOut) {
-      std::cout << "-- File is " << timeNow - timeFileModified << " s old; NOT older than the set timelimit " << timeOut << " s" << std::endl;
+      AliInfo(TString::Format("-- File is %li s old; NOT older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
       return kFALSE; // if file is younger than the set time limit, it will not be downloaded again
     }
     else {
-      std::cout << "-- File is " << timeNow - timeFileModified << " s old; Older than the set timelimit " << timeOut << " s" << std::endl;
+      AliInfo(TString::Format("-- File is %li s old; Older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
       return kTRUE;
     }
   }

@@ -54,7 +54,7 @@ c1.SaveAs("c1.png");
 class TTree;
 class TChain;
 
-class AliExternalInfo{
+class AliExternalInfo : public TObject {
 public:
   AliExternalInfo (TString localStorageDirectory = ".", TString configLocation = "$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg"/*, Bool_t copyToLocalStorage = kTRUE*/);
   virtual ~AliExternalInfo();
@@ -91,6 +91,11 @@ public:
   TTree* GetFriendsTree() const {return fTree;}
   TChain* GetFriendsChain() const {return fChain;} // _Not_ working properly!!!
 
+  void     SetMaxCacheSize(Long64_t size) { fMaxCacheSize=size;   }
+  Long64_t GetMaxCacheSize() const        { return fMaxCacheSize; }
+
+  static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
+
 private:
   Bool_t AddTree(TTree* tree, TString type);
   Bool_t AddChain(TString type, TString period, TString pass);
@@ -108,6 +113,9 @@ private:
   TTree* fTree;                                     ///< master tree with friends
   TChain* fChain;                                   ///< master chain with friends
   std::map<TString, TChain*> fChainMap;             ///< map of chains
+  Long64_t fMaxCacheSize;                           ///< maximum chache size for trees and chains
+
+  static const TString fgkDefaultConfig;            ///< default config file
 
   ClassDef(AliExternalInfo, 0);  // interface to various trending trees
 
