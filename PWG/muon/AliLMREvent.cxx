@@ -1,3 +1,25 @@
+/**************************************************************************
+ * Copyright(c) 2004-2006, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//========================================================================
+//
+//     Contact author: boris.teyssier@cern.ch | antonio.uras@cern.ch
+//
+//=========================================================================
+
+
 // --- Standard libraries ---
 #include <Riostream.h>
 
@@ -24,8 +46,7 @@ fMuons(new TClonesArray("AliLMRMuon",20)),
  {
    for(Int_t i=0;i<3;i++)
      fVertex[i]=0.0;
-  fMuons->SetOwner(kTRUE);	
-
+   fMuons->SetOwner(kTRUE);	
 };
 
 //__________________________________________________________________________
@@ -43,12 +64,11 @@ AliLMREvent::AliLMREvent(Int_t run, Double_t evtPlane, Double_t Vert[3],Double_t
   fRunNb(run), 
   fNMuons(0), 
   fNVtxContributors(0),
-  fTriggerString(0) {
-
-   for(Int_t i=0;i<3;i++)
-     fVertex[i]=Vert[i];
+  fTriggerString(0) 
+{
+  for(Int_t i=0;i<3;i++)
+    fVertex[i]=Vert[i];
   fMuons->SetOwner(kTRUE);
-
 };
 
 //__________________________________________________________________________
@@ -68,17 +88,16 @@ AliLMREvent::AliLMREvent(const AliLMREvent& evt):
 {
   ///copy constructor
   // 
-
-   for(Int_t i=0;i<3;i++)
-     fVertex[i]=evt.fVertex[i];
+  for(Int_t i=0;i<3;i++)
+    fVertex[i]=evt.fVertex[i];
   // // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  if (evt.fMuons) {
-    fMuons = new TClonesArray("AliLMRMuon",evt.fMuons->GetSize());
-    fMuons->SetOwner(kTRUE);
-    for (Int_t i = 0; i < evt.GetNMuons(); i++)
-		new((*fMuons)[fMuons->GetEntriesFast()]) AliLMRMuon(*static_cast<AliLMRMuon*>(evt.fMuons->UncheckedAt(i) ));
-  }
-    
+  if (evt.fMuons)
+    {
+      fMuons = new TClonesArray("AliLMRMuon",evt.fMuons->GetSize());
+      fMuons->SetOwner(kTRUE);
+      for (Int_t i = 0; i < evt.GetNMuons(); i++)
+	new((*fMuons)[fMuons->GetEntriesFast()]) AliLMRMuon(*static_cast<AliLMRMuon*>(evt.fMuons->UncheckedAt(i) ));
+    }
 }
 
 //__________________________________________________________________________
@@ -129,7 +148,7 @@ AliLMREvent& AliLMREvent::operator=(const AliLMREvent&evt)
       fRunNb = evt.fRunNb;
       fNMuons = evt.fNMuons;
       for(Int_t i=0;i<3;i++)
-	fVertex[i] = evt.fVertex[i];
+   	fVertex[i] = evt.fVertex[i];
       fNVtxContributors = evt.fNVtxContributors;
       fTriggerString = evt.fTriggerString;
     }
@@ -161,8 +180,8 @@ void AliLMREvent::Clear(Option_t *){
 
 void AliLMREvent::SetVertex(Double_t V[3])
 {
-   for(Int_t i=0;i<3;i++)
-     fVertex[i]=V[i];
+  for(Int_t i=0;i<3;i++)
+    fVertex[i]=V[i];
 }
 
 //__________________________________________________________________________

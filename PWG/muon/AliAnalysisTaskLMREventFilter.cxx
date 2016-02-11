@@ -1,3 +1,25 @@
+/**************************************************************************
+ * Copyright(c) 2004-2006, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//========================================================================
+//
+//     Contact author: boris.teyssier@cern.ch | antonio.uras@cern.ch
+//
+//=========================================================================
+
+
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1D.h"
@@ -41,10 +63,10 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fhTriggers(0),
   fhNMu(0)
 {
-  fNTrigClass=7;
   //
   // Default constructor
   //
+  fNTrigClass=7;
   for(Int_t i=0;i<7;i++)
     fTriggerMask[i]=1<<i;
   fTriggerClasses[0]="-B-";
@@ -120,9 +142,11 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   
   fhTriggers = new TH1D("hTriggers","L2 Triggers",fNTrigClass,0,fNTrigClass);
   fOutputList->Add(fhTriggers);	  
-  
+  fhTriggers->Sumw2();
+
   fhNMu = new TH2D("hNMu","Number of Muon",50,0,50,fNTrigClass,0,fNTrigClass);
   fOutputList->Add(fhNMu);
+  fhNMu->Sumw2();
 
   for (Int_t i=0;i<fNTrigClass;i++)
     {
@@ -153,7 +177,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
     return;
     
   Int_t nmu = fAOD->GetNumberOfMuonTracks();
-
+  
   if(evtTrigSelect&fTriggerMask[0])
     {
       fhNMu->Fill(nmu,fTriggerClasses[0],1);
@@ -167,7 +191,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
       if(evtTrigSelect&fTriggerMask[i])
 	fhNMu->Fill(nmu,fTriggerClasses[i],1);
     }
-
+  
   TString triggerWord(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   // ---
 
@@ -211,7 +235,6 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   fAliLMREvent->SetMultiplicity("SPDClusters",Multiplicity_SPDClusters);
   fAliLMREvent->SetMultiplicity("RefMult05",Multiplicity_RefMult05);
   fAliLMREvent->SetMultiplicity("RefMult08",Multiplicity_RefMult08);
-  
   fAliLMREvent->SetTriggerString(triggerWord);
 
   if (nmu>1)
@@ -239,6 +262,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  // Create new Muon
 	  trk = fAliLMREvent->AddMuon();
 	  trk->SetMomentum(p[0],p[1],p[2]);
+	  trk->SetCharge(charge);
 	  trk->SetChi2Match(chi2Match);
 	  trk->SetChi2(chi2);
 	  trk->SetRabs(rAbs);
@@ -316,8 +340,8 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, Bool_
   
   if(trigStr.Contains("CMSL7"))
     {
-      Int_t inputMLL = 20;
-      Int_t inputMUL = 21;
+      Int_t inputMLL = 20; // reference to MLL L0 trigger
+      Int_t inputMUL = 21; // reference to MUL L0 trigger
       UInt_t inpmask = fAOD->GetHeader()->GetL0TriggerInputs();
       Int_t is0MLLfired = (inpmask & (1<<(inputMLL-1)));
       Int_t is0MULfired = (inpmask & (1<<(inputMUL-1)));
