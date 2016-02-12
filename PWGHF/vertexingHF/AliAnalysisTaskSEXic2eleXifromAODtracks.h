@@ -323,6 +323,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoLambdaPtvsDl; //!<! Lambda proper life time distribution
 	TH2F *fHistoLambdaPtvsDlSide; //!<! Lambda proper life time distribution (sideband)
 	TH2F *fHistoLambdaPtvsDlMCS; //!<! Lambda proper life time distribution (mc)
+	TH2F *fHistoLambdaPtvsDR; //!<! Lambda decay length distribution
+	TH2F *fHistoLambdaPtvsDRSide; //!<! Lambda decay length distribution (sideband)
+	TH2F *fHistoLambdaPtvsDRMCS; //!<! Lambda decay length distribution (mc)
 
 	TH2F *fHistoEleXiPtvsRapidityRS; //!<! e-Xi pT vs y
 	TH2F *fHistoEleXiPtvsRapidityWS; //!<! e-Xi pT vs y
@@ -376,7 +379,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,21); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,22); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

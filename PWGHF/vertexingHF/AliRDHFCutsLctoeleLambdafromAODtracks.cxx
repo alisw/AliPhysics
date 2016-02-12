@@ -63,6 +63,7 @@ AliRDHFCuts(name),
   fProdUseAODFilterBit(kTRUE),
   fProdAODFilterBit(4),
   fProdRejectTrackWithShared(kFALSE),
+  fProdV0KinkRejection(kTRUE),
   fProdV0MassTolLambda(0.01),
   fProdV0MassTolLambdaRough(0.01),
   fProdV0PtMin(0.5),
@@ -150,6 +151,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdAODFilterBit(source.fProdAODFilterBit),
   fProdRejectTrackWithShared(source.fProdRejectTrackWithShared),
+  fProdV0KinkRejection(source.fProdV0KinkRejection),
   fProdV0MassTolLambda(source.fProdV0MassTolLambda),
   fProdV0MassTolLambdaRough(source.fProdV0MassTolLambdaRough),
   fProdV0PtMin(source.fProdV0PtMin),
@@ -218,6 +220,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fProdAODFilterBit = source.fProdAODFilterBit;
   fProdRejectTrackWithShared = source.fProdRejectTrackWithShared;
+  fProdV0KinkRejection = source.fProdV0KinkRejection;
   fProdV0MassTolLambda = source.fProdV0MassTolLambda;
   fProdV0MassTolLambdaRough = source.fProdV0MassTolLambdaRough;
   fProdV0PtMin = source.fProdV0PtMin;
@@ -397,19 +400,11 @@ Int_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelected(TObject* obj, Int_t sele
       {
 	okcand = kFALSE;
       }
-    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
       {
 	okcand = kFALSE;
       }
-    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)])
-      {
-	okcand = kFALSE;
-      }
-    if(fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
-      {
-	okcand = kFALSE;
-      }
-    if(fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
       {
 	okcand = kFALSE;
       }
@@ -659,11 +654,35 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedPtDepeID(AliAO
   // electron ID first shot
   //
 
+	Double_t nSigmaPion = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kPion);
+	if(fExcludePionTPC){
+		if(TMath::Abs(nSigmaPion)<fExcludenSigmaPionTPC){
+			return kFALSE;
+		}
+	}
+
+	Double_t nSigmaProton = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kProton);
+	if(fExcludeProtonTPC){
+		if(TMath::Abs(nSigmaProton)<fExcludenSigmaProtonTPC){
+			return kFALSE;
+		}
+	}
+
+	Double_t nSigmaKaon = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kKaon);
+	if(fExcludeKaonTPC){
+		if(TMath::Abs(nSigmaKaon)<fExcludenSigmaKaonTPC){
+			return kFALSE;
+		}
+	}
+
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
 
-	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
-	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+  if(fabs(fSigmaElectronTOFMin)<999.|| fabs(fSigmaElectronTOFMax)<999.)
+  {
+    if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
+    if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+  }
 
 	Double_t pte = trk->Pt();
 	Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
@@ -709,7 +728,7 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
      !(cntrack->GetStatus() & AliESDtrack::kTPCrefit)) return kFALSE;
   AliAODVertex *maybeKinkPos = (AliAODVertex*)cptrack->GetProdVertex();
   AliAODVertex *maybeKinkNeg = (AliAODVertex*)cntrack->GetProdVertex();
-  if (maybeKinkPos->GetType()==AliAODVertex::kKink || maybeKinkNeg->GetType()==AliAODVertex::kKink) 
+  if (fProdV0KinkRejection && (maybeKinkPos->GetType()==AliAODVertex::kKink || maybeKinkNeg->GetType()==AliAODVertex::kKink)) 
     return kFALSE;
 
   if ( ( ( cptrack->GetTPCClusterInfo(2,1) ) < (Float_t)fProdV0DaughterTPCClusterMin ) || 
@@ -784,20 +803,39 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 				fPidObjPion->SetPidResponse(pidResp);
 			}
 
-      Int_t isProton= -9999;
-      Int_t isPion= -9999;
+      Int_t isProton= 1;
+      Int_t isPion= 1;
       Double_t nsigmatpc_proton = fPidObjProton->GetSigma(0);
       Double_t nsigmatpc_pion = fPidObjPion->GetSigma(0);
+      Double_t nsigmatof_proton = fPidObjProton->GetSigma(3);
+      Double_t nsigmatof_pion = fPidObjPion->GetSigma(3);
+
       if(isparticle){
         Double_t nSigmaTPCpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kProton);
         Double_t nSigmaTPCpi = fPidObjPion->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kPion);
-        if(fabs(nSigmaTPCpr)<nsigmatpc_proton) isProton = 1;
-        if(fabs(nSigmaTPCpi)<nsigmatpc_pion) isPion = 1;
+        Double_t nSigmaTOFpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTOF(cptrack,AliPID::kProton);
+        Double_t nSigmaTOFpi = fPidObjPion->GetPidResponse()->NumberOfSigmasTOF(cntrack,AliPID::kPion);
+        if(fabs(nSigmaTPCpr)>nsigmatpc_proton) isProton = 0;
+        if(fabs(nSigmaTPCpi)>nsigmatpc_pion) isPion = 0;
+        if(nsigmatof_proton>0.01 && nsigmatof_proton<999.){
+          if(fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0;
+        }
+        if(nsigmatof_pion>0.01 && nsigmatof_pion<999.){
+          if(fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0;
+        }
       }else{
         Double_t nSigmaTPCpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kProton);
         Double_t nSigmaTPCpi = fPidObjPion->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kPion);
-        if(fabs(nSigmaTPCpr)<nsigmatpc_proton) isProton = 1;
-        if(fabs(nSigmaTPCpi)<nsigmatpc_pion) isPion = 1;
+        Double_t nSigmaTOFpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTOF(cntrack,AliPID::kProton);
+        Double_t nSigmaTOFpi = fPidObjPion->GetPidResponse()->NumberOfSigmasTOF(cptrack,AliPID::kPion);
+        if(fabs(nSigmaTPCpr)>nsigmatpc_proton) isProton = 0;
+        if(fabs(nSigmaTPCpi)>nsigmatpc_pion) isPion = 0;
+        if(nsigmatof_proton>0.01 && nsigmatof_proton<999.){
+          if(fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0;
+        }
+        if(nsigmatof_pion>0.01 && nsigmatof_pion<999.){
+          if(fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0;
+        }
       }
       if(isProton<1) return kFALSE;
       if(isPion<1) return kFALSE;
@@ -1130,11 +1168,11 @@ Int_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelected(TLorentzVector* vtrk, TL
     return 0;
   }
 
-  Double_t ptD=cutvars[1];
+  Double_t ptD=sqrt(pow(vtrk->Px()+vv0->Px(),2)+pow(vtrk->Px()+vv0->Py(),2));
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
 
-  Double_t pt=cutvars[1];
+  Double_t pt=ptD;
   Int_t ptbin=PtBin(pt);
   if (ptbin==-1) {
     return 0;
@@ -1197,19 +1235,11 @@ Int_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelected(TLorentzVector* vtrk, TL
     {
       okcand = kFALSE;
     }
-    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
     {
       okcand = kFALSE;
     }
-    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)])
-    {
-      okcand = kFALSE;
-    }
-    if(fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
-    {
-      okcand = kFALSE;
-    }
-    if(fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
     {
       okcand = kFALSE;
     }
