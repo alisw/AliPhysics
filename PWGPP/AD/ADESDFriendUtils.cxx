@@ -28,20 +28,20 @@ ClassImp(ADESDFriendUtils);
 ADESDFriendUtils::ADESDFriendUtils()
   : TObject()
   , fCalibData(NULL) {
-  for (Int_t ch=0; ch<16; ++ch)
-    for (Int_t bc=0; bc<21; ++bc)
+  for (Int_t ch=0; ch<AliADRawStream::kNChannels; ++ch)
+    for (Int_t bc=0; bc<AliADRawStream::kNEvOfInt; ++bc)
       fADCPedSub[ch][bc] = 0.0f;
 }
 
 ADESDFriendUtils::~ADESDFriendUtils() {
 }
 
-void ADESDFriendUtils::Init(Int_t runNumber) {
+AliCDBManager* ADESDFriendUtils::Init(Int_t runNumber) {
   // (1) set up the OCDB
   AliCDBManager *man = AliCDBManager::Instance();
   if (NULL == man) {
     AliFatal("CDB manager not found");
-    return;
+    return NULL;
   }
 
   if (!man->IsDefaultStorageSet())
@@ -53,13 +53,14 @@ void ADESDFriendUtils::Init(Int_t runNumber) {
   AliCDBEntry *entry = man->Get("AD/Calib/Data");
   if (NULL == entry) {
     AliFatal("AD/Calib/Data not found");
-    return;
+    return NULL;
   }
   fCalibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
   if (NULL == fCalibData) {
     AliFatal("No calibration data from calibration database");
-    return;
+    return NULL;
   }
+  return man;
 }
 
 void ADESDFriendUtils::Update(const AliESDADfriend* esdADfriend) {
@@ -67,8 +68,8 @@ void ADESDFriendUtils::Update(const AliESDADfriend* esdADfriend) {
     AliError("NULL == esdADfriend");
     return;
   }  
-  for (Int_t ch=0; ch<16; ++ch) {    
-    for (Int_t bc=0; bc<21; ++bc) {
+  for (Int_t ch=0; ch<AliADRawStream::kNChannels; ++ch) {    
+    for (Int_t bc=0; bc<AliADRawStream::kNEvOfInt; ++bc) {
       fADCPedSub[ch][bc]  = Float_t(esdADfriend->GetPedestal(ch, bc));
       fADCPedSub[ch][bc] -= fCalibData->GetPedestal(ch + 16*esdADfriend->GetIntegratorFlag(ch, bc));
     }
@@ -77,7 +78,7 @@ void ADESDFriendUtils::Update(const AliESDADfriend* esdADfriend) {
 
 Bool_t ADESDFriendUtils::IsPileUp(Int_t ch, Float_t threshold) const {  
   Bool_t isPileUp = kFALSE;
-  for (Int_t bc=13; bc<20 && !isPileUp; ++bc)  
+  for (Int_t bc=13; bc<AliADRawStream::kNEvOfInt-1 && !isPileUp; ++bc)  
     isPileUp |= (fADCPedSub[ch][bc+1] > fADCPedSub[ch][bc] + threshold);
   
   return isPileUp;
