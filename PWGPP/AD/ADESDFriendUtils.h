@@ -11,13 +11,16 @@
 
 class AliADCalibData;
 class AliESDADfriend;
+class AliCDBManager;
+
+#include "AliADRawStream.h"
 
 class ADESDFriendUtils : public TObject {
 public:
   ADESDFriendUtils();
   virtual ~ADESDFriendUtils();
 
-  void    Init(Int_t runNumber);
+  AliCDBManager* Init(Int_t runNumber);
   void    Update(const AliESDADfriend*);
 
   Float_t GetADCPedSub(Int_t ch, Int_t bc) const { return fADCPedSub[ch][bc]; }
@@ -31,7 +34,7 @@ private:
   ADESDFriendUtils& operator=(const ADESDFriendUtils&);
 
   AliADCalibData *fCalibData;         //! pedestals from OCDB
-  Float_t         fADCPedSub[16][21]; //! pedestal subtracted ADC value
+  Float_t         fADCPedSub[AliADRawStream::kNChannels][AliADRawStream::kNEvOfInt]; //! pedestal subtracted ADC value
 
   ClassDef(ADESDFriendUtils, 1);
 } ;
