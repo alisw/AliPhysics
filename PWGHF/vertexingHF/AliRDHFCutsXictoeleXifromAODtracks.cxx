@@ -405,27 +405,15 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TObject* obj, Int_t selecti
       {
 	okcand = kFALSE;
       }
-    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
     {
       okcand = kFALSE;
     }
-    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
     {
       okcand = kFALSE;
     }
-    if(fabs(dphis_e_bach) < fCutsRD[GetGlobalIndex(2,ptbin)])
-    {
-      okcand = kFALSE;
-    }
-    if(fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
-    {
-      okcand = kFALSE;
-    }
-    if(fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
-    {
-      okcand = kFALSE;
-    }
-    if(fabs(detas_e_bach) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    if(fabs(dphis_e_bach) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_bach) < fCutsRD[GetGlobalIndex(3,ptbin)])
     {
       okcand = kFALSE;
     }
@@ -1170,11 +1158,11 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TLorentzVector* vtrk, TLore
     return 0;
   }
 
-  Double_t ptD=cutvars[1];
+  Double_t ptD=sqrt(pow(vtrk->Px()+vcasc->Px(),2)+pow(vtrk->Px()+vcasc->Py(),2));
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
 
-  Double_t pt=cutvars[1];
+  Double_t pt=ptD;
   Int_t ptbin=PtBin(pt);
   if (ptbin==-1) {
     return 0;
@@ -1244,27 +1232,15 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TLorentzVector* vtrk, TLore
       {
 	okcand = kFALSE;
       }
-    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    if(fabs(dphis_e_pr) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
       {
 	okcand = kFALSE;
       }
-    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)])
+    if(fabs(dphis_e_pi) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
       {
 	okcand = kFALSE;
       }
-    if(fabs(dphis_e_bach) < fCutsRD[GetGlobalIndex(2,ptbin)])
-      {
-	okcand = kFALSE;
-      }
-    if(fabs(detas_e_pr) < fCutsRD[GetGlobalIndex(3,ptbin)])
-      {
-	okcand = kFALSE;
-      }
-    if(fabs(detas_e_pi) < fCutsRD[GetGlobalIndex(3,ptbin)])
-      {
-	okcand = kFALSE;
-      }
-    if(fabs(detas_e_bach) < fCutsRD[GetGlobalIndex(3,ptbin)])
+    if(fabs(dphis_e_bach) < fCutsRD[GetGlobalIndex(2,ptbin)] && fabs(detas_e_bach) < fCutsRD[GetGlobalIndex(3,ptbin)])
       {
 	okcand = kFALSE;
       }

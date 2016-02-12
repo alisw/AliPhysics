@@ -31,6 +31,11 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliADCalibData.h"
+
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDAD.h"
@@ -43,13 +48,15 @@ ClassImp(AliAnalysisTaskADVVQA)
 
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA() 
-  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
+  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0),
+  fRun(0),fOldRun(0),fCalibData(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA(const char *name) 
-  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
+  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0),
+  fRun(0),fOldRun(0),fCalibData(0)
 {
   // Constructor
   // Output slot #1 writes into a TList container
@@ -398,6 +405,18 @@ void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskADVVQA::SetCalibData()
+{
+ 
+    AliCDBManager *man = AliCDBManager::Instance();
+    man->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+    man->SetRun(fRun);
+
+    AliCDBEntry *ent = man->Get("AD/Calib/Data");
+    fCalibData = (AliADCalibData*)ent->GetObject();
+    
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskADVVQA::FillHistos(TList *list) 
@@ -423,6 +442,13 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
   AliESDfriend *fESDfriend = fESD->FindFriend();  
   AliESDADfriend* esdADfriend = 0x0;
   if(fESDfriend) esdADfriend = fESDfriend->GetADfriend();
+  
+  fRun=fEvent->GetRunNumber();
+  
+  if (fRun!=fOldRun){
+    SetCalibData();
+    fOldRun=fRun;
+  }
   
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
@@ -476,9 +502,9 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
  		if(i>7) ((TH2F*)(list->At(11)))->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
 		
 		Bool_t localPF = kTRUE;
-		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
-		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,11);
-		fCharges[i] = esdADfriend->GetPedestal(i,11);
+		for(Int_t iClock=0; iClock<9; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
+		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,10);
+		if(esdAD->GetBBFlag(i)) fCharges[i] = esdADfriend->GetPedestal(i,10) - fCalibData->GetPedestal(k);
 		((TH2F*)(list->At(32)))->Fill(i,fCharges[i]);
 		if(localPF)((TH2F*)(list->At(33)))->Fill(i,fCharges[i]);
 		

@@ -18,15 +18,15 @@ public:
 	AliLMREvent& operator=(const AliLMREvent&);
 	void Clear(Option_t*);
 
-	void SetEventPlane(Double_t val) {fEventPlane = val;};
-	void SetRunNumber(Int_t val) {fRunNb = val;};
+	void SetEventPlane(Double_t eventPlane) {fEventPlane = eventPlane;};
+	void SetRunNumber(Int_t RunNb) {fRunNb = RunNb;};
 	void SetXVertex(Double_t x) {fVertex[0] = x;};
 	void SetYVertex(Double_t y) {fVertex[1] = y;};
 	void SetZVertex(Double_t z) {fVertex[2] = z;};
 	void SetVertex(Double_t V[3]);
 	void SetVtxContributors(Int_t nContributors){fNVtxContributors=nContributors;};
 	void SetTriggerString(TString val) { fTriggerString = val;};
-	void SetMultiplicity(TString method,Double_t val);
+	void SetMultiplicity(TString method,Double_t multiplicity);
 	Double_t GetEventPlane() {return fEventPlane ;};
 	Int_t GetRunNumber() {return fRunNb ;};
 	Double_t GetXVertex() {return fVertex[0] ;};

@@ -15,6 +15,11 @@ class AliVParticle;
 
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
  public:
+  typedef AliJetContainer::EJetType_t EJetType_t;
+  typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
+  typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
+  typedef AliJetContainer::JetAcceptanceType JetAcceptanceType;
+
   AliAnalysisTaskEmcalJet();
   AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
@@ -47,6 +52,10 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   const TString&              GetRhoName(Int_t c = 0) const;
   AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius = 0.4);
   AliJetContainer            *AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType = AliJetContainer::kUser, Float_t jetRadius = 0.4);
+  AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, JetAcceptanceType accType,
+  AliParticleContainer* partCont = 0, AliClusterContainer* clusCont = 0, TString tag = "Jet");
+  void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray.Add(cont)  ;}
+
   void                        RemoveJetContainer(Int_t i)                        { fJetCollArray.RemoveAt(i);} 
   AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
   AliJetContainer            *GetJetContainer(const char* name)                                        const;

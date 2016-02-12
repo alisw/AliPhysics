@@ -14,7 +14,8 @@
 # **************************************************************************
 
 # Module name -> library name
-set (MODULE PWGmftmuondepCharmonium)
+set(MODULE PWGmftmuondepCharmonium)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/mftmuondep/charmonium)

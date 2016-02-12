@@ -102,7 +102,7 @@ AliAnalysisTaskCheckPerformanceCascadepp276::AliAnalysisTaskCheckPerformanceCasc
     fESDtrackCuts                  (0), 
     fUtils                         (0),
     fCollidingSystem               ("pp"), 
-    fkSwitchINT7                   (kTRUE),
+    fkTriggerClass                 (AliVEvent::kINT7),
     fPIDResponse                   (0),
     fkRerunV0CascVertexers         (0),
     fkSDDselectionOn               (kTRUE),
@@ -303,7 +303,7 @@ AliAnalysisTaskCheckPerformanceCascadepp276::AliAnalysisTaskCheckPerformanceCasc
     fESDtrackCuts                  (0),
     fUtils                         (0),
     fCollidingSystem               ("pp"),
-    fkSwitchINT7                   (kTRUE),
+    fkTriggerClass                 (AliVEvent::kINT7),
     fPIDResponse                   (0),
     fkRerunV0CascVertexers         (0),
     fkSDDselectionOn               (kTRUE),
@@ -1696,9 +1696,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
    // - Selection for ESD and AOD
    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
-   if      (fCollidingSystem == "pp" && !fkSwitchINT7) isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-   else if (fCollidingSystem == "pp" && fkSwitchINT7)  isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-   else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+   isSelected = (maskIsSelected & fkTriggerClass) == fkTriggerClass;
    if(!isSelected){
        PostData(1, fListHistCascade);
        PostData(2, fCFContCascadePIDAsXiMinus);

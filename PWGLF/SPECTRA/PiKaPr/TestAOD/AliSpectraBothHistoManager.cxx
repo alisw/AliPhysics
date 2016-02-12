@@ -74,7 +74,8 @@ fIncludecorrectlyidentifiedinMCtemplates(kFALSE)
       if (ihist > kNPtRecAllChHist && ihist <= kNHistPID && pidqa) BookPIDHistogram(kHistNameBoth[ihist]);  // PID histos
       if (ihist > kNHistPID && ihist <= kNHistNSig && pidqa) BookNSigHistogram(kHistNameBoth[ihist]);  // NSigmaSep histos
       if(ihist==kHistGenMulvsRawMul) BookGenMulvsRawMulHistogram(kHistNameBoth[ihist]); 
-      if(ihist==kHistDoubleCounts)BookDoubleCountsHistogram(kHistNameBoth[ihist]); 
+      if(ihist==kHistDoubleCounts)BookDoubleCountsHistogram(kHistNameBoth[ihist]);
+      if(ihist > kHistDoubleCounts && ihist <=kHistNSigProtonPtTOFmissmatch && pidqa) BookNSigTOFmissmatchHistogram(kHistNameBoth[ihist]);
     }
    BookEventStatHist();
   TH1::AddDirectory(oldStatus);
@@ -431,3 +432,17 @@ TH1F* AliSpectraBothHistoManager::BookEventStatHist()
 	fOutputList->Add(hist);
 	return hist; 
 }
+//_______________________________________________________________________________________________________
+TH2F*   AliSpectraBothHistoManager::BookNSigTOFmissmatchHistogram(const char * name)
+{
+	// Return a pt histogram with predefined binning, set the ID and add it to the output list
+ 	 AliInfo(Form("Booking NSigma TOF missmatch histogram %s, rebin:%d", name, fNRebin));
+  	 Int_t nbins=200;
+ 	 Float_t miny=-20;
+	 const Double_t templBins[] = {-10.0,-9.5,-9.0,-8.5,-8.0,-7.5,-7.0,-6.5,-6.0,-5.5,-5.0,-4.8,-4.6,-4.4,-4.2,-4.0,-3.8,-3.6,-3.4,-3.2,-3.0,-2.9,-2.8,-2.7,-2.6,-2.5,-2.4,-2.3,-2.2,-2.1,-2.0,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.95,-0.9,-0.85,-0.8,-0.75,-0.7,-0.65,-0.6,-0.55,-0.5,-0.45,-0.4,-0.35,-0.3,-0.25,-0.2,-0.18,-0.16,-0.14,-0.12,-0.1,-0.05,0.0,0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,6.5,7,7.5,8,8.5,9,9.5,10};
+	 Int_t nbinsTempl=126;			
+ 	TH2F * hist = new TH2F(name, Form("TOF missmatch (%s)", name),nbinsTempl,templBins,nbins,miny, 20);
+	hist->GetXaxis()->SetTitle("P_{t} (GeV / c)");
+  	fOutputList->Add(hist);
+ 	 return hist;
+}	

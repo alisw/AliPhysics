@@ -38,14 +38,11 @@ const Int_t AliEmcalJetTask::fgkConstIndexShift = 100000;
 
 //________________________________________________________________________
 AliEmcalJetTask::AliEmcalJetTask() :
-  AliAnalysisTaskEmcal("AliEmcalJetTask"),
-  fJetsName("Jets"),
-  fJetType(kAKT|kFullJet|kRX1Jet),
-  fMinLabelTracks(-kMaxInt),
-  fMaxLabelTracks(kMaxInt),
-  fMinLabelClusters(-kMaxInt),
-  fMaxLabelClusters(kMaxInt),
-  fMinMCLabel(0),
+  AliAnalysisTaskEmcal(),
+  fJetsTag(),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
+  fJetType(AliJetContainer::kFullJet),
+  fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
   fMinJetPt(1.0),
@@ -54,11 +51,11 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMin(-1),
   fJetEtaMax(+1),
   fGhostArea(0.005),
-  fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fUtilities(0),
   fUseExchangeCont(0),
   fLocked(0),
+  fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
   fIsEmcPart(0),
@@ -73,13 +70,10 @@ AliEmcalJetTask::AliEmcalJetTask() :
 //________________________________________________________________________
 AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   AliAnalysisTaskEmcal(name),
-  fJetsName("Jets"),
-  fJetType(kAKT|kFullJet|kRX1Jet),
-  fMinLabelTracks(-kMaxInt),
-  fMaxLabelTracks(kMaxInt),
-  fMinLabelClusters(-kMaxInt),
-  fMaxLabelClusters(kMaxInt),
-  fMinMCLabel(0),
+  fJetsTag("Jets"),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
+  fJetType(AliJetContainer::kFullJet),
+  fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
   fMinJetPt(1.0),
@@ -88,11 +82,11 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fJetEtaMin(-1),
   fJetEtaMax(+1),
   fGhostArea(0.005),
-  fRecombScheme(fastjet::pt_scheme),
   fTrackEfficiency(1.),
   fUtilities(0),
   fUseExchangeCont(useExchangeCont),
   fLocked(0),
+  fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
   fIsEmcPart(0),
@@ -206,19 +200,13 @@ Int_t AliEmcalJetTask::FindJets()
     AliVParticle* t = 0;
     while ((t = tracks->GetNextAcceptParticle())) {
       tracks->GetMomentum(mom, tracks->GetCurrentID());
-      if (((fJetType & kChargedJet) != 0) && (t->Charge() == 0)) {
+      if (((fJetType & AliJetContainer::kChargedJet) != 0) && (t->Charge() == 0)) {
         AliDebug(2,Form("Skipping track %d because it is neutral.", tracks->GetCurrentID()));
         continue;
       }
 
-      if (((fJetType & kNeutralJet) != 0) && (t->Charge() != 0)) {
+      if (((fJetType & AliJetContainer::kNeutralJet) != 0) && (t->Charge() != 0)) {
         AliDebug(2,Form("Skipping track %d because it is charged.", tracks->GetCurrentID()));
-        continue;
-      }
-
-      Int_t lab = TMath::Abs(t->GetLabel());
-      if (lab < fMinLabelTracks || lab > fMaxLabelTracks) {
-        AliDebug(2,Form("Skipping track %d because label %d is not in range (%d, %d)", tracks->GetCurrentID(), lab, fMinLabelTracks, fMaxLabelTracks));
         continue;
       }
 
@@ -231,7 +219,7 @@ Int_t AliEmcalJetTask::FindJets()
         }
       }
 
-      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", tracks->GetCurrentID(), lab, t->Pt()));
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", tracks->GetCurrentID(), t->GetLabel(), t->Pt()));
       Int_t uid = tracks->GetCurrentID() + fgkConstIndexShift * iColl;
       fFastJetWrapper.AddInputVector(mom.Px(), mom.Py(), mom.Pz(), mom.E(), uid);
     }
@@ -254,13 +242,6 @@ Int_t AliEmcalJetTask::FindJets()
       Double_t cPz  = mom.Pz();
 
       Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
-      AliDebug(2,Form("Cluster %d (label = %d, energy = %.3f)", clusters->GetCurrentID(), c->GetLabel(), e));
-
-      Int_t lab = TMath::Abs(c->GetLabel());
-      if (lab < fMinLabelClusters || lab > fMaxLabelClusters) {
-        AliDebug(2,Form("Skipping cluster %d because label %d is not in range (%d, %d)", clusters->GetCurrentID(), lab, fMinLabelClusters, fMaxLabelClusters));
-        continue;
-      }
 
       AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", clusters->GetCurrentID(), c->GetLabel(), e));
       Int_t uid = -clusters->GetCurrentID() - fgkConstIndexShift * iColl;
@@ -364,6 +345,8 @@ void AliEmcalJetTask::ExecOnce()
     gRandom = new TRandom3(0);
   }
 
+  fJetsName = AliJetContainer::GenerateJetName(fJetType, fJetAlgo, fRecombScheme, fRadius, GetParticleContainer(0), GetClusterContainer(0), fJetsTag);
+
   // add jets to event if not yet there
   if (!(InputEvent()->FindListObject(fJetsName))) {
     fJets = new TClonesArray("AliEmcalJet");
@@ -375,32 +358,12 @@ void AliEmcalJetTask::ExecOnce()
     return;
   }
 
-  TString name("kt");
-  fastjet::JetAlgorithm jalgo(fastjet::kt_algorithm);
-  if ((fJetType & kAKT) != 0) {
-    name  = "antikt";
-    jalgo = fastjet::antikt_algorithm;
-    AliDebug(1,"Using AKT algorithm");
-  }
-  else {
-    AliDebug(1,"Using KT algorithm");
-  }
-
-  if ((fJetType & kR020Jet) != 0)
-    fRadius = 0.2;
-  else if ((fJetType & kR030Jet) != 0)
-    fRadius = 0.3;
-  else if ((fJetType & kR040Jet) != 0)
-    fRadius = 0.4;
-
   // setup fj wrapper
-  fFastJetWrapper.SetName(name);
-  fFastJetWrapper.SetTitle(name);
   fFastJetWrapper.SetAreaType(fastjet::active_area_explicit_ghosts);
   fFastJetWrapper.SetGhostArea(fGhostArea);
   fFastJetWrapper.SetR(fRadius);
-  fFastJetWrapper.SetAlgorithm(jalgo);
-  fFastJetWrapper.SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
+  fFastJetWrapper.SetAlgorithm(ConvertToFJAlgo(fJetAlgo));
+  fFastJetWrapper.SetRecombScheme(ConvertToFJRecoScheme(fRecombScheme));
   fFastJetWrapper.SetMaxRap(1);
 
   // setting legacy mode
@@ -633,25 +596,6 @@ void AliEmcalJetTask::SelectCollisionCandidates(UInt_t offlineTriggerMask)
 }
 
 //______________________________________________________________________________________
-void AliEmcalJetTask::SetRadius(Double_t r)            
-{ 
-  if (IsLocked()) return; 
-  fRadius = r; 
-  if ((fJetType & (kRX1Jet|kRX2Jet|kRX3Jet)) == 0) {
-    AliWarning("Radius value will be ignored if jet type is not set to a user defined radius (kRX1Jet,kRX2Jet,kRX3Jet).");
-  }
-}
-
-//______________________________________________________________________________________
-void AliEmcalJetTask::SetType(Int_t t)                 
-{ 
-  if(IsLocked()) return; 
-  if (t==0) fJetType |= kFullJet; 
-  else if (t==1) fJetType |= kChargedJet; 
-  else if (t==2) fJetType |= kNeutralJet; 
-} // for backward compatibility only
-
-//______________________________________________________________________________________
 void AliEmcalJetTask::SetEtaRange(Double_t emi, Double_t ema)
 {
   if (IsLocked()) return;
@@ -708,5 +652,61 @@ void AliEmcalJetTask::SetPhiRange(Double_t pmi, Double_t pma)
   AliParticleContainer* tracks = 0;
   while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
     tracks->SetParticlePhiLimits(pmi, pma);
+  }
+}
+
+//______________________________________________________________________________________
+fastjet::JetAlgorithm AliEmcalJetTask::ConvertToFJAlgo(EJetAlgo_t algo)
+{
+  switch(algo) {
+  case AliJetContainer::kt_algorithm:
+    return fastjet::kt_algorithm;
+
+  case AliJetContainer::cambridge_algorithm:
+    return fastjet::cambridge_algorithm;
+
+  case AliJetContainer::antikt_algorithm:
+    return fastjet::antikt_algorithm;
+
+  case AliJetContainer::undefined_jet_algorithm:
+    return fastjet::undefined_jet_algorithm;
+
+  default:
+    ::Error("AliEmcalJetTask::ConvertToFJAlgo", "Jet algorithm %d not recognized!!!", algo);
+    return fastjet::undefined_jet_algorithm;
+  }
+}
+
+//______________________________________________________________________________________
+fastjet::RecombinationScheme AliEmcalJetTask::ConvertToFJRecoScheme(ERecoScheme_t reco)
+{
+  switch(reco) {
+  case AliJetContainer::E_scheme:
+    return fastjet::E_scheme;
+
+  case AliJetContainer::pt_scheme:
+    return fastjet::pt_scheme;
+
+  case AliJetContainer::pt2_scheme:
+    return fastjet::pt2_scheme;
+
+  case AliJetContainer::Et_scheme:
+    return fastjet::Et_scheme;
+
+  case AliJetContainer::Et2_scheme:
+    return fastjet::Et2_scheme;
+
+  case AliJetContainer::BIpt_scheme:
+    return fastjet::BIpt_scheme;
+
+  case AliJetContainer::BIpt2_scheme:
+    return fastjet::BIpt2_scheme;
+
+  case AliJetContainer::external_scheme:
+    return fastjet::external_scheme;
+
+  default:
+    ::Error("AliEmcalJetTask::ConvertToFJRecoScheme", "Recombination scheme %d not recognized!!!", reco);
+    return fastjet::external_scheme;
   }
 }

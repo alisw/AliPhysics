@@ -27,6 +27,7 @@
 
 /* $Id: */
 
+#include "Riostream.h"
 #include <iostream>
 #include "TH2.h"
 #include "TH3.h"
@@ -47,6 +48,7 @@
 #include "TPDGCode.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h" 
+#include "AliAODHeader.h" 
 #include "AliAODInputHandler.h" 
 #include "AliESDEvent.h"
 #include "AliGenPythiaEventHeader.h"
@@ -3000,13 +3002,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(nTCuts>=0) fh1EvtMult->Fill(fTracksRecCuts->GetEntries());
 
   Int_t nGenPart = 0;
-  if(fMatchMode == 2){
-  Int_t nTGen = GetListOfTracks(fTracksGen,fTrackTypeGen);
-  if(nTGen>=0) nGenPart = fTracksGen->GetEntries();
-  if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
-  if(nGenPart != nTGen) Printf("%s:%d Mismatch selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
-  }
+  Int_t nTGen = 0;
 
+  if(fMatchMode == 2){
+    fTracksGen->Clear();
+    nTGen = GetListOfTracks(fTracksGen,kTrackAODMCExtraonlyChargedCuts);
+    if(nTGen>=0) nGenPart = fTracksGen->GetEntries();
+    if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+    if(nGenPart != nTGen) Printf("%s:%d Mismatch selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nTGen,nGenPart);
+  }
 
   //fetch V0 candidates
 
@@ -3017,7 +3021,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(fUseExtraTracks == 1)    { nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption, all V0 cuts are applied int his function
     if(fUseStandard){nK0sStandard = GetListOfV0s(fListK0sStandard,fK0Type,kK0,kTrackAODCuts,myPrimaryVertex,fAOD);}//fill standard tracks for UE V0 subtraction with PYTHIA Embedding
-    if(fMatchMode == 2){nK0sMC= GetListOfV0s(fListK0sMC,fK0Type,kK0,kTrackAODMCExtraonlyCuts,myPrimaryVertex,fAOD);}//fill MC K0s in PYTHIA Embedding
+    if(fMatchMode == 2){nK0sMC= GetListOfV0s(fListK0sMC,fK0Type,kK0,kV0AODMCExtraonlyCuts,myPrimaryVertex,fAOD);}//fill MC K0s in PYTHIA Embedding
   }
 
   if(fUseExtraTracks == -1)     nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
@@ -3045,7 +3049,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   if(fUseExtraTracks ==  1)      { nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
     if(fUseStandard == kTRUE){nLaStandard = GetListOfV0s(fListLaStandard,fLaType,kLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
-    if(fMatchMode == 2){nLaMC= GetListOfV0s(fListLaMC,fLaType,kLambda,kTrackAODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
+    if(fMatchMode == 2){nLaMC= GetListOfV0s(fListLaMC,fLaType,kLambda,kV0AODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
   }
   
   if(fUseExtraTracks == -1)      nLa = GetListOfV0s(fListLa,fLaType,kLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
@@ -3063,7 +3067,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(fUseExtraTracks ==  1)    { nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraCuts,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
    if(fUseStandard == kTRUE){nALaStandard = GetListOfV0s(fListALaStandard,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);}
-   if(fMatchMode == 2){nALaMC= GetListOfV0s(fListALaMC,fALaType,kAntiLambda,kTrackAODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
+   if(fMatchMode == 2){nALaMC= GetListOfV0s(fListALaMC,fALaType,kAntiLambda,kV0AODMCExtraonlyCuts,myPrimaryVertex,fAOD);}
   }
   if(fUseExtraTracks == -1)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODExtraonlyCuts,myPrimaryVertex,fAOD);// only v0s from PYTHIA embedding
   if(fUseExtraTracks ==  0)    nALa = GetListOfV0s(fListALa,fALaType,kAntiLambda,kTrackAODCuts,myPrimaryVertex,fAOD);//all standard tracks of event, no embedded tracks
@@ -3880,7 +3884,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded) // end: cut embedded ratio
 	  {
 	    if(fMatchMode == 1){
-	      FillEmbeddedHistos(embeddedJet, jet, nK0s, nLa, nALa);//fetch V0s for matched jets and fill embedding histos, 'jet' is matched jet here
+	      FillEmbeddedHistos(embeddedJet, jet, nK0s, nLa, nALa, jettracklist);//fetch V0s for matched jets and fill embedding histos, 'jet' is matched jet here
 	    }
 	  }
 	//################################end V0 embedding part
@@ -5494,7 +5498,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
 	  
-	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa);//fill all V0 embedding histos for match mode 2
+	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa, jettrackList);//fill all V0 embedding histos for match mode 2
 
 	  //Fill gen. jet V0s:
 	  
@@ -5651,6 +5655,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   fTracksRecCutsRC->Clear();
   fTracksRecCuts->Clear();
   fTracksPerpCone->Clear();
+  fTracksGen->Clear();
   fJetsRecCuts->Clear();
   fJetsGen->Clear();
   fJetsEmbedded->Clear();
@@ -5791,10 +5796,10 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
   }
     
   if(fDebug>5){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): type: "<<type<<" particletype: "<<particletype<<"aod: "<<aod<<std::endl;
-    if(type==kTrackUndef){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): kTrackUndef!! "<<std::endl;}
+    if(type==kV0TypeUndef){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): kV0TypeUndef!! "<<std::endl;}
   }
    
-  if(type==kTrackUndef) return 0;
+  if(type==kV0TypeUndef) return 0;
   Int_t iCount = 0;
 
   if(!primVertex) return 0;// this is real vertex of PbPb event
@@ -5892,7 +5897,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
   //##############################################################################################################
 
-  if(tracktype==kTrackAODMCExtraonlyCuts){//carried out only for Match Mode 2: particle to detector level matching
+  if(tracktype==kV0AODMCExtraonlyCuts){//carried out only for Match Mode 2: particle to detector level matching
 
     TClonesArray *aodExtraMCparticles = 0x0;
         
@@ -5913,13 +5918,13 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
      
       Int_t pdgCode = part->GetPdgCode();
 
+     if(fDebug > 3)std::cout<<"MC stack extra particles pdgCode: "<<pdgCode<<std::endl;
+
       //keep only true primary particles from PYTHIA particle level
       if((particletype == kK0)&&(pdgCode != 310))continue;
       if((particletype == kLambda)&&(pdgCode != 3122))continue;
       if((particletype == kAntiLambda)&&(pdgCode != -3122))continue;
-
-      if(fDebug > 4)std::cout<<"MC stack extra particles pdgCode: "<<pdgCode<<std::endl;
-
+ 
       Double_t fEta = part->Eta();      
 
       if(TMath::Abs(fEta) > fCutEta) continue;
@@ -7341,7 +7346,7 @@ Double_t AliAnalysisTaskJetChem::AreaCircSegment(Double_t dRadius, Double_t dDis
 
 
 //_____________________________________________________________________
-void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, const AliAODJet* jet, Int_t nK0s, Int_t nLa, Int_t nALa)
+void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, const AliAODJet* jet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* Jettracklist)
 
 {//Jet matching cuts (FractionPtEmbedded(MC) = 0.5, DeltaREmb(MC) = 0.75*R) are already applied
   
@@ -7361,12 +7366,12 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, co
 
   fh1PtEmbAfterMatch->Fill(jetPt);
   
-  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
+  for(Int_t it=0; it<Jettracklist->GetSize(); ++it){
     
-    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(Jettracklist->At(it));
     if(!trackVP)continue;
     
-    AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
+    AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(Jettracklist->At(it));
     if(!aodtrack) continue;
     
     TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
@@ -7418,7 +7423,7 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, co
   //Int_t nChargedTracks = fTracksRecCuts->GetEntries(); //number of all charged tracks in event
   
   //###############################
-  jettracklist->Clear();
+  Jettracklist->Clear();
   
   
   

@@ -242,17 +242,31 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
+AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, JetAcceptanceType accType,
+    AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
+{
+  // Add particle container
+  // will be called in AddTask macro
+
+  if (partCont == 0) partCont = GetParticleContainer(0);
+  if (clusCont == 0) clusCont = GetClusterContainer(0);
+
+  AliJetContainer *cont = new AliJetContainer(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag);
+  cont->SetJetAcceptanceType(accType);
+  fJetCollArray.Add(cont);
+
+  return cont;
+}
+
+//________________________________________________________________________
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType, Float_t jetRadius) {
 
   // Add particle container
   // will be called in AddTask macro
 
-  TString tmp = TString(n);
-  if(tmp.IsNull()) return 0;
+  if (TString(n).IsNull()) return 0;
 
-  AliJetContainer *cont = 0x0;
-  cont = new AliJetContainer();
-  cont->SetArrayName(n);
+  AliJetContainer *cont = new AliJetContainer(n);
   cont->SetJetRadius(jetRadius);
   cont->SetJetAcceptanceType(accType);
   fJetCollArray.Add(cont);
@@ -266,44 +280,38 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString
   // Add particle container
   // will be called in AddTask macro
 
-  TString tmp = TString(n);
-  if(tmp.IsNull()) return 0;
+  if(TString(n).IsNull()) return 0;
 
-  AliJetContainer *cont = 0x0;
-  cont = new AliJetContainer();
-  cont->SetArrayName(n);
-  cont->SetJetRadius(jetRadius);
+  AliJetContainer::JetAcceptanceType acc = AliJetContainer::kUser;
 
   defaultCutType.ToUpper();
 
   if (defaultCutType.IsNull() || defaultCutType.EqualTo("USER")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kUser);
+    acc = AliJetContainer::kUser;
   }
   else if(defaultCutType.EqualTo("TPC")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kTPC);
+    acc = AliJetContainer::kTPC;
   }
   else if(defaultCutType.EqualTo("TPCFID")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+    acc = AliJetContainer::kTPCfid;
   }
   else if(defaultCutType.EqualTo("EMCAL")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
+    acc = AliJetContainer::kEMCAL;
   }
   else if(defaultCutType.EqualTo("EMCALFID")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kEMCALfid);
+    acc = AliJetContainer::kEMCALfid;
   }
   else if(defaultCutType.EqualTo("DCAL")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kDCAL);
+    acc = AliJetContainer::kDCAL;
   }
   else if(defaultCutType.EqualTo("DCALFID")) {
-    cont->SetJetAcceptanceType(AliJetContainer::kDCALfid);
+    acc = AliJetContainer::kDCALfid;
   }
   else {
     AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),defaultCutType.Data()));
   }
 
-  fJetCollArray.Add(cont);
-
-  return cont;
+  return AddJetContainer(n, acc, jetRadius);
 }
 
 //________________________________________________________________________
@@ -496,7 +504,7 @@ void AliAnalysisTaskEmcalJet::SetNLeadingJets(Int_t t, Int_t c)
 void AliAnalysisTaskEmcalJet::SetJetBitMap(UInt_t m, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
-  if (cont) cont->SetJetBitMap(m);
+  if (cont) cont->SetBitMap(m);
   else AliError(Form("%s in SetJetBitMap(...): container %d not found",GetName(),c));
 }
 

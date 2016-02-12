@@ -133,7 +133,8 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF()
     idx_jetcont(0),
     fNJets_accepted ( 0 ),
     fNaccPart ( 0 ),
-    fNaccClus ( 0 )
+    fNaccClus ( 0 ),
+    fHistManager("AliAnalysisTaskEmcalJetCDF")
   {
   // Default constructor.
   fDebug = AliLog::GetGlobalDebugLevel();
@@ -228,7 +229,8 @@ AliAnalysisTaskEmcalJetCDF::AliAnalysisTaskEmcalJetCDF ( const char *name )
     idx_jetcont(0),
     fNJets_accepted ( 0 ),
     fNaccPart ( 0 ),
-    fNaccClus ( 0 )
+    fNaccClus ( 0 ),
+    fHistManager("AliAnalysisTaskEmcalJetCDF")
   {
   // Standard constructor.
   fDebug = AliLog::GetGlobalDebugLevel();
@@ -356,6 +358,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   // vector of sorted indexes of particles in jet
   std::vector< int > jet_sorted_idxvec ;
 
+  fJetsCont->ResetCurrentID();
   jet = fJetsCont->GetNextAcceptJet (0);
   while ( jet )
     {

@@ -23,7 +23,7 @@ TString AliParticleContainer::fgDefTrackCutsPeriod = "";
 
 //________________________________________________________________________
 AliParticleContainer::AliParticleContainer():
-  AliEmcalContainer("AliParticleContainer"),
+  AliEmcalContainer(),
   fParticlePtCut(0.15),
   fParticleMinEta(-0.9),
   fParticleMaxEta(0.9),
@@ -31,10 +31,8 @@ AliParticleContainer::AliParticleContainer():
   fParticleMaxPhi(10),
   fPhiOffset(0.),
   fMinDistanceTPCSectorEdge(-1),
-  fTrackBitMap(0),
-  fMCTrackBitMap(0),
-  fMinMCLabel(0),
-  fMinMCLabelAccept(-1),
+  fMinMCLabel(-1),
+  fMaxMCLabel(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1),
@@ -62,10 +60,8 @@ AliParticleContainer::AliParticleContainer(const char *name, const char *period)
   fParticleMaxPhi(10),
   fPhiOffset(0.),
   fMinDistanceTPCSectorEdge(-1),
-  fTrackBitMap(0),
-  fMCTrackBitMap(0),
-  fMinMCLabel(0),
-  fMinMCLabelAccept(-1),
+  fMinMCLabel(-1),
+  fMaxMCLabel(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1),
@@ -425,25 +421,19 @@ Bool_t AliParticleContainer::AcceptParticle(Int_t i)
     return kFALSE;
   }
 
-  if (TMath::Abs(vp->GetLabel()) < fMinMCLabelAccept) {
-    AliDebug(2,"Particle not accepted because label too small.");
-    fRejectionReason |= kMinMCLabelAccept;
+  if (vp->TestBits(fBitMap) != (Int_t)fBitMap) {
+    fRejectionReason |= kBitMapCut;
     return kFALSE;
   }
 
-  if (TMath::Abs(vp->GetLabel()) > fMinMCLabel) {
-    if(vp->TestBits(fMCTrackBitMap) != (Int_t)fMCTrackBitMap) {
-      AliDebug(2,"MC particle not accepted because of MC bit map.");
-      fRejectionReason |= kBitMapCut;
-      return kFALSE;
-    }
+  if (fMinMCLabel >= 0 && TMath::Abs(vp->GetLabel()) > fMinMCLabel) {
+    fRejectionReason |= kMCLabelCut;
+    return kFALSE;
   }
-  else {
-    if(vp->TestBits(fTrackBitMap) != (Int_t)fTrackBitMap) {
-      AliDebug(2,"Track not accepted because of bit map.");
-      fRejectionReason |= kBitMapCut;
-      return kFALSE;
-    }
+
+  if (fMaxMCLabel >= 0 && TMath::Abs(vp->GetLabel()) < fMaxMCLabel) {
+    fRejectionReason |= kMCLabelCut;
+    return kFALSE;
   }
 
   if ((vp->GetFlag() & fMCFlag) != fMCFlag) {
@@ -541,4 +531,22 @@ AliVCuts* AliParticleContainer::GetTrackCuts(Int_t icut)
     return static_cast<AliVCuts *>(fListOfCuts->At(icut));
   }
   return NULL;
+}
+
+//________________________________________________________________________
+const char* AliParticleContainer::GetTitle() const
+{
+  static TString trackString;
+
+  if (GetParticlePtCut() == 0) {
+    trackString = TString::Format("%s_pT0000", GetArrayName().Data());
+  }
+  else if (GetParticlePtCut() < 1.0) {
+    trackString = TString::Format("%s_pT0%3.0f", GetArrayName().Data(), GetParticlePtCut()*1000.0);
+  }
+  else {
+    trackString = TString::Format("%s_pT%4.0f", GetArrayName().Data(), GetParticlePtCut()*1000.0);
+  }
+
+  return trackString.Data();
 }

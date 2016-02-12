@@ -21,6 +21,30 @@ class AliLocalRhoParameter;
 class AliJetContainer : public AliEmcalContainer {
  public:
  
+  enum EJetType_t {
+    kFullJet,
+    kChargedJet,
+    kNeutralJet
+  };
+
+  enum EJetAlgo_t {
+    kt_algorithm            = 0,
+    cambridge_algorithm     = 1,
+    antikt_algorithm        = 2,
+    undefined_jet_algorithm = 999
+  };
+
+  enum ERecoScheme_t {
+    E_scheme        = 0,
+    pt_scheme       = 1,
+    pt2_scheme      = 2,
+    Et_scheme       = 3,
+    Et2_scheme      = 4,
+    BIpt_scheme     = 5,
+    BIpt2_scheme    = 6,
+    external_scheme = 99
+  };
+
   enum JetAcceptanceType {
     kTPC       ,     // TPC acceptance
     kTPCfid    ,     // TPC fiducial acceptance
@@ -31,9 +55,9 @@ class AliJetContainer : public AliEmcalContainer {
     kUser            // User defined acceptance
   };
 
-
   AliJetContainer();
   AliJetContainer(const char *name); 
+  AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
   virtual ~AliJetContainer() {;}
   
   void LoadRho(AliVEvent *event);
@@ -66,7 +90,6 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetMinNConstituents(Int_t n)                         { fMinNConstituents = n              ; }
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
-  void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
   void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
   void                        SetTagStatus(Int_t i)                                { fTagStatus      = i                ; }
 
@@ -122,7 +145,10 @@ class AliJetContainer : public AliEmcalContainer {
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
-  Bool_t SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4) const;
+
+  const char*                 GetTitle() const;
+
+  static TString              GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
 
  protected:
   void SetEMCALGeometry();
@@ -153,7 +179,6 @@ class AliJetContainer : public AliEmcalContainer {
   Int_t                       fLeadingHadronType;    //  0 = charged, 1 = neutral, 2 = both
   Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
   Int_t                       fMinNConstituents;     //  minimum number of constituents in jet
-  UInt_t                      fJetBitMap;            //  bit map of accepted jets
   UInt_t                      fJetTrigger;           //  jet trigger
   Int_t                       fTagStatus;            //  jet tag status
   AliParticleContainer       *fParticleContainer;    //  particle container (jet constituents)

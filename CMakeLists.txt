@@ -6,14 +6,11 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
 project(AliPhysics CXX C)
 
-### CMP0025   Compiler id for Apple Clang is now AppleClang.
-### CMP0042   MACOSX_RPATH is enabled by default.
-foreach(p
-  CMP0025 # CMake 3.0
-  CMP0042 # CMake 3.0
-  )
+foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
+          CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
+          CMP0042) # MACOSX_RPATH is enabled by default (v3.0)
   if(POLICY ${p})
-  cmake_policy(SET ${p} NEW)
+    cmake_policy(SET ${p} NEW)
   endif()
 endforeach()
 

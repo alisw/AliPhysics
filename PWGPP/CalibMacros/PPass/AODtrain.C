@@ -54,10 +54,10 @@ void AODtrain(Int_t merge=0, const char* cdbPath="/cvmfs/alice-ocdb.cern.ch/cali
 // collision system: 0-pp, 1-pbpb
   
   TString cdbPathTString=cdbPath;
-  if (cdbPathTString.BeginsWith("alien://")) doCDBconnect=1;
-  else doCDBconnect=0;
+  Bool_t initAlienConnection=kFALSE;
+  if (cdbPathTString.BeginsWith("alien://")) initAlienConnection=kTRUE;
 
-  if (merge || doCDBconnect) {
+  if (initAlienConnection || merge) {
     TGrid::Connect("alien://");
     if (!gGrid || !gGrid->IsConnected()) {
       ::Error("QAtrain", "No grid connection");

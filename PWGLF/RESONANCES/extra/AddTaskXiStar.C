@@ -3,7 +3,7 @@ AliXiStar *AddTaskXiStar(bool MCcase=kFALSE, bool AODcase=kFALSE, int CutList=0)
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskBF", "No analysis manager to connect to.");
+    ::Error("AddTaskXiStar", "No analysis manager to connect to.");
     return NULL;
   }
   

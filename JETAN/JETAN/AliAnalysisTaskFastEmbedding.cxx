@@ -66,6 +66,7 @@ ClassImp(AliAnalysisTaskFastEmbedding)
 AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
 : AliAnalysisTaskSE()
   ,fESD(0)
+  ,fQAMode(0)
   ,fAODout(0)
   ,fAODevent(0)
   ,fAODeventJets(0)
@@ -182,6 +183,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
 AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 : AliAnalysisTaskSE(name)
 ,fESD(0)
+,fQAMode(0)
 ,fAODout(0)
 ,fAODevent(0)
 ,fAODeventJets(0)
@@ -298,6 +300,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTaskFastEmbedding &copy)
 : AliAnalysisTaskSE()
 ,fESD(copy.fESD)
+,fQAMode(copy.fQAMode)
 ,fAODout(copy.fAODout)
 ,fAODevent(copy.fAODevent)
 ,fAODeventJets(copy.fAODeventJets)
@@ -419,6 +422,7 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
    if(this!=&o){
       AliAnalysisTaskSE::operator=(o);
       fESD               = o.fESD;
+      fQAMode            = o.fQAMode;
       fAODout            = o.fAODout;
       fAODevent          = o.fAODevent;
       fAODeventJets      = o.fAODeventJets;
@@ -753,9 +757,12 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    
    fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 250, -0.5, 249.5);
    fh2AODevent = new TH2I("fh2AODevent","selected events;file;event", 500,-0.5,499.5,500,-0.5,499.5);
+  
+   if(fQAMode){ 
    fHistList->Add(fh1AODfile);
    fHistList->Add(fh2AODevent);
-
+   }
+   
    // =========== Switch on Sumw2 for all histos ===========
    for (Int_t i=0; i<fHistList->GetEntries(); ++i) {
       TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
@@ -1204,7 +1211,8 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
                   PostData(1, fHistList);
                   return;
                }
-               fh1AODfile->Fill(fFileId);
+	       if(fQAMode){
+               fh1AODfile->Fill(fFileId);}
                if(fAODEntries!=fNevents){
                   AliError("File with list of AODs and file with nb. of entries inconsistent");
                   PostData(1, fHistList);
@@ -1291,7 +1299,9 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
       AliDebug(AliLog::kDebug,Form("Use entry %d from extra AOD.", fAODEntry));
 
       fh2PtHardEvtSel->Fill(fPtHardBin,fPtHard);
+      if(fQAMode){
       fh2AODevent->Fill(fFileId,fAODEntry);
+      }
 
       TClonesArray *mcpartIN  = (TClonesArray*)(fAODevent->FindListObject("mcparticles"));
       TClonesArray *mcpartOUT = 0x0;
@@ -1566,7 +1576,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
                   continue;
                } 
 
-               if(tmpPart->IsPhysicalPrimary() && tmpPart->Charge()!=0. && tmpPart->Charge()!=-99.  && tmpPart->Pt()>0.){
+               if(tmpPart->IsPhysicalPrimary() && tmpPart->Charge()!=-99.  && tmpPart->Pt()>0.){
 		 new((*mcpartOUT)[nAODmcpart++]) AliAODMCParticle(*tmpPart);
 		 dummy = (*mcpartOUT)[nAODmcpart-1];
 

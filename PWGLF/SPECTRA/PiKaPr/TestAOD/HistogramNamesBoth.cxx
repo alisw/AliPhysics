@@ -89,7 +89,10 @@ const char * AliSpectraNameSpaceBoth::kHistNameBoth[kNHist] =
      "hHistNSigKaonPtTPCTOF",
      "hHistNSigProtonPtTPCTOF",
      "hHistGenMulvsRawMul",
-     "hHistDoubleCounts"	
+     "hHistDoubleCounts",
+     "hHistNSigPionPtTOFmissmatch",
+     "hHistNSigKaonPtTOFmissmatch",
+     "hHistNSigProtonPtTOFTOFmissmatch"		
    };
 
 #endif // HISTOGRAMNAMESBOTH_CXX

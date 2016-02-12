@@ -100,5 +100,6 @@
 #pragma link C++ class  AliAnalysisTaskHFEMulti+;
 #pragma link C++ class  AliHFEhadronicbackground+;
 #pragma link C++ class  AliHFEUnfolding+;
+#pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
 
 #endif

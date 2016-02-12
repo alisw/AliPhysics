@@ -1026,6 +1026,14 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   AliAODTrack *trackpos = (AliAODTrack *)tAODv0->GetDaughter(0);
   AliAODTrack *trackneg = (AliAODTrack *)tAODv0->GetDaughter(1);
 
+  // ensure that trackpos and trackneg are pointing to the correct children
+  // This confusion seems to arise when fOnFlyStatusV0 = true
+  if(trackpos->Charge() < 0 && trackneg->Charge() > 0)
+  {
+    AliAODTrack *tmp = trackpos;
+    trackpos = trackneg;
+    trackneg = tmp;
+  }
 
   if (trackpos && trackneg) {
     tFemtoV0->SetEtaPos(trackpos->Eta());

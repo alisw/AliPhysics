@@ -120,7 +120,7 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, dou
 		return 0 ;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH1* h = new TH1D(hname.Data(), title, nbins, xmin, xmax);
@@ -147,7 +147,7 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, con
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH1* h = new TH1D(hname.Data(), title, nbins, xbins);
@@ -173,7 +173,7 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD 
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH1* h = new TH1D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray());
@@ -204,7 +204,7 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, do
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH2* h = new TH2D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
@@ -233,7 +233,7 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, co
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH2* h = new TH2D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins);
@@ -260,7 +260,7 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD 
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH2* h = new TH2D(hname.Data(), title, xbins.GetSize() - 1, xbins.GetArray(), ybins.GetSize() - 1, ybins.GetArray());
@@ -292,7 +292,7 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, do
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH3* h = new TH3D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
@@ -323,7 +323,7 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, co
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
   }
 	TH3* h = new TH3D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins, nbinsz, zbins);
@@ -351,7 +351,7 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD&
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TH3* h = new TH3D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), ybins.GetSize()-1, ybins.GetArray(), zbins.GetSize()-1, zbins.GetArray());
@@ -380,7 +380,7 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 		return 0;
 	}
 	if(parent->FindObject(hname.Data())){
-		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	THnSparse* h = new THnSparseD(hname.Data(), title, ndim, nbins, min, max);
@@ -407,7 +407,7 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 		return 0;
 	}
 	if(parent->FindObject(hname)){
-		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s does not exist", hname.Data(), dirname.Data());
+		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
 	TArrayD xmin(ndim), xmax(ndim);

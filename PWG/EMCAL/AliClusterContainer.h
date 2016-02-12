@@ -35,17 +35,22 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetClusECut(Double_t cut)                    { fClusECut        = cut ; }
   void                        SetClusPtCut(Double_t cut)                   { fClusPtCut       = cut ; }
   void                        SetClusTimeCut(Double_t min, Double_t max)   { fClusTimeCutLow  = min ; fClusTimeCutUp = max ; }
-  void                        SetClusterBitMap(UInt_t m)                   { fClusterBitMap   = m   ; }
-  void                        SetMCClusterBitMap(UInt_t m)                 { fMCClusterBitMap = m   ; }
   void                        SetMinMCLabel(Int_t s)                       { fMinMCLabel      = s   ; }
+  void                        SetMaxMCLabel(Int_t s)                       { fMaxMCLabel      = s   ; }
+  void                        SetMCLabelRange(Int_t min, Int_t max)        { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
   void                        SetExoticCut(Bool_t e)                       { fExoticCut       = e   ; }
 
-  void                        SetClusUserDefEnergyCut(VCluUserDefEnergy_t t, Double_t cut) { fUserDefEnergyCut[t] = cut                            ; }
+  void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
+  Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
+
   void                        SetClusNonLinCorrEnergyCut(Double_t cut)                     { SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr, cut); }
   void                        SetClusHadCorrEnergyCut(Double_t cut)                        { SetClusUserDefEnergyCut(AliVCluster::kHadCorr, cut)   ; }
   void                        SetDefaultClusterEnergy(Int_t d)                             { fDefaultClusterEnergy = d                             ; }
 
   Int_t                       GetDefaultClusterEnergy() const                              { return fDefaultClusterEnergy                          ; }
+  Double_t                    GetClusPtCut() const                                         { return fClusPtCut                                     ; }
+
+  const char*                 GetTitle() const;
 
  protected:
   
@@ -54,9 +59,8 @@ class AliClusterContainer : public AliEmcalContainer {
   
   Double_t         fClusTimeCutLow;             // low time cut for clusters
   Double_t         fClusTimeCutUp;              // up time cut for clusters
-  UInt_t           fClusterBitMap;              // bit map of accepted clusters (non MC)
-  UInt_t           fMCClusterBitMap;            // bit map of accepted MC clusters
-  Int_t            fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
+  Int_t            fMinMCLabel;                 // minimum MC label
+  Int_t            fMaxMCLabel;                 // maximum MC label
 
   Bool_t           fExoticCut;                  // reject clusters marked as "exotic"
   Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; // cut on the energy of the cluster after higher level corrections (see AliVCluster.h)

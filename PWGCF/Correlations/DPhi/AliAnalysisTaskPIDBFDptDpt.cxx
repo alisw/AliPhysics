@@ -982,8 +982,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "m4"; _m4      = createHisto1D(name,name,_nBins_M4, _min_M4, _max_M4, _title_m4, _title_counts);
     name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
     name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
-    name = "zV"; _vertexZ = createHisto1D(name,name,40, -10, 10, "z-Vertex (cm)", _title_counts);
-    
+    name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
+       
     name = "etadis_POI_AliHelperPID";          _etadis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
     name = "ydis_POI_AliHelperPID";            _ydis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
     name = "etadis_without_PID";                _etadis_without_PID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
@@ -1269,8 +1269,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     vertexY = vertex->GetY();
                     vertexZ = vertex->GetZ();
                     
-                    if(TMath::Abs(vertexZ) > 10)
-		    //if(TMath::Abs(vertexZ) > 6)
+                    if( TMath::Abs(vertexZ) > _max_vertexZ )		      
                     {
                         return;
                     } // Z-Vertex Cut
