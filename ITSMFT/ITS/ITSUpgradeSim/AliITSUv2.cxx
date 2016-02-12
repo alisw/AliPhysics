@@ -419,13 +419,26 @@ void AliITSUv2::CreateGeometry() {
       }
     }
     fUpGeom[j]->CreateLayer(dest);
+	fUpGeom[j]->CreateBarrelLayer(dest);	// #pnamwong
+    
   }
-  CreateSuppCyl(kTRUE,wrapVols[0]);
-  CreateSuppCyl(kFALSE,wrapVols[2]);
+  // CreateSuppCyl(kTRUE,wrapVols[0]);		// Disabled by pnamwong
+  // CreateSuppCyl(kFALSE,wrapVols[2]);		// Disabled by pnamwong
 
   delete[] wrapVols; // delete pointer only, not the volumes
   //
   ((TGeoVolumeAssembly*)vITSV)->GetShape()->ComputeBBox(); // RS enforce recomputing BBox
+
+  
+  //-------------------CREATE Wrap Volume for Barrel--------------------
+  // #pnamwong
+	//TGeoVolume* barrVol = new TGeoVolumeAssembly(AliITSUGeomTGeo::GetITSWrapVolPattern() + TString("Barrel"));
+	//AliITSUv2Layer::CreateBarrel(barrVol);
+	//vALIC->AddNode(barrVol, 1, 0);
+
+	vALIC->AddNode(new TGeoVolumeAssembly("ITSVBarrelV3"), 1, 0);
+
+  //--------------------------------------------------------------------
 
 }
 
@@ -626,6 +639,7 @@ void AliITSUv2::CreateMaterials() {
   AliMixture(21,"INOX304$",aInox304,zInox304,dInox304,4,wInox304);
   AliMedium(21, "INOX304$",21,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
+	// need for ITS IB DCDC units. 
 }
 
 //______________________________________________________________________

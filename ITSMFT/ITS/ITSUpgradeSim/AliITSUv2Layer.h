@@ -72,15 +72,19 @@ class AliITSUv2Layer : public TObject {
     void      SetStaveModel(AliITSUv2::AliITSUModel_t model) {fStaveModel=model;}
     virtual void CreateLayer(TGeoVolume *moth);
 
+    virtual void CreateBarrelLayer(TGeoVolume* moth);	// #pnamwong
+	static void CreateBarrel(TGeoVolume* moth);		// #pnamwong
+
     // Define Trig functions for use with degrees (standerd TGeo angles).
     // Sine function
     Double_t SinD(Double_t deg)const{return TMath::Sin(deg*TMath::DegToRad());}
     // Cosine function
     Double_t CosD(Double_t deg)const{return TMath::Cos(deg*TMath::DegToRad());}
     // Tangent function
-    Double_t TanD(Double_t deg)const{return TMath::Tan(deg*TMath::DegToRad());}
+    Double_t TanD(Double_t deg)const{return TMath::Tan(deg*TMath::DegToRad());}	
+	
+ protected:
 
-  protected:
     // Units, Convert from k?? to cm,degree,GeV,seconds,
     static const Double_t fgkmicron; // Convert micron to TGeom's cm.
     static const Double_t fgkmm; // Convert mm to TGeom's cm.
@@ -132,7 +136,81 @@ class AliITSUv2Layer : public TObject {
 				     Double_t dx=0, Double_t dy=0,
 				     Double_t dz=0) const;
 
+    // ----------- Barrel -------------
+    // #pnamwong
+    // CreateBarrelLayer()
+    TGeoVolume* CreateInnerBEWheelA2(const Color_t, const TGeoMedium*);
 
+    TGeoVolume* CreateInnerBEWheelA3(const Color_t, const TGeoMedium*);
+    TGeoVolume* CreateInnerBEWheelC3(const Color_t, const TGeoMedium*);
+
+   	TGeoVolume* CreateInnerBEWheelC(const TGeoMedium*);
+	TGeoVolume* CreateOuterBEWheelC(const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateOuterBEWheelA(const TGeoManager *mgr=gGeoManager);	
+	TGeoVolume* CreateInnerBHandleA(const char *name, const Double_t pr, Double_t cr, const TGeoMedium*);
+
+	TGeoVolume* Create_ALC_0334_xxA(const TGeoMedium*);			// Inner Barrel End Wheel Handle (in each)
+	TGeoVolume* Create_ALC_0334_xxC(const TGeoMedium*);			// Inner Barrel End Wheel Handle (in each)
+
+	TGeoVolume* Create_ALC_0336_xxA_ins(const TGeoMedium*);					// Inner Barrel End Wheel Plate inside the warp volume (in half stave)
+	TGeoVolume* Create_ALC_0336_xxA_ous(const Int_t, const TGeoMedium*);	// Inner Barrel End Wheel Plate outside the warp volume (in half stave)
+	TGeoVolume* Create_ALC_0337_xxC_ins(const TGeoMedium*);					// Inner Barrel End Wheel Plate inside the warp volume (in half stave)
+	TGeoVolume* Create_ALC_0337_xxC_ous(const Int_t, const TGeoMedium*);	// Inner Barrel End Wheel Plate inside the warp volume (in half stave)
+
+	TGeoVolume* CreateInnerDCDC3(const TGeoMedium*);
+	TGeoVolume* CreateInnerDCCNT3(const TGeoMedium*);
+	
+	TGeoVolume* CreateInnerBHandleC(const TGeoMedium*);
+
+    TGeoVolume* CreateInnerBEWheelA0(const TGeoMedium*);
+    TGeoVolume* CreateInnerBEWheelA1(const TGeoMedium*);
+    
+    TGeoVolume* CreateSamtecCable(const TGeoMedium*);
+    
+    // CreateBarrel()
+    static TGeoVolume* CreateInnerBSupporterA(const TGeoManager *mgr=gGeoManager);
+	static TGeoVolume* CreateInnerBSupporterC(const TGeoManager *mgr=gGeoManager);
+    
+    static TGeoVolume* CreateInnerBCShell(const TGeoManager *mgr=gGeoManager);
+	static TGeoVolume* CreateOuterBCShell(const TGeoManager *mgr=gGeoManager);	
+
+	static TGeoVolume* CreateInnerBServiceB(const TGeoManager *mgr=gGeoManager);
+	static TGeoVolume* CreateInnerBServiceB2(const TGeoManager *mgr=gGeoManager);
+	static TGeoVolume* CreateOuterBServiceB(const TGeoManager *mgr=gGeoManager);
+	
+	// Create DC Powersupply()
+	TGeoVolume* CreateDCSet(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+	
+	TGeoVolume* CreateDCUnit(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateDCBase(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateRoundP(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+
+	TGeoVolume* CreateDCPSLayer(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+
+	TGeoVolume* CreateDCPS1(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateDCBox1(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+
+	TGeoVolume* CreateDCPS2(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+	
+	TGeoVolume* CreateDCPipe(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateDCPipes(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+
+	TGeoVolume* CreateFPGAConnector(const char *nid = "", const TGeoManager *mgr=gGeoManager);
+
+
+    // Basis Geometry
+    TGeoVolume* CreateSTube45(TString, Double_t, Double_t, Double_t, Double_t, Double_t, 
+		Bool_t, Int_t color, const TGeoMedium*);
+	TGeoVolume* CreateTube(TString, Double_t, Double_t, Double_t,
+		Bool_t, Int_t color, Double_t, const TGeoMedium*);
+	TGeoVolume* CreateLTube(TString, Double_t, Double_t, Double_t, Double_t, Double_t, 
+		Bool_t, Bool_t, Int_t color, const TGeoMedium*);
+	
+    // Outer Barrel Detector Barrel
+	//vector<TString> CreateDBOuterHoles(TString, Double_t, Double_t, Double_t, Double_t, Double_t);
+	//vector<TString> CreateDBOuterHandles(TString, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t);
+
+    // --------------------------------	
     Int_t     fLayerNumber; // Current layer number
     Double_t  fPhi0;        // lab phi of 1st stave, in degrees!!!
     Double_t  fLayRadius;   // Inner radius of this layer
@@ -151,6 +229,14 @@ class AliITSUv2Layer : public TObject {
     Int_t     fBuildLevel;  // Used for material studies
 
     AliITSUv2::AliITSUModel_t fStaveModel; // The stave model
+    
+    // ---------------------------------
+    // #pnamwong
+    Int_t fNHandleCreated;  // Number of handles which are created in hole geometry.
+    Int_t fN_DCDC_Created;  // Number of DCDCset which are created in hole geometry.	
+    Int_t fN_DCCNT_Created; // Number of DC Connector which are created in hole geometry.
+    Int_t fN_SamtecCable_Created;
+    // ---------------------------------    
 
     // Parameters for the Upgrade geometry
 
@@ -303,6 +389,54 @@ class AliITSUv2Layer : public TObject {
     static const Double_t fgkOBSFrameULegHeight2;// OB SF U-Leg height
     static const Double_t fgkOBSFrameULegThick;  // OB SF U-Leg thickness
     static const Double_t fgkOBSFrameULegXPos;   // OB SF U-Leg X position
+
+	// Barrel Geomatrix Parameters 
+    // #pnamwong
+//	static const Double_t AliITSUv2Layer::wrpZSpan[3];
+	
+	// Inner Barrel
+	static const Double_t fgkIBStaveLength;
+	static Double_t fgkIBConnOffset;
+	static const Double_t fgkIBConnOffsetExt;
+
+	// Inner Barrel - End Wheel 
+	//static const TGeoMedium *fkIBEWheelMedium;
+	static const Double_t fkALC_0334_RotateAngle[3];
+	static const Double_t fkALC_0334_RotateOffset[3];
+	
+	static const Double_t fkALC_0334_PlateRadius[3];
+	static const Double_t fkALC_0334_PlateThick;
+
+	static const Double_t fkALC_0334_ContactDX[3];
+	static const Double_t fkALC_0334_ContactDY[3];
+
+	static const Double_t fkALC_0334_HoleDia;
+	static const Double_t fkALC_0334_HoleFromEdge;		// center-of-hole to inside-edge
+	static const Double_t fkALC_0334_HoleLength;		// approximate for hole object
+
+	static const Double_t fkALC_0334_HndLength;
+	static const Double_t fkALC_0334_HndWidth;
+	static const Double_t fkALC_0334_HndThick;
+	
+	static const Double_t fkThermalConnOffsetZ[3];
+	static const Double_t fkThermalConnOffsetY[3];
+	
+	static const Double_t fkDCDCOffsetZ[3];
+	static const Double_t fkDCDCOffsetY[3];
+	static const Double_t fkDCDCRotateBeta[3];
+
+//---------------------------------------------------
+	static const Double_t fgkInnerBarrelOffsetX;
+	static const Double_t fgkInnerBarrelOffsetY;
+	static const Double_t fgkInnerBarrelOffsetZ;
+
+	static const Double_t fgkOuterBarrelOffsetX;
+	static const Double_t fgkOuterBarrelOffsetY;
+	static const Double_t fgkOuterBarrelOffsetZ;
+	
+	static const Double_t fgkBarrelRotateAlpha;
+	static const Double_t fgkBarrelRotateBetha;
+	static const Double_t fgkBarrelRotateGamma;
 
 
   ClassDef(AliITSUv2Layer,0) // ITS Upgrade v2 geometry
