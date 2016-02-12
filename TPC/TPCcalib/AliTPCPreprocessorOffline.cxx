@@ -1599,7 +1599,6 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
   fAlignTree->SetAlias("isVertex","refX<10");
   // 
   Int_t  npointsMax=30000000;
-  TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;
   TVectorD param;

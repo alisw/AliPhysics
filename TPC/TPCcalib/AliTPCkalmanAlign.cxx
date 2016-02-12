@@ -852,7 +852,6 @@ void AliTPCkalmanAlign::FitCE(){
   Int_t entries = chain->Draw("1",cutAll,"goff");
   if (entries<200000) return;  // no calibration available - pulser or CE or noise
 
-  TStatToolkit toolkit;
   Double_t chi2=0;
   Int_t    npoints=0;
   TVectorD param;
