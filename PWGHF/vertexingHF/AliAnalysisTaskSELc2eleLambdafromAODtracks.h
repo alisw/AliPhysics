@@ -312,6 +312,11 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoLambdaMassvsPt;     //!<! Lambda mass vs pt histogram
   TH2F* fHistoLambdaMassvsPtMCS;     //!<! Lambda mass vs pt histogram
   TH2F* fHistoLambdaMassvsPtMCGen;     //!<! Lambda mass vs pt histogram
+  TH2F* fHistoLambdaPtvsEta;     //!<! Lambda mass vs pt histogram
+  TH2F* fHistoLambdaPtvsEtaMCS;     //!<! Lambda mass vs pt histogram
+  TH2F* fHistoLambdaPtvsEtaMCGen;     //!<! Lambda mass vs pt histogram
+  THnSparse* fHistoLambdaArmenteros;     //!<! Lambda armenteros podolanski plot
+  THnSparse* fHistoLambdaArmenterosMCS;     //!<! Lambda armenteros podolanski plot
   TH2F* fHistoLambdaPtvsDl;     //!<! Lambda pt vs decay length
   TH2F* fHistoLambdaPtvsDlSide;     //!<! Lambda pt vs decay length
   TH2F* fHistoLambdaPtvsDlMCS;     //!<! Lambda pt vs decay length
@@ -579,7 +584,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,22); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,23); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
