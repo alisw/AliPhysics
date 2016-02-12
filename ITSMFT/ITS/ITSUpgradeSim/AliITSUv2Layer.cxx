@@ -5215,7 +5215,7 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 			new TGeoCombiTrans(fgkOuterBarrelOffsetX, fgkOuterBarrelOffsetY, fgkOuterBarrelOffsetZ, 
 			new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 	  */
-		if (fLayerNumber==3)
+		if (fLayerNumber==6)
 			layVol->AddNode(CreateOuterBCShell(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 
 	}

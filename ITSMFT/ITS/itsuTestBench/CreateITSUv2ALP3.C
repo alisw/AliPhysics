@@ -84,7 +84,7 @@ void CreateITSUv2ALP3()
   const int kNWrapVol = 3;
   const double wrpRMin[kNWrapVol]  = { 2.1, 15.0, 32.0};
   const double wrpRMax[kNWrapVol]  = {14.0, 30.0, 46.0};
-  const double wrpZSpan[kNWrapVol] = {200., 200., 200.};
+  const double wrpZSpan[kNWrapVol] = {70., 95., 200.};
   //
   ITS->SetNWrapVolumes(kNWrapVol); // define wrapper volumes for layers
   for (int iw=0;iw<kNWrapVol;iw++) ITS->DefineWrapVolume(iw,wrpRMin[iw],wrpRMax[iw],wrpZSpan[iw]);
