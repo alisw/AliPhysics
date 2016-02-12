@@ -5102,8 +5102,8 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 	const Double_t kDCPSOffsetZ0 =  347.5*fgkmm/2 - (400.0-347.5)*fgkmm/2;
 	const Double_t kDCPSOffsetZ[7] = {49.3*fgkmm, 45.23*fgkmm, 39.67*fgkmm, 0, 0, 0, 0};
 	const Color_t kEWheelConeColor[7] = {kMagenta, kBlue, kYellow, 0, 0, 0, 0};
-	
-	TGeoVolume *layVol = new TGeoVolumeAssembly(TString("Barrel")+TString(fLayerNumber));
+
+	TGeoVolume *layVol = new TGeoVolumeAssembly(TString("Barrel") += fLayerNumber);
 	
   if (fLayerNumber < fgkNumberOfInnerLayers)
 	{
@@ -5155,6 +5155,7 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 			//layVol->AddNode(CreateInnerBServiceB2(), 1,
 				//new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ +kHandleOffsetASide, 
 				//new TGeoRotation("", fgkBarrelRotateAlpha + 180.0, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+			/*
 			TGeoVolume *volzTube;		
 			
 			// create XY axis at interaction point.
@@ -5175,7 +5176,7 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 			volzTube->SetFillColor(3);
 			volzTube->SetLineColor(3);
 			moth->AddNode(volzTube,0, new TGeoCombiTrans(0, 0, -fgkIBConnOffset, new TGeoRotation("", 0, 0, 0)));
-
+			*/
 			//volzTube= new TGeoVolume(TString("IP+")+=(fgkIBConnOffset*10), new TGeoTube(0, 50*fgkmm, 0.1*fgkmm), 0);
 			//volzTube->SetFillColor(4);
 			//volzTube->SetLineColor(4);
@@ -5205,6 +5206,7 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 	}
 	else
 	{
+	  /*
 		layVol->AddNode(CreateOuterBEWheelA(), 1, 
 			new TGeoCombiTrans(fgkOuterBarrelOffsetX, fgkOuterBarrelOffsetY, fgkOuterBarrelOffsetZ, 
 			new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
@@ -5212,6 +5214,7 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 		layVol->AddNode(CreateOuterBEWheelC(), 1, 
 			new TGeoCombiTrans(fgkOuterBarrelOffsetX, fgkOuterBarrelOffsetY, fgkOuterBarrelOffsetZ, 
 			new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	  */
 		if (fLayerNumber==3)
 			layVol->AddNode(CreateOuterBCShell(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 

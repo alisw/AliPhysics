@@ -436,7 +436,7 @@ void AliITSUv2::CreateGeometry() {
 	//AliITSUv2Layer::CreateBarrel(barrVol);
 	//vALIC->AddNode(barrVol, 1, 0);
 
-	vALIC->AddNode(new TGeoVolumeAssembly("ITSVBarrelV3"), 1, 0);
+	//vALIC->AddNode(new TGeoVolumeAssembly("ITSVBarrelV3"), 1, 0);
 
   //--------------------------------------------------------------------
 
