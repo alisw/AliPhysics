@@ -937,7 +937,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           Int_t label2 = track2->GetLabel();
           AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label2)));
           if(!p2){ Printf("no MCtrack: %d", TMath::Abs(label2)); continue; }
-          if(p2->PdgCode() != 11) continue;
+          if(p2->PdgCode() != -11) continue;
           if(!(mcEvent->GetTrack(p2->GetMother()))) continue;
           if(!AliDielectronMC::Instance()->IsMCTruth(TMath::Abs(label2), (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
           if(mcEvent->GetTrack(p2->GetMother())->PdgCode() == 22) continue;

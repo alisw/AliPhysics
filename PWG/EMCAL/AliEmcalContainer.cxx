@@ -8,6 +8,7 @@
 #include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliNamedArrayI.h"
+#include "AliVParticle.h"
 
 #include "AliEmcalContainer.h"
 
@@ -15,10 +16,12 @@ ClassImp(AliEmcalContainer)
 
 //________________________________________________________________________
 AliEmcalContainer::AliEmcalContainer():
-  TNamed("AliEmcalContainer","AliEmcalContainer"),
+  TObject(),
+  fName(),
   fClArrayName(),
   fClassName(),
   fIsParticleLevel(kFALSE),
+  fBitMap(0),
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
@@ -34,10 +37,12 @@ AliEmcalContainer::AliEmcalContainer():
 
 //________________________________________________________________________
 AliEmcalContainer::AliEmcalContainer(const char *name):
-  TNamed(name,name),
-  fClArrayName(),
+  TObject(),
+  fName(name),
+  fClArrayName(name),
   fClassName(),
   fIsParticleLevel(kFALSE),
+  fBitMap(0),
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
@@ -110,4 +115,21 @@ UShort_t AliEmcalContainer::GetRejectionReasonBitPosition() const
   UShort_t p = 0;
   while (rs >>= 1) { p++; }
   return p;
+}
+
+
+//__________________________________________________________________________________________________
+Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist)
+{
+  // Helper function to calculate the distance between two jets or a jet and a particle
+  if(!part1) return kFALSE;
+  if(!part2) return kFALSE;
+  Double_t dPhi = TMath::Abs(part1->Phi() - part2->Phi());
+  Double_t dEta = TMath::Abs(part1->Eta() - part2->Eta());
+  Double_t dpT  = TMath::Abs(part1->Pt() - part2->Pt());
+  dPhi = TVector2::Phi_mpi_pi(dPhi);
+  if (dPhi > dist) return kFALSE;
+  if (dEta > dist) return kFALSE;
+  if (dpT  > dist) return kFALSE;
+  return kTRUE;
 }

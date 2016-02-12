@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFresonances)
+set(MODULE PWGLFresonances)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES)

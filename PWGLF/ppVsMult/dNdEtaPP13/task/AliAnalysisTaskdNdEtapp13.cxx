@@ -10,7 +10,7 @@
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  * 
+ * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@
 #include "TTree.h"
 #include "TRandom.h"
 #include "TH1F.h"
-#include "TH2F.h" 
+#include "TH2F.h"
 #include "TH3F.h"
 #include "THnSparse.h"
 #include "TList.h"
@@ -42,7 +42,7 @@
 #include "AliAnalysisManager.h"
 
 #include "AliMultiplicity.h"
-#include "AliESDEvent.h"  
+#include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDInputHandlerRP.h"
 #include "AliCDBPath.h"
@@ -62,7 +62,7 @@
 #include "AliCentrality.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
-#include "AliITSMultReconstructor.h" 
+#include "AliITSMultReconstructor.h"
 
 #include "AliLog.h"
 
@@ -141,50 +141,50 @@ const char*  AliAnalysisTaskdNdEtapp13::fgkPDGNames[] = {
 
 const int AliAnalysisTaskdNdEtapp13::fgkPDGCodes[] = {
   211,
-  2212, 
-  321, 
-  323, 
-  11, 
-  13, 
-  213, 
-  411, 
-  413, 
-  431, 
-  433, 
-  1114, 
-  2214, 
-  2224, 
-  3112, 
-  3222, 
-  3114, 
-  3224, 
-  4214, 
-  4224, 
-  3312, 
-  3314, 
-  4122, 
-  2112, 
-  2114, 
-  22, 
-  310, 
-  130, 
-  311, 
-  313, 
-  221, 
-  111, 
-  113, 
-  333, 
-  331, 
-  223, 
-  3122, 
-  3212, 
-  4114, 
-  3214, 
-  421, 
-  423, 
-  3322, 
-  3324, 
-  4132, 
+  2212,
+  321,
+  323,
+  11,
+  13,
+  213,
+  411,
+  413,
+  431,
+  433,
+  1114,
+  2214,
+  2224,
+  3112,
+  3222,
+  3114,
+  3224,
+  4214,
+  4224,
+  3312,
+  3314,
+  4122,
+  2112,
+  2114,
+  22,
+  310,
+  130,
+  311,
+  313,
+  221,
+  111,
+  113,
+  333,
+  331,
+  223,
+  3122,
+  3212,
+  4114,
+  3214,
+  421,
+  423,
+  3322,
+  3324,
+  4132,
   4314
   // nuclei
   // unknown
@@ -195,12 +195,12 @@ const int AliAnalysisTaskdNdEtapp13::fgkPDGCodes[] = {
 /*//Default constructor
   AliAnalysisTaskdNdEtapp13::AliAnalysisTaskdNdEtapp13(const char *name)
   : AliAnalysisTaskSE(name),
-*/  
+*/
 //________________________________________________________________________
-AliAnalysisTaskdNdEtapp13::AliAnalysisTaskdNdEtapp13(const char *name) 
-  : AliAnalysisTaskSE(name), 
+AliAnalysisTaskdNdEtapp13::AliAnalysisTaskdNdEtapp13(const char *name)
+  : AliAnalysisTaskSE(name),
     //
-    fOutput(0), 
+    fOutput(0),
     //
     fDoNormalReco(kFALSE),
     fDoInjection(kFALSE),
@@ -315,12 +315,12 @@ AliAnalysisTaskdNdEtapp13::~AliAnalysisTaskdNdEtapp13()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskdNdEtapp13::UserCreateOutputObjects() 
+void AliAnalysisTaskdNdEtapp13::UserCreateOutputObjects()
 {
   //
   if (fUseSpecialOutput) OpenFile(1);
   fOutput = new TList();
-  fOutput->SetOwner(); 
+  fOutput->SetOwner();
   //
   //
   Bool_t needGeom = GetDoNormalReco() || GetDoInjection() || GetDoRotation();
@@ -380,7 +380,7 @@ void AliAnalysisTaskdNdEtapp13::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *) 
+void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
 {
   // Main loop
   //
@@ -432,13 +432,13 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   //
 
     // =============================================================================>>>
-  
+
   const AliMultiplicity* mult = esd->GetMultiplicity();
   if (!mult) {
     AliDebug(AliLog::kError, "AliMultiplicity not available");
     return;
   }
-  
+
   /* IMPLEMENT INEL > 0 */
 
   Float_t totalNch = 0;
@@ -470,7 +470,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     // fill matrix
     ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
   }
-  
+
   //
   // MC Generator info
   AliGenEventHeader* mcGenH = 0;
@@ -497,7 +497,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
 	  hDpmJet = (AliGenDPMjetEventHeader*)mcGenH1;
 	  break;
 	}
-      } 
+      }
     }
     //
     if ( hHijing || mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())) {
@@ -514,7 +514,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
       // Special for SD rejection
       int npProj = hDpmJet->ProjectileParticipants(); // A
       //      int npTarg = hDpmJet->TargetParticipants(); // p
-      int nsd1,nsd2,ndd; 
+      int nsd1,nsd2,ndd;
       hDpmJet->GetNDiffractive(nsd1,nsd2,ndd);
       if (ndd==0 && (npProj==nsd1 || npProj==nsd2)) {
       hstat->Fill(kNEvSDMC);
@@ -535,7 +535,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
 	break;
       default: // the rest
 	processType = 0;
-	processWeight = 1. / (1. - 0.138 - 0.050) * (1. - fsd - fdd); 
+	processWeight = 1. / (1. - 0.138 - 0.050) * (1. - fsd - fdd);
 	break;
       }
 
@@ -556,7 +556,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
 	break;
       default: // the rest
 	processType = 0;
-	processWeight = 1. / 0.677 * (1. - fsd - fdd); 
+	processWeight = 1. / 0.677 * (1. - fsd - fdd);
 	break;
       }
     }
@@ -575,13 +575,13 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   Int_t trg = handler->IsEventSelected();
   // FIXME: add event selection histo, can probably adapt hstat
   Bool_t pileup = esd->IsPileupFromSPDInMultBins();
-  fIsSelected = trg & fTrigSel; 
+  fIsSelected = trg & fTrigSel;
   if(fIsSelected) hstat->Fill(kEvAfterPhysSel, fWeight);
-  fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);  
+  fIsSelected &= fPPVsMultUtils->IsNotPileupSPDInMultBins(esd);
   fIsSelected &= fPPVsMultUtils->IsINELgtZERO(esd);
   if(fIsSelected) hstat->Fill(kEvAfterPileUp);
-  
-  
+
+
   // Clusters vs trakclets
   Int_t fNofTracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
   Int_t fNofITSClusters0 = esd->GetNumberOfITSClusters(0);
@@ -593,8 +593,8 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
   Double_t v0c3   = vzero->GetMRingV0C(3);
 
-  fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
-  fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
+  //fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
+  //fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
   if(fIsSelected) hstat->Fill(kEvAfterAsymCut);
   /*
     if (!fUseMC) {
@@ -674,7 +674,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   float zdcEnergy=0,zemEnergy=0;
   if (esdZDC) {
     zdcEnergy = (esdZDC->GetZDCN1Energy() + esdZDC->GetZDCP1Energy() + esdZDC->GetZDCN2Energy()+ esdZDC->GetZDCP2Energy());
-    zemEnergy = (esdZDC->GetZDCEMEnergy(0)+ esdZDC->GetZDCEMEnergy(1))/8.; 
+    zemEnergy = (esdZDC->GetZDCEMEnergy(0)+ esdZDC->GetZDCEMEnergy(1))/8.;
   }
   // PutZDCSelection
   ((TH2*)fHistosCustom->UncheckedAt(kHZDCZEMNoSel))->Fill(zemEnergy,zdcEnergy, fWeight);
@@ -700,14 +700,14 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
       fESDVtx[2] = vtxESD->GetZ();
     }
     */
-    
+
     if ( !vtxESD->IsFromVertexerZ() || (vtxESD->GetDispersion()<0.02)) {
       fVtxOK = kTRUE;
       fESDVtx[0] = vtxESD_->GetX(); // R+HACK FIXME: what's this?
       fESDVtx[1] = vtxESD_->GetY(); // R+HACK
       fESDVtx[2] = vtxESD_->GetZ(); // R+HACK
-    } 
-    
+    }
+
   }
   //
   if (fIsSelected) hstat->Fill(kBinEntries+kEvPassPS + kEntriesPerBin*fCurrCentBin, fWeight);
@@ -800,14 +800,14 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   //
   // =============================================================================<<<
   //
-  if (fMultReco) delete fMultReco; 
+  if (fMultReco) delete fMultReco;
   fMultReco = 0;
   //
-}      
+}
 
-  
+
 //________________________________________________________________________
-void AliAnalysisTaskdNdEtapp13::RegisterStat() 
+void AliAnalysisTaskdNdEtapp13::RegisterStat()
 {
   TH1* hstat;
   TList *lst = dynamic_cast<TList*>(GetOutputData(1));
@@ -820,8 +820,8 @@ void AliAnalysisTaskdNdEtapp13::RegisterStat()
     hstat->Fill(kDTht,fDThetaWindow);
     hstat->Fill(kNStd,fNStdDev);
     hstat->Fill(kPhiShift,fDPhiShift);
-    hstat->Fill(kThtS2,fScaleDTBySin2T);  
-    hstat->Fill(kThtCW,fCutOnDThetaX);  
+    hstat->Fill(kThtS2,fScaleDTBySin2T);
+    hstat->Fill(kThtCW,fCutOnDThetaX);
     hstat->Fill(kPhiOvl,fPhiOverlapCut);
     hstat->Fill(kZEtaOvl,fZetaOverlap);
     hstat->Fill(kNoOvl,fRemoveOverlaps);
@@ -834,7 +834,7 @@ void AliAnalysisTaskdNdEtapp13::RegisterStat()
     hstat->Fill(kZVMax,fZVertexMax);
     //
     hstat->Fill(kDPiSCut,fDPhiSCut);
-    hstat->Fill(kNStdCut,fNStdCut);    
+    hstat->Fill(kNStdCut,fNStdCut);
     hstat->Fill(kMCV0Scale, fMCV0Scale);
     //
   }
@@ -843,7 +843,7 @@ void AliAnalysisTaskdNdEtapp13::RegisterStat()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskdNdEtapp13::Terminate(Option_t *) 
+void AliAnalysisTaskdNdEtapp13::Terminate(Option_t *)
 {
   Printf("Terminating...");
   RegisterStat();
@@ -865,7 +865,7 @@ void AliAnalysisTaskdNdEtapp13::InitMultReco()
   fMultReco->SetRemoveClustersFromOverlaps(fRemoveOverlaps);
   fMultReco->SetPhiOverlapCut(fPhiOverlapCut);
   fMultReco->SetZetaOverlapCut(fZetaOverlap);
-  fMultReco->SetHistOn(kFALSE); 
+  fMultReco->SetHistOn(kFALSE);
   fMultReco->SetRecType( AliITSMultRecBg::kData );
 }
 
@@ -889,7 +889,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   hstat->GetXaxis()->SetBinLabel(kEvAfterAsymCut , "Ev. After V0 Asym");
 
 
-  
+
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
   //
@@ -932,7 +932,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   }
   //
   hstat->Fill(kNWorkers);
-  //  
+  //
   AddHisto(histos,hstat,kHStat);
   //
   // ------------------------ events per centrality bin ----------------------
@@ -965,7 +965,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   fZVBin = (fZVertexMax-fZVertexMin)/nZVBinsS; // readjust
   //
   int nZVBins = nZVBinsS;
-  double zMn=fZVertexMin, zMx=fZVertexMax;  
+  double zMn=fZVertexMin, zMx=fZVertexMax;
   const double kZVWide=30.;
   while (zMn>-kZVWide) {zMn -= fZVBin; nZVBins++;}
   while (zMx<kZVWide)  {zMx += fZVBin; nZVBins++;}
@@ -977,7 +977,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   AddHisto(histos,hzvns,kHZVtxNoSel);
   //
   // V0 for events before selection
-  int nbmltV0 = 250; 
+  int nbmltV0 = 250;
   double maxmltV0 = 2500*0.4; //RSmod
   //
   TH1F* hnV0ns = new  TH1F("V0NoSel","V0 signal Before Cent. Selection",nbmltV0,0,maxmltV0);
@@ -1080,7 +1080,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   hzv->GetYaxis()->SetTitle("Cent.Bin ID");
   AddHisto(histos,hzv,kHZVtx);
   //
-  // V0 
+  // V0
   TH2F* hnV0 = new  TH2F("V0","V0 signal per Cent.Bin ",nbmltV0,0,maxmltV0, fNCentBins, -0.5,fNCentBins-0.5);
   hnV0->GetXaxis()->SetTitle("V0 signal");
   hnV0->GetYaxis()->SetTitle("Cent.Bin ID");
@@ -1128,9 +1128,9 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
       sprintf(buffn,"b%d_dZV_ZVGen",ib);
       sprintf(bufft,"bin%d ZvRec-ZvGen vs ZvGen",ib);
       TH2F* hdzv = new  TH2F(buffn,bufft,nZVBinsS,fZVertexMin,fZVertexMax, 200,-1.,1);
-      hdzv->GetXaxis()->SetTitle("VZGen");  
-      hdzv->GetYaxis()->SetTitle("VZRec-VZGen");  
-      AddHisto(histos,hdzv,kHZVResMC+ib); 
+      hdzv->GetXaxis()->SetTitle("VZGen");
+      hdzv->GetYaxis()->SetTitle("VZRec-VZGen");
+      AddHisto(histos,hdzv,kHZVResMC+ib);
     }
     //
     // <n> primaries according to MC generator
@@ -1181,7 +1181,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
     TH1F* hnbcollM = new  TH1F("nBCollMean","<N> bin.colls",fNCentBins, -0.5,fNCentBins-0.5);
     hnbcollM->GetXaxis()->SetTitle("Cent.Bin ID");
     AddHisto(histos,hnbcollM,kHNBCollMeanMC);
-    //    
+    //
   }
   //
   // --------------------------------------------------
@@ -1221,7 +1221,7 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
 }
 
 //_________________________________________________________________________
-TObjArray* AliAnalysisTaskdNdEtapp13::BookHistosSet(const char* pref, UInt_t selHistos) 
+TObjArray* AliAnalysisTaskdNdEtapp13::BookHistosSet(const char* pref, UInt_t selHistos)
 {
   // book standard set of histos attaching the pref in front of the name/title
   //
@@ -1365,7 +1365,7 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
       TParticle* part = fStack->Particle(lab0);
       Float_t dz = part->Vz() - vtxMC[2];
       if (TMath::Abs(dz)<1e-6) break;
-      reject = kTRUE; 
+      reject = kTRUE;
       break;
       }
       if (reject) continue;
@@ -1418,7 +1418,7 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
 	  int clId1 = (int)trl[AliITSMultReconstructor::kClID2];
 	  float *clLabs0 = fMultReco->GetClusterOfLayer(0,clId0) + AliITSMultReconstructor::kClMC0;
 	  float *clLabs1 = fMultReco->GetClusterOfLayer(1,clId1) + AliITSMultReconstructor::kClMC0;
-	  if (!HaveCommonParent(clLabs0,clLabs1)) 
+	  if (!HaveCommonParent(clLabs0,clLabs1))
 	    FillHistosSet(fHistosTrCombU,eta,/*phi,theta,*/dphi,dtheta,dThetaX,dist);
 	}
       } // combinatorials
@@ -1434,7 +1434,7 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
     TH2* hcorr = ((TH2*)fHistosCustom->UncheckedAt(kHNCorrMCEta2));
     if (hcorr) hcorr->Fill(fNPrimMCeta2,fNTreta2, fWeight);
   }
-  //  
+  //
   //-------------------------------------------------------------TMP RS - singles ------->>>
   /*
     int offsH = fCurrCentBin*kNStandardH;
@@ -1529,7 +1529,7 @@ void AliAnalysisTaskdNdEtapp13::FillMCPrimaries()
 Bool_t AliAnalysisTaskdNdEtapp13::FillHistosSet(TObjArray* histos, double eta,
 						 //double /*phi*/,double /*theta*/,
 						 double dphi,double dtheta,double dThetaX,
-						 double dist) 
+						 double dist)
 {
   // fill standard set of histos
   Bool_t res = kFALSE;
@@ -1544,10 +1544,10 @@ Bool_t AliAnalysisTaskdNdEtapp13::FillHistosSet(TObjArray* histos, double eta,
   double dphiS  = TMath::Abs(dphi) - fDPhiShift;
   if (dphi<0) dphiS = -dphiS;
   //
-  if (histos->UncheckedAt(offs+kHDPhiSDThetaX)) 
+  if (histos->UncheckedAt(offs+kHDPhiSDThetaX))
     ((TH2*)histos->UncheckedAt(offs+kHDPhiSDThetaX))->Fill(dphiS,dThetaX, fWeight);
   //
-  if (histos->UncheckedAt(offs+kHDPhiDTheta)) 
+  if (histos->UncheckedAt(offs+kHDPhiDTheta))
     ((TH2*)histos->UncheckedAt(offs+kHDPhiDTheta))->Fill(dphi,dtheta, fWeight);
   //
   if (histos->UncheckedAt(kHWDist))
@@ -1568,15 +1568,15 @@ Bool_t AliAnalysisTaskdNdEtapp13::FillHistosSet(TObjArray* histos, double eta,
 //__________________________________________________________________
 void AliAnalysisTaskdNdEtapp13::FillSpecies(Int_t primsec, Int_t id)
 {
-  // fill PDGcode 
+  // fill PDGcode
   TH1 *hPart=0,*hParent=0;
   if (primsec==0) {
     hPart   = (TH1*)fHistosCustom->UncheckedAt(kHPrimPDG);
     hParent = (TH1*)fHistosCustom->UncheckedAt(kHPrimParPDG);
-  } 
+  }
   else if (primsec==1) {
     hPart   = (TH1*)fHistosCustom->UncheckedAt(kHSecPDG);
-    hParent = (TH1*)fHistosCustom->UncheckedAt(kHSecParPDG);    
+    hParent = (TH1*)fHistosCustom->UncheckedAt(kHSecParPDG);
   }
   else return;
   int ntr = fStack->GetNtrack();
@@ -1674,7 +1674,7 @@ void AliAnalysisTaskdNdEtapp13::CheckReconstructables()
   isPrimArr.ResetAllBits();
   // count track wich may be reconstructable
   //
-  int ntrStore=0,ntrStorePrim=0; 
+  int ntrStore=0,ntrStorePrim=0;
   Int_t *trIndArr = trInd.GetArray();
   for (Int_t it=0; it<ntr; it++) {
     TParticle* part = fStack->Particle(it);
@@ -1734,14 +1734,14 @@ void AliAnalysisTaskdNdEtapp13::CheckReconstructables()
 	cl1->GetGlobalXYZ( clusterLay[1] );
 	fMultReco->ClusterPos2Angles(clusterLay[1], fESDVtx);
 	trComp[AliITSMultReconstructor::kTrPhi][ntrCand]    = clusterLay[0][AliITSMultReconstructor::kClPh];
-	trComp[AliITSMultReconstructor::kTrTheta][ntrCand]  = clusterLay[0][AliITSMultReconstructor::kClTh];      
-	trComp[AliITSMultReconstructor::kTrDTheta][ntrCand] = clusterLay[0][AliITSMultReconstructor::kClTh] - clusterLay[1][AliITSMultReconstructor::kClTh]; 
+	trComp[AliITSMultReconstructor::kTrTheta][ntrCand]  = clusterLay[0][AliITSMultReconstructor::kClTh];
+	trComp[AliITSMultReconstructor::kTrDTheta][ntrCand] = clusterLay[0][AliITSMultReconstructor::kClTh] - clusterLay[1][AliITSMultReconstructor::kClTh];
 	trComp[AliITSMultReconstructor::kTrDPhi][ntrCand]   = clusterLay[0][AliITSMultReconstructor::kClPh] - clusterLay[1][AliITSMultReconstructor::kClPh];
 	trComp[AliITSMultReconstructor::kTrLab1][ntrCand]   = icl1*10 + icl0;
 	double &dphi = trComp[ntrCand][3];
 	if (dphi>TMath::Pi()) dphi=2.*TMath::Pi()-dphi;     // take into account boundary condition
-	trComp[5][ntrCand] = fMultReco->CalcDist(trComp[AliITSMultReconstructor::kTrDPhi][ntrCand], 
-						 trComp[AliITSMultReconstructor::kTrDTheta][ntrCand], 
+	trComp[5][ntrCand] = fMultReco->CalcDist(trComp[AliITSMultReconstructor::kTrDPhi][ntrCand],
+						 trComp[AliITSMultReconstructor::kTrDTheta][ntrCand],
 						 trComp[AliITSMultReconstructor::kTrTheta][ntrCand]);
 	ntrCand++;
       }

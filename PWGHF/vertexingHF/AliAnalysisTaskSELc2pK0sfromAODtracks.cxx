@@ -172,6 +172,10 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks() :
   fHistoK0SMass(0),
   fHistoMassTagV0Min(0),
   fHistoMassTagV0SameSignMin(0),
+  fHistoResponseLcPt(0),
+  fHistoResponseLcPt1(0),
+  fHistoResponseLcPt2(0),
+  fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -272,6 +276,10 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::AliAnalysisTaskSELc2pK0sfromAODtracks(con
   fHistoK0SMass(0),
   fHistoMassTagV0Min(0),
   fHistoMassTagV0SameSignMin(0),
+  fHistoResponseLcPt(0),
+  fHistoResponseLcPt1(0),
+  fHistoResponseLcPt2(0),
+  fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -374,6 +382,13 @@ AliAnalysisTaskSELc2pK0sfromAODtracks::~AliAnalysisTaskSELc2pK0sfromAODtracks() 
     delete fEventBuffer;
   }
   delete fEventInfo;
+
+  if (fGTI)
+    delete[] fGTI;
+  fGTI=0;
+  if (fGTIndex)
+    delete[] fGTIndex;
+  fGTIndex=0;
 
 }
 
@@ -532,6 +547,8 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserExec(Option_t *)
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
+  fAnalCuts->SetMagneticField(fBzkG);
+  fAnalCuts->SetPrimaryVertex(pos);
   MakeAnalysis(aodEvent,mcArray);
 
 
@@ -648,6 +665,8 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::UserCreateOutputObjects()
 		}
 	}
 
+  fGTI = new AliAODTrack *[fTrackBuffSize]; // Array of pointers 
+  fGTIndex = new Int_t [fTrackBuffSize]; // Array of index 
 
   return;
 }
@@ -667,6 +686,18 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
 		if(fProtonCutVarsArray) fProtonCutVarsArray->Delete();
 		if(fV0CutVarsArray) fV0CutVarsArray->Delete();
 	}
+
+  ResetGlobalTrackReference();
+  // ..and set it
+  for (Int_t iTrack=0;iTrack<aodEvent->GetNumberOfTracks();iTrack++){
+    // cast needed since the event now returns AliVTrack instead of AliAODTrack
+    AliAODTrack *track = dynamic_cast<AliAODTrack *>(aodEvent->GetTrack(iTrack));
+    if (!track) continue;
+
+    // Store the reference of the global tracks
+    StoreGlobalTrackReference(track,iTrack);
+  }
+
 
   Int_t nV0s= aodEvent->GetNumberOfV0s();
   Int_t nTracks= aodEvent->GetNumberOfTracks();
@@ -696,11 +727,21 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
     for (Int_t itrk = 0; itrk<nTracks; itrk++) {
       if(seleTrkFlags[itrk]!=1) continue;
       AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
-      if(trk->GetID()<0) continue;
+      //if(trk->GetID()<0) continue;
+      
+      //TPC only track (BIT 7) does not have PID information 
+      //In addition to that, TPC only tracks does not have good DCA resolution
+      //(according to femtoscopy code)
+      AliAODTrack *trkpid = 0;
+      if(fAnalCuts->GetProdAODFilterBit()==7){
+        trkpid = fGTI[-trk->GetID()-1];
+      }else{
+        trkpid = trk;
+      }
 
       Int_t cpid = cptrack->GetID();
       Int_t cnid = cntrack->GetID();
-      Int_t lpid = trk->GetID();
+      Int_t lpid = trkpid->GetID();
       if((cpid==lpid)||(cnid==lpid)) continue;
 
       if(!fAnalCuts->SelectWithRoughCuts(v0,trk)) continue;
@@ -708,12 +749,12 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
       AliAODVertex *secVert = ReconstructSecondaryVertex(v0,trk,aodEvent);
       if(!secVert) continue;
 
-      AliAODRecoCascadeHF *lcobj = MakeCascadeHF(v0,trk,aodEvent,secVert);
+      AliAODRecoCascadeHF *lcobj = MakeCascadeHF(v0,trk,trkpid,aodEvent,secVert);
       if(!lcobj) {
 				continue;
       }
 
-      FillROOTObjects(lcobj,v0,trk,aodEvent,mcArray);
+      FillROOTObjects(lcobj,v0,trk,trkpid,aodEvent,mcArray);
 
       lcobj->GetSecondaryVtx()->RemoveDaughters();
       lcobj->UnsetOwnPrimaryVtx();
@@ -739,12 +780,13 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::MakeAnalysis
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODv0 *v0, AliAODTrack *trk, AliAODEvent *aodEvent, TClonesArray *mcArray) 
+void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *aodEvent, TClonesArray *mcArray) 
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
   //
 	if(!trk) return;
+	if(!trkpid) return;
 	if(!v0) return;
 
   Double_t mprPDG =  TDatabasePDG::Instance()->GetParticle(2212)->Mass();
@@ -793,8 +835,8 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
   Double_t probProton=-9999.;
 	if(fAnalCuts->GetIsUsePID())
 	{
-		nSigmaTPCpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
-		nSigmaTOFpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
+		nSigmaTPCpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kProton);
+		nSigmaTOFpr = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kProton);
 		if(fAnalCuts->GetPidHF()->GetUseCombined()){
 			probProton = fAnalCuts->GetProtonProbabilityTPCTOF(trk);
 		}
@@ -1003,6 +1045,7 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::FillROOTObjects(AliAODRecoCascadeHF 
 				if(islambdac){
 					fHistoLcK0SpMassMCS->Fill(cont);
 					fHistoK0spCorrelationMCS->Fill(cont_correlation);
+          fHistoResponseLcPt->Fill(mclc->Pt(),lcobj->Pt());
 				}
 			}
 	}
@@ -1279,6 +1322,8 @@ void  AliAnalysisTaskSELc2pK0sfromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLcK0SpMassMix);
   fHistoLcK0SpMassMCS = new THnSparseF("fHistoLcK0SpMassMCS","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoLcK0SpMassMCS);
+  fHistoLcK0SpPi0MassMCS = new THnSparseF("fHistoLcK0SpPi0MassMCS","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoLcK0SpPi0MassMCS);
   fHistoLcKPluspMass = new THnSparseF("fHistoLcKPluspMass","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoLcKPluspMass);
   fHistoLcKMinuspMass = new THnSparseF("fHistoLcKMinuspMass","",3,bins_base,xmin_base,xmax_base);
@@ -1364,11 +1409,18 @@ void  AliAnalysisTaskSELc2pK0sfromAODtracks::DefineAnalysisHistograms()
   fHistoMassTagV0SameSignMin=new TH1F("fHistoMassTagV0SameSignMin","",1500,0,1.5);
   fOutputAll->Add(fHistoMassTagV0SameSignMin);
 
+  fHistoResponseLcPt = new TH2D("fHistoResponseLcPt","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseLcPt);
+  fHistoResponseLcPt1 = new TH2D("fHistoResponseLcPt1","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseLcPt1);
+  fHistoResponseLcPt2 = new TH2D("fHistoResponseLcPt2","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseLcPt2);
+
   return;
 }
 
 //________________________________________________________________________
-AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod, AliAODVertex *secVert) 
+AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAODv0 *v0, AliAODTrack *part, AliAODTrack *partpid, AliAODEvent * aod, AliAODVertex *secVert) 
 {
   //
   // Create AliAODRecoCascadeHF object from the argument
@@ -1376,6 +1428,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAOD
 
   if(!v0) return 0x0;
   if(!part) return 0x0;
+  if(!partpid) return 0x0;
   if(!aod) return 0x0;
 
   //------------------------------------------------
@@ -1399,7 +1452,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAOD
   //------------------------------------------------
   // DCA between tracks
   //------------------------------------------------
-  AliESDtrack *esdtrack = new AliESDtrack((AliVTrack*)part);
+  AliESDtrack *esdtrack = new AliESDtrack((AliVTrack*)partpid);
 
   AliNeutralTrackParam *trackV0=NULL;
   const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
@@ -1460,7 +1513,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2pK0sfromAODtracks::MakeCascadeHF(AliAOD
   UShort_t id[2]={(UShort_t)part->GetID(),(UShort_t)trackV0->GetID()};
   theCascade->SetProngIDs(2,id);
 
-  theCascade->GetSecondaryVtx()->AddDaughter(part);
+  theCascade->GetSecondaryVtx()->AddDaughter(partpid);
   theCascade->GetSecondaryVtx()->AddDaughter(v0);
 
   if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
@@ -1747,13 +1800,30 @@ void AliAnalysisTaskSELc2pK0sfromAODtracks::SelectTrack( const AliVEvent *event,
     AliVTrack *track;
     track = (AliVTrack*)event->GetTrack(i);
     
-    if(track->GetID()<0) continue;
+    //if(track->GetID()<0) continue;
     Double_t covtest[21];
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
+    if(!fAnalCuts) continue;
     
     AliAODTrack *aodt = (AliAODTrack*)track;
-    if(!fAnalCuts) continue;
-    if(fAnalCuts->SingleTrkCuts(aodt,fVtx1)){
+
+    if(fAnalCuts->GetProdUseAODFilterBit()){
+      Int_t filterbit = fAnalCuts->GetProdAODFilterBit();
+      if(filterbit==7){
+        if(!aodt->TestFilterBit(BIT(filterbit))) continue;
+      }else{
+        if(!aodt->TestFilterMask(BIT(filterbit))) continue;
+      }
+    }
+
+    AliAODTrack *aodtpid = 0;
+    if(fAnalCuts->GetProdAODFilterBit()==7){
+      aodtpid = fGTI[-aodt->GetID()-1];
+    }else{
+      aodtpid = aodt;
+    }
+
+    if(fAnalCuts->SingleTrkCuts(aodt,aodtpid,fVtx1)){
       seleFlags[i]=1;
       nSeleTrks++;
 			FillProtonROOTObjects(aodt,mcArray);
@@ -2254,3 +2324,67 @@ Int_t AliAnalysisTaskSELc2pK0sfromAODtracks::MatchToMC(AliAODRecoCascadeHF *elob
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskSELc2pK0sfromAODtracks::StoreGlobalTrackReference(AliAODTrack *track, Int_t index){
+  //
+  // Stores the pointer to the global track
+  // copied from femtoscopy/k0analysis/plamanalysis
+  //
+  
+  // Check that the id is positive
+  if(track->GetID()<0){
+    //    printf("Warning: track has negative ID: %d\n",track->GetID());
+    return;
+  }
+
+  // Check id is not too big for buffer
+  if(track->GetID()>=fTrackBuffSize){
+    printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n"
+	   ,track->GetID(),fTrackBuffSize);
+    return;
+  }
+
+  // Warn if we overwrite a track
+  if(fGTI[track->GetID()]){
+    // Seems like there are FilterMap 0 tracks
+    // that have zero TPCNcls, don't store these!
+    if( (!track->GetFilterMap()) &&
+	(!track->GetTPCNcls())   )
+      return;
+
+    // Imagine the other way around,
+    // the zero map zero clusters track
+    // is stored and the good one wants 
+    // to be added. We ommit the warning
+    // and just overwrite the 'bad' track
+    if( fGTI[track->GetID()]->GetFilterMap() ||
+	fGTI[track->GetID()]->GetTPCNcls()   ){
+      // If we come here, there's a problem
+      printf("Warning! global track info already there!");
+      printf("         TPCNcls track1 %u track2 %u",
+	     (fGTI[track->GetID()])->GetTPCNcls(),track->GetTPCNcls());
+      printf("         FilterMap track1 %u track2 %u\n",
+	     (fGTI[track->GetID()])->GetFilterMap(),track->GetFilterMap());
+    }
+  } // Two tracks same id
+
+  // // There are tracks with filter bit 0,
+  // // do they have TPCNcls stored?
+  // if(!track->GetFilterMap()){
+  //   printf("Filter map is zero, TPCNcls: %u\n"
+  // 	   ,track->GetTPCNcls());
+  // }
+
+  // Assign the pointer
+  (fGTI[track->GetID()]) = track;
+  (fGTIndex[track->GetID()]) = index;
+}
+//________________________________________________________________________
+void AliAnalysisTaskSELc2pK0sfromAODtracks::ResetGlobalTrackReference(){
+  // Sets all the pointers to zero. To be called at
+  // the beginning or end of an event
+  for(UShort_t i=0;i<fTrackBuffSize;i++){
+    fGTI[i]=0;
+    fGTIndex[i]=-9999;
+  }
+}

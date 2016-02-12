@@ -105,14 +105,15 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
 
-  enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };// v0 rec. type 
+  enum { kV0TypeUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim, kV0AODMCExtraonlyCuts};// v0 rec. type 
   enum { kK0, kLambda, kAntiLambda };// particletype 
 
-  enum {ktrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, 
+  enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts,                                       
 	kTrackAODExtra, kTrackAODExtraonly, kTrackAODExtraCuts, kTrackAODExtraonlyCuts,
-        kTrackAODMCExtraonly,kTrackAODMCExtraonlyCuts, 
+        kTrackAODMCExtraonlyCharged,kTrackAODMCExtraonlyChargedCuts, 
 	kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
-	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODMCChargedSecS, kTrackAODMCChargedSecNS, kTrackAOCMCChargedPrimAcceptance};//tracktype
+	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODMCChargedSecS, kTrackAODMCChargedSecNS, kTrackAOCMCChargedPrimAcceptance}; //track type
+  enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance,kJetsEmbedded};// jet type
 
 
   static  void   SetProperties(TH3F* h,const char* x, const char* y,const char* z);
@@ -136,7 +137,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
   Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
   AliAODJet* GetRandomCone(TList* jetlist, Double_t dEtaConeMax, Double_t dDistance) const;
-  void FillEmbeddedHistos(const AliAODJet* embeddedJet, const AliAODJet* matchedJet, Int_t nK0s, Int_t nLa, Int_t nALa);
+  void FillEmbeddedHistos(const AliAODJet* embeddedJet, const AliAODJet* matchedJet, Int_t nK0s, Int_t nLa, Int_t nALa, TList* Jettracklist);
 
 
   AliAODJet* GetMedianCluster();

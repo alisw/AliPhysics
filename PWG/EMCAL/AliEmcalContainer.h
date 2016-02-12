@@ -8,18 +8,20 @@
 class TLorentzVector;
 class AliVEvent;
 class AliNamedArrayI;
+class AliVParticle;
 
 #include <TNamed.h>
 #include <TClonesArray.h>
 
-class AliEmcalContainer : public TNamed {
+class AliEmcalContainer : public TObject {
  public:
   enum RejectionReason {
     // General
     kNullObject = 1<<0,
     kPtCut = 1<<1,
     kAcceptanceCut = 1<<2,
-    kBitMapCut = 1<<3,
+    kMCLabelCut = 1<<3,
+    kBitMapCut = 1<<4,
     // leave bits 4-6 free for future implementations
     
     // AliParticleContainer
@@ -28,7 +30,6 @@ class AliEmcalContainer : public TNamed {
     kMCGeneratorCut = 1<<9,
     kChargeCut = 1<<10,
     kMinDistanceTPCSectorEdgeCut = 1<<11,
-    kMinMCLabelAccept = 1<<12,
 
     // AliClusterContainer
     kIsEMCalCut = 1<<13,
@@ -69,6 +70,7 @@ class AliEmcalContainer : public TNamed {
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
+  void                        SetBitMap(UInt_t m)                   { fBitMap = m                       ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
   void                        SortArray()                           { fClArray->Sort()                  ; }
   UInt_t                      GetRejectionReason()            const { return fRejectionReason           ; }
@@ -77,10 +79,17 @@ class AliEmcalContainer : public TNamed {
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
   virtual void                NextEvent() {;}
 
+  const char*                 GetName()                       const { return fName.Data()               ; }
+  void                        SetName(const char* n)                { fName = n                         ; }
+
+  static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
+
  protected:
+  TString                     fName;                    // object name
   TString                     fClArrayName;             // name of branch
   TString                     fClassName;               // name of the class in the TClonesArray
   Bool_t                      fIsParticleLevel;         // whether or not it is a particle level object collection
+  UInt_t                      fBitMap;                  // bitmap mask
   TClonesArray               *fClArray;                 //!TClonesArray
   Int_t                       fCurrentID;               //!current ID for automatic loops
   AliNamedArrayI             *fLabelMap;                //!Label-Index map
@@ -92,6 +101,6 @@ class AliEmcalContainer : public TNamed {
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
-  ClassDef(AliEmcalContainer,5);
+  ClassDef(AliEmcalContainer,6);
 };
 #endif

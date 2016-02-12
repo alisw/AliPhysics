@@ -337,17 +337,16 @@ goCPass()
                     "${batchWorkingDirectory}/QAtrain_duo.C"
                     "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                     "${batchWorkingDirectory}/${configFile}"
-                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                     "${batchWorkingDirectory}/OCDB.root"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C" ) ;;
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz" ) ;;
 
-    2) filesCPass=( 
-                    "${batchWorkingDirectory}/OCDB.root"
+    2) filesCPass=( "${batchWorkingDirectory}/OCDB.root"
                     "$ALICE_ROOT/test/QA/tag.C"
                     "${batchWorkingDirectory}/AODtrain.C"
                     "${batchWorkingDirectory}/rec.C"
@@ -361,13 +360,14 @@ goCPass()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/runPPass_pbpb.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
-                  ) ;;
+                    "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz" ) ;;
   esac
 
+  # -c: check if local source exists; -C: do not copy if local dest exists already
+  # -f: copy all in the same dest dir (flat copy)
+  xCopy -f -c -C -d . "${filesCPass[@]}"
   for file in ${filesCPass[*]}; do
-    [[ ! -f ${file##*/} && -f ${file} ]] && printExec cp -f $file . \
-                                         && [[ ${file##*/} =~ .*\.sh ]] \
-                                         && printExec chmod +x ${file##*/}
+    [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
   done
 
   listDir "$PWD" "before running CPass${cpass}"
@@ -375,6 +375,13 @@ goCPass()
   # Monkey patching: emove spaces from around arguments to root macros. For example this sometimes
   # is known to fail: root 'macro.C(argument1, argument2)'
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
+
+  # If OCDB is found here, then create a macro that configures local OCDB access.
+  # This step also decompresses the tarball into $PWD/OCDB.
+  ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+  [[ -f $ocdbTarball ]] \
+    && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
+    || echo "WARNING: file $ocdbTarball not found!"
 
   # A post-setup action (different for CPass0/1) can be defined. Here it is executed.
   case $cpass in
@@ -408,21 +415,10 @@ goCPass()
     1)
       # This is CPass1.
 
-      # Procure OCDB.
-      echo "Downloading OCDB produced during CPass0 for run $runNumber"
-      copyFileFromRemote $commonOutputPath/meta/cpass0.localOCDB.${runNumber}.tgz $PWD
-
-      # If OCDB is found here, then create a macro that configures local OCDB access.
-      # This step also decompresses the tarball into $PWD/OCDB.
-      ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
-      [[ -f $ocdbTarball ]] \
-        && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
-        || echo "WARNING: file $ocdbTarball not found!"
-
-      # Check if CPass0 has produced calibration.
+      # Check if previous pass has produced calibration.
       if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
         touch $doneFileTmp
-        echo "CPass0 produced no calibration! Exiting..." >> $doneFileTmp
+        echo "CPass$(($cpass-1)) produced no calibration! Exiting..." >> $doneFileTmp
         copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
         return 1
       fi
@@ -484,6 +480,14 @@ goCPass()
       # End of CPass1.
     ;;
     2) 
+      # Check if previous pass has produced calibration.
+      if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
+        touch $doneFileTmp
+        echo "CPass$(($cpass-1)) produced no calibration! Exiting..." >> $doneFileTmp
+        copyFileToRemote "$doneFileTmp" "$(dirname "$doneFile")" || rm -f "$doneFileTmp"
+        return 1
+      fi
+
       if [[ -n "$pretend" ]]; then
         echo "Pretending to run: $runpath/runCPass0.sh /$infile $nEvents $runNumber $ocdbPath $recoTriggerOptions"
         sleep $pretendDelay
@@ -495,7 +499,7 @@ goCPass()
         done
       else
         collisionSystem=$(run2collisionSystem "$runNumber")
-        printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents,\"$ocdbPath\"" "$runNumber"
+        printExec ./runPPass_${collisionSystem}.sh "/$infile" "SPLIT" "$nEvents" "$runNumber" "$ocdbPath"
       fi
     ;;
 
@@ -510,7 +514,7 @@ goCPass()
   while read cpdir; do
     filesToCopy+=($cpdir/!(stdout|cpass$(($cpass-1))*.tgz))
   done < <(find . -type d)
-  xCopyFileToRemote -d $outputDir/ "${filesToCopy[@]}"
+  xCopy -d $outputDir/ "${filesToCopy[@]}"
 
   # Validate CPass.
   case $cpass in
@@ -567,6 +571,7 @@ goCPass()
         reportDoneFile aod AliAOD.root $outputDir >> $doneFileTmp
         reportDoneFile syswatchRec syswatch_rec.log ${outputDir} >> $doneFileTmp
         reportDoneFile qafile QA_results.root $outputDir >> $doneFileTmp
+        reportDoneFile qafile QAresults.root $outputDir >> $doneFileTmp
       fi
     ;;
 
@@ -778,7 +783,7 @@ goMergeCPass()
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
   if [[ -f $ocdbTarball ]]; then
     printExec goMakeLocalOCDBaccessConfig "$ocdbTarball"
-  elif [[ $cpass == 1 ]]; then
+  elif [[ $cpass -ge 1 ]]; then
     # Print a warning only on CPass1.
     echo "WARNING: file $ocdbTarball not found!"
   fi
@@ -889,7 +894,7 @@ goMergeCPass()
   while read cpdir; do
     filesToCopy+=($cpdir/!(stdout))
   done < <(find . -type d)
-  xCopyFileToRemote -d $outputDir/ "${filesToCopy[@]}"
+  xCopy -d $outputDir/ "${filesToCopy[@]}"
 
   # Copy OCDB to meta.
   copyFileToRemote ${batchWorkingDirectory}/${baseTar} $commonOutputPath/meta
@@ -2473,8 +2478,8 @@ EOF
   # Copy all, recursively, with the exception of snapshotted files already present when this
   # function was called.
   [[ "$dirSnapshotExclusion" == '' ]] \
-    && xCopyFileToRemote -d $commonOutputPath/ . \
-    || xCopyFileToRemote -d $commonOutputPath/ ./!($dirSnapshotExclusion)
+    && xCopy -d $commonOutputPath/ . \
+    || xCopy -d $commonOutputPath/ ./!($dirSnapshotExclusion)
 
   # Copy stdout to destination.
   echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"

@@ -1,7 +1,6 @@
 EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefDataITSCutSystematics(int itscut = 0, const char *suffix = ""){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  TString cutname;
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC("chargedParticlesData");
   // Set Energy thresholds for additional patch selection:
@@ -19,24 +18,21 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::kCPREJ2, 12);
   switch(itscut){
   case 0:
-    cutname = "Standard";
     break;
   case 1:
     task->SwitchoffSPDCut();
-    cutname = "NoSPDcut";
     break;
   case 2:
     task->SwitchoffITSCut();
-    cutname = "NoITScut";
     break;
   }
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());
-  outfile += ":ChargedParticleQA_ITScut" + cutname;
+  outfile += TString::Format(":ChargedParticleQA_ITScut%s", suffix);
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_ITS%s", cutname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
 
   return task;
 }

@@ -23,7 +23,8 @@ add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
 
 #Module
-set (MODULE PWGPP)
+set(MODULE PWGPP)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGPP)
@@ -216,6 +217,7 @@ set ( SRCS18
   AD/AliAnalysisTaskADPilot.cxx
   AD/ADESDFriendUtils.cxx
   AD/AliAnalysisTaskADCalib.cxx
+  AD/AliAnalysisTaskADChargeMonitoring.cxx
   )  
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19 
@@ -335,6 +337,7 @@ install(FILES AD/AddTaskADQA.C
 	      AD/AddTaskADVVQA.C 
 	      AD/AddTaskADPilot.C
 	      AD/AddTaskADCalib.C
+	      AD/AddTaskADChargeMonitoring.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C 
  	      AD/trending/MakeTrendingADQA.C 

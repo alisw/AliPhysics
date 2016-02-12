@@ -39,7 +39,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
   
   void SetAnalysisType               (const char* analysisType           = "ESD")  { fAnalysisType                 = analysisType;               }
   void SetCollidingSystem            (const char* collidingSystem        = "pp" )  { fCollidingSystem              = collidingSystem;            }  
-  void SetINT7Trigger                (Bool_t lSwitchINT7                 = kTRUE)  { fkSwitchINT7                 = lSwitchINT7;                 }
+  void SetSelectedTriggerClass       (AliVEvent::EOfflineTriggerTypes    trigType) { fkTriggerClass                = trigType;                   }
   void SetRelaunchV0CascVertexers    (Bool_t  rerunV0CascVertexers       = 0    )  { fkRerunV0CascVertexers        = rerunV0CascVertexers;       }
   void SetSDDSelection               (Bool_t  sddOnSelection             = kTRUE)  { fkSDDselectionOn              = sddOnSelection;             }
   void SetQualityCutZprimVtxPos      (Bool_t  qualityCutZprimVtxPos      = kTRUE)  { fkQualityCutZprimVtxPos       = qualityCutZprimVtxPos;      }
@@ -65,10 +65,9 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
         AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
         AliAnalysisUtils *fUtils;
         TString         fCollidingSystem;       // "pPb" or "pp" colliding system
-        Bool_t           fkSwitchINT7;          // if true, skip FASTOnly (default FALSE) 
+        AliVEvent::EOfflineTriggerTypes fkTriggerClass;  //Trigger selection: kMB, kINT7, etc as needed
        // AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
         AliPIDResponse *fPIDResponse;           //! PID response object        
-       // AliAnalysisUtils *fUtils;
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t          fkSDDselectionOn;               // Boolean : kTRUE = enable the selection based on the SDD status

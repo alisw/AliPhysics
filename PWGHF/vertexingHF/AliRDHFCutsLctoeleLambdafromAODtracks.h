@@ -65,6 +65,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdAODFilterBit(Int_t a){fProdAODFilterBit=a;}
   void SetProdRejectTrackWithShared(Bool_t a){fProdRejectTrackWithShared=a;}
+  void SetProdV0KinkRejection(Bool_t a){fProdV0KinkRejection=a;}
   void SetProdV0MassTolLambda(Double_t a){fProdV0MassTolLambda=a;}
   void SetProdV0MassTolLambdaRough(Double_t a){fProdV0MassTolLambdaRough=a;}
   void SetProdV0PtMin(Double_t a){fProdV0PtMin=a;}
@@ -93,6 +94,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Int_t   GetProdAODFilterBit(){return fProdAODFilterBit;}
   Bool_t   GetProdRejectTrackWithShared(){return fProdRejectTrackWithShared;}
+  Bool_t   GetProdV0KinkRejection(){return fProdV0KinkRejection;}
   Double_t GetProdV0MassTolLambda(){return fProdV0MassTolLambda;}
   Double_t GetProdV0MassTolLambdaRough(){return fProdV0MassTolLambdaRough;}
   Double_t GetProdV0PtMin(){return fProdV0PtMin;}
@@ -173,6 +175,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
   Int_t    fProdAODFilterBit;    /// AOD filter Bit used before object creation
   Bool_t   fProdRejectTrackWithShared;    /// Flag to Reject tracks with shared clusters
+  Bool_t   fProdV0KinkRejection;    /// Flag to Reject v0 kinks
   Double_t fProdV0MassTolLambda;       /// Lambda mass selection  used before object creation
   Double_t fProdV0MassTolLambdaRough;       /// Lambda mass selection  used before object creation
   Double_t fProdV0PtMin;            /// Minimum Lambda pT used before object creation
@@ -214,7 +217,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fConversionMassMax; /// Conversion mass
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,7);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,8);
   /// \endcond
 };
 

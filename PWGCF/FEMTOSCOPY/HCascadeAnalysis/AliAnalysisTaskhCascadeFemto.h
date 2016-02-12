@@ -72,11 +72,12 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   void SetMaxPtCasc(Float_t maxptforcasc) { fMaxPtForCasc  = maxptforcasc;}
   void SetIPCutBac(Float_t ipcutbac) { fIPCutBac = ipcutbac;}
   void SetApplyYcutCasc(Bool_t applyycutcasc) { fkApplyYcutCasc = applyycutcasc;}
- 
   void SetPropagateGlobal(Bool_t propagateglobal) { fkPropagateGlobal = propagateglobal;}
+  void SetPropagateAtFixedR(Bool_t propagatefixedr) { fkPropagateAtFixedR = propagatefixedr;}
+
   void SetCutOnttcProp(Bool_t kcutonttcprop) { fkCutOnTtcProp = kcutonttcprop;}
 
-  void SetPosR125(AliVTrack *track, const Float_t bfield, Double_t priVtx[3], Double_t posSftR125[3] );  
+  void SetPosR125(AliVTrack *track, const Float_t bfield, Double_t posSftR125[3] );  
   Double_t EtaS( Double_t posSftR125[3] ) const; 
   Double_t ThetaS( Double_t posSftR125[3] ) const;
 
@@ -115,6 +116,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   Float_t fIPCutBac;
   Bool_t fkApplyYcutCasc;
   Bool_t fkPropagateGlobal;
+  Bool_t fkPropagateAtFixedR;
   Bool_t fkCutOnTtcProp;
 
   AliESDtrackCuts    *fESDtrackCuts;              //! basic cut variables for tracks added ! not sure
@@ -251,7 +253,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   AliAnalysisTaskhCascadeFemto(const AliAnalysisTaskhCascadeFemto&); // not implemented
   AliAnalysisTaskhCascadeFemto& operator=(const AliAnalysisTaskhCascadeFemto&); // not implemented
   //
-  ClassDef(AliAnalysisTaskhCascadeFemto, 5);
+  ClassDef(AliAnalysisTaskhCascadeFemto, 6);
 };
 
 #endif

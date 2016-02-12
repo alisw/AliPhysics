@@ -259,7 +259,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
     fHistEmbJetsPhiEta->GetXaxis()->SetTitle("#eta");
     fHistEmbJetsPhiEta->GetYaxis()->SetTitle("#phi");
     fOutput->Add(fHistEmbJetsPhiEta);
-    
+
     fHistLeadPartPhiEta = new TH2F("fHistLeadPartPhiEta","fHistLeadPartPhiEta", 100, -1, 1, 201, 0, TMath::Pi() * 2.01);
     fHistLeadPartPhiEta->GetXaxis()->SetTitle("#eta");
     fHistLeadPartPhiEta->GetYaxis()->SetTitle("#phi");
@@ -298,21 +298,21 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistDeltaPtRCvsEP[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
       fHistDeltaPtRCvsEP[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistDeltaPtRCvsEP[i]);
-      
-      if (fJetsCont) {
-	histname = "fHistRCPtExLJ_";
-	histname += i;
-	fHistRCPtExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
-	fHistRCPtExLJ[i]->GetXaxis()->SetTitle("#it{p}_{T}^{RC} (GeV/#it{c})");
-	fHistRCPtExLJ[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistRCPtExLJ[i]);
 
-	histname = "fHistDeltaPtRCExLJ_";
-	histname += i;
-	fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
-	fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
-	fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
-	fOutput->Add(fHistDeltaPtRCExLJ[i]);
+      if (fJetsCont) {
+        histname = "fHistRCPtExLJ_";
+        histname += i;
+        fHistRCPtExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins, fMinBinPt, fMaxBinPt * 2);
+        fHistRCPtExLJ[i]->GetXaxis()->SetTitle("#it{p}_{T}^{RC} (GeV/#it{c})");
+        fHistRCPtExLJ[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistRCPtExLJ[i]);
+
+        histname = "fHistDeltaPtRCExLJ_";
+        histname += i;
+        fHistDeltaPtRCExLJ[i] = new TH1F(histname.Data(), histname.Data(), fNbins * 2, -fMaxBinPt, fMaxBinPt);
+        fHistDeltaPtRCExLJ[i]->GetXaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
+        fHistDeltaPtRCExLJ[i]->GetYaxis()->SetTitle("counts");
+        fOutput->Add(fHistDeltaPtRCExLJ[i]);
 
         histname = "fHistRCPtExPartialLJ_";
         histname += i;
@@ -372,7 +372,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       histname = "fHistEmbPartPtvsJetCorrPt_";
       histname += i;
       fHistEmbPartPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), 
-					      fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+          fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
       fHistEmbPartPtvsJetCorrPt[i]->GetXaxis()->SetTitle("#sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fHistEmbPartPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
       fHistEmbPartPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
@@ -381,7 +381,7 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       histname = "fHistJetPtvsJetCorrPt_";
       histname += i;
       fHistJetPtvsJetCorrPt[i] = new TH2F(histname.Data(), histname.Data(), 
-					  fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+          fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
       fHistJetPtvsJetCorrPt[i]->GetXaxis()->SetTitle("#it{p}_{T,jet}^{emb} (GeV/#it{c})");
       fHistJetPtvsJetCorrPt[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - A#rho (GeV/#it{c})");
       fHistJetPtvsJetCorrPt[i]->GetZaxis()->SetTitle("counts");
@@ -407,11 +407,11 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
       fHistRhoVSEmbBkg[i]->GetXaxis()->SetTitle("A#rho (GeV/#it{c})");
       fHistRhoVSEmbBkg[i]->GetYaxis()->SetTitle("#it{p}_{T,jet}^{emb} - #sum#it{p}_{T,const}^{emb} (GeV/#it{c})");
       fOutput->Add(fHistRhoVSEmbBkg[i]);
-      
+
       histname = "fHistDeltaPtEmbArea_";
       histname += i;
       fHistDeltaPtEmbArea[i] = new TH2F(histname.Data(), histname.Data(), 
-					    50, 0, 2, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+          50, 0, 2, fNbins * 2, -fMaxBinPt, fMaxBinPt);
       fHistDeltaPtEmbArea[i]->GetXaxis()->SetTitle("area");
       fHistDeltaPtEmbArea[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{emb} (GeV/#it{c})");
       fHistDeltaPtEmbArea[i]->GetZaxis()->SetTitle("counts");
@@ -439,19 +439,19 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 {
   // Fill histograms.
 
-  fHistRhovsCent->Fill(fCent, fRhoVal);
+  fHistRhovsCent->Fill(fCent, fJetsCont->GetRhoVal());
 
   // ************
   // Random cones
   // _________________________________
-  
+
   const Float_t rcArea = fConeRadius * fConeRadius * TMath::Pi();
   Float_t RCpt = 0;
   Float_t RCeta = 0;
   Float_t RCphi = 0;
-  
+
   if (fTracksCont || fCaloClustersCont) {
-    
+
     for (Int_t i = 0; i < fRCperEvent; i++) {
       // Simple random cones
       RCpt = 0;
@@ -459,37 +459,37 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
       RCphi = 0;
       GetRandomCone(RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, 0);
       if (RCpt > 0) {
-	fHistRCPhiEta->Fill(RCeta, RCphi);
-	fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal * rcArea, RCpt);
-	
-	fHistRCPt[fCentBin]->Fill(RCpt);
+        fHistRCPhiEta->Fill(RCeta, RCphi);
+        fHistRhoVSRCPt[fCentBin]->Fill(fJetsCont->GetRhoVal() * rcArea, RCpt);
 
-	Double_t ep = RCphi - fEPV0;
-	while (ep < 0) ep += TMath::Pi();
-	while (ep >= TMath::Pi()) ep -= TMath::Pi();
+        fHistRCPt[fCentBin]->Fill(RCpt);
 
-	fHistDeltaPtRCvsEP[fCentBin]->Fill(ep, RCpt - rcArea * fRhoVal);
+        Double_t ep = RCphi - fEPV0;
+        while (ep < 0) ep += TMath::Pi();
+        while (ep >= TMath::Pi()) ep -= TMath::Pi();
+
+        fHistDeltaPtRCvsEP[fCentBin]->Fill(ep, RCpt - rcArea * fJetsCont->GetRhoVal());
       }
 
       if (fJetsCont) {
 
-	// Random cones far from leading jet
-	AliEmcalJet* jet = fJetsCont->GetLeadingJet("rho");
-	
-	RCpt = 0;
-	RCeta = 0;
-	RCphi = 0;
-	GetRandomCone(RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, jet);
-	if (RCpt > 0) {
-	  if (jet) {
-	    Float_t dphi = RCphi - jet->Phi();
-	    if (dphi > 4.8) dphi -= TMath::Pi() * 2;
-	    if (dphi < -1.6) dphi += TMath::Pi() * 2; 
-	    fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
-	  }
-	  fHistRCPtExLJ[fCentBin]->Fill(RCpt);
-	  fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
-	}
+        // Random cones far from leading jet
+        AliEmcalJet* jet = fJetsCont->GetLeadingJet("rho");
+
+        RCpt = 0;
+        RCeta = 0;
+        RCphi = 0;
+        GetRandomCone(RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, jet);
+        if (RCpt > 0) {
+          if (jet) {
+            Float_t dphi = RCphi - jet->Phi();
+            if (dphi > 4.8) dphi -= TMath::Pi() * 2;
+            if (dphi < -1.6) dphi += TMath::Pi() * 2;
+            fHistRCPtExLJVSDPhiLJ->Fill(RCpt, dphi);
+          }
+          fHistRCPtExLJ[fCentBin]->Fill(RCpt);
+          fHistDeltaPtRCExLJ[fCentBin]->Fill(RCpt - rcArea * fJetsCont->GetRhoVal());
+        }
 
         //partial exclusion
         if(fBeamType == kpA) {
@@ -507,13 +507,13 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
               fHistRCPtExPartialLJVSDPhiLJ->Fill(RCpt, dphi);
             }
             fHistRCPtExPartialLJ[fCentBin]->Fill(RCpt);
-            fHistDeltaPtRCExPartialLJ[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+            fHistDeltaPtRCExPartialLJ[fCentBin]->Fill(RCpt - rcArea * fJetsCont->GetRhoVal());
           }
-	}
+        }
       }
     }
   }
-  
+
   // Random cones with randomized particles
   if (fRandTracksCont || fRandCaloClustersCont) {
     RCpt = 0;
@@ -522,7 +522,7 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
     GetRandomCone(RCpt, RCeta, RCphi, fRandTracksCont, fRandCaloClustersCont, 0);
     if (RCpt > 0) {
       fHistRCPtRand[fCentBin]->Fill(RCpt);
-      fHistDeltaPtRCRand[fCentBin]->Fill(RCpt - rcArea * fRhoVal);
+      fHistDeltaPtRCRand[fCentBin]->Fill(RCpt - rcArea * fJetsCont->GetRhoVal());
     }  
   }
 
@@ -531,34 +531,34 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
   // _________________________________
 
   if (fEmbJetsCont) {
-    
+
     AliEmcalJet *embJet = NextEmbeddedJet(kTRUE);
-    
+
     while (embJet != 0) {
       TLorentzVector mom;
       fEmbJetsCont->GetLeadingHadronMomentum(mom,embJet);
-      
+
       Double_t distLeading2Jet = TMath::Sqrt((embJet->Eta() - mom.Eta()) * (embJet->Eta() - mom.Eta()) + (embJet->Phi() - mom.Phi()) * (embJet->Phi() - mom.Phi()));
-      
+
       fHistEmbPartPtvsJetPt[fCentBin]->Fill(embJet->MCPt(), embJet->Pt());
-      fHistEmbPartPtvsJetCorrPt[fCentBin]->Fill(embJet->MCPt(), embJet->Pt() - embJet->Area() * fRhoVal);
+      fHistEmbPartPtvsJetCorrPt[fCentBin]->Fill(embJet->MCPt(), embJet->Pt() - embJet->Area() * fJetsCont->GetRhoVal());
       fHistLeadPartPhiEta->Fill(mom.Eta(), mom.Phi());
       fHistDistLeadPart2JetAxis[fCentBin]->Fill(distLeading2Jet);
-      
+
       fHistEmbJetsPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt(), mom.Pt());
-      fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fRhoVal * embJet->Area(), mom.Pt());
+      fHistEmbJetsCorrPtArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - fJetsCont->GetRhoVal() * embJet->Area(), mom.Pt());
       fHistEmbJetsPhiEta->Fill(embJet->Eta(), embJet->Phi());
-      fHistJetPtvsJetCorrPt[fCentBin]->Fill(embJet->Pt(), embJet->Pt() - fRhoVal * embJet->Area());
-      
+      fHistJetPtvsJetCorrPt[fCentBin]->Fill(embJet->Pt(), embJet->Pt() - fJetsCont->GetRhoVal() * embJet->Area());
+
       fHistEmbBkgArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->MCPt());
-      fHistRhoVSEmbBkg[fCentBin]->Fill(fRhoVal * embJet->Area(), embJet->Pt() - embJet->MCPt());
-      fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
+      fHistRhoVSEmbBkg[fCentBin]->Fill(fJetsCont->GetRhoVal() * embJet->Area(), embJet->Pt() - embJet->MCPt());
+      fHistDeltaPtEmbArea[fCentBin]->Fill(embJet->Area(), embJet->Pt() - embJet->Area() * fJetsCont->GetRhoVal() - embJet->MCPt());
 
       Double_t ep = embJet->Phi() - fEPV0;
       while (ep < 0) ep += TMath::Pi();
       while (ep >= TMath::Pi()) ep -= TMath::Pi();
 
-      fHistDeltaPtEmbvsEP[fCentBin]->Fill(ep, embJet->Pt() - embJet->Area() * fRhoVal - embJet->MCPt());
+      fHistDeltaPtEmbvsEP[fCentBin]->Fill(ep, embJet->Pt() - embJet->Area() * fJetsCont->GetRhoVal() - embJet->MCPt());
 
       embJet = NextEmbeddedJet();
     }
@@ -573,7 +573,7 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Bool_t reset)
   // Get the next accepted embedded jet.
 
   Int_t i = reset ? 0 : -1;
-      
+
   AliEmcalJet* jet = fEmbJetsCont->GetNextAcceptJet(i);
   while (jet && jet->MCPt() < fMCJetPtThreshold) jet = fEmbJetsCont->GetNextAcceptJet();
 
@@ -582,8 +582,8 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Bool_t reset)
 
 //________________________________________________________________________
 void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &phi,
-					   AliParticleContainer* tracks, AliClusterContainer* clusters,
-					   AliEmcalJet *jet, Bool_t bPartialExclusion) const
+    AliParticleContainer* tracks, AliClusterContainer* clusters,
+    AliEmcalJet *jet, Bool_t bPartialExclusion) const
 {
   // Get rigid cone.
 
@@ -609,7 +609,7 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
 
   if (maxPhi > TMath::Pi() * 2) maxPhi = TMath::Pi() * 2;
   if (minPhi < 0) minPhi = 0;
-  
+
   Float_t dLJ = 0;
   Int_t repeats = 0;
   Bool_t reject = kTRUE;
@@ -649,15 +649,15 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
 
       Float_t cluseta = nPart.Eta();
       Float_t clusphi = nPart.Phi();
-      
+
       if (TMath::Abs(clusphi - phi) > TMath::Abs(clusphi - phi + 2 * TMath::Pi()))
-	clusphi += 2 * TMath::Pi();
+        clusphi += 2 * TMath::Pi();
       if (TMath::Abs(clusphi - phi) > TMath::Abs(clusphi - phi - 2 * TMath::Pi()))
-	clusphi -= 2 * TMath::Pi();
-     
+        clusphi -= 2 * TMath::Pi();
+
       Float_t d = TMath::Sqrt((cluseta - eta) * (cluseta - eta) + (clusphi - phi) * (clusphi - phi));
       if (d <= fConeRadius) 
-	pt += nPart.Pt();
+        pt += nPart.Pt();
 
       cluster = clusters->GetNextAcceptCluster();
     }
@@ -668,15 +668,15 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
     while(track) { 
       Float_t tracketa = track->Eta();
       Float_t trackphi = track->Phi();
-      
+
       if (TMath::Abs(trackphi - phi) > TMath::Abs(trackphi - phi + 2 * TMath::Pi()))
-	trackphi += 2 * TMath::Pi();
+        trackphi += 2 * TMath::Pi();
       if (TMath::Abs(trackphi - phi) > TMath::Abs(trackphi - phi - 2 * TMath::Pi()))
-	trackphi -= 2 * TMath::Pi();
-      
+        trackphi -= 2 * TMath::Pi();
+
       Float_t d = TMath::Sqrt((tracketa - eta) * (tracketa - eta) + (trackphi - phi) * (trackphi - phi));
       if (d <= fConeRadius)
-	pt += track->Pt();
+        pt += track->Pt();
 
       track = tracks->GetNextAcceptParticle(); 
     }
@@ -731,7 +731,7 @@ void AliAnalysisTaskDeltaPt::ExecOnce()
   const Float_t maxDist = TMath::Max(fConeMaxPhi - fConeMinPhi, fConeMaxEta - fConeMinEta) / 2;
   if (fMinRC2LJ > maxDist) {
     AliWarning(Form("The parameter fMinRC2LJ = %f is too large for the considered acceptance. "
-                    "Will use fMinRC2LJ = %f", fMinRC2LJ, maxDist));
+        "Will use fMinRC2LJ = %f", fMinRC2LJ, maxDist));
     fMinRC2LJ = maxDist;
   }
 }
@@ -753,7 +753,7 @@ Double_t AliAnalysisTaskDeltaPt::GetNColl() const {
 
     for(Int_t i = 0; i<nNCollBins; i++) {
       if(fCent>=centMin[i] && fCent<centMax[i])
-	return nColl[i];
+        return nColl[i];
     }
 
     return -1.;

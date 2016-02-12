@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFQATasks)
+set(MODULE PWGLFQATasks)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/QATasks)

@@ -446,6 +446,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMPtCorrection->Fill(pT,part->Pt() - pT);
         if (beta > 0) {
           if (part->IsPhysicalPrimary()) {
+            fMTPCphiCounts->Fill(centrality,part->Pt(),track->Phi());
             fMDCAPrimaryTOF->Fill(centrality,part->Pt(),dca[0]);
             fMITS_TPC_TOF->Fill(centrality,part->Pt());
           } else {
@@ -456,7 +457,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fAPtCorrection->Fill(pT,part->Pt() - pT);
         if (part->IsPhysicalPrimary()) {
           fAITS_TPC->Fill(centrality,part->Pt());
-          if (beta > 0) fAITS_TPC_TOF->Fill(centrality,part->Pt());
+          if (beta > 0) {
+					  fAITS_TPC_TOF->Fill(centrality,part->Pt());
+            fATPCphiCounts->Fill(centrality,part->Pt(),track->Phi());
+          }
         }
       }
     } else {

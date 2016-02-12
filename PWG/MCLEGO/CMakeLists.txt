@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGMCLEGO)
+set(MODULE PWGMCLEGO)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # install all executable scripts
 install(DIRECTORY .

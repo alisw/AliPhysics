@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFspectra)
+set(MODULE PWGLFspectra)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA)
@@ -29,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
             		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
+		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
   )
 
 # Sources - alphabetical order
