@@ -939,16 +939,17 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
                 fDCAyEtaPhiMCSecDecaysLambda->Fill(b[0],eta,phi);
                 fDCAzEtaPhiMCSecDecaysLambda->Fill(b[1],eta,phi);
             }
-        } else {
+      }
+      if(isFromMaterial) {
             fDCAyEtaPtMCSecMaterial->Fill(b[0],eta,pt);
             fDCAzEtaPtMCSecMaterial->Fill(b[1],eta,pt);
             fDCAyPhiPtMCSecMaterial->Fill(b[0],phi,pt);
             fDCAzPhiPtMCSecMaterial->Fill(b[1],phi,pt);
             fDCAyEtaPhiMCSecMaterial->Fill(b[0],eta,phi);
             fDCAzEtaPhiMCSecMaterial->Fill(b[1],eta,phi);
-        }
       }
     }
+  }
 }
 
 //_____________________________________________________________________________
@@ -983,8 +984,8 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list)
 
     fRecEventXYZ->Add(fRecEventXYZ);
     fRecEventXYMult->Add(fRecEventXYMult);
-    fRecEventXZMult->Add(fRecEventYZMult);
-    fRecEventYZMult->Add(fRecEventZResZMult);
+    fRecEventXZMult->Add(fRecEventXZMult);
+    fRecEventYZMult->Add(fRecEventYZMult);
     fRecEventZResZMult->Add(fRecEventZResZMult);
 
     fMCEventXYZ->Add(fMCEventXYZ);
