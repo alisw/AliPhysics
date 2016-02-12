@@ -52,11 +52,14 @@
 #include "AliLog.h" 
 #include "AliMultiplicity.h"
 #include "AliTracker.h"
+#include "AliESDVertex.h"
+#include "AliTRDTriggerAnalysis.h"
 
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
 #include "AliPhysicsSelection.h"
 #include "AliTriggerAnalysis.h"
+#include "AliTRDSensorArray.h"
 
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
@@ -178,8 +181,10 @@ ClassImp(AlidNdPtAnalysis)
   fBinsEta(0),
   fBinsZv(0),
 
-  fIsInit(kFALSE)  
+  fIsInit(kFALSE),
   
+  fTRDTriggerRequiredHQU(kFALSE),
+  fTRDTriggerRequiredHJT(kFALSE)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -305,7 +310,10 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fBinsEta(0),
   fBinsZv(0),
 
-  fIsInit(kFALSE)  
+  fIsInit(kFALSE),
+  
+  fTRDTriggerRequiredHQU(kFALSE),
+  fTRDTriggerRequiredHJT(kFALSE)
   
 {
   //
@@ -1197,17 +1205,47 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
+  Bool_t triggerResult = kTRUE;
   AliPhysicsSelection *physicsSelection = NULL;
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler){Printf("ERROR: Could not receive input handler");return;}
-
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+  
+  if (fTRDTriggerRequiredHJT ){
+    AliTRDTriggerAnalysis* trdSelection = (new AliTRDTriggerAnalysis()); //TRD added
+    if (!trdSelection){Printf("ERROR: Could not receive TRD selection"); return; }
+    //added TRD
+    //TRD trigger
+    trdSelection->CalcTriggers(esdEvent);
+    triggerResult=trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHJT);//hard trigger only hight Pt
+    // TRD trigger END
+  }
+  if (fTRDTriggerRequiredHQU ){
+    AliTRDTriggerAnalysis* trdSelection = (new AliTRDTriggerAnalysis()); //TRD added
+    if (!trdSelection){Printf("ERROR: Could not receive TRD selection"); return; }
+    //added TRD
+    //TRD trigger
+    trdSelection->CalcTriggers(esdEvent);
+    triggerResult=trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU);//trigger with low Pt as well
+    // TRD trigger END
+  }  
+   
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
+    if (fTRDTriggerRequiredHJT || fTRDTriggerRequiredHQU){
+      isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask() && triggerResult;
+   
+    }else{
+      isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
+    }
+      
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection){Printf("ERROR: Could not receive physics selection");return;}
