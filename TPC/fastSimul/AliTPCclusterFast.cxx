@@ -71,6 +71,8 @@ public:
   Double_t GetClusterProperties(TVectorF &param, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE, Int_t skipSample=0);
   Double_t GetCOG(Int_t returnType, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
   Double_t GetCOGHit(Int_t returnType);
+  Float_t  UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap);
+  Float_t GetCOGUnfolded(Int_t returnType);
   //
   Double_t  GetExpectedRMS(Int_t dim);
   //Double_t  GetExpectedResolution(Int_t dim);
@@ -911,7 +913,103 @@ Double_t  AliTPCclusterFast::GaussGamma4(Double_t x, Double_t s0, Double_t p1){
 
  
 }
- 
+Float_t AliTPCclusterFast::GetCOGUnfolded(Int_t returnType){
+  //
+  //
+  //
+  Float_t meani, meanj, sumu,overlap;
+  UnfoldCluster(meani, meanj, sumu,overlap);
+  if (returnType==-1) return overlap;
+  if (returnType==0) return sumu;
+  if (returnType==1) return meani;
+  if (returnType==2) return meanj;
+}
+
+Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap){
+  //
+  // Unforling as used in the  AliTPCclusterer::UnfoldCluster - (described in CHEP paper ...)
+  //  - we are not using second local maxima as we assume we know the cluster shape
+  //  - in case of absence of this information local maxima usage to be considered
+  //  
+  Float_t sum3i[7] = {0,0,0,0,0,0,0};
+  Float_t sum3j[7] = {0,0,0,0,0,0,0};
+
+  for (Int_t k =0;k<7;k++) // sequence array
+    for (Int_t l = -1; l<=1;l++){  // +- 1 bin loop
+      if (k>0&&k<6) sum3i[k]+=fDigits(k-1,l+3);  //  i- y direction
+      sum3j[k]+=fDigits(l+2,k);
+      if (fOverlapCluster!=NULL){
+	if (k>0&&k<6) sum3i[k]+=fOverlapCluster->fDigits(k-1,l+3);  //  i- y direction
+	sum3j[k]+=fOverlapCluster->fDigits(l+2,k);
+      }
+    }
+  Float_t mratio[3][3]={{1,1,1},{1,1,1},{1,1,1}};
+  //
+  //unfold  y 
+  Float_t sum3wi    = 0;  //charge minus overlap
+  Float_t sum3wio   = 0;  //full charge
+  Float_t sum3iw    = 0;  //sum for mean value
+  for (Int_t dk=-1;dk<=1;dk++){
+    sum3wio+=sum3i[dk+3];
+    if (dk==0){
+      sum3wi+=sum3i[dk+3];     
+    }
+    else{
+      Float_t ratio =1;
+      if (  ( ((sum3i[dk+3]+3)/(sum3i[3]-3))+1 < (sum3i[2*dk+3]-3)/(sum3i[dk+3]+3))||
+	    (sum3i[dk+3]<=sum3i[2*dk+3] && sum3i[dk+3]>2 )){
+	Float_t xm2 = sum3i[-dk+3];
+	Float_t xm1 = sum3i[+3];
+	Float_t x1  = sum3i[2*dk+3];
+	Float_t x2  = sum3i[3*dk+3]; 	
+	Float_t w11   = TMath::Max((Float_t)(4.*xm1-xm2),(Float_t)0.000001);	  
+	Float_t w12   = TMath::Max((Float_t)(4 *x1 -x2),(Float_t)0.);
+	ratio = w11/(w11+w12);	 
+	for (Int_t dl=-1;dl<=1;dl++)
+	  mratio[dk+1][dl+1] *= ratio;
+      }
+      Float_t amp = sum3i[dk+3]*ratio;
+      sum3wi+=amp;
+      sum3iw+= dk*amp;      
+    }
+  }
+  meani = sum3iw/sum3wi;
+  Float_t overlapi = (sum3wio-sum3wi)/sum3wio;
+  //unfold  z 
+  Float_t sum3wj    = 0;  //charge minus overlap
+  Float_t sum3wjo   = 0;  //full charge
+  Float_t sum3jw    = 0;  //sum for mean value
+  for (Int_t dk=-1;dk<=1;dk++){
+    sum3wjo+=sum3j[dk+3];
+    if (dk==0){
+      sum3wj+=sum3j[dk+3];     
+    }
+    else{
+      Float_t ratio =1;
+      if ( ( ((sum3j[dk+3]+3)/(sum3j[3]-3))+1 < (sum3j[2*dk+3]-3)/(sum3j[dk+3]+3)) ||
+	   (sum3j[dk+3]<=sum3j[2*dk+3] && sum3j[dk+3]>2)){
+	Float_t xm2 = sum3j[-dk+3];
+	Float_t xm1 = sum3j[+3];
+	Float_t x1  = sum3j[2*dk+3];
+	Float_t x2  = sum3j[3*dk+3]; 	
+	Float_t w11   = TMath::Max((Float_t)(4.*xm1-xm2),(Float_t)0.000001);	  
+	Float_t w12   = TMath::Max((Float_t)(4 *x1 -x2),(Float_t)0.);
+	ratio = w11/(w11+w12);	 
+	for (Int_t dl=-1;dl<=1;dl++)
+	  mratio[dl+1][dk+1] *= ratio;
+      }
+      Float_t amp = sum3j[dk+3]*ratio;
+      sum3wj+=amp;
+      sum3jw+= dk*amp;      
+    }
+  }
+  meanj = sum3jw/sum3wj;
+  Float_t overlapj = (sum3wjo-sum3wj)/sum3wjo;  
+  overlap = Int_t(100*TMath::Max(overlapi,overlapj)+3);  
+  sumu = (sum3wj+sum3wi)/2.;
+}
+
+
 // Analytical sollution only in 1D - too long expression
 // Simplify[Integrate[Exp[-(x0-(x1-k*x2))*(x0-(x1-k*x2))/(2*s0*s0)]*Exp[-(x1*t1-k*x2)],{x2,-1,1}]] 
 //
