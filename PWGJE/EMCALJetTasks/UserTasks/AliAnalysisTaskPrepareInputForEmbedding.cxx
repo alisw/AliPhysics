@@ -107,7 +107,7 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    Int_t nBins[dim] = {nBinsfineM, nBinsfineM, nBinsfinePt, nBinsfinePt, 40};
    Double_t xmin[dim]  = {minM, minM, minPt, minPt, 0.};
    Double_t xmax[dim]  = {maxM, maxM, maxPt, maxPt, 2.};
-   TString hsptitle = "Mass-pT response; #it{M}_{det}; #it{M}_{part}; #it{p}_{T,det}; #it{p}_{T,part}; #it{N}_{const}^{det}/#it{N}_{const}^{part}";
+   TString hsptitle = "Mass-pT response; #it{M}_{part}; #it{M}_{det}; #it{p}_{T,part}; #it{p}_{T,det}; #it{N}_{const}^{det}/#it{N}_{const}^{part}";
    fhResponse = new THnSparseF("hResponse", hsptitle.Data(), dim, nBins, xmin, xmax);
    fOutput->Add(fhResponse);
    
