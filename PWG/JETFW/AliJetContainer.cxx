@@ -5,7 +5,6 @@
 
 #include <TClonesArray.h>
 
-#include "AliEmcalJet.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"

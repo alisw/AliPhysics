@@ -67,6 +67,8 @@ class AliEmcalContainer : public TObject {
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) = 0;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom, Int_t i=-1) = 0;
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1) = 0;
+  virtual Bool_t              AcceptObject(Int_t i) = 0;
+  virtual Bool_t              AcceptObject(TObject* obj) = 0;
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
