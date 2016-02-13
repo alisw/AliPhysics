@@ -69,8 +69,6 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *gtrack); // TBI shall I also pass atrack?
   virtual void FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack);
   virtual void V0s(AliVEvent *ave);
-
-
   Bool_t Pion(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t Kaon(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t Proton(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
@@ -195,10 +193,16 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t fFillControlHistogramsEvent;        // fill or not control histograms for global event observables
   TH1I *fGetNumberOfTracksHist;              // aAOD->GetNumberOfTracks()
   TH1I *fGetNumberOfV0sHist;                 // aAOD->GetNumberOfV0s()
+  TH1I *fGetNumberOfCascadesHist;            // aAOD->GetNumberOfCascades()
+  TH1D *fGetMagneticFieldHist;               // aAOD->GetMagneticField()
+  TH1I *fGetEventTypeHist;                   // aAOD->GetEventType()
+  TH1D *fGetCentralityHist;                  // aAOD->GetCentrality()
+
   TH1F *fVertexXYZ[3];                       //! [avtx->GetX(),avtx->GetY(),avtx->GetZ()]
   TH1I *fGetNContributorsHist;               // avtx->GetNContributors()
   TH1F *fGetChi2perNDFHist;                  // avtx->GetChi2perNDF();
   TH1I *fGetNDaughtersHist;                  // avtx->GetNDaughters();
+
   // ...
   // 1b) Non-identified particles (for AOD these are "normal global" tracks):
   TList *fControlHistogramsNonIdentifiedParticlesList;        // list to hold all 'control histograms' for non-identified particles
@@ -287,7 +291,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  //! do something only for the specified event
   UInt_t fPeriod;                 //! do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,4);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,5);
 
 };
 

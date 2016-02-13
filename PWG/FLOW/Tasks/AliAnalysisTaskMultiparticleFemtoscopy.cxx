@@ -32,6 +32,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliCentrality.h"
 
 #include "TCanvas.h" // TBI
 #include "TFile.h" // TBI
@@ -58,6 +59,10 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fFillControlHistogramsEvent(kFALSE),
  fGetNumberOfTracksHist(NULL),
  fGetNumberOfV0sHist(NULL),
+ fGetNumberOfCascadesHist(NULL),
+ fGetMagneticFieldHist(NULL),
+ fGetEventTypeHist(NULL),
+ fGetCentralityHist(NULL),
  fGetNContributorsHist(NULL),
  fGetChi2perNDFHist(NULL),
  fGetNDaughtersHist(NULL),
@@ -174,6 +179,10 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fFillControlHistogramsEvent(kFALSE),
  fGetNumberOfTracksHist(NULL),
  fGetNumberOfV0sHist(NULL),
+ fGetNumberOfCascadesHist(NULL),
+ fGetMagneticFieldHist(NULL),
+ fGetEventTypeHist(NULL),
+ fGetCentralityHist(NULL),
  fGetNContributorsHist(NULL),
  fGetChi2perNDFHist(NULL),
  fGetNDaughtersHist(NULL),
@@ -423,6 +432,13 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
   // AOD event:
   fGetNumberOfTracksHist->Fill(aAOD->GetNumberOfTracks()); // TBI not all tracks are unique
   fGetNumberOfV0sHist->Fill(aAOD->GetNumberOfV0s()); // TBI some V0s share the daughter
+  fGetNumberOfCascadesHist->Fill(aAOD->GetNumberOfCascades()); // TBI validate
+  fGetMagneticFieldHist->Fill(aAOD->GetMagneticField());
+  fGetEventTypeHist->Fill(aAOD->GetEventType());
+  if(aAOD->GetCentrality())
+  {
+   fGetCentralityHist->Fill(aAOD->GetCentrality()->GetCentralityPercentile("V0M")); // TBI validate this
+  }
   // AOD primary vertex:
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
   fVertexXYZ[0]->Fill(avtx->GetX());
@@ -509,6 +525,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
 void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedParticles(AliAODTrack *gtrack)
 {
  // Fill control histograms for non-identified particles.
+ // Uses PassesCommonGlobalTrackCuts(...) TBI
 
  // To do:
  // 1) Add support for MC and ESD, now it works only for AliAODTrack.
@@ -542,6 +559,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedP
 void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack)
 {
  // Fill control histograms for identified particles.
+ // Uses PassesCommonTrackCuts(...) TBI yet still it stored the paremeters of corresponding global track... TBI
 
  // To do:
  // 1) Add support for MC and ESD, now it works only for AliAODTrack.
@@ -556,7 +574,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
  if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");} // TBI keep this for some time, eventually just continue
 
  // b) Check cut selection criteria:
- if(!PassesCommonGlobalTrackCuts(gtrack)){return;} // TBI in the method PassesCommonGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
+ if(!PassesCommonTrackCuts(atrack)){return;} // TBI in the method PassesCommonGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
  // TBI do I need some check for atrack?
 
  // c) Fill control histograms:
@@ -1475,6 +1493,19 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
   fGetNumberOfV0sHist->SetStats(kFALSE);
   fGetNumberOfV0sHist->SetFillColor(kBlue-10);
   fControlHistogramsEventList->Add(fGetNumberOfV0sHist);
+  fGetNumberOfCascadesHist = new TH1I("fGetNumberOfCascadesHist","aAOD->GetNumberOfCascades() (TBI: Not validated.)",10000,0,10000);
+  fGetNumberOfCascadesHist->SetStats(kFALSE);
+  fGetNumberOfCascadesHist->SetFillColor(kBlue-10);
+  fControlHistogramsEventList->Add(fGetNumberOfCascadesHist);
+  fGetMagneticFieldHist = new TH1D("fGetMagneticFieldHist","aAOD->GetMagneticField()",20,-10.,10.);
+  fGetMagneticFieldHist->SetFillColor(kBlue-10);
+  fControlHistogramsEventList->Add(fGetMagneticFieldHist);
+  fGetEventTypeHist = new TH1I("fGetEventTypeHist","aAOD->GetEventType()",1000,0,10);
+  fGetEventTypeHist->SetFillColor(kBlue-10);
+  fControlHistogramsEventList->Add(fGetEventTypeHist);
+  fGetCentralityHist = new TH1D("fGetCentralityHist","aAOD->GetCentrality()",100,0.,100.);
+  fGetCentralityHist->SetFillColor(kBlue-10);
+  fControlHistogramsEventList->Add(fGetCentralityHist);
   TString sxyz[3] = {"X","Y","Z"};
   for(Int_t xyz=0;xyz<3;xyz++)
   {
@@ -1947,7 +1978,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack *atrack)";
  if(!atrack){Fatal(sMethodName.Data(),"!atrack");}
 
- // TBI well, implement some cuts eventually
+ if(!atrack->TestFilterBit(128)) return kFALSE; // TPC-only TBI setter
 
  return kTRUE; 
 
@@ -1976,8 +2007,14 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonEventCuts(AliVEvent *
  }
  else if(aAOD)
  {
-  // TBI
- }
+  if(!aAOD->GetPrimaryVertex()) return kFALSE;
+  if(TMath::Abs(aAOD->GetMagneticField())<0.001) return kFALSE;
+  AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
+  //if(TMath::Abs(avtx->GetX())>10.0) return kFALSE;
+  //if(TMath::Abs(avtx->GetY())>10.0) return kFALSE;
+  if(TMath::Abs(avtx->GetZ())>10.0) return kFALSE; // TBI setter
+  if(avtx->GetNContributors()<=2) return kFALSE; // TBI setter
+ } // else if(aAOD)
 
  return kTRUE;
 
@@ -2006,7 +2043,13 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesMixedEventCuts(AliVEvent *a
  }
  else if(aAOD)
  {
-  // TBI
+  if(!aAOD->GetPrimaryVertex()) return kFALSE;
+  if(TMath::Abs(aAOD->GetMagneticField())<0.001) return kFALSE;
+  AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
+  //if(TMath::Abs(avtx->GetX())>10.0) return kFALSE;
+  //if(TMath::Abs(avtx->GetY())>10.0) return kFALSE;
+  if(TMath::Abs(avtx->GetZ())>10.0) return kFALSE; // TBI setter
+  if(avtx->GetNContributors()<=2) return kFALSE; // TBI setter
  }
 
  return kTRUE;
@@ -2037,6 +2080,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
   if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
   if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
   if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
   // Corresponding AOD global track:
   Int_t id1 = atrack1->GetID();
   AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id1)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id1+1))));
@@ -2053,6 +2097,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
    if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
    if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
    // Corresponding AOD global track:
    Int_t id2 = atrack2->GetID();
    AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id2)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id2+1))));
@@ -2135,10 +2180,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    {
     fCorrelationFunctions[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
-   //  a4) pi-K- [6][8]
+   //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[6][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
@@ -2252,6 +2297,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
   if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
   if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
   if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
   // Corresponding AOD global track:
   Int_t id1 = atrack1->GetID();
   AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(fGlobalTracksAOD[1]->GetValue(id1)) : ca1->UncheckedAt(fGlobalTracksAOD[1]->GetValue(-(id1+1))));
@@ -2267,6 +2313,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
    if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
    if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
    if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
    // Corresponding AOD global track:
    Int_t id2 = atrack2->GetID();
    AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(fGlobalTracksAOD[2]->GetValue(id2)) : ca2->UncheckedAt(fGlobalTracksAOD[2]->GetValue(-(id2+1))));
@@ -2346,10 +2393,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
    {
     fBackground[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
-   //  a4) pi-K- [6][8]
+   //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fBackground[6][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fBackground[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
