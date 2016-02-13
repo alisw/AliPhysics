@@ -1488,7 +1488,7 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(3,  "Acceptance");
   axis->SetBinLabel(4,  "MCLabel");
   axis->SetBinLabel(5,  "BitMap");
-  axis->SetBinLabel(6,  "Bit5");
+  axis->SetBinLabel(6,  "HF cut");
   axis->SetBinLabel(7,  "Bit6");
   axis->SetBinLabel(8,  "NotHybridTrack");
   axis->SetBinLabel(9,  "MCFlag");
