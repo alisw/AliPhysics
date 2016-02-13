@@ -1397,7 +1397,7 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
 	//Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
       }
       if (vCharge < 0) {
-	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->FindBin(vEta,vPt,vPhi));
+	correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->FindBin(vEta,vPt,vPhi));
 	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt); 
       }
     }
