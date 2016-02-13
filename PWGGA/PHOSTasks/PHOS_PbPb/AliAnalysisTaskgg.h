@@ -44,7 +44,7 @@ private:
   THashList *   fOutputContainer;        //final histogram container
   AliAODEvent * fEvent ;        //!
 //  TClonesArray * fStack ;  
-  TList *       fPHOSEvents[1][10][11] ; //Containers for events with PHOS photons
+  TList *       fPHOSEvents[10][10][11] ; //Containers for events with PHOS photons
   TClonesArray* fPHOSEvent ;      //PHOS photons in current event
  
   //Reaction plain for v2
