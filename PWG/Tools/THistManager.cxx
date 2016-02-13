@@ -81,7 +81,7 @@ THistManager::~THistManager(){
 }
 
 //______________________________________________________________________________
-void THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
+THashList* THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
 	/*
 	 * Create a new group of histograms within a parent group. Groups are represented as list. The default parent is
 	 * always the top list. List name structure accouding to unix paths (i.e. top list /, hirarchies separated by /).
@@ -93,11 +93,12 @@ void THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
 	THashList *parentgroup = FindGroup(parent);
 	if(!parentgroup){
 		Fatal("THistManager::CreateHistoGroup", "Parent group %s does not exist", parent);
-		return;
+		return 0;
 	}
 	THashList *childgroup = new THashList();
 	childgroup->SetName(groupname);
 	parentgroup->Add(childgroup);
+	return childgroup;
 }
 
 //______________________________________________________________________________
