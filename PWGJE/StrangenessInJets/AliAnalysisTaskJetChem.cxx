@@ -5450,11 +5450,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(embeddedJet){ 
 
-	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC); //no!
+	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC); //yes!
 	  
 	  if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded){    
 	    
-	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC); //no!
+	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC); //yes!
 	  }
 	}
 	
@@ -5464,7 +5464,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	  Double_t embJetPt = embeddedJet->Pt();//jet pt detector level (matched to generator level PYTHIA jets)
 	  
-	  fh1JetPtEmbGenAfterMatch->Fill(embJetPt);  //no!
+	  fh1JetPtEmbGenAfterMatch->Fill(embJetPt);  //no! but maybe only a matter of statistics..
 	  
 	  if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - embJetPt: "<<embJetPt<<std::endl; 
 
@@ -5489,7 +5489,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    if (ij==0) fFFHistosGen->FillFF(trackPt, jetPt, incrementJetPt);
 
-	    fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);//can be either PYTHIA particle level jet pT, or smeared with matched jet pT
+	    //fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);//can be either PYTHIA particle level jet pT, or smeared with matched jet pT
 	   
 	    
 	    delete trackV;
