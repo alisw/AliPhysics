@@ -62,7 +62,7 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
   fEventCounter(0)
 {
   // Constructor
-  for(Int_t i=0;i<1;i++){
+  for(Int_t i=0;i<10;i++){
     for(Int_t j=0;j<10;j++)
       for(Int_t k=0;k<11;k++)
 	fPHOSEvents[i][j][k]=0 ;
@@ -163,12 +163,13 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   Int_t nQ=50 ;
   Double_t qMax=0.2 ;
   
-  char kTbins[5][20] ;
+  char kTbins[6][20] ;
   sprintf(kTbins[0],"Kt00-02") ;
-  sprintf(kTbins[1],"Kt02-05") ;
-  sprintf(kTbins[2],"Kt05-10") ;
-  sprintf(kTbins[3],"Kt10-15") ;
-  sprintf(kTbins[4],"Kt15-99") ;
+  sprintf(kTbins[1],"Kt02-04") ;
+  sprintf(kTbins[2],"Kt04-07") ;
+  sprintf(kTbins[3],"Kt07-10") ;
+  sprintf(kTbins[4],"Kt10-13") ;
+  sprintf(kTbins[5],"Kt13-20") ;
 
   const Int_t nCuts=7 ;
   char cut[7][20] ;
@@ -180,6 +181,7 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   sprintf(cut[5],"Dist2") ;
   sprintf(cut[6],"Dist3") ;
   
+    
   for(Int_t iCut=0; iCut<nCuts; iCut++){
     for(Int_t ikT=0; ikT<5; ikT++){ 
       fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
@@ -200,19 +202,29 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
   }
 
-  fOutputContainer->Add(new TH3F("hConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH1F("hConvPi0Angle","Angle",200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH3F("hMCConvPi0True","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH3F("hMCConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH1F("hMCConvPi0Angle","Angle",200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH3F("hMCChConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH1F("hMCChConvPi0Angle","Angle",200,0.,TMath::Pi()));
+  for(Int_t ikT=0; ikT<5; ikT++){ 
+     fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+     fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+     fOutputContainer->Add(new TH3F(Form("hSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
+     fOutputContainer->Add(new TH3F(Form("hMiSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
+  }
   
-  fOutputContainer->Add(new TH2F("hVtxR","Vertex dR",200,-100.,100.,500,0.,500.));
-  fOutputContainer->Add(new TH2F("hVtxRPhi","Vertex dR",200,-100.,100.,100,-TMath::Pi(),TMath::Pi()));
-  fOutputContainer->Add(new TH2F("hVtxRTheta","Vertex dR",200,-100.,100.,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F("hVtxPhi","Vertex dPhi",100,-TMath::Pi(),TMath::Pi(),100,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH2F("hVtxTheta","Vertex dTheta",100,-0.5,0.5,100,-0.5,0.5));
+  
+  
+  
+//   fOutputContainer->Add(new TH3F("hConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH1F("hConvPi0Angle","Angle",200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH3F("hMCConvPi0True","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH3F("hMCConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH1F("hMCConvPi0Angle","Angle",200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH3F("hMCChConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH1F("hMCChConvPi0Angle","Angle",200,0.,TMath::Pi()));
+//   
+//   fOutputContainer->Add(new TH2F("hVtxR","Vertex dR",200,-100.,100.,500,0.,500.));
+//   fOutputContainer->Add(new TH2F("hVtxRPhi","Vertex dR",200,-100.,100.,100,-TMath::Pi(),TMath::Pi()));
+//   fOutputContainer->Add(new TH2F("hVtxRTheta","Vertex dR",200,-100.,100.,100,-0.5,0.5));
+//   fOutputContainer->Add(new TH2F("hVtxPhi","Vertex dPhi",100,-TMath::Pi(),TMath::Pi(),100,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH2F("hVtxTheta","Vertex dTheta",100,-0.5,0.5,100,-0.5,0.5));
   
 		 //PHOS calibration QA
 /*
@@ -297,7 +309,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   
   
   FillHistogram("hZvertex",esdVertex5->GetZ(),fRunNumber-0.5);
-  if (TMath::Abs(esdVertex5->GetZ()) > 20. ){
+  if (TMath::Abs(esdVertex5->GetZ()) > 10. ){
     PostData(1, fOutputContainer);
     return;
   }
@@ -314,15 +326,12 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   FillHistogram("hTotSelEvents",3.5) ;  
   
   
-  /*
+  
   //Vtx class z-bin
   Int_t zvtx = (Int_t)((vtx5[2]+10.)/2.) ;
   if(zvtx<0)zvtx=0 ;
   if(zvtx>9)zvtx=9 ;
-  */
-  //No dependence on zVtx observed, save memory
-  Int_t zvtx=0 ;
-
+ 
   AliCentrality *centrality = fEvent->GetCentrality(); 
   fCentrality=centrality->GetCentralityPercentile("V0M");
 
@@ -538,12 +547,13 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       Double_t kT = pair.KT() ;
       TString kTbin="15" ;
       if(kT<0.2) kTbin="Kt00-02";
-      else if(kT<0.5) kTbin="Kt02-05";
-      else if(kT<1.) kTbin="Kt05-10";
-      else if(kT<1.5) kTbin="Kt10-15";
-      else  kTbin="Kt15-99";
+      else if(kT<0.4) kTbin="Kt02-04";
+      else if(kT<0.7) kTbin="Kt04-07";
+      else if(kT<1.) kTbin="Kt07-10";
+      else if(kT<1.3) kTbin="Kt10-13";
+      else if(kT<1.3) kTbin="Kt13-20";
+      else  continue;
       
-
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
       
@@ -560,7 +570,15 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       for(Int_t iCut=0; iCut<7; iCut++){
    	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
-     
+	
+        if(iCut==3){//Both	
+          Double_t dx = ph1->EMCx()-ph2->EMCx() ;
+          Double_t dz = ph1->EMCz()-ph2->EMCz() ;
+	  Double_t r=TMath::Sqrt(dx*dx+dz*dz) ;
+          FillHistogram(Form("hSLfine_%s",kTbin.Data()),qspf,qlpf) ;
+          FillHistogram(Form("hSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
+	}
+	  
 	FillHistogram(Form("hQinv_%s",cut[iCut]),qinv,kT) ;
 	if(TMath::Abs(qo) < 0.05)
 	  FillHistogram(Form("hQinvCut_%s",cut[iCut]),qinv,kT) ;
@@ -618,10 +636,12 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         Double_t kT = pair.KT() ;
         TString kTbin="15" ;
         if(kT<0.2) kTbin="Kt00-02";
-        else if(kT<0.5) kTbin="Kt02-05";
-        else if(kT<1.) kTbin="Kt05-10";
-        else if(kT<1.5) kTbin="Kt10-15";
-        else  kTbin="Kt15-99";
+        else if(kT<0.4) kTbin="Kt02-04";
+        else if(kT<0.7) kTbin="Kt04-07";
+        else if(kT<1.) kTbin="Kt07-10";
+        else if(kT<1.3) kTbin="Kt10-13";
+        else if(kT<1.3) kTbin="Kt13-20";
+        else  continue;
       
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
@@ -639,7 +659,15 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-           FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
+          if(iCut==3){//Both	
+            Double_t dx = ph1->EMCx()-ph2->EMCx() ;
+            Double_t dz = ph1->EMCz()-ph2->EMCz() ;
+	    Double_t r=TMath::Sqrt(dx*dx+dz*dz) ;
+            FillHistogram(Form("hMiSLfine_%s",kTbin.Data()),qspf,qlpf) ;
+            FillHistogram(Form("hMiSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
+	  }  
+	  
+	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
 	   if(TMath::Abs(qo) < 0.05)
 	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
 
@@ -906,6 +934,10 @@ Int_t AliAnalysisTaskgg::ConvertRunNumber(Int_t run){
 Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const{
   
  // if(cut==kDefault){
+  //Consider only pairs from same mudule
+  if(ph1->Module()!=ph2->Module())
+    return kFALSE ;
+  
   if(cut==0){
     return kTRUE ;
   }
