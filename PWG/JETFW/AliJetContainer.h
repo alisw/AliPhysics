@@ -17,6 +17,7 @@ class AliLocalRhoParameter;
 #include "AliEmcalContainer.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
+#include "AliEmcalJet.h"
 
 class AliJetContainer : public AliEmcalContainer {
  public:
@@ -111,7 +112,10 @@ class AliJetContainer : public AliEmcalContainer {
   Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
   Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
   Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
-  Bool_t                      AcceptJet(const AliEmcalJet* jet)          ;
+  virtual Bool_t              AcceptObject(Int_t i)        { return AcceptJet(i);}
+  virtual Bool_t              AcceptObject(TObject* obj)   { return AcceptJet(dynamic_cast<AliEmcalJet*>(obj));}
+  virtual Bool_t              AcceptJet(Int_t i)           { return AcceptJet(GetJet(i));}
+  virtual Bool_t              AcceptJet(const AliEmcalJet* jet)          ;
   Bool_t                      AcceptBiasJet(const AliEmcalJet* jet)      ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}

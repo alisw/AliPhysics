@@ -30,6 +30,8 @@ class AliParticleContainer : public AliEmcalContainer {
   virtual ~AliParticleContainer(){;}
 
   Bool_t                      ApplyKinematicCuts(const AliTLorentzVector& mom);
+  virtual Bool_t              AcceptObject(Int_t i)        { return AcceptParticle(i);}
+  virtual Bool_t              AcceptObject(TObject* obj)   { return AcceptParticle(dynamic_cast<AliVParticle*>(obj));}
   virtual Bool_t              AcceptParticle(AliVParticle* vp)               ;
   virtual Bool_t              AcceptParticle(Int_t i)                        ;
   Double_t                    GetParticlePtCut()                        const   { return fParticlePtCut  ; }
