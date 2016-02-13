@@ -23,7 +23,7 @@ public:
 	~THistManager();
 	void ReleaseOwner() { fIsOwner = kFALSE; };
 
-	void CreateHistoGroup(const char *groupname, const char *parent = "/");
+	THashList* CreateHistoGroup(const char *groupname, const char *parent = "/");
 
 	TH1* CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax);
 	TH1* CreateTH1(const char *name, const char *title, int nbins, const double *xbins);
