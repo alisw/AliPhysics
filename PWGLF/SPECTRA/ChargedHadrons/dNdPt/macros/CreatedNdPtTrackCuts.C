@@ -2058,7 +2058,6 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
  
     TString tag = "Study of systematic uncertanties + Geomtrical cut";
-
 }
 
 
@@ -2084,7 +2083,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
 
-    esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+    //esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
     esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
@@ -2094,24 +2093,26 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "Calculate matching efficiency: TPC only";
      
     if (cutMode==2101){
+      esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
       esdTrackCuts->SetRequireITSRefit(kTRUE); 
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
       TString tag = "Calculate matching efficiency: TPC + ITS";
     }
     
     if (cutMode==2102){
+      esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
       esdTrackCuts->SetRequireITSRefit(kTRUE); 
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); 
       TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit";
     }
     
     if (cutMode==2103){
-      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC only";
     }
     
    if (cutMode==2104){
-      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS";
