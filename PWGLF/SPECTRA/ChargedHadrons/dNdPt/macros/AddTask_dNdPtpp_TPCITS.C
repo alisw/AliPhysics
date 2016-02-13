@@ -9,7 +9,7 @@
 
 
 
-void AddTask_dNdPtpp_TPCITS(const int cutMode=223, const char *partMode = "AllPart", char *suffix="")
+void AddTask_dNdPtpp_TPCITS(const int cutMode=223, const char *partMode = "")
 {
 
  /*
@@ -19,7 +19,7 @@ CheckLoadLibrary("libPWG0selectors");
 */
 
   TString stParticleSelection(partMode);
-  
+  cout<<"String: "<<stParticleSelection<<endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -82,20 +82,10 @@ CheckLoadLibrary("libPWG0selectors");
   // trigger  
   task->SelectCollisionCandidates(AliVEvent::kINT7); 
 
-  //
-  // set analysis options from the Helper here !!!
-  //
 
-  //AliTriggerAnalysis::Trigger trigger = AliTriggerAnalysis::kMB1;
-  AlidNdPtHelper::AnalysisMode analysisMode = AlidNdPtHelper::kTPCITS;
+
   
-  if(stParticleSelection.Contains("AllPart"))    AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kAllPart;
-  if(stParticleSelection.Contains("Pion"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCPion;
-  if(stParticleSelection.Contains("Proton"))     AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCProton;
-  if(stParticleSelection.Contains("Kaon"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCKaon;
-  if(stParticleSelection.Contains("Rest"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCRest;
-  if(stParticleSelection.Contains("Plus"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kPlus;
-  if(stParticleSelection.Contains("Minus"))      AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMinus;
+
 
   
   //
@@ -106,10 +96,18 @@ CheckLoadLibrary("libPWG0selectors");
   fdNdPtAnalysis->SetEventCuts(evtCuts);
   fdNdPtAnalysis->SetAcceptanceCuts(accCuts);
   fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
-  fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
-  fdNdPtAnalysis->SetParticleMode(particleMode); 
+  fdNdPtAnalysis->SetAnalysisMode(AlidNdPtHelper::kTPCITS); 
   fdNdPtAnalysis->SetTriggerMask(AliVEvent::kINT7);
 
+  //Particle Mode
+  if(stParticleSelection.Contains("Pion")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMCPion);}
+  else if(stParticleSelection.Contains("Proton")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMCProton);}
+  else if(stParticleSelection.Contains("Kaon")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMCKaon);}
+  else if(stParticleSelection.Contains("Rest")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMCRest);}
+  else if(stParticleSelection.Contains("Plus")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kPlus);}
+  else if(stParticleSelection.Contains("Minus")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMinus);}
+  else{ fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kAllPart);}
+  
 
   fdNdPtAnalysis->SetUseMCInfo(hasMC);
   fdNdPtAnalysis->SetHistogramsOn(hasMC);
@@ -140,11 +138,12 @@ CheckLoadLibrary("libPWG0selectors");
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("dNdPtpp_%d%c",cutMode,stParticleSelection),
+  TString stContainerName = Form("dNdPtpp_%d",cutMode);
+  stContainerName += stParticleSelection;
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(stContainerName,
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
-							   Form("%s:dNdPt_eperezl", mgr->GetCommonFileName())); 
+							   mgr->GetCommonFileName()); 
   
   mgr->ConnectOutput(task, 1, coutput);
 
