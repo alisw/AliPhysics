@@ -8,14 +8,14 @@
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (
- int    CentralityGroup         = 1, // 1st,2nd,3rd... group;  Diff Cent Groups dealing w/ memory limit
- int    singlesOnly             = 1, // 0: full correlations    1: singles only
- int    useWeights              = 0, // 0: no                   1: yes
+ int    CentralityGroup         = 2, // 1st,2nd,3rd,4th group;  Diff Cent Groups dealing w/ memory limit
+ int    singlesOnly             = 0, // 0: full correlations    1: singles only
+ int    useWeights              = 1, // 0: no                   1: yes
  int    useRapidity             = 1, // 0: no                   1: yes
  int    centralityMethod        = 4, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
  int    chargeSet               = 1, // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -10., // |zMin| should = zMax due to the design of the code
- double zMax                    =  10., // set vertexZ cut   
+ double zMin                    = -6., // |zMin| should = zMax due to the design of the code
+ double zMax                    =  6., // set vertexZ cut   
  double vZwidth                 = 0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          = 1, // PbPb2010(Global=1;TPConly=128;Hybrid=272); pPb2013(Global=?;TPConly=?;Hybrid=768); pp(Global=?;TPConly=?; Hybrid=?)
  int    nClusterMin             = 70,
@@ -38,7 +38,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double ptTOFPID                = 0.5,
  Bool_t isMC                    = 0,
  const char* taskname           = "ChPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/BF_DptDpt_PID_Lego/BF_DptDpt_PID_Lego_Stage1_Step2.root" )
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/Global_160_6vZ24_08y_Kaon_Cent8_Pos_S1S2/Global_160_6vZ24_08y_Kaon_Cent8_Pos_S1S2.root" )
 
 {
   // Set Default Configuration of this analysis
@@ -50,78 +50,38 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     
   double minCentrality[10];
   double maxCentrality[10];
-    
-  if ( particleID == 0 ) // Pion
+       
+  if ( CentralityGroup == 1 )
     {
-      if ( CentralityGroup == 1 )
-        {
-	  minCentrality[0] = 0;       maxCentrality[0]  = 10.;
-	  minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
-	  minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
-	  minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
-        }
-      else if ( CentralityGroup == 2 )
-	{
-	  minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
-	  minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
-	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
-	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
-	}
-      else if ( CentralityGroup == 3 )
-	{
-	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
-	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
-	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
-	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
-	}
+      minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
     }
-  else if ( particleID == 1 ) // Kaon
+  else if ( CentralityGroup == 2 )
     {
-      if ( CentralityGroup == 1 )
-        {
-	  minCentrality[0] = 0;       maxCentrality[0]  = 10.;
-	  minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
-	  minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
-	  minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
-        }
-      else if ( CentralityGroup == 2 )
-	{
-	  minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
-	  minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
-	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
-	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
-	}
-      else if ( CentralityGroup == 3 )
-	{
-	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
-	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
-	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
-	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
-	}
+      minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
+      minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
+      minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
+      minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
     }
-  else if ( particleID == 2 ) // Proton
+  else if ( CentralityGroup == 3 )
     {
-      if ( CentralityGroup == 1 )
-        {
-	  minCentrality[0] = 0;       maxCentrality[0]  = 10.;
-	  minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
-	  minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
-	  minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
-        }
-      else if ( CentralityGroup == 2 )
-	{
-	  minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
-	  minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
-	  minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
-	  minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
-	}
-      else if ( CentralityGroup == 3 )
-	{
-	  minCentrality[0] = 0.;      maxCentrality[0]  = 20.;
-	  minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
-	  minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
-	  minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
-	}
+      minCentrality[0] = 0;      maxCentrality[0]  = 20.;
+      minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
+      minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
+    }
+  else if ( CentralityGroup == 4 )
+    {
+      minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+      minCentrality[5] = 50.;     maxCentrality[5]  = 60.;
+      minCentrality[6] = 60.;     maxCentrality[6]  = 70.;
+      minCentrality[7] = 70.;     maxCentrality[7]  = 80.;
     }
   else
     {
@@ -217,7 +177,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       taskName     =   baseName;        
         
       outputHistogramFileName = baseName;
-      if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
+      //if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";      
         
       TFile  * inputFile  = 0;
@@ -276,6 +236,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
                 }
             }
         }
+      
       task = new  AliAnalysisTaskPIDBFDptDpt(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      );
