@@ -7,6 +7,7 @@
 #if defined __GNUC__
 #pragma GCC system_header
 #endif
+#ifdef FASTJET_VERSION
 #include <fastjet/config.h>
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/JetDefinition.hh>
@@ -15,7 +16,6 @@
 #include <fastjet/AreaDefinition.hh>
 #include <fastjet/SISConePlugin.hh>
 #include <fastjet/CDFMidPointPlugin.hh>
-#ifdef FASTJET_VERSION
 #include <fastjet/Selector.hh>
 #include <fastjet/FunctionOfPseudoJet.hh>
 #include <fastjet/tools/JetMedianBackgroundEstimator.hh>

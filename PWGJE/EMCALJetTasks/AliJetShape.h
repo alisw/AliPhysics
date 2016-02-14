@@ -5,9 +5,9 @@
 
 #include <vector>
 #include <TString.h>
+#ifdef FASTJET_VERSION
 #include "fastjet/config.h"
 #include "fastjet/PseudoJet.hh"
-#ifdef FASTJET_VERSION
 #include "fastjet/FunctionOfPseudoJet.hh"
 #endif
 
