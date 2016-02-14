@@ -28,7 +28,7 @@ AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
   Double_t    jetptcut           = 1.,
   Double_t    jetptcutmax        = 250.,
   Double_t    jetareacut         = 0.001,
-  const char *type               = "TPC",      // EMCAL, TPC
+  AliJetContainer::JetAcceptanceType type = AliJetContainer::kTPCfid,
   Int_t       leadhadtype        = 0,          // AliJetContainer :: Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
   const char *taskname           = "CDF"
 )
@@ -84,7 +84,7 @@ AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
 //     else cellName = "emcalCells"; }
 //     }
 
-  TString acctype = type;
+  TString acctype = "acc"; acctype += TString::Itoa(type,10);
   if ( jetptcut < 1. ) { jetptcut = 1.; }
 
   TString jetstr = "jpt";
@@ -99,20 +99,23 @@ AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
   jetTask->SetNeedEmcalGeom(kFALSE);
 
   AliParticleContainer *trackCont  = jetTask->AddParticleContainer ( tracks.Data() );
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer ( clusters.Data() );
+  trackCont->SetParticlePtCut(0.15);
 
-  AliJetContainer *jetCont = jetTask->AddJetContainer ( njets, acctype.Data(), jetradius );
-  if ( jetCont )
-      {
-      if ( !rho.IsNull() ) { jetCont->SetRhoName ( nrho ); }
-      jetCont->ConnectParticleContainer ( trackCont );
-      jetCont->ConnectClusterContainer ( clusterCont );
-      jetCont->SetPercAreaCut ( jetareacut );
-      jetCont->SetJetPtCut ( jetptcut );
-      jetCont->SetJetPtCutMax ( jetptcutmax );
-      jetCont->SetLeadingHadronType ( leadhadtype ); // Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
-      jetCont->SetMaxTrackPt(1000);
-      }
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer ( clusters.Data() );
+  clusterCont->SetClusECut(0.);
+  clusterCont->SetClusPtCut(0.);
+  clusterCont->SetClusHadCorrEnergyCut(0.30);
+  clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+
+  AliJetContainer *jetCont = jetTask->AddJetContainer ( njets, type, jetradius );
+  if ( !jetCont ) { return NULL;}
+
+  if ( !rho.IsNull() ) { jetCont->SetRhoName ( nrho ); }
+  jetCont->SetPercAreaCut ( jetareacut );
+  jetCont->SetJetPtCut ( jetptcut );
+  jetCont->SetJetPtCutMax ( jetptcutmax );
+  jetCont->SetLeadingHadronType ( leadhadtype ); // Int_t fLeadingHadronType;  0 = charged, 1 = neutral, 2 = both
+  jetCont->SetMaxTrackPt(1000);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
