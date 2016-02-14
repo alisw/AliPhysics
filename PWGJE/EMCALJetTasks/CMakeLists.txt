@@ -175,6 +175,7 @@ if(FASTJET_FOUND)
 	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
+        UserTasks/AliAnalysisTaskEmcalJetExtractor.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullpAJets_Eli_Mod.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
