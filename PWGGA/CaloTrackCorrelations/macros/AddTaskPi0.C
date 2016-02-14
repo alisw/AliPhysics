@@ -690,7 +690,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
     ana->SetNMaxEvMix(10);
     ana->SetMinPt(1.5);
   }
-  else if(collision =="pPb")
+  else if(col =="pPb")
   {
     ana->SetNCentrBin(1);
     ana->SetNZvertBin(10);
