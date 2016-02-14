@@ -33,6 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskDmesonJets.cxx
     AliAnalysisTaskEmcalJetFlavourTagExample.cxx
     AliAnalysisTaskEmcalJetHF.cxx
     AliAnalysisTaskEmcalJetV0CF.cxx
@@ -64,9 +65,6 @@ if(FASTJET_FOUND)
       set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
     endif()
   endif(ROOT_VERSION_MAJOR EQUAL 6)
-  set(SRCS ${SRCS}
-    AliAnalysisTaskDmesonJets.cxx
-  )
 endif(FASTJET_FOUND)
 
 # Headers from sources
