@@ -750,8 +750,8 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 //_________________________________________________________________________________
 /// Fill cluster Shower Shape histograms.
 //_________________________________________________________________________________
-void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
-                                              Int_t mcTag, Float_t maxCellFraction)
+void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag, 
+                                              Float_t maxCellFraction, Int_t & largeTime)
 {
   if(!fFillSSHistograms || GetMixedEvent()) return;
   
@@ -891,7 +891,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
     // Cluster cell loop, select only secondary cells with enough contribution to cluster
     // Start from second highest energy cell
     //
-    Bool_t largeTime = kFALSE;
+    largeTime  = 0;
+    Float_t largeTimeE = 0;
     for(Int_t icell = 1; icell < ncell; icell++)
     {
       Int_t    absId    = cluster->GetCellAbsId(sortList[icell]);
@@ -907,8 +908,12 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
       //printf("Cluster E %2.2f, cell E %2.2f, time %2.2f, weight %2.3f\n",cluster->E(),cellE,cellTime,weight);
       if(weight < 0.01) continue;
       
-      if ( TMath::Abs(cellTime) > 50 ) largeTime = kTRUE;
-      
+      if ( TMath::Abs(cellTime) > 50 ) 
+      {
+        largeTime++;
+        largeTimeE += cellE;
+        //printf(" cluster pT %2.2f, cell E %2.2f, large time %d; ",pt, cellE, largeTime);
+      }
       if ( l0bin == -1 ) continue;
           
       fhTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTime,        GetEventWeight());
@@ -949,6 +954,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster,
       
       
     } // cluster cell loop
+      //if(largeTime > 0) printf("\n");
     
     if ( largeTime ) 
     {
@@ -3098,7 +3104,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, calo, maxCellFraction);
     if( absIdMax < 0 ) AliFatal("Wrong absID");
     
-    FillShowerShapeHistograms(calo,tag,maxCellFraction);
+    Int_t largeTimeInCellCluster = kFALSE;
+    FillShowerShapeHistograms(calo,tag,maxCellFraction,largeTimeInCellCluster);
+    aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container
+    //if(largeTimeInCellCluster > 1) printf("Set n cells large time %d, pt %2.2f\n",aodph.GetFiducialArea(),aodph.Pt());
     
     aodph.SetM02(calo->GetM02());
     //aodph.SetM20(calo->GetM20());
