@@ -893,9 +893,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
     // First in sorted list.
     //
     Int_t    absIdMax    = cluster->GetCellAbsId(sortList[0]);
-    Float_t  cellEMax    = enerList[sortList[0]];
-    Double_t cellTimeMax = timeList[sortList[0]];    Int_t    icolMax     = -1, icolMaxAbs = -1;
-
+    //    Float_t  cellEMax    = enerList[sortList[0]];
+    Double_t cellTimeMax = timeList[sortList[0]];    
+    
     //
     // Cluster cell loop, select only secondary cells with enough contribution to cluster
     // Start from second highest energy cell
@@ -954,7 +954,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
         Int_t   icol     = -1, icolAbs = -1;
         Int_t   irow     = -1, irowAbs = -1;
         Int_t   iRCU     = -1;
-        Int_t   nModule  = GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+        GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
         
         fhColRowLam0BinPtBin        [l0bin][ptbin]->Fill(icolAbs, irowAbs,        GetEventWeight());
         fhColRowLam0BinPtBinWeighted[l0bin][ptbin]->Fill(icolAbs, irowAbs, weight*GetEventWeight());
