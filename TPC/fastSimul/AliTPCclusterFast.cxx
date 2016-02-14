@@ -26,11 +26,14 @@
   AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
   AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
   AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
+  //  AliTPCclusterFast::fPRF->SetParameters(1,0,0.02);   // this will be GEM emulation 
   AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);  
   AliTPCtrackFast::Simul("trackerSimul.root",100,0.6);
   TFile * ftrack = TFile::Open("trackerSimul.root");
   TTree * tree  = (TTree*)ftrack->Get("simulTrack");
-  
+  tree->SetMarkerStyle(25);
+  tree->SetMarkerSize(0.6);
+   
 */
 /// ~~~
 ///
@@ -71,8 +74,8 @@ public:
   Double_t GetClusterProperties(TVectorF &param, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE, Int_t skipSample=0);
   Double_t GetCOG(Int_t returnType, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
   Double_t GetCOGHit(Int_t returnType);
-  Float_t  UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap);
-  Float_t GetCOGUnfolded(Int_t returnType);
+  Float_t  UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
+  Float_t  GetCOGUnfolded(Int_t returnType, Int_t addOverlap=kTRUE, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
   //
   Double_t  GetExpectedRMS(Int_t dim);
   //Double_t  GetExpectedResolution(Int_t dim);
@@ -754,7 +757,7 @@ Double_t AliTPCclusterFast::GetClusterProperties(TVectorF &param, Int_t addOverl
       if (addOverlap && fOverlapCluster){
 	val+=gain*fOverlapCluster->fDigits(iy+2,jz+3);
       }      
-      val+=noise;
+      val+=noise*gRandom->Gaus();
       if (addPedestal) val+=gRandom->Rndm()-0.5;   // add random pedestal assuming mean bias value 0
       if (val>thr){
 	sumW+=val;
@@ -913,19 +916,19 @@ Double_t  AliTPCclusterFast::GaussGamma4(Double_t x, Double_t s0, Double_t p1){
 
  
 }
-Float_t AliTPCclusterFast::GetCOGUnfolded(Int_t returnType){
+Float_t AliTPCclusterFast::GetCOGUnfolded(Int_t returnType, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal,Int_t skipSample){
   //
   //
   //
   Float_t meani, meanj, sumu,overlap;
-  UnfoldCluster(meani, meanj, sumu,overlap);
+  UnfoldCluster(meani, meanj, sumu,overlap,addOverlap, gain,thr,noise,rounding,addPedestal,skipSample);
   if (returnType==-1) return overlap;
   if (returnType==0) return sumu;
   if (returnType==1) return meani;
   if (returnType==2) return meanj;
 }
 
-Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap){
+Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal,Int_t skipSample){
   //
   // Unforling as used in the  AliTPCclusterer::UnfoldCluster - (described in CHEP paper ...)
   //  - we are not using second local maxima as we assume we know the cluster shape
@@ -933,16 +936,36 @@ Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Flo
   //  
   Float_t sum3i[7] = {0,0,0,0,0,0,0};
   Float_t sum3j[7] = {0,0,0,0,0,0,0};
-
+  meani=0;
+  meanj=0;
+  sumu=0;
+  overlap=0;
+  //
+  //
+  //
+  static TMatrixF digitMatrix(5,7);
+  for (Int_t i=0; i<5; i++)
+    for (Int_t j=0; j<7; j++){
+      Float_t value = fDigits(i,j);
+      if (addOverlap && fOverlapCluster) value+=fOverlapCluster->fDigits(i,j);
+      value*=gain;
+      value+=noise*gRandom->Gaus();
+      if (addPedestal) value+=gRandom->Rndm()-0.5;
+      if (rounding) value=TMath::Nint(value);
+      if (value<thr) value=0;      
+      digitMatrix(i,j)=value;
+      if (skipSample==0) digitMatrix(i,j)=value;
+      if (skipSample==1) digitMatrix(i,2+j/2)=value;      
+    }
+  
   for (Int_t k =0;k<7;k++) // sequence array
     for (Int_t l = -1; l<=1;l++){  // +- 1 bin loop
-      if (k>0&&k<6) sum3i[k]+=fDigits(k-1,l+3);  //  i- y direction
-      sum3j[k]+=fDigits(l+2,k);
-      if (fOverlapCluster!=NULL){
-	if (k>0&&k<6) sum3i[k]+=fOverlapCluster->fDigits(k-1,l+3);  //  i- y direction
-	sum3j[k]+=fOverlapCluster->fDigits(l+2,k);
-      }
+      if (k>0&&k<6) sum3i[k]+=digitMatrix(k-1,l+3);  //  i- y direction
+      sum3j[k]+=digitMatrix(l+2,k);
     }
+  if (sum3i[3]<=3 || sum3j[3]<=3) return 0;
+
+
   Float_t mratio[3][3]={{1,1,1},{1,1,1},{1,1,1}};
   //
   //unfold  y 
