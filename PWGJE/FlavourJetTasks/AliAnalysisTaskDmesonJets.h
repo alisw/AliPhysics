@@ -52,6 +52,9 @@ class THashList;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
+using std::vector;
+using std::list;
+
 class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 {
  public:
