@@ -744,46 +744,43 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   // gx,gy,gz - will be taken from the TPC
   //
   //
-  axisName[0]="qpt";    axisTitle[0]="q/pt (c/GeV)";                         // to fill : track.GetSigned1Pt() 
-  binsTrack[0]=5;        xminTrack[0]=-2.5;        xmaxTrack[0]=2.5; 
-  binsTrackITS[0]=5;     xminTrackITS[0]=-2.5;     xmaxTrackITS[0]=2.5; 
-
+  axisName[kQ2PT]="qpt";     axisTitle[kQ2PT]="q/pt (c/GeV)";                         // to fill : track.GetSigned1Pt() 
+  binsTrack[kQ2PT]=5;        xminTrack[kQ2PT]=-2.5;        xmaxTrack[kQ2PT]=2.5; 
+  binsTrackITS[kQ2PT]=5;     xminTrackITS[kQ2PT]=-2.5;     xmaxTrackITS[kQ2PT]=2.5; 
   //
-  axisName[1]="sector";  axisTitle[1]="Sector Number";              // to fill:   9*atan2(gy,gx)/pi+ if (sector>0) sector+18
-  binsTrack[1]=180;      xminTrack[1]=0;           xmaxTrack[1]=18; 
-  binsTrackITS[1]=180;   xminTrackITS[1]=0;        xmaxTrackITS[1]=18; 
+  axisName[kSect]="sector";  axisTitle[kSect]="Sector Number";              // to fill:   9*atan2(gy,gx)/pi+ if (sector>0) sector+18
+  binsTrack[kSect]=180;      xminTrack[kSect]=0;           xmaxTrack[kSect]=18; 
+  binsTrackITS[kSect]=180;   xminTrackITS[kSect]=0;        xmaxTrackITS[kSect]=18; 
   //
-  axisName[2]="R";       axisTitle[2]="r (cm)";                          // to fill:    gr=sqrt(gy**2+gx**2)
-  binsTrack[2]=53;       xminTrack[2]=85.;         xmaxTrack[2]=245.; 
-  binsTrackITS[2]=53;    xminTrackITS[2]=85.;      xmaxTrackITS[2]=245.; 
+  axisName[kLocX]="R";       axisTitle[kLocX]="r (cm)";                          // to fill:    gr=sqrt(gy**2+gx**2)
+  binsTrack[kLocX]=53;       xminTrack[kLocX]=85.;         xmaxTrack[kLocX]=245.; 
+  binsTrackITS[kLocX]=53;    xminTrackITS[kLocX]=85.;      xmaxTrackITS[kLocX]=245.; 
   //
+  axisName[kZ2X]="kZ";       axisTitle[kZ2X]="z/r";                          // to fill : gz/gr 
+  binsTrack[kZ2X]=20;        xminTrack[kZ2X]=-1.0;         xmaxTrack[kZ2X]=1.0;  // +-1 for ITS+TRD and ITS+TOF 
+  binsTrackITS[kZ2X]=20;     xminTrackITS[kZ2X]=-1.8;      xmaxTrackITS[kZ2X]=1.8;  // +-1.8 for the ITS 
   //
-  axisName[3]="kZ";      axisTitle[3]="z/r";                          // to fill : gz/gr 
-  binsTrack[3]=20;       xminTrack[3]=-1.0;        xmaxTrack[3]=1.0;  // +-1 for ITS+TRD and ITS+TOF 
-  binsTrackITS[3]=20;    xminTrackITS[3]=-1.8;     xmaxTrackITS[3]=1.8;  // +-1.8 for the ITS 
-  //
-  axisName[4]="delta";   axisTitle[4]="#Delta (cm)";                 // to fill    local(clusterY-track.y)
-  binsTrack[4]=100;       xminTrack[4]=-dy;        xmaxTrack[4]=dy; 
-  binsTrackITS[4]=100;    xminTrackITS[4]=-dy;     xmaxTrackITS[4]=dy; 
-
+  axisName[kDelt]="delta";   axisTitle[kDelt]="#Delta (cm)";                 // to fill    local(clusterY-track.y)
+  binsTrack[kDelt]=100;      xminTrack[kDelt]=-dy;        xmaxTrack[kDelt]=dy; 
+  binsTrackITS[kDelt]=100;   xminTrackITS[kDelt]=-dy;     xmaxTrackITS[kDelt]=dy; 
   // 
-  binsTrack[4]=TMath::Min(Int_t(20.+2.*dy/0.05),120); // buffer should be smaller than 1 GBy
-  if (selHis==0 ||selHis<0) fHisITSDRPhi = new THnF("deltaRPhiTPCITS","#Delta_{Y} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
-  if (selHis==1 ||selHis<0) fHisITSTRDDRPhi = new THnF("deltaRPhiTPCITSTRD","#Delta_{Y} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
-  if (selHis==2 ||selHis<0) fHisITSTOFDRPhi = new THnF("deltaRPhiTPCITSTOF","#Delta_{Y} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
+  binsTrack[kDelt]=TMath::Min(Int_t(20.+2.*dy/0.05),120); // buffer should be smaller than 1 GBy
+  if (selHis==0 ||selHis<0) fHisITSDRPhi =    new THnF("deltaRPhiTPCITS","#Delta_{Y} (cm)", kNDim, binsTrackITS,xminTrackITS, xmaxTrackITS);
+  if (selHis==1 ||selHis<0) fHisITSTRDDRPhi = new THnF("deltaRPhiTPCITSTRD","#Delta_{Y} (cm) TPC-(ITS+TRD)", kNDim, binsTrack,xminTrack, xmaxTrack);
+  if (selHis==2 ||selHis<0) fHisITSTOFDRPhi = new THnF("deltaRPhiTPCITSTOF","#Delta_{Y} (cm) TPC-(ITS+TOF)", kNDim, binsTrack,xminTrack, xmaxTrack);
   //
-  binsTrack[4]=TMath::Min(Int_t(20.+2.*dz/0.05),120); // buffer should be smaller than 1 GBy
-  xminTrack[4]=-dz;        xmaxTrack[4]=dz; 
-  xminTrackITS[4]=-dz;        xmaxTrackITS[4]=dz; 
-  if (selHis==3 ||selHis<0) fHisITSDZ = new THnF("deltaZTPCITS","#Delta_{Z} (cm)", 5, binsTrackITS,xminTrackITS, xmaxTrackITS);
-  if (selHis==4 ||selHis<0) fHisITSTRDDZ = new THnF("deltaZTPCITSTRD","#Delta_{Z} (cm) TPC-(ITS+TRD)", 5, binsTrack,xminTrack, xmaxTrack);
-  if (selHis==5 ||selHis<0) fHisITSTOFDZ = new THnF("deltaZTPCITSTOF","#Delta_{Z} (cm) TPC-(ITS+TOF)", 5, binsTrack,xminTrack, xmaxTrack);
+  binsTrack[kDelt]=TMath::Min(Int_t(20.+2.*dz/0.05),120); // buffer should be smaller than 1 GBy
+  xminTrack[kDelt]=-dz;        xmaxTrack[kDelt]=dz; 
+  xminTrackITS[kDelt]=-dz;        xmaxTrackITS[kDelt]=dz; 
+  if (selHis==3 ||selHis<0) fHisITSDZ = new THnF("deltaZTPCITS","#Delta_{Z} (cm)", kNDim, binsTrackITS,xminTrackITS, xmaxTrackITS);
+  if (selHis==4 ||selHis<0) fHisITSTRDDZ = new THnF("deltaZTPCITSTRD","#Delta_{Z} (cm) TPC-(ITS+TRD)", kNDim, binsTrack,xminTrack, xmaxTrack);
+  if (selHis==5 ||selHis<0) fHisITSTOFDZ = new THnF("deltaZTPCITSTOF","#Delta_{Z} (cm) TPC-(ITS+TOF)", kNDim, binsTrack,xminTrack, xmaxTrack);
   //
   //
   //
   THn *hisToFill[6]={GetHisITSDRPhi(), GetHisITSTRDDRPhi(), GetHisITSTOFDRPhi(), GetHisITSDZ(), GetHisITSTRDDZ(), GetHisITSTOFDZ()};
   for (Int_t ihis=0; ihis<6; ihis++){
-    if (hisToFill[ihis]) for (Int_t ivar2=0;ivar2<5;ivar2++){ 
+    if (hisToFill[ihis]) for (Int_t ivar2=0;ivar2<kNDim;ivar2++){ 
       hisToFill[ihis]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
       hisToFill[ihis]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());      
     }
@@ -838,10 +835,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
   Int_t cacheSize= 200000000;
   if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
-  const Double_t kernelSigma2[4]={0.25,0.25,0.25,0.25};  // kernel sigma in bin width units
+  const Int_t kNDim1 = kNDim-1;
+  const Double_t kernelSigma2I[4]={1./0.25,1./0.25,1./0.25,1./0.25};  // inverse kernel sigma in bin width units
   const Double_t kFillGap=0.02  ;  // weight for the "non primary distortion info" - 
   //                                used to fill the gap without measurement (PHOS hole)
   const Double_t kFillGapITS=0.01;
+  //
+  // gap weight is kFillGap + Exp(-dist): don't calculate exponent if dist is >kMaxExpArg
+  const Double_t kMaxExpArg = -TMath::Log(TMath::Max(kFillGap*0.1, 1e-3)); 
   //
   // 0.) Load current information file and bookd variables
   // 
@@ -975,6 +976,23 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	tree->SetBranchAddress(branches[3],&vecDeltaITS);
       }
 
+      // prepare aux info for histo bin calculation
+      Long64_t nBProd[kNDim] = {0};
+      int nBinDim[kNDim];
+      double bsize[kNDim],bsizeI[kNDim],limMin[kNDim],limMax[kNDim];
+      nBProd[kNDim1] = 1;
+      THn* curHis = hisToFill[ihis];
+      TNDArrayT<float>& arrND = (TNDArrayT<float>&)curHis->GetArray(); // for direct access
+      for (int i=kNDim;i--;) {
+	TAxis* ax = curHis->GetAxis(i);
+	limMin[i] = ax->GetXmin();
+	limMax[i] = ax->GetXmax();
+	nBinDim[i] = ax->GetNbins();
+	bsize[i]  = (limMax[i]-limMin[i])/nBinDim[i];
+	bsizeI[i] = 1./bsize[i];
+	if (i<kNDim1) nBProd[i] = nBProd[i+1]*(nBinDim[i+1]+2); // +2 to account for under/over-flows
+      }
+      //
       Int_t ntracks=tree->GetEntries();
       //
       for (Int_t itrack=0; itrack<ntracks; itrack++){
@@ -993,6 +1011,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	const Float_t *vDeltaITS  = (vecDeltaITS!=NULL) ? vecDeltaITS->GetMatrixArray():0;
 	//
 	currentTrack++;
+
 	if (timeStamp<minTime) minTime=0;
 	if (timeStamp>maxTime) maxTime=0;
 	meanTime+=timeStamp;
@@ -1002,17 +1021,20 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	}
 
 	if (maxStat>0 &&currentTrack>maxStat) break;
+	double xxx[kNDim] = {0.};
 	//for (Int_t ipoint=0; ipoint<knPoints; ipoint++){
 	for (Int_t ipoint=0; ipoint<npValid; ipoint++){
 	  if (vR[ipoint]<=0 || vDelta[ipoint]<-990.) continue;
+	  if (TMath::Abs(vDelta[ipoint])<0.000001) continue; // RS Do we need this?
 	  Double_t sector=9.*vPhi[ipoint]/TMath::Pi();
 	  if (sector<0) sector+=18;
 	  Double_t deltaPhi=vPhi[ipoint]-TMath::Pi()*(Int_t(sector)+0.5)/9.;
 	  Double_t localX = TMath::Cos(deltaPhi)*vR[ipoint];
-	  Double_t xxx[5]={ param->GetParameter()[4], sector, localX,   vZ[ipoint]/localX, vDelta[ipoint]};
-	  if (TMath::Abs(xxx[4])<0.000001) continue;
+	  xxx[kQ2PT] = param->GetParameter()[4];
+	  xxx[kSect] = sector;
+	  xxx[kLocX] = localX;
 	  Double_t side=-1.+2.*((TMath::Nint(vSec[ipoint])%36)<18);
-	  if ((vZ[ipoint]*side)<-1) xxx[3]=side*0.001; // do not mix z on A side and C side
+	  xxx[kZ2X] = (vZ[ipoint]*side)<-1 ? side*0.001 : vZ[ipoint]/localX; // do not mix z on A side and C side ?? RS
 	  // apply drift velocity calibration if available
 	  Double_t deltaITS=(vDeltaITS) ? vDeltaITS[ipoint]:0;
 	  Double_t deltaRef=vDelta[ipoint];
@@ -1028,57 +1050,88 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	    deltaRef= side*(vDelta[ipoint]*side-(expected+corrTime*drift));
 	    deltaITS= side*(vDeltaITS[ipoint]*side-(expected+corrTime*drift));
 	  }
+	  xxx[kDelt] = deltaRef;
 	  clusterCounter++;
+	  //
+	  // calculate axis bins and global bin
+	  Int_t binIndex[kNDim]={0};
+	  //
+	  if (xxx[kNDim1]<limMin[kNDim1]) binIndex[kNDim1] = 0; // underflow
+	  else if (xxx[kNDim1]<limMax[kNDim1]) binIndex[kNDim1] = 1+int((xxx[kNDim1] - limMin[kNDim1])*bsizeI[kNDim1]); // range
+	  else binIndex[kNDim1] = nBinDim[kNDim1]+1; // oveflow
+	  //
+	  ULong64_t binToFill = binIndex[kNDim1]; // global bin
+	  for (int id=kNDim1;id--;) {
+	    if (xxx[id]<limMin[id]) binIndex[id] = 0; // underflow
+	    else if (xxx[id]<limMax[id]) binIndex[id] = 1+int((xxx[id] - limMin[id])*bsizeI[id]); // range
+	    else binIndex[id] = nBinDim[id]+1; // oveflow
+	    binToFill += binIndex[id]*nBProd[id];
+	  }
+	  //
 	  if (vDeltaITS){
-	    xxx[4]=deltaITS;
-	    hisToFill[ihis]->Fill(xxx,kFillGapITS);
+	    xxx[kDelt] = deltaITS;
+	    int binDeltITS;
+	    if (deltaITS<limMin[kDelt]) binDeltITS = 0; // underflow
+	    else if (deltaITS<limMax[kDelt]) binDeltITS = 1+int((deltaITS - limMin[kDelt])*bsizeI[kDelt]); // range
+	    else binDeltITS = nBinDim[kDelt]+1; // oveflow
+	    Long64_t binToFillITS = binToFill + (binDeltITS-binIndex[kDelt])*nBProd[kDelt]; // global bin for ITS
+	    arrND.At(binToFillITS) += kFillGapITS;	    // curHis->Fill(xxx,kFillGapITS);
+	    xxx[kDelt] = deltaRef;
 	  }
-	  xxx[4]=deltaRef;
-	  hisToFill[ihis]->Fill(xxx,1.);
-	  
-	  Int_t binIndex[5]={0};
-	  Double_t xbin[5], xbinCenter[5];
-	  Double_t  normDelta[5];
-	  Int_t binToFill= hisToFill[ihis]->GetBin(xxx); //	    
-	  hisToFill[ihis]->GetBinContent(binToFill,binIndex);
-	  for (Int_t idim=0; idim<4; idim++) {
-	    xbinCenter[idim]=hisToFill[ihis]->GetAxis(idim)->GetBinCenter(binIndex[idim]);	    
+	  arrND.At(binToFill) += 1.; // curHis->Fill(xxx,1.);
+
+	  Double_t dbinCenter[kNDim];	  
+	  for (Int_t idim=kNDim;idim--;) {
+	    // fractional distance to the center of the bin
+	    // double bincenter = limMin[idim]+bsize[idim]*(binIndex[idim]-0.5); // binindex=0 is underflow!
+	    // dbinCenter[idim] = (xxx[idim]-bincenter)*bsizeI[idim];
+	    dbinCenter[idim] = (xxx[idim]-limMin[idim])*bsize[idim] - (binIndex[idim]-0.5); // binindex=0 is underflow!
 	  }
-	  xbinCenter[4]=xxx[4];
-	  xbin[4]=xxx[4];
-	  for (Int_t ibin0=-1; ibin0<=1; ibin0++){  //qpt
-	    xbin[0]=xbinCenter[0]+ibin0*binWidth[0];
-	    normDelta[0]=(xxx[0]-xbin[0])/binWidth[0];
-	    normDelta[0]*=normDelta[0];
-	    normDelta[0]/=kernelSigma2[0];
-	    for (Int_t ibin1=0; ibin1<=0; ibin1++){  //sector - (Not defined yet if we should make bin respone functio and unfold later) 
-	      xbin[1]=xbinCenter[1]+ibin1*binWidth[1];
-	      normDelta[1]=(xxx[1]-xbin[1])/binWidth[1];
-	      normDelta[1]*=normDelta[1];
-	      normDelta[1]/=kernelSigma2[1];
-	      for (Int_t ibin2=0; ibin2<=0; ibin2++){   //local X
-		xbin[2]=xbinCenter[2]+ibin2*binWidth[2];
-		normDelta[2]=(xxx[2]-xbin[2])/binWidth[2];
-		normDelta[2]*=normDelta[2];
-		normDelta[2]/=kernelSigma2[2];
-		for (Int_t ibin3=-2; ibin3<=2; ibin3++){
-		  xbin[3]=xbinCenter[3]+ibin3*binWidth[3];
-		  if (xbin[3]*xbinCenter[3]<0) continue;  // do not mix a and C side
-		  normDelta[3]=(xxx[3]-xbin[3])/binWidth[3];
-		  normDelta[3]*=normDelta[3];
-		  normDelta[3]/=kernelSigma2[3];
-		  Double_t weightAll= -(normDelta[0]+normDelta[1]+normDelta[2]+normDelta[3]);
-		  weightAll=kFillGap+TMath::Exp(weightAll/0.5);
-		  hisToFill[ihis]->Fill(xbin,weightAll);
-		  if (fillCounter==0) {
-		    printf("Start to Fill");
-		  }
-		  fillCounter++;
-		} // bin3 fill loop
-	      }   // bin2 fill loop	      
-	    }     // bin1 fill loop 
-	  }       // bin0 fill loop
-	
+	  // dbinCenter[kDelt] = 0;
+	  //
+	  for (Int_t iqpt=-1; iqpt<=1; iqpt++){  //qpt
+	    int qptBin = binIndex[kQ2PT]+iqpt;
+	    if (qptBin<0||qptBin>nBinDim[kQ2PT]) continue;
+	    double dqpt = dbinCenter[kQ2PT] + iqpt;
+	    dqpt *= dqpt*kernelSigma2I[kQ2PT];
+	    binToFill += iqpt*nBProd[kQ2PT];
+	    //for (Int_t isec=0; isec<=0; isec++){  //sector - (Not defined yet if we should make bin respone functio and unfold later) 
+	    //  int secBin = binIndex[kSect]+isec;
+	    //  if (secBin<0||secBin>nBinDim[kSect]) continue;
+	    //  double dsec = dbinCenter[kSect] + isec;
+	    //  dsec *= dsec*kernelSigma2I[kSect];
+	    //  binToFill += isec*nBProd[kSect];
+	    //  for (Int_t ilocx=0; ilocx<=0; ilocx++){   //local X
+	    //    int locxBin = binIndex[kLocX]+ilocx;
+	    //    if (locxBin<0||locxBin>nBinDim[kLocX]) continue;
+	    //    double dlocx = dbinCenter[kLocX] + ilocx;
+	    //    dlocx *= dlocx*kernelSigma2I[kLocX];
+	    //    binToFill += ilocx*nBProd[kLocX];
+	    for (Int_t iz2x=-2; iz2x<=2; iz2x++){ // Z/x
+	      if ( xxx[kZ2X]*(xxx[kZ2X]+bsize[kZ2X]*iz2x) < 0 ) continue; // do not mix a and C side
+	      int z2xBin = binIndex[kZ2X]+iz2x;
+	      if (z2xBin<0||z2xBin>nBinDim[kZ2X]) continue; 
+	      double dz2x = dbinCenter[kZ2X] + iz2x;
+	      dz2x *= dz2x*kernelSigma2I[kZ2X];
+	      binToFill += iz2x*nBProd[kZ2X];
+	      //
+	      {
+		// Looping is over, fill histo
+		Double_t weightAll= 2.*(dz2x+dqpt); // 2.*(dz2x+dqpt+dsec+dlocx);
+		weightAll = weightAll>kMaxExpArg ? kFillGap : kFillGap+TMath::Exp(-weightAll);
+		arrND.At(binToFill) += weightAll; // curHis->Fill(...)
+		if (fillCounter==0) printf("Start to Fill\n");
+		fillCounter++;
+	      }
+	      //
+	      binToFill -= iz2x*nBProd[kZ2X];
+	    } // z2x fill loop
+	    //   binToFill -= ilocx*nBProd[kLocX];
+	    // }   // xloc fill loop	      
+	    //    binToFill -= isec*nBProd[kSect];
+	    //  }     // sector fill loop 
+	    binToFill -= iqpt*nBProd[kQ2PT]; // restore
+	  } // qpt fill loop
 	}
       }
       timerFile.Print();
@@ -1094,6 +1147,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   timerAll.Print();
   printf("StatInfo.fillCounter:\t%lld\n",fillCounter);
   printf("StatInfo.clusterCounter:\t%lld\n",clusterCounter);
+  printf("StatInfo.trackCounter:\t%d\n",currentTrack);
   //
   // 2.) Fill metadata information
   //
@@ -1511,7 +1565,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   //
   //
   if (deltaT<=0 || sigmaT<=0){
-    ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %d and sigmaT", deltaT, sigmaT);
+    ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %.1f and sigmaT %.1f", deltaT, sigmaT);
     return kFALSE;
   }
  

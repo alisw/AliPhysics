@@ -20,6 +20,19 @@ public :
     kStremInterpolation      =0x00008     // flag: stream (heavy) interpolation information at each pad-row
   };
 
+  // from the results of running over full chunk (364396 tracks) the fastets is selected
+  enum {kQ2PT,kSect,kLocX,kZ2X,kDelt,kNDim}; // order of DOFs    CP time 13.590
+  
+  //  enum {kQ2PT,kSect,kLocX,kDelt,kZ2X,kNDim}; // order of DOFs    CP time 17.290
+  //  enum {kQ2PT,kSect,kZ2X,kLocX,kDelt,kNDim}; // order of DOFs    CP time 13.950
+  //  enum {kQ2PT,kZ2X,kSect,kLocX,kDelt,kNDim}; // order of DOFs    CP time 20.520
+  //  enum {kZ2X,kQ2PT,kSect,kLocX,kDelt,kNDim}; // order of DOFs    CP time 14.200
+
+  //  enum {kSect,kLocX,kQ2PT,kZ2X,kDelt,kNDim}; // order of DOFs    CP time 13.670
+  //  enum {kSect,kLocX,kZ2X,kQ2PT,kDelt,kNDim}; // order of DOFs    CP time 13.860
+  //  enum {kSect,kLocX,kDelt,kQ2PT,kZ2X,kNDim}; // order of DOFs    CP time 16.840
+  //  enum {kSect,kLocX,kDelt,kQ2PT,kZ2X,kNDim}; // order of DOFs    CP time 16.840
+
 public :
   using AliTPCcalibBase::Process;
   AliTPCcalibAlignInterpolation();
