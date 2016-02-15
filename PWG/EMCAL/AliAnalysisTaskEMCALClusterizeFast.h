@@ -1,6 +1,19 @@
 #ifndef ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
 #define ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
 
+//_________________________________________________________________________
+///
+/// \class AliAnalysisTaskEMCALClusterizeFast
+/// \brief EMCal data reclusterization
+///
+/// This analysis provides a new list of clusters to be used in other analysis
+/// Adapted from analysis class AliAnalysisTaksEMCALClusterizeFast from Deepa Thomas
+///
+/// \author Constantin Loizides, LBNL
+/// \author Salvatore Aiola, LBNL
+///
+//_________________________________________________________________________
+
 class TObjArray;
 class TClonesArray;
 class AliAODEvent;
@@ -13,6 +26,8 @@ class AliEMCALRecParam;
 class AliEMCALRecoUtils;
 class AliVCaloCells;
 class AliEMCALGeometry;
+
+#include "AliEMCALGeoParams.h"
 
 #include "AliAnalysisTaskSE.h"
 
@@ -116,7 +131,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   TString                fGeomName;                       // name of geometry to use.
   Bool_t                 fGeomMatrixSet;                  // set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices;               // matrices from configuration, not geometry.root nor ESDs/AODs
-  TGeoHMatrix           *fGeomMatrix[12];                 // geometry matrices with alignments
+  TGeoHMatrix           *fGeomMatrix[AliEMCALGeoParams::fgkEMCALModules]; // geometry matrices with alignments
   TString                fOCDBpath;                       // path with OCDB location
   AliEMCALCalibData     *fCalibData;                      // EMCAL calib data
   AliCaloCalibPedestal  *fPedestalData;                   // EMCAL pedestal
@@ -144,9 +159,20 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fFiducial;                       // fiducial cut
   Bool_t                 fDoNonLinearity;                 // non linearity calib
   Bool_t                 fRecalDistToBadChannels;         // recalculate distance to bad channel
+    
+  // MC labels
+  static const Int_t     fgkTotalCellNumber = 17664 ;     // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
+  
+  Int_t                  fOrgClusterCellId[fgkTotalCellNumber]; // Array ID of cluster to wich the cell belongs in unmodified clusters. 
+  Int_t                  fCellLabels      [fgkTotalCellNumber]; // Array with MC label/map 
+
   Int_t                  fSetCellMCLabelFromCluster;      // Use cluster MC label as cell label:
                                                           // 0 - get the MC label stored in cells (not available for productions done with aliroot < v5-02-Rev09)
                                                           // 1 - assign to the cell the MC label of the cluster
+  
+  Bool_t                 fSetCellMCLabelFromEdepFrac;     // For MC generated with aliroot > v5-07-21, check the EDep information 
+                                                          // stored in ESDs/AODs to set the cell MC labels
+  
   AliVCaloCells         *fCaloCells;                      //!calo cells object
   TClonesArray          *fCaloClusters;                   //!calo clusters array       
   AliESDEvent           *fEsd;                            //!esd event
@@ -157,6 +183,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
   AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 9);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 10);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
