@@ -1543,13 +1543,13 @@ TGraph *AliT0TimeAmplCorr::CreateCorrectionGraph(TH1*const sourceprojection, con
         TH1 *tempProjection = (TH1*)sourceprojection->Clone("tempprojection");
         spectrum_max->Search(tempProjection, 0.1, "", 0.01);
         Int_t nmaximums = spectrum_max->GetNPeaks();
-        Double_t *maximums = spectrum_max->GetPositionX();
+        //Double_t *maximums = spectrum_max->GetPositionX();
 
         tempProjection->Scale(-1);
         TSpectrum *spectrum_min = new TSpectrum();
         spectrum_min->Search(tempProjection, 0.1, "", 0.01);
         Int_t nminimums = spectrum_min->GetNPeaks();
-        Double_t *minimums = spectrum_min->GetPositionX();
+        //Double_t *minimums = spectrum_min->GetPositionX();
 
         //array of histogram peak, spaces between which will be divided in slices
         Int_t nPeaks = nminimums + nmaximums + 2;
@@ -1557,9 +1557,9 @@ TGraph *AliT0TimeAmplCorr::CreateCorrectionGraph(TH1*const sourceprojection, con
         Double_t *unsortedPeaks = new Double_t[nPeaks];
         Int_t totalUnsortPeaks = 0;
 
-
-        for(Int_t max=0;max<nmaximums;max++)unsortedPeaks[totalUnsortPeaks++] = maximums[max];
-        for(Int_t min=0;min<nminimums;min++)unsortedPeaks[totalUnsortPeaks++] = minimums[min];
+	// don't use intermediate pointer to avoid root5 / root6 incompatibility
+        for(Int_t max=0;max<nmaximums;max++)unsortedPeaks[totalUnsortPeaks++] = spectrum_max->GetPositionX()[max];//maximums[max];
+        for(Int_t min=0;min<nminimums;min++)unsortedPeaks[totalUnsortPeaks++] = spectrum_min->GetPositionX()[min];//minimums[min];
 
         delete spectrum_max;
         delete spectrum_min;
