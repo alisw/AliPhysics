@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// This analysis provides a new list of clusters to be used in other analysis
-//
-// Author: Constantin Loizides, Salvatore Aiola
-//         Adapted from analysis class from Deepa Thomas
-//
-//_________________________________________________________________________
-
 // --- Root ---
 #include <TClonesArray.h>
 #include <TGeoManager.h>
@@ -96,6 +88,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() :
   fDoNonLinearity(kFALSE),
   fRecalDistToBadChannels(kFALSE),
   fSetCellMCLabelFromCluster(0),
+  fSetCellMCLabelFromEdepFrac(0),
   fCaloCells(0),
   fCaloClusters(0),
   fEsd(0),
@@ -104,8 +97,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() :
 { 
   // Constructor
 
-  for(Int_t i = 0; i < 12; ++i) 
-    fGeomMatrix[i] = 0;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fGeomMatrix[i] = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) 
+  { fOrgClusterCellId[j] =-1; fCellLabels[j] =-1 ; }
 }
 
 //________________________________________________________________________
@@ -149,6 +143,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
   fDoNonLinearity(kFALSE),
   fRecalDistToBadChannels(kFALSE),
   fSetCellMCLabelFromCluster(0),
+  fSetCellMCLabelFromEdepFrac(0),
   fCaloCells(0),
   fCaloClusters(0),
   fEsd(0),
@@ -158,8 +153,10 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
   // Constructor
 
   fBranchNames     = "ESD:AliESDHeader.,AliESDRun.,EMCALCells.,EMCALTrigger. AOD:header,emcalCells";
-  for(Int_t i = 0; i < 12; ++i) 
-    fGeomMatrix[i] = 0;
+
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fGeomMatrix[i] = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) 
+  { fOrgClusterCellId[j] =-1; fCellLabels[j] =-1 ; }
 }
 
 //________________________________________________________________________
@@ -338,195 +335,264 @@ void AliAnalysisTaskEMCALClusterizeFast::Clusterize()
 void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 {
   // Fill digits array
-
+  
   fDigitsArr->Clear("C");
   switch (fInputCellType) {
-
-  case kFEEData :
-  case kFEEDataMCOnly :
-  case kFEEDataExcludeMC :
+      
+    case kFEEData :
+    case kFEEDataMCOnly :
+    case kFEEDataExcludeMC :
     {
       // In case of MC productions done before aliroot tag v5-02-Rev09
       // assing the cluster label to all the cells belonging to this cluster
       // very rough
       // Copied and simplified from AliEMCALTenderSupply
-      Int_t cellLabels[12672]={-1};
-      if (fSetCellMCLabelFromCluster) {
+      if (fSetCellMCLabelFromCluster || fSetCellMCLabelFromEdepFrac) 
+      {
+        for (Int_t i = 0; i < fgkTotalCellNumber; i++)
+        {
+          fCellLabels      [i] =-1 ;
+          fOrgClusterCellId[i] =-1 ;
+        }
+        
         Int_t nClusters = InputEvent()->GetNumberOfCaloClusters();
-        for (Int_t i = 0; i < nClusters; i++) {
+        for (Int_t i = 0; i < nClusters; i++) 
+        {
           AliVCluster *clus =  InputEvent()->GetCaloCluster(i);
-      
+          
           if (!clus) continue;
+          
           if (!clus->IsEMCAL()) continue ;
-      
+          
           Int_t      label = clus->GetLabel();
           UShort_t * index = clus->GetCellsAbsId() ;
-      
-          for (Int_t icell=0; icell < clus->GetNCells(); icell++) cellLabels[index[icell]] = label;
+          
+          for(Int_t icell=0; icell < clus->GetNCells(); icell++)
+          {
+            if(!fSetCellMCLabelFromEdepFrac) 
+              fCellLabels[index[icell]] = label;
+            
+            fOrgClusterCellId[index[icell]] = i ; // index of the original cluster
+          } // cell in cluster loop
         } // cluster loop
       }
-
+      
       Double_t avgE        = 0; // for background subtraction
       const Int_t ncells   = fCaloCells->GetNumberOfCells();
-      for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
-	Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
-	Short_t  cellNumber=0;
-	Int_t cellMCLabel=-1;
-	if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
-	  break;
+      for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
+      {
+        Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
+        Short_t  cellNumber=0;
+        Int_t cellMCLabel=-1;
+        if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
+          break;
+        
+        if (fSetCellMCLabelFromCluster) cellMCLabel = fCellLabels[cellNumber];
+        
+        if (cellMCLabel > 0 && cellEFrac < 1e-6) 
+          cellEFrac = 1;
+        
+        if (cellAmplitude < 1e-6 || cellNumber < 0)
+          continue;	
+        
+        if (fInputCellType == kFEEDataMCOnly) {
+          if (cellMCLabel <= 0)
+            continue;
+          else {
+            cellAmplitude *= cellEFrac;
+            cellEFrac = 1;
+          }
+        }
+        else if (fInputCellType == kFEEDataExcludeMC) {
+          if (cellMCLabel > 0) 
+            continue;
+          else {
+            cellAmplitude *= 1 - cellEFrac;
+            cellEFrac = 0;
+          }
+        }
+        
+        if(!AcceptCell(cellNumber)) continue;
+        
+        AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
+                                                                        (Float_t)cellAmplitude, (Float_t)cellTime,
+                                                                        AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
+        
+        if (!fDoClusterize||fSubBackground) 
+        {
+          Float_t energy = cellAmplitude;
+          Float_t time   = cellTime;
+          fClusterizer->Calibrate(energy,time,cellNumber);
+          digit->SetAmplitude(energy);
+          avgE += energy;
+        }
+        
+        // New way to set the cell MC labels, 
+        // valid only for MC productions with aliroot > v5-07-21
+        if(fSetCellMCLabelFromEdepFrac && fOrgClusterCellId[cellNumber] >= 0) // index can be negative if noisy cell that did not form cluster 
+        {
+          fCellLabels[cellNumber] = idigit; 
 
-        if (fSetCellMCLabelFromCluster) cellMCLabel = cellLabels[cellNumber];
-
-	if (cellMCLabel > 0 && cellEFrac < 1e-6) 
-	  cellEFrac = 1;
-
-	if (cellAmplitude < 1e-6 || cellNumber < 0)
-	  continue;	
-
-	if (fInputCellType == kFEEDataMCOnly) {
-	  if (cellMCLabel <= 0)
-	    continue;
-	  else {
-	    cellAmplitude *= cellEFrac;
-	    cellEFrac = 1;
-	  }
-	}
-	else if (fInputCellType == kFEEDataExcludeMC) {
-	  if (cellMCLabel > 0) 
-	    continue;
-	  else {
-	    cellAmplitude *= 1 - cellEFrac;
-	    cellEFrac = 0;
-	  }
-	}
-
-	if(!AcceptCell(cellNumber)) continue;
-
-	AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
-									(Float_t)cellAmplitude, (Float_t)cellTime,
-									AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
-
-	if (!fDoClusterize||fSubBackground) {
-	  Float_t energy = cellAmplitude;
-	  Float_t time   = cellTime;
-	  fClusterizer->Calibrate(energy,time,cellNumber);
-	  digit->SetAmplitude(energy);
-	  avgE += energy;
-	}
-	idigit++;
+          AliVCluster *clus = 0;
+          Int_t iclus = fOrgClusterCellId[cellNumber];
+          
+          if(iclus < 0)
+          {
+            AliInfo("Negative original cluster index, skip \n");
+            continue;
+          }
+          
+          clus = InputEvent()->GetCaloCluster(iclus);
+          
+          for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
+          {
+            if(cellNumber != clus->GetCellAbsId(icluscell)) continue ;
+            
+            // Get the energy deposition fraction.
+            Float_t eDepFrac[4];
+            clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
+            
+            // Select the MC label contributing, only if enough energy deposition
+            TArrayI labeArr(0);
+            TArrayF eDepArr(0);
+            Int_t nLabels = 0;
+            for(Int_t imc = 0; imc < 4; imc++)
+            {
+              if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
+              {
+                nLabels++;
+                
+                labeArr.Set(nLabels);
+                labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
+                
+                eDepArr.Set(nLabels);
+                eDepArr.AddAt(eDepFrac[imc]*cellAmplitude, nLabels-1);
+                // use as deposited energy a fraction of the simulated energy (smeared and with noise)
+              }
+            }
+            
+            if(nLabels > 0)
+            {
+              digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
+            }
+          }
+        }
+        
+        
+        idigit++;
       }
-
+      
       if (fSubBackground) {
-	avgE /= fGeom->GetNumberOfSuperModules()*48*24;
-	Int_t ndigis = fDigitsArr->GetEntries();
-	for (Int_t i = 0; i < ndigis; ++i) {
-	  AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(i));
-	  Double_t energy = digit->GetAmplitude() - avgE;
-	  if (energy<=0.001) {
-	    digit->SetAmplitude(0);
-	  } else {
-	    digit->SetAmplitude(energy);
-	  }
-	}
+        avgE /= fGeom->GetNumberOfSuperModules()*48*24;
+        Int_t ndigis = fDigitsArr->GetEntries();
+        for (Int_t i = 0; i < ndigis; ++i) {
+          AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(i));
+          Double_t energy = digit->GetAmplitude() - avgE;
+          if (energy<=0.001) {
+            digit->SetAmplitude(0);
+          } else {
+            digit->SetAmplitude(energy);
+          }
+        }
       }
     }
-    break;
-    
-  case kPattern :    
+      break;
+      
+    case kPattern :    
     {
       // Fill digits from a pattern
       Int_t maxd = fGeom->GetNCells() / 4;
       for (Int_t idigit = 0; idigit < maxd; idigit++){
-	if (idigit % 24 == 12) idigit += 12;
-	AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
-	digit->SetId(idigit * 4);
-	digit->SetTime(600);
-	digit->SetTimeR(600);
-	digit->SetIndexInList(idigit);
-	digit->SetType(AliEMCALDigit::kHG);
-	digit->SetAmplitude(0.1);	
+        if (idigit % 24 == 12) idigit += 12;
+        AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+        digit->SetId(idigit * 4);
+        digit->SetTime(600);
+        digit->SetTimeR(600);
+        digit->SetIndexInList(idigit);
+        digit->SetType(AliEMCALDigit::kHG);
+        digit->SetAmplitude(0.1);	
       }
     }
-    break;
-
-  case kL0FastORs    : 
-  case kL0FastORsTC  :
-  case kL1FastORs    :
+      break;
+      
+    case kL0FastORs    : 
+    case kL0FastORsTC  :
+    case kL1FastORs    :
     {
       // Fill digits from FastORs
       
       AliVCaloTrigger *triggers = InputEvent()->GetCaloTrigger("EMCAL");
       
       if (!triggers || !(triggers->GetEntries() > 0))
-	return;
+        return;
       
       Int_t idigit = 0;
       triggers->Reset();
       
       while ((triggers->Next())) {
-	Float_t L0Amplitude = 0;
-	triggers->GetAmplitude(L0Amplitude);
-	
-	if (L0Amplitude <= 0 && fInputCellType != kL1FastORs)
-	  continue;
-
-	Int_t L1Amplitude = 0;
-	triggers->GetL1TimeSum(L1Amplitude);
-	
-	if (L1Amplitude <= 0 && fInputCellType == kL1FastORs)
-	  continue;
-      
-	Int_t triggerTime = 0;
-	Int_t ntimes = 0;
-	triggers->GetNL0Times(ntimes);
-	
-	if (ntimes < 1 && fInputCellType == kL0FastORsTC) 
-	  continue;
-	
-	if (ntimes > 0) {
-	  Int_t trgtimes[25];
-	  triggers->GetL0Times(trgtimes);
-	  triggerTime = trgtimes[0];
-	}
-
-	Int_t triggerCol = 0, triggerRow = 0;
-	triggers->GetPosition(triggerCol, triggerRow);
-	
-	Int_t find = -1;
-	fGeom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
-	
-	if (find < 0)
-	  continue;
-      
-	Int_t cidx[4] = {-1};
-	Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
-	
-	if (!ret)
-	  continue;
-
-	Float_t triggerAmplitude = 0;
-	
-	if (fInputCellType == kL1FastORs) {
-	  triggerAmplitude = 0.25 * L1Amplitude;  // it will add 4 cells for 1 amplitude
-	}
-	else {
-	  triggerAmplitude = L0Amplitude;      // 10 bit truncated, so it is already divided by 4
-	}
-	
-	for (Int_t idxpos = 0; idxpos < 4; idxpos++) {
-	  Int_t triggerNumber = cidx[idxpos];
-	  AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
-	  digit->SetId(triggerNumber);
-	  digit->SetTime(triggerTime);
-	  digit->SetTimeR(triggerTime);
-	  digit->SetIndexInList(idigit);
-	  digit->SetType(AliEMCALDigit::kHG);
-	  digit->SetAmplitude(triggerAmplitude);
-	  idigit++;
-	} 
+        Float_t L0Amplitude = 0;
+        triggers->GetAmplitude(L0Amplitude);
+        
+        if (L0Amplitude <= 0 && fInputCellType != kL1FastORs)
+          continue;
+        
+        Int_t L1Amplitude = 0;
+        triggers->GetL1TimeSum(L1Amplitude);
+        
+        if (L1Amplitude <= 0 && fInputCellType == kL1FastORs)
+          continue;
+        
+        Int_t triggerTime = 0;
+        Int_t ntimes = 0;
+        triggers->GetNL0Times(ntimes);
+        
+        if (ntimes < 1 && fInputCellType == kL0FastORsTC) 
+          continue;
+        
+        if (ntimes > 0) {
+          Int_t trgtimes[25];
+          triggers->GetL0Times(trgtimes);
+          triggerTime = trgtimes[0];
+        }
+        
+        Int_t triggerCol = 0, triggerRow = 0;
+        triggers->GetPosition(triggerCol, triggerRow);
+        
+        Int_t find = -1;
+        fGeom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
+        
+        if (find < 0)
+          continue;
+        
+        Int_t cidx[4] = {-1};
+        Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
+        
+        if (!ret)
+          continue;
+        
+        Float_t triggerAmplitude = 0;
+        
+        if (fInputCellType == kL1FastORs) {
+          triggerAmplitude = 0.25 * L1Amplitude;  // it will add 4 cells for 1 amplitude
+        }
+        else {
+          triggerAmplitude = L0Amplitude;      // 10 bit truncated, so it is already divided by 4
+        }
+        
+        for (Int_t idxpos = 0; idxpos < 4; idxpos++) {
+          Int_t triggerNumber = cidx[idxpos];
+          AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+          digit->SetId(triggerNumber);
+          digit->SetTime(triggerTime);
+          digit->SetTimeR(triggerTime);
+          digit->SetIndexInList(idigit);
+          digit->SetType(AliEMCALDigit::kHG);
+          digit->SetAmplitude(triggerAmplitude);
+          idigit++;
+        } 
       }
     }
-    break;
+      break;
   }
 }
 
@@ -698,25 +764,33 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
   
   const Int_t Ncls = fClusterArr->GetEntries();
   AliDebug(1, Form("total no of clusters %d", Ncls)); 
-  for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
+  
+  for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) 
+  {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
-    Int_t ncells_true = 0;
+    
+    Int_t ncellsTrue = 0;
     const Int_t ncells = recpoint->GetMultiplicity();
     UShort_t   absIds[ncells];  
     Double32_t ratios[ncells];
-    Int_t *dlist = recpoint->GetDigitsList();
+    Int_t   *dlist = recpoint->GetDigitsList();
     Float_t *elist = recpoint->GetEnergiesList();
     Double_t mcEnergy = 0;
-    for (Int_t c = 0; c < ncells; ++c) {
+    
+    for (Int_t c = 0; c < ncells; ++c) 
+    {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
-      absIds[ncells_true] = digit->GetId();
-      ratios[ncells_true] = elist[c]/recpoint->GetEnergy();
+      absIds[ncellsTrue] = digit->GetId();
+      ratios[ncellsTrue] = elist[c]/recpoint->GetEnergy();
+      
       if (digit->GetIparent(1) > 0)
-	mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
-      ++ncells_true;
+        mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
+      
+      ++ncellsTrue;
     }
     
-    if (ncells_true < 1) {
+    if (ncellsTrue < 1) 
+    {
       AliWarning("Skipping cluster with no cells");
       continue;
     }
@@ -733,7 +807,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetType(AliVCluster::kEMCALClusterv1);
     c->SetE(recpoint->GetEnergy());
     c->SetPosition(g);
-    c->SetNCells(ncells_true);
+    c->SetNCells(ncellsTrue);
     c->SetCellsAbsId(absIds);
     c->SetCellsAmplitudeFraction(ratios);
     c->SetID(recpoint->GetUniqueID());
@@ -747,26 +821,77 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetM02(elipAxis[0]*elipAxis[0]);
     c->SetM20(elipAxis[1]*elipAxis[1]);
     c->SetMCEnergyFraction(mcEnergy);
+    
+    //
+    // MC labels
+    //
+    Int_t    parentMult   = 0;
+    Int_t   *parentList   = recpoint->GetParents(parentMult);
+    Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
+    
+    c->SetLabel(parentList, parentMult);
+    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    
+    //
+    // Set the cell energy deposition fraction map:
+    //
+    if( parentMult > 0 && fSetCellMCLabelFromEdepFrac )
+    {
+      UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
+      
+      // Get the digit that originated this cell cluster
+      AliVCaloCells* cells = InputEvent()->GetEMCALCells();
+      
+      for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
+      {
+        Int_t   idigit  = fCellLabels[absIds[icell]];
+        
+        const AliEMCALDigit * dig = (const AliEMCALDigit*)fDigitsArr->At(idigit);
+        
+        // Find the 4 MC labels that contributed to the cluster and their 
+        // deposited energy in the current digit
+        
+        mcEdepFracPerCell[icell] = 0; // init
+        
+        Int_t  nparents   = dig->GetNiparent();
+        if ( nparents > 0 ) 
+        {
+          Int_t   digLabel   =-1 ; 
+          Float_t edep       = 0 ;
+          Float_t edepTot    = 0 ;
+          Float_t mcEDepFrac[4] = {0,0,0,0};
+          
+          // all parents in digit
+          for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
+          { 
+            digLabel = dig->GetIparent (jndex+1);
+            edep     = dig->GetDEParent(jndex+1);
+            edepTot += edep;
+            
+            if       ( digLabel == parentList[0] ) mcEDepFrac[0] = edep; 
+            else  if ( digLabel == parentList[1] ) mcEDepFrac[1] = edep;
+            else  if ( digLabel == parentList[2] ) mcEDepFrac[2] = edep;
+            else  if ( digLabel == parentList[3] ) mcEDepFrac[3] = edep;
+          } // all prarents in digit
+          
+          // Divide energy deposit by total deposited energy
+          // Do this only when deposited energy is significant, use 10 MeV although 50 MeV should be expected
+          if(edepTot > 0.01) 
+          {
+            mcEdepFracPerCell[icell] = c->PackMCEdepFraction(mcEDepFrac);
+          }
+        } // at least one parent label in digit
+      } // cell in cluster loop
+      
+      c->SetCellsMCEdepFractionMap(mcEdepFracPerCell);
+      
+      delete [] mcEdepFracPerCell;
+      
+    } // at least one parent in cluster, do the cell primary packing
 
-    //MC
-    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(c);
-    if (esdClus) {
-      Int_t  parentMult = 0;
-      Int_t *parentList = recpoint->GetParents(parentMult);
-      if (parentMult > 0) {
-	TArrayI parents(parentMult, parentList);
-	esdClus->AddLabels(parents); 
-      }
-    }
-    else {
-      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(c);
-      if (aodClus) {
-	Int_t  parentMult = 0;
-	Int_t *parentList = recpoint->GetParents(parentMult);
-	aodClus->SetLabel(parentList, parentMult); 
-      }
-    }
-
+    //
+    // Track matching
+    //
     if (tarr)
       TrackClusterMatching(c, tarr);
   }
