@@ -58,6 +58,8 @@
 #include "AliT0TimeAmplCorr.h"
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
 
 AliT0TimeAmplCorr::AliT0TimeAmplCorr()
 {
@@ -1541,13 +1543,13 @@ TGraph *AliT0TimeAmplCorr::CreateCorrectionGraph(TH1*const sourceprojection, con
         TH1 *tempProjection = (TH1*)sourceprojection->Clone("tempprojection");
         spectrum_max->Search(tempProjection, 0.1, "", 0.01);
         Int_t nmaximums = spectrum_max->GetNPeaks();
-        Float_t *maximums = spectrum_max->GetPositionX();
+        Double_t *maximums = spectrum_max->GetPositionX();
 
         tempProjection->Scale(-1);
         TSpectrum *spectrum_min = new TSpectrum();
         spectrum_min->Search(tempProjection, 0.1, "", 0.01);
         Int_t nminimums = spectrum_min->GetNPeaks();
-        Float_t *minimums = spectrum_min->GetPositionX();
+        Double_t *minimums = spectrum_min->GetPositionX();
 
         //array of histogram peak, spaces between which will be divided in slices
         Int_t nPeaks = nminimums + nmaximums + 2;
