@@ -206,7 +206,7 @@ void AliAnalysisTaskPHOSPCMgg::UserCreateOutputObjects()
   sprintf(kTbins[4],"Kt10-13") ;
   sprintf(kTbins[5],"Kt13-20") ;
 
-  const Int_t nCuts=7 ;
+  const Int_t nCuts=4 ;
   char cut[7][20] ;
   sprintf(cut[0],"All") ;
   sprintf(cut[1],"Disp") ;
@@ -236,7 +236,7 @@ void AliAnalysisTaskPHOSPCMgg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
   }
 
-  for(Int_t ikT=0; ikT<5; ikT++){ 
+  for(Int_t ikT=0; ikT<6; ikT++){ 
      fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
      fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
   }
@@ -639,7 +639,7 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
         else if(kT<0.7) kTbin="Kt04-07";
         else if(kT<1.) kTbin="Kt07-10";
         else if(kT<1.3) kTbin="Kt10-13";
-        else if(kT<1.3) kTbin="Kt13-20";
+        else if(kT<2.0) kTbin="Kt13-20";
         else  continue;
      
 
@@ -725,7 +725,7 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
         else if(kT<0.7) kTbin="Kt04-07";
         else if(kT<1.) kTbin="Kt07-10";
         else if(kT<1.3) kTbin="Kt10-13";
-        else if(kT<1.3) kTbin="Kt13-20";
+        else if(kT<2.0) kTbin="Kt13-20";
         else  continue;
       
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
@@ -811,7 +811,7 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
         else if(kT<0.7) kTbin="Kt04-07";
         else if(kT<1.) kTbin="Kt07-10";
         else if(kT<1.3) kTbin="Kt10-13";
-        else if(kT<1.3) kTbin="Kt13-20";
+        else if(kT<2.0) kTbin="Kt13-20";
         else  continue;
     
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();

@@ -183,7 +183,7 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   
     
   for(Int_t iCut=0; iCut<nCuts; iCut++){
-    for(Int_t ikT=0; ikT<5; ikT++){ 
+    for(Int_t ikT=0; ikT<6; ikT++){ 
 //      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
       fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
@@ -202,7 +202,7 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
   }
 
-  for(Int_t ikT=0; ikT<5; ikT++){ 
+  for(Int_t ikT=0; ikT<6; ikT++){ 
      fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
      fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
      fOutputContainer->Add(new TH3F(Form("hSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
@@ -551,7 +551,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       else if(kT<0.7) kTbin="Kt04-07";
       else if(kT<1.) kTbin="Kt07-10";
       else if(kT<1.3) kTbin="Kt10-13";
-      else if(kT<1.3) kTbin="Kt13-20";
+      else if(kT<2.) kTbin="Kt13-20";
       else  continue;
       
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
@@ -640,7 +640,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         else if(kT<0.7) kTbin="Kt04-07";
         else if(kT<1.) kTbin="Kt07-10";
         else if(kT<1.3) kTbin="Kt10-13";
-        else if(kT<1.3) kTbin="Kt13-20";
+        else if(kT<2.0) kTbin="Kt13-20";
         else  continue;
       
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
