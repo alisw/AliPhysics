@@ -76,11 +76,15 @@ public:
   Double_t GetCOGHit(Int_t returnType);
   Float_t  UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap, Int_t addOverlap, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
   Float_t  GetCOGUnfolded(Int_t returnType, Int_t addOverlap=kTRUE, Float_t gain=0.8, Float_t thr=2, Float_t noise=0.7, Bool_t rounding=kTRUE, Bool_t addPedestal=kTRUE,Int_t skipSample=0);
+
+  Bool_t MakeDigitization(Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal,Int_t skipSample);
   //
   Double_t  GetExpectedRMS(Int_t dim);
   //Double_t  GetExpectedResolution(Int_t dim);
 
   Double_t GetNsec();
+  Float_t GetYMaxBin(){return fYMaxBin;}
+  Float_t GetZMaxBin(){return fZMaxBin;}
   //static void Simul(const char* simul, Int_t npoints);
   static Double_t GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1);
   static Double_t GaussExpConvolution(Double_t x0, Double_t s0,Double_t t1);
@@ -97,8 +101,11 @@ public:
   Float_t fDiffLong;   ///< diffusion sigma longitudinal direction
   Float_t fY;          ///< y ideal position - center bin
   Float_t fZ;          ///< z ideal position - center bin
-  Float_t fYCenterBin; ///< y center bin  
-  Float_t fZCenterBin; ///< z center bin  
+  Float_t fYCenterBin; ///< y center bin   
+  Float_t fZCenterBin; ///< z center bin   
+  Float_t fYMaxBin;    //! y maximum position as position as calculated in the  MakeDigitization   (should be 0 in mean )  
+  Float_t fZMaxBin;    //! z maximum position as position as calculated in the  MakeDigitization   (should be 0 in mean )
+  
   Float_t fAngleY;     ///< y angle - tan(y)
   Float_t fAngleZ;     ///< z angle - tan z
   AliTPCclusterFast *fOverlapCluster; //
@@ -115,13 +122,14 @@ public:
   //
   // digitization part
   //
-  TMatrixF fDigits;    ///< response matrix
+  TMatrixF fDigits;    ///< response matrix (ideal signal without noise, trheshold rounding, pile-up)
+  TMatrixF fRawDigits; //!  "on the fly caclualted digits matrix" for current version of setup - gain, noise, thr.
   Float_t fPRFRMS;     /// pad respons function width
   Float_t fTRFRMS;     /// time rsponsefunction width
   static TF1* fPRF;    ///< Pad response
   static TF1* fTRF;    ///< Time response function
   static Float_t fgZSamplingFactor;               // z sample at 10 MHz is 2 time narrower as rphi sample 
-  ClassDef(AliTPCclusterFast,1)  // container for
+  ClassDef(AliTPCclusterFast,2)  // container for
 };
 
 
@@ -512,10 +520,12 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
 AliTPCclusterFast::AliTPCclusterFast():
   fOverlapCluster(0),
   fPRFRMS(0.5),     // pad respons function width
-  fTRFRMS(0.5)      // time rsponsefunction width
+  fTRFRMS(0.5),      // time responsefunction width
+  fRawDigits()
 {
   ///
   fDigits.ResizeTo(5,7);
+  fRawDigits.ResizeTo(5,7);
 }
 
 void AliTPCclusterFast::Init(){
@@ -527,6 +537,8 @@ void AliTPCclusterFast::Init(){
   fNprim=0;      // mean number of primary electrons
   fNtot=0;       // total number of  electrons
   fQtot=0;       // total charge - Gas gain flucuation taken into account
+  fYCenterBin=0;
+  fZCenterBin=0;
   //
   fPosY.ResizeTo(knMax);
   fPosZ.ResizeTo(knMax);
@@ -928,6 +940,45 @@ Float_t AliTPCclusterFast::GetCOGUnfolded(Int_t returnType, Int_t addOverlap, Fl
   if (returnType==2) return meanj;
 }
 
+
+Bool_t  AliTPCclusterFast::MakeDigitization(Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal,Int_t skipSample){
+  //
+  // Conversion ideal digits array to digits 
+  // In addition local max bin calculated 
+  // 
+  Int_t maxValue=0;
+  for (Int_t i=0; i<5; i++){
+    for (Int_t j=0; j<7; j++){
+      Float_t value = fDigits(i,j);
+      if (addOverlap && fOverlapCluster) value+=fOverlapCluster->fDigits(i,j);
+      value*=gain;
+      value+=noise*gRandom->Gaus();
+      if (addPedestal) value+=gRandom->Rndm()-0.5;
+      if (rounding) value=TMath::Nint(value);
+      if (value<thr) value=0;      
+      if (skipSample==0) {
+	fRawDigits(i,j)=value;
+	if (value>=maxValue  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=1){  // check position of local maxima
+	  maxValue=value;
+	  fYMaxBin=i-2;
+	  fZMaxBin=j-3;
+	}
+      }
+      if (skipSample==1  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=1 ) {    // check position of local maxima
+	fRawDigits(i,2+j/2)=value;      
+	if (value>=maxValue){
+	  maxValue=value;
+	  fYMaxBin=i-2;
+	  fZMaxBin=2+j/2-3;
+	}
+      }
+    }
+  }
+  
+}
+
+
+
 Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Float_t & sumu, Float_t & overlap, Int_t addOverlap, Float_t gain, Float_t thr, Float_t noise, Bool_t rounding, Bool_t addPedestal,Int_t skipSample){
   //
   // Unforling as used in the  AliTPCclusterer::UnfoldCluster - (described in CHEP paper ...)
@@ -943,25 +994,13 @@ Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Flo
   //
   //
   //
-  static TMatrixF digitMatrix(5,7);
-  for (Int_t i=0; i<5; i++)
-    for (Int_t j=0; j<7; j++){
-      Float_t value = fDigits(i,j);
-      if (addOverlap && fOverlapCluster) value+=fOverlapCluster->fDigits(i,j);
-      value*=gain;
-      value+=noise*gRandom->Gaus();
-      if (addPedestal) value+=gRandom->Rndm()-0.5;
-      if (rounding) value=TMath::Nint(value);
-      if (value<thr) value=0;      
-      digitMatrix(i,j)=value;
-      if (skipSample==0) digitMatrix(i,j)=value;
-      if (skipSample==1) digitMatrix(i,2+j/2)=value;      
-    }
+  MakeDigitization(addOverlap, gain, thr, noise,rounding, addPedestal, skipSample);
+
   
   for (Int_t k =0;k<7;k++) // sequence array
     for (Int_t l = -1; l<=1;l++){  // +- 1 bin loop
-      if (k>0&&k<6) sum3i[k]+=digitMatrix(k-1,l+3);  //  i- y direction
-      sum3j[k]+=digitMatrix(l+2,k);
+      if (k>0&&k<6) sum3i[k]+=fRawDigits(k-1,l+3);  //  i- y direction
+      sum3j[k]+=fRawDigits(l+2,k);
     }
   if (sum3i[3]<=3 || sum3j[3]<=3) return 0;
 
