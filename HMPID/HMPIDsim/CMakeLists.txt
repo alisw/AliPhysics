@@ -41,6 +41,7 @@ set(SRCS
     AliHMPIDv1.cxx
     AliHMPIDv2.cxx
     AliHMPIDv3.cxx
+    AliHMPIDvG4.cxx
    )
 
 # Headers from sources
