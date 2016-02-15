@@ -7352,7 +7352,12 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, co
   
   //for extraonly branch the embedded jet is empty and 'jet' is detector level PYTHIA jet
    
+  if(!Jettracklist){std::cout<<"FillEmbeddedHistos(): Jettracklist does not exist!"<<std::endl;}
+  if(Jettracklist->GetEntries() == 0)std::cout<<"FillEmbeddedHistos(): Jettracklist() is empty!!"<<std::endl;
+
   Double_t jetPt = 0;
+
+  if(jet) jetPt = jet->Pt();//getting matched jet pt
 
   if((fUseExtraTracks == 1)&&(fUseEmbeddedJetPt == kTRUE)){
   if(jet) jetPt = embeddedJet->Pt();//getting matched jet pt
