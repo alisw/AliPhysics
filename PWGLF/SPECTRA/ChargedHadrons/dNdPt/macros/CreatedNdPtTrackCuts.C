@@ -2090,20 +2090,24 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
-    TString tag = "Calculate matching efficiency: TPC only";
-     
+    
+    if (cutMode==2100){      
+      esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+      TString tag = "Calculate matching efficiency: TPC only with Crossed Rows";
+    }
+    
     if (cutMode==2101){
       esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
       esdTrackCuts->SetRequireITSRefit(kTRUE); 
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
-      TString tag = "Calculate matching efficiency: TPC + ITS";
+      TString tag = "Calculate matching efficiency: TPC + ITS with Crossed Rows";
     }
     
     if (cutMode==2102){
       esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
       esdTrackCuts->SetRequireITSRefit(kTRUE); 
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); 
-      TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit";
+      TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit with Crossed Rows";
     }
     
     if (cutMode==2103){
@@ -2111,15 +2115,21 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC only";
     }
     
-   if (cutMode==2104){
+    if (cutMode==2104){
       esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS";
     }
 
-   
-  } 
+    if (cutMode==2105){
+      esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS without SPD hit";
+    }
+    
+  }
 
 
   Printf("Created track cuts for: %s", tag.Data());

@@ -9,7 +9,7 @@
 
 
 
-void AddTask_dNdPtpp_TPCITS(const int cutMode=223, const char *partMode = "")
+void AddTask_dNdPtpp_TPCITS(const int cutMode=223, const char *partMode = "", const char *suffix="")
 {
 
  /*
@@ -73,10 +73,15 @@ CheckLoadLibrary("libPWG0selectors");
 
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
+  
+  TString stContainerName = Form("dNdPtpp_%d",cutMode);
+  stContainerName += stParticleSelection;
+  TString stCombinedName(suffix);
+  stContainerName += stCombinedName;
   //
   // Create task
   //
-  AlidNdPtTask *task = new AlidNdPtTask("AlidNdPtTask_TPCITS");  
+  AlidNdPtTask *task = new AlidNdPtTask(stContainerName);  
   task->SetUseMCInfo(hasMC);
 
   // trigger  
@@ -138,8 +143,7 @@ CheckLoadLibrary("libPWG0selectors");
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  TString stContainerName = Form("dNdPtpp_%d",cutMode);
-  stContainerName += stParticleSelection;
+  
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(stContainerName,
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
