@@ -12,5 +12,6 @@
 #pragma link C++ class AliT0CalibOffsetChannelsTask+;
 #pragma link C++ class AliT0AnalysisTaskQA+;
 #pragma link C++ class AliT0CalibAnalysisTask+;
+#pragma link C++ class AliT0TimeAmplCorr+;
 
 #endif

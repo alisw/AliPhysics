@@ -15,7 +15,6 @@
 
 # Module
 set(MODULE T0calib)
-add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/T0/${MODULE})
@@ -38,6 +37,7 @@ set(SRCS
     AliT0CalibAnalysisTask.cxx
     AliT0CalibOffsetChannelsTask.cxx
     AliT0PreprocessorOffline.cxx
+    AliT0TimeAmplCorr.cxx	
    )
 
 # Headers from sources
