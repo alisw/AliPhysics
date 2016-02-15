@@ -1032,13 +1032,19 @@ void AliEMCALUnfolding::EvalParsPhiDependence(Int_t absId, const AliEMCALGeometr
   //
   // calculate params p5 and p6 depending on the phi angle in global coordinate
   // for the cell with given absId index
+  // output phiglob should be in range -10 to 10 degree
   //
   Double_t etaGlob = 0.;//eta in global c.s. - unused
   Double_t phiGlob = 0.;//phi in global c.s. in radians
   geom->EtaPhiFromIndex(absId, etaGlob, phiGlob);
+  if(phiGlob<0)phiGlob+=TMath::TwoPi();
   phiGlob*=180./TMath::Pi();
-  phiGlob-=90.;
-  phiGlob-= (Double_t)((Int_t)geom->GetSuperModuleNumber(absId)/2 * 20);
+  phiGlob-=20.*(Int_t)(phiGlob/20.);
+  Int_t superModule=geom->GetSuperModuleNumber(absId);
+  if(superModule==10 || superModule==11 || superModule==18 || superModule==19) //sm 10,11,18,19 shift by 3.5 deg other 10 deg
+    phiGlob-=3.5;
+  else
+    phiGlob-=10.;
 
   EvalPar5(phiGlob);
   EvalPar6(phiGlob);
