@@ -57,16 +57,8 @@ if(FASTJET_FOUND)
   include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
   link_directories(${FASTJET_LIBS_DIR})
   add_definitions(${FASTJET_DEFINITIONS})
-
   set(SRCS ${SRCS}
            AliAnalysisTaskDmesonJets.cxx)
-
-  if(ROOT_VERSION_MAJOR EQUAL 6)
-    set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
-    if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
-      set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
-    endif()
-  endif(ROOT_VERSION_MAJOR EQUAL 6)
 endif(FASTJET_FOUND)
 
 # Headers from sources
@@ -75,7 +67,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRADEFINITIONS}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core Geom)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCAL PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
