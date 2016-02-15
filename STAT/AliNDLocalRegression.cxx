@@ -199,6 +199,13 @@ void  AliNDLocalRegression::SetCuts(Double_t nSigma, Double_t robustFraction, In
 
 }
 
+Bool_t    AliNDLocalRegression::CleanCovariance(){
+  //
+  //  Clean covariance matrix if not needed anymore
+  //
+  if (fLocalFitCovar) delete fLocalFitCovar;
+  fLocalFitCovar=0;
+};
 
 
 Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel, const char * dimensionFormula, Double_t weightCut, Int_t entries, Bool_t useBinNorm){
@@ -535,6 +542,10 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
   //
   //
   // 
+  if (fLocalFitCovar==NULL) {
+    ::Error("AliNDLocalRegression::EvalError", "Covariance matrix not available");
+    return 0 ;
+  }
   for (Int_t iDim=0; iDim<fNParameters; iDim++){
     if (point[iDim]< fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin();
     if (point[iDim]> fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax();
@@ -782,6 +793,10 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
    */
   const Double_t kScale=0.5;
   const Double_t singularity_tolerance = 1e-200;
+  if (fLocalFitCovar==NULL) {
+    ::Error("AliNDLocalRegression::EvalError", "Covariance matrix not available");
+    return 0 ;
+  }
   //
   // 1.)  Make backup of original parameters
   //

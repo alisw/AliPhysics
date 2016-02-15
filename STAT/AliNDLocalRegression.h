@@ -30,7 +30,7 @@ class AliNDLocalRegression : public TNamed {
   ~AliNDLocalRegression();
 
   Bool_t MakeFit(TTree * tree , const char *formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel,  const char * dimensionFormula, Double_t weightCut=0.00001, Int_t entries=1000000000, Bool_t useBinNorm=kTRUE);
-
+  Bool_t   CleanCovariance();
   Double_t Eval(Double_t *point);
   Double_t EvalError(Double_t *point);
   Bool_t   Derivative(Double_t *point, Double_t *d);
