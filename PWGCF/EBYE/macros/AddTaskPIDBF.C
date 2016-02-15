@@ -55,8 +55,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 				   Double_t sigmaElectronRejection=3,
 				   Bool_t electronExclusiveRejection=kFALSE,
 				   TString correctionFileName = "",
-			           Int_t nCentralityArrayBinsForCorrection,
-	                           Double_t *gCentralityArrayForCorrections) {
+			           Int_t nCentralityArrayBinsForCorrection = -1,
+	                           Double_t *gCentralityArrayForCorrections = 0x0) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
