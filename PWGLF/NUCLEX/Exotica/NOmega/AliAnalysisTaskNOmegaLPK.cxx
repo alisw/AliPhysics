@@ -868,11 +868,11 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,Int_t &nSelect
 
 	Double_t ratioLambda = static_cast<Double_t>(nAntiLambda)/static_cast<Double_t>(nLambda);
 	Double_t ratioLambdaAll = static_cast<Double_t>(fCountAntiLambda)/static_cast<Double_t>(fCountLambda);
-	printf("#######################################################################################################################\n");
-	printf("#####               Lambda: Pro:%7d->%7d,  Anti:%7d->%7d  (ratio:%6.4f->%6.4f) ######################\n",nLambda,fCountLambda,nAntiLambda,fCountAntiLambda,ratioLambda,ratioLambdaAll);
-	printf("#######################################################################################################################\n");
-	printf("##### Analyzed events: %7d, Run Number: %10d, Centrality: %5d, nV0s: %5d ################################\n",fCountEvent,runNumber,fCentrality,nV0s);
-	printf("#######################################################################################################################\n\n\n");
+//	printf("#######################################################################################################################\n");
+//	printf("#####               Lambda: Pro:%7d->%7d,  Anti:%7d->%7d  (ratio:%6.4f->%6.4f) ######################\n",nLambda,fCountLambda,nAntiLambda,fCountAntiLambda,ratioLambda,ratioLambdaAll);
+//	printf("#######################################################################################################################\n");
+//	printf("##### Analyzed events: %7d, Run Number: %10d, Centrality: %5d, nV0s: %5d ################################\n",fCountEvent,runNumber,fCentrality,nV0s);
+//	printf("#######################################################################################################################\n\n\n");
 
 	fCountEvent++;
 
