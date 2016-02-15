@@ -436,6 +436,7 @@ alien_find()
   executable+=" find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
+  local tmp=$(mktemp /tmp/XXXXXXXXXXX 2>/dev/null)
 
   [[ -z $maxCollectionLength ]] && local maxCollectionLength=10000
 
@@ -449,14 +450,15 @@ alien_find()
   iterationNumber=0
   numberOfFiles=$maxCollectionLength
   rm -f $logOutputPath/alien_find.err
-  while [[ $numberOfFiles -ge $maxCollectionLength && $iterationNumber -lt 100 ]]; do
-    numberOfFiles=0
+  while [[ ( $numberOfFiles -ge $maxCollectionLength ) && ( $iterationNumber -lt 100 ) ]]; do
     offset=$((maxCollectionLength*iterationNumber-1)); 
     [[ $offset -lt 0 ]] && offset=0; 
     $executable -x coll -l ${maxCollectionLength} -o ${offset} "$@" 2>>$logOutputPath/alien_find.err \
-    | reformatXMLCollection
+    | reformatXMLCollection | tee "$tmp"
+    numberOfFiles=$(cat "$tmp" 2>/dev/null | wc -l)
     ((iterationNumber++))
   done
+  rm -f "$tmp"
   return 0
 }
 
