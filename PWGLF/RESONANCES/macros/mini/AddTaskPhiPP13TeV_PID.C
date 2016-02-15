@@ -47,7 +47,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask=AliVEvent::kMB;
+  UInt_t      triggerMask=AliVEvent::kINT7;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
 
@@ -112,7 +112,10 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
   AliRsnCutPrimaryVertex* cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
 
-  AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+  AliRsnCutEventProperties* cutEventProperties=new AliRsnCutEventProperties("cutEventProperties");
+  cutEventProperties->SetCheckIncompleteDAQ();
+  cutEventProperties->SetCheckPastFuture();
+  cutEventProperties->SetCheckCorrClustersTracklets();
 
   if(isPP && (!isMC)){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
@@ -121,7 +124,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   // define and fill cut set for event cut
   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-  eventCuts->AddCut(cutEventUtils);
+  eventCuts->AddCut(cutEventProperties);
   eventCuts->AddCut(cutVertex);
   eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
   task->SetEventCuts(eventCuts);
