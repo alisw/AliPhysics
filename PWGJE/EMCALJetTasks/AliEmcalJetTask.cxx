@@ -196,6 +196,7 @@ Int_t AliEmcalJetTask::FindJets()
   TIter nextPartColl(&fParticleCollArray);
   AliParticleContainer* tracks = 0;
   while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
+    AliDebug(2,Form("Tracks from collection %d: '%s'.", iColl-1, tracks->GetName()));
     tracks->ResetCurrentID();
     AliVParticle* t = 0;
     while ((t = tracks->GetNextAcceptParticle())) {
@@ -230,6 +231,7 @@ Int_t AliEmcalJetTask::FindJets()
   TIter nextClusColl(&fClusterCollArray);
   AliClusterContainer* clusters = 0;
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
+    AliDebug(2,Form("Clusters from collection %d: '%s'.", iColl-1, clusters->GetName()));
     clusters->ResetCurrentID();
     AliVCluster* c = 0;
     while ((c = clusters->GetNextAcceptCluster())) {

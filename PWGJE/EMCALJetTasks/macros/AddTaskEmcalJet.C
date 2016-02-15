@@ -118,8 +118,6 @@ AliEmcalJetTask* AddTaskEmcalJet(
   jetTask->SetRadius(radius);
   if (partCont) jetTask->AdoptParticleContainer(partCont);
   if (clusCont) jetTask->AdoptClusterContainer(clusCont);
-  jetTask->SetTracksName(trackName);
-  jetTask->SetClusName(clusName);
   jetTask->SetJetsName(tag);
   jetTask->SetMinJetPt(minJetPt);
   jetTask->SetGhostArea(ghostArea);
