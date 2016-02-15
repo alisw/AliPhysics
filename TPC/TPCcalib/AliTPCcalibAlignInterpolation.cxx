@@ -2414,8 +2414,8 @@ Bool_t  AliTPCcalibAlignInterpolation::LoadNDLocalFit(TTree * tree, const char *
       Int_t hashIndex=reg->GetVisualCorrectionIndex();
       reg->AddVisualCorrection(reg, hashIndex);      
       tree->SetAlias(aliasName, TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
-      tree->SetAlias(aliasName+"L", TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)-(AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter-2)+AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+2))*0.5",hashIndex).Data());
-      tree->SetAlias(aliasName+"M", TString::Format("(AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter-2)+AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+2))*0.5",hashIndex).Data());
+      tree->SetAlias(aliasName+"L", TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)-(AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter-2)+AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+2))*0.5",hashIndex,hashIndex,hashIndex).Data());
+      tree->SetAlias(aliasName+"M", TString::Format("(AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter-2)+AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+2))*0.5",hashIndex, hashIndex).Data());
     }
   }
   return kTRUE;
