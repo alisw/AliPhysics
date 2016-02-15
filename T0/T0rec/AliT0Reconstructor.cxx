@@ -147,7 +147,6 @@ ClassImp(AliT0Reconstructor)
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
   if(LHCperiod.Contains("LHC15")) fLHCperiod=kTRUE;
-
  
 }
 
@@ -181,8 +180,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t shiftAC = GetRecoParam() -> GetLow(312);
   AliDebug(2, Form("Reconstruct(TTree*digitsTree shiftA %f shiftC %f shiftAC %f \n",shiftA, shiftC, shiftAC));
   
-  Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
-  Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
+  Double32_t besttimeA=9999999;  Double32_t besttimeA_best=0;
+  Double32_t besttimeC=9999999;  Double32_t besttimeC_best=0;
   Int_t timeDelayCFD[24]; 
   Int_t badpmt[24];
   //Bad channel
@@ -257,26 +256,33 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       
     }
   }
-  
+  Int_t npmtsC=0;
   for (Int_t ipmt=0; ipmt<12; ipmt++){
     if(time[ipmt] !=0  && time[ipmt] != -99999
        &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
       {
 	if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
-	if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC_best)) 
-	  besttimeC_best=time[ipmt]; //timeC	     
+	//	if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC_best)) 
+	//	  besttimeC_best=time[ipmt]; //timeC
+	besttimeC_best += time[ipmt];  //sum of timeC 
+	npmtsC++;
       }
   }
+  Int_t npmtsA=0;
   for ( Int_t ipmt=12; ipmt<24; ipmt++)
     {
       if(time[ipmt] != 0 && time[ipmt] != -99999
 	 && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
 	{
 	  if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
-	  if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 
-	    besttimeA_best=time[ipmt]; //timeA
+	  //	  if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 
+	  //    besttimeA_best=time[ipmt]; //timeA
+	  besttimeA_best += time[ipmt];  //sum of timeA 
+	  npmtsA++;
 	}
     }
+  if (npmtsC>0) besttimeC_best = besttimeC_best/npmtsC;
+  if (npmtsA>0) besttimeA_best = besttimeA_best/npmtsA;
   
   if( besttimeA < 999999 && besttimeA!=0) {
     frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  );
@@ -387,8 +393,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
   Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold();
   
-  Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
-  Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
+  Double32_t besttimeA=9999999;  Double32_t besttimeA_best=0;
+  Double32_t besttimeC=9999999;  Double32_t besttimeC_best=0;
 
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   
@@ -486,62 +492,69 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   frecpoints.SetAmpLED(ipmt,ampnewmip[ipmt] ); //new amplitude 
 	  }
 	  else {
-	   time[ipmt] = -9999;
-	   adc[ipmt] = 0;
-	   adcmip[ipmt] = 0;
+	    time[ipmt] = -9999;
+	    adc[ipmt] = 0;
+	    adcmip[ipmt] = 0;
 	  }
-       }
-     
-       for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] !=0 &&  time[ipmt] > -9000 
-	    /*&& badpmt[ipmt]==0 */
+	}
+	Int_t npmtsC=0;
+	for (Int_t ipmt=0; ipmt<12; ipmt++){
+	  if(time[ipmt] !=0 &&  time[ipmt] > -9000 
+	     /*&& badpmt[ipmt]==0 */
 	    &&  adcmip[ipmt]>lowAmpThreshold )
-	   {
-	     if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
-	     if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC_best)) 
-	       besttimeC_best=time[ipmt]; //timeC	     
-	   }
-       }
-       for ( Int_t ipmt=12; ipmt<24; ipmt++)
-	 {
-	   if(time[ipmt] != 0 &&  time[ipmt] > -9000 
-	      /* && badpmt[ipmt]==0*/ 
-	      && adcmip[ipmt]>lowAmpThreshold )
-	     {
-	       if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
-	       if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 
-		 besttimeA_best=time[ipmt]; //timeA
-	     }
+	    {
+	      if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
+	      //	     if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC_best)) 
+	      //	       besttimeC_best=time[ipmt]; //timeC	     
+	      besttimeC_best += time[ipmt];  //sum of timeA 
+	      npmtsC++;
+	    }
+	}
+	Int_t npmtsA=0;
+	for ( Int_t ipmt=12; ipmt<24; ipmt++)
+	  {
+	    if(time[ipmt] != 0 &&  time[ipmt] > -9000 
+	       /* && badpmt[ipmt]==0*/ 
+	       && adcmip[ipmt]>lowAmpThreshold )
+	      {
+		if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
+		// if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 
+		//	 besttimeA_best=time[ipmt]; //timeA
+		besttimeA_best += time[ipmt];  //sum of timeA 
+		npmtsA++;
+	      }
 	 }
-       
-       if(besttimeA < 999999 && besttimeA!=0 ) {
-	 if( equalize  ==0 ) 
-	   frecpoints.SetTime1stA((besttimeA * channelWidth)- 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays - fTimeMeanShift[1] ); 
-	 else
-	   {
-	     frecpoints.SetTimeBestA((besttimeA_best * channelWidth )); 
-	     frecpoints.SetTime1stA((besttimeA * channelWidth - fTimeMeanShift[1])); 
-	   }
+	if (npmtsC>0) besttimeC_best = besttimeC_best/npmtsC;
+	if (npmtsA>0) besttimeA_best = besttimeA_best/npmtsA;
+	
+	if(besttimeA < 999999 && besttimeA!=0 ) {
+	  if( equalize  ==0 ) 
+	    frecpoints.SetTime1stA((besttimeA * channelWidth)- 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays - fTimeMeanShift[1] ); 
+	  else
+	    {
+	      frecpoints.SetTimeBestA((besttimeA_best * channelWidth )); 
+	      frecpoints.SetTime1stA((besttimeA * channelWidth - fTimeMeanShift[1])); 
+	    }
        }
-       if( besttimeC < 999999 && besttimeC!=0) {
-	 if( equalize  ==0 ) 
-	   frecpoints.SetTime1stC((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
-	 else
-	   {
-	     frecpoints.SetTimeBestC((besttimeC_best * channelWidth ));
-	     frecpoints.SetTime1stC((besttimeC * channelWidth - fTimeMeanShift[2]));
-	   }
-       }
-       AliDebug(5,Form("1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f ",
-		       besttimeA, besttimeA_best,
+	if( besttimeC < 999999 && besttimeC!=0) {
+	  if( equalize  ==0 ) 
+	    frecpoints.SetTime1stC((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
+	  else
+	    {
+	      frecpoints.SetTimeBestC((besttimeC_best * channelWidth ));
+	      frecpoints.SetTime1stC((besttimeC * channelWidth - fTimeMeanShift[2]));
+	    }
+	}
+	AliDebug(5,Form("1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f ",
+			besttimeA, besttimeA_best,
 		       besttimeC, besttimeC_best) );
-       AliDebug(5,Form("fRecPoints:::  1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f shiftA %f shiftC %f ",
-		       frecpoints.Get1stTimeA(),  frecpoints.GetBestTimeA(),
-		       frecpoints.Get1stTimeC(),  frecpoints.GetBestTimeC(), 
-		       fTimeMeanShift[1], fTimeMeanShift[2] ) );
-       if( besttimeC < 999999 &&  besttimeA < 999999) { 
-	 if(equalize  ==0 )
-	   timeclock = (channelWidth*(besttimeC + besttimeA)/2.- 1000.*fLatencyHPTDC +1000.*fLatencyL1 - 1000.*fGRPdelays - fTimeMeanShift[0]);
+	AliDebug(5,Form("fRecPoints:::  1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f shiftA %f shiftC %f ",
+			frecpoints.Get1stTimeA(),  frecpoints.GetBestTimeA(),
+			frecpoints.Get1stTimeC(),  frecpoints.GetBestTimeC(), 
+			fTimeMeanShift[1], fTimeMeanShift[2] ) );
+	if( besttimeC < 999999 &&  besttimeA < 999999) { 
+	  if(equalize  ==0 )
+	    timeclock = (channelWidth*(besttimeC + besttimeA)/2.- 1000.*fLatencyHPTDC +1000.*fLatencyL1 - 1000.*fGRPdelays - fTimeMeanShift[0]);
 	 else
 	   {
 	     timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - fTimeMeanShift[0];
@@ -621,7 +634,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       //      printf ("Reconstruct :::  T0 MPDA %i MPDC %i", amplitude[24], amplitude[25]);
 
       
-     } // if (else )raw data
+    } // if (else )raw data
   recTree->Fill();
 }
   
