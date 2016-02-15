@@ -429,7 +429,6 @@ void AliESDEvent::Reset()
 
   // Handle the cases
   // Std content + Non std content
-
   // Reset the standard contents
   ResetStdContent(); 
   fDetectorStatus = 0xFFFFFFFF;
@@ -1660,6 +1659,10 @@ void AliESDEvent::CreateStdContent()
   // create the standard AOD content and set pointers
 
   // create standard objects and add them to the TList of objects
+  if (fESDObjects->GetEntries()>=kESDListN) {
+    AliInfoF("StdContent has %d entries, will not create new ones",fESDObjects->GetEntries());
+    return;
+  }
   AddObject(new AliESDRun());
   AddObject(new AliESDHeader());
   AddObject(new AliESDZDC());
