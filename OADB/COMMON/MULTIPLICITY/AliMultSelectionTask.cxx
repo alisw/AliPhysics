@@ -49,6 +49,7 @@ class AliESDAD; //AD
 #include "TMath.h"
 #include "TLegend.h"
 #include "TObjectTable.h"
+#include "TSystem.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"
@@ -1325,9 +1326,27 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ) {
         AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
-        AliWarning(Form(" Will input it automatically for you to %s",lProductionName.Data() ));
-	AliWarning(" If this fails or produces nonsense production names, please invoke:"); 
-	AliWarning("    ::SetAlternateOADBForEstimators(\"productionname\") to override this autodetection!");
+        AliWarning(Form(" Auto-detection production name is %s, checking if there...",lProductionName.Data()));
+	Bool_t lItsThere = CheckOADB( lProductionName ); 
+	if( !lItsThere ){ 
+		//Override options: go to default OADBs depending on generator
+		AliWarning(" OADB for this MC does not exist! Checking generator type..."); 
+		Bool_t lItsHijing = IsHijing(); 
+		Bool_t lItsDPMJet = IsDPMJet(); 
+		if ( lItsHijing ){ 
+			lProductionName = Form("%s-DefaultMC-Hijing",lPeriodName.Data());
+			AliWarning(Form(" This is HIJING! Will use OADB named %s",lProductionName.Data()));
+		}
+		if ( lItsDPMJet ){ 
+			lProductionName = Form("%s-DefaultMC-DPMJet",lPeriodName.Data());
+			AliWarning(Form(" This is DPMJet! Will use OADB named %s",lProductionName.Data())); 
+		}
+		if ( (!lItsHijing) && (!lItsDPMJet) ){ 
+			AliWarning(" Unable to detect generator type from header. Sorry."); 
+		}	
+	}else{ 
+		AliWarning(" OADB for this period exists. Proceeding as usual."); 
+	}	
         fAlternateOADBForEstimators = lProductionName;
         AliInfo("==================================================");
     }
@@ -1804,6 +1823,60 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
 
     return lProductionName;
 }
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const { 
+    //This helper function checks if an OADB exists for the production named lProdName
+    //Determine file name 
+    TString fileName = Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lProdName.Data() );
+
+    Bool_t lInverseThis = !gSystem->AccessPathName(fileName.Data());
+    return lInverseThis;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsHijing() const { 
+	//Function to check if this is Hijing MC
+	Bool_t lReturnValue = kFALSE; 
+        AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+        AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+        AliStack*    stack=0;
+        AliMCEvent*  mcEvent=0;
+        AliGenHijingEventHeader* hHijing=0;
+        if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())){
+		//Option 1: Just Hijing
+		lReturnValue = kTRUE;
+	    } else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+		//Option 2: cocktail involving Hijing
+                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+		if ( hHijing ) lReturnValue = kTRUE;  
+            }		
+
+	}	
+	return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsDPMJet() const { 
+    //Function to check if this is DPMJet
+        //Function to check if this is Hijing MC
+        Bool_t lReturnValue = kFALSE;
+        AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+        AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+        AliStack*    stack=0;
+        AliMCEvent*  mcEvent=0;
+        if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+            if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+		//DPMJet Header is there!
+                lReturnValue = kTRUE;
+            }
+        }
+        return lReturnValue;
+}
+
 //______________________________________________________________________
 void AliMultSelectionTask::CreateEmptyOADB()
 {
