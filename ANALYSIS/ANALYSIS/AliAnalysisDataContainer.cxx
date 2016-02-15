@@ -57,6 +57,7 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisTask.h"
 #include "AliLog.h"
+#include <TBuffer.h>
 
 using std::endl;
 using std::cout;
@@ -149,6 +150,19 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
    }   
    return *this;
 }      
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliAnalysisDataContainer.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(AliAnalysisDataContainer::Class(),this);
+      this->SetDataOwned(kTRUE);
+   } else {
+      R__b.WriteClassBuffer(AliAnalysisDataContainer::Class(),this);
+   }
+}
 
 //______________________________________________________________________________
 void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islot)
