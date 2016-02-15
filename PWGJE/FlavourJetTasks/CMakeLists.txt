@@ -33,7 +33,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskDmesonJets.cxx
     AliAnalysisTaskEmcalJetFlavourTagExample.cxx
     AliAnalysisTaskEmcalJetHF.cxx
     AliAnalysisTaskEmcalJetV0CF.cxx
@@ -58,6 +57,9 @@ if(FASTJET_FOUND)
   include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
   link_directories(${FASTJET_LIBS_DIR})
   add_definitions(${FASTJET_DEFINITIONS})
+
+  set(SRCS ${SRCS}
+           AliAnalysisTaskDmesonJets.cxx)
 
   if(ROOT_VERSION_MAJOR EQUAL 6)
     set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
