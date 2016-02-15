@@ -1012,8 +1012,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	//
 	currentTrack++;
 
-	if (timeStamp<minTime) minTime=0;
-	if (timeStamp>maxTime) maxTime=0;
+	if (timeStamp<minTime) minTime=timeStamp;
+	if (timeStamp>maxTime) maxTime=timeStamp;
 	meanTime+=timeStamp;
 	if (treeInfo) for (Int_t iSec=0; iSec<nSec; iSec++){
 	  meanNcl[iSec]+=nclArray[iSec]->Eval(timeStamp);
