@@ -262,6 +262,42 @@ run2collisionSystem()
   return 0
 }
 
+gitInfo(){
+    #
+    # print git information in alilog format - to enable parsing
+    # in case rquested  diff file created in the $ALICE_ROOT and $ALICE_PHYSICS instalation directory
+    #
+    # USAGE:
+    #     during code development to keep track of the software version  ( git describe ) as we can not use tags
+    #
+    makeDiff=$1
+    if [[ -z ${makeDiff} ]] ; then
+       echo "gitInfo <makeDiff>"; 
+       makeDiff=2;
+    fi
+    alilog_info  "utilities.sh/gitInfo  START"
+    alilog_info  "wdir="`pwd`
+    alilog_info  "\$ALICE_ROOT="$ALICE_ROOT
+    alilog_info  "\$ALICE_ROOT git describe="$(git -C $ALICE_ROOT/../src/ describe)
+    alilog_info  "\$ALICE_PHYSICS="$ALICE_PHYSICS
+    alilog_info  "\$ALICE_PHYSICS git describe="$(git -C $ALICE_PHYSICS/../src/ describe)
+    alilog_info  "\$ROOTSYS="$ROOTSYS
+    alilog_info  "\$ROOTSYS git describe="$(git -C $ROOTSYS/../src/ describe)
+    if [ $makeDiff -eq 1 ] ; then    # dump diff file  to the install directory
+	alilog_info "git  -C $ALICE_ROOT/../src/ diff >\$ALICE_ROOT/ALICE_ROOT.diff"
+	git  -C $ALICE_ROOT/../src/ diff >$ALICE_ROOT/ALICE_ROOT.diff
+	alilog_info "git  -C $ALICE_PHYSICS/../src/ diff >\$ALICE_PHYSICS/ALICE_PHYSICS.diff"
+	git  -C $ALICE_PHYSICS/../src/ diff >$ALICE_PHYSICS/ALICE_PHYSICS.diff
+    fi;
+    if [ $makeDiff -eq 2 ] ; then      # copy software diff  if exist to the current directory
+	alilog_info "cp -f $ALICE_ROOT/ALICE_ROOT.diff `pwd`"
+	cp -f $ALICE_ROOT/ALICE_ROOT.diff .
+	alilog_info "cp -f $ALICE_PHYSICS/ALICE_PHYSICS.diff `pwd`"
+	cp -f $ALICE_PHYSICS/ALICE_PHYSICS.diff .
+    fi;
+    alilog_info  "utilities.sh/gitInfo  END"
+}
+
 hostInfo(){
 #
 # Hallo world -  Print AliRoot/Root/Alien system info
