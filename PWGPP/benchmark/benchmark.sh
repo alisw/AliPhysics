@@ -663,7 +663,8 @@ goMergeCPass()
 
   if [[ "$qaFilesToMerge" != '' ]]; then
     qaFilesToMerge=local.${qaFilesToMerge##*/}
-    tmp=$(cat $qaFilesToMerge); echo ${tmp%/*} > ${qaFilesToMerge}.lastMergingStage.txt.list
+    #strip filenames as QA merging requires list of directories
+    sed -e 's|/[^\/]*$||g' "$qaFilesToMerge" > ${qaFilesToMerge}.lastMergingStage.txt.list
     qaFilesToMerge=${qaFilesToMerge}.lastMergingStage.txt.list
   fi
 
