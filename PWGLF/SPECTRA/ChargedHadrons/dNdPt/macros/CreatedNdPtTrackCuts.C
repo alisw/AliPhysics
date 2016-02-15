@@ -2128,7 +2128,44 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS without SPD hit";
     }
+
+    if (cutMode==2106){
+      esdTrackCuts->SetCutGeoNcrNcl(0,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC only";
+    }
     
+    if (cutMode==2107){
+      esdTrackCuts->SetCutGeoNcrNcl(0,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC + ITS";
+    }
+
+    if (cutMode==2108){
+      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC only";
+    }
+    
+    if (cutMode==2109){
+      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC + ITS";
+    }
+   
+    if (cutMode==2110){
+      esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC only";
+    }
+    
+    if (cutMode==2111){
+      esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC + ITS";
+    }
+  
+  
   }
 
 
