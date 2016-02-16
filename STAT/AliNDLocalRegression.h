@@ -69,7 +69,7 @@ class AliNDLocalRegression : public TNamed {
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
   static void SetVerboseLevel(Int_t verbose){ fgVerboseLevel=TMath::Max(verbose,1);}
  public:
-  Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction);
+  Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArrayI2, Double_t weightCut, Double_t robustFraction);
 
 protected:
   THn *fHistPoints;                     //  histogram local point distoribution

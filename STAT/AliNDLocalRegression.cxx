@@ -69,6 +69,7 @@
 #include "TMatrixD.h"
 #include "TRobustEstimator.h"
 #include "AliMathBase.h"
+#include "TStopwatch.h"
 
 ClassImp(AliNDLocalRegression)
 
@@ -304,15 +305,23 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   }
   for (Int_t ipar=0; ipar<fNParameters; ipar++) pointArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
   // 2.c) kernel array 
-  TObjArray kernelArray(fNParameters);
+  TObjArray kernelArrayI2(fNParameters);
   Int_t entriesKernel = tree->Draw(formulaKernel,selection,"goffpara",entries);
-  for (Int_t ipar=0; ipar<fNParameters; ipar++) kernelArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
+  for (Int_t ipar=0; ipar<fNParameters; ipar++) {
+    TVectorD* vdI2 = new TVectorD(entriesVar,tree->GetVal(ipar));
+    for (int k=entriesVar;k--;) { // to speed up, precalculate inverse squared
+      double kv = (*vdI2)[k];
+      if (TMath::Abs(kv)<1e-12) AliFatalClassF("Kernel width=%f for entry %d of par:%d",kv,k,ipar);
+      (*vdI2)[k] = 1./(kv*kv);
+    }
+    kernelArrayI2.AddAt(vdI2,ipar);
+  }
   //
   Double_t *pvecVar[kMaxDim]={0};
-  Double_t *pvecKernel[kMaxDim]={0};
+  Double_t *pvecKernelI2[kMaxDim]={0};
   for (Int_t idim=0; idim<pointArray.GetEntries(); idim++){
     pvecVar[idim]=((TVectorD*)(pointArray.At(idim)))->GetMatrixArray();
-    pvecKernel[idim]=((TVectorD*)(kernelArray.At(idim)))->GetMatrixArray();
+    pvecKernelI2[idim]=((TVectorD*)(kernelArrayI2.At(idim)))->GetMatrixArray();
     binRange[idim]=fHistPoints->GetAxis(idim)->GetNbins();
   }
   //
@@ -328,19 +337,21 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   // 3.) 
   //
   if (fCutType>0 && fRobustRMSLTSCut>0){
-    MakeRobustStatistic(values, errors,  pointArray, kernelArray, weightCut, fRobustFractionLTS);
+    MakeRobustStatistic(values, errors,  pointArray, kernelArrayI2, weightCut, fRobustFractionLTS);
   }
   //
+
   // 4.) Make local fits
   //
+
   Double_t *binHypFit  = new Double_t[2*fHistPoints->GetNdimensions()];
   //
   TLinearFitter fitter(1+2*fNParameters,TString::Format("hyp%d",2*fNParameters).Data());
-  for (Int_t ibin=0; ibin<nbins; ibin++){
+  for (Int_t ibin=0; ibin<nbins; ibin++) {
     fHistPoints->GetBinContent(ibin,fBinIndex); 
     Bool_t isUnderFlowBin=kFALSE;
     Bool_t isOverFlowBin=kFALSE;
-    for (Int_t idim=0; idim<fNParameters; idim++){      
+    for (Int_t idim=0; idim<fNParameters; idim++) {      
       if (fBinIndex[idim]==0) isUnderFlowBin=kTRUE;
       if (fBinIndex[idim]>binRange[idim]) isOverFlowBin=kTRUE;      
       fBinCenter[idim]=fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
@@ -366,8 +377,8 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	//TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
 	//TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
 	fBinDelta[idim]=pvecVar[idim][ipoint]-fBinCenter[idim];       	
-	sumChi2+= (fBinDelta[idim]*fBinDelta[idim])/(pvecKernel[idim][ipoint]*pvecKernel[idim][ipoint]);
-	if (sumChi2>nchi2Cut) continue;
+	sumChi2+= (fBinDelta[idim]*fBinDelta[idim]) * pvecKernelI2[idim][ipoint];
+	if (sumChi2>nchi2Cut) break;//continue;
 	if (fUseBinNorm){
 	  binHypFit[2*idim]=fBinDelta[idim]/fBinWidth[idim];
 	  binHypFit[2*idim+1]=binHypFit[2*idim]*binHypFit[2*idim];
@@ -377,20 +388,22 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	}
       }      
       if (sumChi2>nchi2Cut) continue;
-      Double_t weight=TMath::Exp(-sumChi2*0.5);
-      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]/weight);
+      //      Double_t weight=TMath::Exp(-sumChi2*0.5);
+      //      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]/weight);
+      Double_t weightI=TMath::Exp(sumChi2*0.5);
+      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]*weightI);
     }
     TVectorD * fitParam=new TVectorD(fNParameters*2+1);
     TVectorD * fitQuality=new TVectorD(3);
     TMatrixD * fitCovar=new TMatrixD(fNParameters*2+1,fNParameters*2+1);
     Double_t normRMS=0;
     Int_t nBinPoints=fitter.GetNpoints();
-    Bool_t fitOK=0;
+    Bool_t fitOK=kFALSE;
     (*fitQuality)[0]=0;
     (*fitQuality)[1]=0;
     (*fitQuality)[2]=0;
 
-    if (fitter.GetNpoints()>fNParameters*2+2){      
+    if (fitter.GetNpoints()>fNParameters*2+2){
       fitOK = (fitter.Eval()==0);
       if (fitOK){
 	normRMS=fitter.GetChisquare()/(fitter.GetNpoints()-fitter.GetNumberFreeParameters());
@@ -426,22 +439,28 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	"fitOK="<<fitOK<<
 	"\n";
     }
+    if (!fitOK) { // avoid memory leak for failed fits
+      delete fitParam;
+      delete fitQuality;
+      delete fitCovar;
+    }
   }
+
   return kTRUE;
 }
 
 
-Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction){
+Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArrayI2, Double_t weightCut, Double_t robustFraction){
   //
   // Calculate robust statistic information
   // use raw array to make faster calcualtion
   const Int_t kMaxDim=100;
   Double_t *pvalues=values.GetMatrixArray();
   Double_t *pvecVar[kMaxDim]={0};
-  Double_t *pvecKernel[kMaxDim]={0};
+  Double_t *pvecKernelI2[kMaxDim]={0};
   for (Int_t idim=0; idim<pointArray.GetEntries(); idim++){
     pvecVar[idim]=((TVectorD*)(pointArray.At(idim)))->GetMatrixArray();
-    pvecKernel[idim]=((TVectorD*)(kernelArray.At(idim)))->GetMatrixArray();
+    pvecKernelI2[idim]=((TVectorD*)(kernelArrayI2.At(idim)))->GetMatrixArray();
     
   }
 
@@ -470,8 +489,8 @@ Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &err
 	//TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
 	//TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
 	fBinDelta[idim]=pvecVar[idim][ipoint]-fBinCenter[idim];       	
-	sumChi2+= (fBinDelta[idim]*fBinDelta[idim])/(pvecKernel[idim][ipoint]*pvecKernel[idim][ipoint]);
-	if (sumChi2>nchi2Cut) continue;
+	sumChi2+= (fBinDelta[idim]*fBinDelta[idim]) * pvecKernelI2[idim][ipoint];
+	if (sumChi2>nchi2Cut) break; //continue;
       }      
       if (sumChi2>nchi2Cut) continue;
       valueLocal[indexLocal]=pvalues[ipoint];
