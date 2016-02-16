@@ -2178,8 +2178,13 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   TFile * fout = pcstream->GetFile();
   pcstream->GetFile()->cd();
   for (Int_t iter=0; iter<5; iter++){
+    if (TString(gSystem->Getenv("AliTPCcalibAlignInterpolation_MakeNDFit_KeepCovariance")).Atoi()==0){
+      if (iter!=0) fitCorrs[iter]->CleanCovariance();
+    }
     fitCorrs[iter]->Write();
-    fitCorrs[iter]->DumpToTree(4, (*pcstreamFit)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
+    if (TString(gSystem->Getenv("AliTPCcalibAlignInterpolation_MakeNDFit_DumpFitTree")).Atoi()>0){
+      fitCorrs[iter]->DumpToTree(4, (*pcstreamFit)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
+    }
   }
   //
   // 4.) Make standard QA plot   
