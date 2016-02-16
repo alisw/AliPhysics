@@ -1987,7 +1987,7 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamber(Int_t padRegion/*=1*/, Bool
   delete histGainSec;
   return gr;
 }
-TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/, Bool_t /*plotQA=kFALSE*/, TObjArray *arrQA/*=0x0*/)
+TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/, Bool_t /*plotQA=kFALSE*/, TObjArray *arrQA/*=0x0*/, Bool_t normQA/*=kTRUE*/)
 {
   //
   // Extract gain variations per chamger for 'padRegion'
@@ -2015,7 +2015,7 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/
     arrQA->Add(histGainSec);
 
     // --- scale axis ---
-    if (median>0) {
+    if (normQA && median>0) {
       TAxis *a=histGainSec->GetYaxis();
       a->SetLimits(a->GetXmin()/median, a->GetXmax()/median);
     }
