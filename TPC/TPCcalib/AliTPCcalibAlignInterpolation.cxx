@@ -1582,7 +1582,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     return kFALSE;
   }
   maxEntries=TMath::Min(maxEntries, entriesAll);
-  TTreeSRedirector *pcstream = new TTreeSRedirector("fitDrift.root","update");
+  TTreeSRedirector *pcstream = new TTreeSRedirector("fitDrift.root","recreate");
   if (time0==time1){
     TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1);
     chainInfo->SetEstimate(chainInfo->GetEntries());
@@ -1801,12 +1801,14 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	  TString::Format("grDeltaZ%d.=",ihis).Data()<<grDeltaZ[ihis]<<     // residual histogram drift fit - mean 
 	  TString::Format("grRMSZ%d.=",ihis).Data()<<grDeltaZ[ihis]<<       //  residual histogram drift fit - rms
 	  TString::Format("fitDeltaZ%d.=",ihis).Data()<<fitDeltaZ[ihis];     //  residual histogram drift fit - linear fit
-	delete grDeltaZ[ihis];
-	delete grRMSZ[ihis];
-	delete fitDeltaZ[ihis];
       }
       (*pcstream)<<"robustFit"<<	
 	"\n";    
+      for (Int_t ihis=0; ihis<12; ihis++){
+	delete grDeltaZ[ihis];
+	delete grRMSZ[ihis];
+	delete fitDeltaZ[ihis];	
+      }
     }
     // delete pcstream;  
     //pcstream = new TTreeSRedirector("fitDrift.root","update");
