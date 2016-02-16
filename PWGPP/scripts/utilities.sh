@@ -445,7 +445,7 @@ summarizeLogs()
 
   #report core files
   for x in "${coreFiles[@]}"; do
-    echo "${x}"
+    echo "core ${x}"
     chmod 644 "${x}"
     stacktraceLog=${x}.stacktrace.log
     #gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
