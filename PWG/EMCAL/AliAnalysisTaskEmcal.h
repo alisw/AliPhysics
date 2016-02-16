@@ -23,6 +23,8 @@ class AliEmcalPythiaInfo;
 #include "Rtypes.h"
 
 #include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
+#include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -64,6 +66,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskEmcal();
 
   AliParticleContainer       *AddParticleContainer(const char *n);
+  AliTrackContainer          *AddTrackContainer(const char *n);
+  AliMCParticleContainer     *AddMCParticleContainer(const char *n);
   AliClusterContainer        *AddClusterContainer(const char *n);
   void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.Add(cont)                        ; }
   void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }

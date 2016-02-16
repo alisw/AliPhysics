@@ -64,6 +64,8 @@ set(SRCS
   AliEsdTrackExt.cxx
   AliHadCorrTask.cxx
   AliParticleContainer.cxx
+  AliMCParticleContainer.cxx
+  AliTrackContainer.cxx
   AliPicoTrack.cxx
   AliEMCALConfiguration.cxx
   AliEMCALConfigHandler.cxx

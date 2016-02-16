@@ -9,82 +9,67 @@
 #include "AliLog.h"
 
 #include "AliTLorentzVector.h"
-#include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
 
 ClassImp(AliParticleContainer)
 
 //________________________________________________________________________
-AliParticleContainer::AliParticleContainer():
-  AliEmcalContainer(),
-  fMinDistanceTPCSectorEdge(-1),
-  fCharge(-1),
-  fGeneratorIndex(-1)
+AliMCParticleContainer::AliMCParticleContainer():
+  AliParticleContainer(),
+  fMCFlag(0)
 {
   // Default constructor.
 
-  fClassName = "AliVParticle";
+  fClassName = "AliAODMCParticle";
 }
 
 //________________________________________________________________________
-AliParticleContainer::AliParticleContainer(const char *name) :
-  AliEmcalContainer(name),
-  fMinDistanceTPCSectorEdge(-1),
-  fCharge(-1),
-  fGeneratorIndex(-1)
+AliMCParticleContainer::AliMCParticleContainer(const char *name):
+  AliParticleContainer(name),
+  fMCFlag(0)
 {
   // Standard constructor.
 
-  fClassName = "AliVParticle";
+  fClassName = "AliAODMCParticle";
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt) 
+AliAODMCParticle* AliMCParticleContainer::GetMCParticleWithLabel(Int_t lab) const
 {
-  // Get the leading particle; use p if "p" is contained in opt
+  //Get particle with label lab in array
 
-  TString option(opt);
-  option.ToLower();
-
-  Int_t tempID = fCurrentID;
-
-  AliVParticle *partMax = GetNextAcceptParticle(0);
-  AliVParticle *part = 0;
-
-  if (option.Contains("p")) {
-    while ((part = GetNextAcceptParticle())) {
-      if (part->P() > partMax->P()) partMax = part;
-    }
-  }
-  else {
-    while ((part = GetNextAcceptParticle())) {
-      if (part->Pt() > partMax->Pt()) partMax = part;
-    }
-  }
-
-  fCurrentID = tempID;
-
-  return partMax;
+  Int_t i = GetIndexFromLabel(lab);
+  return GetMCParticle(i);
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetParticle(Int_t i) const 
+AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticleWithLabel(Int_t lab)
+{
+  //Get particle with label lab in array
+
+  Int_t i = GetIndexFromLabel(lab);
+  return GetAcceptMCParticle(i);
+}
+
+//________________________________________________________________________
+AliAODMCParticle* AliMCParticleContainer::GetMCParticle(Int_t i) const
 {
   //Get i^th jet in array
 
   if (i == -1) i = fCurrentID;
-  if (i < 0 || i >= this->fClArray->GetEntriesFast()) return 0;
-  AliVParticle *vp = static_cast<AliVParticle*>(fClArray->At(i));
+  if (i < 0 || i >= fClArray->GetEntriesFast()) return 0;
+  AliAODMCParticle *vp = static_cast<AliAODMCParticle*>(fClArray->At(i));
   return vp;
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i)
+AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i)
 {
   //return pointer to particle if particle is accepted
 
   if (i == -1) i = fCurrentID;
-  if (AcceptParticle(i)) {
-      return GetParticle(i);
+  if (AcceptMCParticle(i)) {
+      return GetMCParticle(i);
   }
   else {
     AliDebug(2,"Particle not accepted.");
@@ -93,7 +78,7 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i)
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) 
+AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle(Int_t i)
 {
   //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
 
@@ -101,36 +86,36 @@ AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i)
 
   const Int_t n = GetNEntries();
 
-  AliVParticle *p = 0;
+  AliAODMCParticle *p = 0;
   do {
     fCurrentID++;
     if (fCurrentID >= n) break;
-    p = GetAcceptParticle(fCurrentID);
+    p = GetAcceptMCParticle(fCurrentID);
   } while (!p);
 
   return p;
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextParticle(Int_t i) 
+AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle(Int_t i)
 {
   //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
 
   if (i >= 0) fCurrentID = i;
 
   const Int_t n = GetNEntries();
-  AliVParticle *p = 0;
+  AliAODMCParticle *p = 0;
   do {
     fCurrentID++;
     if (fCurrentID >= n) break;
-    p = GetParticle(fCurrentID);
+    p = GetMCParticle(fCurrentID);
   } while (!p);
 
   return p;
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass)
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part, Double_t mass)
 {
   if (part) {
     if (mass < 0) mass = part->M();
@@ -144,20 +129,20 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part)
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part)
 {
   return GetMomentum(mom,part,fMassHypothesis);
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
   Double_t mass = fMassHypothesis;
 
   if (i == -1) i = fCurrentID;
-  AliVParticle *vp = GetParticle(i);
+  AliAODMCParticle *vp = GetMCParticle(i);
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -170,13 +155,13 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliVParticle *vp = GetNextParticle(i);
+  AliAODMCParticle *vp = GetNextMCParticle(i);
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -189,14 +174,14 @@ Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
   Double_t mass = fMassHypothesis;
 
   if (i == -1) i = fCurrentID;
-  AliVParticle *vp = GetAcceptParticle(i);
+  AliAODMCParticle *vp = GetAcceptMCParticle(i);
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -209,13 +194,13 @@ Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliVParticle *vp = GetNextAcceptParticle(i);
+  AliAODMCParticle *vp = GetNextAcceptMCParticle(i);
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -228,10 +213,10 @@ Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp)
+Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp)
 {
   // Return true if vp is accepted.
-  Bool_t r = ApplyParticleCuts(vp);
+  Bool_t r = ApplyMCParticleCuts(vp);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
@@ -248,7 +233,7 @@ Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::AcceptParticle(Int_t i)
+Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i)
 {
   // Return true if vp is accepted.
   Bool_t r = ApplyParticleCuts(GetParticle(i));
@@ -261,7 +246,7 @@ Bool_t AliParticleContainer::AcceptParticle(Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp)
+Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp)
 {
   // Return true if i^th particle is accepted.
 
@@ -269,82 +254,26 @@ Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp)
 
   // Cuts on the particle properties
 
-  if (!vp) {
-    fRejectionReason |= kNullObject;
+  if ((vp->GetFlag() & fMCFlag) != fMCFlag) {
+    fRejectionReason |= kMCFlag;
     return kFALSE;
   }
 
-  if (vp->TestBits(fBitMap) != (Int_t)fBitMap) {
-    fRejectionReason |= kBitMapCut;
-    return kFALSE;
-  }
-
-  if (fMinMCLabel >= 0 && TMath::Abs(vp->GetLabel()) > fMinMCLabel) {
-    fRejectionReason |= kMCLabelCut;
-    return kFALSE;
-  }
-
-  if (fMaxMCLabel >= 0 && TMath::Abs(vp->GetLabel()) < fMaxMCLabel) {
-    fRejectionReason |= kMCLabelCut;
-    return kFALSE;
-  }
-
-  if (fCharge>=0 && fCharge != vp->Charge()) {
-    fRejectionReason |= kChargeCut;
-    return kFALSE;
-  }
-
-  if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex()) {
-    fRejectionReason |= kMCGeneratorCut;
-    return kFALSE;
-  }
-
-  return kTRUE;
+  return ApplyParticleCuts(vp);
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
-{
-  if(fMinDistanceTPCSectorEdge>0.) {
-    const Double_t pi = TMath::Pi();
-    const Double_t kSector = pi/9;
-    Double_t phiDist = TMath::Abs(mom.Phi() - TMath::FloorNint(mom.Phi()/kSector)*kSector);
-    if(phiDist<fMinDistanceTPCSectorEdge) {
-      fRejectionReason |= kMinDistanceTPCSectorEdgeCut;
-      return kFALSE;
-    }
-  }
-
-  return AliEmcalContainer::ApplyKinematicCuts(mom);
-}
-
-//________________________________________________________________________
-Int_t AliParticleContainer::GetNAcceptedParticles()
-{
-  // Get number of accepted particles
-
-  Int_t nPart = 0;
-
-  AliVParticle *vp = GetNextAcceptParticle(0);
-  if(vp) nPart = 1;
-  while (GetNextAcceptParticle())
-    nPart++;
-
-  return nPart;
-}
-
-//________________________________________________________________________
-void AliParticleContainer::SetClassName(const char *clname)
+void AliMCParticleContainer::SetClassName(const char *clname)
 {
   // Set the class name
 
   TClass cls(clname);
-  if (cls.InheritsFrom("AliVParticle")) fClassName = clname;
-  else AliError(Form("Unable to set class name %s for a AliParticleContainer, it must inherits from AliVParticle!",clname));
+  if (cls.InheritsFrom("AliAODMCParticle")) fClassName = clname;
+  else AliError(Form("Unable to set class name %s for a AliMCParticleContainer, it must inherits from AliAODMCParticle!",clname));
 }
 
 //________________________________________________________________________
-const char* AliParticleContainer::GetTitle() const
+const char* AliMCParticleContainer::GetTitle() const
 {
   static TString trackString;
 

@@ -160,12 +160,12 @@ Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle
 //________________________________________________________________________
 Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
 {
-  if (mom.Pt() < fMinPt || mom.Pt() < fMaxPt) {
+  if (mom.Pt() < fMinPt || mom.Pt() > fMaxPt) {
     fRejectionReason |= kPtCut;
     return kFALSE;
   }
 
-  if (mom.E() < fMinPt || mom.E() < fMaxPt) {
+  if (mom.E() < fMinE || mom.E() > fMaxE) {
     fRejectionReason |= kPtCut;
     return kFALSE;
   }
@@ -173,8 +173,12 @@ Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
   Double_t eta = mom.Eta();
   Double_t phi = mom.Phi_0_2pi();
 
-  if (eta < fMinEta || eta > fMaxEta ||
-      phi < fMinPhi || phi > fMaxPhi) {
+  if (fMinEta < fMaxEta && (eta < fMinEta || eta > fMaxEta)) {
+    fRejectionReason |= kAcceptanceCut;
+    return kFALSE;
+  }
+
+  if (fMinPhi < fMaxPhi && (phi < fMinPhi || phi > fMaxPhi)) {
     fRejectionReason |= kAcceptanceCut;
     return kFALSE;
   }

@@ -11,7 +11,7 @@
 #include "AliPicoTrack.h"
 #include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
-#include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
 #include "AliLog.h"
 
 #include "AliEmcalTrackingQATask.h"
@@ -21,7 +21,6 @@ ClassImp(AliEmcalTrackingQATask)
 //________________________________________________________________________
 AliEmcalTrackingQATask::AliEmcalTrackingQATask() : 
   AliAnalysisTaskEmcal("AliEmcalTrackingQA", kTRUE),
-  fSelectHIJING(kTRUE),
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
   fGeneratorLevel(0),
@@ -56,7 +55,6 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
 //________________________________________________________________________
 AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) : 
   AliAnalysisTaskEmcal(name, kTRUE),
-  fSelectHIJING(kTRUE),
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
   fGeneratorLevel(0),
@@ -162,13 +160,11 @@ void AliEmcalTrackingQATask::UserCreateOutputObjects()
   }
 
   if (!fDetectorLevel) {
-    fDetectorLevel = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
-    fDetectorLevel->SetClassName("AliPicoTrack");
+    fDetectorLevel = static_cast<AliTrackContainer*>(fParticleCollArray.At(0));
   }
 
   if (!fGeneratorLevel && fParticleCollArray.GetEntriesFast() > 1) {
-    fGeneratorLevel = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
-    fGeneratorLevel->SetClassName("AliAODMCParticle");
+    fGeneratorLevel = static_cast<AliMCParticleContainer*>(fParticleCollArray.At(1));
   }
 
   AllocateDetectorLevelTHnSparse();
@@ -186,7 +182,7 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
   TString title[20];
   Int_t nbins[20] = {0};
   Double_t *binEdges[20] = {0};
-  
+
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = fNCentHistBins;
@@ -209,12 +205,10 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
   binEdges[dim] = fPhiHistBins;
   dim++;
 
-  if (fSelectHIJING) {
-    title[dim] = "MC Generator";
-    nbins[dim] = 2;
-    binEdges[dim] = fIntegerHistBins;
-    dim++;
-  }
+  title[dim] = "MC Generator";
+  nbins[dim] = 2;
+  binEdges[dim] = fIntegerHistBins;
+  dim++;
 
   title[dim] = "track type";
   nbins[dim] = 3;
@@ -235,7 +229,7 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
       dim++;
     }    
   }
- 
+
   fTracks = new THnSparseF("fTracks","fTracks",dim,nbins);
   for (Int_t i = 0; i < dim; i++) {
     fTracks->GetAxis(i)->SetTitle(title[i]);
@@ -252,7 +246,7 @@ void AliEmcalTrackingQATask::AllocateGeneratorLevelTHnSparse()
   TString title[20];
   Int_t nbins[20] = {0};
   Double_t *binEdges[20] = {0};
-  
+
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = fNCentHistBins;
@@ -275,18 +269,16 @@ void AliEmcalTrackingQATask::AllocateGeneratorLevelTHnSparse()
   binEdges[dim] = fPhiHistBins;
   dim++;
 
-  if (fSelectHIJING) {
-    title[dim] = "MC Generator";
-    nbins[dim] = 2;
-    binEdges[dim] = fIntegerHistBins;
-    dim++;
-  }
+  title[dim] = "MC Generator";
+  nbins[dim] = 2;
+  binEdges[dim] = fIntegerHistBins;
+  dim++;
 
   title[dim] = "Findable";
   nbins[dim] = 2;
   binEdges[dim] = fIntegerHistBins;
   dim++;
- 
+
   fParticlesPhysPrim = new THnSparseF("fParticlesPhysPrim","fParticlesPhysPrim",dim,nbins);
   for (Int_t i = 0; i < dim; i++) {
     fParticlesPhysPrim->GetAxis(i)->SetTitle(title[i]);
@@ -303,7 +295,7 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
   TString title[20];
   Int_t nbins[20] = {0};
   Double_t *binEdges[20] = {0};
-  
+
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     title[dim] = "Centrality %";
     nbins[dim] = fNCentHistBins;
@@ -376,14 +368,13 @@ void AliEmcalTrackingQATask::SetGeneratorLevelName(const char* name)
     return;
   }
   if (!fGeneratorLevel) {  // first check if the generator level array is set
-    fGeneratorLevel = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
+    fGeneratorLevel = dynamic_cast<AliMCParticleContainer*>(fParticleCollArray.At(1));
     if (fGeneratorLevel) {  // now check if the first collection array has been added already
       fGeneratorLevel->SetArrayName(name);
     }
     else {
-      fGeneratorLevel = AddParticleContainer(name);
+      fGeneratorLevel = AddMCParticleContainer(name);
     }
-    fGeneratorLevel->SetClassName("AliAODMCParticle");
     fGeneratorLevel->SelectPhysicalPrimaries(kTRUE);
     fGeneratorLevel->SetParticlePtCut(0);
   }
@@ -394,14 +385,13 @@ void AliEmcalTrackingQATask::SetGeneratorLevelName(const char* name)
 void AliEmcalTrackingQATask::SetDetectorLevelName(const char* name)
 {
   if (!fDetectorLevel) {  // first check if the detector level array is set
-    fDetectorLevel = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+    fDetectorLevel = static_cast<AliTrackContainer*>(fParticleCollArray.At(0));
     if (fDetectorLevel) {  // now check if the second collection array has been added already
       fDetectorLevel->SetArrayName(name);
     }
     else {
-      fDetectorLevel = AddParticleContainer(name);
+      fDetectorLevel = AddTrackContainer(name);
     }
-    fDetectorLevel->SetClassName("AliPicoTrack");
   }
   fDetectorLevel->SetArrayName(name);
 }
@@ -416,7 +406,7 @@ void AliEmcalTrackingQATask::ExecOnce()
 
 //________________________________________________________________________
 void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
-                                                        Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType)
+    Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType)
 {
   Double_t contents[20]={0};
 
@@ -473,7 +463,7 @@ void AliEmcalTrackingQATask::FillGeneratorLevelTHnSparse(Double_t cent, Double_t
 
 //________________________________________________________________________
 void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
-							   Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType)
+    Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType)
 {
   Double_t contents[20]={0};
 
@@ -511,57 +501,57 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
 {
   // Fill the histograms.
 
-  AliPicoTrack *track = static_cast<AliPicoTrack*>(fDetectorLevel->GetNextAcceptParticle(0));
+  AliVTrack *track = fDetectorLevel->GetNextAcceptTrack(0);
   while (track != 0) {
-    Byte_t type = track->GetTrackType();
+    Byte_t type = fDetectorLevel->GetTrackType(fDetectorLevel->GetCurrentID());
     if (type <= 2) {
       Double_t sigma = 0;
       if (fIsEsd) {
-        AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track->GetTrack());
+        AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
         if (esdTrack) sigma = TMath::Sqrt(esdTrack->GetSigma1Pt2());
       }
 
       Int_t label = TMath::Abs(track->GetLabel());
       Int_t mcGen = 1;
       // reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
-      if (fSelectHIJING && (label==0 || track->GetGeneratorIndex() == 0)) mcGen = 0;
+      if (label==0 || track->GetGeneratorIndex() == 0) mcGen = 0;
 
       FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), track->Pt(), sigma, mcGen, type);
-      
+
       if (fGeneratorLevel && label > 0) {
-	AliAODMCParticle *part =  static_cast<AliAODMCParticle*>(fGeneratorLevel->GetAcceptParticleWithLabel(label));
-	if (part) {
-	  if (!fSelectHIJING || part->GetGeneratorIndex() == 0) {
-	    Int_t pdg = TMath::Abs(part->PdgCode());
-	    // select charged pions, protons, kaons , electrons, muons
-	    if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
-	      FillMatchedParticlesTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), track->Eta(), track->Phi(), track->Pt(), type);
-	    }
-	  }
-	}
+        AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
+        if (part) {
+          if (part->GetGeneratorIndex() == 0) {
+            Int_t pdg = TMath::Abs(part->PdgCode());
+            // select charged pions, protons, kaons , electrons, muons
+            if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
+              FillMatchedParticlesTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), track->Eta(), track->Phi(), track->Pt(), type);
+            }
+          }
+        }
       }
     }
     else {
       AliError(Form("Track %d has type %d not recognized!", fDetectorLevel->GetCurrentID(), type));
     }
 
-    track = static_cast<AliPicoTrack*>(fDetectorLevel->GetNextAcceptParticle());
+    track = fDetectorLevel->GetNextAcceptTrack();
   }
 
   if (fGeneratorLevel) {
-    AliAODMCParticle *part = static_cast<AliAODMCParticle*>(fGeneratorLevel->GetNextAcceptParticle(0));
+    AliAODMCParticle *part = fGeneratorLevel->GetNextAcceptMCParticle(0);
     while (part != 0) {
       Int_t mcGen = 1;
       Byte_t findable = 0;
-      
-      if (fSelectHIJING && part->GetGeneratorIndex() == 0) mcGen = 0;
+
+      if (part->GetGeneratorIndex() == 0) mcGen = 0;
 
       Int_t pdg = TMath::Abs(part->PdgCode());
       // select charged pions, protons, kaons , electrons, muons
       if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
 
       FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), mcGen, findable);    
-      part = static_cast<AliAODMCParticle*>(fGeneratorLevel->GetNextAcceptParticle());
+      part = fGeneratorLevel->GetNextAcceptMCParticle();
     }
   }
 

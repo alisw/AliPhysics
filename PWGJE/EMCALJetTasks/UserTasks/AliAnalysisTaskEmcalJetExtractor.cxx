@@ -82,9 +82,9 @@ void AliAnalysisTaskEmcalJetExtractor::UserCreateOutputObjects()
   // ### Basic container settings
   fJetsCont           = GetJetContainer(0);
   if(fJetsCont) { //get particles connected to jets
-    fTracksCont       = fJetsCont->GetParticleContainer();
+    fTracksCont       = dynamic_cast<AliTrackContainer*>(fJetsCont->GetParticleContainer());
   } else {        //no jets, just analysis tracks
-    fTracksCont       = GetParticleContainer(0);
+    fTracksCont       = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
   }
   if(fTracksCont) fTracksCont->SetClassName("AliAODTrack");
 

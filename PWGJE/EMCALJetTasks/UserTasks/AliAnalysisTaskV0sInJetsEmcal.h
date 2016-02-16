@@ -205,7 +205,7 @@ private:
   // EMCal containers
   AliJetContainer* fJetsCont; //! Signal Jets
   AliJetContainer* fJetsBgCont; //! Background Jets
-  AliParticleContainer* fTracksCont; //! Tracks
+  AliTrackContainer* fTracksCont; //! Tracks
 
   // event histograms
   TH1D* fh1EventCounterCut; //! number of events for different selection steps

@@ -19,7 +19,7 @@ ClassImp(AliJetContainer)
 
 //________________________________________________________________________
 AliJetContainer::AliJetContainer():
-  AliEmcalContainer(),
+  AliParticleContainer(),
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
@@ -56,7 +56,7 @@ AliJetContainer::AliJetContainer():
 
 //________________________________________________________________________
 AliJetContainer::AliJetContainer(const char *name):
-  AliEmcalContainer(name),
+  AliParticleContainer(name),
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
@@ -94,7 +94,7 @@ AliJetContainer::AliJetContainer(const char *name):
 //________________________________________________________________________
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
-  AliEmcalContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
   fJetAcceptanceType(kUser),
   fJetRadius(radius),
   fRhoName(),
