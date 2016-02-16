@@ -30,10 +30,13 @@
   AliTPCclusterFast::fTRF->SetParameters(1,0,0.5);  
   AliTPCtrackFast::Simul("trackerSimul.root",100,0.6);
   TFile * ftrack = TFile::Open("trackerSimul.root");
-  TTree * tree  = (TTree*)ftrack->Get("simulTrack");
+  TTree *tree  = (TTree*)ftrack->Get("simulTrack");
   tree->SetMarkerStyle(25);
   tree->SetMarkerSize(0.6);
-   
+  testTree=tree;
+
+  AliTPCclusterFast::UnitTest();
+
 */
 /// ~~~
 ///
@@ -59,6 +62,7 @@
 #include "TGrid.h"
 
 
+TTree* testTree=0;
 
 class AliTPCclusterFast: public TObject {
 public:
@@ -85,13 +89,21 @@ public:
   //Double_t  GetExpectedResolution(Int_t dim);
 
   Double_t GetNsec();
-  Float_t GetYMaxBin(){return fYMaxBin;}
-  Float_t GetZMaxBin(){return fZMaxBin;}
+  Int_t GetYMaxBin(){return fYMaxBin;}
+  Int_t GetZMaxBin(){return fZMaxBin;}
+  TMatrixF *GetRawDigits(){return &fRawDigits;}
+  Float_t GetRawDigit(Int_t i, Int_t j){return fRawDigits(i,j);};
+  Float_t GetDigit(Int_t i, Int_t j){return fDigits(i,j);};
+  Float_t GetDigitsRawMax(){return TMath::MaxElement(35,fRawDigits.GetMatrixArray());}
+  Float_t GetDigitsMax(){return TMath::MaxElement(35,fDigits.GetMatrixArray());}
   //static void Simul(const char* simul, Int_t npoints);
   static Double_t GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1);
   static Double_t GaussExpConvolution(Double_t x0, Double_t s0,Double_t t1);
   static Double_t GaussGamma4(Double_t x, Double_t s0, Double_t p1);
-  static Double_t Gamma4(Double_t x, Double_t p0, Double_t p1);
+  static Double_t Gamma4(Double_t x, Double_t p0, Double_t p1); 
+  //
+  //
+  static Bool_t UnitTest();
 public:
   Float_t fMNprim;     ///< mean number of primary electrons
   //                   //electrons part input
@@ -105,8 +117,8 @@ public:
   Float_t fZ;          ///< z ideal position - center bin
   Float_t fYCenterBin; ///< y center bin   
   Float_t fZCenterBin; ///< z center bin   
-  Float_t fYMaxBin;    //! y maximum position as position as calculated in the  MakeDigitization   (should be 0 in mean )  
-  Float_t fZMaxBin;    //! z maximum position as position as calculated in the  MakeDigitization   (should be 0 in mean )
+  Int_t fYMaxBin;    //! y maximum position as position as calculated in the  MakeDigitization   (should be 0 in mean )  
+  Int_t fZMaxBin;    //! z maximum position as position as calculated in the  MakeDigitization   (should be 0 in mean )
   
   Float_t fAngleY;     ///< y angle - tan(y)
   Float_t fAngleZ;     ///< z angle - tan z
@@ -952,40 +964,66 @@ Bool_t  AliTPCclusterFast::MakeDigitization(Int_t addOverlap, Float_t gain, Floa
   // Conversion ideal digits array to digits 
   // In addition local max bin calculated 
   // 
-  Int_t maxValue=0;
+
+  //
+  // 1.) Make digitization and find the maximal bin 
+  //     store position if maximal bin in the array
+  //       in case of rounding can happen we have the same values in maxima
+  //       to avoid bias we should take one position randomly
+  //       this bias is present also in the OFFLINE clusterer - can be seen like assymetry in the peak position
+  //       Numericaly effect is significant at Qmax~ 10 it is about 0.025 bin size
+ 
+  Float_t maxValue=0;
+  const Float_t kEpsilon=0.000001;
   for (Int_t i=0; i<5; i++){
     for (Int_t j=0; j<7; j++){
       Float_t value = fDigits(i,j);
       if (addOverlap && fOverlapCluster) value+=fOverlapCluster->fDigits(i,j);
       value*=gain;
-      value+=noise*gRandom->Gaus();
+      Float_t cNoise=gRandom->Gaus();
+      value+=noise*cNoise;
       if (addPedestal) value+=gRandom->Rndm()-0.5;
       if (rounding) value=TMath::Nint(value);
       if (value<thr) value=0;      
       if (skipSample==0) {
 	fRawDigits(i,j)=value;
-	if (value>=maxValue  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=(1+skipSample)){  // check position of local maxima
-	  maxValue=value;
+	if ((value+kEpsilon*cNoise)>=maxValue  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=(1+skipSample)){  // check position of local maxima
+	  maxValue=value+kEpsilon*cNoise; // in case of equal values alogn peak chose one randomly
 	  fYMaxBin=i-2;
 	  fZMaxBin=j-3;
 	}
       }
       if (skipSample==1 && (j%2)==1  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=(1+skipSample) ) {    // check position of local maxima
 	fRawDigits(i,2+j/2)=value;      
-	if (value>=maxValue){
-	  maxValue=value;
+	if (value+kEpsilon*cNoise>=maxValue){
+	  maxValue=value+kEpsilon*cNoise;  // in case of equal values alogn peak chose one randomly
 	  fYMaxBin=i-2;
 	  fZMaxBin=2+j/2-3;
 	}
       }
     }
   }
+  //
+  // shift digits  - local maxima should be at predeefinde position y=2 z=3
+  //
+  if (fYMaxBin!=0 ||  fZMaxBin!=0){  //shift digits  - local maxima should be at predeefinde position y=2 z=3
+    TMatrixF tmpDigits(5,7);
+    for (Int_t i=0; i<5; i++)
+      for (Int_t j=0; j<7; j++)	
+	if ((i-fYMaxBin)>=0 && (i-fYMaxBin)<5 && (j-fZMaxBin)>=0 && (j-fZMaxBin)<7) {
+	  tmpDigits(i-fYMaxBin,j-fZMaxBin)= fRawDigits(i, j);
+	}
+    fRawDigits= tmpDigits;          
+  }
+  
   static Int_t dumpCounter=0;
   dumpCounter++;
   if (fgDebugLevel>0 && (dumpCounter%fgDebugLevel)==0){
     ::Info("AliTPCclusterFast::MakeDigitization","fYMaxBin\t%d fZMaxBin\t%d",fYMaxBin,fZMaxBin);    
   }
   return kTRUE;
+  /*
+   */
 }
 
 
@@ -1082,6 +1120,24 @@ Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Flo
   sumu = (sum3wj+sum3wi)/2.;
 }
 
+Bool_t AliTPCclusterFast::UnitTest(){
+  //
+  //
+  //
+  ::Info("AliTPCclusterFast::UnitTest","Test BEGIN");
+  //
+  // Test1. local Max position
+  testTree->SetAlias("IsMaxOK","((fCl.GetRawDigit(2,3)>=fCl.GetRawDigit(1,3))&&(fCl.GetRawDigit(2,3)>=fCl.GetRawDigit(4,3)))!=0");
+  testTree->Draw("IsMaxOK==0","fCl.GetCOGUnfolded(1, 0, 1,  0.0 ,  0.0,  0, 0, 0)!=0","goff",1000);
+  Double_t mean=TMath::Mean(testTree->GetSelectedRows(),testTree->GetV1());
+  if (TMath::Abs(mean)<0.001){
+    ::Info("AliTPCclusterFast::UnitTest","MaxTest OK");
+  }else{
+    ::Error("AliTPCclusterFast::UnitTest","MaxTest FAILED");
+  }
+    
+
+}
 
 // Analytical sollution only in 1D - too long expression
 // Simplify[Integrate[Exp[-(x0-(x1-k*x2))*(x0-(x1-k*x2))/(2*s0*s0)]*Exp[-(x1*t1-k*x2)],{x2,-1,1}]] 
