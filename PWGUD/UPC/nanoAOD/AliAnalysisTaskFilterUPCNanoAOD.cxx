@@ -102,7 +102,7 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   if(aodVertex->GetNContributors() > 1 && TMath::Abs(aodVertex->GetZ()) < 15) hasGoodVertex = kTRUE;
   
   if(!isTriggered || !hasGoodVertex) return;
-  AliInfo("Good UPC event");
+  //AliInfo("Good UPC event");
   
   
   // not sure why but the fillAOD flag seems to be lost somewhere, so must
