@@ -147,7 +147,7 @@ Int_t AliAODMuonReplicator::GetNewLabel(Int_t i)
   /// Call CreatLabelMap before
   /// otherwise only 0 returned
   if ( i < 0 ) {
-    AliError(Form("Searching for new label of particle with invalid label %i"));
+    AliError(Form("Searching for new label of particle with invalid label %i",i));
     return i;
   }
   return fLabelMap.GetValue(i);
