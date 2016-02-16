@@ -58,6 +58,8 @@
 #include "TTreeStream.h"
 #include "TGrid.h"
 
+
+
 class AliTPCclusterFast: public TObject {
 public:
   AliTPCclusterFast();
@@ -129,6 +131,7 @@ public:
   static TF1* fPRF;    ///< Pad response
   static TF1* fTRF;    ///< Time response function
   static Float_t fgZSamplingFactor;               // z sample at 10 MHz is 2 time narrower as rphi sample 
+  static Int_t fgDebugLevel;         // debug output downscaling  factor
   ClassDef(AliTPCclusterFast,2)  // container for
 };
 
@@ -178,6 +181,9 @@ ClassImp(AliTPCtrackFast)
 TF1 *AliTPCclusterFast::fPRF=0;
 TF1 *AliTPCclusterFast::fTRF=0;
 Float_t AliTPCclusterFast::fgZSamplingFactor=2;
+Int_t AliTPCclusterFast::fgDebugLevel=0;
+
+
 
 AliTPCtrackFast::AliTPCtrackFast():
   TObject(),
@@ -958,13 +964,13 @@ Bool_t  AliTPCclusterFast::MakeDigitization(Int_t addOverlap, Float_t gain, Floa
       if (value<thr) value=0;      
       if (skipSample==0) {
 	fRawDigits(i,j)=value;
-	if (value>=maxValue  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=1){  // check position of local maxima
+	if (value>=maxValue  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=(1+skipSample)){  // check position of local maxima
 	  maxValue=value;
 	  fYMaxBin=i-2;
 	  fZMaxBin=j-3;
 	}
       }
-      if (skipSample==1  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=1 ) {    // check position of local maxima
+      if (skipSample==1 && (j%2)==1  && TMath::Abs(i-2)<=1 &&  TMath::Abs(j-3)<=(1+skipSample) ) {    // check position of local maxima
 	fRawDigits(i,2+j/2)=value;      
 	if (value>=maxValue){
 	  maxValue=value;
@@ -974,7 +980,12 @@ Bool_t  AliTPCclusterFast::MakeDigitization(Int_t addOverlap, Float_t gain, Floa
       }
     }
   }
-  
+  static Int_t dumpCounter=0;
+  dumpCounter++;
+  if (fgDebugLevel>0 && (dumpCounter%fgDebugLevel)==0){
+    ::Info("AliTPCclusterFast::MakeDigitization","fYMaxBin\t%d fZMaxBin\t%d",fYMaxBin,fZMaxBin);    
+  }
+  return kTRUE;
 }
 
 
