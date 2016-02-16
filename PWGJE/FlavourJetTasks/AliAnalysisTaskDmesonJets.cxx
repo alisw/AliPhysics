@@ -243,6 +243,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AdoptRDHFCuts(AliRDHFCuts* cuts)
 /// \param Pointer to a AliRDHFCuts object.
 void AliAnalysisTaskDmesonJets::AnalysisEngine::SetRDHFCuts(AliRDHFCuts* cuts)
 {
+  if (!cuts) return;
   if (fRDHFCuts) delete fRDHFCuts;
   fRDHFCuts = static_cast<AliRDHFCuts*>(cuts->Clone());
 }
