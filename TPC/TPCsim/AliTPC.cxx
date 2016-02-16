@@ -1781,6 +1781,9 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   Int_t nofPads = fTPCParam->GetNPads(isec,irow);
   Int_t nofTbins = fTPCParam->GetMaxTBin();
   Int_t indexRange[4];
+
+  const Bool_t useGlitchFilter=fTPCParam->GetUseGlitchFilter();
+
   //
   //  Integrated signal for this row
   //  and a single track signal
@@ -1881,7 +1884,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
   // glitch filters if normal simulated digits
   //
-  if(!fDigitsSwitch) ((AliSimDigits*)dig)->GlitchFilter();
+  if(!fDigitsSwitch && useGlitchFilter) ((AliSimDigits*)dig)->GlitchFilter();
   //
   //  This row has been digitized, delete nonused stuff
   //
