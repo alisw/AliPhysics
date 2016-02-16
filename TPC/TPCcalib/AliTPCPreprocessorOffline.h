@@ -98,7 +98,7 @@ public:
   TChain *GetAlignTree(){return fAlignTree;}
   //
   const TObjArray* GetArrQAhist() const { return fArrQAhist; }
-  void  FillQA(Bool_t qa=kTRUE);
+  void  FillQA(Bool_t qa=kTRUE, Bool_t norm=kTRUE);
   void  MakeQAPlotsGain(TString outputDirectory="", TString fileTypes="png");
   //
   // graph filtering part
@@ -119,6 +119,7 @@ public:
   };
 
 private:
+  Bool_t fNormaliseQA;                     // normalise the QA histograms in the same way as the derived graphs
   Int_t fMinEntries;                      // minimal number of entries for fit
   Int_t fStartRun;                         // start Run - used to make fast selection in THnSparse
   Int_t fEndRun;                           // end   Run - used to make fast selection in THnSparse
