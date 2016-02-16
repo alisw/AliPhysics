@@ -251,15 +251,22 @@ void AliTPCcalibBase::RegisterDebugOutput(const char *path){
   TFile::Cp(dsName.Data(),dsName2.Data());
 }
 
-
-
 TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp, Bool_t useMedian, TTreeSRedirector *cstream, Int_t ival){
+  //
+  // Fitting slices of the projection(axisDim1,axisDim2) of a sparse histogram
+  //
+  TH2D * hist = h->Projection(axisDim1, axisDim2);
+  TGraphErrors *gr=FitSlices(hist, minEntries, nmaxBin, fracLow, fracUp, useMedian, cstream, ival);
+  delete hist;
+  return gr;
+}
+
+TGraphErrors * AliTPCcalibBase::FitSlices(TH2* hist, Int_t minEntries, Int_t nmaxBin, Float_t fracLow, Float_t fracUp, Bool_t useMedian, TTreeSRedirector *cstream, Int_t ival){
   //
   // Fitting slices of the projection(axisDim1,axisDim2) of a sparse histogram
   // 
   const Int_t kMinStat=100;
   TF1 funcGaus("funcGaus","gaus");
-  TH2D * hist = h->Projection(axisDim1, axisDim2);
   Double_t *xvec = new Double_t[hist->GetNbinsX()];
   Double_t *yvec = new Double_t[hist->GetNbinsX()];
   Double_t *xerr = new Double_t[hist->GetNbinsX()];
@@ -351,8 +358,72 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
   delete [] yvec;
   delete [] xerr;
   delete [] yerr;
-  delete hist;
   return graphErrors;
+}
+
+TH2* AliTPCcalibBase::NormalizedProjection(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t normDim, Float_t minStatFrac)
+{
+  // Create projection in axisDim1, axisDim2 in slices of normDim
+  // Normalize the the entries in the dimension normDim and the sum up
+  // Don't use bin for sum if statistics is less than minStatFrac of average number of entries
+
+  if (!h) return 0x0;
+  // ---| axis ranges of dimension in which to normalize |----------------------
+  TAxis *axisNorm=h->GetAxis(normDim);
+  const Int_t first=axisNorm->GetFirst();
+  const Int_t last =axisNorm->GetLast();
+  const Int_t nbins=last-first+1;
+
+  // ---| final merged histogram |----------------------------------------------
+  TH2 * hist = h->Projection(axisDim1, axisDim2);
+  const Double_t statPerBin = hist->Integral()/Double_t(nbins);
+  hist->Reset();
+  hist->SetName(Form("%s_norm", hist->GetName()));
+//   printf("statPerBin: %.2f\n", statPerBin);
+//   printf("first, last, bins: %i, %i, %i\n", first, last, nbins);
+
+  // ---| array with 2D projections per bin and statistics
+  TObjArray arrProjections(nbins);
+  arrProjections.SetOwner();
+  Double_t *values=new Double_t[nbins];
+
+  // ---| loop over normDim bins and do projections |---------------------------
+  Int_t nused=0;
+  for (Int_t ibin=first; ibin<=last; ++ibin) {
+    axisNorm->SetRange(ibin,ibin);
+    TH2 *proj=h->Projection(axisDim1, axisDim2);
+    if (!proj) continue;
+    proj->SetName(Form("%s_%d", h->GetName(), ibin));
+//     proj->SetDirectory(0x0);
+
+    proj->SetUniqueID(0); //steer nomalisation
+
+    const Double_t stat=proj->Integral();
+//     printf("bin: %i (%.2f)\n", ibin, stat);
+    if (stat>minStatFrac*statPerBin) {
+      proj->SetUniqueID(1);
+      proj->Scale(1./stat);
+      values[nused]=stat;
+      ++nused;
+//       printf("  used\n");
+    }
+    arrProjections.Add(proj);
+  }
+
+  // ---| Get Median of used bins, scale and sum up |---------------------------
+  Double_t median=TMath::Median(nused, values);
+//   printf("median: %.2f\n", median);
+  for (Int_t ihist=0; ihist<nbins; ++ihist) {
+    TH2 *proj=static_cast<TH2*>(arrProjections.At(ihist));
+    if (!proj) continue;
+    if (proj->GetUniqueID()) proj->Scale(median);
+    hist->Add(proj);
+  }
+
+  axisNorm->SetRange(first,last);
+  delete [] values;
+
+  return hist;
 }
 
 
