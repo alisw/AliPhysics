@@ -1471,8 +1471,8 @@ private:
  TProfile *fCRC2NUAPro[fCRCMaxnRun][fCRCMaxnCen][fkNCorCRC2][4]; //! NUA terms profile, [CRCBin][eg]
  TH1D *fCRC2CorHist[fCRCMaxnCen][fkNCorCRC2][2]; //! <<2'>>, [centrality][pos,neg,all][corr,spectra]
  TH1D *fCRC2NUAHist[fCRCMaxnCen][fkNCorCRC2][4]; //! NUA hist
- TProfile *fCRC2CovPro[fCRCMaxnCen][fkNCorCRC2][3]; //! Cov pro
- TH1D *fCRC2CovHist[fCRCMaxnCen][fkNCorCRC2][3]; //! Cov hist
+ TProfile *fCRC2CovPro[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov pro
+ TH1D *fCRC2CovHist[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov hist
  
  // Flow all
  const static Int_t fFlowNHarm = 4;
