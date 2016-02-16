@@ -2249,6 +2249,8 @@ goMakeSummary()
   # json header: open array of objects
   echo '[' > "$jsonLogTmp"
 
+  goSummarizeMetaFiles "$metadir"
+
   echo "total numbers for the production:"
   echo
   awk 'BEGIN {nFiles=0;nCore=0;} 
@@ -2491,6 +2493,145 @@ EOF
   alilog_info "[END] goMakeSummary() with following parameters $*"
   return 0
 )
+
+goSummarizeMetaFiles()
+{
+  #summarize the meta files in current dir (unless specified differently)
+  find ${1-"."} -name "*.done" -exec echo donefile {} \; -exec cat {} \; | \
+  awk '
+    BEGIN {
+    }
+
+    /^donefile /  {
+      donefile=$2
+      sub(/^.*\//,"",donefile)
+      match($2,/.pass[0-9]?/,tmparr)
+      pass=tmparr[0]
+      match($2,/run([0-9]*)/,tmparr)
+      runNumber=tmparr[1]
+    }
+
+    #logfiles
+    /OK/ || /BAD/ {
+      logFile=$1
+      sub(/^.*\//,"",logFile)
+
+      if (donefile ~ /merge\./) {
+        mergeLogs[runNumber][pass][logFile]++
+        if ($0 ~ /OK/) mergeLogsOK[runNumber][pass][logFile]++
+        else if ($0 ~ /BAD/) {
+          mergeLogsBAD[runNumber][pass][logFile]++
+          listOfBadLogs[nBadLogs++]=$1
+        }
+      }
+      
+      if (donefile ~ /\.job/) {
+        jobLogs[runNumber][pass][logFile]++
+        if ($0 ~ /OK/) jobLogsOK[runNumber][pass][logFile]++
+        else if ($0 ~ /BAD/) {
+          jobLogsBAD[runNumber][pass][logFile]++
+          listOfBadLogs[nBadLogs++]=$1
+        }
+      }
+      
+      next
+    }
+
+    #output files
+    {
+      fileType=$1
+      file=$2
+      if (donefile ~ /merge\./) {
+        outputFilesMerge[runNumber][pass][fileType]++
+      }
+      if (donefile ~ /\.job/) {
+        outputFilesJobs[runNumber][pass][fileType]++
+      }
+      if (fileType == "core") coreFiles[nCoreFiles++]=file
+    }
+
+    END {
+      print "===== error summary: ================================================================="
+      for (run in jobLogs ) {
+        for (pass in jobLogs[run] ) {
+          
+          for (logFile in jobLogs[run][pass]) {
+            if (jobLogsBAD[run][pass][logFile]>0) {
+              print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run][pass][logFile]" failures )"
+            }
+          }
+          
+          for (logFile in mergeLogs[run][pass]) {
+            if (mergeLogsBAD[run][pass][logFile]>0) {
+              print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run][pass][logFile]" failures )"
+            }
+          }
+
+          if (outputFilesJobs[run][pass]["core"]>0) {
+            print "CORE       : run "run" "pass" ( "outputFilesJobs[run][pass]["core"]" core files! )"
+          }
+          if (outputFilesMerge[run][pass]["core"]>0) {
+            print "CORE       : run "run" merge "pass" ( "outputFilesMerge[run][pass]["core"]" core files! )"
+          }
+
+        }
+      }
+
+      print ""
+      print "===== detailed summary: ================================================================="
+      for (run in jobLogs ) {
+        print"________________________________________"
+        print "run "run
+
+        for (pass in jobLogs[run] ) {
+          print "  "pass
+
+          filesToPrint["esd"]=0
+          filesToPrint["qafile"]=0
+          filesToPrint["ocdbTarball"]=0
+          filesToPrint["aod"]=0
+          filesToPrint["core"]=0
+          for (outputFile in filesToPrint) {
+            if (outputFilesJobs[run][pass][outputFile])  print "      "outputFilesJobs[run][pass][outputFile]" X "outputFile
+          }
+          print "    merge:"
+          for (outputFile in filesToPrint) {
+            if (outputFilesMerge[run][pass][outputFile])  print "      "outputFilesMerge[run][pass][outputFile]" X "outputFile
+          }
+
+          for (logFile in jobLogs[run][pass]) {
+            if (jobLogsBAD[run][pass][logFile]>0) {
+              print "    ERROR: "logFile" OK:"jobLogsOK[run][pass][logFile]" BAD:"jobLogsBAD[run][pass][logFile]
+            }
+          }
+          
+          for (logFile in mergeLogs[run][pass]) {
+            if (mergeLogsBAD[run][pass][logFile]>0) {
+              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run][pass][logFile]" BAD:"mergeLogsBAD[run][pass][logFile]
+            }
+          }
+
+        }
+      }
+     
+      if (nBadLogs)
+      {
+        print ""
+        print "===== list of bad logs: ================================================================="
+        for (i in listOfBadLogs) {
+          print listOfBadLogs[i]
+        }
+      }
+      if (nCoreFiles)
+      {
+        print ""
+        print "===== list of core files: ================================================================="
+        for (i in coreFiles) {
+          print coreFiles[i]
+        }
+      }
+    }'
+}
 
 goMakeSummaryTree()
 (
