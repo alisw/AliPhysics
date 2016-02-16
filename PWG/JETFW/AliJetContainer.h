@@ -14,12 +14,12 @@ class AliLocalRhoParameter;
 #include <TMath.h>
 #include <TLorentzVector.h>
 #include "AliRhoParameter.h"
-#include "AliEmcalContainer.h"
+#include "AliParticleContainer.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliEmcalJet.h"
 
-class AliJetContainer : public AliEmcalContainer {
+class AliJetContainer : public AliParticleContainer {
  public:
  
   enum EJetType_t {
@@ -195,7 +195,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,14);
+  ClassDef(AliJetContainer,15);
 };
 
 #endif

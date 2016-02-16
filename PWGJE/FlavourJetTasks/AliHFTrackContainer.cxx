@@ -27,7 +27,7 @@ ClassImp(AliHFAODMCParticleContainer)
 
 /// This is the default constructor, used for ROOT I/O purposes.
 AliHFTrackContainer::AliHFTrackContainer() :
-  AliParticleContainer(),
+  AliTrackContainer(),
   fDMesonCandidate(0),
   fDaughterList(10)
 {
@@ -41,7 +41,7 @@ AliHFTrackContainer::AliHFTrackContainer() :
 ///
 /// \param name Name of the particle collection
 AliHFTrackContainer::AliHFTrackContainer(const char *name) :
-  AliParticleContainer(name),
+  AliTrackContainer(name),
   fDMesonCandidate(0),
   fDaughterList(10)
 {
@@ -54,9 +54,9 @@ AliHFTrackContainer::AliHFTrackContainer(const char *name) :
 /// Calls the base class method (needed to avoid shadowing).
 ///
 /// \param Pointer to an AliVParticle object.
-Bool_t AliHFTrackContainer::AcceptParticle(AliVParticle* vp)
+Bool_t AliHFTrackContainer::AcceptTrack(AliVTrack* vp)
 {
-  return AliParticleContainer::AcceptParticle(vp);
+  return AliTrackContainer::AcceptTrack(vp);
 }
 
 /// First check whether the particle is a daughter of the
@@ -66,7 +66,7 @@ Bool_t AliHFTrackContainer::AcceptParticle(AliVParticle* vp)
 /// \param i Index of the particle to be checked.
 ///
 /// \return kTRUE if the particle is accepted, kFALSE otherwise.
-Bool_t AliHFTrackContainer::AcceptParticle(Int_t i)
+Bool_t AliHFTrackContainer::AcceptTrack(Int_t i)
 {
   // Determine whether the MC particle is accepted.
 
@@ -78,7 +78,7 @@ Bool_t AliHFTrackContainer::AcceptParticle(Int_t i)
   }
 
   // Not a daughter of the D meson. Apply regular cuts.
-  return AliParticleContainer::AcceptParticle(i);
+  return AliTrackContainer::AcceptTrack(i);
 }
 
 /// Check if particle it's a daughter of the D meson candidate

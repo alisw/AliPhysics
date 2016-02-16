@@ -28,10 +28,10 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-#include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
 #include "AliAnalysisTaskDmesonJets.h"
 
-class AliHFAODMCParticleContainer : public AliParticleContainer {
+class AliHFAODMCParticleContainer : public AliMCParticleContainer {
  public:
   AliHFAODMCParticleContainer();
   AliHFAODMCParticleContainer(const char *name);
@@ -56,8 +56,8 @@ class AliHFAODMCParticleContainer : public AliParticleContainer {
   void   SelectCharmtoD0toKpi();
   void   SelectCharmtoDStartoKpipi();
   
-  Bool_t          AcceptParticle(AliVParticle* vp);
-  Bool_t          AcceptParticle(Int_t i);
+  Bool_t          AcceptMCParticle(AliAODMCParticle* vp);
+  Bool_t          AcceptMCParticle(Int_t i);
 
  protected:
   Bool_t          IsSpecialPDGDaughter(AliAODMCParticle* part) const;
@@ -72,7 +72,7 @@ class AliHFAODMCParticleContainer : public AliParticleContainer {
   AliHFAODMCParticleContainer &operator=(const AliHFAODMCParticleContainer&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliHFAODMCParticleContainer, 1);
+  ClassDef(AliHFAODMCParticleContainer, 2);
   /// \endcond
 };
 #endif
