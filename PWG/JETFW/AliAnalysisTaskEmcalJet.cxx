@@ -61,20 +61,6 @@ AliAnalysisTaskEmcalJet::~AliAnalysisTaskEmcalJet()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet, Int_t c)
-{ 
-  // Accept jet with a bias.
-
-  AliJetContainer *cont = GetJetContainer(c);
-  if(!cont) {
-    AliError(Form("%s:Container %d not found",GetName(),c));
-    return 0;
-  }
-
-  return cont->AcceptBiasJet(jet);
-}
-
-//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet, Int_t c)
 {
 
