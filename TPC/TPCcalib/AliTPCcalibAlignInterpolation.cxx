@@ -855,7 +855,11 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 
   TFile *finfo = TFile::Open(residualInfoFile);
   TTree *treeInfo=0;
-  if (finfo) treeInfo=(TTree*)finfo->Get("summaryTime"); 
+  if (finfo) {
+    treeInfo=(TTree*)finfo->Get("summaryTime"); 
+  }else{
+    ::Fatal("AliTPCcalibAlignInterpolation::FillHistogramsFromChain","residualInfoFile %s does not exist",residualInfoFile);
+  }  
   TGraphErrors * nclArray[nSec]={0};
   TGraphErrors * nclArrayUsed[nSec]={0};
   
@@ -867,6 +871,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       treeInfo->SetBranchAddress(TString::Format("grNclUsed%d.",iSec).Data(),&nclArrayUsed[iSec]);
     }
     treeInfo->GetEntry(0);
+  }else{
+    ::Fatal("AliTPCcalibAlignInterpolation::FillHistogramsFromChain","residualInfoFile %s does not contain tree summaryTime",residualInfoFile);
   }
   //
   // 0.a) Load drift velocity calibration in case availbel
