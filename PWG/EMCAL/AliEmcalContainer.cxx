@@ -9,6 +9,7 @@
 #include "AliLog.h"
 #include "AliNamedArrayI.h"
 #include "AliVParticle.h"
+#include "AliTLorentzVector.h"
 
 #include "AliEmcalContainer.h"
 
@@ -22,6 +23,17 @@ AliEmcalContainer::AliEmcalContainer():
   fClassName(),
   fIsParticleLevel(kFALSE),
   fBitMap(0),
+  fMinPt(0.15),
+  fMaxPt(1000.),
+  fMinE(0.),
+  fMaxE(1000.),
+  fMinEta(-0.9),
+  fMaxEta(0.9),
+  fMinPhi(-10),
+  fMaxPhi(10),
+  fMinMCLabel(-1),
+  fMaxMCLabel(-1),
+  fMassHypothesis(-1),
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
@@ -43,6 +55,17 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fClassName(),
   fIsParticleLevel(kFALSE),
   fBitMap(0),
+  fMinPt(0.15),
+  fMaxPt(1000.),
+  fMinE(0.),
+  fMaxE(1000.),
+  fMinEta(-0.9),
+  fMaxEta(0.9),
+  fMinPhi(-10),
+  fMaxPhi(10),
+  fMinMCLabel(-1),
+  fMaxMCLabel(-1),
+  fMassHypothesis(-1),
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
@@ -131,5 +154,30 @@ Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle
   if (dPhi > dist) return kFALSE;
   if (dEta > dist) return kFALSE;
   if (dpT  > dist) return kFALSE;
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
+{
+  if (mom.Pt() < fMinPt || mom.Pt() < fMaxPt) {
+    fRejectionReason |= kPtCut;
+    return kFALSE;
+  }
+
+  if (mom.E() < fMinPt || mom.E() < fMaxPt) {
+    fRejectionReason |= kPtCut;
+    return kFALSE;
+  }
+
+  Double_t eta = mom.Eta();
+  Double_t phi = mom.Phi_0_2pi();
+
+  if (eta < fMinEta || eta > fMaxEta ||
+      phi < fMinPhi || phi > fMaxPhi) {
+    fRejectionReason |= kAcceptanceCut;
+    return kFALSE;
+  }
+
   return kTRUE;
 }

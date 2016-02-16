@@ -24,15 +24,7 @@ TString AliParticleContainer::fgDefTrackCutsPeriod = "";
 //________________________________________________________________________
 AliParticleContainer::AliParticleContainer():
   AliEmcalContainer(),
-  fParticlePtCut(0.15),
-  fParticleMinEta(-0.9),
-  fParticleMaxEta(0.9),
-  fParticleMinPhi(-10),
-  fParticleMaxPhi(10),
-  fPhiOffset(0.),
   fMinDistanceTPCSectorEdge(-1),
-  fMinMCLabel(-1),
-  fMaxMCLabel(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1),
@@ -48,20 +40,13 @@ AliParticleContainer::AliParticleContainer():
   // Default constructor.
 
   fClassName = "AliVParticle";
+  fMassHypothesis = 0.139;
 }
 
 //________________________________________________________________________
 AliParticleContainer::AliParticleContainer(const char *name, const char *period):
   AliEmcalContainer(name),
-  fParticlePtCut(0.15),
-  fParticleMinEta(-0.9),
-  fParticleMaxEta(0.9),
-  fParticleMinPhi(-10),
-  fParticleMaxPhi(10),
-  fPhiOffset(0.),
   fMinDistanceTPCSectorEdge(-1),
-  fMinMCLabel(-1),
-  fMaxMCLabel(-1),
   fMCFlag(0),
   fGeneratorIndex(-1),
   fCharge(-1),
@@ -82,6 +67,7 @@ AliParticleContainer::AliParticleContainer(const char *name, const char *period)
     AliInfo(Form("Default track cuts period is %s", AliParticleContainer::fgDefTrackCutsPeriod.Data()));
     fTrackCutsPeriod = AliParticleContainer::fgDefTrackCutsPeriod;
   }
+  fMassHypothesis = 0.139;
 }
 
 //________________________________________________________________________
@@ -298,25 +284,49 @@ AliVParticle* AliParticleContainer::GetNextParticle(Int_t i)
 }
 
 //________________________________________________________________________
+Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass)
+{
+  if (part) {
+    if (mass < 0) mass = part->M();
+    mom.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), mass);
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part)
+{
+  return GetMomentum(mom,part,fMassHypothesis);
+}
+
+//________________________________________________________________________
 Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
+  Double_t mass = fMassHypothesis;
+
   if (i == -1) i = fCurrentID;
   AliVParticle *vp = GetParticle(i);
   if (vp) {
+    if (mass < 0) mass = vp->M();
+
     if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
         (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
-      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
     else {
-      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
     }
     return kTRUE;
   }
   else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    mom.SetPtEtaPhiM(0, 0, 0, 0);
     return kFALSE;
   }
 }
@@ -326,20 +336,24 @@ Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
+  Double_t mass = fMassHypothesis;
+
   AliVParticle *vp = GetNextParticle(i);
   if (vp) {
+    if (mass < 0) mass = vp->M();
+
     if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
         (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
-      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
     else {
-      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
     }
     return kTRUE;
   }
   else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    mom.SetPtEtaPhiM(0, 0, 0, 0);
     return kFALSE;
   }
 }
@@ -349,22 +363,26 @@ Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
+  Double_t mass = fMassHypothesis;
+
   if (i == -1) i = fCurrentID;
   AliVParticle *vp = GetAcceptParticle(i);
   if (vp) {
+    if (mass < 0) mass = vp->M();
+
     if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
         (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
-      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
     else {
-      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
     }
 
     return kTRUE;
   }
   else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    mom.SetPtEtaPhiM(0, 0, 0, 0);
     return kFALSE;
   }
 }
@@ -374,47 +392,70 @@ Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
 {
   //Get momentum of the i^th particle in array
 
+  Double_t mass = fMassHypothesis;
+
   AliVParticle *vp = GetNextAcceptParticle(i);
   if (vp) {
+    if (mass < 0) mass = vp->M();
+
     if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks &&
         (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
-      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), 0.139);
+      mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
     }
     else {
-      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), 0.139);
+      mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
     }
 
     return kTRUE;
   }
   else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
+    mom.SetPtEtaPhiM(0, 0, 0, 0);
     return kFALSE;
   }
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::AcceptParticle(AliVParticle *vp)
+Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp)
 {
   // Return true if vp is accepted.
+  Bool_t r = ApplyParticleCuts(vp);
+  if (!r) return kFALSE;
+
+  AliTLorentzVector mom;
+
   Int_t id = fFilteredTracks->IndexOf(vp);
   if (id >= 0) {
-    return AcceptParticle(id);
+    GetMomentum(mom, id);
   }
   else {
-    return kFALSE;
+    GetMomentum(mom, vp);
   }
+
+  return ApplyKinematicCuts(mom);
 }
 
 //________________________________________________________________________
 Bool_t AliParticleContainer::AcceptParticle(Int_t i)
+{
+  // Return true if vp is accepted.
+  Bool_t r = ApplyParticleCuts(GetParticle(i));
+  if (!r) return kFALSE;
+
+  AliTLorentzVector mom;
+  GetMomentum(mom, i);
+
+  return ApplyKinematicCuts(mom);
+}
+
+//________________________________________________________________________
+Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp)
 {
   // Return true if i^th particle is accepted.
 
   fRejectionReason = 0;
 
   // Cuts on the particle properties
-  AliVParticle* vp = GetParticle(i);
 
   if (!vp) {
     fRejectionReason |= kNullObject;
@@ -451,29 +492,12 @@ Bool_t AliParticleContainer::AcceptParticle(Int_t i)
     return kFALSE;
   }
 
-  // Cuts on the 4-momentum
-  AliTLorentzVector mom;
-  GetMomentum(mom, i);
-
-  return ApplyKinematicCuts(mom);
+  return kTRUE;
 }
 
 //________________________________________________________________________
 Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
 {
-  if (mom.Pt() < fParticlePtCut) {
-    fRejectionReason |= kPtCut;
-    return kFALSE;
-  }
-
-  Double_t phi = mom.Phi_0_2pi() + fPhiOffset;
-
-  if (mom.Eta() < fParticleMinEta || mom.Eta() > fParticleMaxEta ||
-      phi < fParticleMinPhi       || phi > fParticleMaxPhi) {
-    fRejectionReason |= kAcceptanceCut;
-    return kFALSE;
-  }
-
   if(fMinDistanceTPCSectorEdge>0.) {
     const Double_t pi = TMath::Pi();
     const Double_t kSector = pi/9;
@@ -483,8 +507,8 @@ Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
       return kFALSE;
     }
   }
-  
-  return kTRUE;
+
+  return AliEmcalContainer::ApplyKinematicCuts(mom);
 }
 
 //________________________________________________________________________
@@ -544,14 +568,14 @@ const char* AliParticleContainer::GetTitle() const
 {
   static TString trackString;
 
-  if (GetParticlePtCut() == 0) {
+  if (GetMinPt() == 0) {
     trackString = TString::Format("%s_pT0000", GetArrayName().Data());
   }
-  else if (GetParticlePtCut() < 1.0) {
-    trackString = TString::Format("%s_pT0%3.0f", GetArrayName().Data(), GetParticlePtCut()*1000.0);
+  else if (GetMinPt() < 1.0) {
+    trackString = TString::Format("%s_pT0%3.0f", GetArrayName().Data(), GetMinPt()*1000.0);
   }
   else {
-    trackString = TString::Format("%s_pT%4.0f", GetArrayName().Data(), GetParticlePtCut()*1000.0);
+    trackString = TString::Format("%s_pT%4.0f", GetArrayName().Data(), GetMinPt()*1000.0);
   }
 
   return trackString.Data();

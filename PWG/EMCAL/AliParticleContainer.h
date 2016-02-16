@@ -29,16 +29,20 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer(const char *name, const char *period = "");
   virtual ~AliParticleContainer(){;}
 
-  Bool_t                      ApplyKinematicCuts(const AliTLorentzVector& mom);
-  virtual Bool_t              AcceptObject(Int_t i)        { return AcceptParticle(i);}
-  virtual Bool_t              AcceptObject(TObject* obj)   { return AcceptParticle(dynamic_cast<AliVParticle*>(obj));}
-  virtual Bool_t              AcceptParticle(AliVParticle* vp)               ;
+  virtual Bool_t              ApplyParticleCuts(const AliVParticle* vp);
+  virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom);
+  virtual Bool_t              AcceptObject(Int_t i)              { return AcceptParticle(i);}
+  virtual Bool_t              AcceptObject(const TObject* obj)   { return AcceptParticle(dynamic_cast<const AliVParticle*>(obj));}
+  virtual Bool_t              AcceptParticle(const AliVParticle* vp)         ;
   virtual Bool_t              AcceptParticle(Int_t i)                        ;
-  Double_t                    GetParticlePtCut()                        const   { return fParticlePtCut  ; }
-  Double_t                    GetParticleEtaMin()                       const   { return fParticleMinEta ; }
-  Double_t                    GetParticleEtaMax()                       const   { return fParticleMaxEta ; }
-  Double_t                    GetParticlePhiMin()                       const   { return fParticleMinPhi ; }
-  Double_t                    GetParticlePhiMax()                       const   { return fParticleMaxPhi ; }
+  Double_t                    GetParticlePtCut()                        const   { return GetMinPt()     ; }
+  Double_t                    GetParticleEtaMin()                       const   { return GetMinEta()    ; }
+  Double_t                    GetParticleEtaMax()                       const   { return GetMaxEta()    ; }
+  Double_t                    GetParticlePhiMin()                       const   { return GetMinPhi()    ; }
+  Double_t                    GetParticlePhiMax()                       const   { return GetMaxPhi()    ; }
+  void                        SetParticlePtCut(Double_t cut)                    { SetMinPt(cut)         ; }
+  void                        SetParticleEtaLimits(Double_t min, Double_t max)  { SetEtaLimits(min, max); }
+  void                        SetParticlePhiLimits(Double_t min, Double_t max)  { SetPhiLimits(min, max); }
   AliVParticle               *GetLeadingParticle(const char* opt="")         ;
   AliVParticle               *GetParticle(Int_t i=-1)                   const;
   AliVParticle               *GetAcceptParticle(Int_t i=-1)                  ;
@@ -46,6 +50,8 @@ class AliParticleContainer : public AliEmcalContainer {
   AliVParticle               *GetAcceptParticleWithLabel(Int_t lab)          ;
   AliVParticle               *GetNextAcceptParticle(Int_t i=-1)              ;
   AliVParticle               *GetNextParticle(Int_t i=-1)                    ;
+  Bool_t                      GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass);
+  Bool_t                      GetMomentum(TLorentzVector &mom, const AliVParticle* part);
   Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
   Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
   Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
@@ -58,13 +64,7 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetArray(AliVEvent *event);
 
   void                        SetClassName(const char *clname);
-  void                        SetParticlePtCut(Double_t cut)                    { fParticlePtCut = cut ; }
-  void                        SetParticleEtaLimits(Double_t min, Double_t max)  { fParticleMaxEta = max ; fParticleMinEta = min ; }
-  void                        SetParticlePhiLimits(Double_t min, Double_t max, Double_t offset=0.)  { fParticleMaxPhi = max ; fParticleMinPhi = min ; fPhiOffset = offset;}
   void                        SetMinDistanceTPCSectorEdge(Double_t min)         { fMinDistanceTPCSectorEdge = min; }
-  void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
-  void                        SetMaxMCLabel(Int_t s)                            { fMaxMCLabel      = s   ; }
-  void                        SetMCLabelRange(Int_t min, Int_t max)             { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
   void                        SetMCFlag(UInt_t m)                               { fMCFlag          = m ; }
   void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
   void                        SetGeneratorIndex(Short_t i)                      { fGeneratorIndex = i  ; }
@@ -95,15 +95,7 @@ class AliParticleContainer : public AliEmcalContainer {
  protected:
   static TString              fgDefTrackCutsPeriod;           //!default period string used to generate track cuts
 
-  Double_t                    fParticlePtCut;                 // cut on particle pt
-  Double_t                    fParticleMinEta;                // cut on particle eta
-  Double_t                    fParticleMaxEta;                // cut on particle eta
-  Double_t                    fParticleMinPhi;                // cut on particle phi
-  Double_t                    fParticleMaxPhi;                // cut on particle phi
-  Double_t                    fPhiOffset;                     // phi offset
   Double_t                    fMinDistanceTPCSectorEdge;      // require minimum distance to edge of TPC sector edge
-  Int_t                       fMinMCLabel;                    // minimum MC label
-  Int_t                       fMaxMCLabel;                    // maximum MC label
   UInt_t                      fMCFlag;                        // select MC particles with flags
   Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
   Short_t                     fCharge;                        // select particles with charge=fCharge
