@@ -20,6 +20,7 @@
 #include "AliRsnEvent.h"
 #include "AliRsnMiniValue.h"
 #include "AliRsnMiniOutput.h"
+#include "AliRsnCutEventUtils.h"
 
 class TList;
 
