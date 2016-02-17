@@ -24,7 +24,7 @@ public:
   AliSysInfo();
   static AliSysInfo * Instance();
   static void AddStamp(const char *sname, Int_t id0=-1, Int_t id1=-1, Int_t id2=-1, Int_t id3=-1);
-  static TTree * MakeTree(const char *lname);
+  static TTree * MakeTree(const char *lname, const char * fout=0);
   static void OpenMemStat();
   static void CloseMemStat();
   static Bool_t Contain(const char * str1, const char * str2);
