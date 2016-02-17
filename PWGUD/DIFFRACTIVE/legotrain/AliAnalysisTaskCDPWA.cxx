@@ -158,7 +158,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 			fTwoPionITSSigma[i][j] = 0;
 			fTwoPionDetMask[i][j] = 0;
 			fTwoPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) fTwoPionBayesProb[i][j] = 0;
+			if ( j < 5) fTwoPionBayesProb[i][j] = 0;
 		}
 	}
 	for (Int_t i = 0; i < 4; i++) {//Four Pion
@@ -170,7 +170,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 			fFourPionITSSigma[i][j] = 0;
 			fFourPionDetMask[i][j] = 0;
 			fFourPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) fFourPionBayesProb[i][j] = 0;
+			if ( j < 5) fFourPionBayesProb[i][j] = 0;
 		}
 	}
 
@@ -279,7 +279,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 			fTwoPionITSSigma[i][j] = 0;
 			fTwoPionDetMask[i][j] = 0;
 			fTwoPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) fTwoPionBayesProb[i][j] = 0;
+			if ( j < 5) fTwoPionBayesProb[i][j] = 0;
 		}
 	}
 	for (Int_t i = 0; i < 4; i++) {//Four Pion
@@ -291,7 +291,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 			fFourPionITSSigma[i][j] = 0;
 			fFourPionDetMask[i][j] = 0;
 			fFourPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) fFourPionBayesProb[i][j] = 0;
+			if ( j < 5) fFourPionBayesProb[i][j] = 0;
 		}
 	}
 
@@ -408,7 +408,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 			fTree->Branch(Form("TwoPionITSSigma_%d_%d",i,j),&fTwoPionITSSigma[i][j]);
 			fTree->Branch(Form("TwoPionDetMask_%d_%d",i,j),&fTwoPionDetMask[i][j]);
 			fTree->Branch(Form("TwoPionTrack_ITSSA_%d_%d",i,j),&fTwoPionTrack_ITSSA[i][j]);
-			if ( j < AliPID::kSPECIES) fTree->Branch(Form("TwoPionBayesProb_%d_%d",i,j),&fTwoPionBayesProb[i][j]);
+			if ( j < 5) fTree->Branch(Form("TwoPionBayesProb_%d_%d",i,j),&fTwoPionBayesProb[i][j]);
 		}
 	}
 	for (Int_t i = 0; i < 4; i++) {
@@ -420,7 +420,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 			fTree->Branch(Form("FourPionITSSigma_%d_%d",i,j),&fFourPionITSSigma[i][j]);
 			fTree->Branch(Form("FourPionDetMask_%d_%d",i,j),&fFourPionDetMask[i][j]);
 			fTree->Branch(Form("FourPionTrack_ITSSA_%d_%d",i,j),&fFourPionTrack_ITSSA[i][j]);
-			if ( j < AliPID::kSPECIES) fTree->Branch(Form("FourPionBayesProb_%d_%d",i,j),&fFourPionBayesProb[i][j]);
+			if ( j < 5) fTree->Branch(Form("FourPionBayesProb_%d_%d",i,j),&fFourPionBayesProb[i][j]);
 		}
 	}
 	//For MC
@@ -733,7 +733,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fTwoPionITSSigma[i][j] = 0;
 			fTwoPionDetMask[i][j] = 0;
 			fTwoPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) fTwoPionBayesProb[i][j] = 0;
+			if ( j < 5) fTwoPionBayesProb[i][j] = 0;
 		}
 	}
 	for (Int_t i = 0; i < 4; i++) {//Four Pion
@@ -745,7 +745,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fFourPionITSSigma[i][j] = 0;
 			fFourPionDetMask[i][j] = 0;
 			fFourPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) fFourPionBayesProb[i][j] = 0;
+			if ( j < 5) fFourPionBayesProb[i][j] = 0;
 		}
 	}
 	for (Int_t i = 0; i < 5; i++) {
@@ -1093,7 +1093,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fTwoPionITSSigma[i][j] = 0;
 				fTwoPionDetMask[i][j] = 0;
 				fTwoPionTrack_ITSSA[i][j] = 0;
-				if ( j < AliPID::kSPECIES) fTwoPionBayesProb[i][j] = 0;
+				if ( j < 5) fTwoPionBayesProb[i][j] = 0;
 			}
 		}
 		for (Int_t i = 0; i < 2; i++) {
@@ -1152,7 +1152,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fFourPionITSSigma[i][j] = 0;
 				fFourPionDetMask[i][j] = 0;
 				fFourPionTrack_ITSSA[i][j] = 0;
-				if ( j < AliPID::kSPECIES) fFourPionBayesProb[i][j] = 0;
+				if ( j < 5) fFourPionBayesProb[i][j] = 0;
 			}
 		}
 		for (Int_t i = 0; i < 4; i++) {
