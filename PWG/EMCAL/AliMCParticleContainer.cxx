@@ -16,7 +16,7 @@ ClassImp(AliParticleContainer)
 //________________________________________________________________________
 AliMCParticleContainer::AliMCParticleContainer():
   AliParticleContainer(),
-  fMCFlag(0)
+  fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
   // Default constructor.
 
@@ -26,7 +26,7 @@ AliMCParticleContainer::AliMCParticleContainer():
 //________________________________________________________________________
 AliMCParticleContainer::AliMCParticleContainer(const char *name):
   AliParticleContainer(name),
-  fMCFlag(0)
+  fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
   // Standard constructor.
 
