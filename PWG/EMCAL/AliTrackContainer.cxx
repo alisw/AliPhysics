@@ -22,7 +22,7 @@ TString AliTrackContainer::fgDefTrackCutsPeriod = "";
 //________________________________________________________________________
 AliTrackContainer::AliTrackContainer():
   AliParticleContainer(),
-  fTrackFilterType(AliEmcalTrackSelection::kNoTrackFilter),
+  fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
   fListOfCuts(0),
   fSelectionModeAny(kFALSE),
   fAODFilterBits(0),
@@ -40,7 +40,7 @@ AliTrackContainer::AliTrackContainer():
 //________________________________________________________________________
 AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   AliParticleContainer(name),
-  fTrackFilterType(AliEmcalTrackSelection::kNoTrackFilter),
+  fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
   fListOfCuts(0),
   fSelectionModeAny(kFALSE),
   fAODFilterBits(0),
