@@ -20,25 +20,24 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   
   AliAnalysisTaskEMCALClusterizeFast *task = new AliAnalysisTaskEMCALClusterizeFast(taskname);
 
-  AliEMCALRecParam *recparam = task->GetRecParam();
-  recparam->SetClusterizerFlag(clusterizer);
-  recparam->SetMinECut(cellE);
-  recparam->SetClusteringThreshold(seedE);
-  recparam->SetW0(4.5);
-  recparam->SetTimeMin(timeMin);
-  recparam->SetTimeMax(timeMax);
-  recparam->SetTimeCut(timeCut);
+  task->GetRecParam()->SetClusterizerFlag(clusterizer);
+  task->GetRecParam()->SetMinECut(cellE);
+  task->GetRecParam()->SetClusteringThreshold(seedE);
+  task->GetRecParam()->SetW0(4.5);
+  task->GetRecParam()->SetTimeMin(timeMin);
+  task->GetRecParam()->SetTimeMax(timeMax);
+  task->GetRecParam()->SetTimeCut(timeCut);
 
   if (clusterizer == AliEMCALRecParam::kClusterizerNxN)
-    recparam->SetNxM(1,1); // -> (1,1) means 3x3!
+    task->GetRecParam()->SetNxM(1,1); // -> (1,1) means 3x3!
 
-  AliEMCALRecoUtils *recoUtils = new AliEMCALRecoUtils();
-  recoUtils->SetNonLinearityFunction(0);
-  task->SetEMCALRecoUtils(recoUtils);
+  task->SetEMCALRecoUtils(new AliEMCALRecoUtils);
+  task->GetRecoUtils()->SetNonLinearityFunction(0);
 
   task->SetAttachClusters(kTRUE);
   task->SetCaloClustersName(clusName);
   task->SetCaloCellsName(cellsName);
+
 #ifdef __CLING__
   task->SetInputCellType(static_cast<AliAnalysisTaskEMCALClusterizeFast::InputCellType>(inputCellType));
 #else
@@ -47,13 +46,10 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   Printf("inputCellType: %d",inputCellType);
 
   task->SetClusterize(kTRUE);
-
   task->SetClusterBadChannelCheck(kTRUE);
   task->SetRejectExoticCells(remExoticCell);
   task->SetRecalDistToBadChannels(calcDistToBC);
-
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    
   return task;
 }
