@@ -183,7 +183,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Double_t fTwoPionITSSigma[2][9]; //! Two track ITS sigma for PID
 		UInt_t fTwoPionMask[2]; //! Two track mask
 		Bool_t fTwoPionDetMask[2][9]; //! Two track detector mask
-		Double_t fTwoPionBayesProb[2][AliPID::kSPECIES]; //!Bayesian probabilities
+		Double_t fTwoPionBayesProb[2][5]; //!Bayesian probabilities
 		Double_t fTwoPionTrack_ITSSA[2][9]; //! Two track(ITSSA) Momentum, Energy and Sign
 
 		Double_t fFourPionTrack[4][9]; //! Four track Momentum, Energy and Sign
@@ -192,7 +192,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Double_t fFourPionITSSigma[4][9]; //! Four track Momentum, Energy and Sign
 		UInt_t fFourPionMask[4]; //! Two track mask
 		Bool_t fFourPionDetMask[4][9]; //! Two track detector mask
-		Double_t fFourPionBayesProb[4][AliPID::kSPECIES]; //!Bayesian probabilities
+		Double_t fFourPionBayesProb[4][5]; //!Bayesian probabilities
 		Double_t fFourPionTrack_ITSSA[4][9];//!
 
 		Double_t fMCGenProtonTrack[2][5]; //! Info of generated Proton 1 after scattering
