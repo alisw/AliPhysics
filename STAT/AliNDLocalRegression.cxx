@@ -69,6 +69,7 @@
 #include "TMatrixD.h"
 #include "TRobustEstimator.h"
 #include "AliMathBase.h"
+#include "TStopwatch.h"
 
 ClassImp(AliNDLocalRegression)
 
@@ -142,10 +143,18 @@ AliNDLocalRegression::~AliNDLocalRegression(){
   delete fKernelWidthFormula;    //: separated  - kernel width for the regression
   delete fPolDimensionFormula;   //: separated  - polynom for the regression
   //
+  if (fLocalFitParam) fLocalFitParam->Delete();
+  if (fLocalFitQuality) fLocalFitQuality->Delete();
+  if (fLocalFitCovar) fLocalFitCovar->Delete();
   delete fLocalFitParam;         // local fit parameters 
   delete fLocalFitQuality;       // local fit quality
   delete fLocalFitCovar;         // local fit covariance matrix
-
+  //
+  delete fLocalRobustStat;
+  //
+  delete[] fBinIndex;
+  delete[] fBinCenter;
+  delete[] fBinDelta;
 }
 
 void AliNDLocalRegression::SetHistogram(THn* histo ){
@@ -158,8 +167,12 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   }
   fHistPoints=histo;
   fLocalFitParam = new TObjArray(fHistPoints->GetNbins());
+  fLocalFitParam->SetOwner(kTRUE);
   fLocalFitQuality = new TObjArray(fHistPoints->GetNbins());
+  fLocalFitQuality->SetOwner(kTRUE);
   fLocalFitCovar = new TObjArray(fHistPoints->GetNbins());
+  fLocalFitCovar->SetOwner(kTRUE);
+  
   //
   // Check histogram
   //
@@ -187,6 +200,13 @@ void  AliNDLocalRegression::SetCuts(Double_t nSigma, Double_t robustFraction, In
 
 }
 
+Bool_t    AliNDLocalRegression::CleanCovariance(){
+  //
+  //  Clean covariance matrix if not needed anymore
+  //
+  if (fLocalFitCovar) delete fLocalFitCovar;
+  fLocalFitCovar=0;
+};
 
 
 Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel, const char * dimensionFormula, Double_t weightCut, Int_t entries, Bool_t useBinNorm){
@@ -285,15 +305,23 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   }
   for (Int_t ipar=0; ipar<fNParameters; ipar++) pointArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
   // 2.c) kernel array 
-  TObjArray kernelArray(fNParameters);
+  TObjArray kernelArrayI2(fNParameters);
   Int_t entriesKernel = tree->Draw(formulaKernel,selection,"goffpara",entries);
-  for (Int_t ipar=0; ipar<fNParameters; ipar++) kernelArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
+  for (Int_t ipar=0; ipar<fNParameters; ipar++) {
+    TVectorD* vdI2 = new TVectorD(entriesVar,tree->GetVal(ipar));
+    for (int k=entriesVar;k--;) { // to speed up, precalculate inverse squared
+      double kv = (*vdI2)[k];
+      if (TMath::Abs(kv)<1e-12) AliFatalClassF("Kernel width=%f for entry %d of par:%d",kv,k,ipar);
+      (*vdI2)[k] = 1./(kv*kv);
+    }
+    kernelArrayI2.AddAt(vdI2,ipar);
+  }
   //
   Double_t *pvecVar[kMaxDim]={0};
-  Double_t *pvecKernel[kMaxDim]={0};
+  Double_t *pvecKernelI2[kMaxDim]={0};
   for (Int_t idim=0; idim<pointArray.GetEntries(); idim++){
     pvecVar[idim]=((TVectorD*)(pointArray.At(idim)))->GetMatrixArray();
-    pvecKernel[idim]=((TVectorD*)(kernelArray.At(idim)))->GetMatrixArray();
+    pvecKernelI2[idim]=((TVectorD*)(kernelArrayI2.At(idim)))->GetMatrixArray();
     binRange[idim]=fHistPoints->GetAxis(idim)->GetNbins();
   }
   //
@@ -309,19 +337,21 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   // 3.) 
   //
   if (fCutType>0 && fRobustRMSLTSCut>0){
-    MakeRobustStatistic(values, errors,  pointArray, kernelArray, weightCut, fRobustFractionLTS);
+    MakeRobustStatistic(values, errors,  pointArray, kernelArrayI2, weightCut, fRobustFractionLTS);
   }
   //
+
   // 4.) Make local fits
   //
+
   Double_t *binHypFit  = new Double_t[2*fHistPoints->GetNdimensions()];
   //
   TLinearFitter fitter(1+2*fNParameters,TString::Format("hyp%d",2*fNParameters).Data());
-  for (Int_t ibin=0; ibin<nbins; ibin++){
+  for (Int_t ibin=0; ibin<nbins; ibin++) {
     fHistPoints->GetBinContent(ibin,fBinIndex); 
     Bool_t isUnderFlowBin=kFALSE;
     Bool_t isOverFlowBin=kFALSE;
-    for (Int_t idim=0; idim<fNParameters; idim++){      
+    for (Int_t idim=0; idim<fNParameters; idim++) {      
       if (fBinIndex[idim]==0) isUnderFlowBin=kTRUE;
       if (fBinIndex[idim]>binRange[idim]) isOverFlowBin=kTRUE;      
       fBinCenter[idim]=fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
@@ -347,8 +377,8 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	//TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
 	//TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
 	fBinDelta[idim]=pvecVar[idim][ipoint]-fBinCenter[idim];       	
-	sumChi2+= (fBinDelta[idim]*fBinDelta[idim])/(pvecKernel[idim][ipoint]*pvecKernel[idim][ipoint]);
-	if (sumChi2>nchi2Cut) continue;
+	sumChi2+= (fBinDelta[idim]*fBinDelta[idim]) * pvecKernelI2[idim][ipoint];
+	if (sumChi2>nchi2Cut) break;//continue;
 	if (fUseBinNorm){
 	  binHypFit[2*idim]=fBinDelta[idim]/fBinWidth[idim];
 	  binHypFit[2*idim+1]=binHypFit[2*idim]*binHypFit[2*idim];
@@ -358,20 +388,22 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	}
       }      
       if (sumChi2>nchi2Cut) continue;
-      Double_t weight=TMath::Exp(-sumChi2*0.5);
-      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]/weight);
+      //      Double_t weight=TMath::Exp(-sumChi2*0.5);
+      //      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]/weight);
+      Double_t weightI=TMath::Exp(sumChi2*0.5);
+      fitter.AddPoint(binHypFit,pvalues[ipoint], perrors[ipoint]*weightI);
     }
     TVectorD * fitParam=new TVectorD(fNParameters*2+1);
     TVectorD * fitQuality=new TVectorD(3);
     TMatrixD * fitCovar=new TMatrixD(fNParameters*2+1,fNParameters*2+1);
     Double_t normRMS=0;
     Int_t nBinPoints=fitter.GetNpoints();
-    Bool_t fitOK=0;
+    Bool_t fitOK=kFALSE;
     (*fitQuality)[0]=0;
     (*fitQuality)[1]=0;
     (*fitQuality)[2]=0;
 
-    if (fitter.GetNpoints()>fNParameters*2+2){      
+    if (fitter.GetNpoints()>fNParameters*2+2){
       fitOK = (fitter.Eval()==0);
       if (fitOK){
 	normRMS=fitter.GetChisquare()/(fitter.GetNpoints()-fitter.GetNumberFreeParameters());
@@ -407,22 +439,28 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	"fitOK="<<fitOK<<
 	"\n";
     }
+    if (!fitOK) { // avoid memory leak for failed fits
+      delete fitParam;
+      delete fitQuality;
+      delete fitCovar;
+    }
   }
+
   return kTRUE;
 }
 
 
-Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction){
+Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArrayI2, Double_t weightCut, Double_t robustFraction){
   //
   // Calculate robust statistic information
   // use raw array to make faster calcualtion
   const Int_t kMaxDim=100;
   Double_t *pvalues=values.GetMatrixArray();
   Double_t *pvecVar[kMaxDim]={0};
-  Double_t *pvecKernel[kMaxDim]={0};
+  Double_t *pvecKernelI2[kMaxDim]={0};
   for (Int_t idim=0; idim<pointArray.GetEntries(); idim++){
     pvecVar[idim]=((TVectorD*)(pointArray.At(idim)))->GetMatrixArray();
-    pvecKernel[idim]=((TVectorD*)(kernelArray.At(idim)))->GetMatrixArray();
+    pvecKernelI2[idim]=((TVectorD*)(kernelArrayI2.At(idim)))->GetMatrixArray();
     
   }
 
@@ -451,8 +489,8 @@ Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &err
 	//TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
 	//TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
 	fBinDelta[idim]=pvecVar[idim][ipoint]-fBinCenter[idim];       	
-	sumChi2+= (fBinDelta[idim]*fBinDelta[idim])/(pvecKernel[idim][ipoint]*pvecKernel[idim][ipoint]);
-	if (sumChi2>nchi2Cut) continue;
+	sumChi2+= (fBinDelta[idim]*fBinDelta[idim]) * pvecKernelI2[idim][ipoint];
+	if (sumChi2>nchi2Cut) break; //continue;
       }      
       if (sumChi2>nchi2Cut) continue;
       valueLocal[indexLocal]=pvalues[ipoint];
@@ -476,6 +514,11 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   //
   // 
   const Double_t almost0=0.00000001;
+  // backward compatibility
+  if(!fBinWidth){
+    fBinWidth   = new Double_t[fHistPoints->GetNdimensions()];
+  }
+
   for (Int_t iDim=0; iDim<fNParameters; iDim++){
     if (point[iDim]<= fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin()+almost0*fHistPoints->GetAxis(iDim)->GetBinWidth(0);
     if (point[iDim]>= fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax()-almost0*fHistPoints->GetAxis(iDim)->GetBinWidth(0);
@@ -500,12 +543,12 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
   Double_t value=vecParam[0];
   if (!rangeOK) return value;
-  if (fUseBinNorm){
+  if (fUseBinNorm) {
     for (Int_t ipar=0; ipar<fNParameters; ipar++){
       Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
       value+=(vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
     }
-  }else{
+  } else {
     for (Int_t ipar=0; ipar<fNParameters; ipar++){
       Double_t delta=(point[ipar]-fBinCenter[ipar]);
       value+=(vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
@@ -518,6 +561,10 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
   //
   //
   // 
+  if (fLocalFitCovar==NULL) {
+    ::Error("AliNDLocalRegression::EvalError", "Covariance matrix not available");
+    return 0 ;
+  }
   for (Int_t iDim=0; iDim<fNParameters; iDim++){
     if (point[iDim]< fHistPoints->GetAxis(iDim)->GetXmin())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmin();
     if (point[iDim]> fHistPoints->GetAxis(iDim)->GetXmax())   point[iDim]=fHistPoints->GetAxis(iDim)->GetXmax();
@@ -533,6 +580,83 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
   //TVectorD &vecQuality = *((TVectorD*)fLocalFitQuality->At(ibin));
   Double_t value=TMath::Sqrt(vecCovar(0,0));  // fill covariance to be used 
   return value;
+}
+
+Bool_t AliNDLocalRegression::Derivative(Double_t *point, Double_t *d)
+{
+  // fill d by partial derivatives
+  //
+  const Double_t almost0=0.00000001;
+  for (Int_t iDim=0; iDim<fNParameters; iDim++){
+    const TAxis* ax = fHistPoints->GetAxis(iDim);
+    if      (point[iDim]<=ax->GetXmin()) point[iDim] = ax->GetXmin()+almost0*ax->GetBinWidth(0);
+    else if (point[iDim]>=ax->GetXmax()) point[iDim] = ax->GetXmax()-almost0*ax->GetBinWidth(0);
+  }
+
+  Int_t ibin = fHistPoints->GetBin(point);
+  if (ibin>=fLocalFitParam->GetEntriesFast() ||
+      !fLocalFitParam->UncheckedAt(ibin) ) return kFALSE;
+  //
+  fHistPoints->GetBinContent(ibin,fBinIndex); 
+  for (Int_t idim=0; idim<fNParameters; idim++){
+    const TAxis* ax = fHistPoints->GetAxis(idim);
+    fBinCenter[idim] = ax->GetBinCenter(fBinIndex[idim]);
+    fBinWidth[idim] = ax->GetBinWidth(fBinIndex[idim]);
+  } 
+  TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
+
+  if (fUseBinNorm){
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+    }
+  }else{
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar]);
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+    }
+  }
+  return kTRUE;
+}
+
+Bool_t AliNDLocalRegression::EvalAndDerivative(Double_t *point, Double_t &val, Double_t *d)
+{
+  // fill d by partial derivatives and calculate value in one go
+  //
+  const Double_t almost0=0.00000001;
+  for (Int_t iDim=0; iDim<fNParameters; iDim++){
+    const TAxis* ax = fHistPoints->GetAxis(iDim);
+    if      (point[iDim]<=ax->GetXmin()) point[iDim] = ax->GetXmin()+almost0*ax->GetBinWidth(0);
+    else if (point[iDim]>=ax->GetXmax()) point[iDim] = ax->GetXmax()-almost0*ax->GetBinWidth(0);
+  }
+  val = 0;
+  Int_t ibin = fHistPoints->GetBin(point);
+  if (ibin>=fLocalFitParam->GetEntriesFast() ||
+      !fLocalFitParam->UncheckedAt(ibin) ) return kFALSE;
+  //
+  fHistPoints->GetBinContent(ibin,fBinIndex); 
+  for (Int_t idim=0; idim<fNParameters; idim++){
+    const TAxis* ax = fHistPoints->GetAxis(idim);
+    fBinCenter[idim] = ax->GetBinCenter(fBinIndex[idim]);
+    fBinWidth[idim] = ax->GetBinWidth(fBinIndex[idim]);
+  } 
+  TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
+  
+  val = vecParam[0];
+  if (fUseBinNorm){
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar])/fBinWidth[ipar];
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+      val += (vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
+    }
+  } else {
+    for (Int_t ipar=0; ipar<fNParameters; ipar++){
+      Double_t delta=(point[ipar]-fBinCenter[ipar]);
+      d[ipar] = vecParam[1+2*ipar] + 2.0*vecParam[1+2*ipar+1]*delta;
+      val += (vecParam[1+2*ipar]+vecParam[1+2*ipar+1]*delta)*delta;
+    }
+  }
+  return kTRUE;
 }
 
 
@@ -688,6 +812,10 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
    */
   const Double_t kScale=0.5;
   const Double_t singularity_tolerance = 1e-200;
+  if (fLocalFitCovar==NULL) {
+    ::Error("AliNDLocalRegression::EvalError", "Covariance matrix not available");
+    return 0 ;
+  }
   //
   // 1.)  Make backup of original parameters
   //
@@ -773,7 +901,9 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
     //
     //  neiborhood loop
     Int_t constCounter=0;
+    Int_t constCounterDim[100]={0};
     for (Int_t iDim=0; iDim<nDims; iDim++){         // loop in n dim
+      constCounterDim[iDim]=0;  // number of constraints per dimension
       for (Int_t iSide=-1; iSide<=1; iSide+=2){     // left right loop
 	for (Int_t jDim=0; jDim<nDims; jDim++) binIndexSide[jDim]= binIndex[jDim];
 	vecZkSide.Zero();
@@ -786,7 +916,10 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
 	Int_t binSide=his->GetBin(binIndexSide);
 	if (binSide>=nBins ) binIndexSide[iDim]=binIndex[iDim];
 	if ((fLocalFitParam)->UncheckedAt(his->GetBin(binIndexSide))==NULL) binIndexSide[iDim]=binIndex[iDim];
-	if (isConst)  constCounter++;
+	if (isConst)  {
+	  constCounter++;
+	  constCounterDim[iDim]++;
+	}
 	Double_t localCenter=his->GetAxis(iDim)->GetBinCenter(binIndex[iDim]);
 	Double_t sideCenter= his->GetAxis(iDim)->GetBinCenter(binIndexSide[iDim]);
 	Double_t position=   (iSide<0) ? his->GetAxis(iDim)->GetBinLowEdge(binIndex[iDim]) :  his->GetAxis(iDim)->GetBinUpEdge(binIndex[iDim]);
@@ -799,7 +932,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
 	  matCovarSide=TMatrixD( matWeight,TMatrixD::kMult,*((TMatrixD*)(fLocalFitCovar->UncheckedAt(his->GetBin(binIndexSide)))));
 	  matCovarSide*=matWeight;
 	}
-
+	if (!isConst) matCovarSide*=1000;
 	//
 	Double_t deltaLocal=(position-localCenter);
 	Double_t deltaSide=(position-sideCenter);
@@ -835,6 +968,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
 	  }
 	  vecZkSide(iconst,0)=sideMeasurement;
 	  vecZk(iMeas,0)=sideMeasurement;
+	  if (!isConst) vecZk(iMeas,0)=localMeasurement;
 	  vecZkBin(iMeas,0)=localMeasurement;
 	}
 	TMatrixD measRSide0(matrixTransformSide,TMatrixD::kMult,matCovarSide);   //     (iconst,iconst)  = (iconst,nParam)*(nParams,nParams)*(nParams,iconst
@@ -876,7 +1010,9 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
     if (useCommon) vecYk*=0.5;                 // in case we are using middle point use only half of delta
     matSk = (matHk*(covXk*matHkT))+measR;      // Innovation (or residual) covariance
     Double_t determinant=0;
-    if (constCounter>=2*nDims){
+    Int_t constCounter2=0;
+    for (Int_t kDim=0; kDim<nDims; kDim++) if (constCounterDim[kDim]>0) constCounter2++;
+    if (constCounter2==nDims){
       determinant= matSk.Determinant();
     }
     if (TMath::Abs(determinant)<singularity_tolerance ) {
@@ -904,6 +1040,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
 	 "vecPos.="<<&vecPos<<         // bin position
 	 "determinant="<<determinant<<  // determinant
 	 "constCounter="<<constCounter<<
+	 "constCounter2="<<constCounter<< 
 	 //
 	 "vecXk0.="<<vecXk0<<          // original parameter vector
 	 "vecXk.="<<&vecXk<<           // parameter vector at bin after update
@@ -939,9 +1076,10 @@ void AliNDLocalRegression::DumpToTree(Int_t nDiv,  TTreeStream & stream){
   const Int_t kMaxDim=100;
   Int_t nBins=fHistPoints->GetNbins();
   
+  TVectorD binLowEdge(fNParameters);
   TVectorD binLocal(fNParameters);
   TVectorF binIndexF(fNParameters);
-  
+  Double_t *pbinLowEdge= binLowEdge.GetMatrixArray();
   //
   for (Int_t iBin=0; iBin<nBins; iBin++){   // loop over bins
     if (iBin%fgVerboseLevel==0) printf("%d\n",iBin);
@@ -949,21 +1087,23 @@ void AliNDLocalRegression::DumpToTree(Int_t nDiv,  TTreeStream & stream){
     for (Int_t iDim=0; iDim<fNParameters; iDim++) { // fill common info for bin of interest
       binIndexF[iDim]=fBinIndex[iDim];
       fBinCenter[iDim]= fHistPoints->GetAxis(iDim)->GetBinCenter(fBinIndex[iDim]);
+      binLowEdge[iDim]= fHistPoints->GetAxis(iDim)->GetBinLowEdge(fBinIndex[iDim]);
       fBinDelta[iDim] = fHistPoints->GetAxis(iDim)->GetBinWidth(fBinIndex[iDim]);
     }
     
     for (Int_t iDim=0; iDim<fNParameters; iDim++){
       for (Int_t jDim=0; jDim<fNParameters; jDim++) binLocal[jDim]=fBinCenter[jDim];
       for (Int_t iDiv=0; iDiv<nDiv; iDiv++){
-	binLocal[iDim]=fBinCenter[iDim]+(fBinDelta[iDim]*iDiv)/nDiv;
-	Double_t value=Eval(binLocal.GetMatrixArray());
-	binLocal[iDim]=fBinCenter[iDim]+(fBinDelta[iDim]*(iDiv-1))/nDiv;
+	binLocal[iDim]=binLowEdge[iDim]+(fBinDelta[iDim]*(iDiv-1.))/Double_t(nDiv);
 	Double_t value2= Eval(binLocal.GetMatrixArray());
+	binLocal[iDim]=binLowEdge[iDim]+(fBinDelta[iDim]*Double_t(iDiv))/Double_t(nDiv);
+	Double_t value=Eval(binLocal.GetMatrixArray());
 	Double_t derivative=nDiv*(value-value2)/fBinDelta[iDim];
 	stream<<
 	  "pos.="<<&binLocal<<          // position vector
 	  "iBin="<<iBin<<               // bin index
-	  "iDim="<<iDim<<               // scan bin index	 
+	  "iDim="<<iDim<<               // scan bin index
+	  "iDiv="<<iDiv<<               // division index
 	  "binIndexF.="<<&binIndexF<<   // bin index
 	  "value="<<value<<             // value at 
 	  "derivative="<<derivative<<   // numerical derivative

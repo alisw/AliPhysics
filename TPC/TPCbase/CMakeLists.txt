@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE TPCbase)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
@@ -58,6 +59,8 @@ set(SRCS
     AliTPCCalibViewerGUItime.cxx
     AliTPCCalPad.cxx
     AliTPCCalROC.cxx
+    AliTPCChebCorr.cxx
+    AliTPCChebDist.cxx
     AliTPCclusterInfo.cxx
     AliTPCclusterMI.cxx
     AliTPCClusterParam.cxx

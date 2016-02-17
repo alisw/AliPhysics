@@ -1,7 +1,7 @@
 #!/bin/bash -l
 # The settings come from ~/.bash_profile
 
-rm -rf */*.root */*.log */*.dat
+rm -rf */*.root */*.log */*.dat */GRP */*.ps */AliHLT*
 cd ./gen
 aliroot -b -q rungen.C\(5\) 2>&1 | tee gen.log
 chmod a-w *.root

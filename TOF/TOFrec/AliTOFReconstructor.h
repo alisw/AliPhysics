@@ -22,6 +22,7 @@ class TTree;
 class AliESDEvent;
 class AliRawReader;
 class AliTOFcalib;
+class AliESDpid;
 
 //class AliTOFT0maker;
 
@@ -47,6 +48,7 @@ public:
   static Double_t  GetExtraTolerance()         {return fgExtraTolerance;}
 
   virtual void FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *esdPID);
+  virtual void GetPidSettings(AliESDpid *esdPID);
 
 private:
   AliTOFReconstructor(const AliTOFReconstructor &); //Not implemented
@@ -61,6 +63,8 @@ private:
   AliTOFClusterFinder *fClusterFinder;
   AliTOFClusterFinderV1 *fClusterFinderV1;
   static Double_t fgExtraTolerance; // extra tolerance on DCut for miscalibrated TPC reco
+
+  static Int_t fgCTPtriggerLatency;
 
   ClassDef(AliTOFReconstructor, 5)   // class for the TOF reconstruction
 };

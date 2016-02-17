@@ -366,21 +366,16 @@ void AliPHOSCpvRecPoint::Print(const Option_t *) const
   
   TString message ; 
   message  =  "AliPHOSCpvRecPoint: " ;
-  message +=  "Digits #   " ;
   AliInfo(message.Data()) ; 
   
   Int_t iDigit;
 
   for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    printf(" %d \n", fDigitsList[iDigit]) ; 
+    printf("\tDigit %d: id=%d, A=%f\n", iDigit, fDigitsList[iDigit], fEnergyList[iDigit]) ; 
 
-  printf("Energies: \n")  ;
-  for(iDigit=0; iDigit<fMulDigit; iDigit++) 
-    printf(" %f ", fEnergyList[iDigit]) ; 
-  
-  message  = "       Multiplicity    = %d\n" ;
-  message += "       Cluster Energy  = %f\n" ;
-  message += "       Stored at position %d\n" ; 
+  message  = "\tPad multiplicity    = %d\n" ;
+  message += "\tCluster amplitude  = %f\n" ;
+  message += "\tStored at position %d\n" ; 
  
   printf(message.Data(), fMulDigit, fAmp, GetIndexInList() ) ; 
 

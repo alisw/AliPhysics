@@ -336,23 +336,25 @@ void AliMUONPedestal::Finalize()
     {
       if(nADCmax>0)
 	{ frac1 = float(nADCmax)/float(fNChannel); 
-	  detail=Form("%s : Warning: Nb of Channels with bad Pedestal (Ped=4095) = %d over %d (%6.4f)",fPrefixLDC.Data(),nADCmax,fNChannel,frac1);
+	  detail=Form("%s : Warning: Nb of Channels with bad Pedestal (Ped=4095) = %d over %d (%6.2f%)",fPrefixLDC.Data(),nADCmax,fNChannel,frac1*100.);
 	  printf("%s\n",detail);
 	  (*fFilcout) <<  detail << endl;}
 
       if(nADC4090>0)
 	{ frac2 = 1.*nADC4090/fNChannel; 
-	  detail=Form("%s : Warning: Nb of Channels with PedSigma<0.5 (Ped=4090) = %d over %d (%6.4f)",fPrefixLDC.Data(),nADC4090,fNChannel,frac2);
+	  detail=Form("%s : Warning: Nb of Channels with PedSigma<0.5 (Ped=4090) = %d over %d (%6.2f%)",fPrefixLDC.Data(),nADC4090,fNChannel,frac2*100.);
 	  printf("%s\n",detail);
 	  (*fFilcout) <<  detail << endl; }
 
       if (frac1+frac2 > frac_badped) { status=-1 ;
-	detail=Form("\n%s !!! ERROR : fraction of Channels with Pedestal>=4090 = %6.4f (> %5.3f)  (status= %d) \n",fPrefixLDC.Data(),frac1+frac2,frac_badped,status);
-	(*fFilcout) <<  detail << endl; printf("%s",detail) ;}
+	detail=Form("\n%s !!! ERROR : fraction of Channels with Pedestal>=4090 = %6.2f% (> %5.2f%)  (status= %d) \n",fPrefixLDC.Data(),(frac1+frac2)*100.,frac_badped*100.,status);
+	//2015-02-08	(*fFilcout) <<  detail << endl; printf("%s",detail) ;}
+	(*fFilcout) <<  detail << endl; fprintf(stderr,"%s",detail) ;}
     }
   else { status= -1;
     detail=Form("\n%s !!! ERROR : Nb good channel = 0 (all pedestals are forced to 4095) !!! (status= %d)\n",fPrefixLDC.Data(),status); 
-    cout << detail; (*fFilcout) << detail ;}
+    //2015-02-08    cout << detail; 
+    (*fFilcout) << detail ; fprintf(stderr,"%s",detail) ; } 
    
   SetStatusDA(status);
 }

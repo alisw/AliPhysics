@@ -100,7 +100,7 @@ Bool_t AliTPCCosmicUtils::GetESD(AliESDEvent *& esdevent, AliESDfriend *& esdfri
 
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(esdH){  
-    esdevent = esdH->GetEvent();
+    esdevent = (AliESDEvent*)esdH->GetEvent();
   }
 
   if(!esdevent){

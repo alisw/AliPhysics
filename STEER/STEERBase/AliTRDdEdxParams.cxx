@@ -16,6 +16,11 @@
 //  Xianguo Lu <lu@physi.uni-heidelberg.de>
 //
 
+//
+// modified 10/08/15 by Lucas Altenkaemper <altenkaemper@physi.uni-heidelberg.de>
+//
+
+
 #include "AliLog.h"
 #include "AliTRDdEdxParams.h"
 
@@ -28,56 +33,65 @@ AliTRDdEdxParams::AliTRDdEdxParams(const TString name, const TString title): TNa
   //
 }
 
-Int_t AliTRDdEdxParams::GetIter(const Int_t itype, const Int_t nch, const Int_t ncls) const
+Int_t AliTRDdEdxParams::GetIter(const Int_t itype, const Int_t nch, const Int_t ncls, const Bool_t etaCorrection) const
 {
   //
   //return array iterator
   //
 
-  Int_t itNch = -999, itNcls = -999;
+    Int_t itNch = -999, itNcls = -999, itEtaCorr = -999;
 
-  //hard coded cuts
-  if(nch==6){
-    itNch = 0;
-  }
-  else{
-    itNch = 1;
-  }
+    //hard coded cuts       // <4, 4, 5 or 6 layer
+    if (nch == 6) {
+        itNch = 0;
+    } else if (nch == 5) {
+        itNch = 1;
+    } else if (nch == 4) {
+        itNch = 2;
+    } else if (nch < 4){
+        itNch = 3;
+    }
 
-  if(nch!=0 && ncls/nch>=18){
-    itNcls = 0;
-  }
-  else{
-    itNcls = 1;
-  }
+    if (nch != 0 && ncls/nch >= 17) {       // QA cut minimum ncls
+        itNcls = 0;
+    }
+    else {
+        itNcls = 1;
+    }
+    
+    if (etaCorrection) {                // eta correction
+        itEtaCorr = 0;
+    } else {
+        itEtaCorr = 1;
+    }
+        
+    const Int_t finaliter = itEtaCorr*80 + itNcls*40 + itNch*10 + itype;
+    
+    if (finaliter < 0 || finaliter >= MAXSIZE) {
+        AliError(Form("out of range itype %d, nch %d, ncls %d\n", itype, nch, ncls));
+    }
 
-  const Int_t finaliter = itype*2*2 +  itNch*2 + itNcls;
-
-  if(finaliter<0 || finaliter>= MAXSIZE){
-    AliError(Form("out of range itype %d nch %d ncls %d\n", itype, nch, ncls));
-  }
-
-  return finaliter;
+    return finaliter;
 }
 
-const TVectorF& AliTRDdEdxParams::GetParameter(const TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls)const
+const TVectorF& AliTRDdEdxParams::GetParameter(const TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Bool_t etaCorrection)const
 {
   //
   //return parameter for particle itype from par[]
   //
 
-  const Int_t iter = GetIter(itype, nch, ncls);
+    const Int_t iter = GetIter(itype, nch, ncls, etaCorrection);
 
-  return par[iter];
+    return par[iter];
 }
 
-void AliTRDdEdxParams::SetParameter(TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[])
+void AliTRDdEdxParams::SetParameter(TVectorF par[], const Int_t itype, const Int_t nch, const Int_t ncls, const Int_t npar, const Float_t vals[], const Bool_t etaCorrection)
 {
   //
   //set parameter, vals of dimension npar, for particle itype
   //
 
-  const Int_t iter = GetIter(itype, nch, ncls);
+    const Int_t iter = GetIter(itype, nch, ncls, etaCorrection);
 
   TVectorF p2(npar, vals);
 
@@ -93,17 +107,17 @@ void AliTRDdEdxParams::Print(Option_t* option) const
 
   TObject::Print(option);
 
-  printf("\n======================= Mean ========================\n");
-  for(Int_t ii=0; ii<MAXSIZE; ii++){
-    printf("%d: Nrows() %d\n",ii, fMeanPar[ii].GetNrows());
-    if(fMeanPar[ii].GetNrows()) fMeanPar[ii].Print();
-  }
+    printf("\n======================= Mean ========================\n");
+    for(Int_t ii = 0; ii < MAXSIZE; ii++){
+        printf("%d: Nrows() %d\n",ii, fMeanPar[ii].GetNrows());
+        if(fMeanPar[ii].GetNrows()) fMeanPar[ii].Print();
+    }
 
-  printf("\n======================= Sigma ========================\n");
-
-  for(Int_t ii=0; ii<MAXSIZE; ii++){
-    printf("%d: Nrows() %d\n",ii, fSigmaPar[ii].GetNrows());
-    if(fSigmaPar[ii].GetNrows()) fSigmaPar[ii].Print();
-  }
-  printf("AliTRDdEdxParams::Print done.\n\n");
+    printf("\n======================= Sigma ========================\n");
+    for(Int_t ii = 0; ii < MAXSIZE; ii++){
+        printf("%d: Nrows() %d\n",ii, fSigmaPar[ii].GetNrows());
+        if(fSigmaPar[ii].GetNrows()) fSigmaPar[ii].Print();
+    }
+    
+    printf("AliTRDdEdxParams::Print done.\n\n");
 }

@@ -92,7 +92,8 @@ private:
   Bool_t  fDefaultInit;               //! Says if the task was created by defaut ctor (only parameters are initialized)
   Bool_t  fWrite ;                   // Write Tracks to TreeT  
  
-  Int_t fNTrackSegments ; // number of track segments found 
+  Int_t fNTrackSegments ; // number of (EMC) track segments found 
+  Int_t fNCpvTrackSegments  ;  //Number of CPV track segments
 
   Float_t fRcpv ;        // Maximum distance between a EMC RecPoint and a CPV RecPoint   
   Float_t fRtpc ;        // Maximum distance between a EMC RecPoint and extrapolation of a TPC track   

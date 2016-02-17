@@ -239,7 +239,7 @@ void TestAOD()
       // Print basic cluster information
       cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
       << cphi*TMath::RadToDeg() << "; Eta: " << ceta 
-      << "; NCells: " << nCells   << "; NLM: " << nlm
+      << "; NCells: " << nCells  << "; NLM: " << nlm
       << "; #Labels: " << nLabels << " Index: " 
       << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
       
@@ -273,14 +273,16 @@ void TestAOD()
           cout<<"         MC More  contributing primary: "<<particle->GetName()<<"; with kinematics: "<<endl;
           cout<<" \t     Energy: "<<particle->E()<<"; Phi: "<<particle->Phi()*TMath::RadToDeg()<<"; Eta: "<<particle->Eta()<<endl;   
           cout<<" \t     dE: "<<energy-particle->E()<<"; dPhi: "<<(cphi-particle->Phi())*TMath::RadToDeg()<<"; dEta: "<<ceta-particle->Eta()<<endl;   
-          
+          cout<<" \t     deposited energy fraction = "<<clus->GetClusterMCEdepFraction(0)<<endl;
+
           for(Int_t i = 1; i < nLabels; i++)
           {
             //particle = stack->Particle((((AliAODCaloCluster*)clus)->GetLabelsArray())->At(i));
             particle = (AliAODMCParticle*)arr->At((clus->GetLabels())[i]);
             //or Int_t *labels = clus->GetLabels();
             //particle = stack->Particle(labels[i]);
-            cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->E()<<endl;
+            cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<
+            "; deposited energy fraction = "<<clus->GetClusterMCEdepFraction(i)<<endl;
           }
         }
         else if( labelIndex >= arr->GetEntriesFast()) 
@@ -350,7 +352,7 @@ void TestAOD()
         else printf("!!! NO TRACK !!!\n");
       }// matching
       
-      //Get PID weights and print them
+      // Get PID weights and print them
       if(kPrintClusterPID)
       {
         const Double_t *pid = clus->GetPID();
@@ -370,12 +372,22 @@ void TestAOD()
         
         for(Int_t i = 0; i < nCells ; i++)
         {
-          Int_t absId       =   index[i]; // or clus->GetCellNumber(i) ;
-          Double_t ampFract =  fraction[i];
-          Float_t amp       = cells.GetCellAmplitude(absId) ;
+          Int_t    absId    = index[i]; // or clus->GetCellNumber(i) ;
+          Double_t ampFract = fraction[i];
+          Float_t  amp      = cells.GetCellAmplitude(absId) ;
           Double_t time     = cells.GetCellTime(absId);
           
           cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time*1e9<<endl;
+          
+          if(kPrintKine)
+          {
+            Float_t eDepFrac[4];
+            clus->GetCellMCEdepFractionArray(i,eDepFrac);
+            Int_t map = 0;
+            if(clus->GetCellsMCEdepFractionMap()) map = clus->GetCellsMCEdepFractionMap()[i];
+            printf("\t \t cell MC label index %d, cell MC deposited energy map %d: p1 %2.2f, p2 %2.2f, p3 %2.2f p4 %2.2f\n",
+                   cells.GetCellMCLabel(absId),map,eDepFrac[0],eDepFrac[1],eDepFrac[2],eDepFrac[3]);
+          }
           
           // Geometry methods  
           Int_t iSupMod =  0 ;
@@ -400,14 +412,11 @@ void TestAOD()
             
             cout<< "                SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
             <<"; Phi "<<iIphi<<"; Index: Cell Eta "<<ieta<<"; Cell Phi "<<iphi
-            //<<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()
+            <<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()
             <<endl;
             
-            if(i==0) sm = iSupMod;
-            else
-            {
-              if(sm!=iSupMod) printf("******CLUSTER SHARED BY 2 SuperModules!!!!\n");
-            }	
+            if      ( i  == 0      ) sm = iSupMod ;
+            else if ( sm != iSupMod) printf("                ******CLUSTER SHARED BY 2 SuperModules!!!!\n");
           }// geometry on
         }// cluster cell loop
       }// print cell clusters

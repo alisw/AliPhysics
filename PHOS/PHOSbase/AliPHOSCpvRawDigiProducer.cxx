@@ -194,8 +194,8 @@ void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
 
       relId[0] = AliPHOSCpvParam::DDL2Mod(iddl) ; // counts from 1 to 5
       relId[1] = -1;      // -1=CPV
-      relId[2] = ix + 1; // counts from 1 to 128
-      relId[3] = iy + 1; // counts from 1 to 60
+      relId[3] = ix + 1; // counts from 1 to 128
+      relId[2] = iy + 1; // counts from 1 to 60
       fGeom->RelToAbsNumbering(relId, absId);
 
       AliDebug(2,Form("CPV digit: pad=%d, (x,z)=(%3d,%2d), DDL=%d, charge=%.0f",

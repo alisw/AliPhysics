@@ -17,7 +17,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                                                  //2 digits are used to distinguish sub-periods (if needed)
                                            Int_t  muonMCMode = 3  ,
                                            Bool_t useV0Filter=kTRUE,
-                                           Bool_t muonWithSPDTracklets=kTRUE)
+                                           Bool_t muonWithSPDTracklets=kTRUE,
+                                           Bool_t isMuonCaloPass=kFALSE)
 {
   // Creates a filter task and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -56,6 +57,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    if (disableCascades) esdfilter->DisableCascades();
    if  (disableKinks) esdfilter->DisableKinks();
   
+   if ( isMuonCaloPass )
+   {
+      esdfilter->SetMuonCaloPass(); // this will call a bunch of DisableXXX methods.
+   }
+  
    mgr->AddTask(esdfilter);
   
    // Muons
@@ -82,6 +88,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    }   
 
    enableTPCOnlyAODTracksLocalFlag = enableTPCOnlyAODTracks;
+  
+  if (!isMuonCaloPass)
+  {
    if((runFlag/100)==10){
      if((runFlag%100)==0) AddTrackCutsLHC10bcde(esdfilter);
      else AddTrackCutsLHC10h(esdfilter);
@@ -97,9 +106,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      std::cout << "ERROR: illegal runFlag value: " << runFlag  << std::endl;
      return NULL;     
    }
-
+  }
+  
    // Filter with cuts on V0s
-   if (useV0Filter) {
+   if (useV0Filter && !isMuonCaloPass) {
      AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
      esdV0Cuts->SetMinRadius(0.2);
      esdV0Cuts->SetMaxRadius(200);

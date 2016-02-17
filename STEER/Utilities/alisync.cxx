@@ -108,6 +108,25 @@ static void recursiveLocalMkdir(const char *dir) {
   mkdir(tmp, S_IRWXU);
 }
 
+// Helpers to trim whitespace from strings. trim from start.
+static inline std::string &ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+  return s;
+}
+
+// trim from end
+static inline std::string &rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+  return s;
+}
+
+// trim from both ends
+static inline std::string &trim(std::string &s) {
+  return ltrim(rtrim(s));
+}
+
+
+
 struct JobInfo {
   std::string filename;
   time_t startTime;
@@ -150,6 +169,32 @@ void normalizePath(std::string &str) {
     /* Make the replacement. */
     str.erase(index, 2);
   }
+}
+
+// Returns a string which contains the md5sum of the file.
+std::string calculateMD5(const std::string &filename) {
+  std::string command;
+  std::string md5sum = "";
+  std::string prefix("alien://");
+  std::string out;
+
+  if (filename.compare(0, prefix.size(), prefix) == 0) {
+    command = "gbbox md5sum ";
+    command += filename.substr(prefix.size());
+  }else {
+    command = "md5sum ";
+    command += filename;
+  }
+
+  command += " 2>/dev/null";
+  std::cout << command << std::endl;
+  out.resize(PATH_MAX*2+1);
+  FILE *of = popen(command.c_str(), "r");
+  size_t t = fread((void *)out.c_str(), PATH_MAX*2, 1, of);
+
+  if (!t)
+    return "";
+  return out.substr(0, std::min(out.find("\t", 0), out.find(" ", 0)));
 }
 
 // Downloading of files:
@@ -196,14 +241,29 @@ void downloadFile(const JobInfo &info,
   std::string tmpsrc = info.filename;
   normalizePath(tmpdest);
   normalizePath(tmpsrc);
-  // If no regexps specified, simply use TFile::Cp. If the source file was not
-  // modified after the last modification date of the destination file, we skip
-  // copying it.
+  // If no regexps specified, simply use TFile::Cp. If the checksum between
+  // source and dest exists and is the same we skip the copy.
+  // If the source file was not modified after the last modification
+  // date of the destination file, we skip copying it.
   // 
   // If regular expressions specified, copy only the tkeys that match those
   // files.
   if (regexps.empty())
   {
+    std::string srcMD5 = calculateMD5(tmpsrc);
+    log(2, "Source MD5: %s\n",srcMD5.c_str());
+    std::string destMD5 = calculateMD5(dest);
+    log(2, "Dest MD5: %s\n",destMD5.c_str());
+
+    if (!gForce
+        && !srcMD5.empty()
+        && !destMD5.empty()
+        && (srcMD5 == destMD5))
+    {
+      log(2, "Source and destination MD5 match. Not copying.\n");
+      exit(0);
+    }
+
     TFile *dest = TFile::Open(tmpdest.c_str());
     if (dest && !gForce)
     {
@@ -470,13 +530,14 @@ int main( int argc, char **argv )
     const char *cf = argv[optind + i];
     if (*cf != '@')
     {
-      gFilenames.push_back(cf);
+      std::string tcf(cf);
+      gFilenames.push_back(trim(tcf));
       continue;
     }
     std::ifstream infile(cf+1);
     std::string line;
     while (std::getline(infile, line))
-      gFilenames.push_back(line);
+      gFilenames.push_back(trim(line));
   }
 
   log(2, "Verbosity level: %i\n", gVerbosity);

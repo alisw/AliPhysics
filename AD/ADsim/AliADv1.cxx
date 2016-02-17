@@ -77,7 +77,8 @@ AliADv1::AliADv1() :
   fADCLightYield(93.75),
   fADCPhotoCathodeEfficiency(0.18),
   fADALightYield(93.75),
-  fADAPhotoCathodeEfficiency(0.18)
+  fADAPhotoCathodeEfficiency(0.18),
+  fKeepHistory(kFALSE)
 {
    // Default Constructor
     fHits = 0;
@@ -91,7 +92,8 @@ AliADv1::AliADv1(const char *name, const char *title) :
   fADCLightYield(93.75),
   fADCPhotoCathodeEfficiency(0.18),
   fADALightYield(93.75),
-  fADAPhotoCathodeEfficiency(0.18)
+  fADAPhotoCathodeEfficiency(0.18),
+  fKeepHistory(kFALSE)
 {
    // Standard constructor for AD Detector
   
@@ -855,7 +857,8 @@ void AliADv1::CreateAD()
   // const Float_t kPosAD3 = 1700.0;
   // ad->AddNode(vADAarray,1, new TGeoTranslation(0., 0., kPosAD2)); 
   // ad->AddNode(vADAarray,2, new TGeoTranslation(0., 0., kPosAD3));
-  const Float_t kPosADA = 1699.7;
+  // const Float_t kPosADA = 1699.7;  // z-center of assembly (cm) Old
+  const Float_t kPosADA = 1696.67;  // z-center of assembly (cm) New, according to Survey by F. Klumb and E.Calvo 2015 Sept 4th.
   ad->AddNode(vADAarray,    1, new TGeoTranslation(0., 0., kPosADA - kADACelldz/2. -0.23)); 
   ad->AddNode(vADAarray,    2, new TGeoTranslation(0., 0., kPosADA + kADACelldz/2. +0.23));
   ad->AddNode(voADsupport,  1, new TGeoTranslation(0., 0., kPosADA));
@@ -1201,7 +1204,9 @@ void AliADv1::StepManager()
       // Set float values
       hits_ad[9]  = tlength_ad;    // track lenght inside ADC or ADA
       hits_ad[10] = eloss_ad;      // energy loss
-      Int_t track = gAlice->GetMCApp()->GetCurrentTrackNumber();
+      Int_t track; 
+      if(fKeepHistory) track = gAlice->GetMCApp()->GetCurrentTrackNumber();
+      else track = gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() );
       AddHit( track, vol_ad, hits_ad ); // <-- this is in AliAD.cxx
       tlength_ad        = 0.0;
       eloss_ad          = 0.0; 

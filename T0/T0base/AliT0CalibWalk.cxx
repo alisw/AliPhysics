@@ -355,6 +355,7 @@ void AliT0CalibWalk::SetWalkDima(TString filename)
     printf (" no file \n");
     return;
   }
+  TDirectoryFile *dr = (TDirectoryFile*)file->Get("resultGraphs");
   TGraph *currGraph ;
   TString aPMTname;
   for(Int_t iPMT = 0; iPMT < 24; iPMT++)
@@ -362,7 +363,8 @@ void AliT0CalibWalk::SetWalkDima(TString filename)
       if(iPMT<12)  aPMTname = Form("C_%02d_QTCCFDgraph", iPMT+1);
       else aPMTname = Form("A_%02d_QTCCFDgraph", iPMT-12+1);
       printf("  %s  \n",aPMTname.Data());
-      currGraph = (TGraph*)file->FindObjectAny(aPMTname.Data());
+      currGraph = (TGraph*)dr->Get(aPMTname.Data());
+      //     currGraph = (TGraph*)file->FindObjectAny(aPMTname.Data());
       currGraph->SetTitle(Form("PMT%i",iPMT+1));
       fWalk.AddAtAndExpand(currGraph,iPMT);
       //      fWalk.At(iPMT)->Print();

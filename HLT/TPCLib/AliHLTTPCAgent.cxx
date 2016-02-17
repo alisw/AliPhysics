@@ -33,6 +33,8 @@
 #include "AliTPCRecoParam.h"
 #include "AliDAQ.h"
 #include "TObject.h"
+#include "AliHLTPluginBase.h"
+#include "AliHLTSystem.h"
 
 /** global instance for agent registration */
 AliHLTTPCAgent gAliHLTTPCAgent;
@@ -103,6 +105,33 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // AliReconstruction: indicated by runloader==NULL, run always on raw data
     bool bPublishRaw=rawReader!=NULL || runloader==NULL;
 
+    AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
+    int tpcInputMode = 0;
+    if( pHLT ){
+      TString hltoptions = pHLT->GetConfigurationString();
+      TObjArray* pTokens=hltoptions.Tokenize(" ");
+      if( pTokens ){
+	int iEntries=pTokens->GetEntriesFast();
+	for (int i=0; i<iEntries; i++) {
+	  if (!pTokens->At(i)) continue;
+	  TString token = pTokens->At(i)->GetName();
+	  if (token.Contains("TPC-input=")) {
+	    TString param=token.ReplaceAll("TPC-input=", "");
+	    if (param == "default") {
+	      tpcInputMode = 0;
+	    } else if (param == "raw") {
+	      tpcInputMode = 1;
+	    } else if (param == "compressed") {
+	      tpcInputMode = 2;
+	    } else {
+	      HLTWarning("wrong parameter \'%s\' for option \'TPC-input=\', expected \'default\'/\'raw\'/\'compressed\'",param.Data() );
+	    }
+	  }
+	}
+	delete pTokens;
+      }
+    }
+
     // This the tracking configuration for the full TPC
     // - 216 clusterfinders (1 per partition)
     // - 36 slice trackers
@@ -123,14 +152,23 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString compressorInput;
     TString trackerInput;
 
+    arg.Form("-publish-clusters all -publish-raw filtered");
 
-    arg.Form("-publish-raw filtered");
+    if( tpcInputMode==1 ){
+      arg.Form("-publish-clusters off -publish-raw all");
+    } else if ( tpcInputMode==2 ){
+      arg.Form("-publish-clusters all -publish-raw off");
+    }
+
     handler->CreateConfiguration("TPC-DP", "TPCDataPublisher", NULL , arg.Data());
+
+    if (bPublishRaw) {
+      hwcfemuInput = "TPC-DP";
+    }
 
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       for (int part=iMinPart; part<=iMaxPart; part++) {
 	TString publisher;
-
 	// digit publisher components
 	publisher.Form("TPC-DP_%02d_%d", slice, part);
 	if (bPublishRaw) {
@@ -139,28 +177,30 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  int ddlno=768;
 	  if (part>1) ddlno+=72+4*slice+(part-2);
 	  else ddlno+=2*slice+part;
-	  arg.Form("-datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", slice, slice, part, part);
+
+	  // arg.Form("-datatype 'DDL_RAW ' 'TPC '  -dataspec 0x%02x%02x%02x%02x", slice, slice, part, part);
+	  arg.Form("-dataspec 0x%02x%02x%02x%02x", slice, slice, part, part); // publish also unpacked clusters, not only raw data
+
 	  handler->CreateConfiguration(publisher.Data(), "BlockFilter", "TPC-DP" , arg.Data());
 	  if (sinkRawData.Length()>0) sinkRawData+=" ";
 	  sinkRawData+=publisher;
 	} else {
 	  arg.Form("-slice %d -partition %d", slice, part);
 	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
+	  if (hwcfemuInput.Length()>0) hwcfemuInput+=" ";
+	  hwcfemuInput+=publisher;
 	}
-
-	if (hwcfemuInput.Length()>0) hwcfemuInput+=" ";
-	hwcfemuInput+=publisher;
       }
     }
 
-	// Hardware CF emulator
-	TString hwcfemu;
-	hwcfemu.Form("TPC-HWCFEmu");
-	arg="";
-	if (!bPublishRaw) arg+=" -do-mc 1";
-	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", hwcfemuInput.Data(), arg.Data());
-	if (hwclustOutput.Length()>0) hwclustOutput+=" ";
-	hwclustOutput+=hwcfemu;
+    // Hardware CF emulator
+    TString hwcfemu;
+    hwcfemu.Form("TPC-HWCFEmu");
+    arg="";
+    if (!bPublishRaw) arg+=" -do-mc 1";
+    handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", hwcfemuInput.Data(), arg.Data());
+    if (hwclustOutput.Length()>0) hwclustOutput+=" ";
+    hwclustOutput+=hwcfemu;
  
     TString hwcfDecoder = "TPC-HWCFDecoder";
     handler->CreateConfiguration(hwcfDecoder.Data(), "TPCHWClusterDecoder",hwclustOutput.Data(), "");

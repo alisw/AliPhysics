@@ -150,7 +150,7 @@ public:
   // Filter AliRelAlignmentKalman - Alignment/Drift velocity
   //
   static TMatrixD* MakeStatRelKalman(TObjArray * const array, Float_t minFraction, Int_t minStat, Float_t maxvd);
-  static TObjArray *SmoothRelKalman(TObjArray * const array,const TMatrixD & stat, Bool_t direction, Float_t sigmaCut);
+  static TObjArray *SmoothRelKalman(TObjArray * const array,const TMatrixD * statP, Bool_t direction, Float_t sigmaCut);
   static TObjArray *SmoothRelKalman(TObjArray * const arrayP, TObjArray * const arrayM);
   static void FilterCE(Double_t deltaT=100, Double_t cutAbs=10, Double_t cutSigma=4., TTreeSRedirector * const pcstream=0);
   static void FilterTracks(Int_t run, Double_t cutSigma=20., TTreeSRedirector * const pcstream=0);

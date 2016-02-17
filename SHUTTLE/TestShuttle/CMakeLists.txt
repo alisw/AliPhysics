@@ -1,5 +1,6 @@
 # Module
 set(MODULE TestShuttle)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/SHUTTLE/${MODULE})

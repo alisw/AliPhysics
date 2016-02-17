@@ -68,9 +68,9 @@ class AliT0RawReader : public TTask {
   Bool_t           fIsOnline;     // for case online DA usage
   Int_t            fBunchID;       //bunchID from TRM chain header
   Bool_t           fPrintout;      // advanced printout
-  Int_t            fAllData[220][5]; // container for raw data
+  Int_t            fAllData[250][5]; // container for raw data
   
- ClassDef(AliT0RawReader,4) //class for reading T0 Raw data
+ ClassDef(AliT0RawReader,5) //class for reading T0 Raw data
 };
 
 typedef AliT0RawReader AliSTARTRawReader; // for backward compatibility

@@ -32,6 +32,8 @@ class TObjArray;
 class AliVTrack;
 class AliTRDPIDResponseObject;
 class AliTRDdEdxParams;
+class TH2;
+class TH2D;
 
 class AliTRDPIDResponse : public TObject {
   public:
@@ -45,23 +47,36 @@ class AliTRDPIDResponse : public TObject {
     enum ETRDPIDMethod {
 	kNN   = 0,
 	kLQ2D = 1,
-	kLQ1D = 2
+	kLQ1D = 2,
+	kLQ3D = 3,
+	kLQ7D = 4
     };
     enum ETRDPIDNMethod {
-	kNMethod=3
+	kNMethod=5
     };
     enum ETRDNslices {
 	kNslicesLQ1D = 1,
 	kNslicesLQ2D = 2,
-	kNslicesNN = 7
+	kNslicesNN = 7,
+	kNslicesLQ3D = 3,
+	kNslicesLQ7D = 7
     };
+    enum ETRDNsliceQ0 {
+	kNsliceQ0LQ1D = 1,
+	kNsliceQ0LQ2D = 4,
+	kNsliceQ0NN = 1,
+	kNsliceQ0LQ3D = 3,
+	kNsliceQ0LQ7D = 1
+    };
+
     AliTRDPIDResponse();
     AliTRDPIDResponse(const AliTRDPIDResponse &ref);
     AliTRDPIDResponse& operator=(const AliTRDPIDResponse &ref);
     ~AliTRDPIDResponse();
     
-    Double_t GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type) const;
-    Double_t GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type, Bool_t ratio=kFALSE, Double_t *info=0x0) const;
+    Double_t GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type, Bool_t fCorrectEta) const;
+    Double_t GetSignalDelta(const AliVTrack *track, AliPID::EParticleType type, Bool_t ratio=kFALSE, Bool_t fCorrectEta=kFALSE, Double_t *info=0x0) const;
+
     static Double_t MeandEdx(const Double_t * xx, const Float_t * par);
     static Double_t MeanTR(const Double_t * xx, const Float_t * par);
     static Double_t MeandEdxTR(const Double_t * xx, const Float_t * par);
@@ -69,7 +84,7 @@ class AliTRDPIDResponse : public TObject {
 
     Int_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE) const;
     inline ETRDNslices  GetNumberOfSlices(ETRDPIDMethod PIDmethod=kLQ1D) const;
-    
+
     Bool_t    IsOwner() const {return TestBit(kIsOwner);}
     
     void      SetOwner();
@@ -78,19 +93,30 @@ class AliTRDPIDResponse : public TObject {
     Bool_t SetPIDResponseObject(const AliTRDPIDResponseObject * obj);
     Bool_t SetdEdxParams(const AliTRDdEdxParams * par);
     
+    // eta correction map
+    TH2D* GetEtaCorrMap(Int_t n) const { return fhEtaCorr[n]; };
+    Bool_t SetEtaCorrMap(Int_t n, TH2D* hMapn);
+
+
     Bool_t    Load(const Char_t *filename = NULL);
   
     Bool_t    IdentifiedAsElectron(Int_t nTracklets, const Double_t *like, Double_t p, Double_t level,Double_t centrality=-1,ETRDPIDMethod PIDmethod=kLQ1D) const;
+    
+    Double_t GetEtaCorrection(const AliVTrack *track, Double_t bg) const;
+    void     SetMagField(Double_t mf) { fMagField=mf; }
   
   private:
     Bool_t    CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out,ETRDPIDMethod PIDmethod=kLQ1D) const;
     Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t *dEdx,ETRDPIDMethod PIDmethod=kLQ1D) const;
     
-    const AliTRDPIDResponseObject *fkPIDResponseObject;   // PID References and Params
-    const AliTRDdEdxParams * fkTRDdEdxParams; //parametrisation for truncated mean
-    Double_t  fGainNormalisationFactor;         // Gain normalisation factor
+    const AliTRDPIDResponseObject *fkPIDResponseObject;   //! PID References and Params
+    const AliTRDdEdxParams * fkTRDdEdxParams; //! parametrisation for truncated mean
+    Double_t  fGainNormalisationFactor;         //! Gain normalisation factor
+    Bool_t    fCorrectEta;   //! switch for eta correction
+    TH2D*     fhEtaCorr[1]; //! Map for TRD eta correction
+    Double_t  fMagField;  //! Magnetic field
   
-  ClassDef(AliTRDPIDResponse, 4)    // Tool for TRD PID
+  ClassDef(AliTRDPIDResponse, 6)    // Tool for TRD PID
 };
 
 AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices(ETRDPIDMethod PIDmethod) const {
@@ -100,6 +126,8 @@ AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices(ETRDPIDMetho
     case kLQ1D: slices = kNslicesLQ1D; break;
     case kLQ2D: slices = kNslicesLQ2D; break;
     case kNN:   slices = kNslicesNN; break;
+    case kLQ3D: slices = kNslicesLQ3D; break;
+    case kLQ7D: slices = kNslicesLQ7D; break;
   };
   return slices;
 }

@@ -1073,7 +1073,6 @@ void AliTPCcalibSummary::ProcessDriftCERef(){
   //
   if (!isCalc){
     // make fits only once
-    TStatToolkit toolkit;
     Double_t chi2=0;
     Int_t    npoints=0;
     TVectorD param;
@@ -1158,7 +1157,6 @@ void AliTPCcalibSummary::ProcessPulserRef(){
   //
   if (!isCalc){
     // make fits only once
-    TStatToolkit toolkit;
     Double_t chi2=0;
     Int_t    npoints=0;
     TVectorD param;

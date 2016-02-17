@@ -43,6 +43,7 @@ public:
   virtual void         SetL1Threshold(Int_t /*i*/, Int_t /*j*/, Int_t /*th*/)= 0;
   
   virtual void         SetL1V0(const Int_t* /*v*/)                           = 0;
+  virtual void         SetL1V0(Int_t /*i*/, const Int_t* /*v*/)              = 0;
   
   virtual void         SetL1FrameMask(Int_t /*m*/)                           = 0;
   virtual void         SetL1FrameMask(Int_t /*i*/, Int_t /*m*/)              = 0;
@@ -66,6 +67,7 @@ public:
   virtual Int_t        GetL1Threshold(Int_t /*i*/, Int_t /*j*/)       const  = 0;
   
   virtual Int_t        GetL1V0(Int_t /*i*/)                           const  = 0;
+  virtual Int_t        GetL1V0(Int_t /*i*/, Int_t /*j*/)              const  = 0;
   
   virtual Int_t        GetL1FrameMask()                               const  = 0;
   virtual Int_t        GetL1FrameMask(Int_t /*i*/)                    const  = 0;

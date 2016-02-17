@@ -3,24 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Id$ */
-/* History of cvs commits:
- *
- * $Log$
- * Revision 1.43  2007/03/10 22:19:01  pavlinov
- * move one varibels from AliEMCALv2 to AliEMCAL
- *
- * Revision 1.42  2007/02/24 20:42:35  pavlinov
- * fixed error of Geant3 parameters initialisation
- *
- * Revision 1.41  2007/02/05 10:43:25  hristov
- * Changes for correct initialization of Geant4 (Mihaela)
- *
- * Revision 1.40  2006/12/05 17:19:26  gustavo
- * Updated AliEMCAL::Digits2Raw, reads first provisional RCU mapping files to make Raw data with new AliCaloAltroMapping and AliCaloRawStream
- *
- *
- */
 //_________________________________________________________________________
 //  Base Class for EMCAL     
 //  holds all geant information of
@@ -86,13 +68,13 @@ protected:
   
   //For embedding
   static AliEMCALRawUtils    * fgRawUtils;        // raw utilities class, for embedding 
-  AliEMCALTriggerData        * fTriggerData;      // Trigger parameters data container
+  TClonesArray               * fTriggerData;      // Trigger parameters data container
 
 private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
-  ClassDef(AliEMCAL,12) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,13) // Electromagnetic calorimeter (base class)
     
 } ;
 

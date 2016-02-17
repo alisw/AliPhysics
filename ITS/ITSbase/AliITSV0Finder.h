@@ -36,6 +36,12 @@ public:
 
   TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
 
+  static void   SetDisabled(Bool_t v=kTRUE) {fgDisabled = v;}
+  static Bool_t GetDisabled()               {return fgDisabled;}
+
+ protected:
+  static Bool_t fgDisabled;     // possibilidy to disable from reconstruction in cpases
+
 private:
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
  

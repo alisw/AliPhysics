@@ -82,6 +82,10 @@ public:
   //
   Bool_t GetESDIndicesStored() const {return fESDIndicesStored;}
   void   SetESDIndicesStored(Bool_t v) {fESDIndicesStored = v;}
+
+ protected:
+  void DeleteTracksSafe();
+
 protected:
   Bool_t            fESDIndicesStored; // Flag new format of sparse friends
   TClonesArray      fTracks;    // ESD friend tracks

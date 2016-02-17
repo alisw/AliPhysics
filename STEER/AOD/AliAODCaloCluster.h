@@ -4,9 +4,13 @@
  * See cxx source for full Copyright notice                               */
 
 //-------------------------------------------------------------------------
-//     AOD calorimeter cluster class (for PHOS and EMCAL)
-//     Author: Markus Oldenburg, CERN, 
-//             Gustavo Conesa, INFN
+/// \class AliAODCaloCluster
+/// \brief Class for calorimeter cluster, EMCal and PHOS, data handling
+///
+///   Class to access calorimeter, EMCAL and PHOS, cluster data
+///
+///  \author Markus Oldenburg, CERN
+///  \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
 //-------------------------------------------------------------------------
 
 #include "AliAODCluster.h"
@@ -44,7 +48,9 @@ class AliAODCaloCluster : public AliAODCluster {
   AliAODCaloCluster& operator=(const AliAODCaloCluster& clus);
   void Clear(const Option_t*);
   
-  // getters
+  //
+  // Getters
+  //
   Double_t GetDistanceToBadChannel() const { return fDistToBadChannel; }
   Double_t GetDispersion() const { return fDispersion; }
   Double_t GetM20() const { return fM20; }
@@ -56,8 +62,6 @@ class AliAODCaloCluster : public AliAODCluster {
   Double_t GetTOF() const { return fTOF; }
   Double_t GetCoreEnergy() const           {return fCoreEnergy ; }
  
- 
-
   Int_t    GetNTracksMatched() const { return fTracksMatched.GetEntriesFast(); }
   TObject *GetTrackMatched(Int_t i) const { return fTracksMatched.At(i); }
  
@@ -78,8 +82,9 @@ class AliAODCaloCluster : public AliAODCluster {
     if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
     else return -1;}
 	
-  
-  // setters
+  //
+  // Setters
+  //
   void SetDistanceToBadChannel(Double_t dist) { fDistToBadChannel = dist; }
   void SetDispersion(Double_t disp) { fDispersion = disp; }
   void SetM20(Double_t m20) { fM20 = m20; }
@@ -110,8 +115,9 @@ class AliAODCaloCluster : public AliAODCluster {
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition ) const;
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
 
+  /// Add reference to associated track to cluster.
+  /// Make sure we attach the object to correct process number.
   void AddTrackMatched(TObject *trk) { 
-    //Make sure we attach the object to correct process number
     if(fTracksMatched.GetEntries()==0) { TRefArray ref(TProcessID::GetProcessWithUID(trk)) ; fTracksMatched = ref ; }
     fTracksMatched.Add(trk) ; }
   
@@ -130,30 +136,50 @@ class AliAODCaloCluster : public AliAODCluster {
   void        SetUserDefEnergy(VCluUserDefEnergy_t t, Double_t e)               { fUserDefEnergy[t] = E() > 1e-6 ? e / E() : 1.  ; }
   void        SetUserDefEnergyCorrFactor(VCluUserDefEnergy_t t, Double_t f)     { fUserDefEnergy[t] = f                          ; }
   
+  void        SetCellsMCEdepFractionMap(UInt_t *array) ;
+  UInt_t    * GetCellsMCEdepFractionMap() const    { return fCellsMCEdepFractionMap ; }
+  
+  void        GetCellMCEdepFractionArray(Int_t cellIndex, Float_t * eDep) const ;
+  UInt_t      PackMCEdepFraction(Float_t * eDep) const ; 
+  
  private :
 
-  Double32_t   fDistToBadChannel; // Distance to nearest bad channel
-  Double32_t   fDispersion;       // cluster dispersion, for shape analysis
-  Double32_t   fM20;              // 2-nd moment along the main eigen axis
-  Double32_t   fM02;              // 2-nd moment along the second eigen axis
-  Double32_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
-  Double32_t   fTrackDx ;         // Distance to closest track in phi
-  Double32_t   fTrackDz ;         // Distance to closest track in z (eta)
-  UShort_t     fNExMax;           // number of (Ex-)maxima before unfolding
-  Double32_t   fTOF;              ////[0,0,12] time-of-flight
-  Double32_t   fCoreEnergy;       // energy of the core of cluster
-
-  TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
-
-  Int_t       fNCells ;
-  UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
-  Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
+  Double32_t   fDistToBadChannel; ///< Distance to nearest bad channel.
+  Double32_t   fDispersion;       ///< cluster dispersion, for shape analysis.
+  Double32_t   fM20;              ///< 2-nd moment along the main eigen axis.
+  Double32_t   fM02;              ///< 2-nd moment along the second eigen axis.
+  Double32_t   fEmcCpvDistance;   ///< The distance from PHOS EMC rec.point to the closest CPV rec.point.
+  Double32_t   fTrackDx ;         ///< Distance to closest track in phi.
+  Double32_t   fTrackDz ;         ///< Distance to closest track in z (eta).
+  UShort_t     fNExMax;           ///< Number of local (Ex-)maxima before unfolding.
   
-  Double_t     fMCEnergyFraction;                    //!MC energy (embedding)
-  Bool_t       fIsExotic;                            //!cluster marked as "exotic" (high energy deposition concentrated in a single cell)
-  Double_t     fUserDefEnergy[kLastUserDefEnergy+1]; //!energy of the cluster after other higher level corrections (e.g. non-linearity, hadronic correction, ...)
+  /// Cluster time-of-flight
+  Double32_t   fTOF;              //[0,0,12] 
+  Double32_t   fCoreEnergy;       ///< Energy of the core of cluster, PHOS.
 
-  ClassDef(AliAODCaloCluster,8);
+  TRefArray    fTracksMatched;    ///< References to tracks close to cluster. First entry is the most likely match.
+
+  Int_t        fNCells ;          ///< Number of cells in cluster. 
+  
+  /// Array of cluster cell absolute Id numbers.
+  UShort_t   * fCellsAbsId;       //[fNCells] 
+  
+  /// Array with cell amplitudes fraction. Only usable for unfolded clusters, where cell can be shared.
+  /// here we store what fraction of the cell energy is assigned to a given cluster.
+  Double32_t * fCellsAmpFraction; //[fNCells][0.,1.,16] 
+  
+  Double_t     fMCEnergyFraction;                    //!<! MC energy (embedding).
+  Bool_t       fIsExotic;                            //!<! Cluster marked as "exotic" (high energy deposition concentrated in a single cell).
+  Double_t     fUserDefEnergy[kLastUserDefEnergy+1]; //!<! Energy of the cluster after other higher level corrections (e.g. non-linearity, hadronic correction, ...).
+
+  /// Array of maps (4 bits, each bit a different information) with fraction of deposited energy 
+  //  per MC particle contributing to the cluster (4 particles maximum) per cell in the cluster.
+  UInt_t     * fCellsMCEdepFractionMap; //[fNCells] 
+  
+  /// \cond CLASSIMP
+  ClassDef(AliAODCaloCluster,9) ;
+  /// \endcond
+
 };
 
 #endif

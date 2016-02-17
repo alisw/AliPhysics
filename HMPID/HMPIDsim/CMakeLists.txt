@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE HMPIDsim)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/HMPID/${MODULE})
@@ -40,6 +41,7 @@ set(SRCS
     AliHMPIDv1.cxx
     AliHMPIDv2.cxx
     AliHMPIDv3.cxx
+    AliHMPIDvG4.cxx
    )
 
 # Headers from sources

@@ -242,7 +242,7 @@ void AliMUONChamberCalibrationTask::ConnectInputData( Option_t* /*option*/ )
 
     // The properly initialized ESD input handler reads ESD tree 
     // and connect it to ESD event, so we only need to retrieve the later
-    fESDInputEvent = fESDInputHandler->GetEvent();
+    fESDInputEvent = (AliESDEvent*)fESDInputHandler->GetEvent();
     if ( !fESDInputEvent ) {
 
       AliFatal( "Could not get input ESD event !!! ");

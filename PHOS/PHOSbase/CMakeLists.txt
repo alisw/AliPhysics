@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PHOSbase)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/PHOS/${MODULE})
@@ -86,6 +87,7 @@ set(SRCS
     AliPHOSTriggerRawDigit.cxx
     AliPHOSTriggerRawDigiProducer.cxx
     AliPHOSTriggerRawReader.cxx
+    AliPHOSTriggerSTURawStream.cxx
     AliPHOSTRURawReader.cxx
 
    )

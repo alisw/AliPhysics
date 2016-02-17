@@ -16,6 +16,7 @@
 class AliPHOSEmcCalibData;
 class AliPHOSCpvCalibData;
 class AliPHOSEmcBadChannelsMap;
+class AliPHOSCpvBadChannelsMap;
 class AliCDBMetaData;
 
 class AliPHOSCalibData: public TNamed {
@@ -36,7 +37,7 @@ class AliPHOSCalibData: public TNamed {
   
   void CreateNew();
   void RandomEmc(Float_t ccMin=0.5   , Float_t ccMax=1.5);
-  void RandomCpv(Float_t ccMin=0.0009, Float_t ccMax=0.0015);
+  void RandomCpv(Float_t ccMin=0.5, Float_t ccMax=2.);
 
   //----First EMC parameters---------
   Float_t GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const;
@@ -72,12 +73,19 @@ class AliPHOSCalibData: public TNamed {
   Bool_t IsBadChannelEmc(Int_t module, Int_t col, Int_t row) const; 
   void   EmcBadChannelIds(Int_t *badIds=0); 
 
+  Int_t  GetNumOfCpvBadChannels() const;
+  Bool_t IsBadChannelCpv(Int_t module, Int_t col, Int_t row) const; 
+  void   CpvBadChannelIds(Int_t *badIds=0); 
+
+
   void SetEmcDataPath(const char* emcPath) {fEmcDataPath=emcPath;}
   void SetCpvDataPath(const char* cpvPath) {fCpvDataPath=cpvPath;}
 
   Bool_t WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
   Bool_t WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
   Bool_t WriteEmcBadChannelsMap(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
+  Bool_t WriteCpvBadChannelsMap(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
+
 
   //----Decalibration factors for simulation-------------
   Float_t GetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row) const;
@@ -88,12 +96,14 @@ class AliPHOSCalibData: public TNamed {
   AliPHOSEmcCalibData* fCalibDataEmc; // EMC calibration data
   AliPHOSCpvCalibData* fCalibDataCpv; // CPV calibration data
   AliPHOSEmcBadChannelsMap* fEmcBadChannelsMap; // EMC bad channels map
-  
+  AliPHOSCpvBadChannelsMap* fCpvBadChannelsMap; // CPV bad channels map
+
   TString fEmcDataPath; // path to EMC calibration data
   TString fCpvDataPath; // path to CPV calibration data
   TString fEmcBadChannelsMapPath; // path to bad channels map
+  TString fCpvBadChannelsMapPath; // path to bad channels map
 
-  ClassDef(AliPHOSCalibData,6)    // PHOS Calibration data
+  ClassDef(AliPHOSCalibData,7)    // PHOS Calibration data
 };
 
 #endif

@@ -17,11 +17,9 @@
 #include <AliEveEventManager.h>
 #include <AliGeomManager.h>
 
-//#include "UPGRADE/AliITSUDigitPix.h"
-
 #include <AliITSUGeomTGeo.h>
-#include <AliITSUSegmentationPix.h>
-#include <AliITSUDigitPix.h>
+#include <AliITSMFTSegmentationPix.h>
+#include <AliITSMFTDigitPix.h>
 //______________________________________________________________________________
 //
 // Visualization of an ITS Upgrade module.
@@ -35,7 +33,7 @@ TEveFrameBox*    AliEveITSUModule::fgITSUFrameBoxDead = 0;
 TEveRGBAPalette* AliEveITSUModule::fgITSUPalette  = 0;
 
 AliITSUGeomTGeo* fGM                 = 0;
-const AliITSUSegmentationPix* fSegm      = 0;
+const AliITSMFTSegmentationPix* fSegm      = 0;
 
 /******************************************************************************/
 
@@ -67,7 +65,7 @@ AliEveITSUModule::AliEveITSUModule(AliITSUGeomTGeo *gm, Int_t id, Int_t layer, I
   //
   fGM = gm; // ITSU Geometry Manager
   fgStaticInitDone = kFALSE; 
-  fSegm = (AliITSUSegmentationPix *)fGM->GetSegmentation(layer);//Fixme later
+  fSegm = fGM->GetSegmentation(layer);
   fDpx = fSegm->Dpx(0);  // pixel pitch in x
   fDpz = fSegm->Dpz(0);  // pixel pitch in z
   SetID(id);
@@ -145,7 +143,7 @@ void AliEveITSUModule::SetID(Int_t gid, Bool_t trans)
 
 /******************************************************************************/
 
-void AliEveITSUModule::SetDigitInQuad(AliITSUDigitPix *pDig)
+void AliEveITSUModule::SetDigitInQuad(AliITSMFTDigitPix *pDig)
 {
   // Sets a digit from source in a visualization structure - called quads.
 
@@ -204,7 +202,7 @@ void AliEveITSUModule::DigitSelected(Int_t idx)
   //    idx=i;
   DigitBase_t *qb  = GetDigit(idx);
   TObject     *obj = GetId(idx);
-  AliITSUDigitPix *pDig  = dynamic_cast<AliITSUDigitPix*>(obj);
+  AliITSMFTDigitPix *pDig  = dynamic_cast<AliITSMFTDigitPix*>(obj);
   printf("AliEveITSUModule::QuadSelected "); 
   printf("  idx=%d, value=%d, obj=0x%lx, digit=0x%lx\n",
 	 idx, qb->fValue, (ULong_t)obj, (ULong_t)pDig);

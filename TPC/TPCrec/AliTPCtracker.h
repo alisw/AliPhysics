@@ -21,7 +21,7 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCtrackerSector.h"
 #include "AliESDfriend.h"
-
+#include "AliTPCseed.h"
 
 
 class TFile;
@@ -83,7 +83,7 @@ public:
   Int_t LoadInnerSectors();
   Int_t LoadOuterSectors();
   virtual void FillClusterArray(TObjArray* array) const;
-  void   Transform(AliTPCclusterMI * cluster);
+  void Transform(AliTPCclusterMI * cluster);
   void ApplyTailCancellation();
   void ApplyXtalkCorrection();
   void CalculateXtalkCorrection();
@@ -142,6 +142,7 @@ public:
    Double_t F3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
                 Double_t c) const; 
    Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
+   Bool_t GetProlongationLine(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
    //
    void ResetSeedsPool();
    void MarkSeedFree( TObject* seed );
@@ -168,14 +169,22 @@ public:
 
    // public for ToyMC usage
    void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE); 
+   void MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE); 
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
+   void MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
-
+   //
+   Bool_t DistortX(const AliTPCseed* seed, double& x, int row);
    //
    virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends
    virtual void   CleanESDFriendsObjects(AliESDEvent* esd);
+   virtual void   CleanESDTracksObjects(TObjArray* trcList);
    //
+   Double_t GetDistortionX(double x, double y, double z, int sec, int row);
+   Double_t GetYSectEdgeDist(int sec, int row, double ymax, double z);
+   static Int_t GetTrackSector(double alpha);
+
 private:
   Bool_t IsFindable(AliTPCseed & t);
   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
@@ -188,6 +197,7 @@ private:
    inline Double_t  GetXrow(Int_t row) const;
    inline Double_t  GetMaxY(Int_t row) const;
    inline Int_t GetRowNumber(Double_t x) const;
+   inline Int_t GetRowNumber(const AliTPCseed* seed) const;
    Int_t GetRowNumber(Double_t x[3]) const;
    inline Double_t GetPadPitchLength(Double_t x) const;
    inline Double_t GetPadPitchLength(Int_t row) const;
@@ -197,6 +207,7 @@ private:
    void ReadSeeds(const AliESDEvent *const event, Int_t direction);  //read seeds from the event
 
    void MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
+   void MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
   
 
    AliTPCseed *MakeSeed(AliTPCseed *const track, Float_t r0, Float_t r1, Float_t r2); //reseed
@@ -279,7 +290,9 @@ private:
    Bool_t fClStatFound[kMaxRow];        //! cached info on found clusters of the seed   
    Bool_t fClStatShared[kMaxRow];       //! cached info on shared clusters of the seed   
    //
-   ClassDef(AliTPCtracker,4) 
+   Int_t fAccountDistortions;           //! flag to account for distortions. RS: to set!
+   //
+   ClassDef(AliTPCtracker,5) 
 };
 
 
@@ -311,7 +324,22 @@ Double_t  AliTPCtracker::GetMaxY(Int_t row) const {
 Int_t AliTPCtracker::GetRowNumber(Double_t x) const
 {
   //
-  return (x>133.) ? fOuterSec->GetRowNumber(x)+fInnerSec->GetNRows():fInnerSec->GetRowNumber(x);
+  if (x<133.) return TMath::Max(fInnerSec->GetRowNumber(x),0);
+  return TMath::Min(fOuterSec->GetRowNumber(x)+fInnerSec->GetNRows(),158);
+}
+
+Int_t AliTPCtracker::GetRowNumber(const AliTPCseed* t) const
+{
+  // last row of the seed or row corresponding to x
+  int row = t->GetRow();
+  /*
+  int rowX = GetRowNumber(t->GetX());
+  if (TMath::Abs(row-rowX)>1 && row>-1) {
+    printf("MISMATCH Seed %d\n",t->GetPoolID());
+    printf("GetROW: %d %d %f %s\n",row,rowX,t->GetX(),row==rowX ? "":"!!!!!!!!!**********!!!!!!!!!!!************!!!!!!!!!!!");
+  }
+  */
+  return (row>-1&&row<159) ? row : GetRowNumber(t->GetX());
 }
 
 Double_t  AliTPCtracker::GetPadPitchLength(Double_t x) const

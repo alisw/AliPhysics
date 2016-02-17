@@ -1,819 +1,484 @@
+#include <fstream>
 #include <iostream>
+#include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctime>
 
+#include "AliLog.h"
+
 #include "AliExternalInfo.h"
-#include "TSystem.h"
-#include "TWebFile.h"
+
+#include "TObjArray.h"
 #include "TString.h"
+#include "TWebFile.h"
+#include "TSystem.h"
+#include "TTree.h"
+#include "TFile.h"
 #include "TChain.h"
+#include "TMath.h"
 
 ClassImp(AliExternalInfo)
 
-AliExternalInfo::AliExternalInfo() :  fCertificate("$HOME/.globus/usercert.pem"),
-                                      fPrivateKey("$HOME/.globus/userkey.pem"),
-                                      fGlobalDir("."),
-                                      fFormMCFilename("MC"),
-                                      fFormMCDir("/sim/"),
-                                      fFormMCFiletype(".mif"),
-                                      fFormRCTFilename("RCT"),
-                                      fFormRCTDir("/data/%s/%s/%s/"),
-                                      fFormRCTFiletype(".mif"),
-                                      fFormLogbookFilename("logbook"),
-                                      fFormLogbookDir("/data/%s/%s/%s/"),
-                                      fFormLogbookFiletype(".root"),
-                                      fFormTriggerClassesFilename("trigger_classes"),
-                                      fFormTriggerClassesDir("/data/%s/"),
-                                      fFormTriggerClassesFiletype(".root"),
-                                      fFormTrendingFilename("trending"),
-                                      fFormTrendingDir("/data/%s/%s/%s/"),
-                                      fFormTrendingFiletype(".root"),
-                                      fFormProdCycleFilename("ProdCycle"),
-                                      fFormProdCycleDir("/data/"),
-                                      fFormProdCycleFiletype(".mif"),
-                                      fFormProdPassesFilename("ProdPasses"),
-                                      fFormProdPassesDir("/data/"),
-                                      fFormProdPassesFiletype(".mif"),
-                                      fTimeLimit(60 * 60 * 24)
-{}
-AliExternalInfo::AliExternalInfo(TString GlobalPath) : 
-                                      fCertificate("$HOME/.globus/usercert.pem"),
-                                      fPrivateKey("$HOME/.globus/userkey.pem"),
-                                      fGlobalDir(GlobalPath),
-                                      fFormMCFilename("MC"),
-                                      fFormMCDir("/sim/"),
-                                      fFormMCFiletype(".mif"),
-                                      fFormRCTFilename("RCT"),
-                                      fFormRCTDir("/data/%s/%s/%s/"),
-                                      fFormRCTFiletype(".mif"),
-                                      fFormLogbookFilename("logbook"),
-                                      fFormLogbookDir("/data/%s/%s/%s/"),
-                                      fFormLogbookFiletype(".root"),
-                                      fFormTriggerClassesFilename("trigger_classes"),
-                                      fFormTriggerClassesDir("/data/%s/"),
-                                      fFormTriggerClassesFiletype(".root"),
-                                      fFormTrendingFilename("trending"),
-                                      fFormTrendingDir("/data/%s/%s/%s/"),
-                                      fFormTrendingFiletype(".root"),
-                                      fFormProdCycleFilename("ProdCycle"),
-                                      fFormProdCycleDir("/data/"),
-                                      fFormProdCycleFiletype(".mif"),
-                                      fFormProdPassesFilename("ProdPasses"),
-                                      fFormProdPassesDir("/data/"),
-                                      fFormProdPassesFiletype(".mif"),
-                                      fTimeLimit(60 * 60 * 24)
-{}
-AliExternalInfo::~AliExternalInfo(){ /*delete fTree;*/}
+const TString AliExternalInfo::fgkDefaultConfig="$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg";
 
-
-// Genereric function to download the information into a specific folder structure
-
-Bool_t AliExternalInfo::Cache(TString period, TString pass, Int_t type){
-  std::cout << "Caching started: period=" << period << " pass= " << pass << std::endl;
-  // Needs to be adjusted by the later switch case for correct download and storage
-  TString remotepath("");
-  TString localpath("");
-  TString file("");
-  TString command("");
-  TString year = GetYearFromPeriod(period);
-  switch (type){
-    case kRCT:
-    {
-      // sanity checks
-      if ( (CheckPeriod(period) == kFALSE) || (CheckPass(pass) == kFALSE) ) return kFALSE;
-      // end of sanity checks
-      TString numberOfPass("");
-      numberOfPass = pass[4];
-      remotepath = (Form("https://alimonitor.cern.ch/configuration/index.jsp?partition=%s&pass=%s&res_path=mif", period.Data(), numberOfPass.Data()));
-      SetUpForPeriodPass(period, pass, localpath, file, fFormRCTFilename, fFormMCFiletype, type);
-      // std::cout << period << " " << pass << " " << file << " " << title << " " << localpath << " " << type << std::endl;
-      command = wget(localpath, fFormRCTFilename, fFormMCFiletype, remotepath);
-      break;
-    }
-    case kMC:
-    {
-      remotepath = "https://alimonitor.cern.ch/MC/?res_path=mif";
-      SetUpForPeriodPass(period, pass, localpath, file, fFormMCFilename, fFormMCFiletype, type);
-      command = wget(localpath, fFormMCFilename, fFormMCFiletype, remotepath);
-      break;
-    }
-    case kProdCycle:
-    {
-      if (period == "") // for downloading whole master database
-      {
-        remotepath = TString::Format("https://alimonitor.cern.ch/prod/?t=1&res_path=mif");
-      }
-      else if ( pass == "") // for downloading a specific id
-      {
-        remotepath = TString::Format("https://alimonitor.cern.ch/prod/jobs.jsp?t=%s&res_path=mif", period.Data());
-      }
-      else {  // for searching a specific pass and period, NOT YET IMPLEMENTED
-        std::cout << "!!!!!!!!!!!!!!!!      NOT IMPLEMENTED      !!!!!!!!!!!!!!!!!!!" << std::endl;
-        TTree* tempTree;
-        tempTree = GetTreeProdCycle();
-
-        char* description = new char[200]();
-        char* tag = new char[200]();
-        Int_t ID;
-        tempTree->SetBranchAddress("Description", description);
-        tempTree->SetBranchAddress("Tag", tag);
-        tempTree->SetBranchAddress("ID", &ID);
-        Int_t nEntries = tempTree->GetEntriesFast();
-
-        for (Int_t i = 0; i < nEntries; ++i){
-          tempTree->GetEntry(i);
-          std::cout << "ID: " << ID << "  Description: " << description << "\n" << "Tag: " << tag << "\n";
-          // NOT YET IMPLEMENTED
-          //
-        }
-        std::cout << std::endl;
-        delete[] description;
-      }
-      TString filename_temp = fFormProdCycleFilename+period;
-      SetUpForPeriodPass(period, pass, localpath, file, filename_temp, fFormProdCycleFiletype, type);
-      command = wget(localpath, filename_temp, fFormProdCycleFiletype, remotepath);
-      break;
-    }
-    case kProdCycleCpasses:{
-      remotepath = TString::Format("https://alimonitor.cern.ch/prod/?t=3&res_path=mif");
-      SetUpForPeriodPass(period, pass, localpath, file, fFormProdPassesFilename, fFormProdPassesFiletype, type);
-      command = wget(localpath, fFormProdPassesFilename, fFormProdPassesFiletype, remotepath);
-      break;
-    }
-    case kLogbook:
-    {
-      // sanity checks
-      if (CheckPeriod(period) == kFALSE) return kFALSE;
-      // end of sanity checks
-      remotepath = TString::Format("http://aliqamod.web.cern.ch/aliqamod/data/%s/%s/%s%s", year.Data(), period.Data(), fFormLogbookFilename.Data(), fFormLogbookFiletype.Data());
-      SetUpForPeriodPass(period, pass, localpath, file, fFormLogbookFilename, fFormLogbookFiletype, type);
-
-      break;
-    }
-    case kTriggerClasses:
-    {
-      remotepath = TString::Format("http://aliqamod.web.cern.ch/aliqamod/data/%s/%s%s", period.Data(), fFormTriggerClassesFilename.Data(), fFormLogbookFiletype.Data()); // ATTENTION 'period' is year!
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTriggerClassesFilename, fFormTriggerClassesFiletype, type);
-      break;
-    }
-    case kTPC:
-    {
-      if (CheckPeriod(period) == kFALSE) return kFALSE;
-      // remotepath = TString::Format("http://aliqa<det>.web.cern.ch/aliqa<det>/data/%s/%s/%s/%s%s", year.Data(), period.Data(), pass.Data(), fFormTrendingFilename.Data(), fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      remotepath = TString::Format("http://aliqatpc.web.cern.ch/aliqatpc/data/%s/%s/%s/%s%s", year.Data(), period.Data(), pass.Data(), fFormTrendingFilename.Data(), fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kRawQATPC:
-    {
-      if (CheckPeriod(period) == kFALSE) return kFALSE;
-      // remotepath = TString::Format("http://aliqa<det>.web.cern.ch/aliqa<det>/data/%s/%s/%s/%s%s", year.Data(), period.Data(), pass.Data(), fFormTrendingFilename.Data(), fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      remotepath = TString::Format("http://aliqatpc.web.cern.ch/aliqatpc/data/%s/%s%s", year.Data(), "OCDBscan", fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      TString filename("OCDBscan");
-      SetUpForPeriodPass(period, pass, localpath, file, filename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kTOF:
-    {
-      if (CheckPeriod(period) == kFALSE) return kFALSE;
-      // remotepath = TString::Format("http://aliqa<det>.web.cern.ch/aliqa<det>/data/%s/%s/%s/%s%s", year.Data(), period.Data(), pass.Data(), fFormTrendingFilename.Data(), fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      remotepath = TString::Format("http://aliqatof.web.cern.ch/aliqatof/data/%s/%s/%s/%s%s", year.Data(), period.Data(), pass.Data(), fFormTrendingFilename.Data(), fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kEVS:
-    {
-      if (CheckPeriod(period) == kFALSE) return kFALSE;
-      remotepath = TString::Format("http://aliqaevs.web.cern.ch/aliqaevs/data/%s/%s/%s/%s%s", year.Data(), period.Data(), pass.Data(), fFormTrendingFilename.Data(), fFormTrendingFiletype.Data()); // ATTENTION 'period' is year!
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-  }
-
-  // Check if there is a file already
-  std::cout << "-- Download from: " << remotepath << std::endl;
-  if (IsDownloadNeeded(file) == kFALSE) return kFALSE;
-  std::cout << "-- Save in: " << file << std::endl;
-
-  // Create folder structure
-  std::cout << "-- mkdir " << localpath << std::endl;
-  gSystem->mkdir(localpath.Data(), kTRUE);
-
-
-  // download information
-  if ( type == kMC || type == kRCT || type == kProdCycle || type == kProdCycleCpasses ){
-    std::cout << command << std::endl;
-    gSystem->Exec(command.Data());
-  }
-  else if ((type == kLogbook) || (type == kTriggerClasses || (type == kTPC) || type == kTOF || type == kEVS || kRawQATPC)){
-    std::cout << "-- TWebFile webfile(" << remotepath << ")" << std::endl;
-    TWebFile webfile(remotepath);
-    if (webfile.Cp(file)) std::cout << "Caching successful" << std::endl;
-    else std::cout << "Caching FAILED" << std::endl;
-  }
-  return kTRUE;
-}
-
-Bool_t AliExternalInfo::CacheRCT(TString period, TString pass){
-  return Cache(period, pass, kRCT);
-}
-Bool_t AliExternalInfo::CacheMC(){
-  return Cache(static_cast<TString>(""), static_cast<TString>("passMC"), kMC);
-}
-Bool_t AliExternalInfo::CacheProdCycle(){
-  return Cache("", "", kProdCycle); // pay attention, first parameter in "AliExternalInfo::Cache()" is normally period
-}
-Bool_t AliExternalInfo::CacheProdPasses(){
-  return Cache("", "", kProdCycleCpasses); // pay attention, first parameter in "AliExternalInfo::Cache()" is normally period
-}
-Bool_t AliExternalInfo::CacheProdCycle(TString id){
-  return Cache(id, "", kProdCycle); // pay attention, first parameter in "AliExternalInfo::Cache()" is normally period
-}
-// Bool_t AliExternalInfo::CacheProdCycle(TString period, TString pass){
-//   return Cache(period, pass, kProdCycle); // pay attention, first parameter in "AliExternalInfo::Cache()" is normally period
-// }
-Bool_t AliExternalInfo::CacheLogbook(TString period){
-  return Cache(period, "", kLogbook);
-}
-Bool_t AliExternalInfo::CacheTriggerClasses(TString year){
-  return Cache(year, "", kTriggerClasses); // pay attention, first parameter in "AliExternalInfo::Cache()" is normally period
-}
-Bool_t AliExternalInfo::CacheDataQA(TString detector, TString period, TString pass){
-  if      ( detector == "TPC" ) return Cache(period, pass, kTPC);
-  else if ( detector == "RawQATPC" ) return Cache(period, pass, kRawQATPC);
-  else if ( detector == "TOF" ) return Cache(period, pass, kTOF);
-  else if ( detector == "EVS" ) return Cache(period, pass, kEVS);
-  else return 1;
-}
-// Bool_t AliExternalInfo::CacheSimQA(TString detector, TString period){
-//   // return Cache(period, pass, kTPC); // pay attention, first parameter in "AliExternalInfo::Cache()" is normally period
-// }
-
-// Bool_t AliExternalInfo::CacheAll(){
-//   // CacheMC();
-//   // @TODO Think about a way to see which periods are existing!!!
-//   // for "all periods and passes": CacheRCT(...);
-//   return kTRUE;
-// }
-
-
-// Generic function to get the tree according to parameters
-
-TTree* AliExternalInfo::GetTree(TString period, TString pass, TString anchorYear, TString productionTag, Int_t type){
-  std::cout << "GetTree()" << std::endl;
-  TTree* tree = 0x0;
-  char delimiter = 'n';
-  TString localpath("");  // complete path to the directory of the file
-  TString file("");       // complete path to file
-  TString filename("");   // filename without type
-  TString filetype("");   // filetype of the stored file
-  TString name("");       // name of the tree
-  TString title("");      // title of the tree
-  switch (type){
-    case kRCT:
-    {
-      // sanity checks
-      if ( (CheckPeriod(period) == kFALSE) || (CheckPass(pass) == kFALSE) ) return tree;
-      // end of sanity checks
-      delimiter = '\"';
-      name = "RCT";
-      title = TString::Format("%s_%s", period.Data(), pass.Data()); // "period_pass"
-      SetUpForPeriodPass(period, pass, localpath, file, fFormRCTFilename, fFormMCFiletype, type);
-      // std::cout << period << " " << pass << " " << file << " " << title << " " << localpath << " " << type << std::endl;
-      break;
-    }
-    case kMC:
-    {
-      anchorYear = ""; // Set to not create a warning, implemented later
-      productionTag = ""; // Set to not create a warning, implemented later
-      delimiter = '\"';
-      name = "MC";
-      title = "passMC";
-      localpath = fFormMCDir;
-      localpath.Prepend(fGlobalDir);
-      file=localpath+fFormMCFilename+fFormMCFiletype;
-      break;
-    }
-    case kProdCycle:
-    {
-      delimiter = '\"';
-      name = "ProdCycle";
-      title = "ProdCycle";
-      localpath = fFormProdCycleDir;
-      localpath.Prepend(fGlobalDir);
-      file=localpath+fFormProdCycleFilename+period+fFormProdCycleFiletype;
-      break;
-    }
-    case kProdCycleCpasses:
-    {
-      delimiter = '\"';
-      name = "ProdPasses";
-      title = "ProdPasses";
-      localpath = fFormProdPassesDir;
-      localpath.Prepend(fGlobalDir);
-      file=localpath+fFormProdPassesFilename+fFormProdPassesFiletype;
-      break;
-    }
-    case kLogbook:
-    {
-      // sanity checks
-      if ( CheckPeriod(period) == kFALSE) return tree;
-      // end of sanity checks
-      name = "logbook";
-      title = TString::Format("%s", period.Data()); // "period_pass"
-      SetUpForPeriodPass(period, pass, localpath, file, fFormLogbookFilename, fFormLogbookFiletype, type);
-      break;
-    }
-    case kTriggerClasses:
-    {
-      name = "trigger_classes";
-      title = TString::Format("%s", period.Data()); // "year"
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTriggerClassesFilename, fFormTriggerClassesFiletype, type);
-      break;
-    }
-    case kTPC:
-    {
-      name = "tpcQA";
-      title = TString::Format("%s/%s", period.Data(), pass.Data()); // "year"
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kRawQATPC:
-    {
-      name = "dcs";
-      title = TString::Format("%s/%s", period.Data(), pass.Data()); // "year"
-      TString filename("OCDBscan");
-      SetUpForPeriodPass(period, pass, localpath, file, filename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kTOF:
-    {
-      name = "trending";
-      title = TString::Format("%s/%s", period.Data(), pass.Data()); // "year"
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kEVS:
-    {
-      name = "trending";
-      title = TString::Format("%s/%s", period.Data(), pass.Data()); // "year"
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-  }
-  // Tree is actually set
-  tree = new TTree(name, title);
-
-  std::cout << "-- Read tree in " << file << std::endl;
-
-  // Checking if tree is already cached, if not cache it automatically according to type
-  if (gSystem->AccessPathName(file.Data()) == kTRUE) {
-    std::cout << "---- ERROR: File not found, maybe not cached yet\n";
-    std::cout << "------ Automatically Caching" << std::endl;
-    if ( type == kRCT){
-      Cache(period, pass, kRCT);
-    }
-    else if (type == kMC){
-      Cache(static_cast<TString>(""), static_cast<TString>("passMC"), kMC);
-    }
-    else if (type == kProdCycle){
-      Cache(period, "", kProdCycle);
-    }
-    else if (type == kProdCycleCpasses){
-      Cache(period, "", kProdCycleCpasses);
-    }
-    else if (type == kLogbook){
-      Cache(period, "", kLogbook);
-    }
-    else if (type == kTriggerClasses){
-      Cache(period, "", kTriggerClasses);
-    }
-    else if (type == kTPC) {
-      Cache(period, pass, kTPC);
-    }
-    else if (type == kRawQATPC) {
-      Cache(period, pass, kRawQATPC);
-    }
-    else if (type == kTOF) {
-      Cache(period, pass, kTOF);
-    }
-    else if (type == kEVS) {
-      Cache(period, pass, kEVS);
-    }
-  }
-
-  if ( type == kMC || type == kRCT || type == kProdCycle || type == kProdCycleCpasses){
-    // tree->ReadFile(file, "", delimiter);
-    if ( (tree->ReadFile(file, "", delimiter)) > 0) std::cout << "-- Successfully read in tree" << std::endl;
-    else std::cout << "-- Error while reading tree" << std::endl;
-    if (file.Contains(".mif")) {
-      file.Chop();file.Chop();file.Chop();
-      file.Append("root");
-    }
-    TFile tempfile(file, "RECREATE");
-    tempfile.cd();
-    tree->Write();
-    tempfile.Close();
-    std::cout << "Write tree to file: " << file << std::endl;
-  }
-  else if (type == kLogbook || type == kTriggerClasses || type == kTPC || type == kRawQATPC || type == kTOF || type == kEVS){
-    TFile* treefile = new TFile(file.Data());
-    tree = dynamic_cast<TTree*>( treefile->Get(name));
-    if (tree==NULL) tree= dynamic_cast<TTree*>( treefile->Get("trending")); // MI temporary FIX  - code has to be reviewed and rewritten
-    if (tree != 0x0) {std::cout << "-- Successfully read in tree" << std::endl;}
-    else std::cout << "-- Error while reading tree" << std::endl;
-  }
-  return tree;
-}
-
-// ##################
-// Returns a pointer to the MC tree*
-TTree* AliExternalInfo::GetTreeMC(TString period, TString anchorYear, TString productionTag){
-  return GetTree(period, "passMC", anchorYear, productionTag, kMC);
-}
-
-// ##################
-// Returns a pointer to the RCT tree
-TTree* AliExternalInfo::GetTreeRCT(TString period, TString pass){
-  return GetTree(period, pass, "", "", kRCT);
-}
-
-// ##################
-// Returns a pointer to the Production Cycle tree
-TTree* AliExternalInfo::GetTreeProdCycle(){
-  return GetTree("", "", "", "", kProdCycle);
-}
-
-// ##################
-// Returns a pointer to the Production Cycle tree
-TTree* AliExternalInfo::GetTreeProdPasses(){
-  return GetTree("", "", "", "", kProdCycleCpasses);
-}
-
-// ##################
-// Returns a pointer to the Production Cycle tree
-TTree* AliExternalInfo::GetTreeProdCycle(TString id){
-  return GetTree(id, "", "", "", kProdCycle);
-}
-// ##################
-// Returns a pointer to the Production Cycle tree
-// TTree* AliExternalInfo::GetTreeProdCycle(TString period, TString pass){
-//   return GetTree(period, pass, "", "", kProdCycle);
-// }
-
-// ##################
-// Returns a pointer to the Logbook tree
-TTree* AliExternalInfo::GetTreeLogbook(TString period){
-  return GetTree(period, "", "", "", kLogbook);
-}
-
-// ##################
-// Returns a pointer to the Trigger Classes tree
-TTree* AliExternalInfo::GetTreeTriggerClasses(TString year){
-  return GetTree(year, "", "", "", kTriggerClasses);
-}
-
-TTree* AliExternalInfo::GetTreeDataQA(TString detector, TString period, TString pass){
-  if      (detector == "TPC" ) return GetTree(period, pass, "", "", kTPC);
-  else if (detector == "RawQATPC" ) return GetTree(period, pass, "", "", kRawQATPC);
-  else if (detector == "TOF" ) return GetTree(period, pass, "", "", kTOF);
-  else if (detector == "EVS" ) return GetTree(period, pass, "", "", kEVS);
-  else{
-    return new TTree;
-  }
-}
-
-TChain* AliExternalInfo::GetChain(TString period, TString pass, TString anchorYear, TString productionTag, Int_t type)
+AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLocation/*, Bool_t copyToLocalStorage*/) :
+                                /*fCopyDataToLocalStorage(copyToLocalStorage),*/
+                                TObject(),
+                                fConfigLocation(configLocation),
+                                fLocalStorageDirectory(localStorageDirectory),
+                                fLocationTimeOutMap(),
+                                fTree(0x0),
+                                fChain(new TChain()),
+                                fChainMap(),
+                                fMaxCacheSize(-1)
 {
-  //blabla file name
-  TString year = GetYearFromPeriod(period);
-  TString name("");
-  TString localpath("");
-  TString file("");
-  switch (type){
-    case kRCT:
-    {
-      name = "RCT";
-      SetUpForPeriodPass(period, pass, localpath, file, fFormRCTFilename, ".root", type);
-      // std::cout << period << " " << pass << " " << file << " " << title << " " << localpath << " " << type << std::endl;
-      break;
-    }
-    case kMC:
-    {
-      anchorYear = ""; // Set to not create a warning, implemented later
-      productionTag = ""; // Set to not create a warning, implemented later
-      name = "MC";
-      localpath = fFormMCDir;
-      localpath.Prepend(fGlobalDir);
-      file=localpath+fFormMCFilename+fFormMCFiletype;
-      break;
-    }
-    case kProdCycle:
-    {
-      name = "ProdCycle";
-      localpath = fFormProdCycleDir;
-      localpath.Prepend(fGlobalDir);
-      file=localpath+fFormProdCycleFilename+period+".root";
-      break;
-    }
-    case kProdCycleCpasses:
-    {
-      name = "ProdPasses";
-      localpath = fFormProdPassesDir;
-      localpath.Prepend(fGlobalDir);
-      file=localpath+fFormProdPassesFilename+fFormProdPassesFiletype;
-      break;
-    }
-    case kLogbook:
-    {
-      name = "logbook";
-      SetUpForPeriodPass(period, pass, localpath, file, fFormLogbookFilename, fFormLogbookFiletype, type);
-      break;
-    }
-    case kTriggerClasses:
-    {
-      name = "trigger_classes";
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTriggerClassesFilename, fFormTriggerClassesFiletype, type);
-      break;
-    }
-    case kTPC:
-    {
-//       name = "tpcQA";
-      name = "trending";
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kRawQATPC:
-    {
-      name = "dcs";
-      TString filename("OCDBscan");
-      SetUpForPeriodPass(period, pass, localpath, file, filename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kTOF:
-    {
-      name = "trending";
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-    case kEVS:
-    {
-      name = "trending";
-      // TString global_properties = "global_properties"; // comment in these two lines if you want to have the global properties file with the interaction rate
-      // SetUpForPeriodPass(period, pass, localpath, file, global_properties, fFormTrendingFiletype, type);
-      SetUpForPeriodPass(period, pass, localpath, file, fFormTrendingFilename, fFormTrendingFiletype, type);
-      break;
-    }
-  }
-
-  TString cmd = TString::Format("ls %s", file.Data());
-  std::cout << "==== cmd: " << cmd << std::endl;
-
-
-  // TString fileName=fFormTrendingFilename;
-  // TString cmd=TString::Format("ls %s/data/*/%s/%s/%s_TPC.root", fGlobalDir.Data(), period.Data(), pass.Data(), fileName.Data());
-  TString files=gSystem->GetFromPipe(cmd.Data());
-  TObjArray *arrFiles=files.Tokenize("\n");
-  std::cout << "Files to add to chain: " << files << std::endl;
-
-  //function to get tree namee based on type
-  TChain *chain=new TChain(name.Data());
-  for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile) {
-    chain->AddFile(arrFiles->At(ifile)->GetName());
-  }
-
-  delete arrFiles;
-  return chain;
+  ReadConfig();
 }
 
-// ##################
-// Returns a pointer to the MC tree*
-TChain* AliExternalInfo::GetChainMC(TString period, TString anchorYear, TString productionTag){
-  return GetChain(period, "passMC", anchorYear, productionTag, kMC);
-}
+AliExternalInfo::~AliExternalInfo() {}
 
-// ##################
-// Returns a pointer to the RCT tree
-TChain* AliExternalInfo::GetChainRCT(TString period, TString pass){
-  return GetChain(period, pass, "", "", kRCT);
-}
 
-// // ##################
-// // Returns a pointer to the Production Cycle tree
-// TChain* AliExternalInfo::GetChainProdCycle(){
-//   return GetChain("", "", "", "", kProdCycle);
-// }
-
-// // ##################
-// // Returns a pointer to the Production Cycle tree
-// TChain* AliExternalInfo::GetChainProdPasses(){
-//   return GetChain("", "", "", "", kProdCycleCpasses);
-// }
-
-// ##################
-// Returns a pointer to the Production Cycle tree
-TChain* AliExternalInfo::GetChainProdCycle(TString id){
-  return GetChain(id, "", "", "", kProdCycle);
-}
-// ##################
-// Returns a pointer to the Production Cycle tree
-// TChain* AliExternalInfo::GetChainProdCycle(TString period, TString pass){
-//   return GetChain(period, pass, "", "", kProdCycle);
-// }
-
-// ##################
-// Returns a pointer to the Logbook tree
-TChain* AliExternalInfo::GetChainLogbook(TString period){
-  return GetChain(period, "", "", "", kLogbook);
-}
-
-// ##################
-// Returns a pointer to the Trigger Classes tree
-TChain* AliExternalInfo::GetChainTriggerClasses(TString year){
-  return GetChain(year, "", "", "", kTriggerClasses);
-}
-
-TChain* AliExternalInfo::GetChainDataQA(TString detector, TString period, TString pass){
-  if      (detector == "TPC" ) return GetChain(period, pass, "", "", kTPC);
-  else if (detector == "RawQATPC" ) return GetChain(period, pass, "", "", kRawQATPC);
-  else if (detector == "TOF" ) return GetChain(period, pass, "", "", kTOF);
-  else if (detector == "EVS" ) return GetChain(period, pass, "", "", kEVS);
-  else{
-    return new TChain;
-  }
-}
-
-// ##################
-// Gives true if Download is needed, because the file is not found or it is older than the set timelimit
-Bool_t AliExternalInfo::IsDownloadNeeded(TString file){
-  std::cout << "-- Check, if " << file << " is already there" << std::endl;
-  if (gSystem->AccessPathName(file.Data()) == kTRUE) {
-    std::cout << "---- File not found locally --> Caching from remote" << std::endl;
-    return kTRUE;
-  }
-  else {
-    std::cout << "---- File already downloaded --> Check if older than timelimit" << std::endl;
-    struct stat st;
-    stat(file.Data(), &st);
-    std::time_t timeNow = std::time(0);
-    long int timeFileModified = st.st_mtime;
-    std::cout << "------ File is " << timeNow - timeFileModified << " seconds old" << std::endl;
-    if (timeNow - timeFileModified < fTimeLimit) {
-      std::cout << "-------- File is not older than the set timelimit " << fTimeLimit << " seconds --> no caching needed" << std::endl;
-      return kFALSE; // if file is younger than the set time limit, it will not be downloaded again
-    }
-    else {
-      std::cout << "-------- File is older than the set timelimit " << fTimeLimit << " seconds --> Caching from remote" << std::endl;
-      return kTRUE;
+/// Reads the configuration file. Lines beginning with an '#' are ignored.
+/// Use the format which is in the config.cfg by default. Adding ressources like the ones already
+/// there should work without problems.
+void AliExternalInfo::ReadConfig(){
+  TString configFileName=gSystem->ExpandPathName(fConfigLocation.Data());
+  if (gSystem->AccessPathName(configFileName)) {
+    AliError(TString::Format("Could not find config file '%s'", configFileName.Data()));
+    const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
+    if (defaultConfigFileName!=configFileName) {
+      AliError("Using default config file instead");
+      configFileName=defaultConfigFileName;
     }
   }
-}
 
-
-// Setting up the correct paths and filenames
-void AliExternalInfo::SetUpForPeriodPass(const TString& period, const TString& pass, TString& localpath, TString& file, const TString& filename, const TString& filetype, Int_t type){
-  TString year = GetYearFromPeriod(period);
-  if (type == kRCT){
-    localpath = TString::Format(fFormRCTDir.Data(), year.Data(), period.Data(), pass.Data());
-  }
-  else if (type == kMC){
-    localpath = fFormMCDir;
-  }
-  else if (type == kProdCycle){
-    // filename.Append(period);
-    localpath = fFormProdCycleDir;
-  }
-  else if (type == kProdCycleCpasses){
-    // filename.Append(period);
-    localpath = fFormProdPassesDir;
-  }
-  else if (type == kLogbook){
-    localpath = TString::Format(fFormLogbookDir.Data(), year.Data(), period.Data(), pass.Data());
-  }
-  else if (type == kTriggerClasses){
-    localpath = TString::Format(fFormTriggerClassesDir.Data(), period.Data());
-  }
-  else if (type == kTPC){
-    localpath = TString::Format(fFormTrendingDir.Data(), year.Data(), period.Data(), pass.Data());
-    localpath.Prepend(fGlobalDir);
-    file = localpath+filename+"_TPC"+filetype;
+  std::ifstream configFile(configFileName);
+  if (!configFile.is_open()) {
+    AliError(TString::Format("Could not open config file '%s'", configFileName.Data()));
     return;
   }
-  else if (type == kRawQATPC){
-    localpath = TString::Format("/data/%s/", year.Data());
-    localpath.Prepend(fGlobalDir);
-    file = localpath+filename+""+filetype;
-    return;
-  }
-    else if (type == kTOF){
-    localpath = TString::Format(fFormTrendingDir.Data(), year.Data(), period.Data(), pass.Data());
-    localpath.Prepend(fGlobalDir);
-    file = localpath+filename+"_TOF"+filetype;
-    return;
-  }
-  else if (type == kEVS){
-    localpath = TString::Format(fFormTrendingDir.Data(), year.Data(), period.Data(), pass.Data());
-    localpath.Prepend(fGlobalDir);
-    file = localpath+filename+"_EVS"+filetype;
-    return;
-  }
-  localpath.Prepend(fGlobalDir);
-  file = localpath+filename+filetype;
-}
 
+  //
+  std::string line;
+  while (std::getline(configFile, line)){
+    TString temp_line(line.c_str()); // Use TString for easier handling
 
-// ##################
-// Checks if path is correct
-Bool_t AliExternalInfo::CheckPeriod(TString period){
-  if (period.Contains("LHC") == kFALSE) {
-    std::cout << "ERROR: Period is not given correctly; Should be something like \"LHC10b\"; Input was: " << period << std::endl;
-    return kFALSE;
-  }
-  if (period.Length() != 6) {
-    std::cout << "ERROR: Period name is to long/short, should be 6 characters like \"LHC10b\"; Input was: " << period.Length() << std::endl;
-    return kFALSE;
-  }
-  return kTRUE;
-}
+    if (temp_line.EqualTo("")) continue; // Ignore empty lines
+    // temp_line = temp_line.Strip(TString::EStripType::kBoth, ' '); // Strip trailing and leading spaces
+    temp_line = temp_line.Strip(TString::kBoth, ' '); // Strip trailing and leading spaces
+    if (temp_line.First('#') == 0) continue; // If line starts with a '#' treat is as a comment
 
+    TObjArray arrTokens = (*(temp_line.Tokenize(' ')));
+    const TString key(arrTokens.At(0)->GetName());
+    const TString value(arrTokens.At(1)->GetName());
 
-Bool_t AliExternalInfo::CheckPass(TString pass) {
-  if (pass.Contains("pass") == kFALSE) {
-    std::cout << "ERROR: Pass is not given correctly; Should be something like \"pass2\"; Input was: " << pass << std::endl;
-    return kFALSE;
-  }
-  if (pass.Length() != 5) {
-    std::cout << "ERROR: Pass name is to long/short, should be 5 characters like \"pass2\"; Input was: " << pass.Length() << std::endl;
-    return kFALSE;
-  }
-  return kTRUE;
-}
-
-TString AliExternalInfo::wget(const TString& localpath, const TString& filename, const TString& filetype, const TString& remotepath){
-  return TString::Format("wget --no-check-certificate --secure-protocol=TLSv1 --certificate=%s --private-key=%s -o %s%s.log -O %s%s%s \"%s\"",
-                                     fCertificate.Data(), fPrivateKey.Data(),
-                                     localpath.Data(), filename.Data(),
-                                     localpath.Data(), filename.Data(), filetype.Data(),
-                                     remotepath.Data());;
-}
-
-void AliExternalInfo::CreateMapWithPassesAndPeriods(){
-  // Creates a vector containing objects of the class "Period" which itself contains the different passes in a vector of TString
-  TTree* tree = GetTreeProdCycle();
-  std::vector<Period> vec;
-  // Reading of the period names in the tree
-  char* temp_tag = new char[200]();
-  tree->SetBranchAddress("Tag", temp_tag);
-  Int_t nEntries = tree->GetEntriesFast();
-
-  // Looping over the tree and chopping the period_pass name into pieces and storing it in a vector
-  for (Int_t i = 0; i < nEntries; ++i){
-    tree->GetEntry(i);
-
-    // std::cout << "Tag: " << temp_tag;
-    TString tag(temp_tag);
-    // std::cout << "    Contains \"_\" = " << tag.First('_') << "\n";
-
-    TObjArray objArray;
-    int first_occurence_ = tag.First('_');
-    if (first_occurence_ != -1){
-      TString period_name(tag(0,first_occurence_));
-      TString pass_name(tag(first_occurence_+1, tag.Length()-first_occurence_));
-
-      if (period_name.Length() != 6) {continue;} // If period does not look like "LHC10b" pattern
-      // std::cout << "Token0 = " << period_name << "   Token1 = " << pass_name << "    Token0.Lenght = " << period_name.Length() << "\n";
-
-      // std::cout << "-- SIZE 6" << std::endl;
-      int found = 0;
-      unsigned int j = 0;
-      for (; j < vec.size(); ++j){
-        if (vec.at(j).GetPeriod() == period_name){
-          found = 1;
-          break;
-        }
-      }
-      if (found == 0){ // if period is already found
-        Period p(period_name);
-        p.AddPass(pass_name);
-
-        vec.push_back(p);
-      }
-      else{
-        vec.at(j).AddPass(pass_name);
-      } // if '_' in tag
-    } // for loop
-  }
-  std::cout << std::endl; // To flush the buffer
-  delete[] temp_tag;
-  for (unsigned int i = 0; i < vec.size(); ++i){
-    vec.at(i).PrintPeriodPass();
+    fLocationTimeOutMap[key] = value;
   }
   return;
 }
 
-TString AliExternalInfo::GetYearFromPeriod(TString period){
+/// Prints out the config which was read in previously. Useful to check if anything went wrong
+void AliExternalInfo::PrintConfig(){
+  // Loop through the map (Would be much easier in c++11)
+  std::cout << "User defined resources are:\n";
+  // looping over map with const_iterator
+  typedef std::map<TString,TString>::const_iterator it_type;
+  for(it_type iterator = fLocationTimeOutMap.begin(); iterator != fLocationTimeOutMap.end(); ++iterator) {
+    std::cout << iterator->first << " " << iterator->second << "\n";
+  }
+  return;
+}
+
+
+/// Sets up all variables according to period, pass and type. Extracts information from the config file
+void AliExternalInfo::SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
+                                     TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass){
+  // Check if resource is a tree in a root file or not
+  pathStructure = CreatePath(type, period, pass);
+
+  // if (fLocationTimeOutMap.count(type + ".treename") > 0) resourceIsTree = kTRUE;
+  // else resourceIsTree = kFALSE;
+  if (type.Contains("MonALISA") == kTRUE) resourceIsTree = kFALSE;
+  else resourceIsTree = kTRUE;
+
+  // To distinguish different detector QA you have to add a <det>_ to the trending.root. Here we check the detector!
+  if (type.Contains("QA")) {
+   Int_t firstDotOfType(type.First('.') + 1);
+   Int_t lastCharOfType(type.Length() - 1);
+   detector = type(firstDotOfType, lastCharOfType) + "_";
+//    std::cout << "DETECTOR: " << detector << std::endl;
+  }
+
+  rootFileName = fLocationTimeOutMap[type + ".filename"];
+  treeName     = fLocationTimeOutMap[type + ".treename"];
+
+  // Create the local path where to store the information of the resource
+  internalLocation += pathStructure;
+  AliInfo(TString::Format("Information will be stored/retrieved in/from %s", internalLocation.Data()));
+
+  if (!(period.Last('*') == period.Length() - 1) || !(pass.Last('*') == pass.Length() - 1) || period.Length() == 0){
+//     std::cout << "mkdir " << internalLocation.Data() << std::endl;
+    gSystem->mkdir(internalLocation.Data(), kTRUE);
+  }
+
+  // Resulting internal path to the file
+  if (resourceIsTree) internalFilename = internalLocation + detector + rootFileName; // e.g data/<year>/<period>/<pass>/<det>_trending.root
+  else internalFilename = internalLocation + rootFileName; // e.g data/<year>/<period>/<pass>/MC.root
+
+  return;
+};
+
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'
+/// \param pass E.g. 'pass2' or 'passMC'
+/// Implements the functionality to download the ressources in the specified storage. If it is not
+/// in the form of a tree it creates one. You can use this function or the functions available in
+/// the class definition as an abbrevation
+/// \return If downloading and creation of tree was successful true, else false
+Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
+  AliInfo(TString::Format("Caching of %s %s from %s in start path %s", period.Data(), pass.Data(), type.Data(), fLocalStorageDirectory.Data()));
+
+  // initialization of local variables
+  TString internalFilename = ""; // Resulting path to the file
+  TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
+  TString externalLocation = "";
+  Bool_t resourceIsTree = kFALSE;
+  TString detector = "";
+  TString rootFileName = "";
+  TString treeName = "";
+  TString pathStructure = "";
+
+  // initialization of external variables
+  externalLocation = fLocationTimeOutMap[type + ".location"];
+
+  // Setting up all the local variables
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+
+  // Checking if resource needs to be downloaded
+  const Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
+
+  if (downloadNeeded == kTRUE){
+    // Download resources in the form of .root files in a tree
+    if (resourceIsTree == kTRUE){
+      externalLocation += pathStructure + rootFileName;
+      AliInfo(TString::Format("Information retrieved from: %s", externalLocation.Data()));
+
+      // Check if external location is a http address or locally accessible
+//       std::cout << externalLocation(0, 4) << std::endl;
+      TFile *file = TFile::Open(externalLocation);
+      if (file && !file->IsZombie()){ // Checks if webresource is available
+        if (file->Cp(internalFilename)) {
+          AliInfo("Caching successful");
+          return kTRUE;
+        }
+        else {
+          AliError("Copying to internal location failed");
+          return kFALSE;
+        }
+      }
+      else {
+        AliError("Ressource not available");
+        return kFALSE;
+      }
+      delete file;
+    }
+    else {
+      //Set up external path with period and pass if necessary
+      if (period != "" && pass != ""){
+        externalLocation = TString::Format(externalLocation.Data(), period.Data(), pass.Data());
+      }
+      else if (period != "" && pass == ""){
+        externalLocation = TString::Format(externalLocation.Data(), period.Data());
+      }
+
+      TString mifFilePath = ""; // Gets changed in Wget command
+      TString command = Wget(mifFilePath, internalLocation, rootFileName, externalLocation);
+
+      std::cout << command << std::endl;
+      gSystem->Exec(command.Data());
+
+      // Store it in a tree inside a root file
+      TTree tree(treeName, treeName);
+
+      if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) {
+        AliInfo("-- Successfully read in tree");
+      }
+      else {
+        AliError("-- Error while reading tree");
+        return kFALSE;
+      }
+
+      TFile tempfile(internalFilename, "RECREATE");
+      tempfile.cd();
+      tree.Write();
+      tempfile.Close();
+      AliInfo(TString::Format("Write tree to file: %s", internalFilename.Data()));
+      return kTRUE;
+    }
+  }
+  else {// downloadIsNeeded == kFALSE
+    return kTRUE;
+  }
+}
+
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'
+/// \param pass E.g. 'pass2' or 'passMC'
+/// Returns the tree with the information from the corresponding resource
+/// \return TTree* with corresponding resource
+TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
+  TString internalFilename = ""; // Resulting path to the file
+  TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
+  TString externalLocation = "";
+  Bool_t resourceIsTree = kFALSE;
+  TString detector = "";
+  TString rootFileName = "";
+  TString treeName = "";
+  TString pathStructure = "";
+
+  TTree* tree = 0x0;
+
+  // Setting up all the local variables
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+
+  std::cout << "internalFilename: " << internalFilename << " rootFileName: " << rootFileName << std::endl;
+
+  if (gSystem->AccessPathName(internalFilename.Data()) == kTRUE) {
+    if (Cache(type, period, pass) == kFALSE) {
+      std::cout << "Caching of ressource was not successful; Nullpointer is returned!\n" << std::endl;
+      return tree;
+    }
+  }
+
+  // Creating and returning the tree from the file
+  TFile* treefile = new TFile(internalFilename.Data());
+
+  // ---| loop over possible tree names |---
+  TObjArray *arr = treeName.Tokenize(",");
+  for (Int_t iname=0; iname<arr->GetEntriesFast(); ++iname) {
+    tree = dynamic_cast<TTree*>( treefile->Get(arr->At(iname)->GetName()) );
+    if (tree) break;
+  }
+  delete arr;
+
+  if (tree != 0x0) {
+    AliInfo("-- Successfully read in tree");
+    AddTree(tree, type);
+  } else {
+    AliError("Error while reading tree");
+  }
+
+  const TString cacheSize=fLocationTimeOutMap[type + ".CacheSize"];
+  Long64_t cache=cacheSize.Atoll();
+  if (fMaxCacheSize>0) {
+    if (cache>0) {
+      cache=TMath::Min(fMaxCacheSize, cache);
+    } else {
+      cache=fMaxCacheSize;
+    }
+  }
+  if (cache>0) tree->SetCacheSize(cache);
+
+  return tree;
+}
+
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'. Here you can use wildcards like in 'ls', e.g. 'LHC15*'
+/// \param pass E.g. 'pass2' or 'passMC'. Here you can use wildcards like in 'ls', e.g. 'pass*'
+/// Returns a chain with the information from the corresponding resources.
+/// \return TChain*
+TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
+  TChain* chain = 0x0;
+  TString internalFilename = ""; // Resulting path to the file
+  TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
+  TString externalLocation = "";
+  Bool_t resourceIsTree = kFALSE;
+  TString detector = "";
+  TString rootFileName = "";
+  TString treeName = "";
+  TString pathStructure = "";
+
+  // Setting up all the local variables
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+
+  TString cmd = TString::Format("/bin/ls %s", internalFilename.Data());
+  // std::cout << "==== cmd: " << cmd << std::endl;
+
+  TString files=gSystem->GetFromPipe(cmd.Data());
+  TObjArray *arrFiles=files.Tokenize("\n");
+  AliInfo(TString::Format("Files to add to chain: %s", files.Data()));
+
+  //function to get tree namee based on type
+  chain=new TChain(treeName.Data());
+  for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile) {
+    chain->AddFile(arrFiles->At(ifile)->GetName());
+  }
+
+  const TString cacheSize=fLocationTimeOutMap[type + ".CacheSize"];
+  Long64_t cache=cacheSize.Atoll();
+  if (fMaxCacheSize>0) {
+    if (cache>0) {
+      cache=TMath::Min(fMaxCacheSize, cache);
+    } else {
+      cache=fMaxCacheSize;
+    }
+  }
+  if (cache>0) chain->SetCacheSize(cache);
+
+  AddChain(type, period, pass);
+  delete arrFiles;
+  return chain;
+};
+
+/// Every tree you create is added to a big tree acting as a friend.
+/// You can have access to this tree with the GetFriendsTree() function.
+/// @TODO Add 'return false' when adding to the friends tree was not successful
+/// \return kTRUE
+Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
+
+  if (tree->BuildIndex("run") < 0) tree->BuildIndex("raw_run");
+  TString name = "";
+
+  if(type.Contains("QA")){ // use TPC instead of QA.TPC
+    name = type(3, type.Length()-1);
+  }
+  else if(type.Contains("MonALISA")){
+    name = type(9, type.Length()-1);
+  }
+  else {
+    name = type;
+  }
+
+  tree->SetName(name);
+  if (fTree == 0x0) fTree = dynamic_cast<TTree*>(tree->Clone());
+  fTree->AddFriend(tree, name);
+
+  AliInfo(TString::Format("Added as friend with the name: %s",name.Data()));
+  return kTRUE;
+}
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'. Here you can use wildcards like in 'ls', e.g. 'LHC15*'
+/// \param pass E.g. 'pass2' or 'passMC'. Here you can use wildcards like in 'ls', e.g. 'pass*'
+/// Not fully working. Should automatically add every downloaded file to a huge chain.
+Bool_t AliExternalInfo::AddChain(TString type, TString period, TString pass){
+  // Adds chain of trees and buildsindexs and addfriends it
+  TString internalFilename = ""; // Resulting path to the file
+  TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
+  TString externalLocation = "";
+  Bool_t resourceIsTree = kFALSE;
+  TString detector = "";
+  TString rootFileName = "";
+  TString treeName = "";
+  TString pathStructure = "";
+
+  // Setting up all the local variables
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+  AliInfo(TString::Format("Add to internal Chain: %s", internalFilename.Data()));
+  AliInfo(TString::Format("with tree name: %s",        treeName.Data()));
+  fChain->AddFile(internalFilename.Data(), TChain::kBigNumber, treeName);
+
+  return kTRUE;
+}
+
+/// \param period Period in the form eg LHC15f
+/// Generate from eg LHC15f the year 2015
+/// \return Year in the form "2015"
+const TString AliExternalInfo::GetYearFromPeriod(const TString &period){
   TString year(period(3,2));
   year = TString::Format("20%s", year.Data());
   return year;
+}
+
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'. Here you can use wildcards like in 'ls', e.g. 'LHC15*'
+/// \param pass E.g. 'pass2' or 'passMC'. Here you can use wildcards like in 'ls', e.g. 'pass*'
+/// Returns a TString containing the complete directory structure where the root
+/// file should be stored/loaded from. eg './data/2015/LHC15f/pass2/'
+const TString AliExternalInfo::CreatePath(TString type, TString period, TString pass){
+  // Create the local path from the type, period and pass of the resource
+  TString internalLocation;
+  //Check if period is MC and adjust storage hierarchy
+  if (period.Length() == 6 || (period == "" && type != "MonALISA.MC") || type == "MonALISA.ProductionCycleID" || type == "TriggerClasses") { // put everything in the form LHCYYx or with empty period and pass in "data"
+    internalLocation.Append("/data/");
+  }
+  else { // everything which is not in the form "LHCYYx" put in /sim/
+    internalLocation.Append("/sim/");
+  }
+  // std::cout << "Internal save path 1: " << internalLocation << std::endl;
+  if (period != "" && type != "MonALISA.ProductionCycleID" && type != "QA.rawTPC"){
+    const TString year = GetYearFromPeriod(period);
+    internalLocation += year + "/";
+    // std::cout << "Internal save path 2: " << internalLocation << std::endl;
+    internalLocation += period + "/";
+    // std::cout << "Internal save path 3: " << internalLocation << std::endl;
+    if (pass != ""){
+      internalLocation += pass + "/";
+      // std::cout << "Internal save path 4: " << internalLocation << std::endl;
+    }
+  }
+  else if (type == "QA.rawTPC"){ // only needs the year
+    const TString year = GetYearFromPeriod(period);
+    internalLocation += year + "/";
+  }
+  else if (type == "MonALISA.ProductionCycleID") { // Needed for ProductionCycleIDs
+    internalLocation += "ID_" + period + "/";
+  }
+  return internalLocation;
+}
+
+/// \param file Exact location of the file which should be checked
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// Checks if the file is older than the timeout which is specified in the config file of this
+/// specific resource type
+/// \returns true if download of the resource is needed and false if not
+Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
+  Int_t timeOut = 0;
+  timeOut = atoi(fLocationTimeOutMap[type + ".timeout"]);
+
+  // std::cout << "-- Check, if " << file << " is already there" << std::endl;
+  if (gSystem->AccessPathName(file.Data()) == kTRUE) {
+    AliInfo("-- File not found locally --> Caching from remote");
+    return kTRUE;
+  }
+  else {
+    // std::cout << "---- File already downloaded --> Check if older than timelimit" << std::endl;
+    struct stat st;
+    stat(file.Data(), &st);
+    std::time_t timeNow = std::time(0);
+    long int timeFileModified = st.st_mtime;
+    // std::cout << "------ File is " << timeNow - timeFileModified << " seconds old" << std::endl;
+    if (timeNow - timeFileModified < timeOut) {
+      AliInfo(TString::Format("-- File is %li s old; NOT older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
+      return kFALSE; // if file is younger than the set time limit, it will not be downloaded again
+    }
+    else {
+      AliInfo(TString::Format("-- File is %li s old; Older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
+      return kTRUE;
+    }
+  }
+}
+/// \param mifFilePath Location of the mif-file which is downloaded from Monalisa; Is changed by this function
+/// \param internalLocation Directory where the root file is stored
+/// \param rootFileName Location of the newly created root file
+/// \param externalLocation Location specified in the config file
+/// Composes the wget-command in a TString which afterwards then can be executed
+/// \return wget-command in a TString
+const TString AliExternalInfo::Wget(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation){
+  TString command = "";
+  TString certificate("$HOME/.globus/usercert.pem");
+  TString privateKey("$HOME/.globus/userkey.pem");
+
+  // TString internalLocation = internalFilename(0, internalFilename.Last('/') + 1); // path to internal location
+  // Create path to logfile with same name as the root file
+  TString logFileName = rootFileName.ReplaceAll(".root", ".log");
+  logFileName.Prepend(internalLocation);
+
+  mifFilePath = rootFileName.ReplaceAll(".log", ".mif");
+  mifFilePath.Prepend(internalLocation);
+
+  command = TString::Format("wget --no-check-certificate --secure-protocol=TLSv1 --certificate=%s --private-key=%s -o %s -O %s \"%s\"",
+                                     certificate.Data(), privateKey.Data(), logFileName.Data(),
+                                     mifFilePath.Data(), externalLocation.Data());
+  return command;
 }

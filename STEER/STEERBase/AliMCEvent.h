@@ -160,6 +160,8 @@ private:
     void 	      UpdateEventInformation();
     virtual void      AssignGeneratorIndex();    
     virtual void      AssignGeneratorIndex(Int_t index, Int_t dmin, Int_t dmax);    
+
+  using AliVEvent::GetVZEROData;
     
 private: 
     // Stanndard implementation for ESD production

@@ -296,7 +296,7 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
   
   // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
   // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
-  if(fSharedCluster)
+  if ( fSharedCluster && nSupMod1 != nSupMod )
   {
     if(nSupMod1%2) relid2[1]+=AliEMCALGeoParams::fgkEMCALCols;
     else           relid1[1]+=AliEMCALGeoParams::fgkEMCALCols;
@@ -304,7 +304,7 @@ Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * d
 	
   rowdiff = TMath::Abs( relid1[0] - relid2[0] ) ;  
   coldiff = TMath::Abs( relid1[1] - relid2[1] ) ;  
-
+  
   // With this condition, cells touching one corner are considered neighbours
   // which was considered as the behavior expected initially, but changed later.
   //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0)) 
@@ -977,50 +977,66 @@ void  AliEMCALRecPoint::EvalElipsAxis(Float_t logWeight,TClonesArray * digits)
 
 }
 
+///
+/// Constructs the list of primary particles which 
+/// have contributed to this RecPoint and calculate deposited energy. 
+/// List of primaries ordered from highest to lowest energy deposition.
+///
 //______________________________________________________________________________
 void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
 {
-  // Constructs the list of primary particles (tracks) which 
-  // have contributed to this RecPoint and calculate deposited energy 
-  // for each track
-    
   AliEMCALDigit * digit =0;
   Int_t * primArray = new Int_t[fMaxTrack] ;
   memset(primArray,-1,sizeof(Int_t)*fMaxTrack);
   Float_t * dEPrimArray = new Float_t[fMaxTrack] ;
   memset(dEPrimArray,-1,sizeof(Int_t)*fMaxTrack);
   
+  // All digits in rec point
   Int_t index ;  
-  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) 
+  { 
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
-    if(!digit) {
+    
+    if(!digit) 
+    {
       AliError("No Digit!!");
       continue;
     }
     
     Int_t nprimaries = digit->GetNprimary() ;
     if ( nprimaries == 0 ) continue ;
+    
+    // All primaries in digit
     Int_t jndex ;
-    for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-      if ( fMulTrack > fMaxTrack ) {
+    for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) 
+    { 
+      if ( fMulTrack > fMaxTrack ) 
+      {
         fMulTrack = fMaxTrack ;
         Error("EvalPrimaries", "increase fMaxTrack ")  ;
         break ;
       }
-      Int_t newPrimary = digit->GetPrimary(jndex+1);
-      Float_t dEPrimary = digit->GetDEPrimary(jndex+1);
+      
+      Int_t   newPrimary = digit->GetPrimary  (jndex+1);
+      Float_t dEPrimary  = digit->GetDEPrimary(jndex+1);
+      
+      // Check if not already stored
       Int_t kndex ;
       Bool_t already = kFALSE ;
-      for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
+      for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) 
+      {
         if ( newPrimary == primArray[kndex] ){
           already = kTRUE ;
           dEPrimArray[kndex] += dEPrimary; 
           break ;
         }
       } // end of check
-      if ( !already && (fMulTrack < fMaxTrack)) { // store it
-        primArray[fMulTrack] = newPrimary ; 
-        dEPrimArray[fMulTrack] = dEPrimary ; 
+      
+      // Store it
+      if ( !already && (fMulTrack < fMaxTrack)) 
+      { 
+        primArray  [fMulTrack] = newPrimary ; 
+        dEPrimArray[fMulTrack] = dEPrimary  ; 
         fMulTrack++ ;
       } // store it
     } // all primaries in digit
@@ -1028,71 +1044,96 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
   
   Int_t *sortIdx = new Int_t[fMulTrack];
   TMath::Sort(fMulTrack,dEPrimArray,sortIdx); 
-  for(index = 0; index < fMulTrack; index++) {
-    fTracksList[index] = primArray[sortIdx[index]] ;    
+  
+  for(index = 0; index < fMulTrack; index++) 
+  {
+    fTracksList  [index] = primArray  [sortIdx[index]] ;    
     fDETracksList[index] = dEPrimArray[sortIdx[index]] ;
   }
+  
   delete [] sortIdx;
   delete [] primArray ;
   delete [] dEPrimArray ;
-  
 }
 
+///
+/// Constructs the list of parent particles which have contributed to this RecPoint.
+/// Access the digits belonging to this recPoint and get the labels and energy deposition.
+/// List of parents ordered from highest to lowest energy deposition.
+///
 //______________________________________________________________________________
 void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 {
-  // Constructs the list of parent particles (tracks) which have contributed to this RecPoint
-
   AliEMCALDigit * digit=0 ;
   Int_t * parentArray = new Int_t[fMaxTrack] ;
   memset(parentArray,-1,sizeof(Int_t)*fMaxTrack);
   Float_t * dEParentArray = new Float_t[fMaxTrack] ;
   memset(dEParentArray,-1,sizeof(Int_t)*fMaxTrack);
-  
+    
+  // Loop on all digits in rec point (cluster)
   Int_t index ;  
-  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) 
+  { 
     if (fDigitsList[index] >= digits->GetEntries() || fDigitsList[index] < 0)
       AliError(Form("Trying to get invalid digit %d (idx in WriteRecPoint %d)",fDigitsList[index],index));
+    
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
-    if(!digit) {
+    
+    if(!digit)
+    {
       AliError("No Digit!!");
       continue;
     }
     
     Int_t nparents = digit->GetNiparent() ;
     if ( nparents == 0 ) continue ;
-    
+        
+    // Loop on all parents in digit
     Int_t jndex ;
-    for ( jndex = 0 ; jndex < nparents ; jndex++ ) { // all primaries in digit
-      if ( fMulParent > fMaxParent ) {
+    for ( jndex = 0 ; jndex < nparents ; jndex++ ) 
+    { 
+      if ( fMulParent > fMaxParent ) 
+      {
         fMulTrack = - 1 ;
         Error("EvalParents", "increase fMaxParent")  ;
         break ;
       }
-      Int_t newParent = digit->GetIparent(jndex+1) ;
+      
+      Int_t   newParent   = digit->GetIparent (jndex+1) ;
       Float_t newdEParent = digit->GetDEParent(jndex+1) ;
+      // Check if parent was not already stored
+      // if stored, add its energy deposition.
       Int_t kndex ;
       Bool_t already = kFALSE ;
-      for ( kndex = 0 ; kndex < fMulParent ; kndex++ ) { //check if not already stored
-        if ( newParent == parentArray[kndex] ){
+      for ( kndex = 0 ; kndex < fMulParent ; kndex++ ) 
+      { 
+        if ( newParent == parentArray[kndex] )
+        {
           dEParentArray[kndex] += newdEParent;
           already = kTRUE ;
           break ;
         }
       } // end of check
-      if ( !already && (fMulParent < fMaxParent)) { // store it
-        parentArray[fMulParent] = newParent ; 
+      
+      // Store the parent
+      if ( !already && (fMulParent < fMaxParent) ) 
+      { 
+        parentArray  [fMulParent] = newParent   ; 
         dEParentArray[fMulParent] = newdEParent ; 
         fMulParent++ ;
       } // store it
     } // all parents in digit
   } // all digits
   
-  if (fMulParent>0) {
+  // Order the parents from highest to lowest energy deposit
+  if ( fMulParent > 0 ) 
+  {
     Int_t *sortIdx = new Int_t[fMulParent];
     TMath::Sort(fMulParent,dEParentArray,sortIdx); 
-    for(index = 0; index < fMulParent; index++) {
-      fParentsList[index] = parentArray[sortIdx[index]] ;      
+
+    for(index = 0; index < fMulParent; index++) 
+    {
+      fParentsList  [index] = parentArray  [sortIdx[index]] ;      
       fDEParentsList[index] = dEParentArray[sortIdx[index]] ;
     }
     delete [] sortIdx;

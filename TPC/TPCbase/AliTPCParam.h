@@ -223,6 +223,7 @@ public:
   void  SetMaxTBin(Int_t maxtbin)  {  fMaxTBin = maxtbin;}
   void  SetADCSat(Int_t adcsat)    {  fADCSat  = adcsat;}
   void  SetADCDynRange(Float_t adcdynrange) {fADCDynRange = adcdynrange;}
+  void  SetUseGlitchFilter(Bool_t use) {fUseGlitchFilter=use;}
   //
   // High voltage parameters
   //
@@ -371,6 +372,7 @@ public:
   Float_t  GetADCDynRange() const {return fADCDynRange;}
   Float_t  GetTotalNormFac() const {return fTotalNormFac;}
   Float_t  GetNoiseNormFac() const {return fNoiseNormFac;}
+  Bool_t   GetUseGlitchFilter() const {return fUseGlitchFilter;}
   //
   // High voltage parameters
   //
@@ -516,6 +518,8 @@ protected :
   Float_t fADCDynRange;     ///< input dynamic range (mV)
   Float_t fTotalNormFac;    ///< full normalisation factor - calculated
   Float_t fNoiseNormFac;    ///< normalisation factor to transform noise in electron to ADC channel
+  Bool_t  fUseGlitchFilter; ///< use the glitch filter to suppress single digits above threshold
+
   //---------------------------------------------------------------------
   // High voltage parameters
   //---------------------------------------------------------------------
@@ -550,7 +554,7 @@ protected :
   void CleanGeoMatrices();
 
   /// \cond CLASSIMP
-  ClassDef(AliTPCParam,11)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,12)  //parameter  object for set:TPC
   /// \endcond
 };
 

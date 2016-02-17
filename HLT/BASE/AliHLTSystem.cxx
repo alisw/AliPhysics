@@ -89,6 +89,7 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   fHLTOUTUse(0),
   fpControlTask(NULL),
   fName(name)
+  , fConfigurationString()
   , fECSParams()
   , fUseHLTOUTComponentTypeGlobal(true)
   , fDetMask(0)
@@ -1160,6 +1161,8 @@ int AliHLTSystem::ScanOptions(const char* options)
 {
   // see header file for class documentation
   int iResult=0;
+  fConfigurationString = options;
+
   if (options) {
     //AliHLTComponentHandler::TLibraryMode libMode=AliHLTComponentHandler::kDynamic;
     TString libs("");

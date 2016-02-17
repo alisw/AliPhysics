@@ -2,6 +2,7 @@
 
 #include "AliTRDNDFast.h"
 #include "TCanvas.h"
+#include "TMath.h"
 
 extern Double_t langaufunc(Double_t *x, Double_t *par) {
 
@@ -245,7 +246,7 @@ void AliTRDNDFast::BuildHistos(){
 	    fHistos[idim]->SetBinContent(ii,val);
 	}
 	// Normalization
-	fHistos[idim]->Scale(1./fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width"));
+      if(fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width")!=0) fHistos[idim]->Scale(1./fHistos[idim]->Integral(1,fHistos[idim]->GetNbinsX(),"width"));
     }
 }
 
@@ -275,11 +276,15 @@ void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
 	range[0]=hdEdx[idim]->GetXaxis()->GetXmin();
 	range[1]=hdEdx[idim]->GetXaxis()->GetXmax();
 	// Norm Histogram
-	hdEdx[idim]->Scale(1./hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width"));
+
+	if(hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width")!=0) hdEdx[idim]->Scale(1./hdEdx[idim]->Integral(1,hdEdx[idim]->GetNbinsX(),"width"));
         // Fit Histogram
 	fFunc[idim]=FitLandau(Form("fit%d",idim),hdEdx[idim],range,"RMB0");
 	// Norm Landau
-	fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2)/fFunc[idim]->Integral(range[0],range[1]));
+	if(fFunc[idim]->Integral(range[0],range[1])!=0.0) fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2)/fFunc[idim]->Integral(range[0],range[1]));
+	else {
+	    fFunc[idim]->SetParameter(2,fFunc[idim]->GetParameter(2));
+	}
 	hdEdx[idim]->DrawCopy();
         fFunc[idim]->DrawCopy("same");
 	// Set Pars

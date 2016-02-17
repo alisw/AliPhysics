@@ -147,7 +147,8 @@ void AliTPCDigitizer::DigitizeFast(Option_t* option)
    }
   AliTPC *pTPC  = (AliTPC *) gAlice->GetModule("TPC");
   AliTPCParam * param = pTPC->GetParam();
-  
+  const Bool_t useGlitchFilter=param->GetUseGlitchFilter();
+
   //sprintf(s,param->GetTitle());
   snprintf(s,100,"%s",param->GetTitle());
   //sprintf(ss,"75x40_100x60");
@@ -363,7 +364,7 @@ void AliTPCDigitizer::DigitizeFast(Option_t* option)
     //
     //  glitch filter
     //
-    digrow->GlitchFilter();
+    if (useGlitchFilter) digrow->GlitchFilter();
     //
     digrow->CompresBuffer(1,zerosup);
     digrow->CompresTrackBuffer(1);
@@ -659,6 +660,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   }
   AliTPC *pTPC  = (AliTPC *) gAlice->GetModule("TPC");
   AliTPCParam * param = pTPC->GetParam();
+  const Bool_t useGlitchFilter=param->GetUseGlitchFilter();
 
   //sprintf(s,param->GetTitle());
   snprintf(s,100,"%s",param->GetTitle());
@@ -1129,7 +1131,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     //
     //  glitch filter
     //
-    digrow->GlitchFilter();
+    if (useGlitchFilter) digrow->GlitchFilter();
     //
     digrow->CompresBuffer(1,zerosup);
     digrow->CompresTrackBuffer(1);

@@ -334,7 +334,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    //         3 = (level+1) > (level)
    if (position == 0){
       if(correctOverflow){
-        AliErrorClass("Position=0 not alowed as conmparison with previous record not possible");
+        AliErrorClass("Position=0 not alowed as comparison with previous record not possible");
         return 1;
       }else return 0; // to work correctly in AddScalers
    };
@@ -350,7 +350,7 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
    AliTriggerScalersRecord* scalers2 = (AliTriggerScalersRecord*)fScalersRecord.At(position);
    AliTriggerScalersRecord* scalers1 = (AliTriggerScalersRecord*)fScalersRecord.At(position-1);
    if (scalers2->Compare((AliTriggerScalersRecord*)fScalersRecord.At(position-1)) == -1){
-    cout << "Records time decreases." << endl;
+     AliError("Records time decreases.");
     return 1;
    }
 
@@ -376,9 +376,9 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
          //else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) overflow[i][ic]++;
          else if ( c2[i] < c1[i] && (c1[i] - c2[i]) > max2) ovflow[i]++;
          else{
-	  cout << "Decreasing count with time." << endl;
-	  cout << i << " c2: " << c2[i] << " c1[i] " << c1[i] << endl;
-	  return 2;
+           AliError("Decreasing count with time.");
+           AliError(Form("%d c2: %u c1[i] %u ",i,c2[i],c1[i]));
+           return 2;
 	 }
 	 //printf("i %i c2 %ul c1 %ul increase %i overflow %i \n",i,c2[i],c1[i],increase[i],overflow[i][ic]);
       }
@@ -390,16 +390,18 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
       }
       for(Int_t i=0;i<(nlevels-1);i++){
         if ((c2_64[i] - c1_64[i]) < (c2_64[i+1] - c1_64[i+1]) ) {
-                 if ( ((c2_64[i+1] - c1_64[i+1]) - (c2_64[i] - c1_64[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
+                 if ( ((c2_64[i+1] - c1_64[i+1]) - (c2_64[i] - c1_64[i])) < 16ull ) {AliDebugClass(1,"Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else {
 		    ULong64_t delta= (c2_64[i+1] - c1_64[i+1]) - (c2_64[i] - c1_64[i]);
-  		    cout << "(level+1)>level pos= " << position << " i= "<< i << " ";
-		    cout << c1_64[i] << " " << c1_64[i+1] << " "<< c2_64[i] << " " << c2_64[i+1] << " delta:";
-		    cout << delta << endl;
-		    if(i != 1)return 1; // Difference for LMA a L0B can be bigger due to the way counters are read
-		    else if(delta>512ull) return 1;
-		 }
-	 }
+                    // Difference for LMA a L0B can be bigger due to the way counters are read
+                    if ((i != 1) || (delta>512ull)){
+        	     AliWarning(Form("Run %09lu (level+1)>level pos= %d i=%d",GetRunNumber(),position,i));
+                     AliWarning(Form("%llu %llu %llu %llu delta: %llu",c1_64[i],c1_64[i+1],c2_64[i],c2_64[i+1],delta));
+                     AliError("Diff too big");
+                     return 1;
+                    }
+		}
+        }
       }
       // Correct for overflow
       if(correctOverflow){ 
@@ -469,9 +471,8 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
 
  for(Int_t i=1;i<fScalersRecord.GetEntriesFast(); i++){
   if(ConsistencyCheck(i,kTRUE,overflow)){
-    fScalersRecord.At(i)->Print();
-    fScalersRecord.At(i-1)->Print();
-    fScalersRecordESD.SetOwner(); 
+    StdoutToAliError(fScalersRecord.At(i)->Print(); fScalersRecord.At(i-1)->Print(););
+    fScalersRecordESD.SetOwner();
     fScalersRecordESD.Delete(); 
     AliErrorClass("Inconsistent scalers, they will not be provided.\n");
     for(Int_t i=0; i<8; i++)delete overflow[i];

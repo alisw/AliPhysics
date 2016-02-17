@@ -24,6 +24,8 @@
 
 /* $Id$ */
 
+#include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include "AliTPCclusterMI.h"
 //#include "AliTPCclusterInfo.h"
 #include "AliTrackPointArray.h"
@@ -195,4 +197,133 @@ void AliTPCclusterMI::SetGlobalTrackPoint( const AliCluster &cl, AliTrackPoint &
   // voluem ID to add later ....
   point.SetXYZ(xyz);
   point.SetCov(cov);
+}
+
+//_____________________________________________________
+void AliTPCclusterMI::SetDistortions(float dx, float dy, float dz)
+{
+  // store distortions rounded to 0.1mm: to 0.1 for X (9 bits) and to 0.1mm (11 bits) for y and z
+  int pack = 0;
+  int dxi = dx*kScaleDX;
+  if (dxi<0) {
+    if (dxi<-kMaxDX) dxi = -kMaxDX;
+    pack |= ((-dxi)&kMaxDX)|(0x1<<(kNBitsDX-1)); // highest bit flags negative value
+  }
+  else {
+    if (dxi>kMaxDX) dxi = kMaxDX;
+    pack |= dxi&kMaxDX;
+  }
+  int dyi = dy*kScaleDY;
+  if (dyi<0) {
+    if (dyi<-kMaxDY) dyi = -kMaxDY;
+    pack |= (((-dyi)&kMaxDY)|(0x1<<(kNBitsDY-1)))<<kNBitsDX; // highest bit flags negative value
+  }
+  else {
+    if (dyi>kMaxDY) dyi = kMaxDY;
+    pack |= (dyi&kMaxDY)<<kNBitsDX;
+  }
+  int dzi = dz*kScaleDZ;
+  if (dzi<0) {
+    if (dzi<-kMaxDZ) dzi = -kMaxDZ;
+    pack |= (((-dzi)&kMaxDZ)|(0x1<<(kNBitsDZ-1)))<<(kNBitsDX+kNBitsDY); // highest bit flags negative value
+  }
+  else {
+    if (dzi>kMaxDZ) dzi = kMaxDZ;
+    pack |= (dzi&kMaxDZ)<<(kNBitsDX+kNBitsDY);
+  }
+  SetSigmaYZ(*(float*)&pack); // interpret as float
+  //
+}
+
+//_____________________________________________________
+void AliTPCclusterMI::GetDistortions(float &dx, float &dy, float &dz) const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  int dxi = pack&kMaskDX;
+  dx = dxi>kMaxDX ? -(dxi&kMaxDX) : dxi;
+  dx *= 1.0f/kScaleDX; //1./50.0f;
+  //
+  int dyi = (pack>>kNBitsDX)&kMaskDY;
+  dy = dyi>kMaxDY ? -(dyi&kMaxDY) : dyi;
+  dy *= 1.0f/kScaleDY; //1./100.0f;
+  //
+  int dzi = (pack>>(kNBitsDX+kNBitsDY))&kMaskDZ;
+  dz = dzi>kMaxDZ ? -(dzi&kMaxDZ) : dzi;
+  dz *= 1.0f/kScaleDZ; //1./100.0f;
+  //
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionX() const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  int dxi = pack&kMaskDX;
+  float dx = dxi>kMaxDX ? -(dxi&kMaxDX) : dxi;
+  dx *= 1.0f/kScaleDX; //1./50.0f;
+  return dx;
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionY() const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  //
+  int dyi = (pack>>kNBitsDX)&kMaskDY;
+  float dy = dyi>kMaxDY ? -(dyi&kMaxDY) : dyi;
+  dy *= 1.0f/kScaleDY; //1./100.0f;
+  return dy;
+  //
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionZ() const
+{
+  // Extract rounded distortions
+  float v = GetSigmaYZ();
+  int pack = *(int*)&v;
+  //
+  int dzi = (pack>>(kNBitsDX+kNBitsDY))&kMaskDZ;
+  float dz = dzi>kMaxDZ ? -(dzi&kMaxDZ) : dzi;
+  dz *= 1.0f/kScaleDZ; //1./100.0f;
+  return dz;
+  //
+}
+
+//______________________________________________________________________________
+Bool_t AliTPCclusterMI::GetGlobalCov(Float_t cov[6]) const
+{
+  // clone of the AliCluster::GetGlobalCov avoiding using kSigmaYZ (used to store
+  // distortions) as a real error
+    for (Int_t i = 0; i < 6; i++) cov[i] = 0;
+
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't get the global coordinates! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+
+  const TGeoHMatrix *mt = GetTracking2LocalMatrix();
+  if (!mt) return kFALSE;
+
+  TGeoHMatrix *ml = GetMatrix();
+  if (!ml) return kFALSE;
+
+  TGeoHMatrix m;
+  Double_t tcov[9] = { 0, 0, 0, 0, GetSigmaY2(), 0, 0, 0, GetSigmaZ2() };
+  m.SetRotation(tcov);
+  m.Multiply(&mt->Inverse());
+  m.Multiply(&ml->Inverse());
+  m.MultiplyLeft(mt);
+  m.MultiplyLeft(ml);
+  Double_t *ncov = m.GetRotationMatrix();
+  cov[0] = ncov[0]; cov[1] = ncov[1]; cov[2] = ncov[2];
+  cov[3] = ncov[4]; cov[4] = ncov[5];
+  cov[5] = ncov[8];
+
+  return kTRUE;
 }

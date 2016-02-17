@@ -14,7 +14,8 @@
 # **************************************************************************
 
 # Module
-set (MODULE alimdc)
+set(MODULE alimdc)
+add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Aditional include folders in alphabetical order except ROOT

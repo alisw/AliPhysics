@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE lhapdfbase)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/LHAPDF/base

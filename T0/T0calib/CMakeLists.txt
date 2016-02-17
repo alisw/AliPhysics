@@ -37,6 +37,7 @@ set(SRCS
     AliT0CalibAnalysisTask.cxx
     AliT0CalibOffsetChannelsTask.cxx
     AliT0PreprocessorOffline.cxx
+    AliT0TimeAmplCorr.cxx	
    )
 
 # Headers from sources

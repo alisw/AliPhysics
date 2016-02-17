@@ -264,13 +264,12 @@ class AliAODEvent : public AliVEvent {
   const TGeoHMatrix* GetEMCALMatrix(Int_t /*i*/)const { return NULL; }
 
 
-  // -- Dimuons
-  TClonesArray *GetDimuons()              const { return fDimuons; }
-  Int_t         GetNDimuons()             const { return fDimuons->GetEntriesFast(); }
-  Int_t         GetNumberOfDimuons()      const { return GetNDimuons(); }
-  AliAODDimuon *GetDimuon(Int_t nDimu)    const { return (AliAODDimuon*)fDimuons->UncheckedAt(nDimu); }
-  Int_t         AddDimuon(const AliAODDimuon* dimu)
-    {new((*fDimuons)[fDimuons->GetEntriesFast()]) AliAODDimuon(*dimu); return fDimuons->GetEntriesFast()-1;}
+  // -- Dimuons (\deprecated)
+  TClonesArray *GetDimuons() const;
+  Int_t         GetNDimuons() const;
+  Int_t         GetNumberOfDimuons() const;
+  AliAODDimuon *GetDimuon(Int_t nDimu) const;
+  Int_t         AddDimuon(const AliAODDimuon* dimu);
   
   // // -- TRD
   Int_t GetNumberOfTrdTracks() const { return fTrdTracks ? fTrdTracks->GetEntriesFast() : 0; }

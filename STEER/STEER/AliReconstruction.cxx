@@ -229,12 +229,14 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fStopOnMissingTriggerFile(kTRUE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
+  fWriteHLTESD(kTRUE),
   fFillTriggerESD(kTRUE),
   //
   fWriteThisFriend(kFALSE),
   fSkipFriendsForLargeZ(kFALSE),
   fMaxFriendTracks(3000),
   fFractionFriends(0.03),
+  fFractionHLTESD(1.0),
   fSkipFriendsCutZ(50),
   //
   fSkipIncompleteDAQ(kTRUE),
@@ -376,12 +378,14 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fStopOnMissingTriggerFile(rec.fStopOnMissingTriggerFile),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
+  fWriteHLTESD(rec.fWriteHLTESD),
   fFillTriggerESD(rec.fFillTriggerESD),
   //
   fWriteThisFriend(rec.fWriteThisFriend),
   fSkipFriendsForLargeZ(rec.fSkipFriendsForLargeZ),
   fMaxFriendTracks(rec.fMaxFriendTracks),
   fFractionFriends(rec.fFractionFriends),
+  fFractionHLTESD(rec.fFractionHLTESD),
   fSkipFriendsCutZ(rec.fSkipFriendsCutZ),
   //
   fSkipIncompleteDAQ(rec.fSkipIncompleteDAQ),
@@ -541,6 +545,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fStopOnMissingTriggerFile = rec.fStopOnMissingTriggerFile;
   fWriteAlignmentData    = rec.fWriteAlignmentData;
   fWriteESDfriend        = rec.fWriteESDfriend;
+  fWriteHLTESD           = rec.fWriteHLTESD;
   fFillTriggerESD        = rec.fFillTriggerESD;
   //
   //
@@ -548,6 +553,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fSkipFriendsForLargeZ = rec.fSkipFriendsForLargeZ;
   fMaxFriendTracks = rec.fMaxFriendTracks;
   fFractionFriends = rec.fFractionFriends;
+  fFractionHLTESD = rec.fFractionHLTESD;
   fSkipFriendsCutZ = rec.fSkipFriendsCutZ;
   //
   fSkipIncompleteDAQ = rec.fSkipIncompleteDAQ;
@@ -1918,7 +1924,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   ftree->GetUserInfo()->Add(fesd);
 
-  fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
+  if (fWriteHLTESD) fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
   fhltesd = new AliESDEvent();
   fhltesd->CreateStdContent();
   // read the ESD template from CDB
@@ -1934,19 +1940,23 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   AliESDEvent* pESDLayout=dynamic_cast<AliESDEvent*>(hltESDConfig->GetObject());
   if (pESDLayout) {
-      // init all internal variables from the list of objects
-      pESDLayout->GetStdContent();
-
-      // copy content and create non-std objects
-      *fhltesd=*pESDLayout;
-      fhltesd->Reset();
+    // init all internal variables from the list of objects
+    pESDLayout->GetStdContent();
+    
+    // copy content and create non-std objects
+    *fhltesd=*pESDLayout;
+    fhltesd->Reset();
   } else {
-      AliError(Form("error setting hltEsd layout from \"HLT/Calib/esdLayout\": invalid object type"));
+    AliError(Form("error setting hltEsd layout from \"HLT/Calib/esdLayout\": invalid object type"));
   }
-
-  fhltesd->WriteToTree(fhlttree);
-  fhlttree->GetUserInfo()->Add(fhltesd);
-
+  if (fWriteHLTESD) {
+    fhltesd->WriteToTree(fhlttree);
+    fhlttree->GetUserInfo()->Add(fhltesd);
+  }
+  else {
+    AliInfo("HLT ESD tree writing is disabled");
+  }
+  
   ProcInfo_t procInfo;
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form("Current memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
@@ -1980,7 +1990,9 @@ void AliReconstruction::SlaveBegin(TTree*)
     fRecoHandler->SetEvent(fesd);
     fRecoHandler->SetESDfriend(fesdf);
     fRecoHandler->SetHLTEvent(fhltesd);
-    fRecoHandler->SetHLTTree(fhlttree);
+    if (fWriteHLTESD) {
+      fRecoHandler->SetHLTTree(fhlttree);
+    }
     fAnalysis->SetInputEventHandler(fRecoHandler);
     // Enter external loop mode
     fAnalysis->SetExternalLoop(kTRUE);
@@ -1993,6 +2005,10 @@ void AliReconstruction::SlaveBegin(TTree*)
   //
   ProcessTriggerAliases();
   //
+  if (!fWriteHLTESD) AliInfo("Writing of HLT ESD tree is disabled");
+  else AliInfoF("%.2f%% of HLT ESD events will be stored",fFractionHLTESD*100.0);
+  AliInfoF("%.2f%% of ESD friends  will be stored",fFractionFriends*100.0);
+
   return;
 }
 
@@ -2123,13 +2139,19 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
       fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
       if (fesd->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
-	AliInfoF("Abandoning incomplete event reconstruction: DAQ attr: 0x%08x",fesd->IsIncompleteDAQ());
+	AliInfoF("Abandoning incomplete event reconstruction: DAQ attr: 0x%08x",fesd->GetDAQAttributes());
 	return kTRUE;
       }
     }
     // fill Event header information from the RawEventHeader
-    if (fRawReader){FillRawEventHeaderESD(fesd);}
-    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
+    if (fRawReader){
+      FillRawEventHeaderESD(fesd);
+      FillRawEventHeaderESD(fhltesd);
+    }
+    else { // fill MC info
+      FillMCEventHeaderESD(fesd);
+      FillMCEventHeaderESD(fhltesd);
+    }
 
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
@@ -2368,7 +2390,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	   }
 	 } 
        }
+       Bool_t usePureSA = ftVertexer->GetITSpureSA();
+       if (!fesd->GetNumberOfTPCClusters()) {
+	 AliInfo("No TPC clusters: VertexerTracks will run with ITSpureSA tracks");
+	 ftVertexer->SetITSpureSA(kTRUE);
+       }
        AliESDVertex *pvtx=ftVertexer->FindPrimaryVertex(fesd);
+       ftVertexer->SetITSpureSA(usePureSA); // restore use settings
        if (pvtx) {
 	 if(constrSPD){
 	   TString title=pvtx->GetTitle();
@@ -2548,17 +2576,22 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
   }
   // write HLT ESD
-  
-  nbf = fhlttree->Fill();
-  if (fTreeBuffSize>0 && fhlttree->GetAutoFlush()<0 && (fMemCountESDHLT += nbf)>fTreeBuffSize ) { // default limit is still not reached
-    nbf = fhlttree->GetZipBytes();
-    if (nbf>0) nbf = -nbf;
-    else       nbf = fhlttree->GetEntries();
-    fhlttree->SetAutoFlush(nbf);
-    AliInfo(Form("Calling fhlttree->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
-		 nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
+  if (fWriteHLTESD) {
+    if (gRandom->Rndm()>fFractionHLTESD) {
+      AliInfo("HLT ESD for this event will be empty");
+      fhltesd->Reset();
+    } 
+    nbf = fhlttree->Fill();
+    if (fTreeBuffSize>0 && fhlttree->GetAutoFlush()<0 && (fMemCountESDHLT += nbf)>fTreeBuffSize ) { // default limit is still not reached
+      nbf = fhlttree->GetZipBytes();
+      if (nbf>0) nbf = -nbf;
+      else       nbf = fhlttree->GetEntries();
+      fhlttree->SetAutoFlush(nbf);
+      AliInfo(Form("Calling fhlttree->SetAutoFlush(%lld) | W:%lld T:%lld Z:%lld",
+		   nbf,fMemCountESDHLT,fhlttree->GetTotBytes(),fhlttree->GetZipBytes()));        
+    }
   }
-    
+
   gSystem->GetProcInfo(&procInfo);
   Long_t dMres=(procInfo.fMemResident-oldMres)/1024;
   Long_t dMvir=(procInfo.fMemVirtual-oldMvir)/1024;
@@ -2700,7 +2733,7 @@ void AliReconstruction::SlaveTerminate()
 
   // we want to have only one tree version number
   ftree->Write(ftree->GetName(),TObject::kOverwrite);
-  fhlttree->Write(fhlttree->GetName(),TObject::kOverwrite);
+  if (fWriteHLTESD) fhlttree->Write(fhlttree->GetName(),TObject::kOverwrite);
 
   if (fWriteESDfriend) {
     ffileF->cd();
@@ -3323,10 +3356,16 @@ Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
   Int_t nV0s=esd->GetNumberOfV0s();
   AliInfo
   (Form("Number of ESD tracks and V0s before cleaning: %d %d",nTracks,nV0s));
-
+  TObjArray tracks2remove;
   Float_t cleanPars[]={fV0DCAmax,fV0CsPmin,fDmax,fZmax};
-  Bool_t rc=esd->Clean(cleanPars);
-
+  Bool_t rc=esd->Clean(cleanPars,&tracks2remove);
+  if (rc) { // physically destroy removed tracks
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+      if (!fTracker[iDet]) continue;
+      if (fTracker[iDet]->OwnsESDObjects()) fTracker[iDet]->CleanESDTracksObjects(&tracks2remove);
+    }
+    tracks2remove.Delete();
+  }
   nTracks=esd->GetNumberOfTracks();
   nV0s=esd->GetNumberOfV0s();
   AliInfo
@@ -3469,6 +3508,7 @@ Bool_t AliReconstruction::FillTriggerScalers(AliESDEvent*& esd)
   }
   return kTRUE;
 }
+
 //_____________________________________________________________________________
 Bool_t AliReconstruction::FillRawEventHeaderESD(AliESDEvent*& esd)
 {
@@ -3486,6 +3526,21 @@ Bool_t AliReconstruction::FillRawEventHeaderESD(AliESDEvent*& esd)
 
   esd->SetTimeStamp(fRawReader->GetTimestamp());  
   esd->SetEventType(fRawReader->GetType());
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::FillMCEventHeaderESD(AliESDEvent*& esd)
+{
+  // 
+  // Filling information from MC Header
+  // 
+  AliHeader* headerMC = fRunLoader->GetHeader();
+  if (!headerMC || !esd) return kFALSE;
+
+  AliInfo("Filling information from MC Header");
+  esd->SetTimeStamp(headerMC->GetTimeStamp());  
 
   return kTRUE;
 }

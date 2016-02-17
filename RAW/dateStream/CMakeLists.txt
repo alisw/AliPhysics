@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE dateStream)
+add_definitions(-D_MODULE_="${MODULE}")
 
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 

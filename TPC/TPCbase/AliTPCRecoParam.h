@@ -38,6 +38,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
   void     SetClusterMaxRange(Int_t index, Int_t value){ fClusterMaxRange[index]=value;}
   //
+  Int_t    GetAccountDistortions()               const {return fAccountDistortions;}
+  void     SetAccountDistortions(Int_t v)              {fAccountDistortions = v;}
+  Bool_t   GetUseCorrectionMap()                 const {return fUseCorrectionMap;}
+  void     SetUseCorrectionMap(Bool_t v=kTRUE)         {fUseCorrectionMap = v;}
+  //
   // Outlier filtering configuration
   //
   Int_t   GetUseOulierClusterFilter() const { return fUseOulierClusterFilter;}  // swith to use outlier cluster filter
@@ -141,6 +146,10 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   void     SetSystematicErrorCluster(Double_t *systematic){ for (Int_t i=0; i<2;i++) fSystematicErrorCluster[i]=systematic[i];}
+  Double_t GetUseDistortionFractionAsErrorY() const {return fDistortionFractionAsErrorYZ[0];}
+  Double_t GetUseDistortionFractionAsErrorZ() const {return fDistortionFractionAsErrorYZ[1];}
+  void     SetUseDistortionFractionAsErrorY(double v) {fDistortionFractionAsErrorYZ[0] = v;}
+  void     SetUseDistortionFractionAsErrorZ(double v) {fDistortionFractionAsErrorYZ[1] = v;}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
   const Double_t * GetSystematicErrorCluster() const { return fSystematicErrorCluster;}
@@ -229,10 +238,13 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t fMaxFaction;            ///< truncated mean - upper threshold
   Int_t   fNeighborRowsDedx;      ///< number of neighboring rows to identify cluster below thres in dEdx calculation 0 -> switch off
   Int_t   fGainCorrectionHVandPTMode; ///< switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
+  Int_t   fAccountDistortions;        ///< account for distortions in tracking
   Double_t fSkipTimeBins;        ///< number of time bins to be skiiped (corrupted signal druing gating opening)
 
   Bool_t fUseTOFCorrection;  ///< switch - kTRUE use TOF correction kFALSE - do not use
   //
+  Bool_t fUseCorrectionMap;  ///< flag to use parameterized correction map (AliTPCChebCorr)
+  
   //  misscalibration
   //
   Double_t fSystematicErrors[5];  ///< systematic errors in the track parameters - to be added to TPC covariance matrix
@@ -241,6 +253,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fSystematicErrorClusterInnerDeepZ[2];  ///< systematic error of the Z cluster err for additional, slow decaying distortions
 
   Double_t fSystematicErrorCluster[2];        ///< systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
+  Double_t fDistortionFractionAsErrorYZ[2];   ///< use fraction of distortion as additional error
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
 public:
   static Bool_t fgUseTimeCalibration; ///< flag usage the time dependent calibration
@@ -248,7 +261,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 22)
+  ClassDef(AliTPCRecoParam, 25)
   /// \endcond
 };
 

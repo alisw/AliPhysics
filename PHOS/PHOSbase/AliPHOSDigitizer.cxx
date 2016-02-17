@@ -588,6 +588,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       if(relId[1] == 0){ // Emc
         if(fcdb->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
       }
+      if(relId[1] == -1){ // Cpv
+        if(fcdb->IsBadChannelCpv(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
+      }
     }
   }
 

@@ -19,18 +19,24 @@
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
   enum Status{ kDisabled = 0x7F};
+  enum {
+    kSectorChanged=BIT(14)          // to flag sector change due to the distortions
+  };
 public:
   AliTPCclusterMI();
   AliTPCclusterMI(const AliTPCclusterMI & cluster);
   AliTPCclusterMI &operator = (const AliTPCclusterMI & cluster); //assignment operator
   AliTPCclusterMI(Int_t *lab, Float_t *hit);
   virtual ~AliTPCclusterMI();
-  virtual void	Clear(const Option_t*) { };//delete fInfo; fInfo=0;}
+  virtual void	Clear(const Option_t*) { ResetBit(0xffffffff);}
   virtual Bool_t IsSortable() const;
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
   inline  void Disable(){fUsed=kDisabled;}
   inline  Bool_t IsDisabled() const {return (fUsed==kDisabled);}
+
+  Bool_t  IsSectorChanged()                const {return TestBit(kSectorChanged);}
+  void    SetSectorChanged(Bool_t v=kTRUE)       {SetBit(kSectorChanged,v);}
 
   virtual Int_t GetDetector() const {return fDetector;}
   virtual Int_t GetRow() const {return fRow;}
@@ -48,12 +54,28 @@ public:
   Char_t  GetType()const {return fType;}
   Float_t GetTimeBin() const { return fTimeBin;}
   Float_t GetPad() const { return fPad;}
+  //
+  void    SetDistortions(float dx, float dy, float dz);
+  void    GetDistortions(float& dx,float& dy, float& dz)  const;
+  Float_t GetDistortionX() const;
+  Float_t GetDistortionY() const;
+  Float_t GetDistortionZ() const;
+
+  Bool_t  GetGlobalCov(Float_t cov[6]) const;
   //  AliTPCclusterInfo * GetInfo() const { return fInfo;}
   //  void SetInfo(AliTPCclusterInfo * info);
   //
   AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
   AliTrackPoint*    MakePoint();
   static void     SetGlobalTrackPoint(const AliCluster &cl, AliTrackPoint &point);
+
+ protected:
+  enum{ // constants for storing x,y,z distortion in AliCluster::fSigmaYZ 
+    kScaleDX=50,kScaleDY=100,kScaleDZ=100, // 1./kScale gives rounding in cm
+    kNBitsDX=10, kNBitsDY=11,kNBitsDZ=11, 
+    kMaxDX = (0x1<<(kNBitsDX-1))-1, kMaxDY = (0x1<<(kNBitsDY-1))-1,kMaxDZ = (0x1<<(kNBitsDZ-1))-1,
+    kMaskDX = (0x1<<kNBitsDX)-1, kMaskDY = (0x1<<kNBitsDY)-1, kMaskDZ = (0x1<<kNBitsDZ)-1
+  };
 
 private:
   //  AliTPCclusterInfo * fInfo;  ///< pointer to the cluster debug info

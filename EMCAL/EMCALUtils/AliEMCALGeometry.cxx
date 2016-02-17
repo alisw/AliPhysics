@@ -289,13 +289,14 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,   
 {
   //printf("AliEMCALGeometry::GetInstanceFromRunNumber() - run %d, geoName <<%s>> \n",runNumber,geoName.Data());
   
-  static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+  static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+  
   if      ( runNumber >= 104064 && runNumber < 140000  ) 
   {
     // 2009-2010 runs
     // First year geometry, 4 SM.
     
-    if (show_info)
+    if (showInfo)
     {
       if(!geoName.Contains("FIRSTYEARV1") && geoName!="")
       { 
@@ -315,18 +316,18 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,   
   {
     // Almost complete EMCAL geometry, 10 SM. Year 2011 configuration
     
-    if (show_info)
+    if (showInfo)
     {
-    if(!geoName.Contains("COMPLETEV1") && geoName!="")
-    {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
-      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
-      printf("\t In use <<EMCAL_COMPLETEV1>>, check run number and year\n");
-    }
-    else 
-    {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETEV1>>\n");
-    }
+      if(!geoName.Contains("COMPLETEV1") && geoName!="")
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+        printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+        printf("\t In use <<EMCAL_COMPLETEV1>>, check run number and year\n");
+      }
+      else 
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETEV1>>\n");
+      }
     }
     return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL",mcname,mctitle) ;
   }
@@ -335,18 +336,18 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,   
     // Complete EMCAL geometry, 12 SM. Year 2012 and on
     // The last 2 SM were not active, anyway they were there.
     
-    if (show_info)
+    if (showInfo)
     {
-    if(!geoName.Contains("COMPLETE12SMV1") && geoName!="")
-    {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
-      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
-      printf("\t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year\n");
-    }
-    else 
-    {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>\n");
-    }
+      if(!geoName.Contains("COMPLETE12SMV1") && geoName!="")
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+        printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+        printf("\t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year\n");
+      }
+      else 
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>\n");
+      }
     }
     return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1","EMCAL",mcname,mctitle) ;
   }
@@ -354,18 +355,18 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,   
   {
     // EMCAL + DCAL geometry, 20 SM. Year 2015 and on
     
-    if (show_info)
+    if (showInfo)
     {
-    if(!geoName.Contains("DCAL_8SM") && geoName!="")
-    {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
-      printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
-      printf("\t In use <<EMCAL_COMPLETE12SMV1_DCAL_8SM>>, check run number and year\n");
-    }
-    else 
-    {
-      printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETE12SMV1_DCAL_8SM>>\n");
-    }
+      if(!geoName.Contains("DCAL_8SM") && geoName!="")
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() *** ATTENTION *** \n");
+        printf("\t Specified geometry name <<%s>> for run %d is not considered! \n",geoName.Data(),runNumber);
+        printf("\t In use <<EMCAL_COMPLETE12SMV1_DCAL_8SM>>, check run number and year\n");
+      }
+      else 
+      {
+        printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Initialized geometry with name <<EMCAL_COMPLETE12SMV1_DCAL_8SM>>\n");
+      }
     }
     return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL",mcname,mctitle) ;
   }  
@@ -1317,6 +1318,25 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
   
   return 0 ;
 }
+
+
+///
+/// Provides shift-rotation matrix for EMCAL from fkSModuleMatrix[smod]
+/// Unsafe method, not to be used in reconstruction, just check there is 
+/// something in the array of matrices without crashing, for EVE checks.
+///
+/// \return alignment matrix for a super module number
+/// \param smod: super module number
+///
+//______________________________________________________________________________________
+const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModuleFromArray(Int_t smod) const 
+{	
+  if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
+    AliFatal(Form("Wrong supermodule index -> %d",smod));
+  
+  return fkSModuleMatrix[smod] ;
+}
+
 
 ///
 /// Provides shift-rotation matrix for EMCAL from the TGeoManager.

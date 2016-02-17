@@ -20,7 +20,7 @@ class AliMathBase : public TObject
  public:
   AliMathBase();
   virtual ~AliMathBase();
-  static void    EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh);
+  static void    EvaluateUni(const Int_t nvectors, const Double_t *data, Double_t &mean, Double_t &sigma, const Int_t hSub);
   static void    EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh, Float_t externalfactor=1);
   static Int_t  Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down);    
   static void TruncatedMean(TH1F * his, TVectorD *param, Float_t down=0, Float_t up=1.0, Bool_t verbose=kFALSE);

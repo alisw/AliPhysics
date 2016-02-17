@@ -97,6 +97,10 @@ public:
   static void PrintArray(TObjArray *array);
   TChain *GetAlignTree(){return fAlignTree;}
   //
+  const TObjArray* GetArrQAhist() const { return fArrQAhist; }
+  void  FillQA(Bool_t qa=kTRUE);
+  void  MakeQAPlotsGain(TString outputDirectory="", TString fileTypes="png");
+  //
   // graph filtering part
   //
   static TGraphErrors* FilterGraphMedianAbs(TGraphErrors * graph, Float_t cut,Double_t &medianY);
@@ -129,6 +133,7 @@ private:
   AliSplineFit * fFitMIP;                  // fit of dependence - MIP
   AliSplineFit * fFitCosmic;               // fit of dependence - Plateu
   TObjArray    * fGainArray;               // array to be stored in the OCDB
+  TObjArray    * fArrQAhist;               // QA histograms
   AliTPCcalibTimeGain * fGainMIP;          // calibration component for MIP
   AliTPCcalibTimeGain * fGainCosmic;       // calibration component for cosmic
   AliTPCcalibGainMult * fGainMult;         // calibration component for pad region gain equalization and multiplicity dependence

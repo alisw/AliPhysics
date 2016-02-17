@@ -1353,7 +1353,7 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd, AliESDEvent *& hltesd)
       if (iDet == AliQAv1::kHLT) {
         TObjArray esdarray;
         esdarray.Add(esd); 
-        esdarray.Add(hltesd); 
+        if (hltesd) esdarray.Add(hltesd); 
         qadm->Exec(AliQAv1::kESDS, &esdarray);
       } else {
         qadm->Exec(AliQAv1::kESDS, esd) ;        

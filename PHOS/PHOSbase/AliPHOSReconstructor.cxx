@@ -47,6 +47,7 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSCpvRecPoint.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSRawFitterv0.h"
 #include "AliPHOSRawFitterv1.h"
@@ -66,6 +67,7 @@ ClassImp(AliPHOSReconstructor)
 Bool_t AliPHOSReconstructor::fgDebug = kFALSE ; 
 TClonesArray*     AliPHOSReconstructor::fgDigitsArray = 0;   // Array of PHOS digits
 TObjArray*        AliPHOSReconstructor::fgEMCRecPoints = 0;   // Array of EMC rec.points
+TObjArray*        AliPHOSReconstructor::fgCPVRecPoints = 0;   // Array of CPV rec.points
 AliPHOSCalibData * AliPHOSReconstructor::fgCalibData  = 0 ;
 TClonesArray*     AliPHOSReconstructor::fgTriggerDigits = 0;   // Array of PHOS trigger digits
 
@@ -81,6 +83,7 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   fTmpDigLG      = new TClonesArray("AliPHOSDigit",100);
   fgDigitsArray  = new TClonesArray("AliPHOSDigit",100);
   fgEMCRecPoints = new TObjArray(100) ;
+  fgCPVRecPoints = new TObjArray(100) ;
   if (!fgCalibData)
     fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
   
@@ -102,6 +105,7 @@ AliPHOSReconstructor::~AliPHOSReconstructor()
   delete fTmpDigLG;
   delete fgDigitsArray;
   delete fgEMCRecPoints;
+  delete fgCPVRecPoints;
   delete fgTriggerDigits;
 } 
 
@@ -129,7 +133,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // This method produces PHOS rec-particles,
   // then it creates AliESDtracks out of them and
   // write tracks to the ESD
-
 
   // do current event; the loop over events is done by AliReconstruction::Run()
   fTSM->SetESD(esd) ; 
@@ -172,6 +175,11 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   emcbranch->SetAddress(&fgEMCRecPoints);
   emcbranch->GetEntry(0);
   
+  TBranch *cpvbranch = clustersTree->GetBranch("PHOSCpvRP");
+  if (cpvbranch) { 
+    cpvbranch->SetAddress(&fgCPVRecPoints);
+    cpvbranch->GetEntry(0);
+  }
   
   // Trigger
   
@@ -259,7 +267,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   //############# Fill CaloCells ###########
   //########################################
-
   Int_t nDigits = fgDigitsArray->GetEntries();
   Int_t idignew = 0 ;
   AliDebug(1,Form("%d digits",nDigits));
@@ -281,6 +288,17 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 					     
       idignew++;
     }
+    //Fill CPV digits
+    if(dig->GetId() > knEMC && 
+       Calibrate(dig->GetEnergy(),dig->GetId()) > GetRecoParam()->GetCPVMinE() ){
+      Int_t primary = dig->GetPrimary(1) ;
+      //NB! CPV cell ID can not fit Short_t <32000
+      //So, for CPV we subtract EMC part and set negative ID
+      phsCells.SetCell(idignew,-(dig->GetId()-56*64*5), Calibrate(dig->GetEnergy(),dig->GetId()),
+                                             0.,
+                                             primary,0.,0) ;					     
+      idignew++;
+    }    
   }
   phsCells.SetNumberOfCells(idignew);
   phsCells.Sort();
@@ -363,29 +381,132 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->AddLabels(arrayPrim);
     
     //Matched ESD track
-    TArrayI arrayTrackMatched(1);
-    arrayTrackMatched[0]= ts->GetTrackIndex();
-    ec->AddTracksMatched(arrayTrackMatched);
+    if(ts->GetTrackIndex()>=0){ //there is a match
+      TArrayI arrayTrackMatched(1);
+      arrayTrackMatched[0]= ts->GetTrackIndex();
+      ec->AddTracksMatched(arrayTrackMatched);
     
-    Int_t index = esd->AddCaloCluster(ec);
+      Int_t index = esd->AddCaloCluster(ec);
 
-    //Set pointer to this cluster in ESD track
-    Int_t nt=esd->GetNumberOfTracks();
-    for (Int_t itr=0; itr<nt; itr++) {
-      AliESDtrack *esdTrack=esd->GetTrack(itr);
-      if(!esdTrack->IsPHOS())
-        continue ;
-      if(esdTrack->GetPHOScluster()==-recpart){ //we store negative cluster number
-        esdTrack->SetPHOScluster(index) ;
+      //Set pointer to this cluster in ESD track
+      Int_t nt=esd->GetNumberOfTracks();
+      for (Int_t itr=0; itr<nt; itr++) {
+        AliESDtrack *esdTrack=esd->GetTrack(itr);
+        if(!esdTrack->IsPHOS())
+          continue ;
+        if(esdTrack->GetPHOScluster()==-recpart){ //we store negative cluster number
+          esdTrack->SetPHOScluster(index) ;
 //no garatie that only one track matched this cluster
 //      break ;
+        }
       }
+    }
+    else{ //Story empty list
+      TArrayI arrayTrackMatched(0);
+      ec->AddTracksMatched(arrayTrackMatched);       
     }
  
     delete ec;   
     delete [] fracList;
     delete [] absIdList;
   }
+
+  //Fill CPV clusters
+  Int_t nOfCPVclu=fgCPVRecPoints->GetEntriesFast() ;
+  Int_t nOfTS = fTSM->GetTrackSegments()->GetEntriesFast() ;
+  for (Int_t recpoint = 0 ; recpoint < nOfCPVclu ; recpoint++) {
+    AliPHOSCpvRecPoint  *cpvRP = static_cast<AliPHOSCpvRecPoint *>(fgCPVRecPoints->At(recpoint));
+    AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
+    
+    Float_t xyz[3];
+    TVector3 pos ; 
+    fGeom->GetGlobalPHOS(cpvRP, pos) ; 
+    for (Int_t ixyz=0; ixyz<3; ixyz++) 
+      xyz[ixyz] = pos[ixyz];
+       
+    // Create cell lists
+    Int_t     cellMult   = cpvRP->GetDigitsMultiplicity();
+    Int_t    *digitsList = cpvRP->GetDigitsList();
+    Float_t  *rpElist    = cpvRP->GetEnergiesList() ;
+    UShort_t *absIdList  = new UShort_t[cellMult];
+    Double_t *fracList   = new Double_t[cellMult];
+
+    for (Int_t iCell=0; iCell<cellMult; iCell++) {
+      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(fgDigitsArray->At(digitsList[iCell]));
+      absIdList[iCell] = (UShort_t)(digit->GetId());
+      if (digit->GetEnergy() > 0)
+ 	fracList[iCell] = rpElist[iCell]/(Calibrate(digit->GetEnergy(),digit->GetId()));
+      else
+ 	fracList[iCell] = 0;
+    }
+
+    //Primaries
+    Int_t  primMult  = 0;
+    Int_t *primList =  cpvRP->GetPrimaries(primMult);
+
+    Float_t energy = cpvRP->GetEnergy();
+    // fills the ESDCaloCluster
+    ec->SetType(AliVCluster::kPHOSCharged);
+    ec->SetPosition(xyz);                       //rec.point position in MARS
+    ec->SetE(energy);                           //total or core particle energy
+    ec->SetDispersion(cpvRP->GetDispersion());  //cluster dispersion
+    ec->SetM02(cpvRP->GetM2x()) ;               //second moment M2x
+    ec->SetM20(cpvRP->GetM2z()) ;               //second moment M2z
+    ec->SetNExMax(cpvRP->GetNExMax());          //number of local maxima
+    ec->SetChi2(-1);                     //not yet implemented
+
+    //Cells contributing to clusters
+    ec->SetNCells(cellMult);
+    ec->SetCellsAbsId(absIdList);
+    ec->SetCellsAmplitudeFraction(fracList);
+
+    //Distance to the nearest bad crystal
+    ec->SetDistanceToBadChannel(cpvRP->GetDistanceToBadCrystal()); 
+  
+    //Array of MC indeces
+    TArrayI arrayPrim(primMult,primList);
+    ec->AddLabels(arrayPrim);
+    
+    //Matched CPV-EMC clusters
+    //CPV TrackSerments go after EMC-related TSs
+    if(recpoint+nOfRecParticles<nOfTS){
+      AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(fTSM->GetTrackSegments()
+								    ->At(recpoint+nOfRecParticles));  
+      if(ts){
+	if(ts->GetEmcIndex()>=0){
+          TArrayI arrayTrackMatched(1);
+          arrayTrackMatched[0]= ts->GetEmcIndex();
+          ec->AddTracksMatched(arrayTrackMatched);
+          ec->SetTrackDistance(ts->GetCpvDistance("x"),ts->GetCpvDistance("z")); 
+	}
+	else{//No match
+          TArrayI arrayTrackMatched(0);
+          ec->AddTracksMatched(arrayTrackMatched);
+          ec->SetTrackDistance(999.,999.); 
+	}
+      }
+    }
+    Int_t index = esd->AddCaloCluster(ec);
+
+    //Set pointer to this cluster in ESD track
+//    Int_t nt=esd->GetNumberOfTracks();
+//    for (Int_t itr=0; itr<nt; itr++) {
+//      AliESDtrack *esdTrack=esd->GetTrack(itr);
+//      if(!esdTrack->IsPHOS())
+//        continue ;
+//      if(esdTrack->GetPHOScluster()==-recpart){ //we store negative cluster number
+//        esdTrack->SetPHOScluster(index) ;
+//no garatie that only one track matched this cluster
+//      break ;
+//      }
+//    }
+ 
+    delete ec;   
+    delete [] fracList;
+    delete [] absIdList;
+  }
+  
+  
   fgDigitsArray ->Clear("C");
   fgEMCRecPoints->Clear("C");
   recParticles  ->Clear();

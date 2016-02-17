@@ -3244,7 +3244,7 @@ Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT
   //
   Double_t dca   = -paramT->GetD(0,0,bz);  // get impact parameter distance to point (0,0)
   Double_t radius= TMath::Abs(1/paramT->GetC(bz));  //
-  Double_t sign  = paramT->GetSign();
+  Double_t sign  = paramT->GetSign()*TMath::Sign(1.,bz)*(-1.);
   Double_t R0    = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);   // radius at current point
   Double_t phiR0 = TMath::ATan2(xyz[1],xyz[0]);                // angle of given point
   Double_t dPhiR0= -TMath::ASin((dca*dca-2*dca*radius*sign+R0*R0)/(2*R0*(dca-radius*sign)));
@@ -3274,6 +3274,8 @@ Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT
       paramR.Rotate(phi);
       paramR.PropagateTo(R,bz);
       (*pcstream)<<"debugEdge"<<
+    "length="<<length<< // track length
+    "radius="<<radius<< // radius
 	"R="<<R<<                   // radius
 	"dphiEdge="<<dPhiEdge<<     // distance to edge 
 	"phi0="<<phi0<<	            // phi0 -phi at the track initial position

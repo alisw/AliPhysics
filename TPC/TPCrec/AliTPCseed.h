@@ -171,6 +171,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
   Bool_t  GetClusterOwner() const {return fClusterOwner;}
   void    SetClusterOwner(Bool_t v) {fClusterOwner = v;}
   //
+  void    TagSuppressSharedClusters();
+
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}

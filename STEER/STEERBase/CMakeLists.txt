@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE STEERBase)
+set(MODULE STEERBase)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
@@ -27,6 +28,9 @@ include_directories(${ROOT_INCLUDE_DIR}
 # Sources - alphabetical order
 set(SRCS
     AliCentrality.cxx
+    AliCheb2DStack.cxx
+    AliCheb2DStackF.cxx
+    AliCheb2DStackS.cxx
     AliCheb3DCalc.cxx
     AliCheb3D.cxx
     AliCodeTimer.cxx

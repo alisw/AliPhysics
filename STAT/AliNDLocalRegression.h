@@ -30,10 +30,13 @@ class AliNDLocalRegression : public TNamed {
   ~AliNDLocalRegression();
 
   Bool_t MakeFit(TTree * tree , const char *formulaVal, const char * formulaVar, const char*selection, const char * formulaKernel,  const char * dimensionFormula, Double_t weightCut=0.00001, Int_t entries=1000000000, Bool_t useBinNorm=kTRUE);
-
+  Bool_t   CleanCovariance();
   Double_t Eval(Double_t *point);
   Double_t EvalError(Double_t *point);
+  Bool_t   Derivative(Double_t *point, Double_t *d);
+  Bool_t   EvalAndDerivative(Double_t *point, Double_t &val, Double_t *d);
   const THn *GetHistogram() {return fHistPoints;}
+  const TObjArray *   GetFitParam(){ return fLocalFitParam;}
   void SetCuts(Double_t nSigma=6, Double_t robustFraction=0.95, Int_t estimator=1);
   void SetHistogram(THn* histo );
   void SetTree(TTree * tree) {fInputTree = tree;}
@@ -41,6 +44,12 @@ class AliNDLocalRegression : public TNamed {
   void SetStreamer( TTreeSRedirector *streamer){ fStreamer=streamer;}
   Bool_t AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *indexes, Double_t *relWeight, TTreeSRedirector* pcstream, Bool_t useCommon=kFALSE);
   void DumpToTree(Int_t div, TTreeStream & stream);
+  //
+  const TObjArray *GetLocalFitParam()   const { return fLocalFitParam;   }
+  const TObjArray *GetLocalFitQuality() const { return fLocalFitQuality; }
+  const TObjArray *GetLocalFitCovar()   const { return fLocalFitCovar;   }
+  //
+  const TMatrixD  *GetLocalRobustStat() const { return fLocalRobustStat; }
   //
   // function to access the Local Regression from the TFormula
   static void AddVisualCorrection(AliNDLocalRegression* corr, Int_t position=0);
@@ -60,7 +69,7 @@ class AliNDLocalRegression : public TNamed {
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
   static void SetVerboseLevel(Int_t verbose){ fgVerboseLevel=TMath::Max(verbose,1);}
  public:
-  Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArray, Double_t weightCut, Double_t robustFraction);
+  Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArrayI2, Double_t weightCut, Double_t robustFraction);
 
 protected:
   THn *fHistPoints;                     //  histogram local point distoribution

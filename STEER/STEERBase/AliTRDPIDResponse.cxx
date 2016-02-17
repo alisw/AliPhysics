@@ -22,11 +22,14 @@
 //  Markus Fasel <M.Fasel@gsi.de>
 //  Anton Andronic <A.Andronic@gsi.de>
 //
+//  modifications 29.10. Yvonne Pachmayer <pachmay@physi.uni-heidelberg.de>
+//
 #include <TAxis.h>
 #include <TClass.h>
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TKey.h>
 #include <TMath.h>
 #include <TObjArray.h>
@@ -43,6 +46,9 @@
 //#include "AliTRDTKDInterpolator.h"
 #include "AliTRDNDFast.h"
 #include "AliTRDdEdxParams.h"
+#include "AliExternalTrackParam.h"
+
+
 
 ClassImp(AliTRDPIDResponse)
 
@@ -52,6 +58,8 @@ AliTRDPIDResponse::AliTRDPIDResponse():
   ,fkPIDResponseObject(NULL)
   ,fkTRDdEdxParams(NULL)
   ,fGainNormalisationFactor(1.)
+  ,fCorrectEta(kFALSE)
+  ,fMagField(0.)
 {
   //
   // Default constructor
@@ -64,6 +72,8 @@ AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
   ,fkPIDResponseObject(NULL)
   ,fkTRDdEdxParams(NULL)
   ,fGainNormalisationFactor(ref.fGainNormalisationFactor)
+  ,fCorrectEta(kFALSE)
+  ,fMagField(0.)
 {
   //
   // Copy constructor
@@ -82,6 +92,8 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
   fGainNormalisationFactor = ref.fGainNormalisationFactor;
   fkPIDResponseObject = ref.fkPIDResponseObject;
   fkTRDdEdxParams = ref.fkTRDdEdxParams;
+  fCorrectEta = ref.fCorrectEta;
+  fMagField   = ref.fMagField;
 
   return *this;
 }
@@ -94,6 +106,7 @@ AliTRDPIDResponse::~AliTRDPIDResponse(){
   if(IsOwner()) {
     delete fkPIDResponseObject;
     delete fkTRDdEdxParams;
+    delete fhEtaCorr[0];
   }
 }
 
@@ -122,10 +135,86 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
   return kTRUE;
 }
 
+//_________________________________________________________________________
+Bool_t AliTRDPIDResponse::SetEtaCorrMap(Int_t i,TH2D* hMap)
+{
+  //
+  // Load map for TRD eta correction (a copy is stored and will be deleted automatically).
+  // If hMap is 0x0,the eta correction will be disabled and kFALSE is returned. 
+  // If the map can be set, kTRUE is returned.
+  //
+  
+//    delete fhEtaCorr[0];
+  
+    if (!hMap) {
+	fhEtaCorr[0] = 0x0;
+
+	return kFALSE;
+    }
+
+    fhEtaCorr[0] = (TH2D*)(hMap->Clone());
+
+    return kTRUE;
+}
+
+//____________________________________________________________
+Double_t AliTRDPIDResponse::GetEtaCorrection(const AliVTrack *track, Double_t bg) const
+{
+    //
+    // eta correction
+    //
+    
+
+    if (!fhEtaCorr[0]) {
+	AliError(Form("Eta correction requested, but map not initialised for iterator:%i (usually via AliPIDResponse). Returning eta correction factor 1!",1));
+	return 1.;
+
+    }
+
+    Double_t fEtaCorFactor=1;
+
+
+    Int_t nch = track->GetTRDNchamberdEdx();
+    
+    const Int_t iter  = 0;
+    
+    if (iter < 0) {
+        AliError(Form("Eta correction requested for track with  = %i, no map available. Returning default eta correction factor = 1!", nch));
+        return 1.;
+    }
+    
+
+    // Get eta from propagation of outer params to TRD
+    const AliExternalTrackParam *tempparam = NULL;
+    Double_t etalayer=-99;
+    if(track->GetOuterParam()) tempparam = track->GetOuterParam();
+    else if(track->GetInnerParam()) tempparam = track->GetInnerParam();
+
+    if(tempparam) {
+	AliExternalTrackParam param(*tempparam);
+	param.PropagateTo(288.43,fMagField);   // hardwired number where TRD begins
+        etalayer= param.Eta();
+    } else return 1.;
+
+
+
+    if((TMath::Abs(etalayer)>0.9)||(bg<0.3)||(bg>1e4)){
+	return 1;
+    } else {
+	if ((fhEtaCorr[iter]->GetBinContent(fhEtaCorr[iter]->FindBin(etalayer,bg)) != 0)) {
+	    fEtaCorFactor= fhEtaCorr[iter]->GetBinContent(fhEtaCorr[iter]->FindBin(etalayer,bg));
+	    return fEtaCorFactor;
+	}  else
+	{
+	    return 1;
+	}
+    }
+}
+
 
 
 //____________________________________________________________
-Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type) const
+Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EParticleType type, Bool_t fCorrectEta) const
 {
   //
   //calculate the TRD nSigma
@@ -134,7 +223,7 @@ Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EP
   const Double_t badval = -9999;
   Double_t info[5]; for(int i=0; i<5; i++){info[i]=badval;}
 
-  const Double_t delta = GetSignalDelta(track, type, kFALSE, info);
+  const Double_t delta = GetSignalDelta(track, type, kFALSE, fCorrectEta, info);
 
   const Double_t mean = info[0];
   const Double_t res = info[1];
@@ -148,7 +237,7 @@ Double_t AliTRDPIDResponse::GetNumberOfSigmas(const AliVTrack *track, AliPID::EP
 }
 
 //____________________________________________________________
-Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/, Double_t *info/*=0x0*/) const
+Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EParticleType type, Bool_t ratio/*=kFALSE*/, Bool_t fCorrectEta, Double_t *info/*=0x0*/) const
 {
   //
   //calculate the TRD signal difference w.r.t. the expected
@@ -161,30 +250,38 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
     return badval;
   }
 
-  Double_t pTRD = -999;
+  Double_t pTRD = 0; 
+  Int_t pTRDNorm =0 ;
   for(Int_t ich=0; ich<6; ich++){
-    pTRD = track->GetTRDmomentum(ich);
-    if(pTRD>0)
-      break;
-  }
-  if(pTRD<0){
-    return badval;
+      if(track->GetTRDmomentum(ich)>0)
+      {
+	  pTRD += track->GetTRDmomentum(ich);
+          pTRDNorm++;
+      }
   }
 
+  if(pTRDNorm>0)
+  {
+      pTRD/=pTRDNorm;
+  }
+  else return badval;
+
   if(!fkTRDdEdxParams){
-    AliError("fkTRDdEdxParams null");
+    AliDebug(3,"fkTRDdEdxParams null");
     return -99999;
   }
 
   const Double_t nch = track->GetTRDNchamberdEdx();
   const Double_t ncls = track->GetTRDNclusterdEdx();
 
-  const TVectorF meanvec = fkTRDdEdxParams->GetMeanParameter(type, nch, ncls);
+//  fkTRDdEdxParams->Print();
+
+  const TVectorF meanvec = fkTRDdEdxParams->GetMeanParameter(type, nch, ncls,fCorrectEta);
   if(meanvec.GetNrows()==0){
     return badval;
   }
 
-  const TVectorF resvec  = fkTRDdEdxParams->GetSigmaParameter(type, nch, ncls);
+  const TVectorF resvec  = fkTRDdEdxParams->GetSigmaParameter(type, nch, ncls,fCorrectEta);
   if(resvec.GetNrows()==0){
     return badval;
   }
@@ -194,22 +291,39 @@ Double_t AliTRDPIDResponse::GetSignalDelta( const AliVTrack* track, AliPID::EPar
 
   //============================================================================================<<<<<<<<<<<<<
 
+
+
   const Double_t bg = pTRD/AliPID::ParticleMass(type);
   const Double_t expsig = MeandEdxTR(&bg, meanpar);
 
   if(info){
-    info[0]= expsig;
-    info[1]= ResolutiondEdxTR(&ncls, respar);
-  }
+      info[0]= expsig;
+      info[1]= ResolutiondEdxTR(&ncls, respar);
+ }
+
+
 
   const Double_t eps = 1e-10;
 
+  // eta asymmetry correction
+  Double_t corrFactorEta = 1.0;
+
+  if (fCorrectEta) {
+      corrFactorEta = GetEtaCorrection(track,bg);
+  }
+
+  AliDebug(3,Form("TRD trunc PID expected signal %f exp. resolution %f bg %f nch %f ncls %f etcoron/off %i nsigma %f ratio %f \n",expsig,ResolutiondEdxTR(&ncls, respar),bg,nch,ncls,fCorrectEta,(corrFactorEta*track->GetTRDsignal())/(expsig + eps),(corrFactorEta*track->GetTRDsignal()) - expsig));
+
+
   if(ratio){
-    return track->GetTRDsignal()/(expsig +  eps);
+      return (corrFactorEta*track->GetTRDsignal())/(expsig + eps);
   }
   else{
-    return track->GetTRDsignal() - expsig;
+      return (corrFactorEta*track->GetTRDsignal()) - expsig;
   }
+
+ 
+
 }
 
 
@@ -221,8 +335,8 @@ Double_t AliTRDPIDResponse::ResolutiondEdxTR(const Double_t * xx,  const Float_t
   //
 
   const Double_t ncls = xx[0];
-
-  return par[0]+par[1]*TMath::Power(ncls, par[2]);
+//  return par[0]+par[1]*TMath::Power(ncls, par[2]);
+  return TMath::Sqrt(par[0]*par[0]+par[1]*par[1]/ncls);
 }
 
 Double_t AliTRDPIDResponse::MeandEdxTR(const Double_t * xx,  const Float_t * pin)
@@ -388,7 +502,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
       // overflow
       probLayer = refUpper->Eval(dEdx);
   } else {
-      AliError("No references available");
+      AliDebug(3,"No references available");
   }
   AliDebug(1, Form("Eval 1D dEdx %f Probability %e", dEdx[0],probLayer));
 
@@ -482,22 +596,57 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[1]=0;
       for(Int_t islice = 0; islice < nSlice; islice++){
 	  if(in[islice]<=0){out[0]=0;out[1]=0;return kFALSE;}  // Require that all slices are filled
-	  if(islice<fkPIDResponseObject->GetNSlicesQ0())out[0]+= in[islice];
+
+	  if(islice<kNsliceQ0LQ2D)out[0]+= in[islice];
 	  else out[1]+= in[islice];
       }
       // normalize signal to number of slices
-      out[0]*=1./Double_t(fkPIDResponseObject->GetNSlicesQ0());
-      out[1]*=1./Double_t(nSlice-fkPIDResponseObject->GetNSlicesQ0());
+
+
+      out[0]*=1./Double_t(kNsliceQ0LQ2D);
+      out[1]*=1./Double_t(nSlice-kNsliceQ0LQ2D);
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f",out[0],out[1]));
       break;
   case kLQ1D: // 1D LQ
       out[0]= 0.;
-      for(Int_t islice = 0; islice < nSlice; islice++)
-	  if(in[islice] > 0) out[0] += in[islice] * fGainNormalisationFactor;   // Protect against negative values for slices having no dE/dx information
-      out[0]*=1./Double_t(nSlice);
+      for(Int_t islice = 0; islice < nSlice; islice++) {
+//	  if(in[islice] > 0) out[0] += in[islice] * fGainNormalisationFactor;   // Protect against negative values for slices having no dE/dx information
+	  if(in[islice] > 0) out[0] += in[islice];  // no neg dE/dx values
+      }
+      out[0]*=1./Double_t(kNsliceQ0LQ1D);
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx dEdx %f",out[0]));
+      break;
+  case kLQ3D: // 3D LQ
+      out[0]=0;
+      out[1]=0;
+      out[2]=0;
+      for(Int_t islice = 0; islice < nSlice; islice++){
+	  if(in[islice]<=0){out[0]=0;out[1]=0;out[2]=0;return kFALSE;}  // Require that all slices are filled
+	  if(islice<kNsliceQ0LQ3D)out[0]+= in[islice];
+	  out[1]=(in[3]+in[4]);
+	  out[2]=(in[5]+in[6]);
+      }
+      // normalize signal to number of slices
+      out[0]*=1./Double_t(kNsliceQ0LQ3D);
+      out[1]*=1./2.;
+      out[2]*=1./2.;
+      if(out[0] < 1e-6) return kFALSE;
+      AliDebug(3,Form("CookdEdx Q0 %f Q1 %f Q2 %f",out[0],out[1],out[2]));
+      break;
+  case kLQ7D: // 7D LQ
+      for(Int_t i=0;i<nSlice;i++) {out[i]=0;}
+      for(Int_t islice = 0; islice < nSlice; islice++){
+	  if(in[islice]<=0){
+	      for(Int_t i=0;i<8;i++){
+		  out[i]=0;
+	      }
+	      return kFALSE;}  // Require that all slices are filled
+	  out[islice]=in[islice];
+      }
+      if(out[0] < 1e-6) return kFALSE;
+      AliDebug(3,Form("CookdEdx Q0 %f Q1 %f Q2 %f Q3 %f Q4 %f Q5 %f Q6 %f Q7 %f",out[0],out[1],out[2],out[3],out[4],out[5],out[6],out[7]));
       break;
 
   default:
@@ -539,7 +688,7 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
 Bool_t AliTRDPIDResponse::SetPIDResponseObject(const AliTRDPIDResponseObject * obj){
 
     fkPIDResponseObject = obj;
-    if((AliLog::GetDebugLevel("",IsA()->GetName()))>0)fkPIDResponseObject->Print("");
+    if((AliLog::GetDebugLevel("",IsA()->GetName()))>0 && obj) fkPIDResponseObject->Print("");
     return kTRUE;
 }
 

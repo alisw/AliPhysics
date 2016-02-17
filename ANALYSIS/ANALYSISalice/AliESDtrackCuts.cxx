@@ -1074,7 +1074,6 @@ Bool_t  AliESDtrackCuts::IsTrackInDistortedTpcRegion(const AliESDtrack * esdTrac
   // moved to the OADB.
   //
   if (!esdTrack->GetInnerParam()) return kFALSE; // non-tpc tracks are not affected
-  if (esdTrack->Eta() > 0) return kFALSE; // A-side assumed safe for the time being
   //
   Double_t eta = esdTrack->Eta(); 
   Double_t phiIn = esdTrack->GetInnerParam()->Phi();

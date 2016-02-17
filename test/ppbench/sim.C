@@ -28,6 +28,8 @@ void sim(Int_t nev=20) {
     simulator.SetQACycles((AliQAv1::DETECTORINDEX_t)det, nev+1) ;
   }
   
+  simulator.SetRunHLT("default"); // In case we do not have ancored production
+
   TStopwatch timer;
   timer.Start();
   simulator.Run(nev);

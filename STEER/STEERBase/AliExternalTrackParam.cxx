@@ -2018,6 +2018,37 @@ AliExternalTrackParam::GetPxPyPzAt(Double_t x, Double_t b, Double_t *p) const {
   return Local2GlobalMomentum(p,fAlpha);
 }
 
+Bool_t AliExternalTrackParam::GetYZAt(Double_t x, Double_t b, Double_t *yz) const 
+{
+  //---------------------------------------------------------------------
+  // This function returns the local Y,Z-coordinates of the intersection 
+  // point between this track and the reference plane "x" (cm). 
+  // Magnetic field "b" (kG)
+  //---------------------------------------------------------------------
+  double dx=x-fX;
+  if(TMath::Abs(dx)<=kAlmost0) {
+    yz[0] = fP[0]; 
+    yz[1] = fP[1];
+    return kTRUE;
+  }
+  double crv=GetC(b);
+  double f1=fP[2], x2r = crv*dx, f2=f1 + x2r;
+  if (TMath::Abs(f1) >= kAlmost1 || 
+      TMath::Abs(f2) >= kAlmost1 || 
+      TMath::Abs(fP[4])< kAlmost0) return kFALSE;
+  double r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  double dy2dx = (f1+f2)/(r1+r2);
+  yz[0] = fP[0] + dx*dy2dx;
+  if (TMath::Abs(x2r)<0.05) yz[1] = fP[1] + dx*(r2 + f2*dy2dx)*fP[3];
+  else {
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    yz[1] = fP[1] + rot/crv*fP[3];    
+  }
+  return kTRUE;
+}
+
+
 Bool_t 
 AliExternalTrackParam::GetYAt(Double_t x, Double_t b, Double_t &y) const {
   //---------------------------------------------------------------------

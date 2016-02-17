@@ -8,7 +8,7 @@ else
     REXE=root.exe
 fi
 
-rm -rf *.root *.dat *.log fort* hlt hough raw* *~ GRP
+rm -rf *.root *.dat *.log fort* hlt hough raw* *~ GRP *.ps AliHLT*
 
 ${REXE} -b -q runsim.C      2>&1 | tee sim.log
 mv syswatch.log simwatch.log

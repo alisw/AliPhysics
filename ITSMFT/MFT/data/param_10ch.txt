@@ -1,0 +1,26 @@
+# use CA (0) or TrackFinder (1)
+1
+# number of planes
+10
+# Layer thickness in X0
+0.004
+# Pixel noise probability ; Add noise (on/off)
+1.E5 0
+# Minimum track length [nb of hits]
+4
+# Cut in position difference (X;Y) [cm]
+0.0028 0.0028
+# Max angle of the segment [deg]
+12.
+# Cut in angle to select vertex-compatible segments [deg]
+0.60 0.60 0.60 0.60 0.60 0.60 0.60 0.60 0.60 0.00
+# Cut in angle to select neighbor compatible segments [deg]
+0.0 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.0
+# Plane efficiencies
+0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98 0.98
+# Calculate Vertex (on/off)
+0
+# Enable QED hits (on/off) ; Hadronic MB Rate [kHz] ; CMOS integration time [microsec]
+0 50. 20.
+# Read geometry from ROOT file
+1 geometry_v6

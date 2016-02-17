@@ -29,15 +29,11 @@ if (excleve GREATER -1)
   set(ROOT_VERSION_MIN_5 "5.34.17")
 endif()
 
-### CMP0025   Compiler id for Apple Clang is now AppleClang.
-### CMP0042   MACOSX_RPATH is enabled by default.
-
-foreach(p
-  CMP0025 # CMake 3.0
-  CMP0042 # CMake 3.0
-  )
+foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
+          CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
+          CMP0042) # MACOSX_RPATH is enabled by default (v3.0)
   if(POLICY ${p})
-  cmake_policy(SET ${p} NEW)
+    cmake_policy(SET ${p} NEW)
   endif()
 endforeach()
 
@@ -56,10 +52,12 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 # Build type for coverage builds
 set(CMAKE_CXX_FLAGS_COVERAGE "-g -O2 -fprofile-arcs -ftest-coverage")
 set(CMAKE_C_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_COVERAGE}")
+set(CMAKE_LINK_FLAGS_COVERAGE "-fprofile-arcs -fPIC")
 
 MARK_AS_ADVANCED(
     CMAKE_CXX_FLAGS_COVERAGE
-    CMAKE_C_FLAGS_COVERAGE)
+    CMAKE_C_FLAGS_COVERAGE
+    CMAKE_LINK_FLAGS_COVERAGE)
 
 # You can change the build type using
 # cmake -DCMAKE_BUILD_TYPE=DEBUG | RELEASE | RELWITHDEBINFO | MINSIZEREL ...
@@ -239,6 +237,12 @@ else()
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
   endif(ROOTSYS)
 
+  # Enable C++11 by default if found in ROOT
+  if(ROOT_HAS_CXX11 AND NOT DISABLE_CXX11)
+    message(STATUS "Enabling C++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  endif()
+
   # FTGL: prefer library from ROOT, look for both libFTGL and libftgl
   unset(LIB_FTGL)
   if(${ROOT_FEATURES} MATCHES "builtin_ftgl")
@@ -311,7 +315,7 @@ else()
 
   # AliRoot modules
   set(ALIROOT_MODULES
-      ACORDE AD BCM EMCAL EPOS EVE EVGEN FASTSIM FIT FMD HLT HMPID ITS MFT
+      ACORDE AD BCM EMCAL EPOS EVE EVGEN FASTSIM FIT FMD HLT HMPID ITS ITSMFT
       MONITOR MUON PHOS PMD STARLIGHT STAT STRUCT T0 TEvtGen TOF TPC TRD TRIGGER
       TTherminator VZERO ZDC ALIGN data GRP OCDB QAref)
 

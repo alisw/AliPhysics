@@ -42,12 +42,16 @@
 #include "AliTOFReconstructor.h"
 #include "AliTOFTriggerMask.h"
 #include "AliTOFTrigger.h"
+#include "AliCTPTimeParams.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 class TTree;
 
 ClassImp(AliTOFReconstructor)
 
 Double_t AliTOFReconstructor::fgExtraTolerance = 0;
+Int_t AliTOFReconstructor::fgCTPtriggerLatency = -1;
 
  //____________________________________________________________________
 AliTOFReconstructor::AliTOFReconstructor() :
@@ -118,11 +122,21 @@ AliTOFReconstructor::~AliTOFReconstructor()
   delete fClusterFinder;
   delete fClusterFinderV1;
 }
+void AliTOFReconstructor::GetPidSettings(AliESDpid *esdPID){
+  Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
+  AliInfo(Form(" TOF resolution set in PIDResponse to %f ps",tofResolution));
+  
+  esdPID->GetTOFResponse().SetTimeResolution(tofResolution);
+
+  return;
+}
 
 //_____________________________________________________________________________
 void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
                                       TTree *clustersTree) const
 {
+  AliInfo(Form("TOF Reconstruct"));
+ 
   //
   // reconstruct clusters from Raw Data
   //
@@ -171,7 +185,22 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 
     fClusterFinder->Digits2RecPoints(rawReader, clustersTree);
   }
-  AliTOFTrigger::PrepareTOFMapFromRaw(rawReader,13600); // 13600 +/- 400 is the value to select the richt bunch crossing (in future from OCDB)
+
+
+  if(fgCTPtriggerLatency < 0){ // read from OCDB
+    AliCDBManager *man = AliCDBManager::Instance();
+    Int_t run = man->GetRun();
+    if(run > 244335){
+      fgCTPtriggerLatency = 12800; // run-2 value
+    }
+    else
+      fgCTPtriggerLatency = 13600; // run-1 value
+
+    AliInfo(Form("CTP latency used for run %i to select bunch ID = %i",run,fgCTPtriggerLatency));
+  }
+
+
+  AliTOFTrigger::PrepareTOFMapFromRaw(rawReader,fgCTPtriggerLatency); // 13600 +/- 400 is the value to select the richt bunch crossing (in future from OCDB)
 }
 
 //_____________________________________________________________________________
@@ -340,9 +369,9 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
 
   if (!GetRecoParam()) AliFatal("cannot get TOF RECO params");
 
-  Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
   AliTOFT0maker *tofT0maker = new AliTOFT0maker(esdPID);
-  tofT0maker->SetTimeResolution(tofResolution);
+  //Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
+  //tofT0maker->SetTimeResolution(tofResolution); // setting performed now in GetPidSetting in AliReconstructor
   tofT0maker->ComputeT0TOF(event);
   tofT0maker->WriteInESD(event);
   tofT0maker->~AliTOFT0maker();

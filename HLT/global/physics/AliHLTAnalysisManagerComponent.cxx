@@ -425,7 +425,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	fPushRequestOngoing = kFALSE;
 	if (pushResult)
 	{
-	  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+	  HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
 	  fNumEvents = 0;
 	}
 
@@ -438,7 +438,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         if (pushResult > 0)
         {
            if (fResetAfterPush) fAnalysisManager->ResetOutputData();
-           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+           HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
            fNumEvents = 0;
         }
         delete retObj;
@@ -525,7 +525,6 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 	if (pBlock)
 	{
 	    AliFlatESDEvent* tmpFlatEvent=reinterpret_cast<AliFlatESDEvent*>( pBlock->fPtr );
-	    AliFlatESDEvent* tmpCopy;
 	    if (tmpFlatEvent)
 	    {
 		AliFlatESDEvent* tmpCopy;
@@ -534,7 +533,7 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 			if (pBlock->fSize + sizeof(AnalysisManagerQueueData) > fAsyncProcessor.BufferSize())
 			{
 				HLTError("Insufficient buffer size for Flat-ESD");
-				tmpFlatEvent = NULL;
+				tmpCopy = NULL;
 			}
 			else
 			{
@@ -581,7 +580,6 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 	if (pBlock)
 	{
 	    AliFlatESDFriend* tmpFlatFriend = reinterpret_cast<AliFlatESDFriend*>( pBlock->fPtr );
-	    AliFlatESDFriend* tmpCopy;
 	    if (tmpFlatFriend)
 	    {
 		AliFlatESDFriend* tmpCopy;
@@ -590,7 +588,7 @@ Int_t AliHLTAnalysisManagerComponent::ReadInput(AnalysisManagerQueueData* eventD
 			if (pBlock->fSize + flatEsdSize + sizeof(AnalysisManagerQueueData) > fAsyncProcessor.BufferSize())
 			{
 				HLTError("Insufficient buffer size for Flat-ESD Friend");
-				tmpFlatFriend = NULL;
+				tmpCopy = NULL;
 			}
 			else
 			{

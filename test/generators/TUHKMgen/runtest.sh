@@ -1,7 +1,7 @@
 #!/bin/bash -l
 # The settings come from ~/.bash_profile
 
-rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log
+rm -rf *.root *.dat *.log fort* hlt hough raw* GRP *.ps AliHLT* recraw/*.root recraw/*.log recraw/*.ps recraw/AliHLT*
 aliroot -b -q sim.C      2>&1 | tee sim.log
 mv syswatch.log simwatch.log
 aliroot -b -q rec.C      2>&1 | tee rec.log

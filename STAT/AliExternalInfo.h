@@ -1,152 +1,124 @@
 #ifndef ALIEXTERNALINFO_H
 #define ALIEXTERNALINFO_H
 
-#include <vector>
-#include <map>
-#include "TTree.h"
-#include "TObject.h"
+/// \class AliExternalInfo
+/// \brief This class gives you an interface to different trees of information spread throughout ALICE
+///
+/// Related task: https://alice.its.cern.ch/jira/browse/ATO-46
+/// With this class you can easily download and use information from different
+/// resources in ALICE, like the RCT, logbook, QA...
+///
+/// For the correct usage of this class you need to have a certificate which does not need typing in your password.
+/**
 
-class TChain;
-class TString;
-//class Period;
+Examples:
 
-/*
-  This class gives an interface to different trees.
+1) Get the tree from a QA tree
 
-  To get the pointer to a tree use GetTree*(<id>).
-  Cache*(<id>) downloads the necessary information.
+AliExternalInfo b(".", "config.cfg"); // first parameter is the working directory. Second parameter is the configuration file.
+b.Cache("QA.TPC", "LHC15f", "pass2"); // Actually not needed because "GetTree(...)" chechs if the resource has been if this is not the case it will automatically call Cache(...)
+TTree* treeTPCQA15fPass2 = b.GetTree("QA.TPC", "LHC15f", "pass2"); // Returns a tree with the information of the resource
+// TTree* treeTPCQA15fPass2 = b.GetTreeDataQA("TPC", "LHC15f", "pass2"); // Different method to get the tree. Calls internally the "Cache(...)" function
+treeTPCQA15fPass2->Print(); // Do something with the tree
 
-  For the correct usage of this class you need to have a certificate which does not need typing in your password.
+2a) Create a chain
+b.Cache("QA.EVS", "LHC10b", "pass4"); Downloads the resource
+b.Cache("QA.EVS", "LHC10c", "pass4");
+b.Cache("QA.EVS", "LHC10d", "pass4");
+TChain* chain10evs = b.GetChain("QA.EVS", "LHC10*", "pass4"); // Creates a chain of all downloaded resources. Note the '*' which is used like in ls
+chain10evs->Draw("interactionRate:run", "", "*"); // Draws a histogram interaction rate vs run
+
+2b) Create a chain
+TTree * treeProdCycle7076 = b.GetTreeProdCycleByID("7076");
+TTree * treeProdCycle7236 = b.GetTreeProdCycleByID("7236");
+TTree * treeProdCycle7214 = b.GetTreeProdCycleByID("7214");
+TChain* chainProdCycleIDs = b.GetChainProdCycleByID("[0-9]*"); // needs number wildcards because a ProdCycle.root is also available
+chainProdCycleIDs->Print();
+
+3) Using the friends tree
+TTree* treeTPCQA15fPass1 = b.GetTree("QA.TPC", "LHC15f", "pass2");
+TTree* treeEVSQA15fPass1 = b.GetTree("QA.EVS", "LHC15f", "pass2");
+// TTree* treeTPCQA15hPass1 = b.GetTree("QA.TPC", "LHC15h", "pass1"); // Only one single tree of type can be added to the friends tree
+// TTree* treeEVSQA15hPass1 = b.GetTree("QA.EVS", "LHC15h", "pass1"); // Only one single tree of type can be added to the friends tree
+b.GetFriendsTree()->Draw("TPC.tpcItsMatchA:EVS.interactionRate","TPC.meanMult>0", "*");
+c1.SaveAs("c1.png");
 */
+/// \author Carsten Klein <Carsten.Klein@cern.ch>, Goethe Universität Frankfurt
+/// \date Jan 18, 2016
 
-class AliExternalInfo
-{
+#include <map>
+
+#include "TString.h"
+
+// forward declarations
+class TTree;
+class TChain;
+
+class AliExternalInfo : public TObject {
 public:
-  AliExternalInfo();
-  AliExternalInfo(TString GlobalPath);
-  ~AliExternalInfo();
+  AliExternalInfo (TString localStorageDirectory = ".", TString configLocation = "$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg"/*, Bool_t copyToLocalStorage = kTRUE*/);
+  virtual ~AliExternalInfo();
+  void ReadConfig();
+  void PrintConfig();
+  Bool_t Cache(TString type="", TString period = "", TString pass=""); // Downloads the tree in the working directory
+  Bool_t CacheMC()                                                      {return Cache("MonALISA.MC", "", "");}
+  Bool_t CacheRCT(TString period, TString pass)                         {return Cache("MonALISA.RCT", period, pass);}
+  Bool_t CacheDataQA(TString detector, TString period, TString pass)    {return Cache("QA." + detector, period, pass);}
+  Bool_t CacheLogbook(TString period)                                   {return Cache("Logbook", period, "");}
+  Bool_t CacheTriggerClasses(TString period)                            {return Cache("TriggerClasses", period, "");}
+  Bool_t CacheProdCycle()                                               {return Cache("MonALISA.ProductionCycle", "", "");}
+  Bool_t CacheProdCycleByID(TString ID)                                 {return Cache("MonALISA.ProductionCycleID", ID, "");}
 
-  Bool_t CacheMC();
-  Bool_t CacheRCT(TString period, TString pass); // Calls Cache(...) with the corresponding type
-  Bool_t CacheLogbook(TString period);
-  Bool_t CacheTriggerClasses(TString year);
-  Bool_t CacheDataQA(TString detector, TString period, TString pass);
-  Bool_t CacheProdCycle(); // downloads the master page
-  Bool_t CacheProdPasses();
-  Bool_t CacheProdCycle(TString id); // can be used, if someone knows the id at mona lisa
-  // Bool_t CacheProdCycle(TString period, TString pass); // NOT YET IMPLEMENTED
-  // Bool_t CacheAll(); // NOT YET IMPLEMENTED
+  TTree* GetTree(TString type, TString period, TString pass);
+  TTree* GetTreeMC()                                                    {return GetTree("MonALISA.MC", "", "");}
+  // TTree* GetTreeMC(TString period = "", TString anchorYear = "", TString productionTag = "") {return GetTree("MonALISA.MC", "", "");} // deprecated; not supported anymore
+  TTree* GetTreeRCT(TString period, TString pass)                       {return GetTree("MonALISA.RCT", period, pass);}
+  TTree* GetTreeDataQA(TString detector, TString period, TString pass)  {return GetTree("QA." + detector, period, pass);}
+  TTree* GetTreeLogbook(TString period)                                 {return GetTree("Logbook", period, "");}
+  TTree* GetTreeTriggerClasses(TString period)                          {return GetTree("TriggerClasses", period, "");}
+  TTree* GetTreeProdCycle()                                             {return GetTree("MonALISA.ProductionCycle", "", "");}
+  TTree* GetTreeProdCycleByID(TString ID)                               {return GetTree("MonALISA.ProductionCycleID", ID, "");}
 
+  TChain* GetChain(TString type, TString period, TString pass);
+  TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}
+  TChain* GetChainRCT(TString period, TString pass)                     {return GetChain("MonALISA.RCT", period, pass);}
+  TChain* GetChainDataQA(TString detector, TString period, TString pass){return GetChain("QA." + detector, period, pass);}
+  TChain* GetChainLogbook(TString period)                               {return GetChain("Logbook", period, "");}
+  TChain* GetChainTriggerClasses(TString period)                        {return GetChain("TriggerClasses", period, "");}
+  TChain* GetChainProdCycle()                                           {return GetChain("MonALISA.ProductionCycle", "", "");}
+  TChain* GetChainProdCycleByID(TString ID)                             {return GetChain("MonALISA.ProductionCycleID", ID, "");}
 
-  TTree* GetTreeMC(TString period = "", TString anchorYear = "", TString productionTag = "");
-  TTree* GetTreeRCT(TString period, TString pass); // Calls GetTree(...) with the corresponding type
-  TTree* GetTreeLogbook(TString period);
-  TTree* GetTreeTriggerClasses(TString year);
-  TTree* GetTreeDataQA(TString detector, TString period, TString pass);
-  TTree* GetTreeProdCycle(); // downloads master page
-  TTree* GetTreeProdPasses(); // downloads master page
-  TTree* GetTreeProdCycle(TString id); // can be used, if someone knows the id at mona lisa
-  // TTree* GetTreeProdCycle(TString period, TString pass);  // NOT YET IMPLEMENTED
+  TTree* GetFriendsTree() const {return fTree;}
+  TChain* GetFriendsChain() const {return fChain;} // _Not_ working properly!!!
 
+  void     SetMaxCacheSize(Long64_t size) { fMaxCacheSize=size;   }
+  Long64_t GetMaxCacheSize() const        { return fMaxCacheSize; }
 
-  TChain* GetChainMC(TString period = "", TString anchorYear = "", TString productionTag = "");
-  TChain* GetChainRCT(TString period, TString pass);
-  TChain* GetChainLogbook(TString period);
-  TChain* GetChainTriggerClasses(TString year);
-  TChain* GetChainDataQA(TString detector, TString period, TString pass);
-  TChain* GetChainProdCycle(TString id); // can be used, if someone knows the id at mona lisa
-  // TChain* GetChainProdCycle(TString period, TString pass);  // NOT YET IMPLEMENTED
-
-  TString GetLocalLocation(){return fGlobalDir; }
-  void SetLocalLocation(TString location){fGlobalDir = location; }
-
-  void SetGlobalTimeLimit(long int t){ fTimeLimit = t;};
-  Double_t GetGlobalTimeLimit(){return fTimeLimit;}
-
-  void CreateMapWithPassesAndPeriods();
-
-  TChain* GetChain(TString period, TString pass, TString anchorYear, TString productionTag, Int_t type);
-  TTree* GetTree(TString period, TString pass, TString anchorYear, TString productionTag, Int_t type);
-  Bool_t Cache(TString period, TString pass, Int_t type); // Downloads the tree in the working directory
-
-  enum type{kRCT, kMC, kLogbook, kTriggerClasses, kTPC, kEVS, kTOF, kProdCycle, kProdCycleCpasses, kRawQATPC, kAll};
+  static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
 
 private:
-  Bool_t IsDownloadNeeded(TString file);
-  Bool_t CheckPeriod(TString period);
-  Bool_t CheckPass(TString pass);
+  Bool_t AddTree(TTree* tree, TString type);
+  Bool_t AddChain(TString type, TString period, TString pass);
+  void SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
+                      TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass);
+  const TString GetYearFromPeriod(const TString& period);
+  const TString Wget(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation);
+  const TString CreatePath(TString type, TString period, TString pass);
+  Bool_t IsDownloadNeeded(TString file, TString type);
 
-  void SetUpForPeriodPass(const TString& period, const TString& pass, TString& localpath, TString& file, const TString& filename, const TString& filetype, Int_t type);
+  // Bool_t fCopyDataToLocalStorage;
+  TString fConfigLocation;                          ///< location of the config file
+  TString fLocalStorageDirectory;                   ///< location of the local cache directory
+  std::map<TString, TString> fLocationTimeOutMap;   ///< map with configuration parameters
+  TTree* fTree;                                     ///< master tree with friends
+  TChain* fChain;                                   ///< master chain with friends
+  std::map<TString, TChain*> fChainMap;             ///< map of chains
+  Long64_t fMaxCacheSize;                           ///< maximum chache size for trees and chains
 
-  TString wget(const TString& localpath, const TString& filename, const TString& filetype, const TString& remotepath);
-  TString GetYearFromPeriod(TString period);
-
-  TString fCertificate;
-  TString fPrivateKey;
-
-  TString fGlobalDir;
-  TString fFormMCFilename;
-  TString fFormMCDir;
-  TString fFormMCFiletype;
-  TString fFormRCTFilename;
-  TString fFormRCTDir;
-  TString fFormRCTFiletype;
-  TString fFormLogbookFilename;
-  TString fFormLogbookDir;
-  TString fFormLogbookFiletype;
-  TString fFormTriggerClassesFilename;
-  TString fFormTriggerClassesDir;
-  TString fFormTriggerClassesFiletype;
-  TString fFormTrendingFilename;
-  TString fFormTrendingDir;
-  TString fFormTrendingFiletype;
-  TString fFormProdCycleFilename;
-  TString fFormProdCycleDir;
-  TString fFormProdCycleFiletype;
-  TString fFormProdPassesFilename;
-  TString fFormProdPassesDir;
-  TString fFormProdPassesFiletype;
-
-  long int fTimeLimit; // in seconds
-
-  TTree* fTree;
-
-  class Period
-  {
-    public:
-      Period(){};
-      Period(TString name) : fName(name){};
-      ~Period(){};
-
-      void SetPeriod(TString name){
-        fName = name;
-      }
-      TString GetPeriod() {
-        return fName;
-      }
-      void AddPass(TString pass){
-        fPasses.push_back(pass);
-      }
-      std::vector<TString> GetPasses(){
-        return fPasses;
-      }
-      void PrintPeriodPass(){
-        std::cout << "Period: " << GetPeriod() << "   Passes: ";
-        for (unsigned int i = 0; i < fPasses.size(); ++i){
-          std::cout << fPasses.at(i) << " ";
-        }
-        std::cout << std::endl;
-      }
-    private:
-      TString fName;
-      std::vector<TString> fPasses;
-  };
-
-  std::vector<Period> fPeriods;
+  static const TString fgkDefaultConfig;            ///< default config file
 
   ClassDef(AliExternalInfo, 0);  // interface to various trending trees
+
 };
 
 #endif // ALIEXTERNALINFO_H
-
-

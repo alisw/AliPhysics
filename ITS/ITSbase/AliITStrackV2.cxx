@@ -173,7 +173,8 @@ AliITStrackV2::PropagateToVertex(const AliESDVertex *v,Double_t d,Double_t x0)
   //------------------------------------------------------------------
   //This function propagates a track to the minimal distance from the origin
   //------------------------------------------------------------------  
-  Double_t bz=GetBz();
+  //  Double_t bz=GetBz(); // RS: in the ITS constant field can be used
+  Double_t bz=AliTrackerBase::GetBz();
   if (PropagateToDCA(v,bz,kVeryBig)) {
     Double_t xOverX0,xTimesRho; 
     xOverX0 = d; xTimesRho = d*x0;
@@ -189,7 +190,8 @@ GetGlobalXYZat(Double_t xloc, Double_t &x, Double_t &y, Double_t &z) const {
   //This function returns a track position in the global system
   //------------------------------------------------------------------
   Double_t r[3];
-  Bool_t rc=GetXYZAt(xloc, GetBz(), r);
+  //  Bool_t rc=GetXYZAt(xloc, GetBz(), r);
+  Bool_t rc=GetXYZAt(xloc, AliTrackerBase::GetBz(), r);
   x=r[0]; y=r[1]; z=r[2]; 
   return rc;
 }
@@ -209,15 +211,20 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
-
+  const double kXThresh = 50.;
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
-  
-  //Double_t bz=GetBz();
-  //if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
-  Double_t b[3]; GetBxByBz(b);
-  if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
+
+  if (oldX>kXThresh || xk>kXThresh) {
+    Double_t b[3]; GetBxByBz(b);
+    if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
+  }
+  else {
+    Double_t bz=AliTrackerBase::GetBz();
+    if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE; //RS revert fast propagation
+  }
   Double_t xOverX0,xTimesRho; 
   xOverX0 = d; xTimesRho = d*x0;
+  
   if (!CorrectForMeanMaterial(xOverX0,xTimesRho,kTRUE)) return kFALSE;
 
   Double_t x=GetX(), y=GetY(), z=GetZ();
@@ -252,9 +259,10 @@ Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOv
     
     GetXYZ(start);   //starting global position
     x += step;
-    if (!GetXYZAt(x, bz, end)) return kFALSE;
+    //    if (!GetXYZAt(x, bz, end)) return kFALSE;
     //if (!AliExternalTrackParam::PropagateTo(x, bz)) return kFALSE;
     if (!AliExternalTrackParam::PropagateToBxByBz(x, b)) return kFALSE;
+    GetXYZ(end);
     AliTracker::MeanMaterialBudget(start, end, mparam);
     xTimesRho = sign*mparam[4]*mparam[0];
     xOverX0   = mparam[1];

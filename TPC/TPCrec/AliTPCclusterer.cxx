@@ -93,6 +93,7 @@ AliTPCclusterer::AliTPCclusterer(const AliTPCParam* par, const AliTPCRecoParam *
   fLoop(0),
   fMaxBin(0),
   fMaxTime(1006), // 1000>940 so use 1000, add 3 virtual time bins before and 3 after
+  fMaxTimeBook(0), // 1000>940 so use 1000, add 3 virtual time bins before and 3 after
   fMaxPad(0),
   fSector(-1),
   fRow(-1),
@@ -164,9 +165,19 @@ void AliTPCclusterer::InitClustererArrays()
   fAllBins = new Float_t*[nRowsMax];
   fAllSigBins = new Int_t*[nRowsMax];
   fAllNSigBins = new Int_t[nRowsMax];
+  //
+  // RS: determine max timebin considered by the recoparams
+  AliTPCRecoParam* rp=0;
+  int irp=0;
+  fMaxTimeBook=TMath::Max(fMaxTime,AliTPCcalibDB::Instance()->GetMaxTimeBinAllPads()+6);
+  while( (rp=AliTPCcalibDB::Instance()->GetRecoParam(irp++)) ) {
+    fMaxTimeBook = TMath::Max(rp->GetLastBin()+6,fMaxTimeBook);
+  }
+  //
+
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
-    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    Int_t maxBin = fMaxTimeBook*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
     fAllBins[iRow] = new Float_t[maxBin];
     memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
     fAllSigBins[iRow] = new Int_t[maxBin];
@@ -617,7 +628,10 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
       AliFatal("Tranformations not in calibDB");    
       return;
     }
-    transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
+    if (!transform->GetCurrentRecoParam()) { 
+      transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
+      transform->SetCurrentTimeStamp(fTimeStamp);
+    }
     Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
     Int_t i[1]={fSector};
     transform->Transform(x,i,0,1);
@@ -978,6 +992,7 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
     fTimeStamp = fEventHeader->Get("Timestamp");
     fEventType = fEventHeader->Get("Type");
     AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+    if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
     transform->SetCurrentTimeStamp(fTimeStamp);
     transform->SetCurrentRun(rawReader->GetRunNumber());
   }
@@ -1038,7 +1053,7 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
-    Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
+    Int_t maxBin = fMaxTimeBook*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
     if (fAllBins) memset(fAllBins[iRow],0,sizeof(Float_t)*maxBin);
     if (fAllNSigBins) fAllNSigBins[iRow]=0;
   }

@@ -258,10 +258,12 @@ class AliAODTrack : public AliVTrack {
   
   Double_t GetRAtAbsorberEnd() const { return fRAtAbsorberEnd; }
   
+  Double_t GetITSchi2()       const       {return fITSchi2;}
   UChar_t  GetITSClusterMap() const       { return (UChar_t)(fITSMuonClusterMap&0xff); }
+  UChar_t  GetITSSharedClusterMap() const { return (UChar_t)((fITSMuonClusterMap&0xff00)>>8); }
   Int_t    GetITSNcls() const; 
   Bool_t   HasPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSClusterMap(),i); }
-  UShort_t GetHitsPatternInTrigCh() const { return (UShort_t)((fITSMuonClusterMap&0xff00)>>8); }
+  Bool_t   HasSharedPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSSharedClusterMap(),i); }
   UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; }
   UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
   
@@ -397,8 +399,9 @@ class AliAODTrack : public AliVTrack {
   void SetCharge(Short_t q) { fCharge = q; }
   void SetChi2perNDF(Double_t chi2perNDF) { fChi2perNDF = chi2perNDF; }
 
+  void SetITSchi2(Double_t ITSchi2)                         {fITSchi2 = ITSchi2;}
   void SetITSClusterMap(UChar_t itsClusMap)                 { fITSMuonClusterMap = (fITSMuonClusterMap&0xffffff00)|(((UInt_t)itsClusMap)&0xff); }
-  void SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)hitsPatternInTrigCh)&0xff)<<8); }
+  void SetITSSharedMap(UChar_t map)                         { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)map)&0xff)<<8); }
   void SetMuonClusterMap(UInt_t muonClusMap)                { fITSMuonClusterMap = (fITSMuonClusterMap&0xfc00ffff)|((muonClusMap&0x3ff)<<16); }
   void SetITSMuonClusterMap(UInt_t itsMuonClusMap)          { fITSMuonClusterMap = itsMuonClusMap; }
   void SetMUONtrigHitsMapTrg(UInt_t muonTrigHitsMap) { fMUONtrigHitsMapTrg = muonTrigHitsMap; }
@@ -453,12 +456,14 @@ class AliAODTrack : public AliVTrack {
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
   Double32_t*   fPID;               //! [0.,1.,8] pointer to PID object
 
+  Double32_t    fITSchi2;           // ITS chi2
+
   ULong_t       fFlags;             // reconstruction status flags 
   Int_t         fLabel;             // track label, points back to MC track
   Int_t         fTOFLabel[3];       // TOF label
   Double32_t    fTrackLength;       // Track length
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer
-                                    // (ITS: bit 1-8, muon trigger: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
+                                    // (ITS: bit 1-8, muon trigger or ITS shared: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
   UInt_t        fMUONtrigHitsMapTrg; // Muon trigger hits map from trigger
   UInt_t        fMUONtrigHitsMapTrk; // Muon trigger hits map from tracker track extrapolation
   UInt_t        fFilterMap;         // filter information, one bit per set of cuts
@@ -485,15 +490,15 @@ class AliAODTrack : public AliVTrack {
   mutable const AliDetectorPID* fDetectorPID; //! transient object to cache calibrated PID information
   TRef          fProdVertex;        // vertex of origin
 
-  Double_t      fTrackPhiOnEMCal;   // phi of track after being propagated to the EMCal surface (default r = 440 cm)
-  Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
-  Double_t      fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double32_t    fTrackPhiOnEMCal;   // phi of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double32_t    fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double32_t    fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
 
   Bool_t fIsMuonGlobalTrack;        // True if the track is built from the combination of MUON and MFT clusters     // AU
 
-  Double_t      fITSsignalTuned;    //! ITS signal tuned on data when using MC
-  Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
-  Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
+  Double32_t    fITSsignalTuned;    //! ITS signal tuned on data when using MC
+  Double32_t    fTPCsignalTuned;    //! TPC signal tuned on data when using MC
+  Double32_t    fTOFsignalTuned;    //! TOF signal tuned on data when using MC
 
   ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 
@@ -515,7 +520,7 @@ class AliAODTrack : public AliVTrack {
   Int_t GetNumberOfTPCClusters() const { return GetTPCncls();}  
   Int_t GetNumberOfTRDClusters() const { return GetTRDncls();}  
 
-  ClassDef(AliAODTrack, 24);
+  ClassDef(AliAODTrack, 25);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

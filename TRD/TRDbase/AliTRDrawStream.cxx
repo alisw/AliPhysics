@@ -469,7 +469,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr)
 	    ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink))) == 0)) {
       if ((fCurrStackMask & (1 << fCurrSlot)) == 0) {
 	++fCurrSlot;
-	fCurrSlot = 0;
+	fCurrLink = 0;
 	continue;
       }
       fCurrLink++;

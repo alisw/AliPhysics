@@ -49,11 +49,13 @@ fL1DCALThreshold(),
 fL1SubRegion(0x0),
 fL1DCALFrameMask(0),
 fMedian(),
-fTriggerBitWord(0)
+fTriggerBitWord(0),
+fL1DCALV0()
 {
 	//
 	for (int i = 0; i < 4; i++) {fL1Threshold[i] = fL1DCALThreshold[i] = 0;}
 	fL1V0[0] = fL1V0[1] = 0;
+        fL1DCALV0[0] = fL1DCALV0[1] = 0;
 	fMedian[0] = fMedian[1] = 0;
 }
 
@@ -75,7 +77,8 @@ fL1DCALThreshold(),
 fL1SubRegion(0x0),
 fL1DCALFrameMask(0),
 fMedian(),
-fTriggerBitWord(0)
+fTriggerBitWord(0),
+fL1DCALV0()
 {
 	//
 	src.Copy(*this);
@@ -141,9 +144,8 @@ void AliESDCaloTrigger::Copy(TObject &obj) const
         for (int i = 0; i < 4; i++) dest.SetL1Threshold(i, fL1Threshold[i]);
         for (int i = 0; i < 4; i++) dest.SetL1Threshold(1, i, fL1DCALThreshold[i]);
 	
-        dest.SetL1Threshold(0, fL1Threshold[0]);
-        dest.SetL1Threshold(1, fL1Threshold[1]);
         dest.SetL1V0(fL1V0);
+        dest.SetL1V0(1, fL1DCALV0);
         dest.SetL1FrameMask(fL1FrameMask);
         dest.SetL1FrameMask(1, fL1DCALFrameMask);
 }

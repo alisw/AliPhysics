@@ -14,7 +14,8 @@
 # **************************************************************************
 
 # Module
-set (MODULE Utilities)
+set(MODULE Utilities)
+add_definitions(-D_MODULE_="${MODULE}")
 # Aditional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR} 
                    )

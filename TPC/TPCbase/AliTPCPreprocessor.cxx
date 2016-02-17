@@ -917,6 +917,8 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
  
  TObjArray *pulserObjects = new TObjArray;
  TObjArray *pulserObjectsOCDB=0;   
+ pulserObjects->SetOwner(kTRUE);
+ pulserObjectsOCDB->SetOwner(kTRUE);
   
  AliCDBEntry* entry = GetFromOCDB("Calib", "Pulser");
  if (entry) pulserObjectsOCDB = (TObjArray*)entry->GetObject();
@@ -1079,7 +1081,9 @@ if (pulserObjectsOCDB) {
   }
   pulserObjects->Delete();
   delete pulserObjects;
-  if (pulserObjectsOCDB) pulserObjectsOCDB->Delete();
+  if (pulserObjectsOCDB) {
+    pulserObjectsOCDB->Delete();
+  }
   delete pulserObjectsOCDB;
 
   return result;
@@ -1096,6 +1100,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
  
  UInt_t result=0;
  TObjArray* rawArray = new TObjArray;
+ rawArray->SetOwner(kTRUE);
 
  TList* list = GetFileSources(sourceFXS,"tpcCalibRaw");
  
@@ -1163,7 +1168,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
   TObjArray    *rocQtime=0;
   
   TObjArray    *ceObjects= new TObjArray;
-  
+  ceObjects->SetOwner(kTRUE);
   
   Int_t nSectors = fROC->GetNSectors();
   
@@ -1179,15 +1184,18 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
   rocTtime = new TObjArray(nSectors+2);   // also make room for A and C side average
   rocTtime->SetName("rocTtime");
   ceObjects->Add(rocTtime);
+  rocTtime->SetOwner(kTRUE);
   
   rocQtime = new TObjArray(nSectors);
   rocQtime->SetName("rocQtime");
   ceObjects->Add(rocQtime);
+  rocQtime->SetOwner(kTRUE);  
 
   //=== new part
   TObjArray *arrFitGraphs=new TObjArray;
   arrFitGraphs->SetName("ceFitsDrift");
   ceObjects->Add(arrFitGraphs);
+  arrFitGraphs->SetOwner(kTRUE);
   
 // Temperature maps 
   
@@ -1260,6 +1268,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
           result=10;
         }
 
+        calCE->Delete();
         delete calCE;
       }
       ++index;
@@ -1314,6 +1323,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
           while ( (obj=nextObj()) ){
             arrFitGraphs->Add(obj->Clone());
           }
+          calCE->Delete();
           delete calCE;
         }
         ++index2;
@@ -1428,6 +1438,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
      Log("AliTPCPreprocsessor: No previous TPC altro calibration entry available.\n");
      altroObjects = new TObjArray;    
  }
+ altroObjects->SetOwner(kTRUE);
 
  acqStart = (AliTPCCalPad*)altroObjects->FindObject("AcqStart");
  if ( !acqStart ) {
@@ -1498,6 +1509,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
  Int_t nSectors = fROC->GetNSectors();
  Bool_t changed=false;
  if (altroObjects == 0 ) altroObjects = new TObjArray;
+ altroObjects->SetOwner(kTRUE);
 
 // extract list of active DDLs
 
@@ -1658,6 +1670,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
 	    }
 	  }
         }
+       altroFXS->Delete();
        delete altroFXS;
        f->Close();
       }
@@ -1682,7 +1695,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
      Bool_t storeOK = Store("Calib", "AltroConfig", altroObjects, &metaData, 0, kFALSE);
      if ( !storeOK ) ++result;
     }  
-
+    
   altroObjects->Delete();
   delete altroObjects;
   

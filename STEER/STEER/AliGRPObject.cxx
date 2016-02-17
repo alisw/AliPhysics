@@ -92,6 +92,7 @@ AliGRPObject::AliGRPObject():
 	fTimeEnd((time_t)fgkInvalidFloat),
 	fBeamEnergy(fgkInvalidFloat),
 	fBeamType(fgkInvalidString),
+	fHLTMode(kUnknown),
 	fNumberOfDetectors(fgkInvalidChar),
 	fDetectorMask(fgkInvalidUInt),
 	fLHCPeriod(fgkInvalidString),
@@ -162,6 +163,7 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fTimeEnd(obj.fTimeEnd),
 	fBeamEnergy(obj.fBeamEnergy),
 	fBeamType(obj.fBeamType),
+	fHLTMode(obj.fHLTMode),
 	fNumberOfDetectors(obj.fNumberOfDetectors),
 	fDetectorMask(obj.fDetectorMask),
 	fLHCPeriod(obj.fLHCPeriod),
@@ -227,6 +229,7 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fTimeEnd = obj.GetTimeEnd();
 	this->fBeamEnergy = obj.GetBeamEnergy();
 	this->fBeamType = obj.GetBeamType();
+	this->fHLTMode  = obj.fHLTMode;
 	this->fNumberOfDetectors = obj.GetNumberOfDetectors();
 	this->fDetectorMask = obj.GetDetectorMask();
 	this->fLHCPeriod = obj.GetLHCPeriod();

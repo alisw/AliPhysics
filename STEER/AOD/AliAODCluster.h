@@ -3,11 +3,15 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //-------------------------------------------------------------------------
-//     AOD cluster base class
-//     Author: Markus Oldenburg, CERN
+/// \class AliAODCluster
+/// \brief Base class for calorimeter cluster data handling
+///
+///   Base class to access calorimeter 
+///   (EMCAL, PHOS, PMD, FMD) cluster data
+///
+///  \author Markus Oldenburg, CERN
+///  \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble, PHOS/EMCal stuff.
 //-------------------------------------------------------------------------
 
 #include <AliVCluster.h>
@@ -44,18 +48,26 @@ class AliAODCluster : public AliVCluster {
   
   Double_t E() const { return fEnergy; }
   
+  //
   // PID
-  
+  //
   UShort_t  GetMostProbablePID() const;
   const Double_t *GetPID() const { return fPID; }//{ for(Int_t i=0; i<13; ++i) pid[i]=fPID[i]; }
   Int_t     GetID()  const { return fID; }
+  
+  //
+  // MC
+  //
+  /// \return Label of MC particle that deposited more energy to the cluster
   Int_t     GetLabel() const   {
     if( fLabel &&  fNLabel > 0)  return  fLabel[0]; 
-    else return -1;} //Most likely the track associated to the cluster
+    else return -1;} 
   Int_t  GetLabelAt(UInt_t i) const;
   Int_t  * GetLabels() const {return fLabel ; }
   UInt_t GetNLabels() const { return (UInt_t)fNLabel; }
+  
   Bool_t TestFilterBit(UInt_t filterBit) const { return (Bool_t) ((filterBit & fFilterMap) != 0); }
+  
   Char_t GetType() const { return fType; }
   
   void GetPosition(Float_t *x) const {
@@ -63,13 +75,15 @@ class AliAODCluster : public AliVCluster {
   
   Bool_t IsEMCAL() const {if(fType == kEMCALClusterv1) return kTRUE;
     else return kFALSE;}
+  
   Bool_t IsPHOS() const {if(fType == kPHOSCharged || fType == kPHOSNeutral) return kTRUE;
     else return kFALSE;}
   
-  // print
   void  Print(const Option_t *opt = "") const;
   
-  // setters
+  //
+  // Setters
+  //
   void SetE(Double32_t energy) {fEnergy = energy ; }
   void SetID(Int_t id) { fID = id; }
   void SetType(Char_t ttype) { fType=ttype; }
@@ -94,25 +108,42 @@ class AliAODCluster : public AliVCluster {
   Double_t    GetMCEnergyFraction() const           { return fMCEnergyFraction ; }
   void        SetMCEnergyFraction(Double_t e)       { fMCEnergyFraction = e    ; }
   
+  void        SetClusterMCEdepFractionFromEdepArray(Float_t *array) ;
+  void        SetClusterMCEdepFraction(UShort_t *array) ;
+  UShort_t  * GetClusterMCEdepFraction() const      { return fClusterMCEdepFraction ; }
+  Float_t     GetClusterMCEdepFraction(Int_t mcIndex) const ;  
+  
  private :
   
-  // Energy & position
-  Double32_t    fEnergy;         // energy
-  Double32_t    fPosition[3];    // position of the cluster
+  Double32_t    fEnergy;         ///< Cluster energy.
   
-  Double32_t    fChi2;           // chi2 (probably not necessary for PMD)
-  Double32_t    fPID[13];         // [0.,1.,8] pointer to PID object
+  Double32_t    fPosition[3];    ///< Position of the cluster.
   
-  Int_t         fID;             // unique cluster ID, points back to the ESD cluster
-  Int_t         fNLabel;         // number of original track for this cluster      
-  Int_t        *fLabel;          // [fNLabel] particle label, points back to MC tracks
-  UInt_t        fFilterMap;      // filter information, one bit per set of cuts
+  Double32_t    fChi2;           ///< Chi2 of unfolding fit (probably not necessary for PMD).
   
-  Char_t        fType;           // cluster type
+  /// Pointer to PID object, array with bayesian probability weights.
+  Double32_t    fPID[13];        //[0.,1.,8] 
+  
+  Int_t         fID;             ///< Unique cluster ID, points back to the ESD cluster.
+  
+  Int_t         fNLabel;         ///< Number of original MC particles generating this cluster.     
+  
+  /// Particle label array, points back to MC particles that generated the cluster.
+  Int_t        *fLabel;          //[fNLabel] 
+  
+  UInt_t        fFilterMap;      ///< Filter information, one bit per set of cuts.
+  
+  Char_t        fType;           ///< cluster type
 
-  Double_t      fMCEnergyFraction;     //!MC energy (embedding)
+  Double_t      fMCEnergyFraction; //!<! MC energy (embedding)
   
-  ClassDef(AliAODCluster,6);
+  /// Array with fraction of deposited energy per MC particle contributing to the cluster.
+  UShort_t     *fClusterMCEdepFraction;//[fNLabel] 
+
+  /// \cond CLASSIMP
+  ClassDef(AliAODCluster,7) ;
+  /// \endcond
+
 };
 
 #endif

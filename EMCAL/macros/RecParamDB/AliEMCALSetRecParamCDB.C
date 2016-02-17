@@ -68,7 +68,6 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     recParamDB->SetTitle("Low Flux - p+p");
     recParamDB->SetEventSpecie(AliRecoParam::kLowMult);
     recParamArray->AddLast(recParamDB);
-    
   }
   
   {
@@ -79,7 +78,6 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     recParamDB->SetTitle("Cosmic");
     recParamDB->SetEventSpecie(AliRecoParam::kCosmic);
     recParamArray->AddLast(recParamDB);
-    
   }
   
   {
@@ -90,21 +88,25 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
     recParamDB->SetTitle("Calibration - LED");
     recParamDB->SetEventSpecie(AliRecoParam::kCalib);
     recParamArray->AddLast(recParamDB);
-    
   }
   
   //Set the default version in the array
   Bool_t defaultIsSet = kFALSE;
-  for(Int_t i = 0; i < recParamArray->GetEntriesFast(); i++) {
+  for(Int_t i = 0; i < recParamArray->GetEntriesFast(); i++) 
+  {
     AliDetectorRecoParam* param = (AliDetectorRecoParam*)recParamArray->UncheckedAt(i);
+  
     if(!param) continue;
-    if(default & param->GetEventSpecie()) {
+    
+    if(default & param->GetEventSpecie()) 
+    {
       param->SetAsDefault();
       defaultIsSet = kTRUE;
     }
   }
   
-  if(!defaultIsSet) {
+  if(!defaultIsSet) 
+  {
     AliError("The default reconstruction parameters are not set!  Exiting...");
     return;
   }
@@ -132,8 +134,12 @@ void AliEMCALSetRecParamCDB(AliRecoParam::EventSpecie_t default = AliRecoParam::
 AliEMCALRecParam* GetHighMultiplicityParameters()
 {
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
-  //Clusterization
-
+  
+  //
+  // Clusterization
+  //
+  
+  // Relic, pre-data settings
   // params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   // params->SetClusteringThreshold(0.5);
   // params->SetMinECut(0.45);
@@ -150,14 +156,21 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetTimeMin(425e-9);//425 ns
   params->SetTimeMax(825e-9);//825 ns
 
-  //Track matching
-
+  //
+  // Track matching
+  //
   params->SetTrkCutNITS(1.0);
   params->SetTrkCutNTPC(20.0);
   params->SetExtrapolateStep(20.);
+
+  // Run1
+  //params->SetTrkInITS(kFALSE);
+  // Run2
+  params->SetTrkInITS(kTRUE);
   
-  //PID
-	
+  //
+  // PID
+  //
   // as a first step, all array elements are initialized to 0.0
   Int_t i, j;
   for (i = 0; i < 6; i++) {
@@ -282,16 +295,16 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetPiZero(5,2, -6.040360e-02);
   params->SetPiZero(5,3, -6.137459e-04);
   params->SetPiZero(5,4,  1.847328e-05);
-  
-  // High flux ones pp 
-  
+    
   params->SetHadronEnergyProb(0, 0.);
   params->SetHadronEnergyProb(1, 0.);
   params->SetHadronEnergyProb(2,  6.188452e-02);
   params->SetHadronEnergyProb(3,  2.030230e+00);
   params->SetHadronEnergyProb(4, -6.402242e-02);
   
-  // raw signal fitting
+  //
+  // Raw signal fitting
+  //
   params->SetHighLowGainFactor(16.);
   params->SetOrderParameter(2);
   params->SetTau(2.35);
@@ -300,9 +313,13 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetRemoveBadChannels(kFALSE);
   params->SetFittingAlgorithm(0);//(AliCaloConstants::kStandard);  
   params->SetFALTROUsage(kTRUE); 
-  params->SetL1PhaseUse(kFALSE);
   params->SetLEDFit(kFALSE);   
 
+  //Run1
+  //params->SetL1PhaseUse(kTRUE);  
+  //Run2
+  params->SetL1PhaseUse(kFALSE);
+  
   return params ;
 }	
 
@@ -315,8 +332,12 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
 {
   
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
-  //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
-  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
+  
+  
+  //
+  // Clusterization
+  //
+  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.05);  //50 MeV       	
 
@@ -328,13 +349,21 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetTimeMin(425e-9);//425 ns
   params->SetTimeMax(825e-9);//825 ns
 
+  //
   // Track Matching
-  
+  //
   params->SetTrkCutNITS(1.0);
   params->SetTrkCutNTPC(20.0);
   params->SetExtrapolateStep(20.);  
   
-  //PID parameters for pp  implemented 
+  // Run1
+  //params->SetTrkInITS(kFALSE);
+  // Run2
+  params->SetTrkInITS(kTRUE);
+  
+  //
+  // PID 
+  //
   // as a first step, all array elements are initialized to 0.0
   Int_t i, j;
   for (i = 0; i < 6; i++) {
@@ -471,7 +500,9 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetHadronEnergyProb(3, -3.051022e+01);
   params->SetHadronEnergyProb(4, -6.036931e-02);
 
-  // raw signal fitting
+  //
+  // Raw signal fitting
+  //
   params->SetHighLowGainFactor(16.);
   params->SetOrderParameter(2);
   params->SetTau(2.35);
@@ -480,9 +511,14 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetRemoveBadChannels(kFALSE);
   params->SetFittingAlgorithm(0);//(AliCaloConstants::kStandard);  
   params->SetFALTROUsage(kTRUE); 
-  params->SetL1PhaseUse(kFALSE);
   params->SetLEDFit(kFALSE);   
 
+  //Run1
+  //params->SetL1PhaseUse(kTRUE);  
+  //Run2
+  params->SetL1PhaseUse(kFALSE);
+
+  
   return params;
 }
 

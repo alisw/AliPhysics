@@ -80,7 +80,7 @@ AliTPCtrack::AliTPCtrack(Double_t x, Double_t alpha, const Double_t p[5],
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
-  Double_t cnv=1./(AliTracker::GetBz()*kB2C);
+  Double_t cnv=1./(AliTracker::GetBz()*kB2C); // RS: avoid extra field calculations
 
   Double_t pp[5]={
     p[0],
@@ -315,7 +315,12 @@ Bool_t AliTPCtrack::PropagateTo(Double_t xk,Double_t rho,Double_t x0) {
   //  x0  - radiation length of the crossed material (g/cm^2) 
   //-----------------------------------------------------------------
   //
-  Double_t bz=GetBz();
+  const double kTinyDist = 10e-4; // neglect this distance
+  const double kSmallDist = 0.5;  // use bz only for this distance
+  Double_t oldX=GetX(),dxa = TMath::Abs(oldX-xk);
+  if (dxa<kTinyDist) return kTRUE;
+  //
+  Double_t bz=AliTracker::GetBz(); //RS: avoid extra field calculations for crude checks
   Double_t zat=0;
   if (!GetZAt(xk, bz,zat)) return kFALSE;
   if (TMath::Abs(zat)>250.){
@@ -324,12 +329,16 @@ Bool_t AliTPCtrack::PropagateTo(Double_t xk,Double_t rho,Double_t x0) {
     //AliWarning("Propagate outside of fiducial volume");
     return kFALSE;
   }
-
-  Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
+  Double_t oldY=GetY(), oldZ=GetZ();
+  //RS: if track is very close to cluster, use bz prolongation only
   //if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
-  Double_t b[3]; GetBxByBz(b);
-  if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
-
+  if (dxa>kSmallDist) {
+    Double_t b[3]; GetBxByBz(b);
+    if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
+  }
+  else {
+    if (!AliExternalTrackParam::PropagateTo(xk,GetBz())) return kFALSE; // field at point
+  }
   Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + 
                            (GetY()-oldY)*(GetY()-oldY) + 
                            (GetZ()-oldZ)*(GetZ()-oldZ));

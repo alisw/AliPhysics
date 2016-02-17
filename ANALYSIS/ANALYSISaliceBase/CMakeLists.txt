@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE ANALYSISaliceBase)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folders in alphabetical order except ROOT
 include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})

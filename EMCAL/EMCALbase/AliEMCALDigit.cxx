@@ -13,19 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//_________________________________________________________________________
-//  EMCAL digit: 
-//      A Digit is the sum of the energy lost in an EMCAL Tower
-//      It also stores information on Primary, and enterring particle
-//      tracknumbers Digits are created using AliEMCALSDigitizer, followed
-//      by AliEMCALDigitizer 
-//
-//*-- Author: Sahal Yacoob (LBL)
-// based on : AliPHOSDigit
-//__________________________________________________________________________
-
 // --- ROOT system ---
 #include <Riostream.h>
 #include <TMath.h>
@@ -634,5 +621,60 @@ void AliEMCALDigit::Print(const Option_t* /*opt*/) const
 	
 }
 
+///
+/// Set the list of primary particles and energy deposition
+/// Not used in reconstruction/simulation, add here just in case used in analysis
+///
+//______________________________________________________________________________
+void AliEMCALDigit::SetListOfPrimaries(Int_t npri, Int_t * prilist, Float_t * edepList) 
+{
+  if ( npri <= 0 || !prilist || !edepList )
+  {
+    AliError(Form("Null number of entries (%d) or null lists (%p,%p), do not set!",npri,prilist,edepList));
+    return;
+  }
+  
+  fNprimary = npri;
+  
+  if ( fPrimary   ) delete [] fPrimary  ; fPrimary   = NULL;
+  if ( fDEPrimary ) delete [] fDEPrimary; fDEPrimary = NULL;
+  
+  fPrimary   = new Int_t  [fNprimary];
+  fDEPrimary = new Float_t[fNprimary];
+  
+  for(Int_t ipri = 0; ipri < npri; ipri++)
+  {
+    fPrimary  [ipri] = prilist [ipri];
+    fDEPrimary[ipri] = edepList[ipri];
+  }
+}
+
+///
+/// Set the list of primary particles and energy deposition
+/// Not used in reconstruction/simulation, but in analysis for reclusterization.
+///
+//______________________________________________________________________________
+void AliEMCALDigit::SetListOfParents(Int_t npar, Int_t * parlist, Float_t * edepList) 
+{
+  if ( npar <= 0 || !parlist  || !edepList )  
+  {
+    AliError(Form("Null number of entries (%d) or null lists (%p,%p), do not set!",npar,parlist,edepList));
+    return;
+  }
+  
+  fNiparent = npar;
+    
+  if ( fIparent  ) delete [] fIparent ; fIparent  = NULL;
+  if ( fDEParent ) delete [] fDEParent; fDEParent = NULL;
+  
+  fIparent  = new Int_t  [fNiparent];
+  fDEParent = new Float_t[fNiparent];
+
+  for(Int_t ipar = 0; ipar < npar; ipar++)
+  {
+    fIparent [ipar] = parlist [ipar];
+    fDEParent[ipar] = edepList[ipar];
+  }
+}
 
 

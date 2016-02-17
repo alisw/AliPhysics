@@ -13,6 +13,9 @@ class AliVTPCseed {
   virtual ~AliVTPCseed() {}
   virtual void CopyToTPCseed( AliTPCseed &) const = 0;
   virtual void SetFromTPCseed( const AliTPCseed*) = 0;
+  //
+  // special method for eventual suppression of shared clusters before deletion
+  virtual void TagSuppressSharedClusters() {}
 };
 
 #endif

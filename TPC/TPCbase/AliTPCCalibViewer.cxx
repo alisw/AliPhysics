@@ -42,6 +42,7 @@
 #include <TKey.h>
 #include <TPad.h>
 //#include <TCanvas.h>
+#include <TProfile2D.h>
 #include <TH1.h>
 #include <TH1F.h>
 #include <TLegend.h>
@@ -340,40 +341,73 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
    else
       drawOptionsStr += "profcolz";
 
+   TProfile2D *prof2D=0x0;
+   const TString profName=TString::Format("prof%d",rndNumber);
+
+   TString secLabel = "";
+
+   TString secStr=sectorStr;
+   secStr.ReplaceAll("S","");
+   if (secStr.IsDigit()) {
+     const Int_t secDigit=secStr.Atoi();
+     if ( secDigit < 36 )
+       secLabel = "IROC";
+     else
+       secLabel = "OROC";
+
+     if (sectorStr.Contains("S"))
+       secLabel="Sector";
+
+     if ( secDigit%36<18 ) //A-Side
+       secLabel += ", A";
+     else
+       secLabel += ", C";
+
+     secLabel += Form("%02d",secDigit%18);
+     secLabel += ";row;pad";
+   }
+
    if (sectorStr == "A") {
       drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
-      drawStr += "(330,-250,250,330,-250,250)";
+//       drawStr += "(330,-250,250,330,-250,250)";
       cutStr += "(sector/18)%2==0 ";
+      prof2D = new TProfile2D(profName,"A-Side;x (cm); y (cm)",330,-250,250,330,-250,250);
    }
    else if  (sectorStr == "C") {
       drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
-      drawStr += "(330,-250,250,330,-250,250)";
+//       drawStr += "(330,-250,250,330,-250,250)";
       cutStr += "(sector/18)%2==1 ";
+      prof2D = new TProfile2D(profName,"C-Side;x (cm); y (cm)",330,-250,250,330,-250,250);
    }
    else if  (sectorStr == "ALL") {
       drawStr += Form(":gy%s:gx%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
-      drawStr += "(330,-250,250,330,-250,250)";
+//       drawStr += "(330,-250,250,330,-250,250)";
+      prof2D = new TProfile2D(profName,"A&C-Side average;x (cm); y (cm)",330,-250,250,330,-250,250);
    }
    else if  (sectorStr.Contains("S")) {
       drawStr += Form(":rpad%s:row%s+(sector>35)*63>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
-      drawStr += "(159,0,159,140,-70,70)";
+//       drawStr += "(159,0,159,140,-70,70)";
       TString sec=sectorStr;
       sec.Remove(0,1);
+      Int_t isec = sec.Atoi();
       cutStr += "sector%36=="+sec+" ";
+      prof2D = new TProfile2D(profName,secLabel,159,0,159,140,-70,70);
    }
    else if (sectorStr.IsDigit()) {
       Int_t isec = sectorStr.Atoi();
       drawStr += Form(":rpad%s:row%s>>prof", fAppendString.Data(), fAppendString.Data());
       drawStr += rndNumber;
-      if (isec < 36 && isec >= 0)
-         drawStr += "(63,0,63,108,-54,54)";
-      else if (isec < 72 && isec >= 36)
-         drawStr += "(96,0,96,140,-70,70)";
-      else {
+      if (isec < 36 && isec >= 0){
+//          drawStr += "(63,0,63,108,-54,54)";
+        prof2D = new TProfile2D(profName,secLabel,63,0,63,108,-54,54);
+      } else if (isec < 72 && isec >= 36) {
+//          drawStr += "(96,0,96,140,-70,70)";
+        prof2D = new TProfile2D(profName,secLabel,96,0,96,140,-70,70);
+      } else {
          Error("EasyDraw","The TPC contains only sectors between 0 and 71.");
          return -1;
       }
@@ -392,9 +426,10 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
    cutStr.ReplaceAll(fAbbreviation, fAppendString);
    if (writeDrawCommand) std::cout << "fTree->Draw(\"" << drawStr << "\", \"" <<  cutStr << "\", \"" << drawOptionsStr << "\");" << std::endl;
    Int_t returnValue = fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
-   TString profName("prof");
-   profName += rndNumber;
-   TObject *obj = gDirectory->Get(profName.Data());
+//    TString profName("prof");
+//    profName += rndNumber;
+//    TObject *obj = gDirectory->Get(profName.Data());
+   TObject *obj=prof2D;
    if (obj && obj->InheritsFrom("TH1")) FormatHistoLabels((TH1*)obj);
    return returnValue;
 }

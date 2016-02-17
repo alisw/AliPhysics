@@ -704,7 +704,6 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 	  iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
 	  Int_t index[2]={iLTMindex,iChannelIndex};
 	  
-	  
 	  if(fTOFTrigMask->IsON(index[0],index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 400) fTOFTrigMap->SetON(index[0],index[1]);
 	}
 	

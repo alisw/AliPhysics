@@ -676,7 +676,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   }while(0);  // End of filling flat ESD structure
 
-
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD event is not stored", maxOutputSize );
   } else {
@@ -689,7 +688,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     outputBlocks.push_back( outBlock );
     fBenchmark.AddOutput(outBlock.fSize);
     size += outBlock.fSize;
-			outsizeEvent = outBlock.fSize;
+    outsizeEvent = outBlock.fSize;
   }
   
 
@@ -735,7 +734,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     size_t freeSpaceTotal = maxOutputSize - size;
     size_t freeSpace = freeSpaceTotal;
 
-    err = ( freeSpace < sizeof( AliFlatESDEvent ) );    
+    err = ( freeSpace < sizeof( AliFlatESDFriend ) );    
     if( err ) break;
 
     new (flatFriend) AliFlatESDFriend;
@@ -832,8 +831,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       if( err ) break;
       new (flatTrack) AliFlatESDFriendTrack;
       
-      freeSpace = freeSpaceTotal - flatFriend->GetSize();
-      
       flatTrack->SetSkipBit( 0 );
       flatTrack->SetTrackParamTPCOut( tpcOutTrack );
       flatTrack->SetTrackParamITSOut( itsOut );
@@ -860,7 +857,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
 	int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
 	
-	if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
+	if(iSlice<0 || iSlice>35 || iPartition<0 || iPartition>5){
 	  HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
 	  continue;
 	}

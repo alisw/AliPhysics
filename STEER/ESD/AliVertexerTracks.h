@@ -95,7 +95,8 @@ class AliVertexerTracks : public TObject {
   void  SetDCAcutIter0(Double_t maxdca) { fDCAcutIter0=maxdca; return; }
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
   void  SetITSrefitRequired() { fITSrefit=kTRUE; return; }
-  void  SetITSpureSA() { fITSpureSA=kTRUE; return; }
+  void  SetITSpureSA(Bool_t v=kTRUE) { fITSpureSA=v; return; }
+  Bool_t GetITSpureSA() { return fITSpureSA; }
   Bool_t GetITSrefitRequired() const { return fITSrefit; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
   void  SetFiducialRZ(Double_t r=3,Double_t z=30) { fFiducialR=r; fFiducialZ=z; return; }

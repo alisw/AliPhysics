@@ -36,7 +36,8 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
     # Get the list of definitions from the directory to be sent to CINT
     get_directory_property(tmpdirdefs COMPILE_DEFINITIONS)
     foreach(dirdef ${tmpdirdefs})
-        set(GLOBALDEFINITIONS -D${dirdef} ${GLOBALDEFINITIONS})
+        string(REPLACE "\"" "\\\"" dirdef_esc ${dirdef})
+        set(GLOBALDEFINITIONS -D${dirdef_esc} ${GLOBALDEFINITIONS})
     endforeach()
     
     # Custom definitions specific to library

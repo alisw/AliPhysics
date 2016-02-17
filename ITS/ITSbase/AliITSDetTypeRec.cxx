@@ -1042,7 +1042,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
     rec->SetDetTypeRec(this);
     rec->RawdataToClusters(rawReader);  
     // skip outer layers if NSPD > threshold
-    if (id==0 && rec->GetNClusters()>recoparam->GetMaxSPDClforSPDOnly()) {
+    if (id==0 && recoparam && rec->GetNClusters()>recoparam->GetMaxSPDClforSPDOnly()) {
       AliInfoF("NSPDclusters %d > threshold %d, skipping SDD,SSD clusterization",
 	       rec->GetNClusters(), recoparam->GetMaxSPDClforSPDOnly());
       break;

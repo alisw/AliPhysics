@@ -384,7 +384,7 @@ void  AliOCDBtoolkit::SetStorage(const TMap *cdbMap){
     TString url=urlOrig; // e.g TString  url="alien://?User=?DBFolder=/alice/data/2010/OCDB?SE=default?CacheFolder=?OperateDisconnected=1?CacheSize=1073741824?CleanupInterval=0"
     man->ExtractBaseFolder(url); // url==alien://Folder=/alice/data/2010/OCDB"
     TString ocdbPrefix(gSystem->Getenv("OCDB_PATHTEST"));
-    if (url.Length()>0){
+    if (ocdbPrefix.Length()>0){
       TRegexp alienPrefix("^alien://Folder=");      
       url(alienPrefix)=ocdbPrefix+"";
     }

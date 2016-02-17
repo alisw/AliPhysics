@@ -49,8 +49,7 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 			  2.,
 			  10.,
 			  1.,
-			  50.,
-			  50.,
+			  25.,
 			  0.,
 			  999999.,
 			  3.
@@ -84,7 +83,7 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
 			  2.,
 			  10.,
 			  1.,
-			  50.,
+			  25.,
 			  0.,
 			  999999.,
 			  3.

@@ -68,17 +68,30 @@
 #include "TGeoGlobalMagField.h"
 #include "AliTracker.h"
 #include <AliCTPTimeParams.h>
+#include "AliTPCChebCorr.h"
+#include "AliTPCChebDist.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 /// \cond CLASSIMP
 ClassImp(AliTPCTransform)
 /// \endcond
 
 
+const Double_t AliTPCTransform::fgkSin20 = TMath::Sin(TMath::Pi()/9);       // sin(20)
+const Double_t AliTPCTransform::fgkCos20 = TMath::Cos(TMath::Pi()/9);       // cos(20)
+const Double_t AliTPCTransform::fgkMaxY2X = TMath::Tan(TMath::Pi()/18);      // tg(10)
+
+
+
 AliTPCTransform::AliTPCTransform():
   AliTransform(),
   fCurrentRecoParam(0),       //! current reconstruction parameters
+  fCorrMapCache0(0),
+  fCorrMapCache1(0),
   fCurrentRun(0),             //! current run
-  fCurrentTimeStamp(0)        //! current time stamp
+  fCurrentTimeStamp(0),       //! current time stamp
+  fTimeDependentUpdated(kFALSE)
 {
   //
   // Speed it up a bit!
@@ -91,12 +104,16 @@ AliTPCTransform::AliTPCTransform():
   fPrimVtx[0]=0;
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
+  fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
 }
 AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   AliTransform(transform),
   fCurrentRecoParam(transform.fCurrentRecoParam),       //! current reconstruction parameters
+  fCorrMapCache0(transform.fCorrMapCache0),
+  fCorrMapCache1(transform.fCorrMapCache1),
   fCurrentRun(transform.fCurrentRun),             //! current run
-  fCurrentTimeStamp(transform.fCurrentTimeStamp)        //! current time stamp
+  fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
+  fTimeDependentUpdated(transform.fTimeDependentUpdated)
 {
   /// Speed it up a bit!
 
@@ -108,6 +125,7 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fPrimVtx[0]=0;
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
+  fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
 }
 
 AliTPCTransform::~AliTPCTransform() {
@@ -139,80 +157,71 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   /// TOF of particle calculated assuming the speed-of-light and
   /// line approximation
 
-  if (!fCurrentRecoParam) {
-    return;
-  }
+  if (!fCurrentRecoParam) return;
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   //
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  Double_t bzField = magF->SolenoidField(); //field in kGaus
+
   AliTPCCalPad * time0TPC = calib->GetPadTime0();
-  AliTPCCalPad * distortionMapY = calib->GetDistortionMap(0);
-  AliTPCCalPad * distortionMapZ = calib->GetDistortionMap(1);
-  AliTPCCalPad * distortionMapR = calib->GetDistortionMap(2);
   AliTPCParam  * param    = calib->GetParameters();
-  AliTPCCorrection * correction = calib->GetTPCComposedCorrection();   // first user defined correction  // if does not exist  try to get it from calibDB array
-  if (!correction) correction = calib->GetTPCComposedCorrection(AliTracker::GetBz());
-  if (!time0TPC){
-    AliFatal("Time unisochronity missing");
-    return ; // make coverity happy
-  }
-  AliTPCCorrection * correctionDelta = calib->GetTPCComposedCorrectionDelta();
 
   if (!param){
     AliFatal("Parameters missing");
     return; // make coverity happy
   }
-
-  Double_t xx[3];
-  //  Apply Time0 correction - Pad by pad fluctuation
-  //
+  if (!time0TPC){
+    AliFatal("Time unisochronity missing");
+    return ; // make coverity happy
+  }
+  
+  // Apply Time0 correction - Pad by pad fluctuation
   if (!calib->HasAlignmentOCDB()) x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
   //
   // Tranform from pad - time coordinate system to the rotated global (tracking) system
-  //
   Local2RotatedGlobal(sector,x);
+  Bool_t isInRotated = kTRUE;
   //
   //
-  //
+  if (fCurrentRecoParam->GetUseCorrectionMap()) ApplyCorrectionMap(sector, row, x);
   // Alignment
   //TODO:  calib->GetParameters()->GetClusterMatrix(sector)->LocalToMaster(x,xx);
-  RotatedGlobal2Global(sector,x);
-
-  //
-  // old ExB correction
   //
   if(fCurrentRecoParam->GetUseExBCorrection()) {
-
-    calib->GetExB()->Correct(x,xx);
-
-  } else {
-
-    xx[0] = x[0];
-    xx[1] = x[1];
-    xx[2] = x[2];
+    RotatedGlobal2Global(sector,x);
+    isInRotated = kFALSE;    
+    Double_t xx[3];
+    calib->GetExB()->Correct(x,xx);   // old ExB correction
+    for (int i=3;i--;) x[i] = xx[i];
   }
 
   //
   // new composed  correction  - will replace soon ExB correction
   //
-  if(fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
-    Float_t distPoint[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
-    correction->CorrectPoint(distPoint, sector);
-    xx[0]=distPoint[0];
-    xx[1]=distPoint[1];
-    xx[2]=distPoint[2];
-    if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
-      Float_t distPointDelta[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
-      correctionDelta->CorrectPoint(distPointDelta, sector);
-      xx[0]=distPointDelta[0];
-      xx[1]=distPointDelta[1];
-      xx[2]=distPointDelta[2];
+  if(fCurrentRecoParam->GetUseComposedCorrection()) {
+    //
+    if (isInRotated) {
+      RotatedGlobal2Global(sector,x);
+      isInRotated = kFALSE;          
+    }
+    AliTPCCorrection * correction = calib->GetTPCComposedCorrection();   // first user defined correction  // if does not exist  try to get it from calibDB array
+    if (!correction) correction = calib->GetTPCComposedCorrection(bzField);
+    AliTPCCorrection * correctionDelta = calib->GetTPCComposedCorrectionDelta();
+    if (correction) {
+      Float_t distPoint[3]={static_cast<Float_t>(x[0]),static_cast<Float_t>(x[1]),static_cast<Float_t>(x[2])};
+      correction->CorrectPoint(distPoint, sector);
+      for (int i=3;i--;) x[i]=distPoint[i];
+      if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
+	Float_t distPointDelta[3]={static_cast<Float_t>(x[0]),static_cast<Float_t>(x[1]),static_cast<Float_t>(x[2])};
+	correctionDelta->CorrectPoint(distPointDelta, sector);
+	for (int i=3;i--;) x[i]=distPointDelta[i];
+      }
     }
   }
-
-
+  
   //
   // Time of flight correction
   //
@@ -226,57 +235,53 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     }
     Float_t deltaDr =0;
     Float_t dist=0;
-    dist+=(fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]);
-    dist+=(fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
+    dist+=x[0]*x[0];  // (fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]); // RS the vertex is anyway close to 0
+    dist+=x[1]*x[1];  // (fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
     dist+=(fPrimVtx[2]-x[2])*(fPrimVtx[2]-x[2]);
     dist = TMath::Sqrt(dist);
     // drift length correction because of TOF
     // the drift velocity is in cm/s therefore multiplication by 0.01
     deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C();
-    xx[2]+=sign*deltaDr;
+    x[2]+=sign*deltaDr;
   }
   //
   //
-  //
-
-  //
-  Global2RotatedGlobal(sector,xx);
-
+  if (!isInRotated) {
+    Global2RotatedGlobal(sector,x);
+    isInRotated = kTRUE;
+  }
   //
   // Apply non linear distortion correction
   //
-  if (distortionMapY ){
+  int useFieldCorr = fCurrentRecoParam->GetUseFieldCorrection();
+  if (useFieldCorr&(0x2|0x4|0x8)) {
+    AliTPCCalPad * distortionMapY=0,*distortionMapZ=0,*distortionMapR=0;
+    //
     // wt - to get it form the OCDB
     // ignore T1 and T2
-    AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-    Double_t bzField = magF->SolenoidField()/10.; //field in T
     Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
     Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
     if (sector%36<18) ezField*=-1;
-    Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
+    //    Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
+    Double_t wt = -10.0 * (bzField) * vdrift / ezField ; // RS: field is already in kGauss
     Double_t c0=1./(1.+wt*wt);
     Double_t c1=wt/c0;
-
+    
     //can be switch on for each dimension separatelly
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x2)
-      if (distortionMapY){
-	xx[1]-= c0*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
-	xx[0]-= c1*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
-      }
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x4)
-      if (distortionMapZ)
-	xx[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x8)
-      if (distortionMapR){
-	xx[0]-= c0*distortionMapR->GetCalROC(sector)->GetValue(row,pad);
-	xx[1]-=-c1*distortionMapR->GetCalROC(sector)->GetValue(row,pad)*wt;
-      }
-
+    if (useFieldCorr&0x2 && (distortionMapY=calib->GetDistortionMap(0))) {
+      x[1]-= c0*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+      x[0]-= c1*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+    }
+    if (useFieldCorr&0x4 && (distortionMapZ=calib->GetDistortionMap(1))) {
+      x[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
+    }
+    if (useFieldCorr&0x8 && (distortionMapR=calib->GetDistortionMap(2))) {
+      x[0]-= c0*distortionMapR->GetCalROC(sector)->GetValue(row,pad);
+      x[1]-=-c1*distortionMapR->GetCalROC(sector)->GetValue(row,pad)*wt;
+    }
+    //
   }
   //
-
-  //
-  x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];
 }
 
 void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
@@ -289,7 +294,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
 
   if (!fCurrentRecoParam) return;
   const  Int_t kMax =60;  // cache for 60 seconds
-  static Int_t lastStamp=-1;  //cached values
+  static time_t lastStamp=-1;  //cached values
   static Double_t lastCorr = 1;
   //
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
@@ -300,7 +305,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
     //
     // caching drift correction - temp. fix
     // Extremally slow procedure
-    if ( TMath::Abs((lastStamp)-Int_t(fCurrentTimeStamp))<kMax){
+    if ( TMath::Abs(Int_t(lastStamp)-Int_t(fCurrentTimeStamp))<kMax){
       driftCorr = lastCorr;
     }else{
       driftCorr = 1.+(driftCalib->GetPTRelative(fCurrentTimeStamp,0)+ driftCalib->GetPTRelative(fCurrentTimeStamp,1))*0.5;
@@ -315,7 +320,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t vdcorrectionTimeGY=0;
   static Double_t time0corrTime=0;
   static Double_t deltaZcorrTime=0;
-  static Int_t    lastStampT=-1;
+  static time_t    lastStampT=-1;
   //
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
     lastStampT=fCurrentTimeStamp;
@@ -445,4 +450,213 @@ void AliTPCTransform::ApplyTransformations(Double_t */*xyz*/, Int_t /*volID*/){
   /// xyz    - global xyz position
   /// volID  - volID of detector (sector number)
 
+}
+
+void AliTPCTransform::SetCurrentTimeStamp(time_t timeStamp) 
+{
+  // set event time stamp and if needed, upload caches
+  fCurrentTimeStamp = timeStamp;
+  fTimeDependentUpdated = kFALSE;
+  UpdateTimeDependentCache();
+}
+
+Bool_t AliTPCTransform::UpdateTimeDependentCache()
+{
+  // update cache for time-dependent parameters
+  //
+  fTimeDependentUpdated = kFALSE;
+  //
+  // correction maps, potentially time dependent
+  TObjArray* mapsArr = 0;
+  if (!fCurrentRecoParam) {
+    AliWarning("RecoParam is not set, do nothing");
+    return fTimeDependentUpdated;
+  }
+  while (fCurrentRecoParam->GetUseCorrectionMap()) {
+    //
+    if (fCorrMapCache0) {
+      // 1: easiest case: map is already cached, it is either time-static or there is 
+      // no other map to follow
+      if (!fCorrMapCache0->GetTimeDependent() || !fCorrMapCache1) break;
+      //
+      // 2: still easy: time dependent but we have in memory all what we need
+      if (fCorrMapCache1 && fCurrentTimeStamp<=fCorrMapCache1->GetTimeStampCenter()
+	  && fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampStart()) break;
+    }
+    else  { // no map yet: 1st query
+      mapsArr = LoadCorrectionMaps();
+      fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(0);
+      //
+      // 3: easy case: time-static map, fCorrMapCache1 is not neaded
+      if (!fCorrMapCache0->GetTimeDependent()) {
+	if (mapsArr->GetEntriesFast()>2) { 
+	  // time independent maps are field dependent!
+	  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+	  Double_t bz = magF->SolenoidField(); //field in kGaus
+	  if (bz>0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(1);
+	  else if (bz<-0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
+	}
+	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
+	break; // done for static map, if needed, look for other stuff 
+      } 
+    }
+    // need to scan whole array to find matching maps
+    if (!mapsArr) mapsArr = LoadCorrectionMaps();
+    int nmaps = mapsArr->GetEntriesFast();
+    const AliTPCChebCorr* prv=0,*nxt=0;
+    for (int i=0;i<nmaps;i++) { // maps are ordered in time
+      fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i);
+      if (fCorrMapCache0->GetTimeStampEnd()<=fCurrentTimeStamp) {
+	prv = fCorrMapCache0;
+	continue;
+      }
+      // we found a chunk which contain our time stamp
+      if (fCurrentTimeStamp <= fCorrMapCache0->GetTimeStampCenter()) { // we are in the 1st half
+	if (prv) { // previous chunk will be used
+	  fCorrMapCache1 = fCorrMapCache0;
+	  fCorrMapCache0 = prv;
+	  break;
+	}
+	// we are at the 1st chunk, read the next one
+	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
+	else fCorrMapCache1 = 0;
+	break;
+      }
+      else { // we are in the 2nd half of cache0,  look for the next for cache1
+	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
+	else { // no next one, do we have previous?
+	  if (prv) {
+	    fCorrMapCache1 = fCorrMapCache0;
+	    fCorrMapCache0 = prv;
+	  }
+	  else fCorrMapCache1 = 0;
+	}
+      }
+      break;
+    }
+    break;
+  } // while
+  // clean unneaded object to save the memory
+  if (mapsArr) {
+    mapsArr->Remove((TObject*)fCorrMapCache0);
+    if (fCorrMapCache1) mapsArr->Remove((TObject*)fCorrMapCache1);
+    mapsArr->SetOwner(kTRUE);
+    delete mapsArr;
+    if (!fCorrMapCache1) {
+      AliInfoF("Loaded static correction map for time stamp %ld",fCurrentTimeStamp);
+      fCorrMapCache0->Print();
+    }
+    else {
+      AliInfoF("Switched to pair of time-dependent correction maps at time stamp %ld",fCurrentTimeStamp);
+      fCorrMapCache0->Print();
+      fCorrMapCache1->Print();
+    }
+  }
+  if (fCorrMapCache0 && fCorrMapCache0->GetTimeStampStart()>fCurrentTimeStamp) {
+    AliWarningF("Event timestamp %ld < map0 beginning %ld",fCurrentTimeStamp,fCorrMapCache0->GetTimeStampStart());
+    fCorrMapCache0->Print();
+  }
+  if (fCorrMapCache1 && fCorrMapCache1->GetTimeStampEnd()<fCurrentTimeStamp) {
+    AliWarningF("Event timestamp %ld > map1 end %ld",fCurrentTimeStamp,fCorrMapCache1->GetTimeStampEnd());
+    fCorrMapCache0->Print();
+  }
+
+  // other time dependent stuff if needed
+  //
+  fTimeDependentUpdated = kTRUE;
+  return fTimeDependentUpdated;
+}
+
+//______________________________________________________
+TObjArray* AliTPCTransform::LoadCorrectionMaps() const
+{
+  // TPC fast Chebyshev correction map, loaded on demand, not handler by calibDB
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliCDBEntry* entry = man->Get("TPC/Calib/CorrectionMaps");
+  TObjArray* correctionMaps = (TObjArray*)entry->GetObject();
+  entry->SetOwner(0);
+  entry->SetObject(0);
+  man->UnloadFromCache("TPC/Calib/CorrectionMaps");
+  return correctionMaps;
+  //
+}
+
+//______________________________________________________
+void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3])
+{
+  // get correction from the map for a point at given ROC and row (IROC/OROC convention)
+  if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
+  if (!fCorrMapCache0->IsCorrection()) AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
+  float y2x=xyz[1]/xyz[0], z2x = fCorrMapCache0->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
+  fCorrMapCache0->Eval(roc,row,y2x,z2x,res);
+  // 
+  // for time dependent correction need to evaluate 2 maps, assuming linear dependence
+  if (fCorrMapCache1) {
+    float delta1[3];
+    fCorrMapCache1->Eval(roc,row,y2x,z2x,delta1);   
+    UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
+    UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
+      // possible division by 0 is checked at upload of maps
+    double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
+    for (int i=3;i--;) res[i] += (delta1[i]-res[i])*dtScale;
+  }
+  //
+}
+
+//______________________________________________________
+Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut)
+{
+  // get correction for dimOut-th dimension from the map for a point at given ROC and row (IROC/OROC convention)
+  if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
+  if (!fCorrMapCache0->IsCorrection()) AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
+  float y2x=xyz[1]/xyz[0], z2x = fCorrMapCache0->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
+  float corr = fCorrMapCache0->Eval(roc,row,y2x,z2x,dimOut);
+  // 
+  // for time dependent correction need to evaluate 2 maps, assuming linear dependence
+  if (fCorrMapCache1) {
+    float corr1 = fCorrMapCache1->Eval(roc,row,y2x,z2x,dimOut);   
+    UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
+    UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
+      // possible division by 0 is checked at upload of maps
+    double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
+    corr += (corr1-corr)*dtScale;
+  }
+  //
+  return corr;
+}
+
+//______________________________________________________
+void AliTPCTransform::EvalDistortionMap(int roc, const double xyzSector[3], float res[3])
+{
+  // get distortions from the map for a point at given ROC
+  if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
+  if (!fCorrMapCache0->IsDistortion()) AliFatalF("Uploaded map is not distortion: %s",fCorrMapCache0->IsA()->GetName());
+  float y2x=xyzSector[1]/xyzSector[0], z2x = fCorrMapCache0->GetUseZ2R() ? xyzSector[2]/xyzSector[0] : xyzSector[2];
+  ((AliTPCChebDist*)fCorrMapCache0)->Eval(roc,xyzSector[0],y2x,z2x,res);
+  // 
+  // for time dependent correction need to evaluate 2 maps, assuming linear dependence
+  if (fCorrMapCache1) {
+    float delta1[3];
+    ((AliTPCChebDist*)fCorrMapCache1)->Eval(roc,xyzSector[0],y2x,z2x,res);
+    UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
+    UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
+      // possible division by 0 is checked at upload of maps
+    double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
+    for (int i=3;i--;) res[i] += (delta1[i]-res[i])*dtScale;
+  }
+  //
+}
+
+//______________________________________________________
+void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
+{
+  // apply distortion from the map to a point provided in LAB coordinate 
+  // at given ROC and row (IROC/OROC convention)
+  double xyzSect[3];
+  float  res[3];
+  Global2RotatedGlobal(roc,xyzLab);
+  EvalDistortionMap(roc, xyzLab, res); // now we are in sector coordinates
+  for (int i=3;i--;) xyzLab[i] += res[i];
+  RotatedGlobal2Global(roc,xyzLab);
+  //
 }

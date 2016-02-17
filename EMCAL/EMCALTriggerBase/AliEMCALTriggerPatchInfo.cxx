@@ -16,6 +16,7 @@
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "TArrayI.h"
+#include "TMath.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEMCALTriggerPatchInfo)
@@ -132,6 +133,9 @@ void AliEMCALTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVec
   // convert to the 4 absId of the cells composing the trigger channel
   Int_t cellAbsId[4]={-1,-1,-1,-1};
   geom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+  if(cellAbsId[0] < 0 || cellAbsId[1] < 0 || cellAbsId[2] < 0 || cellAbsId[3] < 0){
+    AliWarning(Form("Invalid cell ID [%d|%d|%d|%d]\n", cellAbsId[0], cellAbsId[1], cellAbsId[2], cellAbsId[3]));
+  }
 
   // get low left edge (eta max, phi min)
   TVector3 edge1;
@@ -259,3 +263,12 @@ void AliEMCALTriggerPatchInfo::SetLorentzVector( TLorentzVector &lv, const TVect
   lv.SetPxPyPzE( e*v[0]/r,  e*v[1]/r,  e*v[2]/r,  e) ;   
 }
 
+Double_t AliEMCALTriggerPatchInfo::GetPhiTransform(Double_t phiin) const{
+  if(phiin < 0) return phiin + TMath::TwoPi();
+  return phiin;
+}
+
+Double_t AliEMCALTriggerPatchInfo::GetET(Double_t energy) const {
+  TLorentzVector en(fCenterGeo.Px(), fCenterGeo.Py(), fCenterGeo.Pz(), energy);
+  return en.Et();
+}

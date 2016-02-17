@@ -51,7 +51,7 @@ AliTPCseed::AliTPCseed():
   fNClStore(0),
   fClusterPointer(0),
   fClusterOwner(kFALSE),
-  fRow(0),
+  fRow(-1),
   fSector(-1),
   fRelativeSector(-1),
   fCurrentSigmaY2(1e10),
@@ -95,7 +95,7 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fNClStore(0),
   fClusterPointer(0),
   fClusterOwner(clusterOwner),
-  fRow(0),
+  fRow(-1),
   fSector(-1),
   fRelativeSector(-1),
   fCurrentSigmaY2(-1),
@@ -154,7 +154,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fNClStore(0),
   fClusterPointer(0),
   fClusterOwner(kFALSE),
-  fRow(0),
+  fRow(-1),
   fSector(-1),
   fRelativeSector(-1),
   fCurrentSigmaY2(-1),
@@ -209,7 +209,7 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fNClStore(0),
   fClusterPointer(0),
   fClusterOwner(kFALSE),
-  fRow(0),
+  fRow(-1),
   fSector(-1),
   fRelativeSector(-1),
   fCurrentSigmaY2(-1),
@@ -257,9 +257,10 @@ AliTPCseed::~AliTPCseed(){
   if (fClusterPointer) {
     if (fClusterOwner){
       for (Int_t icluster=0; icluster<kMaxRow; icluster++){
-	if(fClusterPointer[icluster] && // shared clusters might be already deleted!
-	   fClusterPointer[icluster]->TestBit(TObject::kNotDeleted)) delete fClusterPointer[icluster];
-	fClusterPointer[icluster]=0;
+	if(fClusterPointer[icluster]) { // shared clusters might be already deleted!
+	  if (fClusterPointer[icluster]->TestBit(TObject::kNotDeleted)) delete fClusterPointer[icluster];
+	  fClusterPointer[icluster]=0;
+	}
       }
     }
     delete[] fClusterPointer;
@@ -1919,3 +1920,20 @@ TObject* AliTPCseed::Clone(const char* /*newname*/) const
   AliTPCseed* dst = new AliTPCseed(*src,fClusterOwner);
   return dst;
 }                                                                                                                                                                    
+
+//__________________________________________________
+void   AliTPCseed::TagSuppressSharedClusters()
+{
+  // RS: special function to flag the cluster if not flagged yet or remove its pointer if flagged
+  // This is needed for deletion of the TPCseeds stored in the ESDfriendTracks in a safe way, avoiding
+  // deletion of shared clusters. DO not use this method except from 
+  // AliESDfriend->DeleteTracksSafe->TagSuppressSharedObjectsBeforeDeletion(): the clusters are DISABLED
+  // 
+  if (!fClusterOwner || !fClusterPointer) return;
+  AliTPCclusterMI* cl=0;
+  for (int i=kMaxRow;i--;) {
+    if (!(cl=fClusterPointer[i])) continue;
+    if (cl->IsDisabled()) fClusterPointer[i] = 0;
+    else cl->Disable();
+  }
+}

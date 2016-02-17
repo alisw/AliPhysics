@@ -173,6 +173,9 @@ AliSimulation *AliSimulation::fgInstance = 0;
  "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD",
  "FIT","MFT","HLT"};
 
+const Char_t* AliSimulation::fgkRunHLTAuto = "auto";
+const Char_t* AliSimulation::fgkHLTDefConf = "default";
+
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName,
 			     const char* name, const char* title) :
@@ -219,13 +222,15 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseTimeStampFromCDB(0),
   fTimeStart(0),
   fTimeEnd(0),
+  fLumiDecayH(10.),
+  fOrderedTimeStamps(),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
   fRunQA(kTRUE), 
   fEventSpecie(AliRecoParam::kDefault),
   fWriteQAExpertData(kTRUE), 
   fGeometryFile(),
-  fRunHLT("default"),
+  fRunHLT(fgkRunHLTAuto),
   fpHLT(NULL),
   fWriteGRPEntry(kTRUE)
 {
@@ -652,6 +657,34 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
     else
       return kTRUE;
+  }
+
+  if (fRunHLT.Contains(fgkRunHLTAuto)) {   
+    InitCDB();
+    InitRunNumber();
+    AliGRPManager grpM;
+    grpM.ReadGRPEntry();
+    const AliGRPObject* grp = grpM.GetGRPData();
+    int hmode = grp->GetHLTMode();
+    TString hmodS;
+    switch(hmode) {
+    case AliGRPObject::kModeA : hmodS = "A"; break;
+    case AliGRPObject::kModeB : hmodS = "B"; break;
+    case AliGRPObject::kModeC : hmodS = "C"; break;
+    default: hmodS = "Unknown";
+    }
+    AliInfoF("HLT Trigger Mode %s detected from GRP",hmodS.Data());
+    if (hmode==AliGRPObject::kModeC) {
+      fRunHLT.ReplaceAll(fgkRunHLTAuto,fgkHLTDefConf);
+      AliInfoF("HLT simulation set to %s",fRunHLT.Data());
+    }
+    else {
+      fRunHLT.ReplaceAll(fgkRunHLTAuto,"");
+      AliInfoF("HLT simulation set to \"%s\"",fRunHLT.Data());
+    }    
+  }
+  else {
+    AliInfoF("fRunHLT is set to \"%s\", no attempt to extract HLT mode from GRP will be done",fRunHLT.Data());
   }
 
   // create and setup the HLT instance
@@ -1117,7 +1150,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     grpM.ReadGRPEntry();
     const AliGRPObject *grpObj = grpM.GetGRPData();
     if (!grpObj || (grpObj->GetTimeEnd() <= grpObj->GetTimeStart())) {
-      AliError("Missing GRP or bad SOR/EOR time-stamps! Switching off the time-stamp generation from GRP!");
+      AliFatal("Missing GRP or bad SOR/EOR time-stamps! Switching off the time-stamp generation from GRP!");
       fTimeStart = fTimeEnd = 0;
       fUseTimeStampFromCDB = kFALSE;
     }
@@ -1125,7 +1158,24 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       fTimeStart = grpObj->GetTimeStart();
       fTimeEnd = grpObj->GetTimeEnd();
     }
+    time_t deltaT = fTimeEnd - fTimeStart;
+    if (deltaT>0) {
+      fOrderedTimeStamps.resize(fNEvents);
+      double tau = fLumiDecayH*3600.;
+      double wt = 1.-TMath::Exp(-double(deltaT)/tau);
+      for (int i=0;i<fNEvents;i++) {
+	double w = wt*gRandom->Rndm();
+	time_t t =  fTimeStart - tau*TMath::Log(1-w);
+	fOrderedTimeStamps[i] = t;
+      }
+      std::sort(fOrderedTimeStamps.begin(), fOrderedTimeStamps.end());
+      //
+      AliInfoF("Ordered %d TimeStamps will be generated between %ld:%ld with decay tau=%.2f h",
+	       fNEvents,fTimeStart,fTimeEnd,fLumiDecayH);
+    }
+    else AliInfoF("Random TimeStamps will be generated between %ld:%ld",fTimeStart,fTimeEnd);
   }
+  else AliInfo("Generated events TimeStamps will be set to 0");
   
   if(AliCDBManager::Instance()->GetRun() >= 0) { 
     AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
@@ -2101,6 +2151,7 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
     AliHeader* header = runLoader->GetHeader();
     // Event loop
     Int_t nev = 0;
+	Int_t prevEsdID = nSkip-1;
     while(kTRUE) {
 	if (!(rawReader->NextEvent())) break;
 	runLoader->SetEventNumber(nev);
@@ -2125,8 +2176,27 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
 	//
 	//  If ESD information available obtain reconstructed vertex and store in header.
 	if (treeESD) {
-		AliInfo(Form("Selected event %d correspond to event %d in raw and to %d in esd",nev,rawReader->GetEventIndex(),nSkip+rawReader->GetEventIndex()));
-	    treeESD->GetEvent(nSkip+rawReader->GetEventIndex());
+		Int_t rawID = rawReader->GetEventIndex();
+		ULong64_t rawGID = rawReader->GetEventIdAsLong();
+		
+		Int_t esdID = nSkip+rawID;
+		if (esdID > treeESD->GetEntriesFast()) esdID = treeESD->GetEntriesFast();
+		Bool_t bFound = kFALSE;
+		while (esdID>prevEsdID) {
+			treeESD->GetEvent(esdID);
+			if (ULong64_t(esd->GetHeader()->GetEventIdAsLong()) == rawGID) {
+				bFound = kTRUE;
+				prevEsdID = esdID;
+				break; // found!
+			}
+			esdID--;
+		}
+		if (!bFound) {
+			AliInfo("Failed to find event ... skipping");
+			continue;
+		}
+
+		AliInfo(Form("Selected event %d correspond to event %d in raw and to %d in esd",nev,rawReader->GetEventIndex(),prevEsdID));
 	    const AliESDVertex* esdVertex = esd->GetPrimaryVertex();
 	    Double_t position[3];
 	    esdVertex->GetXYZ(position);
@@ -2629,8 +2699,13 @@ time_t AliSimulation::GenerateTimeStamp() const
 {
   // Generate event time-stamp according to
   // SOR/EOR time from GRP
+  static int counter=0;
   if (fUseTimeStampFromCDB)
-    return fTimeStart + gRandom->Integer(fTimeEnd-fTimeStart);
+    if (fOrderedTimeStamps.size()) {
+      if (counter>=fOrderedTimeStamps.size()) counter = 0; // in case of overflow, restart
+      return fOrderedTimeStamps[counter++];
+    }
+    else return fTimeStart + gRandom->Integer(fTimeEnd-fTimeStart);
   else
     return 0;
 }
@@ -2703,4 +2778,13 @@ void AliSimulation::DeactivateDetectorsAbsentInGRP(TObjArray* detArr)
       det->SetActive(kFALSE);
     }
   }
+}
+
+//_____________________________________________________________________________
+void AliSimulation::UseTimeStampFromCDB(Double_t decayTimeHours)
+{
+  // Request event time stamp generated within GRP start/end
+  // If nOrdered>0, requested number of ordered timestamps will be generated
+  fUseTimeStampFromCDB = kTRUE;
+  if (decayTimeHours>0.1) fLumiDecayH = decayTimeHours;
 }

@@ -196,8 +196,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   //
   int bcRound = fBCSpacing/25;   // profit from larger than 25ns spacing and set correct BC
   TDirectory * olddir = gDirectory;
-  TFile *f = 0;
-  if(nTrks>500) f = new TFile("VertexerTracks.root","recreate");
+  //  TFile *f = 0;
+  //  if(nTrks>500) f = new TFile("VertexerTracks.root","recreate");
   TObjArray trkArrayOrig(nTrks);
   UShort_t *idOrig = new UShort_t[nTrks];
   Double_t *zTr = new Double_t[nTrks];
@@ -276,12 +276,13 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   delete [] zTr; zTr=NULL;
   delete [] err2zTr; err2zTr=NULL;
 
+  /*
   if(f) {
     f->Close(); delete f; f = NULL;
     gSystem->Unlink("VertexerTracks.root");
     olddir->cd();
   }
-
+  */
   // set vertex ID for tracks used in the fit
   // (only for ESD)
   if(!inputAOD && fCurrentVertex) {

@@ -502,7 +502,7 @@ void  AliPHOSPIDv1::TrackSegments2RecParticles(Option_t *option)
       MakePID() ; 
       
     if(strstr(option,"deb"))
-      PrintRecParticles(option) ;
+      PrintRecParticles(option) ;    
   }
 
   if(strstr(option,"deb"))
@@ -952,10 +952,6 @@ void  AliPHOSPIDv1::MakePID()
     AliFatal("RecPoints or TrackSegments not found !") ;  
   }
 
-  TIter next(fTrackSegments) ; 
-  AliPHOSTrackSegment * ts ; 
-  Int_t index = 0 ; 
-
   Double_t * stof[kSPECIES] ;
   Double_t * sdp [kSPECIES]  ;
   Double_t * scpv[kSPECIES] ;
@@ -969,14 +965,15 @@ void  AliPHOSPIDv1::MakePID()
     sw  [i] = new Double_t[nparticles] ;
   }
   
+  for(Int_t index = 0 ; index < nparticles ; index ++) {
 
-  while ( (ts = (AliPHOSTrackSegment *)next()) ) {
+    AliPHOSTrackSegment * ts = (AliPHOSTrackSegment *)fTrackSegments->At(index);
     
     //cout<<">>>>>> Bayesian Index "<<index<<endl;
+    if(ts->GetEmcIndex()<0)
+      continue ; //Do not analyze CPV TS
 
-    AliPHOSEmcRecPoint * emc = 0 ;
-    if(ts->GetEmcIndex()>=0)
-      emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
+    AliPHOSEmcRecPoint * emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
     
 //    AliPHOSCpvRecPoint * cpv = 0 ;
 //    if(ts->GetCpvIndex()>=0)
@@ -1222,16 +1219,10 @@ void  AliPHOSPIDv1::MakePID()
 // 	  <<", cpv "<<scpv[AliPID::kProton][index]<<" ss "<<sdp[AliPID::kProton][index]<<endl;
 //       cout<<"######################################################"<<endl;
 //     }
-      index++;
   }
   
-  //for (index = 0 ; index < kSPECIES ; index++) 
-  // pid[index] /= nparticles ; 
   
-
-  //  Info("MakePID", "Total Probability calculation");
-  
-  for(index = 0 ; index < nparticles ; index ++) {
+  for(Int_t index = 0 ; index < nparticles ; index ++) {
     
     AliPHOSRecParticle * recpar = static_cast<AliPHOSRecParticle *>(fRecParticles->At(index));
     
@@ -1297,32 +1288,20 @@ void  AliPHOSPIDv1::MakeRecParticles()
   }
   fRecParticles->Clear();
 
-  TIter next(fTrackSegments) ; 
-  AliPHOSTrackSegment * ts ; 
-  Int_t index = 0 ; 
-  AliPHOSRecParticle * rp ; 
-  while ( (ts = (AliPHOSTrackSegment *)next()) ) {
-    //  cout<<">>>>>>>>>>>>>>>PCA Index "<<index<<endl;
-    new( (*fRecParticles)[index] ) AliPHOSRecParticle() ;
-    rp = (AliPHOSRecParticle *)fRecParticles->At(index) ; 
+  Int_t nEmcRP=fEMCRecPoints->GetEntriesFast() ;
+  for(Int_t index=0; index<nEmcRP; index++){
+    AliPHOSRecParticle * rp = new( (*fRecParticles)[index] ) AliPHOSRecParticle() ;
     rp->SetTrackSegment(index) ;
     rp->SetIndexInList(index) ;
     	
-    AliPHOSEmcRecPoint * emc = 0 ;
-    if(ts->GetEmcIndex()>=0)
-      emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
-    
+    AliPHOSEmcRecPoint * emc = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(index)) ;
+    AliPHOSTrackSegment * ts = static_cast<AliPHOSTrackSegment*>(fTrackSegments->At(index)) ;
     AliPHOSCpvRecPoint * cpv = 0 ;
     if(ts->GetCpvIndex()>=0)
-      cpv = (AliPHOSCpvRecPoint *) fCPVRecPoints->At(ts->GetCpvIndex()) ;
+      cpv = (AliPHOSCpvRecPoint*) fCPVRecPoints->At(ts->GetCpvIndex()) ;
     
-    Int_t track = 0 ; 
-    track = ts->GetTrackIndex() ; 
-      
-    // Now set type (reconstructed) of the particle
-
-    // Choose the cluster energy range
-    
+    Int_t track = ts->GetTrackIndex() ; 
+          
     if (!emc) {
       AliFatal(Form("-> emc(%d)", ts->GetEmcIndex())) ;
     }
@@ -1415,12 +1394,9 @@ void  AliPHOSPIDv1::MakeRecParticles()
     rp->SetLastDaughter(-1);
     rp->SetPolarisation(0,0,0);
     //Set the position in global coordinate system from the RecPoint
-    AliPHOSTrackSegment * ts1  = static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(rp->GetPHOSTSIndex()));
-    AliPHOSEmcRecPoint  * erp = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(ts1->GetEmcIndex()));
     TVector3 pos ; 
-    fGeom->GetGlobalPHOS(erp, pos) ; 
+    fGeom->GetGlobalPHOS(emc, pos) ; 
     rp->SetPos(pos);
-    index++ ; 
   }
 }
   
@@ -1634,7 +1610,7 @@ void AliPHOSPIDv1::GetVertex(void)
 
   // Use vertex diamond from CDB GRP folder if the one from ESD is missing
   // PLEASE FIX IT 
-  AliWarning("Can not read vertex from data, use fixed \n") ;
+//  AliWarning("Can not read vertex from data, use fixed \n") ;
   fVtx.SetXYZ(0.,0.,0.) ;
  
 }

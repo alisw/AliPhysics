@@ -13,42 +13,43 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//     ESD class to store calorimeter cell data
-//     Clone of AliAODCaloCells made by Markus Oldenburg, CERN
-//     Author: Gustavo Conesa Balbastre INFN-LNF
-//-------------------------------------------------------------------------
-
 #include "AliESDCaloCells.h"
 
-ClassImp(AliESDCaloCells)
+/// \cond CLASSIMP
+ClassImp(AliESDCaloCells) ;
+/// \endcond
 
+///
+/// Default constructor.
+///
 //_____________________________________________________
 AliESDCaloCells::AliESDCaloCells() : 
   AliVCaloCells(), fNCells(0), fHGLG(0),fCellNumber(0), 
   fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0), 
   fIsSorted(kTRUE), fType(kUndef)
 {
-  // default constructor
 }
+
+///
+/// Constructor.
+///
 //______________________________________________________________________________________
  AliESDCaloCells::AliESDCaloCells(const char* name, const char* title, VCells_t ttype) : 
    AliVCaloCells(name, title), fNCells(0),  fHGLG(0),fCellNumber(0), 
    fAmplitude(0),  fTime(0), fEFraction(0), fMCLabel(0),
    fIsSorted(kTRUE), fType(ttype)
 {
-   // AliVCaloCells constructor
- }
+}
 
+///
+/// Copy constructor.
+///
 //__________________________________________________________
 AliESDCaloCells::AliESDCaloCells(const AliESDCaloCells& c) : 
   AliVCaloCells(c), fNCells(c.fNCells),  fHGLG(0), fCellNumber(0), 
   fAmplitude(0), fTime(0), fEFraction(0), fMCLabel(0),
   fIsSorted(c.fIsSorted), fType(c.fType)
 {
-  // copy constructor
   fHGLG       = new Bool_t[fNCells] ;
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells];
@@ -64,18 +65,22 @@ AliESDCaloCells::AliESDCaloCells(const AliESDCaloCells& c) :
     if(c.fMCLabel)  fMCLabel[i]   = c.fMCLabel[i];
     if(c.fEFraction)fEFraction[i] = c.fEFraction[i];
   }
-  if(c.fHGLG){
-    for(Int_t i = 0; i < fNCells; i++){
+  
+  if(c.fHGLG)
+  {
+    for(Int_t i = 0; i < fNCells; i++)
+    {
       fHGLG[i]          = c.fHGLG[i];   
     }
   }
 }
 
+///
+/// Assignment operator.
+///
 //__________________________________________________________________________
 AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)  
 {
-  // assignment operator
-
   if(this != &source)
   {
     AliVCaloCells::operator=(source);
@@ -117,26 +122,27 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
   return *this;
 }
 
+///
+/// This overwrites the virtual TObject::Copy()
+/// to allow run time copying without casting
+/// in AliESDEvent
+///
 //____________________________________________
 void AliESDCaloCells::Copy(TObject &obj) const 
 {
-  // this overwrites the virtual TOBject::Copy()
-  // to allow run time copying without casting
-  // in AliESDEvent
-
   if(this==&obj)return;
   AliESDCaloCells *robj = dynamic_cast<AliESDCaloCells*>(&obj);
   if(!robj)return; // not an AliESDCaloCells
   *robj = *this;
-
 }
 
+///
+/// Copy the calo cells into a new object. If option all=FALSE, just the object type, 
+/// for mixing.
+///
 //______________________________________________________________________
 AliVCaloCells* AliESDCaloCells::CopyCaloCells(Bool_t all = kTRUE) const
 {  
-  // copy the calo cells into a new object. If option all=FALSE, just the object type, 
-  // for mixing
-  
   AliVCaloCells *obj = new AliESDCaloCells();
   
   if(all){
@@ -160,29 +166,30 @@ AliVCaloCells* AliESDCaloCells::CopyCaloCells(Bool_t all = kTRUE) const
   return obj;
 }
 
-
+///
+/// Destructor.
+///
 //_________________________________
 AliESDCaloCells::~AliESDCaloCells()
 {
-  // destructor
-
   DeleteContainer();
 }
 
+///
+/// Clear arrays.
+///
 //__________________________________________
 void AliESDCaloCells::Clear(const Option_t*)
-{
-  // clear
-  
+{  
   DeleteContainer();
 }
 
-
+///
+/// Function that creates container to store calorimeter cell data.
+///
 //___________________________________________________
 void AliESDCaloCells::CreateContainer(Short_t nCells)
 {
-  // function that creates container to store calorimeter cell data
-
   DeleteContainer();
   
   if (nCells <= 0) 
@@ -212,11 +219,14 @@ void AliESDCaloCells::CreateContainer(Short_t nCells)
   }
 }
 
+///
+/// Deletes allocated memory
+///
 //_____________________________________
 void AliESDCaloCells::DeleteContainer()
 {
-  // deletes allocated memory
-  if(fHGLG){
+  if(fHGLG)
+  {
     delete[] fHGLG;
     fHGLG = 0 ;
   }
@@ -256,11 +266,12 @@ void AliESDCaloCells::DeleteContainer()
   
 }
 
+///
+/// Sort the cell array by cell number.
+///
 //__________________________
 void AliESDCaloCells::Sort() 
-{
-  // sort the cell array by cell number
-  
+{  
   Int_t *idxArray = new Int_t[fNCells];
   TMath::Sort(fNCells,fCellNumber,idxArray,kFALSE);
   
@@ -268,7 +279,7 @@ void AliESDCaloCells::Sort()
   Double32_t *newAmplitude = new Double32_t[fNCells];
   Double32_t *newTime      = new Double32_t[fNCells];
   
-  Int_t    *newMCLabel   = 0 ;
+  Int_t      *newMCLabel   = 0 ;
   Double32_t *newEFraction = 0 ; 
   if(fMCLabel)   newMCLabel   = new Int_t[fNCells];
   if(fEFraction) newEFraction = new Double32_t[fNCells];
@@ -299,20 +310,28 @@ void AliESDCaloCells::Sort()
   fCellNumber = newIndex;
   fAmplitude  = newAmplitude;
   fTime       = newTime;
-  if(fMCLabel)   fMCLabel    = newMCLabel;
-  if(fEFraction) fEFraction  = newEFraction;
+  fMCLabel    = newMCLabel;
+  fEFraction  = newEFraction;
 
   delete [] idxArray;
   
   fIsSorted = kTRUE;
 } 
 
+///
+/// Sets a cell at the given position.
+/// \param pos: cell position in array.
+/// \param cellNumber: Cell absolute Id. number.
+/// \param amplitude: Cell signal (GeV).
+/// \param time: Cell time (s).
+/// \param mclabel: MC particle index in kine array.
+/// \param efrac: Fraction of energy from embedding.
+/// \param isHG: bool true if cell is from high gain.
+///
 //________________________________________________________________________________________
 Bool_t AliESDCaloCells::SetCell(Short_t pos,     Short_t cellNumber, Double32_t amplitude,  
                                 Double32_t time, Int_t mclabel,    Double32_t efrac, Bool_t isHG)
 {
-  // Sets a cell at the given position
-
   if (pos>=0 && pos < fNCells) 
   {
     if(fHGLG)

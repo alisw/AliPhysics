@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliEMCALRecoUtils.cxx | Sun Dec 8 06:56:48 2013 +0100 | Constantin Loizides  $ */
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Class AliEMCALRecoUtils
@@ -66,7 +64,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
-  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       
+  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       
   fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
@@ -113,6 +111,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
+  fConstantTimeShift(reco.fConstantTimeShift),  
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(reco.fEMCALTimeRecalibrationFactors),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
@@ -177,7 +176,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fRecalibration             = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
 
-  fTimeRecalibration             = reco.fTimeRecalibration;
+  fConstantTimeShift         = reco.fConstantTimeShift;
+  fTimeRecalibration         = reco.fTimeRecalibration;
   fEMCALTimeRecalibrationFactors = reco.fEMCALTimeRecalibrationFactors;
 
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
@@ -356,6 +356,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   
   // Recalibrate time
   time = cells->GetCellTime(absID);
+  time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
   
   RecalibrateCellTime(absID,bc,time);
   
@@ -1345,7 +1346,8 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Double_t time = cells->GetCellTime(absIdMax);
   if (!fCellsRecalibrated && IsTimeRecalibrationOn())
     RecalibrateCellTime(absIdMax,bc,time);
-
+  time-=fConstantTimeShift*1e-9; // only in case of Run1 old simulations
+  
   //Recalibrate time with L1 phase 
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn())
     RecalibrateCellTimeL1Phase(imod, bc, time);
@@ -1986,9 +1988,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       }
 
       if (!fITSTrackSA)
-	trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
+        trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
       else
-	trackParam =  new AliExternalTrackParam(*esdTrack); // If ITS Track Standing alone		
+        trackParam =  new AliExternalTrackParam(*esdTrack); // If ITS Track Standing alone		
     }
     
     //If the input event is AOD, the starting point for extrapolation is at vertex
@@ -2575,15 +2577,16 @@ Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster,
   return isGood;
 }
 
+///
+/// Given a esd track, return whether the track survive all the cuts.
+///
+/// The different quality parameter are first.
+/// retrieved from the track. then it is found out what cuts the
+/// track did not survive and finally the cuts are imposed.
+///
 //__________________________________________________________
 Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
 {
-  // Given a esd track, return whether the track survive all the cuts
-
-  // The different quality parameter are first
-  // retrieved from the track. then it is found out what cuts the
-  // track did not survive and finally the cuts are imposed.
-
   UInt_t status = esdTrack->GetStatus();
 
   Int_t nClustersITS = esdTrack->GetITSclusters(0);
@@ -2596,18 +2599,34 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   if (nClustersTPC!=0) 
     chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
 
-
-  //DCA cuts
-  if (fTrackCutsType==kGlobalCut) {
-    Float_t maxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); //This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
+  //
+  // DCA cuts
+  // Only to be used for primary
+  //
+  if ( fTrackCutsType == kGlobalCut ) 
+  {
+    Float_t maxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); 
+    // This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
+    
     //AliDebug(3,Form("Track pT = %f, DCAtoVertexXY = %f",esdTrack->Pt(),MaxDCAToVertexXYPtDep));
+    
+    SetMaxDCAToVertexXY(maxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
+  } 
+  else if( fTrackCutsType == kGlobalCut2011 )
+  {
+    Float_t maxDCAToVertexXYPtDep = 0.0105 + 0.0350/TMath::Power(esdTrack->Pt(),1.1); 
+    // This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()
+    
+     //AliDebug(3,Form("Track pT = %f, DCAtoVertexXY = %f",esdTrack->Pt(),MaxDCAToVertexXYPtDep));
+    
     SetMaxDCAToVertexXY(maxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
   }
 
   Float_t b[2];
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
-  if (bCov[0]<=0 || bCov[2]<=0) {
+  if (bCov[0]<=0 || bCov[2]<=0) 
+  {
     AliDebug(1, "Estimated b resolution lower or equal zero!");
     bCov[0]=0; bCov[2]=0;
   }
@@ -2645,26 +2664,34 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
     cuts[7] = kTRUE;
   if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) > fCutMaxDCAToVertexXY)
     cuts[8] = kTRUE;
-  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutMaxDCAToVertexZ)
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ)  > fCutMaxDCAToVertexZ)
     cuts[9] = kTRUE;
 
-  if (fTrackCutsType==kGlobalCut) {
+  if (fTrackCutsType == kGlobalCut || fTrackCutsType == kGlobalCut2011) 
+  {
     //Require at least one SPD point + anything else in ITS
     if ( (esdTrack->HasPointOnITSLayer(0) || esdTrack->HasPointOnITSLayer(1)) == kFALSE)
       cuts[10] = kTRUE;
   }
 
   // ITS
-  if (fCutRequireITSStandAlone || fCutRequireITSpureSA) {
-    if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) {
+  if (fCutRequireITSStandAlone || fCutRequireITSpureSA) 
+  {
+    if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) 
+    {
       // TPC tracks
       cuts[11] = kTRUE; 
-    } else {
+    } 
+    else 
+    {
       // ITS standalone tracks
-      if (fCutRequireITSStandAlone && !fCutRequireITSpureSA) {
-	if (status & AliESDtrack::kITSpureSA) cuts[11] = kTRUE;
-      } else if (fCutRequireITSpureSA) {
-	if (!(status & AliESDtrack::kITSpureSA)) cuts[11] = kTRUE;
+      if (fCutRequireITSStandAlone && !fCutRequireITSpureSA) 
+      {
+        if (status & AliESDtrack::kITSpureSA)    cuts[11] = kTRUE;
+      } 
+      else if (fCutRequireITSpureSA) 
+      {
+        if (!(status & AliESDtrack::kITSpureSA)) cuts[11] = kTRUE;
       }
     }
   }
@@ -2673,25 +2700,25 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   for (Int_t i=0; i<kNCuts; i++)
     if (cuts[i]) { cut = kTRUE ; }
 
-    // cut the track
+  // cut the track
   if (cut) 
     return kFALSE;
   else 
     return kTRUE;
 }
 
+///
+/// Initialize the track cut criteria.
+/// By default these cuts are set according to AliESDtrackCuts::GetStandardTPCOnlyTrackCuts().
+/// Also, you can customize the cuts using the setters.
 //_____________________________________
 void AliEMCALRecoUtils::InitTrackCuts()
-{
-  //Intilize the track cut criteria
-  //By default these cuts are set according to AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
-  //Also you can customize the cuts using the setters
-  
+{  
   switch (fTrackCutsType)
   {
     case kTPCOnlyCut:
     {
-      AliInfo(Form("Track cuts for matching: GetStandardTPCOnlyTrackCuts()"));
+      AliInfo(Form("Track cuts for matching: AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()"));
       //TPC
       SetMinNClustersTPC(70);
       SetMaxChi2PerClusterTPC(4);
@@ -2709,7 +2736,7 @@ void AliEMCALRecoUtils::InitTrackCuts()
       
     case kGlobalCut:
     {
-      AliInfo(Form("Track cuts for matching: GetStandardITSTPCTrackCuts2010(kTURE)"));
+      AliInfo(Form("Track cuts for matching: AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE)"));
       //TPC
       SetMinNClustersTPC(70);
       SetMaxChi2PerClusterTPC(4);
@@ -2733,7 +2760,7 @@ void AliEMCALRecoUtils::InitTrackCuts()
       
       break;
     }
-
+      
     case kITSStandAlone:
     {
       AliInfo(Form("Track cuts for matching: ITS Stand Alone tracks cut w/o DCA cut"));
@@ -2743,6 +2770,34 @@ void AliEMCALRecoUtils::InitTrackCuts()
       break;
     }
     
+    case kGlobalCut2011:
+    {
+      AliInfo(Form("Track cuts for matching: AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE)"));
+      //TPC
+      SetMinNClustersTPC(50);
+      SetMaxChi2PerClusterTPC(4);
+      SetAcceptKinkDaughters(kFALSE);
+      SetRequireTPCRefit(kTRUE);
+      
+      //ITS
+      SetRequireITSRefit(kTRUE);
+      SetMaxDCAToVertexZ(2);
+      SetMaxDCAToVertexXY();
+      SetDCAToVertex2D(kFALSE);
+      
+      break;
+    }  
+     
+    case kLooseCutWithITSrefit:
+    {
+      AliInfo(Form("Track cuts for matching: Loose cut w/o DCA cut plus ITSrefit"));
+      SetMinNClustersTPC(50);
+      SetAcceptKinkDaughters(kTRUE);
+      SetRequireITSRefit(kTRUE);
+
+      break;
+    }
+  
   }
 }
 

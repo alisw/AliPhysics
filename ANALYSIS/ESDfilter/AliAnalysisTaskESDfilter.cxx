@@ -129,7 +129,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fEMCalSurfaceDistance(440),
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
-  fRefitVertexTracksCuts(0)
+  fRefitVertexTracksCuts(0),
+  fIsMuonCaloPass(kFALSE)
 {
   // Default constructor
   fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -207,7 +208,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fEMCalSurfaceDistance(440),
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
-  fRefitVertexTracksCuts(0)
+  fRefitVertexTracksCuts(0),
+  fIsMuonCaloPass(kFALSE)
 {
   // Constructor
 
@@ -249,7 +251,10 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
   {
     AliError("No OutputTree() for adding the track filter");
   }
-  fTPCaloneTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  if (!fIsMuonCaloPass)
+  {
+    fTPCaloneTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  }
 }
 
 //______________________________________________________________________________
@@ -312,7 +317,9 @@ void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
   cout << spaces.Data() << Form("EMCAL triggers are %s",fAreEMCALTriggerEnabled ? "ENABLED":"DISABLED") << endl;
   cout << spaces.Data() << Form("PHOS triggers  are %s",fArePHOSTriggerEnabled ? "ENABLED":"DISABLED") << endl;
   cout << spaces.Data() << Form("Tracklets      are %s",fAreTrackletsEnabled ? "ENABLED":"DISABLED") << endl;  
-  cout << spaces.Data() << Form("PropagateTrackToEMCal  is %s", fDoPropagateTrackToEMCal ? "ENABLED":"DISABLED") << endl; 
+  cout << spaces.Data() << Form("HMPID          is  %s",fIsHMPIDEnabled ? "ENABLED":"DISABLED") << endl;
+  cout << spaces.Data() << Form("TRD            is  %s",fIsTRDEnabled ? "ENABLED":"DISABLED") << endl;
+  cout << spaces.Data() << Form("PropagateTrackToEMCal  is %s", fDoPropagateTrackToEMCal ? "ENABLED":"DISABLED") << endl;
   if (fRefitVertexTracks<0) cout << spaces.Data() << Form("RefitVerteTracks is DISABLED") << endl;
   else cout << spaces.Data() << Form("RefitVerteTracks is ENABLED to %d",fRefitVertexTracks) << endl;
 }
@@ -606,6 +613,8 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								 vtx->UsesTrack(esdCascadeBach->GetID()),
 								 AliAODTrack::kFromDecayVtx,
 								 selectInfo);
+      aodTrack->SetITSSharedMap(esdCascadeBach->GetITSSharedMap());
+      aodTrack->SetITSchi2(esdCascadeBach->GetITSchi2());      
       aodTrack->SetPIDForTracking(esdCascadeBach->GetPIDForTracking());
       aodTrack->SetTPCFitMap(esdCascadeBach->GetTPCFitMap());
       aodTrack->SetTPCClusterMap(esdCascadeBach->GetTPCClusterMap());
@@ -687,6 +696,8 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								   vtx->UsesTrack(esdCascadePos->GetID()),
 								   AliAODTrack::kFromDecayVtx,
 								   selectInfo);
+	aodTrack->SetITSSharedMap(esdCascadePos->GetITSSharedMap());
+	aodTrack->SetITSchi2(esdCascadePos->GetITSchi2());      
 	aodTrack->SetPIDForTracking(esdCascadePos->GetPIDForTracking());
         aodTrack->SetTPCFitMap(esdCascadePos->GetTPCFitMap());
         aodTrack->SetTPCClusterMap(esdCascadePos->GetTPCClusterMap());
@@ -739,6 +750,8 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								   vtx->UsesTrack(esdCascadeNeg->GetID()),
 								   AliAODTrack::kFromDecayVtx,
 								   selectInfo);
+	aodTrack->SetITSSharedMap(esdCascadeNeg->GetITSSharedMap());
+	aodTrack->SetITSchi2(esdCascadeNeg->GetITSchi2());      
 	aodTrack->SetPIDForTracking(esdCascadeNeg->GetPIDForTracking());
         aodTrack->SetTPCFitMap(esdCascadeNeg->GetTPCFitMap());
         aodTrack->SetTPCClusterMap(esdCascadeNeg->GetTPCClusterMap());
@@ -956,6 +969,8 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 								    vtx->UsesTrack(esdV0Pos->GetID()),
 								    AliAODTrack::kFromDecayVtx,
 								    selectInfo);
+	    aodTrack->SetITSSharedMap(esdV0Pos->GetITSSharedMap());
+	    aodTrack->SetITSchi2(esdV0Pos->GetITSchi2());      
 	    aodTrack->SetPIDForTracking(esdV0Pos->GetPIDForTracking());
 	    aodTrack->SetTPCFitMap(esdV0Pos->GetTPCFitMap());
 	    aodTrack->SetTPCClusterMap(esdV0Pos->GetTPCClusterMap());
@@ -1003,6 +1018,8 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 							      vtx->UsesTrack(esdV0Neg->GetID()),
 							      AliAODTrack::kFromDecayVtx,
 							      selectInfo);
+      aodTrack->SetITSSharedMap(esdV0Neg->GetITSSharedMap());
+      aodTrack->SetITSchi2(esdV0Neg->GetITSchi2());      
       aodTrack->SetPIDForTracking(esdV0Neg->GetPIDForTracking());
       aodTrack->SetTPCFitMap(esdV0Neg->GetTPCFitMap());
       aodTrack->SetTPCClusterMap(esdV0Neg->GetTPCClusterMap());
@@ -1194,6 +1211,8 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 							    vtx->UsesTrack(track->GetID()),
 							    AliAODTrack::kPrimary, 
 							    selectInfo);
+    aodTrack->SetITSSharedMap(track->GetITSSharedMap());
+    aodTrack->SetITSchi2(track->GetITSchi2());      
     aodTrack->SetPIDForTracking(track->GetPIDForTracking());
     aodTrack->SetIsHybridTPCConstrainedGlobal(isHybridITSTPC);    
     aodTrack->SetTPCFitMap(track->GetTPCFitMap());
@@ -1328,6 +1347,8 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
                                                             vtx->UsesTrack(esdTrack->GetID()),
                                                             AliAODTrack::kPrimary, 
                                                             selectInfo);
+    aodTrack->SetITSSharedMap(esdTrack->GetITSSharedMap());
+    aodTrack->SetITSchi2(esdTrack->GetITSchi2());      
     aodTrack->SetPIDForTracking(esdTrack->GetPIDForTracking());
     aodTrack->SetIsHybridGlobalConstrainedGlobal(isHybridGC);    
     aodTrack->SetIsGlobalConstrained(kTRUE);    
@@ -1407,6 +1428,8 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
                                                             vtx->UsesTrack(esdTrack->GetID()),
                                                             AliAODTrack::kPrimary, 
                                                             selectInfo);
+    aodTrack->SetITSSharedMap(esdTrack->GetITSSharedMap());
+    aodTrack->SetITSchi2(esdTrack->GetITSchi2());         
     fPrimaryVertex->AddDaughter(aodTrack);
     aodTrack->SetPIDForTracking(esdTrack->GetPIDForTracking());
     aodTrack->SetTPCFitMap(esdTrack->GetTPCFitMap());
@@ -1492,6 +1515,9 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     caloCluster->SetTrackDistance(cluster->GetTrackDx(), cluster->GetTrackDz());
     
+    caloCluster->SetCellsMCEdepFractionMap(cluster->GetCellsMCEdepFractionMap());
+    caloCluster->SetClusterMCEdepFraction (cluster->GetClusterMCEdepFraction ());
+    
     Int_t nMatchCount = 0;
     TArrayI* matchedT = cluster->GetTracksMatched();
     if (fNumberOfTracks>0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
@@ -1532,13 +1558,17 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
     return;
   }
 		
-  AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()); 
-  if (aodHandler) {
-    TTree *aodTree = aodHandler->GetTree();
-    if (aodTree) {
-      Int_t *type = esd.GetCaloTriggerType();
-      for (Int_t i = 0; i < 15; i++) {
-	aodTree->GetUserInfo()->Add(new TParameter<int>(Form("EMCALCaloTrigger%d",i), type[i]));
+  static Bool_t saveOnce = kFALSE;
+  if (!saveOnce) {
+    AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()); 
+    if (aodHandler) {
+      TTree *aodTree = aodHandler->GetTree();
+      if (aodTree) {
+	Int_t *type = esd.GetCaloTriggerType();
+	for (Int_t i = 0; i < 15; i++) {
+	  aodTree->GetUserInfo()->Add(new TParameter<int>(Form("EMCALCaloTrigger%d",i), type[i]));
+	}
+	saveOnce = kTRUE;
       }
     }
   }
@@ -1729,6 +1759,8 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 								  vtx->UsesTrack(esdTrack->GetID()),
 								  AliAODTrack::kPrimary,
 								  selectInfo);
+	    mother->SetITSSharedMap(esdTrackM->GetITSSharedMap());
+	    mother->SetITSchi2(esdTrackM->GetITSchi2());      	    
 	    mother->SetPIDForTracking(esdTrackM->GetPIDForTracking());
             mother->SetTPCFitMap(esdTrackM->GetTPCFitMap());
             mother->SetTPCClusterMap(esdTrackM->GetTPCClusterMap());
@@ -1791,6 +1823,8 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 								    vtx->UsesTrack(esdTrack->GetID()),
 								    AliAODTrack::kFromDecayVtx,
 								    selectInfo);
+	    daughter->SetITSSharedMap(esdTrackD->GetITSSharedMap());
+	    daughter->SetITSchi2(esdTrackD->GetITSchi2());      	    
 	    daughter->SetPIDForTracking(esdTrackD->GetPIDForTracking());
             daughter->SetTPCFitMap(esdTrackD->GetTPCFitMap());
             daughter->SetTPCClusterMap(esdTrackD->GetTPCClusterMap());
@@ -2161,6 +2195,8 @@ void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 								     vtx->UsesTrack(esdTrkMatch->GetID()),
 								     AliAODTrack::kUndef,
 								     selectInfo);
+	  aodTrkMatch->SetITSSharedMap(esdTrkMatch->GetITSSharedMap());
+	  aodTrkMatch->SetITSchi2(esdTrkMatch->GetITSchi2());      	  
 	  aodTrkMatch->SetPIDForTracking(esdTrkMatch->GetPIDForTracking());
 	  aodTrkMatch->SetTPCFitMap(esdTrkMatch->GetTPCFitMap());
 	  aodTrkMatch->SetTPCClusterMap(esdTrkMatch->GetTPCClusterMap());
@@ -2529,4 +2565,19 @@ void AliAnalysisTaskESDfilter::SetRefitVertexTracks(Int_t algo, Double_t* cuts)
     for (int i=fRefitVertexTracks;i--;) fRefitVertexTracksCuts[i] = cuts[i];
     fRefitVertexTracksNCuts = fRefitVertexTracks;
   }
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::SetMuonCaloPass()
+{
+  /// For a MuonCalo pass, due to the absence of TPC, TRD, TOF and PMD
+  /// a bunch of things can be disabled for sure.
+  
+  fIsMuonCaloPass = kTRUE;
+
+  DisableCascades();
+  DisableKinks();
+  DisableV0s();
+  DisablePmdClusters();
+  SetPropagateTrackToEMCal(kFALSE);
 }

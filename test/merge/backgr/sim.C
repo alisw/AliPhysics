@@ -20,6 +20,8 @@ void sim(Int_t nev=1) {
   simulator.SetSpecificStorage("VZERO/Calib/Data",
 			       "local://$ALICE_ROOT/OCDB/VZERO/PbPb");
 
+  simulator.SetRunHLT("default"); // In case we do not have ancored production
+
   TStopwatch timer;
   timer.Start();
   simulator.Run(nev);

@@ -52,6 +52,11 @@ public:
   void SetUseTPCMultiplicityCorrection(Bool_t useMultiplicityCorrection = kTRUE) { fUseTPCMultiplicityCorrection = useMultiplicityCorrection; };
   Bool_t UseTPCMultiplicityCorrection() const { return fUseTPCMultiplicityCorrection; };
 
+
+  void SetUseTRDEtaCorrection(Bool_t useTRDEtaCorrection) { fUseTRDEtaCorrection = useTRDEtaCorrection; };
+  Bool_t UseTRDEtaCorrection() const { return fUseTRDEtaCorrection; };
+
+
   void SetSpecialDetectorResponse(const char* det) { fSpecialDetResponse=det; }
   void SetUserDataRecoPass(Int_t pass){fUserDataRecoPass=pass;};
 
@@ -73,6 +78,8 @@ private:
   
   Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
+  Bool_t fUseTRDEtaCorrection;          // Use TRD eta correction
+
   Int_t  fUserDataRecoPass;            // forced DATA reco pass
   
   //
@@ -81,6 +88,6 @@ private:
   AliAnalysisTaskPIDResponse(const AliAnalysisTaskPIDResponse &other);
   AliAnalysisTaskPIDResponse& operator=(const AliAnalysisTaskPIDResponse &other);
   
-  ClassDef(AliAnalysisTaskPIDResponse,7)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDResponse,8)  // Task to properly set the PID response functions of all detectors
 };
 #endif

@@ -18,6 +18,7 @@
 #include "AliQAv1.h"
 #include "AliQAManager.h"
 #include <time.h>
+#include <algorithm>
 
 class AliCDBId;
 class AliCDBParam;
@@ -143,7 +144,7 @@ public:
   void UseMagFieldFromGRP() {fUseMagFieldFromGRP = kTRUE;} 
   void SetGRPWriteLocation(char* loc) {fGRPWriteLocation = loc;}
 
-  void UseTimeStampFromCDB()   {fUseTimeStampFromCDB   = kTRUE;}
+  void UseTimeStampFromCDB(Double_t decayTimeHours=10.);
   time_t GenerateTimeStamp() const;
   //
   Bool_t          GetUseDetectorsFromGRP()               const {return fUseDetectorsFromGRP;}
@@ -212,6 +213,8 @@ private:
   Bool_t          fUseTimeStampFromCDB;// Flag to generate event time-stamps according to SOR/EOR from GRP
   time_t          fTimeStart;          // SOR time-stamp
   time_t          fTimeEnd;            // EOR time-stamp
+  Float_t         fLumiDecayH;         // luminosity decay time in hours
+  std::vector<time_t> fOrderedTimeStamps;  //! optional ordered time stamps
   
   //QA stuff
   static const Int_t   fgkNDetectors = 18 ;             // number of detectors   +FIT // alla
@@ -230,7 +233,10 @@ private:
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 14)  // class for running generation, simulation and digitization
+  static const Char_t *fgkRunHLTAuto;         // flag for automatic HLT mode detection
+  static const Char_t *fgkHLTDefConf;         // default configuration to run HLT
+
+  ClassDef(AliSimulation, 15)  // class for running generation, simulation and digitization
 };
 
 #endif
