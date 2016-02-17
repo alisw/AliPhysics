@@ -1145,7 +1145,8 @@ mergeAliSysInfo(){
     #   2.) outputFile 
     #       in case outputFile is root file - tree is written as root file therwise plane txt used
     # example usage 
-    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatch.list syswatch.root; )
+    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchHis.list syswatchHis.root; )
+    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchMap.list syswatchMap.root; )
     inputList=$1
     outputFile=$2
     alilog_info "mergeAliSysInfo  inputList=$1 outputFile=$2 BEGIN"
@@ -1160,14 +1161,17 @@ mergeAliSysInfo(){
     #
     counter=0
     desc=`head  -n 1 $inputList  | xargs head -n 1`  
-    echo $desc:itree/D:nstamps/D:treeName/C  >$outputFile
+    echo $desc:line/D:itree/D:nstamps/D:treeName/C  >$outputFile
     fsize=0
     for afile in `cat  $inputList`; do 
 	fsize=$(wc -l < $afile)
 	((counter++))
 	#echo $counter $fsize $afile 
-	cat $afile | grep -v "hname" | while read -r line; 
-	  do echo "$line" $counter $fsize $afile; 
+	lineCounter=0
+	cat $afile | grep -v "hname" | while read -r line; 	
+	  do 
+	  ((lineCounter++))
+	  echo "$line" $lineCounter $counter $fsize $afile; 
 	done 
     done >> $outputFile
     [[ $outputFile =~ .root$ ]] &&  echo "AliSysInfo::MakeTree(\"$outputFile\",\"$outputFile\")" | aliroot -b 
