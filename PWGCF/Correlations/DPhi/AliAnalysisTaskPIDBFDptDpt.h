@@ -98,6 +98,7 @@ public:
     virtual     void    SetVertexZMin(double v)             { _vertexZMin           = v; }
     virtual     void    SetVertexZMax(double v)             { _vertexZMax           = v; }
     virtual     void    SetVertexZWidth(double v)           { _vertexZWidth         = v; }
+    virtual     void    SetEtaWidth(double v)               { _etaWidth             = v; }
     virtual     void    SetVertexXYMin(double v)            { _vertexXYMin          = v; }
     virtual     void    SetVertexXYMax(double v)            { _vertexXYMax          = v; }
     virtual     void    SetCentralityMethod(int v)          { _centralityMethod     = v; }
@@ -168,6 +169,7 @@ protected:
     double   _vertexZMin;
     double   _vertexZMax;
     double   _vertexZWidth;
+    double   _etaWidth;
     double   _vertexXYMin;
     double   _vertexXYMax;
     int      _centralityMethod;

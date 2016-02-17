@@ -96,6 +96,7 @@ _rejectPairConversion ( 0),
 _vertexZMin           ( -6),
 _vertexZMax           (  6),
 _vertexZWidth         (0.5),
+_etaWidth             (0.1),
 _vertexXYMin          ( -10),
 _vertexXYMax          (  10),
 _centralityMethod     (  4),
@@ -124,7 +125,7 @@ _mult4    ( 0 ),
 _mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
-arraySize ( 2500),
+arraySize ( 5000),
 _id_1(0),
 _charge_1(0),
 _iEtaPhi_1(0),
@@ -423,6 +424,7 @@ _rejectPairConversion ( 0),
 _vertexZMin           ( -6.),
 _vertexZMax           (  6.),
 _vertexZWidth         (0.5 ),
+_etaWidth             (0.1),
 _vertexXYMin          ( -10.),
 _vertexXYMax          (  10.),
 _centralityMethod     (  4),
@@ -451,7 +453,7 @@ _mult4    ( 0 ),
 _mult4a    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
-arraySize ( 2500),
+arraySize ( 5000),
 _id_1(0),
 _charge_1(0),
 _iEtaPhi_1(0),
@@ -755,6 +757,9 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     _min_vertexZ       = _vertexZMin;
     _max_vertexZ       = _vertexZMax;
     _width_vertexZ     = _vertexZWidth;
+    _width_eta_1       = _etaWidth;
+    _width_eta_2       = _etaWidth;
+    
     _nBins_vertexZ     = int( 0.5 + ( _max_vertexZ - _min_vertexZ) / _width_vertexZ );
     _nBins_pt_1        = int( 0.5 + ( _max_pt_1 -_min_pt_1 ) / _width_pt_1 );
     _nBins_eta_1       = int( 0.5 + ( _max_eta_1-_min_eta_1 ) / _width_eta_1 );
