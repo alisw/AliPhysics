@@ -74,7 +74,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
 
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object
 
-  ClassDef(AliRsnCutEventUtils, 5)
+  ClassDef(AliRsnCutEventUtils, 6)
     
     };
 
