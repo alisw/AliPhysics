@@ -41,6 +41,7 @@
 #include "AliESDAD.h"
 #include "AliESDADfriend.h"
 #include "AliESDVZERO.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAnalysisTaskADVVQA.h"
 
@@ -49,14 +50,14 @@ ClassImp(AliAnalysisTaskADVVQA)
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA() 
   : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0),
-  fRun(0),fOldRun(0),fCalibData(0)
+  fRun(0),fOldRun(0),fCalibData(0),fAnalysisUtils(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA(const char *name) 
   : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0),
-  fRun(0),fOldRun(0),fCalibData(0)
+  fRun(0),fOldRun(0),fCalibData(0),fAnalysisUtils(new AliAnalysisUtils)
 {
   // Constructor
   // Output slot #1 writes into a TList container
@@ -129,7 +130,6 @@ void AliAnalysisTaskADVVQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
 {
-
 
   // Create histograms
   // Called once
@@ -401,8 +401,6 @@ void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
   TH2F *fHistMaxChargeValueInt1 = CreateHist2D(fHistMaxChargeValueInt1_Name.Data(),"Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
   list->Add(fHistMaxChargeValueInt1);//39
 
-
-
 }
 
 //________________________________________________________________________
@@ -580,6 +578,9 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
     Printf("ERROR: ESD not available");
     return;
   }
+  
+  if(fAnalysisUtils->IsPileUpEvent(fEvent)) return;
+  if(fAnalysisUtils->IsSPDClusterVsTrackletBG(fEvent)) return;
   
   if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_NoVBC);
   if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_NoVBC);
