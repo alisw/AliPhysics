@@ -660,10 +660,10 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
   values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
 
   if(Req(kPtMC)||Req(kPMC)||Req(kPhiMC)||Req(kEtaMC)){
-    values[AliDielectronVarManager::kPtMC]      = 0;
-    values[AliDielectronVarManager::kPMC]       = 0;
-    values[AliDielectronVarManager::kPhiMC]     = 0;
-    values[AliDielectronVarManager::kEtaMC]     = 0;
+    values[AliDielectronVarManager::kPtMC]      = -999.;
+    values[AliDielectronVarManager::kPMC]       = -999.;
+    values[AliDielectronVarManager::kPhiMC]     = -999.;
+    values[AliDielectronVarManager::kEtaMC]     = -999.;
     AliVParticle *mcTrack(0x0);
     if(AliDielectronMC::Instance()->HasMC())
       mcTrack = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs(particle->GetLabel()));
@@ -1427,6 +1427,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
                        2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
   values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
+  values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
+  values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);  
 
@@ -1766,6 +1768,11 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
         // Calculate pair variables for corresponding generated pair
         if(AliDielectronMC::Instance()->HasMC() && (Req(kMMC)||Req(kPtMC)||Req(kPMC)||Req(kEtaMC)||Req(kPhiMC))){
+          values[AliDielectronVarManager::kMMC]   = -999.;
+          values[AliDielectronVarManager::kPtMC]  = -999.; 
+          values[AliDielectronVarManager::kPMC]   = -999.;
+          values[AliDielectronVarManager::kPhiMC] = -999.;
+          values[AliDielectronVarManager::kEtaMC] = -999.;
           AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetFirstDaughterP() )->GetLabel()));
           AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetSecondDaughterP())->GetLabel()));
           if(mcDaughter1 && mcDaughter2){
