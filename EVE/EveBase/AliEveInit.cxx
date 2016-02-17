@@ -31,6 +31,7 @@
 #include <TEveMacro.h>
 #include <TEveBrowser.h>
 
+#include <cstring>
 #include <iostream>
 
 using namespace std;
@@ -38,6 +39,9 @@ using namespace std;
 AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defaultDataSource,bool storageManager) :
 fPath(path)
 {
+    const int nDetectors = 12;
+    char* detectorsList[nDetectors] = {"EMC","ACO","TRD","SPD","SDD","SSD","TOF","TPC","RPH","PHS","HMP","MCH"};
+    
     //==============================================================================
     // Reading preferences from config file
     //==============================================================================
@@ -50,8 +54,6 @@ fPath(path)
     
     TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
     
-    const int nDetectors = 2;
-    const char* detectors[nDetectors] = {"ACO","MCH"};
     
     Info("AliEveInit",Form("\n\nOCDB path:%s\n\n",ocdbStorage.Data()));
     
@@ -86,24 +88,26 @@ fPath(path)
     
     AliEveMultiView *mv = new AliEveMultiView();
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
-    
-//    mv->InitSimpleGeom(geomGentle->GetGeomGentle(true),true,false); // special geometry for RPhi projection
-//    mv->InitSimpleGeom(geomGentle->GetGeomGentle(),false,true);     // to be replaced by per-detector geometries
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("ACO"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TRD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SPD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SDD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SSD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TOF"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TPC"),false); // standard TPC for 3D and Rho-Z views only
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false); // special TPC geom from R-Phi view
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("PHS"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("HMP"));
-    
-    
-    if(settings.GetValue("MUON.show", true)){
-        mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false);
+
+    for(int i=0;i<nDetectors;i++)
+    {
+        if(settings.GetValue(Form("%s.draw",detectorsList[i]), true))
+        {
+            if(strcmp(detectorsList[i],"TPC")==0 || strcmp(detectorsList[i],"MCH")==0)
+            {
+                // don't load MUON and standard TPC to R-Phi view
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom(detectorsList[i]),false);
+            }
+            else if(strcmp(detectorsList[i],"RPH")==0)
+            {
+                // special TPC geom from R-Phi view
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false);
+            }
+            else
+            {
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom(detectorsList[i]));
+            }
+        }
     }
     
     AddMacros();

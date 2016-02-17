@@ -55,6 +55,18 @@ primary.vertex.spd.cross:               0
 momentum.histograms.show:               0
 momentum.histograms.all.events.show:    0
 
+PHS.draw:                               1
+TPC.draw:                               1
+HMP.draw:                               1
+TRD.draw:                               1
+MCH.draw:                               1
+EMC.draw:                               1
+ACO.draw:                               0
+SPD.draw:                               1
+SDD.draw:                               1
+SSD.draw:                               1
+TOF.draw:                               1
+
 PHS.color:                              53
 TPC.color:                              3
 HMP.color:                              5
@@ -82,6 +94,7 @@ TOF.trans:                              80
 MCH.line.color:                         920
 TPC.line.color:                         1
 HMP.line.color:                         1
+PHS.line.color:                         1
 
 clusters.show:                          0
 kinks.show:                             0

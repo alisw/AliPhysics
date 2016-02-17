@@ -360,20 +360,28 @@ void AliEveEventManagerWindow::DoRefresh()
     
     mv->DestroyAllGeometries();
     
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("EMC"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("ACO"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TRD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SPD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SDD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("SSD"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TOF"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("TPC"),false); // standard TPC for 3D and Rho-Z views only
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false); // special TPC geom from R-Phi view
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("PHS"));
-    mv->InitSimpleGeom(geomGentle->GetSimpleGeom("HMP"));
+    const int nDetectors = 12;
+    char* detectorsList[nDetectors] = {"EMC","ACO","TRD","SPD","SDD","SSD","TOF","TPC","RPH","PHS","HMP","MCH"};
     
-    if(settings.GetValue("MUON.show", true)){
-        mv->InitSimpleGeom(geomGentle->GetSimpleGeom("MCH"),false,true);
+    for(int i=0;i<nDetectors;i++)
+    {
+        if(settings.GetValue(Form("%s.draw",detectorsList[i]), true))
+        {
+            if(strcmp(detectorsList[i],"TPC")==0 || strcmp(detectorsList[i],"MCH")==0)
+            {
+                // don't load MUON and standard TPC to R-Phi view
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom(detectorsList[i]),false);
+            }
+            else if(strcmp(detectorsList[i],"RPH")==0)
+            {
+                // special TPC geom from R-Phi view
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false);
+            }
+            else
+            {
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom(detectorsList[i]));
+            }
+        }
     }
     
     TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
