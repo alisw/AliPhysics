@@ -137,6 +137,11 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     if (fParticleLevel) nlabels = 1;
 
     for (Int_t i = 0; i < fNcentBins; i++) {
+      histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
+      title = histname + ";Rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
+      TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 40, 0, 100);
+      SetRejectionReasonLabels(hist->GetXaxis());
+
       for (Int_t j = 0; j < nlabels; j++) {
         histname = TString::Format("%s/fHistTrPhiEtaPt_%d_%d", cont->GetArrayName().Data(), i, j);
         title = histname + ";#eta;#phi;#it{p}_{T} (GeV/#it{c})";
@@ -189,6 +194,11 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
     fHistManager.CreateHistoGroup(cont->GetArrayName());
     for (Int_t i = 0; i < fNcentBins; i++) {
+      histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
+      title = histname + ";Rejection reason;#it{E}_{cluster} (GeV);counts";
+      TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 40, 0, 100);
+      SetRejectionReasonLabels(hist->GetXaxis());
+
       histname = TString::Format("%s/fHistClusPosition_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{x} (cm);#it{y} (cm);#it{z} (cm)";
       fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -500, 500, 50, -500, 500, 50, -500, 500);
@@ -700,7 +710,7 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
     // Cluster loop
     AliVCluster* cluster = 0;
     clusters->ResetCurrentID();
-    while ((cluster = clusters->GetNextAcceptCluster())) {
+    while ((cluster = clusters->GetNextCluster())) {
       AliTLorentzVector nPart;
       Double_t energy = 0;
 
@@ -714,6 +724,12 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
       }
 
       if (energy <= 0) continue;
+
+      if (!clusters->AcceptCluster(clusters->GetCurrentID())) {
+        histname = TString::Format("%s/fHistRejectionReason_%d", clusters->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(), energy);
+        continue;
+      }
 
       Float_t pos[3]={0};
       cluster->GetPosition(pos);
@@ -790,8 +806,14 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
     particles->ResetCurrentID();
     AliVParticle* track = 0;
     AliTLorentzVector mom;
-    while ((track = particles->GetNextAcceptParticle())) {
+    while ((track = particles->GetNextParticle())) {
       particles->GetMomentum(mom, particles->GetCurrentID());
+
+      if (!particles->AcceptParticle(particles->GetCurrentID())) {
+        histname = TString::Format("%s/fHistRejectionReason_%d", particles->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH2(histname, particles->GetRejectionReasonBitPosition(), mom.Pt());
+        continue;
+      }
 
       fNTotTracks++;
 
