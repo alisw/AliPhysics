@@ -421,7 +421,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ptHardMinEmb            = 50., //    pt hard min in embedding
   Double_t            ptHardMaxEmb            = 1000.,//  pt hard max in embedding
   Double_t            ecmsGeVEmb              = 5020.,//  E cms  in embedding    
-  Float_t             ptWeightEmb             = 0.    //weighting power of the embedded spectrum 
+  Float_t             ptWeightEmb             = 0.,    //weighting power of the embedded spectrum 
+  Double_t            trackeff                = 1.1   //artificial reduction of tracking efficiency
 ){
 
    //typeOfData   
@@ -571,6 +572,11 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetFinderRhoKT->SetMinJetPt(0);
 
       jetFinderRhoKT->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+
+      if(trackeff<1.0){  //artificial reduction of tracking efficiency for real data jet finders
+         jetFinderTask->SetTrackEfficiency(trackeff);
+         jetFinderRhoKT->SetTrackEfficiency(trackeff);
+      }
    }
 
    //____________________________________________________________________
