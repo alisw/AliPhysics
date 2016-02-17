@@ -59,7 +59,8 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
   fCentrality(0.),
   fCenBin(0),
   fPHOSGeo(0x0),
-  fEventCounter(0)
+  fEventCounter(0),
+  fIsPbPb(kTRUE)
 {
   // Constructor
   for(Int_t i=0;i<10;i++){
@@ -268,7 +269,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   FillHistogram("hTotSelEvents",1.5) ;
   
  
-  if(fEventCounter == 0) {
+  if(fEventCounter == 0 && fIsPbPb) {
     //Get Event Plane flattening
     Int_t run = fEvent->GetRunNumber() ;
     AliOADBContainer flatContainer("phosFlat");
@@ -356,40 +357,44 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
 
   //reaction plane
-  AliEventplane *eventPlane = fEvent->GetEventplane();
-  if( ! eventPlane ) { //Event has no event plane
-    PostData(1, fOutputContainer);
-    return;
-  }
-  //V0A
-  const Int_t harmonics = 2; 
-  Double_t qx=0., qy=0.;  
-  Double_t rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent,8, harmonics,qx,qy);
-  //V0C
-  Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
+  Int_t irp=0 ;
+    AliEventplane *eventPlane = fEvent->GetEventplane();
+    if( ! eventPlane ) { //Event has no event plane
+      PostData(1, fOutputContainer);
+      return;
+    }
+    //V0A
+    const Int_t harmonics = 2; 
+    Double_t qx=0., qy=0.;  
+    Double_t rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent,8, harmonics,qx,qy);
+    //V0C
+    Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
 
-  while(rpV0A<0)rpV0A+=TMath::TwoPi()/harmonics ;
-  while(rpV0A>TMath::TwoPi()/harmonics)rpV0A-=TMath::TwoPi()/harmonics ;
-  rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
+    while(rpV0A<0)rpV0A+=TMath::TwoPi()/harmonics ;
+    while(rpV0A>TMath::TwoPi()/harmonics)rpV0A-=TMath::TwoPi()/harmonics ;
+    if(fIsPbPb)
+      rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
   
-  while(rpV0C<0)rpV0C+=TMath::TwoPi()/harmonics ;
-  while(rpV0C>TMath::TwoPi()/harmonics)rpV0C-=TMath::TwoPi()/harmonics ;
-  rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
+    while(rpV0C<0)rpV0C+=TMath::TwoPi()/harmonics ;
+    while(rpV0C>TMath::TwoPi()/harmonics)rpV0C-=TMath::TwoPi()/harmonics ;
+    if(fIsPbPb)
+      rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
   
-  Double_t rpFull=0.5*(rpV0A+rpV0C) ;  
-  FillHistogram("phiRPflat",rpFull,fCentrality) ;  
+    Double_t rpFull=0.5*(rpV0A+rpV0C) ;  
+    FillHistogram("phiRPflat",rpFull,fCentrality) ;  
+
+    //Reaction plane is defined in the range (0;pi)
+    //We have 10 bins
+    irp=Int_t(10.*(rpFull)/TMath::Pi());
+    if(irp>9)irp=9 ;
+    
   
  
   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",4.5) ;
   //All event selections done
   FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
-  //Reaction plane is defined in the range (0;pi)
-  //We have 10 bins
-    
   
-  Int_t irp=Int_t(10.*(rpFull)/TMath::Pi());
-  if(irp>9)irp=9 ;
 
   if(!fPHOSEvents[zvtx][fCenBin][irp]) 
     fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
