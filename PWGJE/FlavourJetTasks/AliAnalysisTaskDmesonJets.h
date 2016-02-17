@@ -59,6 +59,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 {
  public:
 
+  typedef AliJetContainer::EJetType_t EJetType_t;
+  typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
+  typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
+
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi };
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth };
   enum EMesonOrigin_t {
@@ -109,6 +113,50 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     void Print() const;
   };
 
+  struct AliJetDefinition {
+    AliJetDefinition() :
+      fJetType(AliJetContainer::kChargedJet),
+      fRadius(0.4),
+      fJetAlgo(AliJetContainer::antikt_algorithm),
+      fRecoScheme(AliJetContainer::pt_scheme),
+      fDmesonJets()
+    {}
+
+    AliJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco) :
+      fJetType(type),
+      fRadius(r),
+      fJetAlgo(algo),
+      fRecoScheme(reco),
+      fDmesonJets()
+    {}
+
+    AliJetDefinition(const AliJetDefinition &source) :
+      fJetType(source.fJetType),
+      fRadius(source.fRadius),
+      fJetAlgo(source.fJetAlgo),
+      fRecoScheme(source.fRecoScheme),
+      fDmesonJets()
+    {}
+
+    AliJetDefinition& operator=(const AliJetDefinition& source) { new (this) AliJetDefinition(source); return *this; }
+
+    const char*               GetName() const;
+
+    EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
+    Double_t                  fRadius        ; ///<  Jet radius
+    EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
+    ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
+    vector<AliDmesonJetInfo>  fDmesonJets    ; //!<! Array containing the D meson jets
+
+    friend bool        operator< (const AliJetDefinition& lhs, const AliJetDefinition& rhs);
+    friend inline bool operator> (const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return rhs < lhs    ; }
+    friend inline bool operator<=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs > rhs) ; }
+    friend inline bool operator>=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs < rhs) ; }
+
+    friend bool        operator==(const AliJetDefinition& lhs, const AliJetDefinition& rhs);
+    friend inline bool operator!=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs == rhs); }
+  };
+
   /// \class AnalysisEngine
   /// \brief Struct that encapsulates analysis parameters
   ///
@@ -135,9 +183,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     void SetRejectedOriginMap(UInt_t m)             { fRejectedOrigin = m    ; }
     void SetAcceptedDecayMap(UInt_t m)              { fAcceptedDecay  = m    ; }
 
-    const char* GetName(Int_t i=-1) const;
+    const char* GetName() const;
+    const char* GetName(const AliJetDefinition& jetDef) const;
 
-    void AddJetRadius(Float_t r);
+    AliJetDefinition* AddJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
+    AliJetDefinition* AddJetDefinition(const AliJetDefinition& def);
+    std::list<AliJetDefinition>::iterator FindJetDefinition(const AliJetDefinition& eng);
 
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
@@ -161,11 +212,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Double_t                           fMinMass               ; ///<  Min mass in histogram axis
     Double_t                           fMaxMass               ; ///<  Max mass in histogram axis
     AliRDHFCuts                       *fRDHFCuts              ; ///<  D meson candidates cuts
-    vector<Float_t>                    fJetRadii              ; ///<  List of jet radii
     UInt_t                             fRejectedOrigin        ; ///<  Bit mask with D meson origins that are rejected
     UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted
     Bool_t                             fInhibit               ; ///<  Inhibit the task
-    vector< vector<AliDmesonJetInfo> > fDmesonJets            ; //!<! D meson jet candidates
+    list<AliJetDefinition>             fJetDefinitions        ; //!<! Jet definitions
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer       *fMCContainer           ; //!<! MC particle container
     AliHFTrackContainer               *fTrackContainer        ; //!<! Track container
@@ -188,7 +238,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Bool_t              ExtractRecoDecayAttributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractD0Attributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractDstarAttributes(const AliAODRecoCascadeHF* DstarCand, AliDmesonJetInfo& DmesonJet, UInt_t i);
-    Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, Int_t ir);
+    Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliJetDefinition& jetDef);
 
     /// \cond CLASSIMP
     ClassDef(AnalysisEngine, 1);
@@ -199,8 +249,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonJets(const char* name);
   virtual ~AliAnalysisTaskDmesonJets();
 
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, Double_t jetradius, TString cutfname = "");
-  std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AliAnalysisTaskDmesonJets::AnalysisEngine& eng);
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString cutfname = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, const AliJetDefinition& jetDef, TString cutfname = "");
+  std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AnalysisEngine& eng);
 
   void SetShowPositionD(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kPositionD         : fEnabledAxis & ~kPositionD         ; }
   void SetShowInvMass(Bool_t b = kTRUE)           { fEnabledAxis = b ?  fEnabledAxis | kInvMass           : fEnabledAxis & ~kInvMass           ; }
