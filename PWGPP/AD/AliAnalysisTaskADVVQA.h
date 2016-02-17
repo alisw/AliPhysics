@@ -17,6 +17,7 @@ class TH2F;
 class TH3F;
 class TF1;
 class AliADCalibData;
+class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -61,11 +62,12 @@ private:
   Int_t        fOldRun;
   void	       SetCalibData();
   AliADCalibData* fCalibData;      // calibration data
+  AliAnalysisUtils* fAnalysisUtils;
    
   AliAnalysisTaskADVVQA(const AliAnalysisTaskADVVQA&);            // not implemented
   AliAnalysisTaskADVVQA& operator=(const AliAnalysisTaskADVVQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADVVQA, 4);
+  ClassDef(AliAnalysisTaskADVVQA, 5);
 };
 
 #endif
