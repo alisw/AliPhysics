@@ -977,6 +977,34 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   
 }
 
+THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const char *varTagValue){
+  //
+  // Add metadata infromation as user info to the tree - see https://alice.its.cern.ch/jira/browse/ATO-290
+  // TTree metdata are used for the Drawing methods in the folling drawing functions
+  /*
+    Supported metadata:
+    - <varName>.AxisTitle
+    - <varName>.Legend
+    - <varname>.Color
+    - <varname>.MarkerStyle
+    This metadata than can be used by the TStatToolkit
+    - TStatToolkit::MakeGraphSparse
+    - TStatToolkit::MakeGraphErrors
+   */
+  // 
+  if (!tree) return kFALSE;
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (!metaData == 0){  
+    metaData=new THashList;
+    metaData->SetName("metaTable");
+    tree->GetUserInfo()->AddLast(metaData);
+  } 
+  if (varTagName!=NULL && varTagValue!=NULL){
+    metaData->AddLast(new TNamed(varTagName,varTagValue));
+  }
+  return metaData;
+}
+
 
 TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
   //
@@ -1099,6 +1127,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
 //
 // functions used for the trending
 //
+
 
 Int_t  TStatToolkit::MakeStatAlias(TTree * tree, const char * expr, const char * cut, const char * alias) 
 {
