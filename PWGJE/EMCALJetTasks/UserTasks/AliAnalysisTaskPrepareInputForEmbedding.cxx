@@ -69,7 +69,7 @@ void AliAnalysisTaskPrepareInputForEmbedding::UserCreateOutputObjects(){
    fJetDetL  = new TLorentzVector();
    fJetPartL = new TLorentzVector();
    
-   fTreeJets = new TTree("fTreeJet", "fTreeJet");
+   fTreeJets = new TTree(Form("fTreeJet%s%s", fLeadingJetOnly ? "Lj" : "", fHardCoreTag ? "HC" : ""), "fTreeJet");
    //Important! 'dot' after the name needed -- see TTree doc! otherwise the objects in the branches have all the same name and the output cannot be properly retrieved (only with the TBrowser)
    if(fLeadingJetOnly){
       fTreeJets->Branch("fJetDetL.", fJetDetL);
