@@ -19,7 +19,7 @@ Topology::Topology():TObject(), fPattern(), fWordLength(0), fWord(0x0), fUID(0),
   for(Int_t i=0; i<kFitLength; i++) fArrFit[i]=0;
 }
 
-Topology::Topology(const AliITSUClusterPix &cluster):TObject(){//UniqueID of the argument must already have been set
+Topology::Topology(const AliITSMFTClusterPix &cluster):TObject(){//UniqueID of the argument must already have been set
   fPattern.Clear();
   fRs = cluster.GetPatternRowSpan();
   fCs = cluster.GetPatternColSpan();
@@ -34,7 +34,7 @@ Topology::Topology(const AliITSUClusterPix &cluster):TObject(){//UniqueID of the
     for(Int_t ic=0;ic<fCs;ic++){
       if(cluster.TestPixel(ir,ic)){
 	fPattern.SetBitNumber(ir*fCs+ic);
-	fFiredPixels++;
+	tempFiredPixels++;
 	tempxCOG+=ir;
 	tempzCOG+=ic;
       }
@@ -190,7 +190,7 @@ Topology::Topology(const Topology &topo):TObject(),fPattern(topo.GetPattern()){
   fFreq = topo.GetFreq();
   fCounts = topo.GetCounts();
   fHash = topo.GetHash();
-  fHash = topo.GetGroupID();
+  fGroupID = topo.GetGroupID();
   fFiredPixels = topo.GetFiredPixels();
   fxCOGPix = topo.GetxCOGPix();
   fzCOGPix = topo.GetzCOGPix();

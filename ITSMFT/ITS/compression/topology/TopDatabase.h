@@ -1,10 +1,14 @@
 #ifndef TOPDATABASE_H
 #define TOPDATABASE_H
 #include "TObject.h"
+#include "TBits.h"
+#include "./Topology.h"
+#include <Riostream.h>
+#include "TArrayI.h"
+#include "TArrayF.h"
 #include "TObjArray.h"
+#include "AliITSMFTClusterPix.h"
 
-class AliITSUClusterPix;
-class TBits;
 
 class TopDatabase : public TObject {
 
@@ -12,13 +16,12 @@ class TopDatabase : public TObject {
 
   enum SortMode_t{kFrequency=0, kHashes=1};//fMode
   enum FitIndex_t{kDeltaZmean=0, kDeltaZmeanErr=1, kDeltaXmean=2, kDeltaXmeanErr=3, kDeltaZsigma=4, kDeltaZsigmaErr=5,
-		  kDeltaXsigma=6, kDeltaXsigmaErr=7, kChi2z=8, kChi2x=9, kNDFx=10, kNDFz=11, kFitLength=12}; //position in Topology fArrFit 
-  
+		  kDeltaXsigma=6, kDeltaXsigmaErr=7, kChi2z=8, kChi2x=9, kNDFx=10, kNDFz=11, kFitLength=12}; //position in Topology fArrFit
+
   TopDatabase();
   TopDatabase(TopDatabase &ogg);
   ~TopDatabase();
-  void AccountTopology(const AliITSUClusterPix &cluster, Float_t dX, Float_t dZ, Float_t alpha, Float_t beta);
-  void ExpandDB(const TBits* patt);
+  void AccountTopology(const AliITSMFTClusterPix &cluster, Float_t dX, Float_t dZ, Float_t alpha, Float_t beta);
 
   Int_t GetN() const {return fN;}
   Int_t GetTotClusters() const {return fTotClusters;}
@@ -34,8 +37,9 @@ class TopDatabase : public TObject {
   void SetThreshold(Float_t thr);
   void Grouping(Int_t NumberofShiftXbins, Int_t NumberofShiftZbins);//return patterns over threshold
   void SetNmax(Int_t a) { fNmax = a;}
-  Int_t FromCluster2GroupID(const AliITSUClusterPix &cl) const;
-  
+  Int_t FromCluster2GroupID(const AliITSMFTClusterPix &cl) const;
+  Bool_t TestChain2Ways(const AliITSMFTClusterPix &cl) const;
+
 
  private:
   Int_t fN; //length of arrays
@@ -47,8 +51,8 @@ class TopDatabase : public TObject {
   Int_t fNmax;//patterns above this number (included) belong to a "junk" bin
   TObjArray fArrHisto;
   TObjArray* GetArrTopologies() {return &fArrTopologies;}
-  void ExpandDB(TBits* patt); 
-  
+  void ExpandDB(const TBits* patt);
+
 
 ClassDef(TopDatabase,1)
 

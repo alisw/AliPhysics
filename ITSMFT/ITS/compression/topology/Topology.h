@@ -1,10 +1,11 @@
 #ifndef TOPOLOGY_H
 #define TOPOLOGY_H
 #include "TObject.h"
-
-class TH2F;
-class TBits;
-class AliITSUClusterPix;
+#include "TBits.h"
+#include "AliITSMFTClusterPix.h"
+#include "TH2F.h"
+#include "TH1F.h"
+#include <Riostream.h>
 
 class Topology :public TObject {
 
@@ -14,7 +15,7 @@ class Topology :public TObject {
 		  kDeltaXsigma=6, kDeltaXsigmaErr=7, kChi2z=8, kChi2x=9, kNDFx=10, kNDFz=11, kFitLength=12}; //position in fArrFit
 
   Topology();
-  Topology(const AliITSUClusterPix &cluster);
+  Topology(const AliITSMFTClusterPix &cluster);
   Topology(const TBits &top2copy);//UniqueID of the argument must already have been set
   Topology(const Topology &topo);
   virtual ~Topology();
