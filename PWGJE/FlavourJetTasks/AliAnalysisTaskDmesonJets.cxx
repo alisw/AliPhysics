@@ -45,6 +45,85 @@
 
 #include "AliAnalysisTaskDmesonJets.h"
 
+// Definitions of class AliAnalysisTaskDmesonJets::AliDmesonJetInfo
+
+/// Reset all fields to their default values
+void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
+{
+  fD.SetPtEtaPhiE(0,0,0,0);
+  fSoftPionPt = 0;
+  fInvMass2Prong = 0;
+  fJet.SetPtEtaPhiE(0,0,0,0);
+  fJetLeadingPt = 0;
+  fJetNConstituents = 0;
+  fDaughterDistances.Reset();
+}
+
+/// Prints the content of this object in the standard output.
+void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Print() const
+{
+  Printf("Printing D Meson Jet object.");
+  Printf("D Meson: pT = %.3f, eta = %.3f, phi = %.3f, inv. mass = %.3f", fD.Pt(), fD.Eta(), fD.Phi_0_2pi(), fD.M());
+  Printf("Soft pion pT: %.3f. 2-Prong Invariant mass = %.3f", fSoftPionPt, fInvMass2Prong);
+  Printf("Jet: pT = %.3f, eta = %.3f, phi = %.3f", fJet.Pt(), fJet.Eta(), fJet.Phi_0_2pi());
+  Printf("Leading pT = %.3f. Jet N Consituents = %d", fJetLeadingPt, fJetNConstituents);
+}
+
+// Definitions of class AliAnalysisTaskDmesonJets::AliJetDefinition
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskDmesonJets::AliJetDefinition);
+/// \endcond
+
+/// This is the default constructor, used for ROOT I/O purposes.
+AliAnalysisTaskDmesonJets::AliJetDefinition::AliJetDefinition() :
+  TObject(),
+  fJetType(AliJetContainer::kChargedJet),
+  fRadius(0),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
+  fRecoScheme(AliJetContainer::pt_scheme),
+  fDmesonJets()
+{
+}
+
+/// Default constructor
+///
+/// \param type Jet type (full, charged, neutral)
+/// \param r    Jet resolution parameter
+/// \param algo Jet algorithm (anit-kt, kt,...)
+/// \param reco Jet recombination scheme (pt_scheme, E_scheme,...)
+AliAnalysisTaskDmesonJets::AliJetDefinition::AliJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco) :
+  TObject(),
+  fJetType(type),
+  fRadius(r),
+  fJetAlgo(algo),
+  fRecoScheme(reco),
+  fDmesonJets()
+{
+}
+
+/// Copy constructor
+///
+/// \param source Reference to an AliJetDefinition object to copy from
+AliAnalysisTaskDmesonJets::AliJetDefinition::AliJetDefinition(const AliJetDefinition &source) :
+  TObject(),
+  fJetType(source.fJetType),
+  fRadius(source.fRadius),
+  fJetAlgo(source.fJetAlgo),
+  fRecoScheme(source.fRecoScheme),
+  fDmesonJets()
+{
+}
+
+/// Assignment operator
+///
+/// \param source Reference to an AliJetDefinition object to copy from
+AliAnalysisTaskDmesonJets::AliJetDefinition& AliAnalysisTaskDmesonJets::AliJetDefinition::operator=(const AliJetDefinition& source)
+{
+  new (this) AliJetDefinition(source);
+  return *this;
+}
+
 /// Generate a name for this jet definition
 const char* AliAnalysisTaskDmesonJets::AliJetDefinition::GetName() const
 {
@@ -54,8 +133,6 @@ const char* AliAnalysisTaskDmesonJets::AliJetDefinition::GetName() const
 
   return name.Data();
 }
-
-// Definitions of class AliAnalysisTaskDmesonJets::AliJetDefinition
 
 /// Compares 2 jet definitions.
 /// The ordering is based on: jet type, radius, algorithm and recombination scheme, in this order
@@ -92,30 +169,6 @@ bool operator==(const AliAnalysisTaskDmesonJets::AliJetDefinition& lhs, const Al
   if (lhs.fJetAlgo != rhs.fJetAlgo) return false;
   if (lhs.fRecoScheme != rhs.fRecoScheme) return false;
   return true;
-}
-
-// Definitions of class AliAnalysisTaskDmesonJets::AliDmesonJetInfo
-
-/// Reset all fields to their default values
-void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
-{
-  fD.SetPtEtaPhiE(0,0,0,0);
-  fSoftPionPt = 0;
-  fInvMass2Prong = 0;
-  fJet.SetPtEtaPhiE(0,0,0,0);
-  fJetLeadingPt = 0;
-  fJetNConstituents = 0;
-  fDaughterDistances.Reset();
-}
-
-/// Prints the content of this object in the standard output.
-void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Print() const
-{
-  Printf("Printing D Meson Jet object.");
-  Printf("D Meson: pT = %.3f, eta = %.3f, phi = %.3f, inv. mass = %.3f", fD.Pt(), fD.Eta(), fD.Phi_0_2pi(), fD.M());
-  Printf("Soft pion pT: %.3f. 2-Prong Invariant mass = %.3f", fSoftPionPt, fInvMass2Prong);
-  Printf("Jet: pT = %.3f, eta = %.3f, phi = %.3f", fJet.Pt(), fJet.Eta(), fJet.Phi_0_2pi());
-  Printf("Leading pT = %.3f. Jet N Consituents = %d", fJetLeadingPt, fJetNConstituents);
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AnalysisEngine
@@ -1060,13 +1113,16 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   TString htitle;
   TH2* h = 0;
 
+  ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for task '%s' (%lu analysis engines)", GetName(), fAnalysisEngines.size());
   for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
     AnalysisEngine* param = &(*it);
+    ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param->GetName(), param->fJetDefinitions.size());
 
     param->fHistManager = &fHistManager;
 
     for (std::list<AliJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
       AliJetDefinition* jetDef = &(*itdef);
+      ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
 
       fHistManager.CreateHistoGroup(param->GetName(*jetDef));
 
