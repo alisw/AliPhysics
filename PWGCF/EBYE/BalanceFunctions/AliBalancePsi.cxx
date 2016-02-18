@@ -511,7 +511,6 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 
       // pT,Assoc < pT,Trig (if momentum ordering is switched ON)
       if(fMomentumOrdering){
-	Printf("DO ORDRING");
 	if(firstPt < secondPt[j]) 
 	  continue;
       }
