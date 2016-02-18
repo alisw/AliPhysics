@@ -640,13 +640,19 @@ Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
 {
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
 
-  if(pJetSq>1e-6)
-    return (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz())/pJetSq;
-  else {
-    AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq));
-    return -1;
+  if (pJetSq < 1e-6) {
+    AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %.3f",GetName(), pJetSq));
+    return 0;
   }
 
+  Double_t z = (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz()) / pJetSq;
+
+  if (z < 0) {
+    AliWarning(Form("%s: z  = %.3ff < 0, returning 0...",GetName(), z));
+    z = 0;
+  }
+
+  return z;
 }
 
 //________________________________________________________________________
