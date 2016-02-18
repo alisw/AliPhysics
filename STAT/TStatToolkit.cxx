@@ -992,7 +992,7 @@ THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const 
     - TStatToolkit::MakeGraphErrors
    */
   // 
-  if (!tree) return kFALSE;
+  if (!tree) return NULL;
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
   if (!metaData == 0){  
     metaData=new THashList;
