@@ -531,7 +531,7 @@ validateLog()
 
 mergeSysLogs()
 {
-  if [[ $# -lt 2 ]]; then
+  if [[ $# -lt 1 ]]; then
     echo 'merge syslogs to an output file'
     echo 'usage:'
     echo 'mergeSysLogs outputFile inputFile1 inputFile2 ...'
@@ -543,16 +543,38 @@ mergeSysLogs()
   local i
   local x
   local runNumber
+  local fsize
   outputFile=${1}
   shift
   inputFiles="$@"
-  i=0
-  parseListOfFiles ${inputFiles[@]} | while IFS= read x; do
-    runNumber=$(guessRunNumber "${x}")
-    [[ -z ${runNumber} ]] && runNumber=0
-    gawk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' "${x}"
-    (( i++ ))
-  done > "${outputFile}"
+  fileNumber=0
+  parseListOfFiles ${inputFiles[@]} | while IFS= read logFile; do
+    if [[ $fileNumber == 0 ]]; then
+      tableHeader=$( head -n 1 "$logFile" )
+      tableHeader+=":year/I:period/C:run/I:pass/C:line/D:itree/D:nstamps/D:treeName/C"
+      echo $tableHeader
+    fi
+
+    guessRunData "$logFile"
+    [[ -z "$year" ]] && year=0
+    [[ -z "$period" ]] && period=0
+    [[ -z $runNumber ]] && runNumber=0
+    [[ -z "$pass" ]] && pass=0
+    
+    nLines=$(wc -l 2>/dev/null < "$logFile"); ((nLines--))
+
+    lineNumber=-1
+    while read line; do
+      ((lineNumber++))
+      [[ $lineNumber == 0 ]] && continue
+      
+      extraBranches="$year $period $runNumber $pass $lineNumber $fileNumber $nLines"
+      echo "$line $extraBranches"
+
+    done < "$logFile"
+    
+    (( fileNumber++ ))
+  done > "$outputFile"
   return 0
 }
 
