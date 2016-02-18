@@ -1,5 +1,4 @@
 AliAnalysisTaskCFTree *AddTaskCFTree(
-    Int_t analysisMode = 0,
     UInt_t selectionBit = AliVEvent::kMB,
     Double_t zVtxMax = 10,
     Double_t etaMax = 1,
@@ -14,7 +13,6 @@ AliAnalysisTaskCFTree *AddTaskCFTree(
   }  
   
   AliAnalysisTaskCFTree* ana = new AliAnalysisTaskCFTree();
-  ana->SetMode(analysisMode);
   ana->SetEventSelectionBit(selectionBit);
   ana->SetZVertex(zVtxMax);
   ana->SetTrackEtaCut(etaMax);
