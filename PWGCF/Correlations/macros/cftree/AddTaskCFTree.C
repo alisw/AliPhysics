@@ -23,8 +23,8 @@ AliAnalysisTaskCFTree *AddTaskCFTree(
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histos", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("events", TTree::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (ana, 0, coutput1);
-  mgr->ConnectOutput (ana, 1, coutput2);
+  mgr->ConnectOutput (ana, 1, coutput1);
+  mgr->ConnectOutput (ana, 2, coutput2);
   return ana;
 }
 
