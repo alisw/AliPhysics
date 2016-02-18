@@ -51,10 +51,10 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
       Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
       Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-
+      Float_t time = (timebinOffset*TIMEBINWITH)-fL1Phase;
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
-	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase);
+	  return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time);
 	}
       else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
 	{
@@ -65,8 +65,8 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
 	  Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	  Int_t ndf = last - first - 1; // nsamples - 2
-	  return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase,
-				    timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	  return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time,
+				    (int)time, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	} // ampcut
     } // bunch index    
 
