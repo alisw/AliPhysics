@@ -173,7 +173,7 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
     bRemExoticClus  = kTRUE;
     iNonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected;
 
-    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, 0, "", 0., kFALSE);
+    AliEmcalClusterMaker *pClusterMakerTask = AddTaskEmcalClusterMaker(iNonLinFunct, bRemExoticClus, "usedefault", "", 0., kFALSE);
     pClusterMakerTask->GetClusterContainer(0)->SetClusPtCut(0.);
     pClusterMakerTask->GetClusterContainer(0)->SetClusECut(0.);
     pClusterMakerTask->SelectCollisionCandidates(kPhysSel);
@@ -220,13 +220,13 @@ AliAnalysisManager* runEMCalJetAnalysisNew(
 
   // Charged jet analysis
   if (bDoChargedJets) {
-    AliEmcalJetTask *pChJetTask = AddTaskEmcalJet("usedefault", "", 1, kJetRadius, AliJetContainer::kChargedJet, 0.15, 0, kGhostArea, AliJetContainer::pt_scheme, "Jet", 0., kFALSE, kFALSE);
+    AliEmcalJetTask *pChJetTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, kJetRadius, AliJetContainer::kChargedJet, 0.15, 0, kGhostArea, AliJetContainer::pt_scheme, "Jet", 0., kFALSE, kFALSE);
     pChJetTask->SelectCollisionCandidates(kPhysSel);
   }
 
   // Full jet analysis
   if (bDoFullJets) {
-    AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet("usedefault", "usedefault", 1, kJetRadius, AliJetContainer::kFullJet, 0.15, 0.30, kGhostArea, AliJetContainer::pt_scheme, "Jet", 0., kFALSE, kFALSE);
+    AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, kJetRadius, AliJetContainer::kFullJet, 0.15, 0.30, kGhostArea, AliJetContainer::pt_scheme, "Jet", 0., kFALSE, kFALSE);
     pFuJetTask->SelectCollisionCandidates(kPhysSel);
   }
 
