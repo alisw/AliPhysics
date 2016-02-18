@@ -104,7 +104,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "TPCmomentum"            ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()      , aodTrack->GetTPCmomentum()          );
     else if(varString == "TPCTgl"                 ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl()           , aodTrack->GetTPCTgl()               );
     else if(varString == "TOFsignal"              ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignal()        , aodTrack->GetTOFsignal()            );
-    else if(varString == "integratedLenght"       ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLenght() , aodTrack->GetIntegratedLength()     );
+    else if(varString == "integratedLength"       ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLenght() , aodTrack->GetIntegratedLength()     );
     else if(varString == "TOFsignalTuned"         ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned()   , aodTrack->GetTOFsignalTunedOnData() );
     else if(varString == "HMPIDsignal"            ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetHMPIDsignal()      , aodTrack->GetHMPIDsignal()          );
     else if(varString == "HMPIDoccupancy"         ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetHMPIDoccupancy()   , aodTrack->GetHMPIDoccupancy()       );
