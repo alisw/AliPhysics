@@ -29,10 +29,14 @@ class AliJetContainer : public AliParticleContainer {
   };
 
   enum EJetAlgo_t {
-    kt_algorithm            = 0,
-    cambridge_algorithm     = 1,
-    antikt_algorithm        = 2,
-    undefined_jet_algorithm = 999
+    kt_algorithm                    = 0,
+    antikt_algorithm                = 1,
+    cambridge_algorithm             = 2,
+    genkt_algorithm                 = 3,
+    cambridge_for_passive_algorithm = 11,
+    genkt_for_passive_algorithm     = 13,
+    plugin_algorithm                = 99,
+    undefined_jet_algorithm         = 999
   };
 
   enum ERecoScheme_t {

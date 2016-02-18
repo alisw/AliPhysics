@@ -663,13 +663,18 @@ fastjet::JetAlgorithm AliEmcalJetTask::ConvertToFJAlgo(EJetAlgo_t algo)
   switch(algo) {
   case AliJetContainer::kt_algorithm:
     return fastjet::kt_algorithm;
-
-  case AliJetContainer::cambridge_algorithm:
-    return fastjet::cambridge_algorithm;
-
   case AliJetContainer::antikt_algorithm:
     return fastjet::antikt_algorithm;
-
+  case AliJetContainer::cambridge_algorithm:
+    return fastjet::cambridge_algorithm;
+  case AliJetContainer::genkt_algorithm:
+    return fastjet::genkt_algorithm;
+  case AliJetContainer::cambridge_for_passive_algorithm:
+    return fastjet::cambridge_for_passive_algorithm;
+  case AliJetContainer::genkt_for_passive_algorithm:
+    return fastjet::genkt_for_passive_algorithm;
+  case AliJetContainer::plugin_algorithm:
+    return fastjet::plugin_algorithm;
   case AliJetContainer::undefined_jet_algorithm:
     return fastjet::undefined_jet_algorithm;
 

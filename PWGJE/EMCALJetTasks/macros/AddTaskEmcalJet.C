@@ -1,13 +1,13 @@
 AliEmcalJetTask* AddTaskEmcalJet(
   const char *nTracks                        = "usedefault",
   const char *nClusters                      = "usedefault",
-  const Int_t algo                           = 1,                // 1 = AKT, 0 = KT
+  const AliJetContainer::EJetAlgo_t jetAlgo  = AliJetContainer::antikt_algorithm,
   const Double_t radius                      = 0.4,
   const AliJetContainer::EJetType_t jetType  = AliJetContainer::kFullJet,
   const Double_t minTrPt                     = 0.15,
   const Double_t minClPt                     = 0.30,
   const Double_t ghostArea                   = 0.005,
-  const AliJetContainer::ERecoScheme_t recoSch = AliJetContainer::pt_scheme,
+  const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme,
   const char *tag                            = "Jet",
   const Double_t minJetPt                    = 0.,
   const Bool_t lockTask                      = kTRUE,
@@ -103,15 +103,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
-  AliJetContainer::EJetAlgo_t jetAlgo;
-  if (algo == 0) {
-    jetAlgo = AliJetContainer::kt_algorithm;
-  }
-  else {
-    jetAlgo = AliJetContainer::antikt_algorithm;
-  }
-
-  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, recoSch, radius, partCont, clusCont, tag);
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
 
   Printf("Jet task name: %s", name.Data());
  
@@ -121,7 +113,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
   jetTask->SetJetType(jetType);
   jetTask->SetJetAlgo(jetAlgo);
-  jetTask->SetRecombScheme(recoSch);
+  jetTask->SetRecombScheme(reco);
   jetTask->SetRadius(radius);
   if (partCont) jetTask->AdoptParticleContainer(partCont);
   if (clusCont) jetTask->AdoptClusterContainer(clusCont);
