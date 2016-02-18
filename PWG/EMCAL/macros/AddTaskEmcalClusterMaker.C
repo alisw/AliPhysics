@@ -30,7 +30,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(const UInt_t nonLinFunct   = AliE
   if (inputDataType == "ESD")
     nCells = "EMCALCells";
 
-  if (strcmp(nClusters,"usedefault")==0 || nClusters==0) {
+  if (nClusters==0 || strcmp(nClusters,"usedefault")==0) {
     if (inputDataType != "ESD")
       nClusters = "caloClusters";
     else 
