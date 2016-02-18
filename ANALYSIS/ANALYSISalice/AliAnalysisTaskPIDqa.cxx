@@ -69,8 +69,8 @@ fListQAitsPureSA(0x0),
 fListQAtpc(0x0),
 fListQAtpcBasic(0x0),
 fListQAtpcMCtruth(0x0),
-fListQAtpcHybrid(0x0),
-fListQAtpcOROChigh(0x0),
+//fListQAtpcHybrid(0x0), // -> not used and commented for now
+//fListQAtpcOROChigh(0x0), // -> not used and commented for now
 fListQAtpcV0(0x0),
 fListQAtrd(0x0),
 fListQAtrdNsig(0x0),
@@ -105,8 +105,8 @@ fListQAitsPureSA(0x0),
 fListQAtpc(0x0),
 fListQAtpcBasic(0x0),
 fListQAtpcMCtruth(0x0),
-fListQAtpcHybrid(0x0),
-fListQAtpcOROChigh(0x0),
+//fListQAtpcHybrid(0x0), // -> not used and commented for now
+//fListQAtpcOROChigh(0x0), // -> not used and commented for now
 fListQAtpcV0(0x0),
 fListQAtrd(0x0),
 fListQAtrdNsig(0x0),
@@ -249,7 +249,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQA->Add(fListQAinfo);
 
   SetupITSqa();
-//  SetupTPCqa(kFALSE, kTRUE, kFALSE);
+//  SetupTPCqa(kFALSE, kTRUE, kFALSE); // is called in first call of FillTPCqa
   SetupTRDqa();
   SetupTOFqa();
   SetupT0qa();
@@ -447,10 +447,22 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
   // Fill PID qa histograms for the TPC: Fill the histograms for the TPC signal for different settings
   //
 
+  // List of possible scenarios with the numbering scheme (for information only):
+  // scenario ==  0 : Basic
+  // scenario ==  1 : MCtruth
+  // scenario ==  2 : Hybrid (only for LHC11h) -> not used and commented now
+  // scenario ==  3 : OROChigh (only for LHC11h) -> not used and commented now
+  // scenario == 40 : V0 - Electrons
+  // scenario == 41 : V0 - Muons (not implemented)
+  // scenario == 42 : V0 - Pions
+  // scenario == 43 : V0 - Kaons (not filled)
+  // scenario == 44 : V0 - Protons
+
   AliMCEvent *eventMC=MCEvent();  // MC event for MC truth PID
 
   Double_t mom=0.;      // track momentum
   Double_t eta=0.;      // track eta
+  Double_t phi=0.;      // track phi
   Double_t sig=0.;      // TPC dE/dx signal
   Double_t sigStd=0.;         // TPC dE/dx signal (standard = all ROCs)
   Double_t sigIROC=0.;        // TPC dE/dx signal (IROC) 
@@ -461,11 +473,15 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
   Int_t pdgCode=0;      // pdgcode of MC track for MC truth scenario
   Int_t pdgCodeAbs=0;   // absolute value of pdgcode to get both particles and antiparticles
   Int_t iSigMax=1;      // number of TPC signals (std = 1, set automatically higher if available)
-  Int_t nSpecies=0;     // number of particle species under study
+  Int_t nSpecies=0;     // number of particle species under study (can be changed, e.g. in case of V0s)
   Int_t count=0;        // counter for the number of plot sets for all species (i.e. nsigma vs. p, eta and mult)
+  Int_t count2=0;       // counter of extra nsigma plots (only for some scenarios)
+  Int_t count3=0;       // counter of extra nsigma vs. p plots (only V0 scenario)
+  Int_t count4=0;       // yet another counter for the V0 scenario
 
   mom=track->GetTPCmomentum();
   eta=track->Eta();
+  phi=track->Phi();
 //   sigStd=track->GetTPCsignal();
   sigStd=fPIDResponse->GetTPCResponse().GetTrackdEdx(track);
 
@@ -475,10 +491,19 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
   if (scenario > 39) nSpecies=(Int_t)AliPID::kSPECIES;
   else nSpecies=(Int_t)AliPID::kSPECIESC;
 
+  // nSpecies is changed in case of V0, due to Muons and Kaons not being filled
+  if (scenario>39) nSpecies=nSpecies-2;
+
   // Set number of plot sets for all species
   // (i.e. only nsigma vs. p => count=1; also vs. eta and mult => count=3)
-  if ( scenario == 1 || scenario > 39) count=3;
+  if ( scenario == 1 || scenario > 39 ) count=3; // MCtruth (scenario==1) and V0 (scenario>39)
   else count=1;
+
+  // Set number of extra nsigma plots (only for some scenarios)
+  // (i.e. nsigma vs. eta and mult separately for MIPpions and for electrons)
+//  if ( scenario == 0 || scenario == 2 || scenario == 3 ) count2=4; // Basic, Hybrid, OROClong
+  if ( scenario == 0 ) count2=4; // Basic
+  else count2=0;
 
   // Get MC track ( --> can be deleted if TPC signal is NOT filled for scenario=1 (MC truth)
   if (eventMC) {
@@ -502,30 +527,60 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
   }
 
 
-  // TPC signal for all particles vs. momentum (standard, IROC, OROCmedium, OROClong)
-  TH2 *h1std=(TH2*)sublist->At(count*nSpecies+4); 
-  if (h1std) {
-    h1std->Fill(mom,sigStd);
+  // TPC signal vs. momentum (for different particle species (V0s) or all particles (other scenarios))
+  if (scenario > 39) {
+    // TPC signal for different particle species vs. momentum (standard, IROC, OROCmedium, OROClong)
+    count3=8;
+    if (scenario == 40) count4=0;
+    else if (scenario == 42) count4=4;
+    else if (scenario == 44) count4=8;
+    TH2 *h1std=(TH2*)sublist->At(count*nSpecies+count2+count4); 
+    if (h1std) {
+      h1std->Fill(mom,sigStd);
+    }
+
+    TH2 *h1iroc=(TH2*)sublist->At(count*nSpecies+count2+count4+1);
+    if ( h1iroc && sigIROC ) {
+      h1iroc->Fill(mom,sigIROC);
+    }
+
+    TH2 *h1orocm=(TH2*)sublist->At(count*nSpecies+count2+count4+2);
+    if  (h1orocm && sigOROCmedium ) {
+      h1orocm->Fill(mom,sigOROCmedium);
+    }
+
+    TH2 *h1orocl=(TH2*)sublist->At(count*nSpecies+count2+count4+3);
+    if ( h1orocl && sigOROClong ) {
+      h1orocl->Fill(mom,sigOROClong);
+    }
+  }
+  else {
+    // TPC signal for all particles vs. momentum (standard, IROC, OROCmedium, OROClong)
+    TH2 *h1std=(TH2*)sublist->At(count*nSpecies+count2); 
+    if (h1std) {
+      h1std->Fill(mom,sigStd);
+    }
+
+    TH2 *h1iroc=(TH2*)sublist->At(count*nSpecies+count2+1);
+    if ( h1iroc && sigIROC ) {
+      h1iroc->Fill(mom,sigIROC);
+    }
+
+    TH2 *h1orocm=(TH2*)sublist->At(count*nSpecies+count2+2);
+    if  (h1orocm && sigOROCmedium ) {
+      h1orocm->Fill(mom,sigOROCmedium);
+    }
+
+    TH2 *h1orocl=(TH2*)sublist->At(count*nSpecies+count2+3);
+    if ( h1orocl && sigOROClong ) {
+      h1orocl->Fill(mom,sigOROClong);
+    }
   }
 
-  TH2 *h1iroc=(TH2*)sublist->At(count*nSpecies+5);
-  if ( h1iroc && sigIROC ) {
-    h1iroc->Fill(mom,sigIROC);
-  }
 
-  TH2 *h1orocm=(TH2*)sublist->At(count*nSpecies+6);
-  if  (h1orocm && sigOROCmedium ) {
-    h1orocm->Fill(mom,sigOROCmedium);
-  }
-
-  TH2 *h1orocl=(TH2*)sublist->At(count*nSpecies+7);
-  if ( h1orocl && sigOROClong ) {
-    h1orocl->Fill(mom,sigOROClong);
-  }
-
-
-  // - Beginn: MIP pions: TPC signal vs. eta, TPC signal vs. mult -
+  // - Beginn: MIP pions: TPC signal vs. eta, phi and  mult -
   if (mom>0.45 && mom<0.5 && sigStd>40 && sigStd<60) {
+   if (scenario < 40 || scenario == 42) { // if scenario is "V0" then only take pions
 
     Bool_t isPionMC=kTRUE;
 
@@ -540,9 +595,22 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
       else if (iSig==2) sig=sigOROCmedium;
       else if (iSig==3) sig=sigOROClong;
 
-      TH2 *h2=(TH2*)sublist->At(count*nSpecies+8+iSig);
+      TH2 *h2=(TH2*)sublist->At(count*nSpecies+count2+count3+4+iSig);
       if ( h2 && isPionMC ) {
         h2->Fill(eta,sig);
+      }
+    }
+
+    // MIP pions: TPC signal vs. phi (standard, IROC, OROCmedium, OROClong)
+    for (Int_t iSig=0; iSig<iSigMax; iSig++) {
+      if (iSig==0) sig=sigStd;
+      else if (iSig==1) sig=sigIROC;
+      else if (iSig==2) sig=sigOROCmedium;
+      else if (iSig==3) sig=sigOROClong;
+
+      TH2 *h2=(TH2*)sublist->At(count*nSpecies+count2+count3+8+iSig);
+      if ( h2 && isPionMC ) {
+        h2->Fill(phi,sig);
       }
     }
 
@@ -553,15 +621,17 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
       else if (iSig==2) sig=sigOROCmedium;
       else if (iSig==3) sig=sigOROClong;
 
-      TH2 *h3=(TH2*)sublist->At(count*nSpecies+12+iSig);
+      TH2 *h3=(TH2*)sublist->At(count*nSpecies+count2+count3+12+iSig);
       if ( h3 && isPionMC && mult > 0 ) {
         h3->Fill(mult,sig);
       }
     }
+   }
   } // - End: MIP pions -
 
-  // - Beginn: Electrons: TPC signal vs. eta, TPC signal vs. mult -
+  // - Beginn: Electrons: TPC signal vs. eta, phi and mult -
   if (mom>0.32 && mom<0.38 && eleLineDist>-10. && eleLineDist<15.) {
+   if (scenario < 40 || scenario == 40) { // if scenario is "V0" then only take electrons
 
     Bool_t isElectronMC=kTRUE;
 
@@ -576,9 +646,22 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
       else if (iSig==2) sig=sigOROCmedium;
       else if (iSig==3) sig=sigOROClong;
 
-      TH2 *h4=(TH2*)sublist->At(count*nSpecies+16+iSig);
+      TH2 *h4=(TH2*)sublist->At(count*nSpecies+count2+count3+16+iSig);
       if ( h4 && isElectronMC ) {
         h4->Fill(eta,sig);
+      }
+    }
+
+    // Electrons: TPC signal vs. phi (standard, IROC, OROCmedium, OROClong)
+    for (Int_t iSig=0; iSig<iSigMax; iSig++) {
+      if (iSig==0) sig=sigStd;
+      else if (iSig==1) sig=sigIROC;
+      else if (iSig==2) sig=sigOROCmedium;
+      else if (iSig==3) sig=sigOROClong;
+
+      TH2 *h4=(TH2*)sublist->At(count*nSpecies+count2+count3+20+iSig);
+      if ( h4 && isElectronMC ) {
+        h4->Fill(phi,sig);
       }
     }
 
@@ -589,11 +672,12 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
       else if (iSig==2) sig=sigOROCmedium;
       else if (iSig==3) sig=sigOROClong;
 
-      TH2 *h5=(TH2*)sublist->At(count*nSpecies+20+iSig);
+      TH2 *h5=(TH2*)sublist->At(count*nSpecies+count2+count3+24+iSig);
       if ( h5 && isElectronMC && mult > 0 ) {
         h5->Fill(mult,sig);
       }
     }
+   }
   } // - End: Electrons -
 
 }
@@ -605,6 +689,17 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
   // Fill PID qa histograms for the TPC: Fill the histograms for TPC Nsigma for different settings
   //
 
+  // List of possible scenarios with the numbering scheme (for information only):
+  // scenario ==  0 : Basic
+  // scenario ==  1 : MCtruth
+  // scenario ==  2 : Hybrid (only for LHC11h) -> not used and commented now
+  // scenario ==  3 : OROChigh (only for LHC11h) -> not used and commented now
+  // scenario == 40 : V0 - Electrons
+  // scenario == 41 : V0 - Muons (not implemented)
+  // scenario == 42 : V0 - Pions
+  // scenario == 43 : V0 - Kaons (not filled)
+  // scenario == 44 : V0 - Protons
+
   AliMCEvent *eventMC=MCEvent();  // MC event for MC truth PID
 
   Double_t mom=0.;      // track momentum
@@ -615,7 +710,9 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
   Int_t trackLabel=0;   // label of the AliVTrack to identify the corresponding MCtrack
   Int_t pdgCode=0;      // pdgcode of MC track for MC truth scenario
   Int_t pdgCodeAbs=0;   // absolute value of pdgcode to get both particles and antiparticles
-  Int_t nSpecies=0;     // number of particle species under study
+  Int_t nSpecies=0;     // number of particle species under study (can be changed, e.g. in case of V0s)
+  Int_t numberSpecies=0;   // number of particle species under study (stays constant for one scenario)
+  Int_t mvSpecie=0;     // "move Specie", needed for V0s, as Muons and Kaons are not filled
   Int_t count=0;        // counter for the number of plot sets for all species (i.e. vs. p, eta and mult)
 
   mom=track->GetTPCmomentum();
@@ -629,9 +726,15 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
   if (scenario > 39) nSpecies=(Int_t)AliPID::kSPECIES;
   else nSpecies=(Int_t)AliPID::kSPECIESC;
 
+  // numberSpecies always keeps the value obtained by AliPID::kSPECIES(C)
+  numberSpecies=nSpecies;
+
+  // nSpecies is changed in case of V0, due to Muons and Kaons not being filled
+  if (scenario>39) nSpecies=nSpecies-2;
+
   // Set number of plot sets for all species
   // (i.e. only vs. p => count=1; also vs. eta and mult => count=3)
-  if ( scenario == 1 || scenario > 39 ) count=3;
+  if ( scenario == 1 || scenario > 39 ) count=3; // MCtruth (scenario==1) and V0 (scenario>39)
   else count=1;
 
   // Get MC track
@@ -642,12 +745,8 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
     pdgCodeAbs=TMath::Abs(pdgCode);
   }
 
-
   // - Beginn: Nsigma vs. p, vs. eta and vs. multiplicity for different particle species -
-  for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie){
-
-    TH2 *h=(TH2*)sublist->At(ispecie);
-    if (!h) continue;
+  for (Int_t ispecie=0; ispecie<numberSpecies; ++ispecie){
 
     if (scenario == 1) {
       if ( ispecie == 0 && pdgCodeAbs != 11 ) continue;  // Electron
@@ -660,29 +759,45 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
       if ( ispecie == 7 && pdgCodeAbs != 1000020030 ) continue;  // Helium-3
       if ( ispecie == 8 && pdgCodeAbs != 1000020040 ) continue;  // Alpha
     }
-    else if (scenario > 39) {
-      if ( ispecie == 0 && scenario != 40 ) continue;  // Electron
-      if ( ispecie == 1 ) continue;  // Muon
-      if ( ispecie == 2 && scenario != 42 ) continue;  // Pion
-      if ( ispecie == 3 && scenario != 43 ) continue;  // Kaon
-      if ( ispecie == 4 && scenario != 44 ) continue;  // Proton
+    else if (scenario == 40) {
+      if ( ispecie != 0 ) continue;    // Electron
+    }
+    else if (scenario == 41) continue; // Muon (not filled)
+    else if (scenario == 42) {
+      if ( ispecie != 2 ) continue;    // Pion
+    }
+    else if (scenario == 43) continue; // Kaon (not filled)
+    else if (scenario == 44) {
+      if ( ispecie != 4 ) continue;    // Proton
     }
 
+/* // special LHC11h setting not used and commented now
     if (scenario == 2) {
       nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxHybrid);
     }
     else if (scenario == 3) {
       nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie, AliTPCPIDResponse::kdEdxOROC);
     }
-    else {
+*/
+//    else {
       nSigma=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
+//    }
+
+    mvSpecie=0;  // Reset, in case it has been changed before
+
+    // For the V0 scenario, it is necessary to close the gaps due to Muons and Kaons not being filled.
+    // Electrons stay at position "0".
+    if (scenario>39) {
+      if (ispecie == 2) mvSpecie=1;       // Pions are moved from position "2" -> "1".
+      else if (ispecie == 4) mvSpecie=2;  // Protons are moved from  position "4" -> "2".
     }
 
-    h->Fill(mom,nSigma);
+    TH2 *h=(TH2*)sublist->At(ispecie-mvSpecie);
+    if ( h ) h->Fill(mom,nSigma);
 
     if (count == 3) {
-      TH2 *hEta=(TH2*)sublist->At(ispecie+nSpecies);
-      TH2 *hMult=(TH2*)sublist->At(ispecie+2*nSpecies);
+      TH2 *hEta=(TH2*)sublist->At(ispecie-mvSpecie+nSpecies);
+      TH2 *hMult=(TH2*)sublist->At(ispecie-mvSpecie+2*nSpecies);
  
       if ( hEta ) hEta->Fill(eta,nSigma);
       if ( hMult && mult > 0 ) hMult->Fill(mult,nSigma);
@@ -706,12 +821,14 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
             nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
           }
         }
+/* // special LHC11h setting not used and commented now
         else if (scenario == 2) {
           nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion, AliTPCPIDResponse::kdEdxHybrid);
         }
         else if (scenario == 3) {
           nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion, AliTPCPIDResponse::kdEdxOROC);
         }
+*/
         else nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 
         if (isPionMC) h1->Fill(eta,nSigma);
@@ -737,12 +854,14 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
             nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
           }
         }
+/* // special LHC11h setting not used and commented now
         if (scenario == 2) {
           nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxHybrid);
         }
         else if (scenario == 3) {
           nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxOROC);
         }
+*/
         else nSigma=fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
         if (isElectronMC) h3->Fill(eta,nSigma);
@@ -768,8 +887,8 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
   // switches for the different scenarios
   Bool_t scBasic=1;     // default/basic
   Bool_t scMCtruth=1;   // for MC truth tracks
-  Bool_t scHybrid=1;    // for hybrid PID (only LHC11h)
-  Bool_t scOROChigh=1;  // only OROC signal (only LHC11h)
+  Bool_t scHybrid=0;    // for hybrid PID (only LHC11h) -> not used and commented now
+  Bool_t scOROChigh=0;  // only OROC signal (only LHC11h) -> not used and commented now
   Bool_t scV0=1;        // for V0 candidates (only for ESDs available)
   Int_t scCounter=0;    // counter of scenarios, used for the histograms at the end of FillTPCqa
 
@@ -792,6 +911,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
   // Check for MC
   scMCtruth=(MCEvent()!=0x0);
 
+/* // special LHC11h setting not used and commented now
   // Check if period is data LHC11h by checking if
   // the splines for ALLhigh have been set by AliPIDResponse
   AliTPCPIDResponse &tpcResp=fPIDResponse->GetTPCResponse();
@@ -799,6 +919,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     scHybrid   = kFALSE;
     scOROChigh = kFALSE;
   }
+*/
 
   // Check if "ESD" or "AOD" and get the corresponding event and the beam type (or centrality)
   TString analysisType = inputHandler->GetDataType(); // can be "ESD" or "AOD"
@@ -825,8 +946,8 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
   // Get the number of scenarios by counting those, which are switched on
   if (scBasic) scCounter++;
   if (scMCtruth) scCounter++;
-  if (scHybrid) scCounter++;
-  if (scOROChigh) scCounter++;
+//  if (scHybrid) scCounter++;
+//  if (scOROChigh) scCounter++;
   if (scV0) scCounter++;
 
   // Get reference multiplicity for ESDs
@@ -889,6 +1010,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
       FillTPCHistogramsNsigma(fListQAtpcMCtruth,1,track,mult);
     }
 
+/* // special LHC11h setting not used and commented now
     // the "hybrid" scenario (only for LHC11h)
     if (scHybrid == 1) {
       FillTPCHistogramsNsigma(fListQAtpcHybrid,2,track,mult);
@@ -898,6 +1020,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     if (scOROChigh == 1) {
       FillTPCHistogramsNsigma(fListQAtpcOROChigh,3,track,mult);
     }
+*/
 
   } // -- End: track loop --
 
@@ -933,6 +1056,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 
       // fill histograms for V0 candidates
       FillTPCHistogramsNsigma(fListQAtpcV0,40,track,mult);
+      FillTPCHistogramsSignal(fListQAtpcV0,40,track,mult);
 
     } // - End: track loop for electrons from V0 -
 
@@ -965,10 +1089,12 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 
       // fill histograms for V0 candidates
       FillTPCHistogramsNsigma(fListQAtpcV0,42,track,mult);
+      FillTPCHistogramsSignal(fListQAtpcV0,42,track,mult);
 
     } // - End: track loop for pions from V0 -
 
 
+/*  // Take out the kaons - are not filled (at least at the moment)
     // - Begin: track loop for kaons from V0 -
     for(Int_t itrack = 0; itrack < fV0kaons->GetEntries(); itrack++){
       AliVTrack *track=(AliVTrack*)fV0kaons->At(itrack);
@@ -997,9 +1123,10 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 
       // fill histograms for V0 candidates
       FillTPCHistogramsNsigma(fListQAtpcV0,43,track,mult);
+      FillTPCHistogramsSignal(fListQAtpcV0,43,track,mult);
 
     } // - End: track loop for kaons from V0 -
-
+*/
 
     // - Begin: track loop for protons from V0 -
     for(Int_t itrack = 0; itrack < fV0protons->GetEntries(); itrack++){
@@ -1029,6 +1156,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 
       // fill histograms for V0 candidates
       FillTPCHistogramsNsigma(fListQAtpcV0,44,track,mult);
+      FillTPCHistogramsSignal(fListQAtpcV0,44,track,mult);
 
     } // - End: track loop for protons from V0 -
 
@@ -1715,7 +1843,7 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *scenario)
+void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *scenario, Int_t scnumber)
 {
   //
   // Create the TPC qa objects: create histograms for the TPC signal for different settings
@@ -1734,31 +1862,63 @@ void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *sc
   Float_t etaMin=-1.1;
   Float_t etaMax=1.1;
 
+  const Int_t binsPhi=90;
+  Float_t phiMin=0.;
+  Float_t phiMax=6.283;
+
   char signal[4][12]={"std","IROC","OROCmedium","OROClong"};
 
-
-  // TPC signal vs. p for all particles (standard, IROC, OROCmedium, OROClong)
-  for (Int_t iSig=0; iSig<4; iSig++) {
-    TH2F *hSigP = new TH2F(Form("hSigP_TPC_%s_%s",signal[iSig],scenario),
-                             Form("TPC_%s signal (%s) vs. p;p [GeV]; TPC signal [arb. units]",scenario,signal[iSig]),
+  Int_t nSpecies=0;
+  
+  // TPC signal vs. p for different particle species (standard, IROC, OROCmedium, OROClong) (V0)
+  // TPC signal vs. p for all particles (standard, IROC, OROCmedium, OROClong) (other scenarios)
+  if (scnumber == 4) {
+    nSpecies=(Int_t)AliPID::kSPECIES;
+    for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie){
+      if ( ispecie == 1 || ispecie == 3 ) continue;  // Muons and Kaons are not filled for V0s
+      else {
+        for (Int_t iSig=0; iSig<4; iSig++) {
+          TH2F *hSigP = new TH2F(Form("hSigP_TPC_%s_%s_%s",signal[iSig],scenario,AliPID::ParticleName(ispecie)),
+                              Form("TPC_%s n#sigma (%s) %s vs. p;p (GeV/c); TPC signal (arb. units)",scenario,signal[iSig],AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              300,0,300);
+          sublist->Add(hSigP);
+        }
+      }
+    }
+  }
+  else {
+    for (Int_t iSig=0; iSig<4; iSig++) {
+      TH2F *hSigP = new TH2F(Form("hSigP_TPC_%s_%s",signal[iSig],scenario),
+                             Form("TPC_%s signal (%s) vs. p;p (GeV/c); TPC signal (arb. units)",scenario,signal[iSig]),
                              vX->GetNrows()-1,vX->GetMatrixArray(),
                              300,0,300);
-    sublist->Add(hSigP);
+      sublist->Add(hSigP);
+    }
   }
 
   // MIP pions: TPC signal vs. eta
   for (Int_t iSig=0; iSig<4; iSig++) {
     TH2F *hSigEtaMIPpi = new TH2F(Form("hSigEta_TPC_%s_%s_MIPpi",signal[iSig],scenario),
-                                  Form("TPC_%s signal (%s) MIPpi vs. eta;#eta;TPC signal [arb. units]",scenario,signal[iSig]),
+                                  Form("TPC_%s signal (%s) MIPpi vs. eta;#eta;TPC signal (arb. units)",scenario,signal[iSig]),
                                   binsEta,etaMin,etaMax,
                                   300,0,300);
     sublist->Add(hSigEtaMIPpi);
   }
 
+  // MIP pions: TPC signal vs. phi
+  for (Int_t iSig=0; iSig<4; iSig++) {
+    TH2F *hSigPhiMIPpi = new TH2F(Form("hSigPhi_TPC_%s_%s_MIPpi",signal[iSig],scenario),
+                                  Form("TPC_%s signal (%s) MIPpi vs. phi;#phi;TPC signal (arb. units)",scenario,signal[iSig]),
+                                  binsPhi,phiMin,phiMax,
+                                  300,0,300);
+    sublist->Add(hSigPhiMIPpi);
+  }
+
   // MIP pions: TPC signal vs. multiplicity
   for (Int_t iSig=0; iSig<4; iSig++) {
     TH2F *hSigMultMPIpi = new TH2F(Form("hSigMult_TPC_%s_%s_MIPpi",signal[iSig],scenario),
-                                   Form("TPC_%s signal (%s) MIPpi vs. mult;multiplicity;TPC signal [arb. units]",scenario,signal[iSig]),
+                                   Form("TPC_%s signal (%s) MIPpi vs. mult;multiplicity;TPC signal (arb. units)",scenario,signal[iSig]),
                                    nBinsMult,xBinsMult,
                                    300,0,300);
     sublist->Add(hSigMultMPIpi);
@@ -1767,16 +1927,25 @@ void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *sc
   // Electrons: TPC signal vs. eta
   for (Int_t iSig=0; iSig<4; iSig++) {
     TH2F *hSigEtaEle = new TH2F(Form("hSigEta_TPC_%s_%s_Ele",signal[iSig],scenario),
-                                Form("TPC_%s signal (%s) electrons vs. eta;#eta;TPC signal [arb. units]",scenario,signal[iSig]),
+                                Form("TPC_%s signal (%s) electrons vs. eta;#eta;TPC signal (arb. units)",scenario,signal[iSig]),
                                 binsEta,etaMin,etaMax,
                                 300,0,300);
     sublist->Add(hSigEtaEle);
   }
 
+  // Electrons: TPC signal vs. phi
+  for (Int_t iSig=0; iSig<4; iSig++) {
+    TH2F *hSigPhiEle = new TH2F(Form("hSigPhi_TPC_%s_%s_Ele",signal[iSig],scenario),
+                                  Form("TPC_%s signal (%s) electrons vs. phi;#phi;TPC signal (arb. units)",scenario,signal[iSig]),
+                                  binsPhi,phiMin,phiMax,
+                                  300,0,300);
+    sublist->Add(hSigPhiEle);
+  }
+
   // Electrons: TPC signal vs. multiplicity
   for (Int_t iSig=0; iSig<4; iSig++) {
     TH2F *hSigMultEle = new TH2F(Form("hSigMult_TPC_%s_%s_Ele",signal[iSig],scenario),
-                                 Form("TPC_%s signal (%s) electrons vs. mult;multiplicity;TPC signal [arb. units]",scenario,signal[iSig]),
+                                 Form("TPC_%s signal (%s) electrons vs. mult;multiplicity;TPC signal (arb. units)",scenario,signal[iSig]),
                                  nBinsMult,xBinsMult,
                                  300,0,300);
     sublist->Add(hSigMultEle);
@@ -1813,32 +1982,44 @@ void AliAnalysisTaskPIDqa::AddTPCHistogramsNsigma(TList *sublist, const char *sc
 
   // Nsigma vs. p for different particle species
   for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie){
-    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_%s_%s",scenario,AliPID::ParticleName(ispecie)),
-                              Form("TPC_%s n#sigma %s vs. p;p [GeV]; n#sigma",scenario,AliPID::ParticleName(ispecie)),
+    if ( scnumber == 4 && ispecie == 1 ) continue;  // Muons are not filled for V0s (scnumber==4)
+    else if ( scnumber == 4 && ispecie == 3 ) continue;  // Kaons are not filled for V0s (scnumber==4)
+    else {
+      TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_%s_%s",scenario,AliPID::ParticleName(ispecie)),
+                              Form("TPC_%s n#sigma %s vs. p;p (GeV/c); n#sigma",scenario,AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),
                               200,-10,10);
-    sublist->Add(hNsigmaP);
+      sublist->Add(hNsigmaP);
+    }
   }
 
   // Nsigma vs. eta for different particle species (only for some scenarios)
   if ( scnumber == 1 || scnumber == 4 ) {
     for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie){
-      TH2F *hNsigmaEta = new TH2F(Form("hNsigmaEta_TPC_%s_%s",scenario,AliPID::ParticleName(ispecie)),
+      if ( scnumber == 4 && ispecie == 1 ) continue;  // Muons are not filled for V0s (scnumber==4)
+      else if ( scnumber == 4 && ispecie == 3 ) continue;  // Kaons are not filled for V0s (scnumber==4)
+      else {
+        TH2F *hNsigmaEta = new TH2F(Form("hNsigmaEta_TPC_%s_%s",scenario,AliPID::ParticleName(ispecie)),
                               Form("TPC_%s n#sigma %s vs. eta;#eta; n#sigma",scenario,AliPID::ParticleName(ispecie)),
                               binsEta,etaMin,etaMax,
                               200,-10,10);
-      sublist->Add(hNsigmaEta);
+        sublist->Add(hNsigmaEta);
+      }
     }
   }
 
   // Nsigma vs. multiplicity for different particle species (only for some scenarios)
   if ( scnumber == 1 || scnumber == 4 ) {
     for (Int_t ispecie=0; ispecie<nSpecies; ++ispecie){
-      TH2F *hNsigmaMult = new TH2F(Form("hNsigmaMult_TPC_%s_%s",scenario,AliPID::ParticleName(ispecie)),
+      if ( scnumber == 4 && ispecie == 1 ) continue;  // Muons are not filled for V0s (scnumber==4)
+      else if ( scnumber == 4 && ispecie == 3 ) continue;  // Kaons are not filled for V0s (scnumber==4)
+      else {
+        TH2F *hNsigmaMult = new TH2F(Form("hNsigmaMult_TPC_%s_%s",scenario,AliPID::ParticleName(ispecie)),
                               Form("TPC_%s n#sigma %s vs. mult;multiplicity; n#sigma",scenario,AliPID::ParticleName(ispecie)),
                               nBinsMult,xBinsMult,
                               200,-10,10);
-      sublist->Add(hNsigmaMult);
+        sublist->Add(hNsigmaMult);
+      }
     }
   }
 
@@ -1915,6 +2096,7 @@ void AliAnalysisTaskPIDqa::SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fill
     fListQAtpc->Add(fListQAtpcMCtruth);
   }
   
+/* // special LHC11h setting not used and commented now
   // Hybrid and OROChigh scenarios, 
   // special settings only available for PbPb LHC11h data
   if (fill11h == kTRUE) {
@@ -1928,6 +2110,7 @@ void AliAnalysisTaskPIDqa::SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fill
     fListQAtpcOROChigh->SetName("TPCOROChigh");
     fListQAtpc->Add(fListQAtpcOROChigh);
   }
+*/
 
   // scenario only for V0s, 
   // only available for ESDs
@@ -1941,13 +2124,14 @@ void AliAnalysisTaskPIDqa::SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fill
 
   // the default ("basic") scenario
   AddTPCHistogramsNsigma(fListQAtpcBasic,"Basic",0);
-  AddTPCHistogramsSignal(fListQAtpcBasic,"Basic");
+  AddTPCHistogramsSignal(fListQAtpcBasic,"Basic",0);
 
   // only MC truth identified particles
   if (fillMC) {
     AddTPCHistogramsNsigma(fListQAtpcMCtruth,"MCtruth",1);
   }
 
+/* // special LHC11h setting not used and commented now
   // the "hybrid" scenario (only for period LHC11h)
   if (fill11h) {
     AddTPCHistogramsNsigma(fListQAtpcHybrid,"Hybrid",2);
@@ -1957,10 +2141,12 @@ void AliAnalysisTaskPIDqa::SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fill
   if (fill11h) {
     AddTPCHistogramsNsigma(fListQAtpcOROChigh,"OROChigh",3);
   }
-
+*/
+  
   // only for V0s
   if (fillV0) {
     AddTPCHistogramsNsigma(fListQAtpcV0,"V0",4);
+    AddTPCHistogramsSignal(fListQAtpcV0,"V0",4);
   }
  
 
