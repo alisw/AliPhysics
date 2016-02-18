@@ -113,40 +113,15 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     void Print() const;
   };
 
-  struct AliJetDefinition {
-    AliJetDefinition() :
-      fJetType(AliJetContainer::kChargedJet),
-      fRadius(0.4),
-      fJetAlgo(AliJetContainer::antikt_algorithm),
-      fRecoScheme(AliJetContainer::pt_scheme),
-      fDmesonJets()
-    {}
+  class AliJetDefinition : public TObject {
+  public:
+    AliJetDefinition();
+    AliJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
+    AliJetDefinition(const AliJetDefinition &source);
 
-    AliJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco) :
-      fJetType(type),
-      fRadius(r),
-      fJetAlgo(algo),
-      fRecoScheme(reco),
-      fDmesonJets()
-    {}
+    AliJetDefinition& operator=(const AliJetDefinition& source);
 
-    AliJetDefinition(const AliJetDefinition &source) :
-      fJetType(source.fJetType),
-      fRadius(source.fRadius),
-      fJetAlgo(source.fJetAlgo),
-      fRecoScheme(source.fRecoScheme),
-      fDmesonJets()
-    {}
-
-    AliJetDefinition& operator=(const AliJetDefinition& source) { new (this) AliJetDefinition(source); return *this; }
-
-    const char*               GetName() const;
-
-    EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
-    Double_t                  fRadius        ; ///<  Jet radius
-    EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
-    ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
-    vector<AliDmesonJetInfo>  fDmesonJets    ; //!<! Array containing the D meson jets
+    const char* GetName() const;
 
     friend bool        operator< (const AliJetDefinition& lhs, const AliJetDefinition& rhs);
     friend inline bool operator> (const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return rhs < lhs    ; }
@@ -155,6 +130,21 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 
     friend bool        operator==(const AliJetDefinition& lhs, const AliJetDefinition& rhs);
     friend inline bool operator!=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs == rhs); }
+
+  protected:
+    friend class AliAnalysisTaskDmesonJets;
+    friend class AnalysisEngine;
+
+    EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
+    Double_t                  fRadius        ; ///<  Jet radius
+    EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
+    ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
+    vector<AliDmesonJetInfo>  fDmesonJets    ; //!<! Array containing the D meson jets
+
+  private:
+    /// \cond CLASSIMP
+    ClassDef(AliJetDefinition, 1);
+    /// \endcond
   };
 
   /// \class AnalysisEngine
@@ -215,7 +205,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     UInt_t                             fRejectedOrigin        ; ///<  Bit mask with D meson origins that are rejected
     UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted
     Bool_t                             fInhibit               ; ///<  Inhibit the task
-    list<AliJetDefinition>             fJetDefinitions        ; //!<! Jet definitions
+    list<AliJetDefinition>             fJetDefinitions        ; ///<  Jet definitions
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer       *fMCContainer           ; //!<! MC particle container
     AliHFTrackContainer               *fTrackContainer        ; //!<! Track container
@@ -241,7 +231,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliJetDefinition& jetDef);
 
     /// \cond CLASSIMP
-    ClassDef(AnalysisEngine, 1);
+    ClassDef(AnalysisEngine, 2);
     /// \endcond
   };
 
