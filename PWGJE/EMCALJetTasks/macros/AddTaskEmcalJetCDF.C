@@ -110,8 +110,24 @@ AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  AliParticleContainer* trackCont  = jetTask->AddParticleContainer ( tracks.Data() );
-  trackCont->SetParticlePtCut(0.15);
+  if ( tracks.EqualTo("mcparticles") )
+    {
+    AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer ( tracks.Data() );
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+    }
+  else
+  if ( tracks.EqualTo("tracks") || tracks.EqualTo("Tracks") ) {
+    AliTrackContainer* trackCont = jetTask->AddTrackContainer( tracks.Data() );
+    trackCont->SetFilterHybridTracks(kTRUE);
+  }
+  else
+  if ( !tracks.IsNull())
+    {
+    jetTask->AddParticleContainer(tracks.Data());
+    }
+
+  AliParticleContainer* partCont  = jetTask->GetParticleContainer(0);
+  if (partCont) { partCont->SetParticlePtCut(0.15); }
 
   AliClusterContainer* clusterCont = NULL;
   if ( !clusters.IsNull() )
@@ -129,7 +145,7 @@ AliAnalysisTaskEmcalJetCDF* AddTaskEmcalJetCDF (
                               recomb_t,
                               radius,
                               acceptance,
-                              trackCont,
+                              partCont,
                               clusterCont,
                               name);
 
