@@ -400,6 +400,16 @@ void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
   fHistMaxChargeValueInt1_Name += TriggerName;
   TH2F *fHistMaxChargeValueInt1 = CreateHist2D(fHistMaxChargeValueInt1_Name.Data(),"Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
   list->Add(fHistMaxChargeValueInt1);//39
+  
+  TString fHistMeanChargeADAPerFlag_Name = "fHistMeanChargeADAPerFlag_";
+  fHistMeanChargeADAPerFlag_Name += TriggerName;
+  TH2F *fHistMeanChargeADAPerFlag = CreateHist2D(fHistMeanChargeADAPerFlag_Name.Data(),"Mean charge ADA per flag",9,-0.5,8.5,kNChargeSideBins,kChargeSideMin,kChargeSideMax,"Number of BB coincidences","Charge","Entries");
+  list->Add(fHistMeanChargeADAPerFlag);//40
+  
+  TString fHistMeanChargeADCPerFlag_Name = "fHistMeanChargeADCPerFlag_";
+  fHistMeanChargeADCPerFlag_Name += TriggerName;
+  TH2F *fHistMeanChargeADCPerFlag = CreateHist2D(fHistMeanChargeADCPerFlag_Name.Data(),"Mean charge ADC per flag",9,-0.5,8.5,kNChargeSideBins,kChargeSideMin,kChargeSideMax,"Number of BB coincidences","Charge","Entries");
+  list->Add(fHistMeanChargeADCPerFlag);//41
 
 }
 
@@ -500,7 +510,8 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
  		if(i>7) ((TH2F*)(list->At(11)))->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
 		
 		Bool_t localPF = kTRUE;
-		for(Int_t iClock=0; iClock<9; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
+		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
+		for(Int_t iClock=11; iClock<21; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
 		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,10);
 		if(esdAD->GetBBFlag(i)) fCharges[i] = esdADfriend->GetPedestal(i,10) - fCalibData->GetPedestal(k);
 		((TH2F*)(list->At(32)))->Fill(i,fCharges[i]);
@@ -536,6 +547,9 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
 	
   ((TH1F*)(list->At(0)))->Fill(totChargeADA);
   ((TH1F*)(list->At(1)))->Fill(totChargeADC);
+  
+  ((TH1F*)(list->At(40)))->Fill(nBBflagsADA,totChargeADA);
+  ((TH1F*)(list->At(41)))->Fill(nBBflagsADC,totChargeADC);
   
   ((TH2F*)(list->At(16)))->Fill(nBBflagsADA,nBBflagsADC);
   ((TH2F*)(list->At(17)))->Fill(nBGflagsADA,nBGflagsADC);
@@ -579,8 +593,8 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
     return;
   }
   
-  if(fAnalysisUtils->IsPileUpEvent(fEvent)) return;
-  if(fAnalysisUtils->IsSPDClusterVsTrackletBG(fEvent)) return;
+  if(fAnalysisUtils->IsPileUpEvent(fESD)) return;
+  if(fAnalysisUtils->IsSPDClusterVsTrackletBG(fESD)) return;
   
   if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_NoVBC);
   if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_NoVBC);
