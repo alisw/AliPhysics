@@ -30,18 +30,18 @@
 #include <TGFileBrowser.h>
 #include <TEveMacro.h>
 #include <TEveBrowser.h>
+#include <TRegexp.h>
 
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
 AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defaultDataSource,bool storageManager) :
 fPath(path)
 {
-    const int nDetectors = 12;
-    char* detectorsList[nDetectors] = {"EMC","ACO","TRD","SPD","SDD","SSD","TOF","TPC","RPH","PHS","HMP","MCH"};
-    
     //==============================================================================
     // Reading preferences from config file
     //==============================================================================
@@ -89,23 +89,51 @@ fPath(path)
     AliEveMultiView *mv = new AliEveMultiView();
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
 
-    for(int i=0;i<nDetectors;i++)
+    // read all files with names matching "geom_list_XYZ.txt"
+    vector<string> detectorsList;
+    TSystemDirectory dir(Form("%s/../src/EVE/resources/geometry/",gSystem->Getenv("ALICE_ROOT")),
+                         Form("%s/../src/EVE/resources/geometry/",gSystem->Getenv("ALICE_ROOT")));
+
+    TList *files = dir.GetListOfFiles();
+    
+    if (files)
     {
-        if(settings.GetValue(Form("%s.draw",detectorsList[i]), true))
+        TRegexp e("simple_geom_[A-Z][A-Z][A-Z].root");
+        TRegexp e2("[A-Z][A-Z][A-Z]");
+        
+        TSystemFile *file;
+        TString fname;
+        TIter next(files);
+        
+        while ((file=(TSystemFile*)next()))
         {
-            if(strcmp(detectorsList[i],"TPC")==0 || strcmp(detectorsList[i],"MCH")==0)
+            fname = file->GetName();
+            if(fname.Contains(e))
+            {
+                TString detName = fname(e2);
+                detName.Resize(3);
+                detectorsList.push_back(detName.Data());
+            }
+        }
+    }
+    
+    for(int i=0;i<detectorsList.size();i++)
+    {
+        if(settings.GetValue(Form("%s.draw",detectorsList[i].c_str()), true))
+        {
+            if(detectorsList[i]=="TPC" || detectorsList[i]=="MCH")
             {
                 // don't load MUON and standard TPC to R-Phi view
-                mv->InitSimpleGeom(geomGentle->GetSimpleGeom(detectorsList[i]),false);
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()),false);
             }
-            else if(strcmp(detectorsList[i],"RPH")==0)
+            else if(detectorsList[i]=="RPH")
             {
                 // special TPC geom from R-Phi view
                 mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false);
             }
             else
             {
-                mv->InitSimpleGeom(geomGentle->GetSimpleGeom(detectorsList[i]));
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()));
             }
         }
     }

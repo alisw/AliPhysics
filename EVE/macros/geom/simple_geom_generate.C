@@ -8,8 +8,11 @@
 #include <TEveElement.h>
 #include <TEveGeoNode.h>
 #include <TSystem.h>
+#include <TRegexp.h>
 
 #include <iostream>
+#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -27,7 +30,7 @@ void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax,T
     for (int i = 0; i < nlist->GetEntries(); i++)
     {   // loop over nodes in current level and find the one with matching name
         TGeoNode *node2 = (TGeoNode*) nlist->At(i);
-
+        
         if (strcmp(node2->GetName(),nname->GetString().Data()) == 0)
         {
             TEveGeoNode *son = dynamic_cast<TEveGeoNode*>(parent->FindChild(nname->GetName()));
@@ -47,9 +50,33 @@ void simple_geom_generate(char *detectorName="", int runNumber=0)
         cout<<"Give name of the detector as a first argument!"<<endl;
         return;
     }
+
     
-    const int nDetectors = 10;
-    const char* detectorsList[nDetectors] = {"ACO","MCH","EMC","TPC","SPD","SDD","SSD","TOF","PHS","HMP"};
+    // read all files with names matching "geom_list_XYZ.txt"
+    vector<string> detectorsList;
+    TSystemDirectory dir(".",".");
+    TList *files = dir.GetListOfFiles();
+
+    if (files)
+    {
+        TRegexp e("geom_list_[A-Z][A-Z][A-Z].txt");
+        TRegexp e2("[A-Z][A-Z][A-Z]");
+        
+        TSystemFile *file;
+        TString fname;
+        TIter next(files);
+        
+        while ((file=(TSystemFile*)next()))
+        {
+            fname = file->GetName();
+            if(fname.Contains(e))
+            {
+                TString detName = fname(e2);
+                detName.Resize(3);
+                detectorsList.push_back(detName.Data());
+            }
+        }
+    }
     
     // load geometry library
     gSystem->Load("libGeom");
@@ -74,26 +101,27 @@ void simple_geom_generate(char *detectorName="", int runNumber=0)
     TGeoNode* tnode = gGeoManager->GetTopNode();
     tnode->SetVisibility(kFALSE);
     
-    TString path;
-    TObjArray *list;
-    Int_t depth;
-    Char_t line[256];
     
-    for(int i=0;i<nDetectors;i++)
+    for(int i=0;i<detectorsList.size();i++)
     {
+        TString path;
+        TObjArray *list;
+        Int_t depth;
+        Char_t line[256];
+        
         const char *currentDetector;
         if(strcmp(detectorName,"ALL")==0)
         {
             // if we update all detectors
-            currentDetector = detectorsList[i];
+            currentDetector = detectorsList[i].c_str();
         }
         else
         {
             // if we update specific detector, exit loop after one pass
             currentDetector = detectorName;
-            i=nDetectors;
+            i=detectorsList.size();
         }
-           
+
         TEveGeoTopNode* eve_tnode = new TEveGeoTopNode(gGeoManager, tnode);
         eve_tnode->SetVisLevel(0);
         
@@ -102,19 +130,33 @@ void simple_geom_generate(char *detectorName="", int runNumber=0)
         ifstream in(Form("geom_list_%s.txt",currentDetector), ios::in);
         cout<<"Adding shapes from file:"<<Form("geom_list_%s.txt",currentDetector)<<endl;
         
-        while (!in.eof())
+        int lineIter=0;
+
+        while (true)
         {
             in >> line;
+            if(in.eof())break;
+            
             path = TString(line);
+
             if (!path.Contains("ALIC")) continue;
             
             list = path.Tokenize("/");
             depth = list->GetEntries();
             AddNodes(tnode,eve_tnode,depth,depth,list);
+            lineIter++;
         }
+        in.close();
         
-        eve_tnode->SaveExtract(Form("../../resources/geometry/simple_geom_%s.root",currentDetector),
-                               currentDetector, kTRUE);
+        if(lineIter==0)
+        {
+            cout<<"File for "<<currentDetector<<" is empty. Skipping..."<<endl;
+        }
+        else
+        {
+            eve_tnode->SaveExtract(Form("../../resources/geometry/simple_geom_%s.root",currentDetector),
+                                   currentDetector, kTRUE);
+        }
     }
 }
 
