@@ -67,6 +67,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               GetJetPhiMin()                   { return fJetPhiMin         ; }
   Double_t               GetJetPhiMax()                   { return fJetPhiMax         ; }
   UInt_t                 GetJetType()                     { return fJetType           ; }
+  UInt_t                 GetJetAlgo()                     { return fJetAlgo           ; }
   Bool_t                 GetLegacyMode()                  { return fLegacyMode        ; }
   Double_t               GetMinJetArea()                  { return fMinJetArea        ; }
   Double_t               GetMinJetPt()                    { return fMinJetPt          ; }
