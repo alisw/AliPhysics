@@ -281,7 +281,7 @@ void Config()
   Int_t   iEMCAL =  0;
   Int_t   iACORDE=  0;
   Int_t   iVZERO =  0;
-  Int_t   iMFT   =  0;
+  Int_t   iMFT   =  1;
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
