@@ -404,14 +404,12 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
       fIsEventSel = (MultSelection->GetEvSelCode() ? kFALSE : kTRUE);
       fEventStatistics->Fill("MultSelection found",1);
     }
-    if(!fIsEventSel) return;
-    fEventStatistics->Fill("after MultSelection event selection",1);
-    //else{
+    else{
       //Printf("Didn't find MultSelection in run %i",fCurrentRunNumber);
-      //fMultTKL = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
-      //fMultV0Aeq=0;   for (Int_t i=32;i<64;i++) fMultV0Aeq+=fInputEvent->GetVZEROEqMultiplicity(i);
-      //fMultV0Ceq=0;   for (Int_t i=0; i<32;i++) fMultV0Ceq+=fInputEvent->GetVZEROEqMultiplicity(i);
-    //}
+      fMultTKL = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+      fMultV0Aeq=0;   for (Int_t i=32;i<64;i++) fMultV0Aeq+=fInputEvent->GetVZEROEqMultiplicity(i);
+      fMultV0Ceq=0;   for (Int_t i=0; i<32;i++) fMultV0Ceq+=fInputEvent->GetVZEROEqMultiplicity(i);
+    }
 
     //online/offline spd
     AliVMultiplicity* mult = fInputEvent->GetMultiplicity();
