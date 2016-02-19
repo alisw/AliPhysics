@@ -434,7 +434,6 @@ TList* AliNanoAODReplicator::GetList() const
 
 //_____________________________________________________________________________
 void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
-//void AliNanoAODReplicator::ReplicateAndFilter(AliAODEvent *source)
 {
   // Replicate (and filter if filters are there) the relevant parts we're interested in AODEvent
   
@@ -470,26 +469,9 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     fCustomSetter->SetNanoAODHeader(&source, fHeader);
   }
 
-
-  //  Int_t nindices=0;
   const Int_t entries = source.GetNumberOfTracks();
-
-  Double_t pos[3],cov[6];
-  vtx->GetXYZ(pos);
-  vtx->GetCovarianceMatrix(cov);
-  
   if(entries<=0) return;
 
-  if(vtx->GetNContributors()<1) {
-    // SPD vertex cut
-    vtx =source.GetPrimaryVertexSPD();    
-    if(vtx->GetNContributors()<1) { // FIXME: Keep this cut?
-      Info("AliNanoAODReplicator","No good vertex, skip event");
-      return; // NO GOOD VERTEX, SKIP EVENT 
-    }
-  }
-  
-  
   for(Int_t j=0; j<entries; j++){
     
     AliVTrack *track = (AliVTrack*)source.GetTrack(j);
