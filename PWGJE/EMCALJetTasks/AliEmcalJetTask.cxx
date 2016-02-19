@@ -53,7 +53,6 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fGhostArea(0.005),
   fTrackEfficiency(1.),
   fUtilities(0),
-  fUseExchangeCont(0),
   fLocked(0),
   fJetsName(),
   fIsInit(0),
@@ -68,7 +67,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
 }
 
 //________________________________________________________________________
-AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
+AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskEmcal(name),
   fJetsTag("Jets"),
   fJetAlgo(AliJetContainer::antikt_algorithm),
@@ -84,7 +83,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fGhostArea(0.005),
   fTrackEfficiency(1.),
   fUtilities(0),
-  fUseExchangeCont(useExchangeCont),
   fLocked(0),
   fJetsName(),
   fIsInit(0),
@@ -96,10 +94,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fFastJetWrapper(name,name)
 {
   // Standard constructor.
-
-  for (Int_t i = 0; i < fUseExchangeCont; i++) {
-    DefineInput(i+1, TClonesArray::Class());
-  }
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 }
