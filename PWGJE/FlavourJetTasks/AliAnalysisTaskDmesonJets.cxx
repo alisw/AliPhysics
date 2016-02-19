@@ -782,6 +782,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
   AliDmesonJetInfo DmesonJet;
 
+  Int_t nAccCharm = 0;
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     Int_t isSelected = 0;
 
@@ -815,7 +816,16 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
         }
       }
     }
+    nAccCharm++;
   } // end of D cand loop
+
+  TString hname;
+
+  hname = TString::Format("%s/fHistNAcceptedDmesons", GetName());
+  fHistManager->FillTH1(hname, nAccCharm);
+
+  hname = TString::Format("%s/fHistNDmesons", GetName());
+  fHistManager->FillTH1(hname, nD);
 }
 
 /// Find the jet that contains a D meson candidate.
@@ -840,10 +850,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 
   if (fTrackContainer && jetDef.fJetType != AliJetContainer::kNeutralJet) {
     fTrackContainer->SetDMesonCandidate(Dcand);
-    hname = TString::Format("%s/fHistTrackRejectionReason", GetName(jetDef));
+    hname = TString::Format("%s/%s/fHistTrackRejectionReason", GetName(), jetDef.GetName());
     AddInputVectors(fTrackContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
 
-    hname = TString::Format("%s/fHistDMesonDaughterNotInJet", GetName(jetDef));
+    hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", GetName(), jetDef.GetName());
     TH1* histDaughterNotInJet = static_cast<TH1*>(fHistManager->FindObject(hname));
     const TObjArray daughterNotInJet = fTrackContainer->GetDaughterList();
     for (Int_t i = 0; i < daughterNotInJet.GetEntriesFast(); i++) {
@@ -854,7 +864,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
   }
 
   if (fClusterContainer && jetDef.fJetType != AliJetContainer::kChargedJet) {
-    hname = TString::Format("%s/fHistClusterRejectionReason", GetName(jetDef));
+    hname = TString::Format("%s/%s/fHistClusterRejectionReason", GetName(), jetDef.GetName());
     AddInputVectors(fClusterContainer, -100, static_cast<TH2*>(fHistManager->FindObject(hname)));
   }
 
@@ -928,7 +938,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
     fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef->fJetAlgo));
     fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef->fRecoScheme));
 
-    hname = TString::Format("%s/fHistClusterRejectionReason", GetName(*jetDef));
+    hname = TString::Format("%s/%s/fHistClusterRejectionReason", GetName(), jetDef->GetName());
     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
 
     fFastJetWrapper->Run();
@@ -1111,37 +1121,47 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 
   TString hname;
   TString htitle;
-  TH2* h = 0;
+  TH1* h = 0;
 
   ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for task '%s' (%lu analysis engines)", GetName(), fAnalysisEngines.size());
   for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
     AnalysisEngine* param = &(*it);
     ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param->GetName(), param->fJetDefinitions.size());
 
+    fHistManager.CreateHistoGroup(param->GetName());
+
     param->fHistManager = &fHistManager;
+
+    hname = TString::Format("%s/fHistNAcceptedDmesons", param->GetName());
+    htitle = hname + ";Number of D accepted meson candidates;counts";
+    h = fHistManager.CreateTH1(hname, htitle, 51, -0.5, 50.5);
+
+    hname = TString::Format("%s/fHistNDmesons", param->GetName());
+    htitle = hname + ";Number of D meson candidates;counts";
+    h = fHistManager.CreateTH1(hname, htitle, 101, -0.5, 100.5);
 
     for (std::list<AliJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
       AliJetDefinition* jetDef = &(*itdef);
       ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
 
-      fHistManager.CreateHistoGroup(param->GetName(*jetDef));
+      fHistManager.CreateHistoGroup(jetDef->GetName(), param->GetName());
 
-      hname = TString::Format("%s/fHistMCParticleRejectionReason", param->GetName(*jetDef));
+      hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", param->GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/fHistTrackRejectionReason", param->GetName(*jetDef));
+      hname = TString::Format("%s/%s/fHistTrackRejectionReason", param->GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/fHistClusterRejectionReason", param->GetName(*jetDef));
+      hname = TString::Format("%s/%s/fHistClusterRejectionReason", param->GetName(), jetDef->GetName());
       htitle = hname + ";Cluster rejection reason;#it{p}_{T,cluster} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/fHistDMesonDaughterNotInJet", param->GetName(*jetDef));
+      hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", param->GetName(), jetDef->GetName());
       htitle = hname + ";#it{p}_{T,track} (GeV/#it{c});counts";
       fHistManager.CreateTH1(hname, htitle, 400, 0, 100);
       SetRejectionReasonLabels(h->GetXaxis());
@@ -1314,7 +1334,7 @@ void AliAnalysisTaskDmesonJets::AllocateTHnSparse(const AnalysisEngine& param)
       }
     }
 
-    hname = TString::Format("%s/fDmesonJets", param.GetName(*jetDef));
+    hname = TString::Format("%s/%s/fDmesonJets", param.GetName(), jetDef->GetName());
     THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dim,nbins,min,max);
     for (Int_t j = 0; j < dim; j++) {
       h->GetAxis(j)->SetTitle(title[j]);
@@ -1441,7 +1461,7 @@ Bool_t AliAnalysisTaskDmesonJets::FillHistograms()
 
       Double_t radius = jetDef->fRadius;
 
-      hname = TString::Format("%s/fDmesonJets", param->GetName(*jetDef));
+      hname = TString::Format("%s/%s/fDmesonJets", param->GetName(), jetDef->GetName());
       THnSparse* h = static_cast<THnSparse*>(fHistManager.FindObject(hname));
 
       for (Int_t ij = 0; ij < jetDef->fDmesonJets.size(); ij++) {
