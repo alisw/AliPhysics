@@ -28,10 +28,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 				   Double_t DCAz=-1,
 				   Double_t ptMin=0.3,
 				   Double_t ptMax=1.5,
-                                   Double_t kTPCPtMin=0.0,
-                                   Double_t kTPCPtMax=0.4,
-                                   Double_t kTOFPtMin =0.3,
-                                   Double_t kTOFPtMax = 10.0,
+                                   Double_t kTPCPtMax=0.0,
 			           Double_t etaMin=-0.8,
 				   Double_t etaMax=0.8,
 				   Double_t maxTPCchi2 = -1, 
@@ -215,8 +212,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
       else if(kUseNSigmaPID)
  	taskBF->SetUseNSigmaPID(nSigmaMax);
         taskBF->SetParticleType(ParticleType_);   // Added  Noor Alam
-        taskBF->SetTPCPtMinMax(kTPCPtMin,kTPCPtMax); // TPC Pt min and max (N.Alam )
-        taskBF->SetTOFPtMinMax(kTOFPtMin,kTOFPtMax); // TOF Pt min and max (N.Alam)
+        taskBF->SetTPCPtMinMax(ptMin,kTPCPtMax); // TPC Pt min and max (N.Alam )
+        taskBF->SetTOFPtMinMax(kTPCPtMax,ptMax); // TOF Pt min and max (N.Alam)
       //   N.A taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kKaon);
      // taskBF->SetDetectorUsedForPID(AliAnalysisTaskPIDBF::kTPCTOF); //TOFpid,TPCpid
     }
