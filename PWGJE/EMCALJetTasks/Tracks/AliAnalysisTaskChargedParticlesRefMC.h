@@ -57,14 +57,12 @@ public:
   void                        SetRapidityShift(Double_t yshift) { fYshift = yshift; }
   void                        SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
+  void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
   void                        SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
   void                        SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
-
-  void                        SwitchoffSPDCut() { fSwitchoffSPDcut = true; }
-  void                        SwitchoffITSCut() { fSwitchoffITScut = true; }
 
   static AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
 
@@ -93,9 +91,6 @@ protected:
   Int_t                           fPtHardBin;                 ///< event pt hard bin
   Int_t                           fNTrials;                   ///< event trials
   Float_t                         fXsection;                  ///< x-section from pythia header
-
-  Bool_t                          fSwitchoffSPDcut;           ///< Switch off SPD cut
-  Bool_t                          fSwitchoffITScut;           ///< Switch off ITS cut completely (no refit, no cluster requirement)
 
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1

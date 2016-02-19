@@ -72,8 +72,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fPtHardBin(0),
         fNTrials(0),
         fXsection(0),
-        fSwitchoffSPDcut(kFALSE),
-        fSwitchoffITScut(kFALSE),
         fYshift(0.465),
         fEtaSign(1),
         fFracPtHard(-1)
@@ -102,8 +100,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fPtHardBin(0),
         fNTrials(0),
         fXsection(0),
-        fSwitchoffSPDcut(kFALSE),
-        fSwitchoffITScut(kFALSE),
         fYshift(0.465),
         fEtaSign(1),
         fFracPtHard(-1)
@@ -131,7 +127,7 @@ AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
  * Create the output histograms
  */
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
-  fAnalysisUtil = new AliAnalysisUtils;
+  if(!fAnalysisUtil) fAnalysisUtil = new AliAnalysisUtils;
   fHistos = new AliEMCalHistoContainer("Ref");
 
   if(!fTrackCuts){
