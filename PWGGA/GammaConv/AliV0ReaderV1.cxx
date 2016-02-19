@@ -261,11 +261,11 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoPosTrackImpactParamZ->SetXTitle("Z (cm)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamZ);
 
-    fHistoPosTrackImpactParamY = new TH1F("fHistoPosTrackImpactParamY","",390,-20,100);
+    fHistoPosTrackImpactParamY = new TH1F("fHistoPosTrackImpactParamY","",720,-120,120);
     fHistoPosTrackImpactParamY->SetXTitle("Y (cm)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamY);
 
-    fHistoPosTrackImpactParamX = new TH1F("fHistoPosTrackImpactParamX","",50,-5,5);
+    fHistoPosTrackImpactParamX = new TH1F("fHistoPosTrackImpactParamX","",30,-3,3);
     fHistoPosTrackImpactParamX->SetXTitle("X (cm)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamX);
 
@@ -273,11 +273,11 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoNegTrackImpactParamZ->SetXTitle("Z (cm)");
     fImpactParamHistograms->Add(fHistoNegTrackImpactParamZ);
 
-    fHistoNegTrackImpactParamY = new TH1F("fHistoNegTrackImpactParamY","",390,-100,20);
+    fHistoNegTrackImpactParamY = new TH1F("fHistoNegTrackImpactParamY","",720,-120,120);
     fHistoNegTrackImpactParamY->SetXTitle("Y (cm)");
     fImpactParamHistograms->Add(fHistoNegTrackImpactParamY);
 
-    fHistoNegTrackImpactParamX = new TH1F("fHistoNegTrackImpactParamX","",50,-5,5);
+    fHistoNegTrackImpactParamX = new TH1F("fHistoNegTrackImpactParamX","",30,-3,3);
     fHistoNegTrackImpactParamX->SetXTitle("X (cm)");
     fImpactParamHistograms->Add(fHistoNegTrackImpactParamX);
 
@@ -286,27 +286,27 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoPosTrackImpactParamZvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamZvsPt);
 
-    fHistoPosTrackImpactParamYvsPt = new TH2F("fHistoPosTrackImpactParamYvsPt","",100,0,10,420,-20,120);
+    fHistoPosTrackImpactParamYvsPt = new TH2F("fHistoPosTrackImpactParamYvsPt","",100,0,10,720,-120,120);
     fHistoPosTrackImpactParamYvsPt->SetYTitle("Y (cm)");
     fHistoPosTrackImpactParamYvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamYvsPt);
  
-    fHistoPosTrackImpactParamXvsPt = new TH2F("fHistoPosTrackImpactParamXvsPt","",100,0,10,50,-5,5);
+    fHistoPosTrackImpactParamXvsPt = new TH2F("fHistoPosTrackImpactParamXvsPt","",100,0,10,30,-3,5);
     fHistoPosTrackImpactParamXvsPt->SetYTitle("X (cm)");
     fHistoPosTrackImpactParamXvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoPosTrackImpactParamXvsPt);
 
-    fHistoNegTrackImpactParamZvsPt = new TH2F("fHistoNegTrackImpactParamZvsPt","",100,0,10,480,80,80);
+    fHistoNegTrackImpactParamZvsPt = new TH2F("fHistoNegTrackImpactParamZvsPt","",100,0,10,480,-80,80);
     fHistoNegTrackImpactParamZvsPt->SetYTitle("Z (cm)");
     fHistoNegTrackImpactParamZvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoNegTrackImpactParamZvsPt);
 
-    fHistoNegTrackImpactParamYvsPt = new TH2F("fHistoNegTrackImpactParamYvsPt","",100,0,10,420,-120,20);
+    fHistoNegTrackImpactParamYvsPt = new TH2F("fHistoNegTrackImpactParamYvsPt","",100,0,10,720,-120,120);
     fHistoNegTrackImpactParamYvsPt->SetYTitle("Y (cm)");
     fHistoNegTrackImpactParamYvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoNegTrackImpactParamYvsPt);
 
-    fHistoNegTrackImpactParamXvsPt = new TH2F("fHistoNegTrackImpactParamXvsPt","",100,0,10,50,-5,5);
+    fHistoNegTrackImpactParamXvsPt = new TH2F("fHistoNegTrackImpactParamXvsPt","",100,0,10,30,-3,3);
     fHistoNegTrackImpactParamXvsPt->SetYTitle("X (cm)");
     fHistoNegTrackImpactParamXvsPt->SetXTitle("Pt (GeV)");
     fImpactParamHistograms->Add(fHistoNegTrackImpactParamXvsPt);
