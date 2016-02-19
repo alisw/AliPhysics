@@ -49,8 +49,19 @@ Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
   if (fVertexRange > 0)
   {
     AliAODVertex * vertex = evt->GetPrimaryVertex();
-    if (!vertex) return kFALSE;
-    if (TMath::Abs(vertex->GetZ()) > fVertexRange) return kFALSE;
+    if (!vertex) 
+      return kFALSE;
+    
+    if (vertex->GetNContributors() < 1) 
+    {
+      // SPD vertex cut
+      vertex = evt->GetPrimaryVertexSPD();    
+      if (!vertex || vertex->GetNContributors() < 1) 
+        return kFALSE;
+    }    
+    
+    if (TMath::Abs(vertex->GetZ()) > fVertexRange) 
+      return kFALSE;
   }
   
   if (fTrackCut != 0)
