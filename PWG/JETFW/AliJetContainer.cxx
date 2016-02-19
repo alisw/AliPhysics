@@ -832,6 +832,7 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
     algoString = "AKT";
     break;
   default:
+    ::Warning("AliJetContainer::GenerateJetName", "Unknown jet finding algorithm '%d'!", jetAlgo);
     algoString = "";
   }
 

@@ -353,6 +353,7 @@ void AliEmcalJetTask::ExecOnce()
   if (!(InputEvent()->FindListObject(fJetsName))) {
     fJets = new TClonesArray("AliEmcalJet");
     fJets->SetName(fJetsName);
+    ::Info("AliEmcalJetTask::ExecOnce", "Jet collection with name '%s' has been added to the event.", fJetsName.Data());
     InputEvent()->AddObject(fJets);
   }
   else {
