@@ -477,6 +477,31 @@ void THistManager::FillTH1(const char *name, double x, double weight) {
 }
 
 //______________________________________________________________________________
+void THistManager::FillTH1(const char *name, const char *label, double weight) {
+  /*
+   * Fill a 1D histogram within the container. The histogram name also contains the parent group(s) according to the common
+   * group notation.
+   *
+   * @param name: Name of the histogram
+   * @param label: bin label
+   * @param weight (@default 1): optional weight of the entry
+   * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
+   */
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname.Data()));
+  if(!parent){
+    Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
+    return;
+  }
+  TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname.Data()));
+  if(!hist){
+    Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+    return;
+  }
+  hist->Fill(label, weight);
+}
+
+//______________________________________________________________________________
 void THistManager::FillTH2(const char *name, double x, double y, double weight) {
 	/*
 	 * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
