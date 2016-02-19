@@ -72,7 +72,7 @@ protected:
   void                        CreateOldPtBinning(TArrayD &binning) const;
   void                        CreateNewPtBinning(TArrayD &binning) const;
 
-  void                        FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
+  void                        FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
   void                        FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
 
   TString                     GetFiredTriggerClasses(const TClonesArray * triggerpatches);
