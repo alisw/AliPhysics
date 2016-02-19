@@ -1532,7 +1532,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                            nptbins,ptmin,ptmax,
                            GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
   fhPtPhotonSM->SetYTitle("SuperModule ");
-  fhPtPhotonSM->SetXTitle("#it{E} (GeV)");
+  fhPtPhotonSM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPtPhotonSM) ;
   
   fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nbins,nmin,nmax);
