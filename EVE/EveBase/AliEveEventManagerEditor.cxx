@@ -359,9 +359,9 @@ void AliEveEventManagerWindow::DoRefresh()
     mv->DestroyAllGeometries();
     
     vector<string> detectorsList;
-    TSystemDirectory dir(Form("%s/../src/EVE/resources/geometry/",gSystem->Getenv("ALICE_ROOT")),
-                         Form("%s/../src/EVE/resources/geometry/",gSystem->Getenv("ALICE_ROOT")));
-    
+    TSystemDirectory dir(Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")),
+                         Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")));
+
     TList *files = dir.GetListOfFiles();
     
     if (files)

@@ -154,7 +154,7 @@ void simple_geom_generate(char *detectorName="", int runNumber=0)
         }
         else
         {
-            eve_tnode->SaveExtract(Form("../../resources/geometry/simple_geom_%s.root",currentDetector),
+            eve_tnode->SaveExtract(Form("../../resources/geometry/run3/simple_geom_%s.root",currentDetector),
                                    currentDetector, kTRUE);
         }
     }
