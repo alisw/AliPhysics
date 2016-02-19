@@ -342,7 +342,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fDeclTriggerClasses(""),
   fStopped(kFALSE),
   fMaxRSS(0),
-  fMaxVMEM(0)
+  fMaxVMEM(0),
+  fNAbandonedEv(0)
 {
 // create reconstruction object with default parameters
   AliGeomManager::Destroy();
@@ -491,7 +492,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fDeclTriggerClasses(rec.fDeclTriggerClasses),
   fStopped(kFALSE),
   fMaxRSS(0),
-  fMaxVMEM(0)
+  fMaxVMEM(0),
+  fNAbandonedEv(0)
 {
 // copy constructor
 
@@ -2064,6 +2066,23 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   AliCodeTimerAuto("",0);
 
+  if (fRawReader){
+    // Store DAQ detector pattern and attributes
+    fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
+    fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
+    if (fesd->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
+      AliInfo(" ");
+      AliInfoF("Abandoning incomplete event with RAW_ID=%d reconstruction: DAQ attr: 0x%08x",iEvent,fesd->GetDAQAttributes());
+      AliInfoF("ATTENTION: %d events were already abandoned: next stored event will have ID:%d",fNAbandonedEv,iEvent-fNAbandonedEv);
+      AliInfo(" ");
+      fNAbandonedEv++;
+      return kTRUE;
+    }
+  }
+
+  iEvent -= fNAbandonedEv;
+
+
   AliSysInfo::AddStamp(Form("StartEv_%d",iEvent), 0,0,iEvent);
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
@@ -2097,6 +2116,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   }
   AliInfo(Form("================================= Processing event %d of type %-10s ==================================", iEvent,fRecoParam.PrintEventSpecie()));
   fEventInfo.Print();
+
 
   AliSysInfo::AddStamp(Form("StartReco_%d",iEvent), 0,0,iEvent);
   // Set the reco-params
@@ -2134,15 +2154,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("RawQA_%d",iEvent), 0,0,iEvent);
   }
 
-    if (fRawReader){
-      // Store DAQ detector pattern and attributes
-      fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
-      fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
-      if (fesd->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
-	AliInfoF("Abandoning incomplete event reconstruction: DAQ attr: 0x%08x",fesd->GetDAQAttributes());
-	return kTRUE;
-      }
-    }
     // fill Event header information from the RawEventHeader
     if (fRawReader){
       FillRawEventHeaderESD(fesd);

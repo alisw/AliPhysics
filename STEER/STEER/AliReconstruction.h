@@ -447,6 +447,7 @@ private:
   Bool_t               fStopped;        //  flag that reco is stopped due to the limited resources 
   Int_t                fMaxRSS;         //  max RSS memory, MB
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
+  Int_t                fNAbandonedEv;   //  number of abandoned events
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
   ClassDef(AliReconstruction, 52)      // class for running the reconstruction
