@@ -302,7 +302,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
-      fRDHFCuts->SetName("D0StandardCutsPP2010");
+      fRDHFCuts->SetUsePhysicsSelection(kFALSE);
+      fRDHFCuts->SetTriggerClass("","");
     }
     break;
   case kDstartoKpipi:
@@ -319,7 +320,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsDStartoKpipi();
       fRDHFCuts->SetStandardCutsPP2010();
-      fRDHFCuts->SetName("DStarStandardCutsPP2010");
+      fRDHFCuts->SetUsePhysicsSelection(kFALSE);
+      fRDHFCuts->SetTriggerClass("","");
     }
     break;
   default:
@@ -1140,6 +1142,16 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     htitle = hname + ";Number of D meson candidates;counts";
     h = fHistManager.CreateTH1(hname, htitle, 101, -0.5, 100.5);
 
+    hname = TString::Format("%s/fHistNEvents", param->GetName());
+    htitle = hname + ";Event status;counts";
+    h = fHistManager.CreateTH1(hname, htitle, 2, 0, 2);
+    h->GetXaxis()->SetBinLabel(1, "Accepted");
+    h->GetXaxis()->SetBinLabel(2, "Rejected");
+
+    hname = TString::Format("%s/fHistEventRejectionReasons", param->GetName());
+    htitle = hname + ";Rejection reason;counts";
+    h = fHistManager.CreateTH1(hname, htitle, 32, 0, 32);
+
     for (std::list<AliJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
       AliJetDefinition* jetDef = &(*itdef);
       ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
@@ -1423,22 +1435,38 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 {
   if (!fAodEvent) return kFALSE;
 
+  TString hname;
+
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
 
   for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* params = &(*it);
+    AnalysisEngine* eng = &(*it);
 
-    if (params->fInhibit) continue;
+    if (eng->fInhibit) continue;
 
     //Event selection
-    Bool_t iseventselected = params->fRDHFCuts->IsEventSelected(fAodEvent);
-    if (!iseventselected) continue;
+    hname = TString::Format("%s/fHistNEvents", eng->GetName());
+    Bool_t iseventselected = eng->fRDHFCuts->IsEventSelected(fAodEvent);
+    if (!iseventselected) {
+      fHistManager.FillTH1(hname, "Rejected");
+      hname = TString::Format("%s/fHistEventRejectionReasons", eng->GetName());
+      UInt_t bitmap = eng->fRDHFCuts->GetEventRejectionBitMap();
+      TString label;
+      do {
+        label = GetHFEventRejectionReasonLabel(bitmap);
+        if (label.IsNull()) break;
+        fHistManager.FillTH1(hname, label);
+      } while (true);
+      continue;
+    }
+
+    fHistManager.FillTH1(hname, "Accepted");
 
     AliDebug(2, "Event selected");
 
-    params->RunAnalysis();
+    eng->RunAnalysis();
   }
   return kTRUE;
 }
@@ -1559,4 +1587,73 @@ void AliAnalysisTaskDmesonJets::CalculateMassLimits(Double_t range, Int_t pdg, I
     minMass = mass - range / 2;
     maxMass = mass + range / 2;
   }
+}
+
+/// Takes a bitmap and converts the first rejection reason bit to a string; it unsets the first bit.
+///
+/// \param bitmap Bitmap with one or more bit sets by AliRDHFCuts (only the first one will be considered)
+///
+/// \return A string that corresponds to the last bit set in the bitmap (a null string if not bit is set)
+const char* AliAnalysisTaskDmesonJets::GetHFEventRejectionReasonLabel(UInt_t& bitmap)
+{
+  static TString label;
+  label = "";
+
+  if (bitmap & BIT(AliRDHFCuts::kNotSelTrigger)) {
+    label = "NotSelTrigger";
+    bitmap &= ~BIT(AliRDHFCuts::kNotSelTrigger);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kNoVertex)) {
+    label = "NoVertex";
+    bitmap &= ~BIT(AliRDHFCuts::kNoVertex);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kTooFewVtxContrib)) {
+    label = "TooFewVtxContrib";
+    bitmap &= ~BIT(AliRDHFCuts::kTooFewVtxContrib);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kZVtxOutFid)) {
+    label = "ZVtxOutFid";
+    bitmap &= ~BIT(AliRDHFCuts::kZVtxOutFid);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kPileup)) {
+    label = "Pileup";
+    bitmap &= ~BIT(AliRDHFCuts::kPileup);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kOutsideCentrality)) {
+    label = "OutsideCentrality";
+    bitmap &= ~BIT(AliRDHFCuts::kOutsideCentrality);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kPhysicsSelection)) {
+    label = "PhysicsSelection";
+    bitmap &= ~BIT(AliRDHFCuts::kPhysicsSelection);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kBadSPDVertex)) {
+    label = "BadSPDVertex";
+    bitmap &= ~BIT(AliRDHFCuts::kBadSPDVertex);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kZVtxSPDOutFid)) {
+    label = "ZVtxSPDOutFid";
+    bitmap &= ~BIT(AliRDHFCuts::kZVtxSPDOutFid);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kCentralityFlattening)) {
+    label = "CentralityFlattening";
+    bitmap &= ~BIT(AliRDHFCuts::kCentralityFlattening);
+    return label.Data();
+  }
+  if (bitmap & BIT(AliRDHFCuts::kBadTrackV0Correl)) {
+    label = "BadTrackV0Correl";
+    bitmap &= ~BIT(AliRDHFCuts::kBadTrackV0Correl);
+    return label.Data();
+  }
+
+  return label.Data();
 }
