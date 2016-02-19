@@ -106,6 +106,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEMCALDCALTrigger2015.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
+    Tracks/AliAnalysisTaskParticleInJet.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
