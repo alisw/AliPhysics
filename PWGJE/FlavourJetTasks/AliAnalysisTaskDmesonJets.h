@@ -266,6 +266,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   void                 AllocateTHnSparse(const AnalysisEngine& param);
   void                 FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet);
   
+  static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
   list<AnalysisEngine> fAnalysisEngines           ; ///<  Array of analysis parameters
