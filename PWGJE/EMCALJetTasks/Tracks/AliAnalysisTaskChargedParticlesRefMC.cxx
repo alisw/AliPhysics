@@ -23,6 +23,7 @@
 #include <TH1.h>
 #include <TKey.h>
 #include <TList.h>
+#include <TPDGCode.h>
 #include <TProfile.h>
 #include <TMath.h>
 #include <TString.h>
@@ -153,6 +154,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 1000, 0., 20.);
   TString triggers[16] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
+  TString species[6] = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50);
@@ -173,6 +175,24 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
     fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution central eta old binning trigger %s", trg->Data()), oldbinning);
     fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution all eta new binning trigger %s", trg->Data()), newbinning);
     fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution central eta new binning trigger %s", trg->Data()), newbinning);
+    for(TString *piditer = species; piditer < species + sizeof(species)/sizeof(TString); ++piditer){
+      fHistos->CreateTH1(Form("hPtEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+    }
     for(int ipt = 0; ipt < 5; ipt++){
       fHistos->CreateTH1(
           Form("hEtaLabDistAllPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
@@ -388,8 +408,19 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
 
     Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
 
+    // Get PID
+    TString pid = "";
+    switch(TMath::Abs(truepart->PdgCode())){
+    case kPiPlus: pid = "Pi"; break;
+    case kMuonMinus: pid = "Mu"; break;
+    case kElectron: pid = "El"; break;
+    case kKPlus: pid = "Ka"; break;
+    case kProton: pid = "Pr"; break;
+    default: pid = "Ot"; break;
+    };
+
     // Particle selected (do not filter TRD sectors for MC truth)
-    FillTrackHistos("True", truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL, kFALSE);
+    FillTrackHistos("True", truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL, kFALSE, pid);
   }
 
   // Loop over tracks, fill select particles
@@ -446,51 +477,62 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
 
     Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
 
+    // Get PID
+    TString assocpid = "";
+    switch(TMath::Abs(assocMC->PdgCode())){
+    case kPiPlus: assocpid = "Pi"; break;
+    case kMuonMinus: assocpid = "Mu"; break;
+    case kElectron: assocpid = "El"; break;
+    case kKPlus: assocpid = "Ka"; break;
+    case kProton: assocpid = "Pr"; break;
+    default: assocpid = "Ot"; break;
+    };
+
     // Go through the trigger classes and fill histograms
     if(isMinBias){
-      FillTrackHistos("MB", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("MB", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       // Check for exclusive classes
       if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEMC7){
-      FillTrackHistos("EMC7", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EMC7", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
     }
     if(isEJ1){
-      FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       if(isEG1 || isEG2) {
-        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       } else {
-        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEJ2){
-      FillTrackHistos("EJ2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EJ2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       // check for exclusive classes
       if(!isEJ1){
-        FillTrackHistos("EJ2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("EJ2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
       if(isEG1 || isEG2) {
-        FillTrackHistos("E2combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E2combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       } else {
-        FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEG1){
-      FillTrackHistos("EG1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EG1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEG2){
-      FillTrackHistos("EG2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EG2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       // check for exclusive classes
       if(!isEG1){
-        FillTrackHistos("EG2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("EG2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
       if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
   }
@@ -516,20 +558,29 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
     Double_t phi,
     Bool_t etacut,
     Bool_t inEmcal,
-    Bool_t hasTRD
+    Bool_t hasTRD,
+    const char *pid
     )
 {
   fHistos->FillTH1(Form("hPtEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
   fHistos->FillTH1(Form("hPtEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+  fHistos->FillTH1(Form("hPtEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+  fHistos->FillTH1(Form("hPtEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
   if(inEmcal){
     fHistos->FillTH1(Form("hPtEMCALEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
     fHistos->FillTH1(Form("hPtEMCALEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEMCALEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEMCALEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     if(hasTRD){
       fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
       fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     } else {
       fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
       fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     }
   }
 
@@ -549,15 +600,23 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
   if(etacut){
     fHistos->FillTH1(Form("hPtEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
     fHistos->FillTH1(Form("hPtEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     if(inEmcal){
       fHistos->FillTH1(Form("hPtEMCALEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
       fHistos->FillTH1(Form("hPtEMCALEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
       if(hasTRD){
         fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
         fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
       } else {
         fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
         fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
       }
     }
     for(int icut = 0; icut < 5; icut++){
