@@ -82,6 +82,8 @@ set(SRCS
   Trigger/AliEmcalTriggerSelection.cxx
   Trigger/AliEmcalTriggerQAAP.cxx
   Trigger/AliEmcalTriggerQATask.cxx
+  Trigger/AliEmcalTriggerQAPP.cxx
+  Trigger/AliEmcalTriggerQATaskPP.cxx
   )
 
 # Headers from sources

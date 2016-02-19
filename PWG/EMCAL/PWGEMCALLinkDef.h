@@ -55,5 +55,7 @@
 
 #pragma link C++ class AliEmcalTriggerQAAP+;
 #pragma link C++ class AliEmcalTriggerQATask+;
+#pragma link C++ class AliEmcalTriggerQAPP+;
+#pragma link C++ class AliEmcalTriggerQATaskPP+;
 #endif
 
