@@ -13,7 +13,7 @@ class AliAnalysisUtils;
 class AliAODTrack;
 class AliEMCALGeometry;
 class AliESDtrack;
-class AliESDtrackCuts;
+class AliEmcalTrackSelection;
 class AliGenPythiaEventHeader;
 class AliVParticle;
 class AliMCEvent;
@@ -57,6 +57,7 @@ public:
   void                        SetRapidityShift(Double_t yshift) { fYshift = yshift; }
   void                        SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
+  void                        SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
@@ -65,6 +66,8 @@ public:
   void                        SwitchoffSPDCut() { fSwitchoffSPDcut = true; }
   void                        SwitchoffITSCut() { fSwitchoffITScut = true; }
 
+  static AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
+
 protected:
   void                        CreateOldPtBinning(TArrayD &binning) const;
   void                        CreateNewPtBinning(TArrayD &binning) const;
@@ -72,8 +75,6 @@ protected:
   void                        FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   void                        FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
 
-  Bool_t                      TrackSelectionESD(AliESDtrack *track);
-  Bool_t                      TrackSelectionAOD(AliAODTrack *track);
   TString                     GetFiredTriggerClasses(const TClonesArray * triggerpatches);
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard) const;
   AliGenPythiaEventHeader    *GetPythiaHeader() const;
@@ -82,7 +83,7 @@ protected:
   Bool_t                      IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
 
-  AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
