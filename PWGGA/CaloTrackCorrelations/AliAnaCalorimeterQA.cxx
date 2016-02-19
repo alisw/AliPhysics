@@ -77,6 +77,7 @@ fExoNDTimeCuts(0),                     fExoDTimeCuts(),
 
 fClusterMomentum(),                    fClusterMomentum2(),
 fPrimaryMomentum(),
+fConstantTimeShift(0),
 // Histograms
 fhE(0),                                fhPt(0),                                
 fhPhi(0),                              fhEta(0),                               
@@ -284,6 +285,8 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   //         clus->E(),clus->GetNCells(),absIdMax,maxCellFraction);
       
   Double_t tof    = clus->GetTOF()*1.e9;
+  if(tof > 400) tof-=fConstantTimeShift;
+  
   Float_t  energy = clus->E();
   
   fhBadClusterEnergy       ->Fill(energy,                  GetEventWeight());
@@ -314,7 +317,9 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
     
     if(IsGoodCluster(absIdMax2, clus->GetM02(), clus->GetNCells(), cells) &&  clus2->GetM02() > 0.1 )
     {
-      Double_t tof2   = clus2->GetTOF()*1.e9;      
+      Double_t tof2   = clus2->GetTOF()*1.e9;     
+      if(tof2>400) tof2-=fConstantTimeShift;
+      
       fhBadClusterPairDiffTimeE  ->Fill(clus->E(), (tof-tof2), GetEventWeight());
     }
   } // loop
@@ -344,8 +349,8 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
       {
         Double_t time  = cells->GetCellTime(absId);
         GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
-
-        Float_t diff = (tmax-time*1e9);
+        
+        Float_t diff = (tmax-(time*1e9-fConstantTimeShift));
         fhBadCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
         
       } 
@@ -485,7 +490,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       id      = cells->GetCellNumber(iCell);
       highG   = cells->GetCellHighGain(id);
       if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
-              
+      
       // Amplitude recalibration if set
       GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
       
@@ -494,7 +499,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       
       // Transform time to ns
       time *= 1.0e9;
- 
+      time-=fConstantTimeShift;
+
       if(time < fTimeCutMin || time > fTimeCutMax)
       {
         AliDebug(1,Form("Remove cell with Time %f",time));
@@ -669,6 +675,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         
         // Transform time to ns
         time *= 1.0e9;
+        time -= fConstantTimeShift;
         
         if(time < fTimeCutMin || time > fTimeCutMax)
         {
@@ -884,6 +891,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
                                             Double_t tmax)
 {
   Double_t tof = clus->GetTOF()*1.e9;
+  if(tof>400) tof-=fConstantTimeShift;
   
   fhLambda0             ->Fill(clus->E(), clus->GetM02()       , GetEventWeight());
   fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
@@ -909,7 +917,9 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
     {
       Int_t    nModule2 = GetModuleNumber(clus2);
 
-      Double_t tof2   = clus2->GetTOF()*1.e9;          
+      Double_t tof2   = clus2->GetTOF()*1.e9;    
+      if(tof2>400) tof2-=fConstantTimeShift;
+
       fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-tof2, GetEventWeight());
       
       if ( nModule2 == nModule )
@@ -945,7 +955,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
         Double_t time  = cells->GetCellTime(absId);
         GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
         
-        Float_t diff = (tmax-time*1.0e9);
+        Float_t diff = (tmax-(time*1.0e9-fConstantTimeShift));
         fhCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
         if(TMath::Abs(TMath::Abs(diff) > 100) && clus->E() > 1 ) fhCellIdCellLargeTimeSpread->Fill(absId, GetEventWeight());
       }
@@ -1057,6 +1067,8 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     // Cut on time of clusters
     Double_t tof = clus->GetTOF()*1.e9;
+    if(tof>400) tof-=fConstantTimeShift;
+
     if( tof < fTimeCutMin || tof > fTimeCutMax )
     { 
       AliDebug(1,Form("Remove cluster with TOF %f",tof));
@@ -1088,7 +1100,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Double_t tmax  = cells->GetCellTime(absIdMax);
     GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tmax*=1.e9;
-    
+    tmax-=fConstantTimeShift;
     //
     // Fill histograms related to single cluster 
     //
@@ -1879,7 +1891,7 @@ void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
   Float_t  l1   = clus->GetM20();
   Float_t  en   = clus->E();
   Int_t    nc   = clus->GetNCells();  
-  Double_t tmax = clus->GetTOF()*1.e9; // recalibrated elsewhere
+  Double_t tmax = clus->GetTOF()*1.e9-fConstantTimeShift; // recalibrated elsewhere
   
   Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
 
@@ -1908,17 +1920,19 @@ void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
           fhExoL1NCell[ie][idt]->Fill(nc, l1, GetEventWeight());
         } 
         
-        // Diff time, do for one cut in e cross
-        if(ie == 0)
+        // Diff time, do for one cut in time
+        if(idt == 0)
         {
           for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
           {
             Int_t absId  = clus->GetCellsAbsId()[icell]; 
             Double_t time  = cells->GetCellTime(absId);
             GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+            time *= 1e9;
+            time -= fConstantTimeShift;
             
-            Float_t diff = (tmax-time)*1e9;
-            fhExoDTime[idt]->Fill(en, diff, GetEventWeight());
+            Float_t diff = tmax-time;
+            fhExoDTime[ie]->Fill(en, diff, GetEventWeight());
           }
         }
       }
@@ -3721,7 +3735,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
   if(phi1 < 0) phi1 += TMath::TwoPi();    
   
   Double_t tof1 =  ((AliVCluster*) caloClusters->At(iclus))->GetTOF()*1.e9;
-  
+  if(tof1>400) tof1-=fConstantTimeShift;
+
   for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) 
   {
     AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(jclus);
@@ -3730,7 +3745,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
 
     Double_t tof2 =  clus2->GetTOF()*1.e9;
-    
+    if(tof2>400) tof2-=fConstantTimeShift;
+
     Double_t diffTof = tof1-tof2;
     
     // Try to reduce background with a mild shower shape cut and no more 
@@ -3910,7 +3926,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
       Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
       
       Double_t tof2 =  clus2->GetTOF()*1.e9;
-      
+      if(tof2>400) tof2-=fConstantTimeShift;
+
       Double_t diffTof = TMath::Abs(tof1-tof2);
       
       // Try to reduce background with a mild shower shape cut and no more 
