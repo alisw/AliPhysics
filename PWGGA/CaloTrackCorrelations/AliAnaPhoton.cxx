@@ -235,6 +235,8 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
       fhColRowLam0BinPtBinWeighted  [il0][i] = 0 ;  
       fhColRowLam0BinPtBinLargeTime [il0][i] = 0 ;  
       fhCellClusterIndexEAndTime    [il0][i] = 0 ; 
+      fhCellClusterEAndTime         [il0][i] = 0 ;
+      fhCellClusterEFracAndTime     [il0][i] = 0 ;
     }
     
     for(Int_t ism =0; ism < 20; ism++)
@@ -937,11 +939,15 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
       fhCellClusterELam0BinPerSM        [l0bin][sm]->Fill(pt, cellE,        GetEventWeight());
       fhCellClusterELam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE, weight*GetEventWeight());
       
-      if ( TMath::Abs(cellTime) > 50 )
+      if(ptbin >= 0) 
       {
-        if(ptbin >= 0) 
-          fhCellClusterIndexEAndTime[l0bin][ptbin] ->Fill(cellTime, icell, GetEventWeight());
-        
+        fhCellClusterIndexEAndTime[l0bin][ptbin] ->Fill(cellTime, icell             , GetEventWeight());
+        fhCellClusterEAndTime     [l0bin][ptbin] ->Fill(cellTime, cellE             , GetEventWeight());
+        fhCellClusterEFracAndTime [l0bin][ptbin] ->Fill(cellTime, cellE/cluster->E(), GetEventWeight());
+      }
+      
+      if ( TMath::Abs(cellTime) > 50 )
+      {        
         fhCellClusterEFracLam0BinPerSMLargeTime [l0bin][sm]->Fill(pt, cellE/cluster->E(), GetEventWeight());
         fhCellClusterELam0BinPerSMLargeTime     [l0bin][sm]->Fill(pt, cellE             , GetEventWeight());
         fhCellClusterIndexELam0BinPerSMLargeTime[l0bin][sm]->Fill(pt, icell             , GetEventWeight());        
@@ -2255,13 +2261,30 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
         fhCellClusterIndexEAndTime[il0][ipt]  = new TH2F
         (Form("hCellClusterIndexEAndTimeLam0Bin%d_PtBin%d",il0,ipt),
-         Form("#it{p}_{T} vs cell index (E sorted) in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, w > 0, %s",
+         Form("#it{t}_{cell} vs cell index (E sorted) in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, w > 0, %s",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
          ntimebins,timemin,timemax,30,0,30);
-        fhCellClusterIndexEAndTime[il0][ipt] ->SetYTitle("Index (sorted E)");
-        fhCellClusterIndexEAndTime[il0][ipt] ->SetXTitle("time_{cell} (ns)");
+        fhCellClusterIndexEAndTime[il0][ipt] ->SetYTitle("Index (sorted #it{E})");
+        fhCellClusterIndexEAndTime[il0][ipt] ->SetXTitle("#it{time}_{cell} (ns)");
         outputContainer->Add(fhCellClusterIndexEAndTime[il0][ipt] ) ;    
-        
+
+        fhCellClusterEAndTime[il0][ipt]  = new TH2F
+        (Form("hCellClusterEAndTimeLam0Bin%d_PtBin%d",il0,ipt),
+         Form("#it{E}_{cell} vs #it{t}_{cell}  in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, w > 0, %s",
+              ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
+         ntimebins,timemin,timemax,100,0,5);
+        fhCellClusterEAndTime[il0][ipt] ->SetYTitle("#it{E}_{cell} (GeV)");
+        fhCellClusterEAndTime[il0][ipt] ->SetXTitle("#it{time}_{cell} (ns)");
+        outputContainer->Add(fhCellClusterEAndTime[il0][ipt] ) ;    
+
+        fhCellClusterEFracAndTime[il0][ipt]  = new TH2F
+        (Form("hCellClusterEFracAndTimeLam0Bin%d_PtBin%d",il0,ipt),
+         Form("#it{E}_{cell} vs #it{t}_{cell}  in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, w > 0, %s",
+              ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
+         ntimebins,timemin,timemax,100,0,1);
+        fhCellClusterEFracAndTime[il0][ipt] ->SetYTitle("#it{E}_{cell} (GeV)");
+        fhCellClusterEFracAndTime[il0][ipt] ->SetXTitle("#it{time}_{cell} (ns)");
+        outputContainer->Add(fhCellClusterEFracAndTime[il0][ipt] ) ;            
       } // pt bin
       
       for(Int_t ism = 0; ism < GetCaloUtils()->GetNumberOfSuperModulesUsed(); ism++)
