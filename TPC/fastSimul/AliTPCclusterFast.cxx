@@ -34,7 +34,7 @@
   tree->SetMarkerStyle(25);
   tree->SetMarkerSize(0.6);
   testTree=tree;
-
+  AliTPCclusterFast::SetMetadata(tree);
   AliTPCclusterFast::UnitTest();
 
 */
@@ -60,6 +60,7 @@
 #include "TClonesArray.h"
 #include "TTreeStream.h"
 #include "TGrid.h"
+#include "TStatToolkit.h"
 
 
 TTree* testTree=0;
@@ -101,6 +102,7 @@ public:
   static Double_t GaussExpConvolution(Double_t x0, Double_t s0,Double_t t1);
   static Double_t GaussGamma4(Double_t x, Double_t s0, Double_t p1);
   static Double_t Gamma4(Double_t x, Double_t p0, Double_t p1); 
+  static void SetMetadata(TTree * tree);
   //
   //
   static Bool_t UnitTest();
@@ -1135,8 +1137,38 @@ Bool_t AliTPCclusterFast::UnitTest(){
   }else{
     ::Error("AliTPCclusterFast::UnitTest","MaxTest FAILED");
   }
-    
+}
 
+void AliTPCclusterFast::SetMetadata(TTree* tree){
+  //
+  //
+  //
+  tree->SetAlias("deltaYUnfoldedDefault","(GetCOGUnfolded(1, 1, 0.8,   2,  0.6,  1, 1, 0)+fCl.GetYMaxBin()-fY)");
+  tree->SetAlias("deltaYNoOverlapDefault","(fCl.GetCOG(1, 0, 0.8,   2,  0.6,  1, 1, 0)-fY-0)");
+  tree->SetAlias("deltaYOverlapDefault","(fCl.GetCOG(1, 1, 0.8,   2,  0.6,  1, 1, 0)-fY-0)");
+  tree->SetAlias("padrow","Iteration$");
+  //
+  TStatToolkit::AddMetadata(tree,"deltaYNoOverlapDefault.AxisTitle","#Delta_{r#phi} (bin)");
+  TStatToolkit::AddMetadata(tree,"deltaYNoOverlapDefault.Title","(fCl.GetCOG(1, 0, 0.8,   2,  0.6,  1, 1, 0)-fY)");
+  TStatToolkit::AddMetadata(tree,"deltaYNoOverlapDefault.Legend","#Delta_{rphi} no overlap (10 MHz)");
+  TStatToolkit::AddMetadata(tree,"deltaYNoOverlapDefault.Comment","#Delta_{rphi} no overlap (10 MHz) \n (fCl.GetCOG(1, 0, 0.8,   2,  0.6,  1, 1, 0)-fY)");
+  //
+  TStatToolkit::AddMetadata(tree,"deltaYUnfoldedDefault.AxisTitle","#Delta_{r#phi} (bin)");
+  TStatToolkit::AddMetadata(tree,"deltaYUnfoldedDefault.Title","(GetCOGUnfolded(1, 1, 0.8,   2,  0.6,  1, 1, 0)+fCl.GetYMaxBin()-fY)");
+  TStatToolkit::AddMetadata(tree,"deltaYUnfoldedDefault.Legend","#Delta_{rphi} unfolded  (10 MHz)");
+  TStatToolkit::AddMetadata(tree,"deltaYUnfoldedDefault.Comment","#Delta_{rphi} unfolded  (10 MHz). Default digitization parameters. \n Sampling rate 10 MHz.\n Alias: (GetCOGUnfolded(1, 1, 0.8,   2,  0.6,  1, 1, 0)+fCl.GetYMaxBin()-fY)");
+  //
+  TStatToolkit::AddMetadata(tree,"fY.AxisTitle","r#phi (bin)");
+  TStatToolkit::AddMetadata(tree,"fY.Title","fY");
+  TStatToolkit::AddMetadata(tree,"fY.Legend","MC ideal r#phi position");
+  TStatToolkit::AddMetadata(tree,"fY.Comment","MC ideal r#phi position of cluster");
+  //
+  TStatToolkit::AddMetadata(tree,"padrow.AxisTitle","pad row (bin)");
+  TStatToolkit::AddMetadata(tree,"padrow.Title","padrow");
+  TStatToolkit::AddMetadata(tree,"padrow.Legend","pad row (bin)");
+  TStatToolkit::AddMetadata(tree,"padrow.Comment","Cluster - pad row position ");
+  //
+  
 }
 
 // Analytical sollution only in 1D - too long expression
