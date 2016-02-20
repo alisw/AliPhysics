@@ -92,7 +92,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   else if (!trackName.IsNull()) {
     partCont = new AliParticleContainer(trackName);
   }
-  partCont->SetParticlePtCut(minTrPt);
+  if (partCont) partCont->SetParticlePtCut(minTrPt);
 
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
