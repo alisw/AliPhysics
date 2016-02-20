@@ -1,8 +1,8 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefMC(const char *cutname = standard){
+EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefMC(const char *cutname = "standard", const char *suffix = "standard"){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC("chargedParticleMCQA");
+  EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC(Form("chargedParticleMCQA_%s", suffix));
   task->SetOutlierCut(-1);
   // Set Energy thresholds for additional patch selection:
   // These are events with offline patches of a given type where the trigger reached already the plateau
@@ -26,10 +26,10 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   );
 
   TString outfile(mgr->GetCommonFileName());
-  outfile += TString::Format(":ChargedParticleQA_%s", cutname);
+  outfile += TString::Format(":ChargedParticleQA_%s", suffix);
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", cutname), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
 
   return task;
 }
