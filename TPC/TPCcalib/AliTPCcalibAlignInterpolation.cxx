@@ -527,11 +527,11 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       //trackArrayITS[iPoint].SetUniqueID(0);
       AliTPCclusterMI &cluster=clusterArray[iPoint];
       if (cluster.GetVolumeId()==0) continue;
-      Float_t fxyz[3] = {0};
-      cluster.GetGlobalXYZ(fxyz);
-      Double_t xyz[3]={fxyz[0],fxyz[1],fxyz[2]};
+      double alpSect = ((cluster.GetDetector()%18)+0.5)*20*TMath::DegToRad();
+      double xyz[3] = {cluster.GetX(),cluster.GetY(),cluster.GetZ()}; // sector tracking frame
+      paramITS.Local2GlobalPosition(xyz,alpSect);	
       Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
-      paramITS.Global2LocalPosition(xyz,alpha);	
+      paramITS.Global2LocalPosition(xyz,alpha);	 // cluster frame
       if (!(itsOK=paramITS.Rotate(alpha))) break;
       // full material correction makes sense only when crossing the boundary of the TPC
       itsOK = (++npUpdITS)==1 ? 
@@ -558,13 +558,13 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       AliTPCclusterMI &cluster=clusterArray[iPoint];
       //      if (cluster==NULL) continue;
       if (cluster.GetVolumeId()==0) continue;
-      Float_t fxyz[3] = {0};
-      cluster.GetGlobalXYZ(fxyz);
-      Double_t alpha = TMath::ATan2(fxyz[1],fxyz[0]);            
+      double alpSect = ((cluster.GetDetector()%18)+0.5)*20*TMath::DegToRad();
+      double xyz[3] = {cluster.GetX(),cluster.GetY(),cluster.GetZ()}; // sector tracking frame
+      paramTRD.Local2GlobalPosition(xyz,alpSect);	
+      Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
+      paramTRD.Global2LocalPosition(xyz,alpha); // cluster frame
 
       if (trdOK){
-	Double_t xyz[3]={fxyz[0],fxyz[1],fxyz[2]};
-	paramTRD.Global2LocalPosition(xyz,alpha);	
 	// material correction makes sense only when crossing the boundary of the TPC
 	trdOK = paramTRD.Rotate(alpha) && ((++npUpdTRD)==1 ? 
 					   AliTrackerBase::PropagateTrackToBxByBz(&paramTRD,xyz[0],mass,1,kFALSE) :
@@ -585,8 +585,6 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
 	}
       }
       if (tofOK){
-	Double_t xyz[3]={fxyz[0],fxyz[1],fxyz[2]};
-	paramTOF.Global2LocalPosition(xyz,alpha);	
 	// material correction makes sense only when crossing the boundary of the TPC
 	tofOK = paramTOF.Rotate(alpha) && ((++npUpdTOF)==1 ?
 					   AliTrackerBase::PropagateTrackToBxByBz(&paramTOF,xyz[0],mass,1,kFALSE) :
@@ -1229,8 +1227,9 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
       tree->GetEntry(iCl);
       if (iCl%100000==0) printf("%d\n",iCl);
       currentCl++;
-      Float_t xyz[3]={0};
-      cl->GetGlobalXYZ(xyz);
+      double alpSect = ((cl->GetDetector()%18)+0.5)*20*TMath::DegToRad();
+      double xyz[3] = {cl->GetX(),cl->GetY(),cl->GetZ()}; // sector tracking frame
+      param->Local2GlobalPosition(xyz,alpSect);	
       Double_t phi = TMath::ATan2(xyz[1],xyz[0]);
       Double_t radius=TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0]);
       param->Rotate(phi);
