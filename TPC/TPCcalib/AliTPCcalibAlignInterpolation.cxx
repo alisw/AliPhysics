@@ -2682,9 +2682,15 @@ double AliTPCcalibAlignInterpolation::GetTgPhi(double x, double y2x, double q2p,
   if (TMath::Abs(c)<1e-9) return y2x;
   double r2 = y*y+x*x;
   double det = 4./r2 - c*c;
-  if (det<0) printf("track of q2p=%f cannot reach x:%f y:%f\n",q2p,x,y);
-  double snp = 0.5*(y*TMath::Sqrt(det)-c*x); // snp at vertex
-  snp += x*c;  // snp at x,y
+  double snp;
+  if (det<0) {
+    snp = TMath::Sign(-0.8,c);
+    printf("track of q2p=%f cannot reach x:%f y:%f, define snp as %f \n",q2p,x,y,snp);
+  }
+  else {
+    snp = 0.5*(y*TMath::Sqrt(det)-c*x); // snp at vertex
+    snp += x*c;  // snp at x,y
+  }
   return snp/TMath::Sqrt((1-snp)*(1+snp));
 }
 
