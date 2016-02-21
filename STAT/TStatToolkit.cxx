@@ -1035,7 +1035,7 @@ TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName){
   //
   //  Get metadata description
   //
-  if (!tree) return kFALSE;
+  if (!tree) return 0;
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
   if (metaData == NULL){  
     metaData=new THashList;
