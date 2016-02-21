@@ -59,6 +59,10 @@
 #include "AliTPCreco.h"
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliPID.h"
+#include "AliCDBManager.h"
+#include "AliMagF.h"
+#include "AliGRPManager.h"
+#include <TGeoGlobalMagField.h>
 #include "TSystem.h"
 #include "TGrid.h"
 #include "TCut.h"
@@ -821,7 +825,10 @@ void  AliTPCcalibAlignInterpolation::CreateDistortionMapsFromFile(const char * i
   //
 }
 
-void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime, Int_t stopTime, Int_t maxStat, Int_t selHis,const char * residualInfoFile ){
+void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, 
+							       Int_t startTime, Int_t stopTime, Int_t maxStat, 
+							       Int_t selHis,const char * residualInfoFile,
+							       Bool_t fixAlignmentBug){
   /**
    * Trees with point-track residuals to residual histogram
    * @param residualList  text file with tree list
@@ -842,6 +849,33 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   // gap weight is kFillGap + Exp(-dist): don't calculate exponent if dist is >kMaxExpArg
   const Double_t kMaxExpArg = -TMath::Log(TMath::Max(kFillGap*0.1, 1e-3)); 
   //
+  Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
+  float bz;
+  if (fixAlignmentBug) {
+    ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Alignment bug fix is requested\n");
+    //
+    // this requeres the field and the geometry ...
+    if (runNumber<1) AliFatalClass("FillHistogramsFromChain: Run number is not provided");
+    Bool_t geomOK = AliGeomManager::GetGeometry() != 0;
+    AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+    if (!geomOK || !fld) { // need to setup ocdb?
+      AliCDBManager* man = AliCDBManager::Instance();
+      if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
+      if (man->GetRun()!=runNumber) man->SetRun(runNumber);
+    }
+    if (!geomOK) {
+      AliGeomManager::LoadGeometry();
+      AliGeomManager::ApplyAlignObjsFromCDB("TPC");
+    }
+    if (!fld) {
+      AliGRPManager grpMan;
+      grpMan.ReadGRPEntry();
+      grpMan.SetMagField();
+      fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+      bz = fld->SolenoidField();
+    }
+  }
+
   // 0.) Load current information file and bookd variables
   // 
   const Int_t nSec=81;         // 72 sector +5 sumarry info+ 4 medians +
@@ -906,6 +940,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   calibInterpolation->CreateResidualHistosInterpolation(dy,dz,selHis);
   TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
   //
+  TVectorF *vecDeltaOther= 0;
+  TVectorF *vecDeltaOtherITS= 0;
   TVectorF *vecDelta= 0;
   TVectorF *vecDeltaITS= 0;
   TVectorF *vecR=0;
@@ -971,15 +1007,31 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       }
       tree->SetBranchStatus(branches[ihis],kTRUE);
       tree->SetBranchAddress(branches[ihis],&vecDelta);
+      // 
+      // if aligment bug fix is needed, we need also other delta
+      if (fixAlignmentBug) {
+	int ihisOther = ihis<=2 ? ihis+3 : ihis-3;
+	tree->SetBranchStatus(branches[ihisOther],kTRUE);
+	tree->SetBranchAddress(branches[ihisOther],&vecDeltaOther);
+      }
+
       if (ihis<=2 &&ihis!=0){
 	tree->SetBranchStatus(branches[0],kTRUE);
 	tree->SetBranchAddress(branches[0],&vecDeltaITS);
+	if (fixAlignmentBug) {
+	  tree->SetBranchStatus(branches[3],kTRUE);
+	  tree->SetBranchAddress(branches[3],&vecDeltaOtherITS);
+	}
       }
-      if (ihis>2 && ihis!=3){
+      else if (ihis>2 && ihis!=3){
 	tree->SetBranchStatus(branches[3],kTRUE);
 	tree->SetBranchAddress(branches[3],&vecDeltaITS);
+	if (fixAlignmentBug) {
+	  tree->SetBranchStatus(branches[0],kTRUE);
+	  tree->SetBranchAddress(branches[0],&vecDeltaOtherITS);
+	}
       }
-
+      
       // prepare aux info for histo bin calculation
       Long64_t nBProd[kNDim] = {0};
       int nBinDim[kNDim];
@@ -1013,6 +1065,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	const Float_t *vZ  = vecZ->GetMatrixArray();
 	const Float_t *vDelta  = vecDelta->GetMatrixArray();
 	const Float_t *vDeltaITS  = (vecDeltaITS!=NULL) ? vecDeltaITS->GetMatrixArray():0;
+	const Float_t *vDeltaOther = vecDeltaOther ? vecDeltaOther->GetMatrixArray():0;
+	const Float_t *vDeltaOtherITS = vecDeltaOtherITS ? vecDeltaOtherITS->GetMatrixArray():0;
 	//
 	currentTrack++;
 
@@ -1030,31 +1084,49 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	for (Int_t ipoint=0; ipoint<npValid; ipoint++){
 	  if (vR[ipoint]<=0 || vDelta[ipoint]<-990.) continue;
 	  if (TMath::Abs(vDelta[ipoint])<0.000001) continue; // RS Do we need this?
-	  Double_t sector=9.*vPhi[ipoint]/TMath::Pi();
+	  float phiUse = vPhi[ipoint], rUse = vR[ipoint], zUse = vZ[ipoint];
+	  float deltaITSUse = (vDeltaITS) ? vDeltaITS[ipoint]:0;
+	  float deltaRefUse = vDelta[ipoint];
+	  int rocID = TMath::Nint(vSec[ipoint]);
+
+	  if (fixAlignmentBug) {
+	    float dAux = vDeltaOther[ipoint];
+	    if (ihis<3) FixAlignmentBug(rocID, param->GetParameter()[4], bz, phiUse, rUse, zUse, deltaRefUse, dAux);
+	    else        FixAlignmentBug(rocID, param->GetParameter()[4], bz, phiUse, rUse, zUse, dAux, deltaRefUse);
+	    //
+	    if (vDeltaITS) {
+	      dAux = vDeltaOtherITS[ipoint];
+	      float phiAux = vPhi[ipoint], rAux = vR[ipoint], zAux = vZ[ipoint];
+	      if (ihis<3) FixAlignmentBug(rocID, param->GetParameter()[4], bz, phiAux, rAux, zAux, deltaITSUse, dAux);
+	      else        FixAlignmentBug(rocID, param->GetParameter()[4], bz, phiAux, rAux, zAux, dAux, deltaITSUse);
+	    }
+	    //
+	  }
+	  //
+	  Double_t sector=9.*phiUse/TMath::Pi();
 	  if (sector<0) sector+=18;
-	  Double_t deltaPhi=vPhi[ipoint]-TMath::Pi()*(Int_t(sector)+0.5)/9.;
-	  Double_t localX = TMath::Cos(deltaPhi)*vR[ipoint];
+	  Double_t deltaPhi=phiUse-TMath::Pi()*(Int_t(sector)+0.5)/9.;
+	  Double_t localX = TMath::Cos(deltaPhi)*rUse;
+
 	  xxx[kQ2PT] = param->GetParameter()[4];
 	  xxx[kSect] = sector;
 	  xxx[kLocX] = localX;
-	  Double_t side=-1.+2.*((TMath::Nint(vSec[ipoint])%36)<18);
-	  xxx[kZ2X] = (vZ[ipoint]*side)<-1 ? side*0.001 : vZ[ipoint]/localX; // do not mix z on A side and C side ?? RS
+	  Double_t side=-1.+2.*((rocID%36)<18);
+	  xxx[kZ2X] = (zUse*side)<-1 ? side*0.001 : zUse/localX; // do not mix z on A side and C side ?? RS
 	  // apply drift velocity calibration if available
-	  Double_t deltaITS=(vDeltaITS) ? vDeltaITS[ipoint]:0;
-	  Double_t deltaRef=vDelta[ipoint];
 	  
 	  if (ihis>2){  // if z residuals and vdrift calibration existing
-	    Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
-	    Double_t gy    = TMath::Sin(vPhi[ipoint])*localX;
+	    Double_t drift = (side>0) ? kMaxZ-zUse : zUse+kMaxZ;
+	    Double_t gy    = TMath::Sin(phiUse)*localX;
 	    Double_t pvecFit[3];
 	    pvecFit[0]= side;             // z shift (cm)
 	    pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
 	    pvecFit[2]= drift;            // drift length
 	    Double_t expected = (vdriftParam!=NULL) ? (*vdriftParam)[0]+(*vdriftParam)[1]*pvecFit[0]+(*vdriftParam)[2]*pvecFit[1]+(*vdriftParam)[3]*pvecFit[2]:0;
-	    deltaRef= side*(vDelta[ipoint]*side-(expected+corrTime*drift));
-	    deltaITS= side*(vDeltaITS[ipoint]*side-(expected+corrTime*drift));
+	    deltaRefUse= side*(deltaRefUse*side-(expected+corrTime*drift));
+	    deltaITSUse= side*(deltaITSUse*side-(expected+corrTime*drift));
 	  }
-	  xxx[kDelt] = deltaRef;
+	  xxx[kDelt] = deltaRefUse;
 	  clusterCounter++;
 	  //
 	  // calculate axis bins and global bin
@@ -1073,14 +1145,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  }
 	  //
 	  if (vDeltaITS){
-	    xxx[kDelt] = deltaITS;
+	    xxx[kDelt] = deltaITSUse;
 	    int binDeltITS;
-	    if (deltaITS<limMin[kDelt]) binDeltITS = 0; // underflow
-	    else if (deltaITS<limMax[kDelt]) binDeltITS = 1+int((deltaITS - limMin[kDelt])*bsizeI[kDelt]); // range
+	    if (deltaITSUse<limMin[kDelt]) binDeltITS = 0; // underflow
+	    else if (deltaITSUse<limMax[kDelt]) binDeltITS = 1+int((deltaITSUse - limMin[kDelt])*bsizeI[kDelt]); // range
 	    else binDeltITS = nBinDim[kDelt]+1; // oveflow
 	    Long64_t binToFillITS = binToFill + (binDeltITS-binIndex[kDelt])*nBProd[kDelt]; // global bin for ITS
 	    arrND.At(binToFillITS) += kFillGapITS;	    // curHis->Fill(xxx,kFillGapITS);
-	    xxx[kDelt] = deltaRef;
+	    xxx[kDelt] = deltaRefUse;
 	  }
 	  arrND.At(binToFill) += 1.; // curHis->Fill(xxx,1.);
 
@@ -1162,7 +1234,6 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       meanNclUsed[iSec]/=currentTrack;
     }
   }
-  Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
   (*fout)<<"metaData"<<
     "runNumber="<<runNumber<<        // runNumber
     "selHis="<<selHis<<              // selected histogram type
@@ -2602,5 +2673,66 @@ Bool_t  AliTPCcalibAlignInterpolation::DrawScalingComparison(TTree * tree, const
 
 
 
+//_______________________________________________
+double AliTPCcalibAlignInterpolation::GetTgPhi(double x, double y2x, double q2p, double b)
+{
+  // calculate tangent of primary track at any frame at given x,y
+  double y = y2x*x;
+  double c = q2p*b*(-0.299792458e-3);
+  if (TMath::Abs(c)<1e-9) return y2x;
+  double r2 = y*y+x*x;
+  double det = 4./r2 - c*c;
+  if (det<0) printf("track of q2p=%f cannot reach x:%f y:%f\n",q2p,x,y);
+  double snp = 0.5*(y*TMath::Sqrt(det)-c*x); // snp at vertex
+  snp += x*c;  // snp at x,y
+  return snp/TMath::Sqrt((1-snp)*(1+snp));
+}
+
+//______________________________________________
+void AliTPCcalibAlignInterpolation::FixAlignmentBug(int sect, float q2pt, float bz,
+						    float& alp, float& x, float &z, float &deltaY, float &deltaZ)
+{
+  // fix alignment bug: https://alice.its.cern.ch/jira/browse/ATO-339?focusedCommentId=170850&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-170850
+  //
+  int lr = sect/36 ? (AliGeomManager::kTPC2) : (AliGeomManager::kTPC1);
+  int volID = AliGeomManager::LayerToVolUIDSafe(lr,sect%36);
+  const TGeoHMatrix* matGL = AliGeomManager::GetMatrix(volID);
+  const TGeoHMatrix* matTL = AliGeomManager::GetTracking2LocalMatrix(volID);
+  double alpSect = ((sect%18)+0.5)*20.*TMath::DegToRad();
+
+  // cluster in its proper alpha frame with alignment bug, Z trackITS is used !!! 
+  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree, ITS Z only is stored
+  double xyzTrUse[3] = {x, deltaY, z}; // track in bad cluster frame
+  double xyz0[3];
+  //
+  // recover cluster Z position by adding deltaZ, this is approximate, since ITS track Z was used...
+  xyzClUse[2] -= deltaZ;
+  static AliExternalTrackParam trDummy;
+  trDummy.Local2GlobalPosition(xyzClUse,alp); // misaligned cluster in global frame
+  matGL->MasterToLocal(xyzClUse,xyz0);
+  matTL->MasterToLocal(xyz0,xyzClUse);
+  // we got ideal cluster in the sector tracking frame, 
+  //
+  // go to ideal cluster frame
+  trDummy.Local2GlobalPosition(xyzClUse,alpSect); // ideal global
+  double alpFix = TMath::ATan2(xyzClUse[1],xyzClUse[0]);    // fixed cluster phi
+  trDummy.Global2LocalPosition(xyzClUse,alpFix);     // fixed cluster in in its frame
+  //
+  trDummy.Local2GlobalPosition(xyzTrUse,alp); // track in global frame
+  trDummy.Global2LocalPosition(xyzTrUse,alpFix); // track in cluster frame
+  alp = alpFix;
+  //
+  double dx = xyzTrUse[0] - xyzClUse[0]; // x might not be the same after alignment fix
+  // deduce track slopes assuming it comes from the vertex
+  double tgphi = GetTgPhi(xyzClUse[0],xyzTrUse[1]/xyzClUse[0],q2pt,bz);
+  xyzTrUse[1] -= dx*tgphi;
+  xyzTrUse[2] -= dx*xyzClUse[2]/xyzClUse[0]; // z2x
+  //
+  x = xyzClUse[0];
+  z = xyzTrUse[2]; // we still use track Z as a reference ...
+  deltaY = xyzTrUse[1]-xyzClUse[1];
+  deltaZ = xyzTrUse[2]-xyzClUse[2];
+  //
+}
 
 
