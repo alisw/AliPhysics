@@ -275,16 +275,19 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     }
     FillTriggerJetHistograms(kTRUE, pyheader);
   }
-  TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  if(!fTriggerPatches) return;
 
   //TString triggerstring = GetFiredTriggerClasses(fTriggerPatches);
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
-      isEMC7 = isMinBias && IsOfflineSelected(kCPREL0, fTriggerPatches), // triggerstring.Contains("EMC7"),
-      isEJ1 = isMinBias && IsOfflineSelected(kCPREJ1, fTriggerPatches), // triggerstring.Contains("EJ1"),
-      isEJ2 = isMinBias && IsOfflineSelected(kCPREJ2, fTriggerPatches), // triggerstring.Contains("EJ2"),
-      isEG1 = isMinBias && IsOfflineSelected(kCPREG1, fTriggerPatches), // triggerstring.Contains("EG1"),
+      isEMC7 = kFALSE, isEJ1 = kFALSE, isEJ2 = kFALSE, isEG1 = kFALSE, isEG2 = kFALSE;
+  TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+  if(fTriggerPatches){
+      isEMC7 = isMinBias && IsOfflineSelected(kCPREL0, fTriggerPatches); // triggerstring.Contains("EMC7"),
+      isEJ1 = isMinBias && IsOfflineSelected(kCPREJ1, fTriggerPatches); // triggerstring.Contains("EJ1"),
+      isEJ2 = isMinBias && IsOfflineSelected(kCPREJ2, fTriggerPatches); // triggerstring.Contains("EJ2"),
+      isEG1 = isMinBias && IsOfflineSelected(kCPREG1, fTriggerPatches); // triggerstring.Contains("EG1"),
       isEG2 = isMinBias && IsOfflineSelected(kCPREG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
+
+  }
   if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
