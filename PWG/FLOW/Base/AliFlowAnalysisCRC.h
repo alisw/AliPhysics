@@ -687,6 +687,10 @@ public:
  Bool_t GetCalculateFlowVZ() const {return this->fCalculateFlowVZ;};
  void SetCalculateCRC2(Bool_t const cCRC) {this->fCalculateCRC2 = cCRC;};
  Bool_t GetCalculateCRC2() const {return this->fCalculateCRC2;};
+  void SetCalculateCRCVZ(Bool_t const cCRC) {this->fCalculateCRCVZ = cCRC;};
+  Bool_t GetCalculateCRCVZ() const {return this->fCalculateCRCVZ;};
+  void SetCalculateCRCZDC(Bool_t const cCRC) {this->fCalculateCRCZDC = cCRC;};
+  Bool_t GetCalculateCRCZDC() const {return this->fCalculateCRCZDC;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -1292,6 +1296,8 @@ private:
  Bool_t fCalculateCRCPt;
  Bool_t fCalculateCME;
  Bool_t fCalculateCRC2;
+ Bool_t fCalculateCRCVZ;
+ Bool_t fCalculateCRCZDC;
  Bool_t fCalculateFlowQC;
  Bool_t fCalculateFlowZDC;
  Bool_t fCalculateFlowVZ;
@@ -1316,7 +1322,7 @@ private:
   TList *fCRCIntList; //! list to hold CRC histograms
   const static Int_t fCRCnCR = 16;
   const static Int_t fCRCnEtaGap = 7;
-  const static Int_t fCRCnCorr = 3;
+  const static Int_t fCRCnCorr = 4;
   const static Int_t fCRCnEtaBins = 32;
   const static Int_t fCRCMaxnCen = 10;
   Int_t fCRCnCen;
