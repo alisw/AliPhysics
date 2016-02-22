@@ -99,27 +99,54 @@ void aliceToCollada(const char* outFile="aliceGeom.dae")
     
     delete emission;delete ambient;delete diffuse;
     
-    // Get TGeo shapes from simplified geometry files
+    
     TEveManager::Create();
-    TFile f("../../../resources/geometry/gentle_geo_muon.root");
-    TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get("Gentle MUON");
-    f.Close();
-    colladaBuffer->CreateNode("MUON");
-    ReadShapes(gse,"MUON");
     
-    TFile f2("../../../resources/geometry/gentle_geo.root");
-    gse = (TEveGeoShapeExtract*) f2.Get("Gentle");
-    f2.Close();
-    colladaBuffer->CreateNode("MAIN");
-    ReadShapes(gse,"MAIN");
     
-    TFile f3("../../../resources/geometry/gentle_geo_emcal.root");
-    gse = (TEveGeoShapeExtract*) f3.Get("Gentle EMCAL");
-    f3.Close();
-    colladaBuffer->CreateNode("EMCAL");
-    ReadShapes(gse,"EMCAL");
-    //
+    // Get TGeo shapes from simplified geometry files
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
     
+    vector<string> detectorsList;
+    TSystemDirectory dir(Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")),
+                         Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")));
+    
+    TList *files = dir.GetListOfFiles();
+    
+    if (files)
+    {
+        TRegexp e("simple_geom_[A-Z][A-Z][A-Z].root");
+        TRegexp e2("[A-Z][A-Z][A-Z]");
+        
+        TSystemFile *file;
+        TString fname;
+        TIter next(files);
+        
+        while ((file=(TSystemFile*)next()))
+        {
+            fname = file->GetName();
+            if(fname.Contains(e))
+            {
+                TString detName = fname(e2);
+                detName.Resize(3);
+                detectorsList.push_back(detName.Data());
+            }
+        }
+    }
+
+    for(int i=0;i<detectorsList.size();i++)
+    {
+        if(detectorsList[i]!="ACO")
+        {
+            TFile f(Form("../../../resources/geometry/run2/simple_geom_%s.root",detectorsList[i].c_str()));
+            TEveGeoShapeExtract* gse = (TEveGeoShapeExtract*) f.Get(detectorsList[i].c_str());
+            f.Close();
+            colladaBuffer->CreateNode(detectorsList[i].c_str());
+            ReadShapes(gse,detectorsList[i].c_str());
+        }
+    }
+
+        
     // save collada buffer to file
     colladaBuffer->SaveAs(outFile);
     
