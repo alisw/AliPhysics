@@ -61,7 +61,7 @@
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODMCHeader.h"
-
+#include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
@@ -112,6 +112,9 @@ _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       (0),
+fAnalysisType         ( "RealData" ),
+fExcludeResonancesInMC ( kFALSE ),
+fExcludeElectronsInMC ( kFALSE ),
 particleSpecies       ( 0 ),
 _tpcnclus             ( 50),
 _chi2ndf              (5.),
@@ -252,6 +255,10 @@ _vertexZ ( 0),
   _vZ_y_eta_before_any_cuts ( 0),
   _vZ_y_eta_without_PID ( 0),
   _vZ_y_eta_POI_AliHelperPID ( 0),
+
+  _y_Pt_AllCh_MCAODTruth ( 0 ),
+  _y_Pt_Pion_MCAODTruth ( 0 ),
+  _y_Pt_Kaon_MCAODTruth ( 0 ),
   
   _phidis_POI_AliHelperPID ( 0),
   _phidis_without_PID ( 0),
@@ -440,6 +447,9 @@ _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       ( 0),
+fAnalysisType         ( "RealData" ),
+fExcludeResonancesInMC ( kFALSE ),
+fExcludeElectronsInMC ( kFALSE ),
 particleSpecies       ( 0 ),
 _tpcnclus             ( 50),
 _chi2ndf              (5.),
@@ -579,6 +589,10 @@ _Ncluster2  ( 0),
   _vZ_y_eta_before_any_cuts ( 0),
   _vZ_y_eta_without_PID ( 0),
   _vZ_y_eta_POI_AliHelperPID ( 0),
+
+  _y_Pt_AllCh_MCAODTruth ( 0 ),
+  _y_Pt_Pion_MCAODTruth ( 0 ),
+  _y_Pt_Kaon_MCAODTruth ( 0 ),
   
   _phidis_POI_AliHelperPID ( 0),
   _phidis_without_PID ( 0),
@@ -1037,6 +1051,10 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "vZ_y_eta_before_any_cuts";        _vZ_y_eta_before_any_cuts = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
     name = "vZ_y_eta_without_PID";        _vZ_y_eta_without_PID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
     name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
+
+    name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
+    name = "y_Pt_Pion_MCAODTruth";        _y_Pt_Pion_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
+    name = "y_Pt_Kaon_MCAODTruth";        _y_Pt_Kaon_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
     
     if ( _singlesOnly )
     {
@@ -1295,24 +1313,511 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
         _eventAccounting->Fill(3);// count all calls to this function with a valid pointer
         //======================
 
-
-        //*********************************************************
-        //TExMap *trackMap = new TExMap();//Mapping matrix----
-
-	/*        //1st loop track for Global tracks
-        for(Int_t i = 0; i < _nTracks; i++)
+     // ===================================
+     // ***********************************            
+     // Real Data
+     if ( fAnalysisType == "RealData" )
+      {
+        //Track Loop starts here
+        for (int iTrack=0; iTrack< _nTracks; iTrack++)
         {
-            AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
-            if(!aodTrack) {
-                AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
+            AliAODTrack* t = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(iTrack));
+            if (!t) {
+                AliError(Form("Could not receive track %d", iTrack));
                 continue;
             }
-            Int_t gID = aodTrack->GetID();
-            if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks =1; TPConly = 128; Hybrid = 272.
-	    }            */
-        
-	// AliAODTrack* newAodTrack;
 
+            bitOK  = t->TestFilterBit(_trackFilterBit); //?
+            if (!bitOK) continue; //128bit or 272bit
+            
+            q      = t->Charge();
+            charge = int(q);
+            phi    = t->Phi();
+	    p      = t->P(); // momentum magnitude
+            pt     = t->Pt();
+            px     = t->Px();
+            py     = t->Py();
+            pz     = t->Pz();
+            eta    = t->Eta();
+            dedx   = t->GetTPCsignal();
+	    //dcaXY  = t -> DCA();
+            //dcaZ   = t -> ZAtDCA();
+
+	    const float mpion = 0.1395701835; // GeV/c2
+	    const float mkaon = 0.493667; // GeV/c2
+	    const float mproton = 0.93827204621; // GeV/c2
+	    if ( particleSpecies == 0 )  mass = mpion;
+	    if ( particleSpecies == 1 )  mass = mkaon;
+	    if ( particleSpecies == 2 )  mass = mproton;
+	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
+
+	    _etadis_before_any_cuts -> Fill( eta );
+            _phidis_before_any_cuts -> Fill( phi );
+	    _ydis_before_any_cuts   -> Fill( y );
+	    _vZ_y_Pt_before_any_cuts -> Fill( vertexZ, y, pt );
+	    _vZ_y_eta_before_any_cuts -> Fill( vertexZ, y, eta );
+	    
+	    // Kinematics cuts begins:
+	    if(charge == 0) continue; //?
+            if( pt < _min_pt_1 || pt > _max_pt_1) continue;
+	    //if( eta < _min_eta_1 || eta > _max_eta_1) continue;            
+	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
+	    
+	    Double_t pos[3];
+	    t -> GetXYZ(pos);
+	    Double_t DCAX = pos[0] - vertexX;
+	    Double_t DCAY = pos[1] - vertexY;
+	    Double_t DCAZ = pos[2] - vertexZ;             
+	    Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));             
+	    if (DCAZ     <  _dcaZMin ||
+		DCAZ     >  _dcaZMax ||
+		DCAXY    >  _dcaXYMax ) continue;       
+
+	    nClus = t -> GetTPCNcls();
+	    if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
+	    
+	    _Ncluster1 -> Fill(nClus);
+	    //_Ncluster2->Fill(nClus);   //_Ncluster2 same with _Ncluster1
+	    
+	    const float c = 2.99792457999999984e-02; // cm/ps
+	    //l = t->GetIntegratedLength();
+	    l = fPIDResponse->GetTOFResponse().GetExpectedSignal(t,AliPID::kElectron)*c;
+	    timeTOF = t->GetTOFsignal(); //in ps	   
+	    
+	    t0 = fPIDResponse -> GetTOFResponse().GetStartTime(p);
+	    timeTOF -= t0; 
+	    beta = l/timeTOF/c;
+
+	    msquare = p*p*(1/(beta*beta)-1);
+
+	    //_t0_1d->Fill(t0);
+	    //_timeTOF_1d->Fill(timeTOF);
+	    //_trackLength->Fill(l);
+	    
+	    //_dedx_p -> Fill( p, dedx );
+	    //_beta_p -> Fill( p, beta );
+	    //_inverse_beta_p -> Fill( p, 1/beta );
+	    //_msquare_p -> Fill( p, msquare );
+
+	    //_nsigmakaon_1d->Fill(nsigmakaon);
+	    //_nsigmaTOFkaon_1d->Fill(nsigmaTOFkaon);
+
+	    // Eta/phi distribution without any PID cuts
+	    _etadis_without_PID -> Fill( eta );
+            _phidis_without_PID -> Fill( phi );
+	    _ydis_without_PID   -> Fill( y );
+	    _vZ_y_Pt_without_PID -> Fill( vertexZ, y, pt );
+	    _vZ_y_eta_without_PID -> Fill( vertexZ, y, eta );
+
+	    // Eta/phi distribution with TPC cuts without TOF
+	    //if(nsigmakaon < 2)
+	    //{
+	    //	_etadis_withTPC_noTOF->Fill(eta);
+	    //	_phidis_withTPC_noTOF->Fill(phi);
+	    //}
+
+	    // Eta/phi distribution with with TOF cuts without TPC
+	    //if(nsigmaTOFkaon  < 2 && nsigmaTOFpion > 2 && nsigmaTOFelectron > 2 && nsigmaTOFproton > 2)
+	    //{
+	    //	_etadis_withTOF_noTPC->Fill(eta);
+	    //	_phidis_withTOF_noTPC->Fill(phi);
+	    //}   
+	    
+	    Bool_t TOFPID = fHelperPID -> GetfRequestTOFPID(); 
+
+	    // PID cuts
+	    Int_t IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
+
+	    if ( IDrec == 999 ) continue; // reject undefined particles (including electrons)
+	    
+	    //_dedx_p_AliHelperPID_no_Undefined -> Fill( p, dedx );
+	    //_beta_p_AliHelperPID_no_Undefined -> Fill( p, beta );
+	    //_inverse_beta_p_AliHelperPID_no_Undefined -> Fill( p, 1/beta );
+	    //_msquare_p_AliHelperPID_no_Undefined -> Fill( p, msquare );
+	    
+	    if ( IDrec != particleSpecies ) continue; // select particles
+
+	    //_dedx_p_POI_AliHelperPID -> Fill( p, dedx );
+	    //_beta_p_POI_AliHelperPID -> Fill( p, beta );
+	    //_inverse_beta_p_POI_AliHelperPID -> Fill( p, 1/beta );
+	    //_msquare_p_POI_AliHelperPID -> Fill( p, msquare );	    
+	    
+            //==== QA ===========================
+            _dcaz->Fill(DCAZ);
+            _dcaxy->Fill(DCAXY);
+            _etadis_POI_AliHelperPID -> Fill( eta );    //Eta/phi distribution after AliHelperPID cuts
+	    _ydis_POI_AliHelperPID   -> Fill( y );
+            _phidis_POI_AliHelperPID -> Fill( phi );
+	    _vZ_y_Pt_POI_AliHelperPID -> Fill( vertexZ, y, pt );
+	    _vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
+            //===================================
+            //*************************************************
+
+	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
+	    
+            //Particle 1
+            if ( _requestedCharge_1 == charge )
+	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+            {
+                iPhi   = int( phi/_width_phi_1);
+                
+                if (iPhi<0 || iPhi>=_nBins_phi_1 )
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
+                    return;
+                }
+                
+                iEta    = int((eta-_min_eta_1)/_width_eta_1);
+                if (iEta<0 || iEta>=_nBins_eta_1)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
+                    continue;
+                }
+                iPt     = int((pt -_min_pt_1 )/_width_pt_1 );
+                if (iPt<0  || iPt >=_nBins_pt_1)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
+                    continue;
+                }
+                iEtaPhi = iEta*_nBins_phi_1+iPhi;
+                iZEtaPhiPt = iVertexP1 + iEtaPhi*_nBins_pt_1 + iPt;
+                
+                if (_correctionWeight_1)
+                    corr = _correctionWeight_1[iZEtaPhiPt];
+                else
+                    corr = 1;
+                if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1)
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1");
+                    continue;
+                }
+                
+                
+                if (_singlesOnly)
+                {
+                    
+                    __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+                    __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+                    
+                }
+                else
+                {
+                    corrPt                      = corr*pt;
+                    _id_1[k1]                   = iTrack;
+                    _charge_1[k1]               = charge;
+                    _iEtaPhi_1[k1]              = iEtaPhi;
+                    _iPt_1[k1]                  = iPt;
+                    _pt_1[k1]                   = pt;
+                    _px_1[k1]                   = px;
+                    _py_1[k1]                   = py;
+                    _pz_1[k1]                   = pz;
+                    _correction_1[k1]           = corr;
+                    __n1_1                      += corr;
+                    __n1_1_vsEtaPhi[iEtaPhi]    += corr;
+                    __s1pt_1                    += corrPt;
+                    __s1pt_1_vsEtaPhi[iEtaPhi]  += corrPt;
+                    __n1Nw_1                    += 1;
+                    __s1ptNw_1                  += pt;
+                    ++k1;
+                    if (k1>=arraySize)
+                    {
+                        AliError(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) k1 >=arraySize; arraySize: %d",arraySize));
+                        return;
+                    }
+                }
+            }//if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            
+            if ( !_sameFilter && _requestedCharge_2 == charge )
+	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+                
+            {
+                
+                iPhi   = int( phi/_width_phi_2);
+                
+                if (iPhi<0 || iPhi>=_nBins_phi_2 )
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
+                    return;
+                }
+                
+                iEta    = int((eta-_min_eta_2)/_width_eta_2);
+                if (iEta<0 || iEta>=_nBins_eta_2)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
+                    continue;
+                }
+                iPt     = int((pt -_min_pt_2 )/_width_pt_2 );
+                if (iPt<0  || iPt >=_nBins_pt_2)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
+                    continue;
+                }
+                
+                iEtaPhi = iEta*_nBins_phi_2+iPhi;
+                iZEtaPhiPt = iVertexP2 + iEtaPhi*_nBins_pt_2 + iPt;
+                if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2)
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2");
+                    continue;
+                }
+                
+                
+                if (_correctionWeight_2)
+                    corr = _correctionWeight_2[iZEtaPhiPt];
+                else
+                    corr = 1;
+                
+                if (_singlesOnly)
+                {
+                    __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+                    __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+                }
+                else
+                {
+                    corrPt                      = corr*pt;
+                    _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
+                    _charge_2[k2]               = charge;         //cout << "step 2" << endl;
+                    _iEtaPhi_2[k2]              = iEtaPhi;        //cout << "step 3" << endl;
+                    _iPt_2[k2]                  = iPt;            //cout << "step 4" << endl;
+                    _pt_2[k2]                   = pt;             //cout << "step 5" << endl;
+                    _px_2[k2]                   = px;             //cout << "step 6" << endl;
+                    _py_2[k2]                   = py;             //cout << "step 7" << endl;
+                    _pz_2[k2]                   = pz;             //cout << "step 8" << endl;
+                    _correction_2[k2]           = corr;           //cout << "step 9" << endl;
+                    __n1_2                      += corr;          //cout << "step 10" << endl;
+                    __s1pt_2                    += corrPt;        //cout << "step 13" << endl;
+                    __n1Nw_2                    += 1;
+                    __n1_2_vsEtaPhi[iEtaPhi]    += corr;          //cout << "step 11" << endl;
+                    __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;        //cout << "step 14" << endl;
+                    __s1ptNw_2                  += pt;
+                    ++k2;
+                    if (k2>=arraySize)
+                    {
+                        AliWarning(Form("-W- k2 >=arraySize; arraySize: %d",arraySize));
+                        return;
+                    }
+                }                
+                //cout << "done with track" << endl;
+            } //if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+        } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      } //end of "if ( fAnalysisType == "RealData" )"
+
+     // ===================================
+     // ***********************************            
+     // MC AOD Truth
+     if ( fAnalysisType == "MCAOD" )
+      {
+	AliMCEvent * mcEvent = MCEvent();
+	_nTracks = mcEvent -> GetNumberOfTracks();
+	
+        //Track Loop starts here
+        for (int iTrack=0; iTrack< _nTracks; iTrack++)
+          {
+	    AliAODMCParticle * t = ( AliAODMCParticle * ) mcEvent -> GetTrack( iTrack );
+	  
+            if (!t) {
+                AliError(Form("Could not receive track %d", iTrack));
+                continue;
+            }
+
+	    if( !t -> IsPhysicalPrimary() ) continue;
+            
+            q      = t -> Charge();
+            charge = int(q);
+            phi    = t -> Phi();
+            pt     = t -> Pt();
+            eta    = t -> Eta();
+	    y      = t -> Y(); // rapidity
+	    
+	    // Kinematics cuts begins:
+	    if( charge == 0 ) continue;
+            if( pt < _min_pt_1 || pt > _max_pt_1) continue;         
+	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
+
+	    // fill QA histograms
+	    _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles	    
+	    if( TMath::Abs( t -> GetPdgCode() ) == 211 )  _y_Pt_Pion_MCAODTruth -> Fill( y, pt ); //Pion	    
+	    if( TMath::Abs( t -> GetPdgCode() ) == 321 )  _y_Pt_Kaon_MCAODTruth -> Fill( y, pt ); //Kaon
+
+	    //Exclude resonances
+	    if( fExcludeResonancesInMC )
+	      {                            
+		Int_t gMotherIndex = t -> GetMother();
+		if( gMotherIndex != -1 ) {
+		  AliAODMCParticle * motherTrack = dynamic_cast<AliAODMCParticle *>( mcEvent -> GetTrack( gMotherIndex ) );
+		  if( motherTrack ) {
+		    Int_t pdgCodeOfMother = motherTrack -> GetPdgCode();
+                       
+		    if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
+		       || pdgCodeOfMother == 310
+		       || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+		       || pdgCodeOfMother == 111 // pi0 Dalitz
+		       || pdgCodeOfMother == 22 // photon
+		       ) continue;
+		  }
+		}
+	      }
+	    
+	    //Exclude electrons with PDG                                                              
+	    if( fExcludeElectronsInMC ) {
+	      if( TMath::Abs( t -> GetPdgCode() ) == 11 ) continue;
+	    }
+	    
+	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
+	    
+            //Particle 1
+            if ( _requestedCharge_1 == charge )
+	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+            {
+                iPhi   = int( phi/_width_phi_1);
+                
+                if (iPhi<0 || iPhi>=_nBins_phi_1 )
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
+                    return;
+                }
+                
+                iEta    = int((eta-_min_eta_1)/_width_eta_1);
+                if (iEta<0 || iEta>=_nBins_eta_1)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
+                    continue;
+                }
+                iPt     = int((pt -_min_pt_1 )/_width_pt_1 );
+                if (iPt<0  || iPt >=_nBins_pt_1)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
+                    continue;
+                }
+                iEtaPhi = iEta*_nBins_phi_1+iPhi;
+                iZEtaPhiPt = iVertexP1 + iEtaPhi*_nBins_pt_1 + iPt;
+                
+                if (_correctionWeight_1)
+                    corr = _correctionWeight_1[iZEtaPhiPt];
+                else
+                    corr = 1;
+                if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1)
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1");
+                    continue;
+                }
+                
+                
+                if (_singlesOnly)
+                {
+                    
+                    __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+                    __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+                    
+                }
+                else
+                {
+                    corrPt                      = corr*pt;
+                    _id_1[k1]                   = iTrack;
+                    _charge_1[k1]               = charge;
+                    _iEtaPhi_1[k1]              = iEtaPhi;
+                    _iPt_1[k1]                  = iPt;
+                    _pt_1[k1]                   = pt;
+                    _px_1[k1]                   = px;
+                    _py_1[k1]                   = py;
+                    _pz_1[k1]                   = pz;
+                    _correction_1[k1]           = corr;
+                    __n1_1                      += corr;
+                    __n1_1_vsEtaPhi[iEtaPhi]    += corr;
+                    __s1pt_1                    += corrPt;
+                    __s1pt_1_vsEtaPhi[iEtaPhi]  += corrPt;
+                    __n1Nw_1                    += 1;
+                    __s1ptNw_1                  += pt;
+                    ++k1;
+                    if (k1>=arraySize)
+                    {
+                        AliError(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) k1 >=arraySize; arraySize: %d",arraySize));
+                        return;
+                    }
+                }
+            }//if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            
+            if ( !_sameFilter && _requestedCharge_2 == charge )
+	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+                
+            {
+                
+                iPhi   = int( phi/_width_phi_2);
+                
+                if (iPhi<0 || iPhi>=_nBins_phi_2 )
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
+                    return;
+                }
+                
+                iEta    = int((eta-_min_eta_2)/_width_eta_2);
+                if (iEta<0 || iEta>=_nBins_eta_2)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
+                    continue;
+                }
+                iPt     = int((pt -_min_pt_2 )/_width_pt_2 );
+                if (iPt<0  || iPt >=_nBins_pt_2)
+                {
+                    AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
+                    continue;
+                }
+                
+                iEtaPhi = iEta*_nBins_phi_2+iPhi;
+                iZEtaPhiPt = iVertexP2 + iEtaPhi*_nBins_pt_2 + iPt;
+                if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2)
+                {
+                    AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2");
+                    continue;
+                }
+                
+                
+                if (_correctionWeight_2)
+                    corr = _correctionWeight_2[iZEtaPhiPt];
+                else
+                    corr = 1;
+                
+                if (_singlesOnly)
+                {
+                    __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+                    __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+                }
+                else
+                {
+                    corrPt                      = corr*pt;
+                    _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;
+                    _charge_2[k2]               = charge;         //cout << "step 2" << endl;
+                    _iEtaPhi_2[k2]              = iEtaPhi;        //cout << "step 3" << endl;
+                    _iPt_2[k2]                  = iPt;            //cout << "step 4" << endl;
+                    _pt_2[k2]                   = pt;             //cout << "step 5" << endl;
+                    _px_2[k2]                   = px;             //cout << "step 6" << endl;
+                    _py_2[k2]                   = py;             //cout << "step 7" << endl;
+                    _pz_2[k2]                   = pz;             //cout << "step 8" << endl;
+                    _correction_2[k2]           = corr;           //cout << "step 9" << endl;
+                    __n1_2                      += corr;          //cout << "step 10" << endl;
+                    __s1pt_2                    += corrPt;        //cout << "step 13" << endl;
+                    __n1Nw_2                    += 1;
+                    __n1_2_vsEtaPhi[iEtaPhi]    += corr;          //cout << "step 11" << endl;
+                    __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;        //cout << "step 14" << endl;
+                    __s1ptNw_2                  += pt;
+                    ++k2;
+                    if (k2>=arraySize)
+                    {
+                        AliWarning(Form("-W- k2 >=arraySize; arraySize: %d",arraySize));
+                        return;
+                    }
+                }
+                
+                //cout << "done with track" << endl;
+            } //if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+        } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      } //end of "if ( fAnalysisType == "MCAOD" )"
+
+     // ===================================
+     // ***********************************            
+     // MC AOD Reconstructed tracks
+     if ( fAnalysisType == "MCAODreco" )
+      {
         //Track Loop starts here
         for (int iTrack=0; iTrack< _nTracks; iTrack++)
         {
@@ -1596,10 +2101,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-                
-                //cout << "done with track" << endl;
             } //if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
         } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      } //end of "if ( fAnalysisType == "MCAODreco" )"
+	
     } //if(fAODEvent)
     
     
@@ -1844,7 +2349,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     AliInfo("AliAnalysisTaskPIDBFDptDpt::UserExec()   -----------------Event Done ");
     PostData(0,_outputHistoList);
     
-}
+} // End of UserExec
 
 void   AliAnalysisTaskPIDBFDptDpt::FinishTaskOutput()
 {
