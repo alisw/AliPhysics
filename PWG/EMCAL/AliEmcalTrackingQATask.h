@@ -17,7 +17,6 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
   void                   UserCreateOutputObjects();
   void                   SetGeneratorLevelName(const char* name);
   void                   SetDetectorLevelName(const char* name);
-  void                   SetSelectHIJING(Bool_t s)        {fSelectHIJING       = s; }
   void                   SetDoSigma1OverPt(Bool_t s)      {fDoSigma1OverPt     = s; }
   void                   SetDoSigmaPtOverPtGen(Bool_t s)  {fDoSigmaPtOverPtGen = s; }
 
@@ -35,13 +34,12 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcal {
 						       Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
 
   // Task configuration
-  Bool_t                fSelectHIJING          ; //  select HIJING particles
   Bool_t                fDoSigma1OverPt        ; //  add sigma(1/pt), if false add sigma(pt)/pt instead
   Bool_t                fDoSigmaPtOverPtGen    ; //  MC: if true do sigma((ptgen - ptdet) / ptgen), otherwise do sigma((ptgen - ptdet) / ptdet)
 
   // Service fields (non-streamed)
-  AliParticleContainer* fGeneratorLevel        ; //! generator level container
-  AliParticleContainer* fDetectorLevel         ; //! detector level container
+  AliMCParticleContainer* fGeneratorLevel      ; //! generator level container
+  AliTrackContainer*    fDetectorLevel         ; //! detector level container
   Int_t                 fNPtHistBins           ; //! number of pt bins
   Double_t*             fPtHistBins            ; //! pt bins
   Int_t                 fNEtaHistBins          ; //! number of eta bins

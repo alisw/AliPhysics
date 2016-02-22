@@ -25,7 +25,7 @@ ClassImp(AliHFAODMCParticleContainer)
 
 /// This is the default constructor, used for ROOT I/O purposes.
 AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
-  AliParticleContainer(),
+  AliMCParticleContainer(),
   fSpecialPDG(0),
   fRejectedOrigin(0),
   fAcceptedDecay(0)
@@ -39,7 +39,7 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
 ///
 /// \param name Name of the particle collection
 AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
-  AliParticleContainer(name),
+  AliMCParticleContainer(name),
   fSpecialPDG(0),
   fRejectedOrigin(AliAnalysisTaskDmesonJets::kUnknownQuark | AliAnalysisTaskDmesonJets::kFromBottom),
   fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay)
@@ -73,9 +73,9 @@ void AliHFAODMCParticleContainer::SelectCharmtoDStartoKpipi()
 /// Calls the base class method (needed to avoid shadowing).
 ///
 /// \param Pointer to an AliVParticle object.
-Bool_t AliHFAODMCParticleContainer::AcceptParticle(AliVParticle* vp)
+Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(AliAODMCParticle* vp)
 {
-  return AliParticleContainer::AcceptParticle(vp);
+  return AliMCParticleContainer::AcceptMCParticle(vp);
 }
 
 /// First check whether the particle is a "special" PDG particle (in which case the particle is accepted)
@@ -85,7 +85,7 @@ Bool_t AliHFAODMCParticleContainer::AcceptParticle(AliVParticle* vp)
 /// \param i Index of the particle to be checked.
 ///
 /// \return kTRUE if the particle is accepted, kFALSE otherwise.
-Bool_t AliHFAODMCParticleContainer::AcceptParticle(Int_t i)
+Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i)
 {
   // Determine whether the MC particle is accepted.
 
@@ -125,7 +125,7 @@ Bool_t AliHFAODMCParticleContainer::AcceptParticle(Int_t i)
   }
 
   // Not a special PDG particle, and not a daughter of a special PDG particle. Apply regular cuts.
-  return AliParticleContainer::AcceptParticle(i);
+  return AliMCParticleContainer::AcceptMCParticle(i);
 }
 
 /// Check if particle it's a daughter of a "special" PDG particle: AOD mode

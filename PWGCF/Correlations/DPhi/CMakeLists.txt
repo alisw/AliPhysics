@@ -44,6 +44,7 @@ set(SRCS
     AliAnalysisTaskLongRangeCorrelations.cxx
     AliAnalysisTaskMinijet.cxx
     AliAnalysisTaskPhiCorrelations.cxx
+    AliAnalysisTaskCorrelationsDev.cxx
     AliAnalysisTaskpxpx.cxx
     AliAnalysisTaskpxpy.cxx
     AliAnalysisTaskpxpy.cxx

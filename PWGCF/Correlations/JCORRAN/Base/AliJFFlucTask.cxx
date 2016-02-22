@@ -67,7 +67,8 @@ AliJFFlucTask::AliJFFlucTask():
 	IsExcludeWeakDecay = kFALSE;
 	IsCentFlat = kFALSE;
 	IsPhiModule = kFALSE;
-	IsSCptdep = kFALSE; 
+	IsSCptdep = kFALSE;
+	IsSCwithQC= kFALSE; 
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;		
@@ -104,6 +105,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	IsCentFlat = kFALSE;
 	IsPhiModule = kFALSE;
 	IsSCptdep = kFALSE;
+	IsSCwithQC = kFALSE;
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;		
@@ -149,6 +151,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna->SetDebugLevel(fDebugLevel); 
 	fFFlucAna->SetIsPhiModule( IsPhiModule); 
 	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
+	fFFlucAna->SetSCwithQC( IsSCwithQC );
 	// setting histos for phi modulation
 	if( IsPhiModule==kTRUE){
 			for(int icent=0; icent<7; icent++){

@@ -325,7 +325,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fOutput->SetOwner();
 
    // initialize event statistics counter
-   fHEventStat = new TH1F("hEventStat", "Event statistics", 10, 0.0, 10.0);
+   fHEventStat = new TH1F("hEventStat", "Event statistics", 13, 0.0, 13.0);
    fHEventStat->GetXaxis()->SetBinLabel(1, "CINT1B");
    fHEventStat->GetXaxis()->SetBinLabel(2, "V0AND");
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
@@ -335,7 +335,10 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(7, "Not Accepted - Not Enough Contributors");
    fHEventStat->GetXaxis()->SetBinLabel(8, "Not Accepted - No Vertex inside |z| < 10 cm");
    fHEventStat->GetXaxis()->SetBinLabel(9, "Not Accepted - Pile Up Events");
-   fHEventStat->GetXaxis()->SetBinLabel(10, "Not Accepted - All local cuts");
+   fHEventStat->GetXaxis()->SetBinLabel(10, "Not Accepted - Incomplete DAQ");
+   fHEventStat->GetXaxis()->SetBinLabel(11, "Not Accepted - Past/Future");
+   fHEventStat->GetXaxis()->SetBinLabel(12, "Not Accepted - Cluster-Tracklets Correlation");
+   fHEventStat->GetXaxis()->SetBinLabel(13, "Not Accepted - All local cuts");
    
    
    fOutput->Add(fHEventStat);
@@ -764,7 +767,7 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
          msg += " -- Local cuts = REJECTED";
          isSelected = kFALSE;
 	 // fill counter
-	 fHEventStat->Fill(10.1);
+	 fHEventStat->Fill(12.1);
       } else {
          msg += " -- Local cuts = ACCEPTED";
          isSelected = kTRUE;
@@ -773,6 +776,9 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       msg += " -- Local cuts = NONE";
       isSelected = kTRUE;
    }
+
+   AliRsnCutEventUtils* evtUtils=new AliRsnCutEventUtils("temporary_cutEventUtils");
+   evtUtils->IsSelected(&fRsnEvent);
 
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
@@ -801,8 +807,10 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
        }
        else if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
        else if(utils->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
+       else if(evtUtils->IsIncompleteDAQ()) fHEventStat->Fill(9.1);
+       else if(evtUtils->FailsPastFuture()) fHEventStat->Fill(10.1);
+       else if(utils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(11.1);
      }
-	 
      return 0;
    }
 }

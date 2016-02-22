@@ -1450,7 +1450,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
         if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
-        if( eta > -1. && eta < 1.)MultCL1++;
+        if( eta > -1.4 && eta < 1.4)MultCL1++;
       }
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
       if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();

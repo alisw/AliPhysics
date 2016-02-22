@@ -8,6 +8,7 @@
 
 class AliAnalysisUtils;
 class AliEmcalJet;
+class AliEmcalTrackSelection;
 class AliJetContainer;
 class AliVParticle;
 class AliVTrack;
@@ -15,7 +16,6 @@ class TNtuple;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalPtTaskVTrackSelection;
 
 class AliAnalysisTaskPtEfficiencyJets: public AliAnalysisTaskEmcalJet {
 public:
@@ -27,7 +27,7 @@ public:
   virtual Bool_t Run();
 
   void SetMCJetContainer(const char *name) { fMCJetContainer = name; }
-  void SetTrackCuts(AliEMCalPtTaskVTrackSelection *cuts) { fTrackCuts = cuts; }
+  void SetTrackCuts(AliEmcalTrackSelection *cuts) { fTrackCuts = cuts; }
 
 protected:
   AliVTrack *FindAssociatedTrack(AliVParticle *trueParticle);
@@ -40,7 +40,7 @@ private:
 
   AliAnalysisUtils                    *fAnalysisUtils;
   TString                             fMCJetContainer;
-  AliEMCalPtTaskVTrackSelection       *fTrackCuts;
+  AliEmcalTrackSelection              *fTrackCuts;
   TNtuple                             *fTrackNtuple;
 
   ClassDef(AliAnalysisTaskPtEfficiencyJets, 1);

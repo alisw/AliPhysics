@@ -5418,8 +5418,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	TList* jettrackList = new TList();//gen. jets track list
 	Double_t sumPt      = 0.;
 	Bool_t isBadJet     = kFALSE;
-	
 
+	TList* jettrackListMatch = new TList();//matched jets track list
+	Double_t sumPtMatch      = 0.;
+	Bool_t isBadJetMatch     = kFALSE;
+
+	//gen. jet tracks:
 	if(GetFFRadius()<=0){
 	  GetJetTracksTrackrefs(jettrackList, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
 
@@ -5433,6 +5437,28 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  if(fDebug >2)std::cout<<" Generated jet loop: jettrackList is empty! "<<std::endl;
 	  
 	  delete jettrackList;
+	  continue; 
+	}
+	
+
+	jettrackListMatch->Clear();
+	
+	if(matchedJet){
+	  //matched jets tracks:
+	  if(GetFFRadius()<=0){
+	    GetJetTracksTrackrefs(jettrackListMatch, matchedJet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);
+	    
+	  }
+	  else GetJetTracksPointing(fTracksRecCuts, jettrackListMatch, matchedJet, GetFFRadius(), sumPtMatch, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);}
+	
+	
+	if(GetFFMinNTracks()>0 && jettrackListMatch->GetSize()<=GetFFMinNTracks()){isBadJetMatch = kTRUE;}
+	
+	if(jettrackListMatch->GetEntries() == 0){
+	  
+	  if(fDebug >2)std::cout<<" Generated jet loop: jettrackListMatch is empty! "<<std::endl;
+	  
+	  delete jettrackListMatch;
 	  continue; 
 	}
 	
@@ -5498,7 +5524,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
 	  
-	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa, jettrackList);//fill all V0 embedding histos for match mode 2
+	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa, jettrackListMatch);//fill all V0 embedding histos for match mode 2
 
 	  //Fill gen. jet V0s:
 	  
@@ -5616,6 +5642,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	}
 	
 	delete jettrackList;
+	delete jettrackListMatch;
     }
   }
   
