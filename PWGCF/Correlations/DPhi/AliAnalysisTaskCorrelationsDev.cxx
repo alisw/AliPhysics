@@ -1,30 +1,17 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-/* $Id:$ */
-
 #include <TList.h>
 #include <TMath.h>
 #include <TTree.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TNtuple.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
 
 #include "AliAnalysisTaskCorrelationsDev.h"
 #include "AliAnalyseLeadingTrackUE.h"
 
 #include "AliInputEventHandler.h"
+#include "AliAnalysisCuts.h"
 
 #include "AliLog.h"
 #include "AliVParticle.h"
@@ -33,25 +20,30 @@
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
 
-ClassImp( AliAnalysisTaskCorrelationsDev )
+ClassImp(AliAnalysisTaskCorrelationsDev)
 
 //____________________________________________________________________
 AliAnalysisTaskCorrelationsDev:: AliAnalysisTaskCorrelationsDev(const char* name):
 AliAnalysisTaskSE(name),
 // general configuration
-fDebug(0),
 fAnalyseUE(0x0),
+fDebug(0),
 fListOfHistos(0x0), 
+fEventCuts(0),
+fSelectBit(0),
 fZVertex(-1),
 fCentralityMethod("V0M"),
+fUseUncheckedCentrality(kFALSE),
+fUseNewCentralityFramework(kFALSE),
 fTrackEtaCut(10),
 fTrackEtaCutMin(-1.),
 fPtMin(0),
 fFilterBit(0),
 fTrackStatus(0),
-fSelectBit(0),
-fUseUncheckedCentrality(kFALSE),
-fUseNewCentralityFramework(kFALSE)
+fOutputTree(0),
+fOutputContainer(0),
+fTreeEventConfig(0),
+fTreeTrackConfig(0)
 {
   // Default constructor
 
@@ -71,14 +63,41 @@ void  AliAnalysisTaskCorrelationsDev::UserCreateOutputObjects()
 {
   // Create the output container
   
-  if (fDebug > 1) AliInfo("UserCreateOutputObjects()");
-   
+  AliInfo(Form("Particle selection: filter bit = %d | eta_min = %f | eta_max = %f | pt_min = %f | track_status = %d", fFilterBit, fTrackEtaCutMin, fTrackEtaCut, fPtMin, fTrackStatus));
+  
   // Initialize class with main algorithms, event and track selection. 
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, kFALSE, fTrackEtaCut, fTrackEtaCutMin, fPtMin);
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->SetEventSelection(fSelectBit);
+  
+  // create output tree
+  if (fTreeEventConfig->GetEntriesFast() > 0)
+  {
+    TString varlist = "id";
+    for (int i=0; i<fTreeEventConfig->GetEntriesFast(); i++) {
+      varlist += ":";
+      varlist += fTreeEventConfig->At(i)->GetName();
+    }
+    
+    // support 10 tracks
+    for (int j=0; j<TreeMaxTracks; j++)
+      for (int i=0; i<fTreeTrackConfig->GetEntriesFast(); i++)
+        varlist += Form(":%s_%d", fTreeTrackConfig->At(i)->GetName(), j);
+    
+    varlist.ReplaceAll("(", "");
+    varlist.ReplaceAll(")", "");
+    varlist.ReplaceAll("[", "");
+    varlist.ReplaceAll("]", "");
+    varlist.ReplaceAll(".", "_");
+    varlist.ReplaceAll("->", "_");
+      
+    fOutputTree = new TNtuple("fOutputTree", "fOutputTree", varlist);
+    fOutputContainer = new Float_t[fOutputTree->GetNvar()];
+
+    Printf("Created tree with %d branches: %s", fOutputTree->GetNvar(), varlist.Data());
+  }
 
   // Initialize output list of containers
   if (fListOfHistos != NULL){
@@ -93,6 +112,8 @@ void  AliAnalysisTaskCorrelationsDev::UserCreateOutputObjects()
   fListOfHistos->Add(new TH2F("tofSignalvsMult", ";multiplicity;tofSignal", 10, 0.5, 10.5, 1000, 0, 40000));
   fListOfHistos->Add(new TH2F("tofSignalvsTOFMult", ";multiplicity;tofSignal", 10, 0.5, 10.5, 1000, 0, 40000));
   
+  fListOfHistos->Add(fOutputTree);
+  
   PostData(1, fListOfHistos);
   
   AddSettingsTree();
@@ -101,8 +122,8 @@ void  AliAnalysisTaskCorrelationsDev::UserCreateOutputObjects()
 //____________________________________________________________________
 void  AliAnalysisTaskCorrelationsDev::AddSettingsTree()
 {
-  //Write settings to output list
-  TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
+  // Write settings to output list
+  TTree *settingsTree   = new TTree("AnalysisSettings","Analysis Settings");
   settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
   //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
@@ -136,9 +157,13 @@ void  AliAnalysisTaskCorrelationsDev::UserExec(Option_t */*option*/)
   if (fZVertex > 0 && !fAnalyseUE->VertexSelection(fInputEvent, 1, fZVertex)) 
     return;
   
+  // general event selection
+  if (fEventCuts && !fEventCuts->IsSelected(fInputEvent))
+    return;
+  
   Double_t centrality = GetCentrality(fInputEvent, 0);
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(fInputEvent, 0);
+  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(fInputEvent, 0, kTRUE, -1, kTRUE);
   
   Int_t totalTracks = tracks->GetEntriesFast();
   Int_t tofTracks = 0;
@@ -164,7 +189,64 @@ void  AliAnalysisTaskCorrelationsDev::UserExec(Option_t */*option*/)
   if (fDebug > 1)
     Printf("Tracks: %d %d", totalTracks, tofTracks);
   
+  if (fOutputTree)
+  {
+    for (int i=0; i<fOutputTree->GetNvar(); i++)
+      fOutputContainer[i] = 0;
+    
+    fOutputContainer[0] = fAnalyseUE->GetEventCounter();
+    
+    // event properties
+    for (int i=0; i<fTreeEventConfig->GetEntriesFast(); i++)
+    {
+      Float_t value = GetValueInterpreted(fInputEvent, fTreeEventConfig->At(i)->GetName());
+
+      fOutputContainer[i+1] = value;
+      
+      if (fDebug > 5)
+        Printf("E %d %s %f", i, fTreeEventConfig->At(i)->GetName(), value);
+    }
+    
+    // tracks
+    Int_t nTracks = tracks->GetEntriesFast();
+    if (nTracks > TreeMaxTracks)
+      nTracks = TreeMaxTracks;
+    
+    Int_t containerCounter = 1 + fTreeEventConfig->GetEntriesFast();
+    
+    for (int itrack=0; itrack<nTracks; itrack++)
+    {
+      for (int i=0; i<fTreeTrackConfig->GetEntriesFast(); i++)
+      {
+        Float_t value = GetValueInterpreted(dynamic_cast<AliVTrack*> (tracks->At(itrack)), fTreeTrackConfig->At(i)->GetName());
+        fOutputContainer[containerCounter++] = value;
+      
+        if (fDebug > 5)
+          Printf("T %d %d %s %f", itrack, i, fTreeTrackConfig->At(i)->GetName(), value);
+      }
+    }
+    
+    fOutputTree->Fill(fOutputContainer);
+  }
+  
   delete tracks;
+}
+
+Float_t AliAnalysisTaskCorrelationsDev::GetValueInterpreted(TObject* source, const char* command)
+{
+  // get value from the interpreter to allow configuration
+
+  // with some float <-> int casting magic...
+  Int_t error = 0;
+  Int_t tmpInt = (Int_t) gROOT->ProcessLine(Form("Float_t tmpFloat = ((%s*) %p)->%s; Int_t tmpInt; memcpy(&tmpInt, &tmpFloat, sizeof(Float_t)); tmpInt;", source->ClassName(), (void*) source, command), &error);
+  
+  Float_t value;
+  if (error == TInterpreter::kNoError)
+    memcpy(&value, &tmpInt, sizeof(Float_t));
+  else
+    value = -999;
+  
+  return value;
 }
 
 Double_t AliAnalysisTaskCorrelationsDev::GetCentrality(AliVEvent* inputEvent, TObject* mc)
