@@ -2685,7 +2685,7 @@ double AliTPCcalibAlignInterpolation::GetTgPhi(double x, double y2x, double q2p,
   double snp;
   if (det<0) {
     snp = TMath::Sign(-0.8,c);
-    printf("track of q2p=%f cannot reach x:%f y:%f, define snp as %f \n",q2p,x,y,snp);
+    //printf("track of q2p=%f cannot reach x:%f y:%f, define snp as %f \n",q2p,x,y,snp);
   }
   else {
     snp = 0.5*(y*TMath::Sqrt(det)-c*x); // snp at vertex
@@ -2700,23 +2700,32 @@ void AliTPCcalibAlignInterpolation::FixAlignmentBug(int sect, float q2pt, float 
 {
   // fix alignment bug: https://alice.its.cern.ch/jira/browse/ATO-339?focusedCommentId=170850&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-170850
   //
+  static TGeoHMatrix *mCache[72] = {0};
+  if (sect<0||sect>=72) {
+    AliErrorClassF("Invalid sector %d",sect);
+    return;
+  }
   int lr = sect/36 ? (AliGeomManager::kTPC2) : (AliGeomManager::kTPC1);
-  int volID = AliGeomManager::LayerToVolUIDSafe(lr,sect%36);
-  const TGeoHMatrix* matGL = AliGeomManager::GetMatrix(volID);
-  const TGeoHMatrix* matTL = AliGeomManager::GetTracking2LocalMatrix(volID);
+  TGeoHMatrix* mgt = mCache[sect];
+  if (!mgt) {
+    int volID = AliGeomManager::LayerToVolUIDSafe(lr,sect%36);
+    mgt = new TGeoHMatrix(*AliGeomManager::GetTracking2LocalMatrix(volID));
+    mgt->MultiplyLeft(AliGeomManager::GetMatrix(volID));
+    mCache[sect] = mgt;
+    printf("Caching matrix for sector %d\n",sect);
+  }  
   double alpSect = ((sect%18)+0.5)*20.*TMath::DegToRad();
 
   // cluster in its proper alpha frame with alignment bug, Z trackITS is used !!! 
   double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree, ITS Z only is stored
   double xyzTrUse[3] = {x, deltaY, z}; // track in bad cluster frame
-  double xyz0[3];
   //
   // recover cluster Z position by adding deltaZ, this is approximate, since ITS track Z was used...
   xyzClUse[2] -= deltaZ;
   static AliExternalTrackParam trDummy;
   trDummy.Local2GlobalPosition(xyzClUse,alp); // misaligned cluster in global frame
-  matGL->MasterToLocal(xyzClUse,xyz0);
-  matTL->MasterToLocal(xyz0,xyzClUse);
+  double xyz0[3]={xyzClUse[0],xyzClUse[1],xyzClUse[2]};
+  mgt->MasterToLocal(xyz0,xyzClUse);
   // we got ideal cluster in the sector tracking frame, 
   //
   // go to ideal cluster frame
