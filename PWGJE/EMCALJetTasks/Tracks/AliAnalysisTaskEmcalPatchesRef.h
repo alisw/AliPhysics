@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisUtils;
+class THistManager;
 class TArrayD;
 class TString;
 
@@ -54,7 +55,7 @@ protected:
   Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;
-  AliEMCalHistoContainer              *fHistos;
+  THistManager                        *fHistos;
 
   Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;

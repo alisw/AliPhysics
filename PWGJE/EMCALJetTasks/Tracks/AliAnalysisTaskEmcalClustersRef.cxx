@@ -21,6 +21,7 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TString.h>
@@ -28,7 +29,6 @@
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -93,7 +93,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
   CreateEnergyBinning(energybinning);
   TArrayD smbinning(14); CreateLinearBinning(smbinning, 21, -0.5, 20.5);
   TArrayD etabinning; CreateLinearBinning(etabinning, 100, -0.7, 0.7);
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
   TString triggers[18] = {
       "MB", "EMC7", "DMC7",
       "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",

@@ -7,6 +7,7 @@
 
 class TArrayD;
 class TClonesArray;
+class THistManager;
 class TObjArray;
 class TString;
 
@@ -21,7 +22,6 @@ class AliVTrack;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
 
 class AliAnalysisTaskEventSelectionRef : public AliAnalysisTaskSE {
 public:
@@ -60,7 +60,7 @@ protected:
   TString                       fClusterContainerName;
   AliAnalysisUtils              *fAnalysisUtils;
   AliESDtrackCuts               *fTrackCuts;
-  AliEMCalHistoContainer        *fHistos;                   //!
+  THistManager                  *fHistos;                   //!
   AliEMCALGeometry              *fGeometry;                 //!
   TClonesArray                  *fTriggerPatchContainer;    //!
   TClonesArray                  *fClusterContainer;         //!

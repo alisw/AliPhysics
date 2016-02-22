@@ -18,6 +18,7 @@
 #include <TArrayD.h>
 #include <TMath.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
@@ -34,7 +35,6 @@
 #include "AliInputEventHandler.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCalTriggerExtraCuts.h"
 #include "AliAnalysisTaskChargedParticlesRef.h"
 
@@ -115,7 +115,7 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
   CreateOldPtBinning(oldbinning);
   CreateNewPtBinning(newbinning);
 
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
   // Exclusive means classes without higher trigger classes:
   // EG2excl means EG2 && !EG1
   // EJ2excl means EJ2 && !EJ1

@@ -6,14 +6,13 @@
 #include "AliAnalysisTaskSE.h"
 
 class TArrayD;
+class THistManager;
 class TString;
 class AliAnalysisUtils;
 class AliEmcalTrackSelection;
 class AliEMCALGeometry;
 
 namespace EMCalTriggerPtAnalysis {
-
-class AliEMCalHistoContainer;
 
 /**
  * \class AliAnalysisTaskChargedParticlesRef
@@ -69,7 +68,7 @@ protected:
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
-  AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
+  THistManager                    *fHistos;                   ///< Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches

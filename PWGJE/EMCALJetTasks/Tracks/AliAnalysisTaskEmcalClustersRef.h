@@ -10,12 +10,11 @@ class AliEMCALGeometry;
 
 class TArrayD;
 class TClonesArray;
+class THistManager;
 class TList;
 class TString;
 
 namespace EMCalTriggerPtAnalysis {
-
-class AliEMCalHistoContainer;
 
 class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskSE {
 public:
@@ -65,7 +64,7 @@ protected:
   Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;
-  AliEMCalHistoContainer              *fHistos;
+  THistManager                        *fHistos;
   AliEMCALGeometry                    *fGeometry;
   TString                             fClusterContainer;
 

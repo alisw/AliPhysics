@@ -63,7 +63,6 @@ set(SRCS
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx
-    Tracks/AliEMCalHistoContainer.cxx
     Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
