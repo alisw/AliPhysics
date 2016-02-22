@@ -6,7 +6,8 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 						Int_t 		IsHeavyIon 					= 0, 
 						TString 	cutnumberAODBranch 			= "0000000060084001001500000",
 						Bool_t 		doEtaShiftV0Reader 			= kFALSE, 
-						Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+						Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+                        Bool_t      enableConstructGamma        = kFALSE
                      ){
 
 	// ================= Load Librariers =================================
@@ -53,6 +54,7 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 		fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
+        fV0ReaderV1->SetUseConstructGamma(enableConstructGamma);
 		if (!mgr) {
 			Error("AddTask_V0ReaderV1", "No analysis manager found.");
 			return;
