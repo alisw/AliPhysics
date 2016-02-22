@@ -18,6 +18,7 @@
 
 #include <TAxis.h>
 #include <TClonesArray.h>
+#include <THistManager.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TString.h>

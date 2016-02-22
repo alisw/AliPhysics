@@ -15,6 +15,7 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TString.h>
@@ -25,7 +26,6 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliInputEventHandler.h"
@@ -91,7 +91,7 @@ void AliAnalysisTaskEventSelectionRef::UserCreateOutputObjects(){
   fTrackCuts->SetMinNCrossedRowsTPC(120);
   fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
 
   TArrayD ptbinning, energybinning;
   CreatePtBinning(ptbinning);

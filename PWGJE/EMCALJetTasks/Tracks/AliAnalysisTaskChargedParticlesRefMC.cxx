@@ -21,6 +21,7 @@
 #include <TFile.h>
 #include <THashList.h>
 #include <TH1.h>
+#include <THistManager.h>
 #include <TKey.h>
 #include <TList.h>
 #include <TPDGCode.h>
@@ -50,7 +51,6 @@
 #include "AliMCEvent.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskChargedParticlesRefMC.h"
 
 /// \cond CLASSIMP
@@ -128,7 +128,7 @@ AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
  */
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   if(!fAnalysisUtil) fAnalysisUtil = new AliAnalysisUtils;
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
 
   if(!fTrackCuts){
     fTrackCuts = TrackCutsFactory("standard",fInputHandler->IsA() == AliAODInputHandler::Class());

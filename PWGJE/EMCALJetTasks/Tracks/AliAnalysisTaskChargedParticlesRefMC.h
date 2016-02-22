@@ -8,6 +8,7 @@
 
 class TArrayD;
 class TClonesArray;
+class THistManager;
 
 class AliAnalysisUtils;
 class AliAODTrack;
@@ -20,7 +21,6 @@ class AliMCEvent;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
 /**
  * \class AliAnalysisTaskChargedParticlesRefMC
  * \brief Unit test class for charged particle distributions (MC case)
@@ -84,7 +84,7 @@ protected:
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
-  AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
+  THistManager                    *fHistos;                   ///< Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
   // Monte-Carlo specific information

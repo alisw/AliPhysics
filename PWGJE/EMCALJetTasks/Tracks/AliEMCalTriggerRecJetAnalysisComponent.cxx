@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include <THistManager.h>
 #include <TMath.h>
 #include <TString.h>
 
@@ -31,7 +32,6 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerKineCuts.h"

@@ -16,6 +16,7 @@
 #include <TDatabasePDG.h>
 #include <TFile.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TKey.h>
 #include <TList.h>
 #include <TMath.h>
@@ -34,7 +35,6 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -89,7 +89,7 @@ AliAnalysisTaskTracksInJet::AliAnalysisTaskTracksInJet(const char *taskname) :
 AliAnalysisTaskTracksInJet::~AliAnalysisTaskTracksInJet() {}
 
 void AliAnalysisTaskTracksInJet::UserCreateOutputObjects(){
-  fHistosMC = new AliEMCalHistoContainer("MCHistos");
+  fHistosMC = new THistManager("MCHistos");
   fHistosMC->CreateTH1("hNtrials", "Number of trials", 1., 0.5, 1.5);
   fHistosMC->CreateTH1("hNtrialsEvent", "Number of trials (from header, after event selection)", 1, 0.5, 1.5);
   fHistosMC->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);

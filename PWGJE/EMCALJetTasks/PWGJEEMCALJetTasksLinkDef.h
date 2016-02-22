@@ -90,7 +90,6 @@
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
 #pragma link C++ namespace EMCalTriggerPtAnalysis+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalHistoContainer+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
