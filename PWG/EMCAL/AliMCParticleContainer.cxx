@@ -236,7 +236,7 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp)
 Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i)
 {
   // Return true if vp is accepted.
-  Bool_t r = ApplyParticleCuts(GetParticle(i));
+  Bool_t r = ApplyMCParticleCuts(GetMCParticle(i));
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
