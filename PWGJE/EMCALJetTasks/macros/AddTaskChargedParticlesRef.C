@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRef(){
+EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRef(const char *cutname = "standard"){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -18,12 +18,19 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedPartic
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef::kCPREG2, 8);
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef::kCPREJ1, 22);
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef::kCPREJ2, 12);
+  mgr->AddTask(task);
+  task->SetTrackSelection(
+      EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef::TrackCutsFactory(
+          cutname,
+          mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
+      )
+  );
 
   TString outfile(mgr->GetCommonFileName());
-  outfile += ":ChargedParticleQA";
+  outfile += TString::Format(":ChargedParticleQA_%s", cutname);
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("TrackResults", TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", cutname), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
 
   return task;
 }

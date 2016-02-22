@@ -16,19 +16,16 @@
 // $Id$
 
 ///
-/// Implementation of an AliAODBranchReplicator to produce slim muon aods.
+/// Implementation of an AliAODBranchReplicator to produce slim UPC aods.
 ///
 /// This replicator is in charge of replicating the {tracks,vertices,
-/// vzero, tzero, zdc, ad, and, optionally, the SPD tracklets} branches
-/// of the standard AOD into muon AODs (AliAOD.Muons.root)
+/// vzero, zdc, ad, and, optionally, the SPD tracklets} branches
+/// of the standard AOD into UPC AODs.
 ///
-/// The tracks are filtered so that only muon tracks (and only muon tracks
-/// that pass the trackCut if present) make it to the output aods
+/// The tracks are filtered so that only filter bits 0 and 1 make it to the output aods
 ///
-/// The vertices are filtered so that only the primary (and pileup) vertices make it
-/// to the output aods.
 ///
-/// \author L. Aphecetche (Subatech)
+/// \author Michal Broz
 
 #include "AliAODUPCReplicator.h"
 
@@ -61,16 +58,7 @@ fList(0x0),
 fReplicateHeader(replicateHeader),
 fReplicateTracklets(replicateTracklets)
 {
-  /// default ctor
-  ///
-  /// \param trackCut if present will filter out tracks
-  /// \param vertexCut if present will filter out vertices
-  /// \param mcMode what to do with MC information (0: skip it, 1: copy all,
-  /// 2: copy only for events with at least one muon )
-  /// \param replicateHeader whether or not to handle the replication of the
-  /// AOD header branch
-  /// \param replicateTracklets whether or not to include the SPD tracklets branch
-  ///
+
 }
 
 //_____________________________________________________________________________
@@ -98,7 +86,10 @@ TList* AliAODUPCReplicator::GetList() const
     }
 
     fTracks = new TClonesArray("AliAODTrack",30);
-    fTracks->SetName("tracks");    
+    fTracks->SetName("tracks");
+    
+    fVertices = new TClonesArray("AliAODVertex",2);
+    fVertices->SetName("vertices");     
       
     fVZERO = new AliAODVZERO;
     
@@ -111,7 +102,8 @@ TList* AliAODUPCReplicator::GetList() const
     
     fList->Add(fHeader);
     fList->Add(fTracks);
-    fList->Add(fTracklets);
+    fList->Add(fVertices);
+    if ( fReplicateTracklets ) fList->Add(fTracklets);
     fList->Add(fVZERO);
     fList->Add(fZDC);
     fList->Add(fAD);
@@ -160,8 +152,26 @@ void AliAODUPCReplicator::ReplicateAndFilter(const AliAODEvent& source)
     if(IsGoodITSsaTrack(trk)) new ((*fTracks)[nITSsaTracks++]) AliAODTrack(*trk);
 
   }
-  AliInfo(Form("%d good global tracks",nGlobalTracks));
-  AliInfo(Form("%d good ITSsa tracks",nITSsaTracks));
+  
+  assert(fVertices!=0x0);
+  fVertices->Clear("C");
+  TIter nextV(source.GetVertices());
+  AliAODVertex* v;
+  Int_t nvertices(0);
+  
+  while ( ( v = static_cast<AliAODVertex*>(nextV()) ) ) {
+    if (v->GetType() == AliAODVertex::kPrimary) {
+      AliAODVertex* tmp = v->CloneWithoutRefs();
+      AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
+      // to insure the main vertex retains the ncontributors information
+      // which is otherwise computed dynamically from
+      // references to tracks we set it here
+      copiedVertex->SetNContributors(v->GetNContributors()); 
+      delete tmp;
+    }
+  }
+  //AliInfo(Form("%d good global tracks",nGlobalTracks));
+  //AliInfo(Form("%d good ITSsa tracks",nITSsaTracks));
 
   
 }

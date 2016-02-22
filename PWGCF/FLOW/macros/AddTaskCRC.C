@@ -5,16 +5,15 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
-                             Bool_t bCalculateCRC=kTRUE,
                              Bool_t bCalculateCRC2=kFALSE,
                              Int_t CRC2nEtaBins=6,
-                             Bool_t bUseCRCRecentering=kFALSE,
                              TString QVecWeightsFileName,
                              Bool_t bUsePhiEtaWeights,
                              TString PhiEtaWeightsFileName,
                              Bool_t bUseVZERO=kFALSE,
+                             Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
-                             Bool_t bRecenterZDC=kFALSE,
+                             Bool_t bCalculateCRCZDC=kFALSE,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bZDCMCCen=kTRUE,
                              Float_t ZDCGainAlpha=0.395,
@@ -22,7 +21,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              TString Label="",
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
-                             Bool_t bRejectPileUp=kTRUE,
                              Double_t dDCAxy=2.4,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
@@ -112,7 +110,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
  taskFE->SetCentralityEstimator("V0M");
- taskFE->SetRejectPileUp(bRejectPileUp);
+ taskFE->SetRejectPileUp(kTRUE);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetZDCGainAlpha(ZDCGainAlpha);
  taskFE->SetDataSet(sDataSet);
@@ -214,6 +212,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    cutsRP->SetMinimalTPCdedx(-999999999);
    cutsRP->SetPtRange(ptMin,ptMax);
    cutsRP->SetEtaRange(etaMin,etaMax);
+   cutsRP->SetAcceptKinkDaughters(kFALSE);
    cutsRP->SetQA(bCutsQA);
   }
   // Track cuts for POIs
@@ -225,6 +224,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
+  cutsPOI->SetAcceptKinkDaughters(kFALSE);
   cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "ESD") {
@@ -298,17 +298,19 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
- taskQC->SetCalculateCRC(bCalculateCRC);
+ taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRC2(bCalculateCRC2);
+ taskQC->SetCalculateCRCVZ(bCalculateCRCVZ);
+ taskQC->SetCalculateCRCZDC(bCalculateCRCZDC);
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
- taskQC->SetRecenterZDC(bRecenterZDC);
+ taskQC->SetRecenterZDC(bUseZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
- taskQC->SetUseCRCRecenter(bUseCRCRecentering);
+ taskQC->SetUseCRCRecenter(kFALSE);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bUseZDC);
  taskQC->SetCorrWeight(sCorrWeight);
@@ -354,7 +356,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   }
  } // end of if(bUsePtWeights)
  
- if(bUseCRCRecentering || bRecenterZDC) {
+ if(bUseZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {
    cout << "ERROR: QVecWeightsFile not found!" << endl;
@@ -369,7 +371,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    cout << "ERROR: QVecWeightsList not found!" << endl;
    exit(1);
   }
- } // end of if(bUseCRCRecentering)
+ } // end of if(bUseZDC)
  taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
  if(bUsePhiEtaWeights) {
   TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");

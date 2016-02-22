@@ -38,6 +38,7 @@ public:
 	THnSparse* CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes);
 	void SetObject(TObject * const o, const char *group = "/");
 	void FillTH1(const char *hname, double x, double weight = 1.);
+	void FillTH1(const char *name, const char *label, double weight = 1.);
 	void FillTH2(const char *hname, double x, double y, double weight = 1.);
 	void FillTH2(const char *hname, double *point, double weight = 1.);
 	void FillTH3(const char *hname, double x, double y, double z, double weight = 1.);

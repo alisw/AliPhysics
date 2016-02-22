@@ -118,7 +118,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos->Add(fHistos);
 
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
-  fListOfHistos->Add(new TH2F("eventStatCent", ";events;centrality", 4, -0.5, 3.5, 101, 0, 101));
+  fListOfHistos->Add(new TH2F("eventStatCent", ";events;centrality", 4, -0.5, 3.5, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
 
   PostData(1,fListOfHistos);

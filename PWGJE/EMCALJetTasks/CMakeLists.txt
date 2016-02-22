@@ -64,9 +64,6 @@ set(SRCS
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx
     Tracks/AliEMCalHistoContainer.cxx
-    Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
-    Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
-    Tracks/AliEMCalPtTaskVTrackSelection.cxx
     Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
@@ -106,6 +103,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEMCALDCALTrigger2015.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
+    Tracks/AliAnalysisTaskParticleInJet.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx

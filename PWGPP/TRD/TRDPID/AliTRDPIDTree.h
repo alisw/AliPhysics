@@ -110,7 +110,7 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   void SetupV0qa();
   void FillV0PIDlist();
   void ClearV0PIDlist();
-  Double_t GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t& ar);
+  Double_t GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t& ar, Double_t& etaar, Double_t& thetaar);
   Bool_t PassTrackCuts(AliESDtrack *fESDTrack=0);
   Bool_t HasMissingLayer(const AliVTrack *fESDTrack=0);
   Int_t  GetNTrackletsPID(const AliVTrack *fESDTrack=0) const;
@@ -147,7 +147,10 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   Int_t fTRDntracklets;              //! Tree: number of tracking tracklets
   Int_t fTRDntrackletsPID;           //! Tree: number of pid tracklets
   Double_t fTRDphi[6];               //! Tree: local track inclination phi (from track extrapol)
+  Double_t fTRDglobalphi;            //! Tree: global track phi
   Double_t fTRDY[6];                 //! Tree: local track y-position (from track extrapol)
+  Double_t fTRDeta[6];               //! Tree: local track eta (from track extrapol)
+  Double_t fTRDthetalayer[6];        //! Tree: local track theta (from track extrapol)
   Double_t fTRDtheta;                //! Tree: theta track
   Double_t fTRDsignal;               //! Tree: Truncated mean
   Int_t fTRDnclsdEdx;                //! Tree: number of clusters dedx
@@ -169,6 +172,6 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   AliTRDPIDTree(const AliTRDPIDTree&); // not implemented
   AliTRDPIDTree& operator=(const AliTRDPIDTree&); // not implemented
   
-  ClassDef(AliTRDPIDTree, 1);
+  ClassDef(AliTRDPIDTree, 2);
 };
 #endif

@@ -1203,6 +1203,36 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
+AliMCParticleContainer* AliAnalysisTaskEmcal::AddMCParticleContainer(const char *n)
+{
+  // Add particle container
+  // will be called in AddTask macro
+
+  if (TString(n).IsNull()) return 0;
+
+  AliMCParticleContainer* cont = new AliMCParticleContainer(n);
+
+  fParticleCollArray.Add(cont);
+
+  return cont;
+}
+
+//________________________________________________________________________
+AliTrackContainer* AliAnalysisTaskEmcal::AddTrackContainer(const char *n)
+{
+  // Add particle container
+  // will be called in AddTask macro
+
+  if (TString(n).IsNull()) return 0;
+
+  AliTrackContainer* cont = new AliTrackContainer(n);
+
+  fParticleCollArray.Add(cont);
+
+  return cont;
+}
+
+//________________________________________________________________________
 AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) 
 {
   // Add particle container

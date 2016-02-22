@@ -49,9 +49,9 @@
 #include "AliEmcalPhysicsSelection.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliEMCalHistoContainer.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
-#include "AliEMCalPtTaskTrackSelectionESD.h"
-#include "AliEMCalPtTaskTrackSelectionAOD.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelectionESD.h"
+#include "AliEmcalTrackSelectionAOD.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
@@ -298,8 +298,8 @@ namespace EMCalTriggerPtAnalysis {
     fOutput->Add(fHistos->GetListOfHistograms());
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       TIter cutIter(fListTrackCuts);
-      AliEMCalPtTaskVTrackSelection *cutObject(NULL);
-      while((cutObject = dynamic_cast<AliEMCalPtTaskVTrackSelection *>(cutIter()))){
+      AliEmcalTrackSelection *cutObject(NULL);
+      while((cutObject = dynamic_cast<AliEmcalTrackSelection *>(cutIter()))){
         AliESDtrackCuts *cuts = dynamic_cast<AliESDtrackCuts *>(cutObject->GetTrackCuts(0));
         if(cuts){
           cuts->DefineHistograms();
@@ -533,7 +533,7 @@ namespace EMCalTriggerPtAnalysis {
     // found in a jet, and check for different cone radii around a jet
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       for(int icut = 0; icut < fListTrackCuts->GetEntries(); icut++){
-        AliEMCalPtTaskVTrackSelection *trackSelection = static_cast<AliEMCalPtTaskVTrackSelection *>(fListTrackCuts->At(icut));
+        AliEmcalTrackSelection *trackSelection = static_cast<AliEmcalTrackSelection *>(fListTrackCuts->At(icut));
         TIter trackIter(trackSelection->GetAcceptedTracks(fTracks));
         while((track = dynamic_cast<AliVTrack *>(trackIter()))){
           if(fMCEvent && !IsTrueTrack(track)) continue;   // Reject fake tracks in case of MC
@@ -893,7 +893,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param trackCuts Object of type AliESDtrackCuts
    */
   void AliAnalysisTaskPtEMCalTrigger::AddESDTrackCuts(AliESDtrackCuts* trackCuts) {
-    fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionESD(trackCuts));
+    fListTrackCuts->AddLast(new AliEmcalTrackSelectionESD(trackCuts));
   }
 
   /**
@@ -902,7 +902,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param trackCuts Object of type AliESDtrackCuts
    */
   void AliAnalysisTaskPtEMCalTrigger::AddCutsForAOD(AliESDtrackCuts* trackCuts, UInt_t filterbits) {
-    fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionAOD(trackCuts, filterbits));
+    fListTrackCuts->AddLast(new AliEmcalTrackSelectionAOD(trackCuts, filterbits));
   }
 
 

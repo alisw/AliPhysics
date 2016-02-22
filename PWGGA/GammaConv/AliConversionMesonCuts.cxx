@@ -263,7 +263,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
   }
 
   // Meson Cuts
-  if (fIsMergedClusterCut != 0){
+  if (fIsMergedClusterCut == 1){
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",8,-0.5,7.5, 500, 0, 100);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
@@ -274,6 +274,26 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"alpha min");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoMesonCuts);
+  } else if (fIsMergedClusterCut == 2){
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",7,-0.5,6.5, 250, 0, 50);
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(4,"opening angle");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(5,"alpha max");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha min");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"out");
+    fHistograms->Add(fHistoMesonCuts);
+
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",7,-0.5,6.5, 250, 0, 50);
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(4,"opening angle");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(5,"alpha max");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");    
+    
   } else {
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
@@ -742,7 +762,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   if (fHistoInvMassAfter) fHistoInvMassAfter->Fill(pi0->M());
   
-  if (!(fIsMergedClusterCut == 1)){ 
+  if (fIsMergedClusterCut > 0){ 
     if (fHistoDCAGGMesonBefore)fHistoDCAGGMesonBefore->Fill(pi0->GetDCABetweenPhotons());
     if (fHistoDCARMesonPrimVtxBefore)fHistoDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
 

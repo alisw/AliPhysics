@@ -35,7 +35,7 @@ class AliAnalysisTaskEmcalJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      Run()              ;
 
   AliJetContainer            *fJetsCont;                                //! Jets
-  AliParticleContainer       *fTracksCont;                              //! Tracks
+  AliTrackContainer          *fTracksCont;                              //! Tracks
   void*                       fJetBuffer;                               //! buffer for one jet (that will be saved to the tree)
   TTree*                      fJetsOutput;                              //! Jets that will be saved to a tree
   Int_t                       fCounter;                                 // Event counter

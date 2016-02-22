@@ -53,7 +53,7 @@ submitTiming(){
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 	echo source  $balice >  submitTime.sh
-	echo gitInfo -2 >> submitTime.sh
+	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitTime.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(5,$run\\\) >> submitTime.sh
 	chmod a+x submitTime.sh  
 	rm -f submitTime.log
@@ -88,7 +88,9 @@ submitDrift(){
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 	echo export runNumber=$arun  >  submitDrift.sh
-	echo gitInfo -2 >> submitDrift.sh
+	echo export driftDeltaT=$driftDeltaT >> submitDrift.sh 
+        echo export driftSigmaT=$driftSigmaT  >> submitDrift.sh 
+	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitDrift.sh
 	echo source  $balice >>  submitDrift.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(6,$run\\\) >> submitDrift.sh
 	chmod a+x submitDrift.sh  
@@ -150,7 +152,7 @@ submitHistogramming(){
                 ln -sf $wdirRun/fitDrift.root .
 		cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 		echo export mapStartTime=$itime > submitHisto$ihis.sh
-		echo gitInfo -2 >> submitHisto$ihis.sh
+		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitHisto$ihis.sh
 		echo export mapStopTime=$(($itime+$timeDeltaRun)) >> submitHisto$ihis.sh
 		echo export runNumber=$arun    >> submitHisto$ihis.sh  
 		echo source  $balice >>submitHisto$ihis.sh
@@ -205,7 +207,7 @@ submitNDLocal(){
 		submitScript=submit_${ctype}_${side}_${sec0}
 		rm -f $submitScript.*
 		echo export inputFile=$inputFile >  ${submitScript}
-		echo gitInfo -2 >> ${submitScript}
+		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> ${submitScript}
 		echo export inputTree=${treeNames[$ctype]} >> ${submitScript}
 		echo export varTheta0=$theta0       >> ${submitScript}
 		echo export varTheta1=$theta1       >> ${submitScript}
@@ -300,7 +302,7 @@ submitTimeDependentGSI(){
     # 
     #
     alilog_info "BEGIN: 0.) make directory structure"
-    gitInfo 1 > gitInfoMakeDirectory.log
+    gitInfo 2 > gitInfoMakeDirectory.log
     wdir=`pwd`
     for arun in `cat  run.list`; do
        mkdir $wdir/$arun;

@@ -21,17 +21,21 @@
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
+#include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelectionESD.h"
+#include "AliEmcalTrackSelectionAOD.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
-#include "AliESDtrack.h"
 #include "AliInputEventHandler.h"
 #include "AliVVertex.h"
 
-#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
+#include "AliEMCalTriggerExtraCuts.h"
 #include "AliAnalysisTaskChargedParticlesRef.h"
 
 /// \cond CLASSIMP
@@ -51,9 +55,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fGeometry(NULL),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
-    fEtaSign(1),
-    fSwitchoffSPDcut(kFALSE),
-    fSwitchoffITScut(kFALSE)
+    fEtaSign(1)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -77,9 +79,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fGeometry(NULL),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
-    fEtaSign(1),
-    fSwitchoffSPDcut(kFALSE),
-    fSwitchoffITScut(kFALSE)
+    fEtaSign(1)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -107,17 +107,8 @@ AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
 void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
   fAnalysisUtil = new AliAnalysisUtils;
 
-  fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
-  fTrackCuts->DefineHistograms(kRed);
-  fTrackCuts->SetName("Standard Track cuts");
-  fTrackCuts->SetMinNCrossedRowsTPC(120);
-  fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-  if(fSwitchoffSPDcut || fSwitchoffITScut){
-    fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
-  }
-  if(fSwitchoffITScut){
-    fTrackCuts->SetRequireITSRefit(kFALSE);           // Allows also TPC-only tracks
-    fTrackCuts->SetMinNClustersITS(0);
+  if(!fTrackCuts){
+    fTrackCuts = TrackCutsFactory("standard", fInputHandler->IsA() == AliAODInputHandler::Class());
   }
 
   TArrayD oldbinning, newbinning;
@@ -370,16 +361,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
 
     Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
 
-    // Distinguish track selection for ESD and AOD tracks
-    AliESDtrack *esdtrack(NULL);
-    AliAODTrack *aodtrack(NULL);
-    if((esdtrack = dynamic_cast<AliESDtrack *>(checktrack))){
-      if(!TrackSelectionESD(esdtrack)) continue;
-    } else if((aodtrack = dynamic_cast<AliAODTrack *>(checktrack))){
-      if(!TrackSelectionAOD(aodtrack)) continue;
-    } else {
-      continue;
-    }
+    if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
     // fill histograms allEta
     if(isMinBias){
@@ -596,26 +578,6 @@ void AliAnalysisTaskChargedParticlesRef::CreateNewPtBinning(TArrayD& binning) co
 }
 
 /**
- * Run track selection for ESD tracks
- * @param track The track to check
- * @return True if the track is selected, false otherwise
- */
-Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionESD(AliESDtrack* track) {
-  return fTrackCuts->AcceptTrack(track);
-}
-
-/**
- * Run track selection for AOD tracks
- * @param track The track to check
- * @return True if the track is selected, false otherwise
- */
-Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionAOD(AliAODTrack* track) {
-  if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
-  if(track->GetTPCNCrossedRows() < 120) return false;
-  return true;
-}
-
-/**
  * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
  * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
  * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
@@ -675,6 +637,44 @@ TString AliAnalysisTaskChargedParticlesRef::GetFiredTriggerClassesFromPatches(co
     triggerstring += "EG2";
   }
   return triggerstring;
+}
+
+AliEmcalTrackSelection *AliAnalysisTaskChargedParticlesRef::TrackCutsFactory(TString cut, Bool_t aod){
+  AliEmcalTrackSelection *result = NULL;
+  if(!aod){
+    AliESDtrackCuts *esdcuts = NULL;
+    if(cut == "standard"){
+      AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
+      esdcuts->DefineHistograms(kRed);
+      esdcuts->SetName("Standard Track cuts");
+      esdcuts->SetMinNCrossedRowsTPC(120);
+      esdcuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    } else if(cut == "hybrid"){
+      esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+      esdcuts->SetName("Global Hybrid tracks, loose DCA");
+      esdcuts->SetMaxDCAToVertexXY(2.4);
+      esdcuts->SetMaxDCAToVertexZ(3.2);
+      esdcuts->SetDCAToVertex2D(kTRUE);
+      esdcuts->SetMaxChi2TPCConstrainedGlobal(36);
+      esdcuts->SetMaxFractionSharedTPCClusters(0.4);
+    }
+    result = new AliEmcalTrackSelectionESD;
+    result->AddTrackCuts(esdcuts);
+  } else {
+    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
+    result = aodsel;
+    if(cut == "standard"){
+      aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
+      AliEMCalTriggerExtraCuts *extracuts = new AliEMCalTriggerExtraCuts;
+      extracuts->SetMinTPCCrossedRows(120);
+      aodsel->AddTrackCuts(extracuts);
+    } else if(cut == "hybrid"){
+      aodsel->AddFilterBit(256);
+      aodsel->AddFilterBit(512);
+    }
+  }
+
+  return result;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

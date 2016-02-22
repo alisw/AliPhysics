@@ -204,7 +204,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     massD0Task->SetPtBinsLimsCorr(RDHFD0Corrs->GetPtBinLimits());
   } else {
     Double_t ptlimits[15] = {0,0.5,1,2,3,4,5,6,7,8,12,16,20,24,9999};
-    massD0Task->SetNPtBinsCorr(15);
+    massD0Task->SetNPtBinsCorr(14);
     massD0Task->SetPtBinsLimsCorr(ptlimits);
   }
   Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
