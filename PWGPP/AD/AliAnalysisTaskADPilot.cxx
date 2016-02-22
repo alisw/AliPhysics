@@ -186,6 +186,8 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
 {
   // Constructor
   // Output slot #1 writes into a TList container
+  fAnalysisUtils->SetUseOutOfBunchPileUp(kTRUE);
+  
   DefineOutput(1, TList::Class());
 }
 //________________________________________________________________________
@@ -653,6 +655,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		Bool_t localPF = kTRUE;
 		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock))localPF = kFALSE;
 		for(Int_t iClock=11; iClock<21; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock))localPF = kFALSE;
+		
 		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,10);
 		Float_t triggerCharge = esdADfriend->GetPedestal(i,10) - fCalibData->GetPedestal(k);
 		if(esdAD->GetBBFlag(i)){
