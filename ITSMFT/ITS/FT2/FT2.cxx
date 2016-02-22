@@ -13,7 +13,7 @@
 #include "AliITSUTrackerGlo.h"
 #include "AliITSURecoSens.h"
 #include "AliITSURecoLayer.h"
-#include "AliITSsegmentation.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliESDVertex.h"
 #include <TParticle.h>
 #include <TDatabasePDG.h>
@@ -1662,7 +1662,7 @@ Bool_t FT2::PassActiveITSLayer(AliITSURecoLayer* lr)
 	fNITSHits[lrAID] = 0;
 	fNITSSensCand[lrAID] = 0;
 	//
-	const AliITSsegmentation* segm = gm->GetSegmentation(lrAID);
+	const AliITSMFTSegmentationPix* segm = gm->GetSegmentation(lrAID);
 	int nsens = fNITSSensCand[lrAID] = lr->FindSensors(&trImpData[AliITSUTrackerGlo::kTrPhi0], hitSens);
 	int idxHit[2] = {0,1};
 	//
@@ -1925,7 +1925,7 @@ Int_t FT2::ReconstructOnITSLayer(int ilr, double chi2Cut)
 #endif
 	if (nFakeCandTot) {
 		AliITSUGeomTGeo* gm = fITS->GetGeom();
-		const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
+		const AliITSMFTSegmentationPix* segm = gm->GetSegmentation(ilr);
 		for (int ifc=nFakeCandTot;ifc--;) {
 			if (ifc<nFakeCandRnd) { // flat component
 				yzf[0] = trPos[0] + (gRandom->Rndm()-0.5)*dYsearch;
