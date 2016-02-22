@@ -101,13 +101,21 @@ private:
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
-  TH3F	      *fHistTimeVsChargePerPM_UnCorr; 
+  /*TH3F	      *fHistTimeVsChargePerPM_UnCorr; */
+  
+  TH3F	      *fHistChargeTriggerPerPMPerV0Flag;
+  TH3F	      *fHistChargeTailPerPMPerV0Flag;
+  TH3F	      *fHistChargeBBPerPMPerV0Flag;
   
   TH2F	      *fHistChargeTriggerPerChannel;
   TH2F	      *fHistChargeTriggerPerChannel_PF;
-  
   TH2F	      *fHistChargeTriggerPerChannel_TVX;
-  TH2F	      *fHistChargeTriggerPerChannel_PF_TVX; 
+  TH2F	      *fHistChargeTriggerPerChannel_PF_TVX;
+  
+  TH2F	      *fHistChargeTailPerChannel;
+  TH2F	      *fHistChargeTailPerChannel_PF;
+  TH2F	      *fHistChargeTailPerChannel_TVX;
+  TH2F	      *fHistChargeTailPerChannel_PF_TVX;  
   
   TH2F        *fHistChargePerPM_BB; 
   TH2F        *fHistChargePerPM_BB_PF;
