@@ -63,6 +63,7 @@ public:
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
   void                        SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+  void                        InitializeTrackCuts(TString cutname, bool isAOD);
 
   static AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
 
