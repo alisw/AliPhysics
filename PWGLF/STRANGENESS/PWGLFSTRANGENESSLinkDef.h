@@ -31,8 +31,8 @@
 #pragma link C++ class AliMiniParticle+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelations+;
 #pragma link C++ class AliV0ChBasicParticle+;
-#pragma link C++ class AliAnalysisTaskCheckCascadepp276+;
-#pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp276+;
+#pragma link C++ class AliAnalysisTaskCheckCascadepp+;
+#pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp+;
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
 #endif
