@@ -432,7 +432,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	for(Int_t i = 0; i<numberOfCuts; i++){
 
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if(  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=37 ) || trainConfig == 38 
+		if(  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 )  || trainConfig == 38 
 		     || trainConfig == 39 || trainConfig == 40 || trainConfig == 41  || trainConfig == 42 || trainConfig == 43 || trainConfig == 44 || trainConfig == 45    || trainConfig == 46
 		     || trainConfig == 47 ){
 			if (doWeighting){
