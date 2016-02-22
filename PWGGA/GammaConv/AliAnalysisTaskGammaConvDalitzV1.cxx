@@ -980,9 +980,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 			
 			
 			const Int_t nDimDalPlot = 2;
-			Int_t    nBinsDalPlot[nDimDalPlot] = {  400, 400};
-			Double_t xMinDalPlot[nDimDalPlot]  = {    0,   0};
-			Double_t xMaxDalPlot[nDimDalPlot]  = {  0.4, 0.4};
+			Int_t    nBinsDalPlot[nDimDalPlot] = {  4000, 4000};
+			Double_t xMinDalPlot[nDimDalPlot]  = {    0,     0};
+			Double_t xMaxDalPlot[nDimDalPlot]  = {  4.0,   4.0};
 			
 			
 			sESDMotherDalitzPlot[iCut] = new THnSparseF("ESD_Mother_DalitzPlot","ESD_Mother_DalitzPlot",nDimDalPlot,nBinsDalPlot,xMinDalPlot,xMaxDalPlot);
@@ -1363,9 +1363,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 				
 				
 				const Int_t nDimDalPlot = 2;
-				Int_t    nBinsDalPlot[nDimDalPlot] = {  400, 400};
-				Double_t xMinDalPlot[nDimDalPlot]  = {    0,   0};
-				Double_t xMaxDalPlot[nDimDalPlot]  = {  0.4, 0.4};
+				Int_t    nBinsDalPlot[nDimDalPlot] = {  4000, 4000};
+				Double_t xMinDalPlot[nDimDalPlot]  = {    0,     0};
+				Double_t xMaxDalPlot[nDimDalPlot]  = {  4.0,   4.0};
 			
 			
 				sESDTruePi0DalitzPlot[iCut] = new THnSparseF("ESD_TruePi0Dalitz_DalitzPlot","ESD_TruePi0Dalitz_DalitzPlot",nDimDalPlot,nBinsDalPlot,xMinDalPlot,xMaxDalPlot);
