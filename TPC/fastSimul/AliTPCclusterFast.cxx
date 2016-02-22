@@ -106,7 +106,8 @@ public:
   //
   //
   static Bool_t UnitTest();
-public:
+public: // Cluster parameters expressid in bin units
+  //
   Float_t fMNprim;     ///< mean number of primary electrons
   //                   //electrons part input
   Int_t   fNprim;      ///< mean number of primary electrons
@@ -165,20 +166,22 @@ public:
   //
   Double_t  CookdEdx(Int_t npoints, Double_t *amp, Double_t f0,Float_t f1, Int_t dEdxMode);
   //
-  Float_t fMNprim;     ///< mean number of primary electrons
-  Float_t fAngleY;     ///< y angle - tan(y)
-  Float_t fAngleZ;     ///< z angle - tan z
-  Float_t fDiff;       ///< diffusion
+  Float_t fMNprim;     ///< mean number of primary electrons per cm
+  Float_t fTY;         ///< track Y at the vertex in (cm)
+  Float_t fTZ;         ///< track Z at the vertex in (cm)
+  Float_t fTAngleY;     ///< y angle - tan(y) - dy/dx (cm/cm)
+  Float_t fTAngleZ;     ///< z angle - tan(z) - dy/dx (cm/cm) 
+  Float_t fDiff;       ///< diffusion  in mm/sqrt(m) - nominal is 2.2 mm/sqrt(m)
   Float_t fDiffLong;       ///< diffusion sigma longitudinal direction
-  Int_t   fN;          ///< number of clusters
+  Int_t   fN;          ///< number of clusters simulated
   //  overlap track properties
   Bool_t  fBOverlap;          ///< flag generate overlap track
   Float_t fMNprimOverlap;     ///< mean number of primary electrons for overlap track
-  Float_t fDAngleYOverlap;    ///< y angle - tan(y) for overlap track
-  Float_t fDAngleZOverlap;    ///< z angle - tan z for overlap track
-  Float_t fDYOverlap;         ///< delta y position of overlap track at row 0 
-  Float_t fDZOverlap;         ///< delta z position of overlap track at row 0 
-  TClonesArray *fCl;   ///< array of clusters
+  Float_t fDAngleYOverlap;    ///< y angle - tan(y) for overlap track  in cm
+  Float_t fDAngleZOverlap;    ///< z angle - tan z for overlap track   in cm
+  Float_t fDYOverlap;         ///< delta y position of overlap track at row 0 in dy/dx 
+  Float_t fDZOverlap;         ///< delta z position of overlap track at row 0 in dz/dx
+  TClonesArray *fCl;          ///< array of clusters
   //
   Bool_t   fInit;      ///< initialization flag
 
@@ -202,8 +205,8 @@ Int_t AliTPCclusterFast::fgDebugLevel=0;
 AliTPCtrackFast::AliTPCtrackFast():
   TObject(),
   fMNprim(0),
-  fAngleY(0),
-  fAngleZ(0),
+  fTAngleY(0),
+  fTAngleZ(0),
   fN(0),
   fBOverlap(kFALSE),          ///< flag generate overlap track
   fMNprimOverlap(0),     ///< mean number of primary electrons for overlap track
@@ -223,7 +226,11 @@ AliTPCtrackFast::AliTPCtrackFast():
 
 void AliTPCtrackFast::MakeTrack(){
   ///
-
+  /// track paramters in aboslute units
+  /// cluster should be expresse in relative units 
+  //    - cluster performnce dependes on relative units
+  //    - to keep back compatibility
+  //
   if (!fCl) fCl = new TClonesArray("AliTPCclusterFast",159);
   //
   // 0.) Init data structure
@@ -237,19 +244,31 @@ void AliTPCtrackFast::MakeTrack(){
   // 1.) Create hits - with crosstalk diffusion
   //
   for (Int_t i=0;i<fN;i++){
-    Double_t tY = i*fAngleY;
-    Double_t tZ = i*fAngleZ;
+    Double_t tX = (i+83); 
+    Double_t tY = fTY+tX*fTAngleY;
+    Double_t tZ = fTZ+tX*fTAngleZ;
+    //
     AliTPCclusterFast * cluster = (AliTPCclusterFast*) fCl->UncheckedAt(i);
     AliTPCclusterFast * clusterm = (AliTPCclusterFast*) fCl->UncheckedAt(TMath::Max(i-1,0));
     AliTPCclusterFast * clusterp = (AliTPCclusterFast*) fCl->UncheckedAt(TMath::Min(i+1,kMaxRow-1));
     if (!cluster) cluster =   new ((*fCl)[i]) AliTPCclusterFast;
     //
-    Float_t yCenter= TMath::Nint(tY);
-    Float_t zCenter= TMath::Nint(tZ*0.5)*2;
+    // Transform cm -> bins and angle to "bin angle"
+    // 
+    Double_t tYBin=0,tZBin=0;
+    Double_t tYBin=0,tZBin=0;
+    Double_t fDiffBin=0;
+    Double_t fDiffLongBin=0;
+    Double_t fAngleYBin=0;
+    Double_t fAngleZBin=0;
+    //
+    Float_t yCenter= TMath::Nint(tYBin);
+    Float_t zCenter= TMath::Nint(tZBin*0.5)*2;
+    Double_t posY = tYBin-yCenter;
+    Double_t posZ = tZBin-zCenter;
 
-    Double_t posY = tY-yCenter;
-    Double_t posZ = tZ-zCenter;
-    cluster->SetParam(fMNprim,fDiff, fDiffLong, posY,posZ,fAngleY,fAngleZ,yCenter,zCenter);   // when is the cluster plus parameters done 
+
+    cluster->SetParam(fMNprim,fDiffBin, fDiffLongBin, posY,posZ,fAngleYBin,fAngleZBin,yCenter,zCenter);   // when is the cluster plus parameters done 
     //
     cluster->GenerElectrons(cluster, clusterm, clusterp);
     if (fBOverlap){   // if we simulate the overlap of tracks
@@ -508,14 +527,22 @@ void AliTPCtrackFast::Simul(const char* fname, Int_t ntracks, Double_t diffFacto
     fast.fMNprim=(10.+100*gRandom->Rndm());
     if (gRandom->Rndm()>0.5) fast.fMNprim=1./(0.00001+gRandom->Rndm()*0.1);
 
-    fast.fDiff =0.01 +0.5*gRandom->Rndm();       
+    fast.fDiff =0.22*(1+0.5*gRandom->Rndm());     // diffusion in mm/sqrt(cm)       
     //    fast.fDiffLong =  fast.fDiff*0.6/1.;
-    fast.fDiffLong =  fast.fDiff*diffFactor/1.;
+    fast.fDiffLong =  fast.fDiff*diffFactor/1.;   
     //
-    fast.fAngleY   = 4.0*(gRandom->Rndm()-0.5);
+    fast.fTY=gRandom->Gaus(0,0.01); //  cm vertex spread for primaries
+    fast.fTZ=gRandom->Gaus(0,7);    //  7 cm vertex spread in z 
+    if (gRandom->Rndm()>0.5) {
+      fast.fTY=gRandom->Gaus(0,20);  //  20 cm vertex spread for secondaries - generate for half of statistic
+      fast.fTZ=gRandom->Gaus(0,20);  //  20 cm vertex spread for secondaries - generate one half of statistic
+    }
+
+    fast.fTAngleY   = 4.0*(gRandom->Rndm()-0.5);
     if (gRandom->Rndm()<0.2)  fast.fAngleY   = (gRandom->Rndm()-0.5)*TMath::Pi()/9.;    // admixture of high momenta tracks perpendicular to pad row +-10 degrees
-    fast.fAngleZ   = 4.0*(gRandom->Rndm()-0.5);
+    fast.fTAngleZ   = 3.0*(gRandom->Rndm()-0.5);  // track range as acceptabel for TPC
     fast.fN  = 159;
+
     if (simulOverlap){ //
       fast.fBOverlap=kTRUE;        // flag generate overlap track
       fast.fMNprimOverlap=1./(0.00001+gRandom->Rndm()*0.1);        // mean number of primary electrons for overlap track - flat in 1/Q
