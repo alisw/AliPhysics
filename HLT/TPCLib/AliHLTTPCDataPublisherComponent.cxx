@@ -62,6 +62,26 @@ const char* AliHLTTPCDataPublisherComponent::GetComponentID()
   return "TPCDataPublisher";
 }
 
+AliHLTComponentDataType AliHLTTPCDataPublisherComponent::GetOutputDataType() 
+{
+  // 
+  // overwrite AliHLTRawDataPublisherComponent::GetOutputDataType(),
+  // since the component can publishes not only raw data type, but also decompressed clusters
+  //
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTTPCDataPublisherComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList) 
+{ 
+  // see header file for class documentation
+  tgtList.clear();
+  tgtList.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC );
+  return tgtList.size();
+}
+
+
 AliHLTComponent* AliHLTTPCDataPublisherComponent::Spawn()
 {
   /// inherited from AliHLTComponent: spawn function.
@@ -108,7 +128,7 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
 	if( clusterBlocks.size() > 0 ){
 	  for (AliHLTComponentBlockDataList::iterator bd=clusterBlocks.begin(); bd!=clusterBlocks.end(); bd++) {
 	    // set proper data type for cluster blocks 
-	    bd->fDataType = (AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC );
+	    bd->fDataType = (AliHLTTPCDefinitions::RawClustersDataType()  | kAliHLTDataOriginTPC );
 	    // find end of written cluster data
 	    if (offset < bd->fOffset + bd->fSize) offset = bd->fOffset + bd->fSize;
 	  }
@@ -122,7 +142,7 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
 	  FillBlockData(bd);
 	  bd.fOffset        = offset;
 	  bd.fSize          = sizeof(AliHLTTPCRawClustersDescriptor);
-	  bd.fDataType      = AliHLTTPCDefinitions::RawClustersDescriptorDataType();
+	  bd.fDataType      = AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC ;
 	  
 	  if( offset + bd.fSize <= capacity ){
 	    *(AliHLTTPCRawClustersDescriptor*)(outputPtr+offset ) = desc;

@@ -74,7 +74,13 @@ public:
     kLastContainerMode
   };
 
-  /// set mode
+   
+  /// get the output data types of the component.
+   
+  AliHLTComponentDataType GetOutputDataType();  
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);			   
+
+ /// set mode
   void SetMode(int mode) {fMode=mode;}
 
   bool CheckMode(int flag) const {return (fMode&flag)==flag;}

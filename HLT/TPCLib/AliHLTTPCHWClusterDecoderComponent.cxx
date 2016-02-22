@@ -106,7 +106,7 @@ int AliHLTTPCHWClusterDecoderComponent::GetOutputDataTypes(AliHLTComponentDataTy
 
   tgtList.clear();
   tgtList.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC );
-  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC );
   tgtList.push_back( AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
   return tgtList.size();
 }
@@ -367,7 +367,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
     FillBlockData(bd);
     bd.fOffset        = size;
     bd.fSize          = sizeof(AliHLTTPCRawClustersDescriptor);
-    bd.fDataType      = AliHLTTPCDefinitions::RawClustersDescriptorDataType();
+    bd.fDataType      = AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC;
     if( maxOutSize < size + bd.fSize ){
 	HLTWarning( "Output buffer (%db) is too small, required %db", maxOutSize, size+bd.fSize);
 	iResult  = -ENOSPC;

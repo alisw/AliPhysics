@@ -105,7 +105,7 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
    * The function is pure virtual and must be implemented by the child class.
    * @return output data type
    */
-  AliHLTComponentDataType GetOutputDataType();
+  virtual AliHLTComponentDataType GetOutputDataType();
 
   /**
    * Get a ratio by how much the data volume is shrinked or enhanced.
