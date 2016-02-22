@@ -1,20 +1,20 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Rtypes.h>
 #include <TString.h>
-#include "AliAnalysisTaskNOmegaLPK.h"
+#include "AliAnalysisTaskOmegaOmegaOX.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliMCEventHandler.h"
 #include "AliPID.h"
 #endif
 
-AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
+AliAnalysisTaskOmegaOmegaOX *AddTaskOmegaOmegaOX(TString finname="",
 						 Bool_t readMC=kFALSE,
 						 Bool_t additionalChecks=kFALSE,
 						 TString suffix = ""){
 
 	//------------------------------------------------------------------------------------------
-	// version 2.20 (2016/02/19)
+	// version 2.10 (2016/02/11)
 	//------------------------------------------------------------------------------------------
 
   Bool_t stdcuts=kFALSE;
@@ -32,24 +32,24 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
   // with ITS standalone tracks
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
-  ::Info("AddTaskNOmegaLPK","Adding a new task with this settings readMC = %i",readMC);
+  ::Info("AddTaskOmegaOmegaOX","Adding a new task with this settings readMC = %i",readMC);
  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskNOmegaLPK", "No analysis manager to connect to.");
+    ::Error("AddTaskOmegaOmegaOX", "No analysis manager to connect to.");
     return NULL;
   }   
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskNOmegaLPK", "This task requires an input event handler");
+    ::Error("AddTaskOmegaOmegaOX", "This task requires an input event handler");
     return NULL;
   }   
   
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if(type.Contains("AOD")){
-    ::Error("AddTaskNOmegaLPK", "This task requires to run on ESD");
+    ::Error("AddTaskOmegaOmegaOX", "This task requires to run on ESD");
     return NULL;
   }
 
@@ -63,10 +63,10 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
 
   // Create and configure the task
 
-  TString taskname = "NOmegaLPK";
+  TString taskname = "OmegaOmegaOX";
 	TString combinedName;
-	combinedName.Form("NOmegaLPK%s", suffix.Data());
-  AliAnalysisTaskNOmegaLPK *task = new AliAnalysisTaskNOmegaLPK(combinedName);
+	combinedName.Form("OmegaOmegaOX%s", suffix.Data());
+  AliAnalysisTaskOmegaOmegaOX *task = new AliAnalysisTaskOmegaOmegaOX(combinedName);
   task->SetMC(readMC);
   mgr->AddTask(task);
   
