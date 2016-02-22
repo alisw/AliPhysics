@@ -99,11 +99,18 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
 	fHistTimePerPM_UnCorr(0),
 	fHistTimeVsChargeADA_UnCorr(0),
 	fHistTimeVsChargeADC_UnCorr(0),
-	fHistTimeVsChargePerPM_UnCorr(0), 
+	//fHistTimeVsChargePerPM_UnCorr(0),
+	fHistChargeTriggerPerPMPerV0Flag(0),
+	fHistChargeTailPerPMPerV0Flag(0),
+	fHistChargeBBPerPMPerV0Flag(0), 
 	fHistChargeTriggerPerChannel(0),
 	fHistChargeTriggerPerChannel_PF(0),
 	fHistChargeTriggerPerChannel_TVX(0),
-	fHistChargeTriggerPerChannel_PF_TVX(0), 
+	fHistChargeTriggerPerChannel_PF_TVX(0),
+	fHistChargeTailPerChannel(0),
+	fHistChargeTailPerChannel_PF(0),
+	fHistChargeTailPerChannel_TVX(0),
+	fHistChargeTailPerChannel_PF_TVX(0), 
 	fHistChargePerPM_BB(0), 
 	fHistChargePerPM_BB_PF(0),
 	fHistChargePerPM_BB_TVX(0),  
@@ -169,11 +176,18 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
 	fHistTimePerPM_UnCorr(0),
 	fHistTimeVsChargeADA_UnCorr(0),
 	fHistTimeVsChargeADC_UnCorr(0),
-	fHistTimeVsChargePerPM_UnCorr(0), 
+	//fHistTimeVsChargePerPM_UnCorr(0),
+	fHistChargeTriggerPerPMPerV0Flag(0),
+	fHistChargeTailPerPMPerV0Flag(0),
+	fHistChargeBBPerPMPerV0Flag(0),
 	fHistChargeTriggerPerChannel(0),
 	fHistChargeTriggerPerChannel_PF(0),
 	fHistChargeTriggerPerChannel_TVX(0),
 	fHistChargeTriggerPerChannel_PF_TVX(0), 
+	fHistChargeTailPerChannel(0),
+	fHistChargeTailPerChannel_PF(0),
+	fHistChargeTailPerChannel_TVX(0),
+	fHistChargeTailPerChannel_PF_TVX(0),
 	fHistChargePerPM_BB(0), 
 	fHistChargePerPM_BB_PF(0),
 	fHistChargePerPM_BB_TVX(0),  
@@ -227,6 +241,18 @@ void AliAnalysisTaskADPilot::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner();
   
+  fHistChargeTriggerPerPMPerV0Flag = CreateHist3D("fHistChargeTriggerPerPMPerV0Flag","Charge per PM per VZERO flag",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,
+					65,-0.5,64.5,"ADC counts","Channel","Number of VZERO BB flags");
+  fListHist->Add(fHistChargeTriggerPerPMPerV0Flag);
+  
+  fHistChargeTailPerPMPerV0Flag = CreateHist3D("fHistChargeTailPerPMPerV0Flag","Charge per PM per VZERO flag",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,
+					65,-0.5,64.5,"ADC counts","Channel","Number of VZERO BB flags");
+  fListHist->Add(fHistChargeTailPerPMPerV0Flag);
+  
+  fHistChargeBBPerPMPerV0Flag = CreateHist3D("fHistChargeBBPerPMPerV0Flag","Charge per PM per VZERO flag",kNChannelBins, kChannelMin, kChannelMax,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,
+					65,-0.5,64.5,"ADC counts","Channel","Number of VZERO BB flags");
+  fListHist->Add(fHistChargeBBPerPMPerV0Flag);
+  
   fHistChargeTriggerPerChannel = CreateHist2D("fHistChargeTriggerPerChannel","Trigger charge per channel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
   fListHist->Add(fHistChargeTriggerPerChannel);
   
@@ -238,6 +264,18 @@ void AliAnalysisTaskADPilot::UserCreateOutputObjects()
   
   fHistChargeTriggerPerChannel_PF_TVX = CreateHist2D("fHistChargeTriggerPerChannel_PF_TVX","Trigger charge per channel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
   fListHist->Add(fHistChargeTriggerPerChannel_PF_TVX);
+  
+  fHistChargeTailPerChannel = CreateHist2D("fHistChargeTailPerChannel","Tail charge per channel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+  fListHist->Add(fHistChargeTailPerChannel);
+  
+  fHistChargeTailPerChannel_PF = CreateHist2D("fHistChargeTailPerChannel_PF","Tail charge per channel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+  fListHist->Add(fHistChargeTailPerChannel_PF); 
+  
+  fHistChargeTailPerChannel_TVX = CreateHist2D("fHistChargeTailPerChannel_TVX","Tail charge per channel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+  fListHist->Add(fHistChargeTailPerChannel_TVX);
+  
+  fHistChargeTailPerChannel_PF_TVX = CreateHist2D("fHistChargeTailPerChannel_PF_TVX","Tail charge per channel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+  fListHist->Add(fHistChargeTailPerChannel_PF_TVX);
   
   fHistChargePerPM_BB = CreateHist2D("fHistChargePerPM_BB","Charge per PM BB events",kNChannelBins, kChannelMin, kChannelMax,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"PM number","ADC counts");
   fListHist->Add(fHistChargePerPM_BB);
@@ -521,13 +559,14 @@ if (!fHistMaxChargeValueInt1) {
     fHistMaxChargeValueInt1 = CreateHist2D("fHistMaxChargeValueInt1","Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
     fListHist->Add(fHistMaxChargeValueInt1);
   }
+/*/ 
 if(!fHistTimeVsChargePerPM_UnCorr) {
     fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",2600, 400, 3000, 
     					200,-4,0,
 					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
     fListHist->Add(fHistTimeVsChargePerPM_UnCorr);
   } 
-   
+/*/   
 
   // Post output data.
   PostData(1, fListHist);
@@ -583,6 +622,16 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
     fOldRun=fRun;
   }
   
+  //Triggers from VZERO for reference
+  AliESDVZERO* esdVZERO = fESD->GetVZEROData();
+  if(esdVZERO){
+  	UShort_t fTriggerVZERO = esdVZERO->GetTriggerBits();
+	if(fTriggerVZERO & (1 << 0) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(0);
+	if(fTriggerVZERO & (1 << 1) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(1);
+  	}
+  Int_t nVZEROBBflags = 0;
+  for(Int_t i=0; i<64; i++) nVZEROBBflags += esdVZERO->GetBBFlag(i);
+  
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
   Int_t nBBflagsADA = 0;
@@ -605,6 +654,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 	if(fESD->GetHeader()->IsTriggerInputFired("0TVX")){
 		if(esdAD->GetBBFlag(i))fHistChargePerPM_BB_TVX->Fill(i,esdAD->GetAdc(i));
 		if(esdAD->GetTime(i)> -1024 + 1e-6)fHistChargePerPM_Time_TVX->Fill(i,esdAD->GetAdc(i));
+		if(esdAD->GetBBFlag(i)) fHistChargeBBPerPMPerV0Flag->Fill(i,esdAD->GetAdc(i),nVZEROBBflags);
 		}
 	
 	fHistTimePerPM_Corr->Fill(i,esdAD->GetTime(i));
@@ -632,7 +682,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		fHistTimePerPM_UnCorr->Fill(i,esdADfriend->GetTime(i));
  		if(i<8) fHistTimeVsChargeADC_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
  		if(i>7) fHistTimeVsChargeADA_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
-		if(esdAD->GetAdc(i)>0)fHistTimeVsChargePerPM_UnCorr->Fill(TMath::Nint(esdADfriend->GetTime(i)/(25./256.)),TMath::Log10(1.0/esdAD->GetAdc(i)),i);
+		//if(esdAD->GetAdc(i)>0)fHistTimeVsChargePerPM_UnCorr->Fill(TMath::Nint(esdADfriend->GetTime(i)/(25./256.)),TMath::Log10(1.0/esdAD->GetAdc(i)),i);
 		Int_t nbbFlag = 0;
       		Int_t nbgFlag = 0;
 		Int_t charge[21];
@@ -658,18 +708,31 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		
 		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,10);
 		Float_t triggerCharge = esdADfriend->GetPedestal(i,10) - fCalibData->GetPedestal(k);
+		Float_t tailCharge = 0;
+		for(Int_t iClock = 14; iClock <= 20; iClock++){
+			k = i + 16*esdADfriend->GetIntegratorFlag(i,iClock); 
+			tailCharge += esdADfriend->GetPedestal(i,iClock) - fCalibData->GetPedestal(k);
+			}
 		if(esdAD->GetBBFlag(i)){
 			fHistChargeTriggerPerChannel->Fill(i,triggerCharge);
+			fHistChargeTailPerChannel->Fill(i,tailCharge);
 			if(localPF){
 				fHistChargeTriggerPerChannel_PF->Fill(i,triggerCharge);
 				fHistChargePerPM_BB_PF->Fill(i,esdAD->GetAdc(i));
 				fHistChargePerPM_Time_PF->Fill(i,esdAD->GetAdc(i));
+				fHistChargeTailPerChannel_PF->Fill(i,tailCharge);
 				}
-			if(fESD->GetHeader()->IsTriggerInputFired("0TVX")) fHistChargeTriggerPerChannel_TVX->Fill(i,triggerCharge);
+			if(fESD->GetHeader()->IsTriggerInputFired("0TVX")){ 
+				fHistChargeTriggerPerChannel_TVX->Fill(i,triggerCharge);
+				fHistChargeTailPerChannel_TVX->Fill(i,tailCharge);
+				if(esdAD->GetBBFlag(i)) fHistChargeTriggerPerPMPerV0Flag->Fill(i,triggerCharge,nVZEROBBflags);
+				if(esdAD->GetBBFlag(i)) fHistChargeTailPerPMPerV0Flag->Fill(i,tailCharge,nVZEROBBflags);
+				}
 			if(fESD->GetHeader()->IsTriggerInputFired("0TVX") && localPF){
 				fHistChargeTriggerPerChannel_PF_TVX->Fill(i,triggerCharge);
 				fHistChargePerPM_BB_PF_TVX->Fill(i,esdAD->GetAdc(i));
 				fHistChargePerPM_Time_PF_TVX->Fill(i,esdAD->GetAdc(i));
+				fHistChargeTailPerChannel_PF_TVX->Fill(i,tailCharge);
 				}
 			} 
 		
@@ -724,15 +787,6 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 	for(Int_t i = 12; i<16; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i-6);	
   }
   
-  //Triggers from VZERO for reference
-  AliESDVZERO* esdVZERO = fESD->GetVZEROData();
-  if(esdVZERO){
-  	UShort_t fTriggerVZERO = esdVZERO->GetTriggerBits();
-	if(fTriggerVZERO & (1 << 0) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(0);
-	if(fTriggerVZERO & (1 << 1) ? kTRUE : kFALSE) fHistTriggerOthers->Fill(1);
-  	}
-
-
   // Post output data.
   PostData(1, fListHist);
 }
