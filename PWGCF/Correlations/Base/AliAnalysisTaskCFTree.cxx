@@ -175,14 +175,14 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
   fClassStatistics = new TH1D("fClassStatistics","",16,0,16);
 
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fEventStatistics->SetBit(TH1::kCanRebin);
 #endif
   fListOfHistos->Add(fEventStatistics);
   fListOfHistos->Add(fClassStatistics);
   
   fV0chan = new TH1F("fV0chan","",64,-0.5,63.5);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fV0chan->SetBit(TH1::kCanRebin);
 #endif
   fListOfHistos->Add(fV0chan);
