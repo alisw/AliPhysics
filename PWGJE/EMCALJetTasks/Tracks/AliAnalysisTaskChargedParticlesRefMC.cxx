@@ -255,7 +255,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
           );
     }
   }
-  fHistos->GetListOfHistograms()->Add(fTrackCuts);
+  //fHistos->GetListOfHistograms()->Add(fTrackCuts);
   PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -787,6 +787,15 @@ AliGenPythiaEventHeader *AliAnalysisTaskChargedParticlesRefMC::GetPythiaHeader()
     }
   }
   return pythiaHeader;
+}
+
+/**
+ * Set the track selection
+ * @param cutname Name of the track cuts
+ * @param isAOD check whether we run on ESDs or AODs
+ */
+void AliAnalysisTaskChargedParticlesRefMC::InitializeTrackCuts(TString cutname, bool isAOD){
+  SetTrackSelection(TrackCutsFactory(cutname, isAOD));
 }
 
 /**
