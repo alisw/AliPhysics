@@ -4,6 +4,7 @@
 // $Id$
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliEventPoolManager.h"
+#include <THn.h>
 //#include "AliPool.h"
 
 class TH1;
@@ -22,12 +23,14 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   void                        UserCreateOutputObjects();
 
   //Set things for the analyis
-  void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
-  void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b          ; }
-  void                        SetParticleLevel(Bool_t s)                           { fParticleLevel      = s          ; }
-  void                        SetMC(Bool_t m)                                      { fIsMC               = m          ; }
-  void                        SetAdditionalCentEst(const char* meth2)              { fCentMethod_alt = meth2          ; }
+  void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut      ; }
+  void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b        ; }
+  void                        SetParticleLevel(Bool_t s)                           { fParticleLevel      = s        ; }
+  void                        SetMC(Bool_t m)                                      { fIsMC               = m        ; }
+  void                        SetAdditionalCentEst(const char* meth2)              { fCentMethod_alt     = meth2    ; }
   void                        SetAODfilterBits(Int_t b0 = 0, Int_t b1 = 0)         { fAODfilterBits[0]   = b0  ; fAODfilterBits[1] = b1  ; }
+  void                        SetEffHistGamma(THnF *h)                             { fHistEff_Gamma      = h        ; }
+  void                        SetEffHistHadron(THnF *h)                            { fHistEff_Hadron     = h        ; }
 
  protected:
 
@@ -37,12 +40,16 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
   Bool_t                      Run()                                                         ;
   Bool_t                      FillHistograms()                                              ;
-  Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix)        ;
+  Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Bool_t                      AccClusterForAna(AliVCluster* cluster)                        ;
   Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
-  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut);
+  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
 
-  //Constants
+  // Input histograms
+  THnF                      *fHistEff_Gamma;            // input efficiency for trigger particles
+  THnF                      *fHistEff_Hadron;           // input efficiency for associate particles
+
+  // Constants
   Double_t                    fRtoD;                     // conversion of rad to degree
 
   TAxis*                      fMixBCent;                 // Number of centrality bins for the mixed event
@@ -62,23 +69,24 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   Bool_t                      fIsMC;                     // Trigger, MC analysis
   UInt_t                      fAODfilterBits[2];         // AOD track filter bit map
 
-  //Other stuff
+  // Other stuff
   TList                      *fOutputList1;            //! Output list
   TList                      *fOutputList2;            //! Output list
   TList                      *fOutputList3;            //! Output list
 
   // Histograms -
+  TH1  					    *fHistNoClus_pt_Trigger;   //! No of calorimeter Clusters as a function of p_T
   TH1  					    *fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
   TH1					   **fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
-  TH2					   **fHist_dEta_dPhi;           //! No of g-h pairs in the deta eta delta phi plane
-  TH2					   **fHist_dEta_dPhi_low;       //! No of g-h pairs in the deta eta delta phi plane
-  TH2					   **fHist_dEta_dPhi_med;       //! No of g-h pairs in the deta eta delta phi plane
-  TH2					   **fHist_dEta_dPhi_high;      //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi;          //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi_low;      //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi_med;      //! No of g-h pairs in the deta eta delta phi plane
+  TH2					   **fHist_dEta_dPhi_high;     //! No of g-h pairs in the deta eta delta phi plane
   TH1 					    *fHistpi0;                 //!
 
   TH1					  **fHistpt_assHadron[3];      //! pt distributions of the associated hadron in a certain p_t bin of the gamma
   TH1					  **fHist_DP_gh[3];            //! delta phi g-h distribution fro a given p_t gamma bin
-  TH2                	    *fHPoolReady;              //! Check how many Jobs start mixing
+  TH2                	   *fHPoolReady;               //! Check how many Jobs start mixing
   //
   //
 
@@ -86,6 +94,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 5) // Class to analyse gamma hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 6) // Class to analyse gamma hadron correlations
 };
 #endif

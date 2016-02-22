@@ -4,17 +4,12 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *ncells             = "EMCALCells",
-  const char *njets              = "Jets",
-  const char *nrho               = "Rho",
-  Double_t    jetradius          = 0.2,
-  Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.557,
   Double_t    trackptcut         = 0.15,
   Double_t    clusptcut          = 0.30,
-  const char *cutType            = "TPC",
   const char *taskname           = "AliAnalysisTaskGammaHadron"
 )
 {  
+	cout<<"in AddTaskGammaHadron.C(...)"<<endl;
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -37,71 +32,62 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   
   TString name(taskname);
-  if (strcmp(ntracks,"")) {
+  if(strcmp(ntracks,""))
+  {
     name += "_";
     name += ntracks;
   }
-  if (strcmp(nclusters,"")) {
+  if(strcmp(nclusters,""))
+  {
     name += "_";
     name += nclusters;
   }
-  if (strcmp(njets,"")) {
-    name += "_";
-    name += njets;
+
+  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron();
+
+  //perform some settings
+  AnalysisTask->SetCaloCellsName(ncells);
+  AnalysisTask->SetVzRange(-10,10);
+
+ //for later AnalysisTask->SetEffHistGamma(THnF *h);
+ //for later AnalysisTask->SetEffHistHadron(THnF *h);
+
+
+  //add particle and cluster container
+  AliParticleContainer *partCont = AnalysisTask->AddParticleContainer(ntracks);
+  AliClusterContainer  *clusCont = AnalysisTask->AddClusterContainer(nclusters);
+  if(partCont)
+  {
+	  partCont->SetParticlePtCut(trackptcut);
   }
-  
-  name += "_";
-  name += cutType;
-
-
-  //The next XX lines are implemented to get the reader and
-  //AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
-
-
-
-//  AliAnalysisTaskGammaHadron* qaTask = new AliAnalysisTaskGammaHadron(name);
-  AliAnalysisTaskGammaHadron* qaTask = new AliAnalysisTaskGammaHadron();
-  qaTask->SetCaloCellsName(ncells);
-  qaTask->SetRhoName(nrho,-1);
-  qaTask->SetVzRange(-10,10);
-
-  AliParticleContainer *partCont = qaTask->AddParticleContainer(ntracks);
-  if (partCont) partCont->SetParticlePtCut(trackptcut);
-  AliClusterContainer *clusCont = qaTask->AddClusterContainer(nclusters);
-  if (clusCont) {
+  if(clusCont)
+  {
     clusCont->SetClusPtCut(clusptcut);
-    qaTask->SetNeedEmcalGeom(kTRUE);
+    AnalysisTask->SetNeedEmcalGeom(kTRUE);
   }
-  else {
-    qaTask->SetNeedEmcalGeom(kFALSE);
+  else
+  {
+	  AnalysisTask->SetNeedEmcalGeom(kFALSE);
   }
 
-
-  AliJetContainer *jetCont = qaTask->AddJetContainer(njets,cutType,jetradius);
-  if (jetCont) {
-    jetCont->SetJetPtCut(jetptcut);
-    jetCont->SetPercAreaCut(jetareacut);
-    jetCont->SetRhoName(nrho);
-  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-  cout<<"ELI: test1 in task"<<endl;
 
-  mgr->AddTask(qaTask);
+  mgr->AddTask(AnalysisTask);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  cout<<"ELI: test1 in task"<<endl;
+  //cout<<"ELI: test1 in task"<<endl;
 
   TString contName(name);
   contName += "_histosgrams";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput  (qaTask, 0,  cinput1 );
-  mgr->ConnectOutput (qaTask, 1, coutput1 );
+  mgr->ConnectInput  (AnalysisTask, 0,  cinput1 );
+  mgr->ConnectOutput (AnalysisTask, 1, coutput1 );
 
-  return qaTask;
+  return AnalysisTask;
 }
