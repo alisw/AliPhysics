@@ -108,8 +108,8 @@ public:
     if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdGammaHigh(a, b, c);
   }
 
-  void SetJetPatchsize(Int_t jetpatchsize) { fJetPatchsize = jetpatchsize; }
-
+  void SetJetPatchsize(Int_t jetpatchsize) { fJetPatchsize    = jetpatchsize; }
+  void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
 protected:
 
@@ -122,6 +122,7 @@ protected:
   TString                                 fV0InName;                  ///< name of output track array
   TriggerMakerBitConfig_t                 fUseTriggerBitConfig;       ///< type of trigger config
   Int_t                                   fJetPatchsize;              ///< Size of a jet patch
+  Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fDoQA;                      ///< Fill QA histograms
@@ -132,7 +133,7 @@ private:
   AliEmcalTriggerMakerTask &operator=(const AliEmcalTriggerMakerTask &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerMakerTask, 1);
+  ClassDef(AliEmcalTriggerMakerTask, 2);
   /// \endcond
 };
 

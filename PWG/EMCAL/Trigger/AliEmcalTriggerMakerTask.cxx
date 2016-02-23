@@ -39,6 +39,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
   fJetPatchsize(16),
+  fUseL0Amplitudes(kFALSE),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -54,6 +55,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fV0(NULL),
   fUseTriggerBitConfig(kNewConfig),
   fJetPatchsize(16),
+  fUseL0Amplitudes(kFALSE),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -166,7 +168,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   fTriggerMaker->ReadTriggerData(fCaloTriggers);
   fTriggerMaker->BuildL1ThresholdsOffline(fV0);
   fTriggerMaker->SetIsMC(MCEvent());
-  TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent());
+  TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent(), fUseL0Amplitudes);
   AliEMCALTriggerPatchInfo *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;

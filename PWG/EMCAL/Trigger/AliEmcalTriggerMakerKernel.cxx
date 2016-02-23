@@ -198,10 +198,10 @@ void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzero
   }
 }
 
-TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent){
+TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp){
   //std::cout << "Finding trigger patches" << std::endl;
-  AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
-  AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
+  //AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
+  //AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
 
   Double_t vertexpos[3];
   inputevent->GetPrimaryVertex()->GetXYZ(vertexpos);
@@ -223,7 +223,13 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       bkgPatchMask = 1 << fTriggerBitConfig->GetBkgBit(),
       l0PatchMask = 1 << fTriggerBitConfig->GetLevel0Bit();
 
-  std::vector<AliEMCALTriggerRawPatch> patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
+  std::vector<AliEMCALTriggerRawPatch> patches;
+  if (useL0amp) {
+    patches = fPatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
+  }
+  else {
+    patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
+  }
   TObjArray *result = new TObjArray(1000);
   result->SetOwner(kTRUE);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
