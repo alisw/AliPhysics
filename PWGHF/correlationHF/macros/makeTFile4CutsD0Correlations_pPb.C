@@ -15,9 +15,12 @@
 
 //macro to make a .root file which contains an AliRDHFCutsD0toKpi for AliAnalysisTaskSED0Mass task
 
-void makeInputAliAnalysisTaskSED0Correlations(){
+void makeInputAliAnalysisTaskSED0Correlations_pPb(){
 
 //____________________________________________________
+
+  //Set Centrality
+  Float_t minc=0,maxc=100;
 
 // Cuts for D0 cuts
 
@@ -25,11 +28,17 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   RDHFD0Corr->SetName("D0toKpiCuts");
   RDHFD0Corr->SetTitle("Cuts for D0 analysis");
 
-  RDHFD0Corr->SetMinVtxContr(1);
+  // PILE UP REJECTION
+  RDHFD0Corr->SetOptPileup(1);  	   //per DATI (spegni per MC)		
+  RDHFD0Corr->ConfigurePileupCuts(5,0.8);  //per DATI (spegni per MC)
 
-  //Trigger selection - USING THE DEFAULT, WHICH IS CINT1 (ok for pp 2010)
-  //RDHFD0Corr->SetTriggerClass("");
-  //RDHFD0Corr->SetTriggerMask(AliVEvent::kMB); //this shall be enabled!
+  //Event cuts
+  RDHFD0Corr->SetMinVtxContr(1);
+  RDHFD0Corr->SetMaxVtxZ(10.);
+
+  //Trigger selection
+  RDHFD0Corr->SetTriggerClass("");
+  RDHFD0Corr->SetTriggerMask(AliVEvent::kINT7);
 
   //Quality tracks for daughters
   AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
@@ -69,20 +78,20 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   RDHFD0Corr->SetGlobalIndex(nvars,nptbins);
   RDHFD0Corr->SetPtBins(nptbins+1,ptbins);
   
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.80,0.,0.},/* pt<0.5*/
-						  {0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.80,0.,0.},/* 0.5<pt<1*/
-						  {0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.80,0.,0.},/* 1<pt<2 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,0.},/* 2<pt<3 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,0.},/* 3<pt<4 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,0.},/* 4<pt<5 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 5<pt<6 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 6<pt<7 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 7<pt<8 */
-						  {0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 8<pt<12 */
-						  {0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 12<pt<16 */
-						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,999999.*1E-8,0.85,0.,0.},/* 16<pt<20 */
-						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,999999.*1E-8,0.85,0.,0.},/* 20<pt<24 */
-						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,999999.*1E-8,0.85,0.,0.}};/* pt>24 */
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-0.000325,0.80,0.,3.2},/* pt<0.5*/
+                                                  {0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-0.000325,0.80,0.,3.2},/* 0.5<pt<1*/
+                                                  {0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.90,0.,0.},/* 1<pt<2 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.90,0.,0.},/* 2<pt<3 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.90,0.,0.},/* 3<pt<4 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.90,0.,0.},/* 4<pt<5 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.90,0.,0.},/* 5<pt<6 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 6<pt<7 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 7<pt<8 */
+                                                  {0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85,0.,0.},/* 8<pt<12 */
+                                                  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 12<pt<16 */
+                                                  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 16<pt<20 */
+                                                  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 20<pt<24 */
+                                                  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.}};/* pt>24 */
   
   
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
@@ -121,33 +130,34 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   pidObj->SetPLimit(plims,nlims);
   pidObj->SetSigma(sigmas);
   pidObj->SetCompat(compat);
-  pidObj->SetPCompatTOF(1.5);
+  pidObj->SetPCompatTOF(2.);
   pidObj->SetSigmaForTPCCompat(3.);
   pidObj->SetSigmaForTOFCompat(3.);
   pidObj->SetTPC(kTRUE);
   pidObj->SetTOF(kTRUE);
+  pidObj->SetOldPid(kFALSE);
   RDHFD0Corr->SetPidHF(pidObj);
   RDHFD0Corr->SetUsePID(kTRUE);
   RDHFD0Corr->SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
   RDHFD0Corr->SetLowPt(kFALSE);
+  RDHFD0Corr->SetMaximumPforPID(999.);
 
   //activate pileup rejection (for pp)
-  RDHFD0Corr->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+//  RDHFD0Corr->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
   TString cent="";
   //centrality selection (Pb-Pb)
-  Float_t minc=0,maxc=100;
   RDHFD0Corr->SetMinCentrality(minc);
   RDHFD0Corr->SetMaxCentrality(maxc);
   cent=Form("%.0f%.0f",minc,maxc);
-  RDHFD0Corr->SetUseCentrality(AliRDHFCuts::kCentOff); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
+  RDHFD0Corr->SetUseCentrality(AliRDHFCuts::kCentV0A); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
 
   //temporary
   //RDHFD0Corr->SetFixRefs();
 
   cout<<"This is the object I'm going to save:"<<endl;
   RDHFD0Corr->PrintAll();
-  TFile* fout=new TFile("D0toKpiCuts.root","recreate");   //set this!! 
+  TFile* fout=new TFile("D0toKpiCuts_pPb_0_100.root","recreate");   //set this!! 
 
   fout->cd();
   RDHFD0Corr->Write();
@@ -227,12 +237,12 @@ void makeInputAliAnalysisTaskSED0Correlations(){
 
   //Event Mixing settings
   HFCorrelationCuts->SetMaxNEventsInPool(200);
-  HFCorrelationCuts->SetMinNTracksInPool(10000);
-  HFCorrelationCuts->SetMinEventsToMix(1); //reduce to 1?
+  HFCorrelationCuts->SetMinNTracksInPool(10000); //increase to 5000? but modifying in HFCorrelator fTargetDepth
+  HFCorrelationCuts->SetMinEventsToMix(1);  //reduce to 1?
   HFCorrelationCuts->SetTargetFracTracks(0.0025);
   HFCorrelationCuts->SetNofPoolBins(3,3);
 
-  Double_t MBins[]={0,20,35,200};
+  Double_t MBins[]={0,40,65,500};
   Double_t * MultiplicityBins = MBins;
   Double_t ZBins[]={-10,-2.5,2.5,10};
   Double_t *ZVrtxBins = ZBins;
@@ -246,10 +256,10 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   HFCorrelationCuts->SetMCEventTypes(MCEvTypeArray);
 
   //Define sideband edges (if set externally in the AddTask file)
-  Double_t LSBLow[15] = {0.,0.,0.,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
-  Double_t LSBUpp[15] = {0.,0.,0.,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,0.,0.,0.,0.};
-  Double_t RSBLow[15] = {0.,0.,0.,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,0.,0.,0.,0.};
-  Double_t RSBUpp[15] = {0.,0.,0.,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,0.,0.,0.,0.};
+  Double_t LSBLow[15] = {0.,0.,0.,1.7928,1.7768,1.7728,1.7648,1.7488,1.7448,1.7728,1.7048,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
+  Double_t LSBUpp[15] = {0.,0.,0.,1.8288,1.8208,1.8208,1.8128,1.8088,1.8048,1.8048,1.7568,0.,0.,0.,0.};
+  Double_t RSBLow[15] = {0.,0.,0.,1.9008,1.9088,1.9128,1.9168,1.9288,1.9288,1.9288,1.9728,0.,0.,0.,0.};
+  Double_t RSBUpp[15] = {0.,0.,0.,1.9408,1.9528,1.9608,1.9688,1.9848,1.9888,1.9928,2.0768,0.,0.,0.,0.}; 
 
   TVectorD vLSBLow(15,LSBLow);
   TVectorD vLSBUpp(15,LSBUpp);
@@ -258,7 +268,7 @@ void makeInputAliAnalysisTaskSED0Correlations(){
 
   // Save to *.root file
   HFCorrelationCuts->PrintAll();
-  TFile* fout=new TFile("AssocPartCuts_Std_pp.root","recreate");   //set this!! 
+  TFile* fout=new TFile("AssocPartCuts_Std_pPb.root","recreate");   //set this!! 
   fout->cd();
   HFCorrelationCuts->Write();
   vLSBLow.Write("vLSBLow");
