@@ -229,6 +229,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     TVectorD *RSBLow = (TVectorD*)filecuts2->Get("vRSBLow");
     TVectorD *RSBUpp = (TVectorD*)filecuts2->Get("vRSBUpp");      
 
+    if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return;}
+
     massD0Task->SetLSBLowLim(LSBLow->GetMatrixArray());
     massD0Task->SetLSBHighLim(LSBUpp->GetMatrixArray());
     massD0Task->SetRSBLowLim(RSBLow->GetMatrixArray());
