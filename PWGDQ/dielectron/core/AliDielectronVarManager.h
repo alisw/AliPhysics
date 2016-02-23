@@ -144,12 +144,12 @@ public:
     kTRDprob2DEle,           // TRD electron pid probability 2D LQ
     kTRDprob2DPio,           // TRD pion pid probability 2D LQ
     kTRDprob2DPro,           // TRD proton pid probability 2D LQ
-    /* kTRDprob3DEle,           // TRD electron pid probability 3D LQ */
-    /* kTRDprob3DPio,           // TRD pion pid probability 3D LQ */
-    /* kTRDprob3DPro,           // TRD proton pid probability 3D LQ */
-    /* kTRDprob7DEle,           // TRD electron pid probability 7D LQ */
-    /* kTRDprob7DPio,           // TRD pion pid probability 7D LQ */
-    /* kTRDprob7DPro,           // TRD proton pid probability 7D LQ */
+    kTRDprob3DEle,           // TRD electron pid probability 3D LQ
+    kTRDprob3DPio,           // TRD pion pid probability 3D LQ
+    kTRDprob3DPro,           // TRD proton pid probability 3D LQ
+    kTRDprob7DEle,           // TRD electron pid probability 7D LQ
+    kTRDprob7DPio,           // TRD pion pid probability 7D LQ
+    kTRDprob7DPro,           // TRD proton pid probability 7D LQ
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
     kTRDpidEffLeg,           // TRD pid efficiency from conversion electrons
     kTRDsignal,              // TRD signal
@@ -1146,19 +1146,19 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
       values[AliDielectronVarManager::kTRDprob2DPro]    = prob[AliPID::kProton];
     }
     // 3D TRD PID
-    /* if( Req(kTRDprob3DEle) || Req(kTRDprob3DPio) || Req(kTRDprob3DPro) ){ */
-    /*   fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D); */
-    /*   values[AliDielectronVarManager::kTRDprob3DEle]    = prob[AliPID::kElectron]; */
-    /*   values[AliDielectronVarManager::kTRDprob3DPio]    = prob[AliPID::kPion]; */
-    /*   values[AliDielectronVarManager::kTRDprob3DPro]    = prob[AliPID::kProton]; */
-    /* } */
-    /* // 7D TRD PID */
-    /* if( Req(kTRDprob7DEle) || Req(kTRDprob7DPio) || Req(kTRDprob7DPro) ){ */
-    /*   fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ7D); */
-    /*   values[AliDielectronVarManager::kTRDprob7DEle]    = prob[AliPID::kElectron]; */
-    /*   values[AliDielectronVarManager::kTRDprob7DPio]    = prob[AliPID::kPion]; */
-    /*   values[AliDielectronVarManager::kTRDprob7DPro]    = prob[AliPID::kProton]; */
-    /* } */
+     if( Req(kTRDprob3DEle) || Req(kTRDprob3DPio) || Req(kTRDprob3DPro) ){
+       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D); 
+       values[AliDielectronVarManager::kTRDprob3DEle]    = prob[AliPID::kElectron]; 
+       values[AliDielectronVarManager::kTRDprob3DPio]    = prob[AliPID::kPion]; 
+       values[AliDielectronVarManager::kTRDprob3DPro]    = prob[AliPID::kProton]; 
+     } 
+    // 7D TRD PID
+     if( Req(kTRDprob7DEle) || Req(kTRDprob7DPio) || Req(kTRDprob7DPro) ){ 
+       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ7D); 
+       values[AliDielectronVarManager::kTRDprob7DEle]    = prob[AliPID::kElectron]; 
+       values[AliDielectronVarManager::kTRDprob7DPio]    = prob[AliPID::kPion]; 
+       values[AliDielectronVarManager::kTRDprob7DPro]    = prob[AliPID::kProton]; 
+     } 
 
 
     //restore TPC signal if it was changed
