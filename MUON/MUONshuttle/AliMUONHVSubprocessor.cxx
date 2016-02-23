@@ -40,6 +40,8 @@
 #include "TMap.h"
 #include "TObjString.h"
 
+#include "AliMUONCalibrationData.h"
+
 /// \cond CLASSIMP
 ClassImp(AliMUONHVSubprocessor)
 /// \endcond
@@ -67,6 +69,8 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
 
   TMap hv;
   hv.SetOwner(kTRUE);
+  
+  hv.SetUniqueID(AliMUONCalibrationData::PatchHVDCSAliasesSt1WasAppliedMask());
   
   AliMpDCSNamer hvNamer("TRACKER");
 
