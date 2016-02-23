@@ -54,7 +54,7 @@ class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE
 	void SetDCAZDaughterMax1(double maxdcazd1) {fDCAZDaughterMax1 = maxdcazd1;}
 
 	void SetWindowLambda(double winlam) {fWindowV02 = winlam;}
-	void SetCPADibaryon(double cpadi) {fCPADibaryon = cpadi;}
+	void SetCPADibaryon(double cpadi) {fCPADibaryonNO = cpadi;}
 
 	void SetRecoTypeV0(int recotypev0) {fRecoTypeV0 = recotypev0;}
 	void SetLikeSignDB(int likesigndb) {fLikeSignDB = likesigndb;}
@@ -152,7 +152,7 @@ class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE
 
 	// cut parameters for dibaryon
 	Double_t fCPAV01toV02;      // Min cosine of V02's pointing angle to V01
-	Double_t fCPADibaryon;      // Min cosine of dibaryon's pointing angle
+	Double_t fCPADibaryonNO;    // Min cosine of dibaryon's pointing angle
 
 
 	ClassDef(AliAnalysisTaskNOmegaLPK,2); // analysisclass

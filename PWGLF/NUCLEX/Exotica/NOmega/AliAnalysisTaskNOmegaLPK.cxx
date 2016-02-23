@@ -88,7 +88,7 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK() :
 	fIsDCA(0),
 	fNAll(0),
 	fRecoTypeV0(0),// Reconstruction type of V0 (0:N-Omega, 1:H-dibaryon)
-	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:LL, 2:(Lbar)(Lbar), 3:L(Lbar), 4:(Lbar)L)
+	fLikeSignDB(0),// Like-sign of DB (0:ALL, 1:LL, 2:(Lbar)(Lbar), 3:L(Lbar), 4:(Lbar)L)
 	fReqSigmaTPC(3.0),// TPC PIDcut sigma
 	fReqClustersTPC(80),// TPC number of clusters
 	fReqSigmaTOF(3.0),// TOF PIDcut sigma
@@ -117,7 +117,7 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK() :
 	fDCAZDaughterMax2(2.0),// Max DCAZ V0 to PV
 	fWindowV02(0.0045),// Mass window cut for Lambda
 	fCPAV01toV02(0.0),// Min cosine of V02's pointing angle to V01
-	fCPADibaryon(0.99875)// Min cosine of dibaryon's pointing angle
+	fCPADibaryonNO(0.9)//0.99875 Min cosine of dibaryon's pointing angle
 {
 }
 //______________________________________________________________________________________________________
@@ -151,7 +151,7 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK(const Char_t* name) :
 	fIsDCA(0),
 	fNAll(0),
 	fRecoTypeV0(0),// Reconstruction type of V0 (0:N-Omega, 1:H-dibaryon)
-	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:LL, 2:(Lbar)(Lbar), 3:L(Lbar), 4:(Lbar)L)
+	fLikeSignDB(0),// Like-sign of DB (0:ALL, 1:LL, 2:(Lbar)(Lbar), 3:L(Lbar), 4:(Lbar)L)
 	fReqSigmaTPC(3.0),// TPC PIDcut sigma
 	fReqClustersTPC(80),// TPC number of clusters
 	fReqSigmaTOF(3.0),// TOF PIDcut sigma
@@ -180,7 +180,7 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK(const Char_t* name) :
 	fDCAZDaughterMax2(2.0),// Max DCAZ V0 to PV
 	fWindowV02(0.0045),// Mass window cut for Lambda
 	fCPAV01toV02(0.0),// Min cosine of V02's pointing angle to V01
-	fCPADibaryon(0.99875)// Min cosine of dibaryon's pointing angle
+	fCPADibaryonNO(0.9)//0.99875 Min cosine of dibaryon's pointing angle
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -358,7 +358,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 {
 
   //------------------------------------------------------------------------------------------
-  // version NO1-0-6 (2016/02/22)
+  // version NO1-0-7 (2016/02/22)
   // Reconstruct dibaryon from two V0s by ESD class and myself
   // and calculate the invariant mass of dibaryon
   //------------------------------------------------------------------------------------------
@@ -430,7 +430,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	fParameters[23] = fDCAZDaughterMax2;
 	fParameters[24] = fWindowV02;
 	fParameters[25] = fCPAV01toV02;
-	fParameters[26] = fCPADibaryon;
+	fParameters[26] = fCPADibaryonNO;
 	fParameters[27] = fProtonPMax;
 	fParameters[28] = fPionPMax;
 	fParameters[29] = fKaonPMax;
@@ -483,108 +483,122 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 //	if (fCountEvent<setStartNumber) return;
 //	if (fCountEvent>2) return;
 
+
+	//------------------------------------------------------------------------------------------
+	// Stores relevant V0s and tracks in array
+	//------------------------------------------------------------------------------------------
+  
+	// V0s
+	Int_t v0Array[nV0s];
+	Int_t nV0Survived=0;
+	for (Int_t iV0=0; iV0<nV0s; iV0++) {
+		AliESDv0 *v0rel = fESDEvent->GetV0(iV0);
+		AliESDtrack *trkPrel = fESDEvent->GetTrack(v0rel->GetPindex());
+		AliESDtrack *trkNrel = fESDEvent->GetTrack(v0rel->GetNindex());
+		if ( trkPrel->GetSign()>0 && trkNrel->GetSign()<0 ) {
+		} else if ( trkPrel->GetSign()<0 && trkNrel->GetSign()>0 ) {
+			trkPrel = fESDEvent->GetTrack(v0rel->GetNindex());
+			trkNrel = fESDEvent->GetTrack(v0rel->GetPindex());
+		} else continue;
+		if( !fESDtrackCuts->AcceptTrack(trkPrel) ) continue;
+		if( !fESDtrackCuts->AcceptTrack(trkNrel) ) continue;
+		Double_t trkPrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kProton));
+		Double_t trkPrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kPion  ));
+		Double_t trkNrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kProton));
+		Double_t trkNrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kPion  ));
+		if ( fLikeSignDB == 0 ) {//All
+			if ( !(   (trkPrelTPCProton<=fReqSigmaTPC && trkNrelTPCPion<=fReqSigmaTPC  )||
+			          (trkPrelTPCPion<=fReqSigmaTPC   && trkNrelTPCProton<=fReqSigmaTPC)   ) ) continue;
+		} else if ( fLikeSignDB==1 || fLikeSignDB==4 ) {//???-Lambda
+			if ( trkPrelTPCProton>fReqSigmaTPC ) continue;
+			if ( trkNrelTPCPion>fReqSigmaTPC   ) continue;
+		} else if ( fLikeSignDB==2 || fLikeSignDB==3 ) {//???-Lambdabar
+			if ( trkPrelTPCPion>fReqSigmaTPC   ) continue;
+			if ( trkNrelTPCProton>fReqSigmaTPC ) continue;
+		} 
+		v0Array[nV0Survived++] = iV0;
+	}
+
+  // tracks
+  Int_t trkPArray[nTracks];
+  Int_t trkNArray[nTracks];
+  Int_t nTrkPSurvived=0; 
+  Int_t nTrkNSurvived=0; 
+  for (Int_t iTrk=0; iTrk<nTracks; iTrk++) {
+    AliESDtrack *trkrel = fESDEvent->GetTrack(iTrk);
+		Double_t trkrelCharge = trkrel->GetSign();
+    if( !fESDtrackCuts->AcceptTrack(trkrel) ) continue;
+
+		Double_t trkrelDCAPV = trkrel->GetD(PosPV[0],PosPV[1],fBzkG);
+		if ( TMath::Abs(trkrelDCAPV)<fPosDCAToPVMin1 && TMath::Abs(trkrelDCAPV)<fNegDCAToPVMin1 ) continue;
+
+    Double_t trkrelTPCKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kKaon));
+    Double_t trkrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kPion));
+    Double_t trkrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kProton));
+
+		if ( fRecoTypeV0 == 0 ) {//N-Omega
+			if ( fLikeSignDB == 0 ) {//All
+				if ( trkrelTPCProton>fReqSigmaTPC && trkrelTPCKaon>fReqSigmaTPC ) continue;
+				if ( trkrelTPCProton>fReqSigmaTPC && trkrel->P()>fKaonPMax      ) continue;
+			} else if ( fLikeSignDB==1 || fLikeSignDB==3 ) {//LambdaStar-???
+				if ( trkrelCharge>0 && (trkrelTPCProton>fReqSigmaTPC||trkrel->P()>fProtonPMax) ) continue;
+				if ( trkrelCharge<0 && (trkrelTPCKaon>fReqSigmaTPC  ||trkrel->P()>fKaonPMax  ) ) continue;
+			} else if ( fLikeSignDB==2 || fLikeSignDB==4 ) {//LambdaStarbar-???
+				if ( trkrelCharge>0 && (trkrelTPCKaon>fReqSigmaTPC  ||trkrel->P()>fKaonPMax  ) ) continue;
+				if ( trkrelCharge<0 && (trkrelTPCProton>fReqSigmaTPC||trkrel->P()>fProtonPMax) ) continue;
+			} 
+		} else if ( fRecoTypeV0 == 1) {//H-dibaryon
+			if ( fLikeSignDB == 0 ) {//All
+				if ( trkrelTPCProton>fReqSigmaTPC && trkrelTPCPion>fReqSigmaTPC ) continue;
+				if ( trkrelTPCProton>fReqSigmaTPC && trkrel->P()>fPionPMax      ) continue;
+			} else if ( fLikeSignDB==1 || fLikeSignDB==3 ) {//Lambda-???
+				if ( trkrelCharge>0 && (trkrelTPCProton>fReqSigmaTPC||trkrel->P()>fProtonPMax) ) continue;
+				if ( trkrelCharge<0 && (trkrelTPCPion>fReqSigmaTPC  ||trkrel->P()>fPionPMax  ) ) continue;
+			} else if ( fLikeSignDB==2 || fLikeSignDB==4 ) {//Lambdabar-???
+				if ( trkrelCharge>0 && (trkrelTPCPion>fReqSigmaTPC  ||trkrel->P()>fPionPMax  ) ) continue;
+				if ( trkrelCharge<0 && (trkrelTPCProton>fReqSigmaTPC||trkrel->P()>fProtonPMax) ) continue;
+			} 
+		}
+    if ( trkrelCharge>0 ) trkPArray[nTrkPSurvived++] = iTrk;
+    if ( trkrelCharge<0 ) trkNArray[nTrkNSurvived++] = iTrk;
+  }
+
+//  printf("\n\n### nTracks:%d, pSurvive:%d, nSurvive:%d\n",nTracks,nTrkPSurvived,nTrkNSurvived);
+//  printf("### nV0s:%d, nV0Survived:%d\n",nV0s,nV0Survived);
+
+
 	//------------------------------------------------------------------------------------------
 	// Track loop 1 (To find V01) (START)
 	//------------------------------------------------------------------------------------------
 
-	for (Int_t iTrk1=0; iTrk1<nTracks; iTrk1++) {
-		AliESDtrack *trk1=fESDEvent->GetTrack(iTrk1);
-		Double_t trk1Charge = trk1->GetSign();
+	for (Int_t iTrk1=0; iTrk1<nTrkPSurvived; iTrk1++) {
+		Int_t iPos = trkPArray[iTrk1];
+		AliESDtrack *pos1Trk=fESDEvent->GetTrack(iPos);
+		Double_t trk1Charge = pos1Trk->GetSign();
+		if (trk1Charge<0) printf("### BUG!!! at P\n");
 
-		if ( !fESDtrackCuts->AcceptTrack(trk1) ) continue;
-
-		// Pre-track cut (TPCsigma)
-		Double_t trk1TPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk1, AliPID::kProton));
-		Double_t trk1TPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk1, AliPID::kPion  ));
-		Double_t trk1TPCKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk1, AliPID::kKaon  ));
-		if ( fRecoTypeV0 == 0 ) {//N-Omega
-			if ( fLikeSignDB == 0 ) {//All
-				if ( trk1TPCProton>fReqSigmaTPC && trk1TPCKaon>fReqSigmaTPC ) continue;
-				if ( trk1TPCProton>fReqSigmaTPC && trk1->P()>fKaonPMax      ) continue;
-			} else if ( fLikeSignDB==1 || fLikeSignDB==3 ) {//LambdaStar-???
-				if ( trk1Charge>0 && (trk1TPCProton>fReqSigmaTPC||trk1->P()>fProtonPMax) ) continue;
-				if ( trk1Charge<0 && (trk1TPCKaon>fReqSigmaTPC  ||trk1->P()>fKaonPMax  ) ) continue;
-			} else if ( fLikeSignDB==2 || fLikeSignDB==4 ) {//LambdaStarbar-???
-				if ( trk1Charge>0 && (trk1TPCKaon>fReqSigmaTPC  ||trk1->P()>fKaonPMax  ) ) continue;
-				if ( trk1Charge<0 && (trk1TPCProton>fReqSigmaTPC||trk1->P()>fProtonPMax) ) continue;
-			} 
-		} else if ( fRecoTypeV0 == 1) {//H-dibaryon
-			if ( fLikeSignDB == 0 ) {//All
-				if ( trk1TPCProton>fReqSigmaTPC && trk1TPCPion>fReqSigmaTPC ) continue;
-				if ( trk1TPCProton>fReqSigmaTPC && trk1->P()>fPionPMax      ) continue;
-			} else if ( fLikeSignDB==1 || fLikeSignDB==3 ) {//Lambda-???
-				if ( trk1Charge>0 && (trk1TPCProton>fReqSigmaTPC||trk1->P()>fProtonPMax) ) continue;
-				if ( trk1Charge<0 && (trk1TPCPion>fReqSigmaTPC  ||trk1->P()>fPionPMax  ) ) continue;
-			} else if ( fLikeSignDB==2 || fLikeSignDB==4 ) {//Lambdabar-???
-				if ( trk1Charge>0 && (trk1TPCPion>fReqSigmaTPC  ||trk1->P()>fPionPMax  ) ) continue;
-				if ( trk1Charge<0 && (trk1TPCProton>fReqSigmaTPC||trk1->P()>fProtonPMax) ) continue;
-			} 
-		}
-
-		// Impact parameter cut
-		Double_t trk1DCAPV = trk1->GetD(PosPV[0],PosPV[1],fBzkG);
-		if ( TMath::Abs(trk1DCAPV)<fPosDCAToPVMin1 && TMath::Abs(trk1DCAPV)<fNegDCAToPVMin1 ) continue;
-
+		Double_t pos1TPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos1Trk, AliPID::kProton));
+		Double_t pos1TPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos1Trk, AliPID::kPion  ));
+		Double_t pos1TPCKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos1Trk, AliPID::kKaon  ));
 	//------------------------------------------------------------------------------------------
 	// Track loop 2 (To find V01) (START)
 	//------------------------------------------------------------------------------------------
 
-		for (Int_t iTrk2=iTrk1+1; iTrk2<nTracks; iTrk2++) {
-			AliESDtrack *trk2=fESDEvent->GetTrack(iTrk2);
-			Double_t trk2Charge = trk2->GetSign();
+		for (Int_t iTrk2=0; iTrk2<nTrkNSurvived; iTrk2++) {
+			Int_t iNeg = trkNArray[iTrk2];
+			AliESDtrack *neg1Trk=fESDEvent->GetTrack(iNeg);
+			Double_t trk2Charge = neg1Trk->GetSign();
+			if (trk2Charge>0) printf("### BUG!!! at N\n");
 
-			if ( trk1Charge*trk2Charge > 0 ) continue;//reject ++ and -- (survive +- and -+)
-			if ( !fESDtrackCuts->AcceptTrack(trk2) ) continue;
+			if ( trk1Charge*trk2Charge > 0 ) printf("### BUG!!! at PN\n");
 
-			// Pre-track cut (TPCsigma)
-			Double_t trk2TPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk2, AliPID::kProton));
-			Double_t trk2TPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk2, AliPID::kPion  ));
-			Double_t trk2TPCKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk2, AliPID::kKaon  ));
-			if ( fRecoTypeV0 == 0 ) {//N-Omega
-				if ( fLikeSignDB == 0 ) {//All
-					if ( trk2TPCProton>fReqSigmaTPC && trk2TPCKaon>fReqSigmaTPC ) continue;
-					if ( trk2TPCProton>fReqSigmaTPC && trk2->P()>fKaonPMax      ) continue;
-				} else if ( fLikeSignDB==1 || fLikeSignDB==3 ) {//LambdaStar-???
-					if ( trk2Charge>0 && (trk2TPCProton>fReqSigmaTPC||trk2->P()>fProtonPMax) ) continue;
-					if ( trk2Charge<0 && (trk2TPCKaon>fReqSigmaTPC  ||trk2->P()>fKaonPMax  ) ) continue;
-				} else if ( fLikeSignDB==2 || fLikeSignDB==4 ) {//LambdaStarbar-???
-					if ( trk2Charge>0 && (trk2TPCKaon>fReqSigmaTPC  ||trk2->P()>fKaonPMax  ) ) continue;
-					if ( trk2Charge<0 && (trk2TPCProton>fReqSigmaTPC||trk2->P()>fProtonPMax) ) continue;
-				} 
-			} else if ( fRecoTypeV0 == 1) {//H-dibaryon
-				if ( fLikeSignDB == 0 ) {//All
-					if ( trk2TPCProton>fReqSigmaTPC && trk2TPCPion>fReqSigmaTPC ) continue;
-					if ( trk2TPCProton>fReqSigmaTPC && trk2->P()>fPionPMax      ) continue;
-				} else if ( fLikeSignDB==1 || fLikeSignDB==3 ) {//Lambda-???
-					if ( trk2Charge>0 && (trk2TPCProton>fReqSigmaTPC||trk2->P()>fProtonPMax) ) continue;
-					if ( trk2Charge<0 && (trk2TPCPion>fReqSigmaTPC  ||trk2->P()>fPionPMax  ) ) continue;
-				} else if ( fLikeSignDB==2 || fLikeSignDB==4 ) {//Lambdabar-???
-					if ( trk2Charge>0 && (trk2TPCPion>fReqSigmaTPC  ||trk2->P()>fPionPMax  ) ) continue;
-					if ( trk2Charge<0 && (trk2TPCProton>fReqSigmaTPC||trk2->P()>fProtonPMax) ) continue;
-				} 
-			}
-
-			// Impact parameter cut
-			Double_t trk2DCAPV = trk2->GetD(PosPV[0],PosPV[1],fBzkG);
-			if ( TMath::Abs(trk2DCAPV)<fPosDCAToPVMin1 && TMath::Abs(trk2DCAPV)<fNegDCAToPVMin1 ) continue;
+			Double_t neg1TPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg1Trk, AliPID::kProton));
+			Double_t neg1TPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg1Trk, AliPID::kPion  ));
+			Double_t neg1TPCKaon   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg1Trk, AliPID::kKaon  ));
 
 	//------------------------------------------------------------------------------------------
 	// Preparation to reconstruct V01
 	//------------------------------------------------------------------------------------------
-
-			// Ordering positive -> negative track 
-			AliESDtrack *pos1Trk, *neg1Trk;
-			if        ( trk1Charge>0 && trk2Charge>0 ) {//(1,2)=(+,+)->continue
-				continue;
-			} else if ( trk1Charge<0 && trk2Charge<0 ) {//(1,2)=(-,-)->continue
-				continue;
-			} else if ( trk1Charge>0 && trk2Charge<0 ) {//(1,2)=(+,-)->ok
-				pos1Trk=fESDEvent->GetTrack(iTrk1);
-				neg1Trk=fESDEvent->GetTrack(iTrk2);
-			} else if ( trk1Charge<0 && trk2Charge>0 ) {//(1,2)=(-,+)->(+,-)
-				pos1Trk=fESDEvent->GetTrack(iTrk2);
-				neg1Trk=fESDEvent->GetTrack(iTrk1);
-			}
 
 			Double_t pos1DCAPV = pos1Trk->GetD(PosPV[0],PosPV[1],fBzkG);
 			Double_t neg1DCAPV = neg1Trk->GetD(PosPV[0],PosPV[1],fBzkG);
@@ -592,11 +606,11 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			if ( TMath::Abs(neg1DCAPV)<fNegDCAToPVMin1 ) continue;
 
 			if ( fRecoTypeV0 == 0 ) {//N-Omega
-				if ( !(   (trk1TPCProton<=fReqSigmaTPC && trk2TPCKaon<=fReqSigmaTPC  )||
-				          (trk1TPCKaon<=fReqSigmaTPC   && trk2TPCProton<=fReqSigmaTPC)   ) ) continue;
+				if ( !(   (pos1TPCProton<=fReqSigmaTPC && neg1TPCKaon<=fReqSigmaTPC  )||
+				          (pos1TPCKaon<=fReqSigmaTPC   && neg1TPCProton<=fReqSigmaTPC)   ) ) continue;
 			} else if ( fRecoTypeV0 == 1) {//H-dibaryon
-				if ( !(   (trk1TPCProton<=fReqSigmaTPC && trk2TPCPion<=fReqSigmaTPC  )||
-				          (trk1TPCPion<=fReqSigmaTPC   && trk2TPCProton<=fReqSigmaTPC)   ) ) continue;
+				if ( !(   (pos1TPCProton<=fReqSigmaTPC && neg1TPCPion<=fReqSigmaTPC  )||
+				          (pos1TPCPion<=fReqSigmaTPC   && neg1TPCProton<=fReqSigmaTPC)   ) ) continue;
 			}
 
 			Int_t pos1ID = pos1Trk->GetID();
@@ -699,9 +713,11 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	// V0 loop (To find V02) (START)
 	//------------------------------------------------------------------------------------------
 
-	for (Int_t iV02=0; iV02<nV0s; iV02++) {
+	for (Int_t iV02S=0; iV02S<nV0Survived; iV02S++) {
+		Int_t iV02 = v0Array[iV02S];
 		AliESDv0 *esdV02 = fESDEvent->GetV0(iV02);
     Bool_t IsOnFly = esdV02->GetOnFlyStatus();
+//		printf("### loop Pos:%5d/%5d, Neg:%5d/%5d, V0:%5d/%5d\n",iTrk1,nTrkPSurvived-1,iTrk2,nTrkNSurvived-1,iV02S,nV0Survived);
 
 		AliESDtrack *ptrk = fESDEvent->GetTrack(esdV02->GetPindex());
 		AliESDtrack *ntrk = fESDEvent->GetTrack(esdV02->GetNindex());
@@ -724,16 +740,6 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		Double_t ptrkTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrk, AliPID::kPion  ));
 		Double_t ntrkTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrk, AliPID::kProton));
 		Double_t ntrkTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrk, AliPID::kPion  ));
-		if ( fLikeSignDB == 0 ) {//All
-			if ( !(   (ptrkTPCProton<=fReqSigmaTPC && ntrkTPCPion<=fReqSigmaTPC  )||
-			          (ptrkTPCPion<=fReqSigmaTPC   && ntrkTPCProton<=fReqSigmaTPC)   ) ) continue;
-		} else if ( fLikeSignDB==1 || fLikeSignDB==4 ) {//???-Lambda
-			if ( ptrkTPCProton>fReqSigmaTPC ) continue;
-			if ( ntrkTPCPion>fReqSigmaTPC   ) continue;
-		} else if ( fLikeSignDB==2 || fLikeSignDB==3 ) {//???-Lambdabar
-			if ( ptrkTPCPion>fReqSigmaTPC   ) continue;
-			if ( ntrkTPCProton>fReqSigmaTPC ) continue;
-		} 
 
 		Int_t pos2ID = ptrk->GetID();
 		Int_t neg2ID = ntrk->GetID();
@@ -796,7 +802,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		vDBOri  = vV01Ori  + vV02;
 		vDBOriL = vV01Ori  + vV02L;
 		Double_t cpaDB = (vDB.Px()*(PosV01[0]-PosPV[0])+vDB.Py()*(PosV01[1]-PosPV[1])+vDB.Pz()*(PosV01[2]-PosPV[2]))/vDB.P()/rV01;
-		if ( cpaDB<fCPADibaryon ) continue;
+		if ( cpaDB<fCPADibaryonNO ) continue;
 
 
 	//------------------------------------------------------------------------------------------
@@ -804,8 +810,8 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	//------------------------------------------------------------------------------------------
 
 				fCandidateVariables[ 0] = antiLambda1;
-				fCandidateVariables[ 1] = MomPosOri1Pt;
-				fCandidateVariables[ 2] = MomNegOri1Pt;
+				fCandidateVariables[ 1] = MomPosOri1P;
+				fCandidateVariables[ 2] = MomNegOri1P;
 				fCandidateVariables[ 3] = pos1DCAPV;
 				fCandidateVariables[ 4] = neg1DCAPV;
 				fCandidateVariables[ 5] = InvMassLambdaV01;
@@ -918,8 +924,8 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
   TString * fCandidateVariableNames = new TString[nVar2];
 
 	fCandidateVariableNames[ 0]="antiL1";// = antiLambda1;
-	fCandidateVariableNames[ 1]="PtPos1";// = MomPosOri1Pt;
-	fCandidateVariableNames[ 2]="PtNeg1";// = MomNegOri1Pt;
+	fCandidateVariableNames[ 1]="PPos1";// = MomPosOri1P;
+	fCandidateVariableNames[ 2]="PNeg1";// = MomNegOri1P;
 	fCandidateVariableNames[ 3]="DcaPos1";// = posDCAPV;
 	fCandidateVariableNames[ 4]="DcaNeg1";// = negDCAPV;
 	fCandidateVariableNames[ 5]="IMLV01";// = InvMassLambdaV01;
