@@ -23,8 +23,6 @@ class AliAnalyseLeadingTrackUE;
 class  AliAnalysisTaskCorrelationsDev : public AliAnalysisTaskSE
 {
 public:
-  enum { TreeMaxTracks = 10 };
-  
   AliAnalysisTaskCorrelationsDev(const char* name="AliAnalysisTaskCorrelationsDev");
   virtual           ~AliAnalysisTaskCorrelationsDev();
 
@@ -50,7 +48,7 @@ public:
   void   SetCentralityMethod(const char* method, Bool_t unchecked = kFALSE) { fCentralityMethod = method; fUseUncheckedCentrality = kFALSE; }
   void   SetUseNewCentralityFramework(Bool_t flag) { fUseNewCentralityFramework = flag; }
   
-  void   SetCustomTree(TString eventConfig, TString trackConfig) { fTreeEventConfig = eventConfig.Tokenize(";"); fTreeTrackConfig = trackConfig.Tokenize(";"); }
+  void   SetCustomTree(TString eventConfig, Int_t maxTracks, TString trackConfig) { fTreeEventConfig = eventConfig.Tokenize(";"); fTreeMaxTracks = maxTracks; fTreeTrackConfig = trackConfig.Tokenize(";"); }
 
 private:
   AliAnalysisTaskCorrelationsDev(const  AliAnalysisTaskCorrelationsDev &det);
@@ -88,9 +86,10 @@ private:
   TNtuple*   fOutputTree;               //! custom tree output
   Float_t*   fOutputContainer;          //! to fill the tuple 
   TObjArray* fTreeEventConfig;          // list of fields from header kept in tree
+  Int_t      fTreeMaxTracks;            // max number of tracks in tree
   TObjArray* fTreeTrackConfig;          // list of fields from track kept in tree
 
-  ClassDef(AliAnalysisTaskCorrelationsDev, 2); // Analysis task for correlation development
+  ClassDef(AliAnalysisTaskCorrelationsDev, 3); // Analysis task for correlation development
 };
 
 #endif

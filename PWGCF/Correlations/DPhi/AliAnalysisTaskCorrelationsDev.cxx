@@ -43,6 +43,7 @@ fTrackStatus(0),
 fOutputTree(0),
 fOutputContainer(0),
 fTreeEventConfig(0),
+fTreeMaxTracks(0),
 fTreeTrackConfig(0)
 {
   // Default constructor
@@ -75,14 +76,15 @@ void  AliAnalysisTaskCorrelationsDev::UserCreateOutputObjects()
   // create output tree
   if (fTreeEventConfig->GetEntriesFast() > 0)
   {
-    TString varlist = "id";
+    TString varlist = "trigger";
     for (int i=0; i<fTreeEventConfig->GetEntriesFast(); i++) {
       varlist += ":";
       varlist += fTreeEventConfig->At(i)->GetName();
     }
     
-    // support 10 tracks
-    for (int j=0; j<TreeMaxTracks; j++)
+    varlist += ":ntracks";
+    
+    for (int j=0; j<fTreeMaxTracks; j++)
       for (int i=0; i<fTreeTrackConfig->GetEntriesFast(); i++)
         varlist += Form(":%s_%d", fTreeTrackConfig->At(i)->GetName(), j);
     
@@ -194,27 +196,24 @@ void  AliAnalysisTaskCorrelationsDev::UserExec(Option_t */*option*/)
     for (int i=0; i<fOutputTree->GetNvar(); i++)
       fOutputContainer[i] = 0;
     
-    fOutputContainer[0] = fAnalyseUE->GetEventCounter();
+    Int_t containerCounter = 0;
+    fOutputContainer[containerCounter++] = fInputHandler->IsEventSelected();
     
     // event properties
     for (int i=0; i<fTreeEventConfig->GetEntriesFast(); i++)
     {
       Float_t value = GetValueInterpreted(fInputEvent, fTreeEventConfig->At(i)->GetName());
-
-      fOutputContainer[i+1] = value;
+      fOutputContainer[containerCounter++] = value;
       
       if (fDebug > 5)
         Printf("E %d %s %f", i, fTreeEventConfig->At(i)->GetName(), value);
     }
     
     // tracks
-    Int_t nTracks = tracks->GetEntriesFast();
-    if (nTracks > TreeMaxTracks)
-      nTracks = TreeMaxTracks;
+    fOutputContainer[containerCounter++] = tracks->GetEntriesFast();
+    Int_t nTracksToWrite = TMath::Min(fTreeMaxTracks, tracks->GetEntriesFast());
     
-    Int_t containerCounter = 1 + fTreeEventConfig->GetEntriesFast();
-    
-    for (int itrack=0; itrack<nTracks; itrack++)
+    for (int itrack=0; itrack<nTracksToWrite; itrack++)
     {
       for (int i=0; i<fTreeTrackConfig->GetEntriesFast(); i++)
       {
