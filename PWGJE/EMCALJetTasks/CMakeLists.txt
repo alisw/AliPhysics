@@ -168,6 +168,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
+    UserTasks/AliAnalysisTaskSoftDrop.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx  
@@ -180,6 +181,7 @@ if(FASTJET_FOUND)
         AliEmcalJetUtility.cxx
         AliEmcalJetUtilityGenSubtractor.cxx
         AliEmcalJetUtilityConstSubtractor.cxx
+        AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
