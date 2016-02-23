@@ -124,7 +124,7 @@ fMultPercV0S(-1.),
 fMultMeanV0A(-1.),
 fMultMeanV0C(-1.),
 fMultMeanV0M(-1.),
-fIsEventSel(kFALSE),
+fIsEventSel(-1),
 fNchTPC(-1),
 fNchTPCmc(-1),
 fNchV0Amc(-1),
@@ -388,7 +388,17 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fMultPercV0SB = fUtils->GetMultiplicityPercentile(fInputEvent,"V0SB");*/
     
     //new multiplicity calibration class -- AliMultSelection
-    fIsEventSel = kFALSE;
+    fMultTKL = -1.;
+    fMultV0Aeq = -1.;
+    fMultV0Ceq = -1.;
+    fMultV0Meq = -1.;
+    fMultPercV0Aeq = -1.;
+    fMultPercV0Ceq = -1.;
+    fMultPercV0Meq = -1.;
+    fMultMeanV0M = -1.;
+    fMultMeanV0A = -1.;
+    fMultMeanV0C = -1.;
+    fIsEventSel = -1;
     AliMultSelection *MultSelection = (AliMultSelection*) fInputEvent-> FindListObject("MultSelection");
     if(MultSelection){
       fMultTKL = MultSelection->GetEstimator("SPDTracklets")->GetValue();
@@ -401,7 +411,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
       fMultMeanV0A =  MultSelection->GetEstimator("V0A")->GetMean();
       fMultMeanV0C =  MultSelection->GetEstimator("V0C")->GetMean();
       fMultMeanV0M =  MultSelection->GetEstimator("V0M")->GetMean();
-      fIsEventSel = (MultSelection->GetEvSelCode() ? kFALSE : kTRUE);
+      fIsEventSel = MultSelection->GetEvSelCode();
       fEventStatistics->Fill("MultSelection found",1);
     }
     else{
