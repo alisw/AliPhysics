@@ -408,15 +408,15 @@ TGeoManager* AliEveEventManager::AssertGeometry()
     return gGeoManager;
 }
 
+void AliEveEventManager::AddElement(TEveElement *element, TEveElement *parent)
+{
+    gEve->AddElement(element,parent);
+}
+
 void AliEveEventManager::RegisterTransient(TEveElement* element)
 {
     GetMaster()->fTransients->AddElement(element);
 }
-
-//void AliEveEventManager::RegisterTransientList(TEveElement* element)
-//{
-//    GetMaster()->fTransientLists->AddElement(element);
-//}
 
 //------------------------------------------------------------------------------
 // Autoloading of events

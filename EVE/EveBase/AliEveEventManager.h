@@ -44,7 +44,9 @@ class AliEveEventManager : public TEveEventManager, public TQObject
 {
 public:
     enum EDataSource { kSourceHLT, kSourceOnline, kSourceOffline };
+    enum EDataType { kRaw,kHits,kDigits,kClusters,kESD,kAOD };
     enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
+
     
     AliEveEventManager(EDataSource defaultDataSource=kSourceOffline);
     static AliEveEventManager* GetMaster();
@@ -75,6 +77,11 @@ public:
     static AliMagF*      AssertMagField();
     static TGeoManager*  AssertGeometry();
     
+    static void AddElement(TEveElement *element, TEveElement *parent=0);
+    static void Redraw3D(){gEve->Redraw3D();}
+    static void EnableRedraw(){gEve->EnableRedraw();}
+    static void DisableRedraw(){gEve->DisableRedraw();}
+    
     // autoload timer getters and setters
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
     Bool_t        GetAutoLoad()            const { return fAutoLoad;     }
@@ -90,7 +97,6 @@ public:
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,Bool_t replace, Bool_t update);
     TEveElement*  FindGlobal(const TString& tag);
     static void   RegisterTransient(TEveElement* element);
-    //    static void   RegisterTransientList(TEveElement* element);
     void          DestroyTransients();
     
     // data sources:
@@ -107,7 +113,6 @@ public:
     Int_t          GetEventId() const {return fEventId;}
     virtual Int_t  GetMaxEventId(Bool_t refreshESD=kFALSE) const;
     int            GetCurrentRun() {return fCurrentRun;}
-    //    Bool_t         IsEventAvailable() const {return fHasEvent;}
     
     void           SetEventId(int eventId)    { fEventId=eventId;}
     void           SetCurrentRun(int run){fCurrentRun = run;}
