@@ -36,14 +36,6 @@ public:
     kpPb = 1,
     kPbp = -1
   };
-  enum EmcalTriggerClass{
-    kCPREL0 = 0,
-    kCPREG1,
-    kCPREG2,
-    kCPREJ1,
-    kCPREJ2,
-    kCPRntrig
-  };
 
   AliAnalysisTaskChargedParticlesRefMC();
   AliAnalysisTaskChargedParticlesRefMC(const char *name);
@@ -62,10 +54,8 @@ public:
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
-  void                        SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+  void                        SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
-
-  static AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
 
 protected:
   void                        CreateOldPtBinning(TArrayD &binning) const;
@@ -79,11 +69,11 @@ protected:
   AliGenPythiaEventHeader    *GetPythiaHeader() const;
   Bool_t                      IsPhysicalPrimary(const AliVParticle *const part, AliMCEvent *const mcevent);
   Bool_t                      IsOutlier(AliGenPythiaEventHeader * const header) const;
-  Bool_t                      IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
+  AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
   THistManager                    *fHistos;                   ///< Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
@@ -98,7 +88,6 @@ protected:
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
   Double_t                        fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
-  Double_t                        fOfflineEnergyThreshold[kCPRntrig];
 
 private:
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);

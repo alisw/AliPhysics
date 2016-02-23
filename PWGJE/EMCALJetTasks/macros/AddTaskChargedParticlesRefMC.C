@@ -12,14 +12,12 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   // EG2:  8 GeV
   // EJ1:  22 GeV
   // EJ2:  12 GeV
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::kCPREL0, 5);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::kCPREG1, 14);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::kCPREG2, 8);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::kCPREJ1, 22);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::kCPREJ2, 12);
   mgr->AddTask(task);
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+  );
   task->SetTrackSelection(
-      EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::TrackCutsFactory(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
           cutname,
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
       )

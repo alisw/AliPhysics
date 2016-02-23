@@ -37,13 +37,12 @@
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
-#include "AliEMCalTriggerExtraCuts.h"
-#include "AliEmcalTrackSelectionESD.h"
-#include "AliEmcalTrackSelectionAOD.h"
+#include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliGenPythiaEventHeader.h"
@@ -66,6 +65,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         AliAnalysisTaskSE(),
         fTrackCuts(NULL),
         fAnalysisUtil(NULL),
+        fTriggerSelection(NULL),
         fHistos(NULL),
         fGeometry(NULL),
         fPtHard(0),
@@ -81,9 +81,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
-  for(int itrg = 0; itrg < kCPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1.;
-  }
 }
 
 /**
@@ -94,6 +91,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         AliAnalysisTaskSE(name),
         fTrackCuts(NULL),
         fAnalysisUtil(NULL),
+        fTriggerSelection(NULL),
         fHistos(NULL),
         fGeometry(NULL),
         fPtHard(0),
@@ -109,9 +107,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
-  for(int itrg = 0; itrg < kCPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1.;
-  }
   DefineOutput(1, TList::Class());
 }
 
@@ -121,6 +116,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
 AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
   //if(fTrackCuts) delete fTrackCuts;
   if(fAnalysisUtil) delete fAnalysisUtil;
+  if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
 }
 /**
@@ -130,9 +126,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   if(!fAnalysisUtil) fAnalysisUtil = new AliAnalysisUtils;
   fHistos = new THistManager("Ref");
 
-  if(!fTrackCuts){
-    fTrackCuts = TrackCutsFactory("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
-  }
+  if(!fTrackCuts) InitializeTrackCuts("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
 
   TArrayD oldbinning, newbinning;
   CreateOldPtBinning(oldbinning);
@@ -280,12 +274,12 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
       isEMC7 = kFALSE, isEJ1 = kFALSE, isEJ2 = kFALSE, isEG1 = kFALSE, isEG2 = kFALSE;
   TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  if(fTriggerPatches){
-      isEMC7 = isMinBias && IsOfflineSelected(kCPREL0, fTriggerPatches); // triggerstring.Contains("EMC7"),
-      isEJ1 = isMinBias && IsOfflineSelected(kCPREJ1, fTriggerPatches); // triggerstring.Contains("EJ1"),
-      isEJ2 = isMinBias && IsOfflineSelected(kCPREJ2, fTriggerPatches); // triggerstring.Contains("EJ2"),
-      isEG1 = isMinBias && IsOfflineSelected(kCPREG1, fTriggerPatches); // triggerstring.Contains("EG1"),
-      isEG2 = isMinBias && IsOfflineSelected(kCPREG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
+  if(fTriggerPatches && fTriggerSelection){
+      isEMC7 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches); // triggerstring.Contains("EMC7"),
+      isEJ1 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatches); // triggerstring.Contains("EJ1"),
+      isEJ2 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatches); // triggerstring.Contains("EJ2"),
+      isEG1 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches); // triggerstring.Contains("EG1"),
+      isEG2 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
 
   }
   if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
@@ -798,7 +792,7 @@ AliGenPythiaEventHeader *AliAnalysisTaskChargedParticlesRefMC::GetPythiaHeader()
  * @param isAOD check whether we run on ESDs or AODs
  */
 void AliAnalysisTaskChargedParticlesRefMC::InitializeTrackCuts(TString cutname, bool isAOD){
-  SetTrackSelection(TrackCutsFactory(cutname, isAOD));
+  SetTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
 }
 
 /**
@@ -859,32 +853,6 @@ void AliAnalysisTaskChargedParticlesRefMC::CreateNewPtBinning(TArrayD& binning) 
   int ib = 0;
   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
     binning[ib++] = *it;
-}
-
-/**
- * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
- * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
- * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
- * @param trgcls Trigger class for which to apply additional offline patch selection
- * @param triggerpatches Array of trigger patches
- * @return True if at least on patch above threshold is found or no cut is applied
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
-  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
-  int nfound = 0;
-  AliEMCALTriggerPatchInfo *patch = NULL;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(isSingleShower){
-     if(!patch->IsGammaLowSimple()) continue;
-    } else {
-      if(!patch->IsJetLowSimple()) continue;
-    }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
-  }
-  return nfound > 0;
 }
 
 /**
@@ -961,44 +929,6 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOutlier(AliGenPythiaEventHeader *
     }
   }
   return hasOutlier;
-}
-
-AliEmcalTrackSelection *AliAnalysisTaskChargedParticlesRefMC::TrackCutsFactory(TString cut, Bool_t aod){
-  AliEmcalTrackSelection *result = NULL;
-  if(!aod){
-    AliESDtrackCuts *esdcuts = NULL;
-    if(cut == "standard"){
-      AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
-      esdcuts->DefineHistograms(kRed);
-      esdcuts->SetName("Standard Track cuts");
-      esdcuts->SetMinNCrossedRowsTPC(120);
-      esdcuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    } else if(cut == "hybrid"){
-      esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-      esdcuts->SetName("Global Hybrid tracks, loose DCA");
-      esdcuts->SetMaxDCAToVertexXY(2.4);
-      esdcuts->SetMaxDCAToVertexZ(3.2);
-      esdcuts->SetDCAToVertex2D(kTRUE);
-      esdcuts->SetMaxChi2TPCConstrainedGlobal(36);
-      esdcuts->SetMaxFractionSharedTPCClusters(0.4);
-    }
-    result = new AliEmcalTrackSelectionESD;
-    result->AddTrackCuts(esdcuts);
-  } else {
-    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
-    result = aodsel;
-    if(cut == "standard"){
-      aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-      AliEMCalTriggerExtraCuts *extracuts = new AliEMCalTriggerExtraCuts;
-      extracuts->SetMinTPCCrossedRows(120);
-      aodsel->AddTrackCuts(extracuts);
-    } else if(cut == "hybrid"){
-      aodsel->AddFilterBit(256);
-      aodsel->AddFilterBit(512);
-    }
-  }
-
-  return result;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
