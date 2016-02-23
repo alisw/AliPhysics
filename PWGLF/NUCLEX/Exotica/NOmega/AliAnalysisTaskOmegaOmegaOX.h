@@ -40,13 +40,24 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	virtual void Terminate(Option_t *option);
 
 	void SetReqSigmaTPC(double tpcsigma) {fReqSigmaTPC = tpcsigma;}
-	void SetReqClustersTPC(double tpcclust) {fReqClustersTPC = tpcclust;}
+	void SetReqClustersTPC(int tpcclust) {fReqClustersTPC = tpcclust;}
 	void SetReqSigmaTOF(double tofsigma) {fReqSigmaTOF = tofsigma;}
 	void SetReqPseudoRap(double pseudorap) {fReqPseudoRap = pseudorap;}
 
 	void SetCPADibaryon(double cpadi) {fCPADibaryon = cpadi;}
+	void SetMassWinCascade(double masswinc) {fMassWinCascade = masswinc;}
+
+	void SetCascChi2max(double cschi2max) {fCsChi2max = cschi2max;}
+	void SetCascDV0Min(double csdv0min) {fCsDV0min = csdv0min;}
+	void SetCascMassWinLambda(double csmasswinl) {fCsMassWinLambda = csmasswinl;}
+	void SetCascDBachMin(double csdbachmin) {fCsDBachMin = csdbachmin;}
+	void SetCascDCAmax(double csdcamax) {fCsDCAmax = csdcamax;}
+	void SetCascCPAmin(double cscpamin) {fCsCPAmin = cscpamin;}
+	void SetCascRmin(double csrmin) {fCsRmin = csrmin;}
+	void SetCascRmax(double csrmax) {fCsRmax = csrmax;}
 
 	void SetRecoTypeDB(int recotype) {fRecoTypeDB = recotype;}
+	void SetLikeSignDB(int likesigndb) {fLikeSignDB = likesigndb;}
 
 	void MakeAnalysis(TClonesArray *mcArray, AliESDEvent *fESDEvent);
 
@@ -69,6 +80,13 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	Double_t InvMassLambdaStar(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
 	Double_t GetPaFromPxPyPz(Double_t Momentum[3]);
 	Double_t GetPtFromPxPyPz(Double_t Momentum[3]);
+
+  Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
+  Double_t Det(Double_t a00,Double_t a01,Double_t a02,
+         Double_t a10,Double_t a11,Double_t a12,
+         Double_t a20,Double_t a21,Double_t a22) const;
+  Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
+
 	void Rotate(Double_t x,Double_t y,Double_t angle);
 	void Rotate(Double_t x,Double_t y,Double_t angle,Double_t xCenter,Double_t yCenter);
 	Double_t GetAngleFromCosSin(Double_t cos,Double_t sin);
@@ -102,16 +120,28 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	Int_t fNAll;
 
 	// settings for analysis
-	Int_t fRecoTypeDB;            // Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
+	Int_t fRecoTypeDB; // Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
+	Int_t fLikeSignDB; // Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
 
 	// cut parameters for tracks
-	Double_t fReqSigmaTPC;         // TPC PIDcut sigma
-	Int_t fReqClustersTPC;         // TPC number of clusters
-	Double_t fReqSigmaTOF;         // TOF PIDcut sigma
-	Double_t fReqPseudoRap;        // PseudoRapidity
+	Double_t fReqSigmaTPC;  // TPC PIDcut sigma
+	Int_t fReqClustersTPC;  // TPC number of clusters
+	Double_t fReqSigmaTOF;  // TOF PIDcut sigma
+	Double_t fReqPseudoRap; // PseudoRapidity
 
 	// cut parameters for dibaryon
-	Double_t fCPADibaryon;      // Min cosine of dibaryon's pointing angle
+	Double_t fCPADibaryon; // Min cosine of dibaryon's pointing angle
+	Double_t fMassWinCascade; //"window" around the Cascade mass
+
+	// cut parameters for reconstruction of cascade
+	Double_t fCsChi2max;       //maximal allowed chi2 
+	Double_t fCsDV0min;        //min V0 impact parameter
+	Double_t fCsMassWinLambda; //"window" around the Lambda mass
+	Double_t fCsDBachMin;      //min bachelor impact parameter
+	Double_t fCsDCAmax;        //max DCA between the V0 and the track 
+	Double_t fCsCPAmin;        //min cosine of the cascade pointing angle
+	Double_t fCsRmin;          //min radius of the fiducial volume
+	Double_t fCsRmax;          //max radius of the fiducial volume
 
 	ClassDef(AliAnalysisTaskOmegaOmegaOX,2); // analysisclass
 };

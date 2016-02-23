@@ -46,6 +46,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
+#include "AliCascadeVertexer.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskOmegaOmegaOX.h"
@@ -74,10 +75,21 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX() :
 	fVtx1(0x0),
   fBzkG(0),
 	fRecoTypeDB(1),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
-	fReqSigmaTPC(3.0),// TPC PIDcut sigma
-	fReqClustersTPC(80),// TPC number of clusters
-	fReqSigmaTOF(3.0),// TOF PIDcut sigma
-	fReqPseudoRap(0.9),// PseudoRapidity
+	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
+	fReqSigmaTPC(3.0),
+	fReqClustersTPC(80),
+	fReqSigmaTOF(3.0),
+	fReqPseudoRap(0.9),
+	fCPADibaryon(0.9),//0.99875
+	fMassWinCascade(0.02),
+  fCsChi2max(33.),
+  fCsDV0min(0.01),
+  fCsMassWinLambda(0.008),
+  fCsDBachMin(0.01),
+  fCsDCAmax(2.0), 
+  fCsCPAmin(0.0),//0.98
+  fCsRmin(0.2),
+  fCsRmax(100.),
   fCentrality(0),
   fCountMatch(0),
   fCountOnlySelf(0),
@@ -112,10 +124,21 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX(const Char_t* name) :
   fVtx1(0),
   fBzkG(0),
 	fRecoTypeDB(1),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
-	fReqSigmaTPC(3.0),// TPC PIDcut sigma
-	fReqClustersTPC(80),// TPC number of clusters
-	fReqSigmaTOF(3.0),// TOF PIDcut sigma
-	fReqPseudoRap(0.9),// PseudoRapidity
+	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
+	fReqSigmaTPC(3.0),
+	fReqClustersTPC(80),
+	fReqSigmaTOF(3.0),
+	fReqPseudoRap(0.9),
+	fCPADibaryon(0.9),//0.99875
+	fMassWinCascade(0.02),
+  fCsChi2max(33.),
+  fCsDV0min(0.01),
+  fCsMassWinLambda(0.008),
+  fCsDBachMin(0.01),
+  fCsDCAmax(2.0), 
+  fCsCPAmin(0.0),//0.98
+  fCsRmin(0.2),
+  fCsRmax(100.),
   fCentrality(0),
   fCountMatch(0),
   fCountOnlySelf(0),
@@ -261,26 +284,6 @@ void AliAnalysisTaskOmegaOmegaOX::UserExec(Option_t *)
   // MC analysis setting
   //------------------------------------------------
   TClonesArray *mcArray = 0;
-//  AliAODMCHeader *mcHeader=0;
-/*
-  if (fUseMCInfo) {
-    // MC array need for maching
-    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find Monte-Carlo in AOD");
-      return;
-    }
-
-    // load MC header
-    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("AliAnalysisTaskOmegaOmegaOX::UserExec: MC header branch not found!\n");
-      return;
-    }
-
-    Double_t zMCVertex = mcHeader->GetVtxZ();
-	}
-*/
   Int_t nSelectedAnal = 0;
 
 	//------------------------------------------------
@@ -337,8 +340,8 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 {
 
   //------------------------------------------------------------------------------------------
-  // version OO1-0-2 (2016/02/22)
-  // Reconstruct 2 cascade by ESD class
+  // version OO2-0-1 (2016/02/22)
+  // Reconstruct 2 cascade by myself
   // and calculate the invariant mass of Omega-Omega
   //------------------------------------------------------------------------------------------
 
@@ -371,14 +374,33 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
     return;
   }
 
-	const Int_t nCasc = fESDEvent->GetNumberOfCascades();
-  if (nCasc==0) {
+  const Int_t nV0s = fESDEvent->GetNumberOfV0s();
+  if (nV0s==0) {
     return;
   }
+
+  Double_t fCsRmin2 = fCsRmin*fCsRmin;
+  Double_t fCsRmax2 = fCsRmax*fCsRmax;
+
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   // Output cut parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   fParameters[ 0] = fRecoTypeDB;
+	fParameters[ 1] = fLikeSignDB;
+	fParameters[ 2] = fReqSigmaTPC;
+	fParameters[ 3] = fReqClustersTPC;
+	fParameters[ 4] = fReqSigmaTOF;
+	fParameters[ 5] = fReqPseudoRap;
+	fParameters[ 6] = fCPADibaryon;
+	fParameters[ 7] = fMassWinCascade;
+  fParameters[ 8] = fCsChi2max;
+  fParameters[ 9] = fCsDV0min;
+  fParameters[10] = fCsMassWinLambda;
+  fParameters[11] = fCsDBachMin;
+  fParameters[12] = fCsDCAmax; 
+  fParameters[13] = fCsCPAmin;
+  fParameters[14] = fCsRmin;
+  fParameters[15] = fCsRmax;
 
   fParametersTree->Fill();
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -425,7 +447,199 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 
 //	if (fCountEvent<setStartNumber) return;
 //	if (fCountEvent>10) return;
-//	printf("##### Number of cascades: %6d #########################################\n",nCasc);
+
+	//------------------------------------------------------------------------------------------
+	// Stores relevant V0s and tracks in array
+	//------------------------------------------------------------------------------------------
+
+	// V0s
+	Int_t v0Array[nV0s];
+	Int_t nV0Survived=0;
+	for (Int_t iV0=0; iV0<nV0s; iV0++) {
+		AliESDv0 *v0rel = fESDEvent->GetV0(iV0);
+		if (v0rel->GetOnFlyStatus()) continue;
+		if (v0rel->GetD(PosPV[0],PosPV[1],PosPV[2])<fCsDV0min) continue;
+		AliESDtrack *trkPrel = fESDEvent->GetTrack(v0rel->GetPindex());
+		AliESDtrack *trkNrel = fESDEvent->GetTrack(v0rel->GetNindex());
+		if( !fESDtrackCuts->AcceptTrack(trkPrel) ) continue;
+		if( !fESDtrackCuts->AcceptTrack(trkNrel) ) continue;
+		Double_t trkPrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kProton));
+		Double_t trkPrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kPion  ));
+		if ( trkPrelTPCProton>fReqSigmaTPC && trkPrelTPCPion>fReqSigmaTPC ) continue;
+		Double_t trkNrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kProton));
+		Double_t trkNrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kPion  ));
+		if ( trkNrelTPCProton>fReqSigmaTPC && trkNrelTPCPion>fReqSigmaTPC ) continue;
+		v0Array[nV0Survived++] = iV0;
+	}
+
+	// tracks
+	Int_t trkArray[nTracks];
+	Int_t nTrkSurvived=0;
+	for (Int_t iTrk=0; iTrk<nTracks; iTrk++) {
+		AliESDtrack *trkrel = fESDEvent->GetTrack(iTrk);
+		ULong_t status = trkrel->GetStatus();
+		if (status&AliESDtrack::kITSpureSA) continue;
+		if ((status&AliESDtrack::kITSrefit)==0)
+			if ((status&AliESDtrack::kTPCrefit)==0) continue;
+		if (TMath::Abs(trkrel->GetD(PosPV[0],PosPV[1],fBzkG))<fCsDBachMin) continue;
+		if( !fESDtrackCuts->AcceptTrack(trkrel) ) continue;
+		Double_t trkrelTPCKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kKaon));
+		Double_t trkrelTPCPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kPion));
+		if ( trkrelTPCKaon>fReqSigmaTPC && trkrelTPCPion>fReqSigmaTPC ) continue;
+		trkArray[nTrkSurvived++] = iTrk;
+	}
+
+	Int_t nCasc = fESDEvent->GetNumberOfCascades();
+//	printf("\n\n### Stored nCascade:%d, nV0s:%d, nTracks:%d\n",nCasc,nV0s,nTracks);
+	fESDEvent->ResetCascades();
+	nCasc = fESDEvent->GetNumberOfCascades();
+//	printf("### Clear nCascade:%d\n",nCasc);
+
+
+	//------------------------------------------------------------------------------------------
+	// Reconstruction of cascades
+	//------------------------------------------------------------------------------------------
+
+	Int_t nCascSurvived = 0;
+	Int_t nCascExist = 0;
+
+	// Candidate of cascade
+	if (fLikeSignDB==0||fLikeSignDB==1) {//including Omega or Xi
+		for (Int_t iV0=0; iV0<nV0Survived; iV0++) {//V0 loop
+			Int_t indexV0 = v0Array[iV0];
+			AliESDv0 *v0point = fESDEvent->GetV0(indexV0);
+			AliESDv0 v0Casc(*v0point); 
+			v0Casc.ChangeMassHypothesis(kLambda0); 
+			if (TMath::Abs(v0Casc.GetEffMass()-mLambdaPDG)>fCsMassWinLambda) continue;
+
+			for (Int_t iTrk=0; iTrk<nTrkSurvived; iTrk++) {//bachelor loop
+				Int_t indexTrk = trkArray[iTrk];
+				if (indexTrk==v0Casc.GetIndex(0)) continue;
+				if (indexTrk==v0Casc.GetIndex(1)) continue;
+
+				AliESDtrack *trkCasc = fESDEvent->GetTrack(indexTrk);
+				if (trkCasc->GetSign()>0) continue;
+
+				AliESDv0 *v0Propagated = &v0Casc;
+				AliExternalTrackParam etpTrkCasc(*trkCasc);
+				AliExternalTrackParam *trkPropagated = &etpTrkCasc;
+
+				Double_t dcaCasc = PropagateToDCA(v0Propagated,trkPropagated,fBzkG);
+				if (dcaCasc > fCsDCAmax) continue;
+
+				AliESDcascade cascade(*v0Propagated,*trkPropagated,indexTrk);
+
+				Double_t x,y,z;
+				cascade.GetXYZcascade(x,y,z);
+				Double_t r2 = x*x + y*y;
+				if (r2 > fCsRmax2) continue;
+				if (r2 < fCsRmin2) continue;
+
+				Double_t pxV0,pyV0,pzV0;
+				v0Propagated->GetPxPyPz(pxV0,pyV0,pzV0);
+				if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+
+				Double_t x1,y1,z1;
+				v0Propagated->GetXYZ(x1,y1,z1);
+				if (r2 > (x1*x1+y1*y1)) continue;
+
+				if (cascade.GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2])<fCsCPAmin) continue; //condition on the cascade pointing angle 
+
+				Double_t pxB,pyB,pzB;
+				cascade.GetBPxPyPz(pxB,pyB,pzB);
+				TLorentzVector vCascade,vLambda,vBachelor;
+				vLambda.SetXYZM(pxV0,pyV0,pzV0,mLambdaPDG);
+				vBachelor.SetXYZM(pxB,pyB,pzB,mKaonPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massOmega = vCascade.M();
+				vBachelor.SetXYZM(pxB,pyB,pzB,mPionPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massXi = vCascade.M();
+				if (TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade&&
+				    TMath::Abs(massXi-mXiPDG)>fMassWinCascade        ) continue;
+				if (fRecoTypeDB==1&&TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade) continue;
+				if (fRecoTypeDB==4&&TMath::Abs(massXi-mXiPDG)>fMassWinCascade) continue;
+
+				cascade.SetDcaXiDaughters(dcaCasc);
+				fESDEvent->AddCascade(&cascade);
+				nCascSurvived++;
+
+			}//bachelor loop
+
+		}//V0 loop
+
+	}//including Omega or Xi
+
+	// Candidate of anti-cascade
+	if (fLikeSignDB==0||fLikeSignDB==2) {//including Omegabar or Xibar
+		for (Int_t iV0=0; iV0<nV0Survived; iV0++) {//V0 loop
+			Int_t indexV0 = v0Array[iV0];
+			AliESDv0 *v0point = fESDEvent->GetV0(indexV0);
+			AliESDv0 v0Casc(*v0point); 
+			v0Casc.ChangeMassHypothesis(kLambda0Bar); 
+			if (TMath::Abs(v0Casc.GetEffMass()-mLambdaPDG)>fCsMassWinLambda) continue;
+
+			for (Int_t iTrk=0; iTrk<nTrkSurvived; iTrk++) {//bachelor loop
+				Int_t indexTrk = trkArray[iTrk];
+				if (indexTrk==v0Casc.GetIndex(0)) continue;
+				if (indexTrk==v0Casc.GetIndex(1)) continue;
+
+				AliESDtrack *trkCasc = fESDEvent->GetTrack(indexTrk);
+				if (trkCasc->GetSign()<0) continue;
+
+				AliESDv0 *v0Propagated = &v0Casc;
+				AliExternalTrackParam etpTrkCasc(*trkCasc);
+				AliExternalTrackParam *trkPropagated = &etpTrkCasc;
+
+				Double_t dcaCasc = PropagateToDCA(v0Propagated,trkPropagated,fBzkG);
+				if (dcaCasc > fCsDCAmax) continue;
+
+				AliESDcascade cascade(*v0Propagated,*trkPropagated,indexTrk);
+
+				Double_t x,y,z;
+				cascade.GetXYZcascade(x,y,z);
+				Double_t r2 = x*x + y*y;
+				if (r2 > fCsRmax2) continue;
+				if (r2 < fCsRmin2) continue;
+
+				Double_t pxV0,pyV0,pzV0;
+				v0Propagated->GetPxPyPz(pxV0,pyV0,pzV0);
+				if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+
+				Double_t x1,y1,z1;
+				v0Propagated->GetXYZ(x1,y1,z1);
+				if (r2 > (x1*x1+y1*y1)) continue;
+
+				if (cascade.GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2])<fCsCPAmin) continue; //condition on the cascade pointing angle 
+
+				Double_t pxB,pyB,pzB;
+				cascade.GetBPxPyPz(pxB,pyB,pzB);
+				TLorentzVector vCascade,vLambda,vBachelor;
+				vLambda.SetXYZM(pxV0,pyV0,pzV0,mLambdaPDG);
+				vBachelor.SetXYZM(pxB,pyB,pzB,mKaonPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massOmega = vCascade.M();
+				vBachelor.SetXYZM(pxB,pyB,pzB,mPionPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massXi = vCascade.M();
+				if (TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade&&
+				    TMath::Abs(massXi-mXiPDG)>fMassWinCascade        ) continue;
+				if (fRecoTypeDB==1&&TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade) continue;
+				if (fRecoTypeDB==4&&TMath::Abs(massXi-mXiPDG)>fMassWinCascade) continue;
+
+				cascade.SetDcaXiDaughters(dcaCasc);
+				fESDEvent->AddCascade(&cascade);
+				nCascSurvived++;
+
+			}//bachelor loop
+
+		}//V0 loop
+
+	}//including Omegabar or Xibar
+
+	nCasc = fESDEvent->GetNumberOfCascades();
+//	printf("\n### reconstructed nCascade:%d\n\n",nCasc);
+
 
 	//------------------------------------------------------------------------------------------
 	// Cascade loop 1 (To find Omega1) (START)
@@ -468,8 +682,14 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 //		if ( trkP1TPCProton>fReqSigmaTPC && trkP1TPCPion>fReqSigmaTPC ) continue;
 //		if ( trkN1TPCProton>fReqSigmaTPC && trkN1TPCPion>fReqSigmaTPC ) continue;
 		if ( trkB1TPCKaon>fReqSigmaTPC   && trkB1TPCPion>fReqSigmaTPC ) continue;
+		if ( fRecoTypeDB==1||fRecoTypeDB==2 ) {//Omega-???
+			if ( trkB1TPCKaon>fReqSigmaTPC ) continue;
+		} else if ( fRecoTypeDB==3||fRecoTypeDB==4 ) {//Xi-???
+			if ( trkB1TPCPion>fReqSigmaTPC ) continue;
+		}
 		if ( !(   (trkP1TPCProton<=fReqSigmaTPC && trkN1TPCPion<=fReqSigmaTPC  )||
 		          (trkP1TPCPion<=fReqSigmaTPC   && trkN1TPCProton<=fReqSigmaTPC)   ) ) continue;
+
 
 	//------------------------------------------------------------------------------------------
 	// Cascade loop 2 (To find Omega2) (START)
@@ -511,6 +731,11 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 //			if ( trkP2TPCProton>fReqSigmaTPC && trkP2TPCPion>fReqSigmaTPC ) continue;
 //			if ( trkN2TPCProton>fReqSigmaTPC && trkN2TPCPion>fReqSigmaTPC ) continue;
 			if ( trkB2TPCKaon>fReqSigmaTPC   && trkB2TPCPion>fReqSigmaTPC ) continue;
+			if ( fRecoTypeDB==1||fRecoTypeDB==3 ) {//???-Omega
+				if ( trkB2TPCKaon>fReqSigmaTPC ) continue;
+			} else if ( fRecoTypeDB==2||fRecoTypeDB==4 ) {//???-Xi
+				if ( trkB2TPCPion>fReqSigmaTPC ) continue;
+			}
 			if ( !(   (trkP2TPCProton<=fReqSigmaTPC && trkN2TPCPion<=fReqSigmaTPC  )||
 			          (trkP2TPCPion<=fReqSigmaTPC   && trkN2TPCProton<=fReqSigmaTPC)   ) ) continue;
 
@@ -530,12 +755,12 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 //			if ( trkP2TPCProton>fReqSigmaTPC && trkN2TPCProton>fReqSigmaTPC ) continue;
 //			if ( trkP2TPCPion  >fReqSigmaTPC && trkN2TPCPion  >fReqSigmaTPC ) continue;
 
-			if( !fESDtrackCuts->AcceptTrack(trkP1) ) continue;
-			if( !fESDtrackCuts->AcceptTrack(trkP2) ) continue;
-			if( !fESDtrackCuts->AcceptTrack(trkN1) ) continue;
-			if( !fESDtrackCuts->AcceptTrack(trkN2) ) continue;
-			if( !fESDtrackCuts->AcceptTrack(trkB1) ) continue;
-			if( !fESDtrackCuts->AcceptTrack(trkB2) ) continue;
+////			if( !fESDtrackCuts->AcceptTrack(trkP1) ) continue;
+////			if( !fESDtrackCuts->AcceptTrack(trkP2) ) continue;
+////			if( !fESDtrackCuts->AcceptTrack(trkN1) ) continue;
+////			if( !fESDtrackCuts->AcceptTrack(trkN2) ) continue;
+////			if( !fESDtrackCuts->AcceptTrack(trkB1) ) continue;
+////			if( !fESDtrackCuts->AcceptTrack(trkB2) ) continue;
 
 	//------------------------------------------------------------------------------------------
 	// Get Cascade momenta and positions
@@ -655,65 +880,14 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 			Double_t rDB    = GetPaFromPxPyPz(PVtoDB);
 			Double_t ctauDB = rDB/(2*mOmegaPDG)/GetPaFromPxPyPz(MomDB);
 			Double_t cpaDB  = (PVtoDB[0]*MomDB[0]+PVtoDB[1]*MomDB[1])/rDB/GetPaFromPxPyPz(MomDB);
+			if ( cpaDB < fCPADibaryon ) continue;
 
 			if(trkLikeCasc1) delete trkLikeCasc1;
 			if(trkLikeCasc2) delete trkLikeCasc2;
 
-
 	//------------------------------------------------------------------------------------------
 	// PID information
 	//------------------------------------------------------------------------------------------
-
-		// TOF
-/*		Double_t trkP1TOFProton = 999.;
-		Double_t trkP1TOFPion   = 999.;
-		Double_t trkN1TOFProton = 999.;
-		Double_t trkN1TOFPion   = 999.;
-		Double_t trkB1TOFKaon   = 999.;
-		Double_t trkB1TOFPion   = 999.;
-		Double_t trkP2TOFProton = 999.;
-		Double_t trkP2TOFPion   = 999.;
-		Double_t trkN2TOFProton = 999.;
-		Double_t trkN2TOFPion   = 999.;
-		Double_t trkB2TOFKaon   = 999.;
-		Double_t trkB2TOFPion   = 999.;
-		Bool_t trkP1TOFOn = kFALSE;
-		Bool_t trkN1TOFOn = kFALSE;
-		Bool_t trkB1TOFOn = kFALSE;
-		Bool_t trkP2TOFOn = kFALSE;
-		Bool_t trkN2TOFOn = kFALSE;
-		Bool_t trkB2TOFOn = kFALSE;
-
-		if(trkP1->GetStatus()&AliESDtrack::kTOFpid) {
-			trkP1TOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkP1, AliPID::kProton  ));
-			trkP1TOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkP1, AliPID::kPion    ));
-			trkP1TOFOn       = kTRUE;
-		}
-		if(trkN1->GetStatus()&AliESDtrack::kTOFpid) {
-			trkN1TOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkN1, AliPID::kProton  ));
-			trkN1TOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkN1, AliPID::kPion    ));
-			trkN1TOFOn       = kTRUE;
-		}
-		if(trkB1->GetStatus()&AliESDtrack::kTOFpid) {
-			trkB1TOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkB1, AliPID::kPion    ));
-			trkB1TOFKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkB1, AliPID::kKaon    ));
-			trkB1TOFOn       = kTRUE;
-		}
-		if(trkP2->GetStatus()&AliESDtrack::kTOFpid) {
-			trkP2TOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkP2, AliPID::kProton  ));
-			trkP2TOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkP2, AliPID::kPion    ));
-			trkP2TOFOn       = kTRUE;
-		}
-		if(trkN1->GetStatus()&AliESDtrack::kTOFpid) {
-			trkN2TOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkN2, AliPID::kProton  ));
-			trkN2TOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkN2, AliPID::kPion    ));
-			trkN2TOFOn       = kTRUE;
-		}
-		if(trkB2->GetStatus()&AliESDtrack::kTOFpid) {
-			trkB2TOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkB2, AliPID::kPion    ));
-			trkB2TOFKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(trkB2, AliPID::kKaon    ));
-			trkB2TOFOn       = kTRUE;
-		}*/
 
 			// proLambda or antiLambda
 			Int_t proLambda1  = 0;
@@ -936,6 +1110,39 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 			Double_t DCAV0Da1 = casc1->GetDcaV0Daughters();
 			Double_t DCAV0Da2 = casc2->GetDcaV0Daughters();
 
+			// Armenteros-Podolanski (self)
+			Double_t AlphaV01 = 0.;
+			Double_t PtArmV01 = 0.;
+			TVector3 momentumPosV01(MomP1[0],MomP1[1],MomP1[2]);
+			TVector3 momentumNegV01(MomN1[0],MomN1[1],MomN1[2]);
+			TVector3 momentumTotV01(MomP1[0]+MomN1[0],MomP1[1]+MomN1[1],MomP1[2]+MomN1[2]);
+			Double_t qPosV01 = momentumPosV01.Dot(momentumTotV01)/momentumTotV01.Mag();
+			Double_t qNegV01 = momentumNegV01.Dot(momentumTotV01)/momentumTotV01.Mag();
+			AlphaV01 = (qPosV01-qNegV01)/(qPosV01+qNegV01);
+			PtArmV01 = momentumNegV01.Perp(momentumTotV01);
+
+			Double_t AlphaV02 = 0.;
+			Double_t PtArmV02 = 0.;
+			TVector3 momentumPosV02(MomP2[0],MomP2[1],MomP2[2]);
+			TVector3 momentumNegV02(MomN2[0],MomN2[1],MomN2[2]);
+			TVector3 momentumTotV02(MomP2[0]+MomN2[0],MomP2[1]+MomN2[1],MomP2[2]+MomN2[2]);
+			Double_t qPosV02 = momentumPosV02.Dot(momentumTotV02)/momentumTotV02.Mag();
+			Double_t qNegV02 = momentumNegV02.Dot(momentumTotV02)/momentumTotV02.Mag();
+			AlphaV02 = (qPosV02-qNegV02)/(qPosV02+qNegV02);
+			PtArmV02 = momentumNegV02.Perp(momentumTotV02);
+
+			Double_t AlphaDB = 0.;
+			Double_t PtArmDB = 0.;
+			TVector3 momentumDB1(MomCasc1DB[0],MomCasc1DB[1],MomCasc1DB[2]);
+			TVector3 momentumDB2(MomCasc2DB[0],MomCasc2DB[1],MomCasc2DB[2]);
+			TVector3 momentumTotDB(MomCasc1DB[0]+MomCasc2DB[0],MomCasc1DB[1]+MomCasc2DB[1],MomCasc1DB[2]+MomCasc2DB[2]);
+			Double_t qDB1 = momentumDB1.Dot(momentumTotDB)/momentumTotDB.Mag();
+			Double_t qDB2 = momentumDB2.Dot(momentumTotDB)/momentumTotDB.Mag();
+			AlphaDB = (qDB1-qDB2)/(qDB1+qDB2);
+			PtArmDB = momentumDB2.Perp(momentumTotDB);
+
+
+
 	//------------------------------------------------------------------------------------------
 	// Output
 	//------------------------------------------------------------------------------------------
@@ -982,6 +1189,12 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 			fCandidateVariables[39] = MomB1P;
 			fCandidateVariables[40] = MomB2P;
 			fCandidateVariables[41] = static_cast<Float_t>(triggerType);
+			fCandidateVariables[42] = AlphaV01;
+			fCandidateVariables[43] = PtArmV01;
+			fCandidateVariables[44] = AlphaV02;
+			fCandidateVariables[45] = PtArmV02;
+			fCandidateVariables[46] = AlphaDB;
+			fCandidateVariables[47] = PtArmDB;
 
 			fVariablesTree->Fill();
 
@@ -1011,11 +1224,26 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
 
   const char* nameoutput1 = GetOutputSlot(1)->GetContainer()->GetName();
   fParametersTree = new TTree(nameoutput1,"Parameters tree");
-  Int_t nVar1 = 1;
+  Int_t nVar1 = 16;
   fParameters = new Float_t [nVar1];
   TString * fParameterNames = new TString[nVar1];
 
-	fParameterNames[ 0]="RecoTypeDB";//= fRecoTypeDB;
+	fParameterNames[ 0]="RecoTypeDB";// = fRecoTypeDB;
+	fParameterNames[ 1]="LikeSignDB";// = fLikeSignDB;
+	fParameterNames[ 2]="TPCSigma";// = fReqSigmaTPC;
+	fParameterNames[ 3]="TPCClusters";// = fReqClustersTPC;
+	fParameterNames[ 4]="TOFSigma";// = fReqSigmaTOF;
+	fParameterNames[ 5]="PseudoRap";// = fReqPseudoRap;
+	fParameterNames[ 6]="CPADB";// = fCPADibaryon;
+	fParameterNames[ 7]="WinCascade";// = fMassWinCascade;
+  fParameterNames[ 8]="Chi2max";// = fCsChi2max;
+  fParameterNames[ 9]="DV0min";// = fCsDV0min;
+  fParameterNames[10]="WinLambda";// = fCsMassWinLambda;
+  fParameterNames[11]="DBachMin";// = fCsDBachMin;
+  fParameterNames[12]="DCAmax";// = fCsDCAmax; 
+  fParameterNames[13]="CPAmin";// = fCsCPAmin;
+  fParameterNames[14]="Rmin";// = fCsRmin;
+  fParameterNames[15]="Rmax";// = fCsRmax;
 
   for (Int_t ivar=0; ivar<nVar1; ivar++) {
     fParametersTree->Branch(fParameterNames[ivar].Data(),&fParameters[ivar],Form("%s/f",fParameterNames[ivar].Data()));
@@ -1024,7 +1252,7 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
 
   const char* nameoutput2 = GetOutputSlot(2)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput2,"Candidates variables tree");
-  Int_t nVar2 = 42;
+  Int_t nVar2 = 48;
   fCandidateVariables = new Float_t [nVar2];
   TString * fCandidateVariableNames = new TString[nVar2];
 
@@ -1070,6 +1298,12 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
 	fCandidateVariableNames[39]="P1B";// = MomB1P;
 	fCandidateVariableNames[40]="P2B";// = MomB2P;
 	fCandidateVariableNames[41]="TT";// = static_cast<Float_t>(triggerType);
+	fCandidateVariableNames[42]="AlphaV01";// = AlphaV01;
+	fCandidateVariableNames[43]="PtArmV01";// = PtArmV01;
+	fCandidateVariableNames[44]="AlphaV02";// = AlphaV02;
+	fCandidateVariableNames[45]="PtArmV02";// = PtArmV02;
+	fCandidateVariableNames[46]="AlphaDB";// = AlphaDB;
+	fCandidateVariableNames[47]="PtArmDB";// = PtArmDB;
 
   for (Int_t ivar=0; ivar<nVar2; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1495,6 +1729,71 @@ Double_t AliAnalysisTaskOmegaOmegaOX::GetPtFromPxPyPz(Double_t Momentum[3]) {
 
 	return TMath::Sqrt( Momentum[0]*Momentum[0] +	Momentum[1]*Momentum[1] );
 
+}
+//______________________________________________________________________________________________________
+Double_t AliAnalysisTaskOmegaOmegaOX::Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const {
+  //--------------------------------------------------------------------
+  // This function calculates locally a 2x2 determinant
+  //--------------------------------------------------------------------
+  return a00*a11 - a01*a10;
+}
+//______________________________________________________________________________________________________
+Double_t AliAnalysisTaskOmegaOmegaOX::Det(Double_t a00,Double_t a01,Double_t a02,
+         Double_t a10,Double_t a11,Double_t a12,
+         Double_t a20,Double_t a21,Double_t a22) const {
+  //--------------------------------------------------------------------
+  // This function calculates locally a 3x3 determinant
+  //--------------------------------------------------------------------
+  return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
+}
+//______________________________________________________________________________________________________
+Double_t AliAnalysisTaskOmegaOmegaOX::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b) {
+  //--------------------------------------------------------------------
+  // This function returns the DCA between the V0 and the track
+  //--------------------------------------------------------------------
+  Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
+  Double_t r[3]; t->GetXYZ(r);
+  Double_t x1=r[0], y1=r[1], z1=r[2];
+  Double_t p[3]; t->GetPxPyPz(p);
+  Double_t px1=p[0], py1=p[1], pz1=p[2];
+
+  Double_t x2,y2,z2;     // position and momentum of V0
+  Double_t px2,py2,pz2;
+
+  v->GetXYZ(x2,y2,z2);
+  v->GetPxPyPz(px2,py2,pz2);
+
+// calculation dca
+
+  Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
+  Double_t ax= Det(py1,pz1,py2,pz2);
+  Double_t ay=-Det(px1,pz1,px2,pz2);
+  Double_t az= Det(px1,py1,px2,py2);
+
+  Double_t dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
+  if (dca > fCsDCAmax) return 1.e+33;
+
+//points of the DCA
+  Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
+                Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
+
+  x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
+
+  if (x1*x1+y1*y1 > (fCsRmax+5.)*(fCsRmax+5.)) return 1.e+33;
+
+  //propagate track to the points of DCA
+
+  x1=x1*cs1 + y1*sn1;
+
+  if (!t->PropagateTo(x1,b)) {
+    AliError("Propagation failed");
+    //    AliErrorF("Propagation failed for X=%f | V0: %f %f %f",x1,x2,y2,z2);
+    //    t->Print();
+    //
+    return 1.e+33;
+  }
+
+  return dca;
 }
 //______________________________________________________________________________________________________
 //__________________________________________________________________________
