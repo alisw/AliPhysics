@@ -14,6 +14,8 @@ class AliEMCALGeometry;
 
 namespace EMCalTriggerPtAnalysis {
 
+class AliEmcalTriggerOfflineSelection;
+
 /**
  * \class AliAnalysisTaskChargedParticlesRef
  * \brief Unit test class for charged particle distributions
@@ -29,14 +31,6 @@ public:
     kpPb = 1,
     kPbp = -1
   };
-  enum EmcalTriggerClass{
-    kCPREL0 = 0,
-    kCPREG1,
-    kCPREG2,
-    kCPREJ1,
-    kCPREJ2,
-    kCPRntrig
-  };
   AliAnalysisTaskChargedParticlesRef();
   AliAnalysisTaskChargedParticlesRef(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesRef();
@@ -50,13 +44,12 @@ public:
   void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
 
   void SetTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
+  void InitializeTrackCuts(TString cutname, bool isAOD);
+  void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
   void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
 
-  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
-
-  static AliEmcalTrackSelection *TrackCutsFactory(TString name, Bool_t isAOD);
 protected:
   void CreateOldPtBinning(TArrayD &binning) const;
   void CreateNewPtBinning(TArrayD &binning) const;
@@ -64,10 +57,10 @@ protected:
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected);
   void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
-  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
+  AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
   THistManager                    *fHistos;                   ///< Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
@@ -77,8 +70,6 @@ protected:
 
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
-
-  Double_t                        fOfflineEnergyThreshold[kCPRntrig];    ///< Threhold applied on offline patches
 
 private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);

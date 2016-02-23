@@ -63,6 +63,7 @@ set(SRCS
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx
+    Tracks/AliEmcalTriggerOfflineSelection.cxx
     Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
@@ -92,6 +93,7 @@ set(SRCS
     Tracks/AliReducedHighPtEvent.cxx
     Tracks/AliReducedHighPtEventCreator.cxx
     Tracks/AliAnalysisTaskTrackDCA.cxx
+    Tracks/AliEmcalAnalysisFactory.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
