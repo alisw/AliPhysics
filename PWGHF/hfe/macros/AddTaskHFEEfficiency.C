@@ -47,7 +47,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     
     
     
-    if(debug) cout << " === Adding Task ElectFlow === " << endl;
+    if(debug) cout << " === Adding Task ElectronEfficiency === " << endl;
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":ElectroID_";
     fileName += uniqueID;
@@ -65,7 +65,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     //create a task
     AliAnalysisTaskHFEEfficiency *taskHFE = ConfigHFEemcalMod(kTRUE, minTPCCluster, pixel);    //kTRUE if MC
     
-    if(debug) cout << " === AliAnalysisElectronFlow === " << taskHFE << endl;
+    if(debug) cout << " === AliAnalysisTaskHFEEfficiency === " << taskHFE << endl;
     if(!taskHFE) {
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
@@ -86,8 +86,8 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
 
 
     //set RP cuts for flow package analysis
-    TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,foutputName.Data());
+   // TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
     
     mgr->ConnectInput(taskHFE,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskHFE,1,coutput3);
