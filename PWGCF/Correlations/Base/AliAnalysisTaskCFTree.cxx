@@ -282,7 +282,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
 
     //filter out incomplete events:
     fIsIncomplete=0;
-    if (!fMCEvent && f2015IsIncompleteDAQ && ((AliAODEvent*)fInputEvent)->IsIncompleteDAQ()) fIsIncomplete = 1;
+    if (!fMCEvent && ((AliAODEvent*)fInputEvent)->IsIncompleteDAQ()) fIsIncomplete = 1;
     fEventStatistics->Fill("after incomplete event check",1);
 
     TString classes = fInputEvent->GetFiredTriggerClasses();
