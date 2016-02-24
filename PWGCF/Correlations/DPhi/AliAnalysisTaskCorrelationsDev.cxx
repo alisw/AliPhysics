@@ -9,6 +9,7 @@
 
 #include "AliAnalysisTaskCorrelationsDev.h"
 #include "AliAnalyseLeadingTrackUE.h"
+#include "AliPIDResponse.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisCuts.h"
@@ -202,11 +203,20 @@ void  AliAnalysisTaskCorrelationsDev::UserExec(Option_t */*option*/)
     // event properties
     for (int i=0; i<fTreeEventConfig->GetEntriesFast(); i++)
     {
-      Float_t value = GetValueInterpreted(fInputEvent, fTreeEventConfig->At(i)->GetName());
+      TString command(fTreeEventConfig->At(i)->GetName());
+      
+      TObject* input = fInputEvent;
+      if (command.BeginsWith("_pid->"))
+      {
+        input = fInputHandler->GetPIDResponse();
+        command.Remove(0, strlen("_pid->"));
+      }
+      
+      Float_t value = GetValueInterpreted(input, command);
       fOutputContainer[containerCounter++] = value;
       
       if (fDebug > 5)
-        Printf("E %d %s %f", i, fTreeEventConfig->At(i)->GetName(), value);
+        Printf("E %d %s %f", i, command.Data(), value);
     }
     
     // tracks
@@ -227,7 +237,7 @@ void  AliAnalysisTaskCorrelationsDev::UserExec(Option_t */*option*/)
     
     fOutputTree->Fill(fOutputContainer);
   }
-  
+
   delete tracks;
 }
 
