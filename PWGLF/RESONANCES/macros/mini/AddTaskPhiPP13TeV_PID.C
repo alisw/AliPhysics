@@ -111,13 +111,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 3rd argument --> minimum required number of contributors to vtx
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
   AliRsnCutPrimaryVertex* cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-  cutVertex->SetCheckZResolutionSPD();
-  cutVertex->SetCheckDispersionSPD();
-  cutVertex->SetCheckZDifferenceSPDTrack();
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
   cutEventUtils->SetCheckIncompleteDAQ();
-  cutEventUtils->SetCheckPastFuture();
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
   if(isPP && (!isMC)){ 
