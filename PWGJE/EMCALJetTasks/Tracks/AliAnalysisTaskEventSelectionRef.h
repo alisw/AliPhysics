@@ -59,6 +59,11 @@ protected:
   TClonesArray                  *fClusterContainer;         //!
   TObjArray                     *fTrackContainer;           //!
 
+private:
+
+  AliAnalysisTaskEventSelectionRef(const AliAnalysisTaskEventSelectionRef &);
+  AliAnalysisTaskEventSelectionRef &operator=(const AliAnalysisTaskEventSelectionRef &);
+
   ClassDef(AliAnalysisTaskEventSelectionRef, 1);
 };
 
