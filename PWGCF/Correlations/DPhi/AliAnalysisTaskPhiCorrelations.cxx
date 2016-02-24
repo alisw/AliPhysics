@@ -54,7 +54,6 @@
 #include "AliCollisionGeometry.h"
 
 #include "AliEventPoolManager.h"
-#include "AliBasicParticle.h"
 
 #include "AliESDZDC.h"
 #include "AliESDtrackCuts.h"
@@ -89,6 +88,7 @@
 
 
 ClassImp( AliAnalysisTaskPhiCorrelations )
+ClassImp( AliDPhiBasicParticle )
 
 //____________________________________________________________________
 AliAnalysisTaskPhiCorrelations:: AliAnalysisTaskPhiCorrelations(const char* name):
@@ -188,9 +188,7 @@ fJetPtMin(5.),
 fJetConstMin(0),
 fExclusionRadius(-1.),
 fCustomParticlesA(""),
-fCustomParticlesB(""),
-fEventPoolOutputList(),
-fUsePtBinnedEventPool(0)
+fCustomParticlesB("")
 {
   // Default constructor
   // Define input and output slots here
@@ -425,53 +423,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     zvtxbin = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(2, 0)->GetXbins()->GetArray();
   }
 
-  Int_t nPsiBins = 1;
-  Double_t psibins[2] = {-999.,999.};
-  
-  Int_t nPtBins = 1;
-  Double_t defaultPtBins[2] = {-9999., 9999.};
-  Double_t* ptbins = defaultPtBins;
-
-  // Retrieve event pool pt binning only if pool should be devided in bins of pt
-  if(fUsePtBinnedEventPool)
-    if (fHistos->GetUEHist(2)->GetTrackHist(AliUEHist::kToward)->GetNBins(1))
-    {
-      nPtBins  = fHistos->GetUEHist(2)->GetTrackHist(AliUEHist::kToward)->GetNBins(1);
-      ptbins = (Double_t*) fHistos->GetUEHist(2)->GetTrackHist(AliUEHist::kToward)->GetAxis(1, 0)->GetXbins()->GetArray();
-    }
-
-  // Create default event pool in case no external pool is given
-  if(!fPoolMgr)
-  {
-    fPoolMgr = new AliEventPoolManager(poolsize, fMixingTracks, nCentralityBins, centralityBins, nZvtxBins, zvtxbin, nPsiBins, psibins, nPtBins, ptbins);
-    fPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
-  }
-
-  // Check binning of pool manager (basic dimensional check for the time being)
-  if( (fPoolMgr->GetNumberOfMultBins() != nCentralityBins) || (fPoolMgr->GetNumberOfZVtxBins() != nZvtxBins) || (fPoolMgr->GetNumberOfPtBins() != nPtBins) )
-    AliFatal("Binning of given pool manager not compatible with binning of correlation task!");
-
-  // If some bins of the pool should be saved, fEventPoolOutputList must be given
-  // using AddEventPoolToOutput()
-  // Note that this is in principle also possible, if an external poolmanager was given
-  for(Int_t i = 0; i < fEventPoolOutputList.size(); i++)
-  {
-    Double_t minCent = fEventPoolOutputList[i][0];
-    Double_t maxCent = fEventPoolOutputList[i][1];
-    Double_t minZvtx = fEventPoolOutputList[i][2];
-    Double_t maxZvtx = fEventPoolOutputList[i][3];
-    Double_t minPt   = fEventPoolOutputList[i][4];
-    Double_t maxPt   = fEventPoolOutputList[i][5];
-
-    fPoolMgr->SetSaveFlag(minCent, maxCent, minZvtx, maxZvtx, 0, 0, minPt, maxPt);
-  }
-
-  // Basic checks and printing of pool properties
-  fPoolMgr->Validate();
-
-  // save to output if requested
-  if(fEventPoolOutputList.size())
-    fListOfHistos->Add(fPoolMgr);
+  fPoolMgr = new AliEventPoolManager(poolsize, fMixingTracks, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+  fPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
 }
 
 //____________________________________________________________________
@@ -763,18 +716,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // mixed event
   if (fFillMixed)
   {
-    for(Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++)
-    {
-      AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx, 0., iPool);
-      if (fFillOnlyStep0) {
-        ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-        ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool->GetCurrentNEvents());
-      }
-      if (pool->IsReady())
-        for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
-	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
-      pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateMC, pool->GetPtMin(), pool->GetPtMax()));
+    AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+    if (fFillOnlyStep0) {
+      ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool->GetCurrentNEvents());
     }
+    if (pool->IsReady())
+      for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
+    pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateMC));
   }
   
 //   Printf("trigger: %d", ((AliInputEventHandler*)fInputHandler)->IsEventSelected());
@@ -879,14 +829,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // mixed event
       if (fFillMixed)
       {
-        for(Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++)
-        {
-          AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx + 200, 0., iPool);
-          if (pool->IsReady())
-            for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
-              fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTrackedOnlyPrim, tracksRecoMatchedPrim, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
-          pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateRecoMatchedPrim, pool->GetPtMin(), pool->GetPtMax()));
-        }
+	AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx + 200);
+	if (pool->IsReady())
+	  for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+	    fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTrackedOnlyPrim, tracksRecoMatchedPrim, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
+	pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateRecoMatchedPrim));
       }
       
       // Get MC primaries + secondaries that match reconstructed track
@@ -913,14 +860,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // mixed event
       if (fFillMixed)
       {
-        for(Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++)
-        {
-          AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx + 300, 0., iPool);
-          if (pool->IsReady())
-            for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
-              fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTracked, tracksRecoMatchedAll, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
-          pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateRecoMatchedAll, pool->GetPtMin(), pool->GetPtMax()));
-        }
+	AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx + 300);
+	if (pool->IsReady())
+	  for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+	    fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTracked, tracksRecoMatchedAll, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
+	pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelateRecoMatchedAll));
       }
       
       // Get RECO tracks
@@ -961,35 +905,32 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // mixed event
       if (fFillMixed)
       {
-        for(Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++)
-        {
-          AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100, 0., iPool);
-          ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
-          ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
-          if (pool2->IsReady())
-          {
-            for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
-            {
-              // STEP 6
-              if (!fSkipStep6)
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
-              
-              // two track cut, STEP 8
-              if (fTwoTrackEfficiencyCut > 0)
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
-              
-              // apply correction efficiency, STEP 10
-              if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)
-              {
-                // with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
-                Bool_t twoTrackCut = (fTwoTrackEfficiencyCut > 0);
-                
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), twoTrackCut, bSign, fTwoTrackEfficiencyCut, kTRUE);
-              }
-            }
-          }
-          pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate, pool2->GetPtMin(), pool2->GetPtMax()));
-        }
+	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
+	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
+	((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
+	if (pool2->IsReady())
+	{
+	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
+	  {
+	    // STEP 6
+	    if (!fSkipStep6)
+	      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
+	    
+	    // two track cut, STEP 8
+	    if (fTwoTrackEfficiencyCut > 0)
+	      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
+	    
+	    // apply correction efficiency, STEP 10
+	    if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated)
+	    {
+	      // with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
+	      Bool_t twoTrackCut = (fTwoTrackEfficiencyCut > 0);
+	      
+	      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), twoTrackCut, bSign, fTwoTrackEfficiencyCut, kTRUE);
+	    }
+	  }
+	}
+	pool2->UpdatePool(CloneAndReduceTrackList(tracksCorrelate));
       }
       
       if (0 && !fReduceMemoryFootprint)
@@ -1284,56 +1225,52 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     //    FillCorrelations(). Also nMix should be passed in, so a weight
     //    of 1./nMix can be applied.
 
-    for(Int_t iPool=0; iPool<fPoolMgr->GetNumberOfPtBins(); iPool++)
+    AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+    
+    if (!pool)
+      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
+    
+//     pool->SetDebug(1);
+     
+    if (pool->IsReady()) 
     {
-      AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx, 0., iPool);
+      Int_t nMix = pool->GetCurrentNEvents();
+//       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
       
-      if (!pool)
-        AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
-      
-  //     pool->SetDebug(1);
-       
-      if (pool->IsReady()) 
+      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3, nMix);
+      ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, nMix);
+    
+      // Fill mixed-event histos here  
+      for (Int_t jMix=0; jMix<nMix; jMix++) 
       {
-        Int_t nMix = pool->GetCurrentNEvents();
-  //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
-        
-        ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
-        ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3, nMix);
-        ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-        ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, nMix);
-      
-        // Fill mixed-event histos here  
-        for (Int_t jMix=0; jMix<nMix; jMix++) 
-        {
-          TObjArray* bgTracks = pool->GetEvent(jMix);
-        
-          if (!fSkipStep6)
-            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kFALSE, 0, 0.02, kTRUE);
+	TObjArray* bgTracks = pool->GetEvent(jMix);
+	
+	if (!fSkipStep6)
+	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kFALSE, 0, 0.02, kTRUE);
 
-          if (fTwoTrackEfficiencyCut > 0)
-            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
-        }
+	if (fTwoTrackEfficiencyCut > 0)
+	  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
       }
-      
-      if (!pool->GetLockFlag())
-      {
-        TObjArray* storeInMixed = 0;
-        if (tracksCorrelate)
-          storeInMixed = CloneAndReduceTrackList(tracksCorrelate, pool->GetPtMin(), pool->GetPtMax());
-        else
-          storeInMixed = CloneAndReduceTrackList(tracksClone, pool->GetPtMin(), pool->GetPtMax());
-        
-        // ownership is with the pool now
-        pool->UpdatePool(storeInMixed);
-      }
-      //pool->PrintInfo();
     }
+    
+    // ownership is with the pool now
+    if (tracksCorrelate)
+    {
+      pool->UpdatePool(CloneAndReduceTrackList(tracksCorrelate));
+      delete tracksClone;
+    }
+    else
+      pool->UpdatePool(tracksClone);
+    //pool->PrintInfo();
   }
-
-  delete tracksClone;
-  if (tracksCorrelate)
-    delete tracksCorrelate;
+  else
+  {
+    delete tracksClone;
+    if (tracksCorrelate)
+      delete tracksCorrelate;
+  }
 }
 
 Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TObject* mc)
@@ -1561,33 +1498,25 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
   return centrality;
 }
 
-//____________________________________________________________________
-TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tracks, Double_t minPt, Double_t maxPt)
+TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tracks)
 {
-  // clones a track list by using AliBasicParticle which uses much less memory (used for event mixing)
-  // Clone only a certain pt bin on demand
-
+  // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
+  
   // Check if we already have a reduced track list. In that case a simple Clone is enough
-  // Only possible for inclusive pt
-  if(maxPt-minPt < 0)
-    if (tracks->GetEntriesFast() == 0 || tracks->UncheckedAt(0)->InheritsFrom("AliBasicParticle"))
-      return (TObjArray*) tracks->Clone();
+  if (tracks->GetEntriesFast() == 0 || tracks->UncheckedAt(0)->InheritsFrom("AliDPhiBasicParticle"))
+    return (TObjArray*) tracks->Clone();
   
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
-
+  
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->UncheckedAt(i);
-    AliBasicParticle* copy = 0;
-
-    if ( (maxPt-minPt > 0) && ((particle->Pt()<minPt) || (particle->Pt()>=maxPt)) )
-      continue;
-
+    AliDPhiBasicParticle* copy = 0;
     if (fFillCorrelationsRapidity)
-      copy = new AliBasicParticle(particle->Y(), particle->Phi(), particle->Pt(), particle->Charge());
+      copy = new AliDPhiBasicParticle(particle->Y(), particle->Phi(), particle->Pt(), particle->Charge());
     else
-      copy = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+      copy = new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
     copy->SetUniqueID(particle->GetUniqueID());
     tracksClone->Add(copy);
   }
@@ -1769,7 +1698,7 @@ void AliAnalysisTaskPhiCorrelations::ShiftTracks(TObjArray* tracks, Double_t ang
   
   for (Int_t i=0; i<tracks->GetEntriesFast(); ++i) 
   {
-    AliBasicParticle* part = (AliBasicParticle*) tracks->At(i);
+    AliDPhiBasicParticle* part = (AliDPhiBasicParticle*) tracks->At(i);
     Double_t newAngle = part->Phi() + angle; 
     if (newAngle >= TMath::TwoPi())
       newAngle -= TMath::TwoPi();
@@ -1805,7 +1734,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	// rough estimate of multiplicity
 	for (Int_t j=0; j<TMath::Nint(weight); j++)
 	  {
-	    AliBasicParticle* particle = new AliBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fix pT = 1.1 and charge = 0
+	    AliDPhiBasicParticle* particle = new AliDPhiBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fix pT = 1.1 and charge = 0
 	    particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + j + i * 1000) * 10 + idet);
 	    
 	    obj->Add(particle);
@@ -1832,7 +1761,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	  if (phi<0) phi+=TMath::TwoPi();
 	  if (phi>TMath::TwoPi()) phi-=TMath::TwoPi();
 	  
-	  AliBasicParticle* particle = new AliBasicParticle(eta,phi, pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
+	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,phi, pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
 	  particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + itrklets) * 10 + idet);
 	  
 	  obj->Add(particle);
@@ -1855,7 +1784,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	if (eta < -4 || eta > -2.5) continue;
 	if (matching < 2) continue;
 	
-	AliBasicParticle* particle = new AliBasicParticle(eta,track->Phi(), track->Pt(), track->Charge()); 
+	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,track->Phi(), track->Pt(), track->Charge()); 
 	particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iTrack) * 10 + idet);
 	
 	obj->Add(particle);
@@ -1924,8 +1853,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
           continue;
 
         // add particle to array
-        AliBasicParticle* particle =
-          new AliBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
+        AliDPhiBasicParticle* particle =
+          new AliDPhiBasicParticle(track->Eta(), track->Phi(), track->Pt(), track->Charge());
         // NOTE "+ idet" is missing here on purpose as the tracks are the same as in the case of idet == 0
         particle->SetUniqueID((fAnalyseUE->GetEventCounter() * 50000 + iTrack) * 10);
         obj->Add(particle);
@@ -1972,7 +1901,7 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
       }
 
       // add particle to object array
-      AliBasicParticle* particle = new AliBasicParticle(customParticle->Eta(), customParticle->Phi(), customParticle->Pt(), customParticle->Charge());
+      AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(customParticle->Eta(), customParticle->Phi(), customParticle->Pt(), customParticle->Charge());
 
       // Set custom ID. Should be the same if custom particle A and B are the same
       if(fCustomParticlesA == fCustomParticlesB)
@@ -2022,24 +1951,4 @@ Bool_t AliAnalysisTaskPhiCorrelations::InitiateEventPlane(Double_t& evtPlanePhi,
   }
   else
     return 0;
-}
-
-//____________________________________________________________________
-void AliAnalysisTaskPhiCorrelations::AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt)
-{
-  std::vector<Double_t> binVec;
-  binVec.push_back(minCent);
-  binVec.push_back(maxCent);
-  binVec.push_back(minZvtx);
-  binVec.push_back(maxZvtx);
-  binVec.push_back(minPt);
-  binVec.push_back(maxPt);
-  fEventPoolOutputList.push_back(binVec);
-}
-
-//____________________________________________________________________
-void AliAnalysisTaskPhiCorrelations::FinishTaskOutput()
-{
-  // Clear unnecessary pools before saving
-  fPoolMgr->ClearPools();
 }
