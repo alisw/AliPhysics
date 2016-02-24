@@ -28,6 +28,7 @@ AliAnalysisTaskEmcalJetExtractor::AliAnalysisTaskEmcalJetExtractor() :
   fExtractionType(0),
   fExtractionCriterium(0),
   fExtractionMinPt(0),
+  fExtractionMaxPt(0),
   fExtractionPercentage(1.0)
 {
   // Default constructor.
@@ -47,6 +48,7 @@ AliAnalysisTaskEmcalJetExtractor::AliAnalysisTaskEmcalJetExtractor(const char *n
   fExtractionType(0),
   fExtractionCriterium(0),
   fExtractionMinPt(0),
+  fExtractionMaxPt(0),
   fExtractionPercentage(1.0)
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -60,7 +62,7 @@ AliAnalysisTaskEmcalJetExtractor::~AliAnalysisTaskEmcalJetExtractor()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetExtractor::DefineExtraction(Int_t type, Int_t criterium, Double_t minPt, Double_t percentage)
+void AliAnalysisTaskEmcalJetExtractor::DefineExtraction(Int_t type, Int_t criterium, Double_t minPt, Double_t maxPt, Double_t percentage)
 {
   if(!fIsExtractionDefined)
   {
@@ -68,6 +70,7 @@ void AliAnalysisTaskEmcalJetExtractor::DefineExtraction(Int_t type, Int_t criter
     fExtractionType = type;
     fExtractionCriterium = criterium;
     fExtractionMinPt = minPt;
+    fExtractionMaxPt = maxPt;
     fExtractionPercentage = percentage;
   }
   else
@@ -110,6 +113,7 @@ void AliAnalysisTaskEmcalJetExtractor::PrintSettings()
   std::cout << "Extraction type: " << fExtractionType << " (0 - AliEmcalJet, 1 - AliBasicJet, 2 - AliBasicJet w/constituents)\n";
   std::cout << "Extraction criterium: " << fExtractionCriterium << " (0 - MinBias, 1 - Signal jets, 2 - Background jets)\n";
   std::cout << "Extraction min pT (after background correction if rho given): " << fExtractionMinPt << "\n";
+  std::cout << "Extraction max pT (after background correction if rho given): " << fExtractionMaxPt << "\n";
   std::cout << "Extraction percentage (rest is thrown away): " << fExtractionPercentage << "\n";
   std::cout << "###########" << std::endl << std::endl;
 }
@@ -169,7 +173,7 @@ Bool_t AliAnalysisTaskEmcalJetExtractor::Run()
   while(jet) {
 
     // Select jets according to extraction criterium
-    if( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) <= fExtractionMinPt )
+    if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionMaxPt) )
     {  
       jet = fJetsCont->GetNextAcceptJet(); 
       continue;
