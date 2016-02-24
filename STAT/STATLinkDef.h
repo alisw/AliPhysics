@@ -22,6 +22,8 @@
 #pragma link C++ class AliExternalInfo+;
 
 #pragma link C++ namespace TStatToolkit;
+#pragma link C++ function  TStatToolkit::LTMHisto(TH1 * , TVectorF &, Float_t);
+#pragma link C++ function  TStatToolkit::LTMHisto(TH1 * , TVectorD &, Float_t);
 
 /*
 // RS At the moment is not recognized by the CINT...

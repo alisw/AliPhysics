@@ -2086,7 +2086,7 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
   //
 }
 
-void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose, Double_t fractionCut)
+void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose,  Double_t fractionCut, const char * estimators)
 {
   //
   // Function to calculate Distortion maps from the residual histograms
@@ -2129,6 +2129,21 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   char aname[100];
   char bname[100];
   char cname[100];
+  Float_t fractionLTM[100]={0.8};
+  TVectorF *vecLTM[100]={0};
+  Int_t nestimators=1;
+  if (estimators!=NULL){
+    TObjArray * array=TString(estimators).Tokenize(":");
+    nestimators=array->GetEntries();
+    for (Int_t iest=0; iest<nestimators; iest++){
+      fractionLTM[iest]=TString(array->At(iest)->GetName()).Atof();
+    }
+  }
+  for (Int_t iest=0; iest<nestimators; iest++) {
+    vecLTM[iest]=new TVectorF(10);
+    (*(vecLTM[iest]))[9]= fractionLTM[iest];
+  }
+
   //
   int ndim = histo->GetNdimensions();
   int nbins[ndim],idx[ndim],idxmin[ndim],idxmax[ndim],idxSav[ndim];
@@ -2173,7 +2188,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   sw.Start();
   int dimVar=1, dimVarID = axOrd[dimVar];
   //
-  TVectorF  vecLTM(9);
+  //  TVectorF  vecLTM(9);
   while(1) {
     //
     double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
@@ -2262,7 +2277,9 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     Float_t binMedian=0;
     Double_t limits[2]={hfit->GetBinCenter(1), hfit->GetBinCenter(nbins1D)};
     if (nrm>5) {
-      TStatToolkit::LTMHisto(hfit, vecLTM, 0.8); 
+      for (Int_t iest=0; iest<nestimators; iest++){
+	TStatToolkit::LTMHisto(hfit, *(vecLTM[iest]), fractionLTM[iest]); 
+      }
       Double_t* integral=hfit->GetIntegral();      
       for (Int_t i=1; i<nbins1D-1; i++){
 	if (integral[i-1]<0.5 && integral[i]>=0.5){
@@ -2328,9 +2345,12 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	"binMedian="<<binMedian<< //binned median value of 1D histogram
 	"entriesG="<<entriesG<< 
 	"meanG="<<meanG<<     // mean of the gaus fit
-	"rmsG="<<rmsG<<       // rms of the gaus fit
-	"vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
-	"chi2G="<<chi2G;      // chi2 of the gaus fit
+	"rmsG="<<rmsG<<       // rms of the gaus fit	
+	"vecLTM.="<<vecLTM[0]<<   // LTM  frac% statistic
+	"chi2G="<<chi2G;      // chi2 of the gaus fit      
+      for (Int_t iest=1; iest<nestimators; iest++) 
+	(*pcstream)<<TString::Format("%sDump", tname).Data()<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
+      
     }
 
     (*pcstream)<<tname<<
@@ -2346,8 +2366,12 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       "entriesG="<<entriesG<<   // 
       "meanG="<<meanG<<     // mean of the gaus fit
       "rmsG="<<rmsG<<       // rms of the gaus fit
-      "vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
+      "vecLTM.="<<vecLTM[0]<<   // LTM  frac% statistic
       "chi2G="<<chi2G;      // chi2 of the gaus fit
+    for (Int_t iest=1; iest<nestimators; iest++) 
+      (*pcstream)<<tname<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
+
+
     //
     meanVector[tgtDim] = mean; // what's a point of this?
     for (Int_t idim=0; idim<ndim; idim++){
