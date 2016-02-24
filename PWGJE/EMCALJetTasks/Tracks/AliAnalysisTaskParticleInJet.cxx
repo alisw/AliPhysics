@@ -159,7 +159,7 @@ std::vector<const AliVParticle *> AliAnalysisTaskParticleInJet::GetSelectedParti
   AliVTrack *track = NULL;
   do{
     if(!AcceptParticle(test)) continue;
-    if((track == dynamic_cast<AliVTrack *>(test))){
+    if((track = dynamic_cast<AliVTrack *>(test))){
       // apply extra track cuts
       if(!AcceptTrack(track)) continue;
     }
