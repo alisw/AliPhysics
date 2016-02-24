@@ -164,21 +164,22 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
 
 Long64_t AliEventPool::Merge(TCollection* hlist)
 {
-  if (hlist)
+  if (!hlist)
+  	return 0;
+
+  Bool_t origLock = fLockFlag;
+  fLockFlag = kFALSE; // temporary deactivate lockflag to allow filling
+  AliEventPool* tmpObj = 0;
+  TIter objIter(hlist);
+  // Iterate through all objects to be merged
+  while ( (tmpObj = static_cast<AliEventPool*>(objIter())) )
   {
-    Bool_t origLock = fLockFlag;
-    fLockFlag = kFALSE; // temporary deactivate lockflag to allow filling
-    AliEventPool* tmpObj = 0;
-    TIter objIter(hlist);
-    // Iterate through all objects to be merged
-    while (tmpObj = static_cast<AliEventPool*>(objIter())) 
-    {
-      // Update this pool (it won't get fuller than demanded)
-      for(Int_t i=0; i<tmpObj->fEvents.size(); i++)
-        UpdatePool(tmpObj->fEvents.at(i));
-    }
-    fLockFlag = origLock;
+    // Update this pool (it won't get fuller than demanded)
+    for(Int_t i=0; i<tmpObj->fEvents.size(); i++)
+      UpdatePool(tmpObj->fEvents.at(i));
   }
+  fLockFlag = origLock;
+  return hlist->GetEntries() + 1;
 }
 
 void AliEventPool::Clear()
@@ -392,30 +393,30 @@ Int_t AliEventPoolManager::InitEventPools(Int_t depth,
 
 Long64_t AliEventPoolManager::Merge(TCollection* hlist)
 {
-  if (hlist)
+  if (!hlist)
+  	return 0;
+  	
+  AliEventPoolManager* tmpObj = 0;
+  TIter objIter(hlist);
+
+  // Iterate through all objects to be merged
+  while ( (tmpObj = static_cast<AliEventPoolManager*>(objIter())) )
   {
-    AliEventPoolManager* tmpObj = 0;
-    TIter objIter(hlist);
+    for(Int_t i = 0; i<GetNumberOfMultBins(); i++)
+      for(Int_t j = 0; j<GetNumberOfZVtxBins(); j++)
+        for(Int_t k = 0; k<GetNumberOfPsiBins(); k++)
+          for(Int_t l = 0; l<GetNumberOfPtBins(); l++)
+          {
+            TList* poolList = new TList();
+            AliEventPool* objPool = tmpObj->GetEventPool(i,j,k,l);
+            AliEventPool* pool    = GetEventPool(i,j,k,l);
 
-    // Iterate through all objects to be merged
-    while (tmpObj = static_cast<AliEventPoolManager*>(objIter())) 
-    {
-      for(Int_t i = 0; i<GetNumberOfMultBins(); i++)
-        for(Int_t j = 0; j<GetNumberOfZVtxBins(); j++)
-          for(Int_t k = 0; k<GetNumberOfPsiBins(); k++)
-            for(Int_t l = 0; l<GetNumberOfPtBins(); l++)
-            {
-              TList* poolList = new TList();
-              AliEventPool* objPool = tmpObj->GetEventPool(i,j,k,l);
-              AliEventPool* pool    = GetEventPool(i,j,k,l);
-
-              poolList->Add(objPool);
-              pool->Merge(poolList);
-              delete poolList;
-            }
-    }
+            poolList->Add(objPool);
+            pool->Merge(poolList);
+            delete poolList;
+          }
   }
-
+  return hlist->GetEntries() + 1;
 }
 
 void AliEventPoolManager::SetTargetValues(Int_t trackDepth, Float_t fraction, Int_t events)
