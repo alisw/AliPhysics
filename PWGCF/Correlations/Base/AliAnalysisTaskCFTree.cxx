@@ -281,13 +281,8 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fEventStatistics->Fill("after event check",1);
 
     //filter out incomplete events:
-    //    Printf("incompalte events %d, ",fInputEvent->IsIncompleteDAQ());
-    //    if (((AliAODEvent*)fInputEvent)->IsIncompleteDAQ()) return;
     fIsIncomplete=0;
-    if(fInputEvent->GetHeader()->GetL0TriggerInputs()==0 && !fMCEvent)fIsIncomplete=1;
-    //    if(fInputEvent->GetRunNumber()>=236969){//TODO not working on lhc15i, will be fixed in refiltering
-    //      if(((AliAODEvent*)fInputEvent)->IsIncompleteDAQ()    && !fMCEvent)fIsIncomplete=1;
-    //    }
+    if (!fMCEvent && f2015IsIncompleteDAQ && ((AliAODEvent*)fInputEvent)->IsIncompleteDAQ()) fIsIncomplete = 1;
     fEventStatistics->Fill("after incomplete event check",1);
 
     TString classes = fInputEvent->GetFiredTriggerClasses();
