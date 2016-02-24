@@ -26,11 +26,6 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   static AliMUONRecoParam *GetCosmicParam();
   static AliMUONRecoParam *GetCalibrationParam();
   
-  /// set the calibration mode (see GetCalibrationMode() for possible modes)
-  void SetCalibrationMode(Option_t* mode) { fCalibrationMode = mode; fCalibrationMode.ToUpper();}
-  
-  Option_t* GetCalibrationMode() const;
-  
   /// set the clustering (pre-clustering) mode
   void      SetClusteringMode(Option_t* mode) {fClusteringMode = mode; fClusteringMode.ToUpper();}
   /// get the clustering (pre-clustering) mode
@@ -218,28 +213,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Float_t PedSigmaLowLimit() const { return fPedSigmaLimits[0]; }
   /// Retrieve high limit of ped sigma
   Float_t PedSigmaHighLimit() const { return fPedSigmaLimits[1]; }
-  
-  /// Set Low and High threshold for gain a0 term
-  void    SetGainA1Limits(float low, float high) { fGainA1Limits[0]=low; fGainA1Limits[1]=high; }
-  /// Retrieve low limit of a1 (linear term) gain parameter
-  Float_t GainA1LowLimit() const { return fGainA1Limits[0]; }
-  /// Retrieve high limit of a1 (linear term) gain parameter
-  Float_t GainA1HighLimit() const { return fGainA1Limits[1]; }
-  
-  /// Set Low and High threshold for gain a1 term
-  void    SetGainA2Limits(float low, float high) { fGainA2Limits[0]=low; fGainA2Limits[1]=high; }
-  /// Retrieve low limit of a2 (quadratic term) gain parameter
-  Float_t GainA2LowLimit() const { return fGainA2Limits[0]; }
-  /// Retrieve high limit of a2 (quadratic term) gain parameter
-  Float_t GainA2HighLimit() const { return fGainA2Limits[1]; }
-  
-  /// Set Low and High threshold for gain threshold term
-  void    SetGainThresLimits(float low, float high) { fGainThresLimits[0]=low; fGainThresLimits[1]=high; }
-  /// Retrieve low limit on threshold gain parameter
-  Float_t GainThresLowLimit() const { return fGainThresLimits[0]; }
-  /// Retrieve high limit on threshold gain parameter
-  Float_t GainThresHighLimit() const { return fGainThresLimits[1]; }
-  
+    
   /// Set the goodness mask (see AliMUONPadStatusMapMaker)
   void   SetPadGoodnessMask(UInt_t mask) { fPadGoodnessMask=mask; }
   /// Get the goodness mask
@@ -393,18 +367,12 @@ private:
   
   Bool_t     fSaveFullClusterInESD; ///< kTRUE to save all cluster info (including pads) in ESD
   
-  /// calibration mode:  GAIN, NOGAIN, GAINCONSTANTCAPA, INJECTIONGAIN
-  TString    fCalibrationMode; ///<\brief calibration mode
-  
   Int_t      fBypassSt45; ///< non-zero to use trigger tracks to generate "fake" clusters in St 4 and 5. Can be 0, 4, 5 or 45 only
   
   Bool_t     fUseChamber[10]; ///< kTRUE to use the chamber i in the tracking algorithm
   
   Bool_t     fRequestStation[5]; ///< kTRUE to request at least one cluster in station i to validate the track
   
-  Double32_t fGainA1Limits[2]; ///< Low and High threshold for gain a0 parameter
-  Double32_t fGainA2Limits[2]; ///< Low and High threshold for gain a1 parameter
-  Double32_t fGainThresLimits[2]; ///< Low and High threshold for gain threshold parameter
   Double32_t fHVSt12Limits[2]; ///< DEPRECATED. See fHVLimits
   Double32_t fHVSt345Limits[2]; ///< DEPRECATED. See fHVLimits
   Double32_t fPedMeanLimits[2]; ///< Low and High threshold for pedestal mean
@@ -453,8 +421,8 @@ private:
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,170) // MUON reco parameters
-  // we're at 167 not because we had that many versions, but because at some point (version 15->16)
+  ClassDef(AliMUONRecoParam,171) // MUON reco parameters
+  // we're at 171 not because we had that many versions, but because at some point (version 15->16)
   // 166 was committed by error, and we did not to go reverse afterwards...
 };
 

@@ -203,26 +203,8 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     return;
   }
 
-  TString calibrationMode(fRecoParam->GetCalibrationMode());
-  calibrationMode.ToUpper();
-
-  AliMUONVCalibParam* gain = fCalibrationData->Gains(detElemId,manuId);
-  if (!gain)
-  {
-    
-    if (!calibrationMode.Contains("NOGAIN") )
-    {
-      fLogger->Log(Form("%s:%d:Could not get gain for DE=%4d manuId=%4d. Disabling.",
-                        __FILE__,__LINE__,
-                        detElemId,manuId));
-      digit.SetADC(0);
-      return;        
-    }
-  }    
-
-  Int_t adc = DecalibrateTrackerDigit(*pedestal,gain,manuChannel,charge,addNoise,
-                                      digit.IsNoiseOnly(),
-                                      calibrationMode);
+  Int_t adc = DecalibrateTrackerDigit(*pedestal,manuChannel,charge,addNoise,
+                                      digit.IsNoiseOnly());
   
   digit.SetADC(adc);
 }
@@ -319,17 +301,15 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
 //_____________________________________________________________________________
 Int_t 
 AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
-                                            const AliMUONVCalibParam* gains,
                                             Int_t channel,
                                             Float_t charge,
                                             Bool_t addNoise,
-                                            Bool_t noiseOnly,
-                                            const TString& calibrationMode)
+                                            Bool_t noiseOnly)
 {
   /// Decalibrate (i.e. go from charge to adc) a tracker digit, given its
   /// pedestal and gain parameters.
   /// Must insure before calling that channel is valid (i.e. between 0 and
-  /// pedestals or gains->GetSize()-1, but also corresponding to a valid channel
+  /// pedestals->GetSize()-1, but also corresponding to a valid channel
   /// otherwise results are not predictible...)
   ///
   /// This method is completely tied to what happens in its sister method :
@@ -338,27 +318,12 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   
   static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
   
-  Bool_t nogain = calibrationMode.Contains("NOGAIN");
-  
-  Float_t a1(0.0);
   Int_t thres(4095);
   Int_t qual(0xF);
   Float_t capa(AliMUONConstants::DefaultCapa()); // capa = 0.2 and a0 = 1.25
   Float_t a0(AliMUONConstants::DefaultA0());  // is equivalent to gain = 4 mV/fC
   Float_t adc2mv(AliMUONConstants::DefaultADC2MV()); // 1 ADC channel = 0.61 mV
                
-  if ( ! nogain )
-  {
-    if  (!gains)
-    {
-      AliFatalClass("Cannot make gain decalibration without gain values !");
-    }
-    a0 = gains->ValueAsFloat(channel,0);
-    a1 = gains->ValueAsFloat(channel,1);
-    thres = gains->ValueAsInt(channel,2);
-    qual = gains->ValueAsInt(channel,3);
-  }
-  
   Float_t pedestalMean = pedestals.ValueAsFloat(channel,0);
   Float_t pedestalSigma = pedestals.ValueAsFloat(channel,1);
   
@@ -369,63 +334,7 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   
   Float_t chargeThres = a0*thres;
   
-  Float_t padc(0); // (adc - ped) value
-  
-  if ( nogain || charge <= chargeThres || TMath::Abs(a1) < 1E-12 ) 
-  {
-    // linear part only
-    
-    if ( TMath::Abs(a0) > 1E-12 ) 
-    {
-      padc = charge/a0;    
-    }
-  }
-  else 
-  {
-    // FIXME: when we'll use capacitances and real gains, revise this part
-    // to take capa properly into account...
-    
-    AliWarningClass("YOU PROBABLY NEED TO REVISE THIS PART OF CODE !!!");
-    
-    // linear + parabolic part
-    Double_t qt = chargeThres - charge;
-    Double_t delta = a0*a0-4*a1*qt;
-    if ( delta < 0 ) 
-    {
-      AliErrorClass(Form("delta=%e DE %d Manu %d Channel %d "
-                    " charge %e a0 %e a1 %e thres %d ped %e pedsig %e",
-                    delta,pedestals.ID0(),pedestals.ID1(),
-                    channel, charge, a0, a1, thres, pedestalMean, 
-                    pedestalSigma));      
-    }      
-    else
-    {
-      delta = TMath::Sqrt(delta);
-      
-      padc = ( ( -a0 + delta ) > 0 ? ( -a0 + delta ) : ( -a0 - delta ) );
-      
-      padc /= 2*a1;
-    
-      if ( padc < 0 )
-      {
-        if ( TMath::Abs(padc) > 1E-3) 
-        {
-          // this is more than a precision problem : let's signal it !
-          AliErrorClass(Form("padc=%e DE %d Manu %d Channel %d "
-                             " charge %e a0 %e a1 %e thres %d ped %e pedsig %e delta %e",
-                             padc,pedestals.ID0(),pedestals.ID1(),
-                             channel, charge, a0, a1, thres, pedestalMean, 
-                             pedestalSigma,delta));
-        }
-
-        // ok. consider we're just at thres, let it be zero.
-        padc = 0;
-      }
-
-      padc += thres;
-
-    }
-  }
+  Float_t padc = charge/a0; // (adc - ped) value
   
   padc /= capa*adc2mv;
   
@@ -453,10 +362,10 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
     if ( !addNoise || (addNoise && noiseOnly) ) 
     {
       AliDebugClass(1,Form(" DE %04d Manu %04d Channel %02d "
-													 " a0 %7.2f a1 %7.2f thres %04d ped %7.2f pedsig %7.2f adcNoise %7.2f "
+													 " a0 %7.2f thres %04d ped %7.2f pedsig %7.2f adcNoise %7.2f "
 													 " charge=%7.2f padc=%7.2f adc=%04d ZS=%04d fgNSigmas=%e addNoise %d noiseOnly %d ",
 													 pedestals.ID0(),pedestals.ID1(),channel, 
-													 a0, a1, thres, pedestalMean, pedestalSigma, adcNoise,
+													 a0, thres, pedestalMean, pedestalSigma, adcNoise,
 													 charge, padc, adc, 
 													 TMath::Nint(pedestalMean + fgNSigmas*pedestalSigma + 0.5),
 													 fgNSigmas,addNoise,noiseOnly));
@@ -887,13 +796,8 @@ AliMUONDigitizerV3::Init()
   {
     AliFatal("Could not access pedestals from OCDB !");
   }
-  if ( !fCalibrationData->Gains() )
-  {
-    AliFatal("Could not access gains from OCDB !");
-  }
   
-  
-   AliInfo("Using trigger configuration from CDB");
+  AliInfo("Using trigger configuration from CDB");
   
   fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
   

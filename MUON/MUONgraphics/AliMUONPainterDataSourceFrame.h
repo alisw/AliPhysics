@@ -103,10 +103,7 @@ private:
   TGCompositeFrame* fRawSelector24; ///< idem
   TGCompositeFrame* fRawSelector23; ///< idem
   TGCheckButton* fCalibrateNoGain; ///< to trig calibration of raw data (only 0 suppression)
-  TGCheckButton* fCalibrateGainConstantCapa; ///< to trig calibration of raw data (0-supp and gain w/ constant capacitance)
-  TGCheckButton* fCalibrateGain; ///< to trig calibration of raw data (full blown calibration)
-  TGCheckButton* fCalibrateEmelecGain; ///< to trig calibration of raw data (full blown calibration but with factory gains)
-  TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data  
+  TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data
   TGNumberEntry* fHistoMin; ///< xmin of histo to make
   TGNumberEntry* fHistoMax; ///< xmax of histo to make
   TGCheckButton* fEventRangeButton; ///< to trig limitation of event range
@@ -129,7 +126,7 @@ private:
   TGComboBox* fACFTypes; ///< types of ASCII calibration files 
 
   
-  ClassDef(AliMUONPainterDataSourceFrame,6) // Data source selection frame
+  ClassDef(AliMUONPainterDataSourceFrame,7) // Data source selection frame
 };
 
 #endif

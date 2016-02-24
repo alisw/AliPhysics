@@ -77,7 +77,6 @@ ClassImp( AliMUONChamberCalibrationTask )
 AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask():
   AliAnalysisTaskSE( "AliMUONChamberCalibrationTask" ),
   fOCDBPath( "local://$ALICE_ROOT/OCDB" ),
-  fCalibChoice(kNOGAIN),
   fClusterInfoTree(0x0),
   fMuonRecoParam(0x0),
   fClusterInfo(0x0),
@@ -99,7 +98,6 @@ AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask( const char* name,
 							      const Int_t my_calib_option ):
   AliAnalysisTaskSE( name ),
   fOCDBPath( "local://$ALICE_ROOT/OCDB" ),
-  fCalibChoice(kNOGAIN),
   fClusterInfoTree(0x0),
   fMuonRecoParam(0x0),
   fClusterInfo(0x0),
@@ -114,13 +112,6 @@ AliMUONChamberCalibrationTask::AliMUONChamberCalibrationTask( const char* name,
   //
 
   fOCDBPath = ocdbpath;
-  if ( (my_calib_option >= ((Int_t)kNOGAIN)) && (my_calib_option <= ((Int_t)kINJECTIONGAIN)) ) 
-    fCalibChoice = (Calibration_t)my_calib_option;
-  else {
-    AliWarning( Form("Wrong value of the calibration option %d not within [%d, %d] !!! Will use NOGAIN", 
-		     my_calib_option, (Int_t)kNOGAIN, (Int_t)kINJECTIONGAIN ) );
-    fCalibChoice = kNOGAIN;
-  }
 }
 
 //______________________________________________________________
@@ -197,17 +188,6 @@ void AliMUONChamberCalibrationTask::LocalInit()
   // (needed when applying any of the with-gain options)
 
   fMuonRecoParam = AliMUONRecoParam::GetCosmicParam();
-
-  TString caliboption1 = "NOGAIN";
-  TString caliboption2 = "GAINCONSTANTCAPA";
-  TString caliboption3 = "GAIN";
-  TString caliboption4 = "INJECTIONGAIN";
-
-  TString caliboption = caliboption1;
-  if ( fCalibChoice == kGAINCONSTANTCAPA ) caliboption = caliboption2;
-  if ( fCalibChoice == kGAIN ) caliboption = caliboption3;  
-  if ( fCalibChoice == kINJECTIONGAIN ) caliboption = caliboption4;
-  fMuonRecoParam->SetCalibrationMode(caliboption.Data());
 
   for (Int_t iCh=0; iCh<10; iCh++) {
     fMuonRecoParam->SetDefaultNonBendingReso( iCh, 0.152 ); // input ESD was aligned (default cosmic settings)
@@ -347,7 +327,6 @@ void AliMUONChamberCalibrationTask::Exec( Option_t* /*option*/ )
 	
 	// calibration parameters
 	AliMUONVCalibParam* ped = fCalibData->Pedestals( digit->DetElemId(), digit->ManuId() );
-	AliMUONVCalibParam* gain = fCalibData->Gains( digit->DetElemId(), digit->ManuId() );
 	Int_t manuChannel = digit->ManuChannel();
 	Int_t planeType = 0;
 	if ( digit->ManuId() & AliMpConstants::ManuMask(AliMp::kNonBendingPlane) ) {
@@ -366,10 +345,6 @@ void AliMUONChamberCalibrationTask::Exec( Option_t* /*option*/ )
 	padInfo.SetCalibrated( digit->IsCalibrated() );
 	padInfo.SetPedestal( ped->ValueAsFloatFast(manuChannel,0), // mean
 			     ped->ValueAsFloatFast(manuChannel,1) ); // sigma
-	padInfo.SetGain( gain->ValueAsFloatFast(manuChannel,0), // a0
-			 gain->ValueAsFloatFast(manuChannel,1), // a1
-			 (Int_t)gain->ValueAsFloatFast(manuChannel,2), // threshold
-			 (Int_t)gain->ValueAsFloatFast(manuChannel,3) ); // fit quality
 	
 	fClusterInfo->AddPad( padInfo );
       }

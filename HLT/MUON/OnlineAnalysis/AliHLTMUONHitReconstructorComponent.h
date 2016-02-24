@@ -103,9 +103,6 @@ extern "C" struct AliHLTMUONHitRecoLutRow;
  * \li -dontprintparityerrors <br>
  *      If specified then no error or warning messages are printed if any parity
  *      errors are found in the ADC digit data words. <br>
- * \li -useidealgain <br>
- *      When this option is used then the gain correction parameters are not loaded
- *      from the CDB but ideal linear gain is assumed. <br>
  * \li -makeclusters <br>
  *      This option will cause the component to generate extra cluster information
  *      in the form of CLUSTERS data blocks. <br>
@@ -218,7 +215,6 @@ private:
 	IdManuChannelToEntry fIdToEntry; ///< id to line mapping.
 	MaxEntryPerBusPatch fMaxEntryPerBusPatch ;///< map to load maximum allowed buspatch entries for each buspatch
 	bool fWarnForUnexpecedBlock;  ///< Flag indicating if we should log a warning if we got a block of an unexpected type.
-	bool fUseIdealGain;  ///< Flag to indicate that ideal gain should be used and not loaded from the CDB.
 	bool fWarnIfPadSkipped;  ///< Flag for controlling if extensive warnings should be generated when skipping pads.
 	
 	ClassDef(AliHLTMUONHitReconstructorComponent, 0) // Hit reconstructor component for dHLT tracker DDL raw data.

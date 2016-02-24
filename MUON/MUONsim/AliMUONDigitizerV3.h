@@ -46,12 +46,10 @@ public:
   virtual Bool_t Init();
 
   static Int_t DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
-                                       const AliMUONVCalibParam* gains,
                                        Int_t channel,
                                        Float_t charge,
                                        Bool_t addNoise=kFALSE,
-                                       Bool_t noiseOnly=kFALSE,
-                                       const TString& calibrationMode="NOGAIN");
+                                       Bool_t noiseOnly=kFALSE);
   
   /// Set calibration (and recoparam) data
   void SetCalibrationData(AliMUONCalibrationData* calibrationData, AliMUONRecoParam* recoParam);

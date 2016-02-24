@@ -54,13 +54,6 @@ public:
   static TString AsString(Int_t status);
 
   static TString AsCondition(Int_t status);
-
-  /// Return Low and High limits for a0 parameter of gain (linear slope)
-  TVector2 GainA1Limits() const { return fGainA1Limits; }
-  /// Return Low and High limits for a1 parameter of gain (parabolic term)
-  TVector2 GainA2Limits() const { return fGainA2Limits; }
-  /// Return Low and High limits for thres parameter of gain
-  TVector2 GainThresLimits() const { return fGainThresLimits; }
   
   /// Return HV threshold
   Double_t HVLimit(Int_t chamberId) const;
@@ -70,13 +63,6 @@ public:
   /// Return Low and High threshold for pedestal sigma
   TVector2 PedSigmaLimits() const { return fPedSigmaLimits; }
   
-  /// Set Low and High limits for a0 parameter of gain (linear slope)
-  void GainA1Limits(float low, float high) { fGainA1Limits.Set(low,high); }
-  /// Set Low and High limits for a1 parameter of gain (parabolic term)
-  void GainA2Limits(float low, float high) { fGainA2Limits.Set(low,high); }
-  /// Set Low and High limits for thres parameter of gain
-  void GainThresLimits(float low, float high) { fGainThresLimits.Set(low,high); }
-  
   /// Set HV limit
   void SetHVLimit(Int_t chamberId, Double_t hv);
 
@@ -84,14 +70,7 @@ public:
   void SetPedMeanLimits(float low, float high) { fPedMeanLimits.Set(low,high); }
   /// Set Low and High threshold for pedestal sigma 
   void SetPedSigmaLimits(float low, float high) { fPedSigmaLimits.Set(low,high); }
-  
-	/// Set Low and High threshold for gain a0 term
-	void SetGainA1Limits(float low, float high) { fGainA1Limits.Set(low,high); }
-	/// Set Low and High threshold for gain a1 term
-	void SetGainA2Limits(float low, float high) { fGainA2Limits.Set(low,high); }
-	/// Set Low and High threshold for gain threshold term
-	void SetGainThresLimits(float low, float high) { fGainThresLimits.Set(low,high); }
-	
+  	
   /// Set Low and High manu occupancy limits
   void SetManuOccupancyLimits(float low, float high) { fManuOccupancyLimits.Set(low,high); }
   /// Get manu occupancy limits
@@ -113,14 +92,16 @@ public:
   
   static Float_t SwitchValue(const TObjArray& dcsArray);
   
+  Int_t LVStatus(Int_t detElemId) const;
+  
   Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
   
   Int_t OccupancyStatus(Int_t detElemId, Int_t manuId) const;
 
   static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, 
-                           Int_t&  gainStatus, Int_t& otherStatus);
+                           Int_t&  lvStatus, Int_t& otherStatus);
   static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, 
-                           Int_t gainStatus, Int_t otherStatus);  
+                           Int_t lvStatus, Int_t otherStatus);
 private:
   /// Not implemented
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);
@@ -153,20 +134,6 @@ private:
     kMissing = (1<<7)
   };
 
-  /// Gain status
-  enum EGainStatus
-  {
-    kGainOK = 0,
-    kGainA1TooLow = (1<<1),
-    kGainA1TooHigh = (1<<2),
-    kGainA2TooLow = (1<<3),
-    kGainA2TooHigh = (1<<4),
-    kGainThresTooLow = (1<<5),
-    kGainThresTooHigh = (1<<6),
-    
-    kGainMissing = kMissing // please always use last bit for meaning "missing"
-  };
-  
   /// Pedestal status
   enum EPedestalStatus
   {
@@ -178,6 +145,15 @@ private:
     kPedSigmaTooHigh = (1<<5),
     
     kPedMissing = kMissing // please always use last bit for meaning "missing"
+  };
+  
+  /// LV status
+  enum ELVStatus
+  {
+    kLVOK = 0,
+    kLVTooLow = (1<<3),
+    
+    kLVMissing = kMissing // please always use last bit for meaning "missing"
   };
   
   /// HV Error
@@ -208,10 +184,6 @@ private:
   
   const AliMUONCalibrationData& fkCalibrationData; //!<! helper class to get data access (not owner)
   
-  TVector2 fGainA1Limits; //!<! Low and High threshold for gain a0 parameter
-  TVector2 fGainA2Limits; //!<! Low and High threshold for gain a1 parameter
-  TVector2 fGainThresLimits; //!<! Low and High threshold for gain threshold parameter
-
   Double_t fHVLimit[10]; //!<! Low thresholds for HV
 
   TVector2 fPedMeanLimits; //!<! Low and High threshold for pedestal mean
@@ -226,12 +198,11 @@ private:
   mutable TExMap* fHV; //!<! cache of hv statuses
 
   AliMUONVStore* fPedestals; //!<! pedestal values
-  AliMUONVStore* fGains; //!<! gain values
   AliMUONVStore* fConfig; //!<! readout configuration
   
   AliMUONVTrackerData* fTrackerData; //!<! to get occupancies...
   
-  ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,gain,hv
+  ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,lv,hv
 };
 
 #endif

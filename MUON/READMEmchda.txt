@@ -8,14 +8,13 @@ The detector algorithms are implemented for the Muon Tracking in the AliRoot fra
 We currently have 4 DAs for MCH :
 
 - MCHPEDda.cxx for PEDESTAL runs, running at the end of data taking on each LDC (seing only the LDC part of each event, but all events)
-- MCHGAINda.cxx for CALIBRATION runs, running at the end of data taking on each LDC (seing only the LDC part of each event, but all events)
 - MCHOCCda.cxx for PHYSICS runs, running during data taking on a monitoring machine (seing full events, but only a sample of the full stat)
 - MCHBPEVOda.cxx for PHYSICS runs, running during data taking on a monitoring machine (seing full events, but only a sample of the full stat)
 
 \section da_s1 The Muon Tracking Calibration
 
-The Muon tracking chambers needs three types of calibration in order to work properly. Actually  
-to be more precise pedestals are absolutely required, gains are needed to get the best charge measurement possible,  the occupancy
+The Muon tracking chambers needs two types of calibration in order to work properly : pedestals and occupancies. Actually
+to be more precise pedestals are absolutely required, and the occupancy
  is needed in order not to spend all the reconstruction time in hot-spots, and the bus patch evolution is needed to get an idea on long term stability.
 
 \subsection da_ss1 Pedestals
@@ -37,25 +36,6 @@ The typical ECS sequence for pedestals is :
 
 Then the SHUTTLE process the ASCII files and store the result on the OCDB (Keyword=PEDESTALS)
 Only configuration files corresponding to a change of the Muon Tracker configuration are written in the FXS (Keyword=CONFIG).
-
-
-\subsection da_ss2 Electronics gain
-
-In order to perform the required spatial resolution or the tracking chambers (~ 100 microns),
-we need to calibrate the gain of each channel. The gain is computed using dedicated runs where
-a signal (DAC) is send to the chambers FEE. 
-
-The typical ECS sequence for calibration is :
-
-- Switch ON the electronics LV
-- Boot the CROCUS 
-- Configuration 
-- Zero suppression OFF
-- Loop of 11 data taking (typically 400 events) each with a different signal (DAC=0-200- 400-800-1200-1600-2000-2500-3000-3500-4000)
-- The DA computes the mean and sigma (it runs in each LDC) for each run
-- At the end of the last run, the DA computes, by using a fitting procedure, linear and parabolic gain parameters, and writes results in one ASCII file per LDC. Every ascii files are transferred in the FXS.
-
-Then the SHUTTLE process the ASCII files and store the result on the OCDB (KEYWORD=GAINS)
 
 \subsection da_ss3 Occupancy
 

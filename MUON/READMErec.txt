@@ -17,8 +17,8 @@ All the adjustable options and parameters used to tune the different part of the
 
 - We read the RAW data, convert them (convert them back for simulated data) to digit (object inheriting from AliMUONVDigit
 stored into containers inheriting from AliMUONVDigitStore). This conversion is performed by the class AliMUONDigitMaker.
-- We calibrate the digits, via AliMUONDigitCalibrator, by subtracting pedestals and multiplying by gains. All the calibration parameters
-(pedestals, gains, capacitances and HV) are read from the OCDB and stored into AliMUONCalibrationData objects.
+- We calibrate the digits, via AliMUONDigitCalibrator, by subtracting pedestals and multiplying by a constant gain. All the calibration parameters
+(pedestals, HV) are read from the OCDB and stored into AliMUONCalibrationData objects.
 - We create the status of the digit (e.g. pedestal higher than maximum or HV switched off), using AliMUONPadStatusMaker.
 - We create the status map for each digit, i.e the global status (good/bad) of that digit and of its neighbords, using AliMUONPadStatusMapMaker.
 - Calibrated digits might be saved (back) to TreeD in MUON.Digits.root file.
@@ -131,9 +131,6 @@ The latter is a dummy set which allows to avoid any reconstruction in case a sof
 Software triggers are sent to trigger electronics during physics run in order to read the scalers: no action from the MUON tracker is required during such events whose reconstruction has to be skipped.
 
 Every option/parameter can be set one by one. Here is the complete list of available setters:
-- <code>SetCalibrationMode("mode")</code>: set the calibration mode: NOGAIN (only do pedestal subtraction),
-  GAIN (do pedestal subtraction and apply gain correction, but with a single capacitance value for all channels),
-  GAINCONSTANTCAPA (as GAIN, but with a channel-dependent capacitance value).
 - <code>SetClusteringMode("mode")</code>: set the clustering (pre-clustering) mode: NOCLUSTERING, PRECLUSTER, PRECLUSTERV2, PRECLUSTERV3, COG,
   SIMPLEFIT, SIMPLEFITV3, MLEM:DRAW, MLEM, MLEMV2, MLEMV3.
 - <code>SetTrackingMode("mode")</code>: Set the tracking mode: ORIGINAL, KALMAN.
@@ -183,9 +180,6 @@ Every option/parameter can be set one by one. Here is the complete list of avail
 - <code>SetHVSt345Limits(float low, float high)</code>: Set Low and High threshold for St345 HV
 - <code>SetPedMeanLimits(float low, float high)</code>: Set Low and High threshold for pedestal mean
 - <code>SetPedSigmaLimits(float low, float high)</code>: Set Low and High threshold for pedestal sigma
-- <code>SetGainA1Limits(float low, float high)</code>: Set Low and High threshold for gain a0 term
-- <code>SetGainA2Limits(float low, float high)</code>: Set Low and High threshold for gain a1 term
-- <code>SetGainThresLimits(float low, float high)</code>: Set Low and High threshold for gain threshold term
 - <code>SetPadGoodnessMask(UInt_t mask)</code>: Set the goodness mask (see AliMUONPadStatusMapMaker)
 - <code>ChargeSigmaCut(Double_t value)</code>: Number of sigma cut we must apply when cutting on adc-ped
 - <code>SetDefaultNonBendingReso(Int_t iCh, Double_t val)</code>: Set the default non bending resolution of chamber iCh

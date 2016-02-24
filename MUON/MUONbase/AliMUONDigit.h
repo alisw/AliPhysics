@@ -113,7 +113,7 @@ private:
     Int_t fHit;           ///< MC hit number - temporary solution
     Float_t fTime;        ///< MC hit age
   
-    UInt_t fStatusMap; ///< Neighbouring pad status (whether ped, gains, hv were ok or not)
+    UInt_t fStatusMap; ///< Neighbouring pad status (whether ped, lv, hv were ok or not)
     
     static const UInt_t fgkSaturatedMask = 0x1; ///< the mask (part of fFlags) to indicate this digit is saturated
     static const UInt_t fgkUsedMask = 0x10; ///< whether this digit is used by whatever other object (typically a cluster, though)
@@ -123,7 +123,7 @@ private:
     static const UInt_t fgkConverted       = 0x4000; ///< has been converted from a real digit
     static const UInt_t fgkChargeInFC      = 0x8000; ///< charge unit are femto coulomb
   
-    ClassDef(AliMUONDigit,12)  //Digits for MUON
+    ClassDef(AliMUONDigit,13)  //Digits for MUON
 };
 
 #endif

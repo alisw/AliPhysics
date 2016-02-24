@@ -43,7 +43,6 @@ set(SRCS
     AliMUONCommonGeometryBuilder.cxx
     AliMUON.cxx
     AliMUONDigitizerV3.cxx
-    AliMUONGainEventGenerator.cxx
     AliMUONHit.cxx
     AliMUONHitStoreV1.cxx
     AliMUONMCDataInterface.cxx

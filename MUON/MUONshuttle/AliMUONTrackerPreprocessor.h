@@ -36,12 +36,11 @@ private:
   AliMUONVSubprocessor* fPedestalSubprocessor; ///< Pedestal subprocessor
   AliMUONVSubprocessor* fGMSSubprocessor; ///< GMS subprocessor
   AliMUONVSubprocessor* fHVSubprocessor;  ///< HV subprocessor
-  AliMUONVSubprocessor* fGainSubprocessor; ///< Gain subprocessor
   AliMUONVSubprocessor* fOccupancySubprocessor; ///< Occupancy subprocessor
   AliMUONVSubprocessor* fBusPatchEvolutionSubprocessor; ///< Buspatch evolution subprocessor
   AliMUONVSubprocessor* fConfigSubprocessor; ///< config subprocessor
   
-  ClassDef(AliMUONTrackerPreprocessor,5) // MUON Tracker Shuttle preprocessor
+  ClassDef(AliMUONTrackerPreprocessor,6) // MUON Tracker Shuttle preprocessor
 };
 
 #endif

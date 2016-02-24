@@ -88,18 +88,6 @@ public:
   /// Return the sigma of the pedestal
   Float_t  GetPedSigma() const {return fPedSigma;}
   
-  /// Set gain parameters
-  void     SetGain(Float_t a0, Float_t a1, Int_t thres, Int_t qual) {fGainA0 = a0; fGainA1 = a1; fGainThres = thres; fGainQual = qual;}
-  /// Return the linear parameter of the gain
-  Float_t  GetGainA0() const {return fGainA0;}
-  /// Return the quadratic parameter of the gain
-  Float_t  GetGainA1() const {return fGainA1;}
-  /// Return the threshold of the quadratic behaviour of the gain
-  Int_t    GetGainThres() const {return fGainThres;}
-  /// Return the quality of the gain parameters
-  Int_t    GetGainQual() const {return fGainQual;}
-		  
-  
 protected:
     
   // pad info
@@ -117,12 +105,8 @@ protected:
   // calibration parameters
   Float_t    fPedMean;       ///< mean value of pedestal
   Float_t    fPedSigma;      ///< sigma of pedestal
-  Float_t    fGainA0;        ///< linear parameter of gain
-  Float_t    fGainA1;        ///< quadratic parameter of gain
-  Int_t      fGainThres;     ///< threshold of quadratic behaviour of gain
-  Int_t      fGainQual;      ///< quality of gain parameters
   
-  ClassDef(AliMUONPadInfo, 2) //Class to summarize ESD data at pad
+  ClassDef(AliMUONPadInfo, 3) //Class to summarize ESD data at pad
 };
 
 #endif

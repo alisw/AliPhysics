@@ -535,11 +535,10 @@ AliMUONReconstructor::CreateCalibrationData() const
   if ( kTracker ) 
   {
     // Check that we get all the calibrations we'll need
-    if ( !fCalibrationData->Pedestals() ||
-        !fCalibrationData->Gains() )
+    if ( !fCalibrationData->Pedestals() )
     {
-      AliFatal(Form("Could not access all required calibration data (PED %p GAIN %p)",
-                    fCalibrationData->Pedestals(),fCalibrationData->Gains()));      
+      AliFatal(Form("Could not access all required calibration data (PED %p)",
+                    fCalibrationData->Pedestals()));      
     }
     
     if ( !fCalibrationData->HV() ) 

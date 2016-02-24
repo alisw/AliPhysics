@@ -36,7 +36,6 @@ set(SRCS
     AliMUONCalibParamNI.cxx
     AliMUONCalibrationData.cxx
     AliMUONErrorCounter.cxx
-    AliMUONGain.cxx
     AliMUONGlobalCrateConfig.cxx
     AliMUONPedestal.cxx
     AliMUONRegionalTriggerConfig.cxx

@@ -70,7 +70,6 @@ AliMUONRecoParam::AliMUONRecoParam()
   fImproveTracks(kFALSE),
   fUseSmoother(kFALSE),
   fSaveFullClusterInESD(kTRUE),
-  fCalibrationMode("NOGAIN"),
   fBypassSt45(0),
   fPadGoodnessMask(0),
   fChargeSigmaCut(4.0),
@@ -118,20 +117,6 @@ AliMUONRecoParam::BypassSt45(Bool_t st4, Bool_t st5)
 	else if ( st4 ) fBypassSt45 = 4;
 	else if ( st5 ) fBypassSt45 = 5;
 	else fBypassSt45 = 0;
-}
-
-//_____________________________________________________________________________
-Option_t*
-AliMUONRecoParam::GetCalibrationMode() const
-{
-  /// Return the calibration mode. Can be : 
-  /// NOGAIN : only do pedestal subtraction
-  /// GAIN : do pedestal subtraction, and apply gain correction, but with a
-  ///        single capacitance value for all channels
-  /// INJECTIONGAIN : as GAIN, but with gain values taken as EMELEC factory values
-  /// GAINCONSTANTCAPA : as GAIN, but with a channel-dependent capacitance value
-  
-  return fCalibrationMode.Data();
 }
 
 //_____________________________________________________________________________
@@ -371,7 +356,6 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout << "Event Specie=" << GetEventSpecie() << endl;
   
-  cout<<Form("Calibration mode = %s",fCalibrationMode.Data())<<endl;
   cout<<Form("Clustering mode = %s",fClusteringMode.Data())<<endl;
   cout<<Form("Tracking mode = %s",fTrackingMode.Data())<<endl;
 
@@ -506,10 +490,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
 
   cout << Form("%7.2f <= Pedestal mean <= %7.2f",PedMeanLowLimit(),PedMeanHighLimit()) << endl;
   cout << Form("%7.2f <= Pedestal sigma <= %7.2f",PedSigmaLowLimit(),PedSigmaHighLimit()) << endl;
-  cout << Form("%e <= Gain linear term <= %e",GainA1LowLimit(),GainA1HighLimit()) << endl;
-  cout << Form("%e <= Gain quadratic term <= %e",GainA2LowLimit(),GainA2HighLimit()) << endl;
-  cout << Form("%5.0f <= Gain threshold term <= %5.0f",GainThresLowLimit(),GainThresHighLimit()) << endl;
-    
+  
   cout << Form("And we cut on charge >= %7.2f x ( pedestal sigma ) ",ChargeSigmaCut()) << endl;
   
   cout << "Occupancy limits are :" << endl;
@@ -618,15 +599,6 @@ AliMUONRecoParam::SetDefaultLimits()
 	fPedSigmaLimits[0] = 0.6;
 	fPedSigmaLimits[1] = 100;
 
-	fGainA1Limits[0] = 0.1;
-	fGainA1Limits[1] = 10;
-
-	fGainA2Limits[0] = -1E30;
-	fGainA2Limits[1] = 1E30;
-	
-	fGainThresLimits[0] = 0;
-	fGainThresLimits[1] = 4095;
-	
 	fPadGoodnessMask = 0x8080; // Ped is missing | HV is missing
 
   fManuOccupancyLimits[0] = -1.0; 
