@@ -77,7 +77,6 @@ set(SRCS
     AliEveKinkEditor.cxx
     AliEveKinkListEditor.cxx
     AliEveMacro.cxx
-    AliEveMacroEditor.cxx
     AliEveMacroExecutor.cxx
     AliEveMagField.cxx
     AliEveMomentumHistograms.cxx

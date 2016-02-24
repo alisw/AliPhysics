@@ -366,8 +366,8 @@ void AliEveEventManagerWindow::DoRefresh()
     
     if (files)
     {
-        TRegexp e("simple_geom_[A-Z][A-Z][A-Z].root");
-        TRegexp e2("[A-Z][A-Z][A-Z]");
+        TRegexp e("simple_geom_[A-Z,0-9][A-Z,0-9][A-Z,0-9].root");
+        TRegexp e2("[A-Z,0-9][A-Z,0-9][A-Z,0-9]");
         
         TSystemFile *file;
         TString fname;
@@ -405,6 +405,8 @@ void AliEveEventManagerWindow::DoRefresh()
             }
         }
     }
+    
+    AliEveInit::AddMacros();
     
     TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
     TEveScene *rhoZScene = AliEveMultiView::Instance()->GetRhoZScene();

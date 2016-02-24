@@ -113,9 +113,13 @@ SPD.tracklets.show:                     0
 kine.tracks.show:                       0
 HLT.tracks.show:                        0
 
-AD.maxCharge.Raw:                       1023
-AD.maxCharge.ESD:                       300
-AD.showLegend:                          0
+AD0.raw:                                0
+AD0.hits:                               0
+AD0.esd:                                1
+
+AD0.maxCharge.Raw:                      1023
+AD0.maxCharge.ESD:                      300
+AD0.showLegend:                         0
 
 events.autoload.set:                    0
 save.on.autoload:                       0

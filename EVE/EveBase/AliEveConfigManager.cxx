@@ -50,7 +50,7 @@ namespace
 {
  enum EAliEveMenu_e
  {
-	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent, kPreferences
+	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent, kPreferences
  };
 }
  
@@ -89,7 +89,6 @@ AliEveConfigManager::AliEveConfigManager(bool storageManager) :
   fAliEveGeometries(0),
   fAliEvePictures(0),
   fAliEvePicturesHR(0),
-  fAliEveDataSelection(0),
   fAliEveVizDBs(0),
   fLoadCheck(kFALSE)
 {
@@ -143,13 +142,6 @@ AliEveConfigManager::AliEveConfigManager(bool storageManager) :
 
   fAliEvePicturesHR->AddSeparator();
 
-  fAliEveDataSelection = new TGPopupMenu(gClient->GetRoot());
-
-  fAliEveDataSelection->AddEntry("&Save Data Selection macros", kAEMSavemacros);
-  fAliEveDataSelection->AddEntry("&Load Data Selection macros",   kAEMLoadmacros);
-
-  fAliEveDataSelection->AddSeparator();
-
   fAliEveVizDBs = new TGPopupMenu(gClient->GetRoot());
 
   fAliEveVizDBs->AddEntry("&Save VizDB", kAEMSave);
@@ -169,8 +161,6 @@ AliEveConfigManager::AliEveConfigManager(bool storageManager) :
   fAliEvePopup->AddPopup("&PicturesHR", fAliEvePicturesHR);
   fAliEvePopup->AddSeparator();
   fAliEvePopup->AddPopup("&VizDBs",  fAliEveVizDBs);
-  fAliEvePopup->AddSeparator();
-  fAliEvePopup->AddPopup("&DataSelection", fAliEveDataSelection);
   fAliEvePopup->AddSeparator();
 
   fAnalysisPopup = new TGPopupMenu(gClient->GetRoot());  
@@ -827,64 +817,6 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       
       break;
     }
-
-     case kAEMSavemacros:// Saving Data Selection macros
-    {
-
-      AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
-
-      exec->SaveAddedMacros();
-
-      break;
-    }
- 
-   case kAEMLoadmacros://Loading Data Selection macros
-    {
-
-      TEveBrowser *browser = gEve->GetBrowser();
-      browser->ShowCloseTab(kFALSE);
-
-      if(fLoadCheck)
-        browser->RemoveTab(TRootBrowser::kRight, 5);//remove the tab with previous DataSelection window
-      else
-        browser->RemoveTab(TRootBrowser::kRight, 2);
-
-
-      TGFileInfo fi;
-      fi.fFileTypes   = gMacroSaveAsTypes;
-      fi.fIniDir      = StrDup(""); // current directory
-      fi.fFileTypeIdx = 0;
-      fi.fOverwrite   = kTRUE;
-      new TGFileDialog(gClient->GetDefaultRoot(), gEve->GetMainWindow(), kFDOpen, &fi);//dialog
-      if (!fi.fFilename) return;
-
-      TPMERegexp filere(".*/([^/]+$)");
-      if (filere.Match(fi.fFilename) != 2)
-      {
-        Warning("AliEvePopupHandler", "file '%s' bad.", fi.fFilename);
-        return;
-      }
-      printf("Loading...\n");
-
-      TString file(filere[1]);
-      gSystem->ChangeDirectory(fi.fIniDir);
-
-      TEveUtil::Macro(file);//run macro
-
-      AliEveEventManager *eman = AliEveEventManager::GetMaster();//reload event (gEve->Refresh() crashes)
-      Int_t ev = eman->GetEventId();
-      eman->Close();
-      eman->Open();
-      eman->GotoEvent(ev);
-
-      printf("Done.\n");
-
-      fLoadCheck = kTRUE;
-
-      break;
-
-    }
-
     case kAEMSave://saving VizDB
     {
       TGFileInfo fi;

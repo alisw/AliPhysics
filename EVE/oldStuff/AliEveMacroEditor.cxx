@@ -20,6 +20,10 @@
 
 #include "TGComboBox.h"
 
+#include <iostream>
+
+using namespace std;
+
 //______________________________________________________________________________
 // GUI editor for AliEveMacro.
 //
@@ -38,6 +42,8 @@ AliEveMacroEditor::AliEveMacroEditor(const TGWindow *p, Int_t width, Int_t heigh
   fArgs(0),
   fActive(0)
 {
+    cout<<"\n\n\nAliEveMacroEditor constructor called\n\n\n"<<endl;
+    
   // Constructor.
 
   MakeTitle("AliEveMacro");

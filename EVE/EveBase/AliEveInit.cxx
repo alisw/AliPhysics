@@ -88,18 +88,18 @@ fPath(path)
     
     AliEveMultiView *mv = new AliEveMultiView();
     AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
-
+    
     // read all files with names matching "geom_list_XYZ.txt"
     vector<string> detectorsList;
     TSystemDirectory dir(Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")),
                          Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")));
-
+    
     TList *files = dir.GetListOfFiles();
     
     if (files)
     {
-        TRegexp e("simple_geom_[A-Z][A-Z][A-Z].root");
-        TRegexp e2("[A-Z][A-Z][A-Z]");
+        TRegexp e("simple_geom_[A-Z,0-9][A-Z,0-9][A-Z,0-9].root");
+        TRegexp e2("[A-Z,0-9][A-Z,0-9][A-Z,0-9]");
         
         TSystemFile *file;
         TString fname;
@@ -186,7 +186,7 @@ fPath(path)
     gEve->Redraw3D(true);
     gSystem->ProcessEvents();
     
-//    man->GotoEvent(0);
+    //    man->GotoEvent(0);
     
     gEve->EditElement(g_trkcnt);
     gEve->Redraw3D();
@@ -261,8 +261,109 @@ void AliEveInit::AddMacros()
     // Registration of per-event macros
     //==============================================================================
     
+    
+    // check which macros are available
     TEnv settings;
     GetConfig(&settings);
+    vector<string> detectorsList;
+    TSystemDirectory dir(Form("%s/../src/EVE/macros/data/",gSystem->Getenv("ALICE_ROOT")),
+                         Form("%s/../src/EVE/macros/data/",gSystem->Getenv("ALICE_ROOT")));
+    
+    TList *files = dir.GetListOfFiles();
+    
+    if (files)
+    {
+        TRegexp e("data_vis_[A-Z,0-9][A-Z,0-9][A-Z,0-9].C");
+        TRegexp e2("[A-Z,0-9][A-Z,0-9][A-Z,0-9]");
+        
+        TSystemFile *file;
+        TString fname;
+        TIter next(files);
+        
+        while ((file=(TSystemFile*)next()))
+        {
+            fname = file->GetName();
+            if(fname.Contains(e))
+            {
+                TString detName = fname(e2);
+                detName.Resize(3);
+                detectorsList.push_back(detName.Data());
+            }
+        }
+    }
+    
+    AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+    exec->RemoveMacros(); // remove all old macros
+    
+    for(int i=0;i<detectorsList.size();i++)
+    {
+        const char *detector = detectorsList[i].c_str();
+        cout<<"Adding macros for "<<detector<<endl;
+        
+        // add macro for hits
+        if(settings.GetValue(Form("%s.hits",detector),false))
+        {
+            exec->AddMacro(new AliEveMacro(
+                                           Form("Hits %s",detector),
+                                           Form("data_vis_%s.C",detector),
+                                           Form("data_vis_%s",detector),
+                                           "AliEveEventManager::kHits"
+                                           ));
+        }
+        // add macro for digits
+        if(settings.GetValue(Form("%s.digits",detector),false))
+        {
+            exec->AddMacro(new AliEveMacro(
+                                           Form("Digits %s",detector),
+                                           Form("data_vis_%s.C",detector),
+                                           Form("data_vis_%s",detector),
+                                           "AliEveEventManager::kDigits"
+                                           ));
+        }
+        // add macro for raw data
+        if(settings.GetValue(Form("%s.raw",detector),false))
+        {
+            exec->AddMacro(new AliEveMacro(
+                                           Form("Raw %s",detector),
+                                           Form("data_vis_%s.C",detector),
+                                           Form("data_vis_%s",detector),
+                                           "AliEveEventManager::kRaw"
+                                           ));
+        }
+        // add macro for raw data
+        if(settings.GetValue(Form("%s.clusters",detector),false))
+        {
+            exec->AddMacro(new AliEveMacro(
+                                           Form("Clusters %s",detector),
+                                           Form("data_vis_%s.C",detector),
+                                           Form("data_vis_%s",detector),
+                                           "AliEveEventManager::kClusters"
+                                           ));
+        }
+        // add macro for ESD
+        if(settings.GetValue(Form("%s.esd",detector),false))
+        {
+            exec->AddMacro(new AliEveMacro(
+                                           Form("ESD %s",detector),
+                                           Form("data_vis_%s.C",detector),
+                                           Form("data_vis_%s",detector),
+                                           "AliEveEventManager::kESD"
+                                           ));
+        }
+        // add macro for AOD
+        if(settings.GetValue(Form("%s.aod",detector),false))
+        {
+            exec->AddMacro(new AliEveMacro(
+                                           Form("AOD %s",detector),
+                                           Form("data_vis_%s.C",detector),
+                                           Form("data_vis_%s",detector),
+                                           "AliEveEventManager::kAOD"
+                                           ));
+        }
+
+    }
+    
+    // what's below should be removed
     
     bool showMuon         = settings.GetValue("MUON.show", true);              // show MUON's geom
     bool showEMCal        = settings.GetValue("EMCal.show", false);            // show EMCal and PHOS histograms
@@ -272,54 +373,62 @@ void AliEveInit::AddMacros()
     bool drawDigits       = settings.GetValue("digits.show",false);            // show digits
     bool drawAD           = settings.GetValue("AD.show",false);                // show AD hits
     
-    AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
-    exec->RemoveMacros(); // remove all old macros
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Track",   "kine_tracks.C", "kine_tracks", "", kFALSE));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ITS", "its_hits.C",    "its_hits",    "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TPC", "tpc_hits.C",    "tpc_hits",    "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits T0",  "t0_hits.C",     "t0_hits",     "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits FMD", "fmd_hits.C",    "fmd_hits",    "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits ACORDE", "acorde_hits.C",    "acorde_hits",    "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits EMCAL", "emcal_hits.C",    "emcal_hits",    "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TOF",  "tof_hits.C",     "tof_hits",     "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits TRD", "trd_hits.C",    "trd_hits",    "", drawHits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM Hits VZERO", "vzero_hits.C",    "vzero_hits",    "", drawHits));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG ITS",     "its_digits.C",  "its_digits",  "", drawDigits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG TPC",     "tpc_digits.C",  "tpc_digits",  "", drawDigits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG TOF",     "tof_digits.C",  "tof_digits",  "", drawDigits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG HMPID",   "hmpid_digits.C","hmpid_digits","", drawDigits));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG FMD",     "fmd_digits.C",  "fmd_digits",  "", drawDigits));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ITS",     "its_raw.C",     "its_raw",     "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TPC",     "tpc_raw.C",     "tpc_raw",     "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw",     "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW HMPID",   "hmpid_raw.C",   "hmpid_raw",   "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW T0",      "t0_raw.C",      "t0_raw",      "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW FMD",     "fmd_raw.C",     "fmd_raw",     "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw",   "", drawRawData));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw",  "", drawRawData));
-
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC ZDC",      "esd_zdc.C", "esd_zdc", "", kFALSE));
-    
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters ITS", "its_clusters.C", "its_clusters","",     drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TPC", "tpc_clusters.C", "tpc_clusters","",     drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TRD", "trd_clusters.C", "trd_clusters","",     drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters TOF", "tof_clusters.C", "tof_clusters","",     drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters HMPID", "hmpid_clusters.C","hmpid_clusters","",drawClusters));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters PHOS", "phos_clusters.C","phos_clusters","",   drawClusters));
-    
+    if(drawHits)
+    {
+        exec->AddMacro(new AliEveMacro("SIM Hits ITS", "its_hits.C",    "its_hits",    ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits TPC", "tpc_hits.C",    "tpc_hits",    ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits T0",  "t0_hits.C",     "t0_hits",     ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits FMD", "fmd_hits.C",    "fmd_hits",    ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits ACORDE", "acorde_hits.C",    "acorde_hits",    ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits EMCAL", "emcal_hits.C",    "emcal_hits",    ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits TOF",  "tof_hits.C",     "tof_hits",     ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits TRD", "trd_hits.C",    "trd_hits",    ""));
+        exec->AddMacro(new AliEveMacro("SIM Hits VZERO", "vzero_hits.C",    "vzero_hits",    ""));
+    }
+    if(drawDigits){
+        exec->AddMacro(new AliEveMacro("DIG ITS",     "its_digits.C",  "its_digits",  ""));
+        exec->AddMacro(new AliEveMacro("DIG TPC",     "tpc_digits.C",  "tpc_digits",  ""));
+        exec->AddMacro(new AliEveMacro("DIG TOF",     "tof_digits.C",  "tof_digits",  ""));
+        exec->AddMacro(new AliEveMacro("DIG HMPID",   "hmpid_digits.C","hmpid_digits",""));
+        exec->AddMacro(new AliEveMacro("DIG FMD",     "fmd_digits.C",  "fmd_digits",  ""));
+    }
+    if(drawRawData)
+    {
+        exec->AddMacro(new AliEveMacro("RAW ITS",     "its_raw.C",     "its_raw",     ""));
+        exec->AddMacro(new AliEveMacro("RAW TPC",     "tpc_raw.C",     "tpc_raw",     ""));
+        exec->AddMacro(new AliEveMacro("RAW TOF",     "tof_raw.C",     "tof_raw",     ""));
+        exec->AddMacro(new AliEveMacro("RAW HMPID",   "hmpid_raw.C",   "hmpid_raw",   ""));
+        exec->AddMacro(new AliEveMacro("RAW T0",      "t0_raw.C",      "t0_raw",      ""));
+        exec->AddMacro(new AliEveMacro("RAW FMD",     "fmd_raw.C",     "fmd_raw",     ""));
+        exec->AddMacro(new AliEveMacro("RAW VZERO",   "vzero_raw.C",   "vzero_raw",   ""));
+        exec->AddMacro(new AliEveMacro("RAW ACORDE",  "acorde_raw.C",  "acorde_raw",  ""));
+    }
+    if(drawClusters)
+    {
+        exec->AddMacro(new AliEveMacro("REC Clusters ITS", "its_clusters.C", "its_clusters",""));
+        exec->AddMacro(new AliEveMacro("REC Clusters TPC", "tpc_clusters.C", "tpc_clusters",""));
+        exec->AddMacro(new AliEveMacro("REC Clusters TRD", "trd_clusters.C", "trd_clusters",""));
+        exec->AddMacro(new AliEveMacro("REC Clusters TOF", "tof_clusters.C", "tof_clusters",""));
+        exec->AddMacro(new AliEveMacro("REC Clusters HMPID", "hmpid_clusters.C","hmpid_clusters",""));
+        exec->AddMacro(new AliEveMacro("REC Clusters PHOS", "phos_clusters.C","phos_clusters",""));
+    }
     if (showMuon)
     {
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "SIM TrackRef MUON", "muon_trackRefs.C", "muon_trackRefs", "kTRUE", kFALSE));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON", "muon_raw.C", "muon_raw", "", drawRawData));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "DIG MUON", "muon_digits.C", "muon_digits", "", drawDigits));
-        exec->AddMacro(new AliEveMacro(AliEveMacro::kRunLoader, "REC Clusters MUON", "muon_clusters.C", "muon_clusters", "", drawClusters));
+        if(drawRawData){
+            exec->AddMacro(new AliEveMacro("RAW MUON", "muon_raw.C", "muon_raw", ""));
+        }
+        if(drawDigits){
+            exec->AddMacro(new AliEveMacro("DIG MUON", "muon_digits.C", "muon_digits", ""));
+        }
+        if(drawClusters){
+            exec->AddMacro(new AliEveMacro("REC Clusters MUON", "muon_clusters.C", "muon_clusters", ""));
+        }
+
     }
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD AD", "ad_esd.C", "ad_esd", "", drawAD));
-    exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", "", showEMCal));
+    //    exec->AddMacro(new AliEveMacro("ESD AD", "ad_esd.C", "ad_esd", "", drawAD));
+    if(showEMCal){
+        exec->AddMacro(new AliEveMacro("ESD EMCal", "emcal_esdclustercells.C", "emcal_esdclustercells", ""));
+    }
 }
 
 void AliEveInit::ImportMacros()
@@ -330,8 +439,6 @@ void AliEveInit::ImportMacros()
     TString  hack = gSystem->pwd(); // Problem with TGFileBrowser cding
     
     TString macdir("$(ALICE_ROOT)/EVE/macros/data");
-    gSystem->ExpandPathName(macdir);
-    macdir = "$(ALICE_ROOT)/EVE/macros/common";
     gSystem->ExpandPathName(macdir);
     
     TFolder* f = gEve->GetMacroFolder();

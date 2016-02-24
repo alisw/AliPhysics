@@ -34,7 +34,6 @@
 
 // AliEveMacro and AliEveMacroExecutor
 #pragma link C++ class AliEveMacro+;
-#pragma link C++ class AliEveMacroEditor+;
 #pragma link C++ class AliEveMacroExecutor+;
 
 // AliEvePreferencesWindow
