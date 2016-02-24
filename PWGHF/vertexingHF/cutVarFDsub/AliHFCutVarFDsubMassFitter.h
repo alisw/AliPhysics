@@ -32,6 +32,12 @@ protected:
   Double_t fSigErr;
   Double_t fBkg;
   Double_t fBkgErr;
+  Double_t fSigma;
+  Double_t fSigmaErr;
+  Double_t fMean;
+  Double_t fMeanErr;
+  Double_t fChiSquare;
+  Double_t fRedChiSquare;
 
   void ObtainMassHistogram();
   void FitMassHistogram();
@@ -48,11 +54,17 @@ public:
   Double_t GetSigErr() { return fSigErr; };
   Double_t GetBkg() { return fBkg; };
   Double_t GetBkgErr() { return fBkgErr; };
+  Double_t GetSigma() { return fSigma; };
+  Double_t GetSigmaErr() { return fSigmaErr; };
+  Double_t GetMean() { return fMean; };
+  Double_t GetMeanErr() { return fMeanErr; };
+  Double_t GetChiSquare() {return fChiSquare; };
+  Double_t GetRedChiSquare() {return fRedChiSquare; };
 
   AliHFMassFitter* GetFitter() { return fFitter; };
 
 /// \cond CLASSDEF
-  ClassDef(AliHFCutVarFDsubMassFitter, 1);
+  ClassDef(AliHFCutVarFDsubMassFitter, 2);
   /// \endcond
 };
 #endif // ALIHFCUTVARFDSUBMASSFITTER_H
