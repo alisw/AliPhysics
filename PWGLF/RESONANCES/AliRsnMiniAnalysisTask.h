@@ -21,6 +21,8 @@
 #include "AliRsnMiniValue.h"
 #include "AliRsnMiniOutput.h"
 #include "AliRsnCutEventUtils.h"
+#include "AliRsnCutPrimaryVertex.h"
+
 
 class TList;
 
