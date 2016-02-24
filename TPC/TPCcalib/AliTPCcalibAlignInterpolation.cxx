@@ -1430,11 +1430,12 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   chainInfo->SetCacheSize(cacheSize);
   chainTracks->SetCacheSize(cacheSize);
   //
+  Int_t gidRounding=128;                        // git has to be rounded
+  chainInfo->SetEstimate(-1);
+  chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");          
+  //
   Int_t neventsAll=chainInfo->GetEntries();     // total amount of events
   Int_t ntracksAll=chainTracks->GetEntries();   // total amount of tracks
-  Int_t gidRounding=128;                        // git has to be rounded
-  chainInfo->SetEstimate(neventsAll);
-  chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");          
   //
   Long64_t minTime=0,maxTime=0;
   double minGID=0,maxGID=0,meanGID=0,meanTime=0;
@@ -1655,7 +1656,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   TTreeSRedirector *pcstream = new TTreeSRedirector("fitDrift.root","recreate");
   if (time0==time1){
     TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1);
-    chainInfo->SetEstimate(chainInfo->GetEntries());
+    chainInfo->SetEstimate(-1);
     Int_t entries = chainInfo->Draw("timeStamp","","goff",maxEntries);
     if (entries) TStatToolkit::GetMinMax(chainInfo->GetV1(),entries,time0,time1);
   }
