@@ -117,7 +117,6 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
   cutEventUtils->SetCheckIncompleteDAQ();
-  cutEventUtils->SetCheckPastFuture();
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
   if(isPP && (!isMC)){ 
