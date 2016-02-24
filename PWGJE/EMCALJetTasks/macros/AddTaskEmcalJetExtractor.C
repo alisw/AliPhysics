@@ -10,7 +10,6 @@ AliAnalysisTaskEmcalJetExtractor* AddTaskEmcalJetExtractor(
   Int_t       extractionType,
   Int_t       extractionCriterium,
   Double_t    extractionMinPt,
-  Double_t    extractionMaxPt,
   Double_t    extractionPercentage
 )
 {  
@@ -47,8 +46,8 @@ AliAnalysisTaskEmcalJetExtractor* AddTaskEmcalJetExtractor(
   else if(extractionCriterium == 2)
     name += "_CriteriumBackground";
 
-  name += "_Pt";
-  name += Form("%3.2f-%3.2f", extractionMinPt, extractionMaxPt);
+  name += "_MinPt";
+  name += Form("%3.2f", extractionMinPt);
 
   name += "_Percentage";
   name += Form("%e", extractionPercentage);
@@ -75,9 +74,9 @@ AliAnalysisTaskEmcalJetExtractor* AddTaskEmcalJetExtractor(
   jetTask->SetNeedEmcalGeom(kFALSE);
   jetTask->SetVzRange(-10.,10.);
 //  jetTask->SetOffTrigger(physSel);
-  jetTask->DefineExtraction(extractionType, extractionCriterium, extractionMinPt, extractionMaxPt, extractionPercentage);
+  jetTask->DefineExtraction(extractionType, extractionCriterium, extractionMinPt, extractionPercentage);
 
-  AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackArray);
+  AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackArray);
   trackCont->SetParticlePtCut(minTrackPt);
 
   AliJetContainer *jetCont = jetTask->AddJetContainer(jetArray,"USER",jetRadius);
