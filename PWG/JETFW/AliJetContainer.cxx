@@ -89,6 +89,7 @@ AliJetContainer::AliJetContainer(const char *name):
   // Standard constructor.
 
   fClassName = "AliEmcalJet";
+  SetMinPt(1);
 }
 
 //________________________________________________________________________
@@ -127,6 +128,7 @@ AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoSc
   // Constructor.
 
   fClassName = "AliEmcalJet";
+  SetMinPt(1);
 }
 
 //________________________________________________________________________
