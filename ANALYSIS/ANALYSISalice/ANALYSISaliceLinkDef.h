@@ -39,6 +39,11 @@
 
 #pragma link C++ class AliAnalysisTaskBadChunkID+;
 
+#pragma link C++ class AliTrackSelectionFactory+;
+#pragma link C++ class AliVTrackSelection+;
+#pragma link C++ class AliESDTrackSelection+;
+#pragma link C++ class AliAODTrackSelection+;
+
 // If ROOT was built with XML support
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;

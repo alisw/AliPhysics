@@ -48,6 +48,8 @@
 #include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliTrackSelectionFactory.h"
+#include "AliVTrackSelection.h"
 #include "AliLog.h"
 #include "AliAODDimuon.h"
 
@@ -88,7 +90,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
     fHistosQA(0x0),
     fOfflineTriggerMask(0),
     fMultiInputHandler(0),
-    fMCEventHandler(0)
+    fMCEventHandler(0),
+    fTrackSelectionFactory(0),
+    fTrackSelection(0)
 {
   // Default constructor
 }
@@ -107,7 +111,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     fHistosQA(0x0),
     fOfflineTriggerMask(0),
     fMultiInputHandler(0),
-    fMCEventHandler(0)
+    fMCEventHandler(0),
+    fTrackSelectionFactory(0),
+    fTrackSelection(0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
@@ -128,7 +134,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fHistosQA(0x0),
     fOfflineTriggerMask(0),
     fMultiInputHandler(obj.fMultiInputHandler),
-    fMCEventHandler(obj.fMCEventHandler)
+    fMCEventHandler(obj.fMCEventHandler),
+    fTrackSelectionFactory(obj.fTrackSelectionFactory),
+    fTrackSelection(obj.fTrackSelection)
 {
 // Copy constructor
     fDebug            = obj.fDebug;
@@ -165,6 +173,8 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
     fOfflineTriggerMask = other.fOfflineTriggerMask;
     fMultiInputHandler  = other.fMultiInputHandler;
     fMCEventHandler     = other.fMCEventHandler;
+    fTrackSelectionFactory = other.fTrackSelectionFactory;
+    fTrackSelection = other.fTrackSelection;
     return *this;
 }
 
@@ -332,6 +342,13 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 	    fOutputAOD->GetStdContent();
 	}
     }
+
+    if(fTrackSelectionFactory && !fTrackSelection)
+      fTrackSelection = fTrackSelectionFactory->CreateTrackCuts(
+          AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA() == AliAODInputHandler::Class() ?
+              AliTrackSelectionFactory::kAOD :
+              AliTrackSelectionFactory::kESD
+              );
     ConnectMultiHandler();
     UserCreateOutputObjects();
     DisconnectMultiHandler();
@@ -865,4 +882,14 @@ void AliAnalysisTaskSE::DisconnectMultiHandler()
    // Disconnect MultiHandler
    //
    if (fMultiInputHandler) fInputHandler = fMultiInputHandler;
+}
+
+/**
+ * Perform track selection in case a virtual track selection is provided.
+ * @return List of accepted tracks in case a track selection is provided, null otherwise
+ */
+TObjArray *AliAnalysisTaskSE::GetAcceptedTracks(){
+  TObjArray *result = NULL;
+  if(fTrackSelection) result = fTrackSelection->GetAcceptedTracks(InputEvent());
+  return result;
 }

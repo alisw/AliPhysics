@@ -15,7 +15,6 @@
 
 # Module
 set(MODULE ANALYSISalice)
-add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folders in alphabetical order except ROOT
 include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
@@ -43,11 +42,14 @@ set(SRCS
     AliAnalysisTaskSE.cxx
     AliAnalysisTaskStat.cxx
     AliAnalysisTaskTagCreator.cxx
+    AliTrackSelectionFactory.cxx
     AliAODv0KineCuts.cxx
+    AliAODTrackSelection.cxx
     AliESDpidCuts.cxx
     AliESDtrackCuts.cxx
     AliESDv0Cuts.cxx
     AliESDv0KineCuts.cxx
+    AliESDTrackSelection.cxx
     AliEventPoolLoop.cxx
     AliEventPoolManager.cxx
     AliEventPoolOTF.cxx
@@ -59,6 +61,7 @@ set(SRCS
     AliTagAnalysis.cxx
     AliUnfolding.cxx
     AliVZEROEPSelectionTask.cxx
+    AliVTrackSelection.cxx
     AliXMLCollection.cxx
   )
 
