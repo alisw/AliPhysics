@@ -48,15 +48,15 @@ public:
   ~AliHFCutVarFDsubAnalysisManager(); /// Destructor
 
 
-  void DrawDistributions(TString strOutputFolder); ///Draw the distributions of the cut variables
-  void GetEfficiencies(); /// Obtain the efficiences from the MC THnSparses
+  void DrawDistributions(TString strOutputFolder="."); ///Draw the distributions of the cut variables
+  void GetEfficiencies(TString strOutputFolder=".", Bool_t ptWeight=kFALSE, TF1* funcWeightsD=0x0, TF1* funcWeightsB=0x0); /// Obtain the efficiences from the MC THnSparses
   void DrawEfficiencies(TString strOutputFolder, TString prefix="eff", UInt_t xAxis=0);
-  void GetRawYields(Bool_t drawFit=kFALSE, TString strOutputFolder=""); /// Obtain the invariant mass distributions
+  void GetRawYields(Bool_t drawFit=kFALSE, TString strOutputFolder="."); /// Obtain the invariant mass distributions
   void GetXaxisInformation(); /// Obtain the x-axis information
   Bool_t Minimise(UInt_t method=0, UInt_t nIterations=10, Bool_t useWeights=kTRUE,
                   Double_t relSysteEffErr=0., Int_t nSim=1000); /// Obtain the corrected yields
   void DrawLines(TString strOutputFolder, Bool_t IsIncentre=kFALSE); ///Draw the lines correspondent to the cut sets
-
+  
   /// \cond CLASSDEF
   ClassDef(AliHFCutVarFDsubAnalysisManager, 1);
   /// \endcond
