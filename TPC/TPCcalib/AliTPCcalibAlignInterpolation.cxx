@@ -2539,32 +2539,36 @@ void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, co
 
   TCanvas * canvasC = new TCanvas("canvasC","canvasC",1400,1000);
   TPad * pad=0;
-  TPad *pad3 = new TPad("pad1","This is pad1",0.00,0.0,  1,0.33);
-  TPad *pad2 = new TPad("pad2","This is pad2",0.00,0.33, 1,0.66);
-  TPad *pad1 = new TPad("pad3","This is pad3",0.00,0.66, 1,1);
-  pad1->SetBottomMargin(0);
-  pad2->SetBottomMargin(0);
-  pad3->SetBottomMargin(0.15);
-  pad2->SetTopMargin(0);
-  pad3->SetTopMargin(0);
-  pad1->Draw();
-  pad2->Draw();
-  pad3->Draw();
-  pad1->SetGrid(1,1);
-  pad2->SetGrid(1,1);
-  pad3->SetGrid(1,1);
+  TPad *pads[4]={0};
+  for (Int_t ipad=0; ipad<4; ipad++){
+    pads[ipad] = new TPad("pad1","This is pad1",0.00,ipad/4.,  1,(ipad+1.)/4.);
+    pads[ipad]->SetBottomMargin(0);
+    pads[ipad]->SetTopMargin(0);
+  }
+  pads[0]->SetBottomMargin(0.15);
+  pads[3]->SetTopMargin(0.05);
+  for (Int_t ipad=0; ipad<4; ipad++){
+    pads[ipad]->Draw();
+    pads[ipad]->SetGrid(1,1);
+  }
+
   if (chtree){
-    pad1->cd();
+    pads[3]->cd();
     tree->Draw(TString::Format("%s.binMedian:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
-    pad2->cd();
+    pads[2]->cd();
     tree->Draw(TString::Format("%s.vecLTM.fElements[1]:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
-    pad3->cd();
+    pads[1]->cd();
+    tree->Draw(TString::Format("%s.meanG:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0&&abs(%s.meanG-%s.binMedian)<1",kZ,radius,chtree,chtree,chtree).Data(),"colz");
+    pads[0]->cd();
     tree->Draw(TString::Format("%s.vecLTM.fElements[1]-%s.binMedian:sectorCenter:RCenter",chtree,chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
   }else{
+    pads[3]->cd();
     tree->Draw("binMedian:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
-    pad2->cd();
+    pads[2]->cd();
     tree->Draw("vecLTM.fElements[1]:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
-    pad3->cd();
+    pads[1]->cd();
+    tree->Draw("meanG:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0&&abs(meanG-binMedian)<1",kZ,radius).Data(),"colz");
+    pads[0]->cd();
     tree->Draw("binMedian-vecLTM.fElements[1]:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
   }
 
