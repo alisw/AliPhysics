@@ -65,8 +65,7 @@ namespace TStatToolkit
   void TruncatedMean(const TH1 * his, TVectorT<T> *param, Float_t down=0, Float_t up=1.0, Bool_t verbose=kFALSE);
   void MedianFilter(TH1 * his1D, Int_t nmedian);
 
-  template <typename T> 
-  Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
+  template <typename T> Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
   //
   template <typename T> 
   void LTM(TH1 * his, TVectorT<T> *param=0 , Float_t fraction=1,  Bool_t verbose=kFALSE);
@@ -117,7 +116,7 @@ namespace TStatToolkit
   //
   //
   void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t dumpHisto=100,Int_t verbose=kFALSE);
-  void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0, Double_t fractionCut=0.1);
+  void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0,  Double_t fractionCut=0.1, const char * estimators=0);
 
   //
   // norm (distance) functions
