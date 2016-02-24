@@ -43,13 +43,13 @@ TEveCaloDataHist* histo2d()
 { 
 
    // Access to esdTree
-   AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+   AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
 
    // Creating 2D histograms
    TH2F *histopos = new TH2F("histopos","Histo 2d positive",100,-1.5,1.5,80,-pi,pi);
    TH2F *histoneg = new TH2F("histoneg","Histo 2d negative",100,-1.5,1.5,80,-pi,pi);
 
-   Info("histo2d", "Event: %d, Number of tracks: %d\n", AliEveEventManager::GetMaster()->GetEventId(), esd->GetNumberOfTracks() );
+   Info("histo2d", "Event: %d, Number of tracks: %d\n", AliEveEventManager::Instance()->GetEventId(), esd->GetNumberOfTracks() );
 
    // Getting current tracks, filling histograms 
    for ( int n = 0; n < esd->GetNumberOfTracks(); ++n ) {    
@@ -66,7 +66,7 @@ TEveCaloDataHist* histo2d()
    }
 
    TEveCaloDataHist* data = new TEveCaloDataHist();
-   AliEveEventManager::GetMaster()->RegisterTransient(data);
+   AliEveEventManager::Instance()->RegisterTransient(data);
    
    data->AddHistogram(histoneg);
    data->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
@@ -130,7 +130,7 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data){
    //plotting histo
    TEveCaloLego* lego = new TEveCaloLego(data);
    g_histo2d_s->AddElement(lego);
-   AliEveEventManager::GetMaster()->RegisterTransient(lego);
+   AliEveEventManager::Instance()->RegisterTransient(lego);
 
    // move to real world coordinates
    lego->InitMainTrans();
@@ -156,7 +156,7 @@ TEveCalo3D* Create3DView(TEveCaloData* data){
    }
  
    TEveCalo3D* calo3d = new TEveCalo3D(data);
-   AliEveEventManager::GetMaster()->RegisterTransient(calo3d);
+   AliEveEventManager::Instance()->RegisterTransient(calo3d);
    
    calo3d->SetBarrelRadius(550);
    calo3d->SetEndCapPos(550);

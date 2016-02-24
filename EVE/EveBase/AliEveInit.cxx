@@ -227,7 +227,7 @@ void AliEveInit::Init()
 {
     Info("AliEveInit","Adding standard macros");
     
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::Instance()->GetDataSourceOffline();
     
     // Open event
     if (fPath.BeginsWith("alien:"))
@@ -252,7 +252,7 @@ void AliEveInit::Init()
         }
     }
     cout<<"Opening event -1 from "<<fPath.Data()<<endl;
-    gEve->AddEvent(AliEveEventManager::GetMaster());
+    gEve->AddEvent(AliEveEventManager::Instance());
 }
 
 void AliEveInit::AddMacros()
@@ -292,7 +292,7 @@ void AliEveInit::AddMacros()
         }
     }
     
-    AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+    AliEveMacroExecutor *exec = AliEveEventManager::Instance()->GetExecutor();
     exec->RemoveMacros(); // remove all old macros
     
     for(int i=0;i<detectorsList.size();i++)

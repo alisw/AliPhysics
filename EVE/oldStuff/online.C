@@ -39,7 +39,7 @@ void online()
  
   TEveUtil::AssertMacro("VizDB_scan.C");
   
-  AliEveMacroExecutor *exec    = AliEveEventManager::GetMaster()->GetExecutor();
+  AliEveMacroExecutor *exec    = AliEveEventManager::Instance()->GetExecutor();
   TEveBrowser         *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);
 
@@ -169,7 +169,7 @@ void online()
   // Event selection tab
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
-  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::GetMaster()->GetEventSelector());
+  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::Instance()->GetEventSelector());
   slot->StopEmbedding("Selections");
 
   // QA viewer
@@ -182,7 +182,7 @@ void online()
   browser->GetTabRight()->SetTab(1);
 */
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
+  new AliEveEventManagerWindow(AliEveEventManager::Instance());
   browser->StopEmbedding("EventCtrl");
 
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
@@ -209,9 +209,9 @@ void online()
  
 printf("================================ Connecting to Server ...\n");
 
-AliEveEventManager::GetMaster()->ConnectToServer("tcp://*",5024);
+AliEveEventManager::Instance()->ConnectToServer("tcp://*",5024);
 
-zmq::socket_t* subscriber = AliEveEventManager::GetMaster()->AssertSubscriber();
+zmq::socket_t* subscriber = AliEveEventManager::Instance()->AssertSubscriber();
 
 if(subscriber ==0) {
     printf("===================== Not connected! ====================\n");
@@ -228,8 +228,8 @@ if(subscriber ==0) {
   gSystem->ProcessEvents();
 
   // Register command to call on each event.
-  AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
-  AliEveEventManager::GetMaster()->GotoEvent(0);
+  AliEveEventManager::Instance()->AddNewEventCommand("on_new_event();");
+  AliEveEventManager::Instance()->GotoEvent(0);
 
   gEve->EditElement(g_trkcnt);
   gEve->Redraw3D(kTRUE);
@@ -244,7 +244,7 @@ void on_new_event()
 
   if (AliEveEventManager::HasESD())
   {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     esd->GetPrimaryVertex()->GetXYZ(x);
 
     TTimeStamp ts(esd->GetTimeStamp());

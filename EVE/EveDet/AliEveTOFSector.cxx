@@ -58,7 +58,7 @@ AliEveTOFSector::AliEveTOFSector(const Text_t* n, const Text_t* t) :
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
 
-  //fGeoManager = AliEveEventManager::GetMaster()->AssertGeometry();
+  //fGeoManager = AliEveEventManager::Instance()->AssertGeometry();
   if (!fGeoManager) {
     printf("ERROR: no TGeo\n");
   }

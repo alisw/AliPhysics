@@ -248,7 +248,7 @@ AliEveListAnalyserEditor::AliEveListAnalyserEditor(const TGWindow* p, Int_t widt
   ftlMacroSelList->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "UpdateMacroListSelection(Int_t)");
 
   // Handle the signal "NewEventLoaded"
-  AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveListAnalyserEditor", this, "HandleNewEventLoaded()");
+  AliEveEventManager::Instance()->Connect("NewEventLoaded()", "AliEveListAnalyserEditor", this, "HandleNewEventLoaded()");
 
   // Handle the signal "Selected" (another tab has been selected)
   GetGedEditor()->GetTab()->Connect("Selected(Int_t)", "AliEveListAnalyserEditor", this, "HandleTabChangedToIndex(Int_t)");

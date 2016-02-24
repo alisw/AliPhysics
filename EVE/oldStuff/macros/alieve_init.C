@@ -107,14 +107,14 @@ void alieve_init(const TString& cdburi = "",
         }
     }
     
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::Instance()->GetDataSourceOffline();
     
     dataSource->SetFilesPath(path);
     
     Info("alieve_init", "Opening event %d from '%s' ...", event, path.Data());
     TString name("Event"); // CINT has trouble with direct "Event".
     //  new AliEveEventManager(name, event);
-    gEve->AddEvent(AliEveEventManager::GetMaster());
+    gEve->AddEvent(AliEveEventManager::Instance());
 }
 
 void alieve_init_import_macros()

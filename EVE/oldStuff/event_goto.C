@@ -16,9 +16,9 @@
 
 void event_goto(Int_t event=0)
 {
-  if (AliEveEventManager::GetMaster() == 0) {
+  if (AliEveEventManager::Instance() == 0) {
     printf("AliEveEventManager is not initialized!\n");
     return;
   }
-  AliEveEventManager::GetMaster()->GotoEvent(event);
+  AliEveEventManager::Instance()->GotoEvent(event);
 }

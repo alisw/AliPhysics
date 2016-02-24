@@ -94,7 +94,7 @@ fgMagField(0)
     ChangeDataSource(defaultDataSource);
 }
 
-AliEveEventManager* AliEveEventManager::GetMaster()
+AliEveEventManager* AliEveEventManager::Instance()
 {
     // Get master event-manager.
     if(fgMaster){return fgMaster;}
@@ -216,34 +216,10 @@ Int_t AliEveEventManager::CurrentEventId()
     return fgMaster->GetEventId();
 }
 
-Bool_t AliEveEventManager::HasRunLoader()
-{
-    // Check if AliRunLoader is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fRunLoader;
-}
-
 Bool_t AliEveEventManager::HasESD()
 {
     // Check if AliESDEvent is initialized.
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fESD;
-}
-
-Bool_t AliEveEventManager::HasESDfriend()
-{
-    // Check if AliESDfriend is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fESDfriend;
-}
-
-Bool_t AliEveEventManager::HasAOD()
-{
-    // Check if AliESDEvent is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fAOD;
-}
-
-Bool_t AliEveEventManager::HasRawReader()
-{
-    // Check if raw-reader is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fRawReader;
 }
 
 AliRunLoader* AliEveEventManager::AssertRunLoader()
@@ -415,7 +391,7 @@ void AliEveEventManager::AddElement(TEveElement *element, TEveElement *parent)
 
 void AliEveEventManager::RegisterTransient(TEveElement* element)
 {
-    GetMaster()->fTransients->AddElement(element);
+    fTransients->AddElement(element);
 }
 
 //------------------------------------------------------------------------------
@@ -557,7 +533,7 @@ void AliEveEventManager::AfterNewEventLoaded()
     TEnv settings;
     AliEveInit::GetConfig(&settings);
     
-    if(HasESD())
+    if(fCurrentData->fESD && fHasEvent)
     {
         if(settings.GetValue("momentum.histograms.show",false)){fMomentumHistogramsDrawer->Draw();}
         if(settings.GetValue("tracks.primary.vertex.show",false)){fESDTracksDrawer->PrimaryVertexTracks();}
@@ -571,7 +547,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         if(settings.GetValue("primary.vertex.global.cross",false)){
             fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kCross);
         }
-        
         if(settings.GetValue("primary.vertex.tpc.box",false)){
             fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kBox);
         }
@@ -581,7 +556,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         if(settings.GetValue("primary.vertex.tpc.cross",false)){
             fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kCross);
         }
-        
         if(settings.GetValue("primary.vertex.spd.box",false)){
             fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kBox);
         }
@@ -591,8 +565,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         if(settings.GetValue("primary.vertex.spd.cross",false)){
             fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kCross);
         }
-        
-        
         
         if(settings.GetValue("tracks.byCategory.show",false))fESDTracksDrawer->ByCategory();
         if(settings.GetValue("tracks.byType.show",true))fESDTracksDrawer->ByType();
@@ -635,42 +607,15 @@ void AliEveEventManager::AfterNewEventLoaded()
         gEve->FullRedraw3D();
         gSystem->ProcessEvents();
         
-        double zMax=50.;
-        double xMax=40.;
-        double yMax=40.;
-
-        AliESDtrack *trk;
-        AliESDMuonTrack *muonTrk;
-        
-        bool draw=true;
-       /*
-        for(int i=0;i<esd->GetNumberOfTracks();i++)
-        {
-            trk = esd->GetTrack(i);
-            double v[3];
-            trk->GetXYZ(v);
-            if(fabs(v[0])>xMax || fabs(v[1])>yMax || fabs(v[2])>zMax)draw=false;
-        }
-        for(int i=0;i<esd->GetNumberOfMuonTracks();i++)
-        {
-            muonTrk = esd->GetMuonTrack(i);
-            double v[3];
-            v[0] = muonTrk->GetNonBendingCoorAtDCA();
-            v[1] = muonTrk->GetBendingCoorAtDCA();
-            v[2] = muonTrk->GetZ();
-            if(fabs(v[0])>xMax || fabs(v[1])>yMax || fabs(v[2])>zMax)draw=false;
-        }
-        */
-        
         bool saveViews = settings.GetValue("ALICE_LIVE.send",false);
         
-        if(saveViews  && fCurrentData->fESD->GetNumberOfTracks()>0 && draw)
+        if(saveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
         {
             fViewsSaver->SaveForAmore();
             fViewsSaver->SendToAmore();
         }
     }
-    if(HasAOD())
+    if(fCurrentData->fAOD)
     {
         if(settings.GetValue("tracks.aod.byPID.show",false))fAODTracksDrawer->ByPID();
         

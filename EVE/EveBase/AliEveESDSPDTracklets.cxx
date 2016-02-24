@@ -29,7 +29,7 @@ TEveElementList* AliEveESDSPDTracklets::Draw(Float_t radius, Width_t line_width,
 {
     // radius - cylindrical radius to which the tracklets should be extrapolated
     
-    AliESDEvent     *esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent     *esd = AliEveEventManager::Instance()->AssertESD();
     const AliESDVertex    *pv  = esd->GetPrimaryVertexSPD();
     const AliMultiplicity *mul = esd->GetMultiplicity();
     

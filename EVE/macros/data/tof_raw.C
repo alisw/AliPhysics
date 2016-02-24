@@ -25,7 +25,7 @@ void tof_raw(Int_t newDecoder = 2)
 
   TClonesArray *array = 0x0;
 
-  TGeoManager *localGeoManager = AliEveEventManager::GetMaster()->AssertGeometry();
+  TGeoManager *localGeoManager = AliEveEventManager::Instance()->AssertGeometry();
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");
   }

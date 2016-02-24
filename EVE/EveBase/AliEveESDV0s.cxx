@@ -24,7 +24,7 @@
 
 AliEveV0List* AliEveESDV0s::Draw(Bool_t onFly)
 {    
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
     
     AliEveV0List* cont = new AliEveV0List("ESD v0");
@@ -177,7 +177,7 @@ AliEveV0* AliEveESDV0s::MakeV0(TEveTrackPropagator* rnrStyleNeg,TEveTrackPropaga
 
 void AliEveESDV0s::FillPointSet(TEvePointSet* ps, Bool_t onFly)
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     Int_t NV0s = esd->GetNumberOfV0s();
     

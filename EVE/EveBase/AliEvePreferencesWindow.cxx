@@ -245,7 +245,7 @@ void AliEvePreferencesWindow::ApplyChanges()
     TEnv settings;
     AliEveInit::GetConfig(&settings);
  
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::GetMaster()->GetDataSourceOffline();
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)AliEveEventManager::Instance()->GetDataSourceOffline();
     
 //    const Text_t* esdfile = 0;
 //    dataSource->SetESDFileName(esdfile);
@@ -253,7 +253,7 @@ void AliEvePreferencesWindow::ApplyChanges()
  
     AliEveInit::AddMacros();
  
-    AliEveEventManager *man =  AliEveEventManager::GetMaster();
+    AliEveEventManager *man =  AliEveEventManager::Instance();
  
     man->SetAutoLoad(settings.GetValue("events.autoload.set",false));
     

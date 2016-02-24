@@ -34,7 +34,7 @@ class TEveElement;
 TEveElementList* trd_digits(Int_t sector = -1, TEveElement *cont = 0)
 {
   // Link data containers
-  if(!gGeoManager) AliEveEventManager::GetMaster()->AssertGeometry();
+  if(!gGeoManager) AliEveEventManager::Instance()->AssertGeometry();
 
   AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
   

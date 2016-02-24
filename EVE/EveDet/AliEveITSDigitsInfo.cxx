@@ -106,7 +106,7 @@ void AliEveITSDigitsInfo::InitInternals()
 
   static const TEveException kEH("AliEveITSDigitsInfo::InitInternals ");
 
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   SetITSSegmentation();
 

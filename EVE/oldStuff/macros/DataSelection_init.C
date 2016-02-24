@@ -1,6 +1,6 @@
 void DataSelection_init(){
 
-  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+  AliEveMacroExecutor *exec = AliEveEventManager::Instance()->GetExecutor();
   exec->RemoveMacros();
   TEveBrowser *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);

@@ -27,7 +27,7 @@ class TBranch;
 
 TEvePointSet* its_clusters(TEveElement* cont=0, Float_t maxR=50)
 {
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("ITS");

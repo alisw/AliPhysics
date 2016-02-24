@@ -6,7 +6,7 @@ void embed_init()
   TEveUtil::LoadMacro("alieve_init.C");
   alieve_init("Signal", -1);
 
-  AliEveEventManager::GetMaster()->AddNewEventCommand("main_event()");
+  AliEveEventManager::Instance()->AddNewEventCommand("main_event()");
 
   // ------------------------------------------------------------------------
 
@@ -51,12 +51,12 @@ void embed_init()
   // ------------------------------------------------------------------------
 
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
+  new AliEveEventManagerWindow(AliEveEventManager::Instance());
   browser->StopEmbedding("EventCtrl");
 
   // ------------------------------------------------------------------------
 
-  AliEveEventManager::GetMaster()->GotoEvent(0);
+  AliEveEventManager::Instance()->GotoEvent(0);
   gEve->Redraw3D(kTRUE);
 }
 

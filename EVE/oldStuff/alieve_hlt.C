@@ -93,7 +93,7 @@ void alieve_hlt(TString ocdbStorage="local://OCDB")
  
     printf("============ Setting macro executor ============\n");
     
-    AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+    AliEveMacroExecutor *exec = AliEveEventManager::Instance()->GetExecutor();
     printf("exec created\n");
     /*
     exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC PVTX",         "primary_vertex.C", "primary_vertex",             "",                kTRUE));
@@ -139,7 +139,7 @@ void alieve_hlt(TString ocdbStorage="local://OCDB")
     
     browser->GetTabRight()->SetTab(1);
     browser->StartEmbedding(TRootBrowser::kBottom);
-    new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
+    new AliEveEventManagerWindow(AliEveEventManager::Instance());
     browser->StopEmbedding("EventCtrl");
     
     gEve->FullRedraw3D(kTRUE);
@@ -156,14 +156,14 @@ void alieve_hlt(TString ocdbStorage="local://OCDB")
     glv3->CurrentCamera().Dolly(2300, kFALSE, kFALSE);
     glv4->CurrentCamera().Dolly(1, kFALSE, kFALSE);
     
-    AliEveEventManager::GetMaster()->AddNewEventCommand("alieve_online_on_new_event();");
+    AliEveEventManager::Instance()->AddNewEventCommand("alieve_online_on_new_event();");
     
     gEve->FullRedraw3D();
     gSystem->ProcessEvents();
     gEve->Redraw3D(kTRUE);
     
     // set autoload by default
-    AliEveEventManager::GetMaster()->SetAutoLoad(true);
+    AliEveEventManager::Instance()->SetAutoLoad(true);
 }
 
 void alieve_online_on_new_event()

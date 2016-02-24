@@ -14,14 +14,14 @@
 void trd_tracks(TEveElement *cont = 0)
 {
   // Link data containers
-  AliESDEvent* esd(AliEveEventManager::GetMaster()->AssertESD());
+  AliESDEvent* esd(AliEveEventManager::Instance()->AssertESD());
   AliESDfriend *esdFriend(AliEveEventManager::AssertESDfriend());
   if(!esd || !esdFriend){
     Warning("trd_tracks", "Full ESD data missing.");
     return;
   }
 
-/*  AliEveEventManager::GetMaster()->AssertGeometry();
+/*  AliEveEventManager::Instance()->AssertGeometry();
   AliRunLoader *rl = AliEveEventManager::AssertRunLoader();
 */
   AliTRDrecoParam *trdRecoParam = AliTRDrecoParam::GetLowFluxParam();

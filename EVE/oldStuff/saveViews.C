@@ -183,7 +183,7 @@ void saveViews(const char* compositeImgFileName="views.png", Bool_t showLiveBar=
     TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
     cout<<"created"<<endl;
     
-    AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd =  AliEveEventManager::Instance()->AssertESD();
     int run = esd->GetRunNumber();
     TString sqlQuery;
     sqlQuery.Form("SELECT * FROM logbook_trigger_clusters WHERE run = %d",run);
@@ -374,7 +374,7 @@ TString getEventInfo()
     }
     else
     {
-        AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
+        AliESDEvent* esd =  AliEveEventManager::Instance()->AssertESD();
        
         
         

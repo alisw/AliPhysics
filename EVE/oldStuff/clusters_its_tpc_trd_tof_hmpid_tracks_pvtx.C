@@ -14,7 +14,7 @@
 
 void clusters_its_tpc_trd_tof_hmpid_tracks_pvtx(){
 
-  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+  AliEveMacroExecutor *exec = AliEveEventManager::Instance()->GetExecutor();
   exec->RemoveMacros();
   TEveBrowser *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);

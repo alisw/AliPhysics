@@ -51,12 +51,12 @@ TEvePointSet* vplot_tpc(TEveElement* cont=0, Float_t maxR=270)
 
   const Int_t kMaxCl=100*160;
 
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   Double_t pvert[3] = { 0, 0, 0 };
   if (AliEveEventManager::HasESD())
   {
-    AliESDEvent  *esd  = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent  *esd  = AliEveEventManager::Instance()->AssertESD();
     const AliESDVertex *tpcv = esd->GetPrimaryVertexTPC();
     if (tpcv->GetStatus())
       tpcv->GetXYZ(pvert);

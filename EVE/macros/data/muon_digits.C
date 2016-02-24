@@ -46,7 +46,7 @@ void add_muon_digits(TIter* next, TEveQuadSet* bending, TEveQuadSet* nonBending,
   static AliMUONGeometryTransformer* gMUONGeometryTransformer = 0x0;
   if (!gMUONGeometryTransformer) 
   {
-    AliEveEventManager::GetMaster()->AssertGeometry();
+    AliEveEventManager::Instance()->AssertGeometry();
     gMUONGeometryTransformer = new AliMUONGeometryTransformer();
     gMUONGeometryTransformer->LoadGeometryData();
   }

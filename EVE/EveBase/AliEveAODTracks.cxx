@@ -144,7 +144,7 @@ TEveElementList* AliEveAODTracks::ByPID()
     
     int pid = -1;
     int count = 0;
-    AliAODEvent *aod = AliEveEventManager::GetMaster()->AssertAOD();
+    AliAODEvent *aod = AliEveEventManager::Instance()->AssertAOD();
     AliAODTrack* at = NULL;
     
     for (Int_t n = 0; n < aod->GetNumberOfTracks(); ++n)

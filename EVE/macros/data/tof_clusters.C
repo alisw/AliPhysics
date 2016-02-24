@@ -24,7 +24,7 @@ class TEvePointSet;
 
 TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
 {
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TOF");
@@ -85,7 +85,7 @@ TEvePointSet* tof_clusters(TEveElement* cont=0, Float_t maxR=390)
 TEvePointSet* tof_clusters_sec(Int_t selectedSector,
                                TEveElement* cont=0, Float_t maxR=390)
 {
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("TOF");

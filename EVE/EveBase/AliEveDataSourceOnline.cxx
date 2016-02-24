@@ -38,7 +38,7 @@ fFinished(false),
 fStorageManager(storageManager),
 fEventManager(0)
 {
-    fEventManager = AliEveEventManager::GetMaster();
+    fEventManager = AliEveEventManager::Instance();
     
     StorageManagerDown(); // turn SM off by default
     

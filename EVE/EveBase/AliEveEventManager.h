@@ -45,29 +45,24 @@ class AliEveEventManager : public TEveEventManager, public TQObject
 public:
     enum EDataSource { kSourceHLT, kSourceOnline, kSourceOffline };
     enum EDataType { kRaw,kHits,kDigits,kClusters,kESD,kAOD };
-    enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
-
     
     AliEveEventManager(EDataSource defaultDataSource=kSourceOffline);
-    static AliEveEventManager* GetMaster();
+    static AliEveEventManager* Instance();
     
     // getters for data from current data source:
-    //    AliRunLoader*        GetRunLoader()     const { return fCurrentData->fRunLoader; }
-    TFile*               GetESDFile()       const { return fCurrentData->fESDFile; }
-    TTree*               GetESDTree()       const { return fCurrentData->fESDTree; }
-    AliESDEvent*         GetESD()           const { return fCurrentData->fESD;     }
-    //    AliESDfriend*        GetESDfriend()     const { return fCurrentData->fESDfriend; }
-    //    TFile*               GetAODFile()       const { return fCurrentData->fAODFile; }
-    //    TTree*               GetAODTree()       const { return fCurrentData->fAODTree; }
-    //    AliAODEvent*         GetAOD()           const { return fCurrentData->fAOD;     }
+    AliRunLoader*  GetRunLoader(){ return fCurrentData->fRunLoader;}
+    AliRawReader*  GetRawReader(){ return fCurrentData->fRawReader;}
+    TFile*         GetESDFile()  { return fCurrentData->fESDFile;  }
+    TTree*         GetESDTree()  { return fCurrentData->fESDTree;  }
+    AliESDEvent*   GetESD()      { return fCurrentData->fESD;      }
+    AliESDfriend*  GetESDfriend(){ return fCurrentData->fESDfriend;}
+    TFile*         GetAODFile()  { return fCurrentData->fAODFile;  }
+    TTree*         GetAODTree()  { return fCurrentData->fAODTree;  }
+    AliAODEvent*   GetAOD()      { return fCurrentData->fAOD;      }
     
     //static getters for drawing macros
     static Int_t  CurrentEventId();
-    static Bool_t HasRunLoader();
     static Bool_t HasESD();
-    static Bool_t HasESDfriend();
-    static Bool_t HasAOD();
-    static Bool_t HasRawReader();
     
     static AliRunLoader* AssertRunLoader();
     static AliESDEvent*  AssertESD();
@@ -77,10 +72,10 @@ public:
     static AliMagF*      AssertMagField();
     static TGeoManager*  AssertGeometry();
     
-    static void AddElement(TEveElement *element, TEveElement *parent=0);
-    static void Redraw3D(){gEve->Redraw3D();}
-    static void EnableRedraw(){gEve->EnableRedraw();}
-    static void DisableRedraw(){gEve->DisableRedraw();}
+    void AddElement(TEveElement *element, TEveElement *parent=0);
+    void Redraw3D(){gEve->Redraw3D();}
+    void EnableRedraw(){gEve->EnableRedraw();}
+    void DisableRedraw(){gEve->DisableRedraw();}
     
     // autoload timer getters and setters
     Double_t      GetAutoLoadTime()        const { return fAutoLoadTime; }
@@ -96,7 +91,7 @@ public:
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
     Bool_t        InsertGlobal(const TString& tag, TEveElement* model,Bool_t replace, Bool_t update);
     TEveElement*  FindGlobal(const TString& tag);
-    static void   RegisterTransient(TEveElement* element);
+    void          RegisterTransient(TEveElement* element);
     void          DestroyTransients();
     
     // data sources:

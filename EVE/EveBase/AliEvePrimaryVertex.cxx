@@ -21,7 +21,7 @@ using namespace std;
 
 void AliEvePrimaryVertex::PrimaryVertex(EVertexType type,EVertexStyle style, Bool_t use_sigma, Float_t fx, Float_t fy, Float_t fz)
 {
-    AliESDEvent  *esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent  *esd = AliEveEventManager::Instance()->AssertESD();
     
     const AliESDVertex *pv = NULL;
     Color_t color;
@@ -74,13 +74,13 @@ void AliEvePrimaryVertex::PrimaryVertex(EVertexType type,EVertexStyle style, Boo
     
     ls->ApplyVizTag("REC PVTX Box");
     ls->SetMainColor(color);
-    TEveCompound* parent = dynamic_cast<TEveCompound*>(AliEveEventManager::GetMaster()->FindChild(name));
+    TEveCompound* parent = dynamic_cast<TEveCompound*>(AliEveEventManager::Instance()->FindChild(name));
     if (parent == 0)
     {
         parent = new TEveCompound(name);
         parent->OpenCompound();
         parent->SetMainColor(color);
-        AliEveEventManager::GetMaster()->AddElement(parent);
+        AliEveEventManager::Instance()->AddElement(parent);
     }
     parent->AddElement(ls);
     gEve->Redraw3D();

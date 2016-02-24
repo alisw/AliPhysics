@@ -72,7 +72,7 @@ AliEveMUONChamberData::AliEveMUONChamberData(Int_t chamber) :
   }
 
   if (fgTransformer == 0) {
-    AliEveEventManager::GetMaster()->AssertGeometry();
+    AliEveEventManager::Instance()->AssertGeometry();
     fgTransformer = new AliMUONGeometryTransformer();
     fgTransformer->LoadGeometryData();
   }

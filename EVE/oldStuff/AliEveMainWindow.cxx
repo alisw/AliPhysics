@@ -98,7 +98,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
         
         if(fFileDialog->accepted()) {
             
-            AliEveEventManager* evMan = AliEveEventManager::GetMaster();
+            AliEveEventManager* evMan = AliEveEventManager::Instance();
             AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)evMan->GetDataSourceOffline();
             
             if(dataSource)
@@ -121,7 +121,7 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
         fFileDialog->setMode(kAliEveFDRemote);
         fFileDialog->MapWindow();
         if(fFileDialog->accepted()) {
-            AliEveEventManager* evMan = AliEveEventManager::GetMaster();
+            AliEveEventManager* evMan = AliEveEventManager::Instance();
             AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)evMan->GetDataSourceOffline();
             
             if(dataSource)
@@ -182,12 +182,12 @@ void AliEveMainWindow::onMenuGoItem(UInt_t id)
     switch(id){
     case MENU_GO_NEXT_EVENT:
     {
-        AliEveEventManager::GetMaster()->NextEvent();
+        AliEveEventManager::Instance()->NextEvent();
         break;
     }
     case MENU_GO_PREV_EVENT:
     {
-        AliEveEventManager::GetMaster()->PrevEvent();
+        AliEveEventManager::Instance()->PrevEvent();
         break;
     }
     default:
@@ -339,11 +339,11 @@ void AliEveMainWindow::loadFiles()
 {
     TString name("Event"); // CINT has trouble with direct "Event".
 //    new AliEveEventManager(name, 0);
-    gEve->AddEvent(AliEveEventManager::GetMaster());
+    gEve->AddEvent(AliEveEventManager::Instance());
 
     TEveUtil::AssertMacro("VizDB_scan.C");
 
-    AliEveMacroExecutor *exec    = AliEveEventManager::GetMaster()->GetExecutor();
+    AliEveMacroExecutor *exec    = AliEveEventManager::Instance()->GetExecutor();
     //==============================================================================
     // Geometry, scenes, projections and viewers
     //==============================================================================
@@ -457,8 +457,8 @@ void AliEveMainWindow::loadFiles()
     gSystem->ProcessEvents();
 
     // Register command to call on each event.
-    // AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
-    AliEveEventManager::GetMaster()->GotoEvent(0);
+    // AliEveEventManager::Instance()->AddNewEventCommand("on_new_event();");
+    AliEveEventManager::Instance()->GotoEvent(0);
 
     gEve->Redraw3D(kTRUE);
 }

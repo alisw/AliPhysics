@@ -22,7 +22,7 @@
 
 AliEveCascadeList* AliEveESDCascades::Draw()
 {    
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
     
@@ -158,7 +158,7 @@ TEvePointSet* AliEveESDCascades::DrawPoints()
 {
     TEvePointSet* points = new TEvePointSet("Cascade vertex locations");
     
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     Int_t NCascades = esd->GetNumberOfCascades();
     

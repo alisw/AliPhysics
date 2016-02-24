@@ -15,7 +15,7 @@
 
 AliEveLego* lego(){
 
-   AliEveEventManager *mng = AliEveEventManager::GetMaster();
+   AliEveEventManager *mng = AliEveEventManager::Instance();
    AliEveLego *lego = dynamic_cast<AliEveLego*>(mng->FindGlobal("LegoHisto2D"));
 
    if ( lego == 0) {

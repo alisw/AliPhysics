@@ -61,7 +61,7 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
 
   TEveUtil::AssertMacro("VizDB_scan.C");
 
-  AliEveMacroExecutor *exec    = AliEveEventManager::GetMaster()->GetExecutor();
+  AliEveMacroExecutor *exec    = AliEveEventManager::Instance()->GetExecutor();
   TEveBrowser         *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);
 
@@ -192,7 +192,7 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
   // Event selection tab
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
   slot->StartEmbedding();
-  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::GetMaster()->GetEventSelector());
+  new AliEveEventSelectorWindow(gClient->GetRoot(), 600, 400, AliEveEventManager::Instance()->GetEventSelector());
   slot->StopEmbedding("Selections");
 
   // QA viewer
@@ -204,7 +204,7 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
   browser->GetTabRight()->SetTab(1);
 
   browser->StartEmbedding(TRootBrowser::kBottom);
-  new AliEveEventManagerWindow(AliEveEventManager::GetMaster());
+  new AliEveEventManagerWindow(AliEveEventManager::Instance());
   browser->StopEmbedding("EventCtrl");
 
   slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
@@ -233,8 +233,8 @@ void visscan_itsU(const TString& cdburi = "local://$ALICE_ROOT/OCDB",
   gSystem->ProcessEvents();
 
   // Register command to call on each event.
-  AliEveEventManager::GetMaster()->AddNewEventCommand("on_new_event();");
-  AliEveEventManager::GetMaster()->GotoEvent(0);
+  AliEveEventManager::Instance()->AddNewEventCommand("on_new_event();");
+  AliEveEventManager::Instance()->GotoEvent(0);
 
   gEve->EditElement(g_trkcnt);
 
@@ -249,7 +249,7 @@ void on_new_event()
 
   if (AliEveEventManager::HasESD())
   {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     esd->GetPrimaryVertex()->GetXYZ(x);
 
     TTimeStamp ts(esd->GetTimeStamp());

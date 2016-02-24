@@ -346,7 +346,7 @@ void AliEveMUONTrack::PrintESDTrackInfo()
     setw(8) << setprecision(4) <<
     mtp->P()  << "  GeV/c" << endl;
 
-  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
 
   Double_t spdVertexX = 0;
   Double_t spdVertexY = 0;
@@ -442,7 +442,7 @@ void AliEveMUONTrack::MUONTriggerInfo()
   }
   if (fIsESDTrack) {
 
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     ULong64_t triggerMask = esd->GetTriggerMask();
 
     cout << endl;

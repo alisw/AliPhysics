@@ -114,7 +114,7 @@ void AliEveSaveViews::SaveForAmore()
     
     if(AliEveEventManager::HasESD())
     {
-        fESDEvent = AliEveEventManager::GetMaster()->AssertESD();
+        fESDEvent = AliEveEventManager::Instance()->AssertESD();
     }
     else
     {
@@ -292,7 +292,7 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
     
     if(AliEveEventManager::HasESD())
     {
-        fESDEvent = AliEveEventManager::GetMaster()->AssertESD();
+        fESDEvent = AliEveEventManager::Instance()->AssertESD();
     }
     else
     {
@@ -305,7 +305,7 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
     
     int width = 3840;
     int height= 2160;
-
+    
     // 3,840 × 2,160 (4K)
     // 7,680 × 4,320 (8K)
     // 15,360 × 8,640 (16K)
@@ -326,15 +326,15 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
     int x = width3DView;    // x position of the child view
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
-
+    
     for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
         viewFilename = Form("view-%d.png", index);
         
         // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
-//        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
-//        TASImage *viewImg = new TASImage(viewFilename);
+        //        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
+        //        TASImage *viewImg = new TASImage(viewFilename);
         
         //        tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
         
@@ -343,14 +343,14 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
         // This improves the quality of pictures in some specific cases
         // but is causes a bug (moving mouse over views makes them disappear
         // on new event being loaded
-
+        
         TASImage *viewImg;
-         if(index==0){
-             viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
-         }
-         else {
-             viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
-         }
+        if(index==0){
+            viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+        }
+        else {
+            viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+        }
         
         if(viewImg){
             // copy view image in the composite image
@@ -395,7 +395,7 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
             break;
         }
     }
-
+    
     //draw ALICE Logo
     if(logo)
     {
@@ -455,7 +455,7 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
     // write composite image to disk
     TASImage *imgToSave = new TASImage(width,height);
     compositeImg->CopyArea(imgToSave, 0,0, width, height);
-
+    
     // Save screenshot to file
     if(withDialog)
     {
@@ -483,34 +483,33 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
 
 void AliEveSaveViews::BuildEventInfoString()
 {
-    if (AliEveEventManager::HasRawReader())
+    AliRawReader* rawReader = AliEveEventManager::AssertRawReader();
+    if(rawReader)
     {
-        AliRawReader* rawReader = AliEveEventManager::AssertRawReader();
-        if(!rawReader) return;
         fEventInfo.Form("Run: %d  Event#: %d (%s)",
                         rawReader->GetRunNumber(),
                         AliEveEventManager::CurrentEventId(),
                         AliRawEventHeaderBase::GetTypeName(rawReader->GetType())
                         );
-        
-        return;
-    }
-    else if (AliEveEventManager::HasESD())
-    {
-        AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
-        if(!esd)return;
-        fEventInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
-                        esd->GetESDRun()->GetBeamType(),
-                        esd->GetRunNumber(),
-                        esd->GetEventNumberInFile(),
-                        AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
-                        );
         return;
     }
     else
     {
-        fEventInfo="";
-        return;
+        AliESDEvent* esd =  AliEveEventManager::Instance()->AssertESD();
+        if(esd)
+        {
+            fEventInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
+                            esd->GetESDRun()->GetBeamType(),
+                            esd->GetRunNumber(),
+                            esd->GetEventNumberInFile(),
+                            AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
+                            );
+            return;
+        }
+        else
+        {
+            fEventInfo="";
+        }
     }
 }
 
@@ -519,7 +518,7 @@ void AliEveSaveViews::BuildTriggerClassesStrings()
     ULong64_t mask = 1;
     int sw=0;
     
-    AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd =  AliEveEventManager::Instance()->AssertESD();
     ULong64_t triggerMask = esd->GetTriggerMask();
     ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
     

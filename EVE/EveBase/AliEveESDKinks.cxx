@@ -112,7 +112,7 @@ AliEveKink* AliEveESDKinks::MakeKink(TEveTrackPropagator* rnrStyleMoth,TEveTrack
 
 AliEveKinkList* AliEveESDKinks::Draw()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     AliEveKinkList* cont = new AliEveKinkList("ESD kink");
 
     cont->SetMainColor(3); // green
@@ -170,7 +170,7 @@ TEvePointSet* AliEveESDKinks::DrawPoints()
 {
     TEvePointSet* points = new TEvePointSet("Kink vertex locations");
     
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     for (Int_t n=0; n<esd->GetNumberOfTracks(); ++n)
     {

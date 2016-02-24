@@ -6,7 +6,7 @@
 
 void vzero_dump()
 {
-  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
 
   AliESDVZERO *vz = esd->GetVZEROData();
   if (vz)

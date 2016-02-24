@@ -81,13 +81,13 @@ diff a/EVE/macros/emcal_all.C b/EVE/macros/emcal_all.C	(rejected hunks)
 -  // runloader check already in AssertRunLoader function 
 -  
 -  AliESDEvent* esd = 0x0;
--  if(iESD) esd = AliEveEventManager::GetMaster()->AssertESD();
+-  if(iESD) esd = AliEveEventManager::Instance()->AssertESD();
 -  // esd check already in AssertESD function 
 -  
 -  AliEMCALLoader *emcl = dynamic_cast<AliEMCALLoader*> (rl->GetDetectorLoader("EMCAL"));
 -  
--  Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
--  if(evtID != (Int_t)evtNum) AliEveEventManager::GetMaster()->GotoEvent(evtNum);
+-  Int_t evtID = AliEveEventManager::Instance()->GetEventId();
+-  if(evtID != (Int_t)evtNum) AliEveEventManager::Instance()->GotoEvent(evtNum);
 -  
 -  TTree* ht = 0x0; 
 -  TTree* dt = 0x0; 
@@ -129,16 +129,16 @@ diff a/EVE/macros/emcal_all.C b/EVE/macros/emcal_all.C	(rejected hunks)
 +    rl   = AliEveEventManager::AssertRunLoader();
 +    // runloader check already in AssertRunLoader function 
 +
-+    //   Int_t evtID = AliEveEventManager::GetMaster()->GetEventId();
++    //   Int_t evtID = AliEveEventManager::Instance()->GetEventId();
 +    //   rl->GetEvent(evtID);
    }
    
 +  AliESDEvent* esd = 0x0;
-+  if(iESD) esd = AliEveEventManager::GetMaster()->AssertESD();
++  if(iESD) esd = AliEveEventManager::Instance()->AssertESD();
 +  // esd check already in AssertESD function 
 +      
    //  gGeoManager = gEve->GetDefaultGeometry();
-   AliEveEventManager::GetMaster()->AssertGeometry();
+   AliEveEventManager::Instance()->AssertGeometry();
    
    TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
 -  TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();

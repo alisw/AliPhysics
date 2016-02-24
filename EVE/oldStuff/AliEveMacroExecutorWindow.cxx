@@ -167,7 +167,7 @@ AliEveMacroExecutorWindow::AliEveMacroExecutorWindow(AliEveMacroExecutor* master
   MapSubwindows();
   MapWindow();
 
-  AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveMacroExecutorWindow", this,
+  AliEveEventManager::Instance()->Connect("NewEventLoaded()", "AliEveMacroExecutorWindow", this,
 			"NewEventLoaded()");
 }
 
@@ -175,7 +175,7 @@ AliEveMacroExecutorWindow::~AliEveMacroExecutorWindow()
 {
   // Destructor.
 	fBoxContents.clear();
-//    AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded");/*()", this);*/
+//    AliEveEventManager::Instance()->Disconnect("NewEventLoaded");/*()", this);*/
 }
 
 /******************************************************************************/
@@ -250,7 +250,7 @@ void AliEveMacroExecutorWindow::DoReloadEvent()
 {
   // Slot for reload-event.
 
-  AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
+  AliEveEventManager::Instance()->GotoEvent(AliEveEventManager::Instance()->GetEventId());
 }
 
 void AliEveMacroExecutorWindow::DoSelectTags()

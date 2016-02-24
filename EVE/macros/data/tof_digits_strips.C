@@ -28,7 +28,7 @@ void tof_digits_strips(Int_t selectedSector=-1)
 
  // Int_t nDigitsInVolume[3] = {-1, -1, -1};
   Int_t nStrips=19;
-  TGeoManager *localGeoManager = AliEveEventManager::GetMaster()->AssertGeometry();//gEve->GetGeometry("./geometry.root");
+  TGeoManager *localGeoManager = AliEveEventManager::Instance()->AssertGeometry();//gEve->GetGeometry("./geometry.root");
 
   if (!localGeoManager) {
     printf("ERROR: no TGeo\n");

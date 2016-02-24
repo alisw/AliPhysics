@@ -192,13 +192,13 @@ void tpc_raw(int runNumber, Int_t mode = 3)
     gStyle->SetPalette(1, 0);
     
     cout<<"1"<<endl;
-//    AliEveEventManager::GetMaster()->InitOCDB(runNumber);
+//    AliEveEventManager::Instance()->InitOCDB(runNumber);
     
     AliCDBManager::Instance()->SetSpecificStorage("GRP/CTP/Config","local:///local/cdb/");
     AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///local/cdb/");
     
     cout<<"2"<<endl;
-    AliEveEventManager::GetMaster()->AssertGeometry();
+    AliEveEventManager::Instance()->AssertGeometry();
     cout<<"3"<<endl;
     AliEveEventManager::AssertMagField();
     cout<<"4"<<endl;

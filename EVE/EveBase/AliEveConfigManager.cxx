@@ -241,7 +241,7 @@ const char *gPictureSaveAsTypes[] = {"PNG Image", "*.png",
 
 void AliEveConfigManager::ConnectEventManagerSignals()
 {
-    AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliEveEventManager *manager = AliEveEventManager::Instance();
     manager->Connect("StorageManagerOk()","AliEveConfigManager",this,"StorageManagerChangedState(=1)");
     manager->Connect("StorageManagerDown()","AliEveConfigManager",this,"StorageManagerChangedState(=0)");
 }
@@ -925,7 +925,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       if(!gEve->GetViewers()->UseLightColorSet())
         gEve->GetViewers()->SwitchColorSet(); //white background
 
-      AliEveEventManager *eman = AliEveEventManager::GetMaster();//reload event (gEve->Refresh() crashes)
+      AliEveEventManager *eman = AliEveEventManager::Instance();//reload event (gEve->Refresh() crashes)
       Int_t ev = eman->GetEventId();
       eman->Close();
       eman->Open();
@@ -1021,7 +1021,7 @@ void AliEveConfigManager::SetEventInEventManager()
 {
 #ifdef ZMQ
 
-    AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliEveEventManager *manager = AliEveEventManager::Instance();
     AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
     AliESDEvent *event = fListEventsTab->GetSelectedEvent();
     
@@ -1040,7 +1040,7 @@ void AliEveConfigManager::SetEventInEventManager()
 void AliEveConfigManager::StorageManagerChangedState(int state)
 {
 #ifdef ZMQ
-    AliEveEventManager *manager = AliEveEventManager::GetMaster();
+    AliEveEventManager *manager = AliEveEventManager::Instance();
     AliStorageAdministratorPanelListEvents* listEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
     
 //    if (manager->IsOnlineMode()) {

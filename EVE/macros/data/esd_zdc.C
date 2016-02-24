@@ -73,9 +73,9 @@ void esd_zdc()
 {
     printf("\n\nesd_zdc\n\n");
     
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
-  AliESDZDC *esd = AliEveEventManager::GetMaster()->AssertESD()->GetESDZDC();
+  AliESDZDC *esd = AliEveEventManager::Instance()->AssertESD()->GetESDZDC();
 
   if (g_zdc_palette == 0)
   {

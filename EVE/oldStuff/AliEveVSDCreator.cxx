@@ -64,7 +64,7 @@ void AliEveVSDCreator::CreateVSD(const Text_t* vsdFile)
 
   static const TEveException kEH("AliEveVSDCreator::CreateVSD ");
 
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   fRunLoader = AliEveEventManager::AssertRunLoader();
 
@@ -648,7 +648,7 @@ void AliEveVSDCreator::ConvertRecTracks()
   if (fTreeR != 0)
     throw kEH + "tracks already converted.";
 
-  AliESDEvent* esdEvent = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esdEvent = AliEveEventManager::Instance()->AssertESD();
 
   fDirectory->cd();
   fTreeR =  new TTree("RecTracks", "Reconstructed particle trajectories.");
@@ -685,7 +685,7 @@ void AliEveVSDCreator::ConvertV0()
   if (fTreeV0 != 0)
     throw kEH + "AliEveV0 already converted.";
 
-  AliESDEvent* esdEvent = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esdEvent = AliEveEventManager::Instance()->AssertESD();
 
   fDirectory->cd();
   fTreeV0 =  new TTree("AliEveV0", "AliEveV0 points");
@@ -753,7 +753,7 @@ void AliEveVSDCreator::ConvertKinks()
   throw kEH + "Currently non-supported - TEveRecKink being updated.";
 
   /*
-  AliESDEvent* esdEvent = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esdEvent = AliEveEventManager::Instance()->AssertESD();
 
   fDirectory->cd();
   fTreeKK =  new TTree("Kinks", "ESD Kinks");

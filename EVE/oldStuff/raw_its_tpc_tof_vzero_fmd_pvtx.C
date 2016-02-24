@@ -14,7 +14,7 @@
 
 void raw_its_tpc_tof_vzero_fmd_pvtx(){
 
-  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();
+  AliEveMacroExecutor *exec = AliEveEventManager::Instance()->GetExecutor();
   exec->RemoveMacros();
   TEveBrowser *browser = gEve->GetBrowser();
   browser->ShowCloseTab(kFALSE);

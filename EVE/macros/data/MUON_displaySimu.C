@@ -71,29 +71,29 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
   TTree* ct = 0;
   TTree* ht = 0;
 
-  if (AliEveEventManager::GetMaster() == 0) {
+  if (AliEveEventManager::Instance() == 0) {
     printf("No alieve event: use alieve_init(...) \n");
     return;
   }
 
-  if (g_currentEvent == AliEveEventManager::GetMaster()->GetEventId()) {
+  if (g_currentEvent == AliEveEventManager::Instance()->GetEventId()) {
     if (g_fromRaw == fromRaw) {
       printf("Same event... \n");
       return;
     } else {
       if (g_fromRaw) {
 	printf("Same event with digits.\n");
-	AliEveEventManager::GetMaster()->GotoEvent(g_currentEvent);
+	AliEveEventManager::Instance()->GotoEvent(g_currentEvent);
       } else {
 	printf("Same event with raw.\n");
-	AliEveEventManager::GetMaster()->GotoEvent(g_currentEvent);
+	AliEveEventManager::Instance()->GotoEvent(g_currentEvent);
       }
     }
   }
 
   g_fromRaw = fromRaw;
 
-  TString dataPath = TString(AliEveEventManager::GetMaster()->GetTitle());
+  TString dataPath = TString(AliEveEventManager::Instance()->GetTitle());
   dataPath.Append("/raw.root");
 
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
@@ -117,7 +117,7 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
     }
   }
 
-  TString esdDataPath = TString(AliEveEventManager::GetMaster()->GetTitle());
+  TString esdDataPath = TString(AliEveEventManager::Instance()->GetTitle());
   esdDataPath.Append("/AliESDs.root");
   if (clustersFromESD) {
     g_muon_data->LoadRecPointsFromESD(esdDataPath.Data());
@@ -131,7 +131,7 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
   ht = rl->GetTreeH("MUON", false);
   g_muon_data->LoadHits(ht);
   
-  g_currentEvent = AliEveEventManager::GetMaster()->GetEventId();
+  g_currentEvent = AliEveEventManager::Instance()->GetEventId();
 
   gStyle->SetPalette(1, 0);
 
@@ -167,7 +167,7 @@ void MUON_displaySimu(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE, Bool_t
 //______________________________________________________________________________
 void MUON_ESD_tracks()
 {
-  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
 
   TEveTrackList* lt = new TEveTrackList("ESD-Tracks");
   lt->SetMainColor(6);
@@ -200,13 +200,13 @@ void MUON_ESD_tracks()
 //______________________________________________________________________________
 void MUON_Ref_tracks()
 {
-  TString dataPathESD = TString(AliEveEventManager::GetMaster()->GetTitle());
+  TString dataPathESD = TString(AliEveEventManager::Instance()->GetTitle());
   dataPathESD.Append("/AliESDs.root");
-  TString dataPathSIM = TString(AliEveEventManager::GetMaster()->GetTitle());
+  TString dataPathSIM = TString(AliEveEventManager::Instance()->GetTitle());
   dataPathSIM.Append("/");
 
   AliMUONRecoCheck recoCheck(dataPathESD.Data(),dataPathSIM.Data());
-  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(AliEveEventManager::GetMaster()->GetEventId());
+  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(AliEveEventManager::Instance()->GetEventId());
   TIter next(trackRefStore->CreateIterator());
   AliMUONTrack* trackRef;
 

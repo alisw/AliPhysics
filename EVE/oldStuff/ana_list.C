@@ -74,9 +74,9 @@ void ana_list_load_trd_tracks(AliEveListAnalyser* objects = 0, TEveElement *cont
     return;
   }
 
-  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+  AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
 
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
 
   AliTRDrecoParam *trdRecoParam = AliTRDrecoParam::GetLowFluxParam();
   if (!trdRecoParam)

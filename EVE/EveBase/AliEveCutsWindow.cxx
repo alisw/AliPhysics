@@ -2146,7 +2146,7 @@ void AliEveCutsWindow::DrawHistos()
         histEtaPhi = new TH2D("#eta-#phi\nSingle Event", "AliEve #eta-#phi histogram", 100, -1.5, 1.5, 100, 0.0, 2*TMath::Pi());
     }
     
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     if(esd->GetNumberOfTracks())
     {
@@ -2342,16 +2342,16 @@ void AliEveCutsWindow::DrawHistosAll()
         histEtaPhi = new TH2D("#eta-#phi\nAll Events", "AliEve #eta-#phi histogram", 100, 1.5, 1.5, 100, 0.0, 2*TMath::Pi());
     }
     
-    Int_t nEvents = AliEveEventManager::GetMaster()->GetMaxEventId();
+    Int_t nEvents = AliEveEventManager::Instance()->GetMaxEventId();
     
-    AliEveEventManager::GetMaster()->GotoEvent(0);
+    AliEveEventManager::Instance()->GotoEvent(0);
     
     ofstream myresult1(TString::Format("foundMultiplicity.txt"));
     
     for(Int_t i = 0; i <= nEvents; i++)
     {
         
-        AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+        AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
         /*
          if(esd->GetMultiplicity())
          histMult->Fill(esd->GetMultiplicity()->GetNumberOfTracklets());
@@ -2387,7 +2387,7 @@ void AliEveCutsWindow::DrawHistosAll()
             
         }
         
-        AliEveEventManager::GetMaster()->NextEvent();
+        AliEveEventManager::Instance()->NextEvent();
         
     }
     

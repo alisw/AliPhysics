@@ -45,8 +45,10 @@ void data_vis_AD0_raw()
     
     gStyle->SetPalette(1, 0);
     
+    AliEveEventManager *manager = AliEveEventManager::Instance();
+    
     // get Raw Reader from the Event Manager
-    AliRawReader *reader = AliEveEventManager::AssertRawReader();
+    AliRawReader *reader = manager->GetRawReader();
 
     // always check if an object exists!
     if(!reader)
@@ -57,7 +59,7 @@ void data_vis_AD0_raw()
     reader->Reset();
     
     // Ask Event Manager to block redrawing
-    AliEveEventManager::DisableRedraw();
+    manager->DisableRedraw();
     
     // create detector-specific visualisation object
     AliEveADModule* rawA = new AliEveADModule("AD_RAW_A", kTRUE, maxCharge, showLegend);
@@ -68,14 +70,16 @@ void data_vis_AD0_raw()
     rawC->LoadRaw(reader);
     
     // Tell Event Manager to unlock redraw
-    AliEveEventManager::EnableRedraw();
+    manager->EnableRedraw();
 }
 
 /// AD hits visualisation
 void data_vis_AD0_hits()
 {
+    AliEveEventManager *maanger = AliEveEventManager::Instance();
+    
     // ask Event Manager for Run Loader
-    AliRunLoader* runLoader =  AliEveEventManager::AssertRunLoader();
+    AliRunLoader* runLoader =  manager->GetRunLoader();
 
     // check if Run Loader exists
     if(!runLoader)
@@ -119,13 +123,15 @@ void data_vis_AD0_hits()
     points->SetMarkerColor(2);
     
     // register visualisation object in Event Manager and ask to redraw
-    AliEveEventManager::AddElement(points, 0);
-    AliEveEventManager::Redraw3D();
+    manager->AddElement(points, 0);
+    manager->Redraw3D();
 }
 
 /// AD data visualisation from ESD
 void data_vis_AD0_esd()
 {
+    AliEveEventManager *manager = AliEveEventManager::Instance();
+    
     // read settings from AliEVE's config file
     TEnv settings;
     AliEveInit::GetConfig(&settings);
@@ -135,7 +141,7 @@ void data_vis_AD0_esd()
     gStyle->SetPalette(1, 0);
     
     // get ESD from the Event Manager
-    AliESDAD *adESD = AliEveEventManager::GetMaster()->AssertESD()->GetADData();
+    AliESDAD *adESD = manager->GetESD()->GetADData();
     
     // check if ESD exists
     if(!adESD)
@@ -145,7 +151,7 @@ void data_vis_AD0_esd()
     }
     
     // Ask Event Manager to block redrawing
-    AliEveEventManager::DisableRedraw();
+    manager->DisableRedraw();
     
     // create detector-specific visualisation object
     AliEveADModule* esdA = new AliEveADModule("AD_ESD_A", kTRUE, maxCharge, showLegend);
@@ -156,5 +162,5 @@ void data_vis_AD0_esd()
     esdC->LoadEsd(adESD);
     
     // Tell Event Manager to unlock redraw
-    AliEveEventManager::EnableRedraw();
+    manager->EnableRedraw();
 }

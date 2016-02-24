@@ -179,7 +179,7 @@ void AliEveTrack::ImportClustersFromLabel()
 {
     // Import clusters with same label as the track.
     
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     TEvePointSet* clusters = new TEvePointSet(64);
     clusters->SetOwnIds(kTRUE);
     
@@ -241,7 +241,7 @@ void AliEveTrack::ImportClustersFromIndex()
 
 TEvePointSet* AliEveTrack::ImportClustersFromIndex(Int_t index)
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     if (index < 0) {
         Warning("AliEveTrack::ImportClustersFromIndex", "index not set.");

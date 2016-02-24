@@ -15,7 +15,7 @@
 
 AliEveBeamsInfo* beams_info(){
 
-  AliEveEventManager *mng = AliEveEventManager::GetMaster();
+  AliEveEventManager *mng = AliEveEventManager::Instance();
   AliEveBeamsInfo *beamsinfo = dynamic_cast<AliEveBeamsInfo *>(mng->FindGlobal("BeamsInfo"));
 
   if ( beamsinfo == 0) {

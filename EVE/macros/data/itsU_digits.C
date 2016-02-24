@@ -54,7 +54,7 @@ void itsU_digits()
   //  Int_t nLayers = gm->GetNLayers();
   Int_t nModules = gm->GetNModules();
 
-  AliEveEventManager::GetMaster()->AssertGeometry();
+  AliEveEventManager::Instance()->AssertGeometry();
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   rl->LoadDigits("ITS");
   TTree* digTree = rl->GetTreeD("ITS", false);

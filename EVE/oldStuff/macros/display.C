@@ -172,7 +172,7 @@ public:
     
     if (fileName.Contains("ESD")) { 
       std::cout << "Adding ESD file " << fileName << std::endl;
-      AliEveEventManager::GetMaster()->GetDataSourceOffline()->SetESDFileName(fileName);
+      AliEveEventManager::Instance()->GetDataSourceOffline()->SetESDFileName(fileName);
     }
     else if (fileName.EndsWith(".root") || fileName.EndsWith(".raw")) { 
       std::cout << "Adding raw file " << fileName << std::endl;
@@ -190,11 +190,11 @@ public:
     }
     std::cout << "Opening " << fileName << " (" << dirName << ")" << std::endl;
     
-    if (AliEveEventManager::GetMaster()) delete AliEveEventManager::GetMaster();
+    if (AliEveEventManager::Instance()) delete AliEveEventManager::Instance();
     TString eventName("Event"); // CINT has trouble with direct "Event".
-    /* AliEveEventManager::GetMaster() =*/
+    /* AliEveEventManager::Instance() =*/
     new AliEveEventManager(eventName, dirName, 0);
-    gEve->AddEvent(AliEveEventManager::GetMaster());
+    gEve->AddEvent(AliEveEventManager::Instance());
     
     if (refresh) Refresh();
   }
@@ -285,7 +285,7 @@ public:
   Reload()
   {
     Prepare();
-    Int_t event = AliEveEventManager::GetMaster()->GetEventId();
+    Int_t event = AliEveEventManager::Instance()->GetEventId();
     std::cout << "Getting event " << event 
 	      << ", please wait ... " << std::flush;
     gROOT->Macro(Form("event_goto.C(%d)", event));

@@ -207,7 +207,7 @@ namespace
 //    myfile <<"//Macro generated automatically by AliEveMacroExecutor\n\n";
 //    
 //    myfile <<"void "<<file<<"(){\n\n";
-//    myfile <<"  AliEveMacroExecutor *exec = AliEveEventManager::GetMaster()->GetExecutor();\n";
+//    myfile <<"  AliEveMacroExecutor *exec = AliEveEventManager::Instance()->GetExecutor();\n";
 //    myfile <<"  exec->RemoveMacros();\n";
 //    myfile <<"  TEveBrowser *browser = gEve->GetBrowser();\n";
 //    myfile <<"  browser->ShowCloseTab(kFALSE);\n";

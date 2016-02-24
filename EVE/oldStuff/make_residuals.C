@@ -540,7 +540,7 @@ void ButtonWindow::DrawResiduals()
       Info("make_residuals::DrawResiduals", "nEntries: %f", nEntries->GetNumber());
       Info("make_residuals::DrawResiduals", "firstEntry: %f", firstEntry->GetNumber());
     
-      AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
+      AliESDEvent *esd = AliEveEventManager::Instance()->AssertESD();
     
         // OCDB
         

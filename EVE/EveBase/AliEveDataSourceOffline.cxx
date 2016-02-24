@@ -36,7 +36,7 @@ fESDfriendExists(kFALSE),
 fgAODfriends(0),
 fgRawFromStandardLoc(false)
 {
-    fEventManager = AliEveEventManager::GetMaster();
+    fEventManager = AliEveEventManager::Instance();
     Open();
 }
 
