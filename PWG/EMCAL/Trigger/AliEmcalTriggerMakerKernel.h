@@ -19,6 +19,11 @@ template<class T> class AliEMCALTriggerDataGrid;
 template<class T> class AliEMCALTriggerAlgorithm;
 template<class T> class AliEMCALTriggerPatchFinder;
 
+// To be moved to AliRoot in AliEMCALTriggerConstants.h at the first occasion
+namespace EMCALTrigger {
+const Double_t kEMCL0ADCtoGeV_AP = 0.019;             ///< Conversion from EMCAL Level0 ADC to energy
+}
+
 /**
  * @class AliEmcalTriggerMakerKernel
  * @brief Kernel of the EMCAL trigger patch maker
@@ -189,6 +194,8 @@ protected:
 
   AliEMCALTriggerPatchFinder<double>        *fPatchFinder;                //!<! The actual patch finder
   AliEMCALTriggerAlgorithm<double>          *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
+
+  Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 
   Int_t                                     fJetPatchsize;                ///< Size of a jet patch
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
