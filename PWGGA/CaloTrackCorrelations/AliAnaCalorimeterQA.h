@@ -191,6 +191,9 @@ public:
   void SetExoECrossCuts (Int_t i, Float_t c)    { if (i<fExoNECrossCuts) fExoECrossCuts[i] = c ; }
   void SetExoDTimeCuts  (Int_t i, Float_t c)    { if (i<fExoNDTimeCuts ) fExoDTimeCuts [i] = c ; }
   
+  void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
+
+  
  private:
   
   // Switches
@@ -250,6 +253,9 @@ public:
   TLorentzVector fClusterMomentum;              //!<! Cluster momentum, temporary container
   TLorentzVector fClusterMomentum2;             //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMomentum;              //!<! Primary MC momentum, temporary container
+  
+  Float_t  fConstantTimeShift;                  ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
+
   
   // Calorimeter Clusters
     

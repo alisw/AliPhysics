@@ -20,18 +20,19 @@ class AliAnalysisTaskRhoBase : public AliAnalysisTaskEmcalJet {
 
   void                   UserCreateOutputObjects();
 
-  void                   SetOutRhoName(const char *name)                       { fOutRhoName           = name ; 
-                                                                                 fOutRhoScaledName     = Form("%s_Scaled",name) ; }
-  void                   SetCompareRhoName(const char *name)                   { fCompareRhoName       = name ;                   }
-  void                   SetCompareRhoScaledName(const char *name)             { fCompareRhoScaledName = name ;                   }
-  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf   ;                   }
-  void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf   ;                   }
-  void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s    ;                   }
-  void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a    ;                   }
-  void                   SetSmallSystem(Bool_t setter = kTRUE)                 {fIsPbPb = !setter; }
+  void                   SetOutRhoName(const char *name)                       { fOutRhoName           = name    ;
+                                                                                 fOutRhoScaledName     = Form("%s_Scaled",name);     }
+  void                   SetCompareRhoName(const char *name)                   { fCompareRhoName       = name    ;                   }
+  void                   SetCompareRhoScaledName(const char *name)             { fCompareRhoScaledName = name    ;                   }
+  void                   SetScaleFunction(TF1* sf)                             { fScaleFunction        = sf      ;                   }
+  void                   SetRhoFunction(TF1* rf)                               { fRhoFunction          = rf      ;                   }
+  TF1*                   LoadRhoFunction(const char* path, const char* name);
+  void                   SetInEventSigmaRho(Double_t s)                        { fInEventSigmaRho      = s       ;                   }
+  void                   SetAttachToEvent(Bool_t a)                            { fAttachToEvent        = a       ;                   }
+  void                   SetSmallSystem(Bool_t setter = kTRUE)                 { fIsPbPb               = !setter ;                   }
 
-  const TString&         GetOutRhoName() const                                 { return fOutRhoName;                              }
-  const TString&         GetOutRhoScaledName() const                           { return fOutRhoScaledName;                        } 
+  const char*            GetOutRhoName() const                                 { return fOutRhoName.Data()       ;                   }
+  const char*            GetOutRhoScaledName() const                           { return fOutRhoScaledName.Data() ;                   }
 
  protected:
   void                   ExecOnce();

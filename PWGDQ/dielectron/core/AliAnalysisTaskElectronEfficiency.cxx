@@ -25,7 +25,6 @@
 #include "TH3.h"
 #include "THnSparse.h"
 #include "THStack.h"
-#include "TCanvas.h"
 #include "TGraph.h"
 #include "TChain.h"
 #include <math.h>
@@ -51,6 +50,7 @@
 #include "AliCentrality.h"
 #include "AliDielectron.h"
 #include "AliDielectronVarManager.h"
+#include "AliDielectronHistos.h"
 #include "AliDielectronPID.h"
 #include "AliDielectronVarCuts.h"
 #include "AliDielectronTrackCuts.h"
@@ -138,6 +138,11 @@ fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
+fKineTrackCuts(0x0),
+//fPairCuts(0x0),
+fPairCutMee(-1),
+fPairCutTheta(-1),
+fPairCutPhiV(3.2),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
@@ -261,6 +266,11 @@ fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fResolutionCuts(0x0),
+fKineTrackCuts(0x0),
+//fPairCuts(0x0),
+fPairCutMee(-1),
+fPairCutTheta(-1),
+fPairCutPhiV(3.2),
 fvAllPionsForRej(),
 fvPionsRejByAllSigns(),
 fvPionsRejByUnlike(),
@@ -719,11 +729,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t trackPhi = track->Phi();
         for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
           //cutting logic taken from AliDielectron::FillTrackArrays()
-
           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
          //apply track cuts
-          UInt_t cutmask=fvTrackCuts.at(iCut)->IsSelected(track);
-          if (cutmask!=selectedMask) continue;
+          UInt_t cutMask=fvTrackCuts.at(iCut)->IsSelected(track);
+          if (cutMask!=selectedMask) continue;
           vecEleCand_perCut.at(iCut).push_back(iTracks);
           if(track->Charge() < 0){
             fvReco_Ele.at(iCut)->Fill(mcPt,mcEta,mcPhi);
@@ -738,8 +747,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(fvDoPrefilterEff.at(iCut) == kTRUE){
             // check if one of the prefilter electrons also survives the analysis cuts of this cutset.
             UInt_t selectedMaskExtra = (1<<fvExtraTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
-            UInt_t cutmaskExtra      = fvExtraTrackCuts.at(iCut)->IsSelected(track);
-            if(cutmaskExtra==selectedMaskExtra){
+            UInt_t cutMaskExtra      = fvExtraTrackCuts.at(iCut)->IsSelected(track);
+            if(cutMaskExtra==selectedMaskExtra){
               fSelectedByExtraCut|=1<<(iCut); // this is just for the tree.
               atleastOneEleExtraSelected = kTRUE;
               fvAtleastOneEleExtra_perCut.at(iCut) = kTRUE;
@@ -875,36 +884,40 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     if(atleastOnePrefilterSetting && atleastOneEleExtraSelected) CalcPrefilterEff(mcEvent, vecEleCand_perCut, fvAtleastOneEleExtra_perCut);
     
     if(fDoPairing){  // calculate pair efficiency from signal pairs
+      TLorentzVector l1, l2;
+      UInt_t cutMaskKine=0, selectedMaskKine=(1<<fKineTrackCuts->GetCuts()->GetEntries())-1;
       for(Int_t iMC1 = 0; iMC1 < nMCtracks; iMC1++){
         AliMCParticle *p1 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(iMC1));
         if(!p1){ Printf("no MCtrack: %d", iMC1); continue; }
-        if(p1->PdgCode() != 11) continue;
-        if(!(mcEvent->GetTrack(p1->GetMother()))) continue;
         if(!AliDielectronMC::Instance()->IsMCTruth(iMC1, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
-        if(mcEvent->GetTrack(p1->GetMother())->PdgCode() == 22) continue;
-        Double_t mcPt1(p1->Pt()),mcEta1(p1->Eta()),mcPhi1(p1->Phi());
-        if(mcPt1  <  0.2 || TMath::Abs(mcEta1) > 0.8)  continue;
-        TLorentzVector l1;
-        l1.SetPtEtaPhiM(mcPt1,mcEta1,mcPhi1,0.0005109989);
+        cutMaskKine=fKineTrackCuts->IsSelected( p1 );
+        if (cutMaskKine!=selectedMaskKine) continue;
+        l1.SetPtEtaPhiM(p1->Pt(),p1->Eta(),p1->Phi(),0.0005109989);
         for(Int_t iMC2 = 0; iMC2 < nMCtracks; iMC2++){
           if(iMC1 == iMC2) continue;
           AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(iMC2));
           if(!p2){ Printf("no MCtrack: %d", iMC2); continue; }
-          if(p2->PdgCode() != -11) continue;
-          if(!(mcEvent->GetTrack(p2->GetMother()))) continue;
           if(!AliDielectronMC::Instance()->IsMCTruth(iMC2, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
-          if(mcEvent->GetTrack(p2->GetMother())->PdgCode() == 22) continue;
-          Double_t mcPt2(p2->Pt()),mcEta2(p2->Eta()),mcPhi2(p2->Phi());
-          if(mcPt2 < 0.2 || TMath::Abs(mcEta2) > 0.8)  continue;
-          TLorentzVector l2;
-          l2.SetPtEtaPhiM(mcPt2,mcEta2,mcPhi2,0.0005109989);
-          Double_t mee((l1+l2).M()),ptee((l1+l2).Pt());
+          cutMaskKine=fKineTrackCuts->IsSelected( p2 );
+          if (cutMaskKine!=selectedMaskKine) continue;
+          l2.SetPtEtaPhiM(p2->Pt(),p2->Eta(),p2->Phi(),0.0005109989);
+          Double_t mee   = (l1+l2).M();
+          Double_t ptee  = (l1+l2).Pt();
+          Double_t theta = l1.Angle(l2.Vect());
+          Double_t phiv  = -1; // save some computing time if phiv is not requested.
+          if (fPairCutPhiV<3.14) phiv = PhivPair(fESD->GetMagneticField(), p1->Charge(), p2->Charge(), l1.Vect(), l2.Vect());
+          if ( (fPairCutMee   > 0. || fPairCutTheta > 0. || fPairCutPhiV  < 3.14) // at least one cut must be enabled
+                && (mee   < fPairCutMee   || fPairCutMee   < 0.) // -> within cut or cut disabled
+                && (theta < fPairCutTheta || fPairCutTheta < 0.)
+                && (phiv  > fPairCutPhiV  || fPairCutPhiV  > 3.14) ) {
+            continue;
+          }
           if(p1->GetMother() == p2->GetMother())
             fNgenPairs_sameMother->Fill(mee,ptee);
           else
             fNgenPairs_diffMothers->Fill(mee,ptee);
-        } // positron loop  
-      } // electron loop     
+        } // positron loop
+      } // electron loop
       
       for(Int_t iTrack1 = 0; iTrack1 < fESD->GetNumberOfTracks(); iTrack1++){
         AliESDtrack *track1 = fESD->GetTrack(iTrack1);
@@ -912,24 +925,19 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Int_t label1 = track1->GetLabel();
         AliMCParticle *p1 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label1)));
         if(!p1){ Printf("no MCtrack: %d", TMath::Abs(label1)); continue; }
-        if(p1->PdgCode() != 11) continue;
-        if(!(mcEvent->GetTrack(p1->GetMother()))) continue;
         if(!AliDielectronMC::Instance()->IsMCTruth(TMath::Abs(label1), (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
-        if(mcEvent->GetTrack(p1->GetMother())->PdgCode() == 22) continue;
-        Double_t mcPt1(p1->Pt()),mcEta1(p1->Eta()),mcPhi1(p1->Phi());
-        if(mcPt1  <  0.2  || mcPt1  > 10000. || TMath::Abs(mcEta1) > 0.8)  continue;
-        Bool_t rec(kFALSE);
+        cutMaskKine=fKineTrackCuts->IsSelected( p1 );
+        if (cutMaskKine!=selectedMaskKine) continue;
+        Bool_t rec(kFALSE); // store if track was reconstructed at least in one cutInstance.
         std::vector<Bool_t> vRec(GetNCutsets(),kFALSE);
         for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
-          //cutting logic taken from AliDielectron::FillTrackArrays()
           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
           UInt_t cutMask=fvTrackCuts.at(iCut)->IsSelected(track1);
-          vRec.at(iCut) = selectedMask == cutMask ? kTRUE : kFALSE;
-          if(selectedMask == cutMask) rec = kTRUE;
+          vRec.at(iCut) = (cutMask==selectedMask) ? kTRUE : kFALSE;
+          if (cutMask==selectedMask) rec = kTRUE;
         } // cut loop
         if(!rec) continue;
-        TLorentzVector l1;
-        l1.SetPtEtaPhiM(mcPt1,mcEta1,mcPhi1,0.0005109989);     
+        l1.SetPtEtaPhiM(p1->Pt(),p1->Eta(),p1->Phi(),0.0005109989);
         for(Int_t iTrack2 = 0; iTrack2 < fESD->GetNumberOfTracks(); iTrack2++){
           if(iTrack1 == iTrack2) continue;
           AliESDtrack *track2 = fESD->GetTrack(iTrack2);
@@ -937,20 +945,26 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           Int_t label2 = track2->GetLabel();
           AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label2)));
           if(!p2){ Printf("no MCtrack: %d", TMath::Abs(label2)); continue; }
-          if(p2->PdgCode() != -11) continue;
-          if(!(mcEvent->GetTrack(p2->GetMother()))) continue;
           if(!AliDielectronMC::Instance()->IsMCTruth(TMath::Abs(label2), (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
-          if(mcEvent->GetTrack(p2->GetMother())->PdgCode() == 22) continue;
-          Double_t mcPt2(p2->Pt()),mcEta2(p2->Eta()),mcPhi2(p2->Phi());
-          if(mcPt2  <  0.2  || mcPt2  > 10000. || TMath::Abs(mcEta2) > 0.8)  continue;
-          TLorentzVector l2;
-          l2.SetPtEtaPhiM(mcPt2,mcEta2,mcPhi2,0.0005109989);
-          Double_t mee((l1+l2).M()),ptee((l1+l2).Pt());
+          cutMaskKine=fKineTrackCuts->IsSelected( p2 );
+          if (cutMaskKine!=selectedMaskKine) continue;
+          l2.SetPtEtaPhiM(p2->Pt(),p2->Eta(),p2->Phi(),0.0005109989);
           for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
-            //cutting logic taken from AliDielectron::FillTrackArrays()
+            if (!vRec.at(iCut)) continue;
             UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
             UInt_t cutMask=fvTrackCuts.at(iCut)->IsSelected(track2);
-            if(!(selectedMask == cutMask && vRec.at(iCut))) continue;
+            if (cutMask!=selectedMask) continue;
+            Double_t mee   = (l1+l2).M();
+            Double_t ptee  = (l1+l2).Pt();
+            Double_t theta = l1.Angle(l2.Vect());
+            Double_t phiv  = -1; // save some computing time if phiv is not requested.
+            if (fPairCutPhiV<3.14) phiv = PhivPair(fESD->GetMagneticField(), p1->Charge(), p2->Charge(), l1.Vect(), l2.Vect());
+            if ( (fPairCutMee   > 0. || fPairCutTheta > 0. || fPairCutPhiV  < 3.14) // at least one cut must be enabled
+                && (mee   < fPairCutMee   || fPairCutMee   < 0.) // -> within cut or cut disabled
+                && (theta < fPairCutTheta || fPairCutTheta < 0.)
+                && (phiv  > fPairCutPhiV  || fPairCutPhiV  > 3.14) ) {
+              continue;
+            }
             if(p1->GetMother() == p2->GetMother()){
               fvRecoPairs_sameMother.at(iCut)->Fill(mee,ptee);
               if(label1 > 0 && label2 > 0) 
@@ -1056,30 +1070,26 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
         dau2.SetPxPyPzE(vMomEle[0],vMomEle[1],vMomEle[2],energyEle);
         Int_t chargeEle = mcEle->Charge();
         
-        // Invariant Mass:
-        Double_t invmass = (dau1+dau2).M();
-        // Pair Pt:
-        Double_t pairpt  = (dau1+dau2).Pt();
-        // Opening Angle:
-        Double_t theta   = dau1.Angle(dau2.Vect());
-        // PhiV:
-        Double_t phiv    = PhivPair(fESD->GetMagneticField(), chargePion, chargeEle, dau1.Vect(), dau2.Vect());
-        //cout << " invmass = " << invmass << "  theta = " << theta << "  phiv = " << phiv << endl;
+        Double_t mee   = (dau1+dau2).M();
+        Double_t ptee  = (dau1+dau2).Pt();
+        Double_t theta = dau1.Angle(dau2.Vect());
+        Double_t phiv  = PhivPair(fESD->GetMagneticField(), chargePion, chargeEle, dau1.Vect(), dau2.Vect());
         
-        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(51)))->Fill(invmass,pairpt);//hMeePtee
-        (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(52)))->Fill(invmass,phiv,theta);//hMeePhiVOpen
-        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(53)))->Fill(invmass,theta);//hMeeOpen
-        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(54)))->Fill(invmass,phiv);//hMeePhiV
-        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(55)))->Fill(pairpt, theta);//hPteeOpen
-        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(56)))->Fill(pairpt, phiv);//hPteePhiV
-        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(57)))->Fill(theta,  phiv);//hOpenPhiV
+        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(51)))->Fill(mee,ptee);//hMeePtee
+        (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(52)))->Fill(mee,phiv,theta);//hMeePhiVOpen
+        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(53)))->Fill(mee,theta);//hMeeOpen
+        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(54)))->Fill(mee,phiv);//hMeePhiV
+        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(55)))->Fill(ptee,theta);//hPteeOpen
+        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(56)))->Fill(ptee,phiv);//hPteePhiV
+        (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(57)))->Fill(theta,phiv);//hOpenPhiV
         
         // tag the pion as rejected, if the pair falls within following cut:
-        if ( (invmass < fvRejCutMee.at(iCut)   || fvRejCutMee.at(iCut)   < 0.) // -> within cut or cut disabled
+        if ( (fvRejCutMee.at(iCut)   > 0. || fvRejCutTheta.at(iCut) > 0. || fvRejCutPhiV.at(iCut) < 3.14) // at least one cut must be enabled
+            && (mee   < fvRejCutMee.at(iCut)   || fvRejCutMee.at(iCut)   < 0.) // -> within cut or cut disabled
             && (theta < fvRejCutTheta.at(iCut) || fvRejCutTheta.at(iCut) < 0.)
             && (phiv  > fvRejCutPhiV.at(iCut)  || fvRejCutPhiV.at(iCut)  > 3.14) )
         {
-          //cout << " pion rejected! invmass = " << invmass << "  theta = " << theta << "  phiv = " << phiv << endl;
+          //cout << " pion rejected! mee = " << mee << "  theta = " << theta << "  phiv = " << phiv << endl;
           rejByAllSigns = kTRUE;
           if (chargePion!=chargeEle) rejByUnlike = kTRUE;
         }
@@ -1654,16 +1664,29 @@ void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signa
 }
 
 //______________________________________________
-void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunction(TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
-//  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
-  // clone temporare histogram, otherwise it will not be streamed to file!
-  TString key = Form("cntrd%d%d%d",varx,vary,varz);
-  fPostPIDCntrdCorrTPC = (TH1*)fun->GetHistogram()->Clone(key.Data());
-  if(fPostPIDCntrdCorrTPC)  {
-    fPostPIDCntrdCorrTPC->GetListOfFunctions()->AddAt(fun,0);
+  TString key = Form("cntrdTPC%d%d%d",varx,vary,varz);
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    fPostPIDCntrdCorrTPC = (TH1*)fun->Clone(key.Data());
+  }
+  else if (fun->InheritsFrom(TF1::Class())) {
+    AliDielectronHistos::StoreVariables(static_cast<TF1*>(fun)->GetHistogram(), valType);
+    fPostPIDCntrdCorrTPC = (TH1*) static_cast<TF1*>(fun)->GetHistogram()->Clone(key.Data());
+    if(fPostPIDCntrdCorrTPC) {
+      fPostPIDCntrdCorrTPC->GetListOfFunctions()->AddAt(fun,0);
+    }
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
+  if(fPostPIDCntrdCorrTPC) {
     // check for corrections and add their variables to the fill map
     printf("POST TPC PID CORRECTION added for centroids:  ");
     switch(fPostPIDCntrdCorrTPC->GetDimension()) {
@@ -1672,22 +1695,35 @@ void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunction(TF1 *fun, UInt_t
       case 1: printf(" %s ",fPostPIDCntrdCorrTPC->GetXaxis()->GetName());
     }
     printf("\n");
-//    fUsedVars->SetBitNumber(varx, kTRUE); // this is also done in AliDielectronPID::IsSelected()
-//    fUsedVars->SetBitNumber(vary, kTRUE);
-//    fUsedVars->SetBitNumber(varz, kTRUE);
+    fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
 //______________________________________________
-void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunction(TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
-//  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
-  // clone temporare histogram, otherwise it will not be streamed to file!
-  TString key = Form("wdth%d%d%d",varx,vary,varz);
-  fPostPIDWdthCorrTPC = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  TString key = Form("wdthTPC%d%d%d",varx,vary,varz);
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    fPostPIDWdthCorrTPC = (TH1*)fun->Clone(key.Data());
+  }
+  else if (fun->InheritsFrom(TF1::Class())) {
+    AliDielectronHistos::StoreVariables(static_cast<TF1*>(fun)->GetHistogram(), valType);
+    fPostPIDWdthCorrTPC = (TH1*) static_cast<TF1*>(fun)->GetHistogram()->Clone(key.Data());
+    if(fPostPIDWdthCorrTPC) {
+      fPostPIDWdthCorrTPC->GetListOfFunctions()->AddAt(fun,0);
+    }
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
   if(fPostPIDWdthCorrTPC)  {
-    fPostPIDWdthCorrTPC->GetListOfFunctions()->AddAt(fun,0);
     // check for corrections and add their variables to the fill map
     printf("POST TPC PID CORRECTION added for widths:  ");
     switch(fPostPIDWdthCorrTPC->GetDimension()) {
@@ -1696,22 +1732,35 @@ void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunction(TF1 *fun, UInt_t va
       case 1: printf(" %s ",fPostPIDWdthCorrTPC->GetXaxis()->GetName());
     }
     printf("\n");
-//    fUsedVars->SetBitNumber(varx, kTRUE); // this is also done in AliDielectronPID::IsSelected()
-//    fUsedVars->SetBitNumber(vary, kTRUE);
-//    fUsedVars->SetBitNumber(varz, kTRUE);
+    fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
 //______________________________________________
-void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
-  //  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
-  // clone temporare histogram, otherwise it will not be streamed to file!
   TString key = Form("cntrdITS%d%d%d",varx,vary,varz);
-  fPostPIDCntrdCorrITS = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    fPostPIDCntrdCorrITS = (TH1*)fun->Clone(key.Data());
+  }
+  else if (fun->InheritsFrom(TF1::Class())) {
+    AliDielectronHistos::StoreVariables(static_cast<TF1*>(fun)->GetHistogram(), valType);
+    fPostPIDCntrdCorrITS = (TH1*) static_cast<TF1*>(fun)->GetHistogram()->Clone(key.Data());
+    if(fPostPIDCntrdCorrITS) {
+      fPostPIDCntrdCorrITS->GetListOfFunctions()->AddAt(fun,0);
+    }
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
   if(fPostPIDCntrdCorrITS)  {
-    fPostPIDCntrdCorrITS->GetListOfFunctions()->AddAt(fun,0);
     // check for corrections and add their variables to the fill map
     printf("POST ITS PID CORRECTION added for centroids:  ");
     switch(fPostPIDCntrdCorrITS->GetDimension()) {
@@ -1720,22 +1769,35 @@ void AliAnalysisTaskElectronEfficiency::SetCentroidCorrFunctionITS(TF1 *fun, UIn
       case 1: printf(" %s ",fPostPIDCntrdCorrITS->GetXaxis()->GetName());
     }
     printf("\n");
-    //    fUsedVars->SetBitNumber(varx, kTRUE); // this is also done in AliDielectronPID::IsSelected()
-    //    fUsedVars->SetBitNumber(vary, kTRUE);
-    //    fUsedVars->SetBitNumber(varz, kTRUE);
+    fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
 //______________________________________________
-void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
-  //  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
-  // clone temporare histogram, otherwise it will not be streamed to file!
   TString key = Form("wdthITS%d%d%d",varx,vary,varz);
-  fPostPIDWdthCorrITS = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    fPostPIDWdthCorrITS = (TH1*)fun->Clone(key.Data());
+  }
+  else if (fun->InheritsFrom(TF1::Class())) {
+    AliDielectronHistos::StoreVariables(static_cast<TF1*>(fun)->GetHistogram(), valType);
+    fPostPIDWdthCorrITS = (TH1*) static_cast<TF1*>(fun)->GetHistogram()->Clone(key.Data());
+    if(fPostPIDWdthCorrITS) {
+      fPostPIDWdthCorrITS->GetListOfFunctions()->AddAt(fun,0);
+    }
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
   if(fPostPIDWdthCorrITS)  {
-    fPostPIDWdthCorrITS->GetListOfFunctions()->AddAt(fun,0);
     // check for corrections and add their variables to the fill map
     printf("POST ITS PID CORRECTION added for widths:  ");
     switch(fPostPIDWdthCorrITS->GetDimension()) {
@@ -1744,9 +1806,9 @@ void AliAnalysisTaskElectronEfficiency::SetWidthCorrFunctionITS(TF1 *fun, UInt_t
       case 1: printf(" %s ",fPostPIDWdthCorrITS->GetXaxis()->GetName());
     }
     printf("\n");
-    //    fUsedVars->SetBitNumber(varx, kTRUE); // this is also done in AliDielectronPID::IsSelected()
-    //    fUsedVars->SetBitNumber(vary, kTRUE);
-    //    fUsedVars->SetBitNumber(varz, kTRUE);
+    fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
 //______________________________________________________________________________________

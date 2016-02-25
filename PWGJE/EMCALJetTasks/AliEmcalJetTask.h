@@ -32,7 +32,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 #endif
 
   AliEmcalJetTask();
-  AliEmcalJetTask(const char *name, Int_t useExchangeCont=0);
+  AliEmcalJetTask(const char *name);
   virtual ~AliEmcalJetTask();
 
   Bool_t Run();
@@ -67,6 +67,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               GetJetPhiMin()                   { return fJetPhiMin         ; }
   Double_t               GetJetPhiMax()                   { return fJetPhiMax         ; }
   UInt_t                 GetJetType()                     { return fJetType           ; }
+  UInt_t                 GetJetAlgo()                     { return fJetAlgo           ; }
   Bool_t                 GetLegacyMode()                  { return fLegacyMode        ; }
   Double_t               GetMinJetArea()                  { return fMinJetArea        ; }
   Double_t               GetMinJetPt()                    { return fMinJetPt          ; }
@@ -118,7 +119,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fGhostArea;              // ghost area
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
-  Int_t                  fUseExchangeCont;        // use exchange containers as input
   Bool_t                 fLocked;                 // true if lock is set
 
   TString                fJetsName;               //!name of jet collection

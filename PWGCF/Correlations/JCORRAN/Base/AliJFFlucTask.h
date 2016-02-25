@@ -94,6 +94,9 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 					cout << "setting : SCpt dep = " << isSCptdep << endl;};
   void SetParticleCharge( int charge ){ fPcharge = charge;
 					cout << "setting particle charge = " << charge << endl;};
+  void SetSCwithQC( Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC;
+					cout << "setting : SC with QC = " << isSCwithQC << endl;};
+
 //  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
 
@@ -119,6 +122,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t IsCentFlat;
   Bool_t IsPhiModule;
   Bool_t IsSCptdep;
+  Bool_t IsSCwithQC;
   TClonesArray * fInputList;  // tracklist 
   TH1D *h_ratio; 
   AliJFFlucAnalysis *fFFlucAna; // analysis code

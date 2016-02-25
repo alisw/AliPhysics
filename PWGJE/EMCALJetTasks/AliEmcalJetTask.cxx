@@ -53,7 +53,6 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fGhostArea(0.005),
   fTrackEfficiency(1.),
   fUtilities(0),
-  fUseExchangeCont(0),
   fLocked(0),
   fJetsName(),
   fIsInit(0),
@@ -68,7 +67,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
 }
 
 //________________________________________________________________________
-AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
+AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskEmcal(name),
   fJetsTag("Jets"),
   fJetAlgo(AliJetContainer::antikt_algorithm),
@@ -84,7 +83,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fGhostArea(0.005),
   fTrackEfficiency(1.),
   fUtilities(0),
-  fUseExchangeCont(useExchangeCont),
   fLocked(0),
   fJetsName(),
   fIsInit(0),
@@ -96,10 +94,6 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name, Int_t useExchangeCont) :
   fFastJetWrapper(name,name)
 {
   // Standard constructor.
-
-  for (Int_t i = 0; i < fUseExchangeCont; i++) {
-    DefineInput(i+1, TClonesArray::Class());
-  }
 
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 }
@@ -353,6 +347,7 @@ void AliEmcalJetTask::ExecOnce()
   if (!(InputEvent()->FindListObject(fJetsName))) {
     fJets = new TClonesArray("AliEmcalJet");
     fJets->SetName(fJetsName);
+    ::Info("AliEmcalJetTask::ExecOnce", "Jet collection with name '%s' has been added to the event.", fJetsName.Data());
     InputEvent()->AddObject(fJets);
   }
   else {
@@ -663,13 +658,18 @@ fastjet::JetAlgorithm AliEmcalJetTask::ConvertToFJAlgo(EJetAlgo_t algo)
   switch(algo) {
   case AliJetContainer::kt_algorithm:
     return fastjet::kt_algorithm;
-
-  case AliJetContainer::cambridge_algorithm:
-    return fastjet::cambridge_algorithm;
-
   case AliJetContainer::antikt_algorithm:
     return fastjet::antikt_algorithm;
-
+  case AliJetContainer::cambridge_algorithm:
+    return fastjet::cambridge_algorithm;
+  case AliJetContainer::genkt_algorithm:
+    return fastjet::genkt_algorithm;
+  case AliJetContainer::cambridge_for_passive_algorithm:
+    return fastjet::cambridge_for_passive_algorithm;
+  case AliJetContainer::genkt_for_passive_algorithm:
+    return fastjet::genkt_for_passive_algorithm;
+  case AliJetContainer::plugin_algorithm:
+    return fastjet::plugin_algorithm;
   case AliJetContainer::undefined_jet_algorithm:
     return fastjet::undefined_jet_algorithm;
 

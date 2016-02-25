@@ -17,13 +17,14 @@
 
 #include <TArrayD.h>
 #include <TClonesArray.h>
+#include <THistManager.h>
 #include <THashList.h>
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliESDEvent.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 
@@ -39,13 +40,11 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
         AliAnalysisTaskSE(),
         fAnalysisUtil(NULL),
+        fTriggerSelection(NULL),
         fHistos(NULL),
         fRequestAnalysisUtil(kTRUE),
         fTriggerStringFromPatches(kFALSE)
 {
-  for(int itrg = 0; itrg < kEPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1;
-  }
 }
 
 /**
@@ -55,13 +54,11 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name):
     AliAnalysisTaskSE(name),
     fAnalysisUtil(NULL),
+    fTriggerSelection(NULL),
     fHistos(NULL),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE)
 {
-  for(int itrg = 0; itrg < kEPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1;
-  }
   DefineOutput(1, TList::Class());
 }
 
@@ -82,7 +79,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   TArrayD energybinning, etabinning;
   CreateEnergyBinning(energybinning);
   CreateLinearBinning(etabinning, 100, -0.7, 0.7);
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
   TString triggers[18] = {"MB", "EMC7", "DMC7",
       "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
       "MBexcl", "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl"
@@ -119,16 +116,24 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   }
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7") && IsOfflineSelected(kEPREL0, patches),
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1") && IsOfflineSelected(kEPREJ1, patches),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kEPREJ2, patches),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kEPREG1, patches),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kEPREG2, patches),
-      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7") && IsOfflineSelected(kEPRDL0, patches),
-      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1") && IsOfflineSelected(kEPRDJ1, patches),
-      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2") && IsOfflineSelected(kEPRDJ2, patches),
-      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1") && IsOfflineSelected(kEPRDG1, patches),
-      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2") && IsOfflineSelected(kEPRDG2, patches);
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7"),
+      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
+      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
+      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
+      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7"),
+      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1"),
+      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2"),
+      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1"),
+      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2");
+  if(patches && fTriggerSelection){
+      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, patches);
+      isEJ1 &=  fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, patches);
+      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, patches);
+      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, patches);
+      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, patches);
+
+  }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
@@ -399,39 +404,6 @@ void AliAnalysisTaskEmcalPatchesRef::CreateLinearBinning(TArrayD& binning, int n
     currentlimit += binwidth;
   }
 }
-
-/**
- * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
- * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
- * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
- * @param trgcls Trigger class for which to apply additional offline patch selection
- * @param triggerpatches Array of trigger patches
- * @return True if at least on patch above threshold is found or no cut is applied
- */
-Bool_t AliAnalysisTaskEmcalPatchesRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
-  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kEPREL0) || (trgcls == kEPREG1) || (trgcls == kEPREG2) ||
-      (trgcls == kEPRDL0) || (trgcls == kEPRDG1) || (trgcls == kEPRDG2)),
-      isDCAL = ((trgcls == kEPRDL0) || (trgcls == kEPRDG1) || (trgcls == kEPRDG2) || (trgcls == kEPRDJ1) || (trgcls == kEPRDJ2));
-  int nfound = 0;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    bool isDCALpatch = SelectDCALPatch(*patchIter);
-    if(isDCAL){
-      if(!isDCALpatch) continue;
-    } else {
-      if(isDCALpatch) continue;
-    }
-    if(!IsOfflineSimplePatch(*patchIter)) continue;
-    if(isSingleShower){
-      if(!SelectSingleShowerPatch(*patchIter)) continue;
-    } else{
-      if(!SelectJetPatch(*patchIter)) continue;
-    }
-    if(GetPatchEnergy(*patchIter) > fOfflineEnergyThreshold[trgcls]) nfound++;
-  }
-  return nfound > 0;
-}
-
 
 /**
  * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude

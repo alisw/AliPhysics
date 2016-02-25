@@ -76,6 +76,7 @@ AliBalancePsi::AliBalancePsi() :
   fHistQafter(0),
   fPsiInterval(15.),
   fDeltaEtaMax(2.0),
+  fMomentumOrdering(kTRUE),
   fResonancesCut(kFALSE),
   fHBTCut(kFALSE),
   fHBTCutValue(0.02),
@@ -117,6 +118,7 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistQafter(balance.fHistQafter),
   fPsiInterval(balance.fPsiInterval),
   fDeltaEtaMax(balance.fDeltaEtaMax),
+  fMomentumOrdering(balance.fMomentumOrdering),
   fResonancesCut(balance.fResonancesCut),
   fHBTCut(balance.fHBTCut),
   fHBTCutValue(balance.fHBTCutValue),
@@ -507,8 +509,11 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 
       if(!particlesMixed && j == i) continue; // no auto correlations (only for non mixing)
 
-      // pT,Assoc < pT,Trig
-      if(firstPt < secondPt[j]) continue;
+      // pT,Assoc < pT,Trig (if momentum ordering is switched ON)
+      if(fMomentumOrdering){
+	if(firstPt < secondPt[j]) 
+	  continue;
+      }
 
       Short_t charge2 = secondCharge[j];
       

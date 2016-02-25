@@ -531,7 +531,7 @@ validateLog()
 
 mergeSysLogs()
 {
-  if [[ $# -lt 2 ]]; then
+  if [[ $# -lt 1 ]]; then
     echo 'merge syslogs to an output file'
     echo 'usage:'
     echo 'mergeSysLogs outputFile inputFile1 inputFile2 ...'
@@ -543,16 +543,38 @@ mergeSysLogs()
   local i
   local x
   local runNumber
+  local fsize
   outputFile=${1}
   shift
   inputFiles="$@"
-  i=0
-  parseListOfFiles ${inputFiles[@]} | while IFS= read x; do
-    runNumber=$(guessRunNumber "${x}")
-    [[ -z ${runNumber} ]] && runNumber=0
-    gawk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' "${x}"
-    (( i++ ))
-  done > "${outputFile}"
+  fileNumber=0
+  parseListOfFiles ${inputFiles[@]} | while IFS= read logFile; do
+    if [[ $fileNumber == 0 ]]; then
+      tableHeader=$( head -n 1 "$logFile" )
+      tableHeader+=":year/I:period/C:run/I:pass/C:line/D:itree/D:nstamps/D:treeName/C"
+      echo $tableHeader
+    fi
+
+    guessRunData "$logFile"
+    [[ -z "$year" ]] && year=0
+    [[ -z "$period" ]] && period=0
+    [[ -z $runNumber ]] && runNumber=0
+    [[ -z "$pass" ]] && pass=0
+    
+    nLines=$(wc -l 2>/dev/null < "$logFile"); ((nLines--))
+
+    lineNumber=-1
+    while read line; do
+      ((lineNumber++))
+      [[ $lineNumber == 0 ]] && continue
+      
+      extraBranches="$year $period $runNumber $pass $lineNumber $fileNumber $nLines"
+      echo "$line $extraBranches"
+
+    done < "$logFile"
+    
+    (( fileNumber++ ))
+  done > "$outputFile"
   return 0
 }
 
@@ -1130,6 +1152,58 @@ reportDoneFile()
   local dir=$3
   [[ -r $file ]] && echo "$tag ${dir}/${file}"
 }
+
+
+mergeAliSysInfo(){
+    #
+    # marian.ivanov@cern.ch
+    # I think this method should be in $ALICE_ROOT/STEER/AliSysInfo.sh script  
+    # 
+    # mergeAliSysInfo trees
+    # in addition to the original branches file information is appended to the tree
+    # New info appended
+    # Parameters:
+    #   1.) inputList  as ascii file
+    #   2.) outputFile 
+    #       in case outputFile is root file - tree is written as root file therwise plane txt used
+    # example usage 
+    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchHis.list syswatchHis.root; )
+    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchMap.list syswatchMap.root; )
+    inputList=$1
+    outputFile=$2
+    alilog_info "mergeAliSysInfo  inputList=$1 outputFile=$2 BEGIN"
+    if [[ -z ${inputList} ]] ; then
+       echo "mergeAliSysInfo [inputList] [outputFile]"; 
+       return 0;
+    fi
+    if [[ -z ${outputFile} ]] ; then
+       echo "mergeAliSysInfo [inputList] [outputFile]"; 
+       return 0;
+    fi
+    #
+    counter=0
+    desc=`head  -n 1 $inputList  | xargs head -n 1`  
+    echo $desc:line/D:itree/D:nstamps/D:treeName/C  >$outputFile
+    fsize=0
+    for afile in `cat  $inputList`; do 
+	fsize=$(wc -l < $afile)
+	((counter++))
+	#echo $counter $fsize $afile 
+	lineCounter=0
+	cat $afile | grep -v "hname" | while read -r line; 	
+	  do 
+	  ((lineCounter++))
+	  echo "$line" $lineCounter $counter $fsize $afile; 
+	done 
+    done >> $outputFile
+    [[ $outputFile =~ .root$ ]] &&  echo "AliSysInfo::MakeTree(\"$outputFile\",\"$outputFile\")" | aliroot -b 
+    alilog_info "mergeAliSysInfo  inputList=$1 outputFile=$2 END"
+    return 1;
+}
+
+
+
+
 
 #this makes debugging easier:
 #executes the command given as an argument in this environment

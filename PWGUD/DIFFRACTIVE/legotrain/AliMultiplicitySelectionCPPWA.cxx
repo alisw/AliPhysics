@@ -75,7 +75,7 @@ In this period, a cut on 70 clusters should be okay, however, changing to a cros
    fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
    fcutITSTPC_P -> SetMinNCrossedRowsTPC(120);
    fcutITSTPC_P -> SetMaxDCAToVertexZ(2);
-   fcutITSTPC_P -> SetEtaRange(-0.8,0.8);
+   fcutITSTPC_P -> SetEtaRange(-0.9,0.9);
    fcutITSTPC_P -> SetMaxChi2PerClusterTPC(4);
    fcutITSTPC_P -> SetRequireTPCRefit(kTRUE);
    fcutITSTPC_P -> SetRequireITSRefit(kTRUE);

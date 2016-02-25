@@ -33,6 +33,7 @@
 #include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliStack.h"
 
 #include "TCanvas.h" // TBI
 #include "TFile.h" // TBI
@@ -58,6 +59,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fControlHistogramsEventFlagsPro(NULL),
  fFillControlHistogramsEvent(kFALSE),
  fGetNumberOfTracksHist(NULL),
+ fGetNumberOfGlobalTracksHist(NULL),
  fGetNumberOfV0sHist(NULL),
  fGetNumberOfCascadesHist(NULL),
  fGetMagneticFieldHist(NULL),
@@ -79,6 +81,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fPhiHist(NULL),
  fMassHist(NULL),
  fGetFilterMap(NULL),
+ fGetPdgCode(NULL),
  fControlHistogramsIdentifiedParticlesList(NULL),
  fControlHistogramsIdentifiedParticlesFlagsPro(NULL),
  fFillControlHistogramsIdentifiedParticles(kFALSE),
@@ -108,6 +111,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fCorrelationFunctionsFlagsPro(NULL),
  fFillCorrelationFunctions(kFALSE),
  fNormalizeCorrelationFunctions(kFALSE),
+ fCorrelationFunctionsIndices(NULL),
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
@@ -178,6 +182,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fControlHistogramsEventFlagsPro(NULL),
  fFillControlHistogramsEvent(kFALSE),
  fGetNumberOfTracksHist(NULL),
+ fGetNumberOfGlobalTracksHist(NULL),
  fGetNumberOfV0sHist(NULL),
  fGetNumberOfCascadesHist(NULL),
  fGetMagneticFieldHist(NULL),
@@ -199,6 +204,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fPhiHist(NULL),
  fMassHist(NULL),
  fGetFilterMap(NULL),
+ fGetPdgCode(NULL),
  fControlHistogramsIdentifiedParticlesList(NULL),
  fControlHistogramsIdentifiedParticlesFlagsPro(NULL),
  fFillControlHistogramsIdentifiedParticles(kFALSE),
@@ -228,6 +234,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fCorrelationFunctionsFlagsPro(NULL),
  fFillCorrelationFunctions(kFALSE),
  fNormalizeCorrelationFunctions(kFALSE),
+ fCorrelationFunctionsIndices(NULL),
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
@@ -421,7 +428,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
 
  if(aMC)
  {
-  // TBI
+  // MC event:
+  fGetNumberOfTracksHist->Fill(aMC->GetNumberOfTracks());
  } // if(aMC)
  else if(aESD)
  {
@@ -431,6 +439,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
  {
   // AOD event:
   fGetNumberOfTracksHist->Fill(aAOD->GetNumberOfTracks()); // TBI not all tracks are unique
+  fGetNumberOfGlobalTracksHist->Fill(fGlobalTracksAOD[0]->GetSize()); // this is then my multiplicity...
   fGetNumberOfV0sHist->Fill(aAOD->GetNumberOfV0s()); // TBI some V0s share the daughter
   fGetNumberOfCascadesHist->Fill(aAOD->GetNumberOfCascades()); // TBI validate
   fGetMagneticFieldHist->Fill(aAOD->GetMagneticField());
@@ -467,12 +476,38 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
 
  if(aMC)
  {
-  // TBI
+  // MC tracks:
+  for(Int_t iTrack=0;iTrack<aMC->GetNumberOfTracks();iTrack++)
+  {
+   // a) Determine "amctrack";
+   // b) Insanity checks for "amctrack";
+   // c) Fill the control histograms for non-identified particles;
+   // d) Fill the control histograms for identified particles.
+
+   // a) Determine "amctrack":
+   AliAODMCParticle *amcparticle = (AliAODMCParticle*)aMC->GetTrack(iTrack);
+
+   // b) Insanity checks for "amctrack":
+   if(!amcparticle){Fatal(sMethodName.Data(),"!amctrack");}
+
+   // c) Fill the control histograms for non-identified particles:
+   if(fFillControlHistogramsNonIdentifiedParticles){this->FillControlHistogramsNonIdentifiedParticles(amcparticle);}
+
+   // d) Fill the control histograms for identified particles:
+   if(fFillControlHistogramsIdentifiedParticles){this->FillControlHistogramsIdentifiedParticles(amcparticle);}
+
+  } // for(Int_t iTrack=0;iTrack<aMC->GetNumberOfTracks();iTrack++)
  } // if(aMC)
+
+ //=================================================================================================================
+
  else if(aESD)
  {
   // TBI
  } // else if(aESD)
+
+ //=================================================================================================================
+
  else if(aAOD)
  {
   // AOD tracks:
@@ -488,7 +523,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
    AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
 
    // b) Insanity checks for "atrack":
-   if(!atrack){Fatal(sMethodName.Data(),"!atrack");} // TBI keep this for some time, eventually just continue
+   if(!atrack){Fatal(sMethodName.Data(),"!atrack");}
    if(atrack->GetID()>=0 && atrack->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack->GetID()>=0 && atrack->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
    if(atrack->TestFilterBit(128) && atrack->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack->TestFiletrBit(128) && atrack->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
    // if(0==atrack->GetFilterMap())
@@ -506,7 +541,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
    if(0 == fGlobalTracksAOD[0]->GetSize()){return;}
    Int_t id = atrack->GetID();
    AliAODTrack *gtrack = dynamic_cast<AliAODTrack*>(id>=0 ? aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(id)) : aAOD->GetTrack(fGlobalTracksAOD[0]->GetValue(-(id+1))));
-   if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");} // TBI keep this for some time, eventually just continue
+   if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");}
 
    // d) Fill the control histograms for non-identified particles:
    if(fFillControlHistogramsNonIdentifiedParticles){this->FillControlHistogramsNonIdentifiedParticles(gtrack);}
@@ -526,9 +561,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedP
 {
  // Fill control histograms for non-identified particles.
  // Uses PassesCommonGlobalTrackCuts(...) TBI
-
- // To do:
- // 1) Add support for MC and ESD, now it works only for AliAODTrack.
 
  // a) Insanity checks;
  // b) Check cut selection criteria;
@@ -553,6 +585,33 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedP
  fMassHist->Fill(gtrack->M());
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedParticles(AliAODTrack *gtrack)
+
+//================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedParticles(AliAODMCParticle *amcparticle)
+{
+ // Fill control histograms for all charged MC particles.
+
+ // a) Insanity checks;
+ // b) Check cut selection criteria;
+ // c) Fill control histograms.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedParticles(AliAODMCParticle *amcparticle)";
+ if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
+
+ // b) Check cut selection criteria:
+ //if(!PassesCommonGlobalTrackCuts(gtrack)){return;} // TBI in the method PassesCommonGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
+
+ // c) Fill control histograms:
+ fChargeHist->Fill(amcparticle->Charge()+0.5); // see how this histogram was booked for convention used
+ fPtHist->Fill(amcparticle->Pt());
+ fEtaHist->Fill(amcparticle->Eta());
+ fPhiHist->Fill(amcparticle->Phi());
+ fMassHist->Fill(amcparticle->M());
+ fGetPdgCode->Fill(amcparticle->GetPdgCode());
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedParticles(AliAODMCParticle *amcparticle)
 
 //================================================================================================================
 
@@ -615,6 +674,53 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack)
 
+
+//================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODMCParticle *amcparticle)
+{
+ // Fill control histograms for identified Monte Carlo particles.
+
+ // a) Insanity checks;
+ // b) Check cut selection criteria;
+ // c) Fill control histograms.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODMCParticle *amcparticle)";
+ if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
+
+ // b) Check cut selection criteria:
+ if(!PassesCommonTrackCuts(amcparticle)){return;} // TBI have a look at implementation
+
+ // c) Fill control histograms:
+ Int_t index = -44;
+ //  c2) Pions:
+ if(211==TMath::Abs(amcparticle->GetPdgCode()))
+ {
+  index = 2;
+ } // if(211==TMath::Abs(amcparticle->GetPdgCode()))
+ //  c3) Kaons:
+ else if(321==TMath::Abs(amcparticle->GetPdgCode()))
+ {
+  index = 3;
+ } // if(321==TMath::Abs(amcparticle->GetPdgCode()))
+ //  c4) Protons:
+ else if(2212==TMath::Abs(amcparticle->GetPdgCode()))
+ {
+  index = 4;
+ } // if(2212==TMath::Abs(amcparticle->GetPdgCode()))
+ if(-44 != index)
+ {
+  Int_t charge = ((amcparticle->GetPdgCode()>0. ? 0 : 1)); // Okay... TBI
+  Int_t isPhysicalPrimary = ((amcparticle->IsPhysicalPrimary() ? 0 : 1)); // Okay... TBI
+  fPtPIDHist[index][charge][isPhysicalPrimary]->Fill(amcparticle->Pt());
+  fMassPIDHist[index][charge][isPhysicalPrimary]->Fill(amcparticle->M()); // in this context, clearly this is just a control histogram
+  fEtaPIDHist[index][charge][isPhysicalPrimary]->Fill(amcparticle->Eta());
+  fPhiPIDHist[index][charge][isPhysicalPrimary]->Fill(amcparticle->Phi());
+ } // if(-44 != index)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODMCParticle *amcparticle)
+
 //================================================================================================================
 
 void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
@@ -636,7 +742,46 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
 
  if(aMC)
  {
-  // TBI
+  TString pattern = ".11.13.211.321.2212."; // TBI this can be done programatically TBI only for these particles I need to estimate background
+  if(!PassesMixedEventCuts(aMC)){return;} // TBI this is empty at the moment for MC
+  Int_t nTracks = aMC->GetNumberOfTracks();
+  if(!fMixedEvents[0])
+  {
+   TClonesArray ca0("AliAODMCParticle"); // temporary holder, its entries will be copied to fMixedEvents[0]
+   Int_t ca0Counter = 0;
+   for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
+   {
+    AliAODMCParticle *amcparticle = dynamic_cast<AliAODMCParticle*>(aMC->GetTrack(iTrack));
+    if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
+    if(!PassesCommonTrackCuts(amcparticle)){continue;} // TBI re-think, see implemntation of this method
+    if(!(pattern.Contains(Form(".%d.",TMath::Abs(amcparticle->GetPdgCode()))))){continue;}
+    // Fill fMixedEvents[0] with tracks which survived all checks:
+    ca0[ca0Counter++] = amcparticle;
+   } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
+   fMixedEvents[0] = (TClonesArray*)ca0.Clone();
+   if(!fMixedEvents[0]){Fatal(sMethodName.Data(),"!fMixedEvents[0]");}
+  }
+  else if(!fMixedEvents[1])
+  {
+   TClonesArray ca1("AliAODMCParticle"); // temporary holder, its entries will be copied to fMixedEvents[1]
+   Int_t ca1Counter = 0;
+   for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
+   {
+    AliAODMCParticle *amcparticle = dynamic_cast<AliAODMCParticle*>(aMC->GetTrack(iTrack));
+    if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
+    if(!PassesCommonTrackCuts(amcparticle)){continue;} // TBI re-think, see implemntation of this method
+    if(!(pattern.Contains(Form(".%d.",TMath::Abs(amcparticle->GetPdgCode()))))){continue;}
+    // Fill fMixedEvents[0] with tracks which survived all checks:
+    ca1[ca1Counter++] = amcparticle;
+   } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
+   fMixedEvents[1] = (TClonesArray*)ca1.Clone();
+   if(!fMixedEvents[1]){Fatal(sMethodName.Data(),"!fMixedEvents[1]");}
+  }
+  // Shall we do something?
+  if(fMixedEvents[0] && fMixedEvents[1])
+  {
+   CalculateBackground(fMixedEvents[0],fMixedEvents[1],kTRUE);
+  }
  } // if(aMC)
  else if(aESD)
  {
@@ -719,8 +864,9 @@ Int_t AliAnalysisTaskMultiparticleFemtoscopy::CurrentEventNumber()
 
  if(fAnalysisType->EqualTo("MC"))
  {
-  // TBI
+  currentEventNumber = (Int_t)fGetNumberOfTracksHist->GetEntries(); // TBI there is an issue clearly if fFillControlHistogramsEvent is not enabled. Yes, this is really shaky...
  }
+
  else if(fAnalysisType->EqualTo("ESD"))
  {
   // TBI
@@ -728,7 +874,7 @@ Int_t AliAnalysisTaskMultiparticleFemtoscopy::CurrentEventNumber()
 
  else if(fAnalysisType->EqualTo("AOD"))
  {
-  currentEventNumber = (Int_t)fGetNumberOfTracksHist->GetEntries(); // TBI there is an issue clearly if fFillControlHistogramsEvent is not enabled
+  currentEventNumber = (Int_t)fGetNumberOfTracksHist->GetEntries(); // TBI there is an issue clearly if fFillControlHistogramsEvent is not enabled. Yes, this is really shaky...
  }
 
  return currentEventNumber;
@@ -846,11 +992,36 @@ void AliAnalysisTaskMultiparticleFemtoscopy::MC(AliMCEvent *aMC)
 {
  // Monte Carlo analysis is performed in this method.
 
- // ...
- if(aMC)
- {
-  aMC = NULL; // TBI eliminating warnings temporarily
- }
+ // a) Debugging;
+ // b) Common event selection criteria;
+ // c) Fill control histogram for global event observables;
+ // d) Fill control histogram for particles;
+ // e) Calculate correlation functions;
+ // f) Calculate background;
+ // g) V0s.
+
+ // a) Debugging:
+ if(fDoSomeDebugging){this->DoSomeDebugging(aMC);}
+
+ // b) Common event selection criteria:
+ if(!this->PassesCommonEventCuts(aMC)){return;}
+
+ // c) Fill control histogram for global event observables:
+ if(fFillControlHistogramsEvent){this->FillControlHistogramsEvent(aMC);}
+
+ // d) Fill control histograms for particles:
+ if(fFillControlHistogramsNonIdentifiedParticles || fFillControlHistogramsIdentifiedParticles){this->FillControlHistogramsParticle(aMC);}
+
+ // e) Calculate correlation functions:
+ if(fFillCorrelationFunctions){this->CalculateCorrelationFunctions(aMC);}
+
+ // f) Calculate background:
+ if(fEstimateBackground){this->EstimateBackground(aMC);}
+
+ return;
+
+ // g) V0s:
+ // TBI
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::MC(AliMCEvent *aMC)
 
@@ -876,7 +1047,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::AOD(AliAODEvent *aAOD)
 
  // a) Debugging;
  // b) Common event selection criteria;
- // d) Filter our "normal global" tracks;
+ // c) Filter our "normal global" tracks;
+ // d) Fill control histogram for global event observables;
  // e) Fill control histogram for particles;
  // f) Calculate correlation functions;
  // g) Calculate background;
@@ -888,12 +1060,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::AOD(AliAODEvent *aAOD)
  // b) Common event selection criteria:
  if(!this->PassesCommonEventCuts(aAOD)){return;}
 
- // c) Fill control histogram for global event observables:
- if(fFillControlHistogramsEvent){this->FillControlHistogramsEvent(aAOD);}
-
- // d) Filter out "normal global" tracks:
+ // c) Filter out "normal global" tracks:
  this->GlobalTracksAOD(aAOD,0); // [0] stands for default analysis
- if(0 == fGlobalTracksAOD[0]->GetSize()) return;
+ //if(0 == fGlobalTracksAOD[0]->GetSize()) return;
+
+ // d) Fill control histogram for global event observables:
+ if(fFillControlHistogramsEvent){this->FillControlHistogramsEvent(aAOD);}
 
  // e) Fill control histograms for particles:
  if(fFillControlHistogramsNonIdentifiedParticles || fFillControlHistogramsIdentifiedParticles){this->FillControlHistogramsParticle(aAOD);}
@@ -1489,6 +1661,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
   //fGetNumberOfTracksHist->SetStats(kFALSE);
   fGetNumberOfTracksHist->SetFillColor(kBlue-10);
   fControlHistogramsEventList->Add(fGetNumberOfTracksHist);
+  fGetNumberOfGlobalTracksHist = new TH1I("fGetNumberOfGlobalTracksHist","fGlobalTracksAOD[0]->GetSize()",10000,0,10000);
+  //fGetNumberOfGlobalTracksHist->SetStats(kFALSE);
+  fGetNumberOfGlobalTracksHist->SetFillColor(kBlue-10);
+  fControlHistogramsEventList->Add(fGetNumberOfGlobalTracksHist);
   fGetNumberOfV0sHist = new TH1I("fGetNumberOfV0sHist","aAOD->GetNumberOfV0s() (Remark: Some V0s share the daughter.)",10000,0,10000);
   fGetNumberOfV0sHist->SetStats(kFALSE);
   fGetNumberOfV0sHist->SetFillColor(kBlue-10);
@@ -1599,7 +1775,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
   fGetFilterMap->SetFillColor(kBlue-10);
   fGetFilterMap->SetMinimum(0.);
   fControlHistogramsNonIdentifiedParticlesList->Add(fGetFilterMap);
-  // ...
+  fGetPdgCode = new TH1I("fGetPdgCode","atrack->fGetPdgCode()",20000,-10000,10000);
+  fGetPdgCode->SetStats(kFALSE);
+  fGetPdgCode->SetFillColor(kBlue-10);
+  fGetPdgCode->SetMinimum(0.);
+  fControlHistogramsNonIdentifiedParticlesList->Add(fGetPdgCode);
  } // if(fFillControlHistogramsNonIdentifiedParticles)
 
  //  c2) Identified particles:
@@ -1794,7 +1974,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  // Book all the stuff for correlation functions objects.
 
  // a) Book the profile holding all the flags for correlation functions objects;
- // b) Book all correlation functions.
+ // b) Book all correlation functions;
+ // c) Book TExMap *fCorrelationFunctionsIndices.
 
  // a) Book the profile holding all the flags for correlation functions objects:
  fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",2,0,2);
@@ -1830,6 +2011,20 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
    fCorrelationFunctionsList->Add(fCorrelationFunctions[pid1][pid2]);
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
+
+ // c) Book TExMap *fCorrelationFunctionsIndices:
+ //    Chosen convention: [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p]
+ fCorrelationFunctionsIndices = new TExMap();
+ fCorrelationFunctionsIndices->Add(11,0);
+ fCorrelationFunctionsIndices->Add(13,1);
+ fCorrelationFunctionsIndices->Add(211,2);
+ fCorrelationFunctionsIndices->Add(321,3);
+ fCorrelationFunctionsIndices->Add(2212,4);
+ fCorrelationFunctionsIndices->Add(-11,5);
+ fCorrelationFunctionsIndices->Add(-13,6);
+ fCorrelationFunctionsIndices->Add(-211,7);
+ fCorrelationFunctionsIndices->Add(-321,8);
+ fCorrelationFunctionsIndices->Add(-2212,9);
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctions()
 
@@ -1983,6 +2178,26 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack
  return kTRUE; 
 
 } // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack *atrack)
+
+//=======================================================================================================================
+
+Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODMCParticle *amcparticle)
+{
+ // TBI this method applies only to MC, make it uniform with AOD.
+
+ TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODMCParticle *amcparticle)";
+ if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
+
+ if(TMath::Abs(amcparticle->Charge())<1.e-10) return kFALSE; // skipping neutral particles TBI
+ if(!amcparticle->IsPhysicalPrimary()) return kFALSE; // skipping secondaries TBI
+ if(amcparticle->Pt()<0.2) return kFALSE;
+ if(amcparticle->Pt()>=5.0) return kFALSE;
+ if(amcparticle->Eta()<-0.8) return kFALSE;
+ if(amcparticle->Eta()>=0.8) return kFALSE;
+
+ return kTRUE;
+
+} // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODMCParticle *amcparticle)
 
 //=======================================================================================================================
 
@@ -2234,6 +2449,68 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliMCEvent *aMC)
+{
+ // Calculate correlation functions for Monte Carlo.
+
+ // a) Insanity checks;
+ // b) Pattern from supported PDG codes;
+ // c) Two nested loops to calculate C(k), just an example.
+
+ // b) Pattern from supported PDG codes:
+ TString pattern = ".11.13.211.321.2212."; // TBI this can be done programatically
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliMCEvent *aMC)";
+ if(0 == aMC->GetNumberOfTracks()){return;} // TBI re-think
+
+ // c) Two nested loops to calculate C(k), just an example:
+ Int_t nTracks = aMC->GetNumberOfTracks();
+ for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
+ {
+  AliAODMCParticle *amcparticle1 = dynamic_cast<AliAODMCParticle*>(aMC->GetTrack(iTrack1));
+  if(!amcparticle1){Fatal(sMethodName.Data(),"!amcparticle1");}
+
+  if(!PassesCommonTrackCuts(amcparticle1)){continue;} // TBI re-think, see implemntation of this method
+
+  // Loop over the 2nd particle:
+  for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++)
+  {
+   AliAODMCParticle *amcparticle2 = dynamic_cast<AliAODMCParticle*>(aMC->GetTrack(iTrack2));
+   if(!amcparticle2){Fatal(sMethodName.Data(),"!amcparticle2");}
+
+   if(!PassesCommonTrackCuts(amcparticle2)){continue;} // TBI re-think, see implemntation of this method
+
+   // Okay, so we have two tracks, let's check PID, and fill the correlation functions:
+   // Check if this PID is supported in current implementation:
+   if(!(pattern.Contains(Form(".%d.",TMath::Abs(amcparticle1->GetPdgCode()))) && pattern.Contains(Form(".%d.",TMath::Abs(amcparticle2->GetPdgCode()))))){continue;}
+
+   // Determine the indices of correlation function to be filled:
+   Int_t index1 = -44;
+   Int_t index2 = -44;
+   if(fCorrelationFunctionsIndices->GetValue(amcparticle1->GetPdgCode())<=fCorrelationFunctionsIndices->GetValue(amcparticle2->GetPdgCode()))
+   {
+    index1 = fCorrelationFunctionsIndices->GetValue(amcparticle1->GetPdgCode());
+    index2 = fCorrelationFunctionsIndices->GetValue(amcparticle2->GetPdgCode());
+   }
+   else
+   {
+    index1 = fCorrelationFunctionsIndices->GetValue(amcparticle2->GetPdgCode());
+    index2 = fCorrelationFunctionsIndices->GetValue(amcparticle1->GetPdgCode());
+   }
+   if(-44 == index1){Fatal(sMethodName.Data(),"-44 == index1");}
+   if(-44 == index2){Fatal(sMethodName.Data(),"-44 == index2");}
+
+   // Fill or die:
+   fCorrelationFunctions[index1][index2]->Fill(RelativeMomenta(amcparticle1,amcparticle2)); // for the relative momenta ordering doesn't matter
+
+  } // for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliMCEvent *aMC)
+
+//=======================================================================================================================
+
 Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2)
 {
  // Comment the weather here. TBI
@@ -2262,6 +2539,37 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODTrack *ag
  return k;
 
 } // Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2)
+
+//=======================================================================================================================
+
+Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2)
+{
+ // Comment the weather here. TBI
+
+ Double_t k = -44.; // relative momenta k = \frac{1}{2}|\vec{p_1}-\vec{p_2}|
+
+ // \vec{p_1}:
+ Double_t p1x = amcparticle1->Px();
+ Double_t p1y = amcparticle1->Py();
+ Double_t p1z = amcparticle1->Pz();
+ // \vec{p_2}:
+ Double_t p2x = amcparticle2->Px();
+ Double_t p2y = amcparticle2->Py();
+ Double_t p2z = amcparticle2->Pz();
+ // k:
+ k = 0.5*pow(pow(p1x-p2x,2.)+pow(p1y-p2y,2.)+pow(p1z-p2z,2.),0.5);
+
+ if(k<1.e-14) // TBI rething this constraint
+ {
+  cout<<Form("\nSelf-correlation !!!!")<<endl;
+  cout<<Form("p1: %f %f %f",p1x,p1y,p1z)<<endl;
+  cout<<Form("p2: %f %f %f\n",p2x,p2y,p2z)<<endl;
+  exit(0);
+ }
+
+ return k;
+
+} // Double_t AliAnalysisTaskMultiparticleFemtoscopy::RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2)
 
 //=======================================================================================================================
 
@@ -2454,6 +2762,86 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
  fGlobalTracksAOD[2]->Delete(); // TBI or = NULL ?
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)
+{
+ // Calculate background for MC events.
+
+ // TBI this method is not really validated
+ // TBI unify with previous method
+
+ // a) Insanity checks;
+ // b) Temporary primitive algorithm: correlate particles from 'previous event' to particles from 'current event';
+ // c) Two nested loops to calculate B(k);
+ // d) Shift [1] -> [0];
+ // e) Clean [1].
+
+ TString pattern = ".11.13.211.321.2212."; // TBI this can be done programatically TBI only for these particles I need to estimate background TBI move this somewhere else
+
+ // a) Insanity checks:
+ if(!bMC) return; // TBI this is not really needed...
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)";
+ if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
+ if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
+
+ // b) Temporary primitive algorithm: correlate particles from 'previous event' to particles from 'current event'
+ // ...
+
+ // c) Two nested loops to calculate B(k):
+ Int_t nTracks1 = ca1->GetEntries();
+ Int_t nTracks2 = ca2->GetEntries();
+
+ // Start loop over tracks in the 1st event:
+ for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+ {
+  AliAODMCParticle *amcparticle1 = dynamic_cast<AliAODMCParticle*>(ca1->UncheckedAt(iTrack1)); // TBI cross-check UncheckedAt
+  // TBI Temporary track insanity checks:
+  if(!amcparticle1){Fatal(sMethodName.Data(),"!amcparticle1");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(amcparticle1)){continue;} // TBI re-think
+
+  // Start loop over tracks in the 2nd event:
+  for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+  {
+   AliAODMCParticle *amcparticle2 = dynamic_cast<AliAODMCParticle*>(ca2->UncheckedAt(iTrack2)); // TBI cross-check UncheckedAt
+   // TBI Temporary track insanity checks:
+   if(!amcparticle2){Fatal(sMethodName.Data(),"!amcparticle2");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(amcparticle2)){continue;} // TBI re-think
+
+   // Okay... So we have two tracks from two different events ready. Let's check PID, and calculate the background:
+   if(!(pattern.Contains(Form(".%d.",TMath::Abs(amcparticle1->GetPdgCode()))) && pattern.Contains(Form(".%d.",TMath::Abs(amcparticle2->GetPdgCode()))))){continue;}
+
+   // Determine the indices of correlation function to be filled:
+   Int_t index1 = -44;
+   Int_t index2 = -44;
+   if(fCorrelationFunctionsIndices->GetValue(amcparticle1->GetPdgCode())<=fCorrelationFunctionsIndices->GetValue(amcparticle2->GetPdgCode()))
+   {
+    index1 = fCorrelationFunctionsIndices->GetValue(amcparticle1->GetPdgCode());
+    index2 = fCorrelationFunctionsIndices->GetValue(amcparticle2->GetPdgCode());
+   }
+   else
+   {
+    index1 = fCorrelationFunctionsIndices->GetValue(amcparticle2->GetPdgCode());
+    index2 = fCorrelationFunctionsIndices->GetValue(amcparticle1->GetPdgCode());
+   }
+   if(-44 == index1){Fatal(sMethodName.Data(),"-44 == index1");}
+   if(-44 == index2){Fatal(sMethodName.Data(),"-44 == index2");}
+
+   // Fill or die:
+   fBackground[index1][index2]->Fill(RelativeMomenta(amcparticle1,amcparticle2)); // for the relative momenta ordering doesn't matter
+
+  } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+
+ // d) Shift [1] -> [0]:
+ // TBI re-think the lines below, there should be a better way...
+ fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
+
+ // e) Clean [1]:
+ fMixedEvents[1] = NULL;
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)
 
 //=======================================================================================================================
 

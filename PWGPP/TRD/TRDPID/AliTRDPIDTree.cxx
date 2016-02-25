@@ -66,7 +66,8 @@ AliTRDPIDTree::AliTRDPIDTree(const char *name)
     fESDtrackCutsV0(0), fListQATRD(0x0), fListQATRDV0(0x0),
     fNumTagsStored(0), fCollisionSystem(3),
     fpdg(0), frun(0), frunnumber(0), fcentrality(0), fTRDNtracklets(0), fTRDNcls(0), fTRDntracklets(0), fTRDntrackletsPID(0),
-    fTRDtheta(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fPDGTRUE(0), fChi2(0), fhtrackCuts(0), fhArmenteros(0)
+    fTRDtheta(0), fTRDglobalphi(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fPDGTRUE(0), fChi2(0),
+    fhtrackCuts(0), fhArmenteros(0)
 {
 
   //
@@ -132,6 +133,9 @@ void AliTRDPIDTree::UserCreateOutputObjects()
     fTreeTRDPID->Branch("TRDntracklets",&fTRDntracklets);
     fTreeTRDPID->Branch("TRDntrackletsPID",&fTRDntrackletsPID);
     fTreeTRDPID->Branch("TRDphi[6]",fTRDphi);
+    fTreeTRDPID->Branch("TRDeta[6]",fTRDeta);
+    fTreeTRDPID->Branch("TRDthetalayer[6]",fTRDthetalayer);
+    fTreeTRDPID->Branch("TRDglobalphi",&fTRDglobalphi);
     fTreeTRDPID->Branch("TRDY[6]",fTRDY);
     fTreeTRDPID->Branch("TRDtheta",&fTRDtheta);
     fTreeTRDPID->Branch("TRDsignal",&fTRDsignal);
@@ -349,10 +353,13 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     fNSigmaTOF[1]=fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
     fNSigmaTOF[2]=fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 
+    fTRDglobalphi=track->PhiPos();
+
     Int_t ntracklets=0;
     for(Int_t iPl=0;iPl<AliVTrack::kTRDnPlanes;iPl++){
 
-	fTRDphi[iPl]=GetPhi(track,iPl,fTRDY[iPl]);
+	fTRDphi[iPl]=GetPhi(track,iPl,fTRDY[iPl],fTRDeta[iPl],fTRDthetalayer[iPl]);
+      //  printf("testing %i %f %f %f \n",iPl,fTRDtheta,(-TMath::Log(TMath::Tan(0.5 * fTRDtheta))),fTRDeta[iPl]);
 	Float_t dEdx=0;
 	fTRDMomentum[iPl]= track->GetTRDmomentum(iPl);
 	for(int isl= 0; isl<= 7;isl++){
@@ -379,6 +386,7 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
 	    }
 	}
     }
+
 
     AliPID::EParticleType types[]={AliPID::kElectron, AliPID::kMuon, AliPID::kPion, AliPID::kKaon, AliPID::kProton};
     for(Int_t itrdpid=0; itrdpid<5; itrdpid++){
@@ -554,7 +562,7 @@ void AliTRDPIDTree::SetupV0qa()
 }
 
 //________________________________________________________________________
-Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yposlayer)
+Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yposlayer, Double_t &etalayer, Double_t &thetalayer)
 {
     //
     // extrapolate track to TRD radii and convert global phi angle to local coordinate system
@@ -562,15 +570,26 @@ Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yp
 
     Double_t phi=-999;
     yposlayer=-999;
+    etalayer=-999;
+    thetalayer=-999;
     // Phi at entrance of TRD
     Double_t xtrdbeg=AliTRDgeometry::GetXtrdBeg();
     Double_t xtrdend=AliTRDgeometry::GetXtrdEnd();
     Double_t x=xtrdbeg+iPl*(xtrdend-xtrdbeg)/6;
-    if(fTrack->GetOuterParam()){
-	AliExternalTrackParam param(*fTrack->GetOuterParam());
+
+    const AliExternalTrackParam *tempparam = NULL;
+    if(fTrack->GetOuterParam()) tempparam = fTrack->GetOuterParam();
+    else if(fTrack->GetInnerParam()) tempparam = fTrack->GetInnerParam();
+
+
+
+    if(tempparam){
+	AliExternalTrackParam param(*tempparam);
 	param.PropagateTo(x,fESDEvent->GetMagneticField());
 	phi=param.Phi()-param.GetAlpha();
         yposlayer= param.GetY();
+	etalayer= param.Eta();
+	thetalayer= param.Eta();
     }
     if(phi<-TMath::Pi())phi+=2*TMath::Pi();
     if(phi>TMath::Pi())phi-=2*TMath::Pi();

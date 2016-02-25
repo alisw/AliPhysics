@@ -19,10 +19,6 @@ public:
   Float_t GetMaxEta() { return fMaxEta; }
   void  SetMaxEta (Float_t var) { fMaxEta = var;}
 
-
-// [11/3/14 09:15:20] Fiete: to make a full test with the CF train: we also need the possibility to copy values of the header: at least vertex and centrality
-// [11/3/14 09:15:29] Fiete: let's put this before i tag
-
 private:
   UInt_t fBitMask; // Only AOD tracks matching this bit mask are accepted
   Float_t fMinPt; // miminum pt of the tracks
@@ -30,7 +26,7 @@ private:
 
 
 
-  ClassDef(AliAnalysisNanoAODTrackCuts,1); // Select muon spectrometer tracks
+  ClassDef(AliAnalysisNanoAODTrackCuts,1); // track cut object for nano AOD filtering
 };
 
 class AliAnalysisNanoAODEventCuts : public AliAnalysisCuts
@@ -42,11 +38,16 @@ public:
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
   Float_t GetVertexRange() { return fVertexRange; }
   void  SetVertexRange (Float_t var) { fVertexRange = var;}
-public:
-  Float_t fVertexRange; // Only events with primary vertex within this range are accepted (whathever the vertex)
-
+  void  SetMultiplicityRange(AliAnalysisCuts* cutObject, Int_t minMultiplicity, Int_t maxMultiplicity) { fTrackCut = cutObject; fMinMultiplicity = minMultiplicity; fMaxMultiplicity = maxMultiplicity; }
   
-  ClassDef(AliAnalysisNanoAODEventCuts,1); // Select primary vertices
+public:
+  Float_t fVertexRange; // Only events with primary vertex within this range are accepted (whatever the vertex)
+  
+  AliAnalysisCuts* fTrackCut; // track cut object for multiplicity cut
+  Int_t fMinMultiplicity;   // minimum number of tracks to accept this event
+  Int_t fMaxMultiplicity;   // maximal number of tracks to accept this event
+  
+  ClassDef(AliAnalysisNanoAODEventCuts,2); // event cut object for nano AOD filtering
 };
 
 class AliNanoAODSimpleSetter : public AliNanoAODCustomSetter

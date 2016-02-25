@@ -107,7 +107,8 @@ AliAnalysisTaskSE(),
   fSpeed(kTRUE),
   fMergePools(kFALSE),
   fUseDeff(kTRUE),
-  fUseTrackeff(kTRUE)   
+  fUseTrackeff(kTRUE),
+  fPtAssocLimit(1.)
 {
   // Default constructor
 
@@ -160,7 +161,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fSpeed(kTRUE),
   fMergePools(kFALSE),
   fUseDeff(kTRUE),
-  fUseTrackeff(kTRUE)         
+  fUseTrackeff(kTRUE),
+  fPtAssocLimit(1.)   
 {
   // Default constructor
 
@@ -231,7 +233,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fSpeed(source.fSpeed),
   fMergePools(source.fMergePools),
   fUseDeff(source.fUseDeff),
-  fUseTrackeff(source.fUseTrackeff)      
+  fUseTrackeff(source.fUseTrackeff),
+  fPtAssocLimit(source.fPtAssocLimit)   
 {
   // Copy constructor
 }
@@ -329,6 +332,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fMergePools = orig.fMergePools;
   fUseDeff = orig.fUseDeff;
   fUseTrackeff = orig.fUseTrackeff;
+  fPtAssocLimit = orig.fPtAssocLimit;
   
   return *this; //returns pointer of the class
 }
@@ -1174,33 +1178,33 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   TString namePlot = "";
 
   //These for limits in THnSparse (one per bin, same limits). 
-  //Vars: DeltaPhi, InvMass, PtTrack, Displacement, DeltaEta
-  Int_t nBinsPhi[5] = {32,150,6,3,16};
+  //Vars: DeltaPhi, InvMass, PtTrack, Displacement, DeltaEta --> Last bin for pTassoc is to avoid the overflow!
+  Int_t nBinsPhi[5] = {32,150,(int)(2*fPtAssocLimit+1),3,16}; 
   Double_t binMinPhi[5] = {-TMath::Pi()/2.,1.5848,0.,0.,-1.6};  //is the minimum for all the bins
-  Double_t binMaxPhi[5] = {3.*TMath::Pi()/2.,2.1848,3.0,3.,1.6};  //is the maximum for all the bins
+  Double_t binMaxPhi[5] = {3.*TMath::Pi()/2.,2.1848,fPtAssocLimit+0.5,3.,1.6};  //is the maximum for all the bins
 
   //Vars: DeltaPhi, InvMass, DeltaEta
-  Int_t nBinsMix[4] = {32,150,16,6};
+  Int_t nBinsMix[4] = {32,150,16,(int)(2*fPtAssocLimit+1)};
   Double_t binMinMix[4] = {-TMath::Pi()/2.,1.5848,-1.6,0.};  //is the minimum for all the bins
-  Double_t binMaxMix[4] = {3.*TMath::Pi()/2.,2.1848,1.6,3.};  //is the maximum for all the bins
+  Double_t binMaxMix[4] = {3.*TMath::Pi()/2.,2.1848,1.6,fPtAssocLimit+0.5};  //is the maximum for all the bins
 
   Int_t nPoolForHistos=1;
   if(!fMergePools) nPoolForHistos= fCutsTracks->GetNZvtxPoolBins()*fCutsTracks->GetNCentPoolBins(); //multeplicity of histos in case of correct pools treatment: sum(SE_i/ME_i)
  
   for(Int_t i=0;i<fNPtBinsCorr;i++) {
 
-  	  //Modify n of bins with fast speed: in the "for" loop since bins can depend on pT (e.g. mass bin)
+    //Modify n of bins with fast speed: in the "for" loop since bins can depend on pT (e.g. mass bin)
     //setting of mass bin is done at the end of the loop!
     if(fSpeed) { //these with fast speed
-      if(i>=9) {nBinsPhi[0] = 32; nBinsPhi[1] = 67; nBinsPhi[2] = 3; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
-      else {nBinsPhi[0] = 32; nBinsPhi[1] = 43; nBinsPhi[2] = 3; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
-      binMinPhi[0] = -TMath::Pi()/2.; binMinPhi[1] = 1.5848; binMinPhi[2] = 0.; binMinPhi[3] = 0.; binMinPhi[4] = -1.6;
-      binMaxPhi[0] = 3.*TMath::Pi()/2.; binMaxPhi[1] = 2.1848; binMaxPhi[2] = 1.5; binMaxPhi[3] = 3.; binMaxPhi[4] = 1.6;
+      if(i>=9) {nBinsPhi[0] = 32; nBinsPhi[1] = 67; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
+      else {nBinsPhi[0] = 32; nBinsPhi[1] = 43; nBinsPhi[3] = 1; nBinsPhi[4] = 16;}
+      binMinPhi[0] = -TMath::Pi()/2.; binMinPhi[1] = 1.5848; binMinPhi[3] = 0.; binMinPhi[4] = -1.6;
+      binMaxPhi[0] = 3.*TMath::Pi()/2.; binMaxPhi[1] = 2.1848; binMaxPhi[3] = 3.; binMaxPhi[4] = 1.6;
     
-      if(i>=9) {nBinsMix[0] = 32; nBinsMix[1] = 67; nBinsMix[2] = 16; nBinsMix[3] = 3;}
-      else {nBinsMix[0] = 32; nBinsMix[1] = 43; nBinsMix[2] = 16; nBinsMix[3] = 3;} 
-      binMinMix[0] = -TMath::Pi()/2.; binMinMix[1] = 1.5848; binMinMix[2] = -1.6; binMinMix[3] = 0.;
-      binMaxMix[0] = 3.*TMath::Pi()/2.; binMaxMix[1] = 2.1848; binMaxMix[2] = 1.6; binMaxMix[3] = 1.5;
+      if(i>=9) {nBinsMix[0] = 32; nBinsMix[1] = 67; nBinsMix[2] = 16;}
+      else {nBinsMix[0] = 32; nBinsMix[1] = 43; nBinsMix[2] = 16;} 
+      binMinMix[0] = -TMath::Pi()/2.; binMinMix[1] = 1.5848; binMinMix[2] = -1.6;
+      binMaxMix[0] = 3.*TMath::Pi()/2.; binMaxMix[1] = 2.1848; binMaxMix[2] = 1.6;
     }  	  
 
     if(!fMixing) {
@@ -1378,7 +1382,8 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
           }
-        }
+        } //end of fSpeed
+
       } //end of pool multiplicity      
    
       //Resume the definition of histos
@@ -1525,7 +1530,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
         hPhiC_EvMix->Sumw2();
         fOutputCorr->Add(hPhiC_EvMix);  
 
-         //modify here the mass axis of THnSparse! 
+        //modify here the mass axis of THnSparse! 
         if(fSpeed) {
       	  Int_t nBins; Double_t mBin;      
       	  if(i>=9) { //signal range is 1.7488 to 2.0008, plus 1 bin L and R for sidebands
@@ -1548,7 +1553,8 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
       	  
-        } //end of fSpeed          
+        } //end of fSpeed   
+      
       } //end of Mult pools
     } //end of Mix
   }
@@ -2607,12 +2613,29 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "\n--------------------------\n";
   cout << "PtBin tresh. tracks low---\n";
   for (int i=0; i<fNPtBinsCorr; i++) {
-    cout << fPtThreshLow.at(i) << "; ";
+    cout << fPtThreshLow.at(i) << ", ";
   }
-  cout << "PtBin tresh. tracks up----\n";
+  cout << "\nPtBin tresh. tracks up----\n";
   for (int i=0; i<fNPtBinsCorr; i++) {
-    cout << fPtThreshUp.at(i) << "; ";
+    cout << fPtThreshUp.at(i) << ", ";
   }
+  cout << "\nSB limits (LSBLow)----\n";
+  for (int i=0; i<fNPtBinsCorr; i++) {
+    cout << fLSBLowLim.at(i) << ", ";
+  }
+  cout << "\nSB limits (LSBUpp)----\n";
+  for (int i=0; i<fNPtBinsCorr; i++) {
+    cout << fLSBUppLim.at(i) << ", ";
+  }
+  cout << "\nSB limits (RSBLow)----\n";
+  for (int i=0; i<fNPtBinsCorr; i++) {
+    cout << fRSBLowLim.at(i) << ", ";
+  }
+  cout << "\nSB limits (RSBUpp)----\n";
+  for (int i=0; i<fNPtBinsCorr; i++) {
+    cout << fRSBUppLim.at(i) << ", ";
+  }
+
   cout << "\n--------------------------\n";
   cout << "D0 Eta cut for Correl = "<<fEtaForCorrel<<"\n";
   cout << "--------------------------\n";
@@ -2629,6 +2652,8 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "Speed (1 SBL/SBR bin) = "<<fSpeed<<"\n";
   cout << "--------------------------\n";
   cout << "All entries in Pool0 = "<<fMergePools<<"\n";
+  cout << "--------------------------\n";  
+  cout << "PtBin associated maximum edge = "<<fPtAssocLimit<<"\n";
   cout << "--------------------------\n";  
 }
 

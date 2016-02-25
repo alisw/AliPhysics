@@ -48,7 +48,9 @@ public:
                Int_t Rebin,
                Int_t fsig,
                Int_t fbkg,
-               Int_t nSets,
+	       Double_t min,
+	       Double_t max,
+	       Int_t nSets,
                Int_t nPtBins,
                Int_t nCutVariables); /// get the list of cuts
   

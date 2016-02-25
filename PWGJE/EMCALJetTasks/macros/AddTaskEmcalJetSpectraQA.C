@@ -82,9 +82,20 @@ AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackName);
-  if (trackCont) {
-    trackCont->SetParticlePtCut(trackPtCut);
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+  }
+  else if (!trackName.IsNull()) {
+    jetTask->AddParticleContainer(trackName);
+  }
+
+  AliParticleContainer *partCont = jetTask->GetParticleContainer(0);
+  if (partCont) {
+    partCont->SetParticlePtCut(trackPtCut);
   }
 
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);

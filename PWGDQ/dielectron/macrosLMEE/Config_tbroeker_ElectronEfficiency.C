@@ -129,6 +129,22 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   // -----
   // produce analysis filter by using functions in this config:
   // -----
+  
+  if (cutInstance==100) {
+    // kinematic cuts for the legs during pair efficiency determination:
+    AliDielectronVarCuts *kineCuts = new AliDielectronVarCuts("kineCuts","kineCuts");  
+    kineCuts->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+    kineCuts->AddCut(AliDielectronVarManager::kPt,   0.2, 1000.);
+    anaFilter->AddCuts( kineCuts );
+    return anaFilter; // return here because we dont want any other cuts.
+  }
+  if(cutInstance == 101){
+    rejCutMee=-1;
+    rejCutTheta=-1.;/*50.e-3*/;
+    rejCutPhiV=3.2;
+    return 0x0;
+  }
+  
   anaFilter->AddCuts( SetupTrackCuts(cutInstance) );
   if(cutInstance == 25){
     AliDielectronVarCuts *pInCut = new AliDielectronVarCuts("pInCut","pInCut");  
@@ -157,6 +173,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   // selection or rejection of V0 tracks
   if(cutInstance < 20)  
   anaFilter->AddCuts( noconv );
+  
   
   
   std::cout << "...cuts added!" <<std::endl; 

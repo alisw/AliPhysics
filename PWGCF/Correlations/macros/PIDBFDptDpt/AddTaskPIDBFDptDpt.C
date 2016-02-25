@@ -8,6 +8,9 @@
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (
+ TString AnalysisDataType       = "MCAOD", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ Bool_t NoResonances            =  kTRUE, // for MCAOD
+ Bool_t NoElectron              =  kTRUE, // for MCAOD
  int    CentralityGroup         = 1, // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             = 1, // 0: full correlations    1: singles only
  int    useWeights              = 0, // 0: no                   1: yes 
@@ -53,56 +56,47 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
   double maxCentrality[10];
 
   if ( CentralityGroup == 1 )
-    {
-      minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
       minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
       minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
       minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
       minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
       minCentrality[5] = 50.;     maxCentrality[5]  = 60.;
       minCentrality[6] = 60.;     maxCentrality[6]  = 70.;
-      minCentrality[7] = 70.;     maxCentrality[7]  = 80.;
-    }
+      minCentrality[7] = 70.;     maxCentrality[7]  = 80.; }
   else if ( CentralityGroup == 2 )
-    {
-      minCentrality[0] = 0;       maxCentrality[0]  = 10.;
-      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
-      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
-      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
-    }
-  else if ( CentralityGroup == 3 )
-    {
-      minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
+    { minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
       minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
       minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
-      minCentrality[3] = 70.;     maxCentrality[3]  = 80.;
-    }
+      minCentrality[3] = 70.;     maxCentrality[3]  = 80.; }
+  else if ( CentralityGroup == 3 )
+    { minCentrality[0] = 20.;     maxCentrality[0]  = 30.;
+      minCentrality[1] = 30.;     maxCentrality[1]  = 40.; }
   else if ( CentralityGroup == 4 )
-    {
-      minCentrality[0] = 20.;     maxCentrality[0]  = 30.;
-      minCentrality[1] = 30.;     maxCentrality[1]  = 40.;
-    }
+    { minCentrality[0] = 60.;     maxCentrality[0]  = 70.;
+      minCentrality[1] = 70.;     maxCentrality[1]  = 80.; }
   else if ( CentralityGroup == 5 )
-    {
-      minCentrality[0] = 60.;     maxCentrality[0]  = 70.;
-      minCentrality[1] = 70.;     maxCentrality[1]  = 80.;
-    }
+    { minCentrality[0] = 10.;     maxCentrality[0]  = 20.; }
   else if ( CentralityGroup == 6 )
-    {
-      minCentrality[0] = 0;       maxCentrality[0]  = 20.;
+    { minCentrality[0] = 30.;     maxCentrality[0]  = 40.; }
+  else if ( CentralityGroup == 7 )
+    { minCentrality[0] = 50.;     maxCentrality[0]  = 60.; }
+  else if ( CentralityGroup == 8 )
+    { minCentrality[0] = 70.;     maxCentrality[0]  = 80.; }
+  else if ( CentralityGroup == 9 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 20.;
       minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
       minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
-      minCentrality[3] = 60.;     maxCentrality[3]  = 80.;
-    }
-  else if ( CentralityGroup == 7 )
-    {
-      minCentrality[0] = 40.;     maxCentrality[0]  = 60.;
-      minCentrality[1] = 60.;     maxCentrality[1]  = 80.;
-    }
+      minCentrality[3] = 60.;     maxCentrality[3]  = 80.; }
+  else if ( CentralityGroup == 10 )
+    { minCentrality[0] = 40.;     maxCentrality[0]  = 60.;
+      minCentrality[1] = 60.;     maxCentrality[1]  = 80.; }
+  else if ( CentralityGroup == 11 )
+    { minCentrality[0] = 20.;     maxCentrality[0]  = 40.; }
+  else if ( CentralityGroup == 12 )
+    { minCentrality[0] = 60.;     maxCentrality[0]  = 80.; }
   else
-    {
-      return 0;
-    }
+    { return 0; }
   
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
@@ -291,6 +285,9 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetWeigth_1(            weight_1        );
       task->SetWeigth_2(            weight_2        );
       task->SetParticleSpecies(       particleID    );
+      task->SetAnalysisType(      AnalysisDataType  );
+      task->SetResonancesCut(       NoResonances    );
+      task->SetElectronCut(         NoElectron      );
         
       // assign initial values to AliHelperPID object
       AliHelperPID* helperpid = new AliHelperPID();

@@ -15,7 +15,6 @@ void AddTask_GammaConvFlow_PbPb2(
                                TString uniqueID = "",
                                Int_t harmonic=2,
                                Int_t trainConfig = 1,  //change different set of cuts
-                               //Bool_t isMC   = kFALSE, //run MC
                                Int_t enableQAMesonTask = 0, //enable QA in AddTask_GammaConvFlow_PbPb2
                                Int_t enableQAPhotonTask = 0, // enable additional QA task
                                //TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
@@ -29,10 +28,11 @@ void AddTask_GammaConvFlow_PbPb2(
                                Bool_t UseKappaSel = kFALSE,
                                Float_t MinKappa = 0,
                                Float_t MaxKappa = 10,
-                               Int_t FilterVariable = 0, // 0 = NONE/OFF, 1 = Mass, 2 = Kappa
+                               Int_t FilterVariable = 1, // 1 = Mass, 2 = Kappa, 3 = MCee mass, 4 = MCee kappa, 5 = !MCee mass, 6 = !MCee kappa
                                const Int_t NFilterBins = 1,
                                Double_t MinFilter = 0.0,
-                               Double_t MaxFilter = 0.2
+                               Double_t MaxFilter = 0.2,
+                               Bool_t isMC = kFALSE
                                ) {
     
   // ================= Load Librariers =================================
@@ -126,7 +126,7 @@ void AddTask_GammaConvFlow_PbPb2(
   AliAnalysisTaskGammaConvFlow *task=NULL;
   task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic));
   task->SetIsHeavyIon(isHeavyIon);
-  //task->SetIsMC(isMC);
+  task->AliAnalysisTaskGammaConvFlow::SetIsMC(isMC);
   
   cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
   if(!cutsRP) {

@@ -508,9 +508,9 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
   Int_t nBins[nDim] = {800,250,7,4};
   Double_t xMin[nDim] = {0,0, 0,0};
   Double_t xMax[nDim] = {0.8,25,7,4};
-  Int_t nBinsRP[nDim] = {800,250,7,6};
+  Int_t nBinsRP[nDim] = {800,250,7,8};
   Double_t xMinRP[nDim] = {0,0, 0,0};
-  Double_t xMaxRP[nDim] = {0.8,25,7,6};
+  Double_t xMaxRP[nDim] = {0.8,25,7,8};
   
   if(fDoTHnSparse){
     sESDMotherInvMassPtZM = new THnSparseF*[fnCuts];
@@ -2766,7 +2766,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
               sparesFill[2] = (Double_t)zbin; 
               sparesFill[3] = (Double_t)mbin;
             } else {
-              psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(fEventPlaneAngle);
+              psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(TMath::Abs(fEventPlaneAngle));
               zbin = fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
 //               if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 //                 mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
@@ -3365,7 +3365,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
   Int_t mbin = 0;
   
   if(fDoTHnSparse){
-    psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(fEventPlaneAngle);
+    psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(TMath::Abs(fEventPlaneAngle));
     zbin = fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
 //     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
 //       mbin = fBGHandlerRP[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());

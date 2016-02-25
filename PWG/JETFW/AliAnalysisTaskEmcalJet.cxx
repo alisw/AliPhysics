@@ -61,20 +61,6 @@ AliAnalysisTaskEmcalJet::~AliAnalysisTaskEmcalJet()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::AcceptBiasJet(AliEmcalJet *jet, Int_t c)
-{ 
-  // Accept jet with a bias.
-
-  AliJetContainer *cont = GetJetContainer(c);
-  if(!cont) {
-    AliError(Form("%s:Container %d not found",GetName(),c));
-    return 0;
-  }
-
-  return cont->AcceptBiasJet(jet);
-}
-
-//________________________________________________________________________
 Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet, Int_t c)
 {
 
@@ -242,14 +228,24 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
+AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
+    JetAcceptanceType accType, TString tag)
+{
+  // Add particle container
+  // will be called in AddTask macro
+
+  AliParticleContainer* partCont = GetParticleContainer(0);
+  AliClusterContainer* clusCont = GetClusterContainer(0);
+
+  return AddJetContainer(jetType, jetAlgo, recoScheme, radius, accType, partCont, clusCont, tag);
+}
+
+//________________________________________________________________________
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, JetAcceptanceType accType,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
 {
   // Add particle container
   // will be called in AddTask macro
-
-  if (partCont == 0) partCont = GetParticleContainer(0);
-  if (clusCont == 0) clusCont = GetClusterContainer(0);
 
   AliJetContainer *cont = new AliJetContainer(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag);
   cont->SetJetAcceptanceType(accType);
