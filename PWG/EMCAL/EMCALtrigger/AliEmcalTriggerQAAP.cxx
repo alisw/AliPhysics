@@ -33,8 +33,8 @@
 #include "AliLog.h"
 
 #include "AliEMCALTriggerConstants.h"
-
 #include "AliEmcalTriggerQAAP.h"
+
 
 using namespace EMCALTrigger;
 

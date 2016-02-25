@@ -19,8 +19,8 @@
 
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalTriggerMakerTask.h"
 #include "AliEmcalTriggerMakerKernel.h"
+#include "AliEmcalTriggerMakerTask.h"
 #include "AliLog.h"
 
 #include <bitset>

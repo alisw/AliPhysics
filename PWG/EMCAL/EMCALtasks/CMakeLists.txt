@@ -14,69 +14,71 @@
 # **************************************************************************/
 
 #Module
-set(MODULE PWGCFCorrelationsJCORRAN)
+set(MODULE PWGEMCALtasks)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
-                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
   )
 
 # Sources - alphabetical order
 set(SRCS
-  AliJCORRAN.cxx
-  AliJTrackCounter.cxx
-  AliJCORRANTask.cxx
-  AliJEfficiencyTask.cxx
-  AliJDiHadronCorrTask.cxx
-  AliJFilter.cxx
-  AliJEfficiencyScanner.cxx
-  AliJBaseEventHeader.cxx
-  AliJBaseTrack.cxx
-  AliJEventHeader.cxx
-  AliJJet.cxx
-  AliJMCTrack.cxx
-  AliJPhoton.cxx
-  AliJPiZero.cxx
-  AliJRunHeader.cxx
-  AliJTrack.cxx
-  AliJHistManager.cxx
-  AliJCorrelations.cxx
-  AliJDataManager.cxx
-  AliJRunTable.cxx
-  AliJHistos.cxx
-  AliJEventPool.cxx
-  AliJEfficiency.cxx
-  AliJTrackCut.cxx
-  AliJBaseCard.cxx
-  AliJCard.cxx
-  AliJFFlucTask.cxx
-  AliJFFlucAnalysis.cxx
-  AliJXtTask.cxx
-  AliJXtAnalysis.cxx
+  AliAnalysisTaskEMCALClusterizeFast.cxx
+  AliAnalysisTaskEmcalSample.cxx
+  AliAnalysisTaskEmcalTriggerPatchClusterMatch.cxx
+  AliEMCALClusterParams.cxx
+  AliEmcalAodTrackFilterTask.cxx
+  AliEmcalClusTrackMatcherTask.cxx
+  AliEmcalClusterMaker.cxx
+  AliEmcalCompatTask.cxx
+  AliEmcalDebugTask.cxx
+  AliEmcalEsdTrackFilterTask.cxx
+  AliEmcalMCTrackSelector.cxx
+  AliEmcalParticleMaker.cxx
+  AliEmcalPatchFromCellMaker.cxx
+  AliEmcalPhysicsSelectionTask.cxx
+  AliEmcalPicoTrackMaker.cxx
+  AliEmcalSetupTask.cxx
+  AliEmcalTenderTask.cxx
+  AliEmcalTrackingQATask.cxx
+  AliEmcalTrackPropagatorTask.cxx
+  AliEsdSkimTask.cxx
+  AliEsdTrackExt.cxx
+  AliHadCorrTask.cxx
+  AliEMCALConfiguration.cxx
+  AliEMCALConfigHandler.cxx
+  AliEMCALConfigurationMatcher.cxx
+  AliAnalysisTaskEmcalTriggerSelection.cxx
   )
 
 # Headers from sources
-  string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-	generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
-add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW EMCALUtils OADB PHOSUtils)
-	generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils ESD PWGEMCALbase PWGTools STEER STEERBase Tender)
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
@@ -86,11 +88,11 @@ target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-	set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-	install(TARGETS ${MODULE} 
-			ARCHIVE DESTINATION lib
-			LIBRARY DESTINATION lib)
+install(TARGETS ${MODULE} 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
