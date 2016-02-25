@@ -998,20 +998,20 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   
   printf("Meson cuts \n");
   printf("\t |y| < %3.2f \n", fRapidityCutMeson);
-  if (fEnableMinOpeningAngleCut) printf("\t theta_{open} < %3.4f\n", fOpeningAngle);
+  if (fEnableMinOpeningAngleCut) printf("\t theta_{open} > %3.4f\n", fOpeningAngle);
   if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
   else printf("\t alpha pT-dep cut active\n");
   if (!fIsMergedClusterCut){
-    if (fDCAGammaGammaCutOn)printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
-    if (fDCARMesonPrimVtxCutOn)printf("\t dca_{R, prim Vtx} > %3.2f\n", fDCARMesonPrimVtxCut); 
-    if (fDCAZMesonPrimVtxCutOn)printf("\t dca_{Z, prim Vtx} > %3.2f\n\n", fDCAZMesonPrimVtxCut); 
+    if (fDCAGammaGammaCutOn)printf("\t dca_{gamma,gamma} < %3.2f\n", fDCAGammaGammaCut);
+    if (fDCARMesonPrimVtxCutOn)printf("\t dca_{R, prim Vtx} < %3.2f\n", fDCARMesonPrimVtxCut); 
+    if (fDCAZMesonPrimVtxCutOn)printf("\t dca_{Z, prim Vtx} < %3.2f\n\n", fDCAZMesonPrimVtxCut); 
   }
   if (fIsMergedClusterCut == 1 && fEnableMassCut){
     printf("\t Meson selection energy dependent\n\n");
   } else {
     printf("\t Meson selection window for further analysis %3.3f > M_{gamma,gamma} > %3.3f\n\n", fSelectionLow, fSelectionHigh);
   }
-  if (!fMinOpanPtDepCut) printf("\t theta_{open} < %3.2f\n", fMinOpanCutMeson);
+  if (!fMinOpanPtDepCut) printf("\t theta_{open} > %3.2f\n", fMinOpanCutMeson);
   else printf("\t Min theta_{open} pT-dep cut active\n");
   if (!fMaxOpanPtDepCut) printf("\t %3.2f < theta_{open}\n", fMaxOpanCutMeson);
   else printf("\t Max theta_{open} pT-dep cut active\n");
