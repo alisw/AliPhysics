@@ -5440,12 +5440,17 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  continue; 
 	}
 	
-	//matched jets tracks:
-	if(GetFFRadius()<=0){
-	  GetJetTracksTrackrefs(jettrackListMatch, matchedJet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);
 
-	}
-	else GetJetTracksPointing(fTracksRecCuts, jettrackListMatch, matchedJet, GetFFRadius(), sumPtMatch, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);
+	jettrackListMatch->Clear();
+	
+	if(matchedJet){
+	  //matched jets tracks:
+	  if(GetFFRadius()<=0){
+	    GetJetTracksTrackrefs(jettrackListMatch, matchedJet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);
+	    
+	  }
+	  else GetJetTracksPointing(fTracksRecCuts, jettrackListMatch, matchedJet, GetFFRadius(), sumPtMatch, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);}
+	
 	
 	if(GetFFMinNTracks()>0 && jettrackListMatch->GetSize()<=GetFFMinNTracks()){isBadJetMatch = kTRUE;}
 	
@@ -5637,6 +5642,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	}
 	
 	delete jettrackList;
+	delete jettrackListMatch;
     }
   }
   

@@ -27,7 +27,7 @@ class AliAnalysisTaskEmcalJetExtractor : public AliAnalysisTaskEmcalJet {
 
   void                        UserCreateOutputObjects();
   void                        Initialize(Int_t modus, const char* treeName);
-  void                        DefineExtraction(Int_t type, Int_t criterium, Double_t minPt, Double_t percentage);
+  void                        DefineExtraction(Int_t type, Int_t criterium, Double_t minPt, Double_t maxPt, Double_t percentage);
 
  protected:
   void                        ExecOnce();
@@ -35,7 +35,7 @@ class AliAnalysisTaskEmcalJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      Run()              ;
 
   AliJetContainer            *fJetsCont;                                //! Jets
-  AliParticleContainer       *fTracksCont;                              //! Tracks
+  AliTrackContainer          *fTracksCont;                              //! Tracks
   void*                       fJetBuffer;                               //! buffer for one jet (that will be saved to the tree)
   TTree*                      fJetsOutput;                              //! Jets that will be saved to a tree
   Int_t                       fCounter;                                 // Event counter
@@ -44,6 +44,7 @@ class AliAnalysisTaskEmcalJetExtractor : public AliAnalysisTaskEmcalJet {
   Int_t                       fExtractionType;                          // specifies how the jets are saved. 0-AliEmcalJet,1-AliBasicJet,2-AliBasicJet w/constituents
   Int_t                       fExtractionCriterium;                     // criterium for extraction: 0-MinBias
   Double_t                    fExtractionMinPt;                         // Jet min pt for extraction
+  Double_t                    fExtractionMaxPt;                         // Jet max pt for extraction
   Double_t                    fExtractionPercentage;                    // extraction percentage, rest is thrown away
 
  private:

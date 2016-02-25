@@ -90,15 +90,12 @@
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
 #pragma link C++ namespace EMCalTriggerPtAnalysis+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalHistoContainer+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEmcalTriggerOfflineSelection+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventData+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection+;
@@ -123,6 +120,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaPatternContainer+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerPatchTypeObject+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef+;
@@ -134,6 +132,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
+#pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;
 #pragma link C++ class HighPtTracks::AliReducedClusterParticle+;
 #pragma link C++ class HighPtTracks::AliReducedEmcalCluster+;

@@ -67,7 +67,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
   fTriggerTypeSel(kND),
-  fNbins(500),
+  fNbins(250),
   fMinBinPt(0),
   fMaxBinPt(250),
   fMinPtTrackInEmcal(0),
@@ -156,7 +156,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
   fTriggerTypeSel(kND),
-  fNbins(500),
+  fNbins(250),
   fMinBinPt(0),
   fMaxBinPt(250),
   fMinPtTrackInEmcal(0),
@@ -1200,6 +1200,36 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))) cont->NextEvent();
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+AliMCParticleContainer* AliAnalysisTaskEmcal::AddMCParticleContainer(const char *n)
+{
+  // Add particle container
+  // will be called in AddTask macro
+
+  if (TString(n).IsNull()) return 0;
+
+  AliMCParticleContainer* cont = new AliMCParticleContainer(n);
+
+  fParticleCollArray.Add(cont);
+
+  return cont;
+}
+
+//________________________________________________________________________
+AliTrackContainer* AliAnalysisTaskEmcal::AddTrackContainer(const char *n)
+{
+  // Add particle container
+  // will be called in AddTask macro
+
+  if (TString(n).IsNull()) return 0;
+
+  AliTrackContainer* cont = new AliTrackContainer(n);
+
+  fParticleCollArray.Add(cont);
+
+  return cont;
 }
 
 //________________________________________________________________________

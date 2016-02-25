@@ -12,7 +12,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//            AliAnalysisTaskCheckCascadepp276 class
+//            AliAnalysisTaskCheckCascadepp class
 //
 //            Origin AliAnalysisTaskCheckCascade which has four roles :
 //              1. QAing the Cascades from ESD and AOD
@@ -42,20 +42,21 @@
 //                  where new pt dependent V0's cosPA cut implemented by Iouri) 
 //                - AOD analysis part completed 
 //
-//
 //              Adapted to pp 2.76 TeV analysis: D. Colella, domenico.colella@ba.infn.it
 //               Gen-now 2012
 //                - Physics selection re-moved here (mainly for normalization in the efficiency calcuation)
 //                - Centrality selection deleted
 //
-//
-//             Adapted to pPb 5.02 TeV analysis: D. Colella, domenico.colella@ba.infn.it
+//              Adapted to pPb 5.02 TeV analysis: D. Colella, domenico.colella@ba.infn.it
 //               Aug-Sep 2014
 //               - Added the parameter fCollidingSystem, to distingish between pp and pPb procedures
 //               Aug 2015
 //               - Clarify the usage of SDD selection after the introduction of fCollifingSystem
+//
+//              Improvement for pp 13 TeV analysis: D. Colella, domenico.colella@ba.infn.it
 //               Feb 2015
 //               - Added the possibility to select events in the class kINT7 for the pp@13TeV analysis through "fkSwitchINT7"
+//               - Revision of the event selections for the pp@13TeV analysis
 //
 //             
 //
@@ -105,57 +106,63 @@ class AliAODv0;
 #include "AliAnalysisUtils.h"
 
 
-#include "AliAnalysisTaskCheckCascadepp276.h"
+#include "AliAnalysisTaskCheckCascadepp.h"
 
 
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskCheckCascadepp276)
+ClassImp(AliAnalysisTaskCheckCascadepp)
 
 
 
 //________________________________________________________________________
-AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276() 
+AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp() 
   : AliAnalysisTaskSE(), 
-    fAnalysisType               ("ESD"),
-    fESDtrackCuts               (0),
-    fUtils                      (0),
-    fCollidingSystem            ("pp"),
-    fkTriggerClass              (AliVEvent::kINT7),
-    //fkSwitchINT7                (kTRUE),
-    fPIDResponse                (0),
-    fkRerunV0CascVertexers      (0),
-    fkSDDSelectionOn            (kTRUE),
-    fwithSDD                    (kTRUE),
-    fkQualityCutZprimVtxPos     (kTRUE),
-    fkQualityCutNoTPConlyPrimVtx(kTRUE),
-    fkQualityCutTPCrefit        (kTRUE),
-    fkQualityCutnTPCcls         (kTRUE),
-    fkQualityCutPileup          (kTRUE),
-    fMinnTPCcls                 (0),
-    fkExtraSelections           (0),
-    fVtxRange                   (0),
-    fVtxRangeMin                (0),
-    fMinPtCutOnDaughterTracks   (0),
-    fEtaCutOnDaughterTracks     (0),
+    fAnalysisType                   ("ESD"),
+    fCollidingSystem                ("pp"),
+    fkTriggerClass                  (AliVEvent::kINT7),
+    fApplyEvSelDAQincomplete        (kTRUE), 
+    fApplyEvSelSDDstatus            (kFALSE),
+    fApplyEvSelPhysicsSel           (kTRUE),
+    fApplyEvSelNoTPConlyPrimVtx     (kTRUE),
+    fApplyEvSelPileup               (kTRUE),
+    fApplyEvSelSPDclustervstracklet (kTRUE),
+    fApplyEvSelZprimVtxPos          (kTRUE),
+    fESDtrackCuts                   (0), 
+    fUtils                          (0),
+    fPIDResponse                    (0),
+    fRerunV0CascVertexers           (kFALSE),
+    fwithSDD                        (kFALSE),
+    fExtraSelections                (kFALSE),
+    fTrackQualityCutTPCrefit        (kTRUE),
+    fTrackQualityCutnTPCcls         (kTRUE),
+    fMinnTPCcls                     (0),
+    fVtxRangeMax                    (10),
+    fVtxRangeMin                    (0),
+    fMinPtCutOnDaughterTracks       (0),
+    fEtaCutOnDaughterTracks         (0),
 
     // - Plots initialisation
     fListHistCascade(0),
       // Cascades multiplicity plots
       fHistCascadeMultiplicityBeforeAnySel(0),
-      fHistCascadeMultiplicityAfterSDDSel(0),
+      fHistCascadeMultiplicityAfterDAQincompleteEvRej(0),
+      fHistCascadeMultiplicityAfterSDDstatusSel(0),
       fHistCascadeMultiplicityAfterPhysicsSel(0),
-      fHistCascadeMultiplicityForSelEvtNoTPCOnly(0),
-      fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup(0),
-      fHistCascadeMultiplicityAfterVertexCutSel(0),
+      fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel(0),      
+      fHistCascadeMultiplicityAfterPileupRej(0),                
+      fHistCascadeMultiplicityAfterSPDclustervstrackletSel(0),
+      fHistCascadeMultiplicityAfterZprimVtxPosSel(0),           
       // Tracks multiplicity plots
       fHistTrackMultiplicityBeforeAnySel(0),
-      fHistTrackMultiplicityAfterSDDSel(0),
+      fHistTrackMultiplicityAfterDAQincompleteEvRej(0),
+      fHistTrackMultiplicityAfterSDDstatusSel(0),            
       fHistTrackMultiplicityAfterPhysicsSel(0),
-      fHistTrackMultiplicityForSelEvtNoTPCOnly(0),
-      fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup(0),
-      fHistTrackMultiplicityAfterVertexCutSel(0),
+      fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel(0),     
+      fHistTrackMultiplicityAfterPileupRej(0),               
+      fHistTrackMultiplicityAfterSPDclustervstrackletSel(0),
+      fHistTrackMultiplicityAfterZprimVtxPosSel(0),          
       // Vertex position plots (BestVertex)
       fHistPVx(0), fHistPVy(0), fHistPVz(0),
       fHistPVxAnalysis(0), fHistPVyAnalysis(0), fHistPVzAnalysis(0),    
@@ -214,47 +221,52 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276()
 
 
 //________________________________________________________________________
-AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *name) 
+AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name) 
   : AliAnalysisTaskSE(name), 
-    fAnalysisType               ("ESD"), 
-    fESDtrackCuts               (0), 
-    fUtils                      (0),
-    fCollidingSystem            ("pp"),
-    fkTriggerClass              (AliVEvent::kINT7),
-    //fkSwitchINT7                (kTRUE),
-    fPIDResponse                (0),
-    fkRerunV0CascVertexers      (0),
-    fkSDDSelectionOn            (kTRUE),
-    fwithSDD                    (kTRUE),
-    fkQualityCutZprimVtxPos     (kTRUE),
-    fkQualityCutNoTPConlyPrimVtx(kTRUE),
-    fkQualityCutTPCrefit        (kTRUE),
-    fkQualityCutnTPCcls         (kTRUE),
-    fkQualityCutPileup          (kTRUE),
-    fMinnTPCcls                 (0),
-    fkExtraSelections           (0),
-    fVtxRange                   (0),
-    fVtxRangeMin                (0),
-    fMinPtCutOnDaughterTracks   (0),
-    fEtaCutOnDaughterTracks     (0),
-     
+    fAnalysisType                   ("ESD"),
+    fCollidingSystem                ("pp"),
+    fkTriggerClass                  (AliVEvent::kINT7),
+    fApplyEvSelDAQincomplete        (kTRUE),
+    fApplyEvSelSDDstatus            (kFALSE),
+    fApplyEvSelPhysicsSel           (kTRUE),
+    fApplyEvSelNoTPConlyPrimVtx     (kTRUE),
+    fApplyEvSelPileup               (kTRUE),
+    fApplyEvSelSPDclustervstracklet (kTRUE),
+    fApplyEvSelZprimVtxPos          (kTRUE),
+    fESDtrackCuts                   (0),
+    fUtils                          (0),
+    fPIDResponse                    (0),
+    fRerunV0CascVertexers           (kFALSE),
+    fwithSDD                        (kFALSE),
+    fExtraSelections                (kFALSE),
+    fTrackQualityCutTPCrefit        (kTRUE),
+    fTrackQualityCutnTPCcls         (kTRUE),
+    fMinnTPCcls                     (0),
+    fVtxRangeMax                    (10),
+    fVtxRangeMin                    (0),
+    fMinPtCutOnDaughterTracks       (0),
+    fEtaCutOnDaughterTracks         (0),
+
     // - Plots initialisation
     fListHistCascade(0),
-
       // Cascades multiplicity plots
       fHistCascadeMultiplicityBeforeAnySel(0),
-      fHistCascadeMultiplicityAfterSDDSel(0),
+      fHistCascadeMultiplicityAfterDAQincompleteEvRej(0),
+      fHistCascadeMultiplicityAfterSDDstatusSel(0),
       fHistCascadeMultiplicityAfterPhysicsSel(0),
-      fHistCascadeMultiplicityForSelEvtNoTPCOnly(0),
-      fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup(0),
-      fHistCascadeMultiplicityAfterVertexCutSel(0),
+      fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel(0),   
+      fHistCascadeMultiplicityAfterPileupRej(0),             
+      fHistCascadeMultiplicityAfterSPDclustervstrackletSel(0),
+      fHistCascadeMultiplicityAfterZprimVtxPosSel(0),        
       // Tracks multiplicity plots
       fHistTrackMultiplicityBeforeAnySel(0),
-      fHistTrackMultiplicityAfterSDDSel(0),
+      fHistTrackMultiplicityAfterDAQincompleteEvRej(0),
+      fHistTrackMultiplicityAfterSDDstatusSel(0),            
       fHistTrackMultiplicityAfterPhysicsSel(0),
-      fHistTrackMultiplicityForSelEvtNoTPCOnly(0),
-      fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup(0),
-      fHistTrackMultiplicityAfterVertexCutSel(0),
+      fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel(0),     
+      fHistTrackMultiplicityAfterPileupRej(0),               
+      fHistTrackMultiplicityAfterSPDclustervstrackletSel(0),
+      fHistTrackMultiplicityAfterZprimVtxPosSel(0),          
       // Vertex position plots (BestVertex)
       fHistPVx(0), fHistPVy(0), fHistPVz(0),
       fHistPVxAnalysis(0), fHistPVyAnalysis(0), fHistPVzAnalysis(0),
@@ -349,12 +361,12 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *n
      DefineOutput(4, AliCFContainer::Class());
      DefineOutput(5, AliCFContainer::Class());
      DefineOutput(6, AliCFContainer::Class());
-     AliLog::SetClassDebugLevel("AliAnalysisTaskCheckCascadepp276",1);
+     AliLog::SetClassDebugLevel("AliAnalysisTaskCheckCascadepp",1);
     } 
 
 
     //_____Destructor_____
-    AliAnalysisTaskCheckCascadepp276::~AliAnalysisTaskCheckCascadepp276() {
+    AliAnalysisTaskCheckCascadepp::~AliAnalysisTaskCheckCascadepp() {
       // For all TH1, 2, 3 HnSparse and CFContainer are in the fListCascade TList.
       // They will be deleted when fListCascade is deleted by the TSelector dtor
       // Because of TList::SetOwner() ...   
@@ -369,7 +381,7 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *n
 
 
 //________________________________________________________________________
-void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
+void AliAnalysisTaskCheckCascadepp::UserCreateOutputObjects() {
   // Create histograms
   // Called once
 
@@ -433,76 +445,84 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
  // - Cascades multiplicity plots 
  if(! fHistCascadeMultiplicityBeforeAnySel) {
         fHistCascadeMultiplicityBeforeAnySel = new TH1F("fHistCascadeMultiplicityBeforeAnySel",
-                        "Cascades per event (before any selections);Nbr of Cascades/Evt;Events",                
-                        20, 0, 20);
+                 "Cascades per event (before any selections);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityBeforeAnySel);
  }
- if(! fHistCascadeMultiplicityAfterSDDSel) {
-        fHistCascadeMultiplicityAfterSDDSel = new TH1F("fHistCascadeMultiplicityAfterSDDSel", 
-			"Cascades per event (after the SDD selection);Nbr of Cascades/Evt;Events", 
-			20, 0, 20); 		
-	fListHistCascade->Add(fHistCascadeMultiplicityAfterSDDSel);
+ if(! fHistCascadeMultiplicityAfterDAQincompleteEvRej) {
+        fHistCascadeMultiplicityAfterDAQincompleteEvRej = new TH1F("fHistCascadeMultiplicityAfterDAQincompleteEvRej",
+                 "Cascades per event (after DAQ incomplete event rejection);Nbr of Cascades/Evt;Events", 20, 0, 20);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterDAQincompleteEvRej);
+ }
+ if(! fHistCascadeMultiplicityAfterSDDstatusSel) {
+        fHistCascadeMultiplicityAfterSDDstatusSel = new TH1F("fHistCascadeMultiplicityAfterSDDstatusSel", 
+                 "Cascades per event (after the SDD status selection);Nbr of Cascades/Evt;Events", 20, 0, 20); 		
+	fListHistCascade->Add(fHistCascadeMultiplicityAfterSDDstatusSel);
  }
  if(! fHistCascadeMultiplicityAfterPhysicsSel) {
         fHistCascadeMultiplicityAfterPhysicsSel = new TH1F("fHistCascadeMultiplicityAfterPhysicsSel",
-                        "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events",
-                        20, 0, 20);
+                 "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterPhysicsSel);
  }
- if(! fHistCascadeMultiplicityForSelEvtNoTPCOnly) {
-        fHistCascadeMultiplicityForSelEvtNoTPCOnly = new TH1F("fHistCascadeMultiplicityForSelEvtNoTPCOnly",
-                        "Cascades per event (for selected events with well-established PV);Nbr of Cascades/Evt;Events",
-                        20, 0, 20);
-        fListHistCascade->Add(fHistCascadeMultiplicityForSelEvtNoTPCOnly);
+ if(! fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel) {
+        fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel = new TH1F("fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel",
+                 "Cascades per event (for selected events with well-established PV);Nbr of Cascades/Evt;Events", 20, 0, 20);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel);
  }
- if(! fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup) {
-        fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup = new TH1F("fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup",
-                        "Cascades per event (for selected events with well-establisched PV and no pile-up);Nbr of Cascades/Evt;Events",
-                        20, 0, 20);
-        fListHistCascade->Add(fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup);
+ if(! fHistCascadeMultiplicityAfterPileupRej) {
+        fHistCascadeMultiplicityAfterPileupRej = new TH1F("fHistCascadeMultiplicityAfterPileupRej",
+                 "Cascades per event (after pile-up events rejection);Nbr of Cascades/Evt;Events", 20, 0, 20);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterPileupRej);
  }
- if(! fHistCascadeMultiplicityAfterVertexCutSel) {
-        fHistCascadeMultiplicityAfterVertexCutSel = new TH1F("fHistCascadeMultiplicityAfterVertexCutSel",
-                                                             "Cascades per event (after vertex cut selection);Nbr of Cascades/Evt;Events",
-                                                             20, 0, 20);
-        fListHistCascade->Add(fHistCascadeMultiplicityAfterVertexCutSel);
+ if(! fHistCascadeMultiplicityAfterSPDclustervstrackletSel) {
+        fHistCascadeMultiplicityAfterSPDclustervstrackletSel = new TH1F("fHistCascadeMultiplicityAfterSPDclustervstrackletSel",
+                 "Cascades per event (after background rejection based on SPD cluster vs tracklet);Nbr of Cascades/Evt;Events", 20, 0, 20);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterSPDclustervstrackletSel);
+ }
+ if(! fHistCascadeMultiplicityAfterZprimVtxPosSel) {
+        fHistCascadeMultiplicityAfterZprimVtxPosSel = new TH1F("fHistCascadeMultiplicityAfterZprimVtxPosSel",
+                 "Cascades per event (after vertex cut selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterZprimVtxPosSel);
  }
  // - Tracks multiplicity plots 
  if(! fHistTrackMultiplicityBeforeAnySel) {
-	fHistTrackMultiplicityBeforeAnySel = new TH1F("fHistTrackMultiplicityBeforeAnySel", 
-			"Tracks per event (before any selections);Nbr of Cascades/Evt;Events", 
-			100, 0, 100); 		
-	fListHistCascade->Add(fHistTrackMultiplicityBeforeAnySel);
- } 
- if(! fHistTrackMultiplicityAfterSDDSel) {
-        fHistTrackMultiplicityAfterSDDSel = new TH1F("fHistTrackMultiplicityAfterSDDSel",                  
-                        "Tracks per event (after the SDD selection);Nbr of Cascades/Evt;Events",
-                        100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterSDDSel);
+        fHistTrackMultiplicityBeforeAnySel = new TH1F("fHistTrackMultiplicityBeforeAnySel",
+                 "Tracks per event (before any selections);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistTrackMultiplicityBeforeAnySel);
+ }
+ if(! fHistTrackMultiplicityAfterDAQincompleteEvRej) {
+        fHistTrackMultiplicityAfterDAQincompleteEvRej = new TH1F("fHistTrackMultiplicityAfterDAQincompleteEvRej",
+                 "Tracks per event (after DAQ incomplete event rejection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistTrackMultiplicityAfterDAQincompleteEvRej);
+ }
+ if(! fHistTrackMultiplicityAfterSDDstatusSel) {
+        fHistTrackMultiplicityAfterSDDstatusSel = new TH1F("fHistTrackMultiplicityAfterSDDstatusSel",
+                 "Tracks per event (after the SDD status selection);Nbr of Tracks/Evt;Events", 100, 0, 100);                     
+        fListHistCascade->Add(fHistTrackMultiplicityAfterSDDstatusSel);
  }
  if(! fHistTrackMultiplicityAfterPhysicsSel) {
         fHistTrackMultiplicityAfterPhysicsSel = new TH1F("fHistTrackMultiplicityAfterPhysicsSel",
-                        "Tracks per event (after physics selection);Nbr of Cascades/Evt;Events",
-                        100, 0, 100);
+                 "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
         fListHistCascade->Add(fHistTrackMultiplicityAfterPhysicsSel);
  }
- if(! fHistTrackMultiplicityForSelEvtNoTPCOnly) {
-        fHistTrackMultiplicityForSelEvtNoTPCOnly = new TH1F("fHistTrackMultiplicityForSelEvtNoTPCOnly",
-                        "Tracks per event (for selected events with well-established PV);Nbr of Cascades/Evt;Events",
-                        100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityForSelEvtNoTPCOnly);
+ if(! fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel) {
+        fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel = new TH1F("fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel",
+                 "Tracks per event (for selected events with well-established PV);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel);
  }
- if(! fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup) {
-        fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup = new TH1F("fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup",
-                        "Tracks per event (for selected events with well-establisched PV and no pile-up);Nbr of Cascades/Evt;Events",
-                        100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup);
+ if(! fHistTrackMultiplicityAfterPileupRej) {
+        fHistTrackMultiplicityAfterPileupRej = new TH1F("fHistTrackMultiplicityAfterPileupRej",
+                 "Tracks per event (after pile-up events rejection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistTrackMultiplicityAfterPileupRej);
  }
- if(! fHistTrackMultiplicityAfterVertexCutSel) {
-        fHistTrackMultiplicityAfterVertexCutSel = new TH1F("fHistTrackMultiplicityAfterVertexCutSel",
-                                                           "Tracks per event (after vertex cut selection);Nbr of Cascades/Evt;Events",
-                                                           100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterVertexCutSel);
+ if(! fHistTrackMultiplicityAfterSPDclustervstrackletSel) {
+        fHistTrackMultiplicityAfterSPDclustervstrackletSel = new TH1F("fHistTrackMultiplicityAfterSPDclustervstrackletSel",
+                 "Tracks per event (after background rejection based on SPD cluster vs tracklet);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistTrackMultiplicityAfterSPDclustervstrackletSel);
+ }
+ if(! fHistTrackMultiplicityAfterZprimVtxPosSel) {
+        fHistTrackMultiplicityAfterZprimVtxPosSel = new TH1F("fHistTrackMultiplicityAfterZprimVtxPosSel",
+                 "Tracks per event (after vertex cut selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistTrackMultiplicityAfterZprimVtxPosSel);
  }
  // - Vertex position plots
  if(! fHistPVx ){
@@ -735,9 +755,8 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
  }
  // - Usefull string
  const Char_t *sddstatus = "";
- if      (fCollidingSystem == "pp" && fkSDDSelectionOn == kTRUE  && fwithSDD == kTRUE)  sddstatus = "_wSDDon";
- else if (fCollidingSystem == "pp" && fkSDDSelectionOn == kTRUE  && fwithSDD == kFALSE) sddstatus = "_wSDDoff";
- else if (fCollidingSystem == "pp" && fkSDDSelectionOn == kFALSE && fwithSDD == kFALSE) sddstatus = "_woSDD";
+ if      (fCollidingSystem == "pp" && fApplyEvSelSDDstatus  && fwithSDD)  sddstatus = "_wSDDon";
+ else if (fCollidingSystem == "pp" && fApplyEvSelSDDstatus  && !fwithSDD) sddstatus = "_wSDDoff";
  // - CFContainer PID study Xi minus
  if(!fCFContCascadePIDXiMinus)  {
    const Int_t  lNbSteps      =  7 ;
@@ -748,7 +767,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[1] = 800;
    lNbBinsPerVar[2] = 22;
    fCFContCascadePIDXiMinus = new AliCFContainer(Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
-                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
                                                  "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
@@ -777,7 +796,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[1] = 800;
    lNbBinsPerVar[2] = 22;
    fCFContCascadePIDXiPlus = new AliCFContainer(Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
-                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
                                                  "Pt_{cascade} Vs M_{#bar{#Xi}^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
@@ -806,7 +825,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[1] = 1000;
    lNbBinsPerVar[2] = 22;
    fCFContCascadePIDOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
-                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
                                                  "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
@@ -835,7 +854,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[1] = 1000;
    lNbBinsPerVar[2] = 22; 
    fCFContCascadePIDOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
-                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
                                                  "Pt_{cascade} Vs M_{#bar{#Omega}^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
@@ -882,7 +901,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[17] = 112;    //Proper lenght of V0
    lNbBinsPerVar[18] = 112;    //Distance V0-Xi in transverse plane
    fCFContCascadeCuts = new AliCFContainer(Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
-                                           fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                           fMinnTPCcls,fVtxRangeMax,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
                                            "Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
      //Setting the bin limits 
      //0 -  DcaXiDaughters
@@ -993,7 +1012,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
 
 
 //________________________________________________________________________
-void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
+void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
 
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // Main loop (called for each event)
@@ -1018,23 +1037,41 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
        fUtils = new AliAnalysisUtils();
   }
 
-
   ///////////////////
   // EVENT SELECTIONS
   ///////////////////
   // In order:
-  // 1) SDD selection
-  // 2) Physics selection
-  // 3) Select only looking at events with well-established PV
-  // 4) Pileup selection
-  // 5) |Z| < 10 cm
+  // 1) incomplete DAQ events (introduced for Run2 2015 data)
+  // 2) SDD status 
+  // 3) Physics
+  // 4) Well-established PV
+  // 5) Pileup
+  // 6) Background rejection based on SPD cluster vs tracklet correlation
+  // 7) |PV_Z| < 10 cm
+  // 
+  // - Define useful variables
+  Int_t ncascadesBeforeAnySel                 = 0;
+  Int_t ncascadesAfterDAQincompleteEvRej      = 0;
+  Int_t ncascadesAfterSDDstatusSel            = 0;
+  Int_t ncascadesAfterPhysicsSel              = 0;
+  Int_t ncascadesAfterNoTPConlyPrimVtxSel     = 0;
+  Int_t ncascadesAfterPileupRej               = 0;
+  Int_t ncascadesAfterSPDclustervstrackletSel = 0;
+  Int_t ncascadesAfterZprimVtxPosSel          = 0;  
+  Int_t nTrackMultiplicityBeforeAnySel                 = 0;
+  Int_t nTrackMultiplicityAfterDAQincompleteEvRej      = 0;
+  Int_t nTrackMultiplicityAfterSDDstatusSel            = 0;
+  Int_t nTrackMultiplicityAfterPhysicsSel              = 0;
+  Int_t nTrackMultiplicityAfterNoTPConlyPrimVtxSel     = 0;
+  Int_t nTrackMultiplicityAfterPileupRej               = 0;
+  Int_t nTrackMultiplicityAfterSPDclustervstrackletSel = 0;
+  Int_t nTrackMultiplicityAfterZprimVtxPosSel          = 0;
+
 
   //----------------------
   // Before any selections
   //----------------------
   //- Define the variables
-  Int_t ncascadesBeforeAnySel = 0;
-  Int_t nTrackMultiplicityBeforeAnySel = 0;
   if (fAnalysisType == "ESD") {
       // - Load the InputEvent and check
       lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
@@ -1042,8 +1079,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
          AliWarning("ERROR: lESDevent not available \n");
          return;
       }
-      // - Take the number of cascades and tracks before any events selection
-      ncascadesBeforeAnySel = lESDevent->GetNumberOfCascades();
+      ncascadesBeforeAnySel          = lESDevent->GetNumberOfCascades();
       nTrackMultiplicityBeforeAnySel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
   } else if (fAnalysisType == "AOD") {
       // - Load the InputEvent and check
@@ -1052,88 +1088,95 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
           AliWarning("ERROR: lAODevent not available \n");
           return;
       }
-      // - Take the number of cascades and tracks before any events selection
-      ncascadesBeforeAnySel  = lAODevent->GetNumberOfCascades();
+      ncascadesBeforeAnySel          = lAODevent->GetNumberOfCascades();
       nTrackMultiplicityBeforeAnySel = -100;  //FIXME: I can't find the equivalent method for the AOD  
   } else {
       Printf("Analysis type (ESD or AOD) not specified \n");
       return;
   }
-  // - Fill the plots
   fHistCascadeMultiplicityBeforeAnySel->Fill(ncascadesBeforeAnySel);
   fHistTrackMultiplicityBeforeAnySel->Fill(nTrackMultiplicityBeforeAnySel);
 
-  //--------------
-  // SDD selection
-  //--------------
-  // - Define the variables
-  Int_t ncascadesAfterSDDSel = 0;
-  Int_t nTrackMultiplicityAfterSDDSel = 0;
-  // - Selection for ESD and AOD
-  if (fAnalysisType == "ESD") {
-      TString trcl = lESDevent->GetFiredTriggerClasses();
-      //cout<<"Fired Trigger Classes: "<<trcl<<endl;
-      if (fCollidingSystem == "pp" && fkSDDSelectionOn && fwithSDD) {
-          if(!(trcl.Contains("ALLNOTRD"))) {
-               cout<<"We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)..."<<endl;
-               PostData(1, fListHistCascade);
-               PostData(2, fCFContCascadePIDXiMinus);
-               PostData(3, fCFContCascadePIDXiPlus);
-               PostData(4, fCFContCascadePIDOmegaMinus);
-               PostData(5, fCFContCascadePIDOmegaPlus);
-               PostData(6, fCFContCascadeCuts);
-               return;
-          }
-      } else if (fCollidingSystem == "pp" && fkSDDSelectionOn && !fwithSDD) {
-          if((trcl.Contains("ALLNOTRD"))) {
-               cout<<"We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)..."<<endl;
-               PostData(1, fListHistCascade);
-               PostData(2, fCFContCascadePIDXiMinus);
-               PostData(3, fCFContCascadePIDXiPlus);
-               PostData(4, fCFContCascadePIDOmegaMinus);
-               PostData(5, fCFContCascadePIDOmegaPlus);
-               PostData(6, fCFContCascadeCuts);
-               return;
-          }
-      }
-      // - Take the number of cascades and tracks after the SDD selection
-      ncascadesAfterSDDSel = lESDevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterSDDSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
-  } else if (fAnalysisType == "AOD") {
-      TString trcl = lAODevent->GetFiredTriggerClasses();
-      if (fCollidingSystem == "pp" && fkSDDSelectionOn && fwithSDD) {
-           if(!(trcl.Contains("ALLNOTRD"))) {
-                PostData(1, fListHistCascade);
-                PostData(2, fCFContCascadePIDXiMinus);
-                PostData(3, fCFContCascadePIDXiPlus);
-                PostData(4, fCFContCascadePIDOmegaMinus);
-                PostData(5, fCFContCascadePIDOmegaPlus);
-                PostData(6, fCFContCascadeCuts);
-                cout<<"We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)..."<<endl;
-                return;
-           }
-      } else if (fCollidingSystem == "pp" && fkSDDSelectionOn && !fwithSDD) {
-           if((trcl.Contains("ALLNOTRD"))) {
-                PostData(1, fListHistCascade);
-                PostData(2, fCFContCascadePIDXiMinus);
-                PostData(3, fCFContCascadePIDXiPlus);
-                PostData(4, fCFContCascadePIDOmegaMinus);
-                PostData(5, fCFContCascadePIDOmegaPlus);
-                PostData(6, fCFContCascadeCuts);
-                cout<<"We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)..."<<endl;
-                return;
-           }
-      }
-      // - Take the number of cascades and tracks after the SDD selection
-      ncascadesAfterSDDSel = lAODevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterSDDSel = -100; //FIXME: I can't find the equivalent method for the AOD
+  //------------------------------------
+  // 1) Removal of incomplete DAQ events
+  //------------------------------------
+  // - Incomplete DAQ events rejection Run2 data 2015
+  Bool_t IncompleteDAQ = kFALSE;
+  if (fAnalysisType == "ESD") IncompleteDAQ = lESDevent->IsIncompleteDAQ();
+  if (fApplyEvSelDAQincomplete && IncompleteDAQ){
+        AliWarning("This is a DAQ incomplete event... return !");
+        PostData(1, fListHistCascade);
+        PostData(2, fCFContCascadePIDXiMinus);
+        PostData(3, fCFContCascadePIDXiPlus);
+        PostData(4, fCFContCascadePIDOmegaMinus);
+        PostData(5, fCFContCascadePIDOmegaPlus);
+        PostData(6, fCFContCascadeCuts);
+        return;
   }
-  // - Fill the plots
-  fHistCascadeMultiplicityAfterSDDSel->Fill(ncascadesAfterSDDSel);
-  fHistTrackMultiplicityAfterSDDSel->Fill(nTrackMultiplicityAfterSDDSel);
+  if (fAnalysisType == "ESD") { 
+       ncascadesAfterDAQincompleteEvRej          = lESDevent->GetNumberOfCascades();
+       nTrackMultiplicityAfterDAQincompleteEvRej = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+  }
+  fHistCascadeMultiplicityAfterDAQincompleteEvRej->Fill(ncascadesAfterDAQincompleteEvRej);
+  fHistTrackMultiplicityAfterDAQincompleteEvRej->Fill(nTrackMultiplicityAfterDAQincompleteEvRej);
+
+  //------------------------
+  // 2) SDD status selection
+  //------------------------
+  if (fApplyEvSelSDDstatus && fCollidingSystem == "pp") {
+       if (fAnalysisType == "ESD") {
+           TString trcl = lESDevent->GetFiredTriggerClasses();
+           if (fwithSDD && !(trcl.Contains("ALLNOTRD"))) {
+               AliWarning("We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)...");
+               PostData(1, fListHistCascade);
+               PostData(2, fCFContCascadePIDXiMinus);
+               PostData(3, fCFContCascadePIDXiPlus);
+               PostData(4, fCFContCascadePIDOmegaMinus);
+               PostData(5, fCFContCascadePIDOmegaPlus);
+               PostData(6, fCFContCascadeCuts);
+               return;
+           } else if (!fwithSDD && (trcl.Contains("ALLNOTRD"))) {
+               AliWarning("We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)...");
+               PostData(1, fListHistCascade);
+               PostData(2, fCFContCascadePIDXiMinus);
+               PostData(3, fCFContCascadePIDXiPlus);
+               PostData(4, fCFContCascadePIDOmegaMinus);
+               PostData(5, fCFContCascadePIDOmegaPlus);
+               PostData(6, fCFContCascadeCuts);
+               return;
+           }
+           ncascadesAfterSDDstatusSel          = lESDevent->GetNumberOfCascades();
+           nTrackMultiplicityAfterSDDstatusSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+       } else if (fAnalysisType == "AOD") {
+           TString trcl = lAODevent->GetFiredTriggerClasses();
+           if (fwithSDD && !(trcl.Contains("ALLNOTRD"))) {
+               AliWarning("We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)...");
+               PostData(1, fListHistCascade);
+               PostData(2, fCFContCascadePIDXiMinus);
+               PostData(3, fCFContCascadePIDXiPlus);
+               PostData(4, fCFContCascadePIDOmegaMinus);
+               PostData(5, fCFContCascadePIDOmegaPlus);
+               PostData(6, fCFContCascadeCuts);
+               return;
+           } else if (!fwithSDD && (trcl.Contains("ALLNOTRD"))) {
+               AliWarning("We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)...");
+               PostData(1, fListHistCascade);
+               PostData(2, fCFContCascadePIDXiMinus);
+               PostData(3, fCFContCascadePIDXiPlus);
+               PostData(4, fCFContCascadePIDOmegaMinus);
+               PostData(5, fCFContCascadePIDOmegaPlus);
+               PostData(6, fCFContCascadeCuts);
+               return;
+           }
+           ncascadesAfterSDDstatusSel           = lAODevent->GetNumberOfCascades();
+           nTrackMultiplicityAfterSDDstatusSel  = -100; //FIXME: I can't find the equivalent method for the AOD
+       }
+  }
+  fHistCascadeMultiplicityAfterSDDstatusSel->Fill(ncascadesAfterSDDstatusSel);
+  fHistTrackMultiplicityAfterSDDstatusSel->Fill(nTrackMultiplicityAfterSDDstatusSel);
 
   //-------------------------------------------
-  // Multiplicity estimators for pPb collisions  //FIXME
+  // Multiplicity estimators for pPb collisions  //FIXME: not implemented at the moment
   //-------------------------------------------
   //AliCentrality* centrality = 0;
   //if      (fAnalysisType == "ESD" && (fCollidingSystem == "pPb")) centrality = lESDevent->GetCentrality();
@@ -1154,43 +1197,38 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
   //     //}
   //} else if (fCollidingSystem == "pp") lcentrality = 0.;  
 
-  //------------------
-  // Physics selection 
-  //-----------------
-  // - Define the variables
-  Int_t ncascadesAfterPhysicsSel = 0;
-  Int_t nTrackMultiplicityAfterPhysicsSel = 0;
-  // - Selection for ESD and AOD
-  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  Bool_t isSelected = 0;
-  isSelected = (maskIsSelected & fkTriggerClass) == fkTriggerClass;
-  if (!isSelected){
-      PostData(1, fListHistCascade);
-      PostData(2, fCFContCascadePIDXiMinus);
-      PostData(3, fCFContCascadePIDXiPlus);
-      PostData(4, fCFContCascadePIDOmegaMinus);
-      PostData(5, fCFContCascadePIDOmegaPlus);
-      PostData(6, fCFContCascadeCuts);
-      cout<<"We are selecting the events that past the Physics Selection. This event does not pass the Physics Selection. =>  RETURN!! (Exclude it)..."<<endl;
-      return;
+  //---------------------
+  // 3) Physics selection 
+  //---------------------
+  if (fApplyEvSelPhysicsSel) {
+      UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+      Bool_t isSelected = 0;
+      isSelected = (maskIsSelected & fkTriggerClass) == fkTriggerClass;
+      if (!isSelected){
+          AliWarning("We are selecting the events that past the Physics Selection. This event does not pass the Physics Selection. =>  RETURN!! (Exclude it)..."); 
+          PostData(1, fListHistCascade);
+          PostData(2, fCFContCascadePIDXiMinus);
+          PostData(3, fCFContCascadePIDXiPlus);
+          PostData(4, fCFContCascadePIDOmegaMinus);
+          PostData(5, fCFContCascadePIDOmegaPlus);
+          PostData(6, fCFContCascadeCuts);
+          return;
+      }
+      if (fAnalysisType == "ESD") {
+          ncascadesAfterPhysicsSel          = lESDevent->GetNumberOfCascades();    
+          nTrackMultiplicityAfterPhysicsSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);  
+      } else if (fAnalysisType == "AOD") {
+          ncascadesAfterPhysicsSel          = lAODevent->GetNumberOfCascades();
+          nTrackMultiplicityAfterPhysicsSel = -100;  //FIXME: I can't find the equivalent method for the AOD    
+      } 
   }
-  if (fAnalysisType == "ESD") {
-      // - Take the number of cascades and tracks after physics selection
-      ncascadesAfterPhysicsSel = lESDevent->GetNumberOfCascades();    
-      nTrackMultiplicityAfterPhysicsSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);  
-  } else if (fAnalysisType == "AOD") {
-      // - Take the number of cascades and tracks after the physics selection
-      ncascadesAfterPhysicsSel = lAODevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterPhysicsSel = -100;  //FIXME: I can't find the equivalent method for the AOD    
-  } 
-  // - Fill the plots
   fHistCascadeMultiplicityAfterPhysicsSel->Fill(ncascadesAfterPhysicsSel);
   fHistTrackMultiplicityAfterPhysicsSel->Fill(nTrackMultiplicityAfterPhysicsSel);
 
   //---------------------------------------
   // Re-run cascade vertexer (only for ESD)
   //---------------------------------------
-  if (fAnalysisType == "ESD" && fkRerunV0CascVertexers) {
+  if (fAnalysisType == "ESD" && fRerunV0CascVertexers) {
        lESDevent->ResetCascades();
        lESDevent->ResetV0s();
        AliV0vertexer *lV0vtxer = new AliV0vertexer();
@@ -1205,41 +1243,29 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
        //delete lCascVtxer;
   }
 
-  //------------------------------
-  // Well-established PV selection
-  //------------------------------
-  // - Define variables
-  Int_t ncascadesForSelEvtNoTPCOnly = 0;
-  Int_t nTrackMultiplicityForSelEvtNoTPCOnly = 0;
-  // - Selection for the two colliding systems
-  if (fCollidingSystem == "pp") {
-      // - Selection for ESD and AOD
-      if (fAnalysisType == "ESD") {
-          // - Vertex coordinates: get the PVs stored in the ESD found with tracks and SPD
-          const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-          const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
-          // - Select only looking at events with well-established PV
-          if (fkQualityCutNoTPConlyPrimVtx) {
+  //---------------------------------
+  // 4) Well-established PV selection
+  //---------------------------------
+  if (fApplyEvSelNoTPConlyPrimVtx) {
+      if (fCollidingSystem == "pp") {
+          if (fAnalysisType == "ESD") {
+              const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
+              const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
               if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
-                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
-                  PostData(1, fListHistCascade);
-                  PostData(2, fCFContCascadePIDXiMinus);
-                  PostData(3, fCFContCascadePIDXiPlus);
-                  PostData(4, fCFContCascadePIDOmegaMinus);
-                  PostData(5, fCFContCascadePIDOmegaPlus);
-                  PostData(6, fCFContCascadeCuts);
-                  return;
+                      AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                      PostData(1, fListHistCascade);
+                      PostData(2, fCFContCascadePIDXiMinus);
+                      PostData(3, fCFContCascadePIDXiPlus);
+                      PostData(4, fCFContCascadePIDOmegaMinus);
+                      PostData(5, fCFContCascadePIDOmegaPlus);
+                      PostData(6, fCFContCascadeCuts);
+                      return;
               }
-          }
-          // - Take the number of cascades and tracks after TPConly selection
-          ncascadesForSelEvtNoTPCOnly = lESDevent->GetNumberOfCascades();
-          nTrackMultiplicityForSelEvtNoTPCOnly = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
-      } else if (fAnalysisType == "AOD") {
-          // - Vertex coordinates: get the PVs stored in the AOD found with tracks and SPD
-          const AliAODVertex *lPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
-          const AliAODVertex *lPrimaryTrackingAODVtx = lAODevent->GetPrimaryVertex();
-          // - Select only looking at events with well-established PV
-          if (fkQualityCutNoTPConlyPrimVtx) {
+              ncascadesAfterNoTPConlyPrimVtxSel          = lESDevent->GetNumberOfCascades();
+              nTrackMultiplicityAfterNoTPConlyPrimVtxSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+          } else if (fAnalysisType == "AOD") {
+              const AliAODVertex *lPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
+              const AliAODVertex *lPrimaryTrackingAODVtx = lAODevent->GetPrimaryVertex();
               if (!lPrimarySPDVtx && !lPrimaryTrackingAODVtx) {
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
                   PostData(1, fListHistCascade);
@@ -1250,99 +1276,90 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                   PostData(6, fCFContCascadeCuts);
                   return;
               }
+              ncascadesAfterNoTPConlyPrimVtxSel          = lAODevent->GetNumberOfCascades();
+              nTrackMultiplicityAfterNoTPConlyPrimVtxSel = -100;  //FIXME: I can't find the equivalent method for the AOD
           }
-          // - Take the number of cascades and tracks after TPConly selection
-          ncascadesForSelEvtNoTPCOnly = lAODevent->GetNumberOfCascades();
-          nTrackMultiplicityForSelEvtNoTPCOnly = -100;  //FIXME: I can't find the equivalent method for the AOD
-      }
-  } else if (fCollidingSystem == "pPb") {
-      if (fAnalysisType == "ESD") {
-          Bool_t fHasVertex = kFALSE;
-          const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
-          if (vertex->GetNContributors() < 1) {
-              vertex = lESDevent->GetPrimaryVertexSPD();
-              if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
-              else                                fHasVertex = kTRUE;
-              Double_t cov[6]={0};
-              vertex->GetCovarianceMatrix(cov);
-              Double_t zRes = TMath::Sqrt(cov[5]);
-              if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
-          } else fHasVertex = kTRUE;
-          if (fHasVertex == kFALSE) {
-              AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
-              PostData(1, fListHistCascade);
-              PostData(2, fCFContCascadePIDXiMinus);
-              PostData(3, fCFContCascadePIDXiPlus);
-              PostData(4, fCFContCascadePIDOmegaMinus);
-              PostData(5, fCFContCascadePIDOmegaPlus);
-              PostData(6, fCFContCascadeCuts);
-              return;
+      } else if (fCollidingSystem == "pPb") {
+          if (fAnalysisType == "ESD") {
+              Bool_t fHasVertex = kFALSE;
+              const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
+              if (vertex->GetNContributors() < 1) {
+                  vertex = lESDevent->GetPrimaryVertexSPD();
+                  if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
+                  else                                fHasVertex = kTRUE;
+                  Double_t cov[6]={0};
+                  vertex->GetCovarianceMatrix(cov);
+                  Double_t zRes = TMath::Sqrt(cov[5]);
+                  if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
+              } else fHasVertex = kTRUE;
+              if (fHasVertex == kFALSE) {
+                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+              }
+              if (fUtils->IsFirstEventInChunk(lESDevent)) { //Is First event in chunk rejection: Still present!
+                  AliWarning("Pb / This is the first event in the chunk! ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+              }
+              ncascadesAfterNoTPConlyPrimVtxSel          = lESDevent->GetNumberOfCascades();
+              nTrackMultiplicityAfterNoTPConlyPrimVtxSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+          } else if (fAnalysisType == "AOD") {
+              Bool_t fHasVertex = kFALSE;
+              const AliAODVertex *vertex = lAODevent->GetPrimaryVertex();
+              if (vertex->GetNContributors() < 1) {
+                  vertex = lAODevent->GetPrimaryVertexSPD();
+                  if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
+                  else                                fHasVertex = kTRUE;
+                  Double_t cov[6]={0};
+                  vertex->GetCovarianceMatrix(cov);
+                  Double_t zRes = TMath::Sqrt(cov[5]);
+                  if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
+              } else fHasVertex = kTRUE;
+              if (fHasVertex == kFALSE) {
+                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+              }
+              if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!  //FIXME
+                  AliWarning("Pb / This is the first event in the chunk! ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+              }  
+              ncascadesAfterNoTPConlyPrimVtxSel          = lAODevent->GetNumberOfCascades();
+              nTrackMultiplicityAfterNoTPConlyPrimVtxSel = -100;  //FIXME: I can't find the equivalent method for the AOD
           }
-          if (fUtils->IsFirstEventInChunk(lESDevent)) { //Is First event in chunk rejection: Still present!
-              AliWarning("Pb / This is the first event in the chunk! ... return !");
-              PostData(1, fListHistCascade);
-              PostData(2, fCFContCascadePIDXiMinus);
-              PostData(3, fCFContCascadePIDXiPlus);
-              PostData(4, fCFContCascadePIDOmegaMinus);
-              PostData(5, fCFContCascadePIDOmegaPlus);
-              PostData(6, fCFContCascadeCuts);
-              return;
-          }
-          // - Take the number of cascades and tracks after TPConly selection
-          ncascadesForSelEvtNoTPCOnly = lESDevent->GetNumberOfCascades();
-          nTrackMultiplicityForSelEvtNoTPCOnly = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
-      } else if (fAnalysisType == "AOD") {
-          Bool_t fHasVertex = kFALSE;
-          const AliAODVertex *vertex = lAODevent->GetPrimaryVertex();
-          if (vertex->GetNContributors() < 1) {
-              vertex = lAODevent->GetPrimaryVertexSPD();
-              if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
-              else                                fHasVertex = kTRUE;
-              Double_t cov[6]={0};
-              vertex->GetCovarianceMatrix(cov);
-              Double_t zRes = TMath::Sqrt(cov[5]);
-              if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
-          } else fHasVertex = kTRUE;
-          if (fHasVertex == kFALSE) {
-              AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
-              PostData(1, fListHistCascade);
-              PostData(2, fCFContCascadePIDXiMinus);
-              PostData(3, fCFContCascadePIDXiPlus);
-              PostData(4, fCFContCascadePIDOmegaMinus);
-              PostData(5, fCFContCascadePIDOmegaPlus);
-              PostData(6, fCFContCascadeCuts);
-              return;
-          }
-          if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!  //FIXME
-              AliWarning("Pb / This is the first event in the chunk! ... return !");
-              PostData(1, fListHistCascade);
-              PostData(2, fCFContCascadePIDXiMinus);
-              PostData(3, fCFContCascadePIDXiPlus);
-              PostData(4, fCFContCascadePIDOmegaMinus);
-              PostData(5, fCFContCascadePIDOmegaPlus);
-              PostData(6, fCFContCascadeCuts);
-              return;
-          }  
-          // - Take the number of cascades and tracks after TPConly selection
-          ncascadesForSelEvtNoTPCOnly = lAODevent->GetNumberOfCascades();
-          nTrackMultiplicityForSelEvtNoTPCOnly = -100;  //FIXME: I can't find the equivalent method for the AOD
       }
   }
-  // - Fill the plots
-  fHistCascadeMultiplicityForSelEvtNoTPCOnly->Fill(ncascadesForSelEvtNoTPCOnly);
-  fHistTrackMultiplicityForSelEvtNoTPCOnly->Fill(nTrackMultiplicityForSelEvtNoTPCOnly);
-   
+  fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascadesAfterNoTPConlyPrimVtxSel);
+  fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicityAfterNoTPConlyPrimVtxSel);
  
-  //----------------
-  // Pilup selection
-  //----------------
-  // - Define variables
-  Int_t ncascadesForSelEvtNoTPCOnlyNoPileup = 0;
-  Int_t nTrackMultiplicityForSelEvtNoTPCOnlyNoPileup = 0;
-  // - Selection for ESD and AOD
-  if (fAnalysisType == "ESD" && fCollidingSystem == "pp") {
-      if (fkQualityCutPileup) {
-          if(lESDevent->IsPileupFromSPD()){
+  //--------------------
+  // 5) Pileup selection
+  //--------------------
+  if (fApplyEvSelPileup && fCollidingSystem == "pp") {
+      if (fAnalysisType == "ESD") {
+           if(lESDevent->IsPileupFromSPD()){
               AliWarning("Pb / Pile-up event ... return!");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
@@ -1351,14 +1368,11 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
               PostData(5, fCFContCascadePIDOmegaPlus);
               PostData(6, fCFContCascadeCuts);
               return;
-          }
-      }
-      // - Take the number of cascades and tracks after Pileup selection
-      ncascadesForSelEvtNoTPCOnlyNoPileup = lESDevent->GetNumberOfCascades();
-      nTrackMultiplicityForSelEvtNoTPCOnlyNoPileup = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
-  } else if (fAnalysisType == "AOD" && fCollidingSystem == "pp") {
-      if (fkQualityCutPileup) {
-          if(lAODevent->IsPileupFromSPD()){
+           }
+           ncascadesAfterPileupRej          = lESDevent->GetNumberOfCascades();
+           nTrackMultiplicityAfterPileupRej = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+      } else if (fAnalysisType == "AOD") {
+           if(lAODevent->IsPileupFromSPD()){
               AliWarning("Pb / Pile-up event ... return!");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
@@ -1367,27 +1381,40 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
               PostData(5, fCFContCascadePIDOmegaPlus);
               PostData(6, fCFContCascadeCuts);
               return;
-          }
+           }
+           ncascadesAfterPileupRej          = lAODevent->GetNumberOfCascades();
+           nTrackMultiplicityAfterPileupRej = -100;   //FIXME: I can't find the equivalent method for the AOD
       }
-      // - Take the number of cascades and tracks after Pileup selection
-      ncascadesForSelEvtNoTPCOnlyNoPileup = lAODevent->GetNumberOfCascades();
-      nTrackMultiplicityForSelEvtNoTPCOnlyNoPileup = -100;   //FIXME: I can't find the equivalent method for the AOD
   }
-  fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup->Fill(ncascadesForSelEvtNoTPCOnlyNoPileup);
-  fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup->Fill(nTrackMultiplicityForSelEvtNoTPCOnlyNoPileup);
-    
-  //----------------------------------------------------
-  // Vertex Z position selection (+ magnetic field info)
-  //----------------------------------------------------
-  // - Define variables
+  fHistCascadeMultiplicityAfterPileupRej->Fill(ncascadesAfterPileupRej);
+  fHistTrackMultiplicityAfterPileupRej->Fill(nTrackMultiplicityAfterPileupRej);
+
+  //---------------------------------------------------------------------
+  // 6) Background rejection based on SPD cluster vs tracklet correlation
+  //---------------------------------------------------------------------
+  if(fApplyEvSelSPDclustervstracklet){
+      if (fAnalysisType == "ESD" && fUtils->IsSPDClusterVsTrackletBG(lESDevent)) {
+              AliWarning("Pb / Is background based on SPD cluster vs tracklet correlation... return!");
+              PostData(1, fListHistCascade);
+              PostData(2, fCFContCascadePIDXiMinus);
+              PostData(3, fCFContCascadePIDXiPlus);
+              PostData(4, fCFContCascadePIDOmegaMinus);
+              PostData(5, fCFContCascadePIDOmegaPlus);
+              PostData(6, fCFContCascadeCuts);
+              return;
+      }
+      ncascadesAfterSPDclustervstrackletSel          = lESDevent->GetNumberOfCascades();
+      nTrackMultiplicityAfterSPDclustervstrackletSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+  } 
+  fHistCascadeMultiplicityAfterSPDclustervstrackletSel->Fill(ncascadesAfterSPDclustervstrackletSel);
+  fHistTrackMultiplicityAfterSPDclustervstrackletSel->Fill(nTrackMultiplicityAfterSPDclustervstrackletSel);
+
+  //-------------------------------------------------------
+  // 7) Vertex Z position selection (+ magnetic field info)
+  //-------------------------------------------------------
   Double_t lBestPrimaryVtxPos[3]  = {-100.0, -100.0, -100.0};
-  Double_t lMagneticField         = -10.;
   Double_t tPrimaryVtxPosition[3] = {-100.0, -100.0, -100.0};
-  Int_t ncascadesAfterVertexSel          = 0;
-  Int_t nTrackMultiplicityAfterVertexSel = 0; 
-  // - Selection for ESD and AOD
   if (fAnalysisType == "ESD") {
-      // - Vertex coordinates: get the best primary vertex available for the event 
       const AliESDVertex *lPrimaryBestESDVtx = lESDevent->GetPrimaryVertex(); 
       if (!lPrimaryBestESDVtx){
           AliWarning("No prim. vertex in ESD... return!");
@@ -1405,30 +1432,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       tPrimaryVtxPosition[0] = primaryVtx->GetX();
       tPrimaryVtxPosition[1] = primaryVtx->GetY();
       tPrimaryVtxPosition[2] = primaryVtx->GetZ();
-	  fHistPVx->Fill( tPrimaryVtxPosition[0] );
-	  fHistPVy->Fill( tPrimaryVtxPosition[1] );
-	  fHistPVz->Fill( tPrimaryVtxPosition[2] );	  
-      // - Get magnetic filed info
-      lMagneticField = lESDevent->GetMagneticField();
-      //if(TMath::Abs(lMagneticField ) < 10e-6) continue;
-      // - Selection on the primary vertex Z position 
-      if (fkQualityCutZprimVtxPos) {
-          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange || TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin) {
-               AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
-               PostData(1, fListHistCascade);
-               PostData(2, fCFContCascadePIDXiMinus);
-               PostData(3, fCFContCascadePIDXiPlus);
-               PostData(4, fCFContCascadePIDOmegaMinus);
-               PostData(5, fCFContCascadePIDOmegaPlus);
-               PostData(6, fCFContCascadeCuts);
-               return;
-          }
-      }
-      // - Take the number of cascades and tracks after vertex Z position selection
-      ncascadesAfterVertexSel = lESDevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterVertexSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5); 
   } else if (fAnalysisType == "AOD") {
-      // - Vertex coordinates: get the best primary vertex available for the event
       const AliAODVertex *lPrimaryBestAODVtx = lAODevent->GetPrimaryVertex();
       if (!lPrimaryBestAODVtx){
           AliWarning("No prim. vertex in AOD... return!");
@@ -1446,16 +1450,28 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       tPrimaryVtxPosition[0] = primaryVtx->GetX();
       tPrimaryVtxPosition[1] = primaryVtx->GetY();
       tPrimaryVtxPosition[2] = primaryVtx->GetZ();
-	  fHistPVx->Fill( tPrimaryVtxPosition[0] );
-	  fHistPVy->Fill( tPrimaryVtxPosition[1] );
-	  fHistPVz->Fill( tPrimaryVtxPosition[2] );
-      // - Get magnetic filed info
-      lMagneticField = lAODevent->GetMagneticField();
-      //if(TMath::Abs(lMagneticField ) < 10e-6) continue;
-      // - Selection on the primary vertex Z position 
-      if (fkQualityCutZprimVtxPos) {
-          if (TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRange || TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin) {
-              AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
+  }
+  fHistPVx->Fill( tPrimaryVtxPosition[0] );
+  fHistPVy->Fill( tPrimaryVtxPosition[1] );
+  fHistPVz->Fill( tPrimaryVtxPosition[2] );
+  // - Selection on the primary vertex Z position  
+  if (fApplyEvSelZprimVtxPos) {
+      if (fAnalysisType == "ESD") {
+          if (TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin || TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRangeMax) {
+               AliWarning("Pb / | Z position of Best Prim Vtx | out of range [Rmin, Rmax]... return !");
+               PostData(1, fListHistCascade);
+               PostData(2, fCFContCascadePIDXiMinus);
+               PostData(3, fCFContCascadePIDXiPlus);
+               PostData(4, fCFContCascadePIDOmegaMinus);
+               PostData(5, fCFContCascadePIDOmegaPlus);
+               PostData(6, fCFContCascadeCuts);
+               return;
+          }
+          ncascadesAfterZprimVtxPosSel          = lESDevent->GetNumberOfCascades();
+          nTrackMultiplicityAfterZprimVtxPosSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+      } else if (fAnalysisType == "AOD") {
+          if (TMath::Abs(lBestPrimaryVtxPos[2]) < fVtxRangeMin || TMath::Abs(lBestPrimaryVtxPos[2]) > fVtxRangeMax) {
+              AliWarning("Pb / | Z position of Best Prim Vtx | out of range [Rmin, Rmax]... return !");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
               PostData(3, fCFContCascadePIDXiPlus);
@@ -1464,15 +1480,12 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
               PostData(6, fCFContCascadeCuts);
               return;
           }
+          ncascadesAfterZprimVtxPosSel          = lAODevent->GetNumberOfCascades();
+          nTrackMultiplicityAfterZprimVtxPosSel = -100; //FIXME: I can't find the equivalent method for the AOD
       }
-      // - Take the number of cascades and tracks after vertex Z position selection
-      ncascadesAfterVertexSel = lAODevent->GetNumberOfCascades();
-      nTrackMultiplicityAfterVertexSel = -100; //FIXME: I can't find the equivalent method for the AOD
-  } 
-  // - Fill the plots
-  fHistCascadeMultiplicityAfterVertexCutSel->Fill(ncascadesAfterVertexSel);
-  fHistTrackMultiplicityAfterVertexCutSel->Fill(nTrackMultiplicityAfterVertexSel);
-
+  }
+  fHistCascadeMultiplicityAfterZprimVtxPosSel->Fill(ncascadesAfterZprimVtxPosSel);
+  fHistTrackMultiplicityAfterZprimVtxPosSel->Fill(nTrackMultiplicityAfterZprimVtxPosSel);
   // - Vertex position plots: after any event selections
   tPrimaryVtxPosition[0] = -100.0;
   tPrimaryVtxPosition[1] = -100.0;
@@ -1492,6 +1505,11 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
   fHistPVyAnalysis->Fill( tPrimaryVtxPosition[1] );
   fHistPVzAnalysis->Fill( tPrimaryVtxPosition[2] );
   
+  // - Magnetic field
+  Double_t lMagneticField = -10.;
+  if      (fAnalysisType == "ESD") lMagneticField = lESDevent->GetMagneticField();
+  else if (fAnalysisType == "AOD") lMagneticField = lAODevent->GetMagneticField();
+  //if(TMath::Abs(lMagneticField ) < 10e-6) continue;
 
 
   //////////////////////////////
@@ -1625,7 +1643,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
 
           //-------------------------------------
           // - Rejection of a poor quality tracks
-          if (fkQualityCutTPCrefit) {
+          if (fTrackQualityCutTPCrefit) {
                 // - Poor quality related to TPCrefit
                 ULong_t pStatus    = pTrackXi->GetStatus();
                 ULong_t nStatus    = nTrackXi->GetStatus();
@@ -1634,7 +1652,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                 if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
                 if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
           }
-          if (fkQualityCutnTPCcls) {
+          if (fTrackQualityCutnTPCcls) {
                 // - Poor quality related to TPC clusters
                 if (lPosTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Pos. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
                 if (lNegTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Neg. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
@@ -1674,7 +1692,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
 
            //-----------------------------------------
 	   // - Extra-selection for cascade candidates
-           if (fkExtraSelections) { //in AliCascadeVertexer
+           if (fExtraSelections) { //in AliCascadeVertexer
                 if (lDcaXiDaughters > 0.3) continue;                                              // in AliCascadeVertexer
                 if (lXiCosineOfPointingAngle < 0.999 ) continue;                                  // in AliCascadeVertexer
                 if (lDcaV0ToPrimVertexXi < 0.05) continue;                                        // in AliCascadeVertexer
@@ -1838,13 +1856,13 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
 
            //-------------------------------------
            // - Rejection of a poor quality tracks
-           if (fkQualityCutTPCrefit) {
+           if (fTrackQualityCutTPCrefit) {
                 // - Poor quality related to TPCrefit
                 if (!(pTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
                 if (!(nTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
                 if (!(bachTrackXi->IsOn(AliAODTrack::kTPCrefit))) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
            }
-           if (fkQualityCutnTPCcls) {
+           if (fTrackQualityCutnTPCcls) {
                 // - Poor quality related to TPC clusters
                 if (lPosTPCClusters  < fMinnTPCcls) { //AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!");
                     continue; }
@@ -2217,7 +2235,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskCheckCascadepp276::DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent) {
+Int_t AliAnalysisTaskCheckCascadepp::DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent) {
     // Checking the number of tracks with TPCrefit for each event
     // Needed for a rough assessment of the event multiplicity
         
@@ -2242,7 +2260,7 @@ Int_t AliAnalysisTaskCheckCascadepp276::DoESDTrackWithTPCrefitMultiplicity(const
 
 
 //________________________________________________________________________
-void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *) 
+void AliAnalysisTaskCheckCascadepp::Terminate(Option_t *) 
 {
   
   

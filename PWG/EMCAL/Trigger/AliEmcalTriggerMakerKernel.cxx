@@ -51,6 +51,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fTriggerBitMap(NULL),
   fPatchFinder(NULL),
   fLevel0PatchFinder(NULL),
+  fADCtoGeV(1.),
   fJetPatchsize(16),
   fBkgThreshold(-1),
   fL0Threshold(0),
@@ -182,7 +183,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Int_t globCol=-1, globRow=-1;
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    (*fPatchADCSimple)(globCol,globRow) += amp/EMCALTrigger::kEMCL1ADCtoGeV;
+    (*fPatchADCSimple)(globCol,globRow) += amp/fADCtoGeV;
   }
 }
 
@@ -198,10 +199,17 @@ void AliEmcalTriggerMakerKernel::BuildL1ThresholdsOffline(const AliVVZERO *vzero
   }
 }
 
-TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent){
+TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp){
   //std::cout << "Finding trigger patches" << std::endl;
-  AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
-  AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
+  //AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
+  //AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
+
+  if (useL0amp) {
+    fADCtoGeV = EMCALTrigger::kEMCL0ADCtoGeV_AP;
+  }
+  else {
+    fADCtoGeV = EMCALTrigger::kEMCL1ADCtoGeV;
+  }
 
   Double_t vertexpos[3];
   inputevent->GetPrimaryVertex()->GetXYZ(vertexpos);
@@ -223,7 +231,13 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       bkgPatchMask = 1 << fTriggerBitConfig->GetBkgBit(),
       l0PatchMask = 1 << fTriggerBitConfig->GetLevel0Bit();
 
-  std::vector<AliEMCALTriggerRawPatch> patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
+  std::vector<AliEMCALTriggerRawPatch> patches;
+  if (useL0amp) {
+    patches = fPatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
+  }
+  else {
+    patches = fPatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
+  }
   TObjArray *result = new TObjArray(1000);
   result->SetOwner(kTRUE);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
@@ -251,7 +265,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     }
     // convert
     AliEMCALTriggerPatchInfo *fullpatch = AliEMCALTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
-        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * EMCALTrigger::kEMCL1ADCtoGeV,
+        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
         onlinebits | offlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     fullpatch->SetOffSet(offset);
@@ -270,7 +284,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     onlinebits &= l0PatchMask;
 
     AliEMCALTriggerPatchInfo *fullpatch = AliEMCALTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
-        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * EMCALTrigger::kEMCL1ADCtoGeV,
+        patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
         patchit->GetBitmask() | onlinebits | offlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     result->Add(fullpatch);

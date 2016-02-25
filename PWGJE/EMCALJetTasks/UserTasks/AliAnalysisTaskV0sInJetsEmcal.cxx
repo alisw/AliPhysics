@@ -671,7 +671,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fJetsBgCont = GetJetContainer(1);
     if(fbCompareTriggers)
     {
-      fTracksCont = GetParticleContainer(0);
+      fTracksCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
     }
   }
 

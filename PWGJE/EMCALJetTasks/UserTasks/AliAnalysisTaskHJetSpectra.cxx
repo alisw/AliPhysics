@@ -415,7 +415,7 @@ Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track, Bool
    if(isGen){ //pure MC select charged primary tracks 
       //Apply only for kine level or MC containers   
       if(!track->Charge()) return kFALSE;
-      if(fTypeOfAnal != kEmb && fTypeOfAnal != kEmbSingl){
+      if(fTypeOfAnal == kEff){
          if(!(static_cast<AliAODMCParticle*>(track))->IsPhysicalPrimary()) return kFALSE;
       }    
    }

@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 /// * NOmega
 #pragma link C++ class AliAnalysisTaskNOmegaLPK+;
+#pragma link C++ class AliAnalysisTaskOmegaOmegaOX+;
 
 /// Nuclei
 /// * DeltaMasses

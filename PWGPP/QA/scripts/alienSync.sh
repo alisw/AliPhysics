@@ -398,33 +398,31 @@ reformatXMLCollection()
   turl="";
   md5=".";
   ctime="-1";
-  for(i=1; i<=NF; i++){
-    switch ($i){ 
-      case /md5=/:
-        gsub("md5=","",$i);
-        md5=$i;
-        gsub("\"","",md5);
-        if (length(md5)==0) md5=".";
-        break;
-      case /turl=/:
-        gsub("turl=","",$i);
-        turl=$i;
-        gsub("\"","",turl);
-        gsub(/^alien:\/\//,"",turl);
-        break;
-      case /ctime=/:
-        ctime=$i" "$(i+1);
-        gsub("ctime=","",ctime);
-        gsub(/[-:]/," ",ctime);
-        gsub("\"","",ctime);
-        ctime=mktime(ctime);
-        break;
-      case /size=/:
-        gsub("size=","",$i);
-        size=$i;
-        gsub("\"","",size);
-        if (length(size)==0) size="-1";
-        break;
+  for (i=1; i<=NF; i++) {
+    if ($i ~ /md5=/) {
+      gsub("md5=","",$i);
+      md5=$i;
+      gsub("\"","",md5);
+      if (length(md5)==0) md5=".";
+    }
+    else if ($i ~ /turl=/) {
+      gsub("turl=","",$i);
+      turl=$i;
+      gsub("\"","",turl);
+      gsub(/^alien:\/\//,"",turl);
+    }
+    else if ($i ~ /ctime=/) {
+      ctime=$i" "$(i+1);
+      gsub("ctime=","",ctime);
+      gsub(/[-:]/," ",ctime);
+      gsub("\"","",ctime);
+      ctime=mktime(ctime);
+    }
+    else if ($i ~ /size=/) {
+      gsub("size=","",$i);
+      size=$i;
+      gsub("\"","",size);
+      if (length(size)==0) size="-1";
     };
   };
   print turl" "md5" "ctime" "size

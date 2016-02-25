@@ -18,11 +18,9 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionR
 
   // Set Energy thresholds for additional patch selection
   // Threholds are configurable to test the influence of stronger event selections
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREL0, enEMC7);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREG1, enEG1);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREG2, enEG2);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREJ1, enEJ1);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREJ2, enEJ2);
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(enEMC7, enEG1, enEG2, enEJ1, enEJ2)
+  );
   task->SetClusterContainer(clustercontainername);
 
   TString outfile(mgr->GetCommonFileName());

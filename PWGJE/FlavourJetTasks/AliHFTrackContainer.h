@@ -33,15 +33,15 @@ class AliAODTrack;
 #include "AliParticleContainer.h"
 #include "AliAnalysisTaskDmesonJets.h"
 
-class AliHFTrackContainer : public AliParticleContainer {
+class AliHFTrackContainer : public AliTrackContainer {
  public:
   AliHFTrackContainer();
   AliHFTrackContainer(const char *name);
 
   void                 SetDMesonCandidate(AliAODRecoDecay* c);
 
-  Bool_t               AcceptParticle(AliVParticle* vp);
-  Bool_t               AcceptParticle(Int_t i);
+  Bool_t               AcceptTrack(AliVTrack* vp);
+  Bool_t               AcceptTrack(Int_t i);
   void                 GenerateDaughterList();
   const TObjArray&     GetDaughterList() const                         { return fDaughterList            ; }
   
@@ -57,7 +57,7 @@ class AliHFTrackContainer : public AliParticleContainer {
   AliHFTrackContainer &operator=(const AliHFTrackContainer&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliHFTrackContainer, 1);
+  ClassDef(AliHFTrackContainer, 2);
   /// \endcond
 };
 #endif

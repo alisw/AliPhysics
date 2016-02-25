@@ -17,6 +17,7 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     UInt_t        iNumFiles      = 100,                                     // number of files analyzed locally
     UInt_t        iNumEvents     = 5000,                                    // number of events to be analyzed
     const char   *cRunPeriod     = "LHC11h",                                // set the run period
+    UInt_t        kPhysSel       = AliVEvent::kAnyINT,                      // physics selection
     const char   *cTaskName      = "JetAna",                                // sets name of analysis manager
     const Bool_t  bDoChargedJets = kTRUE,
     const Bool_t  bDoFullJets    = kTRUE,
@@ -83,9 +84,6 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
   TString sOrigClusName;
   TString sCorrClusName;
 
-  TString sChJetsName;
-  TString sFuJetsName;
-
   if (iDataType == kAod) {
     sCellName = "emcalCells";
     sOrigClusName = "caloClusters";
@@ -94,11 +92,6 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
     sCellName = "EMCALCells";
     sOrigClusName = "CaloClusters";
   }
-
-  // AliEmcalPhysicsSelection::kEmcalOk, AliEmcalPhysicsSelection::kEmcalH,
-  // AliVEvent::kINT7, AliVEvent::kMB, AliVEvent::kCentral, AliVEvent::kSemiCentral,
-  // AliVEvent::kEMCEGA, AliVEvent::kEMCEJE
-  UInt_t kPhysSel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
 
   // Analysis manager
   AliAnalysisManager* pMgr = new AliAnalysisManager(cTaskName);
@@ -243,27 +236,34 @@ AliAnalysisManager* runEMCalJetAnalysisOld(
 
   // Charged jet analysis
   if (bDoChargedJets) {
-    AliEmcalJetTask *pChJetTask = AddTaskEmcalJet(sTracksName, "", 1, kJetRadius, 1, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
+    AliEmcalJetTask *pChJetTask = AddTaskEmcalJet(sTracksName, "", AliJetContainer::antikt_algorithm, kJetRadius, AliJetContainer::kChargedJet, kTrackPtCut, kClusPtCut, kGhostArea, AliJetContainer::pt_scheme, "Jet", 0., kFALSE, kFALSE);
     pChJetTask->SelectCollisionCandidates(kPhysSel);
-    sChJetsName = pChJetTask->GetName();
-
-    AliAnalysisTaskEmcalJetSpectraQA *pSpectraChTask = AddTaskEmcalJetSpectraQA(sTracksName, "", sChJetsName, "",  kJetRadius, kJetPtCut, 0., "TPC");
-    pSpectraChTask->SetNLeadingJets(1);
-    pSpectraChTask->SelectCollisionCandidates(kPhysSel);
-    pSpectraChTask->SetHistoType(kHistoType);
   }
 
   // Full jet analysis
   if (bDoFullJets) {
-    AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet(sTracksName, sCorrClusName, 1, kJetRadius, 0, kTrackPtCut, kClusPtCut, kGhostArea, 1, "Jet", 0., kFALSE, kFALSE, kFALSE);
+    AliEmcalJetTask *pFuJetTask = AddTaskEmcalJet(sTracksName, sCorrClusName, AliJetContainer::antikt_algorithm, kJetRadius, AliJetContainer::kFullJet, kTrackPtCut, kClusPtCut, kGhostArea, AliJetContainer::pt_scheme, "Jet", 0., kFALSE, kFALSE);
     pFuJetTask->SelectCollisionCandidates(kPhysSel);   
-    sFuJetsName = pFuJetTask->GetName();
-
-    AliAnalysisTaskEmcalJetSpectraQA *pSpectraFuTask = AddTaskEmcalJetSpectraQA(sTracksName, sCorrClusName, sFuJetsName, "", kJetRadius, kJetPtCut, 0., "EMCAL");
-    pSpectraFuTask->SetNLeadingJets(1);
-    pSpectraFuTask->SelectCollisionCandidates(kPhysSel);
-    pSpectraFuTask->SetHistoType(kHistoType);
   }
+
+  AliAnalysisTaskEmcalJetSpectraQA *pSpectraTask = 0;
+
+  if (bDoFullJets) {
+    pSpectraTask = AddTaskEmcalJetSpectraQA(sTracksName, sCorrClusName);
+    pSpectraTask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, kJetRadius, AliJetContainer::kEMCALfid);
+  }
+  else {
+    pSpectraTask = AddTaskEmcalJetSpectraQA(sTracksName, "");
+  }
+
+  if (bDoChargedJets) {
+    pSpectraTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, kJetRadius, AliJetContainer::kTPCfid);
+  }
+
+  pSpectraTask->SetNLeadingJets(1);
+  pSpectraTask->SelectCollisionCandidates(kPhysSel);
+  pSpectraTask->SetHistoType(kHistoType);
+
 
   TObjArray *pTopTasks = pMgr->GetTasks();
   for (Int_t i = 0; i < pTopTasks->GetEntries(); ++i) {

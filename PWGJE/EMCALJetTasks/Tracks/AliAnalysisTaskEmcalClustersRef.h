@@ -10,28 +10,16 @@ class AliEMCALGeometry;
 
 class TArrayD;
 class TClonesArray;
+class THistManager;
 class TList;
 class TString;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
+class AliEmcalTriggerOfflineSelection;
 
 class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskSE {
 public:
-  enum EmcalTriggerClass{
-    kECREL0 = 0,
-    kECREG1,
-    kECREG2,
-    kECREJ1,
-    kECREJ2,
-    kECRDL0,
-    kECRDG1,
-    kECRDG2,
-    kECRDJ1,
-    kECRDJ2,
-    kECRntrig
-  };
   AliAnalysisTaskEmcalClustersRef();
   AliAnalysisTaskEmcalClustersRef(const char *name);
   virtual ~AliAnalysisTaskEmcalClustersRef();
@@ -40,10 +28,9 @@ public:
   void UserExec(Option_t *);
   void Terminate(Option_t *) {}
 
+  void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetClusterContainer(TString clustercontname) { fClusterContainer = clustercontname; }
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
-
-  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
   void SetRequestAnalysisUtil(Bool_t doRequest) { fRequestAnalysisUtil = doRequest; }
 
@@ -62,16 +49,15 @@ protected:
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
   void FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundpatches) const;
   Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
-  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;
-  AliEMCalHistoContainer              *fHistos;
+  THistManager                        *fHistos;
+  AliEmcalTriggerOfflineSelection     *fTriggerSelection;
   AliEMCALGeometry                    *fGeometry;
   TString                             fClusterContainer;
 
   Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;
-  Double_t                            fOfflineEnergyThreshold[kECRntrig];
 
 private:
   AliAnalysisTaskEmcalClustersRef(const AliAnalysisTaskEmcalClustersRef &);

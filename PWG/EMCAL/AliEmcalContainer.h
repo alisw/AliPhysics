@@ -6,6 +6,7 @@
 //
 
 class TLorentzVector;
+class AliTLorentzVector;
 class AliVEvent;
 class AliNamedArrayI;
 class AliVParticle;
@@ -58,9 +59,18 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer(const char *name); 
   virtual ~AliEmcalContainer(){;}
 
+  virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom);
   TClonesArray               *GetArray() const                      { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
   const TString&              GetClassName()                  const { return fClassName                 ; }
+  Double_t                    GetMinE()                       const { return fMinE  ; }
+  Double_t                    GetMaxE()                       const { return fMaxE  ; }
+  Double_t                    GetMinPt()                      const { return fMinPt  ; }
+  Double_t                    GetMaxPt()                      const { return fMaxPt  ; }
+  Double_t                    GetMinEta()                     const { return fMinEta ; }
+  Double_t                    GetMaxEta()                     const { return fMaxEta ; }
+  Double_t                    GetMinPhi()                     const { return fMinPhi ; }
+  Double_t                    GetMaxPhi()                     const { return fMaxPhi ; }
   Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
@@ -70,7 +80,7 @@ class AliEmcalContainer : public TObject {
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom, Int_t i=-1) = 0;
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1) = 0;
   virtual Bool_t              AcceptObject(Int_t i) = 0;
-  virtual Bool_t              AcceptObject(TObject* obj) = 0;
+  virtual Bool_t              AcceptObject(const TObject* obj) = 0;
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
@@ -82,6 +92,18 @@ class AliEmcalContainer : public TObject {
   UShort_t                    GetRejectionReasonBitPosition() const;
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
   virtual void                NextEvent() {;}
+  void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
+  void                        SetMaxMCLabel(Int_t s)                            { fMaxMCLabel      = s   ; }
+  void                        SetMCLabelRange(Int_t min, Int_t max)             { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
+  void                        SetELimits(Double_t min, Double_t max)    { fMinE   = min ; fMaxE   = max ; }
+  void                        SetMinE(Double_t min)                     { fMinE   = min ; }
+  void                        SetMaxE(Double_t max)                     { fMaxE   = max ; }
+  void                        SetPtLimits(Double_t min, Double_t max)   { fMinPt  = min ; fMaxPt  = max ; }
+  void                        SetMinPt(Double_t min)                    { fMinPt  = min ; }
+  void                        SetMaxPt(Double_t max)                    { fMaxPt  = max ; }
+  void                        SetEtaLimits(Double_t min, Double_t max)  { fMaxEta = max ; fMinEta = min ; }
+  void                        SetPhiLimits(Double_t min, Double_t max)  { fMaxPhi = max ; fMinPhi = min ; }
+  void                        SetMassHypothesis(Double_t m)             { fMassHypothesis         = m   ; }
 
   const char*                 GetName()                       const { return fName.Data()               ; }
   void                        SetName(const char* n)                { fName = n                         ; }
@@ -94,6 +116,17 @@ class AliEmcalContainer : public TObject {
   TString                     fClassName;               // name of the class in the TClonesArray
   Bool_t                      fIsParticleLevel;         // whether or not it is a particle level object collection
   UInt_t                      fBitMap;                  // bitmap mask
+  Double_t                    fMinPt;                   // cut on particle pt
+  Double_t                    fMaxPt;                   // cut on particle pt
+  Double_t                    fMaxE;                    // cut on particle energy
+  Double_t                    fMinE;                    // cut on particle energy
+  Double_t                    fMinEta;                  // cut on particle eta
+  Double_t                    fMaxEta;                  // cut on particle eta
+  Double_t                    fMinPhi;                  // cut on particle phi
+  Double_t                    fMaxPhi;                  // cut on particle phi
+  Int_t                       fMinMCLabel;              // minimum MC label
+  Int_t                       fMaxMCLabel;              // maximum MC label
+  Double_t                    fMassHypothesis;          // if < 0 it will use a PID mass when available
   TClonesArray               *fClArray;                 //!TClonesArray
   Int_t                       fCurrentID;               //!current ID for automatic loops
   AliNamedArrayI             *fLabelMap;                //!Label-Index map
@@ -105,6 +138,6 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
-  ClassDef(AliEmcalContainer,6);
+  ClassDef(AliEmcalContainer,7);
 };
 #endif

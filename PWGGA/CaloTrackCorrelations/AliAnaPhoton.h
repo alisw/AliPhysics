@@ -395,6 +395,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhColRowLam0BinPtBin              [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
   TH2F * fhColRowLam0BinPtBinWeighted      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins and log weight Cell E / Cluster E 
   TH2F * fhCellClusterIndexEAndTime        [2][7] ; //!<! Cell in Cluster index (low index high energy, high index low energy) vs cell Time  
+  TH2F * fhCellClusterEAndTime             [2][7] ; //!<! Cell in Cluster E cell vs cell Time,  in a l0 bin, different Pt bins
+  TH2F * fhCellClusterEFracAndTime         [2][7] ; //!<! Cell in Cluster E cell/ E cluster vs cell Time,  in a l0 bin, different Pt bins
 
 //  // Shared clusters
 //  TH2F * fhLam0PerSMShared                   [12] ; //!<! Cluster lambda0 vs  Pt, for shared clusters, EMCal

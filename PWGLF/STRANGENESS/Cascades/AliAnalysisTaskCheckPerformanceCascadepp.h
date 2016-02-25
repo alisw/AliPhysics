@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKCHECKPERFORMANCECASCADEPP276_H
-#define ALIANALYSISTASKCHECKPERFORMANCECASCADEPP276_H
+#ifndef ALIANALYSISTASKCHECKPERFORMANCECASCADEPP_H
+#define ALIANALYSISTASKCHECKPERFORMANCECASCADEPP_H
 
 /*  See cxx source for full Copyright notice */
 
@@ -26,81 +26,86 @@ class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
+class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
  public:
  
-  AliAnalysisTaskCheckPerformanceCascadepp276();
-  AliAnalysisTaskCheckPerformanceCascadepp276(const char *name );
-  virtual ~AliAnalysisTaskCheckPerformanceCascadepp276();
+  AliAnalysisTaskCheckPerformanceCascadepp();
+  AliAnalysisTaskCheckPerformanceCascadepp(const char *name );
+  virtual ~AliAnalysisTaskCheckPerformanceCascadepp();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
-  void SetAnalysisType               (const char* analysisType           = "ESD")  { fAnalysisType                 = analysisType;               }
-  void SetCollidingSystem            (const char* collidingSystem        = "pp" )  { fCollidingSystem              = collidingSystem;            }  
-  void SetSelectedTriggerClass       (AliVEvent::EOfflineTriggerTypes    trigType) { fkTriggerClass                = trigType;                   }
-  void SetRelaunchV0CascVertexers    (Bool_t  rerunV0CascVertexers       = 0    )  { fkRerunV0CascVertexers        = rerunV0CascVertexers;       }
-  void SetSDDSelection               (Bool_t  sddOnSelection             = kTRUE)  { fkSDDselectionOn              = sddOnSelection;             }
-  void SetQualityCutZprimVtxPos      (Bool_t  qualityCutZprimVtxPos      = kTRUE)  { fkQualityCutZprimVtxPos       = qualityCutZprimVtxPos;      }
-  void SetRejectEventPileUp          (Bool_t  rejectPileUp               = kTRUE)  { fkRejectEventPileUp           = rejectPileUp;               }
-  void SetQualityCutNoTPConlyPrimVtx (Bool_t  qualityCutNoTPConlyPrimVtx = kTRUE)  { fkQualityCutNoTPConlyPrimVtx  = qualityCutNoTPConlyPrimVtx; }
-  void SetQualityCutTPCrefit         (Bool_t  qualityCutTPCrefit         = kTRUE)  { fkQualityCutTPCrefit          = qualityCutTPCrefit;         }
-  void SetQualityCutnTPCcls          (Bool_t  qualityCutnTPCcls          = kTRUE)  { fkQualityCutnTPCcls           = qualityCutnTPCcls;          }
-  void SetWithSDDOn                  (Bool_t  withsddOn                  = kTRUE)  { fwithSDD                      = withsddOn;                  }
-  void SetQualityCutMinnTPCcls       (Int_t   minnTPCcls                 = 70   )  { fMinnTPCcls                   = minnTPCcls;                 }
-  void SetExtraSelections            (Bool_t  extraSelections            = 0    )  { fkExtraSelections             = extraSelections;            }
-  void SetVertexRange                (Float_t vtxrange                   = 0.   )  { fVtxRange                     = vtxrange;                   }
-  void SetVertexRangeMin             (Float_t vtxrangemin                = 0.   )  { fVtxRangeMin                  = vtxrangemin;                }
-  void SetApplyAccCut                (Bool_t  acccut                     = kFALSE) { fApplyAccCut                  = acccut;                     }    
-  void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks             = 0.   )  { fMinPtCutOnDaughterTracks     = minptdaughtrks;             }
-  void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks               = 0.   )  { fEtaCutOnDaughterTracks       = etadaughtrks;               }
+
+  void SetAnalysisType                 (const char* analysisType            = "ESD"  ) { fAnalysisType                   = analysisType;                 }
+  void SetCollidingSystem              (const char* collidingSystem         = "pp"   ) { fCollidingSystem                = collidingSystem;              }
+  void SetSelectedTriggerClass         (AliVEvent::EOfflineTriggerTypes trigType     ) { fkTriggerClass                  = trigType;                     }
+  void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete        = kTRUE  ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
+  void SetEventSelSDDstatus            (Bool_t eventselSDDstatus            = kFALSE ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
+  void SetEventSelPhysicsSel           (Bool_t eventselPhysicsSel           = kTRUE  ) { fApplyEvSelPhysicsSel           = eventselPhysicsSel;           }
+  void SetEventSelNoTPConlyPrimVtx     (Bool_t eventselNoTPConlyPrimVtx     = kTRUE  ) { fApplyEvSelNoTPConlyPrimVtx     = eventselNoTPConlyPrimVtx;     }
+  void SetEventSelPileup               (Bool_t eventselPileup               = kTRUE  ) { fApplyEvSelPileup               = eventselPileup;               }
+  void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet = kTRUE  ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; }
+  void SetEventSelZprimVtxPos          (Bool_t eventselZprimVtxPos          = kTRUE  ) { fApplyEvSelZprimVtxPos          = eventselZprimVtxPos;          }
+  void SetRelaunchV0CascVertexers      (Bool_t rerunV0CascVertexers         = kFALSE ) { fRerunV0CascVertexers           = rerunV0CascVertexers;         }
+  void SetWithSDDOn                    (Bool_t withsddOn                    = kTRUE  ) { fwithSDD                        = withsddOn;                    }
+  void SetTrackQualityCutTPCrefit      (Bool_t trackqualityCutTPCrefit      = kTRUE  ) { fTrackQualityCutTPCrefit        = trackqualityCutTPCrefit;      }
+  void SetTrackQualityCutnTPCcls       (Bool_t trackqualityCutnTPCcls       = kTRUE  ) { fTrackQualityCutnTPCcls         = trackqualityCutnTPCcls;       }
+  void SetQualityCutMinnTPCcls         (Int_t  minnTPCcls                   = 70     ) { fMinnTPCcls                     = minnTPCcls;                   }
+  void SetVertexRange                  (Float_t vtxrangemin, Float_t vtxrangemax     ) { fVtxRangeMax                    = vtxrangemax;
+                                                                                         fVtxRangeMin                    = vtxrangemin;                  }
+  void SetApplyAccCut                  (Bool_t  acccut                      = kFALSE ) { fApplyAccCut                    = acccut;                       }
+  void SetMinptCutOnDaughterTracks     (Float_t minptdaughtrks              = 0.0    ) { fMinPtCutOnDaughterTracks       = minptdaughtrks;               }
+  void SetExtraSelections              (Bool_t  extraSelections             = kFALSE ) { fkExtraSelections               = extraSelections;              }
+  void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                = 0.8    ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
+  //Setters for the V0 and cascade Vertexer Parameters
+  void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
+  void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
+  void SetV0VertexerDCASecondtoPV          (Double_t lParameter){ fV0Sels[2] = lParameter; }
+  void SetV0VertexerDCAV0Daughters         (Double_t lParameter){ fV0Sels[3] = lParameter; }
+  void SetV0VertexerCosinePA               (Double_t lParameter){ fV0Sels[4] = lParameter; }
+  void SetV0VertexerMinRadius              (Double_t lParameter){ fV0Sels[5] = lParameter; }
+  void SetV0VertexerMaxRadius              (Double_t lParameter){ fV0Sels[6] = lParameter; }
+  void SetCascVertexerMaxChisquare         (Double_t lParameter){ fCascSels[0] = lParameter; }
+  void SetCascVertexerMinV0ImpactParameter (Double_t lParameter){ fCascSels[1] = lParameter; }
+  void SetCascVertexerV0MassWindow         (Double_t lParameter){ fCascSels[2] = lParameter; }
+  void SetCascVertexerDCABachToPV          (Double_t lParameter){ fCascSels[3] = lParameter; }
+  void SetCascVertexerDCACascadeDaughters  (Double_t lParameter){ fCascSels[4] = lParameter; }
+  void SetCascVertexerCascadeCosinePA      (Double_t lParameter){ fCascSels[5] = lParameter; }
+  void SetCascVertexerCascadeMinRadius     (Double_t lParameter){ fCascSels[6] = lParameter; }
+  void SetCascVertexerCascadeMaxRadius     (Double_t lParameter){ fCascSels[7] = lParameter; }
 
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
 
-        TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
-        AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
-        AliAnalysisUtils *fUtils;
-        TString         fCollidingSystem;       // "pPb" or "pp" colliding system
-        AliVEvent::EOfflineTriggerTypes fkTriggerClass;  //Trigger selection: kMB, kINT7, etc as needed
-       // AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
-        AliPIDResponse *fPIDResponse;           //! PID response object        
+        TString           fAnalysisType;                   // "ESD" or "AOD" analysis type      
+        TString           fCollidingSystem;                // "pPb" or "pp" colliding system
+        AliVEvent::EOfflineTriggerTypes fkTriggerClass;    // Trigger selection: kMB, kINT7, etc as needed
+        Bool_t            fApplyEvSelDAQincomplete;        //       
+        Bool_t            fApplyEvSelSDDstatus;            //
+        Bool_t            fApplyEvSelPhysicsSel;           //
+        Bool_t            fApplyEvSelNoTPConlyPrimVtx;     //
+        Bool_t            fApplyEvSelPileup;               //
+        Bool_t            fApplyEvSelSPDclustervstracklet; //
+        Bool_t            fApplyEvSelZprimVtxPos;          //
+        AliESDtrackCuts  *fESDtrackCuts;                   // ESD track cuts used for primary track definition
+        AliAnalysisUtils *fUtils;                          // analysis utils (for pA vertex selection)
+        AliPIDResponse   *fPIDResponse;                    //! PID response object
+        Bool_t            fRerunV0CascVertexers;           // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
+        Bool_t            fwithSDD;                        // Boolean : kTRUE = select events with SDD reco
+        Bool_t            fExtraSelections;                // Boolean : kTRUE = apply tighter selections, before starting the analysis
+        Bool_t            fTrackQualityCutTPCrefit;        //
+        Bool_t            fTrackQualityCutnTPCcls;         //
+        Int_t             fMinnTPCcls;                     // Minimum number of TPC cluster for daughter tracks
+        Bool_t            fkExtraSelections;               // Boolean : kTRUE = apply tighter selections, before starting the analysis
+        Float_t           fVtxRangeMax;                    // to select events with |zvtx|<fVtxRange cm
+        Float_t           fVtxRangeMin;                    // to select events with |zvtx|>fVtxRangeMin cm
+        Bool_t            fApplyAccCut;                   // flag to apply acceptance cuts to MC cascades
+        Float_t           fMinPtCutOnDaughterTracks;       // minimum pt cut on daughter tracks
+        Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
 
-        Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
-        Bool_t          fkSDDselectionOn;               // Boolean : kTRUE = enable the selection based on the SDD status
-        Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
-        Bool_t          fkRejectEventPileUp;            // Boolean : kTRUE = enable the rejection of events tagged as pile-up by SPD (AliESDEvent::IsPileupFromSPD)
-        Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
-        Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
-        Bool_t          fkQualityCutnTPCcls;            // Boolean : kTRUE = ask for n TPC clusters for each daughter track
-        Bool_t          fwithSDD;                       // Boolean : kTRUE = select events with SDD reco
-        Int_t           fMinnTPCcls;                    // Boolean : set the value for the minimum number of TPC clusters
-        Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
-        Float_t         fVtxRange;                      // to select events with |zvtx|<fVtxRange cm
-        Float_t         fVtxRangeMin;                   // to select events with |zvtx|>fVtxRangeMin cm
-        Bool_t          fApplyAccCut;                   // flag to apply acceptance cuts to MC cascades       
-        Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
-        Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks 
-        //Setters for the V0 and cascade Vertexer Parameters
-        void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
-        void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
-        void SetV0VertexerDCASecondtoPV          (Double_t lParameter){ fV0Sels[2] = lParameter; }
-        void SetV0VertexerDCAV0Daughters         (Double_t lParameter){ fV0Sels[3] = lParameter; }
-        void SetV0VertexerCosinePA               (Double_t lParameter){ fV0Sels[4] = lParameter; }
-        void SetV0VertexerMinRadius              (Double_t lParameter){ fV0Sels[5] = lParameter; }
-        void SetV0VertexerMaxRadius              (Double_t lParameter){ fV0Sels[6] = lParameter; }
-        void SetCascVertexerMaxChisquare         (Double_t lParameter){ fCascSels[0] = lParameter; }
-        void SetCascVertexerMinV0ImpactParameter (Double_t lParameter){ fCascSels[1] = lParameter; }
-        void SetCascVertexerV0MassWindow         (Double_t lParameter){ fCascSels[2] = lParameter; }
-        void SetCascVertexerDCABachToPV          (Double_t lParameter){ fCascSels[3] = lParameter; }
-        void SetCascVertexerDCACascadeDaughters  (Double_t lParameter){ fCascSels[4] = lParameter; }
-        void SetCascVertexerCascadeCosinePA      (Double_t lParameter){ fCascSels[5] = lParameter; }
-        void SetCascVertexerCascadeMinRadius     (Double_t lParameter){ fCascSels[6] = lParameter; }
-         void SetCascVertexerCascadeMaxRadius    (Double_t lParameter){ fCascSels[7] = lParameter; } 
-       
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 	
@@ -108,11 +113,13 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
          // - General Plots
          // Cascade multiplicity plots
          TH1F *fHistCascadeMultiplicityBeforeAnySel;
-         TH1F *fHistCascadeMultiplicityAfterSDDSel;
+         TH1F *fHistCascadeMultiplicityAfterDAQincompleteEvRej;
+         TH1F *fHistCascadeMultiplicityAfterSDDstatusSel;
          TH1F *fHistCascadeMultiplicityAfterPhysicsSel;
-         TH1F *fHistCascadeMultiplicityForSelEvtNoTPCOnly;
-         TH1F *fHistCascadeMultiplicityForSelEvtNoTPCOnlyNoPileup;
-         TH1F *fHistCascadeMultiplicityAfterVertexCutSel;
+         TH1F *fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel;
+         TH1F *fHistCascadeMultiplicityAfterPileupRej;
+         TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
+         TH1F *fHistCascadeMultiplicityAfterZprimVtxPosSel;
          TH1F *fHistnXiPlusPerEvTot;                  // After any event selections, in all the eta and pt range
          TH1F *fHistnXiMinusPerEvTot;                 // After any event selections, in all the eta and pt range
          TH1F *fHistnOmegaPlusPerEvTot;               // After any event selections, in all the eta and pt range
@@ -127,11 +134,13 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
          TH1F *fHistnAssoOmegaPlus;                   // For the Reconstructed-Associated cascades 
          // Tracks multiplicity plots
          TH1F *fHistTrackMultiplicityBeforeAnySel;
-         TH1F *fHistTrackMultiplicityAfterSDDSel;
+         TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
+         TH1F *fHistTrackMultiplicityAfterSDDstatusSel;
          TH1F *fHistTrackMultiplicityAfterPhysicsSel;
-         TH1F *fHistTrackMultiplicityForSelEvtNoTPCOnly;
-         TH1F *fHistTrackMultiplicityForSelEvtNoTPCOnlyNoPileup;
-         TH1F *fHistTrackMultiplicityAfterVertexCutSel;
+         TH1F *fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel;
+         TH1F *fHistTrackMultiplicityAfterPileupRej;
+         TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
+         TH1F *fHistTrackMultiplicityAfterZprimVtxPosSel;
          // Vertex position plots (BestVertex)
          TH1F *fHistPVx;                              // After any selections but before |Z| < 10 cm
          TH1F *fHistPVy;                              // After any selections but before |Z| < 10 cm
@@ -276,10 +285,10 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
 
 
 
-  AliAnalysisTaskCheckPerformanceCascadepp276(const AliAnalysisTaskCheckPerformanceCascadepp276&);            // not implemented
-  AliAnalysisTaskCheckPerformanceCascadepp276& operator=(const AliAnalysisTaskCheckPerformanceCascadepp276&); // not implemented
+  AliAnalysisTaskCheckPerformanceCascadepp(const AliAnalysisTaskCheckPerformanceCascadepp&);            // not implemented
+  AliAnalysisTaskCheckPerformanceCascadepp& operator=(const AliAnalysisTaskCheckPerformanceCascadepp&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadepp276, 8);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadepp, 9);
 };
 
 #endif

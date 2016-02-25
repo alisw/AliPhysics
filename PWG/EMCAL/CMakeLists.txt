@@ -64,6 +64,8 @@ set(SRCS
   AliEsdTrackExt.cxx
   AliHadCorrTask.cxx
   AliParticleContainer.cxx
+  AliMCParticleContainer.cxx
+  AliTrackContainer.cxx
   AliPicoTrack.cxx
   AliEMCALConfiguration.cxx
   AliEMCALConfigHandler.cxx
@@ -80,6 +82,8 @@ set(SRCS
   Trigger/AliEmcalTriggerSelection.cxx
   Trigger/AliEmcalTriggerQAAP.cxx
   Trigger/AliEmcalTriggerQATask.cxx
+  Trigger/AliEmcalTriggerQAPP.cxx
+  Trigger/AliEmcalTriggerQATaskPP.cxx
   )
 
 # Headers from sources

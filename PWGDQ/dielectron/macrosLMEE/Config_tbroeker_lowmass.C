@@ -21,7 +21,6 @@ TString names("demo_1;demo_2");
      Bool_t kRot = 0;
      Bool_t kMix = 1;
 
-     ULong64_t triggerMask = AliVEvent::kINT7;
      Bool_t randomizeDau = kTRUE;
      
      
@@ -30,7 +29,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
 const Int_t nPF = 2;
 
-AliDielectron* Config_tbroeker_lowmasspPb(Int_t cutDefinition=1, Bool_t isRandomRej=kFALSE)
+AliDielectron* Config_tbroeker_lowmass(Int_t cutDefinition=1, Bool_t isRandomRej=kFALSE)
 {
   //
   // Setup the instance of AliDielectron

@@ -108,6 +108,12 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   endif()
 
+  # Enable C++14 by default if found in ROOT
+  if(ROOT_HAS_CXX14 AND NOT DISABLE_CXX14)
+    message(STATUS "Enabling C++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  endif()
+
   # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)
   if(NOT AliRoot_HASALIEN)
       message(WARNING "AliRoot Core has been built without with AliEn support: some features might be unavailable!")

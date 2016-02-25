@@ -8,10 +8,9 @@
 class AliAnalysisUtils;
 class AliEMCALGeometry;
 class AliEMCALTriggerPatchInfo;
+class THistManager;
 
 namespace EMCalTriggerPtAnalysis {
-
-class AliEMCalHistoContainer;
 
 class AliAnalysisTaskEmcalOfflinePatchesRef: public AliAnalysisTaskSE {
 public:
@@ -25,7 +24,7 @@ public:
 protected:
   AliAnalysisUtils                        *fAnalysisUtil;
   AliEMCALGeometry                        *fGeometry;
-  AliEMCalHistoContainer                  *fHistos;
+  THistManager                            *fHistos;
 
 private:
   AliAnalysisTaskEmcalOfflinePatchesRef(const AliAnalysisTaskEmcalOfflinePatchesRef &);

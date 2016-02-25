@@ -23,6 +23,8 @@ class AliEmcalPythiaInfo;
 #include "Rtypes.h"
 
 #include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
+#include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -64,13 +66,19 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskEmcal();
 
   AliParticleContainer       *AddParticleContainer(const char *n);
+  AliTrackContainer          *AddTrackContainer(const char *n);
+  AliMCParticleContainer     *AddMCParticleContainer(const char *n);
   AliClusterContainer        *AddClusterContainer(const char *n);
   void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.Add(cont)                        ; }
   void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }
   AliParticleContainer       *GetParticleContainer(Int_t i=0)         const;
-  AliClusterContainer        *GetClusterContainer(Int_t i=0)          const;
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
+  AliClusterContainer        *GetClusterContainer(Int_t i=0)          const;
   AliClusterContainer        *GetClusterContainer(const char* name)   const;
+  AliMCParticleContainer     *GetMCParticleContainer(Int_t i=0)               const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(i))   ; }
+  AliMCParticleContainer     *GetMCParticleContainer(const char* name)        const { return dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(name)); }
+  AliTrackContainer          *GetTrackContainer(Int_t i=0)                    const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(i))        ; }
+  AliTrackContainer          *GetTrackContainer(const char* name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
   void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
   void                        SetCaloCellsName(const char *n)                       { fCaloCellsName     = n                              ; }

@@ -16,12 +16,14 @@
 #include <string>
 #include <vector>
 
+#include <THistManager.h>
 #include <TMath.h>
 #include <TString.h>
 
 #include "AliAODMCParticle.h"
 #include "AliCentrality.h"
 #include "AliEmcalJet.h"
+#include "AliEmcalTrackSelection.h"
 #include "AliJetContainer.h"
 #include "AliMCParticle.h"
 #include "AliMCEvent.h"
@@ -30,8 +32,6 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerKineCuts.h"
