@@ -702,10 +702,13 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     {
      wPhiEta = fPhiEtaWeights[cw]->GetBinContent(fPhiEtaWeights[cw]->FindBin(dPhi,dEta));
     }
-    if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
-      if(dPt>0.2 && dPt<20.) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
-      else wPhiEta = 0.;
-    }
+     if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
+       if(dPt>0.2 && dPt<20.) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
+       else wPhiEta = 0.;
+     }
+     if(fUseEtaWeights && fEtaWeightsHist[fCenBin][0]) {
+       wPhiEta *= 1./fEtaWeightsHist[fCenBin][cw]->GetBinContent(fEtaWeightsHist[fCenBin][cw]->FindBin(dEta));
+     }
     
     ptEta[0] = dPt;
     ptEta[1] = dEta;
@@ -16595,27 +16598,30 @@ void AliFlowAnalysisCRC::InitializeArraysForDistributions()
 
 void AliFlowAnalysisCRC::InitializeArraysForVarious()
 {
- // Initialize all arrays used for various unclassified objects.
- fMultHist = NULL;
- fCenHist = NULL;
- fCenWeightsHist = NULL;
- fCenWeigCalHist = NULL;
- for(Int_t c=0; c<10; c++) {
-  fPtWeightsHist[c] = NULL;
- }
- for(Int_t h=0; h<fCRCnCen; h++) {
-  for (Int_t c=0; c<2; c++) {
-   fhZNCentroid[h][c] = NULL;
-   fhZNSpectra[h][c] = NULL;
-   fhZNCenvsMul[h][c] = NULL;
-   fhZNResvsMul[h][c] = NULL;
-   fhZNResvsCen[h][c] = NULL;
+  // Initialize all arrays used for various unclassified objects.
+  fMultHist = NULL;
+  fCenHist = NULL;
+  fCenWeightsHist = NULL;
+  fCenWeigCalHist = NULL;
+  for(Int_t c=0; c<10; c++) {
+    fPtWeightsHist[c] = NULL;
+    for(Int_t k=0; k<2; k++) {
+      fEtaWeightsHist[c][k] = NULL;
+    }
   }
-  fhZNCvsZNA[h] = NULL;
- }
- for (Int_t c=0; c<4; c++) {
-  fhZNQVecCov[c] = NULL;
- }
+  for(Int_t h=0; h<fCRCnCen; h++) {
+    for (Int_t c=0; c<2; c++) {
+      fhZNCentroid[h][c] = NULL;
+      fhZNSpectra[h][c] = NULL;
+      fhZNCenvsMul[h][c] = NULL;
+      fhZNResvsMul[h][c] = NULL;
+      fhZNResvsCen[h][c] = NULL;
+    }
+    fhZNCvsZNA[h] = NULL;
+  }
+  for (Int_t c=0; c<4; c++) {
+    fhZNQVecCov[c] = NULL;
+  }
 } //  end of void AliFlowAnalysisCRC::InitializeArraysForVarious()
 
 //=======================================================================================================================
@@ -18625,6 +18631,7 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
   Double_t dReR2n=0., dImR2n = 0.;
   Double_t dReA2n=0., dImA2n = 0.;
   Double_t EtaBinW = (fCRCEtaMax-fCRCEtaMin)/fCRC2nEtaBins;
+  Double_t CorrA=0., WeigA=0., CorrB=0., WeigB=0.;
   
   for(Int_t e=1; e<=fCRC2nEtaBins; e++) {
     
@@ -18703,11 +18710,11 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
       
       // calculate covariances
       for(Int_t c=0;c<fkNCorCRC2;c++) {
+        CorrA = fCRCCorrProdTempHist[c][0][0]->GetBinContent(1);
+        WeigA = fCRCCorrProdTempHist[c][1][0]->GetBinContent(1);
         for(Int_t c2=0;c2<fkNCorCRC2;c2++) {
-          Double_t CorrA = fCRCCorrProdTempHist[c][0][0]->GetBinContent(1);
-          Double_t WeigA = fCRCCorrProdTempHist[c][1][0]->GetBinContent(1);
-          Double_t CorrB = fCRCCorrProdTempHist[c2][0][0]->GetBinContent(1);
-          Double_t WeigB = fCRCCorrProdTempHist[c2][1][0]->GetBinContent(1);
+          CorrB = fCRCCorrProdTempHist[c2][0][0]->GetBinContent(1);
+          WeigB = fCRCCorrProdTempHist[c2][1][0]->GetBinContent(1);
           fCRC2CovPro[fCenBin][c][c2]->Fill(EtaBin,CorrA*CorrB,WeigA*WeigB*fCenWeightEbE);
         }
       }
@@ -20707,8 +20714,8 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
               if(fNUAforCRC) {
                 Double_t NUACor = 0.;
                 if(k==0) NUACor = cosA*cosB + sinA*sinB;
-                if(k==1) NUACor = (cosA*cosB - sinA*sinB)*cosVZA + (cosA*sinB+sinA*cosB)*sinVZA;
-                if(k==2) NUACor = (cosA*cosB - sinA*sinB)*cosVZC + (cosA*sinB+sinA*cosB)*sinVZC;
+                if(k==1) NUACor = (cosA*cosB - sinA*sinB)*cosVZC + (cosA*sinB+sinA*cosB)*sinVZC;
+                if(k==2) NUACor = (cosA*cosB - sinA*sinB)*cosVZA + (cosA*sinB+sinA*cosB)*sinVZA;
                 Double_t TwoCorr = (sumwx/sumw - NUACor)*sumw;
                 SumTwoCorr += TwoCorr;
               } else {

@@ -848,6 +848,8 @@ public:
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
+ void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t c) {this->fEtaWeightsHist[h][c] = n;};
+ TH1D* GetEtaWeightsHist(Int_t h, Int_t c) const {return this->fEtaWeightsHist[h][c];};
  void SetZNCentroid(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCentroid[eg][h] = n;};
  TH2F* GetZNCentroid(Int_t const eg, Int_t const h) const {return this->fhZNCentroid[eg][h];};
  void SetZNSpectra(TH1F* const n, Int_t const eg, Int_t const h) {this->fhZNSpectra[eg][h] = n;};
@@ -1525,6 +1527,7 @@ private:
  TH1D* fCenWeightsHist; //! Centrality weights
  TH1D* fCenWeigCalHist; //! Centrality weights
  TH1D* fPtWeightsHist[10]; //! Pt weights
+ TH1D* fEtaWeightsHist[10][2]; //! Eta weights
  Double_t fCenWeightEbE;
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
  TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra

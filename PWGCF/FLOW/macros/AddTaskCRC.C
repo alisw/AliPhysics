@@ -28,6 +28,8 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Bool_t bCalculateFlow=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
+                             Bool_t bUseEtaWeights=kFALSE,
+                             TString EtaWeightsFileName="",
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
                              Float_t MaxDevZN=9.,
@@ -314,7 +316,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bUseZDC);
  taskQC->SetCorrWeight(sCorrWeight);
- taskQC->SetUsePtWeights(bUsePtWeights);
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
@@ -338,6 +339,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  } // end of if(bCenFlattening)
  
  if(bUsePtWeights) {
+  taskQC->SetUsePtWeights(bUsePtWeights);
   TFile* PtWeightsFile = TFile::Open(PtWeightsFileName,"READ");
   if(!PtWeightsFile) {
    cout << "ERROR: PtWeightsFile not found!" << endl;
@@ -355,6 +357,28 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    }
   }
  } // end of if(bUsePtWeights)
+  
+  if(bUseEtaWeights) {
+    taskQC->SetUseEtaWeights(bUseEtaWeights);
+    TFile* EtaWeightsFile = TFile::Open(EtaWeightsFileName,"READ");
+    if(!EtaWeightsFile) {
+      cout << "ERROR: EtaWeightsFile not found!" << endl;
+      exit(1);
+    }
+    for(Int_t c=0; c<10; c++) {
+      for(Int_t k=0; k<2; k++) {
+        TH1D* EtaWeightsHist = dynamic_cast<TH1D*>(EtaWeightsFile->Get(Form("Eta_Weights_cen%d_ch%d",c,k)));
+        if(EtaWeightsHist) {
+          taskQC->SetEtaWeightsHist(EtaWeightsHist,c,k);
+          cout << "Eta weights centr. "<<c<<" set (from " <<  EtaWeightsFileName.Data() << ")" << endl;
+        }
+        else {
+          cout << "ERROR: EtaWeightsHist not found!" << endl;
+          exit(1);
+        }
+      }
+    }
+  } // end of if(bUseEtaWeights)
  
  if(bUseZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
