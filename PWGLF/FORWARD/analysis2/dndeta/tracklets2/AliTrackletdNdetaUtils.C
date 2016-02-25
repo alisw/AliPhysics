@@ -124,6 +124,26 @@ public:
    */  
   static Int_t GetB(Container* parent, const char* name, Bool_t def=false);
   /** 
+   * Get a copy of a 1D histogram from a container 
+   * 
+   * @param parent  Container 
+   * @param name    Name of histogram 
+   * @param newName Optional new name of copy 
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH1* CopyH1(Container* parent, const char* name,const char* newName=0);
+  /** 
+   * Get a copy of a 2D histogram from a container 
+   * 
+   * @param parent  Container 
+   * @param name    Name of histogram 
+   * @param newName Optional new name of copy 
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH2* CopyH2(Container* parent, const char* name,const char* newName=0);
+  /** 
    * Service function to make a 1D histogram from an axis definition 
    * 
    * @param name  Name of histogram 
@@ -403,6 +423,28 @@ Int_t AliTrackletdNdetaUtils::GetB(Container*  parent,
   return p->GetVal();
 }
 //____________________________________________________________________
+TH1* AliTrackletdNdetaUtils::CopyH1(Container*  parent,
+				    const char* name,
+				    const char* newName)
+{
+  TH1* orig = GetH1(parent, name);
+  if (!orig) return 0;
+  TH1* ret  = static_cast<TH1*>(orig->Clone(newName ? newName : name));
+  ret->SetDirectory(0); // Release from file container
+  return ret;
+}
+//____________________________________________________________________
+TH2* AliTrackletdNdetaUtils::CopyH2(Container*  parent,
+				    const char* name,
+				    const char* newName)
+{
+  TH2* orig = GetH2(parent, name);
+  if (!orig) return 0;
+  TH2* ret  = static_cast<TH2*>(orig->Clone(newName ? newName : name));
+  ret->SetDirectory(0); // Release from file container
+  return ret;
+}
+//____________________________________________________________________
 TH1* AliTrackletdNdetaUtils::Make1D(Container&     c,
 				   const TString& name,
 				   const TString& title,
@@ -431,6 +473,16 @@ TH1* AliTrackletdNdetaUtils::Make1D(Container&     c,
   if (const_cast<TAxis&>(xAxis).GetLabels()) {
     for (Int_t i = 1; i <= xAxis.GetNbins(); i++)
       ret->GetXaxis()->SetBinLabel(i, xAxis.GetBinLabel(i));
+  }
+  switch (style) {
+  case 27:
+  case 33:
+    ret->SetMarkerSize(1.4);
+    break;
+  case 29:    
+  case 30:
+    ret->SetMarkerSize(1.2);
+    break;
   }
   c.Add(ret);
   return ret;

@@ -1,0 +1,172 @@
+\documentclass{article}
+
+\usepackage[margin=2cm,a4paper]{geometry}
+\usepackage{amsmath}
+\usepackage{amstext}
+\usepackage{hyperref}
+\newcommand\dndeta{% 
+  \ensuremath%
+  \mathrm{d}N_{\mathrm{ch}}/\mathrm{d}\eta}
+\title{$\dndeta$ from SPD tracklets}
+\author{Christian Holm Christensen}
+\date{\today}
+\begin{document}
+\maketitle 
+
+\section{Fundamentals}
+
+The fundamental formula used in the analysis of SPD tracklets is 
+\begin{align}
+  \label{eq:fundamental}
+  R &= \frac{P}{(1-\beta^\prime)M^\prime}\left(1-\beta\right)M\quad,
+\end{align}
+where
+\begin{itemize}
+\item[$R$] is the result
+\item[$P$] is the distribution of generated primary particles in
+  simulations. 
+\item[$M^\prime$] is distribution of measured (reconstructed) tracklets
+  from simulated data 
+\item[$\beta^\prime$] is the relative contribution of background to
+  $M^\prime$ 
+\item[$M$] is the distribution of measured (reconstructed) tracklets
+  from real data
+\item[$\beta$] is the relative contribution of background to $M$ 
+\end{itemize}
+
+Here, all variables are two-dimensional distributions over $\eta$ and
+$\mathrm{IP}_z$ of number of tracklets (or particles for $P$) for a
+given centrality or other event selection. 
+
+The background $\beta$ (for both simulated and real data) can be
+estimated in two ways: 
+
+\begin{description}
+\item[Injection] By injecting fake clusters into the events and
+  reconstructing the event.
+\item[Combinatorics] By inspecting the mothers of the two constituent
+  clusters. 
+\end{description}
+
+Strictly speaking, the latter method is only possible on simulated
+data, but the estimate from simulated data can be used as an estimate
+for real data. 
+
+\section{Injection}
+
+When estimating the background from injected clusters, the analysis
+builds the distribution $I$ using several reconstruction passed on the
+same event.  In each pass, a real cluster is removed and a new fake
+cluster, similar to the removed one, is placed elsewhere in the SPD.
+The distribution $I$ therefore has a large number of `fake'
+tracklets.  
+
+For both the tracklets in the distribution $I$ from injected clusters,
+and from the tracklets of the measured distribution $M$, we can
+determine the distribution $f(\Delta)$ of the quality parameter
+$\Delta$ given by  
+\begin{align}
+  \label{eq:Delta}
+  \Delta 
+  &= 
+    \left(\frac{\Delta\varphi-\delta_{\varphi}}{\sigma_{\varphi}}\right)^2+
+    \left(\frac{\Delta\vartheta\sin^{-2}(\vartheta)}{\sigma_{\vartheta}}\right)^2
+    \quad,
+\end{align}
+where $\Delta\varphi$ and $\Delta\vartheta$ are the residuals with
+respect to the expected tracklet trajectory, and $\sigma_{\varphi}$
+and $\sigma_{\vartheta}$ are the resolutions in the two angles. 
+
+Signal tracks are expected to have a
+$\Delta<\Delta_{\mathrm{cut}}=1.5$, while background tracks will have
+a $\Delta>\min\Delta_{\mathrm{tail}}=5$.  We can therefore extract the
+background $B$ from the distribution $I$ by matching the tails of the
+$\Delta_I$ distribution to that of $\Delta_M$, or more precisely 
+\begin{align}
+  \label{eq:scaledI}
+  B 
+  &= \frac{\int_{\min\Delta_{\mathrm{tail}}}^{\infty}\mathrm{d}\Delta
+    f_M(\Delta)}{
+    \int_{\min\Delta_{\mathrm{tail}}}^{\infty}\mathrm{d}\Delta
+    f_I(\Delta)}I\quad.
+\end{align}
+
+We then calculate the relative contribution of background particle
+$\beta$ as 
+\begin{align}
+  \label{eq:betaI}
+  (1-\beta)M &= \left(1-\frac{B}{M}\right)M = M-B = S\quad.
+\end{align}
+Here, $S$ is the signal distribution.  For simulated data, we simply
+replace the un-primed distributions with the primed equivalent
+\begin{align*}
+  % \label{eq:betaIMC}
+  (1-\beta^\prime)M^\prime 
+  &=
+    \left(1-\frac{B^\prime}{M^\prime}\right)M^\prime 
+    = M^\prime-B^\prime = S^\prime\quad,
+\end{align*}
+where $B^\prime$ is calculated from $I^\prime$ as given in
+\eqref{eq:scaledI} where we have injected clusters into a simulated
+event. 
+
+\section{Combinatorics}
+
+By selecting tracklets for which the two constituent clusters come
+from different tracks in the simulated data, we can estimate the
+(combinatorial) background $C^\prime$ directly.  We can therefore calculate
+the signal distribution in simulated data as 
+\begin{align}
+  \label{eq:betaCMC}
+  (1-\beta^\prime)M^\prime 
+  &= \left(1-\frac{C^\prime}{M^\prime}\right)M^\prime =
+    M^\prime - C^\prime = S^\prime\quad,
+\end{align}
+where we again have identified the signal distribution $S^\prime$ for
+simulated data. 
+
+We cannot estimate $C$ for real data, so instead, we assume the same
+combinatorial background in real data, with a scaling factor, and for
+real data, we get 
+\begin{align}
+  \label{eq:betaC}
+  (1-\beta)M 
+  &= (1-k\beta^\prime)M 
+    = \left(1-k\frac{C^\prime}{M^\prime}\right)M = S\quad.
+\end{align}
+Note, in this case, the expression does not reduce further.  The
+constant $k=1.3$ expresses the additional amount of combinatorial
+background seen in real as opposed to simulated data. 
+
+\section{Putting it together} 
+
+We can put all the above together to form 4 different ways of
+calculating $R$ 
+
+\begin{align}
+  \label{eq:methods}
+  R &=
+      \begin{cases}
+        \frac{P}{M^\prime-C^\prime}\left(1-k\frac{C^\prime}{M^\prime}\right)M 
+        & \text{Combinatorial---Combinatorial}\\
+        \frac{P}{M^\prime-C^\prime}(M-B) 
+        & \text{Combinatorial---Injection}\\
+        \frac{P}{M^\prime-B^\prime}\left(1-k\frac{C^\prime}{M^\prime}\right)M 
+        & \text{Injection---Combinatorial}\\
+        \frac{P}{M^\prime-B^\prime}(M-B)
+        & \text{Injection---Injection}\quad.
+      \end{cases}
+\end{align}
+Note, in the first case (Combinatorial---Combinatoral), if $k=1$, the
+equation simplifies to 
+\begin{align*}
+  R &= \frac{P}{M^\prime}M\quad,
+\end{align*}
+meaning we can identify 
+\begin{align}
+  \label{eq:alpha}
+  \alpha &= \frac{P}{(1-\beta^\prime)M^\prime}
+\end{align}
+as an effective correction from the measurements to the number of
+primary particles. 
+\end{document}
