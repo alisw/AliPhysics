@@ -601,12 +601,13 @@ struct GridRailway : public PluginRailway
    * 
    * @return true on success
    */
-  virtual Bool_t AuxFile(const TString& name, bool copy=false)
+  virtual Bool_t AuxFile(TString& name, bool copy=false)
   {
-    if (!Railway::AuxFile(name, copy)) return false;
+    TString local = name;
+    if (!Railway::AuxFile(local, copy)) return false;
     // We need to add this file as an additional 'library', so that the 
     // file is uploaded to the users Grid working directory. 
-    fHandler->AddAdditionalLibrary(gSystem->BaseName(name.Data()));
+    fHandler->AddAdditionalLibrary(local);
     return true;
   }
   /** 
