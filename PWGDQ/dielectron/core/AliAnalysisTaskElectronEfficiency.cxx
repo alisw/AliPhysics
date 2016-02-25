@@ -906,9 +906,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           Double_t theta = l1.Angle(l2.Vect());
           Double_t phiv  = -1; // save some computing time if phiv is not requested.
           if (fPairCutPhiV<3.14) phiv = PhivPair(fESD->GetMagneticField(), p1->Charge(), p2->Charge(), l1.Vect(), l2.Vect());
-          if (   (mee   < fPairCutMee   || fPairCutMee   < 0.) // -> within cut or cut disabled
-              && (theta < fPairCutTheta || fPairCutTheta < 0.)
-              && (phiv  > fPairCutPhiV  || fPairCutPhiV  > 3.14) ) {
+          if ( (fPairCutMee   > 0. || fPairCutTheta > 0. || fPairCutPhiV  < 3.14) // at least one cut must be enabled
+                && (mee   < fPairCutMee   || fPairCutMee   < 0.) // -> within cut or cut disabled
+                && (theta < fPairCutTheta || fPairCutTheta < 0.)
+                && (phiv  > fPairCutPhiV  || fPairCutPhiV  > 3.14) ) {
             continue;
           }
           if(p1->GetMother() == p2->GetMother())
@@ -958,7 +959,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             Double_t theta = l1.Angle(l2.Vect());
             Double_t phiv  = -1; // save some computing time if phiv is not requested.
             if (fPairCutPhiV<3.14) phiv = PhivPair(fESD->GetMagneticField(), p1->Charge(), p2->Charge(), l1.Vect(), l2.Vect());
-            if (   (mee   < fPairCutMee   || fPairCutMee   < 0.) // -> within cut or cut disabled
+            if ( (fPairCutMee   > 0. || fPairCutTheta > 0. || fPairCutPhiV  < 3.14) // at least one cut must be enabled
+                && (mee   < fPairCutMee   || fPairCutMee   < 0.) // -> within cut or cut disabled
                 && (theta < fPairCutTheta || fPairCutTheta < 0.)
                 && (phiv  > fPairCutPhiV  || fPairCutPhiV  > 3.14) ) {
               continue;
@@ -1082,7 +1084,8 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
         (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(57)))->Fill(theta,phiv);//hOpenPhiV
         
         // tag the pion as rejected, if the pair falls within following cut:
-        if (   (mee   < fvRejCutMee.at(iCut)   || fvRejCutMee.at(iCut)   < 0.) // -> within cut or cut disabled
+        if ( (fvRejCutMee.at(iCut)   > 0. || fvRejCutTheta.at(iCut) > 0. || fvRejCutPhiV.at(iCut) < 3.14) // at least one cut must be enabled
+            && (mee   < fvRejCutMee.at(iCut)   || fvRejCutMee.at(iCut)   < 0.) // -> within cut or cut disabled
             && (theta < fvRejCutTheta.at(iCut) || fvRejCutTheta.at(iCut) < 0.)
             && (phiv  > fvRejCutPhiV.at(iCut)  || fvRejCutPhiV.at(iCut)  > 3.14) )
         {
