@@ -185,6 +185,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::FillHistograms()
     FillHistogram("hBackgroundPt", fJetsCont->GetRhoVal(), fCent);
     Int_t count = 0;
     AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    fJetsCont->ResetCurrentID();
     // All jets
     while(jet) {
       count++;
@@ -315,6 +316,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     // Create correlation-like objects and save them in a TClonesArray
     AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
     Int_t count = 0;
+    fJetsCont->ResetCurrentID();
     while(jet) {
 
       // Add the particle object to the clones array
