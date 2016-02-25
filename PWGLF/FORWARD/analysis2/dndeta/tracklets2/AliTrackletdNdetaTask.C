@@ -1195,8 +1195,9 @@ AliTrackletdNdetaTask::CentBin::EstimateBackground(Container* dataCon,
   Container* bgCon = set->MasterFinalize(result, fIPz, deltaCut, deltaTail);
   if (!bgCon) return 0;
 
-  Bool_t isComb = TString(GetName()).Contains("combinatorics",
-					      TString::kIgnoreCase);
+  Bool_t isComb = set->fName.Contains("combinatorics", TString::kIgnoreCase);
+  // Info("EstimateBackground", "%s - combinatorics? %s",
+  //      set->fName.Data(), isComb ? "yes" : "no");
 
   Double_t dataIntg = GetD(dataCon, "deltaTailIntg", -1);
   Double_t dataIntE = GetD(dataCon, "deltaTailIntE", -1);
@@ -1219,48 +1220,53 @@ AliTrackletdNdetaTask::CentBin::EstimateBackground(Container* dataCon,
     AliWarningF("No delta distribution in %s", dataCon->GetName());
   }
 
-  TH1* bgScaled = static_cast<TH1*>(bgDelta->Clone("deltaScaled"));
-  bgCon->Add(bgScaled);
-  bgScaled->SetLineStyle(7);
-  bgScaled->SetTitle(Form("%s\\times%6.3f", bgDelta->GetTitle(), scale));
-  bgScaled->SetDirectory(0);
-  if (dataDelta) bgScaled->SetMarkerStyle(dataDelta->GetMarkerStyle());
-  else           bgScaled->SetMarkerStyle(20);
+  TH1* deltaScaled = CopyH1(bgCon, "delta", "deltaScaled");
+  bgCon->Add(deltaScaled);
+  deltaScaled->SetLineStyle(7);
+  deltaScaled->SetTitle(Form("%s\\times%6.3f", bgDelta->GetTitle(), scale));
+  if (dataDelta) deltaScaled->SetMarkerStyle(dataDelta->GetMarkerStyle());
+  else           deltaScaled->SetMarkerStyle(20);
 
   if (lDebug > 2)
     AliInfoF("Scaling %s Delta dist by %f +/- %f",
 	     bgCon->GetName(), scale, scaleE);
 
-  for (Int_t bin = 1; bin <= bgScaled->GetNbinsX(); bin++) {
-    Double_t c = bgScaled->GetBinContent(bin);
-    Double_t e = bgScaled->GetBinError  (bin);
-    bgScaled->SetBinContent(bin,scale*c);
-    bgScaled->SetBinError  (bin,TMath::Sqrt(c*c*scaleE*scaleE+e*e*scale*scale));
+  for (Int_t bin = 1; bin <= deltaScaled->GetNbinsX(); bin++) {
+    Double_t c = deltaScaled->GetBinContent(bin);
+    Double_t e = deltaScaled->GetBinError  (bin);
+    deltaScaled->SetBinContent(bin,scale*c);
+    deltaScaled->SetBinError  (bin,TMath::Sqrt(c*c*scaleE*scaleE+
+					       e*e*scale*scale));
   }
 
-  TH2* bgEtaVsIPz   = GetH2(bgCon,   "etaVsIPz");
-  TH2* dataEtaVsIPz = GetH2(dataCon, "etaVsIPz");
-  TH2* backgroundEst   =
-    static_cast<TH2*>(bgEtaVsIPz->Clone("backgroundEst"));
-  backgroundEst->SetTitle("\\beta\\hbox{ estimate}");
-  backgroundEst->SetDirectory(0);
+  TH2* backgroundEst = CopyH2(bgCon,  "etaVsIPz", "backgroundEst");
+  backgroundEst->SetTitle("Background");
   if (!isComb) backgroundEst->Scale(scale);
+  // else         Info("EstimateBackground", "Combinators, no scaling of BG");
   bgCon->Add(backgroundEst);
 
-  TH2* signalEst = static_cast<TH2*>(dataEtaVsIPz->Clone("signalEst"));
-  signalEst->SetDirectory(0);
-  signalEst->SetTitle("measured - background");
+  TH2* signalEst = CopyH2(dataCon, "etaVsIPz","signalEst");
+  signalEst->SetMarkerStyle(backgroundEst->GetMarkerStyle());
+  signalEst->SetMarkerColor(backgroundEst->GetMarkerColor());
+  signalEst->SetMarkerSize (backgroundEst->GetMarkerSize());
+  signalEst->SetLineStyle  (backgroundEst->GetLineStyle());
+  signalEst->SetLineColor  (backgroundEst->GetLineColor());
+  signalEst->SetLineWidth  (backgroundEst->GetLineWidth());
+  signalEst->SetFillStyle  (backgroundEst->GetFillStyle());
+  signalEst->SetFillColor  (backgroundEst->GetFillColor());
+  signalEst->SetTitle("Signal");
   signalEst->Add(backgroundEst,-1);
   bgCon->Add(signalEst);
 
-  TH2* beta = static_cast<TH2*>(backgroundEst->Clone("beta"));
+  TH2* measured  = GetH2(dataCon, "etaVsIPz");
+  TH2* beta      = static_cast<TH2*>(backgroundEst->Clone("beta"));
   beta->SetTitle("\\beta");
   beta->SetDirectory(0);
-  beta->Divide(dataEtaVsIPz);
+  beta->Divide(measured);
   bgCon->Add(beta);
     
   TH2* bg1MBeta   = static_cast<TH2*>(beta->Clone("oneMinusBeta"));
-  bg1MBeta->SetTitle("1-\\beta\\hbox{ estimate}");
+  bg1MBeta->SetTitle("1-\\beta");
   bg1MBeta->SetDirectory(0);
   bg1MBeta->Reset();
   bgCon->Add(bg1MBeta);  
@@ -1282,9 +1288,9 @@ AliTrackletdNdetaTask::CentBin::MasterFinalize(Container* parent,
 					       Double_t   deltaCut,
 					       Double_t   deltaTail)
 {
-  Double_t nEvents = fIPz->GetEntries();
-  Printf("Bin %5.1f-%5.1f%%: %10d events", fMin, fMax, Int_t(nEvents));
+  Double_t   nEvents = fIPz->GetEntries();
   Container* result  = CreateContainer(*parent);
+  Printf("Bin %5.1f-%5.1f%%: %10d events", fMin, fMax, Int_t(nEvents));
 
   // Copy ipZ histogram and scale by number of events 
   TH1* ipZ = static_cast<TH1*>(CloneAndAdd(result, fIPz));
@@ -2613,8 +2619,8 @@ AliTrackletdNdetaMCTask::CentBin::CentBin(Float_t c1, Float_t c2,
 {
   fPrimSet  = new HistoSet("primaries", kCyan+2, 34);
   fSecSet   = new HistoSet("secondaries", kMagenta+2, 28);
-  fCombSet  = new HistoSet("combinatorics", kYellow+2, 29);
-  fCombUSet = new HistoSet("uncorrelatedCombinatorics", kPink+2, 30);
+  fCombSet  = new HistoSet("combinatorics", kYellow+2, 30);
+  fCombUSet = new HistoSet("uncorrelatedCombinatorics", kPink+2, 27);
   fHistoSets->Add(fPrimSet);
   fHistoSets->Add(fSecSet);
   fHistoSets->Add(fCombSet);
@@ -2863,11 +2869,13 @@ AliTrackletdNdetaMCTask::CentBin::MasterFinalize(Container* parent,
   result->Add(fEtaVsIPzMC);
   result->Add(fEtaVsIPzMCSel);
 
-  TH1* dNdetaAll = AverageOverIPz(fEtaVsIPzMC,    "dNdeta",    1, ipzGen);
-  TH1* dNdetaSel = AverageOverIPz(fEtaVsIPzMCSel, "dNdetaSel", 1, ipzRec);
+  TH1* dNdetaAll = AverageOverIPz(fEtaVsIPzMC,    "truedNdeta",    1, ipzGen);
+  TH1* dNdetaSel = AverageOverIPz(fEtaVsIPzMCSel, "truedNdetaSel", 1, ipzRec);
   dNdetaAll->SetMarkerSize(1.4*dNdetaAll->GetMarkerSize());
   dNdetaAll->SetTitle("All events");
   dNdetaSel->SetTitle("Selected events");
+  dNdetaAll->SetYTitle("\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta");
+  dNdetaSel->SetYTitle("\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta");
   result->Add(dNdetaAll);
   result->Add(dNdetaSel);
   
@@ -3153,7 +3161,8 @@ Bool_t AliTrackletdNdetaMCTask::FillPrimaries(Double_t cent,
     TIter nextB(&toRun);
     while ((bin = static_cast<CentBin*>(nextB()))) {
       // AliInfoF("Filling track %6d into %s", trackNo, bin->Name());
-      bin->FillPrimary(ipZ, genIPz, eta, pdg->Charge()!=0,pdgID, weight);
+      bin->FillPrimary(dataOK ? ipZ : -1000, genIPz,
+		       eta, pdg->Charge()!=0,pdgID, weight);
     }
   }
   return true;

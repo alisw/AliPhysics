@@ -261,9 +261,9 @@ struct TrackletdNdetaTrain : public TrainSetup
     // gROOT->GetMacroPath()));
     // gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGUD/multVScentPbPb");
     Info("CreateTasks", "Loading code");
-    fRailway->LoadSource("FixPaths.C+");
-    fRailway->LoadSource("AliTrackletdNdetaUtils.C+");
-    fRailway->LoadSource("AliTrackletdNdetaTask.C+");
+    fRailway->LoadSource("FixPaths.C");
+    fRailway->LoadSource("AliTrackletdNdetaUtils.C");
+    fRailway->LoadSource("AliTrackletdNdetaTask.C");
 
     // --- Create the task using interpreter -------------------------
     Bool_t             mc  = mgr->GetMCtruthEventHandler() != 0;
