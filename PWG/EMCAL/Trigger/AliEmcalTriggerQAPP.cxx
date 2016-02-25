@@ -37,7 +37,7 @@ using namespace EMCALTrigger;
 ClassImp(AliEmcalTriggerQAPP)
 /// \endcond
 
-const Int_t AliEmcalTriggerQAPP::fgkMaxPatchAmp[6] = {2000, 2000, 2000, 6000, 6000, 5000};
+const Int_t AliEmcalTriggerQAPP::fgkMaxPatchAmp[6] = {3000, 3000, 3000, 6000, 6000, 5000};
 const TString AliEmcalTriggerQAPP::fgkPatchTypes[3] = {"Online", "Recalc", "Offline"};
 
 /// Dummy constructor for ROOT I/O
@@ -196,6 +196,13 @@ void AliEmcalTriggerQAPP::Init()
         hname = Form("EMCTRQA_hist%sMaxPatchAmp%s%s", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         htitle = Form("EMCTRQA_hist%sMaxPatchAmp%s%s;amplitude;entries", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         fHistManager.CreateTH1(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
+
+        for (Int_t itrig2 = itrig+1; itrig2 < 6; itrig2++) {
+          if (kEMCalTriggerNames[itrig2].IsNull() || fEnabledTriggerTypes[itrig2] == kFALSE) continue;
+          hname = Form("EMCTRQA_hist%s%sMaxVs%sMax%s", det[idet], kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+          htitle = Form("EMCTRQA_hist%s%sMaxVs%sMax%s;%s max;%s max;entries", det[idet], kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data(), kEMCalTriggerNames[itrig2].Data(), kEMCalTriggerNames[itrig].Data());
+          fHistManager.CreateTH2(hname, htitle, fgkMaxPatchAmp[itrig2]/fADCperBin, 0, fgkMaxPatchAmp[itrig2], fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
+        }
       }
 
       hname = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
@@ -361,14 +368,21 @@ void AliEmcalTriggerQAPP::EventCompleted()
       hname = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
       fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][itype], fMaxPatchDCal[itrig][itype]);
 
-      if (fMaxPatchEMCal[itrig][itype] > 0) {
-        hname = Form("EMCTRQA_histEMCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-        fHistManager.FillTH1(hname, fMaxPatchEMCal[itrig][itype]);
-      }
+      hname = Form("EMCTRQA_histEMCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      fHistManager.FillTH1(hname, fMaxPatchEMCal[itrig][itype]);
 
-      if (fMaxPatchDCal[itrig][itype] > 0) {
-        hname = Form("EMCTRQA_histDCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-        fHistManager.FillTH1(hname, fMaxPatchDCal[itrig][itype]);
+      hname = Form("EMCTRQA_histDCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      fHistManager.FillTH1(hname, fMaxPatchDCal[itrig][itype]);
+
+      for (Int_t itrig2 = itrig+1; itrig2 < 6; itrig2++) {
+        if (kEMCalTriggerNames[itrig2].IsNull() || fEnabledTriggerTypes[itrig2] == kFALSE) continue;
+        if (fMaxPatchDCal[itrig2][itype] == 0 && fMaxPatchEMCal[itrig2][itype] == 0) continue;
+
+        hname = Form("EMCTRQA_histEMCal%sMaxVs%sMax%s", kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+        fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig2][itype], fMaxPatchEMCal[itrig][itype]);
+
+        hname = Form("EMCTRQA_histDCal%sMaxVs%sMax%s", kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+        fHistManager.FillTH2(hname, fMaxPatchDCal[itrig2][itype], fMaxPatchDCal[itrig][itype]);
       }
 
       fMaxPatchEMCal[itrig][itype] = 0;
