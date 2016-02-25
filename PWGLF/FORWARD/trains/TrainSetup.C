@@ -92,6 +92,7 @@ struct TrainSetup
     fOptions.Add("ocdb",   "(TENDER_SNAPSHOT)","Enable OCDB",            "");
     fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
     fOptions.Add("cent-oadb","PERIOD","Alternative OADB for centrality","");
+    fOptions.Add("no-link","Do not make symlink to output",              false);
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -336,7 +337,9 @@ struct TrainSetup
       if (status) Warning("Run", "%s", e.Data());
       else    	  Error("Run", "%s", e.Data());
     }
-    if (fOptions.Has("date")) {
+    if (fOptions.Has("date") &&
+	!fOptions.Get("date").EqualTo("none") &&
+	!fOptions.Has("no-link")) {
       TString tmp     = "";
       TString escaped = EscapeName(fName, tmp);
       gSystem->Exec(Form("rm -f last_%s", escaped.Data()));
@@ -534,14 +537,17 @@ protected:
   virtual AliVEventHandler* CreateInputHandler(UShort_t type,
 					       Bool_t   esdRecPoints=false)
   {
+    Info("CreateInputHandler", "Making handler for %d (%d)",
+	 type, esdRecPoints);
     AliVEventHandler* ret = 0;
     switch (type) {
     case Railway::kESD:  {
       AliESDInputHandler* input = 0;
       if (!esdRecPoints) input = new AliESDInputHandler();
       else {
+	Info("CreateInputHandler", "Special handler for rec-points");
 	AliESDInputHandlerRP* esd = new AliESDInputHandlerRP();
-	esd->ReadFromDirectory();
+	// esd->ReadFromDirectory();
 	input = esd;	
       }
       input->SetReadFriends(fOptions.AsBool("friends"));
@@ -761,6 +767,17 @@ protected:
 			     ":%s", gROOT->GetMacroPath()));
     AliAnalysisTaskSE* task = CoupleSECar("AddTaskMultSelection.C","false");
     FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
+    if (!task->HasBranches()) {
+      // Everything except tracks since that slows does things and is
+      // really only needed for reference multiplicities
+      task->SetBranches("ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,"
+			"AliESDVZERO.,AliESDTZERO.,TPCVertex.,"
+			"SPDVertex.,PrimaryVertex.,AliMultiplicity."
+			"SPDPileupVertices,TrkPileupVertices,"
+			"AliESDAD. "
+			"AOD:header,vertices,AliAODTZERO,AliAODVZERO,"
+			"AliAODZDC,AliAODAD");
+    }
     return;
 
     // Ignore the rest - just kept for historical reasons 
@@ -909,6 +926,7 @@ protected:
       return;
     }
     AliAnalysisTask* task = reinterpret_cast<AliAnalysisTask*>(ret);
+    if (!task->HasBranches()) task->SetBranches("ESD:AliESDRun. AOD:header");
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     
     mgr->AddTask(task);
