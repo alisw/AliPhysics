@@ -296,6 +296,7 @@ TH2* GetBg(Bool_t comb, TSeqCollection* list, Int_t b)
 
   TH2* in  = GetH2(list,  Form("b%d_TrInj_ZvEtaCutT", b));
   TH2* ret = static_cast<TH2*>(in->Clone("bg"));
+  in ->SetDirectory(0);
   ret->SetDirectory(0);
   ret->SetStats(0);
   TH1*  deltaRec = GetH1(list, Form("b%d_TrData_WDist", b));
@@ -354,8 +355,10 @@ TH2* CorrectSignal(Bool_t comb, TH2* meas, TH2* bg, TH2* simMeas)
   }
   TH2* beta = static_cast<TH2*>(bg->Clone("beta"));
   beta->Divide(simMeas);
+  beta->SetDirectory(0);
   TH2* one = static_cast<TH2*>(bg->Clone("one"));
   one->Reset();
+  one->SetDirectory(0);
   for (Int_t i = 1; i <= one->GetNbinsX(); i++) 
     for (Int_t j = 1; j <= one->GetNbinsY(); j++)
       one->SetBinContent(i,j,1);
@@ -472,6 +475,8 @@ void CorrectOneBin(THStack*        stack,
   }
   else
     realBg = GetBg(false, realList, b);
+  realMeas->SetName("realMeas");
+  simMeas ->SetName("simMeas");
   realBg  ->SetName("realBg");
   simBg   ->SetName("simBg");
   trueGen ->SetName("trueGen");
@@ -480,6 +485,12 @@ void CorrectOneBin(THStack*        stack,
   simMeas ->SetTitle("Measured (simulated)");
   simBg   ->SetTitle("Background (simulated)");
   trueGen ->SetTitle("Generated");
+  realMeas->SetDirectory(0);
+  simMeas ->SetDirectory(0);
+  trueGen ->SetDirectory(0);
+  realIPz ->SetDirectory(0);
+  simIPz  ->SetDirectory(0);
+  trueIPz ->SetDirectory(0);
   
   // Scale IPz histograms
   Double_t dummy;
@@ -543,6 +554,7 @@ void CorrectOneBin(THStack*        stack,
   // Create fiducial cut as cut on alpha 
   TH2* fiducial = static_cast<TH2*>(alpha->Clone("fiducial"));
   fiducial->SetTitle("Fiducial cut");
+  fiducial->SetDirectory(0);
   for (Int_t i = 1; i <= fiducial->GetNbinsX(); i++) {
     for (Int_t j = 1; j <= fiducial->GetNbinsY(); j++) {
       Double_t a = fiducial->GetBinContent(i,j);
@@ -604,6 +616,7 @@ void CorrectOneBin(THStack*        stack,
     simIPz ->Scale(1/simNev);
     trueIPz->Scale(1/trueNev);
   }
+#if 0
   TCanvas* c = new TCanvas(Form("c%02d",b),
 			   Form("Centrality bin %d",b),
 			   1200, 1000);
@@ -624,15 +637,13 @@ void CorrectOneBin(THStack*        stack,
   c->cd(12); summary ->DrawClone("nostack");
   c->GetPad(4)->BuildLegend();
   c->GetPad(12)->BuildLegend();
-  
+#endif 
   stack->Add(truth);
   stack->Add(dndeta, "e2");
 
   if (!dir) return;
 
-  TDirectory* out = dir->mkdir(Form("bin%02d", b));
-  out->cd();
-
+  dir->cd();
   realMeas ->Write();
   realIPz  ->Write();
   realBg   ->Write();
@@ -666,15 +677,20 @@ void CorrectOneBin(THStack*        stack,
  * @param flags Flags for the processing 
  * @param nBins Number of bins to process 
  */
-void SimpleCorrect(UShort_t flags, Int_t nBins=1)
+void SimpleCorrect(UShort_t flags,
+		   const char* realFileName,
+		   const char* simFileName,
+		   Int_t       nBins=9,
+		   const char* otherFileName="")
 {
-  TFile* realFile = TFile::Open("trdt.root", "READ");
-  TFile* simFile  = TFile::Open("trmc.root", "READ");
-  TList* realList = static_cast<TList*>(realFile->Get("clist"));
-  TList* simList  = static_cast<TList*>(simFile ->Get("clist"));
-  TObjArray* other = 0;
-  TFile* file = TFile::Open("corrRes/Bla_9bins_CutEta-2.0_2.0_Zv-15.0_15.0_bgComb_Shape_wdst_MCBG_cutSig1.5_cutBg5.0.root","READ");
-  if (file) other =static_cast<TObjArray*>(file->Get("TObjArray"));
+  TFile* realFile  = TFile::Open(realFileName,  "READ");
+  TFile* simFile   = TFile::Open(simFileName,   "READ");
+  TFile* otherFile = TFile::Open(otherFileName, "READ");
+  TList* realList  = static_cast<TList*>(realFile->Get("clist"));
+  TList* simList   = static_cast<TList*>(simFile ->Get("clist"));
+  TObjArray* otherList = 0;
+  if (otherFile)
+    otherList =static_cast<TObjArray*>(otherFile->Get("TObjArray"));
 
   Bool_t realComb = flags & 0x1;
   Bool_t simComb  = flags & 0x2;
@@ -686,25 +702,44 @@ void SimpleCorrect(UShort_t flags, Int_t nBins=1)
 	   realComb ? "MC-labels" : "Injection",
 	   simComb  ? "MC-labels" : "Injection",
 	   preScale ? " (pre-scaled)" : "");
-  THStack* res = new THStack("result", tit);
-  for (Int_t b = 0; b < nBins; b++) {
-    CorrectOneBin(res,0,b,realList,simList,realComb,simComb,preScale,full);
 
-    if (other) {
-      TH1* od = GetH1(other, Form("bin%d_DataCorrSignal_Bla",b));
-      TH1* ot = GetH1(other, Form("bin%d_MCTruth",b));
+  TFile*   output = TFile::Open("result.root", "RECREATE");
+  THStack* res    = new THStack("result", tit);
+  TH1*     cent   = GetH1(realList, "EvCentr");
+  for (Int_t b = 0; b < nBins; b++) {
+    Double_t c1 = cent->GetXaxis()->GetBinLowEdge(b+1);
+    Double_t c2 = cent->GetXaxis()->GetBinUpEdge (b+1);
+    TString  name;
+    name.Form("cent%03d%02d_%03d%02d",
+	      Int_t(c1), Int_t(c1*100)%100,
+	      Int_t(c2), Int_t(c2*100)%100);
+    TDirectory* dir = output->mkdir(name);
+    CorrectOneBin(res,dir,b,realList,simList,realComb,simComb,preScale,full);
+
+    if (otherList) {
+      TH1* od = GetH1(otherList, Form("bin%d_DataCorrSignal_Bla",b));
+      TH1* ot = GetH1(otherList, Form("bin%d_MCTruth",b));
       TH1* td = static_cast<TH1*>(od->Clone("otherdNdeta"));
       TH1* tt = static_cast<TH1*>(ot->Clone("otherTruth"));
+      td->SetDirectory(0);
+      tt->SetDirectory(0);
       SetAttr(td, cc[b%11], 21, 1.2, 3004, 1, 1);
       SetAttr(tt, cc[b%11], 25, 1.4, 0, 7, 3);
       if (td->GetMinimum() < 1e-6) { td->SetMinimum(); td->SetMaximum(); }
       if (tt->GetMinimum() < 1e-6) { tt->SetMinimum(); tt->SetMaximum(); }
       res->Add(td, "e2");
       res->Add(tt);
+      dir->cd();
+      td->Write();
+      tt->Write();
     }
   }
   TCanvas* all = new TCanvas("all", "all");
   res->Draw("nostack");
+  res->SetMaximum(1.2*res->GetMaximum("nostack"));
+  output->cd();
+  res->Write();
+  output->Write();
 
   new TBrowser;
 }

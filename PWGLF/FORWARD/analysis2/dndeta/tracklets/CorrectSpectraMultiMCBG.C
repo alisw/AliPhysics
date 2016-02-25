@@ -716,7 +716,7 @@ void ProcessHistos(int bin)
   hsigCorr->SetTitle(prefT + "Corrected Signal");
 
   hsigCorr->Multiply(use1mBeta ? halpMC : halp );
-  PrintH(hsigCorr);
+  // PrintH(hsigCorr);
   MyPrint(1,"Multiply by %s", use1mBeta ? halpMC->GetName() : halp->GetName());
   res->AddAtAndExpand(hsigCorr, shift + kSigCorr);
   MyPrint(2,"Add corrected signal %s at %d", hsigCorr->GetName(), shift+kSigCorr);
