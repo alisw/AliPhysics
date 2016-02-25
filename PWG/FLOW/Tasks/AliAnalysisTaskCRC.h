@@ -193,6 +193,8 @@ public:
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
+ void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t c) {this->fEtaWeightsHist[h][c] = n;};
+ TH1D* GetEtaWeightsHist(Int_t h, Int_t c) const {return this->fEtaWeightsHist[h][c];};
  void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
  Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
  void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
@@ -283,6 +285,7 @@ private:
  TList *fQVecList;       // list with weights
  TH1D* fCenWeightsHist;
  TH1D* fPtWeightsHist[10];
+ TH1D* fEtaWeightsHist[10][2];
  Bool_t fQAZDCCuts;
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
