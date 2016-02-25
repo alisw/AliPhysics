@@ -577,7 +577,7 @@ void AliAnalysisTaskADPilot::SetCalibData()
 {
  
     AliCDBManager *man = AliCDBManager::Instance();
-    man->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+    man->SetDefaultStorage("alien://Folder=/alice/data/2015/OCDB");
     man->SetRun(fRun);
 
     AliCDBEntry *ent = man->Get("AD/Calib/Data");
