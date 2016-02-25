@@ -3,8 +3,8 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskEmcal.h"
 #include "AliEmcalTriggerMakerKernel.h"
+#include "AliAnalysisTaskEmcal.h"
 #include <TString.h>
 
 class TClonesArray;

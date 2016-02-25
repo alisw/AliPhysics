@@ -22,8 +22,8 @@
 #include <vector>
 #include <TClonesArray.h>
 
-#include "AliEmcalTriggerDecision.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerSelection.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 

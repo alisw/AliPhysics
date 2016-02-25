@@ -17,11 +17,11 @@
 #include <THnSparse.h>
 
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalTriggerQAAP.h"
 #include "AliEMCALTriggerFastOR.h"
 #include "AliEMCALTriggerConstants.h"
-
+#include "AliEmcalTriggerQAAP.h"
 #include "AliEmcalTriggerQATask.h"
+
 
 using namespace EMCALTrigger;
 

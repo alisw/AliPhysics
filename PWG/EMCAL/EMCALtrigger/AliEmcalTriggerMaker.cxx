@@ -17,16 +17,15 @@
 #include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalTriggerMaker.h"
+#include "AliEmcalTriggerSetupInfo.h"
 #include "AliEMCALTriggerConstants.h"
 #include "AliEMCALTriggerDataGrid.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"
 #include "AliVCaloCells.h"
 #include "AliVCaloTrigger.h"
 #include "AliVVZERO.h"
-#include "AliEmcalTriggerMaker.h"
-
 #include "THistManager.h"
 #include "TString.h"
 

@@ -768,6 +768,9 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL\EMCALbase \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL\EMCALtrigger \
+                         @CMAKE_SOURCE_DIR@/PWGPP/EMCAL\EMCALtasks \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/macros \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QA/macros \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL \
