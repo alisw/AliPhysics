@@ -63,7 +63,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     }
     
     //create a task
-    AliAnalysisTaskHFEEfficiency *taskHFE = ConfigHFEemcalMod(kTRUE, minTPCCluster, pixel);    //kTRUE if MC
+    AliAnalysisTaskHFEEfficiency *taskHFE = ConfigHFEEff(kTRUE, minTPCCluster, pixel);    //kTRUE if MC
     
     if(debug) cout << " === AliAnalysisTaskHFEEfficiency === " << taskHFE << endl;
     if(!taskHFE) {
@@ -104,14 +104,14 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskHFEEfficiency* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
+AliAnalysisTaskHFEEfficiency* ConfigHFEEff(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
     //
     // HFE standard task configuration
     //
     
     Bool_t kAnalyseTaggedTracks = kTRUE;
     
-    AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsITSTOFTPC","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
+    AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEffITSTOFTPC","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
     //  hfecuts->CreateStandardCuts();
     hfecuts->SetMinNClustersTPC(minTPCCulster);
     hfecuts->SetMinNClustersITS(5);
@@ -133,7 +133,7 @@ AliAnalysisTaskHFEEfficiency* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster
     //  hfecuts->SetQAOn();
     hfecuts->SetPtRange(0, 30);
     
-    AliAnalysisTaskHFEEfficiency *task = new AliAnalysisTaskHFEEfficiency("HFE_Flow_TPCEMCal");
+    AliAnalysisTaskHFEEfficiency *task = new AliAnalysisTaskHFEEfficiency("HFE_Eff");
     printf("task ------------------------ %p\n ", task);
     
     
