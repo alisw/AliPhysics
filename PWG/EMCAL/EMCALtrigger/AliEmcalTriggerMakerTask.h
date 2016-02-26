@@ -12,6 +12,22 @@ class THistManager;
 class AliVVZERO;
 class AliEMCALTriggerPatchInfo;
 
+/**
+ * \class AliEmcalTriggerMakerTask
+ * \brief EMCAL trigger maker task
+ * \ingroup EMCALTRGFW
+ *
+ * The EMCAL trigger maker task steers the process building
+ * trigger patches, performed via the trigger maker kernel,
+ * and provides the interface to the user. As this, it forwards
+ * necessary data like FASTor amplitudes and time sums as well
+ * as cell data to the trigger maker kernel and reads out the
+ * patches. The patches as type of raw patches are converted
+ * into full patches (AliEMCALTriggerPatchInfo) and stored
+ * in a TClonesArray which is added to the input event. On user
+ * request it can also fill QA histograms which are added to
+ * the common root file.
+ */
 class AliEmcalTriggerMakerTask : public AliAnalysisTaskEmcal {
 public:
   /***

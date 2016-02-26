@@ -20,6 +20,7 @@ class AliEMCALTriggerFastOR;
 /**
  * @class AliEmcalTriggerQAAP
  * @brief Class to generate EMCal trigger QA plots
+ * @ingroup EMCALTRGFW
  */
 
 class AliEmcalTriggerQAAP : public TNamed {
