@@ -8,9 +8,7 @@
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (
- TString AnalysisDataType       = "MCAOD", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- Bool_t NoResonances            =  kTRUE, // for MCAOD
- Bool_t NoElectron              =  kTRUE, // for MCAOD
+ TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  int    CentralityGroup         = 1, // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             = 1, // 0: full correlations    1: singles only
  int    useWeights              = 0, // 0: no                   1: yes 
@@ -20,14 +18,14 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double zMax                    =  6., // set vertexZ cut   
  double vZwidth                 = 0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          = 1, // PbPb2010(Global=1;TPConly=128;Hybrid=272); pPb2013(Global=?;TPConly=?;Hybrid=768); pp(Global=?;TPConly=?; Hybrid=?)
- int    nClusterMin             = 70,
+ int    nClusterMin             = 80,
  double ptMin                   =  0.2,
  double ptMax                   =  2.0,
  double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
  double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
  double eta2Max                 =  0.8, // set y2max acturally if useRapidity==1
- double etaBinWidth             =  0.05, // set yBinWidth acturally if useRapidity==1
+ double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
@@ -47,6 +45,8 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
   // Set Default Configuration of this analysis
   // ==========================================
   int    useRapidity            = 1; // 0: no      1: yes
+  Bool_t NoResonances           = kTRUE; // only for MCAOD
+  Bool_t NoElectron             = kTRUE; // only for MCAOD
   int    debugLevel             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
@@ -95,8 +95,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     { minCentrality[0] = 20.;     maxCentrality[0]  = 40.; }
   else if ( CentralityGroup == 12 )
     { minCentrality[0] = 60.;     maxCentrality[0]  = 80.; }
-  else
-    { return 0; }
+  else { return 0; }
   
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
@@ -314,12 +313,8 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
       analysisManager->ConnectOutput(task,  0, taskOutputContainer );
-
-      //cout << "Task added ...." << endl;
         
       iTask++;
-
-    }        
-    
+    }            
   return task;
 }
