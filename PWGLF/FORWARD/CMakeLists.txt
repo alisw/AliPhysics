@@ -287,8 +287,6 @@ install ( FILES analysis2/AddTaskdNdeta.C
 		analysis2/MakeFMDEventPlane.C
                 analysis2/MakeForwardQA.C
 		analysis2/MakeMCCorr.C		
-                analysis2/OtherData.C
-                analysis2/other.root
            DESTINATION PWGLF/FORWARD/analysis2 )
 
 # Install corrections 
