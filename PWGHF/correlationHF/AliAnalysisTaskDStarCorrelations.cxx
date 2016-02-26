@@ -1237,21 +1237,38 @@ void AliAnalysisTaskDStarCorrelations::DefineThNSparseForAnalysis(){
     
     
     // for reconstruction on Data and MC
-    Int_t nbinsSparse[5]=         {nbinscorr ,     32 ,  32, 10,nbinsPool};
-    Double_t binLowLimitSparse[5]={lowcorrbin,0.14314 ,-1.6,  0,-0.5};
-    Double_t binUpLimitSparse[5]= {upcorrbin ,0.14794 , 1.6,  5,nbinsPool-0.5};
+   
+    //Int_t nbinsSparse[5]=         {nbinscorr ,     32 ,  32, 10,nbinsPool};
+    //Double_t binLowLimitSparse[5]={lowcorrbin,0.14314 ,-1.6,  0,-0.5};
+    //Double_t binUpLimitSparse[5]= {upcorrbin ,0.14794 , 1.6,  5,nbinsPool-0.5};
     
-  //  Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     40 ,  32, 10,nbinsPool};
-  //  Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.14788 ,-1.6,  0,-0.5};
-  //  Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.1504 , 1.6,  5,nbinsPool-0.5};
+    Int_t nbinsSparse[5]=         {nbinscorr ,     50 ,  32, 10,nbinsPool};
+    Double_t binLowLimitSparse[5]={lowcorrbin,0.142 ,-1.6,  0,-0.5};
+    Double_t binUpLimitSparse[5]= {upcorrbin ,0.1495 , 1.6,  5,nbinsPool-0.5};
+
     
-    Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     27 ,  32, 10,nbinsPool};
-    Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.1473 ,-1.6,  0,-0.5};
-    Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.1644 , 1.6,  5,nbinsPool-0.5};
     
-    Int_t nbinsSparseMC[6]=         {nbinscorr ,     32 ,  32, 10,nbinsPool,3};
-    Double_t binLowLimitSparseMC[6]={lowcorrbin,0.14314 ,-1.6,  0,-0.5,-0.5};
-    Double_t binUpLimitSparseMC[6]= {upcorrbin ,0.14794 , 1.6,  5,nbinsPool-0.5,2.5};
+  //  Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     27 ,  32, 10,nbinsPool};
+  // Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.1473 ,-1.6,  0,-0.5};
+  //  Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.1644 , 1.6,  5,nbinsPool-0.5};
+    
+    Int_t nbinsSparseDStarSB[5]=         {nbinscorr ,     80 ,  32, 10,nbinsPool};
+    Double_t binLowLimitSparseDStarSB[5]={lowcorrbin,0.148 ,-1.6,  0,-0.5};
+    Double_t binUpLimitSparseDStarSB[5]= {upcorrbin ,0.160 , 1.6,  5,nbinsPool-0.5};
+
+    
+   // Int_t nbinsSparseMC[6]=         {nbinscorr ,     32 ,  32, 10,nbinsPool,3};
+   // Double_t binLowLimitSparseMC[6]={lowcorrbin,0.14314 ,-1.6,  0,-0.5,-0.5};
+   // Double_t binUpLimitSparseMC[6]= {upcorrbin ,0.14794 , 1.6,  5,nbinsPool-0.5,2.5};
+    
+   
+    Int_t nbinsSparseMC[6]=         {nbinscorr ,  50 ,  32, 10,nbinsPool,3};
+    Double_t binLowLimitSparseMC[6]={lowcorrbin,0.142 ,-1.6, 0,-0.5,-0.5};
+    Double_t binUpLimitSparseMC[6]= {upcorrbin ,0.1495 , 1.6, 5,nbinsPool-0.5,2.5};
+    
+
+    
+    
     
     TString signalSparseName = "";
     TString bkgSparseName = "";
@@ -1425,8 +1442,15 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
   //      cout << "D vs D histogram: " << nameDZerovsDStarMass << endl;
         
         D0mass = new TH1F(nameDZeroMass.Data(), Form("D^{0} invariant mass in bin %d; M(K#pi) GeV/c^{2};",iBin),200,1.75,1.95);
-        DStarMass = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
-        DStarFromSBMass = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+      //  DStarMass = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+        
+        DStarMass = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),400,0.13,0.19);
+
+        DStarFromSBMass = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),400,0.13,0.19);
+        
+      // DStarFromSBMass = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+        
+        
         DZerovsDStarMass = new TH2D(nameDZerovsDStarMass.Data(),Form("Delta invariant mass for sideband in bin %d; M(K#pi) GeV/c^{2};M(K#pi#pi)- M(K#pi) GeV/c^{2}",iBin),200,1.75,1.95,200,0.1,0.2);
         
         if(!fmixing){
@@ -1450,8 +1474,15 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
             nameDZerovsDStarMass+=Form("%d",iBin);
             
             D0massWeighted = new TH1F(nameDZeroMass.Data(), Form("D^{0} invariant mass in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,1.75,1.95);
-            DStarMassWeighted = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
-            DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+            
+          //  DStarMassWeighted = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+            
+            DStarMassWeighted = new TH1F(nameDStarMass.Data(), Form("Delta invariant mass for candidates in bin %d eff weight; M(K#pi#pi)- M(K#pi) GeV/c^{2};",iBin),400,0.13,0.19);
+            
+            DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),400,0.13,0.19);
+
+        //  DStarFromSBMassWeighted = new TH1F(nameDStarFromSBMass.Data(), Form("Delta invariant mass for sideband in bin %d eff weight; M(K#pi) GeV/c^{2};",iBin),200,0.1,0.2);
+            
             DZerovsDStarMassWeighted = new TH2D(nameDZerovsDStarMass.Data(),Form("Delta invariant mass for sideband in bin %d; M(K#pi) GeV/c^{2};M(K#pi#pi)- M(K#pi) GeV/c^{2}",iBin),200,1.75,1.95,200,0.1,0.2);
             
             D0massWeighted->Sumw2();
@@ -1542,13 +1573,13 @@ void AliAnalysisTaskDStarCorrelations::DefineHistoForAnalysis(){
     
     
     // Montecarlo for D*
-    TH2D *MCtagPtDStarfromCharm = new TH2D("MCtagPtDStarfromCharm","RECO pt of MCtagged DStars from charm",50,0,50,200,0.1,0.2);
+    TH2D *MCtagPtDStarfromCharm = new TH2D("MCtagPtDStarfromCharm","RECO pt of MCtagged DStars from charm",50,0,50,400,0.13,0.19);
     if(fmontecarlo) fOutputMC->Add(MCtagPtDStarfromCharm);
     
-    TH2D *MCtagPtDStarfromBeauty = new TH2D("MCtagPtDStarfromBeauty","RECO pt of MCtagged DStars from beauty",50,0,50,200,0.1,0.2);
+    TH2D *MCtagPtDStarfromBeauty = new TH2D("MCtagPtDStarfromBeauty","RECO pt of MCtagged DStars from beauty",50,0,50,400,0.13,0.19);
     if(fmontecarlo) fOutputMC->Add(MCtagPtDStarfromBeauty);
 	
-	TH2F *MCtagPtDStar = new TH2F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",50,0,50,200,0.1,0.2);
+	TH2F *MCtagPtDStar = new TH2F("MCtagPtDStar","RECO pt of MCtagged DStars side bands",50,0,50,400,0.13,0.19);
 	if(fmontecarlo) fOutputMC->Add(MCtagPtDStar);
     
     TH2F * MCTagEtaInclusiveDStar = new TH2F("MCTagEtaInclusiveDStar","MC Tag eta distributions of Inclusive Dmesons; #eta; pT;Entries",20,-1,1,50,0,50);
