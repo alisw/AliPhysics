@@ -56,6 +56,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
   if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
 
+  (!isPP || isMC) rejectPileUp=kFALSE;
+
   //-------------------------------------------
   //pair cuts
   //-------------------------------------------

@@ -128,7 +128,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
     if(useFineMcBinning) outm->AddAxis(ptID,300,0.,3.);
-    else out->AddAxis(ptID,200,0.,20.);
+    else outm->AddAxis(ptID,200,0.,20.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
 
