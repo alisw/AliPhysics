@@ -337,26 +337,19 @@ protected:
     TH1F * _nsigmaTOFkaon_1d;
     
     TH1F * _etadis_POI_AliHelperPID;
-    TH1F * _ydis_POI_AliHelperPID;
-    TH1F * _etadis_without_PID;
-    TH1F * _ydis_without_PID;
     TH1F * _etadis_before_any_cuts;
-    TH1F * _ydis_before_any_cuts;
 
-    TH3F * _vZ_y_Pt_before_any_cuts;
-    TH3F * _vZ_y_Pt_without_PID;
+    TH1F * _ydis_POI_AliHelperPID;
+    
     TH3F * _vZ_y_Pt_POI_AliHelperPID;
-
-    TH3F * _vZ_y_eta_before_any_cuts;
-    TH3F * _vZ_y_eta_without_PID;
     TH3F * _vZ_y_eta_POI_AliHelperPID;
 
     TH2F * _y_Pt_AllCh_MCAODTruth;
     TH2F * _y_Pt_Pion_MCAODTruth;
     TH2F * _y_Pt_Kaon_MCAODTruth;
+    TH2F * _y_Pt_Proton_MCAODTruth;
     
     TH1F * _phidis_POI_AliHelperPID;
-    TH1F * _phidis_without_PID;
     TH1F * _phidis_before_any_cuts;
     
     TH1F * _dcaz;
