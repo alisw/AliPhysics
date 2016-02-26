@@ -527,6 +527,12 @@ struct dNdetaDrawer
 	   Float_t     vzMax=-999, 
 	   const char* base="")
   {
+    Warning("Run","\n"
+	    "============================================================\n"
+	    "\n"
+	    "This script is deprecated.  Please use new GSE based drawing\n"
+	    "\n"
+	    "============================================================\n");
     TString  ostr(others); ostr.ToUpper();
     UShort_t obits = 0x0;
     if (ostr.EqualTo("ALL")) obits = 0xf;
