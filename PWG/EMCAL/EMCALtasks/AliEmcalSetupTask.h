@@ -17,6 +17,7 @@ class AliESDtrackCuts;
 
 /**
  * \class AliEmcalSetupTask
+ * \ingroup EMCALFWTASKS
  * \brief Simple task setting up connections to databases for the EMCAL train
  *
  * This class, as an analysis task, handles the setup of the connection to the

@@ -18,6 +18,7 @@ static const Double_t kEMCL1ADCtoADCSum = 3.40;             ///<
 /**
  * \class AliEmcalTriggerSetupInfo
  * \brief Settings manager for the trigger patch algorithm
+ * \ingroup EMCALTGRFW
  *
  * This class contains the main settings (trigger threshold) for the different EMCAL
  * Level1 trigger classes.
