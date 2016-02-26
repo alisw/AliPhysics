@@ -27,6 +27,7 @@ const Double_t kEMCL0ADCtoGeV_AP = 0.019;             ///< Conversion from EMCAL
 /**
  * @class AliEmcalTriggerMakerKernel
  * @brief Kernel of the EMCAL trigger patch maker
+ * @ingroup EMCALTRGFW
  *
  * The trigger maker kernel contains the core functionality of
  * the trigger maker:

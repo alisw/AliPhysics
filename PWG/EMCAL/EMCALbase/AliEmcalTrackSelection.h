@@ -26,6 +26,7 @@ class AliVTrack;
 /**
  * \class AliEmcalTrackSelection
  * \brief Interface for virtual track selection
+ * \ingroup EMCALCOREFW
  *
  * Interface for track selection within the EMCAL framework. Enables transparent track selection
  * for ESDs and AODs by implementing a wrapper derived from this class. The following abstract
