@@ -31,9 +31,7 @@
   //AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
   AliTPCclusterFast::fTRF = new TF1("gamma4Norm","Gamma4Norm(x)",-3,3); //Gamma4 TRF in bin units (100ns)
 
-  TStopwatch timer;
-  AliTPCtrackFast::Simul("trackerSimul.root",20,0.6);
-  timer.Print();
+  TStopwatch timer;  AliTPCtrackFast::Simul("trackerSimul.root",20,0.6);   timer.Print();
 
   TFile * ftrack = TFile::Open("trackerSimul.root");
   TTree *tree  = (TTree*)ftrack->Get("simulTrack");
@@ -1017,8 +1015,8 @@ Double_t AliTPCclusterFast::GEMPRF(Double_t x, Double_t sigma){
   // GEM PRF response function aprroximated as integral of gaussian
   // sigma of gaussian is the diffusion of electrons within GEM layers
   // in 0.5 cm of the drift lenght + O(0.100)mm GEM pitch ==> 0.2 mm 
-  if (x<0) return 1+0.5*TMath::Erf((x+0.5)/sigma);
-  if (x>0) return 1+0.5*TMath::Erf(-(x-0.5)/sigma);
+  if (x<0) return (1+TMath::Erf((x+0.5)/sigma))*0.5;
+  if (x>0) return (1+TMath::Erf(-(x-0.5)/sigma))*0.5;
 }
 
 
