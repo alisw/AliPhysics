@@ -4,8 +4,8 @@
 // $Id$
 
 #include "AliPhysicsSelectionTask.h"
+#include "AliEmcalPhysicsSelection.h"
 
-class AliEmcalPhysicsSelection;
 class TH1;
 
 class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {

@@ -21,6 +21,7 @@ class AliVTrack;
 /**
  * \class AliEmcalTrackSelectionESD
  * \brief Implementation of virtual track selection for ESDs
+ * \ingroup EMCALCOREFW
  *
  * Implementation of the track selection for the analysis on ESDs using
  * AliESDtrackCuts as underlying structure

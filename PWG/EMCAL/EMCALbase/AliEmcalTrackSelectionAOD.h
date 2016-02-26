@@ -19,6 +19,7 @@ class AliVTrack;
 /**
  * \class AliEmcalTrackSelectionAOD
  * \brief Implement virtual track selection for AOD analysis
+ * \ingroup EMCALCOREFW
  *
  * Implementation of track selection in case the analysis runs on AODs
  * For the moment it uses the AliESDtrackCuts and converts AOD tracks to

@@ -62,10 +62,9 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliVVZERO.h"
 #include "AliAnalysisTaskEmcal.h"
-#include "AliEmcalTriggerSetupInfo.h"
-// event handler (and pico's) includes                                                                                                      
 #include <AliInputEventHandler.h>
 #include <AliVEventHandler.h>
+#include "AliEmcalTriggerSetupInfo.h"
 #include "AliAODHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliPicoTrack.h"

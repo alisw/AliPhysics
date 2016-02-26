@@ -19,6 +19,7 @@
 /**
  * \class AliEmcalPythiaInfo
  * \brief Store some informaion about a Pythia event
+ * \ingroup EMCALCOREFW
  *
  * This class is used to store some information
  * about a Pythia event (also for embedding)

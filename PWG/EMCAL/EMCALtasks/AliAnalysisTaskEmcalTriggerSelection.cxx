@@ -19,10 +19,10 @@
  * Author: Markus Fasel
  */
 
-#include "AliAnalysisTaskEmcalTriggerSelection.h"
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
+#include "AliAnalysisTaskEmcalTriggerSelection.h"
 
 ClassImp(AliAnalysisTaskEmcalTriggerSelection)
 
