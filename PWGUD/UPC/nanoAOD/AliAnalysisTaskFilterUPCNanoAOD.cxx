@@ -101,7 +101,14 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   AliAODVertex *aodVertex = aod->GetPrimaryVertex();
   if(aodVertex->GetNContributors() > 1 && TMath::Abs(aodVertex->GetZ()) < 15) hasGoodVertex = kTRUE;
   
-  if(!isTriggered || !hasGoodVertex) return;
+  UInt_t nGoodTracks = 0;
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+  	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+  	if( !trk ) continue;
+  	if( trk->TestFilterBit(1<<0) || trk->TestFilterBit(1<<1)) nGoodTracks++;
+	}
+  
+  if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
   //AliInfo("Good UPC event");
   
   
