@@ -1,4 +1,4 @@
-#if !(defined __CINT__  || defined __CLING__) || defined __ROOTCINT__ || defined __ROOTCLING__
+#ifdef __CINT__
 
 #pragma link off all globals;
 #pragma link off all classes;
