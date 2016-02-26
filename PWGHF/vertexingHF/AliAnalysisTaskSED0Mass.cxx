@@ -831,7 +831,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutputMass->Add(fhStudyImpParSingleTrackCand);
   if(fReadMC){
     //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
-    Int_t nbinsImpParStudy[8]=      {36,36,40, 40, 20,  15,  3, 4.};
+    Int_t nbinsImpParStudy[8]=      {36,36,40, 40, 20,  15,  3, 4};
     Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
     Double_t limitUpImpParStudy[8]= {36.,36., 5, 5,  0.2, 15,  3.,4.};
 
@@ -2769,7 +2769,7 @@ void AliAnalysisTaskSED0Mass::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2Pron
       if(!isCuts) return;
       Int_t isPid= fCuts->IsSelectedPID(part);
       ptB=AliVertexingHFUtils::GetBeautyMotherPt(arrMC,partD0);
-      Double_t arrayMC[8]={part->Pt(), ptB,normIP[0], normIP[1], lxy, lxy/TMath::Sqrt(err2decaylength),isCuts, isPid};
+      Double_t arrayMC[8]={part->Pt(), ptB,normIP[0], normIP[1], lxy, lxy/TMath::Sqrt(err2decaylength),(Double_t)isCuts, (Double_t)isPid};
 
       //fill pointD0MC
       for(Int_t i=0; i<8; i++){
@@ -2788,14 +2788,14 @@ void AliAnalysisTaskSED0Mass::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2Pron
     if(!IsSelectedPIDoff) return;
     Int_t pid=fCuts->IsSelectedPID(part);
     if((IsSelectedPIDoff==1 || IsSelectedPIDoff==3) && fFillOnlyD0D0bar<2){
-      Double_t array[9]={part->Pt(),normIP[0],normIP[1],lxy,lxy/TMath::Sqrt(err2decaylength),part->InvMassD0(),IsSelectedPIDoff,pid,0};
+      Double_t array[9]={part->Pt(),normIP[0],normIP[1],lxy,lxy/TMath::Sqrt(err2decaylength),part->InvMassD0(),(Double_t)IsSelectedPIDoff,(Double_t)pid,0.};
       for(Int_t i=0;i<9;i++){
 	pointD0[i]=array[i];
       }
       fhStudyImpParSingleTrackCand->Fill(pointD0);
     }
     if (IsSelectedPIDoff>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
-      Double_t arrayD0bar[9]={part->Pt(),normIP[0],normIP[1],lxy,lxy/TMath::Sqrt(err2decaylength),part->InvMassD0bar(),IsSelectedPIDoff,pid,1};
+      Double_t arrayD0bar[9]={part->Pt(),normIP[0],normIP[1],lxy,lxy/TMath::Sqrt(err2decaylength),part->InvMassD0bar(),(Double_t)IsSelectedPIDoff,(Double_t)pid,1.};
       for(Int_t i=0;i<9;i++){
 	pointD0bar[i]=arrayD0bar[i];
       }
