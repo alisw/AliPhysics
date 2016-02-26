@@ -54,6 +54,7 @@ Double_t myFunc(Double_t* xp, Double_t* pp);
 /**
  * Class to draw dN/deta results 
  * 
+ * @deprecated Use new GSE based drawing 
  * @ingroup pwglf_forward_dndeta
  */
 struct dNdetaDrawer 
@@ -3429,6 +3430,7 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 /** 
  * Display usage information
  * 
+ * @deprecated Use new GSE based drawing 
  */
 void
 Usage()
@@ -3510,6 +3512,7 @@ Usage()
  * @param centMax   Largest centrality 
  *
  * @ingroup pwglf_forward_dndeta
+ * @deprecated Use new GSE based drawing 
  */
 void
 DrawdNdeta(const char* filename="forward_dndeta.root", 
