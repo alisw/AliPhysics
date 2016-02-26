@@ -4,8 +4,9 @@
 // This cut implementation checks the quality of event primary vertex.
 // Some functions currently work only with ESD events (not AOD).
 //
-// authors: F. Bellini (fbellini@cern.ch)
-// contributors: A. Knospe (aknospe@cern.ch)
+// authors: Martin Vala (martin.vala@cern.ch)
+//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//
 
 #include "AliRsnCutEventUtils.h"
 #include "AliAnalysisUtils.h"
@@ -243,11 +244,11 @@ Bool_t AliRsnCutEventUtils::IsIncompleteDAQ(){
   if(!fEvent) return kFALSE;
   AliAODEvent* aodEvt=0;
   Bool_t isAOD=fEvent->IsAOD();
-  if(isAOD) aodEvt=(AliAODEvent*)(fEvent->GetRef());
+  if(isAOD) aodEvt=dynamic_cast<AliAODEvent *>(fEvent->GetRef());
 
   AliESDEvent* esdEvt=0;
   Bool_t isESD=fEvent->IsESD();
-  if(isESD) esdEvt=(AliESDEvent*)(fEvent->GetRef());
+  if(isESD) esdEvt=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
 
   if(isAOD && aodEvt && aodEvt->IsIncompleteDAQ()) return kTRUE;
   else if(isESD && esdEvt && esdEvt->IsIncompleteDAQ()) return kTRUE;
