@@ -22,15 +22,19 @@
   .x ~/rootlogon.C
   
   .L $ALICE_ROOT/../src/TPC/fastSimul/AliTPCclusterFast.cxx+
-  
+  AliTPCclusterFast::InitFormulas();
   AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
   AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
-  AliTPCclusterFast::fPRF->SetParameters(1,0,0.02);   // this will be GEM emulation 
+  // 
+  AliTPCclusterFast::fPRF =new TF1("fprf"," GEMPRF(x,0.02)",-3,3); // GEM
+  //
   //AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
-  AliTPCclusterFast::fTRF = new TF1("gamma4","AliTPCclusterFast::Gamma4(((x+0.52)/2.6),55,0.160)",-1,2);
+  AliTPCclusterFast::fTRF = new TF1("gamma4Norm","Gamma4Norm(x)",-3,3); //Gamma4 TRF in bin units (100ns)
 
-  AliTPCtrackFast::Simul("trackerSimul.root",100,0.6);
- 
+  TStopwatch timer;
+  AliTPCtrackFast::Simul("trackerSimul.root",20,0.6);
+  timer.Print();
+
   TFile * ftrack = TFile::Open("trackerSimul.root");
   TTree *tree  = (TTree*)ftrack->Get("simulTrack");
   tree->SetMarkerStyle(25);
@@ -64,6 +68,7 @@
 #include "TGrid.h"
 #include "TStatToolkit.h"
 #include "AliTPCParamSR.h"
+#include "TFormulaPrimitive.h"
 
 TTree* testTree=0;
 
@@ -100,10 +105,13 @@ public:
   Float_t GetDigitsRawMax(){return TMath::MaxElement(35,fRawDigits.GetMatrixArray());}
   Float_t GetDigitsMax(){return TMath::MaxElement(35,fDigits.GetMatrixArray());}
   //static void Simul(const char* simul, Int_t npoints);
+  static void InitFormulas();
   static Double_t GaussConvolution(Double_t x0, Double_t x1, Double_t k0, Double_t k1, Double_t s0, Double_t s1);
   static Double_t GaussExpConvolution(Double_t x0, Double_t s0,Double_t t1);
   static Double_t GaussGamma4(Double_t x, Double_t s0, Double_t p1);
   static Double_t Gamma4(Double_t x, Double_t p0, Double_t p1); 
+  static Double_t Gamma4Norm(Double_t x); 
+  static Double_t GEMPRF(Double_t x, Double_t sigma);
   static void SetMetadata(TTree * tree);
   //
   //
@@ -225,7 +233,14 @@ AliTPCtrackFast::AliTPCtrackFast():
 
 }
 
-
+void AliTPCclusterFast::InitFormulas(){
+  //
+  // Register formula as a build-in formulas to speed up evaluation
+  //
+  TFormulaPrimitive::AddFormula(new TFormulaPrimitive("GEMPRF","GEMPRF",AliTPCclusterFast::GEMPRF));
+  TFormulaPrimitive::AddFormula(new TFormulaPrimitive("Gamma4","Gamma4",AliTPCclusterFast::Gamma4));
+  TFormulaPrimitive::AddFormula(new TFormulaPrimitive("Gamma4Norm","Gamma4Norm",AliTPCclusterFast::Gamma4Norm));
+}
 
 
 void AliTPCtrackFast::MakeTrack(){
@@ -977,13 +992,34 @@ Double_t  Gamma4(Double_t *x, Double_t *param){
 
 Double_t  AliTPCclusterFast::Gamma4(Double_t x, Double_t p0, Double_t p1){
   /// Gamma 4 Time response function of ALTRO
+  /// Gamma 4 Time response function of ALTRO
 
   if (x<0) return 0;
   Double_t g1 = TMath::Exp(-4.*x/p1);
   Double_t g2 = TMath::Power(x/p1,4);
   return p0*g1*g2;
 }
+
+Double_t  AliTPCclusterFast::Gamma4Norm(Double_t x){
+  /// Gamma 4 Time response function of ALTRO with hardwired normalization parameters
+  ///   X in bin unit=100 ns
+  ///    Maximum of the TRF ==1  - sum of all time bins ~ 1.9
+  ///
+  return AliTPCclusterFast::Gamma4((x+1.98094355865156)*0.1,55,0.160);
+}
  
+
+
+
+
+Double_t AliTPCclusterFast::GEMPRF(Double_t x, Double_t sigma){
+  //
+  // GEM PRF response function aprroximated as integral of gaussian
+  // sigma of gaussian is the diffusion of electrons within GEM layers
+  // in 0.5 cm of the drift lenght + O(0.100)mm GEM pitch ==> 0.2 mm 
+  if (x<0) return 1+0.5*TMath::Erf((x+0.5)/sigma);
+  if (x>0) return 1+0.5*TMath::Erf(-(x-0.5)/sigma);
+}
 
 
 Double_t  AliTPCclusterFast::GaussGamma4(Double_t x, Double_t s0, Double_t p1){
