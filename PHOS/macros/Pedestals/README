@@ -1,0 +1,18 @@
+     How to produce pedestal tables in ALTRO format
+       	    Daiki Sekihata, Yuri Kharlov
+    	  	    28.02.2016
+
+1. Take a run of type PEDESTAL with data recording
+
+2. Analyze raw data from pedestal run by macro Pedestals.C:
+   .L Pedestals.C+
+   Pedestals("path-to-raw-file.root")
+   File ped<run_number>.root will be created.
+
+3. Process the root file produced at step 2 by runPedestal.C:
+   root -b -l -q runPedestal.C'(run_number)'
+   it will produce PedestalTable_<run_number>.tgz with text files in format for
+   loading to ALTRO memory VFPED
+
+4. un-pack tar file:
+   tar zxf PedestalTable_<run_number>.tgz

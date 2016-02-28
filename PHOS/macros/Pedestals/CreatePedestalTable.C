@@ -20,11 +20,16 @@
 
 using namespace std;
 
-void CreatePedestalTable(Int_t runnumber)
+Bool_t CreatePedestalTable(Int_t runnumber)
 {
   TFile *rootfile = TFile::Open(Form("ped%d.root",runnumber),"READ");
+  if (rootfile)
+    printf("File ped%d.root is opened successfully\n",runnumber);
+  else {
+    printf("Cannot open ped%d.root\n",runnumber);
+    return kFALSE;
+  }
   TFile *outfile = new TFile(Form("PedestalTable_%d.root",runnumber),"RECREATE");
-
 
   const Int_t Nmod=5;
   const Int_t Nsru=4;
@@ -57,12 +62,14 @@ void CreatePedestalTable(Int_t runnumber)
       for(Int_t idtc=0;idtc<Ndtc;idtc++){
 
         if(idtc==0 || idtc==20) continue;//for TRU.
-        if((14 < idtc && idtc<20)
-        || (34 < idtc && idtc<40)) continue;//empty dtc port
+        if((14 < idtc && idtc<20) || (34 < idtc && idtc<40)) continue;//empty dtc port
 
         fstream ftxt;
         Char_t name[255];
-        sprintf(name,"Pedestal_%d_SRUM%d-%d_DTC%d.txt",runnumber,imod,isru,idtc);
+	Int_t iDTC=idtc;
+	if (idtc==1) iDTC=15; // FEE 1 is connected to SRU port 15
+        sprintf(name,"%d/Pedestal_%d_SRUM%d-%d_DTC%d.txt",runnumber,runnumber,imod,isru,iDTC);
+	gSystem->Exec(Form("mkdir -p %d",runnumber));
         ftxt.open(name,ios::out);
 
         for(Int_t ix=0;ix<Nx;ix++){// high gain
@@ -130,6 +137,7 @@ void CreatePedestalTable(Int_t runnumber)
 
 
   outfile->Close();
+  return kTRUE;
 
 }
 

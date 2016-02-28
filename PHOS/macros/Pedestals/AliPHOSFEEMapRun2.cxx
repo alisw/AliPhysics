@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
 #include <TObject.h>
 #include <TString.h>
 #include <TMath.h>
@@ -9,6 +12,8 @@
 //Module ID should be  [0-4], hard ware numbering. M1:half module,M4:closet module to HMPID.
 //Author : Daiki Sekihata (Hiroshima University), 15.August.2015
 //daiki.sekihata@cern.ch
+//last update : 15.Sep.2015, Daiki Sekihata
+
 
 //usage 1: if one wants to convert a cell ID to all electronics numbering at once.
 //root [0] AliPHOSFEEMapRun2 *map = new AliPHOSFEEMapRun2(2,23,42)
@@ -41,7 +46,9 @@ AliPHOSFEEMapRun2::AliPHOSFEEMapRun2()
  fCSPID(-1),
  fHVID(-1),
  fALTCH_LG(-1),
- fALTCH_HG(-1)
+ fALTCH_HG(-1),
+ fTRUID(-1),
+ fTRUCH(-1)
 {
 	//default constructor
 
@@ -54,7 +61,9 @@ AliPHOSFEEMapRun2::AliPHOSFEEMapRun2(Int_t module,Int_t cellx,Int_t cellz)
  fCSPID(-1),
  fHVID(-1),
  fALTCH_LG(-1),
- fALTCH_HG(-1)
+ fALTCH_HG(-1),
+ fTRUID(-1),
+ fTRUCH(-1)
 {
 	fSRUID = CellToSRUID(cellx);
 	fFEEID = CellToFEEID(cellz);
@@ -63,6 +72,9 @@ AliPHOSFEEMapRun2::AliPHOSFEEMapRun2(Int_t module,Int_t cellx,Int_t cellz)
   fHVID  = CSPToHVID(fCSPID);
   fALTCH_LG = CSPToALTROChannel(fCSPID,"Low");
   fALTCH_HG = CSPToALTROChannel(fCSPID,"High");
+  fTRUID = CellToTRUID(module,cellx,cellz);
+  fTRUCH = CellToTRUChannel(cellx,cellz);
+
 }
 //________________________________________________________________________
 void AliPHOSFEEMapRun2::Print(Option_t *) const
@@ -313,6 +325,63 @@ Int_t AliPHOSFEEMapRun2::CSPToALTROChannel(Int_t csp, TString gain)
   else{
     printf("gain must be High or Low! return -1.");
     return -1;
+  }
+
+}
+//________________________________________________________________________
+Int_t AliPHOSFEEMapRun2::CellToTRUID(Int_t module, Int_t cellx, Int_t cellz)
+{
+  if(module < 1 || 5 < module) return -1;// this is based on hardware numbering.
+	if(cellx < 0 || 63 < cellx || cellz < 0 || 55 < cellz) return -1;
+
+  if(module==1 && cellx<32) return -1;
+
+  Int_t tru = -1;
+
+  Int_t x = cellx / 16;//x = [0,1,2,3]
+  Int_t z = 1 - cellz / 28;//z = [0,1]
+  Int_t offset = (module-1)*8-4;
+
+  tru = 2*x + z + offset;
+
+	return tru;
+}
+//________________________________________________________________________
+Int_t AliPHOSFEEMapRun2::CellToTRUChannel(Int_t cellx, Int_t cellz)
+{
+	if(cellx < 0 || 63 < cellx || cellz < 0 || 55 < cellz) return -1;
+  Int_t truch = -1;
+
+  //if(cellz>27) cellz -= 27;
+
+  Int_t z = (27 - (cellz % 28)) / 2;//z = [0-13]
+  Int_t x = (cellx%16) / 2;
+  truch = z*8 + x;
+
+	return truch;
+}
+//________________________________________________________________________
+void AliPHOSFEEMapRun2::TRUHWToCellID(Int_t ddl, Int_t hwaddress, Int_t &cellx, Int_t &cellz)
+{
+  if(hwaddress < 0 || (111 < hwaddress && hwaddress < 2048 )|| 2160 < hwaddress ){
+    cellx = -1;
+    cellz = -1;
+    return;
+  }
+  else{
+    Int_t offset_x = 16*((ddl-4)%4);
+
+    if(hwaddress>=2048){// this is for cellz<28
+      cellx = 2*((hwaddress-2048) % 8) + offset_x;
+      cellz = 28 - 2*((hwaddress-2048) / 8 + 1);
+      //cout << "ddl = " << ddl << " , HW = " << hwaddress << " , cellx = " << cellx << " , cellz = " << cellz << endl;
+    }
+    else{// this is cell for cellz>=28
+      cellx = 2 * (hwaddress % 8) + offset_x;
+      cellz = 28 - 2 * (hwaddress / 8 + 1) + 28;
+    }
+
+    return;
   }
 
 }

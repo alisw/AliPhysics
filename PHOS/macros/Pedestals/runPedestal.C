@@ -1,4 +1,4 @@
-void runPedestal()
+void runPedestal(const Int_t runnumber = 233043)
 {
   //Daiki Sekihata (Hiroshima University)
   //run with "aliroot -l -b -q runPedestal.C"
@@ -10,8 +10,6 @@ void runPedestal()
   //gROOT->LoadMacro("Pedestals.C+g");
   //printf("Pedestals.C will run.\n");
 
-  const Int_t runnumber = 233043;
-
   printf("Analyzing Run : %d\n",runnumber);
 
   //TString textfile = Form("%d.txt",runnumber);
@@ -19,14 +17,15 @@ void runPedestal()
 
   gROOT->LoadMacro("AliPHOSFEEMapRun2.cxx+g");
   gROOT->LoadMacro("CreatePedestalTable.C+g");
-  printf("CreatePedestalTable.C will run.\n");
+  printf("CreatePedestalTable.C will run\n");
 
-  CreatePedestalTable(runnumber);
-
-  gSystem->Exec(Form("tar cf PedestalTable_%d.tar Pedestal*.txt",runnumber));
-  gSystem->Exec("rm Pedestal*.txt");
-
-  printf("Done!\n");
-
+  if (CreatePedestalTable(runnumber)) {
+    gSystem->Exec(Form("tar czf PedestalTable_%d.tgz %d/Pedestal*.txt",
+		       runnumber,runnumber));
+    gSystem->Exec(Form("rm -fr %d",runnumber));
+    printf("Done! Pedestals for loading to ALTRO stored in PedestalTable_%d.tgz\n",
+	   runnumber);
+  }
+  else
+    return;
 }
-
