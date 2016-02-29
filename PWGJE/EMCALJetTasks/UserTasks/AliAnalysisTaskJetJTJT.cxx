@@ -732,7 +732,8 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 	}
 	int fHadronSelectionCut = 5; //5=Hybrid cut
 	if (fTracksCont) {
-		AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+		fTracksCont->ResetCurrentID();
+		AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
 		while(track) {
 			double ptt = track->Pt();
 
@@ -759,7 +760,8 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 	}
 
 	if (fCaloClustersCont) {
-		AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+		fCaloClustersCont->ResetCurrentID();
+		AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
 		while(cluster) {
 			TLorentzVector nPart;
 			cluster->GetMomentum(nPart, fVertex);
@@ -783,7 +785,8 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 		//Make arrays to hold jets to be tested in background jT
 		Float_t jetPhis[200] = {};
 		Float_t jetEtas[200] = {};
-		AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
+		fJetsCont->ResetCurrentID();
+		AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
 		Int_t ij = 0;
 		while(jet) {
 			//cout << "Jet found " << ij << " pt: " << jet->Pt() << endl;
@@ -807,7 +810,8 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 
 
 		//fTracks =dynamic_cast <TClonesArray*>(InputEvent()->FindListObject( fTrackArrayName.Data() ));
-		jet = fJetsCont->GetNextAcceptJet(0); 
+		fJetsCont->ResetCurrentID();
+		jet = fJetsCont->GetNextAcceptJet(); 
 		while(jet) {
 			if(jet->Pt() > 5){
 				if(jet->Eta() < -0.4 || jet->Eta() > 0.4){ //TODO Fix
@@ -898,7 +902,8 @@ Bool_t AliAnalysisTaskJetJTJT::FillHistograms()
 					// Do jT for all particles in respect to jet axis
 					if (fTracksCont) {
 						int counter = 0;
-						AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+						fTracksCont->ResetCurrentID();
+						AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
 						while(track) {
 							Double_t jt = getJt(track,bgCone,0);
 							double effCorr = fEfficiency->GetCorrection(track->Pt(), fHadronSelectionCut, fCent);  // here you generate warning if ptt>30
@@ -1012,7 +1017,8 @@ void AliAnalysisTaskJetJTJT::CheckClusTrackMatching()
 	Double_t dphi = 999;
 
 	//Get closest cluster to track
-	AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+	fTracksCont->ResetCurrentID();
+	AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
 	while(track) {
 		//Get matched cluster
 		Int_t emc1 = track->GetEMCALcluster();
@@ -1027,7 +1033,8 @@ void AliAnalysisTaskJetJTJT::CheckClusTrackMatching()
 	}
 
 	//Get closest track to cluster
-	AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+	fCaloClustersCont->ResetCurrentID();
+	AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
 	while(cluster) {
 		TLorentzVector nPart;
 		cluster->GetMomentum(nPart, fVertex);

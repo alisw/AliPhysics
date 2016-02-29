@@ -471,7 +471,8 @@ Bool_t AliAnalysisTaskEmcalJetV0CF::IsV0InJet(TVector3 vV0, Double_t dJetPtMin)
 
   TVector3 vJet;
   Double_t dJetRadius = fJetsContRD->GetJetRadius();
-  AliEmcalJet *pJet = fJetsContRD->GetNextAcceptJet(0); while (pJet) {
+  fJetsContRD->ResetCurrentID();
+  AliEmcalJet *pJet = fJetsContRD->GetNextAcceptJet(); while (pJet) {
     Double_t dPt = fJetsContRD->GetJetPtCorr(fJetsContRD->GetCurrentID());
     if (dPt<dJetPtMin) { pJet = fJetsContRD->GetNextAcceptJet(); continue; }
 

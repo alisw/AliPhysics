@@ -113,7 +113,8 @@ Bool_t AliAnalysisTaskParticleInJet::Run(){
     }
 
     // Look at the MC Jet container
-    AliEmcalJet *mcjet = GetJetContainer(fJetContainerNameMC.Data())->GetNextAcceptJet(0);
+    GetJetContainer(fJetContainerNameMC.Data())->ResetCurrentID();
+    AliEmcalJet *mcjet = GetJetContainer(fJetContainerNameMC.Data())->GetNextAcceptJet();
     do{
       for(int itrk = 0; itrk < mcjet->GetNumberOfTracks(); itrk++){
         mctrack = mcjet->TrackAt(itrk, GetParticleContainer(0)->GetArray());
@@ -136,7 +137,8 @@ Bool_t AliAnalysisTaskParticleInJet::Run(){
 
   // Look at the MC Jet container
   AliVParticle *jettrack = NULL;
-  AliEmcalJet *recjet = GetJetContainer(fJetContainerNameRec.Data())->GetNextAcceptJet(0);
+  GetJetContainer(fJetContainerNameRec.Data())->ResetCurrentID();
+  AliEmcalJet *recjet = GetJetContainer(fJetContainerNameRec.Data())->GetNextAcceptJet();
   do{
     for(int itrk = 0; itrk < recjet->GetNumberOfTracks(); itrk++){
       jettrack = recjet->TrackAt(itrk, GetParticleContainer(1)->GetArray());
@@ -155,7 +157,8 @@ Bool_t AliAnalysisTaskParticleInJet::Run(){
 
 std::vector<const AliVParticle *> AliAnalysisTaskParticleInJet::GetSelectedParticles(AliParticleContainer *const cont) const {
   std::vector<const AliVParticle *> result;
-  AliVParticle * test = cont->GetNextAcceptParticle(0);
+  cont->ResetCurrentID();
+  AliVParticle * test = cont->GetNextAcceptParticle();
   AliVTrack *track = NULL;
   do{
     if(!AcceptParticle(test)) continue;

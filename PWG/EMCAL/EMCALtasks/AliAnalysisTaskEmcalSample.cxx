@@ -127,7 +127,8 @@ Bool_t AliAnalysisTaskEmcalSample::FillHistograms()
   // Fill histograms.
 
   if (fTracksCont) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
       track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
@@ -135,7 +136,8 @@ Bool_t AliAnalysisTaskEmcalSample::FillHistograms()
   }
   
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
@@ -160,7 +162,8 @@ void AliAnalysisTaskEmcalSample::CheckClusTrackMatching()
   Double_t dphi = 999;
 
   //Get closest cluster to track
-  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+  fTracksCont->ResetCurrentID();
+  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
   while(track) {
     //Get matched cluster
     Int_t emc1 = track->GetEMCALcluster();
@@ -175,7 +178,8 @@ void AliAnalysisTaskEmcalSample::CheckClusTrackMatching()
   }
   
   //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  fCaloClustersCont->ResetCurrentID();
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
   while(cluster) {
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, fVertex);

@@ -662,7 +662,8 @@ void AliAnalysisTaskEmcalJetMassBkg::GetCone(TLorentzVector& lvRC,Float_t &pt, F
   lvRC.SetPxPyPzE(0.,0.,0.,0.);
 
   if (clusters) {
-    AliVCluster* cluster = clusters->GetNextAcceptCluster(0);
+    clusters->ResetCurrentID();
+    AliVCluster* cluster = clusters->GetNextAcceptCluster();
     while (cluster) {     
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
@@ -687,7 +688,8 @@ void AliAnalysisTaskEmcalJetMassBkg::GetCone(TLorentzVector& lvRC,Float_t &pt, F
   }
 
   if (tracks) {
-    AliVParticle* track = tracks->GetNextAcceptParticle(0); 
+    tracks->ResetCurrentID();
+    AliVParticle* track = tracks->GetNextAcceptParticle(); 
     while(track) { 
       Float_t tracketa = track->Eta();
       Float_t trackphi = track->Phi();

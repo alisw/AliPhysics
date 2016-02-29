@@ -897,7 +897,8 @@ namespace EMCalTriggerPtAnalysis {
   {
 
     const AliEmcalJet *result = NULL;
-    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    jets->ResetCurrentID();
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet();
     while(tmp){
       if(TrackInJet(track, tmp, jets->GetParticleContainer())){
         result = tmp;
@@ -977,7 +978,8 @@ namespace EMCalTriggerPtAnalysis {
   const AliEmcalJet* AliAnalysisTaskPtEMCalTrigger::FoundClusterInJet(const AliVCluster* const clust, AliJetContainer* const jets) const {
 
     const AliEmcalJet *result = NULL;
-    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    jets->ResetCurrentID();
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet();
     while(tmp){
       if(ClusterInJet(clust, tmp, jets->GetClusterContainer())){
         result = tmp;
