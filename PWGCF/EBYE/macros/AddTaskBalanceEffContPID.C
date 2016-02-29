@@ -2,6 +2,11 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
 						 Double_t centrMin=0.,
 						 Double_t centrMax=80.,
 						 Double_t vertexZ=10.,
+                                                 Double_t ptmin = 0.2,
+                                                 Double_t ptmax = 2.0,
+                                                 Double_t pttpcmax = 0.6,
+                                                 Double_t nsigmapid = 3.0,
+                                                 Int_t pidType = 1,
 						 Int_t AODfilterBit = 128,
 						 Bool_t bUseElectronRejection = kFALSE,
 						 TString fileNameBase="AnalysisResults",
@@ -51,15 +56,15 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   taskEffContPIDBF->SetVertexDiamond(.3,.3,vertexZ);
 
   //analysis kinematic cuts
-  taskEffContPIDBF->SetMinPt(0.2);
-  taskEffContPIDBF->SetMaxPt(2.0); //5.0
-   taskEffContPIDBF->SetTPCPtMax(0.6); // For TPC Max
+  taskEffContPIDBF->SetMinPt(ptmin);
+  taskEffContPIDBF->SetMaxPt(ptmax); //5.0
+   taskEffContPIDBF->SetTPCPtMax(pttpcmax); // For TPC Max
   //taskEffContPIDBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
   //taskEffContPIDBF->SetPtRange(0.1, 20.0, 100);  //acceptance cuts //5.0,49
   taskEffContPIDBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
   taskEffContPIDBF->SetPtRange(0.2, 20.0, 100);  //acceptance cuts //5.0,49
-  taskEffContPIDBF->SetNSigmaCut(3.0); // NSigma Cut;
-  taskEffContPIDBF->SetPIDType(1); // KNSigmaTPCTOF == 1, KNSigmaTPC==0, KNSigmaTOF == 2
+  taskEffContPIDBF->SetNSigmaCut(nsigmapid); // NSigma Cut;
+  taskEffContPIDBF->SetPIDType(pidType); // KNSigmaTPCTOF == 1, KNSigmaTPC==0, KNSigmaTOF == 2
   
 
 
