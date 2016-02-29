@@ -226,7 +226,7 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
   Double_t Beta(AliAODTrack *track);
   Bool_t IsTPCPID(AliAODTrack* track) const; //Check Track ,Is Track TPC?
   Bool_t IsTOFPID(AliAODTrack* track) const; // Check Track , Is Track TOF?
-  Int_t SigmaCalculate(AliAODTrack *trk );
+  void SigmaCalculate(AliAODTrack *trk );
   Int_t SigmaCutForParticleSpecies(AliAODTrack *trk );
 
  
