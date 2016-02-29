@@ -78,14 +78,11 @@ AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i)
 }
 
 //________________________________________________________________________
-AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle(Int_t i)
+AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle()
 {
-  //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
-
-  if (i >= 0) fCurrentID = i;
+  //Get next accepted particle
 
   const Int_t n = GetNEntries();
-
   AliAODMCParticle *p = 0;
   do {
     fCurrentID++;
@@ -97,11 +94,9 @@ AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle(Int_t i)
 }
 
 //________________________________________________________________________
-AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle(Int_t i)
+AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
 {
-  //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
-
-  if (i >= 0) fCurrentID = i;
+  //Get next particle
 
   const Int_t n = GetNEntries();
   AliAODMCParticle *p = 0;
@@ -155,13 +150,13 @@ Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliAODMCParticle *vp = GetNextMCParticle(i);
+  AliAODMCParticle *vp = GetNextMCParticle();
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -194,13 +189,13 @@ Bool_t AliMCParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next accepted particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliAODMCParticle *vp = GetNextAcceptMCParticle(i);
+  AliAODMCParticle *vp = GetNextAcceptMCParticle();
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);

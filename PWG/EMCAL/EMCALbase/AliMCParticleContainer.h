@@ -29,18 +29,18 @@ class AliMCParticleContainer : public AliParticleContainer {
   virtual AliAODMCParticle   *GetLeadingMCParticle(const char* opt="")        { return static_cast<AliAODMCParticle*>(GetLeadingParticle(opt)); }
   virtual AliAODMCParticle   *GetMCParticle(Int_t i=-1)                 const;
   virtual AliAODMCParticle   *GetAcceptMCParticle(Int_t i=-1)                ;
-  virtual AliAODMCParticle   *GetNextAcceptMCParticle(Int_t i=-1)            ;
-  virtual AliAODMCParticle   *GetNextMCParticle(Int_t i=-1)                  ;
+  virtual AliAODMCParticle   *GetNextAcceptMCParticle()                      ;
+  virtual AliAODMCParticle   *GetNextMCParticle()                            ;
   virtual AliVParticle       *GetParticle(Int_t i=-1)                   const { return GetMCParticle(i)           ; }
   virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)                   { return GetAcceptMCParticle(i)     ; }
-  virtual AliVParticle       *GetNextAcceptParticle(Int_t i=-1)               { return GetNextAcceptMCParticle(i) ; }
-  virtual AliVParticle       *GetNextParticle(Int_t i=-1)                     { return GetNextMCParticle(i)       ; }
+  virtual AliVParticle       *GetNextAcceptParticle()                         { return GetNextAcceptMCParticle()  ; }
+  virtual AliVParticle       *GetNextParticle()                               { return GetNextMCParticle()        ; }
   virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part, Double_t mass);
   virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part);
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i);
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i);
-  virtual Bool_t              GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
-  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
+  virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
+  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);
 
   void                        SetClassName(const char *clname);
   void                        SetMCFlag(UInt_t m)                               { fMCFlag          = m ; }

@@ -32,14 +32,14 @@ class AliParticleContainer : public AliEmcalContainer {
   virtual AliVParticle       *GetLeadingParticle(const char* opt="")         ;
   virtual AliVParticle       *GetParticle(Int_t i=-1)                   const;
   virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)                  ;
-  virtual AliVParticle       *GetNextAcceptParticle(Int_t i=-1)              ;
-  virtual AliVParticle       *GetNextParticle(Int_t i=-1)                    ;
+  virtual AliVParticle       *GetNextAcceptParticle()                        ;
+  virtual AliVParticle       *GetNextParticle()                              ;
   virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass);
   virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part);
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i);
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i);
-  virtual Bool_t              GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
-  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
+  virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
+  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
   Int_t                       GetNAcceptedParticles()                   ;
 
