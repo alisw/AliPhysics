@@ -28,6 +28,8 @@
 // Task for calculating the efficiency of the Balance Function 
 // for single particles and pairs
 // 
+// Modified By Noor Alam(VECC ,Kolkata)
+ //[ Special thanks to Michael Weber]
 // ---------------------------------------------------------------------
 
 ClassImp(AliAnalysisTaskEffContPIDBF)
@@ -799,6 +801,9 @@ h1ProtonAsNonProton->Fill(trackAOD->Pt());
 Bool_t AliAnalysisTaskEffContPIDBF::IsMCParticleCut(AliAODMCParticle* particle) {
 
 
+//cout<<"Min Pt ---- "<<fMinPt<<"Max Pt "<<fMaxPt<<"Pt TPC Max "<<fPtTPCMax<<endl;
+
+
         if (particle->Charge() == 0) {return kFALSE;}
         if ((particle->Pt() < fMinPt) || (particle->Pt() > fMaxPt)) {return kFALSE;}
 
@@ -856,7 +861,7 @@ else{
    fnsigmas[kSpKaon][kNSigmaTOF]=nsigmaTOFkKaon;
    fnsigmas[kSpProton][kNSigmaTOF]=nsigmaTOFkProton;
 
-   return;
+return;
 
 }
 
@@ -911,7 +916,7 @@ Int_t AliAnalysisTaskEffContPIDBF::GetParticleSpecies(AliAODTrack *trk )
   SigmaCalculate(trk);
   Int_t mypid = -1;
   mypid = SigmaCutForParticleSpecies(trk);
-    Printf(" >>>>>>>>>>>>>>>>> mypid = %d",mypid);
+  //Printf(" >>>>>>>>>>>>>>>>> mypid = %d",mypid);
   return mypid;
 }
 

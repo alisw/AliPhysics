@@ -5,7 +5,8 @@
 //
 // Task for calculating the efficiency and contamination of the Balance 
 // Function for single particles and pairs
-// 
+// Modified By Noor Alam(VECC ,Kolkata)
+//[ Special thanks to Michael Weber]
 // ---------------------------------------------------------------------
 
 class TList;
