@@ -359,7 +359,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   std::vector< int > jet_sorted_idxvec ;
 
   fJetsCont->ResetCurrentID();
-  jet = fJetsCont->GetNextAcceptJet (0);
+  jet = fJetsCont->GetNextAcceptJet ();
   while ( jet )
     {
     Int_t track_idx = -999; // index variable for tracks
@@ -1796,9 +1796,10 @@ std::vector<Int_t> AliAnalysisTaskEmcalJetCDF::SortTracksPt ( AliParticleContain
   std::vector<ptidx_pair> pair_list;
   pair_list.reserve ( entries );
 
+  trackscont->ResetCurrentID();
   for ( Int_t i_entry = 0; i_entry < entries; i_entry++ )
       {
-      AliVParticle *track = trackscont->GetNextAcceptParticle ( i_entry );
+      AliVParticle *track = trackscont->GetNextAcceptParticle ();
 
       if ( !track )
           {

@@ -87,7 +87,7 @@ void AliAnalysisTaskEmcalJetExtractor::UserCreateOutputObjects()
   if(fJetsCont) { //get particles connected to jets
     fTracksCont       = dynamic_cast<AliTrackContainer*>(fJetsCont->GetParticleContainer());
   } else {        //no jets, just analysis tracks
-    fTracksCont       = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
+    fTracksCont       = dynamic_cast<AliTrackContainer*>(GetTrackContainer(0));
   }
   if(fTracksCont) fTracksCont->SetClassName("AliAODTrack");
 
@@ -161,17 +161,17 @@ Bool_t AliAnalysisTaskEmcalJetExtractor::Run()
 {
   Long64_t eventID = InputEvent()->GetHeader()->GetEventIdAsLong();
 
-  AliAODTrack *track = static_cast<AliAODTrack*>(fTracksCont->GetNextAcceptParticle(0));
-  // All tracks plots
   fTracksCont->ResetCurrentID();
+  AliAODTrack *track = static_cast<AliAODTrack*>(fTracksCont->GetNextAcceptParticle());
+  // All tracks plots
   while(track) {
     FillHistogram("hTrackPhiEta", track->Phi(), track->Eta()); 
     track = static_cast<AliAODTrack*>(fTracksCont->GetNextAcceptParticle());
   }
 
-  AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+  fJetsCont->ResetCurrentID();
+  AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(); 
   while(jet) {
-
     // Select jets according to extraction criterium
     if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionMaxPt) )
     {  

@@ -320,7 +320,8 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fJetsContRD02) {
     ncs = fPicoJetsClArrRD02->GetEntriesFast();
     fPicoHeaderCJ->BackgroundRhoRD02(fJetsContRD02->GetRhoVal());
-    AliEmcalJet *pJet = fJetsContRD02->GetNextAcceptJet(0); while (pJet) {
+    fJetsContRD02->ResetCurrentID();
+    AliEmcalJet *pJet = fJetsContRD02->GetNextAcceptJet(); while (pJet) {
       new ((*fPicoJetsClArrRD02)[ncs++]) AliPicoJet(pJet, GetLeadingHadronPt(pJet));
       pJet = fJetsContRD02->GetNextAcceptJet();
     }
@@ -329,7 +330,8 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fJetsContRD03) {
     ncs = fPicoJetsClArrRD03->GetEntriesFast();
     fPicoHeaderCJ->BackgroundRhoRD03(fJetsContRD03->GetRhoVal());
-    AliEmcalJet *pJet = fJetsContRD03->GetNextAcceptJet(0); while (pJet) {
+    fJetsContRD03->ResetCurrentID();
+    AliEmcalJet *pJet = fJetsContRD03->GetNextAcceptJet(); while (pJet) {
       new ((*fPicoJetsClArrRD03)[ncs++]) AliPicoJet(pJet, GetLeadingHadronPt(pJet));
       pJet = fJetsContRD03->GetNextAcceptJet();
     }
@@ -338,7 +340,8 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fJetsContRD04) {
     ncs = fPicoJetsClArrRD04->GetEntriesFast();
     fPicoHeaderCJ->BackgroundRhoRD04(fJetsContRD04->GetRhoVal());
-    AliEmcalJet *pJet = fJetsContRD04->GetNextAcceptJet(0); while (pJet) {
+    fJetsContRD04->ResetCurrentID();
+    AliEmcalJet *pJet = fJetsContRD04->GetNextAcceptJet(); while (pJet) {
       new ((*fPicoJetsClArrRD04)[ncs++]) AliPicoJet(pJet, GetLeadingHadronPt(pJet));
       pJet = fJetsContRD04->GetNextAcceptJet();
     }
@@ -348,7 +351,8 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fJetsContMC02) {
     ncs = fPicoJetsClArrMC02->GetEntriesFast();
     fPicoHeaderCJ->BackgroundRhoMC02(fJetsContMC02->GetRhoVal());
-    AliEmcalJet *pJet = fJetsContMC02->GetNextAcceptJet(0); while (pJet) {
+    fJetsContMC02->ResetCurrentID();
+    AliEmcalJet *pJet = fJetsContMC02->GetNextAcceptJet(); while (pJet) {
       new ((*fPicoJetsClArrMC02)[ncs++]) AliPicoJet(pJet, GetLeadingHadronPt(pJet));
       pJet = fJetsContMC02->GetNextAcceptJet();
     }
@@ -357,7 +361,8 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fJetsContMC03) {
     ncs = fPicoJetsClArrMC03->GetEntriesFast();
     fPicoHeaderCJ->BackgroundRhoMC03(fJetsContMC03->GetRhoVal());
-    AliEmcalJet *pJet = fJetsContMC03->GetNextAcceptJet(0); while (pJet) {
+    fJetsContMC03->ResetCurrentID();
+    AliEmcalJet *pJet = fJetsContMC03->GetNextAcceptJet(); while (pJet) {
       new ((*fPicoJetsClArrMC03)[ncs++]) AliPicoJet(pJet, GetLeadingHadronPt(pJet));
       pJet = fJetsContMC03->GetNextAcceptJet();
     }
@@ -366,7 +371,8 @@ Bool_t AliAnalysisTaskEmcalJetV0Filter::Run()
   if (fJetsContMC04) {
     ncs = fPicoJetsClArrMC04->GetEntriesFast();
     fPicoHeaderCJ->BackgroundRhoMC04(fJetsContMC04->GetRhoVal());
-    AliEmcalJet *pJet = fJetsContMC04->GetNextAcceptJet(0); while (pJet) {
+    fJetsContMC04->ResetCurrentID();
+    AliEmcalJet *pJet = fJetsContMC04->GetNextAcceptJet(); while (pJet) {
       new ((*fPicoJetsClArrMC04)[ncs++]) AliPicoJet(pJet, GetLeadingHadronPt(pJet));
       pJet = fJetsContMC04->GetNextAcceptJet();
     }

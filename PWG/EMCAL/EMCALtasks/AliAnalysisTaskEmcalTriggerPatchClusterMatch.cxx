@@ -774,7 +774,8 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
   //Tracks
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
-    AliVTrack *track = dynamic_cast<AliVTrack*>(partCont->GetNextAcceptParticle(0));
+    partCont->ResetCurrentID();
+    AliVTrack *track = dynamic_cast<AliVTrack*>(partCont->GetNextAcceptParticle());
     while(track) {
       Double_t trkphi = track->Phi()*TMath::RadToDeg();
       fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());

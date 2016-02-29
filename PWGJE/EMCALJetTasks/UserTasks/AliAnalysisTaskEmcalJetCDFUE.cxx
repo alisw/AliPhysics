@@ -293,7 +293,7 @@ Bool_t AliAnalysisTaskEmcalJetCDFUE::FillHistograms()
   for ( Size_t i = 0; i < fNaccPart; i++ ) // replace the index order by the sorted array
       {
       track_idx = fEvent_sorted_idxvec.at ( i );
-      track = fTracksCont->GetNextAcceptParticle ( track_idx );
+      track = fTracksCont->GetAcceptParticle ( track_idx );
 
       if ( !track )
           {
@@ -1059,9 +1059,10 @@ std::vector<Int_t> AliAnalysisTaskEmcalJetCDFUE::SortTracksPt ( AliParticleConta
   std::vector<ptidx_pair> pair_list;
   pair_list.reserve ( entries );
 
+  trackscont->ResetCurrentID();
   for ( Int_t i_entry = 0; i_entry < entries; i_entry++ )
       {
-      AliVParticle *track = trackscont->GetNextAcceptParticle ( i_entry );
+      AliVParticle *track = trackscont->GetNextAcceptParticle ( );
 
       if ( !track )
           {

@@ -501,7 +501,8 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
 {
   // Fill the histograms.
 
-  AliVTrack *track = fDetectorLevel->GetNextAcceptTrack(0);
+  fDetectorLevel->ResetCurrentID();
+  AliVTrack *track = fDetectorLevel->GetNextAcceptTrack();
   while (track != 0) {
     Byte_t type = fDetectorLevel->GetTrackType(fDetectorLevel->GetCurrentID());
     if (type <= 2) {
@@ -539,7 +540,8 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
   }
 
   if (fGeneratorLevel) {
-    AliAODMCParticle *part = fGeneratorLevel->GetNextAcceptMCParticle(0);
+    fGeneratorLevel->ResetCurrentID();
+    AliAODMCParticle *part = fGeneratorLevel->GetNextAcceptMCParticle();
     while (part != 0) {
       Int_t mcGen = 1;
       Byte_t findable = 0;

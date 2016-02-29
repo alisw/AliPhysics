@@ -160,7 +160,8 @@ void AliEMCalTriggerRecJetAnalysisComponent::Process(const AliEMCalTriggerEventD
   }
 
   AliJetContainer *cont = data->GetJetContainerData();
-  AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
+  cont->ResetCurrentID();
+  AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet();
   AliVTrack *foundtrack(NULL);
   const AliVParticle *assocMC(NULL);
   AliCentrality *centralityHandler = data->GetRecEvent()->GetCentrality();
