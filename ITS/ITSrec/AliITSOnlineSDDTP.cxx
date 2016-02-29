@@ -30,19 +30,23 @@
 ClassImp(AliITSOnlineSDDTP)
 
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fLowThreshold(0),fHighThreshold(0),fNSigmaGain(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fLowThreshold(0),fHighThreshold(0),fValidateOption(1),fMinGain(0.001),fMaxGain(9.),fNSigmaGain(0.),fToleranceGain(0.3),fNSigmaNoise(0.)
 {
   // default constructor
   Reset();
-  SetNSigmaGain();
+  SetValidationOption(1);
+  SetMaxNSigmaForValid(9.);
+  SetMaxRelDiffForValid(0.3);
   SetNSigmaNoise();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t nddl, Int_t ncarlos, Int_t sid, Float_t xDAC):AliITSOnlineSDD(nddl,ncarlos,sid),fDAC(xDAC),fLowThreshold(0),fHighThreshold(0),fNSigmaGain(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t nddl, Int_t ncarlos, Int_t sid, Float_t xDAC):AliITSOnlineSDD(nddl,ncarlos,sid),fDAC(xDAC),fLowThreshold(0),fHighThreshold(0),fValidateOption(1),fMinGain(0.001),fMaxGain(9.),fNSigmaGain(0.),fToleranceGain(0.3),fNSigmaNoise(0.)
 {
   // standard constructor
   Reset();
-  SetNSigmaGain();
+  SetValidationOption(1);
+  SetMaxNSigmaForValid(9.);
+  SetMaxRelDiffForValid(0.3);
   SetNSigmaNoise();
 }
 //______________________________________________________________________
@@ -137,8 +141,15 @@ void AliITSOnlineSDDTP::ValidateAnodes(){
   // tag good/bad channels
   Float_t meang,rmsg;
   StatGain(meang,rmsg);
-  Float_t lowlim=meang-fNSigmaGain*rmsg;
-  Float_t hilim=meang+fNSigmaGain*rmsg;
+  Float_t lowlim=fMinGain;
+  Float_t hilim=fMaxGain;
+  if(fValidateOption==1){
+    lowlim=meang*(1-fToleranceGain);
+    hilim=meang*(1+fToleranceGain);
+  }else{
+    lowlim=meang-fNSigmaGain*rmsg;
+    hilim=meang+fNSigmaGain*rmsg;
+  }
 
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
@@ -156,9 +167,11 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms) const {
     if(!fGoodAnode[ian]) continue;
     if(fNEvents[ian]==0) continue;
     Float_t chgain=GetChannelGain(ian);
-    sum+=chgain;
-    sumq+=chgain*chgain;
-    cnt++;
+    if(chgain>fMinGain && chgain<fMaxGain){
+      sum+=chgain;
+      sumq+=chgain*chgain;
+      cnt++;
+    }
   }
   if(cnt>0){ 
     mean=sum/(Float_t)cnt;
