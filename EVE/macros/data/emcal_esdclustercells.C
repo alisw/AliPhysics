@@ -288,7 +288,9 @@ void emcal_esdclustercells()
     //---------------------------
     
     TEveCaloDataHist* data = new TEveCaloDataHist();
-    AliEveEventManager::RegisterTransient(data);
+    AliEveEventManager *manager = AliEveEventManager::Instance();
+    cout<<"\n\n adding 2d data to event manager"<<endl;
+    manager->RegisterTransient(data);
     
     data->AddHistogram(fHistoEM);
     data->RefSliceInfo(0).Setup("EMCell:", 0, kOrange+7);
@@ -1236,7 +1238,9 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data)
     // plotting histo
     TEveCaloLego* lego = new TEveCaloLego(data);
     g_histo2d_s->AddElement(lego);
-    AliEveEventManager::RegisterTransient(lego);
+    AliEveEventManager *manager = AliEveEventManager::Instance();
+    cout<<"\n\nadding lego to event manager"<<endl;
+    manager->RegisterTransient(lego);
     
     // move to real world coordinates
     lego->InitMainTrans();
@@ -1264,7 +1268,9 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     }
     
     TEveCalo3D* calo3d = new TEveCalo3D(data);
-    AliEveEventManager::RegisterTransient(calo3d);
+    AliEveEventManager *manager = AliEveEventManager::Instance();
+    cout<<"Adding 3d view to event manager"<<endl;
+    manager->RegisterTransient(calo3d);
     
     calo3d->SetBarrelRadius(600);
     calo3d->SetEndCapPos(550);

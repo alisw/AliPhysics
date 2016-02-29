@@ -85,7 +85,7 @@ TEveEventManager("Event", ""),
 fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
 fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
-fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
+fTransients(0),
 fExecutor(0),fViewsSaver(0),fESDTracksDrawer(0),fAODTracksDrawer(0),fPrimaryVertexDrawer(0),fKinksDrawer(0),fCascadesDrawer(0),fV0sDrawer(0),fMuonTracksDrawer(0),fSPDTracklersDrawer(0),fKineTracksDrawer(0),  fMomentumHistogramsDrawer(0),fPEventSelector(0),
 fgGRPLoaded(false),
 fgMagField(0)
@@ -124,12 +124,7 @@ void AliEveEventManager::InitInternals()
     fTransients->IncDenyDestroy();
     gEve->AddToListTree(fTransients, kFALSE);
     
-    fTransientLists = new TEveElementList("Transient Lists", "Containers of transient elements.");
-    fTransientLists->IncDenyDestroy();
-    gEve->AddToListTree(fTransientLists, kFALSE);
-    
     fPEventSelector = new AliEveEventSelector(this);
-    fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
     
     fViewsSaver = new AliEveSaveViews();
     fESDTracksDrawer = new AliEveESDTracks();
@@ -187,11 +182,6 @@ void AliEveEventManager::DestroyTransients()
     
     gEve->GetViewers()->DeleteAnnotations();
     fTransients->DestroyElements();
-    for (TEveElement::List_i i = fTransientLists->BeginChildren();
-         i != fTransientLists->EndChildren(); ++i)
-    {
-        (*i)->DestroyElements();
-    }
     DestroyElements();
     ElementChanged();
 }
@@ -680,59 +670,6 @@ Bool_t AliEveEventManager::InitGRP()
     }
     
     return kTRUE;
-}
-
-Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model)
-{
-    // Insert a new visualization-parameter database entry with the default
-    return InsertGlobal(tag, model, fGlobalReplace, fGlobalUpdate);
-}
-
-Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model,
-                                        Bool_t replace, Bool_t update)
-{
-    TPair* pair = (TPair*) fGlobal->FindObject(tag);
-    if (pair)
-    {
-        if (replace)
-        {
-            model->IncDenyDestroy();
-            model->SetRnrChildren(kFALSE);
-            
-            TEveElement* old_model = dynamic_cast<TEveElement*>(pair->Value());
-            if(!old_model) AliFatal("old_model == 0, dynamic cast failed\n");
-            while (old_model->HasChildren())
-            {
-                TEveElement *el = old_model->FirstChild();
-                el->SetVizModel(model);
-                if (update)
-                {
-                    el->CopyVizParams(model);
-                    el->PropagateVizParamsToProjecteds();
-                }
-            }
-            old_model->DecDenyDestroy();
-            
-            pair->SetValue(dynamic_cast<TObject*>(model));
-            return kTRUE;
-        }
-        else
-        {
-            return kFALSE;
-        }
-    }
-    else
-    {
-        model->IncDenyDestroy();
-        model->SetRnrChildren(kFALSE);
-        fGlobal->Add(new TObjString(tag), dynamic_cast<TObject*>(model));
-        return kTRUE;
-    }
-}
-
-TEveElement* AliEveEventManager::FindGlobal(const TString& tag)
-{
-    return dynamic_cast<TEveElement*>(fGlobal->GetValue(tag));
 }
 
 Bool_t AliEveEventManager::InitOCDB(int runNo)

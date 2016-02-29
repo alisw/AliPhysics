@@ -88,9 +88,6 @@ public:
     void          StopAutoLoadTimer();
     
     // global and transient elements:
-    Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
-    Bool_t        InsertGlobal(const TString& tag, TEveElement* model,Bool_t replace, Bool_t update);
-    TEveElement*  FindGlobal(const TString& tag);
     void          RegisterTransient(TEveElement* element);
     void          DestroyTransients();
     
@@ -155,12 +152,7 @@ private:
     TTimer*  fAutoLoadTimer;         // Timer for automatic event loading
     Bool_t   fAutoLoadTimerRunning;  // State of auto-load timer.
     
-    
-    TMap*             fGlobal;          // Map of global elements
-    Bool_t            fGlobalReplace;   // Are global replace
-    Bool_t            fGlobalUpdate;    // Are global updates
     TEveElementList*  fTransients;      // Container for additional transient (per event) elements.
-    TEveElementList*  fTransientLists;  // Container for lists of transient (per event) elements.
     
     AliEveMacroExecutor*        fExecutor;                  // Executor for std macros
     AliEveSaveViews*            fViewsSaver;                // views saver

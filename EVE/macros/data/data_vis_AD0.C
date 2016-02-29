@@ -12,6 +12,7 @@
 /// \author Matevz Tadel <Matevz.Tadel@cern.ch>, Univ. of California San Diego
 /// \author Alja Mrak-Tadel <Alja.Mrak.Tadel@cern.ch>, Univ. of California San Diego
 /// \author Michal Broz <Michal.Broz@cern.ch>, Czech Technical University
+/// \author Jeremi Niedziela <jeremi.niedziela@cern.ch>, Warsaw University of Technology
 /// \date Feb 23, 2016
 
 
@@ -37,19 +38,10 @@ void data_vis_AD0(AliEveEventManager::EDataType type)
 /// AD raw data visualisation
 void data_vis_AD0_raw()
 {
-    // read settings from AliEVE's config file
-    TEnv settings;
-    AliEveInit::GetConfig(&settings);
-    Int_t maxCharge = settings.GetValue("AD.maxCharge.Raw",1023);
-    Bool_t showLegend = settings.GetValue("AD.showLegend",false);
-    
-    gStyle->SetPalette(1, 0);
-    
     AliEveEventManager *manager = AliEveEventManager::Instance();
     
     // get Raw Reader from the Event Manager
     AliRawReader *reader = manager->GetRawReader();
-
     // always check if an object exists!
     if(!reader)
     {
@@ -57,6 +49,14 @@ void data_vis_AD0_raw()
         return;
     }
     reader->Reset();
+    
+    // read settings from AliEVE's config file
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    Int_t maxCharge = settings.GetValue("AD.maxCharge.Raw",1023);
+    Bool_t showLegend = settings.GetValue("AD.showLegend",false);
+    
+    gStyle->SetPalette(1, 0);
     
     // Ask Event Manager to block redrawing
     manager->DisableRedraw();
@@ -69,7 +69,10 @@ void data_vis_AD0_raw()
     rawA->LoadRaw(reader);
     rawC->LoadRaw(reader);
     
-    // Tell Event Manager to unlock redraw
+    // Tell Event Manager to draw modules
+    manager->AddElement(rawA);
+    manager->AddElement(rawC);
+    manager->Redraw3D();
     manager->EnableRedraw();
 }
 
@@ -161,6 +164,9 @@ void data_vis_AD0_esd()
     esdA->LoadEsd(adESD);
     esdC->LoadEsd(adESD);
     
-    // Tell Event Manager to unlock redraw
+    // Tell Event Manager to draw modules
+    manager->AddElement(esdA);
+    manager->AddElement(esdC);
+    manager->Redraw3D();
     manager->EnableRedraw();
 }
