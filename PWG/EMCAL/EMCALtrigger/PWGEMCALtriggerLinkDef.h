@@ -12,7 +12,6 @@
 #pragma link C++ class AliEmcalTriggerDecisionContainer+;
 #pragma link C++ class AliEmcalTriggerSelectionCuts++;
 #pragma link C++ class AliEmcalTriggerSelection+;
-#pragma link C++ class AliEmcalTriggerQAAP+;
 #pragma link C++ class AliEmcalTriggerQATask+;
 #pragma link C++ class AliEmcalTriggerQAPP+;
 #pragma link C++ class AliEmcalTriggerQATaskPP+;
