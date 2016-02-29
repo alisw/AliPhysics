@@ -262,7 +262,7 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
   fHistTruthProton = new TH3D("fHistTruthProton","TruthProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthProton);
 
-//-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------------------
 
   fHistMCRecoPionPlus = new TH3D("fHistMCRecoPionPlus","MCRecoPionPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoPionPlus);
@@ -308,7 +308,7 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
 
   fHistMCRecoProtonAsPion = new TH3D("fHistMCRecoProtonAsPion","MCRecoProtonAsPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoProtonAsPion);
-//-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -367,10 +367,6 @@ fOutputList->Add(h1ProtonAsKaon);
 fOutputList->Add(h1ProtonAsPion);
 fOutputList->Add(h1KaonAsProton);
 fOutputList->Add(h1KaonAsPion);
-
-
-
-
  
   PostData(1, fQAList);
   PostData(2, fOutputList);
@@ -548,14 +544,14 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
  }
           break;
   
-          } // End of switch
+         } // End of switch
 
-} // If condition end
+     } // If condition end
 	
-	      }//loop over tracks
-	      //+++++++++++++++++ MC Truth Hsito for Pion, Kaon and Proton ++++++++++++++++++//
+}//loop over tracks
+// ++++++++++++++++++++++++++++++++++++++++ MC Truth Hsito for Pion, Kaon and Proton ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 	      
-	      //++++++++++++++++++Reconstruced Partcile and PID selection +++++++++++++++++++++//
+//+++++++++++++++++++++++++++++++++++++++++Reconstruced Partcile and PID selection ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 	      
 	      //AOD track loop
 	      Int_t nGoodTracks = fAOD->GetNumberOfTracks();   
@@ -623,7 +619,7 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 		  Short_t gCharge = trackAOD->Charge();
 		  Double_t phiRad = trackAOD->Phi();
 
-		  //===========================PID (so far only for electron rejection)===============================//		    
+//========================================================PID (so far only for electron rejection)===================================================================//		    
 		  if(fElectronRejection) {
 		    
 		    // get the electron nsigma
@@ -656,12 +652,12 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 		    fHistNSigmaTPCvsPtafterPID->Fill(trackAOD->Pt(),nSigma);		    
 
 		  }
-		  //===========================end of PID (so far only for electron rejection)===============================//		  
+//=====================================================end of PID (so far only for electron rejection)================================================================//		  
 		  
                Int_t pdgCodeReco = ((AliAODMCParticle*)recoMC)->GetPdgCode();
 
 
-// PID selection start ======================================================
+// PID selection start ================================================================================================================================================
 
  Double_t dEdx   = trackAOD -> GetTPCsignal();
  fHistdEdxTPC->Fill(trackAOD->Pt(),dEdx);
@@ -786,7 +782,7 @@ h1ProtonAsNonProton->Fill(trackAOD->Pt());
 }
 
 }
-// PID selection end ========================================================
+// PID selection end ================================================================================================================================================
 
 		
 	       }//AOD track loop 
@@ -800,8 +796,6 @@ h1ProtonAsNonProton->Fill(trackAOD->Pt());
 }
 
 
-
-
 Bool_t AliAnalysisTaskEffContPIDBF::IsMCParticleCut(AliAODMCParticle* particle) {
 
 
@@ -813,7 +807,7 @@ Bool_t AliAnalysisTaskEffContPIDBF::IsMCParticleCut(AliAODMCParticle* particle) 
         return kTRUE;
 }
 
-Int_t AliAnalysisTaskEffContPIDBF::SigmaCalculate(AliAODTrack *trk ){
+void AliAnalysisTaskEffContPIDBF::SigmaCalculate(AliAODTrack *trk ){
 
   Double_t nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
   Double_t nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kKaon);
@@ -862,7 +856,7 @@ else{
    fnsigmas[kSpKaon][kNSigmaTOF]=nsigmaTOFkKaon;
    fnsigmas[kSpProton][kNSigmaTOF]=nsigmaTOFkProton;
 
-
+   return;
 
 }
 
@@ -886,6 +880,16 @@ if(trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt && (!IsTOFPID(trk))) return kSpUndefi
     nsigmaKaon    =  TMath::Abs(fnsigmas[kSpKaon][kNSigmaTPCTOF])  ;
     nsigmaPion    =  TMath::Abs(fnsigmas[kSpPion][kNSigmaTPCTOF])  ;
     break;
+
+  case kNSigmaTOF:
+
+    nsigmaProton  =  TMath::Abs(fnsigmas[kSpProton][kNSigmaTOF]);
+    nsigmaKaon    =  TMath::Abs(fnsigmas[kSpKaon][kNSigmaTOF])  ;
+    nsigmaPion    =  TMath::Abs(fnsigmas[kSpPion][kNSigmaTOF])  ;
+    break;
+
+
+
 }
 
 if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) return kSpUndefined;
