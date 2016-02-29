@@ -56,8 +56,9 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
   option.ToLower();
 
   Int_t tempID = fCurrentID;
+  ResetCurrentID();
 
-  AliVCluster *clusterMax = GetNextAcceptCluster(0);
+  AliVCluster *clusterMax = GetNextAcceptCluster();
   AliVCluster *cluster = 0;
 
   if (option.Contains("e")) {
@@ -130,11 +131,9 @@ AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab)
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i) 
+AliVCluster* AliClusterContainer::GetNextAcceptCluster() 
 {
-  //Get next accepted cluster; if i >= 0 (re)start counter from i; return 0 if no accepted cluster could be found
-
-  if (i>=0) fCurrentID = i;
+  //Get next accepted cluster
 
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
@@ -148,11 +147,9 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster(Int_t i)
 }
 
 //________________________________________________________________________
-AliVCluster* AliClusterContainer::GetNextCluster(Int_t i) 
+AliVCluster* AliClusterContainer::GetNextCluster() 
 {
-  //Get next cluster; if i >= 0 (re)start counter from i; return 0 if no cluster could be found
-
-  if (i>=0) fCurrentID = i;
+  //Get next cluster
 
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
@@ -231,11 +228,11 @@ Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliClusterContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliClusterContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next particle in array
 
-  AliVCluster *vc = GetNextCluster(i);
+  AliVCluster *vc = GetNextCluster();
   return GetMomentum(mom, vc);
 }
 
@@ -249,11 +246,11 @@ Bool_t AliClusterContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliClusterContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliClusterContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next accepted particle in array
 
-  AliVCluster *vc = GetNextAcceptCluster(i);
+  AliVCluster *vc = GetNextAcceptCluster();
   return GetMomentum(mom, vc);
 }
 
@@ -339,11 +336,15 @@ Int_t AliClusterContainer::GetNAcceptedClusters()
   // Get number of accepted particles
 
   Int_t nClus = 0;
+  Int_t tempID = fCurrentID;
+  ResetCurrentID();
 
-  AliVCluster *clus = GetNextAcceptCluster(0);
+  AliVCluster *clus = GetNextAcceptCluster();
   if(clus) nClus = 1;
   while (GetNextAcceptCluster())
     nClus++;
+
+  fCurrentID = tempID;
 
   return nClus;
 }

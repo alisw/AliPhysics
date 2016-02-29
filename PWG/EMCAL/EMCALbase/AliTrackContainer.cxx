@@ -189,14 +189,11 @@ AliVTrack* AliTrackContainer::GetAcceptTrack(Int_t i)
 }
 
 //________________________________________________________________________
-AliVTrack* AliTrackContainer::GetNextAcceptTrack(Int_t i)
+AliVTrack* AliTrackContainer::GetNextAcceptTrack()
 {
-  //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
-
-  if (i >= 0) fCurrentID = i;
+  //Get next accepted particle
 
   const Int_t n = GetNEntries();
-
   AliVTrack *p = 0;
   do {
     fCurrentID++;
@@ -208,11 +205,9 @@ AliVTrack* AliTrackContainer::GetNextAcceptTrack(Int_t i)
 }
 
 //________________________________________________________________________
-AliVTrack* AliTrackContainer::GetNextTrack(Int_t i)
+AliVTrack* AliTrackContainer::GetNextTrack()
 {
-  //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
-
-  if (i >= 0) fCurrentID = i;
+  //Get next particle
 
   const Int_t n = GetNEntries();
   AliVTrack *p = 0;
@@ -274,13 +269,13 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliVTrack *vp = GetNextTrack(i);
+  AliVTrack *vp = GetNextTrack();
   if (vp) {
     if (mass < 0) mass = vp->M();
 
@@ -330,13 +325,13 @@ Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next accepted particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliVTrack *vp = GetNextAcceptTrack(i);
+  AliVTrack *vp = GetNextAcceptTrack();
   if (vp) {
     if (mass < 0) mass = vp->M();
 

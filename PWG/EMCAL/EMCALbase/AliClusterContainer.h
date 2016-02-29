@@ -34,10 +34,10 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t                      GetMomentum(TLorentzVector &mom, const AliVCluster* clus);
   Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
   Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
-  Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
-  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
-  AliVCluster                *GetNextAcceptCluster(Int_t i=-1)            ;
-  AliVCluster                *GetNextCluster(Int_t i=-1)                  ;
+  Bool_t                      GetNextMomentum(TLorentzVector &mom);
+  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom);
+  AliVCluster                *GetNextAcceptCluster();
+  AliVCluster                *GetNextCluster();
   Int_t                       GetNClusters()                         const { return GetNEntries();   }
   Int_t                       GetNAcceptedClusters()                      ;
   void                        SetClassName(const char* clname);

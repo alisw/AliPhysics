@@ -46,8 +46,9 @@ AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt)
   option.ToLower();
 
   Int_t tempID = fCurrentID;
+  ResetCurrentID();
 
-  AliVParticle *partMax = GetNextAcceptParticle(0);
+  AliVParticle *partMax = GetNextAcceptParticle();
   AliVParticle *part = 0;
 
   if (option.Contains("p")) {
@@ -93,14 +94,11 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i)
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i) 
+AliVParticle* AliParticleContainer::GetNextAcceptParticle()
 {
-  //Get next accepted particle; if i >= 0 (re)start counter from i; return 0 if no accepted particle could be found
-
-  if (i >= 0) fCurrentID = i;
+  //Get next accepted particle
 
   const Int_t n = GetNEntries();
-
   AliVParticle *p = 0;
   do {
     fCurrentID++;
@@ -112,11 +110,9 @@ AliVParticle* AliParticleContainer::GetNextAcceptParticle(Int_t i)
 }
 
 //________________________________________________________________________
-AliVParticle* AliParticleContainer::GetNextParticle(Int_t i) 
+AliVParticle* AliParticleContainer::GetNextParticle()
 {
-  //Get next particle; if i >= 0 (re)start counter from i; return 0 if no particle could be found
-
-  if (i >= 0) fCurrentID = i;
+  //Get next particle
 
   const Int_t n = GetNEntries();
   AliVParticle *p = 0;
@@ -170,13 +166,13 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliVParticle *vp = GetNextParticle(i);
+  AliVParticle *vp = GetNextParticle();
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -209,13 +205,13 @@ Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next accepted particle in array
 
   Double_t mass = fMassHypothesis;
 
-  AliVParticle *vp = GetNextAcceptParticle(i);
+  AliVParticle *vp = GetNextAcceptParticle();
   if (vp) {
     if (mass < 0) mass = vp->M();
     mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
@@ -324,11 +320,15 @@ Int_t AliParticleContainer::GetNAcceptedParticles()
   // Get number of accepted particles
 
   Int_t nPart = 0;
+  Int_t tempID = fCurrentID;
+  ResetCurrentID();
 
-  AliVParticle *vp = GetNextAcceptParticle(0);
+  AliVParticle *vp = GetNextAcceptParticle();
   if(vp) nPart = 1;
   while (GetNextAcceptParticle())
     nPart++;
+
+  fCurrentID = tempID;
 
   return nPart;
 }

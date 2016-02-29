@@ -36,21 +36,21 @@ class AliTrackContainer : public AliParticleContainer {
   virtual Bool_t              AcceptParticle(const AliVParticle* vp)       { return AcceptTrack(dynamic_cast<const AliVTrack*>(vp))  ; }
   virtual AliVParticle       *GetParticle(Int_t i=-1)                const { return GetTrack(i)           ; }
   virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)                { return GetAcceptTrack(i)     ; }
-  virtual AliVParticle       *GetNextAcceptParticle(Int_t i=-1)            { return GetNextAcceptTrack(i) ; }
-  virtual AliVParticle       *GetNextParticle(Int_t i=-1)                  { return GetNextTrack(i)       ; }
+  virtual AliVParticle       *GetNextAcceptParticle()                      { return GetNextAcceptTrack()  ; }
+  virtual AliVParticle       *GetNextParticle()                            { return GetNextTrack()        ; }
   virtual Bool_t              AcceptTrack(const AliVTrack* vp)            ;
   virtual Bool_t              AcceptTrack(Int_t i)                        ;
   virtual AliVTrack          *GetLeadingTrack(const char* opt="")          { return static_cast<AliVTrack*>(GetLeadingParticle(opt)); }
   virtual AliVTrack          *GetTrack(Int_t i=-1)                   const;
   virtual AliVTrack          *GetAcceptTrack(Int_t i=-1)                  ;
-  virtual AliVTrack          *GetNextAcceptTrack(Int_t i=-1)              ;
-  virtual AliVTrack          *GetNextTrack(Int_t i=-1)                    ;
+  virtual AliVTrack          *GetNextAcceptTrack()                        ;
+  virtual AliVTrack          *GetNextTrack()                              ;
   virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass);
   virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part);
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i);
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i);
-  virtual Bool_t              GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
-  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
+  virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
+  virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);
   Int_t                       GetNTracks()                              const   { return GetNParticles()         ; }
   Int_t                       GetNAcceptedTracks()                              { return GetNAcceptedParticles() ; }
   ETrackFilterType_t          GetTrackFilterType()                      const   { return fTrackFilterType; }
