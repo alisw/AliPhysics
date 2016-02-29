@@ -21,7 +21,7 @@ template<class T> class AliEMCALTriggerPatchFinder;
 
 // To be moved to AliRoot in AliEMCALTriggerConstants.h at the first occasion
 namespace EMCALTrigger {
-const Double_t kEMCL0ADCtoGeV_AP = 0.019;             ///< Conversion from EMCAL Level0 ADC to energy
+const Double_t kEMCL0ADCtoGeV_AP = 0.018970588*4;  // 0.075882352;             ///< Conversion from EMCAL Level0 ADC to energy
 }
 
 /**
@@ -107,6 +107,13 @@ public:
   void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *const config) { fTriggerBitConfig = config; }
 
   /**
+   * Set range for L0 time
+   * @param min Minimum L0 time (default is 7)
+   * @param max Maximum L0 time (default is 10)
+   */
+  void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
+
+  /**
    * Reset data grids
    */
   void Reset();
@@ -114,6 +121,9 @@ public:
   /**
    * Read the calo trigger data
    * @param trigger Input calo trigger data
+   * @param timeMin Minimum L0 time
+   * @param timeMax Maximum L0 time
+   * @param applyTimeCut If true, only L0 amoplitudes in the range timeMin, timeMax are considered
    */
   void ReadTriggerData(AliVCaloTrigger *trigger);
 
@@ -140,7 +150,7 @@ protected:
    * @param trg Triggers object with the pointer set to the patch to inspect
    * @return True if the patch is accepted, false otherwise.
    */
-  Bool_t                                    CheckForL0(Int_t col, Int_t row) const;
+  Bool_t CheckForL0(Int_t col, Int_t row) const;
 
   /**
    * Create trigger algorithm for gamma triggers
@@ -195,7 +205,8 @@ protected:
 
   AliEMCALTriggerPatchFinder<double>        *fPatchFinder;                //!<! The actual patch finder
   AliEMCALTriggerAlgorithm<double>          *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
-
+  Int_t                                     fL0MinTime;                   ///< Minimum L0 time
+  Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
   Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 
   Int_t                                     fJetPatchsize;                ///< Size of a jet patch
@@ -204,6 +215,7 @@ protected:
   Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
   Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
   Bool_t                                    fIsMC;                        ///< Set MC offset
+
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
 
   /// \cond CLASSIMP
