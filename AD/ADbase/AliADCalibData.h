@@ -115,10 +115,10 @@ class AliADCalibData: public TNamed {
 
   UShort_t GetTriggerSelected(Int_t output) const {return ((output>=0 && output<5)?fTriggerSelected[output]:0);};
   
-  Bool_t GetEnableCharge(Int_t channel);
-  Bool_t GetEnableTiming(Int_t channel);
-  UShort_t GetOnlinePedestal(Int_t integrator, Int_t channel);
-  UShort_t GetOnlinePedestalCut(Int_t integrator, Int_t channel);
+  Bool_t GetEnableCharge(Int_t channel) const;
+  Bool_t GetEnableTiming(Int_t channel) const;
+  UShort_t GetOnlinePedestal(Int_t integrator, Int_t channel) const;
+  UShort_t GetOnlinePedestalCut(Int_t integrator, Int_t channel) const;
 
 
   static Int_t GetBoardNumber(Int_t channel);

@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $id$
+// $Id:$
 
 TTree* MakeTTree();
 
@@ -35,7 +35,7 @@ TTree* MakeTTree() {
   Bool_t  doExtrapolation[21];
   for (Int_t bc=0; bc<21; ++bc) {
     extrapolationThresholds[bc] = -999.9f;
-    doExtrapolation[bc] = kFALSE;
+    doExtrapolation[bc]         = kFALSE;
   }
   t->Branch("extrapolationThresholds",  &extrapolationThresholds, "val[21]/F");
   t->Branch("doExtrapolation",          &doExtrapolation,         "val[21]/O");
@@ -55,8 +55,8 @@ TTree* MakeTTree() {
   f_Int1.BypassStreamer();
   for (chOffline=0; chOffline<16; ++chOffline) {
     chOnline = gOffline2Online[chOffline];    
-    f_Int0.Clear();
-    f_Int1.Clear();
+    f_Int0.Clear("C");
+    f_Int1.Clear("C");
     for (Int_t bc=0; bc<21; ++bc) {
       new (f_Int0[bc]) TF1(Form("f_Ch%02d_BC%02d_int0", chOffline, bc), "x");
       new (f_Int1[bc]) TF1(Form("f_Ch%02d_BC%02d_int1", chOffline, bc), "x");

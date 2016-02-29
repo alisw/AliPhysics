@@ -24,6 +24,7 @@ class AliESDADfriend;
 class AliESDEvent;
 class AliADCalibData;
 class TSpline3;
+class TTree;
 
 class AliADReconstructor: public AliReconstructor {
 public:
@@ -52,35 +53,39 @@ public:
   void GetCollisionMode();
   Double_t GetZPosition(const char* symname);
 
-  AliADCalibData *GetCalibData() const; 
+  const AliADCalibData *GetCalibData() const; 
   void GetTimeSlewingSplines();
   Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
 
   enum {kInvalidADC   =  -1024,
         kInvalidTime  =  -1024};
 
+  void SetOption(Option_t *opt);
+
   AliESDAD*    GetESDAD() { return fESDAD; }
 
 protected:
-
-  AliESDAD*        fESDAD;       // AD ESD object 
-  AliESDEvent*     fESD;         // ESD object
-  AliESDADfriend*  fESDADfriend; // AD ESDfriend object  
+  AliESDAD       *fESDAD;       // AD ESD object 
+  AliESDEvent    *fESD;         // ESD object
+  AliESDADfriend *fESDADfriend; // AD ESDfriend object  
 
 private:
   AliADReconstructor(const AliADReconstructor &reconstructor); //Not implemented
   AliADReconstructor& operator = (const AliADReconstructor &reconstructor); //Not implemented
-  
-  AliADCalibData* fCalibData;      //! calibration data
-  mutable TClonesArray *fDigitsArray;  // clones-array for ConvertDigits() and FillESD()
-  
-  Int_t              fCollisionMode;  // =0->p-p, =1->A-A
-  Float_t            fBeamEnergy;     // beam energy
-  Float_t            fHptdcOffset[16];  //! HPTDC time offsets channel by channel
-  TSpline3	     *fTimeSlewingSpline[16]; //Time slewing splines
-  Float_t	     fLayerDist[4];    //Z position of layers
 
-  ClassDef(AliADReconstructor, 4)  // class for the AD reconstruction
+  const AliADCalibData *fCalibData;             //! calibration data
+  mutable TClonesArray *fDigitsArray;           // clones-array for ConvertDigits() and FillESD()
+  TTree                *fSaturationCorrection;  //! used to correct for saturation
+
+  Int_t                 fCollisionMode;         // =0->p-p, =1->A-A
+  Float_t               fBeamEnergy;            // beam energy
+  Float_t               fHptdcOffset[16];       //! HPTDC time offsets channel by channel
+  TSpline3	       *fTimeSlewingSpline[16]; //Time slewing splines
+  Float_t	        fLayerDist[4];          //Z position of layers
+
+  Bool_t                fCorrectForSaturation;  //
+
+  ClassDef(AliADReconstructor, 5)  // class for the AD reconstruction
 };
 
 #endif
