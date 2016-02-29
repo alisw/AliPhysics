@@ -134,6 +134,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;
+#pragma link C++ class HighPtTracks::AliReducedHighPtEventCreator+;
 #pragma link C++ class HighPtTracks::AliReducedClusterParticle+;
 #pragma link C++ class HighPtTracks::AliReducedEmcalCluster+;
 #pragma link C++ class HighPtTracks::AliReducedPatchInfo+;
@@ -142,8 +143,12 @@
 #pragma link C++ class HighPtTracks::AliReducedGeneratedParticle+;
 #pragma link C++ class HighPtTracks::AliReducedReconstructedTrack+;
 #pragma link C++ class HighPtTracks::AliReducedHighPtEvent+;
-#pragma link C++ class HighPtTracks::AliReducedHighPtEventCreator+;
 #pragma link C++ class HighPtTracks::AliReducedTrackSelectionContainer+;
+#pragma link C++ class HighPtTracks::AliReducedJetEvent+;
+#pragma link C++ class HighPtTracks::AliReducedJetInfo+;
+#pragma link C++ class HighPtTracks::AliReducedJetParticle+;
+#pragma link C++ class HighPtTracks::AliReducedJetConstituent+;
+#pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
 #pragma link C++ class AliAnalysisTaskLEDCheck+;
 
@@ -167,10 +172,5 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
-#pragma link C++ class HighPtTracks::AliReducedJetEvent+;
-#pragma link C++ class HighPtTracks::AliReducedJetInfo+;
-#pragma link C++ class HighPtTracks::AliReducedJetParticle+;
-#pragma link C++ class HighPtTracks::AliReducedJetConstituent+;
-#pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #endif
 #endif

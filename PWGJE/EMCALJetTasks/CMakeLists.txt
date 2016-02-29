@@ -66,6 +66,7 @@ set(SRCS
     Tracks/AliEmcalTriggerOfflineSelection.cxx
     Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
+    Tracks/AliEMCalTriggerAnaTriggerDecisionConfig.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
     Tracks/AliEMCalTriggerBinningFactory.cxx
     Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
@@ -84,6 +85,7 @@ set(SRCS
     Tracks/AliEMCalTriggerAnaTriggerClass.cxx
     Tracks/AliEMCalTriggerAnaClassManager.cxx
     Tracks/AliParticleMap.cxx
+    Tracks/AliReducedHighPtEventCreator.cxx
     Tracks/AliReducedEmcalCluster.cxx
     Tracks/AliReducedPatchInfo.cxx
     Tracks/AliReducedPatchContainer.cxx
@@ -91,7 +93,11 @@ set(SRCS
     Tracks/AliReducedGeneratedParticle.cxx
     Tracks/AliReducedReconstructedTrack.cxx
     Tracks/AliReducedHighPtEvent.cxx
-    Tracks/AliReducedHighPtEventCreator.cxx
+    Tracks/AliReducedJetEvent.cxx
+    Tracks/AliReducedJetInfo.cxx
+    Tracks/AliReducedJetParticle.cxx
+    Tracks/AliReducedJetConstituent.cxx
+    Tracks/AliReducedMatchedTrack.cxx
     Tracks/AliAnalysisTaskTrackDCA.cxx
     Tracks/AliEmcalAnalysisFactory.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
@@ -181,12 +187,8 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
-        Tracks/AliReducedJetEvent.cxx
-        Tracks/AliReducedJetInfo.cxx
-        Tracks/AliReducedJetParticle.cxx
-        Tracks/AliReducedJetConstituent.cxx
-        Tracks/AliReducedMatchedTrack.cxx
-        Tracks/AliAnalysisTaskTracksInJet.cxx)
+        Tracks/AliAnalysisTaskTracksInJet.cxx
+        )
     include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
@@ -196,6 +198,7 @@ endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set(HDRS ${HDRS} Tracks/AliEMCalTriggerAnaHelper.h)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
