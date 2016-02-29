@@ -19,7 +19,6 @@
 #include <string>
 #include <TNamed.h>
 #include <THistManager.h>
-#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 /**
  * \namespace EMCalTriggerPtAnalysis
