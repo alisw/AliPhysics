@@ -361,7 +361,6 @@ void AliEmcalTriggerQAPP::EventCompleted()
 
     for (Int_t itrig = 1; itrig < 6; itrig++) {
       if (kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
-      if (fMaxPatchDCal[itrig][itype] == 0 && fMaxPatchEMCal[itrig][itype] == 0) continue;
 
       AliDebug(2, Form("Trigger type: %s", kEMCalTriggerNames[itype].Data()));
 
@@ -376,7 +375,6 @@ void AliEmcalTriggerQAPP::EventCompleted()
 
       for (Int_t itrig2 = itrig+1; itrig2 < 6; itrig2++) {
         if (kEMCalTriggerNames[itrig2].IsNull() || fEnabledTriggerTypes[itrig2] == kFALSE) continue;
-        if (fMaxPatchDCal[itrig2][itype] == 0 && fMaxPatchEMCal[itrig2][itype] == 0) continue;
 
         hname = Form("EMCTRQA_histEMCal%sMaxVs%sMax%s", kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
         fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig2][itype], fMaxPatchEMCal[itrig][itype]);
