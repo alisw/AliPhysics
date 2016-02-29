@@ -10,12 +10,14 @@
 
 class TList;
 class TH1F;
-class TH3D;
 class TH2F;
+class TH2D;
+class TH3D;
 class TString;
 class AliAODEvent;
 class AliAODInputHandler;
-class TH2D;
+class AliAODMCParticle;
+class AliAODTrack;
 
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
