@@ -135,7 +135,8 @@ inline void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float 
   // Sector/row is in 0-71 ROC convention, to check Zs outlying from the sector
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
-  GetParam(sector,y2x,z)->Eval(row, tz, corr);
+  const AliCheb2DStack* par = GetParam(sector,y2x,z);
+  if (par) par->Eval(row, tz, corr);
   //
 }
 
@@ -145,7 +146,8 @@ inline void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) 
   // Calculate correction for point with x,y,z sector corrdinates
   // Sector is in 0-71 ROC convention, to check Zs outlying from the sector
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
-  GetParam(sector,tz[0],tz[1])->Eval(row, tz, corr);
+  const AliCheb2DStack* par = GetParam(sector,tz[0],tz[1]);
+  if (par) par->Eval(row, tz, corr);
   //
 }
 
@@ -156,7 +158,8 @@ inline Float_t AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, int
   // Sector/row is in 0-71 ROC convention, to check Zs outlying from the sector
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
-  return GetParam(sector,y2x,z)->Eval(row, dimOut, tz);
+  const AliCheb2DStack* par = GetParam(sector,y2x,z);
+  if (par) par->Eval(row, dimOut, tz);
   //
 }
 
@@ -166,7 +169,8 @@ inline Float_t AliTPCChebCorr::Eval(int sector, int row, float tz[2], int dimOut
   // Calculate correction for point with x,y,z sector corrdinates
   // Sector is in 0-71 ROC convention, to check Zs outlying from the sector
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
-  return GetParam(sector,tz[0],tz[1])->Eval(row, dimOut, tz);
+  const AliCheb2DStack* par = GetParam(sector,tz[0],tz[1]);
+  return par ? par->Eval(row, dimOut, tz) : 0;
   //
 }
 
