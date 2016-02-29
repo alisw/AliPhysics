@@ -19,7 +19,6 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerFastOR.h"
 #include "AliEMCALTriggerConstants.h"
-#include "AliEmcalTriggerQAAP.h"
 #include "AliEmcalTriggerQATask.h"
 
 
@@ -67,8 +66,8 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name) :
   fEMCALTriggerQA->SetOwner(kTRUE);
 
   for (Int_t i = 0; i < fNcentBins; i++) {
-    TString qaName(Form("%s_AliEmcalTriggerQAAP_Cent%d", name, i));
-    fEMCALTriggerQA->AddAt(new AliEmcalTriggerQAAP(qaName), i);
+    TString qaName(Form("%s_AliEMCALTriggerQA_Cent%d", name, i));
+    fEMCALTriggerQA->AddAt(new AliEMCALTriggerQA(qaName), i);
   }
 }
 
@@ -211,27 +210,27 @@ void AliEmcalTriggerQATask::UserCreateOutputObjects()
     }
 
     title[dim] = "DCal median (offline)";
-    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    nbins[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
     min[dim] = 0;
-    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    max[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / 10;
     dim++;
 
     title[dim] = "EMCal median (offline)";
-    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    nbins[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
     min[dim] = 0;
-    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    max[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / 10;
     dim++;
 
     title[dim] = "DCal median (recalc)";
-    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    nbins[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
     min[dim] = 0;
-    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    max[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / 10;
     dim++;
 
     title[dim] = "EMCal median (recalc)";
-    nbins[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
+    nbins[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / fADCperBin / 10;
     min[dim] = 0;
-    max[dim] = AliEmcalTriggerQAAP::fgkMaxPatchAmp[fBkgPatchType] / 10;
+    max[dim] = AliEMCALTriggerQA::fgkMaxPatchAmp[fBkgPatchType] / 10;
     dim++;
 
     fHistEventQA = new THnSparseF("fHistEventQA","fHistEventQA",dim,nbins,min,max);
@@ -467,15 +466,15 @@ void AliEmcalTriggerQATask::SetNCentBins(Int_t n)
   }
 
   for (Int_t i = fNcentBins; i < n; i++) {
-    TString qaName(Form("%s_AliEmcalTriggerQAAP_Cent%d", GetName(), i));
+    TString qaName(Form("%s_AliEMCALTriggerQA_Cent%d", GetName(), i));
     if (fEMCALTriggerQA->At(0)) {
-      AliEmcalTriggerQAAP* triggerQA = new AliEmcalTriggerQAAP(*(static_cast<AliEmcalTriggerQAAP*>(fEMCALTriggerQA->At(0))));
+      AliEMCALTriggerQA* triggerQA = new AliEMCALTriggerQA(*(static_cast<AliEMCALTriggerQA*>(fEMCALTriggerQA->At(0))));
       triggerQA->SetName(qaName);
       triggerQA->SetTitle(qaName);
       fEMCALTriggerQA->AddAt(triggerQA, i);
     }
     else {
-      fEMCALTriggerQA->AddAt(new AliEmcalTriggerQAAP(qaName), i);
+      fEMCALTriggerQA->AddAt(new AliEMCALTriggerQA(qaName), i);
     }
   }
 

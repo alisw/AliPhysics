@@ -19,9 +19,9 @@ class TClonesArray;
 class TObjArray;
 class THistManager;
 class TString;
-class AliEmcalTriggerQAAP;
 class THnSparse;
 
+#include "AliEMCALTriggerQA.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcal.h"
 #include "AliEMCALTriggerChannelContainer.h"
@@ -105,7 +105,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   void SetADCperBin(Int_t n);
   void SetNCentBins(Int_t n);
 
-  AliEmcalTriggerQAAP* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fNcentBins ? static_cast<AliEmcalTriggerQAAP*>(fEMCALTriggerQA->At(i)) : 0; }
+  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fNcentBins ? static_cast<AliEMCALTriggerQA*>(fEMCALTriggerQA->At(i)) : 0; }
 
   void Set2015CaloTriggerNames();
 

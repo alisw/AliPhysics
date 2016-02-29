@@ -39,7 +39,6 @@ set(SRCS
   AliEmcalTriggerDecisionContainer.cxx
   AliEmcalTriggerSelectionCuts.cxx
   AliEmcalTriggerSelection.cxx
-  AliEmcalTriggerQAAP.cxx
   AliEmcalTriggerQATask.cxx
   AliEmcalTriggerQAPP.cxx
   AliEmcalTriggerQATaskPP.cxx
