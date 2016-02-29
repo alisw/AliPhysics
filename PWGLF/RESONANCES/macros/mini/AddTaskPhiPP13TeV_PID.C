@@ -118,7 +118,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   cutVertex->SetCheckZDifferenceSPDTrack();
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-  cutEventUtils->SetCheckIncompleteDAQ();
+  if(aodFilterBit<200) cutEventUtils->SetCheckIncompleteDAQ();
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
   if(isPP && (!isMC)){ 
