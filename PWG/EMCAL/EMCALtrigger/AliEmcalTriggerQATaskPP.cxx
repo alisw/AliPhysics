@@ -59,13 +59,12 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP(const char *name) :
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
 
+  SetForceBeamType(AliAnalysisTaskEmcal::kpp);
+  SetNCentBins(1);
+
   fEMCALTriggerQA = new TObjArray((fNcentBins+1)*2);
   fEMCALTriggerQA->SetOwner(kTRUE);
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    TString qaName(Form("%s_AliEmcalTriggerQAAP_Cent%d", name, i));
-    fEMCALTriggerQA->AddAt(new AliEmcalTriggerQAPP(qaName), i);
-  }
+  fEMCALTriggerQA->AddAt(new AliEmcalTriggerQAPP(name), 0);
 }
 
 /**
