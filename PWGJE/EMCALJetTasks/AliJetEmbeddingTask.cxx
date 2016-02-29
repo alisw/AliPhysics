@@ -44,7 +44,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fhPartJet(0),
   fhEtaPart(0),
   fhPhiPart(0),
-  fhTreeEntriesUsed(0)
+  fhTreeEntriesUsed(0),
+  fNTreeEntries(0)
   
 {
   // Default constructor.
@@ -82,7 +83,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fhPartJet(0),
   fhEtaPart(0),
   fhPhiPart(0),
-  fhTreeEntriesUsed(0)
+  fhTreeEntriesUsed(0),
+  fNTreeEntries(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -118,12 +120,12 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       fTreeJet4Vect->SetBranchAddress(fBranchJDetName, &detjet);
       fTreeJet4Vect->GetEntry(0);
       fTreeJet4Vect->Show();
-      Int_t nentries = fTreeJet4Vect->GetEntries();
-      fhTreeEntriesUsed = new TH1F("fhTreeEntriesUsed", "Entries;Entry in TTree", nentries, 0, nentries-1);
+      fNTreeEntries = fTreeJet4Vect->GetEntries();
+      fhTreeEntriesUsed = new TH1F("fhTreeEntriesUsed", "Entries;Entry in TTree", fNTreeEntries, 0, fNTreeEntries-1);
       fOutput->Add(fhTreeEntriesUsed);
       
-      fCurrentEntry = gRandom->Integer(nentries); //in each worker it starts from a different entry
-      
+      fCurrentEntry = gRandom->Integer(fNTreeEntries); //in each worker it starts from a different entry
+      Printf("Entries %lld, start from %d", fNTreeEntries, fCurrentEntry);
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -171,7 +173,6 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
 void AliJetEmbeddingTask::Run() 
 {
   // Embed particles.
-  
   if (fNClusters > 0 && fOutClusters) {
     if (fCopyArray) 
       CopyClusters();
@@ -195,6 +196,7 @@ void AliJetEmbeddingTask::Run()
        }
        // Add track from tree of 4-vectors (jet reco) and save the particle level somewhere
        if(fFromTree){
+       	  
        	  if(!fTreeJet4Vect || fBranchJDetName.IsNull()) {
        	     AliFatal(Form("Tree or branch name not found"));
        	  }
@@ -204,9 +206,9 @@ void AliJetEmbeddingTask::Run()
        	  //fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJParName.Data(), &jetPar);
-       	  Int_t nentries = fTreeJet4Vect->GetEntries();
+       	  
        	  Double_t pTemb = -1;
-       	  if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;
        	     AliWarning("Starting from first entry again");
@@ -216,49 +218,51 @@ void AliJetEmbeddingTask::Run()
        	  
        	  // selected pT range 
        	  if((fPtMin != 0 && fPtMax != 0) && !fRandomEntry) {
-       	     while(!(pTemb > fPtMin && pTemb < fPtMax)){
+       	     Int_t countWhile = 0;
+       	     while(!(pTemb > fPtMin && pTemb < fPtMax) && countWhile < fNTreeEntries){
        	     	fCurrentEntry++;
-       	     	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	     	if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	else {
        	     	   fCurrentEntry = 0;
        	     	   AliWarning("Starting from first entry again");
        	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	}
        	     	pTemb = jetDet->Pt();
+       	     	countWhile++;
        	     }
        	  }
        	  // exclude a fraction of the entries -- doesn't work very well
-       	  if(fRandomEntry){
-  
-     	     if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     else {
-       	     	fCurrentEntry = 0;
-       	     	AliWarning("Starting from first entry again");
-       	     	fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     }
-       	     pTemb = jetDet->Pt();
-       	     
-       	     Float_t downscl = GetDownscalinigFactor();
-       	     Float_t random = gRandom->Rndm();
-       	     
-       	     while (random > downscl){
-       	     	fCurrentEntry++;
-       	     	random = gRandom->Rndm();
-       	     	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     	else {
-       	     	   fCurrentEntry = 0;
-       	     	   AliWarning("Starting from first entry again");
-       	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     	}
-       	     	pTemb = jetDet->Pt();
-       	     	if(pTemb < fPtRanges[fCurrentBin]) {
-       	     	   random = gRandom->Rndm();
-       	     	   
-       	     	}
-       	     	   
-       	     }
-       	     
-       	  }
+       	  //if(fRandomEntry){
+          //
+     	  //   if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   else {
+       	  //   	fCurrentEntry = 0;
+       	  //   	AliWarning("Starting from first entry again");
+       	  //   	fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   }
+       	  //   pTemb = jetDet->Pt();
+       	  //   
+       	  //   Float_t downscl = GetDownscalinigFactor();
+       	  //   Float_t random = gRandom->Rndm();
+       	  //   
+       	  //   while (random > downscl){
+       	  //   	fCurrentEntry++;
+       	  //   	random = gRandom->Rndm();
+       	  //   	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   	else {
+       	  //   	   fCurrentEntry = 0;
+       	  //   	   AliWarning("Starting from first entry again");
+       	  //   	   fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   	}
+       	  //   	pTemb = jetDet->Pt();
+       	  //   	if(pTemb < fPtRanges[fCurrentBin]) {
+       	  //   	   random = gRandom->Rndm();
+       	  //   	   
+       	  //   	}
+       	  //   	   
+       	  //   }
+       	  //   
+       	  //}
 
        	  fhTreeEntriesUsed->Fill(fCurrentEntry);
        	  // Add the track that complies with the settings 
