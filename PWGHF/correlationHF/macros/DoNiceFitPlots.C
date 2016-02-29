@@ -153,18 +153,18 @@ c->ls();
 
   pad->cd();
 
-  TLatex *tl1=new TLatex(0.215,0.81,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+  TLatex *tl1=new TLatex(0.215,0.83,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
   tl1->SetNDC();
   tl1->SetTextSize(0.035);
   tl1->Draw("same");
 
   if(system==0) {
-    TLatex *tl2=new TLatex(0.215,0.88,Form("#bf{pp, #sqrt{#it{s}}=7 TeV}"));
+    TLatex *tl2=new TLatex(0.215,0.885,Form("#bf{pp, #sqrt{#it{s}}=7 TeV}"));
     tl2->SetNDC();
     tl2->SetTextSize(0.035);
     tl2->Draw("same");
   } else {
-    TLatex *tl2=new TLatex(0.215,0.88,Form("#bf{p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV}"));
+    TLatex *tl2=new TLatex(0.215,0.885,Form("#bf{p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV}"));
     tl2->SetNDC();
     tl2->SetTextSize(0.035);
     tl2->Draw("same");
@@ -176,24 +176,24 @@ c->ls();
   tl2b->Draw("same");
 
   if(system==0) {
-    TLatex *tl3=new TLatex(0.215,0.74,Form("#bf{|#it{y}^{D}|<0.5, |#Delta#eta|<1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.77,Form("#bf{|#it{y}^{D}|<0.5, |#Delta#eta|<1.0}"));
     tl3->SetNDC();
     tl3->SetTextSize(0.035);
     tl3->Draw("same");
   } else {
-    TLatex *tl3=new TLatex(0.215,0.74,Form("#bf{-0.96<#it{y}^{D}_{cms}<0.04, |#Delta#eta|<1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.77,Form("#bf{-0.96<#it{y}^{D}_{cms}<0.04, |#Delta#eta|<1.0}"));
     tl3->SetNDC();
     tl3->SetTextSize(0.035);
     tl3->Draw("same");
   }
 
   if(system==0) {
-    TLatex *tl4=new TLatex(0.215,0.67,Form("#bf{5<#it{p}_{T}^{D}<8 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.71,Form("#bf{5<#it{p}_{T}^{D}<8 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.035);
     tl4->Draw("same");
   } else {
-    TLatex *tl4=new TLatex(0.215,0.67,Form("#bf{8<#it{p}_{T}^{D}<16 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.71,Form("#bf{8<#it{p}_{T}^{D}<16 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.035);
     tl4->Draw("same");
@@ -205,24 +205,24 @@ c->ls();
   tlAlice->SetTextSize(0.038);
 */
   if(system==0) {
-    TLatex *tlUnc=new TLatex(0.20,0.60,Form("#bf{{}^{+13%}_{-10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.20,0.65,Form("#bf{{}^{+13%}_{-10%} scale uncertainty}"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.0375);
     tlUnc->Draw("same");
   } else {
-    TLatex *tlUnc=new TLatex(0.20,0.60,Form("#bf{{}^{+10%}_{-10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.20,0.65,Form("#bf{{}^{+10%}_{-10%} scale uncertainty}"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.0375);
     tlUnc->Draw("same");
   }
 
 //UNCOMMENT TO WRITE FORMULA AND BASELINE APPROACH INFO
- /*
+ 
   TLatex *tl5=new TLatex(0.21,0.58,Form("#bf{Fit function: f(#Delta#varphi) = #it{b} + #frac{#it{A}_{NS}}{#sqrt{2#pi}#sigma_{NS}} exp#left(- #frac{(#Delta#varphi)^{2}}{2#sigma_{NS}^{2}}#right)+#frac{#it{A}_{AS}}{#sqrt{2#pi}#sigma_{AS}} exp#left(- #frac{(#Delta#varphi-#pi)^{2}}{2#sigma_{AS}^{2}}#right)}"));
   tl5->SetNDC();
   tl5->SetTextSize(0.0255);
   tl5->Draw("same");
-*/
+
  /* TLatex *tl6=new TLatex(0.18,0.52,Form("#bf{Baseline (#it{b}) fixed to the weighted average of points in #pi/4 < #Delta#varphi < #pi/2}"));
   tl6->SetNDC();
   tl6->SetTextSize(0.024);
