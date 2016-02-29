@@ -10,6 +10,7 @@
 
 #include <TNamed.h>
 #include <TArrayI.h>
+#include <cstring>
 
 class AliEMCALTriggerPatchInfo;
 class THashList;
@@ -34,10 +35,12 @@ public:
 
   AliEMCALTriggerQA();
   AliEMCALTriggerQA(const char* name);
+  AliEMCALTriggerQA(const AliEMCALTriggerQA& triggerQA);
   virtual ~AliEMCALTriggerQA();
 
   void   SetDebugLevel(Int_t l)       { fDebugLevel        = l; }
   void   SetBkgPatchType(Int_t t)     { fBkgPatchType      = t; }
+  void   SetADCperBin(Int_t i)        { fADCperBin         = i; }
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
   Int_t  GetBkgPatchType()      const { return fBkgPatchType  ; }
@@ -58,10 +61,10 @@ public:
 
   THashList* GetListOfHistograms()  { return fHistos; }
 
-protected:
-
   static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
   static const TString    fgkPatchTypes[3];             ///< Patch type names
+
+protected:
 
   Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
@@ -96,7 +99,6 @@ private:
   TObject *FindObject(const char *name) const;
   virtual TObject *FindObject(const TObject *obj) const;
 
-  AliEMCALTriggerQA(const AliEMCALTriggerQA &);
   AliEMCALTriggerQA &operator=(const AliEMCALTriggerQA &);
 
   /// \cond CLASSIMP
