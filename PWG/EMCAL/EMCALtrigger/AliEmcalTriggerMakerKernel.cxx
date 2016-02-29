@@ -51,6 +51,8 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fTriggerBitMap(NULL),
   fPatchFinder(NULL),
   fLevel0PatchFinder(NULL),
+  fL0MinTime(7),
+  fL0MaxTime(10),
   fADCtoGeV(1.),
   fJetPatchsize(16),
   fBkgThreshold(-1),
@@ -161,7 +163,7 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
       TArrayI l0times(nl0times);
       trigger->GetL0Times(l0times.GetArray());
       for(int itime = 0; itime < nl0times; itime++){
-        if(l0times[itime] >7 && l0times[itime] < 10){
+        if(l0times[itime] > fL0MinTime && l0times[itime] < fL0MaxTime){
           (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
           break;
         }
@@ -315,7 +317,7 @@ Bool_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
       if(col + jpos >= kColsEta) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
       if(row + ipos >= kNRowsPhi) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
       Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
-      if(l0times > 7 && l0times < 10) nvalid++;
+      if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
     }
   }
   if (nvalid != 4) return false;

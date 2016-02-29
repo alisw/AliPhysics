@@ -94,6 +94,14 @@ public:
   void SetRunQA(Bool_t doQA = kTRUE) { fDoQA = doQA; }
 
   /**
+   * Set range for L0 time
+   * @param min Minimum L0 time (default is 7)
+   * @param max Maximum L0 time (default is 10)
+   */
+  void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
+
+
+  /**
    * Set the name of the output container
    * @param name Name of the output container
    */
@@ -139,6 +147,8 @@ protected:
   TriggerMakerBitConfig_t                 fUseTriggerBitConfig;       ///< type of trigger config
   Int_t                                   fJetPatchsize;              ///< Size of a jet patch
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
+  Int_t                                   fL0MinTime;                 ///< Minimum L0 time
+  Int_t                                   fL0MaxTime;                 ///< Maximum L0 time
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fDoQA;                      ///< Fill QA histograms

@@ -40,6 +40,8 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fUseTriggerBitConfig(kNewConfig),
   fJetPatchsize(16),
   fUseL0Amplitudes(kFALSE),
+  fL0MinTime(7),
+  fL0MaxTime(10),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -56,6 +58,8 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fUseTriggerBitConfig(kNewConfig),
   fJetPatchsize(16),
   fUseL0Amplitudes(kFALSE),
+  fL0MinTime(7),
+  fL0MaxTime(10),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -131,6 +135,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   }
   fTriggerMaker->SetJetPatchsize(fJetPatchsize);
   fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
+  fTriggerMaker->SetL0TimeRange(fL0MinTime, fL0MaxTime);
 
   if (!fCaloTriggersOutName.IsNull()) {
     fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
