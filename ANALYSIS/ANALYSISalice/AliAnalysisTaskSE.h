@@ -121,7 +121,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     AliInputEventHandler      *fMCEventHandler;     //! pointer to MCEventHandler
     AliTrackSelectionFactory  *fTrackSelectionFactory; /// track selection factory
     AliVTrackSelection        *fTrackSelection;        /// track selection
-    ClassDef(AliAnalysisTaskSE, 4); // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskSE, 5); // Analysis task for standard jet analysis
 };
  
 #endif
