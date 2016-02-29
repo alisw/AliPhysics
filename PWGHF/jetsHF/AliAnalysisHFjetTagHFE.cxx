@@ -447,7 +447,8 @@ Bool_t AliAnalysisHFjetTagHFE::FillHistograms()
 
 
   if (fTracksCont) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
       track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
@@ -455,7 +456,8 @@ Bool_t AliAnalysisHFjetTagHFE::FillHistograms()
   }
 
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
@@ -471,7 +473,8 @@ Bool_t AliAnalysisHFjetTagHFE::FillHistograms()
   //cout << "JetsCont : " << fJetsCont << endl;
 
   if (fJetsCont) {
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(); 
     while(jet) {
 
        //cout << "# of jets : " << jet->GetNumberOfTracks() << endl;
@@ -527,7 +530,8 @@ void AliAnalysisHFjetTagHFE::CheckClusTrackMatching()
   Double_t dphi = 999;
 
   //Get closest cluster to track
-  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+  fTracksCont->ResetCurrentID();
+  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
   while(track) {
     //Get matched cluster
     Int_t emc1 = track->GetEMCALcluster();
@@ -542,7 +546,8 @@ void AliAnalysisHFjetTagHFE::CheckClusTrackMatching()
   }
   
   //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  fCaloClustersCont->ResetCurrentID();
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
   while(cluster) {
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, fVertex);
@@ -678,7 +683,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      double rho = 0.0;
      if (fJetsCont) 
         {
-         AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
+         fJetsCont->ResetCurrentID();
+         AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
          rho = fJetsCont->GetRhoVal();
          
          while(jet) {
@@ -894,7 +900,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     Double_t pTeJetTrue = 0.0;
     if(fmcData && fJetsContPart)
       {
-        AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet(0);  // full or charge ?
+        fJetsContPart->ResetCurrentID();
+        AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet();  // full or charge ?
         while(jetPart) 
              {
                Bool_t iTagHFjet = tagHFjet( jetPart, epTarrayMC, 0, pt);
@@ -906,7 +913,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     // reco
     if (fJetsCont) 
        {
-        AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);  // full or charge ?
+        fJetsCont->ResetCurrentID();
+        AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();  // full or charge ?
         while(jet) 
            {
             //jet->Pt() 
@@ -1147,7 +1155,8 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(THnSparse *pJet)
 
               if (fJetsCont) 
                   {
-                   AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet(0);  // full or charge ?
+                   fJetsContPart->ResetCurrentID();
+                   AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet();  // full or charge ?
                    while(jetPart) 
                     {
 
