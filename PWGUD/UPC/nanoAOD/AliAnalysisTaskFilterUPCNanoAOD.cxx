@@ -95,6 +95,9 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   if(trigger.Contains("CTEST61-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0OMU
   if(trigger.Contains("CCUP8-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
   if(trigger.Contains("CCUP9-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0STP
+  if(trigger.Contains("CCUP10-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0SH1
+  if(trigger.Contains("CCUP11-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP 0OMU
+  if(trigger.Contains("CCUP12-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP
   
   //Vertex
   Bool_t hasGoodVertex = kFALSE;
@@ -109,6 +112,7 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
 	}
   
   if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
+  //if(!isTriggered) return;
   //AliInfo("Good UPC event");
   
   
