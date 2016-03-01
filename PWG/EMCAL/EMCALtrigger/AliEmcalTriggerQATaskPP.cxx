@@ -170,19 +170,18 @@ Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
       fCaloTriggers->GetL1TimeSum(L1amp);
       if (L1amp < 0) L1amp = 0;
       fCaloTriggers->GetAmplitude(L0amp);
+      L0amp *= 4;
       if (L0amp < 0) L0amp = 0;
 
-      Int_t time = 0;
+      Int_t time = -1;
       Int_t nl0times(0);
       fCaloTriggers->GetNL0Times(nl0times);
        if(nl0times) {
          TArrayI l0times(nl0times);
          fCaloTriggers->GetL0Times(l0times.GetArray());
          for(int itime = 0; itime < nl0times; itime++){
-           if(l0times[itime] >7 && l0times[itime] < 10){
-             time = l0times[itime];
-             break;
-           }
+           time = l0times[itime];
+           break;
          }
        }
 
@@ -191,6 +190,18 @@ Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
       GetTriggerQA(fCentBin)->ProcessFastor(&fastor);
     }
   }
+
+  if (fCaloCells) {
+    const Int_t ncells = fCaloCells->GetNumberOfCells();
+    AliEmcalTriggerQAPP::AliEmcalCellInfo cellInfo;
+    for (Int_t pos = 0; pos < ncells; pos++) {
+      Double_t amp = fCaloCells->GetAmplitude(pos);
+      Int_t absId = fCaloCells->GetCellNumber(pos);
+      cellInfo.Set(absId, amp);
+      GetTriggerQA(fCentBin)->ProcessCell(cellInfo);
+    }
+  }
+
   GetTriggerQA(fCentBin)->EventCompleted();
 
   return kTRUE;
