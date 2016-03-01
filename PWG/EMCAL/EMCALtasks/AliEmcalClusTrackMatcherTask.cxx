@@ -339,7 +339,7 @@ void AliEmcalClusTrackMatcherTask::UpdateClusters()
     Double_t deta = 999;
     Double_t dphi = 999;
     GetEtaPhiDiff(trackFirstMatch, cluster, dphi, deta);
-    cluster->SetTrackDistance(deta, dphi);
+    cluster->SetTrackDistance(dphi, deta);
 
     // Cast into ESD/AOD objects
     AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(cluster);
