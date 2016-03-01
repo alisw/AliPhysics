@@ -101,6 +101,7 @@ set(SRCS
     physics/AliHLTV0HistoComponent.cxx
     physics/AliHLTAnalysisManager.cxx
     physics/AliHLTAnalysisManagerComponent.cxx
+    physics/examples/AliAnalysisTaskExampleV.cxx
    )
 
 if(ZEROMQ_FOUND)
