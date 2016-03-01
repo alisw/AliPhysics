@@ -24,6 +24,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+#include <set>
+#include <iostream>
 #include <TNamed.h>
 #include "THistManager.h"
 
@@ -43,13 +45,25 @@ public:
     kOfflinePatch
   };
 
+  struct AliEmcalCellInfo {
+    AliEmcalCellInfo() : fAbsId(-1), fEnergy(0.) {}
+    void Set(Int_t absId, Double_t e) { fAbsId = absId; fEnergy = e; }
+
+    Short_t  fAbsId;
+    Double_t fEnergy;
+  };
+
   AliEmcalTriggerQAPP();
   AliEmcalTriggerQAPP(const char* name);
   AliEmcalTriggerQAPP(const AliEmcalTriggerQAPP& triggerQA);
   virtual ~AliEmcalTriggerQAPP();
 
-  void   SetDebugLevel(Int_t l)       { fDebugLevel        = l; }
-  void   SetADCperBin(Int_t i)        { fADCperBin         = i; }
+  void   SetDebugLevel(Int_t l)               { fDebugLevel = l; }
+  void   SetADCperBin(Int_t i)                { fADCperBin  = i; }
+  void   SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
+  void   AddOfflineBadChannel(Short_t absId)  { fOfflineBadChannels.insert(absId)   ; }
+  void   ReadOfflineBadChannelFromFile(const char* fname);
+  void   ReadOfflineBadChannelFromStream(std::istream& stream);
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
 
@@ -59,8 +73,11 @@ public:
   void   Init();
   void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
   void   ProcessFastor(AliEMCALTriggerFastOR* fastor);
+  void   ProcessCell(const AliEmcalCellInfo& cell);
   void   EventCompleted();
   void   ComputeBackground();
+
+
 
   THashList* GetListOfHistograms()  { return fHistManager.GetListOfHistograms(); }
 
@@ -69,17 +86,19 @@ public:
 
 protected:
 
+  std::set<Short_t>       fOfflineBadChannels;          ///< Abd ID of offline bad channels
   Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Bool_t                  fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
   Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
   Int_t                   fADCperBin;                   ///< ADC counts per bin
   Int_t                   fDebugLevel;                  ///< Debug level
+  Int_t                   fL0MinTime;                   ///< Minimum L0 time
+  Int_t                   fL0MaxTime;                   ///< Maximum L0 time
 
   THistManager            fHistManager;                 ///<  Histogram manager
-  Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-  Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-  Int_t                   fPatchAreas[6];               //!<! Patch sizes retrieved directly during the patch processing
+  Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (will be reset each event)
+  Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (will be reset each event)
 
 private:
   AliEmcalTriggerQAPP &operator=(const AliEmcalTriggerQAPP &);
