@@ -14,7 +14,7 @@ AliAnalysisTask* AddTaskAnalysisTaskExampleV()
   }
 
   //attach the actual task
-  AliAnalysisTask* task = new AliAnalysisTaskExampleV();
+  AliAnalysisTask* task = new AliAnalysisTaskExampleV("example");
   mgr->AddTask(task);
 
   //Create the in/out containers

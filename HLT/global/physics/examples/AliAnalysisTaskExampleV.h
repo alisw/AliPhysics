@@ -15,26 +15,30 @@
 
 class TH1F;
 class TList;
+class AliVEvent;
 
 #ifndef ALIANALYSISTASKSE_H
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTask.h"
 #endif
 
-class AliAnalysisTaskExampleV : public AliAnalysisTaskSE {
+class AliAnalysisTaskExampleV : public AliAnalysisTask {
  public:
     AliAnalysisTaskExampleV();
     AliAnalysisTaskExampleV(const char *name);
     virtual ~AliAnalysisTaskExampleV();
     
-    virtual void     UserCreateOutputObjects();
-    virtual void     UserExec(Option_t *option);
+    virtual void     CreateOutputObjects();
+    virtual void     Exec(Option_t *option);
     virtual void     Terminate(Option_t *);
+    virtual void     ConnectInputData(Option_t*);
     
  private:
     TList           *fOutput;        // Output list
     TH1F            *fHistPt;        // Pt spectrum
     TH1F            *fHistEta;       // pseudorapidity spectrum
     // NEW HISTO to be declared here
+    
+    AliVEvent *fV;
     
     AliAnalysisTaskExampleV(const AliAnalysisTaskExampleV&); // not implemented
     AliAnalysisTaskExampleV& operator=(const AliAnalysisTaskExampleV&); // not implemented

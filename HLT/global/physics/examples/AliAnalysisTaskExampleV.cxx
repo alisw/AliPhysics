@@ -34,7 +34,8 @@
 #include "TCanvas.h"
 #include "TList.h"
 
-#include "AliAnalysisTaskSE.h"
+#include "AliVEventHandler.h"
+#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliStack.h"
 #include "AliVEvent.h"
@@ -46,7 +47,7 @@ ClassImp(AliAnalysisTaskExampleV)
 
 //________________________________________________________________________
 AliAnalysisTaskExampleV::AliAnalysisTaskExampleV() // All data members should be initialised here
-   :AliAnalysisTaskSE(),
+   :AliAnalysisTask(),
     fOutput(0),
     fHistPt(0), 
     fHistEta(0)
@@ -56,7 +57,7 @@ AliAnalysisTaskExampleV::AliAnalysisTaskExampleV() // All data members should be
 
 //________________________________________________________________________
 AliAnalysisTaskExampleV::AliAnalysisTaskExampleV(const char *name) // All data members should be initialised here
-   :AliAnalysisTaskSE(name),
+   :AliAnalysisTask(name, ""),
     fOutput(0),
     fHistPt(0), 
     fHistEta(0)
@@ -65,6 +66,7 @@ AliAnalysisTaskExampleV::AliAnalysisTaskExampleV(const char *name) // All data m
     // Define input and output slots here (never in the dummy constructor)
     // Input slot #0 works with a TChain - it is connected to the default input container
     // Output slot #1 writes into a TH1 container
+    DefineInput(0, TChain::Class());                                            // for input
     DefineOutput(1, TList::Class());                                            // for output list
 }
 
@@ -79,7 +81,7 @@ AliAnalysisTaskExampleV::~AliAnalysisTaskExampleV()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskExampleV::UserCreateOutputObjects()
+void AliAnalysisTaskExampleV::CreateOutputObjects()
 {
     // Create histograms
     // Called once
@@ -107,13 +109,25 @@ void AliAnalysisTaskExampleV::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskExampleV::UserExec(Option_t *) 
+void AliAnalysisTaskExampleV::ConnectInputData(Option_t*)
+{
+  AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!vH) {
+    Printf("ERROR: Could not get VEventHandler");
+  }
+  else {
+    fV = vH->GetEvent();
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskExampleV::Exec(Option_t *) 
 {
     // Main loop
     // Called for each event
         
     // get pointer to reconstructed event
-    AliVEvent *event = InputEvent();
+    AliVEvent *event = fV;
     if (!event) { AliInfo("ERROR: Could not retrieve event"); return; }
 
     // access the vertex:
