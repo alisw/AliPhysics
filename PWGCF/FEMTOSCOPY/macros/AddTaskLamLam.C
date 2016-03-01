@@ -8,14 +8,14 @@ AliAnalysisV0Lam *AddTaskLamLam(TString fieldType, Int_t varCutType, Int_t nomin
     return NULL;
   }
 
-  AliAnalysisV0Lam *myTask = new AliAnalysisV0Lam("LamLamTask",  varCutIndex, nominalCutIndex, flattenCent);
+  AliAnalysisV0Lam *myTask = new AliAnalysisV0Lam("LamLamTask",  varCutType, nominalCutIndex, flattenCent);
   if(!myTask) return NULL;
   mgr->AddTask(myTask);
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   TString containerName = "MyListVar";
-  containerName += varCutIndex;
+  containerName += varCutType;
   containerName += fieldType;
 
   
