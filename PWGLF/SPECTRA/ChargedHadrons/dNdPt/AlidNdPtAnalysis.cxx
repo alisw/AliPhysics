@@ -60,6 +60,7 @@
 #include "AliPhysicsSelection.h"
 #include "AliTriggerAnalysis.h"
 #include "AliTRDSensorArray.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
@@ -160,6 +161,7 @@ ClassImp(AlidNdPtAnalysis)
   fRecTrackHist(0),
   fEventCount(0),
   fPileUpCount(0),
+  fSPDBGCount(0),
   fMCPrimTrackHist(0),
 
   // Candle event histogram
@@ -289,6 +291,7 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fRecTrackHist(0),
   fEventCount(0),
   fPileUpCount(0),
+  fSPDBGCount(0),
   fMCPrimTrackHist(0),
 
   // Candle event histogram
@@ -420,6 +423,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fRecTrackHist) delete fRecTrackHist; fRecTrackHist=0; 
   if(fEventCount) delete fEventCount; fEventCount=0;
   if(fPileUpCount) delete fPileUpCount; fPileUpCount=0;
+  if(fSPDBGCount) delete fSPDBGCount; fSPDBGCount=0;
   if(fMCPrimTrackHist) delete fMCPrimTrackHist; fMCPrimTrackHist=0;
 
   //
@@ -1158,6 +1162,9 @@ void AlidNdPtAnalysis::Init()
 
   fPileUpCount = new TH1D("fPileUpCount","Pileup",2,-1,1);
   fPileUpCount->Sumw2();
+
+  fSPDBGCount = new TH1D("fSPDBGCount","SPD Cluster Vs Tracklet BG",2,-1,1);
+  fSPDBGCount->Sumw2();
   
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
@@ -1279,16 +1286,28 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     }
   }
   /// Pile up events are investigated since 13TeV analysis. \c IsPileupFromSPD() checks for pile up events using the SPD vertex. \c IsPileupFromSPD(5,0.8) requires at least 5 contibutors to the vertex to reject the pile up event.
+  fPileUpCount->Fill(-0.5);
   if(IsUsePileUpRejection()){
     if(esdEvent->IsPileupFromSPD(5,0.8)) {
 //     if(esdEvent->IsPileupFromSPD()) {
-      Printf("Pileup! Event is rejected");
-      fPileUpCount->Fill(-0.5);
+      Printf("Pileup! Event is rejected");    
       return;
-    }
+    }    
   }
   fPileUpCount->Fill(0.5);
 
+  fSPDBGCount->Fill(-0.5);
+  if(IsUseSPDClusterVsTrackletRejection()){
+    AliAnalysisUtils *utils = new AliAnalysisUtils();
+    if(utils->IsSPDClusterVsTrackletBG(esdEvent)){
+      Printf("Background! Event is rejected");
+      
+      return;
+    }
+  }
+  fSPDBGCount->Fill(0.5);
+
+  
   // use MC information
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -1468,8 +1487,18 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       // only negative charged 
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
-
-      FillHistograms(track,stack,vtxESD->GetZ(),AlidNdPtHelper::kAllTracks, multRecMult); 
+      
+      if(IsUseTOFBunchCrossing()){
+      Int_t TOFBunchCrossing = track->GetTOFBunchCrossing(esdEvent->GetMagneticField(),kTRUE); /////
+      if(TOFBunchCrossing != 0) continue; 
+      }
+      
+      //Rejecting Kink Mothers
+      if(IsUseKinkMotherReject()){
+      if(track->GetKinkIndex(0)<0) continue;
+      }
+      
+      FillHistograms(track,stack,vtxESD->GetZ(),AlidNdPtHelper::kAllTracks, multRecMult);
       labelsAll[multAll] = TMath::Abs(track->GetLabel());
       multAll++;
      
@@ -1640,10 +1669,14 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
      // all inelastic
      Double_t vEventMatrix[2] = {vtxMC[2],static_cast<Double_t>(multMCTrueTracks)};
-     fGenEventMatrix->Fill(vEventMatrix); 
-     if(isEventTriggered) fTriggerEventMatrix->Fill(vEventMatrix);
-     if(isEventOK && isEventTriggered) fRecEventMatrix->Fill(vEventMatrix);
-
+     
+     // INEL events
+//      if(evtType != AliPWG0Helper::kElastic){
+       fGenEventMatrix->Fill(vEventMatrix); 
+       if(isEventTriggered) fTriggerEventMatrix->Fill(vEventMatrix);
+       if(isEventOK && isEventTriggered) fRecEventMatrix->Fill(vEventMatrix);
+//      }
+     
      // single diffractive
      if(evtType == AliPWG0Helper::kSD) {
        fGenSDEventMatrix->Fill(vEventMatrix); 
@@ -1659,6 +1692,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      }
 
      // non diffractive
+//      if(evtType == AliPWG0Helper::kND && evtType != AliPWG0Helper::kElastic) {
      if(evtType == AliPWG0Helper::kND) {
        fGenNDEventMatrix->Fill(vEventMatrix); 
        if(isEventTriggered) fTriggerNDEventMatrix->Fill(vEventMatrix);
@@ -1666,6 +1700,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      }
 
      // non single diffractive
+//      if(evtType != AliPWG0Helper::kSD && evtType != AliPWG0Helper::kElastic) {
      if(evtType != AliPWG0Helper::kSD) {
        fGenNSDEventMatrix->Fill(vEventMatrix); 
        if(isEventTriggered) fTriggerNSDEventMatrix->Fill(vEventMatrix);
@@ -1714,7 +1749,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        if(accCuts->AcceptTrack(particle)) 
        {
          Double_t vTrackEventMatrix[4] = {vtxMC[2], particle->Pt(), particle->Eta(),static_cast<Double_t>(multMCTrueTracks)}; 
-         fGenTrackEventMatrix->Fill(vTrackEventMatrix);
+//          if( evtType != AliPWG0Helper::kElastic) {
+	   fGenTrackEventMatrix->Fill(vTrackEventMatrix);
+// 	 }
 
          if(evtType == AliPWG0Helper::kSD) {
            fGenTrackSDEventMatrix->Fill(vTrackEventMatrix);
@@ -1722,11 +1759,13 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          if(evtType == AliPWG0Helper::kDD) {
            fGenTrackDDEventMatrix->Fill(vTrackEventMatrix);
 	 }
-         if(evtType == AliPWG0Helper::kND) {
-           fGenTrackNDEventMatrix->Fill(vTrackEventMatrix);
+//          if(evtType == AliPWG0Helper::kND && evtType != AliPWG0Helper::kElastic) {
+         if(evtType == AliPWG0Helper::kND ) {
+	   fGenTrackNDEventMatrix->Fill(vTrackEventMatrix);
 	 }
+//          if(evtType != AliPWG0Helper::kSD && evtType != AliPWG0Helper::kElastic) {
          if(evtType != AliPWG0Helper::kSD) {
-           fGenTrackNSDEventMatrix->Fill(vTrackEventMatrix);
+	   fGenTrackNSDEventMatrix->Fill(vTrackEventMatrix);
 	 }
 	 if (isEventINEL0) {
 	   fGenTrackINEL0EventMatrix->Fill(vTrackEventMatrix);
@@ -1736,18 +1775,22 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          //
          if(!isEventTriggered) continue;  
 
-         fTriggerTrackEventMatrix->Fill(vTrackEventMatrix);
-         if(evtType == AliPWG0Helper::kSD) {
+//          if( evtType != AliPWG0Helper::kElastic) {
+           fTriggerTrackEventMatrix->Fill(vTrackEventMatrix);
+// 	 }
+	 if(evtType == AliPWG0Helper::kSD) {
            fTriggerTrackSDEventMatrix->Fill(vTrackEventMatrix);
 	 }
          if(evtType == AliPWG0Helper::kDD) {
            fTriggerTrackDDEventMatrix->Fill(vTrackEventMatrix);
 	 }
-         if(evtType == AliPWG0Helper::kND) {
-           fTriggerTrackNDEventMatrix->Fill(vTrackEventMatrix);
+//          if(evtType == AliPWG0Helper::kND && evtType != AliPWG0Helper::kElastic) {
+         if(evtType == AliPWG0Helper::kND ) {
+	   fTriggerTrackNDEventMatrix->Fill(vTrackEventMatrix);
 	 }
+//          if(evtType != AliPWG0Helper::kSD && evtType != AliPWG0Helper::kElastic) {
          if(evtType != AliPWG0Helper::kSD) {
-           fTriggerTrackNSDEventMatrix->Fill(vTrackEventMatrix);
+	   fTriggerTrackNSDEventMatrix->Fill(vTrackEventMatrix);
 	 }
 	 if (isEventINEL0) {
 	   fTriggerTrackINEL0EventMatrix->Fill(vTrackEventMatrix);
@@ -1756,18 +1799,22 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          //
     	 if(!isEventOK) continue;  
 
-         fRecTrackEventMatrix->Fill(vTrackEventMatrix);
+//          if( evtType != AliPWG0Helper::kElastic) {
+           fRecTrackEventMatrix->Fill(vTrackEventMatrix);
+// 	 }
          if(evtType == AliPWG0Helper::kSD) {
            fRecTrackSDEventMatrix->Fill(vTrackEventMatrix);
 	 }
          if(evtType == AliPWG0Helper::kDD) {
            fRecTrackDDEventMatrix->Fill(vTrackEventMatrix);
 	 }
-         if(evtType == AliPWG0Helper::kND) {
-           fRecTrackNDEventMatrix->Fill(vTrackEventMatrix);
+//          if(evtType == AliPWG0Helper::kND && evtType != AliPWG0Helper::kElastic) {
+         if(evtType == AliPWG0Helper::kND ) {
+	   fRecTrackNDEventMatrix->Fill(vTrackEventMatrix);
 	 }
+//          if(evtType != AliPWG0Helper::kSD && evtType != AliPWG0Helper::kElastic) {
          if(evtType != AliPWG0Helper::kSD) {
-           fRecTrackNSDEventMatrix->Fill(vTrackEventMatrix);
+	   fRecTrackNSDEventMatrix->Fill(vTrackEventMatrix);
 	 }
 	 if (isEventINEL0) {
 	   fRecTrackINEL0EventMatrix->Fill(vTrackEventMatrix);
@@ -2206,6 +2253,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
     fRecTrackHist2->Add(entry->fRecTrackHist2);
     fEventCount->Add(entry->fEventCount);
     fPileUpCount->Add(entry->fPileUpCount);
+    fSPDBGCount->Add(entry->fSPDBGCount);
     fMCPrimTrackHist->Add(entry->fMCPrimTrackHist);
 
   count++;
