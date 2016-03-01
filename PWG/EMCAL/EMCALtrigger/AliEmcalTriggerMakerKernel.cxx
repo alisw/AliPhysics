@@ -15,6 +15,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <fstream>
 
 #include <TArrayI.h>
 #include <TObjArray.h>
@@ -42,6 +43,7 @@ ClassImp(AliEmcalTriggerMakerKernel)
 AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   TObject(),
   fBadChannels(),
+  fOfflineBadChannels(),
   fTriggerBitConfig(NULL),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
@@ -118,7 +120,23 @@ void AliEmcalTriggerMakerKernel::Init(){
 
   fLevel0PatchFinder = new AliEMCALTriggerAlgorithm<double>(0, nrows, 0);
   fLevel0PatchFinder->SetPatchSize(2);
-  fLevel0PatchFinder->SetSubregionSize(1);
+  fLevel0PatchFinder->SetSubregionSize(2);
+}
+
+void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromStream(std::istream& stream)
+{
+  Short_t absId = 0;
+
+  while (stream.good()) {
+    stream >> absId;
+    AddOfflineBadChannel(absId);
+  }
+}
+
+void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadOfflineBadChannelFromStream(file);
 }
 
 void AliEmcalTriggerMakerKernel::Reset(){
@@ -163,10 +181,8 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
       TArrayI l0times(nl0times);
       trigger->GetL0Times(l0times.GetArray());
       for(int itime = 0; itime < nl0times; itime++){
-        if(l0times[itime] > fL0MinTime && l0times[itime] < fL0MaxTime){
-          (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
-          break;
-        }
+        (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
+        break;
       }
     }
   }
@@ -178,6 +194,13 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
   for(Int_t iCell = 0; iCell < nCell; ++iCell) {
     // get the cell info, based in index in array
     Short_t cellId = cells->GetCellNumber(iCell);
+
+    // Check bad channel map
+    if (fOfflineBadChannels.find(cellId) != fOfflineBadChannels.end()) {
+      AliDebug(10, Form("%hd is a bad channel, skipped.", cellId));
+      continue;
+    }
+
     Double_t amp = cells->GetAmplitude(iCell);
     // get position
     Int_t absId=-1;
@@ -276,18 +299,17 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
 
   // Find Level0 patches
   std::vector<AliEMCALTriggerRawPatch> l0patches = fLevel0PatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
-  for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = patches.begin(); patchit != patches.end(); ++patchit){
-    if(!CheckForL0(patchit->GetColStart(), patchit->GetRowStart())) continue;
-    Int_t offlinebits = 0;
-    if(patchit->GetADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
-    if(patchit->GetOfflineADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
-
-    Int_t onlinebits = (*fTriggerBitMap)(patchit->GetColStart(), patchit->GetRowStart());
-    onlinebits &= l0PatchMask;
+  for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
+    Int_t offlinebits = 0, onlinebits = 0;
+    ELevel0TriggerStatus_t L0status = CheckForL0(patchit->GetColStart(), patchit->GetRowStart());
+    if (L0status == kNotLevel0) continue;
+    if (L0status == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit());
+    if (patchit->GetADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
+    if (patchit->GetOfflineADC() > fL0Threshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
 
     AliEMCALTriggerPatchInfo *fullpatch = AliEMCALTriggerPatchInfo::CreateAndInitialize(patchit->GetColStart(), patchit->GetRowStart(),
         patchit->GetPatchSize(), patchit->GetADC(), patchit->GetOfflineADC(), patchit->GetOfflineADC() * fADCtoGeV,
-        patchit->GetBitmask() | onlinebits | offlinebits, vertexvec, fGeometry);
+        onlinebits | offlinebits, vertexvec, fGeometry);
     fullpatch->SetTriggerBitConfig(fTriggerBitConfig);
     result->Add(fullpatch);
   }
@@ -295,10 +317,12 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   return result;
 }
 
-Bool_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
+AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
+  ELevel0TriggerStatus_t result = kLevel0Candidate;
+
   if(col < 0 || row < 0){
     AliError(Form("Patch outside range [col %d, row %d]", col, row));
-    return kFALSE;
+    return kNotLevel0;
   }
   Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
   fGeometry->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
@@ -313,15 +337,18 @@ Bool_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
       trumod = -1;
       fGeometry->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
       fGeometry->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
-      if(trumod != truref) continue;
+      if(trumod != truref) {
+        result = kNotLevel0;
+        return result;
+      }
       if(col + jpos >= kColsEta) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
       if(row + ipos >= kNRowsPhi) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
       Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
       if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
     }
   }
-  if (nvalid != 4) return false;
-  return true;
+  if (nvalid == 4) result = kLevel0Fired;
+  return result;
 }
 
 AliEMCALTriggerAlgorithm<double> *AliEmcalTriggerMakerKernel::CreateGammaTriggerAlgorithm(int rowmin, int rowmax) const {

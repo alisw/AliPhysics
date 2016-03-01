@@ -132,6 +132,8 @@ public:
     if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdGammaHigh(a, b, c);
   }
 
+  AliEmcalTriggerMakerKernel* GetTriggerMaker() const { return fTriggerMaker; }
+
   void SetJetPatchsize(Int_t jetpatchsize) { fJetPatchsize    = jetpatchsize; }
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
