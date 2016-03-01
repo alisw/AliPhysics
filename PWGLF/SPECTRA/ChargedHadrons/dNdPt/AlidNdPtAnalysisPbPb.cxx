@@ -876,6 +876,12 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
       // only negative charged 
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
+      
+      if(IsUseTOFBunchCrossing()){
+        Int_t TOFBunchCrossing = track->GetTOFBunchCrossing(esdEvent->GetMagneticField(),kTRUE); 
+        if(TOFBunchCrossing != 0) continue; 
+      }
+      
 
       //
       Double_t values[4] = {vtxESD->GetZ(),track->Pt(),track->Eta(), centralityF};	  
