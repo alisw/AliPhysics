@@ -250,66 +250,76 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ; 
 
 	fh_eta
-		<< TH1D("h_eta", "h_eta", 300, -15, 15 )
+		<< TH1D("h_eta", "h_eta", 100, -15, 15 )
 		<< fHistCentBin
 		<< "END" ;
 	fh_phi
-		<< TH1D("h_phi", "h_phi", 300, -10, 10)
+		<< TH1D("h_phi", "h_phi", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
 	fh_Qvector
-		<< TH1D("h_QVector", "h_QVector", 300, -10, 10)
+		<< TH1D("h_QVector", "h_QVector", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
 		<< fBin_h 
 		<< "END" ;
 
 
 	fh_ntracks 
-		<< TH1D("h_tracks", "h_tracks", 1000, 0, 30000)
+		<< TH1D("h_tracks", "h_tracks", 100, 0, 30000)
 		<< fHistCentBin
 		<< "END" ;  
 	
 	fh_vn 
- 		<< TH1D("hvn","hvn", 5096, -0.5, 0.5) 
+ 		<< TH1D("hvn","hvn", 1024, -1.5, 1.5) 
  		<< fBin_h << fBin_k 
  		<< fHistCentBin
  		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent] 
 	fh_vn_vn
-	  	<< TH1D("hvn_vn", "hvn_vn", 5096, -0.1, 0.1)
+	  	<< TH1D("hvn_vn", "hvn_vn", 1024, -1.5, 1.5)
   		<< fBin_h << fBin_k 
  	 	<< fBin_hh << fBin_kk
  	 	<< fHistCentBin
  	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
 	fh_correlator 
-		<< TH1D("h_corr", "h_corr", 5096, -1, 1)
+		<< TH1D("h_corr", "h_corr", 1024, -1.5, 1.5)
 		<< fCorrBin
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_SC_ptdep_4corr
-		<< TH1D("hvnvm_SC","hvnvm_SC", 5096, -0.1, 0.1)
+		<< TH1D("hvnvm_SC","hvnvm_SC", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_k
 		<< fBin_hh << fBin_kk
 		<< fHistCentBin << fBin_Nptbins
 		<< "END" ;
 	fh_SC_ptdep_2corr
-		<< TH1D("hvn_SC","hvn_SC", 5096, -0.5, 0.5)
+		<< TH1D("hvn_SC","hvn_SC", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_k
 		<< fHistCentBin << fBin_Nptbins
 		<< "END" ; 
 
 	fh_SC_with_QC_4corr 
-		<< TH1D("hQC_SC4p", "hQC_SC4p", 5096, -1., 1.)
+		<< TH1D("hQC_SC4p", "hQC_SC4p", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_hh 
 		<< fHistCentBin 
 		<< "END" ;
 	fh_SC_with_QC_2corr
-		<< TH1D("hQC_SC2p", "hQC_SC2p", 5096, -1., 1.)
+		<< TH1D("hQC_SC2p", "hQC_SC2p", 1024, -1.5, 1.5)
 		<< fBin_h 
 		<< fHistCentBin 
 		<< "END" ; 
 
+	fh_QvectorQC
+		<< TH2D("hQvecQC", "hQvecQC", 1024, -1.1 , 1.1, 1024, -1.1, 1.1 ) 
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
 
+	fh_QvectorQCphi
+		<< TH1D("hQbecQCphi", "hQbecQCphi", 1024, -3.2 , 3.2 )
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
 
 	//AliJTH1D set done.
 	
@@ -362,10 +372,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	enum{kSubA, kSubB, kNSub};
 	enum{kReal, kImg, kNPhase};
 	double Eta_config[kNSub][2];
-	Eta_config[kSubA][0] = fEta_min;
-	Eta_config[kSubA][1] = fEta_max;
-	Eta_config[kSubB][0] = -1*fEta_max;
-	Eta_config[kSubB][1] = -1*fEta_min; 
+	Eta_config[kSubA][0] = fEta_min;  // 0.4 min for SubA 
+	Eta_config[kSubA][1] = fEta_max;  // 0.8 max for SubA
+	Eta_config[kSubB][0] = -1*fEta_max; // -0.8  min for SubB
+	Eta_config[kSubB][1] = -1*fEta_min; // -0.4  max for SubB
 
 	// use complex variable instead of doulbe Qn // 
 	TComplex QnA[kNH];
@@ -581,16 +591,12 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	}//pt dep done
 
 	if(IsSCwithQC==kTRUE){
-		if(fDebugLevel > 3 ){
-			cout << "doing additional job.. doing SC with QC method " << endl;
-			cout << "Evt number " << AnaEntry << endl;
-		};
 		// (a) calculate QC q-vecotr 
 		// (b) calculate 4p correaltion
 		// (c) calculate 2p correaltion
 
 		CalculateQvectorsQC(); // (a) 
-		for(int ih=3; ih<=5; ih++){
+		for(int ih=2; ih<=5; ih++){
 			for(int ihh=2; ihh<ih; ihh++){
 				TComplex four = Four( ih, ihh, -1*ih, -1*ihh ) / Four(0,0,0,0).Re() ;
 				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( four.Re() );
@@ -856,20 +862,25 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	} // for max harmonics
 	//Calculate Q-vector with particle loop
 	Long64_t ntracks = fInputList->GetEntriesFast();
-	double tracknumber =0;
 	for( Long64_t it=0; it<ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		double phi = itrack->Phi();
 		double eta = itrack->Eta(); 
 		// track Eta cut Note! pt cuts already applied in AliJFFlucTask.cxx 
 		if( TMath::Abs(eta) > fEta_max || TMath::Abs(eta) < fEta_min ) continue;
-		tracknumber++;
 		for(int ih=0; ih<kNH; ih++){
 			for(int ik=0; ik<nKL; ik++){
 				QvectorQC[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 			}
 		}
 	 } // track loop done.
+	// Q-vector[ih][ik] calculated doen. //(need ik??)
+
+	// Save QA plot
+	for(int ih=0; ih<kNH; ih++){
+		fh_QvectorQC[ih][fCBin]->Fill( QvectorQC[ih][1].Re()/QvectorQC[0][1].Re() , QvectorQC[ih][1].Im()/QvectorQC[0][1].Re() ); // fill normalized Q vector
+		fh_QvectorQCphi[ih][fCBin]->Fill( QvectorQC[ih][1].Theta() );
+	}
 	// Q-vector calculated
 }
 //________________________________________________________________________
