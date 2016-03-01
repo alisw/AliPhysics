@@ -16,8 +16,8 @@ class AliHFEextraCuts;
 
 AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                           TString uniqueID = "",
-                                                          Float_t centrMin ,
-                                                          Float_t centrMax ,
+                                                          Float_t centrMin,
+                                                          Float_t centrMax,
                                                           Bool_t Weights = kTRUE,
                                                           Bool_t CocktailWeights = kTRUE,
                                                           Bool_t SetSTACK = kFALSE,
@@ -40,7 +40,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                           Double_t pTminAssoTrack = 0.0,
                                                           //const char *Cent = "V0M",
                                                           Bool_t shrinkSP = kTRUE,
-                                                          Bool_t debug = kFALSE,
+                                                          Bool_t debug = kFALSE
                                                           )
 
 {
