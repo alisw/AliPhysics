@@ -1418,13 +1418,18 @@ void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) {
     Float_t offsetPerSM=0.;
-    Int_t l1Phase = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
+    Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
+    Int_t l1Phase=l1PhaseShift & 3; //bit operation
     if(bc >= l1Phase)
       offsetPerSM = (bc - l1Phase)*25;
     else
       offsetPerSM = (bc - l1Phase + 4)*25;
-    
-    celltime -= offsetPerSM*1.e-9;    ;  
+
+    Int_t l1shiftOffset=l1PhaseShift>>2; //bit operation
+    l1shiftOffset*=25;
+   
+    celltime -= offsetPerSM*1.e-9;
+    celltime -= l1shiftOffset*1.e-9;
   }
 }
 
