@@ -3,6 +3,9 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <set>
+#include <iostream>
+
 #include <TObject.h>
 
 #include "AliEMCALTriggerChannelContainer.h"
@@ -40,6 +43,8 @@ const Double_t kEMCL0ADCtoGeV_AP = 0.018970588*4;  // 0.075882352;             /
  */
 class AliEmcalTriggerMakerKernel : public TObject {
 public:
+
+  enum ELevel0TriggerStatus_t { kNotLevel0, kLevel0Candidate, kLevel0Fired };
 
   /**
    * Constructor
@@ -114,6 +119,24 @@ public:
   void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
 
   /**
+   * Add an offline bad channel to the set
+   * @param absId Absolute ID of the bad channel
+   */
+  void AddOfflineBadChannel(Short_t absId) { fOfflineBadChannels.insert(absId); }
+
+  /**
+   * Read the offline bad channel map from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadOfflineBadChannelFromStream(std::istream& stream);
+
+  /**
+   * Read the offline bad channel map from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadOfflineBadChannelFromFile(const char* fname);
+
+  /**
    * Reset data grids
    */
   void Reset();
@@ -148,9 +171,9 @@ protected:
    * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
    * in the same TRU
    * @param trg Triggers object with the pointer set to the patch to inspect
-   * @return True if the patch is accepted, false otherwise.
+   * @return the status of the patch (not L0, candidate, fired)
    */
-  Bool_t CheckForL0(Int_t col, Int_t row) const;
+  ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
   /**
    * Create trigger algorithm for gamma triggers
@@ -194,6 +217,7 @@ protected:
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
 
   AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
+  std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
   const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
 
