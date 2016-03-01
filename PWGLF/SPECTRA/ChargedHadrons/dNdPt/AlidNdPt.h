@@ -53,13 +53,15 @@ public:
   void SetMultTrackCuts(AliESDtrackCuts* const cuts)            { fMultTrackCuts = cuts; }
   void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
   void SetUsePileUpRejection(Bool_t pileup)			{ fUsePileUpRejection = pileup;}  
+  void SetUseSPDClusterVsTrackletRejection(Bool_t spdclutrkls)  { fUseSPDClusterVsTrackletRejection = spdclutrkls; }
+  void SetUseTOFBunchCrossing(Bool_t tofbunchcross)             { fUseTOFBunch = tofbunchcross; }
+  void SetUseKinkMotherRejection(Bool_t kinkmother)             { fUseKinkMother = kinkmother; }               
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
   void SetTriggerClass(const Char_t *triggerClass)              { fTriggerClass = triggerClass; }
   void SetParticleMode(const AlidNdPtHelper::ParticleMode mode) { fParticleMode = mode; }
   void SetPhysicsTriggerSelection(AliPhysicsSelection* const selection)  { fPhysicsSelection = selection; }
   void SetBackgroundCuts(AlidNdPtBackgroundCuts* const cuts)    { fdNdPtBackgroundCuts = cuts; }
-
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
@@ -69,6 +71,9 @@ public:
   AliESDtrackCuts* GetMultTrackCuts() const                     { return (fMultTrackCuts) ? fMultTrackCuts: fEsdTrackCuts; }  
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
   Bool_t IsUsePileUpRejection() const				{ return fUsePileUpRejection;}
+  Bool_t IsUseSPDClusterVsTrackletRejection() const             { return fUseSPDClusterVsTrackletRejection;}
+  Bool_t IsUseTOFBunchCrossing() const                          { return fUseTOFBunch;}
+  Bool_t IsUseKinkMotherReject() const                          { return fUseKinkMother; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
   const Char_t* GetTriggerClass() const                         { return fTriggerClass; }
@@ -85,7 +90,6 @@ public:
 
   void SetTriggerMask(UInt_t triggermask)  { fTriggerMask = triggermask; }
   UInt_t GetTriggerMask()  { return fTriggerMask; }
-
 
 protected:
    static Double_t* CloneArray(Int_t n, Double_t* source);
@@ -104,6 +108,9 @@ private:
 
   Bool_t fUseMCInfo;                            // use MC information
   Bool_t fUsePileUpRejection;			// use Pile up rejection (pp)
+  Bool_t fUseSPDClusterVsTrackletRejection;     // use SPD Clusters vs Tracklet
+  Bool_t fUseTOFBunch;                          // use TOF bunch crossing
+  Bool_t fUseKinkMother;                        // use Rejection of Kink Mothers
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
   const Char_t * fTriggerClass;                 // trigger class
@@ -117,7 +124,7 @@ private:
 
   UInt_t fTriggerMask;    // trigger mask
 
-  ClassDef(AlidNdPt,6);
+  ClassDef(AlidNdPt,7);
 };
 
 #endif
