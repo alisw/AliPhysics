@@ -98,11 +98,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
  
    TString containerNameSuffix("");
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
+
+   TString cntype = centralityType;
  
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh));
+      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
 
    //__________________________________________________________________________________
    // #### DEFINE MY ANALYSIS TASK
@@ -247,10 +249,12 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString containerNameSuffix("");
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
  
+   TString cntype = centralityType;
+
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh));
+      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
 
    //_________________________________________________________________
 
@@ -478,10 +482,12 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString containerNameSuffix("");
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
  
+   TString cntype = centralityType;
+
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh));
+      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
 
    //_________________________________________________________________
    TString recoTracks  = ""; //DETECTOR LEVEL TRACKS NAME
@@ -508,7 +514,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          ptHardMaxEmb,//ptHardMax
          ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
-         Form("JetEmbeddingFromGenTask_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),//taskName
+         Form("JetEmbeddingFromGenTask_TT%d%d_AN%d%d_R%02d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius)),//taskName
          0.15, //const Double_t  minPt 
          1000.,//const Double_t  maxPt          
         -0.9, //const Double_t  minEta 
@@ -533,7 +539,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
       AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", 
-                           Form("SigleTrackEmb_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal), 
+                           Form("SigleTrackEmb_TT%d%d_AN%d%d_R%02d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius)), 
                                        ptHardMinEmb, ptHardMaxEmb, //min pT max pT
                                        -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
@@ -568,6 +574,11 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
  
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
+   TString apx="";
+   if(trackeff<1.0) apx = Form("_EFF%03d",TMath::Nint(trackeff*100)); 
+  
+   TString note = Form("_TT%d%d_AN%d%d_%s%s", TMath::Nint(ttLow), TMath::Nint(ttHigh), typeOfData, typeOfAnal, cntype.Data(), apx.Data());
+ 
    //REAL TRACKS - JET CLUSTERIZER 
    AliEmcalJetTask* jetFinderTask = 0x0;
    AliEmcalJetTask* jetFinderRhoKT = 0x0; 
@@ -575,13 +586,14 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal != kKine){
        //ANTIKT  DETECTOR LEVEL 
       jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKTxx,jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,
-       Form("JetAKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0,0,0);
+         Form("JetAKT_%s", note.Data()),0,0,0);
       jetFinderTask->SetMinJetPt(0.150);
 
       //jetFinderTask->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
 
       //KT DETECTOR LEVEL
-      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,       Form("JetKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0);
+      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKTxx, jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,  
+         Form("JetKT_%s_SigR%02d", note.Data(), TMath::Nint(10*jetRadius)),0.,0,0);
       jetFinderRhoKT->SetMinJetPt(0);
 
       //jetFinderRhoKT->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
@@ -600,13 +612,15 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){
 
       //ANTIKT GENERATOR LEVEL
-      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetAKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0); 
+      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, 
+         Form("JetAKTMC_%s", note.Data()),0.,0,0); 
       jetFinderTaskMC->SetMinJetPt(0.150);
 
       //if(typeOfAnal == kEff) jetFinderTaskMC->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE);
 
       //KT GENERATOR LEVEL
-      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0); 
+      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, 
+         Form("JetKTMC_%s_SigR%02d", note.Data(), TMath::Nint(10*jetRadius)),0.,0,0); 
       jetFinderRhoKTMC->SetMinJetPt(0);
 
       //if(typeOfAnal == kEff) jetFinderRhoKTMC->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE);
@@ -654,9 +668,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(jetFinderTask)   tname = jetFinderTask->GetName();
 
    AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
-                                  tname.Data(), triggerName.Data(), typeOfData, typeOfAnal,
-                                  TMath::Nint(ttLow),TMath::Nint(ttHigh)));
+                                  Form("HJetSpectra_%s_%s_%s", 
+                                  tname.Data(), triggerName.Data(), note.Data()));
 
    if(typeOfAnal == kKine) task->SetNeedEmcalGeom(kFALSE); //KINE
    if(typeOfAnal == kEff && typeOfData == kPythia){  //EFF with PYTHIA
