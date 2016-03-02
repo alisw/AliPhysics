@@ -102,6 +102,8 @@ UInt_t AliADPreprocessor::Process(TMap* dcsAliasMap)
 
 	// Writes AD PMs HV values into AD calibration object and Timing resolution parameters
   	calibData->FillDCSData(fDCSData);
+	
+	if(runType == "PHYSICS") ProcessTrendings();
 	   
    // *************** From DAQ ******************
    
@@ -219,6 +221,29 @@ UInt_t AliADPreprocessor::ProcessTimeSlewing()
   
   delete sourceList;
    
+  return result;
+
+}
+//______________________________________________________________________________________________
+UInt_t AliADPreprocessor::ProcessTrendings()
+{
+
+  // *************** HV From DCS ******************
+  TClonesArray *fGraphs = fDCSData->GetGraphs();
+  
+  Bool_t result = 0;
+  Bool_t resECal=kFALSE;
+ 
+  if(fGraphs != 0x0){
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Michal Broz");
+  metaData.SetComment("This preprocessor fills an object with PM V and I trends");
+
+  resECal = Store("Calib", "PMTrends", fGraphs, &metaData, 0, kFALSE);
+  }
+  if(resECal==kFALSE ) result = 1;
+     
   return result;
 
 }

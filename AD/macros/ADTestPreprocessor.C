@@ -15,7 +15,7 @@ void ADTestPreprocessor()
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(12345, 0, 123450);
+  AliTestShuttle* shuttle = new AliTestShuttle(666, 0, 123450);
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
@@ -156,8 +156,8 @@ TMap* CreateDCSAliasMap()
 		
 		
 		if(aliasName.Contains("HV")) {
-			for(int i=0;i<10;i++){
-				dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,10)), timeStamp+10*i);
+			for(int i=0;i<20;i++){
+				dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,val*0.1)), timeStamp+10*i);
 				valueSet->Add(dcsVal);
 			}
 		} else {

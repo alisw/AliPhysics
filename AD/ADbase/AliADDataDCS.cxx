@@ -51,7 +51,7 @@ AliADDataDCS::AliADDataDCS():
 	fDaqEndTime(0),
 	fCtpStartTime(0),
 	fCtpEndTime(0),
-    fGraphs("TGraph",kNGraphs),
+        fGraphs(NULL),
 	fFEEParameters(NULL),
 	fIsProcessed(kFALSE)
 
@@ -75,7 +75,7 @@ AliADDataDCS::AliADDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t 
 	fDaqEndTime(daqEndTime),
 	fCtpStartTime(ctpStartTime),
 	fCtpEndTime(ctpEndTime),
-	fGraphs("TGraph",kNGraphs),
+	fGraphs(new TClonesArray("TGraph",kNGraphs)),
 	fFEEParameters(new TMap()),
 	fIsProcessed(kFALSE)
 
@@ -105,7 +105,7 @@ AliADDataDCS::AliADDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t 
 AliADDataDCS::~AliADDataDCS() {
 
   // destructor
-  fGraphs.Clear("C");
+  fGraphs->Clear("C");
   delete fFEEParameters;
 
 }
@@ -159,10 +159,10 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
 				if(variation > 0.05) fDeadChannel[iAlias] = kTRUE;
-			}
+				}
 			fHv[iAlias]->Fill(values[iValue]);
    			iValue++;
-    	}      
+    			}      
     	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
 
   	// calculate mean and rms of the first two histos
@@ -172,7 +172,25 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 
     	delete[] values;
     	delete[] times;	
-	} else { // Treating FEE Parameters
+	}
+      else if(iAlias >= kNHvChannel && iAlias<2*kNHvChannel){
+        Int_t nentries = aliasArr->GetEntries();
+
+    	Double_t *times = new Double_t[nentries];
+    	Double_t *values = new Double_t[nentries];
+	UInt_t iValue=0;
+	
+	while((aValue = (AliDCSValue*) iterarray.Next())) {
+	               UInt_t currentTime = aValue->GetTimeStamp();
+	               if(currentTime>fCtpEndTime) break;
+
+   	               values[iValue] = aValue->GetFloat();
+   	               times[iValue] = (Double_t) (currentTime);
+		       iValue++;
+	               }
+	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs
+        } 
+      else { // Treating FEE Parameters
 		AliDCSValue * lastVal = NULL;
 		while((aValue = (AliDCSValue*) iterarray.Next())) lastVal = aValue; // Take only the last value
 		fFEEParameters->Add(new TObjString(fAliasNames[iAlias].Data()),lastVal);
@@ -199,6 +217,9 @@ void AliADDataDCS::Init(){
 		fHv[iAlias]->GetXaxis()->SetTitle("Hv");
 		iAlias++;
   }
+  
+  for(int iPM = 0; iPM<16 ; iPM++) fAliasNames[iAlias++] = Form("AD0/HV/I%d",iPM);
+  
   // CCIU Parameters
 	
   fAliasNames[iAlias++] = "AD0/FEE/CCIU/BBAThreshold";
@@ -289,7 +310,7 @@ void AliADDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_t
 
    // Create graphics
    
-   TGraph *gr = new(fGraphs[fGraphs.GetEntriesFast()]) TGraph(dim, x, y);
+   TGraph *gr = new((*fGraphs)[fGraphs->GetEntriesFast()]) TGraph(dim, x, y);
 
    gr->GetXaxis()->SetTimeDisplay(1);
    gr->SetTitle(fAliasNames[i].Data());
@@ -304,15 +325,15 @@ void AliADDataDCS::Draw(const Option_t* /*option*/)
 
   if(!fIsProcessed) return;
 
-  if(fGraphs.GetEntries()==0)  return;
+  if(fGraphs->GetEntries()==0)  return;
   
   TCanvas *cHV = new TCanvas("AD0_HV","AD0_HV");
   cHV->Divide(4,4);
   
   for(int iPM = 0; iPM<16 ; iPM++){
   	cHV->cd(iPM+1);
-  	((TGraph*) fGraphs.UncheckedAt(iPM))->SetMarkerStyle(20);
-  	((TGraph*) fGraphs.UncheckedAt(iPM))->Draw("ALP");	  		
+  	((TGraph*) fGraphs->UncheckedAt(iPM))->SetMarkerStyle(20);
+  	((TGraph*) fGraphs->UncheckedAt(iPM))->Draw("ALP");	  		
   	}
 }
 
