@@ -1,4 +1,4 @@
-AliAnalysisV0Lam *AddTaskLamLam(TString fieldType, Int_t varCutType, Int_t nominalCutIndex, Bool_t flattenCent)
+AliAnalysisV0Lam *AddTaskLamLam(Int_t varCutType, Int_t nominalCutIndex, Bool_t flattenCent)
 {
   // Adds the Lambda-Lambda femtoscopy task to the manger
 
@@ -16,18 +16,14 @@ AliAnalysisV0Lam *AddTaskLamLam(TString fieldType, Int_t varCutType, Int_t nomin
 
   TString containerName = "MyListVar";
   containerName += varCutType;
-  containerName += fieldType;
 
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  outputFileName += ":Results";
   
-  
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(containerName, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:foldername", "MyOutput.root"));
-
-  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(containerName, TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data()));
 
   mgr->ConnectInput(myTask, 0, cinput);	
   mgr->ConnectOutput(myTask, 1, coutput);	
-
-  
   
   return myTask;
 }
