@@ -23,7 +23,7 @@ AliAnalysisTask* AddTaskAnalysisTaskExampleV()
 
   // Connect to the input and output containers
   mgr->ConnectInput(task,0,input); 
-  mgr->ConnectOutput(task,1,output1);
+  mgr->ConnectOutput(task,0,output1);
 
   return task;
 }

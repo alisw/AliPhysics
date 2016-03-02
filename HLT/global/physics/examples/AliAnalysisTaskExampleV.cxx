@@ -67,7 +67,7 @@ AliAnalysisTaskExampleV::AliAnalysisTaskExampleV(const char *name) // All data m
     // Input slot #0 works with a TChain - it is connected to the default input container
     // Output slot #1 writes into a TH1 container
     DefineInput(0, TChain::Class());                                            // for input
-    DefineOutput(1, TList::Class());                                            // for output list
+    DefineOutput(0, TList::Class());                                            // for output list
 }
 
 //________________________________________________________________________
@@ -105,7 +105,7 @@ void AliAnalysisTaskExampleV::CreateOutputObjects()
         
     fOutput->Add(fHistPt);
     fOutput->Add(fHistEta);
-    PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(0, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
 }
 
 //________________________________________________________________________
@@ -154,8 +154,6 @@ void AliAnalysisTaskExampleV::Exec(Option_t *)
         fHistPt->Fill(trackParams.Pt());
         fHistEta->Fill(trackParams.Eta());
     }
-
-    PostData(1, fOutput);
 }
 
 
