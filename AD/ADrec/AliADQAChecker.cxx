@@ -92,6 +92,7 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxBGVariation = fQAParam->GetMaxBGVariation();
   fAsynchronBB = fQAParam->GetAsynchronBB();
   fAsynchronBG = fQAParam->GetAsynchronBG();
+  
 }
 
 //____________________________________________________________________________
@@ -272,7 +273,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			QAbox->AddText(meanChargeADA.Data());				
     			}
 		}
-    	} 
+    	}
+	
     TH1F *hChargeADC = (TH1F*)list->At(AliADQADataMakerRec::kChargeADC);
     if (!hChargeADC) {
       AliWarning("ChargeADC histogram is not found");
@@ -485,159 +487,12 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			}
     		}
     	}                                                      
-    TH2F *hChargeEoIInt0 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt0);
-    if (!hChargeEoIInt0) {
-      AliWarning("ChargeEoIInt0 histogram is not found");
-    }
-    else {
-    	if(hChargeEoIInt0->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt0->GetListOfFunctions()->Add(new TPaveText(0.4,0.53,0.85,0.85,"NDC"));
-    	for(Int_t i=0; i<hChargeEoIInt0->GetListOfFunctions()->GetEntries(); i++){
-     		TString funcName = hChargeEoIInt0->GetListOfFunctions()->At(i)->ClassName();
-     		if(funcName.Contains("TPaveText")){
-      			TPaveText *QAbox = (TPaveText*)hChargeEoIInt0->GetListOfFunctions()->At(i);
-      			QAbox->Clear();
-
-    			TH1D *hChargeSlice;
-			
-			TString messageText = " "; 
-			TString satTextADA = " A-side = ";
-			TString satTextADC = " C-side = ";
-			Char_t satValue[5];
-			Bool_t	medSat = kFALSE; 
-			Bool_t	highSat = kFALSE;
-			Bool_t	hugeSat = kFALSE;
-			
-    			for(Int_t i=0; i<2; i++){
-      				hChargeSlice = hChargeEoIInt0->ProjectionY("hChargeSlice",8*i+1,8*i+9);
-				Double_t saturation;
-				if(hChargeSlice->Integral() != 0) saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
-				sprintf(satValue, "%1.3f", saturation);
-				if(i == 0) satTextADC +=satValue; 
-				if(i == 1) satTextADA +=satValue;
-				if(saturation > fSatMed && saturation < fSatHigh){
-					test = 0.7;
-					medSat = kTRUE;
-					}
-				if(saturation > fSatHigh && saturation < fSatHuge){
-					test = 0.3;
-					highSat = kTRUE;
-					}
-				if(saturation > fSatHuge){
-					test = 0.1;
-					hugeSat = kTRUE;
-					}
-				}
-			if(!medSat && !highSat && !hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("Saturation OK");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}
-			if(medSat && !highSat && !hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kYellow);
-        			QAbox->AddText("Medium Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}
-			if(highSat && !hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kOrange);
-        			QAbox->AddText("High Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}
-			if(hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kRed);
-        			QAbox->AddText("Very High Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}		
-							
-    			}
-		}
-    	}
-    TH2F *hChargeEoIInt1 = (TH2F*)list->At(AliADQADataMakerRec::kChargeEoIInt1);
-    if (!hChargeEoIInt1) {
-      AliWarning("ChargeEoIInt1 histogram is not found");
-    }
-    else {
-    	if(hChargeEoIInt1->GetListOfFunctions()->GetEntries()<1) hChargeEoIInt1->GetListOfFunctions()->Add(new TPaveText(0.4,0.53,0.85,0.85,"NDC"));
-    	for(Int_t i=0; i<hChargeEoIInt1->GetListOfFunctions()->GetEntries(); i++){
-     		TString funcName = hChargeEoIInt1->GetListOfFunctions()->At(i)->ClassName();
-     		if(funcName.Contains("TPaveText")){
-      			TPaveText *QAbox = (TPaveText*)hChargeEoIInt1->GetListOfFunctions()->At(i);
-      			QAbox->Clear();
-
-    			TH1D *hChargeSlice;
-			
-			TString messageText = " "; 
-			TString satTextADA = " A-side = ";
-			TString satTextADC = " C-side = ";
-			Char_t satValue[5];
-			Bool_t	medSat = kFALSE; 
-			Bool_t	highSat = kFALSE;
-			Bool_t	hugeSat = kFALSE;
-			
-    			for(Int_t i=0; i<2; i++){
-      				hChargeSlice = hChargeEoIInt1->ProjectionY("hChargeSlice",8*i+1,8*i+9);
-				Double_t saturation;
-				if(hChargeSlice->Integral() != 0) saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
-				sprintf(satValue, "%1.3f", saturation);
-				if(i == 0) satTextADC +=satValue; 
-				if(i == 1) satTextADA +=satValue;
-				if(saturation > fSatMed && saturation < fSatHigh){
-					test = 0.7;
-					medSat = kTRUE;
-					}
-				if(saturation > fSatHigh && saturation < fSatHuge){
-					test = 0.3;
-					highSat = kTRUE;
-					}
-				if(saturation > fSatHuge){
-					test = 0.1;
-					hugeSat = kTRUE;
-					}
-				}
-			if(!medSat && !highSat && !hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("Saturation OK");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}
-			if(medSat && !highSat && !hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kYellow);
-        			QAbox->AddText("Medium Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}
-			if(highSat && !hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kOrange);
-        			QAbox->AddText("High Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}
-			if(hugeSat){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kRed);
-        			QAbox->AddText("Very High Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
-				}		
-    			}
-		}
-    	}
     TH2F *hChargeSaturation = (TH2F*)list->At(AliADQADataMakerRec::kChargeSaturation);
     if (!hChargeSaturation) {
       AliWarning("ChargeSaturation histogram is not found");
     }
     else {
-    	if(hChargeSaturation->GetListOfFunctions()->GetEntries()<1) hChargeSaturation->GetListOfFunctions()->Add(new TPaveText(0.4,0.53,0.85,0.85,"NDC"));
+    	if(hChargeSaturation->GetListOfFunctions()->GetEntries()<1) hChargeSaturation->GetListOfFunctions()->Add(new TPaveText(0.11,0.40,0.89,0.65,"NDC"));
     	for(Int_t i=0; i<hChargeSaturation->GetListOfFunctions()->GetEntries(); i++){
      		TString funcName = hChargeSaturation->GetListOfFunctions()->At(i)->ClassName();
      		if(funcName.Contains("TPaveText")){
@@ -645,22 +500,19 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			QAbox->Clear();
 
     			TH1D *hChargeSlice;
-			
-			TString messageText = " "; 
-			TString satTextADA = " A-side = ";
-			TString satTextADC = " C-side = ";
+			TString satText = "    ";
 			Char_t satValue[5];
 			Bool_t	medSat = kFALSE; 
 			Bool_t	highSat = kFALSE;
 			Bool_t	hugeSat = kFALSE;
 			
-    			for(Int_t i=0; i<2; i++){
-      				hChargeSlice = hChargeSaturation->ProjectionY("hChargeSlice",8*i+1,8*i+9);
+    			for(Int_t i=0; i<16; i++){
+      				hChargeSlice = hChargeSaturation->ProjectionY("hChargeSlice",i+1,i+1);
 				Double_t saturation;
 				if(hChargeSlice->Integral() != 0) saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
 				sprintf(satValue, "%1.3f", saturation);
-				if(i == 0) satTextADC +=satValue; 
-				if(i == 1) satTextADA +=satValue;
+				satText +=satValue; 
+				satText +=" "; 
 				if(saturation > fSatMed && saturation < fSatHigh){
 					test = 0.7;
 					medSat = kTRUE;
@@ -677,30 +529,26 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 			if(!medSat && !highSat && !hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("Saturation OK");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
+        			QAbox->AddText("Saturation");
+				QAbox->AddText(satText.Data());
 				}
 			if(medSat && !highSat && !hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kYellow);
-        			QAbox->AddText("Medium Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
+        			QAbox->AddText("Saturation");
+				QAbox->AddText(satText.Data());
 				}
 			if(highSat && !hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kOrange);
-        			QAbox->AddText("High Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
+        			QAbox->AddText("Saturation");
+				QAbox->AddText(satText.Data());
 				}
 			if(hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kRed);
-        			QAbox->AddText("Very High Saturation");
-				QAbox->AddText(satTextADA.Data());
-				QAbox->AddText(satTextADC.Data());
+        			QAbox->AddText("Saturation");
+				QAbox->AddText(satText.Data());
 				}		
     			}
 		}
@@ -724,23 +572,25 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			for(Int_t i=0; i<16; i++){
       				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
-				Double_t around = hClockSlice->Integral(5,10) + hClockSlice->Integral(12,17);
+				Double_t flagArray[21];
+				for(Int_t iClock = 0; iClock<21; iClock++)flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
+				Int_t maxClock = TMath::LocMax(21,flagArray);
 				if(center == 0){
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
 					continue;
 					} 
-				if(around/center > fAsynchronBB) {
+				if(maxClock != 10) {
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
 					}
 				}
 			if(notSynchADA || notSynchADC){
 				QAbox->Clear();
-        			QAbox->SetFillColor(kOrange);
-        			if(notSynchADA)QAbox->AddText("ADA not synchronized");
+        			QAbox->SetFillColor(kRed);
+        			if(notSynchADA)QAbox->AddText("ADA not configured");
 				if(!notSynchADA)QAbox->AddText("ADA ok");
-				if(notSynchADC)QAbox->AddText("ADC not synchronized");
+				if(notSynchADC)QAbox->AddText("ADC not configured");
 				if(!notSynchADC)QAbox->AddText("ADC ok");
 				if(notSynchADA && notSynchADC)QAbox->SetFillColor(kRed);
 				}
@@ -757,51 +607,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     if (!hBGFlagVsClock) {
       AliWarning("BGFlagVsClock histogram is not found");
     }
-    else {
-    	if(hBGFlagVsClock->GetListOfFunctions()->GetEntries()<1) hBGFlagVsClock->GetListOfFunctions()->Add(new TPaveText(0.30,0.15,0.70,0.37,"NDC"));
-    	for(Int_t i=0; i<hBGFlagVsClock->GetListOfFunctions()->GetEntries(); i++){
-     		TString funcName = hBGFlagVsClock->GetListOfFunctions()->At(i)->ClassName();
-     		if(funcName.Contains("TPaveText")){
-      			TPaveText *QAbox = (TPaveText*)hBGFlagVsClock->GetListOfFunctions()->At(i);
-      			QAbox->Clear();
-
-    			TH1D *hClockSlice;
-			Bool_t notSynchADA = kFALSE;
-			Bool_t notSynchADC = kFALSE;
-
-    			for(Int_t i=0; i<16; i++){
-      				hClockSlice = hBGFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
-				Double_t center = hClockSlice->GetBinContent(11);
-				Double_t around = hClockSlice->Integral(5,10) + hClockSlice->Integral(12,14);
-				if(center == 0){
-					if(i>7)notSynchADA = kTRUE;
-					if(i<8)notSynchADC = kTRUE;
-					continue;
-					} 
-				if(around/center > fAsynchronBG) {
-					if(i>7)notSynchADA = kTRUE;
-					if(i<8)notSynchADC = kTRUE;
-					}
-				}
-			if(notSynchADA || notSynchADC){
-				QAbox->Clear();
-        			QAbox->SetFillColor(kOrange);
-        			if(notSynchADA)QAbox->AddText("ADA not synchronized");
-				if(!notSynchADA)QAbox->AddText("ADA ok");
-				if(notSynchADC)QAbox->AddText("ADC not synchronized");
-				if(!notSynchADC)QAbox->AddText("ADC ok");
-				if(notSynchADA && notSynchADC)QAbox->SetFillColor(kRed);
-				}
-			else {
-				QAbox->Clear();
-        			QAbox->SetFillColor(kGreen);
-        			QAbox->AddText("ADA ok");
-				QAbox->AddText("ADC ok");
-				}			
-    			}
-		}
-    	}  
-     
+    
     TH2F *hPedestalDiffInt0  = (TH2F*)list->At(AliADQADataMakerRec::kPedestalDiffInt0);
     if (!hPedestalDiffInt0) {
       AliWarning("PedestalInt0 histogram is not found");
@@ -1024,10 +830,11 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	TVirtualPad* pChargeZoom = 0;
 	TVirtualPad* pTimeRatio = 0;
 	TVirtualPad* pDecision = 0;
+	TVirtualPad* pChargeTrend = 0;
 	
-	const UInt_t nRows = 10;
+	const UInt_t nRows = 11;
 	const UInt_t nLargeRows = 1;
-	Bool_t isLarge[] = {0,0,1,0,0,0,0,0,0,0};
+	Bool_t isLarge[] = {0,0,1,0,0,0,0,0,0,0,0};
 	const Double_t timesLarger = 1.5;
 	Double_t xRow[nRows];
 	xRow[0] = 0.95;
@@ -1102,6 +909,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	fImage[esIndex]->cd();
     	pD->Draw();
     	pDecision = pD;
+	iRow++;
+	
+	TPad* pCT = new TPad("Charge Trend", "Charge Trend Pad", 0, xRow[iRow+1], 1.0, xRow[iRow]);
+    	fImage[esIndex]->cd();
+    	pCT->Draw();
+    	pChargeTrend = pCT;
 
     	pCharge->Divide(2, 1);
 	pChargeZoom->Divide(6, 1);
@@ -1110,7 +923,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pClockFg->Divide(4, 1);
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
-    	pMaxCh->Divide(3, 1);
 	pMeanTime->Divide(4, 1);
 	pDecision->Divide(3, 1);
 	
@@ -1289,12 +1101,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 		histo->DrawCopy("COLZ");
 		}
 	//Saturation monitoring pad
-	for(Int_t iHist = 0; iHist<3; iHist++){
-		pad = pMaxCh->cd(iHist+1);
-		gPad->SetLogz();
-		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoIInt0+iHist);
-		histo->DrawCopy("COLZ");
-		}
+	pad = pMaxCh->cd();
+	gPad->SetLogz();
+	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeSaturation);
+	//histo->GetYaxis()->SetRangeUser(800,1024);
+	histo->DrawCopy("COLZ");
+
 	//Trigger inputs pad
 	pad = pTrigger->cd();
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTriggers);
@@ -1341,6 +1153,20 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	//pad = pDecision->cd(4);
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kDecisions);
 	histo->Draw("COLZTEXT");
+	
+	pad = pChargeTrend->cd();
+	histoBlue = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA);
+	histoRed = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC);
+	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
+	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
+	min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
+	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
+	histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.2*TMath::MaxElement(2,max));
+	histoBlue->GetYaxis()->SetTitle("Quantile 0.9");
+	histoBlue->DrawCopy();
+	histoRed->DrawCopy("same");
+	myLegend1->Draw();
+	//fTrend_Test->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 
     }
