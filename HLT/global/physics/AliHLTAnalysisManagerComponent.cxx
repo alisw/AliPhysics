@@ -320,9 +320,8 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
   }
 
   bool requestPush = eventData->fRequestPush;
-  CleanEventData(eventData);
 
-  //In AsyncMode, we copy the content to a temporary buffer an reset the Analysis Manager directly
+  //In AsyncMode, we copy the content to a temporary buffer and reset the Analysis Manager directly
   if (retVal && fQueueDepth)
   {
     //If we are an async process, we cannot access the pushback-period of the parent process, so we use this flag
@@ -330,6 +329,11 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
 
     retVal = fAsyncProcessor.SerializeIntoBuffer((TObject*) retVal, this);
     if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+  }
+
+  if (fQueueDepth)
+  {
+    CleanEventData(eventData);
   }
 
   //In synchronous mode, we can just return the object
@@ -352,13 +356,13 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
   }
 
+  AnalysisManagerQueueData* eventData = NULL;
   if (IsDataEvent())
   {
     // -- Get ESD object
     // -------------------
     AliVEvent* vEvent=NULL;
     AliVfriendEvent* vFriend=NULL;
-    AnalysisManagerQueueData* eventData;
     if (fAsyncProcess)
     {
       eventData = (AnalysisManagerQueueData*) fAsyncProcessor.AllocateBuffer();
@@ -441,9 +445,13 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
            HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
            fNumEvents = 0;
         }
-        delete retObj;
       }
     }
+  }
+
+  if (fQueueDepth == 0 && eventData)
+  {
+    CleanEventData(eventData);
   }
 
   return 0;
