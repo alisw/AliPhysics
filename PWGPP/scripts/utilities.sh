@@ -839,7 +839,13 @@ copyFileFromRemote() (
   maxCopyTries=${maxCopyTries-10}
   sleepRetry=0
   err=0
-  timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  if which timeout &>/dev/null; then
+    timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  elif which gtimeout &>/dev/null; then
+    timeoutPrefix="gtimeout -s 9 ${remoteCpTimeout-600}"
+  else
+    timeoutPrefix=""
+  fi
   $timeoutPrefix true || timeoutPrefix=
   opname="[copyFileFromRemote]"
   mkdir -p "$dstdir"
@@ -900,7 +906,13 @@ copyFileToRemote() (
   proto="${dstdir%%://*}"
   sleepRetry=0
   err=0
-  timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  if which timeout &>/dev/null; then
+    timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  elif which gtimeout &>/dev/null; then
+    timeoutPrefix="gtimeout -s 9 ${remoteCpTimeout-600}"
+  else
+    timeoutPrefix=""
+  fi
   $timeoutPrefix true || timeoutPrefix=
   [[ "$proto" == "$dstdir" ]] && proto=local
   opname="[copyFileToRemote] (proto=$proto)"
