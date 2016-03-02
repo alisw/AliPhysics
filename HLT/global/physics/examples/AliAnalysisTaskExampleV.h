@@ -33,12 +33,12 @@ class AliAnalysisTaskExampleV : public AliAnalysisTask {
     virtual void     ConnectInputData(Option_t*);
     
  private:
-    TList           *fOutput;        // Output list
-    TH1F            *fHistPt;        // Pt spectrum
-    TH1F            *fHistEta;       // pseudorapidity spectrum
+    TList           *fOutput;        //! Output list
+    TH1F            *fHistPt;        //! Pt spectrum
+    TH1F            *fHistEta;       //! pseudorapidity spectrum
     // NEW HISTO to be declared here
     
-    AliVEvent *fV;
+    AliVEvent *fV; //!
     
     AliAnalysisTaskExampleV(const AliAnalysisTaskExampleV&); // not implemented
     AliAnalysisTaskExampleV& operator=(const AliAnalysisTaskExampleV&); // not implemented
