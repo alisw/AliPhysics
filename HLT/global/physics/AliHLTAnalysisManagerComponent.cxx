@@ -402,7 +402,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
     }
   }
   
-  if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
+  if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeSOR | kAliHLTDataOriginAny))
   {
     fQuickEndRun = false;
   }
