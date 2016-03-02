@@ -158,8 +158,10 @@ fMaxDevZN(5.)
  
   for(Int_t c=0; c<10; c++) {
     fPtWeightsHist[c] = NULL;
-    for(Int_t k=0; k<2; k++) {
-      fEtaWeightsHist[c][k] = NULL;
+    for(Int_t b=0; b<21; b++) {
+      for(Int_t k=0; k<2; k++) {
+        fEtaWeightsHist[c][b][k] = NULL;
+      }
     }
   }
  
@@ -267,12 +269,14 @@ fMaxDevZN(5.)
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
- for(Int_t c=0; c<10; c++) {
-  fPtWeightsHist[c] = NULL;
-   for(Int_t k=0; k<2; k++) {
-     fEtaWeightsHist[c][k] = NULL;
-   }
- }
+  for(Int_t c=0; c<10; c++) {
+    fPtWeightsHist[c] = NULL;
+    for(Int_t b=0; b<21; b++) {
+      for(Int_t k=0; k<2; k++) {
+        fEtaWeightsHist[c][b][k] = NULL;
+      }
+    }
+  }
  
 }
 
@@ -367,11 +371,14 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   }
   if(fUseEtaWeights){
     for(Int_t h=0; h<10; h++) {
-      for(Int_t c=0; c<2; c++) {
-        if(fEtaWeightsHist[h][c]) fQC->SetEtaWeightsHist(fEtaWeightsHist[h][c],h,c);
+      for(Int_t b=0; b<21; b++) {
+        for(Int_t c=0; c<2; c++) {
+          if(fEtaWeightsHist[h][b][c]) fQC->SetEtaWeightsHist(fEtaWeightsHist[h][b][c],h,b,c);
+        }
       }
     }
   }
+  
  fQC->SetMultiplicityIs(fMultiplicityIs);
  fQC->SetnBinsForCorrelations(fnBinsForCorrelations);
  fQC->SetUse2DHistograms(fUse2DHistograms);
