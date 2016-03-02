@@ -132,6 +132,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEMCALDCALTrigger2015+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;
