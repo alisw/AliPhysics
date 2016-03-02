@@ -36,6 +36,7 @@ class AliAnalysisTaskExampleV : public AliAnalysisTask {
     TList           *fOutput;        //! Output list
     TH1F            *fHistPt;        //! Pt spectrum
     TH1F            *fHistEta;       //! pseudorapidity spectrum
+    Bool_t          fSkipExec;       // example config (don't exclude from streaming!)
     // NEW HISTO to be declared here
     
     AliVEvent *fV; //!

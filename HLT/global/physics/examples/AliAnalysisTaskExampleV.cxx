@@ -50,7 +50,8 @@ AliAnalysisTaskExampleV::AliAnalysisTaskExampleV() // All data members should be
    :AliAnalysisTask(),
     fOutput(0),
     fHistPt(0), 
-    fHistEta(0)
+    fHistEta(0),
+    fSkipExec(kFALSE)
 {
     //default ctor, never init memory here
 }
@@ -60,7 +61,8 @@ AliAnalysisTaskExampleV::AliAnalysisTaskExampleV(const char *name) // All data m
    :AliAnalysisTask(name, ""),
     fOutput(0),
     fHistPt(0), 
-    fHistEta(0)
+    fHistEta(0),
+    fSkipExec(kFALSE)
 {
     // ctor
     // Define input and output slots here (never in the dummy constructor)
