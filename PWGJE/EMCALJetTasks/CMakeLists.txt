@@ -117,6 +117,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
     UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
     UserTasks/AliAnalysisTaskDijetHadron.cxx
+    UserTasks/AliAnalysisTaskParticleRandomizer.cxx
     UserTasks/AliAnalysisTaskEmcalBadCells.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx

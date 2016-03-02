@@ -37,6 +37,7 @@
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;
 #pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
 #pragma link C++ class AliAnalysisTaskDijetHadron+;
+#pragma link C++ class AliAnalysisTaskParticleRandomizer+;
 #pragma link C++ class AliAnalysisTaskEmcalBadCells+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetBase+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetAna+;
