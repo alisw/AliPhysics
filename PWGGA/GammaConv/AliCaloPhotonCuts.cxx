@@ -3075,6 +3075,23 @@ Float_t AliCaloPhotonCuts::CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy){
       } else {
         return 10;
       }  
+    case 2:
+      if (fMinNLM == 1 && fMaxNLM == 1 ){
+        return FunctionM02(clusEnergy, 0.0662, -0.0201, -0.0, 1.86e-3, 9.91 );
+      } else if (fMinNLM == 2 && fMaxNLM == 2 ){
+        return FunctionM02(clusEnergy, 0.353, -0.0264, -0.424, 5.59e-3, 21.9 );
+      } else {
+        return 10;
+      }  
+    case 3:
+      if (fMinNLM == 1 && fMaxNLM == 1 ){
+        return FunctionM02(clusEnergy, 0.0662, -0.0201, -0.2, 1.86e-3, 9.91 );
+      } else if (fMinNLM == 2 && fMaxNLM == 2 ){
+        return FunctionM02(clusEnergy, 0.353, -0.0264, -0.624, 5.59e-3, 21.9 );
+      } else {
+        return 10;
+      }  
+
     default:  
       AliError(Form("Max M02 for merged cluster Cut not defined %d",maxM02));
       return 10;
@@ -3093,6 +3110,27 @@ Float_t AliCaloPhotonCuts::CalculateMinM02 (Int_t minM02, Float_t clusEnergy){
         return FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. );
       else 
         return 0.3;
+    case 2:
+      if (FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. ) > 0.27)
+        return FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. );
+      else 
+        return 0.27;
+    case 3:
+      if (FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. ) > 0.25)
+        return FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. );
+      else 
+        return 0.25;
+    case 4:
+      if (FunctionM02(clusEnergy, 2.135, -0.245, 0.1, 0., 0. ) > 0.27)
+        return FunctionM02(clusEnergy, 2.135, -0.245, 0.1, 0., 0. );
+      else 
+        return 0.27;
+    case 5:
+      if (FunctionM02(clusEnergy, 2.135, -0.245, -0.1, 0., 0. ) > 0.27)
+        return FunctionM02(clusEnergy, 2.135, -0.245, -0.1, 0., 0. );
+      else 
+        return 0.27;
+
     default:  
       AliError(Form("Min M02 for merged cluster Cut not defined %d",minM02));
       return -1;
