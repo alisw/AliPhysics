@@ -29,6 +29,11 @@ class AliEmcalPythiaInfo;
 
 #include "AliAnalysisTaskSE.h"
 
+/**
+ * @class AliAnalysisTaskEmcal
+ * @brief Base task in the EMCAL framework
+ * @ingroup EMCALCOREFW
+ */
 class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
 
@@ -163,96 +168,98 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
 
-  static Double_t             fgkEMCalDCalPhiDivide;      //  phi value used to distinguish between DCal and EMCal
+  static Double_t             fgkEMCalDCalPhiDivide;      ///  phi value used to distinguish between DCal and EMCal
 
   // Task configuration
-  TString                     fPythiaInfoName;             // name of pythia info object
-  BeamType                    fForceBeamType;              // forced beam type
-  Bool_t                      fGeneralHistograms;          // whether or not it should fill some general histograms
-  Bool_t                      fInitialized;                // whether or not the task has been already initialized
-  Bool_t                      fCreateHisto;                // whether or not create histograms
-  TString                     fCaloCellsName;              // name of calo cell collection
-  TString                     fCaloTriggersName;           // name of calo triggers collection
-  TString                     fCaloTriggerPatchInfoName;   // trigger patch info array name
-  Double_t                    fMinCent;                    // min centrality for event selection
-  Double_t                    fMaxCent;                    // max centrality for event selection
-  Double_t                    fMinVz;                      // min vertex for event selection
-  Double_t                    fMaxVz;                      // max vertex for event selection
-  Double_t                    fTrackPtCut;                 // cut on track pt in event selection
-  Int_t                       fMinNTrack;                  // minimum nr of tracks in event with pT>fTrackPtCut
-  Bool_t                      fUseAliAnaUtils;             // used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
-  Bool_t                      fRejectPileup;               // Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
-  Bool_t                      fTklVsClusSPDCut;            // Apply tracklet-vs-cluster SPD cut to reject background events in pp
-  UInt_t                      fOffTrigger;                 // offline trigger for event selection
-  TString                     fTrigClass;                  // trigger class name for event selection
-  TriggerType                 fTriggerTypeSel;             // trigger type to select based on trigger patches
-  Int_t                       fNbins;                      // no. of pt bins
-  Double_t                    fMinBinPt;                   // min pt in histograms
-  Double_t                    fMaxBinPt;                   // max pt in histograms
-  Double_t                    fMinPtTrackInEmcal;          // min pt track in emcal
-  Double_t                    fEventPlaneVsEmcal;          // select events which have a certain event plane wrt the emcal
-  Double_t                    fMinEventPlane;              // minimum event plane value
-  Double_t                    fMaxEventPlane;              // maximum event plane value
-  TString                     fCentEst;                    // name of V0 centrality estimator
-  Bool_t                      fIsEmbedded;                 // trigger, embedded signal
-  Bool_t                      fIsPythia;                   // trigger, if it is a PYTHIA production
-  Int_t                       fSelectPtHardBin;            // select one pt hard bin for analysis
-  Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
-  Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
-  Int_t                       fNcentBins;                  // how many centrality bins
-  Bool_t                      fNeedEmcalGeom;              // whether or not the task needs the emcal geometry
-  TObjArray                   fParticleCollArray;          // particle/track collection array
-  TObjArray                   fClusterCollArray;           // cluster collection array
-  ULong_t                     fTriggers;                   // list of fired triggers
-  EMCalTriggerMode_t          fEMCalTriggerMode;           // EMCal trigger selection mode
-  Bool_t                      fUseNewCentralityEstimation; // Use new centrality estimation (for 2015 data)
-  Bool_t                      fGeneratePythiaInfoObject;   // Generate Pythia info object
+  TString                     fPythiaInfoName;             /// name of pythia info object
+  BeamType                    fForceBeamType;              /// forced beam type
+  Bool_t                      fGeneralHistograms;          /// whether or not it should fill some general histograms
+  Bool_t                      fInitialized;                /// whether or not the task has been already initialized
+  Bool_t                      fCreateHisto;                /// whether or not create histograms
+  TString                     fCaloCellsName;              /// name of calo cell collection
+  TString                     fCaloTriggersName;           /// name of calo triggers collection
+  TString                     fCaloTriggerPatchInfoName;   /// trigger patch info array name
+  Double_t                    fMinCent;                    /// min centrality for event selection
+  Double_t                    fMaxCent;                    /// max centrality for event selection
+  Double_t                    fMinVz;                      /// min vertex for event selection
+  Double_t                    fMaxVz;                      /// max vertex for event selection
+  Double_t                    fTrackPtCut;                 /// cut on track pt in event selection
+  Int_t                       fMinNTrack;                  /// minimum nr of tracks in event with pT>fTrackPtCut
+  Bool_t                      fUseAliAnaUtils;             /// used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
+  Bool_t                      fRejectPileup;               /// Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
+  Bool_t                      fTklVsClusSPDCut;            /// Apply tracklet-vs-cluster SPD cut to reject background events in pp
+  UInt_t                      fOffTrigger;                 /// offline trigger for event selection
+  TString                     fTrigClass;                  /// trigger class name for event selection
+  TriggerType                 fTriggerTypeSel;             /// trigger type to select based on trigger patches
+  Int_t                       fNbins;                      /// no. of pt bins
+  Double_t                    fMinBinPt;                   /// min pt in histograms
+  Double_t                    fMaxBinPt;                   /// max pt in histograms
+  Double_t                    fMinPtTrackInEmcal;          /// min pt track in emcal
+  Double_t                    fEventPlaneVsEmcal;          /// select events which have a certain event plane wrt the emcal
+  Double_t                    fMinEventPlane;              /// minimum event plane value
+  Double_t                    fMaxEventPlane;              /// maximum event plane value
+  TString                     fCentEst;                    /// name of V0 centrality estimator
+  Bool_t                      fIsEmbedded;                 /// trigger, embedded signal
+  Bool_t                      fIsPythia;                   /// trigger, if it is a PYTHIA production
+  Int_t                       fSelectPtHardBin;            /// select one pt hard bin for analysis
+  Int_t                       fMinMCLabel;                 /// minimum MC label value for the tracks/clusters being considered MC particles
+  Int_t                       fMCLabelShift;               /// if MC label > fMCLabelShift, MC label -= fMCLabelShift
+  Int_t                       fNcentBins;                  /// how many centrality bins
+  Bool_t                      fNeedEmcalGeom;              /// whether or not the task needs the emcal geometry
+  TObjArray                   fParticleCollArray;          /// particle/track collection array
+  TObjArray                   fClusterCollArray;           /// cluster collection array
+  ULong_t                     fTriggers;                   /// list of fired triggers
+  EMCalTriggerMode_t          fEMCalTriggerMode;           /// EMCal trigger selection mode
+  Bool_t                      fUseNewCentralityEstimation; /// Use new centrality estimation (for 2015 data)
+  Bool_t                      fGeneratePythiaInfoObject;   /// Generate Pythia info object
 
   // Service fields
-  AliAnalysisUtils           *fAliAnalysisUtils;           //!vertex selection (optional)
-  Bool_t                      fIsEsd;                      //!whether it's an ESD analysis
-  AliEMCALGeometry           *fGeom;                       //!emcal geometry
-  TClonesArray               *fTracks;                     //!tracks
-  TClonesArray               *fCaloClusters;               //!clusters
-  AliVCaloCells              *fCaloCells;                  //!cells
-  AliVCaloTrigger            *fCaloTriggers;               //!calo triggers
-  TClonesArray               *fTriggerPatchInfo;           //!trigger patch info array
-  Double_t                    fCent;                       //!event centrality
-  Int_t                       fCentBin;                    //!event centrality bin
-  Double_t                    fEPV0;                       //!event plane V0
-  Double_t                    fEPV0A;                      //!event plane V0A
-  Double_t                    fEPV0C;                      //!event plane V0C
-  Double_t                    fVertex[3];                  //!event vertex
-  Int_t                       fNVertCont;                  //!event vertex number of contributors
-  BeamType                    fBeamType;                   //!event beam type
-  AliGenPythiaEventHeader    *fPythiaHeader;               //!event Pythia header
-  Double_t                    fPtHard;                     //!event pt hard
-  Int_t                       fPtHardBin;                  //!event pt hard bin
-  Int_t                       fNTrials;                    //!event trials
-  Float_t                     fXsection;                   //!x-section from pythia header
-  AliEmcalPythiaInfo         *fPythiaInfo;                 //!event parton info
+  AliAnalysisUtils           *fAliAnalysisUtils;           //!<!vertex selection (optional)
+  Bool_t                      fIsEsd;                      //!<!whether it's an ESD analysis
+  AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
+  TClonesArray               *fTracks;                     //!<!tracks
+  TClonesArray               *fCaloClusters;               //!<!clusters
+  AliVCaloCells              *fCaloCells;                  //!<!cells
+  AliVCaloTrigger            *fCaloTriggers;               //!<!calo triggers
+  TClonesArray               *fTriggerPatchInfo;           //!<!trigger patch info array
+  Double_t                    fCent;                       //!<!event centrality
+  Int_t                       fCentBin;                    //!<!event centrality bin
+  Double_t                    fEPV0;                       //!<!event plane V0
+  Double_t                    fEPV0A;                      //!<!event plane V0A
+  Double_t                    fEPV0C;                      //!<!event plane V0C
+  Double_t                    fVertex[3];                  //!<!event vertex
+  Int_t                       fNVertCont;                  //!<!event vertex number of contributors
+  BeamType                    fBeamType;                   //!<!event beam type
+  AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
+  Double_t                    fPtHard;                     //!<!event pt hard
+  Int_t                       fPtHardBin;                  //!<!event pt hard bin
+  Int_t                       fNTrials;                    //!<!event trials
+  Float_t                     fXsection;                   //!<!x-section from pythia header
+  AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info
 
   // Output
-  TList                      *fOutput;                     //!output list
-  TH1                        *fHistEventCount;             //!incoming and selected events
-  TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
-  TProfile                   *fHistXsectionAfterSel;       //!x section from pythia header
-  TH1                        *fHistTrials;                 //!trials from pyxsec.root
-  TH1                        *fHistEvents;                 //!total number of events per pt hard bin
-  TProfile                   *fHistXsection;               //!x section from pyxsec.root
-  TH1                        *fHistPtHard;                 //!pt hard distribution
-  TH1                        *fHistCentrality;             //!event centrality distribution
-  TH1                        *fHistZVertex;                //!z vertex position
-  TH1                        *fHistEventPlane;             //!event plane distribution
-  TH1                        *fHistEventRejection;         //!book keep reasons for rejecting event
-  TH1                        *fHistTriggerClasses;         //!number of events in each trigger class
+  TList                      *fOutput;                     //!<!output list
+  TH1                        *fHistEventCount;             //!<!incoming and selected events
+  TH1                        *fHistTrialsAfterSel;         //!<!total number of trials per pt hard bin after selection
+  TH1                        *fHistEventsAfterSel;         //!<!total number of events per pt hard bin after selection
+  TProfile                   *fHistXsectionAfterSel;       //!<!x section from pythia header
+  TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
+  TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
+  TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
+  TH1                        *fHistPtHard;                 //!<!pt hard distribution
+  TH1                        *fHistCentrality;             //!<!event centrality distribution
+  TH1                        *fHistZVertex;                //!<!z vertex position
+  TH1                        *fHistEventPlane;             //!<!event plane distribution
+  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
+  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
+  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcal, 14) // EMCAL base analysis task
+  /// \endcond
 };
 
 //________________________________________________________________________
