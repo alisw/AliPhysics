@@ -56,6 +56,9 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fL0MinTime(7),
   fL0MaxTime(10),
   fADCtoGeV(1.),
+  fMinCellAmp(0),
+  fMinL0FastORAmp(0),
+  fMinL1FastORAmp(0),
   fJetPatchsize(16),
   fBkgThreshold(-1),
   fL0Threshold(0),
@@ -161,9 +164,13 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // for some strange reason some ADC amps are initialized in reconstruction
     // as -1, neglect those
     trigger->GetL1TimeSum(adcAmp);
-    if (adcAmp>-1) (*fPatchADC)(globCol,globRow) = adcAmp;
-    trigger->GetTriggerBits(bitmap);
-    (*fTriggerBitMap)(globCol, globRow) = bitmap;
+    if (adcAmp < 0) adcAmp = 0;
+
+    if (adcAmp >= fMinL1FastORAmp) {
+      (*fPatchADC)(globCol,globRow) = adcAmp;
+      trigger->GetTriggerBits(bitmap);
+      (*fTriggerBitMap)(globCol, globRow) = bitmap;
+    }
 
     // Handling for L0 triggers
     // For the ADC value we use fCaloTriggers->GetAmplitude()
@@ -174,15 +181,18 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     Float_t amplitude(0);
     trigger->GetAmplitude(amplitude);
     if(amplitude < 0) amplitude = 0;
-    (*fPatchAmplitudes)(globCol,globRow) = amplitude*4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
-    Int_t nl0times(0);
-    trigger->GetNL0Times(nl0times);
-    if(nl0times){
-      TArrayI l0times(nl0times);
-      trigger->GetL0Times(l0times.GetArray());
-      for(int itime = 0; itime < nl0times; itime++){
-        (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
-        break;
+    amplitude *= 4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
+    if (amplitude >= fMinL0FastORAmp) {
+      (*fPatchAmplitudes)(globCol,globRow) = amplitude;
+      Int_t nl0times(0);
+      trigger->GetNL0Times(nl0times);
+      if(nl0times){
+        TArrayI l0times(nl0times);
+        trigger->GetL0Times(l0times.GetArray());
+        for(int itime = 0; itime < nl0times; itime++){
+          (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
+          break;
+        }
       }
     }
   }
@@ -208,7 +218,8 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Int_t globCol=-1, globRow=-1;
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    (*fPatchADCSimple)(globCol,globRow) += amp/fADCtoGeV;
+    amp /= fADCtoGeV;
+    if (amp >= fMinCellAmp) (*fPatchADCSimple)(globCol,globRow) += amp;
   }
 }
 
