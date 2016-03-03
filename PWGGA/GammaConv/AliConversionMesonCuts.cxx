@@ -1212,8 +1212,99 @@ Float_t AliConversionMesonCuts::FunctionMaxMassCut(Float_t e){
     }
     return mass + nSigma*sigma;
     break;
+  case 3:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 2;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
     
-    break;    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+  case 4:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 2;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+  case 5:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 4;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
+    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+  case 6:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 4;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+    
   default:
     cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
     return -1;
@@ -1293,8 +1384,105 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
     
     return mass - nSigma*sigma;
     break;
+  case 3:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 2;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
     
-    break;    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+    return mass - nSigma*sigma;
+    break;
+  case 4:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 2;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+    
+    return mass - nSigma*sigma;
+    break;
+  case 5:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 4;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
+    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+    return mass - nSigma*sigma;
+    break;
+  case 6:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 4;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+    
+    return mass - nSigma*sigma;
+    break;
+    
   default:
     cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
     return -1;
