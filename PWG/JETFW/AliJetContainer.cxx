@@ -237,8 +237,9 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
   option.ToLower();
 
   Int_t tempID = fCurrentID;
+  ResetCurrentID();
 
-  AliEmcalJet *jetMax = GetNextAcceptJet(0);
+  AliEmcalJet *jetMax = GetNextAcceptJet();
   AliEmcalJet *jet = 0;
 
   if (option.Contains("rho")) {
@@ -299,11 +300,9 @@ AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
+AliEmcalJet* AliJetContainer::GetNextAcceptJet() {
 
-  //Get next accepted jet; if i >= 0 (re)start counter from i; return 0 if no accepted jet could be found
-
-  if (i>=0) fCurrentID = i;
+  //Get next accepted jet;
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
@@ -317,11 +316,9 @@ AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextJet(Int_t i) {
+AliEmcalJet* AliJetContainer::GetNextJet() {
 
-  //Get next jet; if i >= 0 (re)start counter from i; return 0 if no jet could be found
-
-  if (i>=0) fCurrentID = i;
+  //Get next jet;
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
@@ -388,29 +385,29 @@ Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next jet in array
 
-  AliEmcalJet *jet = GetNextJet(i);
+  AliEmcalJet *jet = GetNextJet();
   return GetMomentum(mom, jet);
 }
 
 //________________________________________________________________________
 Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the i^th jet in array
 
   AliEmcalJet *jet = GetAcceptJet(i);
   return GetMomentum(mom, jet);
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the i^th particle in array
+  //Get momentum of the next accepted jet in array
 
-  AliEmcalJet *jet = GetNextAcceptJet(i);
+  AliEmcalJet *jet = GetNextAcceptJet();
   return GetMomentum(mom, jet);
 }
 
@@ -757,10 +754,16 @@ Int_t AliJetContainer::GetNAcceptedJets()
   // Get number of accepted jets
 
   Int_t nJet = 0;
-  AliEmcalJet *jet = GetNextAcceptJet(0);
+  Int_t tempID = fCurrentID;
+  ResetCurrentID();
+
+  AliEmcalJet *jet = GetNextAcceptJet();
   if(jet) nJet = 1;
   while (GetNextAcceptJet())
     nJet++;
+
+  fCurrentID = tempID;
+
   return nJet;
 }
 

@@ -23,8 +23,9 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/FlavourJetTasks)
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
@@ -70,7 +71,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core Geom)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCAL PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies

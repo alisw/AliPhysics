@@ -227,7 +227,7 @@ private:
   AlidNdPtAnalysisPbPb(const AlidNdPtAnalysisPbPb&); // not implemented
   AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented  
 
-  ClassDef(AlidNdPtAnalysisPbPb,7);
+  ClassDef(AlidNdPtAnalysisPbPb,8);
 };
 
 #endif

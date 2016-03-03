@@ -423,7 +423,8 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
@@ -540,7 +541,8 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //  systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
@@ -656,6 +658,7 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
       //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     

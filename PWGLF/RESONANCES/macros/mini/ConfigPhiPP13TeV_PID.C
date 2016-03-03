@@ -128,7 +128,7 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
     if(useFineMcBinning) outm->AddAxis(ptID,300,0.,3.);
-    else out->AddAxis(ptID,200,0.,20.);
+    else outm->AddAxis(ptID,200,0.,20.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
 
@@ -196,7 +196,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
     else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
     else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
-    else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetSPDminNClusters(0);}
+    else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
     else if(customQualityCutsID==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
     else if(customQualityCutsID==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
     else if(customQualityCutsID==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}

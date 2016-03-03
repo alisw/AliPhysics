@@ -366,15 +366,17 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
       exit(1);
     }
     for(Int_t c=0; c<10; c++) {
-      for(Int_t k=0; k<2; k++) {
-        TH1D* EtaWeightsHist = dynamic_cast<TH1D*>(EtaWeightsFile->Get(Form("Eta_Weights_cen%d_ch%d",c,k)));
-        if(EtaWeightsHist) {
-          taskQC->SetEtaWeightsHist(EtaWeightsHist,c,k);
-          cout << "Eta weights centr. "<<c<<" set (from " <<  EtaWeightsFileName.Data() << ")" << endl;
-        }
-        else {
-          cout << "ERROR: EtaWeightsHist not found!" << endl;
-          exit(1);
+      for(Int_t b=0; b<21; b++) {
+        for(Int_t k=0; k<2; k++) {
+          TH1D* EtaWeightsHist = dynamic_cast<TH1D*>(EtaWeightsFile->Get(Form("Eta_Weights_cen%d_ptbin%d_ch%d",c,b+1,k)));
+          if(EtaWeightsHist) {
+            taskQC->SetEtaWeightsHist(EtaWeightsHist,c,b,k);
+            printf("Eta_Weights_cen%d_ptbin%d_ch%d set (from %s)\n",c,b+1,k,EtaWeightsFileName.Data());
+          }
+          else {
+            printf("ERROR: Eta_Weights_cen%d_ptbin%d_ch%d not found! \n",c,b+1,k);
+            exit(1);
+          }
         }
       }
     }

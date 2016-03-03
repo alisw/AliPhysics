@@ -20,7 +20,6 @@
 #include "AliNeutralTrackParam.h"
 #include "AliNormalizationCounter.h"
 #include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
 #include "AliTOFPIDResponse.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
@@ -61,45 +60,35 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX() :
 	AliAnalysisTaskSE(),
 	fESDEvent(0x0),
 	fESDtrackCutsV0(0x0),
-//	fESDCutsV0(0),
 	fESDtrackCuts(0x0),
-  fUseMCInfo(kFALSE),
-  fPIDResponse(0x0),
-  fPIDCombined(0x0),
-  fIsEventSelected(kFALSE),
-  fMixedEvent(kFALSE),
-  fParametersTree(0x0),
-  fVariablesTree(0x0),
-  fParameters(),
-  fCandidateVariables(),
+	fUseMCInfo(kFALSE),
+	fPIDResponse(0x0),
+	fIsEventSelected(kFALSE),
+	fMixedEvent(kFALSE),
+	fParametersTree(0x0),
+	fVariablesTree(0x0),
+	fParameters(),
+	fCandidateVariables(),
 	fVtx1(0x0),
-  fBzkG(0),
-	fRecoTypeDB(1),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
+	fBzkG(0),
+	fRecoTypeDB(0),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
 	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
+	fRecoSelfCasc(0),// Cascade reconstruction is made by (0:ESD class, 1:by myself)
 	fReqSigmaTPC(3.0),
 	fReqClustersTPC(80),
 	fReqSigmaTOF(3.0),
 	fReqPseudoRap(0.9),
-	fCPADibaryon(0.9),//0.99875
-	fMassWinCascade(0.02),
-  fCsChi2max(33.),
-  fCsDV0min(0.01),
-  fCsMassWinLambda(0.008),
-  fCsDBachMin(0.01),
-  fCsDCAmax(2.0), 
-  fCsCPAmin(0.0),//0.98
-  fCsRmin(0.2),
-  fCsRmax(100.),
-  fCentrality(0),
-  fCountMatch(0),
-  fCountOnlySelf(0),
-  fCountOnlyV0(0),
-  fCountLambda(0),
-  fCountAntiLambda(0),
-	fCountLambdaSelf(0),
-	fCountAntiLambdaSelf(0),
-	fCountMatchLambda(0),
-	fCountMatchAntiLambda(0),
+	fCPADibaryon(0.99),//0.99875
+	fMassWinCascade(999.),
+	fCsChi2max(33.),
+	fCsDV0min(0.01),
+	fCsMassWinLambda(0.008),
+	fCsDBachMin(0.01),
+	fCsDCAmax(2.0), 
+	fCsCPAmin(0.0),//0.98
+	fCsRmin(0.2),
+	fCsRmax(100.),
+	fCentrality(0),
 	fCountEvent(0),
 	fIsDCA(0),
 	fNAll(0)
@@ -107,56 +96,47 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX() :
 }
 //______________________________________________________________________________________________________
 AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX(const Char_t* name) :
-  AliAnalysisTaskSE(name),
+	AliAnalysisTaskSE(name),
 	fESDEvent(0x0),
 	fESDtrackCutsV0(0x0),
 //	fESDCutsV0(0),
 	fESDtrackCuts(0x0),
-  fUseMCInfo(kFALSE),
-  fPIDResponse(0x0),
-  fPIDCombined(0x0),
-  fIsEventSelected(kFALSE),
-  fMixedEvent(kFALSE),
-  fParametersTree(0),
-  fVariablesTree(0),
-  fParameters(),
-  fCandidateVariables(),
-  fVtx1(0),
-  fBzkG(0),
-	fRecoTypeDB(1),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
-	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
+	fUseMCInfo(kFALSE),
+	fPIDResponse(0x0),
+	fIsEventSelected(kFALSE),
+	fMixedEvent(kFALSE),
+	fParametersTree(0),
+	fVariablesTree(0),
+	fParameters(),
+	fCandidateVariables(),
+	fVtx1(0),
+	fBzkG(0),
+	fRecoTypeDB(0),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
+	fLikeSignDB(0),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
+	fRecoSelfCasc(0),// Cascade reconstruction is made by (0:ESD class, 1:by myself)
 	fReqSigmaTPC(3.0),
 	fReqClustersTPC(80),
 	fReqSigmaTOF(3.0),
 	fReqPseudoRap(0.9),
-	fCPADibaryon(0.9),//0.99875
-	fMassWinCascade(0.02),
-  fCsChi2max(33.),
-  fCsDV0min(0.01),
-  fCsMassWinLambda(0.008),
-  fCsDBachMin(0.01),
-  fCsDCAmax(2.0), 
-  fCsCPAmin(0.0),//0.98
-  fCsRmin(0.2),
-  fCsRmax(100.),
-  fCentrality(0),
-  fCountMatch(0),
-  fCountOnlySelf(0),
-  fCountOnlyV0(0),
-  fCountLambda(0),
-  fCountAntiLambda(0),
-	fCountLambdaSelf(0),
-	fCountAntiLambdaSelf(0),
-	fCountMatchLambda(0),
-	fCountMatchAntiLambda(0),
+	fCPADibaryon(0.99),//0.99875
+	fMassWinCascade(999.),
+	fCsChi2max(33.),
+	fCsDV0min(0.01),
+	fCsMassWinLambda(0.008),
+	fCsDBachMin(0.01),
+	fCsDCAmax(2.0), 
+	fCsCPAmin(0.0),//0.98
+	fCsRmin(0.2),
+	fCsRmax(100.),
+	fCentrality(0),
 	fCountEvent(0),
 	fIsDCA(0),
 	fNAll(0)
 {
-  //
-  // Constructor. Initialization of Inputs and Outputs
-  //
-  Info("AliAnalysisTaskOmegaOmegaOX","Calling Constructor");
+	//
+	// Constructor. Initialization of Inputs and Outputs
+	//
+	Info("AliAnalysisTaskOmegaOmegaOX","Calling Constructor");
 
 	DefineOutput(1,TTree::Class());  //My private output
 	DefineOutput(2,TTree::Class());  //My private output
@@ -190,28 +170,24 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX(const Char_t* name) :
 }
 //______________________________________________________________________________________________________
 AliAnalysisTaskOmegaOmegaOX::~AliAnalysisTaskOmegaOmegaOX() {
-  //
-  // destructor
-  //
-  Info("~AliAnalysisTaskOmegaOmegaOX","Calling Destructor");
+	//
+	// destructor
+	//
+	Info("~AliAnalysisTaskOmegaOmegaOX","Calling Destructor");
   
-  if (fPIDResponse) {
-    delete  fPIDResponse;
-  }
+	if (fPIDResponse) {
+		delete  fPIDResponse;
+	}
 
-  if (fPIDCombined) {
-    delete  fPIDCombined;
-  }
+	if (fParametersTree) {
+		delete fParametersTree;
+		fParametersTree = 0;
+	}
 
-  if (fParametersTree) {
-    delete fParametersTree;
-    fParametersTree = 0;
-  }
-
-  if (fVariablesTree) {
-    delete fVariablesTree;
-    fVariablesTree = 0;
-  }
+	if (fVariablesTree) {
+		delete fVariablesTree;
+		fVariablesTree = 0;
+	}
 
 	if(fESDtrackCutsV0) delete fESDtrackCutsV0;
 //	if(fESDCutsV0) delete fESDCutsV0;
@@ -220,43 +196,43 @@ AliAnalysisTaskOmegaOmegaOX::~AliAnalysisTaskOmegaOmegaOX() {
 }
 //______________________________________________________________________________________________________
 void AliAnalysisTaskOmegaOmegaOX::Init() {
-  //
-  // Initialization
-  //
+	//
+	// Initialization
+	//
 	//
 
-		//Copied from $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C
+	//Copied from $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C
 
-  fIsEventSelected=kFALSE;
+	fIsEventSelected=kFALSE;
 
-  if (fDebug > 1) AliInfo("Init");
+	if (fDebug > 1) AliInfo("Init");
 
-  return;
+	return;
 }
 //______________________________________________________________________________________________________
 void AliAnalysisTaskOmegaOmegaOX::UserExec(Option_t *)
 {
 // user exec
-  //----------------------
-  // Check the PIDresponse
-  //----------------------
-  if(!fPIDResponse) {
+	//----------------------
+	// Check the PIDresponse
+	//----------------------
+	if(!fPIDResponse) {
 		AliError("No pid response");
 		return;
 	}
 
-  //---------------------
-  // Check the InputEvent
-  //---------------------
+	//---------------------
+	// Check the InputEvent
+	//---------------------
 	fESDEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
 	if (!fESDEvent) {
- 	  AliError("NO EVENT FOUND!");
- 		return;
-  }
+		AliError("NO EVENT FOUND!");
+		return;
+	}
 
-  //------------------------------------------------
-  // First check if the event has proper vertex and B
-  //------------------------------------------------
+	//------------------------------------------------
+	// First check if the event has proper vertex and B
+	//------------------------------------------------
 	AliESDVertex *esdTrkPV = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
 	Double_t PosTrkPV[3];
 	esdTrkPV->GetXYZ(PosTrkPV);
@@ -266,19 +242,19 @@ void AliAnalysisTaskOmegaOmegaOX::UserExec(Option_t *)
 	esdPV->GetXYZ(posPV);
 
 	if (TMath::Abs(PosTrkPV[2])>10.) {
- 	  AliError("Z of primary vertex is not within +-10cm !");
+		AliError("Z of primary vertex is not within +-10cm !");
 		return;
 	}
 
 	Int_t runNumber = 0;
-  runNumber = (InputEvent())->GetRunNumber();
+	runNumber = (InputEvent())->GetRunNumber();
 
 	fBzkG = (Double_t)fESDEvent->GetMagneticField(); 
 	AliKFParticle::SetField(fBzkG);
-  if (TMath::Abs(fBzkG)<0.001) {
- 	  AliError("No magnet field !");
-    return;
-  }
+	if (TMath::Abs(fBzkG)<0.001) {
+		AliError("No magnet field !");
+		return;
+	}
 
 	//------------------------------------------------
   // MC analysis setting
@@ -328,11 +304,6 @@ void AliAnalysisTaskOmegaOmegaOX::UserCreateOutputObjects()
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
-  // Setting properties of PID
-  fPIDCombined=new AliPIDCombined;
-  fPIDCombined->SetDefaultTPCPriors();
-  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-
   return;
 }
 //______________________________________________________________________________________________________
@@ -340,7 +311,7 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 {
 
   //------------------------------------------------------------------------------------------
-  // version OO2-0-1 (2016/02/22)
+  // version OO2-0-4 (2016/03/01)
   // Reconstruct 2 cascade by myself
   // and calculate the invariant mass of Omega-Omega
   //------------------------------------------------------------------------------------------
@@ -379,9 +350,6 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
     return;
   }
 
-  Double_t fCsRmin2 = fCsRmin*fCsRmin;
-  Double_t fCsRmax2 = fCsRmax*fCsRmax;
-
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   // Output cut parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -401,6 +369,7 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
   fParameters[13] = fCsCPAmin;
   fParameters[14] = fCsRmin;
   fParameters[15] = fCsRmax;
+	fParameters[16] = fRecoSelfCasc;
 
   fParametersTree->Fill();
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -448,202 +417,19 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 //	if (fCountEvent<setStartNumber) return;
 //	if (fCountEvent>10) return;
 
-	//------------------------------------------------------------------------------------------
-	// Stores relevant V0s and tracks in array
-	//------------------------------------------------------------------------------------------
-
-	// V0s
-	Int_t v0Array[nV0s];
-	Int_t nV0Survived=0;
-	for (Int_t iV0=0; iV0<nV0s; iV0++) {
-		AliESDv0 *v0rel = fESDEvent->GetV0(iV0);
-		if (v0rel->GetOnFlyStatus()) continue;
-		if (v0rel->GetD(PosPV[0],PosPV[1],PosPV[2])<fCsDV0min) continue;
-		AliESDtrack *trkPrel = fESDEvent->GetTrack(v0rel->GetPindex());
-		AliESDtrack *trkNrel = fESDEvent->GetTrack(v0rel->GetNindex());
-		if( !fESDtrackCuts->AcceptTrack(trkPrel) ) continue;
-		if( !fESDtrackCuts->AcceptTrack(trkNrel) ) continue;
-		Double_t trkPrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kProton));
-		Double_t trkPrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kPion  ));
-		if ( trkPrelTPCProton>fReqSigmaTPC && trkPrelTPCPion>fReqSigmaTPC ) continue;
-		Double_t trkNrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kProton));
-		Double_t trkNrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kPion  ));
-		if ( trkNrelTPCProton>fReqSigmaTPC && trkNrelTPCPion>fReqSigmaTPC ) continue;
-		v0Array[nV0Survived++] = iV0;
-	}
-
-	// tracks
-	Int_t trkArray[nTracks];
-	Int_t nTrkSurvived=0;
-	for (Int_t iTrk=0; iTrk<nTracks; iTrk++) {
-		AliESDtrack *trkrel = fESDEvent->GetTrack(iTrk);
-		ULong_t status = trkrel->GetStatus();
-		if (status&AliESDtrack::kITSpureSA) continue;
-		if ((status&AliESDtrack::kITSrefit)==0)
-			if ((status&AliESDtrack::kTPCrefit)==0) continue;
-		if (TMath::Abs(trkrel->GetD(PosPV[0],PosPV[1],fBzkG))<fCsDBachMin) continue;
-		if( !fESDtrackCuts->AcceptTrack(trkrel) ) continue;
-		Double_t trkrelTPCKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kKaon));
-		Double_t trkrelTPCPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kPion));
-		if ( trkrelTPCKaon>fReqSigmaTPC && trkrelTPCPion>fReqSigmaTPC ) continue;
-		trkArray[nTrkSurvived++] = iTrk;
-	}
-
-	Int_t nCasc = fESDEvent->GetNumberOfCascades();
-//	printf("\n\n### Stored nCascade:%d, nV0s:%d, nTracks:%d\n",nCasc,nV0s,nTracks);
-	fESDEvent->ResetCascades();
-	nCasc = fESDEvent->GetNumberOfCascades();
-//	printf("### Clear nCascade:%d\n",nCasc);
-
-
-	//------------------------------------------------------------------------------------------
-	// Reconstruction of cascades
-	//------------------------------------------------------------------------------------------
-
-	Int_t nCascSurvived = 0;
-	Int_t nCascExist = 0;
-
-	// Candidate of cascade
-	if (fLikeSignDB==0||fLikeSignDB==1) {//including Omega or Xi
-		for (Int_t iV0=0; iV0<nV0Survived; iV0++) {//V0 loop
-			Int_t indexV0 = v0Array[iV0];
-			AliESDv0 *v0point = fESDEvent->GetV0(indexV0);
-			AliESDv0 v0Casc(*v0point); 
-			v0Casc.ChangeMassHypothesis(kLambda0); 
-			if (TMath::Abs(v0Casc.GetEffMass()-mLambdaPDG)>fCsMassWinLambda) continue;
-
-			for (Int_t iTrk=0; iTrk<nTrkSurvived; iTrk++) {//bachelor loop
-				Int_t indexTrk = trkArray[iTrk];
-				if (indexTrk==v0Casc.GetIndex(0)) continue;
-				if (indexTrk==v0Casc.GetIndex(1)) continue;
-
-				AliESDtrack *trkCasc = fESDEvent->GetTrack(indexTrk);
-				if (trkCasc->GetSign()>0) continue;
-
-				AliESDv0 *v0Propagated = &v0Casc;
-				AliExternalTrackParam etpTrkCasc(*trkCasc);
-				AliExternalTrackParam *trkPropagated = &etpTrkCasc;
-
-				Double_t dcaCasc = PropagateToDCA(v0Propagated,trkPropagated,fBzkG);
-				if (dcaCasc > fCsDCAmax) continue;
-
-				AliESDcascade cascade(*v0Propagated,*trkPropagated,indexTrk);
-
-				Double_t x,y,z;
-				cascade.GetXYZcascade(x,y,z);
-				Double_t r2 = x*x + y*y;
-				if (r2 > fCsRmax2) continue;
-				if (r2 < fCsRmin2) continue;
-
-				Double_t pxV0,pyV0,pzV0;
-				v0Propagated->GetPxPyPz(pxV0,pyV0,pzV0);
-				if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
-
-				Double_t x1,y1,z1;
-				v0Propagated->GetXYZ(x1,y1,z1);
-				if (r2 > (x1*x1+y1*y1)) continue;
-
-				if (cascade.GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2])<fCsCPAmin) continue; //condition on the cascade pointing angle 
-
-				Double_t pxB,pyB,pzB;
-				cascade.GetBPxPyPz(pxB,pyB,pzB);
-				TLorentzVector vCascade,vLambda,vBachelor;
-				vLambda.SetXYZM(pxV0,pyV0,pzV0,mLambdaPDG);
-				vBachelor.SetXYZM(pxB,pyB,pzB,mKaonPDG);
-				vCascade = vLambda + vBachelor;
-				Double_t massOmega = vCascade.M();
-				vBachelor.SetXYZM(pxB,pyB,pzB,mPionPDG);
-				vCascade = vLambda + vBachelor;
-				Double_t massXi = vCascade.M();
-				if (TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade&&
-				    TMath::Abs(massXi-mXiPDG)>fMassWinCascade        ) continue;
-				if (fRecoTypeDB==1&&TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade) continue;
-				if (fRecoTypeDB==4&&TMath::Abs(massXi-mXiPDG)>fMassWinCascade) continue;
-
-				cascade.SetDcaXiDaughters(dcaCasc);
-				fESDEvent->AddCascade(&cascade);
-				nCascSurvived++;
-
-			}//bachelor loop
-
-		}//V0 loop
-
-	}//including Omega or Xi
-
-	// Candidate of anti-cascade
-	if (fLikeSignDB==0||fLikeSignDB==2) {//including Omegabar or Xibar
-		for (Int_t iV0=0; iV0<nV0Survived; iV0++) {//V0 loop
-			Int_t indexV0 = v0Array[iV0];
-			AliESDv0 *v0point = fESDEvent->GetV0(indexV0);
-			AliESDv0 v0Casc(*v0point); 
-			v0Casc.ChangeMassHypothesis(kLambda0Bar); 
-			if (TMath::Abs(v0Casc.GetEffMass()-mLambdaPDG)>fCsMassWinLambda) continue;
-
-			for (Int_t iTrk=0; iTrk<nTrkSurvived; iTrk++) {//bachelor loop
-				Int_t indexTrk = trkArray[iTrk];
-				if (indexTrk==v0Casc.GetIndex(0)) continue;
-				if (indexTrk==v0Casc.GetIndex(1)) continue;
-
-				AliESDtrack *trkCasc = fESDEvent->GetTrack(indexTrk);
-				if (trkCasc->GetSign()<0) continue;
-
-				AliESDv0 *v0Propagated = &v0Casc;
-				AliExternalTrackParam etpTrkCasc(*trkCasc);
-				AliExternalTrackParam *trkPropagated = &etpTrkCasc;
-
-				Double_t dcaCasc = PropagateToDCA(v0Propagated,trkPropagated,fBzkG);
-				if (dcaCasc > fCsDCAmax) continue;
-
-				AliESDcascade cascade(*v0Propagated,*trkPropagated,indexTrk);
-
-				Double_t x,y,z;
-				cascade.GetXYZcascade(x,y,z);
-				Double_t r2 = x*x + y*y;
-				if (r2 > fCsRmax2) continue;
-				if (r2 < fCsRmin2) continue;
-
-				Double_t pxV0,pyV0,pzV0;
-				v0Propagated->GetPxPyPz(pxV0,pyV0,pzV0);
-				if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
-
-				Double_t x1,y1,z1;
-				v0Propagated->GetXYZ(x1,y1,z1);
-				if (r2 > (x1*x1+y1*y1)) continue;
-
-				if (cascade.GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2])<fCsCPAmin) continue; //condition on the cascade pointing angle 
-
-				Double_t pxB,pyB,pzB;
-				cascade.GetBPxPyPz(pxB,pyB,pzB);
-				TLorentzVector vCascade,vLambda,vBachelor;
-				vLambda.SetXYZM(pxV0,pyV0,pzV0,mLambdaPDG);
-				vBachelor.SetXYZM(pxB,pyB,pzB,mKaonPDG);
-				vCascade = vLambda + vBachelor;
-				Double_t massOmega = vCascade.M();
-				vBachelor.SetXYZM(pxB,pyB,pzB,mPionPDG);
-				vCascade = vLambda + vBachelor;
-				Double_t massXi = vCascade.M();
-				if (TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade&&
-				    TMath::Abs(massXi-mXiPDG)>fMassWinCascade        ) continue;
-				if (fRecoTypeDB==1&&TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade) continue;
-				if (fRecoTypeDB==4&&TMath::Abs(massXi-mXiPDG)>fMassWinCascade) continue;
-
-				cascade.SetDcaXiDaughters(dcaCasc);
-				fESDEvent->AddCascade(&cascade);
-				nCascSurvived++;
-
-			}//bachelor loop
-
-		}//V0 loop
-
-	}//including Omegabar or Xibar
-
-	nCasc = fESDEvent->GetNumberOfCascades();
-//	printf("\n### reconstructed nCascade:%d\n\n",nCasc);
-
 
 	//------------------------------------------------------------------------------------------
 	// Cascade loop 1 (To find Omega1) (START)
 	//------------------------------------------------------------------------------------------
+
+	if ( fRecoSelfCasc==1 ) {//Reconstruction of cascade is done by myself
+		if (!ReconstructCascade()) return;
+	}
+	Int_t nCasc = fESDEvent->GetNumberOfCascades();
+  if (nCasc==0) {
+    return;
+  }
+//	printf("\n### reconstructed nCascade:%d\n\n",nCasc);
 
 	for (Int_t iCasc1=0; iCasc1<nCasc; iCasc1++) {
 		AliESDcascade *casc1 = fESDEvent->GetCascade(iCasc1);
@@ -1224,7 +1010,7 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
 
   const char* nameoutput1 = GetOutputSlot(1)->GetContainer()->GetName();
   fParametersTree = new TTree(nameoutput1,"Parameters tree");
-  Int_t nVar1 = 16;
+  Int_t nVar1 = 17;
   fParameters = new Float_t [nVar1];
   TString * fParameterNames = new TString[nVar1];
 
@@ -1244,6 +1030,7 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
   fParameterNames[13]="CPAmin";// = fCsCPAmin;
   fParameterNames[14]="Rmin";// = fCsRmin;
   fParameterNames[15]="Rmax";// = fCsRmax;
+	fParameterNames[16]="RecoSelfCasc";// = fRecoSelfCasc;
 
   for (Int_t ivar=0; ivar<nVar1; ivar++) {
     fParametersTree->Branch(fParameterNames[ivar].Data(),&fParameters[ivar],Form("%s/f",fParameterNames[ivar].Data()));
@@ -1794,6 +1581,248 @@ Double_t AliAnalysisTaskOmegaOmegaOX::PropagateToDCA(AliESDv0 *v, AliExternalTra
   }
 
   return dca;
+}
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskOmegaOmegaOX::ReconstructCascade() {
+
+	//------------------------------------------------------------------------------------------
+	// version 0.00 (2016/02/24)
+	// Reconstruction of Cascade by myself (from AliCascadeVertexer.cxx)
+	// Return: Number of Reconstructed cascades
+	//------------------------------------------------------------------------------------------
+
+	// Get or calculate constant ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Double_t mElectronPDG = TDatabasePDG::Instance()->GetParticle(11)->Mass();//0.000511
+	Double_t mPionPDG     = TDatabasePDG::Instance()->GetParticle(211)->Mass();//0.139570
+	Double_t mKaonPDG     = TDatabasePDG::Instance()->GetParticle(321)->Mass();//0.493677
+	Double_t mProtonPDG   = TDatabasePDG::Instance()->GetParticle(2212)->Mass();//0.938272
+	Double_t mLambdaPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();//1.115680
+  Double_t mXiPDG       = TDatabasePDG::Instance()->GetParticle(3312)->Mass();//1.321710
+//  Double_t mXi1530PDG   = TDatabasePDG::Instance()->GetParticle(3314)->Mass();//1.535000
+  Double_t mOmegaPDG    = TDatabasePDG::Instance()->GetParticle(3334)->Mass();//1.672450
+
+  const Int_t nTracks = fESDEvent->GetNumberOfTracks();
+  if (nTracks==0) {
+    return kFALSE;
+  }
+
+  const Int_t nV0s = fESDEvent->GetNumberOfV0s();
+  if (nV0s==0) {
+    return kFALSE;
+  }
+
+  Double_t fCsRmin2 = fCsRmin*fCsRmin;
+  Double_t fCsRmax2 = fCsRmax*fCsRmax;
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	// Get or calculate constant for this event ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	const AliESDVertex *esdTrkPV = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
+	Double_t PosTrkPV[3];
+	esdTrkPV->GetXYZ(PosTrkPV);
+
+	const AliESDVertex *esdPV = (AliESDVertex*)fESDEvent->GetPrimaryVertex();
+	Double_t PosPV[3];
+	esdPV->GetXYZ(PosPV);
+
+	Double_t vPVX = PosPV[0];
+	Double_t vPVY = PosPV[1];
+	Double_t vPVZ = PosPV[2];
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	//------------------------------------------------------------------------------------------
+	// Stores relevant V0s and tracks in array
+	//------------------------------------------------------------------------------------------
+
+	Int_t nCasc = fESDEvent->GetNumberOfCascades();
+//	printf("\n\n### Stored nCascade:%d, nV0s:%d, nTracks:%d\n",nCasc,nV0s,nTracks);
+	fESDEvent->ResetCascades();
+	nCasc = fESDEvent->GetNumberOfCascades();
+//	printf("### Clear nCascade:%d\n",nCasc);
+
+	// V0s
+	Int_t v0Array[nV0s];
+	Int_t nV0Survived=0;
+	for (Int_t iV0=0; iV0<nV0s; iV0++) {
+		AliESDv0 *v0rel = fESDEvent->GetV0(iV0);
+		if (v0rel->GetOnFlyStatus()) continue;
+		if (v0rel->GetD(PosPV[0],PosPV[1],PosPV[2])<fCsDV0min) continue;
+		AliESDtrack *trkPrel = fESDEvent->GetTrack(v0rel->GetPindex());
+		AliESDtrack *trkNrel = fESDEvent->GetTrack(v0rel->GetNindex());
+		if( !fESDtrackCuts->AcceptTrack(trkPrel) ) continue;
+		if( !fESDtrackCuts->AcceptTrack(trkNrel) ) continue;
+		Double_t trkPrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kProton));
+		Double_t trkPrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kPion  ));
+		if ( trkPrelTPCProton>fReqSigmaTPC && trkPrelTPCPion>fReqSigmaTPC ) continue;
+		Double_t trkNrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kProton));
+		Double_t trkNrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kPion  ));
+		if ( trkNrelTPCProton>fReqSigmaTPC && trkNrelTPCPion>fReqSigmaTPC ) continue;
+		v0Array[nV0Survived++] = iV0;
+	}
+
+	// tracks
+	Int_t trkArray[nTracks];
+	Int_t nTrkSurvived=0;
+	for (Int_t iTrk=0; iTrk<nTracks; iTrk++) {
+		AliESDtrack *trkrel = fESDEvent->GetTrack(iTrk);
+		ULong_t status = trkrel->GetStatus();
+		if (status&AliESDtrack::kITSpureSA) continue;
+		if ((status&AliESDtrack::kITSrefit)==0)
+			if ((status&AliESDtrack::kTPCrefit)==0) continue;
+		if (TMath::Abs(trkrel->GetD(PosPV[0],PosPV[1],fBzkG))<fCsDBachMin) continue;
+		if( !fESDtrackCuts->AcceptTrack(trkrel) ) continue;
+		Double_t trkrelTPCKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kKaon));
+		Double_t trkrelTPCPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkrel, AliPID::kPion));
+		if ( trkrelTPCKaon>fReqSigmaTPC && trkrelTPCPion>fReqSigmaTPC ) continue;
+		trkArray[nTrkSurvived++] = iTrk;
+	}
+
+
+	//------------------------------------------------------------------------------------------
+	// Reconstruction of cascades
+	//------------------------------------------------------------------------------------------
+
+	Int_t nCascSurvived = 0;
+	Int_t nCascExist = 0;
+
+	// Candidate of cascade
+	if (fLikeSignDB==0||fLikeSignDB==1) {//including Omega or Xi
+		for (Int_t iV0=0; iV0<nV0Survived; iV0++) {//V0 loop
+			Int_t indexV0 = v0Array[iV0];
+			AliESDv0 *v0point = fESDEvent->GetV0(indexV0);
+			AliESDv0 v0Casc(*v0point); 
+			v0Casc.ChangeMassHypothesis(kLambda0); 
+			if (TMath::Abs(v0Casc.GetEffMass()-mLambdaPDG)>fCsMassWinLambda) continue;
+
+			for (Int_t iTrk=0; iTrk<nTrkSurvived; iTrk++) {//bachelor loop
+				Int_t indexTrk = trkArray[iTrk];
+				if (indexTrk==v0Casc.GetIndex(0)) continue;
+				if (indexTrk==v0Casc.GetIndex(1)) continue;
+
+				AliESDtrack *trkCasc = fESDEvent->GetTrack(indexTrk);
+				if (trkCasc->GetSign()>0) continue;
+
+				AliESDv0 *v0Propagated = &v0Casc;
+				AliExternalTrackParam etpTrkCasc(*trkCasc);
+				AliExternalTrackParam *trkPropagated = &etpTrkCasc;
+
+				Double_t dcaCasc = PropagateToDCA(v0Propagated,trkPropagated,fBzkG);
+				if (dcaCasc > fCsDCAmax) continue;
+
+				AliESDcascade cascade(*v0Propagated,*trkPropagated,indexTrk);
+
+				Double_t x,y,z;
+				cascade.GetXYZcascade(x,y,z);
+				Double_t r2 = x*x + y*y;
+				if (r2 > fCsRmax2) continue;
+				if (r2 < fCsRmin2) continue;
+
+				Double_t pxV0,pyV0,pzV0;
+				v0Propagated->GetPxPyPz(pxV0,pyV0,pzV0);
+				if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+
+				Double_t x1,y1,z1;
+				v0Propagated->GetXYZ(x1,y1,z1);
+				if (r2 > (x1*x1+y1*y1)) continue;
+
+				if (cascade.GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2])<fCsCPAmin) continue; //condition on the cascade pointing angle 
+
+				Double_t pxB,pyB,pzB;
+				cascade.GetBPxPyPz(pxB,pyB,pzB);
+				TLorentzVector vCascade,vLambda,vBachelor;
+				vLambda.SetXYZM(pxV0,pyV0,pzV0,mLambdaPDG);
+				vBachelor.SetXYZM(pxB,pyB,pzB,mKaonPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massOmega = vCascade.M();
+				vBachelor.SetXYZM(pxB,pyB,pzB,mPionPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massXi = vCascade.M();
+				if (TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade&&
+				    TMath::Abs(massXi-mXiPDG)>fMassWinCascade        ) continue;
+				if (fRecoTypeDB==1&&TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade) continue;
+				if (fRecoTypeDB==4&&TMath::Abs(massXi-mXiPDG)>fMassWinCascade) continue;
+
+				cascade.SetDcaXiDaughters(dcaCasc);
+				fESDEvent->AddCascade(&cascade);
+				nCascSurvived++;
+
+			}//bachelor loop
+
+		}//V0 loop
+
+	}//including Omega or Xi
+
+	// Candidate of anti-cascade
+	if (fLikeSignDB==0||fLikeSignDB==2) {//including Omegabar or Xibar
+		for (Int_t iV0=0; iV0<nV0Survived; iV0++) {//V0 loop
+			Int_t indexV0 = v0Array[iV0];
+			AliESDv0 *v0point = fESDEvent->GetV0(indexV0);
+			AliESDv0 v0Casc(*v0point); 
+			v0Casc.ChangeMassHypothesis(kLambda0Bar); 
+			if (TMath::Abs(v0Casc.GetEffMass()-mLambdaPDG)>fCsMassWinLambda) continue;
+
+			for (Int_t iTrk=0; iTrk<nTrkSurvived; iTrk++) {//bachelor loop
+				Int_t indexTrk = trkArray[iTrk];
+				if (indexTrk==v0Casc.GetIndex(0)) continue;
+				if (indexTrk==v0Casc.GetIndex(1)) continue;
+
+				AliESDtrack *trkCasc = fESDEvent->GetTrack(indexTrk);
+				if (trkCasc->GetSign()<0) continue;
+
+				AliESDv0 *v0Propagated = &v0Casc;
+				AliExternalTrackParam etpTrkCasc(*trkCasc);
+				AliExternalTrackParam *trkPropagated = &etpTrkCasc;
+
+				Double_t dcaCasc = PropagateToDCA(v0Propagated,trkPropagated,fBzkG);
+				if (dcaCasc > fCsDCAmax) continue;
+
+				AliESDcascade cascade(*v0Propagated,*trkPropagated,indexTrk);
+
+				Double_t x,y,z;
+				cascade.GetXYZcascade(x,y,z);
+				Double_t r2 = x*x + y*y;
+				if (r2 > fCsRmax2) continue;
+				if (r2 < fCsRmin2) continue;
+
+				Double_t pxV0,pyV0,pzV0;
+				v0Propagated->GetPxPyPz(pxV0,pyV0,pzV0);
+				if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+
+				Double_t x1,y1,z1;
+				v0Propagated->GetXYZ(x1,y1,z1);
+				if (r2 > (x1*x1+y1*y1)) continue;
+
+				if (cascade.GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2])<fCsCPAmin) continue; //condition on the cascade pointing angle 
+
+				Double_t pxB,pyB,pzB;
+				cascade.GetBPxPyPz(pxB,pyB,pzB);
+				TLorentzVector vCascade,vLambda,vBachelor;
+				vLambda.SetXYZM(pxV0,pyV0,pzV0,mLambdaPDG);
+				vBachelor.SetXYZM(pxB,pyB,pzB,mKaonPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massOmega = vCascade.M();
+				vBachelor.SetXYZM(pxB,pyB,pzB,mPionPDG);
+				vCascade = vLambda + vBachelor;
+				Double_t massXi = vCascade.M();
+				if (TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade&&
+				    TMath::Abs(massXi-mXiPDG)>fMassWinCascade        ) continue;
+				if (fRecoTypeDB==1&&TMath::Abs(massOmega-mOmegaPDG)>fMassWinCascade) continue;
+				if (fRecoTypeDB==4&&TMath::Abs(massXi-mXiPDG)>fMassWinCascade) continue;
+
+				cascade.SetDcaXiDaughters(dcaCasc);
+				fESDEvent->AddCascade(&cascade);
+				nCascSurvived++;
+
+			}//bachelor loop
+
+		}//V0 loop
+
+	}//including Omegabar or Xibar
+
+//	printf("### looped nCascade:%d\n",nCascSurvived);
+
+	return kTRUE;
+
 }
 //______________________________________________________________________________________________________
 //__________________________________________________________________________

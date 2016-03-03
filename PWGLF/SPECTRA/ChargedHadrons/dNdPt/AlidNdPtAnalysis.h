@@ -312,6 +312,7 @@ private:
   THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
   THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multTrueMC  
   TH1D       *fPileUpCount; // if pileup x<0 
+  TH1D       *fSPDBGCount;  // spd background 
 
   //
   // candle events track corrections
@@ -349,7 +350,7 @@ private:
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,9);
+  ClassDef(AlidNdPtAnalysis,10);
 };
 
 #endif

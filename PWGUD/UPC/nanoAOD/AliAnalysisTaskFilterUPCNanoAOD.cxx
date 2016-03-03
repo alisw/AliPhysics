@@ -95,13 +95,24 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   if(trigger.Contains("CTEST61-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0OMU
   if(trigger.Contains("CCUP8-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
   if(trigger.Contains("CCUP9-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0STP
+  if(trigger.Contains("CCUP10-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0SH1
+  if(trigger.Contains("CCUP11-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP 0OMU
+  if(trigger.Contains("CCUP12-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP
   
   //Vertex
   Bool_t hasGoodVertex = kFALSE;
   AliAODVertex *aodVertex = aod->GetPrimaryVertex();
   if(aodVertex->GetNContributors() > 1 && TMath::Abs(aodVertex->GetZ()) < 15) hasGoodVertex = kTRUE;
   
-  if(!isTriggered || !hasGoodVertex) return;
+  UInt_t nGoodTracks = 0;
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+  	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
+  	if( !trk ) continue;
+  	if( trk->TestFilterBit(1<<0) || trk->TestFilterBit(1<<1)) nGoodTracks++;
+	}
+  
+  if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
+  //if(!isTriggered) return;
   //AliInfo("Good UPC event");
   
   

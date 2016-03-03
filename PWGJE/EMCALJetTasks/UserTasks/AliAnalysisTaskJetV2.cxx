@@ -1497,7 +1497,8 @@ void AliAnalysisTaskJetV2::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_
     }
     // get the charged energy (if tracks are provided)
     if(tracksCont) {
-        AliVParticle* track = tracksCont->GetNextAcceptParticle(0);
+        tracksCont->ResetCurrentID();
+        AliVParticle* track = tracksCont->GetNextAcceptParticle();
         while(track) {
             Float_t etaTrack(track->Eta()), phiTrack(track->Phi());
             // get distance from cone
@@ -1510,7 +1511,8 @@ void AliAnalysisTaskJetV2::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_
     // get the neutral energy (if clusters are provided)
     if(clusterCont) {
         TLorentzVector momentum;
-        AliVCluster* cluster = clusterCont->GetNextAcceptCluster(0);
+        clusterCont->ResetCurrentID();
+        AliVCluster* cluster = clusterCont->GetNextAcceptCluster();
         while(cluster) {
             cluster->GetMomentum(momentum, const_cast<Double_t*>(fVertex));
             Float_t etaClus(momentum.Eta()), phiClus(momentum.Phi());

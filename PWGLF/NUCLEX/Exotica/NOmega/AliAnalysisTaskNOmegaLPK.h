@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKNOMEGALPK_H
 
   //------------------------------------------------------------------------------------------
-  // version 1.50 (2016/02/22)
+  // version 1.60 (2016/03/01)
   //------------------------------------------------------------------------------------------
 
 /* $Id$ */ 
@@ -13,13 +13,8 @@
 #include "AliAnalysisTaskSE.h"
 
 class TH1F;
-class TClonesArray;
-
-/// Missing forward declaration
 class AliESDtrack;
-class AliESDEvent;
-class AliESDVertex;
-class AliESDtrackCuts;
+class TClonesArray;
 
 class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE 
 {
@@ -84,31 +79,22 @@ class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE
 
 	void DefineTreeVariables();
 
-	AliESDEvent *fESDEvent;           // ESD event
-	AliVEvent *fVEvent;               // ESD event
-	AliESDtrackCuts *fESDtrackCutsV0; // basic cut variables for v0's
-//	AliESDv0Cuts     *fESDCutsV       // V0 track cuts
-	AliESDtrackCuts *fESDtrackCuts;   // track cuts
-	Bool_t fUseMCInfo;                // Use MC info
-	AliPIDResponse *fPIDResponse;     // PID response object
-	Bool_t fIsEventSelected;          // flag for event selected
-	Bool_t fMixedEvent;               // Use mixed event
-	TTree *fParametersTree;           // tree of the cut parameters on output slot 1
-	TTree *fVariablesTree;            // tree of the candidate variables on output slot 2
-	Float_t *fParameters;             // cut parameters to be written to the tree1
-	Float_t *fCandidateVariables;     // variables to be written to the tree2
-	AliESDVertex *fVtx1;              // reconstructed vertex from 2 tracks (new v0)
-	Double_t fBzkG;                   // magnetic field value [kG]
+	AliESDEvent *fESDEvent;            // ESD event
+	AliVEvent *fVEvent;                // ESD event
+	AliESDtrackCuts *fESDtrackCutsNeg; // basic cut variables for v0's
+//	AliESDv0Cuts     *fESDCutsV        // V0 track cuts
+	AliESDtrackCuts *fESDtrackCuts;    // track cuts
+	Bool_t fUseMCInfo;                 // Use MC info
+	AliPIDResponse *fPIDResponse;      // PID response object
+	Bool_t fIsEventSelected;           // flag for event selected
+	Bool_t fMixedEvent;                // Use mixed event
+	TTree *fParametersTree;            // tree of the cut parameters on output slot 1
+	TTree *fVariablesTree;             // tree of the candidate variables on output slot 2
+	Float_t *fParameters;              // cut parameters to be written to the tree1
+	Float_t *fCandidateVariables;      // variables to be written to the tree2
+	AliESDVertex *fVtx1;               // reconstructed vertex from 2 tracks (new v0)
+	Double_t fBzkG;                    // magnetic field value [kG]
 	Int_t fCentrality;
-	Int_t fCountMatch;
-	Int_t fCountOnlySelf;
-	Int_t fCountOnlyV0;
-	Int_t fCountLambda;
-	Int_t fCountAntiLambda;
-	Int_t fCountLambdaSelf;
-	Int_t fCountAntiLambdaSelf;
-	Int_t fCountMatchLambda;
-	Int_t fCountMatchAntiLambda;
 	Int_t fCountEvent;
 	Int_t fIsDCA;
 	Int_t fNAll;

@@ -17,7 +17,6 @@
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliAnalysisTaskCorrelationsDev+;
 #pragma link C++ class AliAnalysisTaskTwoPlusOne+;
-#pragma link C++ class AliDPhiBasicParticle+;
 #pragma link C++ class AliPhiCorrelationsQATask+;
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskMinijet+;
