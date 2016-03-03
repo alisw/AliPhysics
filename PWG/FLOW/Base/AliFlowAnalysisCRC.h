@@ -1329,6 +1329,7 @@ private:
  
   TList *fCRCIntList; //! list to hold CRC histograms
   const static Int_t fCRCnCR = 16;
+  const static Int_t fCRCnNUA = 14;
   const static Int_t fCRCnEtaGap = 7;
   const static Int_t fCRCnCorr = 4;
   const static Int_t fCRCnEtaBins = 32;
@@ -1345,7 +1346,7 @@ private:
   TH1D *fCRCMult[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   TProfile *fCRCCorrPro[fCRCMaxnRun][fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
   TH1D *fCRCSumWeigHist[fCRCMaxnRun][fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
-  TProfile *fCRCNUATermsPro[fCRCMaxnRun][4][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms profile
+  TProfile *fCRCNUATermsPro[fCRCMaxnRun][fCRCnNUA][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms profile
   
   TH1D *fCRCCorrProdTempHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! temporary correlation products for covariances, [CRCBin][eg]
   TH1D *fCRCCorrHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
@@ -1353,7 +1354,7 @@ private:
   TProfile *fCRCCorrProd2p2pPro[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! correlation products
   TH1D *fCRCCovHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! covariances final histo
   TH1D *fCRCCFunHist[fCRCnEtaGap][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
-  TH1D *fCRCNUATermsHist[4][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms final histo
+  TH1D *fCRCNUATermsHist[fCRCnNUA][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms final histo
  
  // Q vectors
  // const static Int_t fCRCnRun = 92;
