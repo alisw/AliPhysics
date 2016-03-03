@@ -1080,10 +1080,10 @@ AliTrackletdNdetaTask::HistoSet::MasterFinalize(Container* parent,
 
   // Normalize delta distribution to integral over 5 to 25 
   TH1* delta = static_cast<TH1*>(CloneAndAdd(result, fDelta));
-  Double_t eintg;
-  Double_t intg = Integrate(delta, tailDelta, fDelta->GetXaxis()->GetXmax(),
-			    eintg);
   delta->Scale(1./nEvents);
+  Double_t maxDelta = fDelta->GetXaxis()->GetXmax();
+  Double_t eintg;
+  Double_t intg = Integrate(delta, tailDelta, maxDelta,  eintg);
       
   result->Add(new TParameter<double>("deltaTailIntg", intg));
   result->Add(new TParameter<double>("deltaTailIntE", eintg));
@@ -1095,9 +1095,21 @@ AliTrackletdNdetaTask::HistoSet::MasterFinalize(Container* parent,
   dPhiVsdThetaX->Scale(1./nEvents);
   dPhiVsdTheta ->Scale(1./nEvents);
   
+  TH1* deltaIntg = etaVsDelta->ProjectionX("deltaTailInt");
+  deltaIntg->SetDirectory(0);
+  deltaIntg->Reset();
+  deltaIntg->SetYTitle(Form("\\int_{%3.1f}^{%4.1f}\\mathrm{d}\\Delta",
+			    tailDelta, maxDelta));
+  for (Int_t i = 1; i <= deltaIntg->GetNbinsX(); i++) {
+    TH1* tmp = etaVsDelta->ProjectionY("tmp",i,i);
+    intg     = Integrate(tmp, tailDelta, maxDelta, eintg);
+    deltaIntg->SetBinContent(i, intg);
+    deltaIntg->SetBinError  (i, eintg);
+    delete tmp;
+  }
+  result->Add(deltaIntg);
 
-
-    return result;
+  return result;
 }
 //____________________________________________________________________
 void AliTrackletdNdetaTask::HistoSet::Fill(Double_t ipZ,
@@ -1109,8 +1121,8 @@ void AliTrackletdNdetaTask::HistoSet::Fill(Double_t ipZ,
 					   Double_t delta,
 					   Double_t weight)
 {
-  fEtaVsDelta               ->Fill(eta,   delta,   weight);
   if (delta > fEtaVsDelta->GetYaxis()->GetXmax())   return;
+  fEtaVsDelta               ->Fill(eta,   delta,   weight);
   fDPhiVsdThetaX            ->Fill(dphis, dthetax, weight);
   fDPhiVsdTheta             ->Fill(dphi,  dtheta,  weight);
   fDelta                    ->Fill(delta,          weight);
@@ -1230,18 +1242,11 @@ AliTrackletdNdetaTask::CentBin::EstimateBackground(Container* dataCon,
   if (lDebug > 2)
     AliInfoF("Scaling %s Delta dist by %f +/- %f",
 	     bgCon->GetName(), scale, scaleE);
-
-  for (Int_t bin = 1; bin <= deltaScaled->GetNbinsX(); bin++) {
-    Double_t c = deltaScaled->GetBinContent(bin);
-    Double_t e = deltaScaled->GetBinError  (bin);
-    deltaScaled->SetBinContent(bin,scale*c);
-    deltaScaled->SetBinError  (bin,TMath::Sqrt(c*c*scaleE*scaleE+
-					       e*e*scale*scale));
-  }
+  Scale(deltaScaled, scale, scaleE);
 
   TH2* backgroundEst = CopyH2(bgCon,  "etaVsIPz", "backgroundEst");
   backgroundEst->SetTitle("Background");
-  if (!isComb) backgroundEst->Scale(scale);
+  if (!isComb) Scale(backgroundEst, scale, scaleE); // ->Scale(scale);
   // else         Info("EstimateBackground", "Combinators, no scaling of BG");
   bgCon->Add(backgroundEst);
 
@@ -1824,14 +1829,12 @@ Bool_t AliTrackletdNdetaTask::ProcessTracklets(TList&            toRun,
 	TMath::Abs(dThetaX) > fScaledDThetaCut) continue;
     // If not within the bins we're looking at, continue 
     if (eta < fEtaAxis.GetXmin() || eta > fEtaAxis.GetXmax())  continue;
-    if (phi < fPhiAxis.GetXmin() || phi > fPhiAxis.GetXmax())  continue;
+    // if (phi < fPhiAxis.GetXmin() || phi > fPhiAxis.GetXmax())  continue;
 
     // Assume a signal 
     Bool_t   isSignal = true;
     if (delta >  fDeltaCut)       isSignal = false;
     if (dPhiS >= fShiftedDPhiCut) isSignal = false;
-    // Redundant check?
-    if (delta >  fMaxDelta)       isSignal = false;
 
     // Now fill all found centrality bins 
     FillBins(toRun, reco, mult, trackletNumber, isSignal, ipZ,
