@@ -877,8 +877,9 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   if(fHistoArmenterosafter)fHistoArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
   if(fHistoPsiPairDeltaPhiafter)fHistoPsiPairDeltaPhiafter->Fill(deltaPhi,photon->GetPsiPair());
   if(fHistoKappaafter)fHistoKappaafter->Fill(photon->GetPhotonPt(), GetKappaTPC(photon, event));
-  if(fHistoAsymmetryafter && photon->GetPhotonP()!=0)fHistoAsymmetryafter->Fill(photon->GetPhotonP(),electronCandidate->GetP()/photon->GetPhotonP());
-  
+  if(fHistoAsymmetryafter){
+    if(photon->GetPhotonP()!=0 && electronCandidate->P()!=0)fHistoAsymmetryafter->Fill(photon->GetPhotonP(),electronCandidate->P()/photon->GetPhotonP());
+  }
   return kTRUE;
 
 }
