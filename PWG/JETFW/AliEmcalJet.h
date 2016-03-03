@@ -1,6 +1,7 @@
 #ifndef AliEmcalJet_H
 #define AliEmcalJet_H
 
+#include <Riosfwd.h>
 #include <vector>
 #include <algorithm>
 #include <utility>
@@ -10,6 +11,7 @@
 #include <TClonesArray.h>
 #include <TVector2.h>
 #include <TLorentzVector.h>
+#include <TString.h>
 
 #include "AliVParticle.h"
 #include "AliVCluster.h"
@@ -34,6 +36,10 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
   AliEmcalJet(const AliEmcalJet &jet);
   AliEmcalJet& operator=(const AliEmcalJet &jet);
+  friend std::ostream &operator<<(std::ostream &in, const AliEmcalJet &jet);
+
+  std::ostream &Print(std::ostream &in) const;
+  TString toString() const;
 
   Double_t          Px()                         const { return fPt*TMath::Cos(fPhi);  }
   Double_t          Py()                         const { return fPt*TMath::Sin(fPhi);  }
@@ -359,4 +365,6 @@ class AliEmcalJet : public AliVParticle
 
   ClassDef(AliEmcalJet,17) // Emcal jet class in cylindrical coordinates
 };
+
+std::ostream &operator<<(std::ostream &in, const AliEmcalJet &jet);
 #endif
