@@ -5508,7 +5508,7 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBEWheelC3(const Color_t color, const TGeo
 
 	}		
 
-	vol->AddNode(Create_ALC_0337_xxC_ous(color, med), 1, // Endwheel, outside wrap volume
+	ewhVol->AddNode(Create_ALC_0337_xxC_ous(color, med), 1, // Endwheel, outside wrap volume
 		new TGeoCombiTrans(0, 0, 0,
 		new TGeoRotation("", 0,0,0)));
 
