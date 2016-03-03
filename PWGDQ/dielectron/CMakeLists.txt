@@ -74,6 +74,9 @@ set(SRCS
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
       JPSI/AliDielectronSpectrum.cxx
+      LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
+      LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
+      LMEE/AliDielectronReducedTrack.cxx
    )
 
 # Headers from sources
