@@ -218,7 +218,7 @@ public:
   Float_t  GetSuperModulesPar(Int_t ipar)     const { return fEMCGeometry->GetSuperModulesPar(ipar)  ; }
   //
   Int_t    GetSMType(Int_t nSupMod)           const { if( nSupMod > fEMCGeometry->GetNumberOfSuperModules() ) return -1;
-                                                      return fEMCSMSystem[nSupMod]		     ; }
+                                                      return fEMCGeometry->GetEMCSystem()[nSupMod]		     ; }
   Bool_t   IsDCALSM(Int_t nSupMod) const;
   Bool_t   IsDCALExtSM(Int_t nSupMod) const;
   Bool_t   GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax)    const 
@@ -319,7 +319,7 @@ public:
   Bool_t  RelPosCellInSModule(Int_t absId, Double_t loc[3]) const;
   Bool_t  RelPosCellInSModule(Int_t absId, TVector3 &vloc)  const;
 
-  Int_t  * GetEMCSystem()            const { return fEMCSMSystem          ; }     //EMC System, SM type list
+  Int_t  * GetEMCSystem()            const { return fEMCGeometry->GetEMCSystem()          ; }     //EMC System, SM type list
   // Local Coordinates of SM
   TArrayD  GetCentersOfCellsEtaDir() const { return fCentersOfCellsEtaDir ; }     // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
   TArrayD  GetCentersOfCellsXDir()   const { return fCentersOfCellsXDir   ; }     // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
@@ -442,7 +442,7 @@ protected:
   AliEMCALTriggerMapping* fTriggerMapping; // Trigger mapping
   
   TString  fGeoName;                 // geometry name
-  Int_t    *fEMCSMSystem;	           // geometry structure
+  //Int_t    *fEMCSMSystem;	         // [fEMCGeometry.fNumberOfSuperModules] geometry structure
   Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
   Int_t    fnSupModInDCAL;           // for calculation abs cell id; 06-nov-12
   Int_t    fNCellsInSupMod;          // number cell in super module
