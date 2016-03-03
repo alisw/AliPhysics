@@ -24,32 +24,32 @@ public:
   AliAnalysisTaskTrackDensity(const char *name);
   virtual ~AliAnalysisTaskTrackDensity();
 
-protected:
-
-  virtual void UserCreateOutputObjects();
-  virtual bool Run();
-
-  void SetMCJetContainer(TString contname) { fMCJetContainerName = contname; }
-  void SetMCParticleContainer(TString contname) { fMCJetContainerName = contname; }
-
   void SetJetRadiusBinning(TArrayD binning) { fJetRadii = binning; }
   void SetJtPtBinning(TArrayD binning) { fJetPtBins = binning; }
   void SetParticlePtSteps(TArrayD binning) { fPtMinSteps = binning; }
   void SetParticlePtBinning(TArrayD binning) { fParticlePtBinning = binning; }
 
-  int GetParticleMultiplicity(const AliEmcalJet * const jet, AliParticleContainer *partcont, double ptmin, double ptmax, double rmin, double rmax) const;
+  void SetMCJetContainer(TString contname) { fMCJetContainerName = contname; }
+  void SetMCParticleContainer(TString contname) { fMCParticleContainerName = contname; }
+
+protected:
+
+  virtual void UserCreateOutputObjects();
+  virtual bool Run();
+
+  int GetParticleMultiplicity(const AliEmcalJet &jet, const AliParticleContainer &partcont, double ptmin, double ptmax, double rmin, double rmax) const;
   void FindJetPtBin(const AliEmcalJet *const jet, double &ptmin, double &ptmax) const;
 
 private:
-  THistManager              *fHistos;
+  THistManager                *fHistos;                     //!<! Histogram manager
 
-  TString                     fMCJetContainerName;
-  TString                     fMCParticleContainerName;
+  TString                     fMCJetContainerName;          /// Name of the MC jet container
+  TString                     fMCParticleContainerName;     /// Name of the MC particle container
 
-  TArrayD                     fJetRadii;
-  TArrayD                     fJetPtBins;
-  TArrayD                     fPtMinSteps;
-  TArrayD                     fParticlePtBinning;
+  TArrayD                     fJetRadii;                    ///
+  TArrayD                     fJetPtBins;                   ///
+  TArrayD                     fPtMinSteps;                  ///
+  TArrayD                     fParticlePtBinning;           ///
 
   ClassDef(AliAnalysisTaskTrackDensity, 1);
 };
