@@ -911,7 +911,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   //
   TVectorD     *vdriftParam=0;
   TGraphErrors *vdriftGraph=0;  
-  TFile *fdrift = TFile::Open("fitDrift.root");
+  TFile *fdrift = TFile::Open("fitDrift.root"); 
+  AliSysInfo::AddStamp("FillHistogramsFromChain.LoadDriftBegin",1,0);
   if (fdrift){
     TTree * tree = (TTree*)fdrift->Get("fitTimeStat");
     if (tree==NULL){
@@ -932,6 +933,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   }else{
     ::Error("LoadDriftCalibration FAILED", "fitDrift.root not present");
   }
+  AliSysInfo::AddStamp("FillHistogramsFromChain.LoadDriftEND",1,1);
   //
   // 1.) Fill histograms and mean informations
   //
@@ -971,7 +973,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   UShort_t npValid=knPoints;
   Long64_t fillCounter=0;
   Long64_t clusterCounter=0;
-
+  AliSysInfo::AddStamp("FillHistogramsFromChain.BEGIN",2,0);
   for (Int_t ihis=0; ihis<6; ihis++){    
     if (selHis>=0 && ihis!=selHis) continue;
     Double_t binWidth[4]={0};
@@ -1218,6 +1220,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
     fout->GetFile()->cd();
     hisToFill[ihis]->Write();
   }
+  AliSysInfo::AddStamp("FillHistogramsFromChain.END",2,1);
   if (hisTime) hisTime->Write();
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","End of processing\n");
   timerAll.Print();
@@ -1348,7 +1351,11 @@ TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, con
   }
   if (tree==NULL) {
     tree = treeFriend;
-  }else{
+    tree->SetName("Default");
+    tree->SetTitle("Default");
+    treeFriend = (TTree*) fin->Get(treeName);
+  }
+  {
     tree->AddFriend(treeFriend,TString::Format("%s",friendAlias).Data());
     tree->SetAlias(TString::Format("%sOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<2&&%s.chi2G>0&&%s.rmsG<2&&%s.rmsG/%s.rms<2",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data());
     tree->SetAlias(TString::Format("%sDrawOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<4&&%s.chi2G>0",friendAlias,friendAlias,friendAlias,friendAlias).Data()); 
@@ -1631,7 +1638,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   const Double_t kBCcutMin=-5;
   const Double_t kBCcutMax=20;
   const Double_t robFraction=0.99; 
-
+  const Int_t cacheSize=250000000; // 250 MBy cache  
+  
   Int_t maxEntries=1000000;
   Int_t maxPointsRobust=4000000;
   //
@@ -1645,19 +1653,31 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %.1f and sigmaT %.1f", deltaT, sigmaT);
     return kFALSE;
   }
- 
+  if (TString(gSystem->GetFromPipe("cat residual.list | grep -c alien://")).Atoi()>0) TGrid::Connect("alien");
+
   TChain * chainDelta = AliXRDPROOFtoolkit::MakeChain("residual.list","delta",0,-1);
+  AliSysInfo::AddStamp("FitDrift.chainDeltaGetEntriesBegin",1,0,0);
   entriesAll = chainDelta->GetEntries();
+  chainDelta->SetCacheLearnEntries(100);
+  chainDelta->SetCacheSize(0);
+  chainDelta->SetCacheSize(cacheSize);
+  AliSysInfo::AddStamp("FitDrift.chainDeltaGetEntriesEnd",1,1,0);
+
   if (entriesAll<kMinEntries) {
     ::Error("fitDrift FAILED","Not enough tracks in the chain.  Ntracks=%d",entriesAll); 
     return kFALSE;
   }
   maxEntries=TMath::Min(maxEntries, entriesAll);
   TTreeSRedirector *pcstream = new TTreeSRedirector("fitDrift.root","recreate");
-  if (time0==time1){
-    TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1);
-    chainInfo->SetEstimate(-1);
+  if (time0==time1){ 
+    AliSysInfo::AddStamp("FitDrift.chainInfoGetTimeBegin",2,0,0);
+    TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1); 
+    chainDelta->SetCacheSize(cacheSize);
+    //    chainInfo->SetEstimate(-1); // i cashed here -1 does not work
+    chainInfo->SetEstimate(maxEntries); // i cashed here -1 does not work
     Int_t entries = chainInfo->Draw("timeStamp","","goff",maxEntries);
+    chainInfo->PrintCacheStats();
+    AliSysInfo::AddStamp("FitDrift.chainInfoGetTimeEND",2,1,0);
     if (entries) TStatToolkit::GetMinMax(chainInfo->GetV1(),entries,time0,time1);
   }
   // 0.) Cache variables:  to be done using loop
@@ -1671,13 +1691,18 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   //       timeStamp
   //       npValid
   //
-  AliSysInfo::AddStamp("StartCache",1,0,0);
-  chainDelta->SetEstimate(maxEntries*160/5.);
-  Int_t entriesFit0 = chainDelta->Draw("tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC","Entry$%5==0","goffpara",maxEntries);
-  Int_t entriesFit=entriesFit0/10;
-  AliSysInfo::AddStamp("EndCache",1,1,0);
+  AliSysInfo::AddStamp("FitDrift.StartCache",3,0,0);
+  chainDelta->SetCacheLearnEntries(100);
+  chainDelta->SetCacheSize(0);
+  chainDelta->SetCacheSize(10000000);
 
-  AliSysInfo::AddStamp("BeginFill",1,1,0);
+  chainDelta->SetEstimate(maxEntries*160/5.);
+  Int_t entriesFit0 = chainDelta->Draw("tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC","Entry$%5==0","goffpara",maxEntries); 
+  chainDelta->PrintCacheStats();
+  Int_t entriesFit=entriesFit0/10;
+  AliSysInfo::AddStamp("FitDrift.EndCache",3,1,0);
+
+  AliSysInfo::AddStamp("FitDrift.BeginFill",4,1,0);
 
   TVectorD * deltaTOF  = new TVectorD(entriesFit); //
   TVectorD * deltaTRD  = new TVectorD(entriesFit); //
@@ -1698,7 +1723,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     (*vecTime)[i]= chainDelta->GetVal(6)[index];    
     (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];    
   }
-  AliSysInfo::AddStamp("EndFill",1,1,0);
+  AliSysInfo::AddStamp("FitDrift.EndFill",4,1,0);
 
 
   //
@@ -1711,12 +1736,12 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   TVectorD paramTRDBC(5);  
   TVectorD paramTOFBC(5);
   //  
-  AliSysInfo::AddStamp("StartRobust",2,0,0);
+  AliSysInfo::AddStamp("FitDrift.StartRobust",2,0,0);
   TF1 * fpol1 = new TF1("f1","[0]+[1]*x",0,250);
   //
   if (pcstream->GetFile()->Get("robustFit")==0){
     for (Int_t iter=0; iter<20; iter++){
-      AliSysInfo::AddStamp("Robustiter",3,iter,0);
+      AliSysInfo::AddStamp("FitDrift.RobustIter",3,iter,0);
       TLinearFitter *fitterRobust= new TLinearFitter(4,TString::Format("hyp%d",3).Data());
       TLinearFitter *fitterTRD= new TLinearFitter(4,TString::Format("hyp%d",3).Data());
       TLinearFitter *fitterTOF= new TLinearFitter(4,TString::Format("hyp%d",3).Data());
