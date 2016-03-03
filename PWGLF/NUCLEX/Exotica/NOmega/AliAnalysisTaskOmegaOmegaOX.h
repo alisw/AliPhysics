@@ -35,6 +35,9 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	void SetReqClustersTPC(int tpcclust) {fReqClustersTPC = tpcclust;}
 	void SetReqSigmaTOF(double tofsigma) {fReqSigmaTOF = tofsigma;}
 	void SetReqPseudoRap(double pseudorap) {fReqPseudoRap = pseudorap;}
+	void SetProtonPMax(Double_t maxprotonp) {fProtonPMax = maxprotonp;}
+	void SetPionPMax(Double_t maxpionp) {fPionPMax = maxpionp;}
+	void SetKaonPMax(Double_t maxkaonp) {fKaonPMax = maxkaonp;}
 
 	void SetCPADibaryon(double cpadi) {fCPADibaryon = cpadi;}
 	void SetMassWinCascade(double masswinc) {fMassWinCascade = masswinc;}
@@ -67,10 +70,6 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	AliESDtrackCuts  *fESDtrackCuts;   // track cuts
 
 	Bool_t PreTrackCut(AliESDtrack *track);
-	Double_t InvMassLambda(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
-	Double_t InvMassLambdaStar(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
-	Double_t GetPaFromPxPyPz(Double_t Momentum[3]);
-	Double_t GetPtFromPxPyPz(Double_t Momentum[3]);
 	Bool_t ReconstructCascade();
 
   Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
@@ -79,9 +78,13 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
          Double_t a20,Double_t a21,Double_t a22) const;
   Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
 
-	void Rotate(Double_t x,Double_t y,Double_t angle);
-	void Rotate(Double_t x,Double_t y,Double_t angle,Double_t xCenter,Double_t yCenter);
-	Double_t GetAngleFromCosSin(Double_t cos,Double_t sin);
+	// for V0 (Invariant mass)
+	Double_t InvMassLambda(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
+	Double_t InvMassLambdaStar(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
+
+	// others
+	Double_t GetPaFromPxPyPz(Double_t Momentum[3]) {return TMath::Sqrt( Momentum[0]*Momentum[0] + Momentum[1]*Momentum[1] + Momentum[2]*Momentum[2] );}
+	Double_t GetPtFromPxPyPz(Double_t Momentum[3]) {return TMath::Sqrt( Momentum[0]*Momentum[0] + Momentum[1]*Momentum[1] );}
 
 	void DefineTreeVariables();
 
@@ -111,6 +114,9 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	Int_t fReqClustersTPC;  // TPC number of clusters
 	Double_t fReqSigmaTOF;  // TOF PIDcut sigma
 	Double_t fReqPseudoRap; // PseudoRapidity
+	Double_t fProtonPMax;   // Max momentum of proton
+	Double_t fPionPMax;     // Max momentum of pion
+	Double_t fKaonPMax;     // Max momentum of kaon
 
 	// cut parameters for dibaryon
 	Double_t fCPADibaryon; // Min cosine of dibaryon's pointing angle
