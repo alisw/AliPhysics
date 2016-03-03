@@ -126,6 +126,8 @@ void AliHLTTPCHWCFEmulatorComponent::GetInputDataTypes( vector<AliHLTComponentDa
   list.clear();
   list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType ); 	 
   list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTTPCHWCFEmulatorComponent::GetOutputDataType()
@@ -140,6 +142,8 @@ int AliHLTTPCHWCFEmulatorComponent::GetOutputDataTypes(AliHLTComponentDataTypeLi
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC );
   tgtList.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC );
   return tgtList.size();
 }
 
@@ -465,14 +469,15 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
     {
       const AliHLTComponentBlockData* iter = blocks+ndx;
       
+      fBenchmark.AddInput(iter->fSize);
+
       if (  iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) 
 	    &&  iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
 
       int slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       int patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
  
-      fBenchmark.AddInput(iter->fSize);
- 
+  
       if (!iter->fPtr) continue;
  
       // create input block for the HW cluster finder
@@ -613,6 +618,22 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
  
   if( outBlock ) delete[] outBlock;
   if( allocOutMC ) delete[] allocOutMC;      
+  
+  if( iResult>=0 ){
+    //
+    // forward unpacked clusters if they are present
+    // to forward input data, one should only forward the block descriptors, without copying the data. 
+    // The framework will recognise that these blocks are forwarded, as they have fPtr field !=NULL, and take the data from fPtr pointer   
+    //
+    for( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ ){
+      const AliHLTComponentBlockData* iter = blocks+ndx;      
+      if(  iter->fDataType == AliHLTTPCDefinitions::RawClustersDataType() || iter->fDataType == AliHLTTPCDefinitions::RawClustersDescriptorDataType() ){
+	if( !iter->fPtr ) continue;
+	fBenchmark.AddOutput(iter->fSize);
+	outputBlocks.push_back( *iter );
+      }
+    } 
+  }
 
   fBenchmark.Stop(0);  
   HLTInfo(fBenchmark.GetStatistics());
