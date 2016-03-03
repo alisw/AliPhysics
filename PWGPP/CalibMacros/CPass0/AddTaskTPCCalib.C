@@ -388,7 +388,7 @@ void ConfigOCDB(){
   //
   bool print_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
 
-  if (print_info) ::Info("AddTaskTPCCalib", "SETUP OCBD for TPC Run =%d\n", run);
+  if (print_info) ::Info("AddTaskTPCCalib", "SETUP OCBD\n");
   //
   //
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
