@@ -54,6 +54,8 @@ public:
    Double_t        DCAProduct();                                                   
    void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
    Short_t         NSisters()  {return fNSisters;}
+   Double_t        PairPtRes()              const;
+   Double_t        PairYRes()               const;
 
  private:
    

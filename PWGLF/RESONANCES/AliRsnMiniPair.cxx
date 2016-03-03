@@ -216,3 +216,23 @@ void AliRsnMiniPair::DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpyp
   }
   return;
 }
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairPtRes() const
+{
+//
+// Return pair pt resolution
+//
+   if (Pt(1) <= 0.0) return 1E20;
+   return (Pt(0) - Pt(1)) / Pt(1);
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairYRes() const
+{
+//
+// Return pair rapidity resolution
+//
+  if (Y(1) <= 0.0) return 1E20;
+  return (Y(0) - Y(1)) / Y(1);
+}

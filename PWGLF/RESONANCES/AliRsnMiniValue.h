@@ -44,6 +44,8 @@ public:
       kFirstDaughterDCA,  //DCA to PV of the first daughter of the pair
       kSecondDaughterDCA, //DCA to PV of the second daughter of the pair
       kNSisters,    // number of daughters (only for MC)
+      kPairPtRes,       // pair pT resolution
+      kPairYRes,        // pair rapidity resolution
       kTypes          // -- general limit ----------------------------------------------------------
    };
 
