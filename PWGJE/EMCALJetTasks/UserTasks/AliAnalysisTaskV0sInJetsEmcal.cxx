@@ -1778,7 +1778,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     else
     {
       AliAODJet* jetTrig = 0;
-      AliVTrack* track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+      fTracksCont->ResetCurrentID();
+      AliVTrack* track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
       if(track) // there are some accepted trigger tracks
       {
         while(track) // loop over selected tracks

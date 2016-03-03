@@ -112,14 +112,14 @@ class AliJetContainer : public AliParticleContainer {
   AliEmcalJet                *GetAcceptJet(Int_t i)                      ;
   AliEmcalJet                *GetJetWithLabel(Int_t lab)            const;
   AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)           ;
-  AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
-  AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
+  AliEmcalJet                *GetNextAcceptJet()                         ;
+  AliEmcalJet                *GetNextJet()                               ;
   Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass);
   Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet);
   Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
   Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
-  Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
-  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
+  Bool_t                      GetNextMomentum(TLorentzVector &mom);
+  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom);
   virtual Bool_t              AcceptObject(Int_t i)              { return AcceptJet(i);}
   virtual Bool_t              AcceptObject(const TObject* obj)   { return AcceptJet(dynamic_cast<const AliEmcalJet*>(obj));}
   virtual Bool_t              AcceptJet(Int_t i)                         ;

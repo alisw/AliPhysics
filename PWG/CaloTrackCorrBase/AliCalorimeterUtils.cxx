@@ -329,7 +329,8 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
 
       TString passM = pass;
       if(useDefault) passM = "pass1";
-      else if(pass=="muon_calo") passM = "pass0";
+      else if(pass=="muon_calo_pass1") passM = "muon_calo_pass1";
+      else if(pass=="muon_calo_pass2") passM = "muon_calo_pass2";
 
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
       if(!trecalpass) {

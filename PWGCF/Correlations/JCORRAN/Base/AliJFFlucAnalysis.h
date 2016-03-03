@@ -144,6 +144,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		// additinal variables for SC with QC
 		AliJTH1D fh_SC_with_QC_4corr; // for <vn^2 vm^2>
 		AliJTH1D fh_SC_with_QC_2corr; // for <vn^2>
+		AliJTH2D fh_QvectorQC; // check for Q-vec dist for [ic][ih]
+		AliJTH1D fh_QvectorQCphi;
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis
 };

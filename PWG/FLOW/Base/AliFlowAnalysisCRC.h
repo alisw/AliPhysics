@@ -292,6 +292,7 @@ public:
  virtual Int_t GetCRCQVecBin(Int_t c, Int_t y);
  virtual Int_t GetCRCRunBin(Int_t RunNum);
  virtual Int_t GetCRCCenBin(Double_t Centrality);
+ virtual Int_t GetCRCPtBin(Double_t pt);
  
  virtual Double_t GetSPZDChar(Int_t har, Double_t QRe,Double_t QIm,Double_t ZARe,Double_t ZAIm,Double_t ZCRe,Double_t ZCIm);
  
@@ -848,8 +849,8 @@ public:
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
- void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t c) {this->fEtaWeightsHist[h][c] = n;};
- TH1D* GetEtaWeightsHist(Int_t h, Int_t c) const {return this->fEtaWeightsHist[h][c];};
+ void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
+ TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
  void SetZNCentroid(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCentroid[eg][h] = n;};
  TH2F* GetZNCentroid(Int_t const eg, Int_t const h) const {return this->fhZNCentroid[eg][h];};
  void SetZNSpectra(TH1F* const n, Int_t const eg, Int_t const h) {this->fhZNSpectra[eg][h] = n;};
@@ -890,6 +891,9 @@ public:
  
  // Flow SP ZDC
  void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
+  void SetFlowSPZDCRbRList(TList* const TL) {this->fFlowSPZDCRbRList = TL;};
+  void SetFlowSPZDCRunsList(TList* const TL, Int_t r) {this->fFlowSPZDCRunsList[r] = TL;};
+  
  void SetFlowSPZDCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorPro[c][eg][h] = TP;};
  TProfile* GetFlowSPZDCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorPro[c][eg][h];};
  void SetFlowSPZDCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorHist[c][eg][h] = TH;};
@@ -901,8 +905,10 @@ public:
  TH1D* GetFlowSPZDCIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntHist[c][eg];};
  void SetFlowSPZDCSpectra(TProfile* const TH, Int_t const c) {this->fFlowSPZDCSpectra[c] = TH;};
  TProfile* GetFlowSPZDCSpectra(Int_t const c) const {return this->fFlowSPZDCSpectra[c];};
- void SetFlowSPZDCIntPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntPro[c][eg] = TP;};
- TProfile* GetFlowSPZDCIntPro(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntPro[c][eg];};
+ void SetFlowSPZDCIntPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntPro[r][c][eg] = TP;};
+ TProfile* GetFlowSPZDCIntPro(Int_t const r, Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntPro[r][c][eg];};
+  void SetFlowSPZDCIntNUA(TProfile* const TP, Int_t const r, Int_t const eg) {this->fFlowSPZDCIntNUA[r][eg] = TP;};
+  TProfile* GetFlowSPZDCIntNUA(Int_t const r, Int_t const eg) const {return this->fFlowSPZDCIntNUA[r][eg];};
 
  
  // Flow SP VZ
@@ -1494,13 +1500,17 @@ private:
  
  // Flow SP ZDC
  TList *fFlowSPZDCList;    //! SPZDC List
- const static Int_t fFlowNPro = 9;
+ TList *fFlowSPZDCRbRList; //! CRC list of histograms RbR
+ TList *fFlowSPZDCRunsList[fCRCMaxnRun]; //! list of runs
+ const static Int_t fFlowNPro = 10;
+ const static Int_t fFlowNNUA = 20;
  TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
- TProfile *fFlowSPZDCIntPro[fFlowNHarm][fFlowNPro]; //! reference flow
+ TProfile *fFlowSPZDCIntPro[fCRCMaxnRun][fFlowNHarm][fFlowNPro]; //! reference flow
  TH1D *fFlowSPZDCIntHist[fFlowNHarm][fFlowNPro]; //!
  TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
  TProfile *fFlowSPZDCSpectra[fCRCMaxnCen]; //!
+ TProfile *fFlowSPZDCIntNUA[fCRCMaxnRun][fFlowNNUA]; //!
  
  // Flow QC
  TList *fFlowQCList;    //! QC List
@@ -1527,7 +1537,8 @@ private:
  TH1D* fCenWeightsHist; //! Centrality weights
  TH1D* fCenWeigCalHist; //! Centrality weights
  TH1D* fPtWeightsHist[10]; //! Pt weights
- TH1D* fEtaWeightsHist[10][2]; //! Eta weights
+ TH1D* fEtaWeightsHist[10][21][2]; //! Eta weights
+ Double_t *fCRCPtBins; //!
  Double_t fCenWeightEbE;
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
  TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra

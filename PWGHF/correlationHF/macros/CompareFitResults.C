@@ -32,7 +32,10 @@ Double_t ytitleoffset=2.45,xtitleoffset=1.95;
 Bool_t skip3to5=kTRUE;
 Double_t markersize=1.5;
 Double_t markersizeMC=1.2;
-
+Bool_t drawSystMC=kTRUE;
+void SetDrawSystMC(Bool_t drawsystmc){
+  drawSystMC=drawsystmc;
+}
 void Init3x3Settings(){
   referencePadHeight=0.35;
   resizeTextFactor=0.85;
@@ -50,12 +53,12 @@ Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
 Double_t topMarginCanvas=0.07;
 const Int_t nmodels=7;
-Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kFALSE,kTRUE};
-TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","POWHEG","PYTHIA8","HERWIG","POWHEG"};
-TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia0","PYTHIA6, Perugia2010","PYTHIA6, Perugia2011","POWHEG+PYTHIA6","PYTHIA8, Tune C","HERWIG","POWHEG+PYTHIA6 EPS09"};
-Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kRed+2,kCyan,kViolet,kRed+2};
-Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kFALSE,kTRUE,kFALSE,kTRUE};// this is also used to split the legend in 2!!
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,3};
+Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE};
+TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG"};
+TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia0","PYTHIA6, Perugia2010","PYTHIA6, Perugia2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09"};
+Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kCyan,kViolet,kRed+2,kRed+2};
+Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE};// this is also used to split the legend in 2!!
+Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3};
 TH1D **hMC;
 TGraphAsymmErrors **grMC;
 
@@ -426,15 +429,16 @@ TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
   TLatex *tlrap;
   Double_t x=0.015,y=0.28;
   if(ncolumns==3){
-    x=0.015;
-    if(includeDEta)    x=0.065;
+    x=0.015;// this and the following numbers does not make too much sense, they come just from an optimization
+    if(includeDEta)x=0.065;
+    if(collSystem==1&&includeDEta)x=0.048;
   }
   if(nrows==3){// these are hard coded number from an optimization
     if(includeDEta)y=0.25;
     else y=0.18;
   }
   if(nrows==2){// these are hard coded number from an optimization
-    y=0.395;
+    y=0.395;    
   }
   TString str;
   if(collSystem==0)str="|#it{y}^{D}_{cms}|<0.5";
@@ -1255,11 +1259,13 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       grMC[kmc]->SetFillStyle(3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);
       grMC[kmc]->SetMarkerSize(markersizeMC);
-      if(drawMCasLines==2){
-	grMC[kmc]->Draw("C0");
-      }
-      else {
-	grMC[kmc]->Draw("E5");
+      if(drawSystMC){
+	if(drawMCasLines==2){
+	  grMC[kmc]->Draw("C0");
+	}
+	else {
+	  grMC[kmc]->Draw("E5");
+	}
       }
       
       //      if(legend)legend->AddEntry(hMC[kmc],Form("%s",strModelDir[kmc].Data()),"lep");  
@@ -1660,8 +1666,11 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
     return;
   }  
 
+  Bool_t includeinlegendOrig[7];
+  for(Int_t k=0;k<7;k++)includeinlegendOrig[k]=includeinlegend[k];
   Int_t orderAssoc[3]={2,0,1};  
   for(Int_t jp=0;jp<=2;jp++){
+
     Int_t needTitle=0;
     if(jp==0)needTitle=2;
     gStyle->SetOptStat(0000);
@@ -1671,7 +1680,13 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
     if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
       includeinlegend[3]=kFALSE;
       includeinlegend[4]=kFALSE;
+      includeinlegend[5]=kFALSE;
+      includeinlegend[6]=kFALSE;
       CompareDatatoModels(0,orderAssoc[jp],0,pd,100000+needTitle+100);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
+      includeinlegend[3]=includeinlegendOrig[3];
+      includeinlegend[4]=includeinlegendOrig[4];
+      includeinlegend[5]=includeinlegendOrig[5];
+      includeinlegend[6]=includeinlegendOrig[6];
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
       CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle);//+1000000);    
@@ -1684,9 +1699,10 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
       includeinlegend[0]=kFALSE;
       includeinlegend[1]=kFALSE;
       includeinlegend[2]=kFALSE;
-      includeinlegend[3]=kTRUE;
-      includeinlegend[4]=kTRUE;
       CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle+100);    
+      includeinlegend[0]=includeinlegendOrig[0];
+      includeinlegend[1]=includeinlegendOrig[1];
+      includeinlegend[2]=includeinlegendOrig[2];
     }
     else{
       CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle);    
@@ -1749,11 +1765,18 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
 
   cFinalPaperStyle->Modified();
   cFinalPaperStyle->Update();
-  cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.root");
-  cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.eps");
-  cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.png");
-  cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.pdf");
-
+  if(drawSystMC){
+    cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.root");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.eps");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.png");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCFitResults.pdf");
+  }
+  else{
+  cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.root");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.eps");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.png");
+    cFinalPaperStyle->SaveAs("ComparePPtoMCnoSystFitResults.pdf");
+  }
   return;
 
 }
@@ -1937,6 +1960,8 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
     return;
   }  
 
+  Bool_t includeinlegendOrig[7];
+  for(Int_t k=0;k<7;k++)includeinlegendOrig[k]=includeinlegend[k];
   Int_t orderAssoc[3]={2,0,1};  
   for(Int_t jp=0;jp<=2;jp++){
     Int_t needTitle=0;
@@ -1948,8 +1973,14 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
     if(jp==1){// identifier set as: 10*quantity+binass; NS --> 0 ; binass == jp (not orderAssoc[jp])
       includeinlegend[3]=kFALSE;
       includeinlegend[4]=kFALSE;
+      includeinlegend[5]=kFALSE;
       includeinlegend[6]=kFALSE;
       CompareDatatoModels(1,orderAssoc[jp],0,pd,100000+needTitle+100);    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
+      includeinlegend[3]=includeinlegendOrig[3];
+      includeinlegend[4]=includeinlegendOrig[4];
+      includeinlegend[5]=includeinlegendOrig[5];
+      includeinlegend[6]=includeinlegendOrig[6];
+
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
       CompareDatatoModels(1,orderAssoc[jp],0,pd,needTitle);    
@@ -1962,18 +1993,19 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
       includeinlegend[0]=kFALSE;
       includeinlegend[1]=kFALSE;
       includeinlegend[2]=kFALSE;
-      includeinlegend[3]=kFALSE;
-      includeinlegend[4]=kFALSE;
-      includeinlegend[6]=kTRUE;
       CompareDatatoModels(1,orderAssoc[jp],0,pd,needTitle+100);    
-      TLatex *tlDeta=GetDRapForSystem(0,orderAssoc[jp],1);
+      includeinlegend[0]=includeinlegendOrig[0];
+      includeinlegend[1]=includeinlegendOrig[1];
+      includeinlegend[2]=includeinlegendOrig[2];
+      TLatex *tlDeta=GetDRapForSystem(1,orderAssoc[jp],1);
       tlDeta->Draw();
     
     }
     else{
       CompareDatatoModels(1,orderAssoc[jp],0,pd,needTitle);    
     }
-    TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],orderAssoc[jp]);
+
+    TLatex *tlAssYieldPt=GetAssocPtText(orderAssoc[jp],orderAssoc[jp],0);
     tlAssYieldPt->Draw();
  
     gStyle->SetOptStat(0000);   
@@ -2015,11 +2047,18 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
 
   cFinalPaperStyle->Modified();
   cFinalPaperStyle->Update();
-  cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.root");
-  cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.eps");
-  cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.png");
-  cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.pdf");
-
+  if(drawSystMC){
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.root");
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.eps");
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.png");
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCFitResults.pdf");
+  }
+  else {
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCnoSystFitResults.root");
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCnoSystFitResults.eps");
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCnoSystFitResults.png");
+    cFinalPaperStyle->SaveAs("ComparePPbtoMCnoSystFitResults.pdf");
+  }
   return;
 
 }

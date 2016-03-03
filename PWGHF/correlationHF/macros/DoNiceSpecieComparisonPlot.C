@@ -138,6 +138,7 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(tl->GetX()+0.04);
 	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.065); 
 	str.ReplaceAll("GeV/c","GeV/#it{c}");
+	str.ReplaceAll(" < ","<");
 	tl->SetTitle(str.Data());
 	tl->SetTextSize(0.045);
       }
@@ -181,14 +182,17 @@ void RestylePlot(TPad * pad, Int_t pos){
     } //end of TLatex 'if'
 
     if(strName.Contains("TH1")) {
-      TH1D *hist = (TH1D*)lc->At(jl);  
+      TH1D *hist = (TH1D*)lc->At(jl); 
       if(hist->GetMarkerColor()==kRed) {
 	maxY[0] = hist->GetBinContent(hist->GetMaximumBin());
 	hist->SetMarkerSize(1.8);
 	hist->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+	hist->GetXaxis()->CenterTitle(kTRUE);
 	hist->GetXaxis()->SetTitleSize(0.05);
 	hist->GetXaxis()->SetTitleOffset(1.00);
 	hist->GetXaxis()->SetLabelSize(0.04);
+	hist->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
+	hist->GetYaxis()->CenterTitle(kTRUE);
 	hist->GetYaxis()->SetTitleSize(0.05);
 	hist->GetYaxis()->SetTitleOffset(1.14);
 	hist->GetYaxis()->SetLabelSize(0.04);

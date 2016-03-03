@@ -171,7 +171,8 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
   FillH1(kHistMult, nTracklets);
 
   if (fJetsCont) {
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
     Int_t i = 0;
     while (jet) {
       FillH1(kHistJetPt, jet->Pt());

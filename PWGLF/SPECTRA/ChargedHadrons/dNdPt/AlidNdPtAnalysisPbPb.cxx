@@ -870,12 +870,17 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
 
       // only postive charged 
-      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0) 
-        continue;
+      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0){ continue;}
       
       // only negative charged 
-      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
-        continue;
+      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0){continue;}
+      
+      if(IsUseTOFBunchCrossing()){
+	if( abs(track->GetTOFsignalDz())>10){ continue;}
+	if( track->GetTOFsignalToT()<0){    continue;}
+	if( track->GetTOFsignalToT()>25){   continue;}
+      }
+      
 
       //
       Double_t values[4] = {vtxESD->GetZ(),track->Pt(),track->Eta(), centralityF};	  
@@ -932,7 +937,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
        if(!particle->GetPDG()) { continue; }
        Double_t charge = particle->GetPDG()->Charge()/3.;
        if ( TMath::Abs(charge) < 0.001 ){ continue;}
-
+       
        // only postive charged 
        if(GetParticleMode() == AlidNdPtHelper::kPlus && charge < 0.) {continue;}
        

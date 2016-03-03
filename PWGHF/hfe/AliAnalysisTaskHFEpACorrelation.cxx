@@ -19,7 +19,7 @@
 //      Task for Heavy-flavour electron analysis in pPb collisions    //
 //      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 //																	  //
-//		version: February 24, 2016.							          //
+//		version: February 29, 2016.							          //
 //                                                                    //
 //	    Authors 							                          //
 //		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -2961,6 +2961,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             if (fMCparticle->Eta()<fEtaCutMin || fMCparticle->Eta()>fEtaCutMax) continue;
             
             if (fMCparticle->Charge() == 0) continue;
+            if (!fMCparticle->IsPhysicalPrimary()) continue; //Physical primary
             
             //Save the pT of all Charged hadrons in the acceptance (This is the denominator of the efficiency)
             fpTEffHadronsMC->Fill(fMCparticle->Pt());

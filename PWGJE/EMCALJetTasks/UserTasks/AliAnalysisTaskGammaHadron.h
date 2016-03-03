@@ -50,13 +50,20 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   THnF                      *fHistEff_Hadron;           // input efficiency for associate particles
 
   // Constants
-  Double_t                    fRtoD;                     // conversion of rad to degree
+  Double_t                    fRtoD;                    // conversion of rad to degree
+  static const Int_t          fN_Identifier=3;          // number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
+  static const Int_t          N_DPhistos=31;            // =  nbins[0];
+  static const Int_t          N_G_Histos=9;             // nine 2D histograms for different trigger energy ranges
+  static const Int_t          N_ZT_Histos=7;            // seven 2D histograms for different zT ranges
+  static const Int_t          N_XI_Histos=8;            // eight 2D histograms for different xi ranges
+  Double_t                    ZT_Step;                  // Bin width for the zT histograms
+  Double_t                    XI_Step;                  // Bin width for the Xi histograms
 
   TAxis*                      fMixBCent;                 // Number of centrality bins for the mixed event
   TAxis*                      fMixBZvtx;                 // Number of vertex bins for the mixed event
   TString                     fCentMethod_alt;           // alternative centrality selection method
   Double_t                    fCent_alt;                 // alternative centrality
-  AliEventPoolManager        *fPoolMgr;                 //! event mixer
+  AliEventPoolManager        *fPoolMgr;                  //! event mixer
   Int_t                       fTrackDepth;               //  #tracks to fill pool
   Int_t                       fPoolSize;                 //  Maximum number of events
 
@@ -73,16 +80,17 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   TList                      *fOutputList1;            //! Output list
   TList                      *fOutputList2;            //! Output list
   TList                      *fOutputList3;            //! Output list
+  TList                      *fOutputList_xi;          //! Output list
+  TList                      *fOutputList_zeta;        //! Output list
 
   // Histograms -
   TH1  					    *fHistNoClus_pt_Trigger;   //! No of calorimeter Clusters as a function of p_T
   TH1  					    *fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
   TH1					   **fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
-  TH2					   **fHist_dEta_dPhi;          //! No of g-h pairs in the deta eta delta phi plane
-  TH2					   **fHist_dEta_dPhi_low;      //! No of g-h pairs in the deta eta delta phi plane
-  TH2					   **fHist_dEta_dPhi_med;      //! No of g-h pairs in the deta eta delta phi plane
-  TH2					   **fHist_dEta_dPhi_high;     //! No of g-h pairs in the deta eta delta phi plane
   TH1 					    *fHistpi0;                 //!
+  TH2					   **fHist_dEta_dPhi_G[3];     //! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
+  TH2					   **fHist_dEta_dPhi_ZT[3];    //! No of g-h pairs in the deta eta delta phi plane for certain zT values
+  TH2					   **fHist_dEta_dPhi_XI[3];    //! No of g-h pairs in the deta eta delta phi plane for certain Xi values
 
   TH1					  **fHistpt_assHadron[3];      //! pt distributions of the associated hadron in a certain p_t bin of the gamma
   TH1					  **fHist_DP_gh[3];            //! delta phi g-h distribution fro a given p_t gamma bin

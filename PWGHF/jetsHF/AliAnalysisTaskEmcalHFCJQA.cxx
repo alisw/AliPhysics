@@ -450,7 +450,8 @@ void AliAnalysisTaskEmcalHFCJQA::CheckClusTrackMatching()
   Double_t dphi = 999;
 
   //Get closest cluster to track
-  AliPicoTrack* PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetNextAcceptParticle(0));
+  fTracksCont->ResetCurrentID();
+  AliPicoTrack* PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetNextAcceptParticle());
   while(PicoTrack)
   {
 	AliVTrack* track = PicoTrack->GetTrack();
@@ -470,7 +471,8 @@ void AliAnalysisTaskEmcalHFCJQA::CheckClusTrackMatching()
   }
 
   //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  fCaloClustersCont->ResetCurrentID();
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
   while(cluster)
   {
     TLorentzVector nPart;

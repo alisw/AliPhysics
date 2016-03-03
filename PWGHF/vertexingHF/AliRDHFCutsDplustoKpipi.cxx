@@ -50,7 +50,8 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) :
   fMaxPStrongPidpi(0.),
   fUseImpParProdCorrCut(kFALSE),
   fUsed0MeasMinusExpCut(kFALSE),
-  fMaxd0MeasMinusExp(0x0)
+  fMaxd0MeasMinusExp(0x0),
+  fScaleNormDLxyBypOverPt(kTRUE)
 {
   //
   // Default Constructor
@@ -137,7 +138,8 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &
   fMaxPStrongPidpi(source.fMaxPStrongPidpi),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
   fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
-  fMaxd0MeasMinusExp(0x0)
+  fMaxd0MeasMinusExp(0x0),
+  fScaleNormDLxyBypOverPt(source.fScaleNormDLxyBypOverPt)
 {
   //
   // Copy constructor
@@ -161,7 +163,8 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
   fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
   fUsed0MeasMinusExpCut=source.fUsed0MeasMinusExpCut;
   if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
-  
+  fScaleNormDLxyBypOverPt=source.fScaleNormDLxyBypOverPt;
+
   return *this;
 }
 //---------------------------------------------------------------------------
@@ -294,7 +297,8 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
   if(fVarsForOpt[12]){
     iter++;
-    vars[iter]=dd->NormalizedDecayLengthXY()*dd->P()/dd->Pt();
+    if(fScaleNormDLxyBypOverPt) vars[iter]=dd->NormalizedDecayLengthXY()*dd->P()/dd->Pt();
+    else vars[iter]=dd->NormalizedDecayLengthXY();
   }
   if(fVarsForOpt[13]){
     iter++;
@@ -488,9 +492,11 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-
-    if(d->NormalizedDecayLengthXY()*d->P()/pt<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-
+    if(fScaleNormDLxyBypOverPt){
+      if(d->NormalizedDecayLengthXY()*d->P()/pt<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }else{
+      if(d->NormalizedDecayLengthXY()<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
     if(d->CosPointingAngleXY()<fCutsRD[GetGlobalIndex(13,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     //sec vert

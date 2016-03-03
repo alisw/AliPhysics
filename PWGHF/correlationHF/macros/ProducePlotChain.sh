@@ -31,16 +31,16 @@ export HFCJlocalCodeDir="$PWD"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
 declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Oct30/Templates_pp_28Aug15"
 #/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/MCTemplates/Templates_pp_12May15"
-declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Oct30/Templates_pPb_28Aug15"
+declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Dec18/Templates_pPb_28Aug15"
 #"/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare -a Nmccase=( 5 4 )
-declare -a mccasePP=( 1 1 1 1 1 0 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, POHWEG+Perugia2011, PYTHIA8, HERWIG, POWHEG+Perugia2011 with EPS09
-declare -a mccasePPb=( 1 1 1 0 1 0 1 )
+declare -a Nmccase=( 5 5 )
+declare -a mccasePP=( 1 1 1 1 0 1 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09
+declare -a mccasePPb=( 1 1 1 1 0 0 1 )
 declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
-declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" )
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC")
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
@@ -90,7 +90,7 @@ declare -a includev2=( 0 0 )
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
 ############  IN CASE SOME WERE ALREADY DONE WITH THIS VERY SAME SCRIPT #######
 declare -i cpCode=0 # THIS WILL MAKE THE COMMITTED MACRO TO BE COPIED AND USED IN THE HFCJlocalCodeDir DIRECTORY, WHICH IS EXPORTED. IF YOU WANT TO MODIFY CODE YOU CAN RUN WITH THIS SET TO 1 THE FIRST TIME AND THEN SET IT TO 0. 
-declare -ai useScriptFDpaths=( 1 1 1 ) #THIS IS USEFUL IN CASE YOU DO NOT WANT TO RECOMPUTE THE FD BUT USE THE PATHS SET BY THE SCRIPT FOR THE FILES COMING FROM THE FD SUBTRACTION
+declare -ai useScriptFDpaths=( 1 1 1 ) #DO NOT CHANGE IT, UNLESS YOU KNOW!!  THIS IS USEFUL IN CASE YOU DO NOT WANT TO RECOMPUTE THE FD BUT USE THE PATHS SET BY THE SCRIPT FOR THE FILES COMING FROM THE FD SUBTRACTION
 declare -i doFeedDownGlob=1
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
 declare doInitAndReflStep=1  ## NOTE THAT THIS STEP IS NECESSARY ALSO IN CASE THE PLOTS DO NOT HAVE TO BE REFLECTED. THE "reflect" PARAMETER ABOVE IS WHAT DETERMINED WHETHER OR NOT THE PLOTS WILL BE REFLECTED INSIDE THIS STEP. THIS PARAMETER IS JUST A SWITCH: YOU CAN SET IT TO 0 IN CASE YOU ALREADY DID IT AND YOU DO NOT WANT TO REPEAT IT
@@ -99,7 +99,7 @@ declare doNicePlot=1
 declare doCompareMesons=1
 declare dofit=1
 declare doFitResultComparisonPPpPb=1
-declare dofitMC=1
+declare dofitMC=0
 declare doFitResultComparisonPPtoMC=1
 declare doFitResultComparisonPPbtoMC=1
 declare doFitResultComparisonPPtoPPbtoMCPP=0
@@ -517,6 +517,7 @@ IncludeModel(3,${mccasePP[3]})
 IncludeModel(4,${mccasePP[4]})
 IncludeModel(5,${mccasePP[5]})
 IncludeModel(6,${mccasePP[6]})
+SetDrawSystMC(kFALSE)
 CompareFitResultsPPtoMCUniqueCanvas()
 EOF
 
@@ -566,6 +567,7 @@ IncludeModel(3,${mccasePPb[3]})
 IncludeModel(4,${mccasePPb[4]})
 IncludeModel(5,${mccasePPb[5]})
 IncludeModel(6,${mccasePPb[6]})
+SetDrawSystMC(kFALSE)
 CompareFitResultsPPbtoMCUniqueCanvas()
 EOF
 
