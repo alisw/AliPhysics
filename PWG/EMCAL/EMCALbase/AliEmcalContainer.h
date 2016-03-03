@@ -1,9 +1,7 @@
 #ifndef AliEmcalContainer_H
 #define AliEmcalContainer_H
-
-//
-// container with name, TClonesArray
-//
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TLorentzVector;
 class AliTLorentzVector;
@@ -18,6 +16,20 @@ class AliVParticle;
  * @class AliEmcalContainer
  * @brief Base class for container structures within the EMCAL framework
  * @ingroup EMCALCOREFW
+ * @author  M. Verweij
+ *
+ * This class is the base class for container object used in the EMCAL framework.
+ * The main purpose is to connect this to objects stored as list objects in the
+ * input event, among them particles, EMCAL clusters, or jets. The core of the container
+ * is a pointer to a TClonesArray representing the the content in the input event.
+ *
+ * Containers can be connected. For example, jet containers need access to the track
+ * container and the cluster container in case constituent information is required.
+ *
+ * In addition, kinematical cuts can be applied, accessing only content which is selected
+ * using the selection cuts to be applied.
+ *
+ * The usage of EMCAL containers is described here: \subpage EMCALcontainers
  */
 class AliEmcalContainer : public TObject {
  public:
