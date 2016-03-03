@@ -792,10 +792,13 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
 
   cutIndex++; //4
   // Asymmetry Cut
-  if(fDoPhotonAsymmetryCut == kTRUE){
-    if(!AsymmetryCut(photon,event)){
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //4
-      return kFALSE;
+  AliAODConversionPhoton* photonAOD = dynamic_cast<AliAODConversionPhoton*>(photon);
+  if (photonAOD){
+    if(fDoPhotonAsymmetryCut == kTRUE){
+      if(!AsymmetryCut(photonAOD,event)){
+        if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photonAOD->GetPhotonPt()); //4
+        return kFALSE;
+      }
     }
   }
 
@@ -835,7 +838,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
     return kFALSE;
   }
 
-  AliAODConversionPhoton* photonAOD = dynamic_cast<AliAODConversionPhoton*>(photon);
+//   AliAODConversionPhoton* photonAOD = dynamic_cast<AliAODConversionPhoton*>(photon);
   if (photonAOD){
     photonAOD->CalculateDistanceOfClossetApproachToPrimVtx(event->GetPrimaryVertex());
 
@@ -877,8 +880,10 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   if(fHistoArmenterosafter)fHistoArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
   if(fHistoPsiPairDeltaPhiafter)fHistoPsiPairDeltaPhiafter->Fill(deltaPhi,photon->GetPsiPair());
   if(fHistoKappaafter)fHistoKappaafter->Fill(photon->GetPhotonPt(), GetKappaTPC(photon, event));
-  if(fHistoAsymmetryafter && photon->GetPhotonP()!=0)fHistoAsymmetryafter->Fill(photon->GetPhotonP(),electronCandidate->GetP()/photon->GetPhotonP());
-  
+  if(photonAOD){
+    if(fHistoAsymmetryafter && photonAOD->GetPhotonP()!=0)fHistoAsymmetryafter->Fill(photonAOD->GetPhotonP(),electronCandidate->GetP()/photonAOD->GetPhotonP());
+  }
+
   return kTRUE;
 
 }
@@ -1346,7 +1351,7 @@ Bool_t AliConversionPhotonCuts::KappaCuts(AliConversionPhotonBase * photon,AliVE
 }
 
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::AsymmetryCut(AliConversionPhotonBase * photon,AliVEvent *event) {
+Bool_t AliConversionPhotonCuts::AsymmetryCut(AliAODConversionPhoton * photon,AliVEvent *event) {
   // Cut on Energy Assymetry
 
   for(Int_t ii=0;ii<2;ii++){

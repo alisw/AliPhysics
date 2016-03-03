@@ -146,7 +146,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t dEdxCuts(AliVTrack * track);
     Bool_t KappaCuts(AliConversionPhotonBase * photon,AliVEvent *event);
     Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
-    Bool_t AsymmetryCut(AliConversionPhotonBase *photon,AliVEvent *event);
+    Bool_t AsymmetryCut(AliAODConversionPhoton *photon,AliVEvent *event);
     Bool_t PIDProbabilityCut(AliConversionPhotonBase *photon, AliVEvent * event);
     Bool_t SelectV0Finder(Bool_t onfly){
       if(onfly == fUseOnFlyV0Finder) return kTRUE;
