@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include <TObject.h>
-
+#include <TArrayF.h>
 #include "AliEMCALTriggerChannelContainer.h"
 
 class TObjArray;
@@ -145,6 +145,30 @@ public:
   void ReadOfflineBadChannelFromFile(const char* fname);
 
   /**
+   * Read the FastOR pedestals from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadFastORPedestalFromStream(std::istream& stream);
+
+  /**
+   * Read the FastOR pedestals from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadFastORPedestalFromFile(const char* fname);
+
+  /**
+   * Set the pedestal value for a FastOR
+   * @param absId Absolute ID of a FastOR
+   * @param ped   Pedestal value
+   */
+  void SetFastORPedestal(Short_t absId, Float_t ped);
+
+  /**
+   * Reset the FastOR pedestal array
+   */
+  void ResetFastORPedestal() { fFastORPedestal.Reset(); }
+
+  /**
    * Reset data grids
    */
   void Reset();
@@ -226,6 +250,7 @@ protected:
 
   AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
   std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
+  TArrayF                                   fFastORPedestal;              ///< FastOR pedestal
   const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
 

@@ -27,6 +27,7 @@
 #include <set>
 #include <iostream>
 #include <TNamed.h>
+#include <TArrayF.h>
 #include "THistManager.h"
 
 class AliEMCALTriggerPatchInfo;
@@ -66,6 +67,10 @@ public:
   void   AddOfflineBadChannel(Short_t absId)  { fOfflineBadChannels.insert(absId)   ; }
   void   ReadOfflineBadChannelFromFile(const char* fname);
   void   ReadOfflineBadChannelFromStream(std::istream& stream);
+  void   ReadFastORPedestalFromStream(std::istream& stream);
+  void   ReadFastORPedestalFromFile(const char* fname);
+  void   SetFastORPedestal(Short_t absId, Float_t ped);
+  void   ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
   void   SetFastORandCellThresholds(Int_t l0, Int_t l1, Double_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
@@ -88,6 +93,7 @@ public:
 protected:
 
   std::set<Short_t>       fOfflineBadChannels;          ///< Abd ID of offline bad channels
+  TArrayF                 fFastORPedestal;              ///< FastOR pedestal
   Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Bool_t                  fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold

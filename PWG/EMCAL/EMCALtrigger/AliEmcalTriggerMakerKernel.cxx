@@ -44,6 +44,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   TObject(),
   fBadChannels(),
   fOfflineBadChannels(),
+  fFastORPedestal(5000),
   fTriggerBitConfig(NULL),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
@@ -142,6 +143,32 @@ void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromFile(const char* fname
   ReadOfflineBadChannelFromStream(file);
 }
 
+void AliEmcalTriggerMakerKernel::SetFastORPedestal(Short_t absId, Float_t ped)
+{
+  if (absId < 0 || absId >= fFastORPedestal.GetSize()) {
+    AliWarning(Form("Abs. ID %d out of range (0,5000)", absId));
+    return;
+  }
+  fFastORPedestal[absId] = ped;
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORPedestalFromStream(std::istream& stream)
+{
+  Short_t absId = 0;
+  Float_t ped = 0;
+  while (stream.good()) {
+    stream >> ped;
+    SetFastORPedestal(absId, ped);
+    absId++;
+  }
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORPedestalFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadFastORPedestalFromStream(file);
+}
+
 void AliEmcalTriggerMakerKernel::Reset(){
   fPatchAmplitudes->Reset();
   fPatchADC->Reset();
@@ -180,8 +207,11 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // information, a lookup table with the L0 times for each TRU is created
     Float_t amplitude(0);
     trigger->GetAmplitude(amplitude);
-    if(amplitude < 0) amplitude = 0;
     amplitude *= 4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
+    Int_t absId = -1;
+    fGeometry->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
+    amplitude -= fFastORPedestal[absId];
+    if(amplitude < 0) amplitude = 0;
     if (amplitude >= fMinL0FastORAmp) {
       (*fPatchAmplitudes)(globCol,globRow) = amplitude;
       Int_t nl0times(0);
