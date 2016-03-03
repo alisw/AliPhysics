@@ -76,7 +76,7 @@ private:
   Float_t fMaxBBVariation;
   Float_t fMaxBGVariation;
   Float_t fAsynchronBB;
-  Float_t fAsynchronBG;
+  Float_t fAsynchronBG; 
 
   ClassDef(AliADQAChecker,5)  // description 
 

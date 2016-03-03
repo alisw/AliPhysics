@@ -24,7 +24,11 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
   void ValidateAnodes();
   void ReadBaselines();
 
-  void SetNSigmaGain(Float_t sig=3.){fNSigmaGain=sig;}
+  void SetValidationOption(Int_t opt){fValidateOption=opt;}
+  void SetMinGain(Float_t ming=0.001){fMinGain=ming;}
+  void SetMaxGain(Float_t maxg=99.){fMaxGain=maxg;}
+  void SetMaxRelDiffForValid(Double_t reld=0.3){fToleranceGain=reld;}
+  void SetMaxNSigmaForValid(Float_t sig=3.){fNSigmaGain=sig;}
   void SetNSigmaNoise(Float_t sig=10.){fNSigmaNoise=sig;}
   Bool_t IsModuleGood()const;
   Bool_t IsAnodeGood(Int_t iAnode)const{ return fGoodAnode[iAnode];}
@@ -70,8 +74,12 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
   Float_t fCorrNoise[fgkNAnodes];  // array of anode corrected noise
   Float_t fSumTPPeak[fgkNAnodes];  // test pulse amplitude summed over events
   Float_t fTPPos[fgkNAnodes];      // test pulse position
+  Int_t fValidateOption;           // Option to check for good gain
+  Float_t fMinGain;                // minimum acceptable gain
+  Float_t fMaxGain;                // maximum acceptable gain
   Float_t fNSigmaGain;             // Cut value for gain (n*sigma)
+  Float_t fToleranceGain;          // Cut value for gain (percent from mean)
   Float_t fNSigmaNoise;            // Threshold for TP signal identification
-  ClassDef(AliITSOnlineSDDTP,4);
+  ClassDef(AliITSOnlineSDDTP,5);
 };
 #endif

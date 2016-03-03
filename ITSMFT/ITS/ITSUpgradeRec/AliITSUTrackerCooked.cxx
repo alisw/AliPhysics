@@ -475,6 +475,7 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
       AliESDtrack iotrack;
       iotrack.UpdateTrackParams(track,AliESDtrack::kITSin);
       iotrack.SetLabel(label);
+      if (fSAonly) iotrack.SetStatus(AliESDtrack::kITSpureSA); 
       event->AddTrack(&iotrack);
   }
 

@@ -47,7 +47,7 @@
 #include <float.h>
 //#include "TGraph2D.h"
 //#include "TGraph.h"
-
+class THashList;
 
 namespace TStatToolkit
 {
@@ -65,8 +65,7 @@ namespace TStatToolkit
   void TruncatedMean(const TH1 * his, TVectorT<T> *param, Float_t down=0, Float_t up=1.0, Bool_t verbose=kFALSE);
   void MedianFilter(TH1 * his1D, Int_t nmedian);
 
-  template <typename T> 
-  Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
+  template <typename T> Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
   //
   template <typename T> 
   void LTM(TH1 * his, TVectorT<T> *param=0 , Float_t fraction=1,  Bool_t verbose=kFALSE);
@@ -83,8 +82,10 @@ namespace TStatToolkit
   //
   // Graph tools
   //
+  THashList *AddMetadata(TTree*, const char *vartagName,const char *varTagValue);
+  TNamed *GetMetadata(TTree* tree, const char *vartagName);
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
-  TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
+  TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=-1, Int_t firstEntry=0);
 
   //
   // Fitting function
@@ -115,7 +116,7 @@ namespace TStatToolkit
   //
   //
   void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t dumpHisto=100,Int_t verbose=kFALSE);
-  void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0, Double_t fractionCut=0.1);
+  void MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=0,  Double_t fractionCut=0.1, const char * estimators=0);
 
   //
   // norm (distance) functions
@@ -130,7 +131,7 @@ namespace TStatToolkit
   //
   // TTree function for robust draw
   //
-  TH1* DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts = "1", const char* hname = "histo", const char* htitle = "histo", Int_t nsigma = 4, Float_t fraction = 0.75);
+  TH1* DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts = "1", const char* hname = "histo", const char* htitle = "histo", Int_t nsigma = 4, Float_t fraction = 0.75, TObjArray *description=0 );
   //
   // TestFunctions:
   //

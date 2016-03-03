@@ -259,7 +259,7 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2, In
 }
 
 
-TTree * AliSysInfo::MakeTree(const char *lname){
+TTree * AliSysInfo::MakeTree(const char *lname, const char * fout){
   // char * lname = "syswatch.log"
   TTree * tree = new TTree;
   tree->ReadFile(lname);
@@ -269,6 +269,12 @@ TTree * AliSysInfo::MakeTree(const char *lname){
   tree->SetAlias("VM","pI.fMemVirtual");
   tree->SetAlias("deltaRM","(pI.fMemResident-pIOld.fMemResident)");
   tree->SetAlias("RM","pI.fMemResident");
+  if (fout!=0){
+    TFile * f = TFile::Open(fout,"recreate");
+    f->cd();
+    tree->Write("AliSysInfo");
+    delete f;
+  }
   return tree;
 }
 

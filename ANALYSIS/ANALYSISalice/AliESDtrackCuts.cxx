@@ -1483,9 +1483,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     cuts[40]=kTRUE;
 
   // TOF signal Dz cut
-  Float_t dxTOF = esdTrack->GetTOFsignalDx();
-  Float_t dzTOF = esdTrack->GetTOFsignalDz();
+  Float_t dxTOF = 999.; //esdTrack->GetTOFsignalDx();
+  Float_t dzTOF = 999.; //esdTrack->GetTOFsignalDz();
   if (fFlagCutTOFdistance && (esdTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit
+    dxTOF = esdTrack->GetTOFsignalDx();
+    dzTOF = esdTrack->GetTOFsignalDz();
 	  if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
 		  const AliESDEvent* event = esdTrack->GetESDEvent();
 		  if (event){

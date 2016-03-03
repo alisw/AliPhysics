@@ -337,7 +337,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	if (curr!=processedIds.end() && *curr<=id) {
 	  curr++;
 	} else {
-	  if (headerSize<=capacity-offset) {
+	  if (offset+headerSize<=capacity) {
 	    HLTInfo("add empty data block for equipment id %d", id);
 	    memcpy(outputPtr+offset, header.GetHeader(), headerSize);
 	    AliHLTComponentBlockData bd;

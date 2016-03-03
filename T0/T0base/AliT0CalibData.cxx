@@ -87,7 +87,7 @@ AliT0CalibData::~AliT0CalibData()
   //
 }
 //________________________________________________________________
-void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChannel) const
+void  AliT0CalibData::PrintLookup(Option_t*) const
 {
   // print lookup table
 
@@ -95,29 +95,34 @@ void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChan
   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
   printf("Number Of TRMs in setup %i\n",GetNumberOfTRMs());
 
-  iTRM=0; iTDC=0; Int_t chain=0; iChannel=0;
+  Int_t iTRM=7; Int_t iTDC=0;  Int_t iChain=0;  Int_t iChannel=0;
 
-  for (Int_t ik=0; ik<105; ik++){
+  for (Int_t ik=0; ik<226; ik++){
     lookvalue->SetTRM(iTRM);
     lookvalue->SetTDC(iTDC);
-    lookvalue->SetChain(chain);
+    lookvalue->SetChain(iChain);
     lookvalue->SetChannel(iChannel);
     
     if (iChannel<6) iChannel +=2;
     else {iChannel = 0; iTDC++;}
-    if(ik==57) { iTDC=0; iChannel=0; iTRM=1;}
-   
-  printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i %i\n",iTRM, iTDC,chain, iChannel);
+    if(ik==57) { iTDC=0; iChannel=0; iTRM=7; iChain=1;}
+    if(ik==107) { iTDC=0; iChannel=0; iTRM=9; iChain=0;}
+    if(ik==163) { iTDC=0; iChannel=0; iTRM=9; iChain=1;}
+    if(ik==211) { iTDC=12; iChannel=0; iTRM=7; iChain=1;}
+    if(ik==215) { iTDC=12; iChannel=0; iTRM=9; iChain=1;}
+    
+  
+    printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i %i\n",iTRM, iTDC,iChain, iChannel);
     lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
     //    TString name= lookkey->GetChannelName();
     // cout<<name.Data()<<endl;
     if (lookkey)
       {
 	TString name= lookkey->GetChannelName();
-	/*	cout<<" lookup KEY!!! "<<name.Data()<<" "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
+	cout<<" lookup KEY!!! "<<name.Data()<<" "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
 	    <<lookvalue->GetTDC()<<" "
 	    << lookvalue->GetChain()<<" "
-	    <<lookvalue->GetChannel()<<endl;*/
+	    <<lookvalue->GetChannel()<<endl;
       }
   }
   

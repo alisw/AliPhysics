@@ -65,9 +65,10 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
     short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
     // timebinOffset is timebin value at maximum (maxrev)
     short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
+    Float_t time = (timebinOffset*TIMEBINWITH)-fL1Phase;
     if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
-      return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase);
+      return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time);
     }
     else if ( maxf >= fAmpCut )
     {
@@ -100,8 +101,8 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 	      }
 	      catch (const std::exception & e) {
           AliError( Form("TGraph Fit exception %s, fit status %d", e.what(),tmpStatus) );
-          return AliCaloFitResults( maxamp, ped, Ret::kNoFit, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase,
-                                   timebinOffset, Ret::kDummy, Ret::kDummy,  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+          return AliCaloFitResults( maxamp, ped, Ret::kNoFit, maxf, time,
+                                   (int)time, Ret::kDummy, Ret::kDummy,  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	      }
         
 	      if( fVerbose == true )
@@ -112,12 +113,12 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 	      // global tmax
 	      tmax = fTf1->GetParameter(1) + timebinOffset - (maxrev - first) // abs. t0
         + fTf1->GetParameter(2); // +tau, makes sum tmax
-	      
+	    Float_t timemax = (tmax*TIMEBINWITH)-fL1Phase;
         delete graph;
         return AliCaloFitResults( maxamp, ped , Ret::kFitPar,
                                  fTf1->GetParameter(0)/fkEulerSquared,
-                                 (tmax*TIMEBINWITH)-fL1Phase,
-                                 timebinOffset,
+                                 timemax,
+                                 (int)timemax,
                                  fTf1->GetChisquare(),
                                  fTf1->GetNDF(),
                                  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
@@ -129,8 +130,8 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 	    {
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase,
-                                 timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time,
+                                 (int)time, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	    }
     } // ampcut
   }

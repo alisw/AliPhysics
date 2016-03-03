@@ -22,13 +22,22 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   TH2F* GetCleanEvent(const TH2F* hrawd) const;
   void AddEvent(TH2F* hrawd);
   void ValidateAnodes();
+  void ValidateModule();
   void ReadBaselines();
 
   void SetMinNoise(Float_t ns=0.001){fMinCorrNoise=ns;}
   void SetMaxNoise(Float_t ns=9.){fMaxCorrNoise=ns;}
   void SetNSigmaNoise(Float_t ns=4.){fNSigmaNoise=ns;}
+  void SetMinNumGoodAnForGoodMod(Int_t cut=16){fMinNumGoodAnForGoodMod=cut;}
+  void SetCutOnGoodAnodeClusterSize(Int_t clu=5){fMinClusterOfGoodAn=clu;}
 
   Bool_t IsAnodeGood(Int_t iAnode)const{ return fGoodAnode[iAnode];}
+  Int_t CountGoodAnodes() const{
+    Int_t nGdAn=0;
+    for(Int_t ian=0;ian<fgkNAnodes;ian++) if(fGoodAnode[ian]) nGdAn++;  
+    return nGdAn;
+  }
+
   Float_t GetAnodeBaseline(Int_t iAnode) const{ return fBaseline[iAnode];}
   Int_t GetAnodeEqualizedBaseline(Int_t iAnode) const{ return fEqBaseline[iAnode];}
   Int_t GetAnodeBaselineOffset(Int_t iAnode) const{ return fOffsetBaseline[iAnode];}
@@ -70,7 +79,9 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
   Float_t fMinCorrNoise;             // Cut value for minimum corrected noise
   Float_t fMaxCorrNoise;             // Cut value for maximum corrected noise
   Float_t fNSigmaNoise;              // Cut value for corrected noise (n*sigma)
+  Int_t   fMinNumGoodAnForGoodMod;   // Min. n. good anodes to tag mod as good
+  Int_t   fMinClusterOfGoodAn;       // Min. n. of adjacent good anodes
 
-  ClassDef(AliITSOnlineSDDCMN,3);
+  ClassDef(AliITSOnlineSDDCMN,4);
 };
 #endif

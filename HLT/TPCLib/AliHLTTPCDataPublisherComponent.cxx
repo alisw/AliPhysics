@@ -25,6 +25,7 @@
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCDataCompressionDecoder.h"
+#include "AliHLTTPCRawClustersDescriptor.h"
 #include "AliHLTPluginBase.h"
 #include "AliHLTSystem.h"
 #include "AliHLTOUT.h"
@@ -61,6 +62,26 @@ const char* AliHLTTPCDataPublisherComponent::GetComponentID()
   return "TPCDataPublisher";
 }
 
+AliHLTComponentDataType AliHLTTPCDataPublisherComponent::GetOutputDataType() 
+{
+  // 
+  // overwrite AliHLTRawDataPublisherComponent::GetOutputDataType(),
+  // since the component can publishes not only raw data type, but also decompressed clusters
+  //
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTTPCDataPublisherComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList) 
+{ 
+  // see header file for class documentation
+  tgtList.clear();
+  tgtList.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC );
+  tgtList.push_back( AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC );
+  return tgtList.size();
+}
+
+
 AliHLTComponent* AliHLTTPCDataPublisherComponent::Spawn()
 {
   /// inherited from AliHLTComponent: spawn function.
@@ -70,68 +91,101 @@ AliHLTComponent* AliHLTTPCDataPublisherComponent::Spawn()
 int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& evtData, 
 						   AliHLTComponentTriggerData& trigData, 
 						   AliHLTUInt8_t* outputPtr, 
-						   AliHLTUInt32_t& size, 
+						   AliHLTUInt32_t& outputSize, 
 						   AliHLTComponentBlockDataList& outputBlocks)
 {
   /// inherited from AliHLTProcessor: data processing
   if (!IsDataEvent()) return 0;
 
+  AliHLTUInt32_t capacity=outputSize;
+  outputSize=0;
   int iResult=0;
 
-  AliHLTComponentBlockDataList clusterBlocks;
   AliHLTUInt32_t offset=0;
-  AliHLTUInt32_t capacity=size;
-  size=0;
-  if (fClusters) {
+
+  if( fClusters && ( CheckMode(kPublishClustersAll) || CheckMode(kRegisterClusterBlocks) )  ){
+
     fClusters->Clear();
+
     if (CheckMode(kPublishClustersAll)) {
       // set the target buffer only if the clusters should be published
-      fClusters->SetTargetBuffer(outputPtr+offset, capacity-offset);
+      fClusters->SetTargetBuffer(outputPtr, capacity);
     } else if (CheckMode(kRegisterClusterBlocks)) {
       // data blocks are registered in the container, track model cluster blocks
       // are unpacked but not stored in order to find the included partitions
-      //fClusters->
     }
-    if (CheckMode(kPublishClustersAll) ||
-	CheckMode(kRegisterClusterBlocks)) {
-      if ((iResult=ReadClusterFromHLTOUT(fClusters))>=0) {
-	if ((iResult=fClusters->GetState())>=0) {
-	  if (fClusters->CopyBlockDescriptors(clusterBlocks)>0) {
-	    for (AliHLTComponentBlockDataList::const_iterator bd=clusterBlocks.begin();
-		 bd!=clusterBlocks.end(); bd++) {
-	      if (offset<bd->fOffset+bd->fSize)
-		offset=bd->fOffset+bd->fSize;
-	    }
+
+    iResult = ReadClusterFromHLTOUT(fClusters);
+    
+    if( CheckMode(kPublishClustersAll) ) { // write out cluster blocks 	    
+
+      if( iResult>=0 ) iResult = fClusters->GetState();
+      
+      if( iResult >= 0 ){
+	AliHLTComponentBlockDataList clusterBlocks;
+	fClusters->CopyBlockDescriptors(clusterBlocks);
+	
+	if( clusterBlocks.size() > 0 ){
+	  for (AliHLTComponentBlockDataList::iterator bd=clusterBlocks.begin(); bd!=clusterBlocks.end(); bd++) {
+	    // set proper data type for cluster blocks 
+	    bd->fDataType = (AliHLTTPCDefinitions::RawClustersDataType()  | kAliHLTDataOriginTPC );
+	    // find end of written cluster data
+	    if (offset < bd->fOffset + bd->fSize) offset = bd->fOffset + bd->fSize;
 	  }
-	} else if (iResult==-ENOSPC) {
-	  offset=fClusters->GetBlockCount()*sizeof(AliHLTTPCRawClusterData)+
-	    fClusters->GetClusterCount()*sizeof(AliHLTTPCRawCluster);
-	  iResult=0; // keep going to also accumulate the size for raw data blocks
+	  
+	  // add "merged clusters" descriptor. Even when compressed clusters were not merged originally, they were automaticalla merged during decoding	  
+	    
+	  AliHLTTPCRawClustersDescriptor desc; 
+	  desc.SetMergedClustersFlag(1);
+	  
+	  AliHLTComponent_BlockData bd;
+	  FillBlockData(bd);
+	  bd.fOffset        = offset;
+	  bd.fSize          = sizeof(AliHLTTPCRawClustersDescriptor);
+	  bd.fDataType      = AliHLTTPCDefinitions::RawClustersDescriptorDataType() | kAliHLTDataOriginTPC ;
+	  
+	  if( offset + bd.fSize <= capacity ){
+	    *(AliHLTTPCRawClustersDescriptor*)(outputPtr+offset ) = desc;
+	    clusterBlocks.push_back(bd);
+	    outputBlocks.insert( outputBlocks.begin(), clusterBlocks.begin(), clusterBlocks.end() );	    
+	  }
+	  offset+= bd.fSize;	  
 	}
+      } else if (iResult==-ENOSPC) {
+	offset = fClusters->GetBlockCount()*sizeof(AliHLTTPCRawClusterData)+
+	  fClusters->GetClusterCount()*sizeof(AliHLTTPCRawCluster)
+	  + sizeof(AliHLTTPCRawClustersDescriptor);
+	iResult=0; // keep going to also accumulate the size for raw data blocks    
       }
-      if (iResult==-ENODATA) {
-	// return indicates absence of compressed clusters in HLTOUT
-	// but is not treated as an error further downstream
-	iResult=0;
-      }
+    }        
+    if (iResult==-ENODATA) {
+      // return indicates absence of compressed clusters in HLTOUT
+      // but is not treated as an error further downstream
+      iResult=0;    
     }
   }
 
-  if (offset<=capacity) {
-    size=capacity-offset;
-    outputPtr+=offset;
-  } else {
-    // there is clearly not enough space, keep the full buffer to
-    // publish the raw data blocks and determine the size of those
-    // data will be overwritten
-    size=capacity;
+  if (iResult==-ENOSPC) {
+    iResult=0; // keep going to also accumulate the size for raw data blocks    
   }
+
+  // Write out raw data. Virtual IsSelected() method decides which raw data blocks are required (if any). 
+
+  AliHLTUInt32_t rawSize = 0;
+
+  if (offset <= capacity) {
+    rawSize = capacity - offset;
+    outputPtr += offset;
+  }
+
   if (iResult>=0) {
     unsigned firstBlock=outputBlocks.size();
-    iResult=AliHLTRawReaderPublisherComponent::GetEvent(evtData, trigData, outputPtr, size, outputBlocks);
+    iResult = AliHLTRawReaderPublisherComponent::GetEvent(evtData, trigData, outputPtr, rawSize, outputBlocks);
+
     if (iResult==-ENOSPC) {
       // not enough space in the buffer, fMaxSize has been updated by base class
-      fMaxSize+=offset;
+      offset += fMaxSize;
+      iResult = 0;
     } else if (iResult>=0) {
       if (outputBlocks.size()>firstBlock && CheckMode(kPublishRawFiltered)) {
 	AliInfo(Form("publishing %lu DDL(s) for emulation of compressed TPC clusters", outputBlocks.size()-firstBlock));
@@ -143,25 +197,21 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
 	if (firstBlock>0) {firstBlock--; continue;}
 	bd->fOffset+=offset;
       }
-      offset+=size;
+      offset+=rawSize;
     }
   }
-
-  if (iResult>=0 && capacity<offset && fMaxSize<(int)offset) {
+ 
+  if (iResult>=0 && capacity<offset ) {
     // update the size requirement
-    fMaxSize=offset;
-    outputBlocks.clear();
+    if( fMaxSize<(int)offset ) fMaxSize=offset;   
     iResult=-ENOSPC;
   }
 
   if (iResult>=0) {
-    size=offset;
-    if ( clusterBlocks.size()>0 && CheckMode(kPublishClustersAll) ) { // write out cluster blocks with proper data type
-      for (AliHLTComponentBlockDataList::iterator bd=clusterBlocks.begin(); bd!=clusterBlocks.end(); bd++) {
-	bd->fDataType = (AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC );
-      }
-      outputBlocks.insert(outputBlocks.begin(), clusterBlocks.begin(), clusterBlocks.end());
-    }
+    outputSize=offset;
+  } else {
+    outputBlocks.clear();
+    outputSize = 0;
   }
 
   return iResult;

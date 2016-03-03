@@ -243,6 +243,12 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   endif()
 
+  # Enable C++14 by default if found in ROOT
+  if(ROOT_HAS_CXX14 AND NOT DISABLE_CXX14)
+    message(STATUS "Enabling C++14")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  endif()
+
   # FTGL: prefer library from ROOT, look for both libFTGL and libftgl
   unset(LIB_FTGL)
   if(${ROOT_FEATURES} MATCHES "builtin_ftgl")

@@ -21,6 +21,7 @@ class AliADPreprocessor : public AliPreprocessor
   protected:
     virtual UInt_t Process(TMap* dcsAliasMap);
     UInt_t ProcessTimeSlewing();
+    UInt_t ProcessTrendings();
 
     AliADDataDCS *fDCSData;    // CDB class that stores the calibration data
 

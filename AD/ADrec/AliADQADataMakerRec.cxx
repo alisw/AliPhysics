@@ -185,8 +185,27 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
   ResetEventTrigClasses();
   
   if(task == AliQAv1::kRAWS){
-    TTimeStamp currentTime;
-    fCycleStopTime = currentTime.GetSec();
+    TDatime currentTime;
+    fCycleStopTime = currentTime.GetSecond();
+    
+    
+    Double_t xq[1] = {0.9};
+    Double_t yq[1];
+
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBins(fCurrentCycle,0,fCurrentCycle);
+    ((TH1F*)GetRawsData(kChargeADA_PC))->GetQuantiles(1,yq,xq);
+   
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBinContent(fCurrentCycle,yq[0]);
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->LabelsOption("v");
+    if (fCurrentCycle%10 == 0)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->SetBinLabel(fCurrentCycle,Form("%d:%d:%d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond())); 
+    ((TH1F*)GetRawsData(kChargeADA_PC))->Reset("ICES");
+    
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBins(fCurrentCycle,0,fCurrentCycle);
+    ((TH1F*)GetRawsData(kChargeADC_PC))->GetQuantiles(1,yq,xq);
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBinContent(fCurrentCycle,yq[0]);
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetXaxis()->LabelsOption("v");
+    if (fCurrentCycle%10 == 0)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetXaxis()->SetBinLabel(fCurrentCycle,Form("%d:%d:%d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond()));
+    ((TH1F*)GetRawsData(kChargeADC_PC))->Reset("ICES");
     
     Int_t nCorrelation = 0;
     Int_t nPair = 1;
@@ -533,7 +552,24 @@ void AliADQADataMakerRec::InitRaws()
   TH1F * h1d;
 
   int iHisto =0;
-
+  
+  h1d = new TH1F("H1D_Trend_TriggerChargeQuantileADA","Trigger charge quantile",1, 0, 1) ;  
+  Add2RawsList(h1d,kTrend_TriggerChargeQuantileADA, !expert, image, saveCorr);   iHisto++;
+  h1d->SetLineWidth(2);
+  h1d->SetLineColor(kBlue);
+  
+  h1d = new TH1F("H1D_Charge_ADA_PC",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  Add2RawsList(h1d,kChargeADA_PC, !expert, image, saveCorr);   iHisto++;
+  
+  h1d = new TH1F("H1D_Trend_TriggerChargeQuantileADC","Trigger charge quantile",1, 0, 1) ;  
+  Add2RawsList(h1d,kTrend_TriggerChargeQuantileADC, !expert, image, saveCorr);   iHisto++;
+  h1d->SetLineWidth(2);
+  h1d->SetLineColor(kRed);
+  
+  h1d = new TH1F("H1D_Charge_ADC_PC",Form("Total integrated [-%d,+%d] charge;Charge [ADC counts]",fRecoParam->GetNPreClocks(),fRecoParam->GetNPostClocks()), kNChargeSideBins, kChargeSideMin, kChargeSideMax) ;  
+  Add2RawsList(h1d,kChargeADC_PC, !expert, image, saveCorr);   iHisto++;
+  
+ 
   // Creation of Cell Multiplicity Histograms
   h1i = new TH1I("H1I_Multiplicity_ADA", "Number of channels with charge signal and time ADA;# of Channels;Entries", 9, -0.5, 8.5) ;  
   Add2RawsList(h1i,kMultiADA, expert, !image, !saveCorr);   iHisto++;
@@ -834,6 +870,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Double_t weightADA =0., weightADC = 0.;
   UInt_t   itimeADA=0, itimeADC=0;
   Double_t chargeADA=0., chargeADC=0.;
+  Double_t chargeTrigADA=0., chargeTrigADC=0.;
 
   Double_t diffTime=-100000, sumTime = -10000;
   
@@ -855,7 +892,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Bool_t flagBG[16];	 
     Float_t charge;
     Int_t  offlineCh;
-    Float_t adc[16], time[16], width[16], timeCorr[16]; 
+    Float_t adc[16], time[16], width[16], timeCorr[16], adcTrig[16]; 
     Int_t  iPair=0;
 
     for(Int_t iChannel=0; iChannel<16; iChannel++) { // BEGIN : Loop over channels
@@ -881,6 +918,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       // Fill Charge EoI histograms
 	   
       adc[offlineCh]    = 0.0;
+      adcTrig[offlineCh] = 0.0;
       // Search for the maximum charge in the train of 21 LHC clocks 
       // regardless of the integrator which has been operated:
       Float_t maxadc = 0;
@@ -902,6 +940,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  imax   = iClock;
 	}
       }
+      adcTrig[offlineCh] = adcPedSub[10];
       if (imax != -1) {
 	Int_t start = imax - fRecoParam->GetNPreClocks();
 	if (start < 0) start = 0;
@@ -933,10 +972,12 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	if(offlineCh<8) {
 	  mulADC++;
 	  chargeADC += adc[offlineCh];
+	  chargeTrigADC += adcTrig[offlineCh];
 	  
 	} else {
 	  mulADA++;
 	  chargeADA += adc[offlineCh];
+	  chargeTrigADA += adcTrig[offlineCh];
 	}
       }
       // Fill HPTDC Time Histograms
@@ -1099,6 +1140,8 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     FillRawsData(kChargeADA,chargeADA);
     FillRawsData(kChargeADC,chargeADC);
     FillRawsData(kChargeAD,chargeADA + chargeADC);
+    if(mulADA!=0)FillRawsData(kChargeADA_PC,chargeTrigADA/mulADA);
+    if(mulADC!=0)FillRawsData(kChargeADC_PC,chargeTrigADA/mulADC);
     
     //Decisions
     Int_t windowOffset = (fCalibData->GetTriggerCountOffset(0) - 3242)*25;

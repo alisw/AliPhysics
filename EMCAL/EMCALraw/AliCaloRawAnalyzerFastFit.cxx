@@ -58,10 +58,10 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
     Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
     Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
     short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-    
+    Float_t time = (timebinOffset*TIMEBINWITH)-fL1Phase;
     if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
-      return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase); //Time scale 19/08/2014 (Antônio)
+      return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, time); //Time scale 19/08/2014 (Antônio)
     }
     else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
     {
@@ -94,15 +94,15 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
                                        eSignal, dTau, dAmp, eAmp, dTime0, eTime, chi2);
 	      Double_t dTimeMax = dTime0 + timebinOffset - (maxrev - first) // abs. t0
         + dTau; // +tau, makes sum tmax
-        
-	      return AliCaloFitResults(maxamp,ped,Ret::kFitPar,dAmp,(dTimeMax*TIMEBINWITH)-fL1Phase,timebinOffset,chi2,Ret::kDummy,Ret::kDummy,AliCaloFitSubarray(index,maxrev,first,last)); //Time scale 19/08/2014 (Antônio)
+          Float_t timemax = (dTimeMax*TIMEBINWITH)-fL1Phase;
+	      return AliCaloFitResults(maxamp,ped,Ret::kFitPar,dAmp,timemax,(int)timemax,chi2,Ret::kDummy,Ret::kDummy,AliCaloFitSubarray(index,maxrev,first,last)); //Time scale 19/08/2014 (Antônio)
 	    } // samplecut
       else
 	    {
         
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
-	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, (timebinOffset*TIMEBINWITH)-fL1Phase, timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); //Time scale 19/08/2014 (Antônio)
+	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time, (int)time, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); //Time scale 19/08/2014 (Antônio)
 	    }
     } // ampcut
   } // bunch index

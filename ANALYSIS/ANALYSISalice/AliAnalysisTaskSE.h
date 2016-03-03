@@ -23,6 +23,8 @@ class AliMultiInputEventHandler;
 class AliAnalysisCuts;
 class AliESDfriend;
 class AliEventTag;
+class AliTrackSelectionFactory;
+class AliVTrackSelection;
 
 class TTree;
 class TList;
@@ -70,9 +72,15 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual TList*        GetQAHistos()   const {return fHistosQA;}
     virtual Bool_t        IsEventInBinZero() { return kFALSE;}
     virtual UInt_t        GetCollisionCandidates() const { return fOfflineTriggerMask;}
+
+    void SetTrackSelectionFactory(AliTrackSelectionFactory *factory)  { fTrackSelectionFactory = factory; }
+    void SetTrackSelection(AliVTrackSelection *sel)                   { fTrackSelection = sel; }
+
  protected:
     void ConnectMultiHandler();
     void DisconnectMultiHandler();
+
+    TObjArray *GetAcceptedTracks();
 
   protected:
     Int_t                 fDebug;           //  Debug flag
@@ -111,7 +119,9 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // Event Mixing
     AliMultiInputEventHandler *fMultiInputHandler;  //! pointer to multihandler
     AliInputEventHandler      *fMCEventHandler;     //! pointer to MCEventHandler
-    ClassDef(AliAnalysisTaskSE, 4); // Analysis task for standard jet analysis
+    AliTrackSelectionFactory  *fTrackSelectionFactory; /// track selection factory
+    AliVTrackSelection        *fTrackSelection;        /// track selection
+    ClassDef(AliAnalysisTaskSE, 5); // Analysis task for standard jet analysis
 };
  
 #endif

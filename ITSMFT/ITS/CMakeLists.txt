@@ -19,6 +19,6 @@ add_subdirectory(ITSUpgradeRec)
 add_subdirectory(ITSUpgradeSim)
 
 # Macros
-install(DIRECTORY macros misc testITSU  testITSUv1 testITSUv2 itsuTestBench DESTINATION ITSMFT/ITS)
+install(DIRECTORY macros misc FT1 FT2 itsuTestBench DESTINATION ITSMFT/ITS)
 
 message(STATUS "ITS UPGRADE from ITSMFT enabled")

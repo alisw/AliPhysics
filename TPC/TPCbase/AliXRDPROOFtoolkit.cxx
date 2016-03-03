@@ -118,12 +118,12 @@ TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, 
     if (counter<=startFile) continue;
     if ((maxFiles>0) && (counter>maxFiles+startFile)) break;
 
-    TFile * f = TFile::Open(currentFile.Data());
-    if (f){
-      chain->Add(currentFile.Data());
-    }
-
-    delete f;
+    //    TFile * f = TFile::Open(currentFile.Data());
+    //    if (f){
+    chain->Add(currentFile.Data());
+    //    }
+    
+    //    delete f;
   }
 
   in.close();

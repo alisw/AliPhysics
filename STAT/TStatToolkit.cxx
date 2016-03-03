@@ -940,14 +940,15 @@ TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param
   return result;
 }
 
-TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, const char * cut,  Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
+TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, const char * cut,  Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset, Int_t drawEntries, Int_t firstEntry){
   //
   // Query a graph errors
   // return TGraphErrors specified by expr and cut 
   // Example  usage TStatToolkit::MakeGraphError(tree,"Y:X:ErrY","X>0", 25,2,0.4)
   // tree   - tree with variable
   // expr   - examp 
-  const Int_t entries =  tree->Draw(expr,cut,"goff");
+  const Int_t entries =  tree->Draw(expr,cut,"goff",drawEntries,firstEntry);
+ 
   if (entries<=0) {
     ::Error("TStatToolkit::MakeGraphError","Empty or Not valid expression (%s) or cut *%s)", expr,cut);
     return 0;
@@ -970,12 +971,82 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   TObjArray *charray = chstring.Tokenize(":");
   graph->GetXaxis()->SetTitle(charray->At(1)->GetName());
   graph->GetYaxis()->SetTitle(charray->At(0)->GetName());
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (!metaData == 0){    
+    TNamed *nmdTitle0 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(0)->GetName()));
+    TNamed *nmdTitle1 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(1)->GetName()));
+    TNamed *nmdYAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(0)->GetName()));
+    TNamed *nmdXAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(1)->GetName())); 
+    //
+    TString grTitle=charray->At(0)->GetName();
+    if (nmdTitle0)  grTitle=nmdTitle0->GetTitle();
+    if (nmdTitle1)  {
+      grTitle+=":";
+      grTitle+=nmdTitle1->GetTitle();
+    }else{
+      grTitle+=":";
+      grTitle+=charray->At(1)->GetName();
+    }
+    if (nmdYAxis) {graph->GetYaxis()->SetTitle(nmdYAxis->GetTitle());}
+    if (nmdXAxis) {graph->GetXaxis()->SetTitle(nmdXAxis->GetTitle());}  
+    graph->SetTitle(grTitle.Data());
+  }  
   delete charray;
   if (msize>0) graph->SetMarkerSize(msize);
   for(Int_t i=0;i<graph->GetN();i++) graph->GetX()[i]+=offset;
   return graph;
   
 }
+
+THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const char *varTagValue){
+  //
+  // Add metadata infromation as user info to the tree - see https://alice.its.cern.ch/jira/browse/ATO-290
+  // TTree metdata are used for the Drawing methods in the folling drawing functions
+  /*
+    Supported metadata:
+    - <varName>.AxisTitle
+    - <varName>.Legend
+    - <varname>.Color
+    - <varname>.MarkerStyle
+    This metadata than can be used by the TStatToolkit
+    - TStatToolkit::MakeGraphSparse
+    - TStatToolkit::MakeGraphErrors
+   */
+  // 
+  if (!tree) return NULL;
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (metaData == NULL){  
+    metaData=new THashList;
+    metaData->SetName("metaTable");
+    tree->GetUserInfo()->AddLast(metaData);
+  } 
+  if (varTagName!=NULL && varTagValue!=NULL){
+    TNamed * named = TStatToolkit::GetMetadata(tree, varTagName);
+    if (named==NULL){
+      metaData->AddLast(new TNamed(varTagName,varTagValue));
+    }else{
+      named->SetTitle(varTagValue);
+    }
+  }
+  return metaData;
+}
+
+TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName){
+  //
+  //  Get metadata description
+  //
+  if (!tree) return 0;
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (metaData == NULL){  
+    metaData=new THashList;
+    metaData->SetName("metaTable");
+    tree->GetUserInfo()->AddLast(metaData);
+    return 0;
+  } 
+  TNamed * named = (TNamed*)metaData->FindObject(vartagName);
+  return named;
+}
+
 
 
 TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
@@ -1069,14 +1140,10 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
 
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
   if (!metaData == 0){    
-    TNamed *nmdTitle0 = 0x0;
-    TNamed *nmdTitle1 = 0x0;
-    TNamed *nmdYAxis = 0x0;
-    TNamed *nmdXAxis = 0x0;
-    nmdTitle0 =(TNamed *) metaData ->FindObject(Form("%s.title",charray->At(0)->GetName()));  
-    nmdTitle1 =(TNamed *) metaData ->FindObject(Form("%s.title",charray->At(1)->GetName())); 
-    nmdYAxis =(TNamed *) metaData ->FindObject(Form("%s.axis",charray->At(0)->GetName()));
-    nmdXAxis =(TNamed *) metaData ->FindObject(Form("%s.axis",charray->At(1)->GetName()));  
+    TNamed *nmdTitle0 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(0)->GetName()));
+    TNamed *nmdTitle1 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(1)->GetName()));
+    TNamed *nmdYAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(0)->GetName()));
+    TNamed *nmdXAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(1)->GetName())); 
     //
     TString grTitle=charray->At(0)->GetName();
     if (nmdTitle0)  grTitle=nmdTitle0->GetTitle();
@@ -1099,6 +1166,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
 //
 // functions used for the trending
 //
+
 
 Int_t  TStatToolkit::MakeStatAlias(TTree * tree, const char * expr, const char * cut, const char * alias) 
 {
@@ -1610,7 +1678,7 @@ TMultiGraph*  TStatToolkit::MakeStatusLines(TTree * tree, const char * expr, con
 }
 
 
-TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts, const char* histoname, const char* histotitle, Int_t nsigma, Float_t fraction )
+TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts, const char* histoname, const char* histotitle, Int_t nsigma, Float_t fraction, TObjArray *description )
 {
   //
   // Draw histogram from TTree with robust range
@@ -1622,22 +1690,27 @@ TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
   // - fraction:   fraction of data to define the robust mean
   // - nsigma:     nsigma value for range
   //
-
+  // To add:
+  //    automatic ranges - separatelly for X, Y and Z nbins  - as string
+  //    names for the variables
+  //    option, entries, first entry  like in tree draw
+  //
    TString drawStr(drawCommand);
    TString cutStr(cuts);
    Int_t dim = 1;
 
    if(!tree) {
-     cerr<<" Tree pointer is NULL!"<<endl;
+     ::Error("TStatToolkit::DrawHistogram","Tree pointer is NULL!");
      return 0;
    }
 
    // get entries
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff");
    if (entries == -1) {
-     cerr<<"TTree draw returns -1"<<endl;
+     ::Error("TStatToolkit::DrawHistogram","Tree draw returns -!");
      return 0;
    }
+   TObjArray *charray = drawStr.Tokenize(":");
 
    // get dimension
    if(tree->GetV1()) dim = 1;
@@ -1649,28 +1722,58 @@ TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
    }
 
    // draw robust
-   Double_t meanX, rmsX=0;
-   Double_t meanY, rmsY=0;
-   TStatToolkit::EvaluateUni(entries, tree->GetV1(),meanX,rmsX, fraction*entries);
-   if(dim==2){
-     TStatToolkit::EvaluateUni(entries, tree->GetV1(),meanY,rmsY, fraction*entries);
-     TStatToolkit::EvaluateUni(entries, tree->GetV2(),meanX,rmsX, fraction*entries);
+   // Get estimators
+   Double_t mean1=0, rms1=0, min1=0, max1=0;
+   Double_t mean2=0, rms2=0, min2=0, max2=0;
+   Double_t mean3=0, rms3=0, min3=0, max3=0;
+   
+   TStatToolkit::GetMinMaxMean( tree->GetV1(),entries, min1,max1, mean1);  
+   TStatToolkit::EvaluateUni(entries, tree->GetV1(),mean1,rms1, fraction*entries);
+   if(dim>1){
+     TStatToolkit::GetMinMaxMean( tree->GetV2(),entries, min2,max2, mean2);  
+     TStatToolkit::EvaluateUni(entries, tree->GetV1(),mean2,rms2, fraction*entries);
    }
+   if(dim>2){
+     TStatToolkit::GetMinMaxMean( tree->GetV3(),entries, min3,max3, mean3);  
+     TStatToolkit::EvaluateUni(entries, tree->GetV3(),mean3,rms3, fraction*entries);
+   }
+
    TH1* hOut=NULL;
    if(dim==1){
-     hOut = new TH1F(histoname, histotitle, 200, meanX-nsigma*rmsX, meanX+nsigma*rmsX);
+     hOut = new TH1F(histoname, histotitle, 200, mean1-nsigma*rms1, mean1+nsigma*rms1);
      for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV1()[i]);
      hOut->GetXaxis()->SetTitle(tree->GetHistogram()->GetXaxis()->GetTitle());
-     hOut->Draw();
    }
    else if(dim==2){
-     hOut = new TH2F(histoname, histotitle, 200, meanX-nsigma*rmsX, meanX+nsigma*rmsX,200, meanY-nsigma*rmsY, meanY+nsigma*rmsY);
+     hOut = new TH2F(histoname, histotitle, 200, min2, max2,200, mean1-nsigma*rms1, mean1+nsigma*rms1);
      for (Int_t i=0; i<entries; i++) hOut->Fill(tree->GetV2()[i],tree->GetV1()[i]);
      hOut->GetXaxis()->SetTitle(tree->GetHistogram()->GetXaxis()->GetTitle());
      hOut->GetYaxis()->SetTitle(tree->GetHistogram()->GetYaxis()->GetTitle());
-     hOut->Draw("colz");
    }
-   return hOut;
+   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+   
+   if (!metaData == 0){    
+    TNamed *nmdTitle0 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(0)->GetName()));
+    TNamed *nmdXAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(1)->GetName())); 
+    TNamed *nmdTitle1 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(1)->GetName()));
+    TNamed *nmdYAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(0)->GetName()));
+    //
+    TString hisTitle=charray->At(0)->GetName();
+    if (nmdTitle0)  hisTitle=nmdTitle0->GetTitle();
+    if (nmdTitle1)  {
+      hisTitle+=":";
+      hisTitle+=nmdTitle1->GetTitle();
+    }else{
+      hisTitle+=":";
+      hisTitle+=charray->At(1)->GetName();
+    }
+    if (nmdYAxis) {hOut->GetYaxis()->SetTitle(nmdYAxis->GetTitle());}
+    if (nmdXAxis) {hOut->GetXaxis()->SetTitle(nmdXAxis->GetTitle());}            
+    hOut->SetTitle(hisTitle);
+  }
+  delete charray;
+  // if (option) hOut->Draw(option);
+  return hOut;
 }
 
 void TStatToolkit::CheckTreeAliases(TTree * tree, Int_t ncheck){
@@ -1983,7 +2086,7 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
   //
 }
 
-void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose, Double_t fractionCut)
+void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose,  Double_t fractionCut, const char * estimators)
 {
   //
   // Function to calculate Distortion maps from the residual histograms
@@ -2026,6 +2129,21 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   char aname[100];
   char bname[100];
   char cname[100];
+  Float_t fractionLTM[100]={0.8};
+  TVectorF *vecLTM[100]={0};
+  Int_t nestimators=1;
+  if (estimators!=NULL){
+    TObjArray * array=TString(estimators).Tokenize(":");
+    nestimators=array->GetEntries();
+    for (Int_t iest=0; iest<nestimators; iest++){
+      fractionLTM[iest]=TString(array->At(iest)->GetName()).Atof();
+    }
+  }
+  for (Int_t iest=0; iest<nestimators; iest++) {
+    vecLTM[iest]=new TVectorF(10);
+    (*(vecLTM[iest]))[9]= fractionLTM[iest];
+  }
+
   //
   int ndim = histo->GetNdimensions();
   int nbins[ndim],idx[ndim],idxmin[ndim],idxmax[ndim],idxSav[ndim];
@@ -2070,7 +2188,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   sw.Start();
   int dimVar=1, dimVarID = axOrd[dimVar];
   //
-  TVectorF  vecLTM(9);
+  //  TVectorF  vecLTM(9);
   while(1) {
     //
     double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
@@ -2159,7 +2277,9 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     Float_t binMedian=0;
     Double_t limits[2]={hfit->GetBinCenter(1), hfit->GetBinCenter(nbins1D)};
     if (nrm>5) {
-      TStatToolkit::LTMHisto(hfit, vecLTM, 0.8); 
+      for (Int_t iest=0; iest<nestimators; iest++){
+	TStatToolkit::LTMHisto(hfit, *(vecLTM[iest]), fractionLTM[iest]); 
+      }
       Double_t* integral=hfit->GetIntegral();      
       for (Int_t i=1; i<nbins1D-1; i++){
 	if (integral[i-1]<0.5 && integral[i]>=0.5){
@@ -2225,9 +2345,12 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 	"binMedian="<<binMedian<< //binned median value of 1D histogram
 	"entriesG="<<entriesG<< 
 	"meanG="<<meanG<<     // mean of the gaus fit
-	"rmsG="<<rmsG<<       // rms of the gaus fit
-	"vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
-	"chi2G="<<chi2G;      // chi2 of the gaus fit
+	"rmsG="<<rmsG<<       // rms of the gaus fit	
+	"vecLTM.="<<vecLTM[0]<<   // LTM  frac% statistic
+	"chi2G="<<chi2G;      // chi2 of the gaus fit      
+      for (Int_t iest=1; iest<nestimators; iest++) 
+	(*pcstream)<<TString::Format("%sDump", tname).Data()<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
+      
     }
 
     (*pcstream)<<tname<<
@@ -2243,8 +2366,12 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       "entriesG="<<entriesG<<   // 
       "meanG="<<meanG<<     // mean of the gaus fit
       "rmsG="<<rmsG<<       // rms of the gaus fit
-      "vecLTM.="<<&vecLTM<<   // LTM  frac% statistic
+      "vecLTM.="<<vecLTM[0]<<   // LTM  frac% statistic
       "chi2G="<<chi2G;      // chi2 of the gaus fit
+    for (Int_t iest=1; iest<nestimators; iest++) 
+      (*pcstream)<<tname<<TString::Format("vecLTM%d.=",iest)<<vecLTM[iest];   // LTM  frac% statistic
+
+
     //
     meanVector[tgtDim] = mean; // what's a point of this?
     for (Int_t idim=0; idim<ndim; idim++){

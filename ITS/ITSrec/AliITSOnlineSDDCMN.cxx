@@ -30,22 +30,26 @@
 
 ClassImp(AliITSOnlineSDDCMN)
 //______________________________________________________________________
-  AliITSOnlineSDDCMN::AliITSOnlineSDDCMN():AliITSOnlineSDD(),fNEvents(0),fLowThreshold(0),fHighThreshold(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.)
+AliITSOnlineSDDCMN::AliITSOnlineSDDCMN():AliITSOnlineSDD(),fNEvents(0),fLowThreshold(0),fHighThreshold(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.),fMinNumGoodAnForGoodMod(0),fMinClusterOfGoodAn(0)
 {
   // default constructor
   Reset();
   SetMinNoise();
   SetMaxNoise();
   SetNSigmaNoise();
+  SetMinNumGoodAnForGoodMod();
+  SetCutOnGoodAnodeClusterSize();
 }
 //______________________________________________________________________
-  AliITSOnlineSDDCMN::AliITSOnlineSDDCMN(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fLowThreshold(0),fHighThreshold(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.)
+  AliITSOnlineSDDCMN::AliITSOnlineSDDCMN(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fNEvents(0),fLowThreshold(0),fHighThreshold(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.),fMinNumGoodAnForGoodMod(0),fMinClusterOfGoodAn(0)
 {
   // default constructor
   Reset();
   SetMinNoise();
   SetMaxNoise();
   SetNSigmaNoise();
+  SetMinNumGoodAnForGoodMod();
+  SetCutOnGoodAnodeClusterSize();
 }
 //______________________________________________________________________
 AliITSOnlineSDDCMN::~AliITSOnlineSDDCMN(){
@@ -105,6 +109,34 @@ void  AliITSOnlineSDDCMN::ValidateAnodes(){
     if(!fGoodAnode[ian]) continue;
     if(GetAnodeCorrNoise(ian)>fMaxCorrNoise || GetAnodeCorrNoise(ian)<fMinCorrNoise) fGoodAnode[ian]=0;
     if(GetAnodeCorrNoise(ian)>fNSigmaNoise*CalcMeanNoise()) fGoodAnode[ian]=0;
+  }
+  ValidateModule();
+}
+//______________________________________________________________________
+void  AliITSOnlineSDDCMN::ValidateModule(){
+  // check if there are enough good channels or a cluster og good channels
+
+  Int_t nGoodAnodes=CountGoodAnodes();
+  if(nGoodAnodes==0) fHighThreshold=255;
+  else if(nGoodAnodes<fMinNumGoodAnForGoodMod){
+    Bool_t inCluster=kFALSE;
+    Int_t nAnCluster=0;
+    Int_t largerCluster=0;
+    for(Int_t ian=0;ian<fgkNAnodes;ian++){
+      if(!inCluster && IsAnodeGood(ian)){
+	inCluster=kTRUE;
+	nAnCluster=0;
+      }
+      if(inCluster && IsAnodeGood(ian)==0){
+	inCluster=kFALSE;
+	if(nAnCluster>largerCluster) largerCluster=nAnCluster;
+      }
+      if(inCluster && IsAnodeGood(ian)) nAnCluster++;
+    }
+    if(largerCluster<fMinClusterOfGoodAn){
+      for(Int_t ian=0;ian<fgkNAnodes;ian++) fGoodAnode[ian]=kFALSE;
+      fHighThreshold=255;
+    }
   }
 }
 

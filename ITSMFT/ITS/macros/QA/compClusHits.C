@@ -46,11 +46,13 @@ typedef struct {
   Float_t pt;
   Float_t eta;
   Float_t phi;
+  Float_t sensCosTheta;
+  Float_t sensCosPhi;
   Float_t xyz[3];
   Float_t dX;
   Float_t dY;
-  Float_t dZ;  
-  Bool_t split;  
+  Float_t dZ;
+  Bool_t split;
   Bool_t prim;
   Int_t  pdg;
   Int_t  ntr;
@@ -65,7 +67,7 @@ void compClusHits(int nev=-1)
   gSystem->Load("libITSUpgradeSim");
   gSystem->Load("libITSUpgradeRec");
   gROOT->SetStyle("Plain");
-
+	
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   man->SetSpecificStorage("GRP/GRP/Data",
@@ -75,22 +77,22 @@ void compClusHits(int nev=-1)
   man->SetSpecificStorage("ITS/Calib/RecoParam",
 			  Form("local://%s",gSystem->pwd()));
   man->SetRun(0);
-
-
+	
+	
   gAlice=NULL;
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   runLoader->LoadgAlice();
-
+	
   gAlice = runLoader->GetAliRun();
-
+	
   runLoader->LoadHeader();
   runLoader->LoadKinematics();
   runLoader->LoadRecPoints();
   runLoader->LoadSDigits();
   runLoader->LoadHits();
-
+	
   AliLoader *dl = runLoader->GetDetectorLoader("ITS");
-
+	
   AliGeomManager::LoadGeometry("geometry.root");
   TObjArray algITS;
   AliGeomManager::LoadAlignObjsFromCDBSingleDet("ITS",algITS);
@@ -125,19 +127,21 @@ void compClusHits(int nev=-1)
   clSumm cSum;
   trOut->Branch("evID", &cSum.evID ,"evID/I");
   trOut->Branch("volID",&cSum.volID,"volID/I");
-  trOut->Branch("lrID", &cSum.lrID ,"lrID/I");  
-  trOut->Branch("clID", &cSum.clID ,"clID/I");  
+  trOut->Branch("lrID", &cSum.lrID ,"lrID/I");
+  trOut->Branch("clID", &cSum.clID ,"clID/I");
   trOut->Branch("nPix", &cSum.nPix ,"nPix/I");
   trOut->Branch("nX"  , &cSum.nX   ,"nX/I");
   trOut->Branch("nZ"  , &cSum.nZ   ,"nZ/I");
   trOut->Branch("q"   , &cSum.q    ,"q/I");
-  trOut->Branch("pt"  , &cSum.pt   ,"pt/F");  
-  trOut->Branch("eta"  ,&cSum.eta  ,"eta/F");  
-  trOut->Branch("phi"  , &cSum.phi  ,"phi/F");  
-  trOut->Branch("xyz",   cSum.xyz,  "xyz[3]/F");  
+  trOut->Branch("pt"  , &cSum.pt   ,"pt/F");
+  trOut->Branch("eta"  ,&cSum.eta  ,"eta/F");
+  trOut->Branch("phi"  , &cSum.phi  ,"phi/F");
+  trOut->Branch("sensCosTheta"  , &cSum.sensCosTheta  ,"sensCosTheta/F");
+  trOut->Branch("sensCosPhi"  , &cSum.sensCosPhi  ,"sensCosPhi/F");
+  trOut->Branch("xyz",   cSum.xyz,  "xyz[3]/F");
   trOut->Branch("dX"  , &cSum.dX   ,"dX/F");
   trOut->Branch("dY"  , &cSum.dY   ,"dY/F");
-  trOut->Branch("dZ"  , &cSum.dZ   ,"dZ/F");  
+  trOut->Branch("dZ"  , &cSum.dZ   ,"dZ/F");
   trOut->Branch("split",&cSum.split,"split/O");
   trOut->Branch("prim", &cSum.prim, "prim/O");
   trOut->Branch("pdg",  &cSum.pdg,  "pdg/I");
@@ -150,20 +154,20 @@ void compClusHits(int nev=-1)
     cluTree=dl->TreeR();
     hitTree=dl->TreeH();
     hitTree->SetBranchAddress("ITS",&hitList);
-    // 
+    //
     // read clusters
     for (int ilr=nlr;ilr--;) {
       TBranch* br = cluTree->GetBranch(Form("ITSRecPoints%d",ilr));
       if (!br) {printf("Did not find cluster branch for lr %d\n",ilr); exit(1);}
       br->SetAddress(its->GetLayerActive(ilr)->GetClustersAddress());
     }
-    cluTree->GetEntry(0); 
+    cluTree->GetEntry(0);
     its->ProcessClusters();
     //
     // read hits
     for(Int_t iEnt=0;iEnt<hitTree->GetEntries();iEnt++){//entries loop degli hits
       hitTree->GetEntry(iEnt);
-      int nh = hitList->GetEntries();      
+      int nh = hitList->GetEntries();
       for(Int_t iHit=0; iHit<nh;iHit++){
 	AliITSUHit *pHit = (AliITSUHit*)hitList->At(iHit);
 	int mcID = pHit->GetTrack();
@@ -187,16 +191,18 @@ void compClusHits(int nev=-1)
       int nClu = clr->GetEntries();
       printf("Layer %d : %d clusters\n",ilr,nClu);
       //
+      Double_t angle = 0;
       for (int icl=0;icl<nClu;icl++) {
 	AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
 	int modID = cl->GetVolumeId();
-	
+				
 	//------------ check if this is a split cluster
 	int sInL = modID - gm->GetFirstChipIndex(ilr);
+	AliITSURecoSens* sens = lr->GetSensor(sInL);
+	angle = sens->GetPhiTF();
 	if (!cl->TestBit(kSplCheck)) {
 	  cl->SetBit(kSplCheck);
 	  // check if there is no other cluster with same label on this module
-	  AliITSURecoSens* sens = lr->GetSensor(sInL);
 	  int nclSn = sens->GetNClusters();
 	  int offs = sens->GetFirstClusterId();
 	  //	printf("To check for %d (mod:%d) N=%d from %d\n",icl,modID,nclSn,offs);
@@ -252,8 +258,8 @@ void compClusHits(int nev=-1)
 	    break;
 	  }
 	  if (!pHit) {
-	    printf("did not find MChit for label %d on module %d ",il,modID); 
-	    cl->Print(); 
+	    printf("did not find MChit for label %d on module %d ",il,modID);
+	    cl->Print();
 	    htArr->Print();
 	    continue;
 	  }
@@ -265,6 +271,17 @@ void compClusHits(int nev=-1)
 	  mat->MasterToLocal(gxyzH,txyzH);
 	  double rcl = TMath::Sqrt(xyzClTr[0]*xyzClTr[0]+xyzClTr[1]*xyzClTr[1]);
 	  double rht = TMath::Sqrt(txyzH[0]*txyzH[0]+txyzH[1]*txyzH[1]);
+	  //
+					
+	  TVector3 vector(xg1-xg0,yg1-yg0,zg1-zg0);
+	  vector.RotateZ(angle);
+	  Double_t vX = vector.X();
+	  Double_t vY = vector.Y();
+	  Double_t vZ = vector.Z();
+	  //
+	  double path = TMath::Sqrt(vX*vX+vY*vY+vZ*vZ);
+	  cSum.sensCosTheta	= vX/path;
+	  cSum.sensCosPhi       = vY/TMath::Sqrt(vZ*vZ+vY*vY);
 	  //
 	  GetHistoClSize(clsize,kDR,&histoArr)->Fill((rht-rcl)*1e4);
 	  if (cl->TestBit(kSplit)) {
@@ -305,10 +322,10 @@ void compClusHits(int nev=-1)
 	  //
 	  trOut->Fill();
 	  /*
-	  if (clsize==5) {
+	    if (clsize==5) {
 	    printf("\nL%d(%c) Mod%d, Cl:%d | %+5.1f %+5.1f (%d/%d)|H:%e %e %e | C:%e %e %e\n",ilr,cl->TestBit(kSplit) ? 'S':'N',
-		   modID,icl,(txyzH[0]-xyzClTr[0])*1e4,(txyzH[2]-xyzClTr[2])*1e4, row,col,
-		   gxyzH[0],gxyzH[1],gxyzH[2],xyzClGlo[0],xyzClGlo[1],xyzClGlo[2]);
+	    modID,icl,(txyzH[0]-xyzClTr[0])*1e4,(txyzH[2]-xyzClTr[2])*1e4, row,col,
+	    gxyzH[0],gxyzH[1],gxyzH[2],xyzClGlo[0],xyzClGlo[1],xyzClGlo[2]);
 	    cl->Print();
 	    pHit->Print();
 	    //
@@ -319,13 +336,13 @@ void compClusHits(int nev=-1)
 	    cl->GetLocalXYZ(cloc);
 	    printf("LocH: %e %e %e | %e %e %e\n",a0,b0,c0,a1,b1,c1);
 	    printf("LocC: %e %e %e | %e %e %e\n",cloc[0],cloc[1],cloc[2],xyzClTr[0],xyzClTr[1],xyzClTr[2]);
-	  }
+	    }
 	  */
 	  //
 	}
       }
     }
-    
+		
     //    layerClus.Clear();
     //
     arrMCTracks.Delete();
@@ -340,7 +357,7 @@ void compClusHits(int nev=-1)
   //
 }
 
-void DrawReport(const char* psname, TObjArray* harr) 
+void DrawReport(const char* psname, TObjArray* harr)
 {
   gStyle->SetOptFit(1);
   if (!harr) harr = &histoArr;
@@ -348,9 +365,9 @@ void DrawReport(const char* psname, TObjArray* harr)
   //
   TString psnm1 = psname;
   if (psnm1.IsNull()) psnm1 = "clusters.ps";
-  TString psnm0 = psnm1.Data(); 
+  TString psnm0 = psnm1.Data();
   psnm0 += "[";
-  TString psnm2 = psnm1.Data(); 
+  TString psnm2 = psnm1.Data();
   psnm2 += "]";
   cnv->Print(psnm0.Data());
   //
@@ -389,7 +406,7 @@ TH1* GetHistoClSize(int npix,int id,TObjArray* harr)
   //
   if (npix<1) {
     if (harr->GetEntriesFast()>=id && (h=(TH1*)harr->At(id))) return h;
-    h = new TH1F("npixAll","npixAll",150,0.5,54.5); 
+    h = new TH1F("npixAll","npixAll",150,0.5,54.5);
     h->SetDirectory(0);
     h->SetLineColor(kRed);
     harr->AddAtAndExpand(h, kNPixAll);
@@ -433,15 +450,15 @@ TH1* GetHistoClSize(int npix,int id,TObjArray* harr)
   h  = new TH1F(Form("SPL_dtxODD_npix%d",npix),Form("SPL_dtxODD_npix%d",npix),nbin,-kdiff,kdiff);
   h->SetLineColor(kMagenta);
   h->SetFillColor(kMagenta);
-  h->SetFillStyle(3001);  
+  h->SetFillStyle(3001);
   h->SetLineStyle(2);
   h->SetDirectory(0);
-
+	
   harr->AddAtAndExpand(h, npix*10 + kDTXoddSPL);
   h  = new TH1F(Form("SPL_dtxEVN_npix%d",npix),Form("SPL_dtxEVN_npix%d",npix),nbin,-kdiff,kdiff);
   h->SetLineColor(kCyan);
   h->SetFillColor(kCyan);
-  h->SetFillStyle(3006);  
+  h->SetFillStyle(3006);
   h->SetLineStyle(2);
   h->SetDirectory(0);
   harr->AddAtAndExpand(h, npix*10 + kDTXevenSPL);

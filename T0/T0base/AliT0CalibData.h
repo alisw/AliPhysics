@@ -22,7 +22,7 @@ class AliT0CalibData: public TNamed {
  
   void     ReadAsciiLookup(const Char_t *filename);
   Int_t    GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
-  void     PrintLookup(Option_t* option= "", Int_t iTRM=0, Int_t iTDC=0, Int_t iChannel=0) const;
+  void     PrintLookup(Option_t* option= "") const;
   TMap    *GetMapLookup(void) {return &fLookup;}
   Int_t    GetNumberOfTRMs() const {return fNumberOfTRMs;}
   void     SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}

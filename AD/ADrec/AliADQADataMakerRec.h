@@ -48,6 +48,9 @@ public:
 		   kTimeSlewingOff,kTimeSlewingOn,kWidthSlewing,
 		   kMultiADA,kMultiADC,kChargeAD, 
 		   
+		   kChargeADA_PC,kChargeADC_PC,
+		   kTrend_TriggerChargeQuantileADA,kTrend_TriggerChargeQuantileADC,
+		   
 		   kPairTimeDiffMean,kPairTimeDiffRMS,
 		   kNChargeCorrADA,
 		   kNChargeCorrADC = kNChargeCorrADA + 28,

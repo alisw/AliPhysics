@@ -3,12 +3,12 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h"
-#include "AliITSUClusterPix.h"
+#include "AliITSMFTClusterPix.h"
 #include "AliITSURecoLayer.h"
 #include "AliITSURecoDet.h"
-#include "AliITSUHit.h"
+#include "AliITSMFTHit.h"
 #include "AliITSUGeomTGeo.h"
-#include "AliITSsegmentation.h"
+#include "AliITSMFTSegmentationPix.h"
 #include "AliGeomManager.h"
 #include "AliStack.h"
 #include "AliLoader.h"
@@ -21,8 +21,8 @@
 #include "TPaveStats.h"
 #include "TClonesArray.h"
 #include <Riostream.h>
-#include "./MyClasses/Topology.h"
-#include "./MyClasses/TopDatabase.h"
+#include "./Topology.h"
+#include "./TopDatabase.h"
 
 #endif
 
@@ -84,6 +84,55 @@ void compClusHitsMod2(int nev=-1)
         Form("local://%s",gSystem->pwd()));
   man->SetRun(0);
 
+  TH1F* hL0A = new TH1F("hL0A", "Layer 0, polar angle", 20, 0, TMath::PiOver2());
+  hL0A->SetDirectory(0);
+  hL0A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL0B = new TH1F("hL0B", "Layer 0, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL0B->SetDirectory(0);
+  hL0B->GetXaxis()->SetTitle("#beta");
+
+  TH1F* hL1A = new TH1F("hL1A", "Layer 1, polar angle", 20, 0, TMath::PiOver2());
+  hL1A->SetDirectory(0);
+  hL1A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL1B = new TH1F("hL1B", "Layer 1, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL1B->SetDirectory(0);
+  hL1B->GetXaxis()->SetTitle("#beta");
+
+  TH1F* hL2A = new TH1F("hL2A", "Layer 2, polar angle", 20, 0, TMath::PiOver2());
+  hL2A->SetDirectory(0);
+  hL2A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL2B = new TH1F("hL2B", "Layer 2, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL2B->SetDirectory(0);
+  hL2B->GetXaxis()->SetTitle("#beta");
+
+  TH1F* hL3A = new TH1F("hL3A", "Layer 3, polar angle", 20, 0, TMath::PiOver2());
+  hL3A->SetDirectory(0);
+  hL3A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL3B = new TH1F("hL3B", "Layer 3, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL3B->SetDirectory(0);
+  hL3B->GetXaxis()->SetTitle("#beta");
+
+  TH1F* hL4A = new TH1F("hL4A", "Layer 4, polar angle", 20, 0, TMath::PiOver2());
+  hL4A->SetDirectory(0);
+  hL4A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL4B = new TH1F("hL4B", "Layer 4, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL4B->SetDirectory(0);
+  hL4B->GetXaxis()->SetTitle("#beta");
+
+  TH1F* hL5A = new TH1F("hL5A", "Layer 5, polar angle", 20, 0, TMath::PiOver2());
+  hL5A->SetDirectory(0);
+  hL5A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL5B = new TH1F("hL5B", "Layer 5, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL5B->SetDirectory(0);
+  hL5B->GetXaxis()->SetTitle("#beta");
+
+  TH1F* hL6A = new TH1F("hL6A", "Layer 6, polar angle", 20, 0, TMath::PiOver2());
+  hL6A->SetDirectory(0);
+  hL6A->GetXaxis()->SetTitle("#alpha");
+  TH1F* hL6B = new TH1F("hL6B", "Layer 6, azimuthal angle", 20, 0, TMath::PiOver2());
+  hL6B->SetDirectory(0);
+  hL6B->GetXaxis()->SetTitle("#beta");
+
   gAlice=NULL;
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
   runLoader->LoadgAlice();
@@ -104,7 +153,7 @@ void compClusHitsMod2(int nev=-1)
   AliGeomManager::ApplyAlignObjsToGeom(algITS);
   //
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
-  AliITSUClusterPix::SetGeom(gm);
+  AliITSMFTClusterPix::SetGeom(gm);
   //
   AliITSURecoDet *its = new AliITSURecoDet(gm, "ITSinterface");
   its->CreateClusterArrays();
@@ -115,7 +164,7 @@ void compClusHitsMod2(int nev=-1)
   //
   TTree *cluTree = 0x0;
   TTree *hitTree = 0x0;
-  TClonesArray *hitList=new TClonesArray("AliITSUHit");
+  TClonesArray *hitList=new TClonesArray("AliITSMFTHit");
   //
   Float_t xyzClGloF[3];
   Double_t xyzClGlo[3],xyzClTr[3];
@@ -180,16 +229,16 @@ void compClusHitsMod2(int nev=-1)
       hitTree->GetEntry(iEnt);
       int nh = hitList->GetEntries();
       for(Int_t iHit=0; iHit<nh;iHit++){
-        AliITSUHit *pHit = (AliITSUHit*)hitList->At(iHit);
+        AliITSMFTHit *pHit = (AliITSMFTHit*)hitList->At(iHit);
         int mcID = pHit->GetTrack();
 	//printf("MCid: %d %d %d Ch %d\n",iEnt,iHit, mcID, pHit->GetChip());
         TClonesArray* harr = arrMCTracks.GetEntriesFast()>mcID ? (TClonesArray*)arrMCTracks.At(mcID) : 0;
         if (!harr) {
-          harr = new TClonesArray("AliITSUHit"); // 1st encounter of the MC track
+          harr = new TClonesArray("AliITSMFTHit"); // 1st encounter of the MC track
           arrMCTracks.AddAtAndExpand(harr,mcID);
         }
         //
-        new ( (*harr)[harr->GetEntriesFast()] ) AliITSUHit(*pHit);
+        new ( (*harr)[harr->GetEntriesFast()] ) AliITSMFTHit(*pHit);
       }
     }
     //    return;
@@ -205,7 +254,7 @@ void compClusHitsMod2(int nev=-1)
       //printf("Layer %d : %d clusters\n",ilr,nClu);
       //
       for (int icl=0;icl<nClu;icl++) {
-        AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
+        AliITSMFTClusterPix *cl = (AliITSMFTClusterPix*)clr->At(icl);
         int modID = cl->GetVolumeId();
 
         //------------ check if this is a split cluster
@@ -218,7 +267,7 @@ void compClusHitsMod2(int nev=-1)
           int offs = sens->GetFirstClusterId();
           //  printf("To check for %d (mod:%d) N=%d from %d\n",icl,modID,nclSn,offs);
           for (int ics=0;ics<nclSn;ics++) {
-            AliITSUClusterPix* clusT = (AliITSUClusterPix*)lr->GetCluster(offs+ics); // access to clusters
+            AliITSMFTClusterPix* clusT = (AliITSMFTClusterPix*)lr->GetCluster(offs+ics); // access to clusters
             if (clusT==cl) continue;
             for (int ilb0=0;ilb0<3;ilb0++) {
               int lb0 = cl->GetLabel(ilb0); if (lb0<=-1) break;
@@ -239,7 +288,7 @@ void compClusHitsMod2(int nev=-1)
           }
         }
         //------------
-        const AliITSsegmentation* segm = gm->GetSegmentation(ilr);
+        const AliITSMFTSegmentationPix* segm = gm->GetSegmentation(ilr);
         //
         cl->GetGlobalXYZ(xyzClGloF);
         int clsize = cl->GetNPix();
@@ -262,9 +311,9 @@ void compClusHitsMod2(int nev=-1)
 	  if (!htArr) {printf("did not find MChits for label %d ",labels[il]); cl->Print(); continue;}
           //
           int nh = htArr->GetEntriesFast();
-          AliITSUHit *pHit=0;
+          AliITSMFTHit *pHit=0;
           for (int ih=nh;ih--;) {
-            AliITSUHit* tHit = (AliITSUHit*)htArr->At(ih);
+            AliITSMFTHit* tHit = (AliITSMFTHit*)htArr->At(ih);
             if (tHit->GetChip()!=modID) continue;
             pHit = tHit;
             break;
@@ -287,8 +336,8 @@ void compClusHitsMod2(int nev=-1)
           //
           //Angles determination
 
-          pHit->GetPositionL(xExit,yExit,zExit);
-          pHit->GetPositionL0(xEnt,yEnt,zEnt,tof1);
+          pHit->GetPositionL(xExit,yExit,zExit,gm);
+          pHit->GetPositionL0(xEnt,yEnt,zEnt,tof1,gm);
 
           Double_t dirHit[3]={(xExit-xEnt),(yExit-yEnt),(zExit-zEnt)};
 
@@ -311,6 +360,41 @@ void compClusHitsMod2(int nev=-1)
           beta1 = TMath::ATan2(dirHit[0],dirHit[2]); //Azimuthal angle, values from -Pi to Pi
           Float_t beta2 = (Float_t) beta1;
           cSum.beta = beta2;
+
+	  if(ilr==0){
+	    hL0A->Fill(alpha2);
+	    hL0B->Fill(beta2);
+	  }
+	  
+	  if(ilr==1){
+	    hL1A->Fill(alpha2);
+	    hL1B->Fill(beta2);
+	  }
+
+	  if(ilr==2){
+	    hL2A->Fill(alpha2);
+	    hL2B->Fill(beta2);
+	  }
+
+	  if(ilr==3){
+	    hL3A->Fill(alpha2);
+	    hL3B->Fill(beta2);
+	  }
+
+	  if(ilr==4){
+	    hL4A->Fill(alpha2);
+	    hL4B->Fill(beta2);
+	  }
+
+	  if(ilr==5){
+	    hL5A->Fill(alpha2);
+	    hL5B->Fill(beta2);
+	  }
+
+	  if(ilr==6){
+	    hL6A->Fill(alpha2);
+	    hL6B->Fill(beta2);
+	  }
           
           GetHistoClSize(clsize,kDR,&histoArr)->Fill((rht-rcl)*1e4);
           if (cl->TestBit(kSplit)) {
@@ -424,6 +508,46 @@ void compClusHitsMod2(int nev=-1)
   flDB->WriteObject(&DB,"DB","kSingleKey");
   flDB->Close();
   delete flDB;
+
+  TCanvas* cnv123 = new TCanvas("cnv123","cnv123");
+  cnv123->Divide(1,2);
+  cnv123->Print("anglesdistr.pdf[");
+  cnv123->cd(1);
+  hL0A->Draw();
+  cnv123->cd(2);
+  hL0B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->cd(1);
+  hL1A->Draw();
+  cnv123->cd(2);
+  hL1B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->cd(1);
+  hL2A->Draw();
+  cnv123->cd(2);
+  hL2B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->cd(1);
+  hL3A->Draw();
+  cnv123->cd(2);
+  hL3B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->cd(1);
+  hL4A->Draw();
+  cnv123->cd(2);
+  hL4B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->cd(1);
+  hL5A->Draw();
+  cnv123->cd(2);
+  hL5B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->cd(1);
+  hL6A->Draw();
+  cnv123->cd(2);
+  hL6B->Draw();
+  cnv123->Print("anglesdistr.pdf");
+  cnv123->Print("anglesdistr.pdf]");
   //
 }
 

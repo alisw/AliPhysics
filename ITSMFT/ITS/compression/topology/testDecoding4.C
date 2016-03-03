@@ -22,8 +22,8 @@
 #include "TPaveStats.h"
 #include "TClonesArray.h"
 #include "TStopwatch.h"
-#include "./MyClasses/Topology.h"
-#include "./MyClasses/TopDatabase.h"
+#include "./Topology.h"
+#include "./TopDatabase.h"
 
 #endif
 
@@ -39,12 +39,12 @@ void LoadDB(const char* fname);
 void Top2Word(const TBits* top, UChar_t* Word);
 UInt_t FuncMurmurHash2(const void * key, Int_t len);
 std::ostream& printTop(TBits top, std::ostream &out);
-void testDecoding4(int nev=-1, int nRepetintions=100);
+void testDecoding4(int nev=-1, int nRepetintions=100, Bool_t checkflag=kFALSE);
 Int_t Top2Int(const TBits* top);
 
 TBits clTop;
 
-void testDecoding4(int nev, int nRepetintions){
+void testDecoding4(int nev, int nRepetintions, Bool_t checkflag){
   const int kSplit=0x1<<22;
   const int kSplCheck=0x1<<23;
   //
@@ -84,7 +84,7 @@ void testDecoding4(int nev, int nRepetintions){
   AliGeomManager::ApplyAlignObjsToGeom(algITS);
   //
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE);
-  AliITSUClusterPix::SetGeom(gm);
+  AliITSMFTClusterPix::SetGeom(gm);
   //
   AliITSURecoDet *its = new AliITSURecoDet(gm, "ITSinterface");
   its->CreateClusterArrays();
@@ -114,7 +114,7 @@ void testDecoding4(int nev, int nRepetintions){
 
   TCanvas* c = new TCanvas("c","cInterpolation");
   c->Divide(2,1);
-  
+
   TH1F* RealInter = new TH1F("RealInter","Real time with interpolation search",50,4e-7,8e-7);
   RealInter->SetDirectory(0);
   RealInter->GetXaxis()->SetTitle("t (s)");
@@ -130,7 +130,7 @@ void testDecoding4(int nev, int nRepetintions){
 
 
   for(Int_t irep=0; irep<nRepetintions; irep++){
-    printf("%d / %d\n", irep, nRepetintions);  
+    printf("%d / %d\n", irep, nRepetintions);
     Int_t totClusters=0;
     for (Int_t iEvent = 0; iEvent < ntotev; iEvent++) {
       //printf("\n Event %i \n",iEvent);
@@ -139,14 +139,14 @@ void testDecoding4(int nev, int nRepetintions){
       cluTree=dl->TreeR();
       hitTree=dl->TreeH();
       hitTree->SetBranchAddress("ITS",&hitList);
-      // 
+      //
       // read clusters
       for (int ilr=nlr;ilr--;) {
 	TBranch* br = cluTree->GetBranch(Form("ITSRecPoints%d",ilr));
 	if (!br) {printf("Did not find cluster branch for lr %d\n",ilr); exit(1);}
 	br->SetAddress(its->GetLayerActive(ilr)->GetClustersAddress());
       }
-      cluTree->GetEntry(0); 
+      cluTree->GetEntry(0);
       its->ProcessClusters();
       //
       //printf(" tree entries: %lld\n",cluTree->GetEntries());
@@ -159,7 +159,13 @@ void testDecoding4(int nev, int nRepetintions){
 	//
 	for (int icl=0;icl<nClu;icl++){
 	  //if(icl%1000==0)printf("%d / %d\n", icl, nClu);
-	  AliITSUClusterPix *cl = (AliITSUClusterPix*)clr->At(icl);
+	  AliITSMFTClusterPix *cl = (AliITSMFTClusterPix*)clr->At(icl);
+    if(irep==0 && checkflag==kTRUE){
+      if(!DB.TestChain2Ways(*cl)){
+        cout << "ERROR: the chain does not work!"<<endl;
+        exit(1);
+      }
+    }
 	  Timer.Start(!totClusters);
 	  Int_t num = DB.FromCluster2GroupID(*cl);
 	  Timer.Stop();
@@ -172,7 +178,7 @@ void testDecoding4(int nev, int nRepetintions){
       Double_t CPUTime = (Timer.CpuTime())/totClusters;
       Double_t RealTime = (Timer.RealTime())/totClusters;
       CPUInter->Fill(CPUTime);
-      RealInter->Fill(RealTime);    
+      RealInter->Fill(RealTime);
     }//event loop
   }
   c->cd(1);
@@ -181,7 +187,7 @@ void testDecoding4(int nev, int nRepetintions){
   CPUInter->Draw();
   c->Print("DecodingTime.pdf");
 }
- 
+
 void LoadDB(const char* fname)
 {
   // load database
@@ -205,7 +211,7 @@ void Top2Word(const TBits* top, UChar_t* Word){
 	tempChar=0;
 	BitCounter=7;
 	index++;
-      }	
+      }
       if(top->TestBitNumber(ir*cs+ic)) tempChar+=(1<<BitCounter);
       BitCounter--;
     }
@@ -260,7 +266,7 @@ std::ostream& printTop(TBits top, std::ostream &out){
   Int_t rs = UID>>16;
   Int_t cs = UID&0xffff;
   for (Int_t ir=0;ir<rs;ir++){
-    out << "|"; 
+    out << "|";
     for (Int_t ic=0; ic<cs; ic++) {
       out << Form("%c",top.TestBitNumber(ir*cs+ic) ? '+':' ');
     }
