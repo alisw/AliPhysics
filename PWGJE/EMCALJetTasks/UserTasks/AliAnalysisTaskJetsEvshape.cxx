@@ -221,7 +221,7 @@ void AliAnalysisTaskJetsEvshape::UserExec(Option_t *option)
 
     // event shape selection
 
-    InputEvent()->GetList()->ls();
+    // InputEvent()->GetList()->ls();
   }
 
  stop:
