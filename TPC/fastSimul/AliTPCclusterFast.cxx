@@ -23,7 +23,7 @@
   
   .L $ALICE_ROOT/../src/TPC/fastSimul/AliTPCclusterFast.cxx+
   AliTPCclusterFast::InitFormulas();
-  AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);
+  AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);  //MWPC
   AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
   // 
   AliTPCclusterFast::fPRF =new TF1("fprf"," GEMPRF(x,0.02)",-3,3); // GEM
@@ -1236,6 +1236,16 @@ void AliTPCclusterFast::SetMetadata(TTree* tree){
   tree->SetAlias("deltaYNoOverlapDefault","(fCl.GetCOG(1, 0, 0.8,   2,  0.6,  1, 1, 0)-fY-0)");
   tree->SetAlias("deltaYOverlapDefault","(fCl.GetCOG(1, 1, 0.8,   2,  0.6,  1, 1, 0)-fY-0)");
   tree->SetAlias("padrow","Iteration$");
+
+  tree->SetAlias("IROC","padrow<63");
+  tree->SetAlias("OROCMedium","padrow>63&&padrow<127");
+  tree->SetAlias("OROCLong","padrow>127");  
+  tree->SetAlias("padLength","((IROC)*0.75+(OROCMedium)*1+(OROCLong*1.5))");
+  tree->SetAlias("padWidth","((IROC)*0.4+(padrow>63)*0.6)");
+  tree->SetAlias("driftLength","250-abs(fZCenterBin*0.25)");
+  
+  //
+
   //
   //
   //
