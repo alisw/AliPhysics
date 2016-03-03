@@ -15947,7 +15947,7 @@ void AliFlowAnalysisCRC::InitializeArraysForCRC()
     fCRCCorrProd2p2pPro[c][eg][h] = NULL;
     fCRCCovHist[c][eg][h] = NULL;
    } // end of for(Int_t c=0;c<2;c++)
-   for(Int_t c=0;c<4;c++) {
+   for(Int_t c=0;c<fCRCnNUA;c++) {
     fCRCNUATermsHist[c][eg][h] = NULL;
    } // end of for(Int_t c=0;c<4;c++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
@@ -15961,7 +15961,7 @@ void AliFlowAnalysisCRC::InitializeArraysForCRC()
      fCRCCorrPro[r][c][eg][h] = NULL;
      fCRCSumWeigHist[r][c][eg][h] = NULL;
     } // end of for(Int_t c=0;c<2;c++)
-    for(Int_t c=0;c<4;c++) {
+    for(Int_t c=0;c<fCRCnNUA;c++) {
      fCRCNUATermsPro[r][c][eg][h] = NULL;
     } // end of for(Int_t c=0;c<4;c++)
    } // end of for (Int_t h=0;h<fCRCnCen;h++)
@@ -18583,6 +18583,19 @@ void AliFlowAnalysisCRC::CalculateCRCCorr()
                 fCRCCorrProdTempHist[2][0][0]->SetBinContent(CRCBin,GammaAB);
                 fCRCCorrProdTempHist[2][1][0]->SetBinContent(CRCBin,dM2AB*fCenWeightEbE);
                 
+                fCRCNUATermsPro[fRunBin][4][eg][fCenBin]->Fill(CRCBin-e,(p1n0kRe*VZARe+p1n0kIm*VZAIm)/mp,mp*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][5][eg][fCenBin]->Fill(CRCBin-e,(p1n0kIm*VZARe-p1n0kRe*VZAIm)/mp,mp*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][6][eg][fCenBin]->Fill(CRCBin-e,(p1n0kRe*VZCRe+p1n0kIm*VZCIm)/mp,mp*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][7][eg][fCenBin]->Fill(CRCBin-e,(p1n0kIm*VZCRe-p1n0kRe*VZCIm)/mp,mp*fCenWeightEbE);
+                
+                fCRCNUATermsPro[fRunBin][8][eg][fCenBin]->Fill(CRCBin-e,(dReR1n*VZARe+dImR1n*VZAIm)/mR,mR*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][9][eg][fCenBin]->Fill(CRCBin-e,(dImR1n*VZARe-dReR1n*VZAIm)/mR,mR*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][10][eg][fCenBin]->Fill(CRCBin-e,(dReR1n*VZCRe+dImR1n*VZCIm)/mR,mR*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][11][eg][fCenBin]->Fill(CRCBin-e,(dImR1n*VZCRe-dReR1n*VZCIm)/mR,mR*fCenWeightEbE);
+                
+                fCRCNUATermsPro[fRunBin][12][eg][fCenBin]->Fill(CRCBin-e,(p1n0kRe*dReR1n-p1n0kIm*dImR1n)/dM2AB,dM2AB*fCenWeightEbE);
+                fCRCNUATermsPro[fRunBin][13][eg][fCenBin]->Fill(CRCBin-e,(p1n0kIm*dReR1n+p1n0kRe*dImR1n)/dM2AB,dM2AB*fCenWeightEbE);
+                
                 fCRCNUATermsPro[fRunBin][0][eg][fCenBin]->Fill(fCRCnCR+1-e,VZCRe,fCenWeightEbE);
                 fCRCNUATermsPro[fRunBin][1][eg][fCenBin]->Fill(fCRCnCR+1-e,VZARe,fCenWeightEbE);
                 fCRCNUATermsPro[fRunBin][2][eg][fCenBin]->Fill(fCRCnCR+1-e,VZCIm,fCenWeightEbE);
@@ -18622,8 +18635,10 @@ void AliFlowAnalysisCRC::CalculateCRCCorr()
       fCRCCorrPro[fRunBin][3][eg][fCenBin]->Fill(3-e,ResAB,mT*fCenWeightEbE);
       fCRCCorrProdTempHist[3][0][0]->SetBinContent(3,ResAB);
       fCRCCorrProdTempHist[3][1][0]->SetBinContent(3,fCenWeightEbE);
+      
+      fCRCNUATermsPro[fRunBin][4][eg][fCenBin]->Fill(fCRCnCR+1-e,T2Re/mT,mT*fCenWeightEbE);
+      fCRCNUATermsPro[fRunBin][5][eg][fCenBin]->Fill(fCRCnCR+1-e,T2Im/mT,mT*fCenWeightEbE);
     }
-    
     
     for(Int_t k=0; k<fCRCnCorr; k++) {
     for(Int_t c=0;c<2;c++) {
@@ -20781,8 +20796,12 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
               if(fNUAforCRC) {
                 Double_t NUACor = 0.;
                 if(k==0) NUACor = cosA*cosB + sinA*sinB;
-                if(k==1) NUACor = (cosA*cosB - sinA*sinB)*cosVZC + (cosA*sinB+sinA*cosB)*sinVZC;
-                if(k==2) NUACor = (cosA*cosB - sinA*sinB)*cosVZA + (cosA*sinB+sinA*cosB)*sinVZA;
+                if(k==1) {
+                 NUACor = (cosA*cosB - sinA*sinB)*cosVZC + (cosA*sinB+sinA*cosB)*sinVZC; // TBI
+                }
+                if(k==2) {
+                 NUACor = (cosA*cosB - sinA*sinB)*cosVZA + (cosA*sinB+sinA*cosB)*sinVZA; // TBI
+                }
                 Double_t TwoCorr = (sumwx/sumw - NUACor)*sumw;
                 SumTwoCorr += TwoCorr;
               } else {
@@ -20851,7 +20870,7 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
   
   // calculate correlation functions
   
-  for(Int_t k=0;k<fCRCnCorr;k++) {
+  for(Int_t k=0;k<3;k++) {
     for(Int_t eg=0;eg<fCRCnEtaGap;eg++) {
       for (Int_t h=0;h<fCRCnCen;h++) {
         
@@ -20883,6 +20902,10 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
             Double_t Cov24 = fCRCCovHist[k][eg][h]->GetBinContent((CRCBin2-1)*fCRCnCR+CRCBin4);
             Double_t Cov34 = fCRCCovHist[k][eg][h]->GetBinContent((CRCBin3-1)*fCRCnCR+CRCBin4);
             
+            Double_t VAVC = fCRCCorrHist[3][eg][h]->GetBinContent(1);
+            Double_t QVA = fCRCCorrHist[3][eg][h]->GetBinContent(2);
+            Double_t QVC = fCRCCorrHist[3][eg][h]->GetBinContent(3);
+            
             Double_t CFun = Corr1 - Corr2 - Corr3 + Corr4;
             Double_t CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.)
             + 2*(-Cov12-Cov13+Cov14+Cov23-Cov24-Cov34) ;
@@ -20893,9 +20916,15 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
               fCRCCFunHist[eg][h]->SetBinContent(CFunBin,CFun);
               fCRCCFunHist[eg][h]->SetBinError(CFunBin,CFunErr);
             }
-            if(k==1 || k==2) {
-              CFun /= sqrt(fabs(fCRCCorrHist[3][eg][h]->GetBinContent(1)));
-              CFunErr /= sqrt(fabs(fCRCCorrHist[3][eg][h]->GetBinContent(1)));
+            if(k==1) {
+              Double_t ResCor = QVC*VAVC/QVA;
+              CFun /= sqrt(fabs(ResCor));
+              CFunErr /= sqrt(fabs(ResCor));
+            }
+            if(k==2) {
+              Double_t ResCor = QVA*VAVC/QVC;
+              CFun /= sqrt(fabs(ResCor));
+              CFunErr /= sqrt(fabs(ResCor));
             }
             AvCFun += CFun;
             AvCFunErr += pow(CFunErr,2.);
@@ -23931,7 +23960,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
    } // end of for(Int_t c=0;c<2;c++)
    
    // NUA corrections:
-   for(Int_t c=0;c<4;c++) {
+   for(Int_t c=0;c<fCRCnNUA;c++) {
     TH1D *CRCNUATermsHist = dynamic_cast<TH1D*>(fCRCIntList->FindObject(Form("fCRCNUATermsHist[%d][%d][%d]",c,eg,h)));
     if(CRCNUATermsHist) { this->SetCRCNUATermsHist(CRCNUATermsHist,c,eg,h); }
     else { cout<<"WARNING: CRCNUATermsHist is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
@@ -23969,7 +23998,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
      else { cout<<"WARNING: CRCSumWeigHist is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
     } // end of for(Int_t c=0;c<2;c++)
     // NUA corrections:
-    for(Int_t c=0;c<4;c++) {
+    for(Int_t c=0;c<fCRCnNUA;c++) {
      TProfile *CRCNUATermsPro = dynamic_cast<TProfile*>(fCRCIntRunsList[r]->FindObject(Form("fCRCNUATermsPro[%d][%d][%d][%d]",fRunList[r],c,eg,h)));
      if(CRCNUATermsPro) { this->SetCRCNUATermsPro(CRCNUATermsPro,r,c,eg,h); }
      else { cout<<"WARNING: CRCNUATermsPro is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
@@ -25153,7 +25182,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
    } // end of for(Int_t c=0;c<2;c++)
    
    // NUA corrections:
-   for(Int_t c=0;c<4;c++) {
+   for(Int_t c=0;c<fCRCnNUA;c++) {
     fCRCNUATermsHist[c][eg][h] = new TH1D(Form("fCRCNUATermsHist[%d][%d][%d]",c,eg,h),Form("fCRCNUATermsHist[%d][%d][%d]",c,eg,h),fCRCnCR,0.,1.*fCRCnCR);
     fCRCNUATermsHist[c][eg][h]->Sumw2();
     fCRCIntList->Add(fCRCNUATermsHist[c][eg][h]);
@@ -25181,7 +25210,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
      fCRCIntRunsList[r]->Add(fCRCSumWeigHist[r][c][eg][h]);
     }
     // NUA:
-    for(Int_t c=0;c<4;c++) {
+    for(Int_t c=0;c<fCRCnNUA;c++) {
      fCRCNUATermsPro[r][c][eg][h] = new TProfile(Form("fCRCNUATermsPro[%d][%d][%d][%d]",fRunList[r],c,eg,h),
                                                  Form("fCRCNUATermsPro[%d][%d][%d][%d]",fRunList[r],c,eg,h),fCRCnCR+1,0.,fCRCnCR+1.,"s");
      fCRCNUATermsPro[r][c][eg][h]->Sumw2();
