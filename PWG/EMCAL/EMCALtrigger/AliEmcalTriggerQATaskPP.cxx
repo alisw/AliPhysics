@@ -101,6 +101,10 @@ void AliEmcalTriggerQATaskPP::ExecOnce()
     AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), fTriggerPatchesName.Data()));
     return;
   }
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    GetTriggerQA(i)->ExecOnce();
+  }
 }
 
 /**
@@ -187,7 +191,7 @@ Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
 
       fastor.Initialize(L0amp, L1amp, globRow, globCol, time, fGeom);
 
-      GetTriggerQA(fCentBin)->ProcessFastor(&fastor);
+      GetTriggerQA(fCentBin)->ProcessFastor(&fastor, fCaloCells);
     }
   }
 
