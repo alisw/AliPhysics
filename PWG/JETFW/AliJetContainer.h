@@ -166,34 +166,34 @@ class AliJetContainer : public AliParticleContainer {
   void SetEMCALGeometry();
   void SetAcceptanceCuts();
   
-  JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
-  Float_t                     fJetRadius;            //  jet radius
-  TString                     fRhoName;              //  Name of rho object
-  TString                     fLocalRhoName;         //  Name of local rho object
-  TString                     fRhoMassName;          //  Name of rho mass object
-  Int_t                       fFlavourSelection;     //  selection on jet flavour
-  Float_t                     fJetAreaCut;           //  cut on jet area
-  Float_t                     fAreaEmcCut;           //  minimum cut on jet emcal area
-  Float_t                     fMinClusterPt;         //  maximum cluster constituent pt to accept the jet
-  Float_t                     fMaxClusterPt;         //  maximum cluster constituent pt to accept the jet
-  Float_t                     fMinTrackPt;           //  maximum track constituent pt to accept the jet
-  Float_t                     fMaxTrackPt;           //  maximum track constituent pt to accept the jet
-  Float_t                     fZLeadingEmcCut;       //  maximum z,leading neutral
-  Float_t                     fZLeadingChCut;        //  maximum z,leading charged
-  Float_t                     fNEFMinCut;            //  minimum NEF in a jet
-  Float_t                     fNEFMaxCut;            //  maximum NEF in a jet
-  Int_t                       fLeadingHadronType;    //  0 = charged, 1 = neutral, 2 = both
-  Int_t                       fNLeadingJets;         //  how many jets are to be considered the leading jet(s)
-  Int_t                       fMinNConstituents;     //  minimum number of constituents in jet
-  UInt_t                      fJetTrigger;           //  jet trigger
-  Int_t                       fTagStatus;            //  jet tag status
-  AliParticleContainer       *fParticleContainer;    //  particle container (jet constituents)
-  AliClusterContainer        *fClusterContainer;     //  cluster container (jet constituents)
-  AliRhoParameter            *fRho;                  //! event rho for these jets
-  AliLocalRhoParameter       *fLocalRho;             //! event local rho for these jets
-  AliRhoParameter            *fRhoMass;              //! event rho mass for these jets
-  AliEMCALGeometry           *fGeom;                 //! emcal geometry
-  Int_t                       fRunNumber;            //! run number
+  JetAcceptanceType           fJetAcceptanceType;    ///  acceptance type
+  Float_t                     fJetRadius;            ///  jet radius
+  TString                     fRhoName;              ///  Name of rho object
+  TString                     fLocalRhoName;         ///  Name of local rho object
+  TString                     fRhoMassName;          ///  Name of rho mass object
+  Int_t                       fFlavourSelection;     ///  selection on jet flavour
+  Float_t                     fJetAreaCut;           ///  cut on jet area
+  Float_t                     fAreaEmcCut;           ///  minimum cut on jet emcal area
+  Float_t                     fMinClusterPt;         ///  maximum cluster constituent pt to accept the jet
+  Float_t                     fMaxClusterPt;         ///  maximum cluster constituent pt to accept the jet
+  Float_t                     fMinTrackPt;           ///  maximum track constituent pt to accept the jet
+  Float_t                     fMaxTrackPt;           ///  maximum track constituent pt to accept the jet
+  Float_t                     fZLeadingEmcCut;       ///  maximum z,leading neutral
+  Float_t                     fZLeadingChCut;        ///  maximum z,leading charged
+  Float_t                     fNEFMinCut;            ///  minimum NEF in a jet
+  Float_t                     fNEFMaxCut;            ///  maximum NEF in a jet
+  Int_t                       fLeadingHadronType;    ///  0 = charged, 1 = neutral, 2 = both
+  Int_t                       fNLeadingJets;         ///  how many jets are to be considered the leading jet(s)
+  Int_t                       fMinNConstituents;     ///  minimum number of constituents in jet
+  UInt_t                      fJetTrigger;           ///  jet trigger
+  Int_t                       fTagStatus;            ///  jet tag status
+  AliParticleContainer       *fParticleContainer;    ///  particle container (jet constituents)
+  AliClusterContainer        *fClusterContainer;     ///  cluster container (jet constituents)
+  AliRhoParameter            *fRho;                  //!<! event rho for these jets
+  AliLocalRhoParameter       *fLocalRho;             //!<! event local rho for these jets
+  AliRhoParameter            *fRhoMass;              //!<! event rho mass for these jets
+  AliEMCALGeometry           *fGeom;                 //!<! emcal geometry
+  Int_t                       fRunNumber;            //!<! run number
 
  private:
   AliJetContainer(const AliJetContainer& obj); // copy constructor
