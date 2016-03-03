@@ -11,7 +11,9 @@
 #include "AliTLorentzVector.h"
 #include "AliParticleContainer.h"
 
+/// \cond CLASSIMP
 ClassImp(AliParticleContainer)
+/// \endcond
 
 //________________________________________________________________________
 AliParticleContainer::AliParticleContainer():

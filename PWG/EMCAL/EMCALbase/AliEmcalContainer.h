@@ -14,6 +14,11 @@ class AliVParticle;
 #include <TNamed.h>
 #include <TClonesArray.h>
 
+/**
+ * @class AliEmcalContainer
+ * @brief Base class for container structures within the EMCAL framework
+ * @ingroup EMCALCOREFW
+ */
 class AliEmcalContainer : public TObject {
  public:
   enum RejectionReason {
@@ -111,33 +116,35 @@ class AliEmcalContainer : public TObject {
   static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
 
  protected:
-  TString                     fName;                    // object name
-  TString                     fClArrayName;             // name of branch
-  TString                     fClassName;               // name of the class in the TClonesArray
-  Bool_t                      fIsParticleLevel;         // whether or not it is a particle level object collection
-  UInt_t                      fBitMap;                  // bitmap mask
-  Double_t                    fMinPt;                   // cut on particle pt
-  Double_t                    fMaxPt;                   // cut on particle pt
-  Double_t                    fMaxE;                    // cut on particle energy
-  Double_t                    fMinE;                    // cut on particle energy
-  Double_t                    fMinEta;                  // cut on particle eta
-  Double_t                    fMaxEta;                  // cut on particle eta
-  Double_t                    fMinPhi;                  // cut on particle phi
-  Double_t                    fMaxPhi;                  // cut on particle phi
-  Int_t                       fMinMCLabel;              // minimum MC label
-  Int_t                       fMaxMCLabel;              // maximum MC label
-  Double_t                    fMassHypothesis;          // if < 0 it will use a PID mass when available
-  TClonesArray               *fClArray;                 //!TClonesArray
-  Int_t                       fCurrentID;               //!current ID for automatic loops
-  AliNamedArrayI             *fLabelMap;                //!Label-Index map
-  Double_t                    fVertex[3];               //!event vertex array
-  UInt_t                      fRejectionReason;         //!reject reason bit map for the last call to an accept object function
-  TClass                     *fLoadedClass;             //!Class of teh objects contained in the TClonesArray
+  TString                     fName;                    /// object name
+  TString                     fClArrayName;             /// name of branch
+  TString                     fClassName;               /// name of the class in the TClonesArray
+  Bool_t                      fIsParticleLevel;         /// whether or not it is a particle level object collection
+  UInt_t                      fBitMap;                  /// bitmap mask
+  Double_t                    fMinPt;                   /// cut on particle pt
+  Double_t                    fMaxPt;                   /// cut on particle pt
+  Double_t                    fMaxE;                    /// cut on particle energy
+  Double_t                    fMinE;                    /// cut on particle energy
+  Double_t                    fMinEta;                  /// cut on particle eta
+  Double_t                    fMaxEta;                  /// cut on particle eta
+  Double_t                    fMinPhi;                  /// cut on particle phi
+  Double_t                    fMaxPhi;                  /// cut on particle phi
+  Int_t                       fMinMCLabel;              /// minimum MC label
+  Int_t                       fMaxMCLabel;              /// maximum MC label
+  Double_t                    fMassHypothesis;          /// if < 0 it will use a PID mass when available
+  TClonesArray               *fClArray;                 //!<!TClonesArray
+  Int_t                       fCurrentID;               //!<!current ID for automatic loops
+  AliNamedArrayI             *fLabelMap;                //!<!Label-Index map
+  Double_t                    fVertex[3];               //!<!event vertex array
+  UInt_t                      fRejectionReason;         //!<!reject reason bit map for the last call to an accept object function
+  TClass                     *fLoadedClass;             //!<!Class of teh objects contained in the TClonesArray
 
  private:
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalContainer,7);
+  /// \endcond
 };
 #endif

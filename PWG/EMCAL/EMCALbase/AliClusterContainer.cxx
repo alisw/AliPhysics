@@ -11,7 +11,9 @@
 
 #include "AliClusterContainer.h"
 
+/// \cond CLASSIMP
 ClassImp(AliClusterContainer)
+/// \endcond
 
 //________________________________________________________________________
 AliClusterContainer::AliClusterContainer():

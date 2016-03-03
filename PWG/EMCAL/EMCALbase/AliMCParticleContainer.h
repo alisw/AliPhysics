@@ -10,6 +10,11 @@ class AliTLorentzVector;
 #include "AliAODMCParticle.h"
 #include "AliParticleContainer.h"
 
+/**
+ * @class AliMCParticleContainer
+ * @brief Container for MC-true particles within the EMCAL framework
+ * @ingroup EMCALCOREFW
+ */
 class AliMCParticleContainer : public AliParticleContainer {
  public:
 
@@ -49,12 +54,13 @@ class AliMCParticleContainer : public AliParticleContainer {
   const char*                 GetTitle() const;
 
  protected:
-  UInt_t                      fMCFlag;                        // select MC particles with flags
+  UInt_t                      fMCFlag;                        /// select MC particles with flags
 
  private:
   AliMCParticleContainer(const AliMCParticleContainer& obj); // copy constructor
   AliMCParticleContainer& operator=(const AliMCParticleContainer& other); // assignment
 
+  /// \cond
   ClassDef(AliMCParticleContainer,1);
 
 };
