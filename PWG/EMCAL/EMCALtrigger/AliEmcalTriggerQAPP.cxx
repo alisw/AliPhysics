@@ -46,6 +46,8 @@ const TString AliEmcalTriggerQAPP::fgkPatchTypes[3] = {"Online", "Recalc", "Offl
 /// Dummy constructor for ROOT I/O
 AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
   TNamed(),
+  fOfflineBadChannels(),
+  fFastORPedestal(),
   fFastorL0Th(400),
   fFastorL1Th(400),
   fADCperBin(16),
@@ -92,6 +94,8 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
 /// \param name Name of the object
 AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
   TNamed(name,name),
+  fOfflineBadChannels(),
+  fFastORPedestal(5000),
   fFastorL0Th(400),
   fFastorL1Th(400),
   fADCperBin(16),
@@ -138,6 +142,8 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
 /// \param triggerQA Reference to an object to copy from
 AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const AliEmcalTriggerQAPP& triggerQA) :
   TNamed(triggerQA),
+  fOfflineBadChannels(triggerQA.fOfflineBadChannels),
+  fFastORPedestal(triggerQA.fFastORPedestal),
   fFastorL0Th(triggerQA.fFastorL0Th),
   fFastorL1Th(triggerQA.fFastorL1Th),
   fADCperBin(triggerQA.fADCperBin),
@@ -190,7 +196,6 @@ void AliEmcalTriggerQAPP::ReadOfflineBadChannelFromStream(std::istream& stream)
   }
 }
 
-
 /// Read the offline bad channel map from a text file
 ///
 /// \param fname Path and name of the file
@@ -198,6 +203,43 @@ void AliEmcalTriggerQAPP::ReadOfflineBadChannelFromFile(const char* fname)
 {
   std::ifstream file(fname);
   ReadOfflineBadChannelFromStream(file);
+}
+
+/// Set the pedestal value for a FastOR
+///
+/// \param absId Absolute ID of a FastOR
+/// \param ped   Pedestal value
+void AliEmcalTriggerQAPP::SetFastORPedestal(Short_t absId, Float_t ped)
+{
+  if (absId < 0 || absId >= fFastORPedestal.GetSize()) {
+    AliWarning(Form("Abs. ID %d out of range (0,5000)", absId));
+    return;
+  }
+  fFastORPedestal[absId] = ped;
+}
+
+
+/// Read the FastOR pedestals from a standard stream
+///
+/// \param stream A reference to a standard stream to read from (can be a file stream)
+void AliEmcalTriggerQAPP::ReadFastORPedestalFromStream(std::istream& stream)
+{
+  Short_t absId = 0;
+  Float_t ped = 0;
+  while (stream.good()) {
+    stream >> ped;
+    SetFastORPedestal(absId, ped);
+    absId++;
+  }
+}
+
+/// Read the FastOR pedestals from a text file
+///
+/// \param fname Path and name of the file
+void AliEmcalTriggerQAPP::ReadFastORPedestalFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadFastORPedestalFromStream(file);
 }
 
 /// Set the patch types to be plotted
@@ -306,6 +348,10 @@ void AliEmcalTriggerQAPP::Init()
       for (Int_t idet = 0; idet < 2; idet++) {
         hname = Form("EMCTRQA_hist%sPatchAmp%s%s", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         htitle = Form("EMCTRQA_hist%sPatchAmp%s%s;amplitude;entries", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+        fHistManager.CreateTH1(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
+
+        hname = Form("EMCTRQA_hist%sMaxPatchAmp%s%s", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+        htitle = Form("EMCTRQA_hist%sMaxPatchAmp%s%s;amplitude;entries", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         fHistManager.CreateTH1(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
 
         for (Int_t itrig2 = itrig+1; itrig2 < 6; itrig2++) {
@@ -477,7 +523,7 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
 {
   TString hname;
 
-  Int_t L0amp = fastor->GetL0Amp();
+  Int_t L0amp = fastor->GetL0Amp() - fFastORPedestal[fastor->GetAbsId()];
   Bool_t isDCal = kFALSE;
 
   if (fGeom) {
@@ -593,6 +639,12 @@ void AliEmcalTriggerQAPP::EventCompleted()
 
       hname = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
       fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][itype], fMaxPatchDCal[itrig][itype]);
+
+      hname = Form("EMCTRQA_histEMCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      fHistManager.FillTH1(hname, fMaxPatchEMCal[itrig][itype]);
+
+      hname = Form("EMCTRQA_histDCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      fHistManager.FillTH1(hname, fMaxPatchDCal[itrig][itype]);
 
       for (Int_t itrig2 = itrig+1; itrig2 < 6; itrig2++) {
         if (kEMCalTriggerNames[itrig2].IsNull() || fEnabledTriggerTypes[itrig2] == kFALSE) continue;
