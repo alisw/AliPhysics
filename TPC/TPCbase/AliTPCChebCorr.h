@@ -159,7 +159,7 @@ inline Float_t AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, int
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
   const AliCheb2DStack* par = GetParam(sector,y2x,z);
-  if (par) par->Eval(row, dimOut, tz);
+  return par ? par->Eval(row, dimOut, tz) : 0;
   //
 }
 
