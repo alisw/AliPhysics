@@ -33,6 +33,8 @@ class AliEMCALTriggerPatchInfo;
 class TObjArray;
 class THashList;
 class AliEMCALTriggerFastOR;
+class AliEMCALGeometry;
+class AliVCaloCells;
 
 class AliEmcalTriggerQAPP : public TNamed {
 public:
@@ -66,18 +68,17 @@ public:
   void   ReadOfflineBadChannelFromStream(std::istream& stream);
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
+  void   SetFastORandCellThresholds(Int_t l0, Int_t l1, Double_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
 
   void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
   void   EnableTriggerType(EMCalTriggerType_t type, Bool_t e = kTRUE);
 
   void   Init();
+  void   ExecOnce();
   void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
-  void   ProcessFastor(AliEMCALTriggerFastOR* fastor);
+  void   ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells);
   void   ProcessCell(const AliEmcalCellInfo& cell);
   void   EventCompleted();
-  void   ComputeBackground();
-
-
 
   THashList* GetListOfHistograms()  { return fHistManager.GetListOfHistograms(); }
 
@@ -95,16 +96,32 @@ protected:
   Int_t                   fDebugLevel;                  ///< Debug level
   Int_t                   fL0MinTime;                   ///< Minimum L0 time
   Int_t                   fL0MaxTime;                   ///< Maximum L0 time
+  Double_t                fMinCellAmp;                  ///< Minimum offline amplitude of the cells
+  Int_t                   fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
+  Int_t                   fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
+  THistManager            fHistManager;                 ///< Histogram manager
 
-  THistManager            fHistManager;                 ///<  Histogram manager
+  AliEMCALGeometry       *fGeom;                        //!<! EMCal geometry
   Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (will be reset each event)
   Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (will be reset each event)
+  Double_t                fSumOfflineEMCal;             //!<! EMCal sum of all offline energy deposition (will be reset each event)
+  Int_t                   fSumL0EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
+  Int_t                   fSumL1EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
+  Double_t                fSumOfflineDCal;              //!<! DCal sum of all offline energy deposition (will be reset each event)
+  Int_t                   fSumL0DCal;                   //!<! DCal sum of all online energy deposition (will be reset each event)
+  Int_t                   fSumL1DCal;                   //!<! DCal sum of all online energy deposition (will be reset each event)
+  Int_t                   fNCellEMCal;                  //!<! EMCal number of offline cells (will be reset each event)
+  Int_t                   fNL0EMCal;                    //!<! EMCal number of L0 FastORs (will be reset each event)
+  Int_t                   fNL1EMCal;                    //!<! EMCal number of L1 FastORs (will be reset each event)
+  Int_t                   fNCellDCal;                   //!<! DCal number of offline cells (will be reset each event)
+  Int_t                   fNL0DCal;                     //!<! DCal number of L0 FastORs (will be reset each event)
+  Int_t                   fNL1DCal;                     //!<! DCal number of L1 FastORs (will be reset each event)
 
 private:
   AliEmcalTriggerQAPP &operator=(const AliEmcalTriggerQAPP &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQAPP, 1);
+  ClassDef(AliEmcalTriggerQAPP, 2);
   /// \endcond
 };
 
