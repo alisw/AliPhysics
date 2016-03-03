@@ -23,17 +23,17 @@ class AliEmcalClusterMaker : public AliAnalysisTaskEmcal {
   Bool_t                 Run()                                          ;
   void                   ExecOnce()                                     ;
 
-  TString                fOutCaloName;               // name of output clusters; if empty updates old clusters instead of creating a new collection
-  AliEMCALRecoUtils     *fRecoUtils;                 // pointer to reco utils
-  Bool_t                 fEsdMode;                   //!ESD/AOD mode
-  TClonesArray          *fOutClusters;               //!output cluster collection
-  TH1F                  *fEnergyDistBefore;          //!energy distribution before
-  TH2F                  *fEtaPhiDistBefore;          //!eta/phi distribution before
-  TH2F                  *fEnergyTimeHistBefore;      //!energy/time distribution before
-  TH1F                  *fEnergyDistAfter;           //!energy distribution after
-  TH2F                  *fEtaPhiDistAfter;           //!eta/phi distribution after
-  TH2F                  *fEnergyTimeHistAfter;       //!energy/time distribution after
-  TH1F                  *fEnergyExoticClusters;      //!energy of exotic clusters
+  TString                fOutCaloName;               /// name of output clusters; if empty updates old clusters instead of creating a new collection
+  AliEMCALRecoUtils     *fRecoUtils;                 /// pointer to reco utils
+  Bool_t                 fEsdMode;                   //!<!ESD/AOD mode
+  TClonesArray          *fOutClusters;               //!<!output cluster collection
+  TH1F                  *fEnergyDistBefore;          //!<!energy distribution before
+  TH2F                  *fEtaPhiDistBefore;          //!<!eta/phi distribution before
+  TH2F                  *fEnergyTimeHistBefore;      //!<!energy/time distribution before
+  TH1F                  *fEnergyDistAfter;           //!<!energy distribution after
+  TH2F                  *fEtaPhiDistAfter;           //!<!eta/phi distribution after
+  TH2F                  *fEnergyTimeHistAfter;       //!<!energy/time distribution after
+  TH1F                  *fEnergyExoticClusters;      //!<!energy of exotic clusters
 
  private:
   AliEmcalClusterMaker(const AliEmcalClusterMaker&);            // not implemented
