@@ -9,6 +9,11 @@ class AliVEvent;
 
 #include "AliEmcalContainer.h"
 
+/**
+ * @class AliClusterContainer
+ * @brief Container structure for EMCAL clusters
+ * @ingroup EMCALCOREFW
+ */
 class AliClusterContainer : public AliEmcalContainer {
  public:
   typedef enum AliVCluster::VCluUserDefEnergy_t VCluUserDefEnergy_t;
@@ -60,17 +65,19 @@ class AliClusterContainer : public AliEmcalContainer {
 
  protected:
   
-  Double_t         fClusTimeCutLow;             // low time cut for clusters
-  Double_t         fClusTimeCutUp;              // up time cut for clusters
-  Bool_t           fExoticCut;                  // reject clusters marked as "exotic"
-  Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; // cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
-  Int_t            fDefaultClusterEnergy;       // default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
+  Double_t         fClusTimeCutLow;             /// low time cut for clusters
+  Double_t         fClusTimeCutUp;              /// up time cut for clusters
+  Bool_t           fExoticCut;                  /// reject clusters marked as "exotic"
+  Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; /// cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
+  Int_t            fDefaultClusterEnergy;       /// default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
+  /// \cond CLASSIMP
   ClassDef(AliClusterContainer,5);
+  /// \endcond
 };
 
 #endif

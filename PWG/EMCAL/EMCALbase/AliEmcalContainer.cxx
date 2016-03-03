@@ -13,7 +13,9 @@
 
 #include "AliEmcalContainer.h"
 
+/// \cond CLASSIMP
 ClassImp(AliEmcalContainer)
+/// \endcond
 
 //________________________________________________________________________
 AliEmcalContainer::AliEmcalContainer():
