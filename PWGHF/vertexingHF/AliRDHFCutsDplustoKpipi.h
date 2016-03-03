@@ -70,7 +70,8 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   }
 
   void Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval);
- 
+  virtual void PrintAll()const;
+
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
                    kTPCKaonLess1,kTPCKaonMore1Less2,kTPCKaonMore2Less3,kTPCKaonMore3,
                    kTPCProtonLess1,kTPCProtonMore1Less2,kTPCProtonMore2Less3,kTPCProtonMore3,
