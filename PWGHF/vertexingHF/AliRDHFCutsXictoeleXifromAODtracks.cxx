@@ -27,6 +27,7 @@
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -57,6 +58,7 @@ AliRDHFCuts(name),
   fUseCascadePID(kFALSE),
   fPidObjCascPi(0),
   fPidObjCascPr(0),
+  fUseV0Topology(0),
   fBzkG(0),
   fProdTrackTPCNclsPIDMin(0),
   fProdTrackTPCNclsRatioMin(0.0),
@@ -146,6 +148,7 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fUseCascadePID(source.fUseCascadePID),
   fPidObjCascPi(source.fPidObjCascPi),
   fPidObjCascPr(source.fPidObjCascPr),
+  fUseV0Topology(source.fUseV0Topology),
   fBzkG(source.fBzkG),
   fProdTrackTPCNclsPIDMin(source.fProdTrackTPCNclsPIDMin),
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
@@ -216,6 +219,7 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fUseCascadePID = source.fUseCascadePID;
   fPidObjCascPi = source.fPidObjCascPi;
   fPidObjCascPr = source.fPidObjCascPr;
+  fUseV0Topology = source.fUseV0Topology;
   fBzkG = source.fBzkG;
   fProdTrackTPCNclsPIDMin = source.fProdTrackTPCNclsPIDMin;
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
@@ -849,6 +853,23 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
     }
   }
 
+  if(fUseV0Topology>0){
+    Double_t dphiprlam = 0.;
+    if(isparticle){
+      TVector3 v3v0pr(casc->MomPosX(),casc->MomPosY(),casc->MomPosZ());
+      TVector3 v3lam(casc->Px(),casc->Py(),casc->Pz());
+      dphiprlam = v3v0pr.DeltaPhi(v3lam);
+    }else{
+      TVector3 v3v0pr(casc->MomNegX(),casc->MomNegY(),casc->MomNegZ());
+      TVector3 v3lam(casc->Px(),casc->Py(),casc->Pz());
+      dphiprlam = -1.*v3v0pr.DeltaPhi(v3lam);
+    }
+    if(fUseV0Topology==1){
+      if(dphiprlam>0) return kFALSE;
+    }else if(fUseV0Topology==2){
+      if(dphiprlam<0) return kFALSE;
+    }
+  }
   
   return kTRUE;
 }
