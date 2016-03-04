@@ -723,9 +723,10 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     "lifetime"/*11*/,
     "PID"/*12*/,
     "Arm.-Pod."/*13*/,
-    "inclusive"/*14*/,
-    "in jet event"/*15*/,
-    "in jet"/*16*/
+    "cross-cont."/*14*/,
+    "inclusive"/*15*/,
+    "in jet event"/*16*/,
+    "in jet"/*17*/
   };
 
   fh1EventCounterCut = new TH1D("fh1EventCounterCut", "Number of events after filtering;selection filter;counts", iNCategEvent, 0, iNCategEvent);
@@ -1382,8 +1383,8 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutDCAToPrimVtxMin > 0.) printf("min DCA of daughters to the prim vtx [cm]: %g\n", fdCutDCAToPrimVtxMin);
   if(fdCutDCADaughtersMax > 0.) printf("max DCA between daughters [sigma of TPC tracking]: %g\n", fdCutDCADaughtersMax);
   if(fdCutEtaDaughterMax > 0.) printf("max |eta| of daughter tracks: %g\n", fdCutEtaDaughterMax);
-  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax);
-  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
+  if(fdCutNSigmadEdxMax > 0. && (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.))) printf("max |Delta(dE/dx)| in the TPC [sigma dE/dx]: %g\n", fdCutNSigmadEdxMax);
+  if(fdCutNSigmadEdxMax > 0. && fbIsPbPb && fdPtProtonPIDMax > 0.) printf("max pt of proton for applying PID cut [GeV/c]: %g\n", fdPtProtonPIDMax);
   printf("V0 reconstruction method: %s\n", fbOnFly ? "on-the-fly" : "offline");
   if(fdCutCPAKMin > 0.) printf("min CPA, K0S: %g\n", fdCutCPAKMin);
   if(fdCutCPALMin > 0.) printf("min CPA, (A)Lambda: %g\n", fdCutCPALMin);
@@ -1393,7 +1394,7 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fdCutNTauKMax > 0.) printf("max proper lifetime, K0S [tau]: %g\n", fdCutNTauKMax);
   if(fdCutNTauLMax > 0.) printf("max proper lifetime, (A)Lambda [tau]: %g\n", fdCutNTauLMax);
   if(fbCutArmPod) printf("Armenteros-Podolanski cut for K0S\n");
-//  if(fbCutCross) printf("cross contamination cut\n");
+  if(fbCutCross) printf("cross-contamination cut\n");
   printf("-------------------------------------------------------\n");
   printf("analysis of V0s in jets: %s\n", fbJetSelection ? "yes" : "no");
   if(fbJetSelection)
@@ -1484,7 +1485,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   // PID Response Task object
   AliPIDResponse* fPIDResponse = 0;
-  if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.)
+  if(fdCutNSigmadEdxMax > 0. && (!fbIsPbPb || (fbIsPbPb && fdPtProtonPIDMax > 0.)))
   {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1839,7 +1840,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Bool_t bIsCandidateALambda = kTRUE; // candidate for anti-Lambda
     Bool_t bIsInPeakK0s = kFALSE; // candidate within the K0s mass peak
     Bool_t bIsInPeakLambda = kFALSE; // candidate within the Lambda mass peak
-    Bool_t bIsInPeakALambda = kFALSE; // candidate within the Lambda mass peak
+    Bool_t bIsInPeakALambda = kFALSE; // candidate within the anti-Lambda mass peak
     Bool_t bIsInConeJet = kFALSE; // candidate within the jet cones
     Bool_t bIsInConePerp = kFALSE; // candidate within a perpendicular cone
     Bool_t bIsInConeRnd = kFALSE; // candidate within the random cone
@@ -1863,6 +1864,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     // Sigma of the mass peak window
     Double_t dMassPeakWindowK0s = dNSigmaMassMax * MassPeakSigmaOld(dPtV0, 0);
     Double_t dMassPeakWindowLambda = dNSigmaMassMax * MassPeakSigmaOld(dPtV0, 1);
+    if(!fbIsPbPb) // p-p
+    {
+      dMassPeakWindowK0s = 0.010; // LF p-p
+      dMassPeakWindowLambda = 0.005; // LF p-p
+    }
 
     // Invariant mass peak selection
     if(TMath::Abs(dMassV0K0s - dMassPDGK0s) < dMassPeakWindowK0s)
@@ -2181,20 +2187,26 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
     // 12
     // Daughter PID
-    if(fdCutNSigmadEdxMax > 0. && fdPtProtonPIDMax > 0.)
+    if(fdCutNSigmadEdxMax > 0.)
     {
-//        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
-//        if(dNSigmaPosPion > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // pi+, pi-
-//          bIsCandidateK0s = kFALSE;
-//        if(dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
-//          bIsCandidateLambda = kFALSE;
-//        if(dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) // p-, pi+
-//          bIsCandidateALambda = kFALSE;
-      if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
-      if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
-        bIsCandidateLambda = kFALSE;
-      if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
-        bIsCandidateALambda = kFALSE;
+      if(fbIsPbPb && fdPtProtonPIDMax > 0.) // Pb-Pb
+      {
+        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (proton below %g GeV/c) < %g\n", fdPtProtonPIDMax, fdCutNSigmadEdxMax);
+        if((dPtDaughterPos < fdPtProtonPIDMax) && (dNSigmaPosProton > fdCutNSigmadEdxMax)) // p+
+          bIsCandidateLambda = kFALSE;
+        if((dPtDaughterNeg < fdPtProtonPIDMax) && (dNSigmaNegProton > fdCutNSigmadEdxMax)) // p-
+          bIsCandidateALambda = kFALSE;
+      }
+      else // p-p
+      {
+        if(bPrintCuts) printf("Rec: Applying cut: Delta dE/dx (both daughters): < %g\n", fdCutNSigmadEdxMax);
+        if(dNSigmaPosPion > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // pi+, pi-
+          bIsCandidateK0s = kFALSE;
+        if(dNSigmaPosProton > fdCutNSigmadEdxMax || dNSigmaNegPion > fdCutNSigmadEdxMax) // p+, pi-
+          bIsCandidateLambda = kFALSE;
+        if(dNSigmaNegProton > fdCutNSigmadEdxMax || dNSigmaPosPion > fdCutNSigmadEdxMax) // p-, pi+
+          bIsCandidateALambda = kFALSE;
+      }
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     }
     iCutIndex++;
@@ -2218,28 +2230,38 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
     iCutIndex++;
 
+    // 14
+    // Cross-contamination
     /*
-        // Cross contamination
-        if(bIsInPeakK0s)
-        {
-          if(bIsCandidateLambda) // Lambda candidates in K0s peak, excluded from Lambda candidates by CC cut
-            fh2CCLambda->Fill(dMassV0Lambda, dPtV0);
-        }
-        if(bIsInPeakLambda)
-        {
-          if(bIsCandidateK0s) // K0s candidates in Lambda peak, excluded from K0s candidates by CC cut
-            fh2CCK0s->Fill(dMassV0K0s, dPtV0);
-        }
-        if(fbCutCross)
-        {
-          if(bIsInPeakK0s)
-            bIsCandidateLambda = kFALSE;
-          if(bIsInPeakLambda)
-            bIsCandidateK0s = kFALSE;
-          FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
-        }
-        iCutIndex++;
+    if(bIsInPeakK0s)
+    {
+      if(bIsCandidateLambda) // Lambda candidates in K0s peak, excluded from Lambda candidates by CC cut
+        fh2CCLambda->Fill(dMassV0Lambda, dPtV0);
+    }
+    if(bIsInPeakLambda)
+    {
+      if(bIsCandidateK0s) // K0s candidates in Lambda peak, excluded from K0s candidates by CC cut
+        fh2CCK0s->Fill(dMassV0K0s, dPtV0);
+    }
     */
+    if(fbCutCross)
+    {
+      if(bIsInPeakK0s)
+      {
+        bIsCandidateLambda = kFALSE;
+        bIsCandidateALambda = kFALSE;
+      }
+      if(bIsInPeakLambda)
+      {
+        bIsCandidateK0s = kFALSE;
+      }
+      if(bIsInPeakALambda)
+      {
+        bIsCandidateK0s = kFALSE;
+      }
+      FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
+    }
+    iCutIndex++;
     // End of particle-dependent cuts
 
     //===== End of reconstruction cutting =====
@@ -2374,10 +2396,10 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       dAngle = vecV0Momentum.Angle(vecJetMomentum);
     }
 
-    // iCutIndex = 14
+    // iCutIndex = 15
     if(bIsCandidateK0s)
     {
-      // 14 K0s candidates after cuts
+      // 15 K0s candidates after cuts
 //          printf("K0S: i = %d, m = %g, pT = %g, eta = %g, phi = %g\n",iV0,dMassV0K0s,dPtV0,dEtaV0,dPhiV0);
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, kFALSE, kFALSE, iCutIndex, iCentIndex);
       Double_t valueKIncl[3] = {dMassV0K0s, dPtV0, dEtaV0};
@@ -2390,12 +2412,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
       if(iNJetSel)
       {
-        // 15 K0s in jet events
+        // 16 K0s in jet events
         FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, kFALSE, kFALSE, iCutIndex + 1, iCentIndex);
       }
       if(bIsInConeJet)
       {
-        // 16 K0s in jets
+        // 17 K0s in jets
         FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, kFALSE, kFALSE, iCutIndex + 2, iCentIndex);
         Double_t valueKInJC[4] = {dMassV0K0s, dPtV0, dEtaV0, jet->Pt()};
         fhnV0InJetK0s[iCentIndex]->Fill(valueKInJC);
@@ -2432,7 +2454,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
     if(bIsCandidateLambda)
     {
-      // 14 Lambda candidates after cuts
+      // 15 Lambda candidates after cuts
 //          printf("La: i = %d, m = %g, pT = %g, eta = %g, phi = %g\n",iV0,dMassV0Lambda,dPtV0,dEtaV0,dPhiV0);
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, bIsCandidateLambda, kFALSE, iCutIndex, iCentIndex);
       Double_t valueLIncl[3] = {dMassV0Lambda, dPtV0, dEtaV0};
@@ -2440,12 +2462,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh1V0InvMassLambdaCent[iCentIndex]->Fill(dMassV0Lambda);
       if(iNJetSel)
       {
-        // 15 Lambda in jet events
+        // 16 Lambda in jet events
         FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, bIsCandidateLambda, kFALSE, iCutIndex + 1, iCentIndex);
       }
       if(bIsInConeJet)
       {
-        // 16 Lambda in jets
+        // 17 Lambda in jets
         FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, bIsCandidateLambda, kFALSE, iCutIndex + 2, iCentIndex);
         Double_t valueLInJC[4] = {dMassV0Lambda, dPtV0, dEtaV0, jet->Pt()};
         fhnV0InJetLambda[iCentIndex]->Fill(valueLInJC);
@@ -2482,7 +2504,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     }
     if(bIsCandidateALambda)
     {
-      // 14 ALambda candidates after cuts
+      // 15 ALambda candidates after cuts
 //          printf("AL: i = %d, m = %g, pT = %g, eta = %g, phi = %g\n",iV0,dMassV0ALambda,dPtV0,dEtaV0,dPhiV0);
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, kFALSE, bIsCandidateALambda, iCutIndex, iCentIndex);
       Double_t valueALIncl[3] = {dMassV0ALambda, dPtV0, dEtaV0};
@@ -2490,12 +2512,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       fh1V0InvMassALambdaCent[iCentIndex]->Fill(dMassV0ALambda);
       if(iNJetSel)
       {
-        // 15 ALambda in jet events
+        // 16 ALambda in jet events
         FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, kFALSE, bIsCandidateALambda, iCutIndex + 1, iCentIndex);
       }
       if(bIsInConeJet)
       {
-        // 16 ALambda in jets
+        // 17 ALambda in jets
         FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, kFALSE, bIsCandidateALambda, iCutIndex + 2, iCentIndex);
         Double_t valueLInJC[4] = {dMassV0ALambda, dPtV0, dEtaV0, jet->Pt()};
         fhnV0InJetALambda[iCentIndex]->Fill(valueLInJC);
