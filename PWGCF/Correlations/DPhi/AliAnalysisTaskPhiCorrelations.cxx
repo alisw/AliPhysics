@@ -1522,7 +1522,7 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     else
     {
       if (fAOD)
-        centralityObj = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP();
+        centralityObj = fAOD->GetCentrality();
       else if (fESD)
         centralityObj = fESD->GetCentrality();
       
