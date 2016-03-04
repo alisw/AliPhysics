@@ -59,6 +59,13 @@ public:
    */
   bool InputBit( AliHLTUInt8_t & value );
 
+  /**
+   * Pad read pointer to next 8 bit boundary
+   * This overload first clears the internal register and rewinds the read
+   * pointer appropriately, then calls Pad8Bits of the base class
+   */
+  void Pad8Bits();
+
   /// Print info
   void Print(Option_t* option = "") const;
   /// clear the object and reset pointer references

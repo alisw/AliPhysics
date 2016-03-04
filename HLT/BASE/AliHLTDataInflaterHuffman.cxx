@@ -168,6 +168,16 @@ bool AliHLTDataInflaterHuffman::InputBit( AliHLTUInt8_t & value )
   return AliHLTDataInflater::InputBit(value);
 }
 
+void AliHLTDataInflaterHuffman::Pad8Bits()
+{
+  /// special overload of Pad8Bits method to clear the
+  /// internal register and rewind the read pointer
+  RewindBitPosition(fInputLength);
+  fInputLength = 0;
+  fInput = 0;
+  AliHLTDataInflater::Pad8Bits();
+}
+
 void AliHLTDataInflaterHuffman::Print(Option_t* option) const
 {
   /// Print info
