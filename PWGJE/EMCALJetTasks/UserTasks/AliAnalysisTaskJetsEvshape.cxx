@@ -89,7 +89,7 @@ void AliAnalysisTaskJetsEvshape::UserCreateOutputObjects()
     fTracksCont       = GetParticleContainer(0);
     fCaloClustersCont = GetClusterContainer(0);
   }
-  if(fTracksCont) fTracksCont->SetClassName("AliVTrack");
+  if(fTracksCont) fTracksCont->SetClassName("AliVParticle");
   if(fCaloClustersCont) fCaloClustersCont->SetClassName("AliVCluster");
 
   // setup list
