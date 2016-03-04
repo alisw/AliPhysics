@@ -97,9 +97,15 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
     TFile* file = 0;
     while ((det = (TNamed*) next()))
     {
-      TString rppath = det->TestBit(kReadFromArchiveBIT) ? 
-	Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName()) :
-	Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName());
+      TString rppath;
+      if (det->TestBit(kReadFromArchiveBIT)) {
+	if (fPathName->EndsWith("root_archive.zip"))
+	  rppath.Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName());
+	else
+	  rppath.Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName());
+      }
+      else
+	rppath.Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName());
       file = TFile::Open(rppath.Data());
       if (!file) {
 	AliErrorF("AliESDInputHandlerRP: Failed to open %s",rppath.Data());
@@ -167,6 +173,8 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     char folder[20];
     snprintf(folder, 20, "Event%d", iev);
     // Tree R
+    // AliInfo("List of files");
+    // fRFiles->ls();
     TIter next(fRFiles);
     TFile* file;
     Int_t idx  = 0;
@@ -203,9 +211,15 @@ Bool_t AliESDInputHandlerRP::OpenFile(Int_t i)
     TFile* file;
     while ((det = (TNamed*) next()))
     {
-      TString rppath = det->TestBit(kReadFromArchiveBIT) ? 
-	Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName()) :
-	Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName());
+      TString rppath;
+      if (det->TestBit(kReadFromArchiveBIT)) {
+	if (fPathName->EndsWith("root_archive.zip"))
+	  rppath.Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName());
+	else
+	  rppath.Form("%sroot_archive.zip#%s.RecPoints.root", fPathName->Data(), det->GetName());
+      }
+      else
+	rppath.Form("%s%s.RecPoints.root", fPathName->Data(), det->GetName());
       file = TFile::Open(rppath.Data());
       if (!file) AliFatalF("AliESDInputHandlerRP: Failed to open %s !",rppath.Data());
       fRFiles->Add(file);
@@ -221,6 +235,9 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
 
     // Get path to directory
     TString fileName(path);
+
+
+
     if (fileName.IsNull()) return kFALSE;
     AliInfo(Form("Directory change %s \n", path));
 
@@ -231,13 +248,16 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     if(fileName.Contains("#")){
     // If this is an archive it will contain a # 
       fIsArchive = kTRUE;
-    } else  if(fileName.Contains(esdname)){
+      /// AliInfoF("%s is an archive", fileName.Data());
+    }
+    else  if(fileName.Contains(esdname)){
       fileName.ReplaceAll(esdname, "");
     }
 
     //
     // At this point we have a path to the directory or to the archive anchor
     *fPathName = fileName;
+    // AliInfoF("Path name is now %s", fPathName->Data());
     //
     // Now filter the files containing RecPoints *.RecPoints.*
 
@@ -251,15 +271,20 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
       membersArch = arch->GetMembers();
       fPathName->ReplaceAll("#", "");
       fPathName->ReplaceAll(esdname, "");
-    } else {
+    }
+    else {
 	// Directory or alien archive
       if (fileName.BeginsWith("alien:")) {
+	AliInfoF("prefix is, alien: trying to open %s/root_archive.zip", fPathName->Data());
         TFile* file = TFile::Open(Form("%s/root_archive.zip", fPathName->Data()));
         TArchiveFile* arch = file->GetArchive();
         membersArch = arch->GetMembers();
       } 
     }
-
+    // if (membersArch) {
+    //   AliInfo("List of archive members");
+    //   membersArch->Print();
+    // }
     TFile* entry;
     Int_t ien = 0;
     fDetectors->Delete(); 
