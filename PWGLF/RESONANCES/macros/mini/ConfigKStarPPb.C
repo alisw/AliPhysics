@@ -152,7 +152,7 @@ Bool_t ConfigKStarPPb
     //Computed as (Xrec-Xgen)/Xgen, with a MC-true like computation
     TString nameR[6]    = {"ResPM", "ResMP", "ResPtPM", "ResPtMP", "ResYPM", "ResYMP"};
     TString compR[6]    = {"TRUE" , "TRUE", "TRUE", "TRUE", "TRUE", "TRUE"};
-    TString outputR[6]     = {"SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE"};
+    TString outputR[6]  = {"SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE"};
     Int_t   pdgCodeR[6] = {313, -313, 313, -313, 313, -313};
     Char_t  charge1R[6] = {'+', '-', '+', '-', '+', '-'};
     Char_t  charge2R[6] = {'-', '+', '-', '+', '-', '+'};
@@ -171,7 +171,7 @@ Bool_t ConfigKStarPPb
       // axis X: invmass resolution, pt resolution, y resolution
       if (j<2) outR->AddAxis(resID, 200, -0.02, 0.02);
       else if (j<4) outR->AddAxis(resPt, 100, -0.05, 0.05);
-      else outR->AddAxis(resY, 100, -0.05, 0.05);
+      else outR->AddAxis(resY, 100, -0.5, 0.5);
       //axis Y: mother pt
       outR->AddAxis(ptID, 200, 0.0, 20.0); 
       //axis Z: rapidity
