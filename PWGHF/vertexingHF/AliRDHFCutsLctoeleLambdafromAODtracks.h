@@ -49,6 +49,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
+  void SetUseV0Topology(Int_t a) { fUseV0Topology=a; }
+  Int_t GetUseV0Topology() { return fUseV0Topology; }
 
   Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
   Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
@@ -167,6 +169,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF *fPidObjProton;         /// PID object for proton from Lc
   AliAODPidHF *fPidObjPion;         /// PID object for proton from Lc
   Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
+  Int_t   fUseV0Topology;          /// 0: Cowboy+Sailor 1: Cowboy 2:Sailor
   Double_t fBzkG; ///B field
   Double_t fPrimVert[3]; ///Primary vertex
   
@@ -217,7 +220,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fConversionMassMax; /// Conversion mass
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,8);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,9);
   /// \endcond
 };
 

@@ -27,6 +27,7 @@
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -57,6 +58,7 @@ AliRDHFCuts(name),
   fPidObjProton(0),
   fPidObjPion(0),
   fUseOnTheFlyV0(kFALSE),
+  fUseV0Topology(0),
   fBzkG(0),
   fProdTrackTPCNclsPIDMin(0),
   fProdTrackTPCNclsRatioMin(0.0),
@@ -145,6 +147,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fPidObjProton(source.fPidObjProton),
   fPidObjPion(source.fPidObjPion),
   fUseOnTheFlyV0(source.fUseOnTheFlyV0),
+  fUseV0Topology(source.fUseV0Topology),
   fBzkG(source.fBzkG),
   fProdTrackTPCNclsPIDMin(source.fProdTrackTPCNclsPIDMin),
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
@@ -214,6 +217,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fPidObjProton = source.fPidObjProton;
   fPidObjPion = source.fPidObjPion;
   fUseOnTheFlyV0 = source.fUseOnTheFlyV0;
+  fUseV0Topology = source.fUseV0Topology;
   fBzkG = source.fBzkG;
   fProdTrackTPCNclsPIDMin = source.fProdTrackTPCNclsPIDMin;
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
@@ -711,6 +715,7 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 
   Bool_t onFlyV0 = v0->GetOnFlyStatus(); // on-the-flight V0s
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return kFALSE;
+  if ( !onFlyV0 && fUseOnTheFlyV0 ) return kFALSE;
 	if(!v0) return kFALSE;
 	if(!(v0->GetSecondaryVtx())) return kFALSE;
 
@@ -854,6 +859,24 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
         (sharedMap2.CountBits() >= 1))
     {
       return kFALSE;
+    }
+  }
+
+  if(fUseV0Topology>0){
+    Double_t dphiprlam = 0.;
+    if(isparticle){
+      TVector3 v3v0pr(v0->MomPosX(),v0->MomPosY(),v0->MomPosZ());
+      TVector3 v3lam(v0->Px(),v0->Py(),v0->Pz());
+      dphiprlam = v3v0pr.DeltaPhi(v3lam);
+    }else{
+      TVector3 v3v0pr(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
+      TVector3 v3lam(v0->Px(),v0->Py(),v0->Pz());
+      dphiprlam = -1.*v3v0pr.DeltaPhi(v3lam);
+    }
+    if(fUseV0Topology==1){
+      if(dphiprlam>0) return kFALSE;
+    }else if(fUseV0Topology==2){
+      if(dphiprlam<0) return kFALSE;
     }
   }
 
