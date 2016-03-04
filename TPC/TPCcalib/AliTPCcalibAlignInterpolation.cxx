@@ -70,6 +70,9 @@
 #include "AliMathBase.h"
 #include "TStyle.h"
 #include "TCanvas.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliCDBId.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
 
@@ -2779,5 +2782,191 @@ void AliTPCcalibAlignInterpolation::FixAlignmentBug(int sect, float q2pt, float 
   deltaZ = xyzTrUse[2]-xyzClUse[2];
   //
 }
+
+
+void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t run, TString  targetOCDBstorage, const char * testDiffCDB/*=0*/){
+  ///
+  /// Make OCDB entry using information using the vdrift calibration obtained in the  AliTPCcalibAlignInterpolation::FitDrift function (suing ResidualTrees.root)
+  /// 
+  ///
+  /* 
+     char * inputFile= "fitDrift.root"
+     char * inputFile= "/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o.1502/000244918/fitDrift.root";
+     char * testDiffCDB="/cvmfs/alice.cern.ch/calibration/data/2015/OCDB/TPC/Calib/TimeDrift/Run244918_244918_v3_s0.root";
+     Int_t  run=244918;
+     AliTPCcalibAlignInterpolation::MakeVDriftOCDB( inputFile,run,"", testDiffCDB)
+  */
+
+  /*
+   The same calibration was done previoulsy using the AliTPCcalibTime class
+   Many graphs in previously done RUN1 calibration used for monitoring purposes and do not have equivalent in the new calibration 
+   using ResidualTrees  
+   Old CPass0 calibration () - 114 graphs exported and monitored later using trending  (O (100 kBy) per run)
+      * 108 graphs for Align+drift = 9 params x 3 detectors x 4 version ) 
+      ** vdrift calibration (3 param)  and alingment graphs (6)
+      ** each pair of detector ITS->TPC, TRD->TPC, TOF->TPC
+      ** Kalman filter storted in 4 version
+      *** raw input per time bin, kalman forward propagation, Kalaman back propagation, smoothed Kalman  
+      ** usage 
+      *** ITS->TPC smoothed version in case exist
+      *** TOF->TPC smooehted in case ITS->TPC not availale
+        
+      * 6 graphs for the Laser CE backup graphs
+      * backup of ClusterParam and RecoParam as it was used in the process of  calibration 
+      ** calibration depends
+  
+   New calibration input data ( O(3 MBy) for 2 hours measurement):
+   
+   Export variables:
+     only vdrift calibration graphs (_DELTAZ,DRIFTVD, TO and VDGY)  will  be exported
+     smoothed version equivalent (grTRDReg) and raw calibration equivalent (grTRDmed)
+     ITS  - mean (TRD+TOF)*0.5
+     TRD  - TRD
+     TOF  - TOF
+  */  
+
+  //
+  // 1. Read calibratio data from the tree
+  //
+  TVectorD     *vdriftParam=0;
+  TGraphErrors *grTRDReg=0;  
+  TGraphErrors *grTOFReg=0;  
+  TGraphErrors *grTRDMed=0;  
+  TGraphErrors *grTOFMed=0;  
+  TFile *fdrift = TFile::Open(inputFile);
+  if (fdrift){
+    TTree * tree = (TTree*)fdrift->Get("fitTimeStat");
+    if (tree==NULL){
+      ::Fatal("MakeVDriftOCDB.LoadDriftCalibration FAILED", "tree fitTimeStat not avaliable in file fitDrift.root");
+    }else{
+      if (tree->GetBranch("grTRDReg."))  tree->SetBranchAddress("grTRDReg.",&grTRDReg);
+      if (tree->GetBranch("grTOFReg."))  tree->SetBranchAddress("grTOFReg.",&grTOFReg);
+      if (tree->GetBranch("grTRDMed."))  tree->SetBranchAddress("grTRDMed.",&grTRDMed);
+      if (tree->GetBranch("grTOFMed."))  tree->SetBranchAddress("grTOFMed.",&grTOFMed);
+      if (tree->GetBranch("paramRobust.")) tree->SetBranchAddress("paramRobust.",&vdriftParam);
+      tree->GetEntry(0);
+    }    
+  }else{
+    ::Fatal("MakeVDriftOCDB.LoadDriftCalibration FAILED", "Input file %s not accesible", inputFile);
+  }  
+  if (grTRDReg==NULL && grTOFReg==NULL){
+    ::Fatal("MakeVDriftOCDB.LoadDriftCalibration FAILED", "drift calibration enot present");
+  }
+  //
+  // 2.)  Transform v drift calibration object into the format used in previous calibration
+  //
+  TObjArray * driftArray = new TObjArray();
+  TGraphErrors   *graphDELTAZ=0;
+  TGraphErrors   *graphT0=0;
+  TGraphErrors   *graphVDGY=0;
+  TGraphErrors   *graphDRIFTVD=0;
+  TGraphErrors   *graph=0;
+
+  const char *chDet[3]={"ITS","TRD","TOF"};
+  Double_t atime[2]={0,0};
+  Double_t deltaZ[2]={0,0};
+  Double_t t0[2]={0,0};
+  Double_t vdgy[2]={0,0};
+  graphDRIFTVD=(grTRDMed!=NULL) ? grTRDMed:grTOFMed;
+  //
+  atime[0]=graphDRIFTVD->GetX()[0];
+  atime[1]=graphDRIFTVD->GetX()[graphDRIFTVD->GetN()-1];
+  for (Int_t ipoint=0; ipoint<=1; ipoint++){
+    deltaZ[ipoint]=(*vdriftParam)[1];  // unit OK
+    vdgy[ipoint]=-(*vdriftParam)[2];   // units OK
+    t0[ipoint]=(*vdriftParam)[0];      // not fine
+  }
+  Double_t vdrifCorrRun=1./(1.+(*vdriftParam)[3]);
+
+  //
+  for (Int_t idet=0; idet<3; idet++){
+    for (Int_t itype=0; itype<2; itype++){  //0. original version 1.)smoothed version
+      TString grPrefix="ALIGN_";
+      grPrefix+=chDet[idet];
+      if (itype==0) grPrefix+="_TPC_";
+      if (itype==1) grPrefix+="B_TPC_";
+      //
+      graphDELTAZ=new TGraphErrors(2, atime, deltaZ);
+      graphDELTAZ->SetName(grPrefix+"DELTAZ");
+      driftArray->AddLast(graphDELTAZ);
+      graphT0=new TGraphErrors(2, atime, t0);
+      graphT0->SetName(grPrefix+"T0");
+      driftArray->AddLast(graphT0);
+      graphVDGY=new TGraphErrors(2, atime, vdgy);
+      graphVDGY->SetName(grPrefix+"VDGY");
+      driftArray->AddLast(graphVDGY);
+      //
+      // drift velocity
+      //graph=(grTRDMed!=NULL) ? new TGraphErrors(*grTRDMed): new TGraphErrors(*grTOFMed); // normal constructor give us seg fault
+      graph=(TGraphErrors*)((grTRDMed!=NULL) ? grTRDMed->Clone(): grTOFMed->Clone()); // normal constructor give us 0
+      Int_t npoints = graph->GetN();
+      for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+	graph->GetY()[ipoint]=-1;
+	if (idet==1 && grTRDMed) { // TRD
+	  if (itype==0) graph->GetY()[ipoint]=(vdrifCorrRun*(1-grTRDMed->GetY()[ipoint]))-1.;
+	  if (itype==1) graph->GetY()[ipoint]=(vdrifCorrRun*(1-grTRDReg->GetY()[ipoint]))-1.;
+	}
+	if (idet==2 && grTOFMed) { // TOF
+	  if (itype==0) graph->GetY()[ipoint]=(vdrifCorrRun*(1-grTOFMed->GetY()[ipoint]))-1.;
+	  if (itype==1) graph->GetY()[ipoint]=(vdrifCorrRun*(1-grTOFReg->GetY()[ipoint]))-1.;
+	}
+	if (idet==0 &&  (grTRDMed&&grTOFMed)) { // (TRD+TOF)*0.5
+	  if (itype==0) graph->GetY()[ipoint]=(vdrifCorrRun*(1-(grTRDMed->GetY()[ipoint]+grTOFMed->GetY()[ipoint])*0.5))-1.;
+	  if (itype==1) graph->GetY()[ipoint]=(vdrifCorrRun*(1-(grTRDReg->GetY()[ipoint]+grTOFReg->GetY()[ipoint])*0.5))-1.;
+	}
+      }
+      graph->SetName(grPrefix+"DRIFTVD");
+      driftArray->AddLast(graph);
+    }
+  }
+  //
+  // 3. Store selected graphs in OCDB
+  //
+  AliCDBStorage* targetStorage = 0x0;
+  if (targetOCDBstorage.Length()==0) {
+    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+  else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
+    targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
+  }
+  AliCDBMetaData* metaData = new AliCDBMetaData;
+  metaData->SetObjectClassName("TObjArray");
+  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion(">v5-07-20"); //AliRoot version
+  metaData->SetComment("AliTPCcalibAlignInterpolation Calibration of the time dependence of the drift velocity using Residual trees");
+  AliCDBId id1("TPC/Calib/TimeDrift", run, run);
+  
+  //now the entry owns the metadata, but NOT the data
+  AliCDBEntry *driftCDBentry=new AliCDBEntry(driftArray,id1,metaData,kFALSE);
+  targetStorage->Put(driftCDBentry); 
+  //
+  //
+  // 4. Make diff to reference CDB  if sepecfied
+  // 
+  if (testDiffCDB){    
+    TFile *f = TFile::Open(testDiffCDB);
+    AliCDBEntry * entry=(AliCDBEntry*)f->Get("AliCDBEntry");
+    TObjArray * array = (TObjArray*)entry->GetObject();
+    //array->ls();
+    TGraphErrors * grRef= (TGraphErrors * )array->FindObject("ALIGN_TRDB_TPC_DRIFTVD");
+    TGraphErrors * gr= (TGraphErrors * )driftArray->FindObject("ALIGN_TRDB_TPC_DRIFTVD");
+    grRef->SetMarkerStyle(25);
+    gr->SetMarkerStyle(21);
+    Double_t minimum=TMath::Min(grRef->GetMinimum(), gr->GetMinimum());
+    Double_t maximum=TMath::Max(grRef->GetMaximum(), gr->GetMaximum());
+    grRef->SetMinimum(minimum);
+    grRef->SetMaximum(maximum);
+
+    grRef->Draw("ap");
+    gr->Draw("p");
+  }
+
+  delete driftCDBentry;
+
+
+}
+
 
 
