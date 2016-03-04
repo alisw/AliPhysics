@@ -97,6 +97,7 @@ void AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior
       delete fPriorsDistributions[i]; 
     }
     fPriorsDistributions[i]=new TH1F(*prior);
+    SetEnablePriors(kTRUE); 
   }
 }
 
