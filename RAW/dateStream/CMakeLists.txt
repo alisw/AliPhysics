@@ -37,3 +37,4 @@ set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
 install(TARGETS ${MODULE} RUNTIME DESTINATION bin)
+install(FILES event.h DESTINATION include)
