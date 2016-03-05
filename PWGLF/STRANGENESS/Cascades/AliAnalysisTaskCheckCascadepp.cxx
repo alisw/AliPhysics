@@ -126,6 +126,8 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fApplyEvSelSDDstatus            (kFALSE),
     fApplyEvSelPhysicsSel           (kTRUE),
     fApplyEvSelNoTPConlyPrimVtx     (kTRUE),
+    fApplyEvSelSPDvtxres            (kTRUE),
+    fApplyEvSelVtxProximity         (kTRUE),
     fApplyEvSelPileup               (kTRUE),
     fApplyEvSelSPDclustervstracklet (kTRUE),
     fApplyEvSelZprimVtxPos          (kTRUE),
@@ -142,6 +144,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fVtxRangeMin                    (0),
     fMinPtCutOnDaughterTracks       (0),
     fEtaCutOnDaughterTracks         (0),
+    fSPDPileUpminContributors       (3),
 
     // - Plots initialisation
     fListHistCascade(0),
@@ -230,6 +233,8 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fApplyEvSelSDDstatus            (kFALSE),
     fApplyEvSelPhysicsSel           (kTRUE),
     fApplyEvSelNoTPConlyPrimVtx     (kTRUE),
+    fApplyEvSelSPDvtxres            (kTRUE),
+    fApplyEvSelVtxProximity         (kTRUE),
     fApplyEvSelPileup               (kTRUE),
     fApplyEvSelSPDclustervstracklet (kTRUE),
     fApplyEvSelZprimVtxPos          (kTRUE),
@@ -246,6 +251,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fVtxRangeMin                    (0),
     fMinPtCutOnDaughterTracks       (0),
     fEtaCutOnDaughterTracks         (0),
+    fSPDPileUpminContributors       (3),
 
     // - Plots initialisation
     fListHistCascade(0),
@@ -1243,30 +1249,24 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
        //delete lCascVtxer;
   }
 
-  //---------------------------------
-  // 4) Well-established PV selection
-  //---------------------------------
-  if (fApplyEvSelNoTPConlyPrimVtx) {
-      if (fCollidingSystem == "pp") {
-          if (fAnalysisType == "ESD") {
-              const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-              const AliESDVertex *lPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
-              if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
-                      AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
-                      PostData(1, fListHistCascade);
-                      PostData(2, fCFContCascadePIDXiMinus);
-                      PostData(3, fCFContCascadePIDXiPlus);
-                      PostData(4, fCFContCascadePIDOmegaMinus);
-                      PostData(5, fCFContCascadePIDOmegaPlus);
-                      PostData(6, fCFContCascadeCuts);
-                      return;
-              }
-              ncascadesAfterNoTPConlyPrimVtxSel          = lESDevent->GetNumberOfCascades();
-              nTrackMultiplicityAfterNoTPConlyPrimVtxSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
-          } else if (fAnalysisType == "AOD") {
-              const AliAODVertex *lPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
-              const AliAODVertex *lPrimaryTrackingAODVtx = lAODevent->GetPrimaryVertex();
-              if (!lPrimarySPDVtx && !lPrimaryTrackingAODVtx) {
+  //------------------------------------
+  // 4) Primary Vertex quality selection
+  //------------------------------------
+  if (fCollidingSystem == "pp") {
+       const AliESDVertex *lESDPrimaryTrackingVtx = 0x0;
+       const AliESDVertex *lESDPrimarySPDVtx      = 0x0;
+       const AliAODVertex *lAODPrimaryTrackingVtx = 0x0;
+       const AliAODVertex *lAODPrimarySPDVtx      = 0x0;
+       if (fAnalysisType == "ESD") {
+           lESDPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();
+           lESDPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
+       } else if (fAnalysisType == "AOD") {
+           lAODPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
+           lAODPrimaryTrackingVtx = lAODevent->GetPrimaryVertex(); 
+       }
+       // 4.1) reject events if both are explicitly requested and none is available
+       if (fApplyEvSelNoTPConlyPrimVtx) {
+            if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus()) && fAnalysisType == "ESD"){
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
                   PostData(1, fListHistCascade);
                   PostData(2, fCFContCascadePIDXiMinus);
@@ -1275,11 +1275,73 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                   PostData(5, fCFContCascadePIDOmegaPlus);
                   PostData(6, fCFContCascadeCuts);
                   return;
-              }
+            }
+            if (!(lAODPrimarySPDVtx && lAODPrimaryTrackingVtx) && fAnalysisType == "AOD") {
+                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+             }
+        }
+        // 4.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
+        if (fApplyEvSelSPDvtxres) {
+             if (!lESDPrimarySPDVtx->GetStatus()) {
+                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+             }
+             if (lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
+                  AliWarning("Pb / The SPD prim. vertex has a Z resolution > 0.25 and dispersion > 0.04 ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+             }
+        }
+        // 4.3) check the proximity between the spd vertex and trak vertex, and reject if not satisfied 
+        if (fApplyEvSelVtxProximity) { 
+            if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus())) {
+                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+             }
+             if (lESDPrimarySPDVtx->IsFromVertexerZ() && (TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5)) {
+                  AliWarning("Pb / The Z coordinated of the SPD and tracks vertex are more than 0.5 cm away ... return !");
+                     PostData(1, fListHistCascade);
+                     PostData(2, fCFContCascadePIDXiMinus);
+                     PostData(3, fCFContCascadePIDXiPlus);
+                     PostData(4, fCFContCascadePIDOmegaMinus);
+                     PostData(5, fCFContCascadePIDOmegaPlus);
+                     PostData(6, fCFContCascadeCuts);
+                     return;
+             }
+        }
+        // - Fill the plots
+        if (fAnalysisType == "ESD") {
+              ncascadesAfterNoTPConlyPrimVtxSel          = lESDevent->GetNumberOfCascades();
+              nTrackMultiplicityAfterNoTPConlyPrimVtxSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+        } else if (fAnalysisType == "AOD") {
               ncascadesAfterNoTPConlyPrimVtxSel          = lAODevent->GetNumberOfCascades();
               nTrackMultiplicityAfterNoTPConlyPrimVtxSel = -100;  //FIXME: I can't find the equivalent method for the AOD
-          }
-      } else if (fCollidingSystem == "pPb") {
+        }
+  } else if (fCollidingSystem == "pPb") { //FIXME: the "activation" variable ares not used
           if (fAnalysisType == "ESD") {
               Bool_t fHasVertex = kFALSE;
               const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
@@ -1350,7 +1412,6 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
               nTrackMultiplicityAfterNoTPConlyPrimVtxSel = -100;  //FIXME: I can't find the equivalent method for the AOD
           }
       }
-  }
   fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascadesAfterNoTPConlyPrimVtxSel);
   fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicityAfterNoTPConlyPrimVtxSel);
  
@@ -1359,7 +1420,7 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   //--------------------
   if (fApplyEvSelPileup && fCollidingSystem == "pp") {
       if (fAnalysisType == "ESD") {
-           if(lESDevent->IsPileupFromSPD()){
+           if(lESDevent->IsPileupFromSPD(fSPDPileUpminContributors)){
               AliWarning("Pb / Pile-up event ... return!");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
@@ -1372,7 +1433,7 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
            ncascadesAfterPileupRej          = lESDevent->GetNumberOfCascades();
            nTrackMultiplicityAfterPileupRej = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
       } else if (fAnalysisType == "AOD") {
-           if(lAODevent->IsPileupFromSPD()){
+           if(lAODevent->IsPileupFromSPD(fSPDPileUpminContributors)){
               AliWarning("Pb / Pile-up event ... return!");
               PostData(1, fListHistCascade);
               PostData(2, fCFContCascadePIDXiMinus);
