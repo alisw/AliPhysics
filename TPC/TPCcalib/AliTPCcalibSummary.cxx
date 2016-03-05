@@ -864,8 +864,9 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
   static TVectorD vFitDipAngleParTotMedium(3);
   static TVectorD vFitDipAngleParTotLong(3);
   static TVectorD vFitDipAngleParTotAbsolute(3);
-
-  
+  static Int_t gainMIPTime0=0;
+  static Int_t gainMIPTime1=0;
+   
   vGainGraphIROC.Zero();
   vGainGraphOROCmed.Zero();
   vGainGraphOROClong.Zero();
@@ -954,7 +955,11 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
        }
     }
     
-    if (graphMIP) gainMIP = AliTPCcalibDButil::EvalGraphConst(graphMIP,timeStamp);
+    if (graphMIP) {
+      gainMIP = AliTPCcalibDButil::EvalGraphConst(graphMIP,timeStamp);
+      gainMIPTime0=graphMIP->GetX()[0];
+      gainMIPTime1=graphMIP->GetX()[graphMIP->GetN()-1];
+    }
     if (graphCosmic) gainCosmic = AliTPCcalibDButil::EvalGraphConst(graphCosmic,timeStamp);
     if (graphAttach) attachMIP = AliTPCcalibDButil::EvalGraphConst(graphAttach,timeStamp);
     if (graphMIP)  AliTPCcalibDButil::GetNearest(graphMIP, timeStamp, dMIP,dummy);
@@ -996,7 +1001,9 @@ void AliTPCcalibSummary::ProcessGain(Int_t irun, Int_t timeStamp){
     "grMultiplicityTot.="         << &ggrMultiplicityTot         <<
     "grMultiplicityMax.="         << &ggrMultiplicityMax         <<
     //
-    "gainMIP="                    << gainMIP                     <<
+    "gainMIP="                    << gainMIP                     <<   // gain normalization parameter
+    "gainMIPTime0="               << gainMIPTime0                <<   // first bin for time calibration
+    "gainMIPTime1="               << gainMIPTime1                <<   // last bin for gain calibration
     "attachMIP="                  << attachMIP                   <<
     "dMIP="                       << dMIP                        <<
     "gainCosmic="                 << gainCosmic                   ;
