@@ -2812,7 +2812,7 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
       *** raw input per time bin, kalman forward propagation, Kalaman back propagation, smoothed Kalman  
       ** usage 
       *** ITS->TPC smoothed version in case exist
-      *** TOF->TPC smooehted in case ITS->TPC not availale
+      *** TOF->TPC smoothed in case ITS->TPC not availale
         
       * 6 graphs for the Laser CE backup graphs
       * backup of ClusterParam and RecoParam as it was used in the process of  calibration 
@@ -2895,7 +2895,7 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   for (Int_t ipoint=0; ipoint<=1; ipoint++){
     deltaZ[ipoint]=(*vdriftParam)[1];  // unit OK
     vdgy[ipoint]=-(*vdriftParam)[2];   // units OK
-    t0[ipoint]=(*vdriftParam)[0];               // t0 to be normzlized to the ms
+    t0[ipoint]=-(*vdriftParam)[0];               // t0 to be normzlized to the ms
     t0[ipoint]/=(param->GetDriftV()/1000000.); 
   }
   
