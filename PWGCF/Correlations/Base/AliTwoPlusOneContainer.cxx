@@ -364,7 +364,6 @@ Int_t AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx
       continue;
     else{
       found_triggers += ind_found;
-      return found_triggers;
     }
 
     //use only the highest energetic particle on the away side, if there is only 1 away side trigger this is already the case
