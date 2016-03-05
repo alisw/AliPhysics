@@ -34,6 +34,11 @@ public:
 
   void ProcessDriftCERef();
   void ProcessPulserRef();
+  //  
+  static  void AddMetadata(TTree * tree);
+  static void AddMetadataRawQA(TTree * tree);
+  static void AddMetadataGain(TTree * tree);
+
 protected:
   AliTPCcalibDB     *fCalibDB;      //! pointer to the TPC calib manager
   AliTPCcalibDButil *fDButil;       //! pointer to the TPC calib db utils

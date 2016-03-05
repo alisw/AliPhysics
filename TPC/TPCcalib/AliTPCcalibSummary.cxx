@@ -1332,8 +1332,47 @@ void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
 
 }
 
+void AliTPCcalibSummary::AddMetadataRawQA(TTree * treeRawQATPC){
+  //
+  // Make Aliases and description for Raw QA trending
+  //
+  treeRawQATPC->SetAlias("isIROC","(Iteration$<36)");
+  treeRawQATPC->SetAlias("isOROC","(Iteration$>=36)");
+  treeRawQATPC->SetAlias("occOK0","(occQA.fElements>0)");
+  treeRawQATPC->SetAlias("occIROC","Sum$(occQA.fElements*(isIROC*occOK0))/Sum$(isIROC*occOK0)");
+  treeRawQATPC->SetAlias("occOROC","Sum$(occQA.fElements*(isOROC*occOK0))/Sum$(isOROC*occOK0)");
+
+  TStatToolkit::AddMetadata(treeRawQATPC,"occIROC.AxisTitle","Occupancy IROC ");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occIROC.Title","Sum$(occQA.fElements*(isIROC*occOK0))/Sum$(isIROC*occOK0)");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occIROC.Legend","IROC occ.");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occIROC.Comment","Digits occupancy in IROC  #(A>thr)/#All as obtained in AMORE QA");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occOROC.AxisTitle","Occupancy IROC ");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occOROC.Title","Sum$(occQA.fElements*(isOROC*occOK0))/Sum$(isOROC*occOK0)");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occOROC.Legend","OROC occ.");
+  TStatToolkit::AddMetadata(treeRawQATPC,"occOROC.Comment","Digits occupanncy in OROC  #(A>thr)/#All as obtained in AMORE QA");
+}
+
+void AliTPCcalibSummary::AddMetadataGain(TTree * treeRawQATPC){
+  //
+  // Define aliases and valriable description for some important gain calibration parameters
+  //
+  treeRawQATPC->SetAlias("gainDefined","gainMIP!=0&&abs(dits)<1800");
+  TStatToolkit::AddMetadata(treeRawQATPC,"gainMIP.AxisTitle","gain conversion (50/MIP)");
+  TStatToolkit::AddMetadata(treeRawQATPC,"gainMIP.Title","gainMIP");
+  TStatToolkit::AddMetadata(treeRawQATPC,"gainMIP.Legend","gain(t)");
+  TStatToolkit::AddMetadata(treeRawQATPC,"gainMIP.Comment","Gain normalization coeficient used for time dependenta gain calibation. Last correction to move combined dEdx for MIP to channel 50");
+
+}
 
 
+void AliTPCcalibSummary::AddMetadata(TTree * tree){
+  //
+  // add metadata for automatic documentiation 
+  //
+  AddMetadataRawQA(tree);
+  AddMetadataGain(tree);
+  
+}
 
 // TCanvas * DrawCEDiff(TTree * tree){
   
