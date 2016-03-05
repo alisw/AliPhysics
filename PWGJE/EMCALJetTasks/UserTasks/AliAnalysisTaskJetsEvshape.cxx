@@ -167,7 +167,7 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
   FillH1(kHistStat, kStatUsed);
 
   AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
-  Int_t nTracklets = mult->GetNumberOfTracklets();
+  Int_t nTracklets = mult ? mult->GetNumberOfTracklets() : -1;
   FillH1(kHistMult, nTracklets);
 
   if (fJetsCont) {
