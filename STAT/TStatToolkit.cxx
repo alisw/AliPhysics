@@ -1055,9 +1055,8 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   // Format of expr : Var:Run or Var:Run:ErrorY or Var:Run:ErrorY:ErrorX
   // offset : points can slightly be shifted in x for better visibility with more graphs
   //
-  // Written by Weilin.Yu
-  // updated & merged with QA-code by Patrick Reichelt
-  //
+  // Patrick Reichelt and Marian Ivanov
+  // maintained and updated bu Marian Ivanov
   const Int_t entries = tree->Draw(expr,cut,"goff");
   if (entries<=0) {
     ::Error("TStatToolkit::MakeGraphSparse","Empty or Not valid expression (%s) or cut (%s)", expr, cut);
@@ -1132,14 +1131,16 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   delete [] index;
   delete [] newBins;
   // 
-  graphNew->SetTitle(expr);
   TString chstring(expr);
-  TObjArray *charray = chstring.Tokenize(":");
-  graphNew->GetXaxis()->SetTitle(charray->At(1)->GetName());
-  graphNew->GetYaxis()->SetTitle(charray->At(0)->GetName());
+  if (cut) chstring+=TString::Format(" ( %s )", cut);
+  graphNew->SetTitle(chstring);
 
   THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
   if (!metaData == 0){    
+    chstring=expr;
+    TObjArray *charray = chstring.Tokenize(":");
+    graphNew->GetXaxis()->SetTitle(charray->At(1)->GetName());
+    graphNew->GetYaxis()->SetTitle(charray->At(0)->GetName());    
     TNamed *nmdTitle0 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(0)->GetName()));
     TNamed *nmdTitle1 = TStatToolkit::GetMetadata(tree,Form("%s.Title",charray->At(1)->GetName()));
     TNamed *nmdYAxis  = TStatToolkit::GetMetadata(tree,Form("%s.AxisTitle",charray->At(0)->GetName()));
@@ -1154,10 +1155,12 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
       grTitle+=":";
       grTitle+=charray->At(1)->GetName();
     }
+    if (cut)  grTitle+=TString::Format(" ( %s )", cut);
+    graphNew->SetTitle(grTitle);
     if (nmdYAxis) {graphNew->GetYaxis()->SetTitle(nmdYAxis->GetTitle());}
     if (nmdXAxis) {graphNew->GetXaxis()->SetTitle(nmdXAxis->GetTitle());}            
+    delete charray;
   }
-  delete charray;
   return graphNew;
 }
 
