@@ -73,7 +73,8 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliCDBId.h"
-
+#include "AliTPCParam.h"
+#include "AliTPCClusterParam.h"
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
 
 ClassImp(AliTPCcalibAlignInterpolation)
@@ -2794,6 +2795,8 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
      char * inputFile= "/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o.1502/000244918/fitDrift.root";
      char * testDiffCDB="/cvmfs/alice.cern.ch/calibration/data/2015/OCDB/TPC/Calib/TimeDrift/Run244918_244918_v3_s0.root";
      Int_t  run=244918;
+
+     .x  $ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C(run,"local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB/")
      AliTPCcalibAlignInterpolation::MakeVDriftOCDB( inputFile,run,"", testDiffCDB)
   */
 
@@ -2824,6 +2827,25 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
      TRD  - TRD
      TOF  - TOF
   */  
+  TObjArray * driftArray = new TObjArray();
+
+  //
+  // 0. Initialize OCDB if not done before
+  //
+  AliTPCParam *param =0;
+  if (AliCDBManager::Instance()->GetDefaultStorage()!=NULL){
+    //
+    //
+    AliTPCClusterParam *clParam =   AliTPCcalibDB::Instance()->GetClusterParam();
+    param= AliTPCcalibDB::Instance()->GetParameters();
+    TObjArray *recoParams = new TObjArray(4) ;
+    for (Int_t i=0;i<4;i++) recoParams->AddAt(AliTPCcalibDB::Instance()->GetRecoParam(i),i);
+    driftArray->AddLast(clParam);
+    driftArray->AddLast(recoParams);    
+    ::Info("AliTPCcalibAlignInterpolation::MakeVDriftOCDB","Residual calibration used. We have to trust  - your OCDB is correct, as we can nt check.");
+  }else{
+    ::Fatal("AliTPCcalibAlignInterpolation::MakeVDriftOCDB","Im sorry. OCDB has to be intilaized before. We need to get Parameters objects, which were used in previous calibration. In ideal case the OCDB entry to be setup to the entries, indeed used to produce Residual trees ... But this we can not CHECK");
+  }
 
   //
   // 1. Read calibratio data from the tree
@@ -2855,7 +2877,6 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   //
   // 2.)  Transform v drift calibration object into the format used in previous calibration
   //
-  TObjArray * driftArray = new TObjArray();
   TGraphErrors   *graphDELTAZ=0;
   TGraphErrors   *graphT0=0;
   TGraphErrors   *graphVDGY=0;
@@ -2874,8 +2895,11 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   for (Int_t ipoint=0; ipoint<=1; ipoint++){
     deltaZ[ipoint]=(*vdriftParam)[1];  // unit OK
     vdgy[ipoint]=-(*vdriftParam)[2];   // units OK
-    t0[ipoint]=(*vdriftParam)[0];      // not fine
+    t0[ipoint]=(*vdriftParam)[0];               // t0 to be normzlized to the ms
+    t0[ipoint]/=(param->GetDriftV()/1000000.); 
   }
+  
+
   Double_t vdrifCorrRun=1./(1.+(*vdriftParam)[3]);
 
   //
