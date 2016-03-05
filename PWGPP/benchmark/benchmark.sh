@@ -2528,6 +2528,8 @@ goSummarizeMetaFiles()
       pass=tmparr[0]
       match($2,/run([0-9]*)/,tmparr)
       runNumber=tmparr[1]
+      runs[runNumber]=1;
+      passes[pass]=1;
     }
 
     #logfiles
@@ -2536,19 +2538,21 @@ goSummarizeMetaFiles()
       sub(/^.*\//,"",logFile)
 
       if (donefile ~ /merge\./) {
-        mergeLogs[runNumber][pass][logFile]++
-        if ($0 ~ /OK/) mergeLogsOK[runNumber][pass][logFile]++
+        mergeLogsFiles[logFile]=1
+        mergeLogs[runNumber,pass,logFile]++
+        if ($0 ~ /OK/) mergeLogsOK[runNumber,pass,logFile]++
         else if ($0 ~ /BAD/) {
-          mergeLogsBAD[runNumber][pass][logFile]++
+          mergeLogsBAD[runNumber,pass,logFile]++
           listOfBadLogs[nBadLogs++]=$1
         }
       }
       
-      if (donefile ~ /\.job/) {
-        jobLogs[runNumber][pass][logFile]++
-        if ($0 ~ /OK/) jobLogsOK[runNumber][pass][logFile]++
+      else if (donefile ~ /\.job/) {
+        jobLogsFiles[logFile]=1
+        jobLogs[runNumber,pass,logFile]++
+        if ($0 ~ /OK/) jobLogsOK[runNumber,pass,logFile]++
         else if ($0 ~ /BAD/) {
-          jobLogsBAD[runNumber][pass][logFile]++
+          jobLogsBAD[runNumber,pass,logFile]++
           listOfBadLogs[nBadLogs++]=$1
         }
       }
@@ -2561,36 +2565,38 @@ goSummarizeMetaFiles()
       fileType=$1
       file=$2
       if (donefile ~ /merge\./) {
-        outputFilesMerge[runNumber][pass][fileType]++
+        mergeFileTypes[fileType]=1
+        outputFilesMerge[runNumber,pass,fileType]++
       }
-      if (donefile ~ /\.job/) {
-        outputFilesJobs[runNumber][pass][fileType]++
+      else if (donefile ~ /\.job/) {
+        jobFileTypes[fileType]=1
+        outputFilesJobs[runNumber,pass,fileType]++
       }
       if (fileType == "core") coreFiles[nCoreFiles++]=file
     }
 
     END {
       print "===== error summary: ================================================================="
-      for (run in jobLogs ) {
-        for (pass in jobLogs[run] ) {
+      for (run in runs ) {
+        for (pass in passes ) {
           
-          for (logFile in jobLogs[run][pass]) {
-            if (jobLogsBAD[run][pass][logFile]>0) {
-              print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run][pass][logFile]" failures )"
+          for (logFile in jobLogsFiles) {
+            if (jobLogsBAD[run,pass,logFile]>0) {
+              print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run,pass,logFile]" failures )"
             }
           }
           
-          for (logFile in mergeLogs[run][pass]) {
-            if (mergeLogsBAD[run][pass][logFile]>0) {
-              print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run][pass][logFile]" failures )"
+          for (logFile in mergeLogsFiles) {
+            if (mergeLogsBAD[run,pass,logFile]>0) {
+              print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run,pass,logFile]" failures )"
             }
           }
 
-          if (outputFilesJobs[run][pass]["core"]>0) {
-            print "CORE       : run "run" "pass" ( "outputFilesJobs[run][pass]["core"]" core files! )"
+          if (outputFilesJobs[run,pass,"core"]>0) {
+            print "CORE       : run "run" "pass" ( "outputFilesJobs[run,pass,"core"]" core files! )"
           }
-          if (outputFilesMerge[run][pass]["core"]>0) {
-            print "CORE       : run "run" merge "pass" ( "outputFilesMerge[run][pass]["core"]" core files! )"
+          if (outputFilesMerge[run,pass,"core"]>0) {
+            print "CORE       : run "run" merge "pass" ( "outputFilesMerge[run,pass,"core"]" core files! )"
           }
 
         }
@@ -2598,11 +2604,11 @@ goSummarizeMetaFiles()
 
       print ""
       print "===== detailed summary: ================================================================="
-      for (run in jobLogs ) {
+      for (run in runs ) {
         print"________________________________________"
         print "run "run
 
-        for (pass in jobLogs[run] ) {
+        for (pass in passes ) {
           print "  "pass
 
           filesToPrint["esd"]=0
@@ -2611,22 +2617,22 @@ goSummarizeMetaFiles()
           filesToPrint["aod"]=0
           filesToPrint["core"]=0
           for (outputFile in filesToPrint) {
-            if (outputFilesJobs[run][pass][outputFile])  print "      "outputFilesJobs[run][pass][outputFile]" X "outputFile
+            if (outputFilesJobs[run,pass,outputFile])  print "      "outputFilesJobs[run,pass,outputFile]" X "outputFile
           }
           print "    merge:"
           for (outputFile in filesToPrint) {
-            if (outputFilesMerge[run][pass][outputFile])  print "      "outputFilesMerge[run][pass][outputFile]" X "outputFile
+            if (outputFilesMerge[run,pass,outputFile])  print "      "outputFilesMerge[run,pass,outputFile]" X "outputFile
           }
 
-          for (logFile in jobLogs[run][pass]) {
-            if (jobLogsBAD[run][pass][logFile]>0) {
-              print "    ERROR: "logFile" OK:"jobLogsOK[run][pass][logFile]" BAD:"jobLogsBAD[run][pass][logFile]
+          for (logFile in jobLogsFiles) {
+            if (jobLogsBAD[run,pass,logFile]>0) {
+              print "    ERROR: "logFile" OK:"jobLogsOK[run,pass,logFile]" BAD:"jobLogsBAD[run,pass,logFile]
             }
           }
           
-          for (logFile in mergeLogs[run][pass]) {
-            if (mergeLogsBAD[run][pass][logFile]>0) {
-              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run][pass][logFile]" BAD:"mergeLogsBAD[run][pass][logFile]
+          for (logFile in mergeLogsFiles) {
+            if (mergeLogsBAD[run,pass,logFile]>0) {
+              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run,pass,logFile]" BAD:"mergeLogsBAD[run,pass,logFile]
             }
           }
 
