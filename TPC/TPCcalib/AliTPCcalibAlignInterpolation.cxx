@@ -849,6 +849,11 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   const Double_t kFillGap=0.02  ;  // weight for the "non primary distortion info" - 
   //                                used to fill the gap without measurement (PHOS hole)
   const Double_t kFillGapITS=0.01;
+  // track and cluster quality cuts - see also AliTPCcalibAlignInterpolation::CalculateDistance
+  const Int_t   kMaxSkippedCluster=10;  // 10 cluster
+  const Float_t kMaxRMSTrackCut=2.0;    // maximal RMS (cm) between the tracks 
+  const Float_t kMaxRMSClusterCut=0.3;    // maximal RMS (cm) between the cluster and local mean
+  const Float_t kMaxDeltaClusterCut=0.5;    // maximal delta(cm) between the cluster and local mean
   //
   // gap weight is kFillGap + Exp(-dist): don't calculate exponent if dist is >kMaxExpArg
   const Double_t kMaxExpArg = -TMath::Log(TMath::Max(kFillGap*0.1, 1e-3)); 
@@ -930,7 +935,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	tree->SetBranchAddress("grTOFReg.",&vdriftGraph);
 	tree->GetEntry(0);
       }else{
-	::Info("LoadDriftCalibration", "tree fitTimeStat not avaliable in file fitDrift.root");
+	::Info("LoadDriftCalibration", "tree fitTimeStat loaded from the tree");
       }
     }
     
@@ -954,6 +959,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   TVectorF *vecSec=0;
   TVectorF *vecPhi=0;
   TVectorF *vecZ=0;
+  TVectorF *vecLocalDelta = new TVectorF(knPoints);
   Int_t timeStamp=0;
   AliExternalTrackParam *param = 0;
   //
@@ -1073,6 +1079,14 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	const Float_t *vDeltaITS  = (vecDeltaITS!=NULL) ? vecDeltaITS->GetMatrixArray():0;
 	const Float_t *vDeltaOther = vecDeltaOther ? vecDeltaOther->GetMatrixArray():0;
 	const Float_t *vDeltaOtherITS = vecDeltaOtherITS ? vecDeltaOtherITS->GetMatrixArray():0;
+	const Float_t *vLocalDelta=vecLocalDelta->GetMatrixArray();
+	//
+	// calculate distance and aplly track and cluster quality cut
+	Float_t rmsTrack=3, rmsCluster=1;
+	Int_t nSkippedCluster=AliTPCcalibAlignInterpolation::CalculateDistance(*vecDelta,*vecDeltaITS, *vecSec, *vecLocalDelta, npValid, rmsTrack, rmsCluster,1.5);
+	if (nSkippedCluster>kMaxSkippedCluster) continue;
+	if (rmsTrack>kMaxRMSTrackCut) continue;
+	if (rmsCluster>kMaxRMSClusterCut) continue;	
 	//
 	currentTrack++;
 
@@ -1090,6 +1104,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	for (Int_t ipoint=0; ipoint<npValid; ipoint++){
 	  if (vR[ipoint]<=0 || vDelta[ipoint]<-990.) continue;
 	  if (TMath::Abs(vDelta[ipoint])<0.000001) continue; // RS Do we need this?
+	  if (TMath::Abs(vLocalDelta[ipoint])> kMaxDeltaClusterCut) continue;
 	  float phiUse = vPhi[ipoint], rUse = vR[ipoint], zUse = vZ[ipoint];
 	  float deltaITSUse = (vDeltaITS) ? vDeltaITS[ipoint]:0;
 	  float deltaRefUse = vDelta[ipoint];
@@ -2990,6 +3005,102 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   delete driftCDBentry;
 
 
+}
+
+
+Float_t  AliTPCcalibAlignInterpolation::CalculateDistance(const TVectorF &track0, const TVectorF &track1, const TVectorF &vecSec, TVectorF &vecDelta, Int_t npValid, Float_t &rmsTrack,  Float_t &rmsCluster, Float_t lpNorm){
+  ///  Calculate track and cluster RMS distance. RMS distance is than used in toder to
+  ///    1.) Calcute rms distance between the track0 and reference track1    
+  ///    2.) Calculate rms distance between the cluster and local median cluster position in region +-2 padrows (wihing one sector)
+  ///        and store delta in exported vecDelta array
+  /// \param[in] track0             vector: cluster-track residuals for track of interest
+  /// \param[in] track1             vector: cluster-track residuals for reference track
+  /// \param[in] vecSec             vector: cluster sector index
+  /// \param[in] lpNorm             the p value for the p-type norm (https://en.wikipedia.org/wiki/Norm_(mathematics))
+  /// \param[out] rmsTrack          calculated 2 track distance (lpNorm)
+  /// \param[out] rmsCluster        calculated cluster local mean distance (lpNorm)
+  ///
+  ///  Return value - number of the clusters with too big RMS
+  /// 
+  // In the following routine AliTPCcalibAlignInterpolation::FillHistogramsFromChain cut applied on quality of track and custer infromation
+  // Suggested cuts (based on the resolution parametrrization studies)
+  //    - nOut <10 - less than 15 clusters rejected   - kMaxSkippedCluster=10;
+  //    - rmsTrack<2 cm    kMaxRMSTrackCut=2.0;
+  //    - rmsCluster<0.3 cm kMaxRMSClusterCut=0.3;  
+  //    - |vecDelta|<0.5 cm  kMaxDeltaClusterCut=0.5; 
+  //
+  // Parameters of algorithm for the moment set as a constant 
+  const Int_t   kMinFractionPoints=0.5;
+  const Float_t kMaxDist=20;
+  const Float_t kMaxDistTrack=5;
+  Float_t maxRMSTrack=rmsTrack;
+  Float_t maxRMSCluster=rmsCluster;
+
+  //
+  Float_t distance2=0;
+  Int_t npoints=0;
+   // cache matrix pointers
+  const Float_t *delta0=track0.GetMatrixArray();
+  const Float_t *delta1=track1.GetMatrixArray();
+  const Float_t *sec=vecSec.GetMatrixArray();
+  //
+  // 1.) Calcute rms distance between the track0 and reference track1    
+  //
+  for (Int_t irow=0; irow<npValid; irow++){
+    vecDelta[irow]=1000;
+    if (TMath::Abs(delta0[irow])==0) continue;  // 
+    if (TMath::Abs(delta1[irow])==0) continue;  // 
+    if (TMath::Abs(delta0[irow])>kMaxDist) continue;  // 
+    if (TMath::Abs(delta1[irow])>kMaxDist) continue;  //
+    if (TMath::Abs(delta0[irow]-delta1[irow])>kMaxDistTrack) continue;  //
+    npoints++;
+    distance2+=(delta0[irow]-delta1[irow])*(delta0[irow]-delta1[irow]);
+  }
+  if (npoints<=80) return -1;
+  if (npoints<npValid*kMinFractionPoints) return -1; // not enough points
+  rmsTrack = TMath::Sqrt(distance2/npoints);
+  if (rmsTrack>maxRMSTrack) {
+    return -1;
+  }
+  //
+  //    2.) Calculate rms distance between the cluster and local median cluster posotion in region +-2 padrows (wihing one sector)
+  //         and store delta in exported vecDelta array
+  Int_t nOutCounter=0;  // counter of clusters 
+  rmsCluster=0;
+  Float_t rmsSum=0;
+  Float_t deltaArray[10]={0};
+  for (Int_t irow=0; irow<npValid; irow++){
+    Int_t idelta=1;
+    vecDelta[irow]=1000;
+    if (TMath::Abs(delta0[irow])>kMaxDist) continue;
+    deltaArray[0]=delta0[irow];
+    Int_t nforMedian=1;
+    Int_t sector36=Int_t(sec[irow])%36;
+    for (idelta=1; idelta<3; idelta++) {
+      if ((irow-idelta)<0) break;
+      if ((irow+idelta)>npValid) break;
+      if (TMath::Abs(sec[irow-idelta])>72) break;
+      if (TMath::Abs(sec[irow+idelta])>72) break;
+      if (Int_t(sec[irow-idelta])%36!=sector36) break;  // sometimes looks like sector not initialized
+      if (Int_t(sec[irow+idelta])%36!=sector36) break;
+      if (TMath::Abs(delta0[irow-idelta])<kMaxDist) deltaArray[nforMedian++]=delta0[irow-idelta];
+      if (TMath::Abs(delta0[irow+idelta])<kMaxDist) deltaArray[nforMedian++]=delta0[irow+idelta];
+    }
+    if (irow==0) vecDelta[irow]=delta0[0]-delta0[1];
+    if (irow==npValid-1) vecDelta[irow]=delta0[irow]-delta0[irow-1];
+    if (nforMedian>1){
+      vecDelta[irow]=delta0[irow]-TMath::Mean(nforMedian, deltaArray);
+    }
+    if (vecDelta[irow]>maxRMSCluster){
+      nOutCounter++;
+    }else{
+      rmsCluster+=TMath::Power(TMath::Abs(vecDelta[irow]),lpNorm);
+      rmsSum++;
+    }
+  }
+  if (rmsSum<=0) return 0;
+  rmsCluster=TMath::Power(rmsCluster/rmsSum,1./lpNorm);
+  return nOutCounter;
 }
 
 

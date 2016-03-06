@@ -56,6 +56,7 @@ public :
   static Bool_t FitDrift(double deltaT=120., double sigmaT=600.,  double time0=0., double time1=0.);
   static void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1);
   static void MakeVDriftOCDB(const char *inputFile, Int_t run, TString  targetOCDBstorage="", const char * testDiffCDB=0);
+  static Float_t  CalculateDistance(const TVectorF &track0, const TVectorF &track1, const TVectorF &vecSec, TVectorF &vecDelta, Int_t npValid, Float_t &rmsTrack,  Float_t &rmsCluster, Float_t lpNorm=1.5); 
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
   THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}
   THn * GetHisITSTOFDRPhi() const {return fHisITSTOFDRPhi;}
