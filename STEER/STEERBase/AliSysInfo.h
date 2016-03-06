@@ -30,7 +30,7 @@ public:
   static Bool_t GetVerbose()                {return fgVerbose;} 
   static void SetDisabled(Bool_t v=kTRUE)   {fgDisabled = v; fgVerbose=kFALSE;}
   static Bool_t IsDisabled()               {return fgDisabled;}
-
+  static void PrintJiraTable(TTree * tree, const char *var, const char *cut, const char *format, const char *output="syswatch.table");
 private:
   AliSysInfo(const AliSysInfo& source);
   AliSysInfo& operator= (const AliSysInfo& rec);
