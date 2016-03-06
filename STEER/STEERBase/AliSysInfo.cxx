@@ -91,6 +91,7 @@
 #include "TTimeStamp.h"
 #include "AliSysInfo.h"
 #include "TBufferFile.h"
+#include "TTreePlayer.h"
 
 //#include "TMemStatManager.h"  //USE IFDEF
 
@@ -376,4 +377,30 @@ Double_t AliSysInfo::EstimateObjectSize(TObject* object){
   Double_t size=file->Length();
   delete file;
   return size;
+}
+
+
+void  AliSysInfo::PrintJiraTable(TTree * tree, const char *var, const char *cut, const char *format, const char *outputTable){
+  //
+  // Print Tree query table as a JIRA table
+  // Generic implementation using "custom format" in the future, e.g to print html tables
+  // 
+  /*
+    Example:
+    AliSysInfo::PrintJiraTable(tree, "deltaT:sname", "deltaT>0", "col=10:100", "syswatch.table");
+    AliSysInfo::PrintJiraTable(tree, "deltaT:sname", "deltaT>0", "col=10:100", 0);
+    AliSysInfo::PrintJiraTable(tree, "deltaT:sname:fileReadCalls:fileBytesRead/1000000", "deltaT>0", "col=10:100:25:15", 0);
+  */
+  tree->SetScanField(tree->GetEntries());
+  ((TTreePlayer*)(tree->GetPlayer()))->SetScanRedirect(true);
+  ((TTreePlayer*)(tree->GetPlayer()))->SetScanFileName("AliSysInfo.PrintJiraTable.tmp0");
+  tree->Scan(var,cut,format);
+  ((TTreePlayer*)(tree->GetPlayer()))->SetScanRedirect(0);
+  gSystem->Exec("cat AliSysInfo.PrintJiraTable.tmp0 | sed s_*_\"|\"_g | grep -v \"|||\" > AliSysInfo.PrintJiraTable.tmp1");
+  if (outputTable==0){
+    gSystem->Exec("cat AliSysInfo.PrintJiraTable.tmp1");
+  }else{
+    gSystem->Exec(TString::Format("mv AliSysInfo.PrintJiraTable.tmp1 %s", outputTable).Data());
+  }
+
 }
