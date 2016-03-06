@@ -245,6 +245,15 @@ public:
                                                    Float_t & l0,   Float_t & l1,   
                                                    Float_t & disp, Float_t & dEta, Float_t & dPhi,
                                                    Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi);
+  
+  void     RecalculateClusterShowerShapeParametersWithCellCuts(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster, 
+                                                               Float_t cellEcut, Float_t cellTimeCut, Int_t bc, Float_t & enAfterCuts);
+
+  void     RecalculateClusterShowerShapeParametersWithCellCuts(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
+                                                               Float_t cellEcut, Float_t cellTimeCut, Int_t bc,
+                                                               Float_t & enAfterCuts, Float_t & l0,   Float_t & l1,   
+                                                               Float_t & disp, Float_t & dEta, Float_t & dPhi,
+                                                               Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi);
   void     RecalculateClusterPID(AliVCluster * cluster);
   AliEMCALPIDUtils * GetPIDUtils() { return fPIDUtils;}
 
