@@ -62,7 +62,7 @@ AliAnalysisTask* AddTaskJpsi_zzhou_PbPb(
   task->SetEventFilter(eventCuts);
   task->SetRejectPileup();
 		
-  gROOT->LoadMacro("ConfigJpsi_zzhou_lowpt.C");
+  gROOT->LoadMacro( cfg.Data() );
 	
 	
   //add dielectron analysis with different cuts to the task
