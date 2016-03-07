@@ -3009,6 +3009,10 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
     targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
   }
+  else {
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+
   AliCDBMetaData* metaData = new AliCDBMetaData;
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Marian Ivanov");
