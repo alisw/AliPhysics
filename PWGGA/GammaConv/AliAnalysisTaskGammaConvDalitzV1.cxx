@@ -2459,7 +2459,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 								
 								  
 								    hESDMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift());  
-								    hESDMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->GetAlpha()));  
+                                    hESDMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),fabs(pi0cand->GetAlpha()));
 								    hESDMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle()); 
 								    
 								} 
@@ -2494,7 +2494,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 							if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
 								  
 								    hESDMotherPi0PtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift());  
-								    hESDMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->GetAlpha()));  
+                                    hESDMotherPi0PtAlpha[fiCut]->Fill(pi0cand->Pt(),fabs(pi0cand->GetAlpha()));
 								    hESDMotherPi0PtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle()); 
 								    
 								    
@@ -2765,7 +2765,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 						        
 						   
 							hESDTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift()); 
-							hESDTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->GetAlpha())); 
+                            hESDTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),fabs(Pi0Candidate->GetAlpha()));
 							hESDTruePi0PtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle()); 
 							
 							if( fDoMesonQA > 1 ) {

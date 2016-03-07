@@ -639,22 +639,22 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
       return kFALSE; // cuts on distance from collision point
     }
 
-    if(abs(ePos->Vz()) > fMaxZ){
+    if(fabs(ePos->Vz()) > fMaxZ){
       return kFALSE;  // outside material
     }
-    if(abs(eNeg->Vz()) > fMaxZ){
+    if(fabs(eNeg->Vz()) > fMaxZ){
       return kFALSE;  // outside material
     }
 
-    if( ePos->R() <= ((abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( ePos->R() <= ((fabs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((abs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((fabs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
-    if( eNeg->R() <= ((abs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( eNeg->R() <= ((fabs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((abs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((fabs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
@@ -730,22 +730,22 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
     if(rPos>fMaxR){
       return kFALSE; // cuts on distance from collision point
     }
-    if(abs(ePos->Zv()) > fMaxZ){
+    if(fabs(ePos->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
-    if(abs(eNeg->Zv()) > fMaxZ){
+    if(fabs(eNeg->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
 
-    if( rPos <= ((abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( rPos <= ((fabs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   rPos >= ((abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   rPos >= ((fabs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
-    if( rNeg <= ((abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( rNeg <= ((fabs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   rNeg >= ((abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   rNeg >= ((fabs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
@@ -846,7 +846,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
     }
 
     cutIndex++; //10
-    if(abs(photonAOD->GetDCAzToPrimVtx()) > fDCAZPrimVtxCut) { //DCA Z cut of photon to primary vertex
+    if(fabs(photonAOD->GetDCAzToPrimVtx()) > fDCAZPrimVtxCut) { //DCA Z cut of photon to primary vertex
       if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //10
       return kFALSE;
     }
@@ -1006,17 +1006,17 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   }
   cutIndex++;
 
-  if(photon->GetConversionRadius() <= ((abs(photon->GetConversionZ())*fLineCutZRSlope)-fLineCutZValue)){
+  if(photon->GetConversionRadius() <= ((fabs(photon->GetConversionZ())*fLineCutZRSlope)-fLineCutZValue)){
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
-  else if (fUseEtaMinCut &&  photon->GetConversionRadius() >= ((abs(photon->GetConversionZ())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
+  else if (fUseEtaMinCut &&  photon->GetConversionRadius() >= ((fabs(photon->GetConversionZ())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
-  if(abs(photon->GetConversionZ()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(fabs(photon->GetConversionZ()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
@@ -1240,7 +1240,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 
   if(fDoKaonRejectionLowP == kTRUE && !fSwitchToKappa){
     if(fCurrentTrack->P()<fPIDMinPKaonRejectionLowP ){
-      if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
+      if( fabs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
 
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1250,7 +1250,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   cutIndex++;
   if(fDoProtonRejectionLowP == kTRUE && !fSwitchToKappa){
     if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
-      if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
+      if( fabs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
 
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1261,7 +1261,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 
   if(fDoPionRejectionLowP == kTRUE && !fSwitchToKappa){
     if( fCurrentTrack->P()<fPIDMinPPionRejectionLowP ){
-      if( abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
+      if( fabs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
 
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1484,14 +1484,14 @@ Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * e
     return kFALSE;
   }
 
-  if( ePos->R() <= ((abs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
+  if( ePos->R() <= ((fabs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
     return kFALSE;
   }
-  else if (fUseEtaMinCut &&  ePos->R() >= ((abs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
+  else if (fUseEtaMinCut &&  ePos->R() >= ((fabs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
     return kFALSE;
   }
 
-  if(abs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(fabs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
@@ -1499,7 +1499,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * e
     return kFALSE;
   }
 
-  if(abs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(fabs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
@@ -3135,13 +3135,13 @@ Double_t AliConversionPhotonCuts::GetCosineOfPointingAngle( const AliConversionP
 Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photon) const {
 
   if (fDo2DPsiPairChi2){
-    if (abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){  
+    if (fabs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){
       return kTRUE;
     } else {
       return kFALSE;
     }    
   } else {
-    if(abs(photon->GetPsiPair()) > fPsiPairCut){
+    if(fabs(photon->GetPsiPair()) > fPsiPairCut){
       return kFALSE;}
     else{return kTRUE;}
   } 
@@ -3211,7 +3211,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
       TVector3 v1(photon->Px(),photon->Py(),photon->Pz());
       TVector3 v2(photonComp->Px(),photonComp->Py(),photonComp->Pz());
       Double_t OpeningAngle=v1.Angle(v2);
-      if( OpeningAngle < fOpenAngle && abs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR){
+      if( OpeningAngle < fOpenAngle && fabs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR){
         if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
       }      
     }
@@ -3253,14 +3253,14 @@ Bool_t AliConversionPhotonCuts::InPlaneOutOfPlaneCut(Double_t photonPhi, Double_
     return kTRUE;
   }
   else if(fInPlaneOutOfPlane == 1){
-    if(abs(gammaToEPAngle)<=0.25*TMath::Pi() || abs(gammaToEPAngle)>=0.75*TMath::Pi()){
+    if(fabs(gammaToEPAngle)<=0.25*TMath::Pi() || fabs(gammaToEPAngle)>=0.75*TMath::Pi()){
       if(fill&&fHistoEventPlanePhi)fHistoEventPlanePhi->Fill(gammaToEPAngle);
       return kTRUE;
     }
     else return kFALSE;
   }
   else if(fInPlaneOutOfPlane == 2){
-    if(abs(gammaToEPAngle)>0.25*TMath::Pi() && abs(gammaToEPAngle)<0.75*TMath::Pi()){
+    if(fabs(gammaToEPAngle)>0.25*TMath::Pi() && fabs(gammaToEPAngle)<0.75*TMath::Pi()){
       if(fill&&fHistoEventPlanePhi)fHistoEventPlanePhi->Fill(gammaToEPAngle);
       return kTRUE;
     }
