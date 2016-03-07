@@ -15,10 +15,12 @@
 #include "AliAltroMapping.h"
 #include "AliRawReaderDate.h"
 #include "AliPHOSCpvParam.h"
+#include "AliPHOSCalibData.h"
 
 class AliPHOSCpvRawStream;
 class AliPHOSDigit ;
 class AliPHOSGeometry ;
+class AliPHOSCalibData;
 
 class AliPHOSCpvRawDigiProducer: public TObject {
 
@@ -42,6 +44,7 @@ public:
 
   void   SetCpvMinAmp(Int_t cpvMin) { fCpvMinE=cpvMin; } // thresholds would be ped + fCpvMinE
 
+  void SetCalibData(AliPHOSCalibData* cd){fCalibData = cd;}
 protected:
   void CreateErrHist();             // initialize histogram of errors
 private:
@@ -55,6 +58,8 @@ private:
 
   Int_t ** fPed[2][2*AliPHOSCpvParam::kNDDL]; // pedestals    ped[0][iddl][x][y] = pedestal; ped[1][iddl][x][y] = N*sigma (N was used while creating ped files)
   Bool_t fPedFilesRLoaded;
+
+  AliPHOSCalibData* fCalibData;
 
   ClassDef(AliPHOSCpvRawDigiProducer,2);
 };
