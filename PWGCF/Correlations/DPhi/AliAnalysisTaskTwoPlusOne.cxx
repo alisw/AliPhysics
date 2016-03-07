@@ -375,25 +375,32 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	// Fill mixed-event histos here  
 	for (Int_t jMix=0; jMix<nMix; jMix++){
 	  TObjArray* bgTracks = pool->GetEvent(jMix);
-	  
+	  Int_t mixScale = 2*nMix;
+	  if(fMixOnlyBiasedEvents)
+	    mixScale = nMix;
+
 	  //standard mixed event
 	  if(!fThreeParticleMixed){
-	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
-	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
+	    if(!fMixOnlyBiasedEvents)
+	      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
 	  }
 	  
 	  //1plus1 mixed event
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / (2*nMix), kTRUE, kFALSE, applyEfficiency);
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / (2*nMix), kTRUE, kFALSE, applyEfficiency);
+	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / mixScale, kTRUE, kFALSE, applyEfficiency);
+	  if(!fMixOnlyBiasedEvents)
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / mixScale, kTRUE, kFALSE, applyEfficiency);
 	  
 	  //mixed combinatorics
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
+	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
+	  if(!fMixOnlyBiasedEvents)
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
 	  
 	  //background same from mixed comb
 	  if(fUseBackgroundSameFromMixedComb){
-	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kTRUE, applyEfficiency);
-	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kTRUE, applyEfficiency);
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / mixScale, kFALSE, kTRUE, applyEfficiency);
+	    if(!fMixOnlyBiasedEvents)
+	      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / mixScale, kFALSE, kTRUE, applyEfficiency);
 	  }
 	  
 	  //mixed event for background Same
