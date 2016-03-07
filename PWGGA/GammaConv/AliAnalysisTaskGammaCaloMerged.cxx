@@ -1167,7 +1167,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
   fNClusterMergedCandidates = 0;
   
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent);
+  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
