@@ -254,7 +254,10 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
-  fWeightJetJetMC(1)
+  fWeightJetJetMC(1),
+  fDoInOutTimingCluster(kFALSE),
+  fMinTimingCluster(0),
+  fMaxTimingCluster(0)
 
 {
   
@@ -455,7 +458,10 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
-  fWeightJetJetMC(1)
+  fWeightJetJetMC(1),
+  fDoInOutTimingCluster(kFALSE),
+  fMinTimingCluster(0),
+  fMaxTimingCluster(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2290,10 +2296,18 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
       AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
       if (gamma0==NULL) continue;
+      if ( fDoInOutTimingCluster ){
+        Double_t tof = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetTOF();
+        if ( tof < fMinTimingCluster || tof > fMaxTimingCluster ) continue;
+      }
       
       for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
         if (gamma1==NULL) continue;
+        if ( fDoInOutTimingCluster ){
+          Double_t tof = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef())->GetTOF();
+          if ( tof > fMinTimingCluster && tof < fMaxTimingCluster ) continue;
+        }
         
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
@@ -2316,7 +2330,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               fHistoMotherEtaPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(),  fWeightJetJetMC);
             }
           }
-                    if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
+          if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
             Int_t zbin = 0;
             Int_t mbin = 0;
             
