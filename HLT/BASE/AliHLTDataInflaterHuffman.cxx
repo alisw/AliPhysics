@@ -153,6 +153,31 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
   return true;
 }
 
+bool AliHLTDataInflaterHuffman::InputBit( AliHLTUInt8_t & value )
+{
+  /// special overload of InputBit method to consider the
+  /// internal register
+  if (fInputLength > 0) {
+    const int shiftval=sizeof(fInput)*8 - 1;
+    value = (fInput>>shiftval) & 0x1;
+    fInput<<=1;
+    fInputLength-=1;
+    return true;
+  }
+
+  return AliHLTDataInflater::InputBit(value);
+}
+
+void AliHLTDataInflaterHuffman::Pad8Bits()
+{
+  /// special overload of Pad8Bits method to clear the
+  /// internal register and rewind the read pointer
+  RewindBitPosition(fInputLength);
+  fInputLength = 0;
+  fInput = 0;
+  AliHLTDataInflater::Pad8Bits();
+}
+
 void AliHLTDataInflaterHuffman::Print(Option_t* option) const
 {
   /// Print info

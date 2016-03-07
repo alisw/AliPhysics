@@ -27,7 +27,7 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCSpacePointContainer.h"
-#include "AliHLTTPCHWCFSpacePointContainer.h"
+#include "AliHLTTPCRawSpacePointContainer.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
@@ -469,8 +469,11 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 {
   // write associated clusters to buffer via deflater
   if (!pDeflater || !pSpacePoints) return -EINVAL;
-  AliHLTTPCHWCFSpacePointContainer* pTPCRawSpacePoints=dynamic_cast<AliHLTTPCHWCFSpacePointContainer*>(pSpacePoints);
-  if (!pTPCRawSpacePoints) return -EINVAL;
+  AliHLTTPCRawSpacePointContainer* pTPCRawSpacePoints=dynamic_cast<AliHLTTPCRawSpacePointContainer*>(pSpacePoints);
+  if (!pTPCRawSpacePoints) {
+    HLTError("invalid type of SpacePointContainer \"%s\", required AliHLTTPCRawSpacePointContainer", pSpacePoints->ClassName());
+    return -EINVAL;
+  }
   bool bReverse=true;
   bool bWriteSuccess=true;
   int writtenClusters=0;
@@ -589,8 +592,16 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	    }
 	    AliHLTUInt64_t sigmaY264=0;
 	    if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
+	    // we can safely use the upper limit as this is an unphysical cluster, no impact to physics
+	    if (sigmaY264 >= 1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fBitLength) {
+	      sigmaY264 = (1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fBitLength)-1;
+	    }
 	    AliHLTUInt64_t sigmaZ264=0;
 	    if (!isnan(sigmaZ2)) sigmaZ264=(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
+	    // we can safely use the upper limit as this is an unphysical cluster, no impact to physics
+	    if (sigmaZ264 >= 1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fBitLength) {
+	      sigmaZ264 = (1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fBitLength)-1;
+	    }
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kResidualPad    , deltapad64);  
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaPad);
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kResidualTime   , deltatime64);
@@ -641,7 +652,13 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
     bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(haveClusters);
   }
 
-  if (!bWriteSuccess) return -ENOSPC;
+  if (!bWriteSuccess) {
+    // TODO: code review 2015-02-10 Matthias.Richter@scieq.net
+    // misleading error code, there are two reasons for failed write operation
+    // 1) target buffer overflow -> -ENOSPC
+    // 2) value range excess -> -ERANGE
+    return -ENOSPC;
+  }
 
   int allClusters=0;
   for (clrow=fRawTrackPoints.begin(); clrow!=fRawTrackPoints.end(); clrow++) {

@@ -678,6 +678,7 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   unsigned lastPadRow=0;
   AliHLTUInt64_t lastPad64=0;
   AliHLTUInt64_t lastTime64=0;
+  pDeflater->StartEncoder();
   AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin();
   if (clusterID!=pGrid->end()) {
     for (; clusterID!=pGrid->end(); clusterID++) {
@@ -791,6 +792,7 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       blockout->fCount++;
     }
   }
+  pDeflater->StopEncoder();
   AliHLTComponent_BlockData bd;
   AliHLTComponent::FillBlockData(bd);
   bd.fOffset        = size+offset;

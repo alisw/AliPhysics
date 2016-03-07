@@ -654,6 +654,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   unsigned lastPadRow=0;
   AliHLTUInt64_t lastPad64=0;
   AliHLTUInt64_t lastTime64=0;
+  pDeflater->StartEncoder();
   AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin();
 
   AliHLTUInt32_t filledBytes = 0;
@@ -777,8 +778,16 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       }
       AliHLTUInt64_t sigmaY264=0;
       if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
+      // we can safely use the upper limit as this is an unphysical cluster, no impact to physics
+      if (sigmaY264 >= 1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fBitLength) {
+        sigmaY264 = (1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fBitLength)-1;
+      }
       AliHLTUInt64_t sigmaZ264=0;
       if (!isnan(sigmaZ2)) sigmaZ264=(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
+      // we can safely use the upper limit as this is an unphysical cluster, no impact to physics
+      if (sigmaZ264 >= 1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fBitLength) {
+        sigmaZ264 = (1<<AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fBitLength)-1;
+      }
       pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPadRow , padrow64);
       pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPad    , pad64);
       if (fMode&kModeDifferentialPadTime) pDeflater->OutputBit(padType);
@@ -794,8 +803,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
     }
     blockout->fCount++;
   }
-  
-
+  pDeflater->StopEncoder();
   AliHLTComponent_BlockData bd;
   AliHLTComponent::FillBlockData(bd);
   bd.fOffset        = offset;

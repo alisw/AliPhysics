@@ -136,7 +136,7 @@ public:
   /** function to determine input bit
    * @return boolean (if bit is 1 or 0)
    */
-  bool InputBit( AliHLTUInt8_t & value );
+  virtual bool InputBit( AliHLTUInt8_t & value );
 
   /** function to read bits from bitstream
    * @param value
@@ -152,7 +152,7 @@ public:
   bool RewindBitPosition(UInt_t const & bitCount);
  
   /** function pad 8 bits */
-  void Pad8Bits();
+  virtual void Pad8Bits();
 
   /** function to determine input bytes
    * @param data       AliHLTUInt8_t* pointer to input data

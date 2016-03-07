@@ -753,7 +753,10 @@ int AliHLTTPCDataCompressionComponent::WriteTrackClusters(const vector<AliHLTGlo
     }
 
     int result=pTrackPoints->Write(*track, pSpacePoints, pDeflater, outputPtr+size, capacity-size, fpWrittenAssociatedClusterIds);
-    if (result<0) return result;
+    if (result<0) {
+      HLTError("failed to write track points for track %d with error code %d, aborting", track->GetID(), result);
+      return result;
+    }
     size+=result;
 
     UInt_t nofTrackPoints=track->GetNumberOfPoints();

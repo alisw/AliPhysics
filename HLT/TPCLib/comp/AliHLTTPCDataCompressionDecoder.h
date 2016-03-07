@@ -483,6 +483,10 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	  trackpad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
 	  if (currentTrackPoint->GetU()>0.) trackpad64=(AliHLTUInt64_t)round(trackpad);
 	  if (sign) {
+	    if (trackpad64<value) {
+	      bReadSuccess=false;
+	      break;
+	    }
 	    value=trackpad64-value;
 	  } else {
 	    value+=trackpad64;
@@ -500,6 +504,10 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	  tracktime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
 	  if (currentTrackPoint->GetV()>0.) tracktime64=(AliHLTUInt64_t)round(tracktime);
 	  if (sign) {
+	    if (tracktime64<value) {
+	      bReadSuccess=false;
+	      break;
+	    }
 	    value=tracktime64-value;
 	  } else {
 	    value+=tracktime64;
