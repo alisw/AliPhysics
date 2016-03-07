@@ -167,6 +167,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutRejectElectronsWithTPCpid(kFALSE),
   fProbBayes(0.0),
   fCurrCentr(0.0),
+  fPtTOFPIDoff(0.),
   fVZEROgainEqualization(NULL),
   fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(kFALSE),
@@ -293,6 +294,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutRejectElectronsWithTPCpid(kFALSE),
   fProbBayes(0.0),
   fCurrCentr(0.0),
+  fPtTOFPIDoff(0.),
   fVZEROgainEqualization(NULL),
   fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(kFALSE),
@@ -422,6 +424,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid),
   fProbBayes(0.0),
   fCurrCentr(0.0),
+  fPtTOFPIDoff(that.fPtTOFPIDoff),
   fVZEROgainEqualization(NULL),
   fVZEROgainEqualizationCen(NULL),
   fApplyRecentering(that.fApplyRecentering),
@@ -527,6 +530,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
+  fPtTOFPIDoff=that.fPtTOFPIDoff;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
   fCentralityPercentileMax=that.fCentralityPercentileMax;
@@ -2793,6 +2797,9 @@ Bool_t AliFlowTrackCuts::PassesAODpidCut(const AliAODTrack* track )
   case kTPCTOFNsigmaPurity:
       if(!PassesTPCTOFNsigmaPurityCut(track)) pass = kFALSE;
       break;
+  case kTPCTPCTOFNsigma:
+	  if(!PassesTPCTPCTOFNsigmaCut(track)) pass = kFALSE;
+	  break;
   default:
     return kTRUE;
     break;
@@ -4901,7 +4908,54 @@ Bool_t AliFlowTrackCuts::TPCTOFagree(const AliVTrack *track)
 }
 // end part added by F. Noferini
 //-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCTPCTOFNsigmaCut(const AliAODTrack* track){
 
+  //Added by Bernhard Hohlweger (bernhard.hohlweger@cern.ch)
+  //This method uses only the TPC dEdx up to a certain Pt for particle identification, above this Pt value the combined information from TOF and TPC is used.
+  //Default values tuned on 2010h.
+  //Pt threshold can be set by calling AliFlowTrackCuts::SetPtTOFPIDoff(Double_t pt).
+
+  Bool_t pass = kTRUE;
+
+  if(!fPIDResponse) pass = kFALSE;
+  if(!track) pass = kFALSE;
+
+  // check TPC status
+  if(track->GetTPCsignal() < 10) pass = kFALSE;
+
+  if(fPtTOFPIDoff == 0.){
+    if(fParticleID == AliPID::kProton){
+      fPtTOFPIDoff = 0.75;
+    }else if(fParticleID == AliPID::kPion){
+      fPtTOFPIDoff = 0.55;
+    }else if(fParticleID == AliPID::kKaon){
+      fPtTOFPIDoff = 0.45;
+    }else{
+      //by default just use the standard TPCTOFNsigmaCut
+      fPtTOFPIDoff = 0.;
+    }
+  }
+  if(pass){
+    Double_t Pt = track->Pt();
+    Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
+    Float_t nsigma2 = 999.;
+    if(Pt < fPtTOFPIDoff){
+      nsigma2 = nsigmaTPC*nsigmaTPC;
+    }else{
+      // check TOF status
+      if (((track->GetStatus()&AliVTrack::kTOFout)==0)&&((track->GetStatus()&AliVTrack::kTIME)==0)){
+        pass = kFALSE;
+      }else{
+        Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
+        nsigma2 = nsigmaTPC*nsigmaTPC + nsigmaTOF*nsigmaTOF;
+      }
+    }
+    pass = pass && (nsigma2 < fNsigmaCut2);
+  }
+
+  return pass;
+
+}
 //-----------------------------------------------------------------------
 const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
 {
