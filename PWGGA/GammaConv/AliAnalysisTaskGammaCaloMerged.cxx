@@ -1357,7 +1357,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
       if (fDoMesonQA > 0 ){
         fHistoMotherPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-        fHistoMotherPtAlpha[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->GetAlpha()), fWeightJetJetMC);
+        fHistoMotherPtAlpha[fiCut]->Fill(pi0cand->Pt(),fabs(pi0cand->GetAlpha()), fWeightJetJetMC);
         fHistoMotherPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(), fWeightJetJetMC);
       }
     }
@@ -1430,7 +1430,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
           fHistoTrueClusPi0InvMassvsPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
           if (fDoMesonQA > 0 && GetSelectedMesonID() != 2){
             fHistoTruePi0PtY[fiCut]->Fill(mesoncand->Pt(),mesoncand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-            fHistoTruePi0PtAlpha[fiCut]->Fill(mesoncand->Pt(),abs(mesoncand->GetAlpha()), fWeightJetJetMC);
+            fHistoTruePi0PtAlpha[fiCut]->Fill(mesoncand->Pt(),fabs(mesoncand->GetAlpha()), fWeightJetJetMC);
             fHistoTruePi0PtOpenAngle[fiCut]->Fill(mesoncand->Pt(),mesoncand->GetOpeningAngle(), fWeightJetJetMC);
           }
         
@@ -1460,7 +1460,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
           if (fDoMesonQA > 1)fHistoTrueClusEtaInvMassvsPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
           if ( fDoMesonQA > 0 && GetSelectedMesonID() != 1 ){
             fHistoTrueEtaPtY[fiCut]->Fill(mesoncand->Pt(),mesoncand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-            fHistoTrueEtaPtAlpha[fiCut]->Fill(mesoncand->Pt(),abs(mesoncand->GetAlpha()), fWeightJetJetMC);
+            fHistoTrueEtaPtAlpha[fiCut]->Fill(mesoncand->Pt(),fabs(mesoncand->GetAlpha()), fWeightJetJetMC);
             fHistoTrueEtaPtOpenAngle[fiCut]->Fill(mesoncand->Pt(),mesoncand->GetOpeningAngle(), fWeightJetJetMC);                      
           }
         } else {
@@ -1495,7 +1495,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
           fHistoTrueClusPartConvPi0InvMassvsPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
           if ( fDoMesonQA > 0 && GetSelectedMesonID() != 2){
             fHistoTruePi0PtY[fiCut]->Fill(mesoncand->Pt(),mesoncand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-            fHistoTruePi0PtAlpha[fiCut]->Fill(mesoncand->Pt(),abs(mesoncand->GetAlpha()), fWeightJetJetMC);
+            fHistoTruePi0PtAlpha[fiCut]->Fill(mesoncand->Pt(),fabs(mesoncand->GetAlpha()), fWeightJetJetMC);
             fHistoTruePi0PtOpenAngle[fiCut]->Fill(mesoncand->Pt(),mesoncand->GetOpeningAngle(), fWeightJetJetMC);                      
           }
           if (GetSelectedMesonID() < 2) {
@@ -1522,7 +1522,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
           fHistoTrueClusPartConvEtaInvMassvsPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
           if ( fDoMesonQA > 0 && GetSelectedMesonID() != 1 ){
             fHistoTrueEtaPtY[fiCut]->Fill(mesoncand->Pt(),mesoncand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-            fHistoTrueEtaPtAlpha[fiCut]->Fill(mesoncand->Pt(),abs(mesoncand->GetAlpha()), fWeightJetJetMC);
+            fHistoTrueEtaPtAlpha[fiCut]->Fill(mesoncand->Pt(),fabs(mesoncand->GetAlpha()), fWeightJetJetMC);
             fHistoTrueEtaPtOpenAngle[fiCut]->Fill(mesoncand->Pt(),mesoncand->GetOpeningAngle(), fWeightJetJetMC);                      
           }
         } else if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()) {
@@ -1546,14 +1546,14 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
     if (!(TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton())){
       fHistoTrueClusBGPtvsM02[fiCut]->Fill(TrueClusterCandidate->Pt(), m02, fWeightJetJetMC);
       fHistoTrueClusBGInvMassvsPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
-      if (pdgCodeParticle== abs(211)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 0.5, fWeightJetJetMC); // pi+/-
-      else if (pdgCodeParticle== abs(2212)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 1.5, fWeightJetJetMC); // p
-      else if (pdgCodeParticle== abs(321)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 2.5, fWeightJetJetMC); // K+-
-      else if (pdgCodeParticle== abs(2112)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 3.5, fWeightJetJetMC); // n
-      else if (pdgCodeParticle== abs(310)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 4.5, fWeightJetJetMC); // K0s
-      else if (pdgCodeParticle== abs(3122)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 5.5, fWeightJetJetMC); // Lambda
-      else if (pdgCodeParticle== abs(13)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 6.5, fWeightJetJetMC); // mu+/-
-      else if (pdgCodeParticle== abs(130)) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 7.5, fWeightJetJetMC); // K0l
+      if (abs(pdgCodeParticle) == 211) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 0.5, fWeightJetJetMC); // pi+/-
+      else if (abs(pdgCodeParticle) == 2212) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 1.5, fWeightJetJetMC); // p
+      else if (abs(pdgCodeParticle) == 321) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 2.5, fWeightJetJetMC); // K+-
+      else if (abs(pdgCodeParticle) == 2112) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 3.5, fWeightJetJetMC); // n
+      else if (abs(pdgCodeParticle) == 310) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 4.5, fWeightJetJetMC); // K0s
+      else if (abs(pdgCodeParticle) == 3122) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 5.5, fWeightJetJetMC); // Lambda
+      else if (abs(pdgCodeParticle) == 13) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 6.5, fWeightJetJetMC); // mu+/-
+      else if (abs(pdgCodeParticle) == 130) fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 7.5, fWeightJetJetMC); // K0l
       else fHistoTrueClusBGPtvsSource[fiCut]->Fill(mesoncand->Pt(), 8.5, fWeightJetJetMC); // Rest
     }
       
@@ -1565,17 +1565,17 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
         fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 0.5, fWeightJetJetMC); // direct photon
       } else {
         Int_t pdgCodeMother = fMCStack->Particle(motherLab)->GetPdgCode();
-        if (pdgCodeMother == 111) 
+        if (abs(pdgCodeMother) == 111)
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 1.5, fWeightJetJetMC); // pi0
-        else if (pdgCodeMother == 221) 
+        else if (abs(pdgCodeMother) == 221)
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 2.5, fWeightJetJetMC); // eta
-        else if (pdgCodeMother == 331) 
+        else if (abs(pdgCodeMother) == 331)
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 3.5, fWeightJetJetMC); // eta'
-        else if (pdgCodeMother == 223) 
+        else if (abs(pdgCodeMother) == 223)
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 4.5, fWeightJetJetMC); // omega
-        else if (pdgCodeMother == 333) 
+        else if (abs(pdgCodeMother) == 333)
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 5.5, fWeightJetJetMC); // phi
-        else if (pdgCodeMother == 3122) 
+        else if (abs(pdgCodeMother) == 3122)
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 6.5, fWeightJetJetMC); // Lambda
         else 
           fHistoTrueClusGammaPtvsSource[fiCut]->Fill(mesoncand->Pt(), 7.5, fWeightJetJetMC); // rest
@@ -1589,11 +1589,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
         fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 0.5, fWeightJetJetMC); // direct photon
       } else {
         Int_t pdgCodeMother = fMCStack->Particle(motherLab)->GetPdgCode();
-        if (pdgCodeMother == 22) 
+        if (abs(pdgCodeMother) == 22)
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 1.5, fWeightJetJetMC); // gamma
-        else if (pdgCodeMother == 111) 
+        else if (abs(pdgCodeMother) == 111)
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 2.5, fWeightJetJetMC); // pi0
-        else if (pdgCodeMother == 221) 
+        else if (abs(pdgCodeMother) == 221)
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 3.5, fWeightJetJetMC); // eta
         else if (abs(pdgCodeMother) == 411 || abs(pdgCodeMother) == 421 || abs(pdgCodeMother) == 431 ||
                  abs(pdgCodeMother) == 443 || abs(pdgCodeMother) == 100443 || abs(pdgCodeMother) == 200443 ) 
@@ -1601,7 +1601,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
         else if (abs(pdgCodeMother) == 511 || abs(pdgCodeMother) == 521 || abs(pdgCodeMother) == 531 ||
                  abs(pdgCodeMother) == 553 || abs(pdgCodeMother) == 100553 || abs(pdgCodeMother) == 200553 ) 
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 5.5, fWeightJetJetMC); // b
-        else if (pdgCodeMother == 23 || abs(pdgCodeMother) == 24) 
+        else if (abs(pdgCodeMother) == 23 || abs(pdgCodeMother) == 24)
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 6.5, fWeightJetJetMC); // W/Z
         else if (abs(pdgCodeMother) == 15) 
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 7.5, fWeightJetJetMC); // tau

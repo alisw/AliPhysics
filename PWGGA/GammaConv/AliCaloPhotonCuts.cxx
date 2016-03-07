@@ -893,7 +893,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *
 
   if(!fMCStack)return kFALSE;
 
-  if (abs(particle->GetPdgCode()) == 11){
+  if (TMath::Abs(particle->GetPdgCode()) == 11){
 
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
@@ -1377,7 +1377,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
         rowdiff = largestCellirow - matched_largestCellirow;
         coldiff = largestCellicol - matched_largestCellicol;
         calculatedDiff = kTRUE;
-      }else if( abs(matched_largestCelliMod - largestCelliMod) == 1 && (ClusID == matchClusID) ){
+      }else if( TMath::Abs(matched_largestCelliMod - largestCelliMod) == 1 && (ClusID == matchClusID) ){
         if(matched_largestCelliMod%2){
           matched_largestCelliMod -= 1;
           matched_largestCellicol += AliEMCALGeoParams::fgkEMCALCols;
@@ -2145,7 +2145,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
         fHistClusterM20M02BeforeQA->Fill(clusM20, clusM02, weight);
       }
 
-      Bool_t match_dEta = (abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
+      Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
       Bool_t match_dPhi = kFALSE;
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
@@ -2326,7 +2326,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
         fHistClusterM20M02BeforeQA->Fill(clusM20, clusM02, weight);
       }
 
-      Bool_t match_dEta = (abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
+      Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
       Bool_t match_dPhi = kFALSE;
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;

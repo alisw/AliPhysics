@@ -2925,7 +2925,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
     if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
     if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
       fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
-      if (abs(particle->Eta()) < 0.66 ){
+      if (fabs(particle->Eta()) < 0.66 ){
         if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
       }
       if(particle->GetMother() >-1){ // Meson Decay Gamma
@@ -3084,7 +3084,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
       if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCStack,kFALSE)){
         fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
-        if (abs(particle->Eta()) < 0.66 ){
+        if (fabs(particle->Eta()) < 0.66 ){
           if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
         }
         
@@ -3296,7 +3296,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           // fill new histograms
           if (!matched){
             fHistoPhotonPairPtconv[fiCut]->Fill(pi0cand->M(),gamma0->Pt(),fWeightJetJetMC);
-            if(abs(pi0cand->GetAlpha())<0.1)
+            if(fabs(pi0cand->GetAlpha())<0.1)
               fHistoMotherInvMassPtAlpha[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
             
             if (fDoMesonQA > 0){
