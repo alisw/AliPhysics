@@ -47,6 +47,7 @@ const TString AliEmcalTriggerQAPP::fgkPatchTypes[3] = {"Online", "Recalc", "Offl
 AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
   TNamed(),
   fOfflineBadChannels(),
+  fBadChannels(),
   fFastORPedestal(),
   fFastorL0Th(400),
   fFastorL1Th(400),
@@ -96,6 +97,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
   TNamed(name,name),
   fOfflineBadChannels(),
   fFastORPedestal(5000),
+  fBadChannels(),
   fFastorL0Th(400),
   fFastorL1Th(400),
   fADCperBin(16),
@@ -143,6 +145,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
 AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const AliEmcalTriggerQAPP& triggerQA) :
   TNamed(triggerQA),
   fOfflineBadChannels(triggerQA.fOfflineBadChannels),
+  fBadChannels(),
   fFastORPedestal(triggerQA.fFastORPedestal),
   fFastorL0Th(triggerQA.fFastorL0Th),
   fFastorL1Th(triggerQA.fFastorL1Th),
@@ -203,6 +206,28 @@ void AliEmcalTriggerQAPP::ReadOfflineBadChannelFromFile(const char* fname)
 {
   std::ifstream file(fname);
   ReadOfflineBadChannelFromStream(file);
+}
+
+/// Read the FastOR bad channel map from a standard stream
+///
+/// \param stream A reference to a standard stream to read from (can be a file stream)
+void AliEmcalTriggerQAPP::ReadFastORBadChannelFromStream(std::istream& stream)
+{
+  Short_t absId = -1;
+
+  while (stream.good()) {
+    stream >> absId;
+    AddFastORBadChannel(absId);
+  }
+}
+
+/// Read the FastOR bad channel map from a text file
+///
+/// \param fname Path and name of the file
+void AliEmcalTriggerQAPP::ReadFastORBadChannelFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadFastORBadChannelFromStream(file);
 }
 
 /// Set the pedestal value for a FastOR
@@ -522,6 +547,8 @@ void AliEmcalTriggerQAPP::ProcessCell(const AliEmcalCellInfo& cell)
 void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells)
 {
   TString hname;
+
+  if (fBadChannels.find(fastor->GetAbsId()) != fBadChannels.end()) return;
 
   Int_t L0amp = fastor->GetL0Amp() - fFastORPedestal[fastor->GetAbsId()];
   Bool_t isDCal = kFALSE;

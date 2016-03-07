@@ -8,7 +8,6 @@
 
 #include <TObject.h>
 #include <TArrayF.h>
-#include "AliEMCALTriggerChannelContainer.h"
 
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
@@ -125,6 +124,24 @@ public:
    * @param cell Threshold for cell amplitudes
    */
   void SetFastORandCellThresholds(Int_t l0, Int_t l1, Int_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
+
+  /**
+   * Add a FastOR bad channel to the list
+   * @param absId Absolute ID of the bad channel
+   */
+  void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+
+  /**
+   * Read the FastOR bad channel map from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadFastORBadChannelFromStream(std::istream& stream);
+
+  /**
+   * Read the FastOR bad channel map from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadFastORBadChannelFromFile(const char* fname);
 
   /**
    * Add an offline bad channel to the set
@@ -248,7 +265,7 @@ protected:
    */
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
 
-  AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
+  std::set<Short_t>                         fBadChannels;                 ///< Container of bad channels
   std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
   TArrayF                                   fFastORPedestal;              ///< FastOR pedestal
   const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
@@ -279,7 +296,7 @@ protected:
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerMakerKernel, 2);
+  ClassDef(AliEmcalTriggerMakerKernel, 3);
   /// \endcond
 };
 
