@@ -4,6 +4,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
     const char *suffix
 ) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *densitytask = new EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity("densitytask");
   mgr->AddTask(densitytask);
@@ -13,7 +14,10 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
           TList::Class(), AliAnalysisManager::kOutputContainer,
           Form("%s:TrackDensity_%s", mgr->GetCommonFileName(), suffix)));
 
+  densitytask->SetOffTrigger(AliVEvent::kINT7);
   densitytask->SetIsPythia(true);
+  densitytask->SetUseAliAnaUtils(true, true);
+  densitytask->SetTrackSelection(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory("standard", isAOD));
 
   AliMCParticleContainer *partcont = densitytask->AddMCParticleContainer(mcparticlecontainername);
   partcont->SetName("MCParticles");
