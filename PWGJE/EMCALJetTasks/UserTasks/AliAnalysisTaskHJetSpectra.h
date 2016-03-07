@@ -72,7 +72,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
     kC0100 = 0,  
     kC020   = 1,  
     kC2050,  
-    kC50100, 
+    kC50100,
+    kCOverflow, 
     kCAll
   };
 
@@ -230,6 +231,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1D    *fhDeltaPt[kCAll][kRho-1]; //!  delta pT 
    TH1D    *fhDeltaPtEmb[kCAll][kRho-1]; //! embedded delta pT 
    TH2D    *fhDeltaPtEmb2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
+   TH1D    *fhDeltaPtEmbPerp[kCAll][kRho-1]; //! embedded delta pT (emb track is perp to TT)
+   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
    TH1D    *fhDeltaPtIncl[kCAll][kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
    TH2F    *fhKTAreaPt;//!KT jets area versus PT
@@ -309,7 +312,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 12); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 13); // Charged jet analysis for pA
 
 };
 #endif

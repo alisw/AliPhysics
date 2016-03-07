@@ -93,7 +93,7 @@ fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentra
  fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
 fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
  fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
-fRhoRec(kRho),fRhoMC(kRho), fCentralityBins(4),
+fRhoRec(kRho),fRhoMC(kRho), fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
 fTrigTracksGen(),
@@ -142,6 +142,8 @@ fTrigTracks()
          fhDeltaPt[ic][ir]=NULL; 
          fhDeltaPtEmb[ic][ir]=NULL; 
          fhDeltaPtEmb2D[ic][ir]=NULL;
+         fhDeltaPtEmbPerp[ic][ir]=NULL; 
+         fhDeltaPtEmbPerp2D[ic][ir]=NULL;
          fhDeltaPtIncl[ic][ir]=NULL;
       }
 
@@ -154,6 +156,7 @@ fTrigTracks()
    fCentralityBins[1]=20.;
    fCentralityBins[2]=50.;
    fCentralityBins[3]=100.;
+   fCentralityBins[4]=1e6; //centrality overflow bin
    
 }
 
@@ -178,7 +181,7 @@ fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentra
  fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
  fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
-fRhoRec(kRho), fRhoMC(kRho), fCentralityBins(4),
+fRhoRec(kRho), fRhoMC(kRho), fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
 fTrigTracksGen(),
@@ -228,6 +231,8 @@ fTrigTracks()
          fhDeltaPt[ic][ir]=NULL;
          fhDeltaPtEmb[ic][ir]=NULL; 
          fhDeltaPtEmb2D[ic][ir]=NULL;
+         fhDeltaPtEmbPerp[ic][ir]=NULL; 
+         fhDeltaPtEmbPerp2D[ic][ir]=NULL;
          fhDeltaPtIncl[ic][ir]=NULL;
       }
 
@@ -241,6 +246,7 @@ fTrigTracks()
    fCentralityBins[1]=20.;
    fCentralityBins[2]=50.;
    fCentralityBins[3]=100.;
+   fCentralityBins[4]=1e6; //centrality overflow bin
  
    DefineOutput(1, TList::Class());
 }
@@ -254,12 +260,14 @@ Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi, Doubl
 
    AliVParticle* tmpTrack=NULL; 
 
-   recTrkCont->ResetCurrentID();
-   while((tmpTrack = recTrkCont->GetNextAcceptParticle())){
-      if(!tmpTrack) continue; 
-      if(IsTrackInAcceptance(tmpTrack, isGen)){ 
-         if(GetDeltaR(tmpTrack->Phi(), phi, tmpTrack->Eta(), eta) < radius){
-            tmpConePt = tmpConePt + tmpTrack->Pt();
+   if(recTrkCont){
+      recTrkCont->ResetCurrentID();
+      while((tmpTrack = recTrkCont->GetNextAcceptParticle())){
+         if(!tmpTrack) continue; 
+         if(IsTrackInAcceptance(tmpTrack, isGen)){ 
+            if(GetDeltaR(tmpTrack->Phi(), phi, tmpTrack->Eta(), eta) < radius){
+               tmpConePt = tmpConePt + tmpTrack->Pt();
+            }
          }
       }
    }
@@ -606,7 +614,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          centralityPercentileZNA = tmpCentrality->GetCentralityPercentile("ZNA");
       }
 
-      if((centralityPercentile < 0.) || (centralityPercentile > 100.)){ //cut on centrality
+      if((centralityPercentile < fCentralityBins[0]) || (centralityPercentile >  fCentralityBins[4])){ //cut on centrality
          AliWarning(Form("Centrality value not valid (c=%E)",centralityPercentile)); 
          fHistEvtSelection->Fill(4);
          return kFALSE;
@@ -706,7 +714,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
 
-      fTrigTracksGen.clear(); //list of trigger particle indices true MC
+      fTrigTracksGen.resize(0); //list of trigger particle indices true MC
 
       if(parContGen){ 
          parContGen->ResetCurrentID();
@@ -746,7 +754,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Int_t ntriggers = 0;
  
    if(fTypeOfAnal != kKine){
-      fTrigTracks.clear(); //list pf trigger particle indices
+      fTrigTracks.resize(0); //list pf trigger particle indices
       
       if(trkContRec){
          trkContRec->ResetCurrentID();
@@ -1150,10 +1158,24 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                   //2 Dim distribution
                   fhDeltaPtEmb2D[icb[ic]][ir]->Fill(jetEmb->Pt(),                
                        jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
-                }
-             }
-          }
-       }
+
+
+                  if(trackTT){ //embedded track/jet is perp to TT
+                     dphi = TMath::Abs(RelativePhi(trackTT->Phi(), jetEmb->Phi())); 
+                     if(TMath::Pi()/4 <  dphi && dphi < 3*TMath::Pi()/4){
+                        //1 Dim  distribution
+                        fhDeltaPtEmbPerp[icb[ic]][ir]->Fill(
+                             jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
+                        
+                        //2 Dim distribution
+                        fhDeltaPtEmbPerp2D[icb[ic]][ir]->Fill(jetEmb->Pt(),                
+                             jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
+                     }
+                  }
+               }
+            }
+         }
+      }
    }//end of embedding
 
 
@@ -1411,12 +1433,14 @@ void AliAnalysisTaskHJetSpectra::Terminate(Option_t *){
 AliAnalysisTaskHJetSpectra::~AliAnalysisTaskHJetSpectra(){
    // Destructor. Clean-up the output list, but not the histograms that are put inside
    // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-   if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-      delete fOutput;
-   }
+   //if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+   //   delete fOutput;
+   //}
    delete fRandom;
    delete fHelperClass;
  
+   fTrigTracksGen.resize(0); //list of trigger particle indices true MC
+   fTrigTracks.resize(0); //list pf trigger particle indices
 } 
 
 //________________________________________________________________________
@@ -1545,6 +1569,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
          if(fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl){
             //Embedded PYTHIA jets
+            //1D
             name = (ic==0) ? Form("fhDeltaPtEmbMB%s",bgtype[ir].Data()) : 
                              Form("fhDeltaPtEmb%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
                                   TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
@@ -1552,6 +1577,15 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
             fhDeltaPtEmb[ic][ir] = (TH1D*) fhDeltaPt[ic][ir]->Clone(name.Data());
             fOutput->Add((TH1D*) fhDeltaPtEmb[ic][ir]);
 
+            //1D perp to TT
+            name = (ic==0) ? Form("fhDeltaPtEmbPerpMB%s",bgtype[ir].Data()) : 
+                             Form("fhDeltaPtEmbPerp%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
+                                  TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
+
+            fhDeltaPtEmbPerp[ic][ir] = (TH1D*) fhDeltaPt[ic][ir]->Clone(name.Data());
+            fOutput->Add((TH1D*) fhDeltaPtEmbPerp[ic][ir]);
+
+ 
            //2D
             name = (ic==0) ? Form("fhDeltaPtEmb2DMB%s",bgtype[ir].Data()) : 
                              Form("fhDeltaPtEmb2D%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1560,6 +1594,16 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
             fhDeltaPtEmb2D[ic][ir] = new TH2D(name.Data(),
                 Form("fhDeltaPtEmb2D%s",bgtype[ir].Data()), 125,0, 250, 150, -50, 100);
             fOutput->Add((TH2D*)fhDeltaPtEmb2D[ic][ir]);
+
+
+           //2D perp to TT
+            name = (ic==0) ? Form("fhDeltaPtEmbPerp2DMB%s",bgtype[ir].Data()) : 
+                             Form("fhDeltaPtEmbPerp2D%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
+                                  TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
+
+            fhDeltaPtEmbPerp2D[ic][ir] = (TH2D*) fhDeltaPtEmb2D[ic][ir]->Clone(name.Data()),
+            fOutput->Add((TH2D*)fhDeltaPtEmbPerp2D[ic][ir]);
+
          }
       }
    }
