@@ -326,10 +326,15 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
   if (retVal && fQueueDepth)
   {
     //If we are an async process, we cannot access the pushback-period of the parent process, so we use this flag
-    if (!(fAsyncProcess ? requestPush : CheckPushbackPeriod())) return(NULL); 
-
-    retVal = fAsyncProcessor.SerializeIntoBuffer((TObject*) retVal, this);
-    if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+    if (!(fAsyncProcess ? requestPush : CheckPushbackPeriod()))
+    {
+      retVal = NULL; 
+    }
+    else
+    {
+      retVal = fAsyncProcessor.SerializeIntoBuffer((TObject*) retVal, this);
+      if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+    }
   }
 
   if (fQueueDepth)
