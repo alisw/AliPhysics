@@ -139,31 +139,6 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
       return;
     }
     
-    // AliConvEventCuts *fEventCuts=NULL;
-    // if(V0ReaderEventCutNumber!=""){
-    // 	fEventCuts= new AliConvEventCuts(V0ReaderEventCutNumber.Data(),V0ReaderEventCutNumber.Data());
-    // 	fEventCuts->SetPreSelectionCutFlag(kTRUE);
-    // 	if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
-    // 		fV0ReaderV1->SetEventCuts(fEventCuts);
-    // 		fEventCuts->SetFillCutHistograms("",kTRUE);
-    // 		if (IsHeavyIon==2){
-    // 			fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
-    // 			fEventCuts->DoEtaShift(doEtaShiftV0Reader);
-    // 		}
-    // 	}
-    // }
-    
-    // // Set AnalysisCut Number
-    // AliConversionPhotonCuts *fCuts=NULL;
-    // if(V0ReaderPhotonCutNumber!=""){
-    // 	fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
-    // 	fCuts->SetPreSelectionCutFlag(kTRUE);
-    // 	fCuts->SetIsHeavyIon(IsHeavyIon);
-    // 	if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
-    // 		fV0ReaderV1->SetConversionCuts(fCuts);
-    // 		fCuts->SetFillCutHistograms("",kTRUE);
-    // 	}
-    // }
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
@@ -216,14 +191,15 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
   CutHandlerConv cuts;
   if(trainConfig == 1){
     cuts.AddCut("00000103", "00000009266302004204400000");
-    //    cuts.AddCut("00000103", "00000009266302004254400000");
-    //   cuts.AddCut("00000103", "00000009266372004204400000");
     //     cuts.AddCut("00000103", "00000009286372004204400000");
   } else if (trainConfig == 2) {
     cuts.AddCut("00000103", "00000009286342004204400000");
     cuts.AddCut("00000103", "00000009286342001204400000");
     cuts.AddCut("00000103", "00000009286342007204400000");
+ } else if (trainConfig == 3) {
     cuts.AddCut("00000103", "00000009286342004254400000");
+    cuts.AddCut("00000103", "00000009286372004254400000");
+    cuts.AddCut("00000103", "00000009286372004204400000");
   }else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -254,10 +230,9 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
+    ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kTRUE);
     
-    ConvCutList->Add(analysisCuts[i]);
-    EventCutList->Add(analysisEventCuts[i]);
    }
 
 
