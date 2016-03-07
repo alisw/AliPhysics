@@ -1,8 +1,17 @@
-//
-// Container with name, TClonesArray and cuts for calo clusters
-//
-// Author: M. Verweij, S. Aiola
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include <TClonesArray.h>
 
 #include "AliVEvent.h"
@@ -15,7 +24,9 @@
 ClassImp(AliClusterContainer)
 /// \endcond
 
-//________________________________________________________________________
+/**
+ * Default constructor.
+ */
 AliClusterContainer::AliClusterContainer():
   AliEmcalContainer(),
   fClusTimeCutLow(-10),
@@ -23,8 +34,6 @@ AliClusterContainer::AliClusterContainer():
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1)
 {
-  // Default constructor.
-
   fClassName = "AliVCluster";
 
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
@@ -32,7 +41,10 @@ AliClusterContainer::AliClusterContainer():
   }
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor.
+ * @param name Name of the array connected to this container
+ */
 AliClusterContainer::AliClusterContainer(const char *name):
   AliEmcalContainer(name),
   fClusTimeCutLow(-10),
@@ -40,8 +52,6 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1)
 {
-  // Standard constructor.
-
   fClassName = "AliVCluster";
 
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
@@ -49,11 +59,13 @@ AliClusterContainer::AliClusterContainer(const char *name):
   }
 }
 
-//________________________________________________________________________
+/**
+ * Get the leading cluster; use e if "e" is contained in opt (otherwise et)
+ * @param opt
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
 {
-  // Get the leading cluster; use e if "e" is contained in opt (otherwise et)
-
   TString option(opt);
   option.ToLower();
 
@@ -87,22 +99,26 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
   return clusterMax;
 }
 
-//________________________________________________________________________
+/**
+ * Get i^th cluster in array
+ * @param i
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetCluster(Int_t i) const 
 {
-  //Get i^th cluster in array
-
   if(i<0 || i>fClArray->GetEntriesFast()) return 0;
   AliVCluster *vp = static_cast<AliVCluster*>(fClArray->At(i));
   return vp;
 
 }
 
-//________________________________________________________________________
+/**
+ * Return pointer to cluster if cluster is accepted
+ * @param i
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) 
 {
-  //Return pointer to cluster if cluster is accepted
-
   AliVCluster *vc = GetCluster(i);
   if (!vc) return 0;
 
@@ -114,29 +130,34 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Get particle with label lab in array
+ * @param lab
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const 
 {
-  //Get particle with label lab in array
-  
   Int_t i = GetIndexFromLabel(lab);
   return GetCluster(i);
 }
 
-//________________________________________________________________________
+/**
+ * Get particle with label lab in array
+ * @param lab
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab)  
 {
-  //Get particle with label lab in array
-  
   Int_t i = GetIndexFromLabel(lab);
   return GetAcceptCluster(i);
 }
 
-//________________________________________________________________________
+/**
+ * Get next accepted cluster
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetNextAcceptCluster() 
 {
-  //Get next accepted cluster
-
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
   do {
@@ -148,11 +169,12 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster()
   return c;
 }
 
-//________________________________________________________________________
+/**
+ * Get next cluster
+ * @return
+ */
 AliVCluster* AliClusterContainer::GetNextCluster() 
 {
-  //Get next cluster
-
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
   do {
@@ -164,7 +186,6 @@ AliVCluster* AliClusterContainer::GetNextCluster()
   return c;
 }
 
-//________________________________________________________________________
 Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, const AliVCluster* vc, Double_t mass)
 {
   if (mass < 0) mass = 0;
@@ -200,7 +221,6 @@ Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, const AliVCluster* 
   return kTRUE;
 }
 
-//________________________________________________________________________
 Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, const AliVCluster* vc)
 {
   if (fMassHypothesis > 0) return GetMomentum(mom, vc, fMassHypothesis);
@@ -220,43 +240,52 @@ Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, const AliVCluster* 
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Get momentum of the i^th particle in array
+ * @param mom
+ * @param i
+ * @return
+ */
 Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i)
 {
-  //Get momentum of the i^th particle in array
-
   AliVCluster *vc = GetCluster(i);
   return GetMomentum(mom, vc);
 }
 
-//________________________________________________________________________
+/**
+ * Get momentum of the next particle in array
+ * @param mom
+ * @return
+ */
 Bool_t AliClusterContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the next particle in array
-
   AliVCluster *vc = GetNextCluster();
   return GetMomentum(mom, vc);
 }
 
-//________________________________________________________________________
+/**
+ * Get momentum of the i^th particle in array
+ * @param mom
+ * @param i
+ * @return
+ */
 Bool_t AliClusterContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
 {
-  //Get momentum of the i^th particle in array
-
   AliVCluster *vc = GetAcceptCluster(i);
   return GetMomentum(mom, vc);
 }
 
-//________________________________________________________________________
+/**
+ * Get momentum of the next accepted particle in array
+ * @param mom
+ * @return
+ */
 Bool_t AliClusterContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the next accepted particle in array
-
   AliVCluster *vc = GetNextAcceptCluster();
   return GetMomentum(mom, vc);
 }
 
-//________________________________________________________________________
 Bool_t AliClusterContainer::AcceptCluster(Int_t i)
 {
   Bool_t r = ApplyClusterCuts(GetCluster(i));
@@ -268,7 +297,6 @@ Bool_t AliClusterContainer::AcceptCluster(Int_t i)
   return ApplyKinematicCuts(mom);
 }
 
-//________________________________________________________________________
 Bool_t AliClusterContainer::AcceptCluster(const AliVCluster* clus)
 {
   Bool_t r = ApplyClusterCuts(clus);
@@ -280,11 +308,13 @@ Bool_t AliClusterContainer::AcceptCluster(const AliVCluster* clus)
   return ApplyKinematicCuts(mom);
 }
 
-//________________________________________________________________________
+/**
+ * Return true if cluster is accepted.
+ * @param clus
+ * @return
+ */
 Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus)
 {
-  // Return true if cluster is accepted.
-
   fRejectionReason = 0;
 
   if (!clus) {
@@ -332,11 +362,12 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus)
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Get number of accepted particles
+ * @return
+ */
 Int_t AliClusterContainer::GetNAcceptedClusters()
 {
-  // Get number of accepted particles
-
   Int_t nClus = 0;
   Int_t tempID = fCurrentID;
   ResetCurrentID();
@@ -351,7 +382,6 @@ Int_t AliClusterContainer::GetNAcceptedClusters()
   return nClus;
 }
 
-//________________________________________________________________________
 Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
 {
   if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
@@ -362,7 +392,6 @@ Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
   }
 }
 
-//________________________________________________________________________
 void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
 {
   if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
@@ -374,17 +403,17 @@ void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
 }
 
 
-//________________________________________________________________________
+/**
+ * Set the class name
+ * @param clname
+ */
 void AliClusterContainer::SetClassName(const char *clname)
 {
-  // Set the class name
-
   TClass cls(clname);
   if (cls.InheritsFrom("AliVCluster")) fClassName = clname;
   else AliError(Form("Unable to set class name %s for a AliClusterContainer, it must inherits from AliVCluster!",clname));
 }
 
-//________________________________________________________________________
 const char* AliClusterContainer::GetTitle() const
 {
   static TString clusterString;

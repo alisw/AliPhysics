@@ -33,43 +33,47 @@ class AliVParticle;
  */
 class AliEmcalContainer : public TObject {
  public:
+  /**
+   * @enum RejectionReason
+   * @brief Bit definition for the reason a particle was rejected
+   */
   enum RejectionReason {
     // General
-    kNullObject = 1<<0,
-    kPtCut = 1<<1,
-    kAcceptanceCut = 1<<2,
-    kMCLabelCut = 1<<3,
-    kBitMapCut = 1<<4,
-    kHFCut = 1<<5,
+    kNullObject = 1<<0,                  /// Object is NULL
+    kPtCut = 1<<1,                       /// \f$ p_{t} \f$ cut
+    kAcceptanceCut = 1<<2,               /// particle not in acceptance in \f$ \eta \f$ and/or \f$ \phi \f$
+    kMCLabelCut = 1<<3,                  /// Invalid MC label
+    kBitMapCut = 1<<4,                   /// kBitMapCut
+    kHFCut = 1<<5,                       /// kHFCut
     // leave bit 6 free for future implementations
     
     // AliParticleContainer
-    kNotHybridTrack = 1<<7,
-    kMCFlag = 1<<8,
-    kMCGeneratorCut = 1<<9,
-    kChargeCut = 1<<10,
-    kMinDistanceTPCSectorEdgeCut = 1<<11,
+    kNotHybridTrack = 1<<7,              /// Track did not pass the hybrid track cuts
+    kMCFlag = 1<<8,                      /// Cut on the MC flag
+    kMCGeneratorCut = 1<<9,              /// Generator flag mismatch
+    kChargeCut = 1<<10,                  /// Particle charge did not match
+    kMinDistanceTPCSectorEdgeCut = 1<<11,/// Track too close to the TPC sector boundary
     // leave bit 12 free for future implementations
 
     // AliClusterContainer
-    kIsEMCalCut = 1<<13,
-    kTimeCut = 1<<14,
-    kEnergyCut = 1<<15,
-    kExoticCut = 1<<16,
+    kIsEMCalCut = 1<<13,                 /// Cluster not in the EMCAL
+    kTimeCut = 1<<14,                    /// Cell time cut not passed
+    kEnergyCut = 1<<15,                  /// Energy below threshold
+    kExoticCut = 1<<16,                  /// Cluster is exotic cluster
     // leave bit 17 free for future implementations
 
     // AliJetContainer
-    kAreaCut = 1<<18,
-    kAreaEmcCut = 1<<19,
-    kZLeadingChCut = 1<<20,
-    kZLeadingEmcCut = 1<<21,
-    kNEFCut = 1<<22,
-    kMinLeadPtCut = 1<<23,
-    kMaxTrackPtCut = 1<<24,
-    kMaxClusterPtCut = 1<<25,
-    kFlavourCut = 1<<26,
-    kTagStatus = 1<<27,
-    kMinNConstituents = 1<<28
+    kAreaCut = 1<<18,                    /// Cut on the jet area
+    kAreaEmcCut = 1<<19,                 /// Cut on the jet area in the EMCAL
+    kZLeadingChCut = 1<<20,              /// Cut on the z of the leading charged constituent
+    kZLeadingEmcCut = 1<<21,             /// Cut on the z of the leading particle in the EMCAL
+    kNEFCut = 1<<22,                     /// Cut on the neutral energy fraction
+    kMinLeadPtCut = 1<<23,               /// Cut on the minimum \f$ p_{t} \f$ of the leading particle
+    kMaxTrackPtCut = 1<<24,              /// Cut on the maximum track \f$ p_{t} \f$
+    kMaxClusterPtCut = 1<<25,            /// Cut on the maximum cluster \f$ p_{t} \f$
+    kFlavourCut = 1<<26,                 /// Cut on flavour content in the jet
+    kTagStatus = 1<<27,                  /// Cut on jet tag status
+    kMinNConstituents = 1<<28            /// Cut on the minimum number of constituents
   };
 
   AliEmcalContainer();
