@@ -138,7 +138,6 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(tl->GetX()+0.04);
 	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.065); 
 	str.ReplaceAll("GeV/c","GeV/#it{c}");
-	str.ReplaceAll(" < ","<");
 	tl->SetTitle(str.Data());
 	tl->SetTextSize(0.045);
       }
@@ -155,6 +154,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.67);
 	str.ReplaceAll("#cbar",",");
+	str.ReplaceAll("+","#plus"); 
+	str.ReplaceAll("-","#minus"); 
 	tl->SetTitle("");
 	tl->SetTextSize(0.042);
 	dZeroUnc=str.Data();
@@ -165,6 +166,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.595); 
 	str.ReplaceAll("#cbar",","); 
+	str.ReplaceAll("+","#plus"); 
+	str.ReplaceAll("-","#minus"); 
 	tl->SetTitle("");
 	tl->SetTextSize(0.042);
 	dStarUnc=str.Data();
@@ -174,6 +177,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.52); 
 	str.ReplaceAll("#cbar",","); 
+	str.ReplaceAll("+","#plus"); 
+	str.ReplaceAll("-","#minus"); 
 	tl->SetTitle("");
 	tl->SetTextSize(0.042);
 	dPlusUnc=str.Data();	
