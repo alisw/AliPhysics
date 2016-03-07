@@ -64,6 +64,9 @@ public:
   void   SetDebugLevel(Int_t l)               { fDebugLevel = l; }
   void   SetADCperBin(Int_t i)                { fADCperBin  = i; }
   void   SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
+  void   AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+  void   ReadFastORBadChannelFromStream(std::istream& stream);
+  void   ReadFastORBadChannelFromFile(const char* fname);
   void   AddOfflineBadChannel(Short_t absId)  { fOfflineBadChannels.insert(absId)   ; }
   void   ReadOfflineBadChannelFromFile(const char* fname);
   void   ReadOfflineBadChannelFromStream(std::istream& stream);
@@ -93,6 +96,7 @@ public:
 protected:
 
   std::set<Short_t>       fOfflineBadChannels;          ///< Abd ID of offline bad channels
+  std::set<Short_t>       fBadChannels;                 ///< Container of bad channels
   TArrayF                 fFastORPedestal;              ///< FastOR pedestal
   Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
   Bool_t                  fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
@@ -127,7 +131,7 @@ private:
   AliEmcalTriggerQAPP &operator=(const AliEmcalTriggerQAPP &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQAPP, 2);
+  ClassDef(AliEmcalTriggerQAPP, 3);
   /// \endcond
 };
 

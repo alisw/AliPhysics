@@ -24,7 +24,6 @@ class THnSparse;
 #include "AliEMCALTriggerQA.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcal.h"
-#include "AliEMCALTriggerChannelContainer.h"
 
 /**
  * \class AliEmcalTriggerQATask
@@ -124,7 +123,6 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   TObjArray                                *fEMCALTriggerQA;             ///< produces the QA histograms
   Int_t                                     fADCperBin;                  ///< ADC counts per bin
   Int_t                                     fBkgPatchType;               ///< Background patch type
-  AliEMCALTriggerChannelContainer           fBadChannels;                ///< Container of bad channels
 
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
   TH1                                      *fHistEMCalTriggers;          //!<! EMCal triggers
@@ -135,7 +133,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   AliEmcalTriggerQATask &operator=(const AliEmcalTriggerQATask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQATask, 1) // Task to make QA of EMCAL trigger
+  ClassDef(AliEmcalTriggerQATask, 2) // Task to make QA of EMCAL trigger
   /// \endcond
 };
 

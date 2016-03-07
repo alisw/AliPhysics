@@ -143,6 +143,22 @@ void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromFile(const char* fname
   ReadOfflineBadChannelFromStream(file);
 }
 
+void AliEmcalTriggerMakerKernel::ReadFastORBadChannelFromStream(std::istream& stream)
+{
+  Short_t absId = -1;
+
+  while (stream.good()) {
+    stream >> absId;
+    AddFastORBadChannel(absId);
+  }
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORBadChannelFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadFastORBadChannelFromStream(file);
+}
+
 void AliEmcalTriggerMakerKernel::SetFastORPedestal(Short_t absId, Float_t ped)
 {
   if (absId < 0 || absId >= fFastORPedestal.GetSize()) {
@@ -186,8 +202,10 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // get position in global 2x2 tower coordinates
     // A0 left bottom (0,0)
     trigger->GetPosition(globCol, globRow);
+    Int_t absId = -1;
+    fGeometry->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
     // exclude channel completely if it is masked as hot channel
-    if(fBadChannels.HasChannel(globCol, globRow)) continue;
+    if (fBadChannels.find(absId) != fBadChannels.end()) continue;
     // for some strange reason some ADC amps are initialized in reconstruction
     // as -1, neglect those
     trigger->GetL1TimeSum(adcAmp);
@@ -208,8 +226,6 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     Float_t amplitude(0);
     trigger->GetAmplitude(amplitude);
     amplitude *= 4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
-    Int_t absId = -1;
-    fGeometry->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
     amplitude -= fFastORPedestal[absId];
     if(amplitude < 0) amplitude = 0;
     if (amplitude >= fMinL0FastORAmp) {
