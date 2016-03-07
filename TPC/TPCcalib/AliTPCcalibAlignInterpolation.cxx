@@ -844,6 +844,13 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Start %s\n", residualList);
   Int_t cacheSize= 200000000;
   if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
+  Bool_t autoCache = kFALSE;
+  if (gSystem->Getenv("autoCacheSize")) {
+    Printf("env variable autoCacheSize = %s", TString(gSystem->Getenv("autoCacheSize")).Data());
+    autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
+  }
+  Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
+
   const Int_t kNDim1 = kNDim-1;
   const Double_t kernelSigma2I[4]={1./0.25,1./0.25,1./0.25,1./0.25};  // inverse kernel sigma in bin width units
   const Double_t kFillGap=0.02  ;  // weight for the "non primary distortion info" - 
@@ -995,7 +1002,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       TFile *esdFile = TFile::Open(fileNameString.Data(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta");
-      tree->SetCacheSize(cacheSize);
+      if (!autoCache) tree->SetCacheSize(cacheSize);
       tree->SetBranchStatus("*",kFALSE);
       if (!tree) continue;
       ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain", "Processing file \t %s\n",esdArray->At(iesd)->GetName());
@@ -1062,6 +1069,11 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       }
       //
       Int_t ntracks=tree->GetEntries();
+      if (!autoCache) {
+	tree->SetCacheSize(0);
+	tree->SetCacheSize(cacheSize);
+	tree->AddBranchToCache("*", kTRUE);
+      }
       //
       for (Int_t itrack=0; itrack<ntracks; itrack++){
 	if (startTime>0){
@@ -1231,6 +1243,8 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  } // qpt fill loop
 	}
       }
+      tree->PrintCacheStats();
+
       timerFile.Print();
       delete tree;
       delete esdFile;
@@ -1449,16 +1463,25 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   //
   TStopwatch timer1;
   TTreeSRedirector * pcstream = new TTreeSRedirector("residualInfo.root", "recreate");
-  const Int_t cacheSize=100000000; // 100 MBy cache  
+  Int_t cacheSize=100000000; // 100 MBy cache
+  if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
+  Bool_t autoCache = kFALSE;
+  if (gSystem->Getenv("autoCacheSize")) autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
+  Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
+
   TChain * chainInfo  = AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1);
-  chainInfo->SetCacheSize(cacheSize);
+  if (!autoCache) {
+    chainInfo->SetCacheSize(cacheSize);
+  }
   TChain * chainTracks  = AliXRDPROOFtoolkit::MakeChain("residual.list","delta",0,-1);
-  chainInfo->SetCacheSize(cacheSize);
-  chainTracks->SetCacheSize(cacheSize);
+  if (!autoCache) {
+    chainTracks->SetCacheSize(cacheSize);
+  }
   //
   Int_t gidRounding=128;                        // git has to be rounded
   chainInfo->SetEstimate(-1);
-  chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");          
+  chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");    
+  chainInfo->PrintCacheStats();      
   //
   Int_t neventsAll=chainInfo->GetEntries();     // total amount of events
   Int_t ntracksAll=chainTracks->GetEntries();   // total amount of tracks
@@ -1531,14 +1554,23 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
     if (f==NULL) continue;
     TTree * treeInfo = (TTree*)f->Get("eventInfo"); 
     if (treeInfo==NULL) continue;
+    if (!autoCache) {
+      treeInfo->SetCacheSize(cacheSize);
+    }
     treeInfo->SetBranchAddress("vecNClTPC.",&vecNClTPC);
     treeInfo->SetBranchAddress("vecNClTPCused.",&vecNClTPCused);
     treeInfo->SetBranchAddress("nSPD",&nITS[0]);
     treeInfo->SetBranchAddress("nSDD",&nITS[1]);
     treeInfo->SetBranchAddress("nSSD",&nITS[2]);
+    treeInfo->AddBranchToCache(treeInfo->GetBranch("vecNClTPC."), kTRUE);
+    treeInfo->AddBranchToCache(treeInfo->GetBranch("vecNClTPCused."), kTRUE);
+    treeInfo->AddBranchToCache(treeInfo->GetBranch("nSPD"), kTRUE);
+    treeInfo->AddBranchToCache(treeInfo->GetBranch("nSDD"), kTRUE);
+    treeInfo->AddBranchToCache(treeInfo->GetBranch("nSSD"), kTRUE);
     Bool_t hasTimeStamp=(treeInfo->GetBranch("timeStamp")!=NULL);
     if (hasTimeStamp) treeInfo->SetBranchAddress("timeStamp",&timeStamp);
     if (!hasTimeStamp) ((TBranch*)(treeInfo->GetListOfBranches()->At(1)))->SetAddress(&timeStamp);
+    treeInfo->AddBranchToCache(treeInfo->GetBranch("timeStamp"), kTRUE);
     Int_t treeEntries=treeInfo->GetEntries();
     for (Int_t iEntry=0; iEntry<treeEntries; iEntry++){
       treeInfo->GetEntry(iEntry);
@@ -1574,6 +1606,8 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
       }
     }
     timer.Print();
+    treeInfo->PrintCacheStats();
+
   }
   timer2.Print();
   TGraphErrors grEvent(hisEvent);
@@ -1657,7 +1691,6 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   const Double_t kBCcutMin=-5;
   const Double_t kBCcutMax=20;
   const Double_t robFraction=0.99; 
-  const Int_t cacheSize=250000000; // 250 MBy cache  
   
   Int_t maxEntries=1000000;
   Int_t maxPointsRobust=4000000;
@@ -1666,7 +1699,13 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   TCut  selection="";
   Int_t entriesAll=0;
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
-  //
+
+  Int_t cacheSize=100000000; // 100 MBy cache
+  if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
+  Bool_t autoCache = kFALSE;
+  if (gSystem->Getenv("autoCacheSize")) autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
+  Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
+//
   //
   if (deltaT<=0 || sigmaT<=0){
     ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %.1f and sigmaT %.1f", deltaT, sigmaT);
@@ -1675,11 +1714,12 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   if (TString(gSystem->GetFromPipe("cat residual.list | grep -c alien://")).Atoi()>0) TGrid::Connect("alien");
 
   TChain * chainDelta = AliXRDPROOFtoolkit::MakeChain("residual.list","delta",0,-1);
+  if (!autoCache) {
+    chainDelta->SetCacheSize(0);
+    chainDelta->SetCacheSize(cacheSize);
+  }
   AliSysInfo::AddStamp("FitDrift.chainDeltaGetEntriesBegin",1,0,0);
   entriesAll = chainDelta->GetEntries();
-  chainDelta->SetCacheLearnEntries(100);
-  chainDelta->SetCacheSize(0);
-  chainDelta->SetCacheSize(cacheSize);
   AliSysInfo::AddStamp("FitDrift.chainDeltaGetEntriesEnd",1,1,0);
 
   if (entriesAll<kMinEntries) {
@@ -1691,7 +1731,10 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   if (time0==time1){ 
     AliSysInfo::AddStamp("FitDrift.chainInfoGetTimeBegin",2,0,0);
     TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1); 
-    chainDelta->SetCacheSize(cacheSize);
+    if (!autoCache) {
+      chainInfo->SetCacheSize(cacheSize);
+      chainInfo->SetCacheLearnEntries(1);
+    }
     //    chainInfo->SetEstimate(-1); // i cashed here -1 does not work
     chainInfo->SetEstimate(maxEntries); // i cashed here -1 does not work
     Int_t entries = chainInfo->Draw("timeStamp","","goff",maxEntries);
@@ -1711,9 +1754,6 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   //       npValid
   //
   AliSysInfo::AddStamp("FitDrift.StartCache",3,0,0);
-  chainDelta->SetCacheLearnEntries(100);
-  chainDelta->SetCacheSize(0);
-  chainDelta->SetCacheSize(10000000);
 
   chainDelta->SetEstimate(maxEntries*160/5.);
   Int_t entriesFit0 = chainDelta->Draw("tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC","Entry$%5==0","goffpara",maxEntries); 
