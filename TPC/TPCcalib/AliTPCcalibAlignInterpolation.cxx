@@ -751,12 +751,12 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   //
   //
   axisName[kQ2PT]="qpt";     axisTitle[kQ2PT]="q/pt (c/GeV)";                         // to fill : track.GetSigned1Pt() 
-  binsTrack[kQ2PT]=5;        xminTrack[kQ2PT]=-2.5;        xmaxTrack[kQ2PT]=2.5; 
-  binsTrackITS[kQ2PT]=5;     xminTrackITS[kQ2PT]=-2.5;     xmaxTrackITS[kQ2PT]=2.5; 
+  binsTrack[kQ2PT]=7;        xminTrack[kQ2PT]=-3;        xmaxTrack[kQ2PT]=3; 
+  binsTrackITS[kQ2PT]=7;     xminTrackITS[kQ2PT]=-3;     xmaxTrackITS[kQ2PT]=3; 
   //
   axisName[kSect]="sector";  axisTitle[kSect]="Sector Number";              // to fill:   9*atan2(gy,gx)/pi+ if (sector>0) sector+18
-  binsTrack[kSect]=180;      xminTrack[kSect]=0;           xmaxTrack[kSect]=18; 
-  binsTrackITS[kSect]=180;   xminTrackITS[kSect]=0;        xmaxTrackITS[kSect]=18; 
+  binsTrack[kSect]=181;      xminTrack[kSect]=-0.05;           xmaxTrack[kSect]=18.05; 
+  binsTrackITS[kSect]=181;   xminTrackITS[kSect]=-0.05;        xmaxTrackITS[kSect]=18.05; 
   //
   axisName[kLocX]="R";       axisTitle[kLocX]="r (cm)";                          // to fill:    gr=sqrt(gy**2+gx**2)
   binsTrack[kLocX]=53;       xminTrack[kLocX]=85.;         xmaxTrack[kLocX]=245.; 
@@ -770,12 +770,12 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   binsTrack[kDelt]=100;      xminTrack[kDelt]=-dy;        xmaxTrack[kDelt]=dy; 
   binsTrackITS[kDelt]=100;   xminTrackITS[kDelt]=-dy;     xmaxTrackITS[kDelt]=dy; 
   // 
-  binsTrack[kDelt]=TMath::Min(Int_t(20.+2.*dy/0.05),120); // buffer should be smaller than 1 GBy
+  binsTrack[kDelt]=TMath::Min(Int_t(20.+2.*dy/0.05),100); // buffer should be smaller than 1 GBy
   if (selHis==0 ||selHis<0) fHisITSDRPhi =    new THnF("deltaRPhiTPCITS","#Delta_{Y} (cm)", kNDim, binsTrackITS,xminTrackITS, xmaxTrackITS);
   if (selHis==1 ||selHis<0) fHisITSTRDDRPhi = new THnF("deltaRPhiTPCITSTRD","#Delta_{Y} (cm) TPC-(ITS+TRD)", kNDim, binsTrack,xminTrack, xmaxTrack);
   if (selHis==2 ||selHis<0) fHisITSTOFDRPhi = new THnF("deltaRPhiTPCITSTOF","#Delta_{Y} (cm) TPC-(ITS+TOF)", kNDim, binsTrack,xminTrack, xmaxTrack);
   //
-  binsTrack[kDelt]=TMath::Min(Int_t(20.+2.*dz/0.05),120); // buffer should be smaller than 1 GBy
+  binsTrack[kDelt]=TMath::Min(Int_t(20.+2.*dz/0.05),100); // buffer should be smaller than 1 GBy
   xminTrack[kDelt]=-dz;        xmaxTrack[kDelt]=dz; 
   xminTrackITS[kDelt]=-dz;        xmaxTrackITS[kDelt]=dz; 
   if (selHis==3 ||selHis<0) fHisITSDZ = new THnF("deltaZTPCITS","#Delta_{Z} (cm)", kNDim, binsTrackITS,xminTrackITS, xmaxTrackITS);
@@ -1479,12 +1479,14 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   }
   //
   Int_t gidRounding=128;                        // git has to be rounded
-  chainInfo->SetEstimate(-1);
-  chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");    
-  chainInfo->PrintCacheStats();      
-  //
+<bin problem
   Int_t neventsAll=chainInfo->GetEntries();     // total amount of events
   Int_t ntracksAll=chainTracks->GetEntries();   // total amount of tracks
+
+  //chainInfo->SetEstimate(-1);                 // using -1  make a problem - too much memory allocate with autimatic switch . crash in case of 4MBy limits in the next Draw 
+  chainInfo->SetEstimate(neventsAll);   
+  chainInfo->Draw("timeStamp:gid/128","timeStamp>0","goff");          
+  //
   //
   Long64_t minTime=0,maxTime=0;
   double minGID=0,maxGID=0,meanGID=0,meanTime=0;
