@@ -1479,7 +1479,6 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   }
   //
   Int_t gidRounding=128;                        // git has to be rounded
-<bin problem
   Int_t neventsAll=chainInfo->GetEntries();     // total amount of events
   Int_t ntracksAll=chainTracks->GetEntries();   // total amount of tracks
 
@@ -1552,6 +1551,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
     TString fileName = array->At(iFile)->GetName();
     if (fileName.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
     printf("%d\t%s\n",iFile,fileName.Data());    
+    AliSysInfo::AddStamp(fileName.Data(),1,iFile);
     TFile * f = TFile::Open(fileName.Data());
     if (f==NULL) continue;
     TTree * treeInfo = (TTree*)f->Get("eventInfo"); 
@@ -1609,7 +1609,11 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
     }
     timer.Print();
     treeInfo->PrintCacheStats();
-
+    AliSysInfo::AddStamp(fileName.Data(),2,iFile);
+    delete treeInfo;
+    delete f;
+    AliSysInfo::AddStamp(fileName.Data(),3,iFile);
+    
   }
   timer2.Print();
   TGraphErrors grEvent(hisEvent);
