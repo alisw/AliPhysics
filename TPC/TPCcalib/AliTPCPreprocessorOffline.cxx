@@ -1133,7 +1133,7 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   //
   //
   Int_t entries=TMath::Max(arrayITS->GetEntriesFast(),arrayTOF->GetEntriesFast());
-  TObjArray *arrays[12]={arrayITS, arrayITSP, arrayITSM, arrayITSB,
+  TObjArray *arrays[12]={arrayITS, arrayITSP, arrayITSM, arrayITSB, //During deletion, we must not delete arrayITS, arrayTRD, and arrayTOF bacause we do not own them!!!
 			 arrayTRD, arrayTRDP, arrayTRDM, arrayTRDB,
 			 arrayTOF, arrayTOFP, arrayTOFM, arrayTOFB};
   TString   grnames[12]={"ALIGN_ITS", "ALIGN_ITSP", "ALIGN_ITSM", "ALIGN_ITSB",
@@ -1175,8 +1175,8 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
       graph->SetName(grName.Data());
       vdriftArray->AddLast(graph);
     }
-    delete arrays[iarray];
-  }  
+    if (iarray != 0 && iarray != 4 && iarray != 8) delete arrays[iarray];  //the objects number 0, 4, and 8 are arrayITS, arrayTRD, and arrayTOF, which we do not own, so we must not delete them.
+  }
 }
 
 //_____________________________________________________________________________
