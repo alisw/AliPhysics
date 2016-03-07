@@ -34,7 +34,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
     reco->SwitchOnRejectExoticCell() ;
     reco->SwitchOnRejectExoticCluster(); 
     
-    reco->SetExoticCellDiffTimeCut(50);     // If |t cell max - t cell in cross| > 50 do not add its energy 
+//  reco->SetExoticCellDiffTimeCut(50);     // If |t cell max - t cell in cross| > 50 do not add its energy, avoid 
     reco->SetExoticCellFractionCut(0.97);   // 1-Ecross/Ecell > 0.97 -> out
     reco->SetExoticCellMinAmplitudeCut(4.); // 4 GeV    
   }  
