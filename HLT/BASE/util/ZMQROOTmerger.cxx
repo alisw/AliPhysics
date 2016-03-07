@@ -28,7 +28,6 @@
 TObject* UnpackMessage(zmq_msg_t* message);
 Int_t ProcessOptionString(TString arguments);
 Int_t InitZMQ();
-void* InitZMQsocket(void* context, Int_t socketMode, const char* configs);
 void* work(void* param);
 Int_t Run();
 
