@@ -14,7 +14,9 @@ enum eventCutSet { kEvtDefault=0,
 		   kDefaultVtx12,//=2
 		   kDefaultVtx8, //=3
 		   kDefaultVtx5, //=4                    
-		   kMCEvtDefault //=5
+		   kMCEvtDefault, //=5                   
+		   kSpecial1, //=6                   
+		   kSpecial2 //=7
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -56,6 +58,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
   if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
+  if(evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
 
   if(!isPP || isMC) rejectPileUp=kFALSE;
 
@@ -113,16 +116,20 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 2nd argument --> |Vz| range
   // - 3rd argument --> minimum required number of contributors to vtx
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-  AliRsnCutPrimaryVertex* cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-  cutVertex->SetCheckZResolutionSPD();
-  cutVertex->SetCheckDispersionSPD();
-  cutVertex->SetCheckZDifferenceSPDTrack();
+
+  AliRsnCutPrimaryVertex* cutVertex=0;
+  if(evtCutSetID!=eventCutSet::kSpecial1){
+    cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+    cutVertex->SetCheckZResolutionSPD();
+    cutVertex->SetCheckDispersionSPD();
+    cutVertex->SetCheckZDifferenceSPDTrack();
+  }
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
   if(aodFilterBit<200) cutEventUtils->SetCheckIncompleteDAQ();
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
-  if(isPP && (!isMC)){ 
+  if(isPP && (!isMC) && cutVertex){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
     ::Info("AddTaskPhiPP13TeV_PID", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
@@ -130,8 +137,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // define and fill cut set for event cut
   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
   eventCuts->AddCut(cutEventUtils);
-  eventCuts->AddCut(cutVertex);
-  eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+  if(cutVertex){
+    eventCuts->AddCut(cutVertex);
+    eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+  }else{
+    eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+  }
   task->SetEventCuts(eventCuts);
 
   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
