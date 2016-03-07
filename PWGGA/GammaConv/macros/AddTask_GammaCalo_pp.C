@@ -482,7 +482,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111064032230000","0163103100000050"); //
     cuts.AddCut("00000113","1111111065032230000","0163103100000050"); //
     cuts.AddCut("00000113","1111111066032230000","0163103100000050"); //
-
+  } else if (trainConfig == 106){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
+    cuts.AddCut("00000113","1111111003032230000","0163103100000050"); //
   } else if (trainConfig == 108){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
     cuts.AddCut("00000113","1111111063032230000","0163103100000050"); //
     cuts.AddCut("00000113","1111111163032230000","0163103100000050"); //
@@ -751,6 +752,9 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(trainConfig == 106){
+    task->SetInOutTimingCluster(-30e-9,35e-9);
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =
