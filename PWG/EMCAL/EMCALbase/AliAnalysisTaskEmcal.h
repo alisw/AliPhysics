@@ -1,5 +1,7 @@
 #ifndef ALIANALYSISTASKEMCAL_H
 #define ALIANALYSISTASKEMCAL_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
 class TString;
@@ -33,37 +35,55 @@ class AliEmcalPythiaInfo;
  * @class AliAnalysisTaskEmcal
  * @brief Base task in the EMCAL framework
  * @ingroup EMCALCOREFW
+ * @author Martha Verweij
+ * @author Salvatore Aiola
  */
 class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
 
+  /**
+   * @enum Beam type
+   * @brief Switch for the beam type
+   */
   enum BeamType {
-    kNA       = -1,
-    kpp       = 0,
-    kAA       = 1,
-    kpA       = 2
+    kNA       = -1,//!< Undefined
+    kpp       = 0, //!< Proton-Proton
+    kAA       = 1, //!< Nucleus-Nucleus
+    kpA       = 2  //!< Proton-Nucleus
   };
 
+  /**
+   * @enum TriggerType
+   * @brief Switch for EMCAL trigger types
+   */
   enum TriggerType {
-    kND       = -1,
-    kJ1       = 0,
-    kJ2       = 1,
-    kG1	      = 2,
-    kG2       = 3,
-    kL0       = 4
+    kND       = -1,//!< Undefined
+    kJ1       = 0, //!< EMCAL Level1 jet trigger, high threshold
+    kJ2       = 1, //!< EMCAL Level1 jet trigger, low threshold
+    kG1	      = 2, //!< EMCAL Level1 gamma trigger, high threshold
+    kG2       = 3, //!< EMCAL Level1 gamma trigger, low threshold
+    kL0       = 4  //!< EMCAL Level0 trigger
   };
 
-  enum TriggerCategory {       // Online trigger categories
-    kTriggerLevel0      = 0,   
-    kTriggerLevel1Jet   = 1,
-    kTriggerLevel1Gamma = 2,
-    kTriggerRecalcJet   = 3,   // Recalculated max trigger patch; does not need to be above trigger threshold
-    kTriggerRecalcGamma = 4
+  /**
+   * @enum TriggerCategory
+   * @brief Online trigger categories
+   */
+  enum TriggerCategory {
+    kTriggerLevel0      = 0,   //!< Level0 trigger patch
+    kTriggerLevel1Jet   = 1,   //!< Level1 jet trigger patch
+    kTriggerLevel1Gamma = 2,   //!< Level1 gamma trigger patch
+    kTriggerRecalcJet   = 3,   //!< Recalculated jet trigger patch; does not need to be above trigger threshold
+    kTriggerRecalcGamma = 4    //!< kRecalculated gamma trigger patch; does not need to be above trigger threshold
   };
 
+  /**
+   * @enum EMCalTriggerMode_t
+   * @brief Handling of the EMCAL trigger thresholds
+   */
   enum EMCalTriggerMode_t {
-    kNoSpecialTreatment,       // No special treatment for EMCal triggers
-    kOverlapWithLowThreshold   // The overlap between low and high threshold trigger is assigned to the lower threshold only
+    kNoSpecialTreatment,       //!< No special treatment for EMCal triggers
+    kOverlapWithLowThreshold   //!< The overlap between low and high threshold trigger is assigned to the lower threshold only
   };
 
   AliAnalysisTaskEmcal();
@@ -262,11 +282,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   /// \endcond
 };
 
-//________________________________________________________________________
+/**
+ * Calculate Delta Phi.
+ * @param[in] phia \f$ \phi \f$ of the first particle
+ * @param[in] phib \f$ \phi \f$ of the second particle
+ * @param[in] rangeMin Minimum \f$ \phi \f$ range
+ * @param[in] rangeMax Maximum \f$ \phi \f$ range
+ * @return Difference in \f$ \phi \f$
+ */
 inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib, Double_t rangeMin, Double_t rangeMax) 
 {
-  // Calculate Delta Phi.
-
   Double_t dphi = -999;
   const Double_t tpi = TMath::TwoPi();
   
@@ -281,7 +306,15 @@ inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib, Dou
   return dphi;
 }
 
-//________________________________________________________________________
+/**
+ * Generate array with fixed binning within min and max with n bins. The parameter array
+ * will contain the bin edges set by this function. Attention, the array needs to be
+ * provided from outside with a size of n+1
+ * @param[in] n Number of bins
+ * @param[in] min Minimum value for the binning
+ * @param[in] max Maximum value for the binning
+ * @param[out] array Array containing the bin edges
+ */
 inline void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array)
 {
   Double_t binWidth = (max-min)/n;
@@ -291,7 +324,15 @@ inline void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, D
   }
 }
 
-//________________________________________________________________________
+/**
+ * Generate array with fixed binning within min and max with n bins. The array containing the bin
+ * edges set will be created by this function. Attention, this function does not take care about
+ * memory it allocates - the array needs to be deleted outside of this function
+ * @param[in] n Number of bins
+ * @param[in] min Minimum value for the binning
+ * @param[in] max Maximum value for the binning
+ * @return Array containing the bin edges created bu this function
+ */
 inline Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max)
 {
   Double_t *array = new Double_t[n+1];

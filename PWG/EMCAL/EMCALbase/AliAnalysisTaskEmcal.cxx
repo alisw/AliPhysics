@@ -1,8 +1,17 @@
-//
-// Emcal base analysis task.
-//
-// Author: S.Aiola, M. Verweij
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include <RVersion.h>
 #include "AliAnalysisTaskEmcal.h"
 
@@ -47,9 +56,12 @@ Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 ClassImp(AliAnalysisTaskEmcal)
 /// \endcond
 
-//________________________________________________________________________
+/**
+ * Default constructor.
+ */
 AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() : 
   AliAnalysisTaskSE("AliAnalysisTaskEmcal"),
+  fPythiaInfoName(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fInitialized(kFALSE),
@@ -60,7 +72,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
-  fMaxVz(-999),
+  fMaxVz(999),
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
@@ -126,8 +138,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistEventRejection(0),
   fHistTriggerClasses(0)
 {
-  // Default constructor.
-
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
@@ -136,9 +146,14 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusterCollArray.SetOwner(kTRUE);
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor.
+ * @param[in] name Name of the task
+ * @param[in] histo If true then general histograms are filled by the task
+ */
 AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) : 
   AliAnalysisTaskSE(name),
+  fPythiaInfoName(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fInitialized(kFALSE),
@@ -149,7 +164,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinCent(-999),
   fMaxCent(-999),
   fMinVz(-999),
-  fMaxVz(-999),
+  fMaxVz(999),
   fTrackPtCut(0),
   fMinNTrack(0),
   fUseAliAnaUtils(kFALSE),
@@ -215,8 +230,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistEventRejection(0),
   fHistTriggerClasses(0)
 {
-  // Standard constructor.
-
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
@@ -229,13 +242,13 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   }
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)
 {
   AliClusterContainer *cont = GetClusterContainer(c);
@@ -243,7 +256,6 @@ void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)
   else AliError(Form("%s in SetClusPtCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcal::SetClusTimeCut(Double_t min, Double_t max, Int_t c)
 {
   AliClusterContainer *cont = GetClusterContainer(c);
@@ -251,7 +263,6 @@ void AliAnalysisTaskEmcal::SetClusTimeCut(Double_t min, Double_t max, Int_t c)
   else AliError(Form("%s in SetClusTimeCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcal::SetTrackPtCut(Double_t cut, Int_t c)
 {
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -261,7 +272,6 @@ void AliAnalysisTaskEmcal::SetTrackPtCut(Double_t cut, Int_t c)
   fTrackPtCut = cut;
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcal::SetTrackEtaLimits(Double_t min, Double_t max, Int_t c)
 {
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -269,7 +279,6 @@ void AliAnalysisTaskEmcal::SetTrackEtaLimits(Double_t min, Double_t max, Int_t c
   else AliError(Form("%s in SetTrackPtCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcal::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c)
 {
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -277,11 +286,11 @@ void AliAnalysisTaskEmcal::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c
   else AliError(Form("%s in SetTrackPhiLimits(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
+/**
+ * Create user output.
+ */
 void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 {
-  // Create user output.
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (mgr) {
     AliVEventHandler *evhand = mgr->GetInputEventHandler();
@@ -419,7 +428,6 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   PostData(1, fOutput);
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   if (fIsPythia) {
@@ -448,11 +456,12 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Main loop, called for each event.
+ * @param
+ */
 void AliAnalysisTaskEmcal::UserExec(Option_t *) 
 {
-  // Main loop, called for each event.
-
   if (!fInitialized)
     ExecOnce();
 
@@ -489,11 +498,16 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Check whether cluster is accepted under the cluster
+ * selection specified in the cluster container stored
+ * under index c
+ * @param[in] clus EMCAL cluster to be accepted
+ * @param[in] c Index of the cluster container
+ * @return true if cluster is accepted
+ */
 Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
 {
-  // Return true if cluster is accepted.
-
   AliWarning("AliAnalysisTaskEmcal::AcceptCluster method is deprecated. Please use GetCusterContainer(c)->AcceptCluster(clus).");
 
   if (!clus) return kFALSE;
@@ -507,11 +521,16 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
   return cont->AcceptCluster(clus);
 }
 
-//________________________________________________________________________
+/**
+ * Check whether track is accepted under the track
+ * selection specified in the track container stored
+ * under index c
+ * @param[in] track Track to be checked
+ * @param[in] c Index of the track container
+ * @return true if track is accepted
+ */
 Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
 {
-  // Return true if track is accepted.
-
   AliWarning("AliAnalysisTaskEmcal::AcceptTrack method is deprecated. Please use GetParticleContainer(c)->AcceptParticle(clus).");
 
   if (!track) return kFALSE;
@@ -525,14 +544,19 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
   return cont->AcceptParticle(track);
 }
 
-//________________________________________________________________________
+/**
+ * Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+ * Get the pt hard bin from the file path
+ * This is to called in Notify and should provide the path to the AOD/ESD file
+ * (Partially copied from AliAnalysisHelperJetTasks)
+ * @param[in] currFile Name of the current ESD/AOD file
+ * @param[out] fXsec Cross section calculated by PYTHIA
+ * @param[out] fTrials Number of trials needed by PYTHIA
+ * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
+ * @return True if parameters were obtained successfully, false otherwise
+ */
 Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
 {
-  //
-  // Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
-  // Get the pt hard bin from the file path
-  // This is to called in Notify and should provide the path to the AOD/ESD file
-  // (Partially copied from AliAnalysisHelperJetTasks)
 
   TString file(currFile);  
   fXsec = 0;
@@ -604,11 +628,12 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Called when file changes.
+ * @return
+ */
 Bool_t AliAnalysisTaskEmcal::UserNotify()
 {
-  // Called when file changes.
-
   if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
     return kTRUE;
 
@@ -645,11 +670,12 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Load parton info
+ * @param event
+ */
 void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
 {
-  // Load parton info
-
   if (!fPythiaInfoName.IsNull() && !fPythiaInfo) {
     fPythiaInfo = dynamic_cast<AliEmcalPythiaInfo*>(event->FindListObject(fPythiaInfoName));
     if (!fPythiaInfo) {
@@ -659,11 +685,11 @@ void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Init the analysis.
+ */
 void AliAnalysisTaskEmcal::ExecOnce()
 {
-  // Init the analysis.
-
   if (!InputEvent()) {
     AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
     return;
@@ -746,11 +772,13 @@ void AliAnalysisTaskEmcal::ExecOnce()
   fInitialized = kTRUE;
 }
 
-//_____________________________________________________
+/**
+ * Get beam type : pp-AA-pA
+ * ESDs have it directly, AODs get it from hardcoded run number ranges
+ * @return
+ */
 AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 {
-  // Get beam type : pp-AA-pA
-  // ESDs have it directly, AODs get it from hardcoded run number ranges
 
   if (fForceBeamType != kNA)
     return fForceBeamType;
@@ -781,7 +809,12 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   }  
 }
 
-//________________________________________________________________________
+/**
+ * Get list of selected triggers of the given event.
+ * The trigger selection is performed using EMCAL
+ * patches found for the given event
+ * @return A bitmap encoding the trigger found for the event
+ */
 ULong_t AliAnalysisTaskEmcal::GetTriggerList()
 {
   if (!fTriggerPatchInfo)
@@ -820,10 +853,14 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
   return triggers;
 }
 
-//________________________________________________________________________
+/**
+ * Check if event has a given trigger type
+ * @param trigger
+ * @return
+ */
 Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 {
-  // Check if event has a given trigger type
+  //
   if(trigger==kND) {
     AliWarning(Form("%s: Requesting undefined trigger type!", GetName())); 
     return kFALSE;
@@ -835,11 +872,12 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
   return TESTBIT(fTriggers, trigger);
 }
 
-//________________________________________________________________________
+/**
+ * Check if event is selected
+ * @return True if the event is selected.
+ */
 Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 {
-  // Check if event is selected
-
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -940,8 +978,8 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       fAliAnalysisUtils = new AliAnalysisUtils();
     fAliAnalysisUtils->SetMinVtxContr(2);
     fAliAnalysisUtils->SetMaxVtxZ(999);
-    if(fMinVz<-10.) fMinVz = -10.; 
-    if(fMinVz>10.)  fMaxVz = 10.;
+    if(fMinVz<-998.) fMinVz = -10.;
+    if(fMaxVz>998.)  fMaxVz = 10.;
 
     if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
       if (fGeneralHistograms) fHistEventRejection->Fill("VtxSel2013pA",1);
@@ -1035,11 +1073,14 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Get array from event.
+ * @param name
+ * @param clname
+ * @return
+ */
 TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const char *clname)
 {
-  // Get array from event.
-
   TClonesArray *arr = 0;
   TString sname(name);
   if (!sname.IsNull()) {
@@ -1065,11 +1106,12 @@ TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const ch
   return arr;
 }
 
-//________________________________________________________________________
+/**
+ * Retrieve objects from event.
+ * @return
+ */
 Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 {
-  // Retrieve objects from event.
-
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
@@ -1204,12 +1246,15 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create new container for MC particles and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new container for MC particles
+ */
 AliMCParticleContainer* AliAnalysisTaskEmcal::AddMCParticleContainer(const char *n)
 {
-  // Add particle container
-  // will be called in AddTask macro
-
   if (TString(n).IsNull()) return 0;
 
   AliMCParticleContainer* cont = new AliMCParticleContainer(n);
@@ -1219,12 +1264,15 @@ AliMCParticleContainer* AliAnalysisTaskEmcal::AddMCParticleContainer(const char 
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Create new track container and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new track container
+ */
 AliTrackContainer* AliAnalysisTaskEmcal::AddTrackContainer(const char *n)
 {
-  // Add particle container
-  // will be called in AddTask macro
-
   if (TString(n).IsNull()) return 0;
 
   AliTrackContainer* cont = new AliTrackContainer(n);
@@ -1234,12 +1282,15 @@ AliTrackContainer* AliAnalysisTaskEmcal::AddTrackContainer(const char *n)
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Create new particle container and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new particle container
+ */
 AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) 
 {
-  // Add particle container
-  // will be called in AddTask macro
-
   if (TString(n).IsNull()) return 0;
 
   AliParticleContainer* cont = new AliParticleContainer(n);
@@ -1249,12 +1300,15 @@ AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n)
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Create new cluster container and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new cluster container
+ */
 AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) 
 {
-  // Add cluster container
-  // will be called in AddTask macro
-
   if (TString(n).IsNull()) return 0;
 
   AliClusterContainer* cont = new AliClusterContainer(n);
@@ -1264,49 +1318,59 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n)
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$ i^{th} \f$ particle container attached to this task
+ * @param[in] i Index of the particle container
+ * @return Particle container found for the given index (NULL if no particle container exists for that index)
+ */
 AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const 
 {
-  // Get i^th particle container
-
   if (i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
   AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$ i^{th} \f$ cluster container attached to this task
+ * @param[in] i Index of the cluster container
+ * @return Cluster container found for the given index (NULL if no cluster container exists for that index)
+ */
 AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const 
 {
-  // Get i^th cluster container
-
   if (i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;
   AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Find particle container attached to this task according to its name
+ * @param[in] name Name of the particle container
+ * @return Particle container found under the given name
+ */
 AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const char *name) const 
 {
-  // Get particle container with name
-
   AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.FindObject(name));
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Find cluster container attached to this task according to its name
+ * @param[in] name Name of the cluster container
+ * @return Cluster container found under the given name
+ */
 AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const char *name) const 
 {
-  // Get cluster container with name
-
   AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.FindObject(name));
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$ $i^{th} \f$ TClonesArray with particles
+ * @param[in] i Index of the particle container inside the task
+ * @return TClonesArray connected to the container (NULL if not found)
+ */
 TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const 
 {
-  // Get i^th TClonesArray with AliVParticle
-
   AliParticleContainer *cont = GetParticleContainer(i);
   if (!cont) {
     AliError(Form("%s: Particle container %d not found",GetName(),i));
@@ -1316,11 +1380,13 @@ TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const
   return cont->GetArray();
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$ i^{th} \f$ TClonesArray with EMCAL clusters
+ * @param[in] i Index of the cluster container inside the task
+ * @return TClonesArray connected to the container (NULL if not found)
+ */
 TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const 
 {
-  // Get i^th TClonesArray with AliVCluster
-
   AliClusterContainer *cont = GetClusterContainer(i);
   if (!cont) {
     AliError(Form("%s:Cluster container %d not found",GetName(),i));
@@ -1329,11 +1395,15 @@ TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const
   return cont->GetArray();
 }
 
-//________________________________________________________________________
+/**
+ * Get particle p if accepted from  container with index c
+ * If particle not accepted return 0
+ * @param[in] p Index of the particle inside the Particle container
+ * @param[in] c Index of the particle container
+ * @return Accepted particle (NULL if no accepted particle with the index is found inside the container)
+ */
 AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c) const 
 {
-  // Get particle p if accepted from  container c
-  // If particle not accepted return 0
 
   AliParticleContainer *cont = GetParticleContainer(c);
   if (!cont) {
@@ -1345,12 +1415,15 @@ AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c)
   return vp;
 }
 
-//________________________________________________________________________
+/**
+ * Get particle p if accepted from  container c
+ * If particle not accepted return 0
+ * @param[in] cl Index of the cluster inside the container
+ * @param[in] c Indexd of the cluster container
+ * @return Accepted cluster (NULL if no accepted cluster with index is found)
+ */
 AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) const 
 {
-  // Get particle p if accepted from  container c
-  // If particle not accepted return 0
-
   AliClusterContainer *cont = GetClusterContainer(c);
   if (!cont) {
     AliError(Form("%s: Cluster container %d not found",GetName(),c));
@@ -1361,11 +1434,13 @@ AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) 
   return vc;
 }
 
-//________________________________________________________________________
+/**
+ * Get number of particles in container attached to this task with index i
+ * @param[i] i Index of then particle container
+ * @return Number of particles in container
+ */
 Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const 
 {
-  // Get number of entries in particle array i
-
   AliParticleContainer *cont = GetParticleContainer(i);
   if (!cont) {
     AliError(Form("%s: Particle container %d not found",GetName(),i));
@@ -1374,11 +1449,14 @@ Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const
   return cont->GetNEntries();
 }
 
-//________________________________________________________________________
+/**
+ * Get number of clusters in the cluster container attached to this task with
+ * index i
+ * @param[in] i Index of the container
+ * @return Number of clusters inside the container
+ */
 Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const 
 {
-  // Get number of entries in cluster array i
-
   AliClusterContainer *cont = GetClusterContainer(i);
   if (!cont) {
     AliError(Form("%s: Cluster container %d not found",GetName(),i));
@@ -1387,15 +1465,19 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const
   return cont->GetNEntries();
 }
 
-//________________________________________________________________________
+/**
+ * Get main trigger match
+ *
+ * For the selection of the main trigger patch, high and low threshold triggers of a given category are grouped
+ * If there are more than 1 main patch of a given trigger category (i.e. different high and low threshold patches),
+ * the highest one according to the ADC value is taken. In case doSimpleOffline is true, then only the patches from
+ * the simple offline trigger are used.
+ * @param[in] trigger Type of the EMCAL Level0/Level1 trigger
+ * @param[in] doSimpleOffline If true simple offline patches are used
+ * @return Main trigger patch for the trigger category (defined as highest energy patch)
+ */
 AliEMCALTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCategory trigger, Bool_t doSimpleOffline)
 {
-  // Get main trigger match
-  //
-  // For the selection of the main trigger patch, high and low threshold triggers of a given category are grouped
-  // If there are more than 1 main patch of a given trigger category (i.e. different high and low threshold patches),
-  // the highest one according to the ADC value is taken. In case doSimpleOffline is true, then only the patches from
-  // the simple offline trigger are used.
 
   if (!fTriggerPatchInfo) {
     AliError(Form("%s: fTriggerPatchInfo not available",GetName()));
@@ -1475,11 +1557,13 @@ AliEMCALTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
   return selected;
 }
 
-//________________________________________________________________________
+/**
+ * Add object to event
+ * @param[in] obj Object to be added
+ * @param[in] attempt If true don't handle error
+ */
 void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj, Bool_t attempt)
 {
-  // Add object to event
-
   if (!(InputEvent()->FindListObject(obj->GetName()))) {
     InputEvent()->AddObject(obj);
   }
@@ -1490,11 +1574,15 @@ void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj, Bool_t attempt)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Determines if a track is inside the EMCal acceptance, using \f$\eta\f$/\f$\phi\f$ at the vertex (no propagation).
+ * Includes +/- edges. Useful to determine whether track propagation should be attempted.
+ * @param[in] part Particle to check
+ * @param[in] edges Size of the edges in \f$\phi\f$ excluded from the EMCAL acceptance
+ * @return True if a particle is inside the EMCAL acceptance, false otherwise
+ */
 Bool_t AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges) const
 {
-  // Determines if a track is inside the EMCal acceptance, using eta/phi at the vertex (no propagation).
-  // Includes +/- edges. Useful to determine whether track propagation should be attempted.
 
   if (!fGeom) {
     AliWarning(Form("%s - AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance - Geometry is not available!", GetName()));
@@ -1512,7 +1600,6 @@ Bool_t AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance(AliVParticle* part, Double
   }
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
 {
   axis->SetBinLabel(1,  "NullObject");
@@ -1549,32 +1636,43 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(32, "Bit31");
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the fraction of momentum z of part 1 w.r.t. part 2 in the direction of part 2.
+ * @param[in] part1 Momentum vector for which the relative fraction is calculated
+ * @param[in] part2 Reference momentum vector for the calculation
+ * @return Relative fraction of momentum of particle 1 with respect to particle 2
+ */
 Double_t AliAnalysisTaskEmcal::GetParallelFraction(AliVParticle* part1, AliVParticle* part2)
 {
-  // Calculates the fraction of momentum of part 1 w.r.t. part 2 in the direction of part 2.
-
   TVector3 vect1(part1->Px(), part1->Py(), part1->Pz());
   TVector3 vect2(part2->Px(), part2->Py(), part2->Pz());
   Double_t z = (vect1 * vect2) / (vect2 * vect2);
   return z;
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the fraction of momentum z of vect 1 w.r.t. part 2 in the direction of part 2.
+ * @param[in] vect1 Momentum vector for which the relative fraction is calculated
+ * @param[in] part2 Reference momentum vector for the calculation
+ * @return Relative fraction of momentum of particle 1 with respect to particle 2
+ */
 Double_t AliAnalysisTaskEmcal::GetParallelFraction(const TVector3& vect1, AliVParticle* part2)
 {
-  // Calculates the fraction of momentum of vect 1 w.r.t. part 2 in the direction of part 2.
-
   TVector3 vect2(part2->Px(), part2->Py(), part2->Pz());
   Double_t z = (vect1 * vect2) / (vect2 * vect2);
   return z;
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Calculate \f$\phi\f$ and \f$\eta\f$ difference between a track (t) and a cluster (c). The
+ * position of the track is obtained on the EMCAL surface
+ * @param[in] t Track to check
+ * @param[in] v Cluster to check
+ * @param[out] phidiff Distance in \f$\phi\f$ between cluster and track
+ * @param[out] etadiff Distance in \f$\eta\f$ between cluster and track
+ */
 void AliAnalysisTaskEmcal::GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
-  // Calculate phi and eta difference between track and cluster.
- 
   phidiff = 999;
   etadiff = 999;
 
@@ -1592,11 +1690,13 @@ void AliAnalysisTaskEmcal::GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *
   phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Get track type encoded from bits 20 and 21.
+ * @param[in] t Track to check
+ * @return
+ */
 Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliVTrack *t)
 {
-  // Get track type encoded from bits 20 and 21.
-
   Byte_t ret = 0;
   if (t->TestBit(BIT(22)) && !t->TestBit(BIT(23)))
     ret = 1;
@@ -1607,12 +1707,17 @@ Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliVTrack *t)
   return ret;
 }
 
-//________________________________________________________________________
+/**
+ * Return track type: 0 = filterBit1, 1 = filterBit2 && ITS, 2 = filterBit2 && !ITS.
+ * Returns 3 if filterBit1 and filterBit2 do not test.
+ * WARNING: only works with AOD tracks and AOD filter bits must be provided. Otherwise will always return 0.
+ * @param aodTrack
+ * @param filterBit1
+ * @param filterBit2
+ * @return
+ */
 Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2)
 {
-  // Return track type: 0 = filterBit1, 1 = filterBit2 && ITS, 2 = filterBit2 && !ITS.
-  // Returns 3 if filterBit1 and filterBit2 do not test.
-  // WARNING: only works with AOD tracks and AOD filter bits must be provided. Otherwise will always return 0.
 
   Int_t res = 0;
 
@@ -1634,11 +1739,12 @@ Byte_t AliAnalysisTaskEmcal::GetTrackType(const AliAODTrack *aodTrack, UInt_t fi
   return res;
 }
 
-//________________________________________________________________________
+/**
+ * Copy some information about the Pythia event in a PythaInfo object
+ * @param[in] mcEvent Monte Carlo event from which the information is obtained
+ */
 void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
 {
-  // Copy some information about the Pythia event in a PythaInfo object
-
   if (!fPythiaInfo) {
     fPythiaInfo = new AliEmcalPythiaInfo();
   }

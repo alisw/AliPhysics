@@ -1,5 +1,7 @@
 #ifndef AliClusterContainer_H
 #define AliClusterContainer_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TLorentzVector;
 
@@ -13,6 +15,10 @@ class AliVEvent;
  * @class AliClusterContainer
  * @brief Container structure for EMCAL clusters
  * @ingroup EMCALCOREFW
+ * @author Martha Verweij
+ * @author Salvatore Aiola
+ *
+ * Container with name, TClonesArray and cuts for calo clusters
  */
 class AliClusterContainer : public AliEmcalContainer {
  public:
