@@ -104,7 +104,7 @@
  * @section alihlt_wrapper_interface_cdb CDB handling
  * The interface initializes the CDB from the path found
  * in the environment variable ALIHLT_HCDBDIR. If this is empty, path is
- * set from <tt>$ALICE_ROOT</tt>.
+ * set from <tt>$ALICE_ROOT</tt>. If ALIHLT_HCDBSNAPSHOT is set, this is set as snaphsot file on top of ALIHLT_HCDBDIR as default storage.
  */
 
 /////////////////////////////////////////////////////////////////////////////////////

@@ -58,7 +58,7 @@ AliHLTMisc& AliHLTMisc::Instance()
   return *fgInstance;
 }
 
-int AliHLTMisc::InitCDB(const char* /*cdbpath*/)
+int AliHLTMisc::InitCDB(const char* /*cdbpath*/, const char* /*cdbsnapshot*/)
 {
   // default method, functionality is implemented in the child class
   return -EFAULT;
