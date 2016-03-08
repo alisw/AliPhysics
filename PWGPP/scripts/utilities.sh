@@ -428,7 +428,7 @@ summarizeLogs()
   for file in "${files[@]}"; do
     [[ ! -f "${file}" ]] && continue
     #keep track of core files for later processing
-    [[ "${file##*/}" =~ ^core$ ]] && coreFiles[${file}]="${file}" && continue
+    [[ "${file##*/}" =~ ^core ]] && coreFiles[${file}]="${file}" && continue
     [[ ! "${file##*/}" =~ ${logFiles} ]] && continue
     errorSummary=$(validateLog "${file}")
     validationStatus=$?
