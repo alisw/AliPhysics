@@ -29,24 +29,27 @@ AliCheb2DStack::AliCheb2DStack()
   ,fNParams(0)
   ,fNCoefsTot(0)
   ,fNRowsTot(0)
+  ,fRowXI(0)
   ,fNRows(0)
   ,fNCols(0)
   ,fCoeffsEntry(0)
   ,fColEntry(0)
 {
   // Default constructor
-  for (int i=2;i--;) {
-    fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i];
-  }
+  for (int i=2;i--;) fBMin[i] = fBMax[i] = 0;
+  fBScaleZ = fBOffsetZ = 0;
+  fDead[0] = fDead[1] = 0;
 }
 
 //____________________________________________________________________
-AliCheb2DStack::AliCheb2DStack(int nSlices, int dimOut, const float bmin[2],const float bmax[2])
+AliCheb2DStack::AliCheb2DStack(int nSlices, int dimOut, const float bmin[2],const float bmax[2], 
+			       const float* dead, const float *rowXI)
   :fDimOut(dimOut) 
   ,fNSlices(nSlices)
   ,fNParams(nSlices*dimOut)
   ,fNCoefsTot(0)
   ,fNRowsTot(0)
+  ,fRowXI(rowXI)
   ,fNRows(new UChar_t[nSlices*dimOut])
   ,fNCols(0)
   ,fCoeffsEntry(new Int_t[nSlices])
@@ -58,8 +61,14 @@ AliCheb2DStack::AliCheb2DStack(int nSlices, int dimOut, const float bmin[2],cons
   for (int i=2;i--;) {
     fBMin[i] = bmin[i];
     fBMax[i] = bmax[i];
-    fBScale[i] = 2./(fBMax[i] - fBMin[i]); // prepare mapping of boundaries to [-1:1]
-    fBOffset[i] = fBMin[i] + 1./fBScale[i];
+  }
+  fBScaleZ = 2./(fBMax[1] - fBMin[1]); // prepare mapping of boundaries to [-1:1]
+  fBOffsetZ = fBMin[1] + 1./fBScaleZ;
+
+  if (dead) {
+    fDead[0] = dead[0];
+    fDead[1] = dead[1];
+    if (!rowXI) AliError("Dead zones will be ignored since the inverse radii are not provided");
   }
 }
 
@@ -94,7 +103,7 @@ void AliCheb2DStack::CheckDimensions(const int *np) const
 }
 
 //____________________________________________________________________
-float* AliCheb2DStack::DefineGrid(int dim, const int np[2]) const
+float* AliCheb2DStack::DefineGrid(int slice, int dim, const int np[2]) const
 {
   // prepare the grid of Chebyshev roots for dim-th output dimension
   // First np[1] nodes of 2nd input dimesion are stored, then np[0] nodes for 1st dim.
@@ -105,7 +114,7 @@ float* AliCheb2DStack::DefineGrid(int dim, const int np[2]) const
     int npnt = np[id];
     for (int ip=0;ip<npnt;ip++) {
       float x = TMath::Cos( TMath::Pi()*(ip+0.5)/npnt );
-      grid[cnt++] = MapToExternal(x,id);
+      grid[cnt++] = MapToExternal(slice,x,id);
     }
   }
   //

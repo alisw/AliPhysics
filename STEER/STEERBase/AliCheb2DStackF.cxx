@@ -30,8 +30,8 @@ AliCheb2DStackF::AliCheb2DStackF()
 
 //____________________________________________________________________
 AliCheb2DStackF::AliCheb2DStackF(stFun_t fun, int nSlices, int dimOut, const float bmin[2],const float bmax[2], 
-			       const int np[2], const float* precD)
-  :AliCheb2DStack(nSlices,dimOut,bmin,bmax)
+			       const int np[2], const float* dead, const float *rowXI, const float* precD)
+  :AliCheb2DStack(nSlices,dimOut,bmin,bmax,dead,rowXI)
   ,fCoeffs(0)
 {
   // create stack of 2D->dimOut Chebyshev parameterizations debined in 2 dimensions between bmin and bmax,
@@ -57,8 +57,8 @@ AliCheb2DStackF::AliCheb2DStackF(stFun_t fun, int nSlices, int dimOut, const flo
 //____________________________________________________________________
 AliCheb2DStackF::AliCheb2DStackF(stFun_t fun, int nSlices, int dimOut, 
 				 const float bmin[2],const float bmax[2], 
-				 const int np[][2], const float* precD)
-  :AliCheb2DStack(nSlices,dimOut,bmin,bmax)
+				 const int np[][2], const float* dead, const float *rowXI, const float* precD)
+:AliCheb2DStack(nSlices,dimOut,bmin,bmax,dead,rowXI)
   ,fCoeffs(0)
 {
   // create stack of 2D->dimOut Chebyshev parameterizations debined in 2 dimensions between bmin and bmax,
@@ -89,7 +89,7 @@ void AliCheb2DStackF::Eval(int sliceID, const float  *par, float *res) const
 {
   // evaluate Chebyshev parameterization for 2d->DimOut function at sliceID
   float p0,p1;
-  MapToInternal(par,p0,p1);
+  MapToInternal(sliceID, par,p0,p1);
   const UChar_t *rows = &fNRows[sliceID*fDimOut];          // array of fDimOut rows for current slice
   const UChar_t *cols = &fNCols[fColEntry[sliceID]];       // array of columns per row for current slice
   const Float_t *cfs  = &fCoeffs[fCoeffsEntry[sliceID]];   // array of coefficients for current slice
@@ -110,7 +110,7 @@ Float_t AliCheb2DStackF::Eval(int sliceID, int dimOut, const float *par) const
 {
   // evaluate Chebyshev parameterization for requested output dimension only at requested sliceID
   float p0,p1;
-  MapToInternal(par,p0,p1);
+  MapToInternal(sliceID,par,p0,p1);
   int pid = sliceID*fDimOut;
   const UChar_t *rows = &fNRows[pid];                      // array of fDimOut rows for current slice
   const UChar_t *cols = &fNCols[fColEntry[sliceID]];       // array of columns per row for current slice
@@ -138,7 +138,6 @@ void AliCheb2DStackF::CreateParams(stFun_t fun, const int *np, const float* prc)
   float **grids = new float*[fDimOut]; // Chebyshev grids for each output dimension
   int maxSpace = 1;
   for (int id=fDimOut;id--;) {
-    grids[id] = DefineGrid(id, &np[2*id]);
     int nsp = np[2*id]*np[2*id+1];
     if (maxSpace<nsp) maxSpace = nsp;
   }
@@ -151,6 +150,7 @@ void AliCheb2DStackF::CreateParams(stFun_t fun, const int *np, const float* prc)
   float *tmpCoef2D = new float[maxSpace]; // temporary workspace
   //
   for (int isl=0;isl<fNSlices;isl++) {
+    for (int id=fDimOut;id--;) grids[id] = DefineGrid(isl, id, &np[2*id]);
     fCoeffsEntry[isl] = fCoeffs - coeffs0;   // offset of the given slice coeffs
     fColEntry[isl]    = fNCols  - nCols0;    // offset of the given slice columns dimensions
     for (int id=0;id<fDimOut;id++) {
@@ -158,9 +158,9 @@ void AliCheb2DStackF::CreateParams(stFun_t fun, const int *np, const float* prc)
       // be substited later by coeffs for this dimension
       FillFunValues(fun, isl, id, grids[id], &np[2*id]);
       ChebFit(&np[2*id], tmpCoef2D, prc ? prc[id] : fgkDefPrec);
+      for (int id=fDimOut;id--;) delete[] grids[id];
     }
   }
-  for (int id=fDimOut;id--;) delete[] grids[id];
   delete[] grids;
   delete[] tmpCoef2D;
   //

@@ -45,7 +45,7 @@ class AliTPCChebCorr : public TNamed
  public:
   //
   AliTPCChebCorr();
-  AliTPCChebCorr(const char* name, const char* title, int nps=1,int nzs=1, float zmaxAbs=250);
+  AliTPCChebCorr(const char* name, const char* title, int nps=1,int nzs=1, float zmaxAbs=250, float deadZone=1.5, const float *xi=0);
   virtual ~AliTPCChebCorr();
   void     Parameterize(stFun_t fun,int dimOut,const int np[2], const float *prec=0);
   void     Parameterize(stFun_t fun,int dimOut,const int np[][2], const float *prec=0);
@@ -62,6 +62,8 @@ class AliTPCChebCorr : public TNamed
   Int_t    GetNStacksZ()                         const {return fNStacksZ;}
   Int_t    GetNStacksSector()                    const {return fNStacksSect;}
   Int_t    GetNRows()                            const {return fNRows;}
+  Float_t  GetDeadZone()                         const {return fDeadZone;}
+  //
   const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ?  fParams[id] : 0;}
   const AliCheb2DStack* GetParam(int sector, float y2x, float z) const;
   //
@@ -76,8 +78,8 @@ class AliTPCChebCorr : public TNamed
   void     Eval(int sector, int row, float tz[2], float *corr)       const;
   Float_t  Eval(int sector, int row, float y2x, float z, int dimOut) const;
   Float_t  Eval(int sector, int row, float tz[2], int dimOut)        const;
+  void     Init();
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
-  static   float GetAngGap()                    {return fgkAngGap;}
   //
   virtual  Bool_t   IsCorrection()               const {return kTRUE;}
   virtual  Bool_t   IsDistortion()               const {return kFALSE;}
@@ -101,16 +103,19 @@ class AliTPCChebCorr : public TNamed
   Float_t  fZScaleI;                // 1/Zspan of single stack
   Float_t  fY2XScaleI;              // 1/Y2Xspan of single stack
   //
+  Float_t  fDeadZone;               // dead zone in cm
+  Float_t* fRowXI;                  //[fNRows]  // 1/X of each row is dead zone to be used
+  //
   AliCheb2DStack** fParams;         //[fNStacks] set of AliCheb2DStack parameterizations
   //
   static const float fgkY2XHSpan;   // half span of sector
-  static const float fgkAngGap;     // dead angular zone on each agde
+  static const float fgkPadRowX[];  // nominal rows
  protected:
   //
   AliTPCChebCorr(const AliTPCChebCorr& src);            // dummy
   AliTPCChebCorr& operator=(const AliTPCChebCorr& rhs); // dummy
   //
-  ClassDef(AliTPCChebCorr,2)
+  ClassDef(AliTPCChebCorr,3)
 };
 
 //_________________________________________________________________
