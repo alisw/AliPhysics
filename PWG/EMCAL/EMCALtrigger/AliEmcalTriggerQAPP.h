@@ -80,6 +80,7 @@ public:
 
   void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
   void   EnableTriggerType(EMCalTriggerType_t type, Bool_t e = kTRUE);
+  void   EnableDCal(Bool_t e = kTRUE) { fDCalPlots = e; }
 
   void   Init();
   void   ExecOnce();
@@ -110,6 +111,7 @@ protected:
   Int_t                   fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
   Int_t                   fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
   THistManager            fHistManager;                 ///< Histogram manager
+  Bool_t                  fDCalPlots;                   ///< Whether to add DCal QA plots
 
   AliEMCALGeometry       *fGeom;                        //!<! EMCal geometry
   Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (will be reset each event)
