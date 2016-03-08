@@ -80,6 +80,7 @@ class AliTPCChebCorr : public TNamed
   Float_t  Eval(int sector, int row, float tz[2], int dimOut)        const;
   void     Init();
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
+  static const float* GetPadRowX()              {return fgkPadRowX;}
   //
   virtual  Bool_t   IsCorrection()               const {return kTRUE;}
   virtual  Bool_t   IsDistortion()               const {return kFALSE;}
