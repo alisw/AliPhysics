@@ -43,10 +43,10 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
   Bool_t                      AccClusterForAna(AliVCluster* cluster)                        ;
   Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
-  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
-
+  Double_t                    GetEff(TLorentzVector ParticleVec)                            ;
   Bool_t                      fGamma_Or_Pi0;            // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fSameEventAnalysis;       // This tells me whether the analysis is done for same event fSameEventAnalysis==1 or mixed events
   Bool_t                      Debug;					   // Can be set for debugging
