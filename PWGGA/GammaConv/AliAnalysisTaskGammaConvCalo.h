@@ -375,8 +375,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
     // hists for nonlineartiy calibration
-    TH2F**                  fHistoTruePi0NonLinearity;                          //! E_truth/E_rec vs E_rec for TruePi0s
-    TH2F**                  fHistoTrueEtaNonLinearity;                          //! E_truth/E_rec vs E_rec for TrueEtas
+//    TH2F**                  fHistoTruePi0NonLinearity;                          //! E_truth/E_rec vs E_rec for TruePi0s
+//    TH2F**                  fHistoTrueEtaNonLinearity;                          //! E_truth/E_rec vs E_rec for TrueEtas
 
     // additional variables
     Double_t                fEventPlaneAngle;                 // EventPlaneAngle
@@ -410,7 +410,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 23);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 24);
 };
 
 #endif
