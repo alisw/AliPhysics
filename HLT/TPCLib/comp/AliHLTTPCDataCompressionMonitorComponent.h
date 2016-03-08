@@ -289,7 +289,7 @@ public:
     }
     const AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* GetClusterSpacePointPropertyGrid(AliHLTUInt32_t mask) const {
       if (fRawData) return fRawData->GetSpacePointPropertyGrid(mask);
-      return false;
+      return NULL;
     }
 
     /// internal cleanup
