@@ -266,7 +266,7 @@ void emcal_esdclustercells()
     //---------------------------
     // Set up 3d quads
     //---------------------------
-    
+
     SetUpEMCALQuads();
     
     SetUpPHOSQuads();
@@ -282,7 +282,7 @@ void emcal_esdclustercells()
     // Calorimeter
     //
     AnalyzeClusters(esd);
-    
+
     //---------------------------
     // 2d display
     //---------------------------
@@ -307,10 +307,10 @@ void emcal_esdclustercells()
     data->GetPhiBins()->SetTitleFont(120);
     data->GetPhiBins()->SetTitle("f");
     data->IncDenyDestroy();
-    
+
     // Plotting the lego histogram in a new tab
     CreateHistoLego(data);
-    
+
     // Plotting the 3D histogram
     TEveCalo3D *calo3d = Create3DView(data);
     
@@ -1214,7 +1214,8 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data)
     TGLViewer* glv;
     
     // Viewer initialization, tab creation
-    if ( g_histo2d_v == 0 ) {
+    if ( g_histo2d_v == 0 )
+    {
         TEveWindowSlot *slot    = 0;
         TEveBrowser    *browser = gEve->GetBrowser();
         
@@ -1230,13 +1231,14 @@ TEveCaloLego* CreateHistoLego(TEveCaloData* data)
         g_histo2d_lego_overlay = new TEveCaloLegoOverlay();
         glv->AddOverlayElement(g_histo2d_lego_overlay);
         glv->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
-    } else 
+    } else
     {
         glv = g_histo2d_v->GetGLViewer(); 
     }
     
     // plotting histo
     TEveCaloLego* lego = new TEveCaloLego(data);
+    
     g_histo2d_s->AddElement(lego);
     AliEveEventManager *manager = AliEveEventManager::Instance();
     cout<<"\n\nadding lego to event manager"<<endl;

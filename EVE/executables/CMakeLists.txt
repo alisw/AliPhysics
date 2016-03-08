@@ -37,18 +37,24 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
-# aliconvertertest executable
+# aliceToJson executable
 add_executable(aliceToJson aliceToJson.cxx)
-    target_link_libraries(aliceToJson ConverterJSON STEERBase STEER ESD)
+target_link_libraries(aliceToJson ConverterJSON STEERBase STEER ESD)
 
 # alieve executable
 add_executable(alieve alieve_main.cxx)
 target_link_libraries(alieve EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Net Physics RIO Tree VMC STEER ESD CDB AOD RAWDatabase RAWDatarec Thread ANALYSIS HLTbase GenVector GeomPainter Proof Gui XMLParser ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim Ged RGL AliHLTHOMER ANALYSISaliceBase XMLIO RAWDatasim HistPainter ITSsim Spectrum ${LIB_FTGL} GLEW  STEERBase EveBase Eve Core Rint ASImage)
-
 if(ZEROMQ_FOUND)
     target_link_libraries(alieve MONITORzmq)
     add_definitions(-DZMQ)
 endif(ZEROMQ_FOUND)
 
+# alimyo executable
+add_executable(alimyo hello-myo.cxx)
+set(MYO_LIBRARY ${AliRoot_SOURCE_DIR}/EVE/resources/myo/myo.framework)
+target_link_libraries(alimyo ${MYO_LIBRARY})
+SET_TARGET_PROPERTIES(alimyo PROPERTIES INSTALL_RPATH "${AliRoot_SOURCE_DIR}/EVE/resources/myo/")
+
+
 # Installation
-install(TARGETS alieve aliceToJson RUNTIME DESTINATION bin)
+install(TARGETS alieve aliceToJson alimyo RUNTIME DESTINATION bin)
