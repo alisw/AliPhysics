@@ -309,7 +309,7 @@ void emcal_esdclustercells()
     data->IncDenyDestroy();
 
     // Plotting the lego histogram in a new tab
-    CreateHistoLego(data);
+//    CreateHistoLego(data); // this function breaks Event Display closing
 
     // Plotting the 3D histogram
     TEveCalo3D *calo3d = Create3DView(data);
