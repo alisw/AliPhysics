@@ -173,7 +173,6 @@ fHPoolReady(0x0)
 	fGamma_Or_Pi0      =Input_Gamma_Or_Pi0;
 	Debug              =0;  //set only 1 for debugging
 
-
 	// Default constructor.
 	fAODfilterBits[0] = 0;
 	fAODfilterBits[1] = 0;
