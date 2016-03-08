@@ -95,7 +95,7 @@ inline void AliCheb2DStack::MapToInternal(int slice, const float* xy, float args
   float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
   if (fRowXI) {
     tmn += fDead[0]*fRowXI[slice];
-    tmx += fDead[1]*fRowXI[slice];
+    tmx -= fDead[1]*fRowXI[slice];
   }
   args[ktgp] = 2.f*(xy[ktgp]-tmn)/(tmx-tmn) - 1.f;
 #ifdef _BRING_TO_BOUNDARY2D_
@@ -114,7 +114,7 @@ inline void AliCheb2DStack::MapToInternal(int slice, const float* xy, float &x0,
   float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
   if (fRowXI) {
     tmn += fDead[0]*fRowXI[slice];
-    tmx += fDead[1]*fRowXI[slice];
+    tmx -= fDead[1]*fRowXI[slice];
   }
   x0 = 2.f*(xy[ktgp]-tmn)/(tmx-tmn) - 1.f;
   //
@@ -133,7 +133,7 @@ inline float AliCheb2DStack::MapToExternal(int slice, float x,int dim)  const
   float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
   if (fRowXI) {
     tmn += fDead[0]*fRowXI[slice];
-    tmx += fDead[1]*fRowXI[slice];
+    tmx -= fDead[1]*fRowXI[slice];
   }
   return 0.5*(x+1.0f)*(tmx-tmn)+tmn;
 }
