@@ -24,6 +24,7 @@ public:
   // ###### Configuration setters
   void          SetRandomizeInPhi(Bool_t val)               {fRandomizeInPhi = val;}
   void          SetRandomizeInEta(Bool_t val)               {fRandomizeInEta = val;}
+  void          SetRandomizeInTheta(Bool_t val)             {fRandomizeInTheta = val;}
   void          SetRandomizeInPt(Bool_t val)                {fRandomizeInPt = val;}
 
   void          SetPhiMin(Double_t val)                     {fMinPhi = val;}
@@ -41,6 +42,7 @@ private:
   Bool_t              fInitialized;               // internal state when ExecOnce has been executed
   Bool_t              fRandomizeInPhi;            // randomize the particle's position in azimuth
   Bool_t              fRandomizeInEta;            // randomize the particle's position in pseudorap
+  Bool_t              fRandomizeInTheta;          // randomize the particle's position in theta
   Bool_t              fRandomizeInPt;             // randomize the particle's position in Pt
 
   Double_t            fMinPhi;                    // range for phi for randomization
@@ -58,7 +60,7 @@ private:
 
   TRandom3*           fRandom;                    //! random number generator
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 1);
+  ClassDef(AliAnalysisTaskParticleRandomizer, 2);
 };
 
 #endif
