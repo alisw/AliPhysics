@@ -2417,18 +2417,19 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
   canvasQAFit->Divide(1,5,0,0); 
   treeDist->SetMarkerStyle(25);
   treeDist->SetMarkerSize(0.5);
+  TCut defaultCut="abs(qptCenter)<0.1";
   //
   {
     canvasQAFit->cd(1)->SetRightMargin(0.1);
-    treeDist->Draw("delta:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    treeDist->Draw("delta:sectorCenter:RCenter",defaultCut+"abs(abs(kZCenter)-0.1)<0.06","colz");
     canvasQAFit->cd(2)->SetRightMargin(0.1);
-    treeDist->Draw("delta-delta_Fit0:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    treeDist->Draw("delta-delta_Fit0:sectorCenter:RCenter",defaultCut+"abs(abs(kZCenter)-0.1)<0.06","colz");
     canvasQAFit->cd(3)->SetRightMargin(0.1);
-    treeDist->Draw("delta-delta_Fit1:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    treeDist->Draw("delta-delta_Fit1:sectorCenter:RCenter",defaultCut+"abs(abs(kZCenter)-0.1)<0.06","colz");
     canvasQAFit->cd(4)->SetRightMargin(0.1);
-    treeDist->Draw("delta-delta_Fit2:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    treeDist->Draw("delta-delta_Fit2:sectorCenter:RCenter",defaultCut+"abs(abs(kZCenter)-0.1)<0.06","colz");
     canvasQAFit->cd(5)->SetRightMargin(0.1);
-    treeDist->Draw("delta_Fit0-delta_Fit2:sectorCenter:RCenter","qptCenter==0&&abs(abs(kZCenter)-0.1)<0.06","colz");
+    treeDist->Draw("delta_Fit0-delta_Fit2:sectorCenter:RCenter",defaultCut+"abs(abs(kZCenter)-0.1)<0.06","colz");
   }
   canvasQAFit->SaveAs((TString::Format("%sFit_sec%d_%d_theta%d_%dQAFit.png",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data()));
   TObjString input=inputTree;
@@ -2597,7 +2598,7 @@ Bool_t  AliTPCcalibAlignInterpolation::LoadNDLocalFit(TTree * tree, const char *
 }
 
 
-void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, const char* chtree,  Float_t radius, Float_t kZ, const char *figType){
+void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, const char* chtree,  Float_t radius, Float_t kZ, TCut &  selection, const char *figType){
   // Predefined plot: 
   //    Draw distortion map comparison
   //    Compare median and LTM estimator of the mean value of distortion in the bin
@@ -2610,7 +2611,7 @@ void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, co
      Float_t radius=100;
      Float_t kZ=0.1;
      figType="png"; 
-     AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(tree, chtree, radius,kZ,figType);
+     AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(tree, chtree, radius,kZ,"abs(qptCenter)<0.1",figType);
   */
   if (!tree) {
     ::Error("DrawEstimatorComparison","Tree not available");
@@ -2645,24 +2646,24 @@ void  AliTPCcalibAlignInterpolation::DrawMapEstimatorComparison(TTree * tree, co
 
   if (chtree){
     pads[3]->cd();
-    tree->Draw(TString::Format("%s.binMedian:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
+    tree->Draw(TString::Format("%s.binMedian:sectorCenter:RCenter",chtree).Data(),selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
     pads[2]->cd();
-    tree->Draw(TString::Format("%s.vecLTM.fElements[1]:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
+    tree->Draw(TString::Format("%s.vecLTM.fElements[1]:sectorCenter:RCenter",chtree).Data(),selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
     pads[1]->cd();
-    tree->Draw(TString::Format("%s.meanG:sectorCenter:RCenter",chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0&&abs(%s.meanG-%s.binMedian)<1",kZ,radius,chtree,chtree,chtree).Data(),"colz");
+    tree->Draw(TString::Format("%s.meanG:sectorCenter:RCenter",chtree).Data(),selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0&&abs(%s.meanG-%s.binMedian)<1",kZ,radius,chtree,chtree,chtree).Data(),"colz");
     pads[0]->cd();
-    tree->Draw(TString::Format("%s.vecLTM.fElements[1]-%s.binMedian:sectorCenter:RCenter",chtree,chtree).Data(),TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
+    tree->Draw(TString::Format("%s.vecLTM.fElements[1]-%s.binMedian:sectorCenter:RCenter",chtree,chtree).Data(),selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&%s.rms>0",kZ,radius,chtree).Data(),"colz");
   }else{
     pads[3]->cd();
-    tree->Draw("binMedian:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
+    tree->Draw("binMedian:sectorCenter:RCenter",selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
     pads[2]->cd();
-    tree->Draw("vecLTM.fElements[1]:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
+    tree->Draw("vecLTM.fElements[1]:sectorCenter:RCenter",selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
     pads[1]->cd();
-    tree->Draw("meanG:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0&&abs(meanG-binMedian)<1",kZ,radius).Data(),"colz");
+    tree->Draw("meanG:sectorCenter:RCenter",selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0&&abs(meanG-binMedian)<1",kZ,radius).Data(),"colz");
     pads[0]->cd();
-    tree->Draw("binMedian-vecLTM.fElements[1]:sectorCenter:RCenter",TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
+    tree->Draw("binMedian-vecLTM.fElements[1]:sectorCenter:RCenter",selection+TString::Format("abs(kZCenter+(%2.2f))<0.06&&abs(RCenter-%2.2f)<20&&rms>0",kZ,radius).Data(),"colz");
   }
-
+  
   if (figType) canvasC->SaveAs(TString::Format("distortionMap_%s_R%2.0f_kZ%2.2f.%s",chtree,radius,kZ,figType).Data());
 }
 
@@ -2696,6 +2697,7 @@ Bool_t  AliTPCcalibAlignInterpolation::DrawScalingComparison(TTree * tree, const
   //
   // 0.) Check variables
   //
+  TCut defaultCut="abs(qptCenter)<0.1";
   if (tree==NULL) {
     ::Error("AliTPCcalibAlignInterpolation::DrawScalingComparison","Tree not set");
     return kFALSE;
@@ -2703,7 +2705,7 @@ Bool_t  AliTPCcalibAlignInterpolation::DrawScalingComparison(TTree * tree, const
   Int_t tentries[3]={0};
   const char *vars[3]={chRef, chBin0, chBin1};
   for (Int_t i=0; i<3;i++){
-    tentries[i]=tree->Draw(TString::Format("%s.binMedian",vars[i]),"qptCenter==0","goff", 10000);
+    tentries[i]=tree->Draw(TString::Format("%s.binMedian",vars[i]),defaultCut,"goff", 10000);
     if (tentries[i]<=0){
       ::Error("AliTPCcalibAlignInterpolation::DrawScalingComparison","Expression %s  or tree %s not valid ", vars[i], tree->GetName());
       return kFALSE;
@@ -2712,7 +2714,7 @@ Bool_t  AliTPCcalibAlignInterpolation::DrawScalingComparison(TTree * tree, const
   //
   // 1.) get scaling factor using A side scaling (OROC scaling on C side more problematic)
   //
-  Int_t entries = tree->Draw(TString::Format("%s.binMedian-%s.binMedian:%s.binMedian-%s.binMedian", chBin0,chRef, chBin1,chRef).Data(),"qptCenter==0&&kZCenter>0","goff");
+  Int_t entries = tree->Draw(TString::Format("%s.binMedian-%s.binMedian:%s.binMedian-%s.binMedian", chBin0,chRef, chBin1,chRef).Data(),defaultCut+"kZCenter>0","goff");
   TGraph * gr0 = new TGraph(entries,tree->GetV1(),tree->GetV2());
   TGraph * gr1 = new TGraph(entries,tree->GetV2(),tree->GetV1());
   gr0->Fit("pol1");
@@ -2747,7 +2749,7 @@ Bool_t  AliTPCcalibAlignInterpolation::DrawScalingComparison(TTree * tree, const
   pad1->SetGrid(1,1);
   pad2->SetGrid(1,1);
   pad3->SetGrid(1,1);
-  TCut cutAccept=TString::Format("abs(qptCenter)==0&&abs(kZCenter+(%2.2f))<0.06&&RCenter>%2.0f&&RCenter<%2.0f&&%s.rms>0",kZ,R0,R1,chRef).Data();
+  TCut cutAccept=defaultCut+TString::Format("abs(kZCenter+(%2.2f))<0.06&&RCenter>%2.0f&&RCenter<%2.0f&&%s.rms>0",kZ,R0,R1,chRef).Data();
   Int_t isOK=0;
   const Int_t kMinEntries=100;
   {
@@ -3128,7 +3130,7 @@ Float_t  AliTPCcalibAlignInterpolation::CalculateDistance(const TVectorF &track0
     Int_t sector36=Int_t(sec[irow])%36;
     for (idelta=1; idelta<3; idelta++) {
       if ((irow-idelta)<0) break;
-      if ((irow+idelta)>npValid) break;
+      if ((irow+idelta)>=npValid) break;
       if (TMath::Abs(sec[irow-idelta])>72) break;
       if (TMath::Abs(sec[irow+idelta])>72) break;
       if (Int_t(sec[irow-idelta])%36!=sector36) break;  // sometimes looks like sector not initialized

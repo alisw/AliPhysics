@@ -9,7 +9,7 @@ class THn;
 class AliExternalTrackParam;
 class AliESDfriendTrack;
 class AliTrackPointArray;
-
+class TCut;
 
 class AliTPCcalibAlignInterpolation : public AliTPCcalibBase {
 public :
@@ -67,7 +67,7 @@ public :
   static TTree* AddFriendDistortionTree(TTree * tree, const char * fname, const char *treeName,  const char *friendAlias);
   static TTree* LoadDistortionTrees(const char * maplist="map.list", Int_t cacheSize=100000000, Int_t markerStyle=25, Float_t markerSize=0.4 );
   static Bool_t LoadNDLocalFit(TTree * tree, const char *chTree);
-  static void DrawMapEstimatorComparison(TTree * tree, const char* chtree,  Float_t radius, Float_t kZ, const char *figType=0);
+  static void DrawMapEstimatorComparison(TTree * tree, const char* chtree,  Float_t radius, Float_t kZ,  TCut & selection, const char *figType=0);
   static Bool_t DrawScalingComparison(TTree * tree, const char* chRef, const char *chBin0, const char *chBin1,  Float_t R0, Float_t R1, Float_t kZ, const char *figType);
 protected:
   static void FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
