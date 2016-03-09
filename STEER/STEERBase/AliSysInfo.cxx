@@ -262,25 +262,14 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2, In
 
 TTree * AliSysInfo::MakeTree(const char *lname, const char * fout){
   // char * lname = "syswatch.log"
-  TTree * treeP = new TTree;
-  treeP->ReadFile(lname);
-  TTree * tree = treeP->CopyTree("Entry$>0");
-  tree->BuildIndex("Entry$");
-  treeP->BuildIndex("Entry$");
-  tree->AddFriend(treeP,"P");
-
-
+  TTree * tree = new TTree;
+  tree->ReadFile(lname);
   tree->SetAlias("deltaT","stampSec-stampOldSec");
   tree->SetAlias("T","stampSec-first");
   tree->SetAlias("deltaVM","(pI.fMemVirtual-pIOld.fMemVirtual)");
   tree->SetAlias("VM","pI.fMemVirtual");
   tree->SetAlias("deltaRM","(pI.fMemResident-pIOld.fMemResident)");
   tree->SetAlias("RM","pI.fMemResident");
-  tree->SetAlias("deltafileCounter","(fileCounter-P.fileCounter)");
-  tree->SetAlias("deltafileReadCalls","(fileReadCalls-P.fileReadCalls)");
-  tree->SetAlias("deltafileBytesRead","(fileBytesRead-P.fileBytesRead)");
-  tree->SetAlias("deltafileBytesWritten","(fileBytesWritten-P.fileBytesWritten)");
-
   if (fout!=0){
     TFile * f = TFile::Open(fout,"recreate");
     f->cd();
