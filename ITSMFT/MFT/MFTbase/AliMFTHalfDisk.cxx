@@ -61,6 +61,7 @@ AliMFTHalfDisk::AliMFTHalfDisk(AliMFTHalfDiskSegmentation *segmentation):TNamed(
 
   fHalfDiskVolume = new TGeoVolumeAssembly(GetName());
   
+  //
 
   // Building Heat Exchanger Between faces
 	TGeoVolumeAssembly * heatExchangerVol = CreateHeatExchanger();
