@@ -38,7 +38,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoSend(void* socket);
 Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoRequest(void* /*socket*/);
-Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
