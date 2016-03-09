@@ -1,5 +1,5 @@
 /*
-  fbellini@cern.ch - last update on 09/09/2014
+  fbellini@cern.ch - last update on 09/03/2016
   Macro to run the TOF QA trending by accessing the std QA output, 
   to be mainly used with the automatic scripts to fill the QA repository.
   Launch with 
@@ -27,14 +27,16 @@
 #include "AliTOFChannelOnlineStatusArray.h"
 
 ///Functions with default parameters
-Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output;
-			  Int_t runNumber,          // run number
-			  Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
-			  Bool_t checkPIDqa=kTRUE, //set to kTRUE to check PIDqa output for TOF
-			  TString ocdbStorage = "raw://", //set the default ocdb storage
-			  Bool_t drawAll = kFALSE,  //enable display plots on canvas and save png
-			  Bool_t saveHisto=kTRUE,   //set to kTRUE to save histograms in root file
-			  Bool_t savePng=kTRUE );    //set to kTRUE to save histogram to png image
+Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
+			  Int_t runNumber,                      //run number
+			  Bool_t isMC = kFALSE,                 //MC flag, to disable meaningless checks
+			  Bool_t checkPIDqa = kTRUE,            //set to kTRUE to check PIDqa output for TOF
+			  Double_t RangeFitNsigmaPIDmin = -2.,  //set lower limit for fitting Nsigma_TOF_ID
+			  Double_t RangeFitNsigmaPIDmax = 2.,   //set upper limit for fitting Nsigma_TOF_ID
+			  TString ocdbStorage = "raw://",       //set the default ocdb storage
+			  Bool_t drawAll = kFALSE,              //enable display plots on canvas and save png
+			  Bool_t saveHisto = kTRUE,             //set to kTRUE to save histograms in root file
+			  Bool_t savePng = kTRUE );             //set to kTRUE to save histogram to png image
 
 Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE);
 
@@ -42,15 +44,17 @@ void MakeUpHisto(TH1* histo, TString titleY, Int_t marker = 20, Color_t color = 
 
 
 Int_t MakeTrendingTOFQA(char * runlist,
-			Int_t year=2010, 
-			TString period="LHC10c", 
-			TString pass="cpass1_pass4", 
-			TString nameSuffix ="_barrel",
-			Bool_t isMC=kFALSE,
-			Int_t trainId=0, 
-			Bool_t saveHisto=kTRUE,
-			Bool_t checkPIDqa=kTRUE,
-			Bool_t drawAll=kTRUE,
+			Int_t year = 2010,
+			TString period = "LHC10c",
+			TString pass = "cpass1_pass4",
+			TString nameSuffix = "_barrel",
+			Bool_t isMC = kFALSE,
+			Int_t trainId = 0,
+			Double_t RangeFitNsigmaPIDmin = -2.,
+			Double_t RangeFitNsigmaPIDmax = 2.,
+			Bool_t saveHisto = kTRUE,
+			Bool_t checkPIDqa = kTRUE,
+			Bool_t drawAll = kTRUE,
 			Bool_t IsOnGrid = kTRUE)
 {
 
@@ -77,7 +81,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
     Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
     
     //run post-analysis
-    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, "raw://", drawAll, saveHisto, kTRUE)==0){
+    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax, "raw://", drawAll, saveHisto, kTRUE)==0){
       filesCounter++;
     } else Printf("Post analysis not run on QA output %s", infile);
   }
@@ -86,14 +90,16 @@ Int_t MakeTrendingTOFQA(char * runlist,
 }
 
 //---------------------------------------------------------------------------------
-Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output;
-			  Int_t runNumber,          // run number
-			  Bool_t isMC,       //MC flag, to disable meaningless checks
-			  Bool_t checkPIDqa, //set to kTRUE to check PIDqa output for TOF
-			  TString ocdbStorage, //set the default ocdb storage
-			  Bool_t drawAll ,  //enable display plots on canvas and save png
-			  Bool_t saveHisto,   //set to kTRUE to save histograms in root file
-			  Bool_t savePng)    //set to kTRUE to save histogram to png image
+Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA output;
+			  Int_t runNumber,                //run number
+			  Bool_t isMC,                    //MC flag, to disable meaningless checks
+			  Bool_t checkPIDqa,              //set to kTRUE to check PIDqa output for TOF
+			  Double_t RangeFitNsigmaPIDmin,  //set lower limit for fitting Nsigma_TOF_ID
+			  Double_t RangeFitNsigmaPIDmax,  //set upper limit for fitting Nsigma_TOF_ID		     
+			  TString ocdbStorage,            //set the default ocdb storage
+			  Bool_t drawAll ,                //enable display plots on canvas and save png
+			  Bool_t saveHisto,               //set to kTRUE to save histograms in root file
+			  Bool_t savePng)                 //set to kTRUE to save histogram to png image
 {
   // macro to generate tree with TOF QA trending variables
   // access qa PWGPP output files  
@@ -485,10 +491,11 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
   }
 
   //--------------------------------- NSigma PID from TOF QA ----------------------------------//
+  TF1 * f = new TF1("f","gaus", RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax);
   TH2F * hSigmaPi=(TH2F*)pidList->FindObject("hTOFpidSigmaPi_all"); 
   hSigmaPi->GetYaxis()->SetRangeUser(-5.,5.);
   hSigmaPi->GetXaxis()->SetRangeUser(0.2,10.);
-  hSigmaPi->FitSlicesY();
+  hSigmaPi->FitSlicesY(f);
   TH1D * hSigmaPi_1 = (TH1D*)gDirectory->Get("hTOFpidSigmaPi_all_1");
   TH1D * hSigmaPi_2 = (TH1D*)gDirectory->Get("hTOFpidSigmaPi_all_2");
   //hSigmaPiT0->SetName("hSigmaPiT0");
@@ -558,6 +565,12 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     hSigmaPi->Write();
     hSigmaKa->Write();
     hSigmaPro->Write();
+    hSigmaPi_1->Write();
+    hSigmaPi_2->Write();
+    hSigmaKa_1->Write();
+    hSigmaKa_2->Write();
+    hSigmaPro_1->Write();
+    hSigmaPro_2->Write();
   }
   
  //--------------------------------- NSigma PID from PIDqa ----------------------------------//
@@ -641,13 +654,13 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     if (saveHisto) {
       trendFile->cd();
       hSigmaPiT0->Write();
-      hSigmaKaT0->Write();
-      hSigmaProT0->Write();
       hSigmaPiT0_1->Write();
-      hSigmaKaT0_1->Write();
-      hSigmaProT0_1->Write();
       hSigmaPiT0_2->Write();
+      hSigmaKaT0->Write();
+      hSigmaKaT0_1->Write();
       hSigmaKaT0_2->Write();
+      hSigmaProT0->Write();
+      hSigmaProT0_1->Write();
       hSigmaProT0_2->Write();
     }
   }
@@ -790,7 +803,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,       //full path of the QA output
     hT0AC->SetTitle("timeZero measured by T0 detector");
     hT0A ->Draw("same");
     hT0C ->Draw("same");
-    lT0->Draw();  
+    //lT0->Draw();  
     cT0detector->cd(2);
     hT0res->Draw();
 

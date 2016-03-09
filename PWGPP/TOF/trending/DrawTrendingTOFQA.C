@@ -374,6 +374,13 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hMatchEffVsRunNormToGoodCh->Draw();
   cMatchEffNormToGoodCh->Print(Form("%s/cMatchEffNormToGoodCh.png",plotDir.Data()));
 
+  TCanvas* cMatchEffSummary = new TCanvas("cMatchEffSummary","cMatchEffSummary",50, 50,1050, 550);
+  hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
+  hMatchEffVsRun->Draw();
+  hMatchEffVsRunNormToGoodCh->Draw("same");
+  hMatchEffVsRunNormToGoodChInAcc->Draw("same");
+  cMatchEffSummary->Print(Form("%s/cMatchEffSummary.png",plotDir.Data()));
+
   TCanvas* cGoodCh = new TCanvas("cGoodCh","cGoodCh",50, 50,1050, 550);
   hGoodChannelsRatio->GetYaxis()->SetRangeUser(0.75,1.);
   hGoodChannelsRatio->Draw();
