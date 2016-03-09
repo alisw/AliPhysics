@@ -38,6 +38,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoSend(void* socket);
 Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoRequest(void* /*socket*/);
+Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
@@ -220,7 +221,7 @@ Int_t Run()
 }
 
 //_____________________________________________________________________
-Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
   string tmp;
   tmp.assign((char*)zmq_msg_data(topicMsg),zmq_msg_size(topicMsg));
@@ -266,14 +267,14 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
 //_____________________________________________________________________
 Int_t HandleRequest(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  if (HandleControlMessage(topicMsg, dataMsg, socket)>0) return 0;
+  if (DoControl(topicMsg, dataMsg, socket)>0) return 0;
   return DoReply(topicMsg, dataMsg, socket);
 }
 
 //_____________________________________________________________________
 Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  if (HandleControlMessage(topicMsg, dataMsg, socket)>0) return 0;
+  if (DoControl(topicMsg, dataMsg, socket)>0) return 0;
   return DoReceive(topicMsg, dataMsg, socket);
 }
 
