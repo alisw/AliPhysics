@@ -104,6 +104,7 @@ public:
 
   void SetProcessOld(Bool_t process=kTRUE) {fProcessOld=process;}
   void SetProcessNew(Bool_t process=kTRUE) {fProcessNew=process; if (process&&!fHnDrift) CreateDVhist(); }
+  void SetROCblackData(Int_t rocblackDataDown=-1, Int_t rocblackDataUp=-1) {fROCblackDataDown=rocblackDataDown; fROCblackDataUp=rocblackDataUp;}
   //Getters
   Int_t GetNeventsProcessed() const { return fNevents; }
 
@@ -159,6 +160,8 @@ private:
   Int_t   fPeakIntPlus;             ///< Peak integral range for COG determination. Bins used after max bin
   Float_t fNoiseThresholdMax;       ///< Analysis Treshold for signal finding: Max>fNoiseThresholdMax*PadNoise
   Float_t fNoiseThresholdSum;       ///< Analysis Treshold for signal finding: Sum>fNoiseThresholdSum*PadNoise
+  Int_t   fROCblackDataUp;          ///< Upper edge of ROC range to be processed in case of black event. if -1; online drif velocity algorithm
+  Int_t   fROCblackDataDown;        ///< Lower edge of ROC rabge to be processed in case of black event. if -1; online drif velocity algorithm. 
 
   Bool_t  fIsZeroSuppressed;        ///< If data is Zero Suppressed -> Don't subtrakt pedestals!
 

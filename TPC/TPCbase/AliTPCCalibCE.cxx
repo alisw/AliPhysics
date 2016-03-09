@@ -312,6 +312,8 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fPeakIntPlus(2),
   fNoiseThresholdMax(5.),
   fNoiseThresholdSum(8.),
+  fROCblackDataDown(-1),
+  fROCblackDataUp(-1),
   fIsZeroSuppressed(kFALSE),
   fLastSector(-1),
   fSecRejectRatio(.4),
@@ -400,6 +402,8 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   fPeakIntPlus(sig.fPeakIntPlus),
   fNoiseThresholdMax(sig.fNoiseThresholdMax),
   fNoiseThresholdSum(sig.fNoiseThresholdSum),
+  fROCblackDataDown(-1),
+  fROCblackDataUp(-1),
   fIsZeroSuppressed(sig.fIsZeroSuppressed),
   fLastSector(-1),
   fSecRejectRatio(.4),
@@ -572,6 +576,8 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   fPeakIntPlus(2),
   fNoiseThresholdMax(5.),
   fNoiseThresholdSum(8.),
+  fROCblackDataDown(-1),
+  fROCblackDataUp(-1),
   fIsZeroSuppressed(kFALSE),
   fLastSector(-1),
   fSecRejectRatio(.4),
@@ -766,42 +772,47 @@ void AliTPCCalibCE::ProcessBunch(const Int_t sector, const Int_t row, const Int_
 {
   /// new filling method to fill the THnSparse histogram
 
-  //only in new processing mode
-  if (!fProcessNew) return;
-    //don't use the IROCs and inner part of OROCs
-  if (sector<36) return;
-  if (row<40) return;
-  //only bunches with reasonable length
-  if (length<3||length>10) return;
-
   UShort_t  timeBin    = (UShort_t)startTimeBin;
-  //skip first laser layer
-  if (timeBin<280) return;
-
+  Int_t padFill = pad;
   Double_t timeBurst=SetBurstHnDrift();
 
-  Int_t cePeak=((sector/18)%2)*7+6;
-  //after 1 event setup peak ranges
-  if (fEventInBunch==1 && fPeaks[cePeak]==0) {
-    // set time range
-    fHnDrift->GetAxis(4)->SetRangeUser(timeBurst-2*60,timeBurst+2*60);
-    FindLaserLayers();
-    // set time range
-    fHnDrift->GetAxis(4)->SetRangeUser(fHnDrift->GetAxis(4)->GetXmin(),fHnDrift->GetAxis(4)->GetXmax());
-    fHnDrift->Reset();
-  }
-
-  // After the first event only fill every 5th  bin in a row with the CE information
-  Int_t padFill=pad;
-  if (fEventInBunch==0||(fPeaks[cePeak]>100&&TMath::Abs((Short_t)fPeaks[cePeak]-(Short_t)timeBin)<(Short_t)fPeakWidths[cePeak])){
-    Int_t mod=5;
-    Int_t n=pad/mod;
-    padFill=mod*n+mod/2;
-  }
-
-  //noise removal
-  if (!IsPeakInRange(timeBin+length/2,sector)) return;
-
+  if (fROCblackDataDown==-1 || fROCblackDataUp==-1){
+    //only in new processing mode
+    if (!fProcessNew) return;
+    //don't use the IROCs and inner part of OROCs
+    if (sector<36) return;
+    if (row<40) return;
+    //only bunches with reasonable length
+    if (length<3||length>10) return;
+    
+    //skip first laser layer
+    if (timeBin<280) return;
+    
+    Int_t cePeak=((sector/18)%2)*7+6;
+    //after 1 event setup peak ranges
+    if (fEventInBunch==1 && fPeaks[cePeak]==0) {
+      // set time range
+      fHnDrift->GetAxis(4)->SetRangeUser(timeBurst-2*60,timeBurst+2*60);
+      FindLaserLayers();
+      // set time range
+      fHnDrift->GetAxis(4)->SetRangeUser(fHnDrift->GetAxis(4)->GetXmin(),fHnDrift->GetAxis(4)->GetXmax());
+      fHnDrift->Reset();
+    }
+    
+    // After the first event only fill every 5th  bin in a row with the CE information
+    if (fEventInBunch==0||(fPeaks[cePeak]>100&&TMath::Abs((Short_t)fPeaks[cePeak]-(Short_t)timeBin)<(Short_t)fPeakWidths[cePeak])){
+      Int_t mod=5;
+      Int_t n=pad/mod;
+      padFill=mod*n+mod/2;
+    }
+    
+    //noise removal
+    if (!IsPeakInRange(timeBin+length/2,sector)) return;
+  } else if( !(sector>=fROCblackDataDown && sector<fROCblackDataUp) ) return;
+  
+    
+    
+  
   Double_t x[kHnBinsDV]={(Double_t)sector,(Double_t)row,
       (Double_t)padFill,(Double_t)timeBin,timeBurst};
 
