@@ -1116,19 +1116,19 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
   HistogramMakeUp(hT0DetRes, kMagenta+1, 1, "", "","","","");    
   list->AddLast(hT0DetRes) ; 
 
-  TH1F* hT0fill = new TH1F(Form("hT0fill%s",suffix.Data()), "Event timeZero of fill; t_{0,fill} [ps]; events", 1000, -12500., 12500. ) ; 
+  TH1F* hT0fill = new TH1F(Form("hT0fill%s",suffix.Data()), "Event timeZero of fill; t_{0,fill} [ps]; events", 10, -5., 5. ) ; 
   HistogramMakeUp(hT0fill, kOrange+1, 25, "", "","","","");    
   list->AddLast(hT0fill) ; 
     
-  TH1F* hT0TOF = new TH1F(Form("hT0TOF%s",suffix.Data()), "Event timeZero estimated by TOF; t0 [ps]; events", 1000, -12500., 12500. ) ; 
+  TH1F* hT0TOF = new TH1F(Form("hT0TOF%s",suffix.Data()), "Event timeZero estimated by TOF; t0 [ps]; events", 140, -700., 700. ) ; 
   HistogramMakeUp(hT0TOF, kTeal-5, 21, "", "","","","");    
   list->AddLast(hT0TOF) ; 
     
-  TH1F* hT0T0 = new TH1F(Form("hT0T0%s",suffix.Data()), "Best timeZero between AC, A, C; t_{0} [ps]; events", 1000, -12500., 12500. ) ; 
+  TH1F* hT0T0 = new TH1F(Form("hT0T0%s",suffix.Data()), "Best timeZero between AC, A, C; t_{0} [ps]; events",  140, -700., 700. ) ; 
   HistogramMakeUp(hT0T0, kAzure+7, 26, "", "","","","");    
   list->AddLast(hT0T0) ; 
     
-  TH1F* hT0best = new TH1F(Form("hT0best%s",suffix.Data()), "Event timeZero estimated as T0best; t0 [ps]; events", 1000, -12500., 12500.) ; 
+  TH1F* hT0best = new TH1F(Form("hT0best%s",suffix.Data()), "Event timeZero estimated as T0best; t0 [ps]; events",  140, -700., 700. ) ; 
   HistogramMakeUp(hT0best, kBlack, 20, "", "","","","");    
   list->AddLast(hT0best) ; 
 
@@ -1148,10 +1148,22 @@ void    AliAnalysisTaskTOFqaID::AddStartTimeHisto(TList *list, TString suffix)
   HistogramMakeUp(hT0bestRes, kBlack, 20, "", "","","","");    
   list->AddLast(hT0bestRes) ; 
 
-  TH2F* hT0TOFvsNtrk = new TH2F(Form("hT0TOFvsNtrk%s",suffix.Data()), "Event timeZero estimated by TOF vs. number of tracks in event;TOF-matching tracks; t0 [ps]", 100, 0., 100., 500,-2500.,2500. ) ; 
+  TH2F* hT0TOFvsNtrk = new TH2F(Form("hT0TOFvsNtrk%s",suffix.Data()), "Event timeZero estimated by TOF vs. TOF-matching tracks; N_{TOF}; t0 [ps]", 700, 0., 700., 140, -700., 700.) ; 
   HistogramMakeUp(hT0TOFvsNtrk, kTeal-5, 1, "colz", "","","","");    
   list->AddLast(hT0TOFvsNtrk) ;
-  
+
+  TH2F* hT0ACvsNtrk = new TH2F(Form("hT0ACvsNtrk%s",suffix.Data()), "Event timeZero estimated by T0AC vs. TOF-matching tracks;  N_{TOF}; t0 [ps]", 700, 0., 700., 140, -700., 700.) ; 
+  HistogramMakeUp(hT0ACvsNtrk, kRed+2, 1, "colz", "","","","");    
+  list->AddLast(hT0ACvsNtrk) ;
+
+  TH2F* hT0AvsNtrk = new TH2F(Form("hT0AvsNtrk%s",suffix.Data()), "Event timeZero estimated by T0A vs. TOF-matching tracks;  N_{TOF}; t0 [ps]", 700, 0., 700., 140, -700., 700.) ; 
+  HistogramMakeUp(hT0AvsNtrk, kBlue+2, 1, "colz", "","","","");    
+  list->AddLast(hT0AvsNtrk) ; 
+ 
+  TH2F* hT0CvsNtrk = new TH2F(Form("hT0CvsNtrk%s",suffix.Data()), "Event timeZero estimated by T0C vs. TOF-matching tracks;  N_{TOF}; t0 [ps]", 700, 0., 700., 140, -700., 700.) ; 
+  HistogramMakeUp(hT0CvsNtrk, kGreen+2, 1, "colz", "","","","");    
+  list->AddLast(hT0CvsNtrk) ;
+
   TH2F* hEventT0MeanVsVtx = new TH2F(Form("hEventT0MeanVsVtx%s",suffix.Data()), "T0 detector: mean vs vertex ; (t0_{A}-t0_{C})/2 [ns]; (t0_{A}+t0_{C})/2 [ns]; events", 50, -25., 25., 50, -25., 25. ) ; 
   HistogramMakeUp(hEventT0MeanVsVtx, kBlue+2, 1, "colz", "","","","");    
   list->AddLast(hEventT0MeanVsVtx) ;
@@ -1516,16 +1528,39 @@ void AliAnalysisTaskTOFqaID::FillStartTimeHisto(TString suffix)
   
   TString timeZeroHisto[4]={"hT0fill","hT0TOF","hT0T0","hT0best"};
   TString timeZeroHistoRes[4]={"hT0fillRes","hT0TOFRes","hT0T0Res","hT0bestRes"};
-  for (Int_t j=0;j<4;j++){
+
+  //Fill T0fill plots
+  timeZeroHisto[0].Append(suffix.Data());
+  timeZeroHistoRes[0].Append(suffix.Data());
+  (fESDpid->GetTOFResponse()).ResetT0info();
+  fESDpid->SetTOFResponse(fESD, AliESDpid::kFILL_T0);
+  timeZero[0]=fESDpid->GetTOFResponse().GetStartTime(10.); 
+  timeZeroRes[0]=fESDpid->GetTOFResponse().GetStartTimeRes(10.);
+  ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHisto[0].Data())))->Fill(timeZero[0]); //will be 0 by definition
+  ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHistoRes[0].Data())))->Fill(timeZeroRes[0]);//taken from the header
+  
+  //fill other start time plots
+  for (Int_t j=1;j<4;j++){
     timeZeroHisto[j].Append(suffix.Data());
     timeZeroHistoRes[j].Append(suffix.Data());
+    (fESDpid->GetTOFResponse()).ResetT0info();
     fESDpid->SetTOFResponse(fESD, (AliESDpid::EStartTimeType_t) j);//(fill_t0, tof_t0, t0_t0, best_t0)
-    timeZero[j]=fESDpid->GetTOFResponse().GetStartTime(10.); //timeZero for bin pT>10GeV/c
-    timeZeroRes[j]=fESDpid->GetTOFResponse().GetStartTimeRes(10.); //timeZero for bin pT>10GeV/c
-    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
-    ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
+    //check start time mask 
+    Int_t startTimeMaskBin = fESDpid->GetTOFResponse().GetT0binMask(9); //timeZeroMask for 10th bin, corresponding to p>10GeV/c
+    //fill plot only when there is a start time othern than fill_t0
+    if (startTimeMaskBin>0) {
+      timeZero[j]=fESDpid->GetTOFResponse().GetStartTime(10.); //timeZero for bin p>10GeV/c
+      timeZeroRes[j]=fESDpid->GetTOFResponse().GetStartTimeRes(10.); //timeZero for bin p>10GeV/c
+      ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
+      ((TH1F*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
+      if (j==AliESDpid::kTOF_T0) ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kTOF_T0]);
+      if (j==AliESDpid::kT0_T0){
+	if (startTimeMaskBin==2) ((TH2F*)fHlistTimeZero->FindObject("hT0AvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kT0_T0]);
+	if (startTimeMaskBin==4) ((TH2F*)fHlistTimeZero->FindObject("hT0CvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kT0_T0]);
+	if (startTimeMaskBin==6) ((TH2F*)fHlistTimeZero->FindObject("hT0ACvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kT0_T0]);
+      }
+    }
   }
-  ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks[0],timeZero[AliESDpid::kTOF_T0]);
    
   //response set to best_t0 by previous loop
   FillStartTimeMaskHisto(suffix.Data());
