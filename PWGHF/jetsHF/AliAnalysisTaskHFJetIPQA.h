@@ -116,7 +116,6 @@ public:
 		double second;// to be compatible with std::pair
 		bool   is_electron; // added for electron contribution check
 		bool   is_fromB; // added for electron contribution check
-
 	};
 
 
@@ -125,25 +124,7 @@ public:
 	static const Int_t fgkMaxGener=10; // ancester level wanted to be checked
 	static const Int_t fgkMaxIter=100; // number of iteration to find out matching particle
 
-	/*
-      -------------------------------------------------------------------------------------
-     fParentSelect[0][0] =  411; //D+
-     fParentSelect[0][1] =  421; //D0
-     fParentSelect[0][2] =  431; //Ds+
-     fParentSelect[0][3] = 4122; //Lambdac+
-     fParentSelect[0][4] = 4132; //Ksic0
-     fParentSelect[0][5] = 4232; //Ksic+
-     fParentSelect[0][6] = 4332; //OmegaC0
 
-         -------------------------------------------------------------------------------------
-     fParentSelect[1][0] =  511; //B0
-     fParentSelect[1][1] =  521; //B+
-     fParentSelect[1][2] =  531; //Bs0
-     fParentSelect[1][3] = 5122; //Lambdab0
-     fParentSelect[1][4] = 5132; //Ksib-
-     fParentSelect[1][5] = 5232; //Ksib0
-     fParentSelect[1][6] = 5332; //Omegab-
-	 */
 	enum TTypeImpPar {kXY,kXYSig,kXYZ,kXYZSig,kXYZSigmaOnly};
 	AliAnalysisTaskHFJetIPQA();
 	AliAnalysisTaskHFJetIPQA(const char *name);
@@ -653,14 +634,14 @@ private:
 
 	//Monte Carlo correction factor containers
 
-	Double_t fBackgroundFactor[9][44];
-	Double_t fBackgroundFactorBins[45];
-	Double_t fBackgroundFactorLinus[16][498]; //FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
+	Double_t fBackgroundFactor[9][44];//[9][44]
+	Double_t fBackgroundFactorBins[45];//[45]
+	Double_t fBackgroundFactorLinus[16][498]; //[16][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
 
 
 	static bool mysort(const myvaluetuple& i, const myvaluetuple& j);
 
-	ClassDef(AliAnalysisTaskHFJetIPQA, 1)
+	ClassDef(AliAnalysisTaskHFJetIPQA, 2)
 };
 #endif
 
