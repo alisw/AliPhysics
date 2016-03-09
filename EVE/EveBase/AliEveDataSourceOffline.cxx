@@ -45,6 +45,11 @@ AliEveDataSourceOffline::~AliEveDataSourceOffline()
     
 }
 
+void AliEveDataSourceOffline::NextEvent()
+{
+        GotoEvent(AliEveEventManager::CurrentEventId()+1);
+}
+
 void AliEveDataSourceOffline::GotoEvent(Int_t event)
 {
     cout<<"Go to event:"<<event<<endl;

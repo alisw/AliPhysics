@@ -86,7 +86,7 @@ void AliEveDataSourceOnline::GetNextEvent()
     
     while(1)
     {
-        cout<<"Waiting for event from online reconstruction...";
+        cout<<"Waiting for event from online reconstruction..."<<endl;
         receiveStatus = eventManager->Get(tmpEvent,EVENTS_SERVER_SUB);
         
         if(receiveStatus == 0){ // timeout
@@ -99,7 +99,7 @@ void AliEveDataSourceOnline::GetNextEvent()
         {
             if(tmpEvent)
             {
-                cout<<"received. ("<<tmpEvent->GetRunNumber();
+                cout<<"Received event of run "<<tmpEvent->GetRunNumber()<<endl;
                 if(tmpEvent->GetRunNumber()>=0 && tmpEvent->GetNumberOfTracks()>0)
                 {
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
@@ -115,7 +115,6 @@ void AliEveDataSourceOnline::GetNextEvent()
                     if(strcmp(requiredTriggerClass,"none")!=0)
                     {
                         // check if required trigger class fired
-
                         ULong64_t mask = 1;
                         ULong64_t triggerMask = tmpEvent->GetTriggerMask();
                         ULong64_t triggerMaskNext50 = tmpEvent->GetTriggerMaskNext50();
@@ -153,7 +152,7 @@ void AliEveDataSourceOnline::GetNextEvent()
                     {
                         if(fEventInUse == 0){fWritingToEventIndex = 1;}
                         else if(fEventInUse == 1){fWritingToEventIndex = 0;}
-                        cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
+                        cout<<"Event number in file:"<<tmpEvent->GetEventNumberInFile()<<endl;
                         if(fCurrentEvent[fWritingToEventIndex])
                         {
                             delete fCurrentEvent[fWritingToEventIndex];
@@ -164,9 +163,24 @@ void AliEveDataSourceOnline::GetNextEvent()
                         
                         fIsNewEventAvaliable = true;
                     }
+                    else
+                    {
+                        cout<<"Trigger classes don't match the filter!"<<endl;
+                    }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->UnLock();
 #endif
+                }
+                else
+                {
+                    if(tmpEvent->GetRunNumber()<0)
+                    {
+                        cout<<"Incorrect run number!"<<endl;
+                    }
+                    if(tmpEvent->GetNumberOfTracks()<=0)
+                    {
+                        cout<<"No tracks!"<<endl;
+                    }
                 }
             }
             else
@@ -302,16 +316,15 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
     else
     {
         cout<<"\n\nWARNING -- No event has been already loaded. Loading the most recent event...\n\n"<<endl;
-        
+        return;
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
         requestMessage->messageType = REQUEST_GET_LAST_EVENT;
-        
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
-        
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->Lock();
 #endif
+
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
         eventManager->Get(resultEvent,SERVER_COMMUNICATION_REQ);
         

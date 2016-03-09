@@ -20,7 +20,8 @@ public:
     ~AliEveDataSourceOffline();
 
     void GotoEvent(Int_t event);
-
+    void NextEvent();
+    
     void SetFilesPath(const TString& path);
     
     void SearchRawForCentralReconstruction();

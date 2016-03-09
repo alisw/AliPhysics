@@ -435,7 +435,7 @@ void AliEveEventManager::SetTrigSel(Int_t trig)
 void AliEveEventManager::StartAutoLoadTimer()
 {
     // Start the auto-load timer.
-    fAutoLoadTimer->SetTime((Long_t)(100*fAutoLoadTime));
+    fAutoLoadTimer->SetTime((Long_t)(1000*fAutoLoadTime));
     fAutoLoadTimer->Reset();
     fAutoLoadTimer->TurnOn();
     fAutoLoadTimerRunning = kTRUE;
@@ -466,7 +466,7 @@ void AliEveEventManager::AutoLoadNextEvent()
     StopAutoLoadTimer();
     cout<<"Calling NextEvent method on current data source"<<endl;
 
-    fCurrentDataSource->GotoEvent(fEventId+1);
+    fCurrentDataSource->NextEvent();
     
     TEnv settings;
     AliEveInit::GetConfig(&settings);
