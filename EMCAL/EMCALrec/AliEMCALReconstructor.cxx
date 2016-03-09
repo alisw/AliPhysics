@@ -430,7 +430,10 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   branchtrg->GetEntry(0);
   
   // Note: fgTriggerProcessor reset done at the end of this method
-  //   fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, fTriggerData);
+  
+  // TO DO: Run2 emulation
+  if(esd->GetRunNumber() < 200000) // Enable trigger emulation for Run1
+    fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");
