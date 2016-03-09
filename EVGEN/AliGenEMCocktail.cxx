@@ -101,6 +101,7 @@ void AliGenEMCocktail::CreateCocktail()
   Double_t phiMax = fPhiMax*180./TMath::Pi();
   AliInfo(Form("Ranges pT:%4.1f : %4.1f GeV/c, y:%4.2f : %4.2f, Phi:%5.1f : %5.1f degres",ptMin,ptMax,yMin,yMax,phiMin,phiMax));
   AliInfo(Form("the parametrised sources uses the decay mode %d",fDecayMode));
+  AliInfo(Form("generating %d particles per source",fNPart));
   AliInfo(Form("Selected Params:collision system - %d , centrality - %d, pi0 param - %d, eta param - %d, omega param - %d, phi param - %d",fCollisionSystem, fCentrality, fPtSelectPi0, fPtSelectEta, fPtSelectOmega, fPtSelectPhi));
   //Initialize user selection for Pt Parameterization and centrality:
   AliGenEMlib::SelectParams(fCollisionSystem, fPtSelectPi0, fPtSelectEta, fPtSelectOmega, fPtSelectPhi, fCentrality,fV2Systematic);
