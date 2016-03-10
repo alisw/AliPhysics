@@ -16,7 +16,7 @@
 #include "TGeoGlobalMagField.h"
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskgg.h"
+#include "AliAnalysisTaskggMC.h"
 #include "AliFemtoTrack.h"
 #include "AliFemtoThreeVector.h"
 #include "AliFemtoPair.h"
@@ -44,45 +44,18 @@
 // Authors: Dmitri Peressounko
 // Date   : 28.05.2011
 
-ClassImp(AliAnalysisTaskgg)
+ClassImp(AliAnalysisTaskggMC)
 
 //________________________________________________________________________
-AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name) 
-: AliAnalysisTaskSE(name),
- // fStack(0x0),
-  fOutputContainer(0x0),
-  fEvent(0x0),
-  fPHOSEvent(0x0),
-  fV0AFlat(0x0),
-  fV0CFlat(0x0),
-  fRunNumber(0),
-  fCentrality(0.),
-  fCenBin(0),
-  fPHOSGeo(0x0),
-  fEventCounter(0),
-  fIsPbPb(kTRUE)
+AliAnalysisTaskggMC::AliAnalysisTaskggMC(const char *name) 
+: AliAnalysisTaskgg(name),
+  fStack(0x0)
 {
-  // Constructor
-  for(Int_t i=0;i<10;i++){
-    for(Int_t j=0;j<10;j++)
-      for(Int_t k=0;k<11;k++)
-	fPHOSEvents[i][j][k]=0 ;
-  }
-  
-  // Output slots #0 write into a TH1 container
-  DefineOutput(1,TList::Class());
-
-  // Initialize the PHOS geometry
-  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-
-  //We have to apply re-calibration for pass1 LCH10h
-  // Initialize decalibration factors in the form of the OCDB object
-
 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskgg::UserCreateOutputObjects()
+void AliAnalysisTaskggMC::UserCreateOutputObjects()
 {
 
   // Create histograms
@@ -102,8 +75,6 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hSelEvents","Event selection", 10,0.,10.,nRuns,0.,float(nRuns))) ;
   fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 10,0.,10.)) ;
  
-  fOutputContainer->Add(new TH2F("phiRP","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
  
  
   //vertex distribution
@@ -119,26 +90,9 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCluEvsClu_Disp","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
   fOutputContainer->Add(new TH2F("hCluEvsClu_Both","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
   fOutputContainer->Add(new TH2F("hCluEvsCluM","ClusterMult vs E",200,0.,20.,100,0.,20.)) ;
-  fOutputContainer->Add(new TH2F("hCenTOF","Centrality vs PHOS TOF", 100,0.,100.,600,-6.e-6,6.e-6)) ;
     
   //PHOS QA
-  fOutputContainer->Add(new TH1I("hCellMultEvent"  ,"PHOS cell multiplicity per event"    ,2000,0,2000));
-  fOutputContainer->Add(new TH1I("hCellMultEventM1","PHOS cell multiplicity per event, M1",2000,0,2000));
-  fOutputContainer->Add(new TH1I("hCellMultEventM2","PHOS cell multiplicity per event, M2",2000,0,2000));
-  fOutputContainer->Add(new TH1I("hCellMultEventM3","PHOS cell multiplicity per event, M3",2000,0,2000));
-
-  fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,3000,0.,30.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM1","Cell energy in module 1",3000,0.,30.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM2","Cell energy in module 2",3000,0.,30.));
-  fOutputContainer->Add(new TH1F("hCellEnergyM3","Cell energy in module 3",3000,0.,30.));
-
-  fOutputContainer->Add(new TH2F("hCellNXZM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellNXZM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellNXZM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellEXZM1","Cell E(X,Z), M1",64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellEXZM2","Cell E(X,Z), M2",64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCellEXZM3","Cell E(X,Z), M3",64,0.5,64.5, 56,0.5,56.5));
- 			
+			
   fOutputContainer->Add(new TH2F("hCPVr","CPV radius",100,0.,20.,100,0.,2.));
   fOutputContainer->Add(new TH3F("hLambda","Lambdas for all clusters",150,0.,30.,150,0.,30.,200,0.,2.));
   
@@ -159,9 +113,6 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCluDispM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluDispM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
 
-  fOutputContainer->Add(new TH2F("hTofM1","TOF in M1" ,100,0.,20.,400,-4.e-6,4.e-6));
-  fOutputContainer->Add(new TH2F("hTofM2","TOF in M2" ,100,0.,20.,400,-4.e-6,4.e-6));
-  fOutputContainer->Add(new TH2F("hTofM3","TOF in M3" ,100,0.,20.,400,-4.e-6,4.e-6));
   
   //Single photon and pi0 spectrum
   Int_t nQ=120 ;
@@ -175,22 +126,35 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   sprintf(kTbins[4],"Kt10-13") ;
   sprintf(kTbins[5],"Kt13-20") ;
 
-  const Int_t nCuts=7 ;
+  const Int_t nCuts=4 ;
   char cut[7][20] ;
   sprintf(cut[0],"All") ;
   sprintf(cut[1],"Disp") ;
   sprintf(cut[2],"CPV") ;
   sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Dist1") ;
-  sprintf(cut[5],"Dist2") ;
-  sprintf(cut[6],"Dist3") ;
+  
+  const Int_t nParents=12 ;
+  char parent[nParents][20] ;
+  sprintf(parent[0],"Conversion") ;
+  sprintf(parent[1],"pi0") ;
+  sprintf(parent[2],"pipm") ;
+  sprintf(parent[3],"p") ;
+  sprintf(parent[4],"n") ;
+  sprintf(parent[5],"eta") ;
+  sprintf(parent[6],"K0s") ;
+  sprintf(parent[7],"K0l") ;
+  sprintf(parent[8],"omega") ;
+  sprintf(parent[9],"Sigma") ;
+  sprintf(parent[10],"Charged") ;
+  sprintf(parent[11],"Neutral") ;
+  
   
     
   for(Int_t iCut=0; iCut<nCuts; iCut++){
     for(Int_t ikT=0; ikT<6; ikT++){ 
 //      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
  
-//      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
@@ -200,7 +164,7 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
       
 //      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-//      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
@@ -209,59 +173,48 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
     
     }        
 
-    fOutputContainer->Add(new TH2F(Form("hQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    //General
+    fOutputContainer->Add(new TH2F(Form("hQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    
+    //Common parent
+    for(Int_t ip=0; ip<nParents; ip++){
+      fOutputContainer->Add(new TH2F(Form("hQinv_%s_%s",parent[ip],cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    }
+    
+    //true photons wo common parents
+   fOutputContainer->Add(new TH2F(Form("hQinv_gamma_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));  
+    
+    //pi0 HBT
+    fOutputContainer->Add(new TH2F(Form("hQinv_pi0HBT_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+
+    //Flow
+    fOutputContainer->Add(new TH2F(Form("hQinv_flow_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+
+    //eta-phi
+    fOutputContainer->Add(new TH2F(Form("hQinv_etaphi_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+
+    //jet
+    fOutputContainer->Add(new TH2F(Form("hQinv_jet_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    
+    
   }
 
-  for(Int_t ikT=0; ikT<6; ikT++){ 
-     fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
-     fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
-     fOutputContainer->Add(new TH3F(Form("hSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
-     fOutputContainer->Add(new TH3F(Form("hMiSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
-  }
+//   for(Int_t ikT=0; ikT<6; ikT++){ 
+//      fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+//      fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+//      fOutputContainer->Add(new TH3F(Form("hSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
+//      fOutputContainer->Add(new TH3F(Form("hMiSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
+//   }
   
-  
-  
-  
-//   fOutputContainer->Add(new TH3F("hConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH1F("hConvPi0Angle","Angle",200,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH3F("hMCConvPi0True","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH3F("hMCConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH1F("hMCConvPi0Angle","Angle",200,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH3F("hMCChConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH1F("hMCChConvPi0Angle","Angle",200,0.,TMath::Pi()));
-//   
-//   fOutputContainer->Add(new TH2F("hVtxR","Vertex dR",200,-100.,100.,500,0.,500.));
-//   fOutputContainer->Add(new TH2F("hVtxRPhi","Vertex dR",200,-100.,100.,100,-TMath::Pi(),TMath::Pi()));
-//   fOutputContainer->Add(new TH2F("hVtxRTheta","Vertex dR",200,-100.,100.,100,-0.5,0.5));
-//   fOutputContainer->Add(new TH2F("hVtxPhi","Vertex dPhi",100,-TMath::Pi(),TMath::Pi(),100,0.,TMath::Pi()));
-//   fOutputContainer->Add(new TH2F("hVtxTheta","Vertex dTheta",100,-0.5,0.5,100,-0.5,0.5));
-  
-		 //PHOS calibration QA
-/*
-  fOutputContainer->Add(new TH2F("hPi0M11","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hPi0M12","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hPi0M13","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hPi0M22","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hPi0M23","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     
-  fOutputContainer->Add(new TH2F("hMiPi0M11","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hMiPi0M12","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hMiPi0M13","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hMiPi0M22","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hMiPi0M23","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-  fOutputContainer->Add(new TH2F("hMiPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-*/    
   
   PostData(1, fOutputContainer);
 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskgg::UserExec(Option_t *) 
+void AliAnalysisTaskggMC::UserExec(Option_t *) 
 {
   // Main loop, called for each event
   // Analyze ESD/AOD
@@ -276,6 +229,14 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     return;
   }
 
+  fStack = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
+  if (!fStack) {
+    Printf("ERROR: Could not retrieve stack");
+    PostData(1, fOutputContainer);
+    return;
+  }
+
+  
   fRunNumber=ConvertRunNumber(fEvent->GetRunNumber()) ;
   FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",1.5) ;
@@ -370,6 +331,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
   //reaction plane
   Int_t irp=0 ;
+/*  
     AliEventplane *eventPlane = fEvent->GetEventplane();
     if( ! eventPlane ) { //Event has no event plane
       PostData(1, fOutputContainer);
@@ -399,11 +361,11 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     //We have 10 bins
     irp=Int_t(10.*(rpFull)/TMath::Pi());
     if(irp>9)irp=9 ;
-    
+*/    
   
  
   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",4.5) ;
+  FillHistogram("hTotSelEvents",5.5) ;
   //All event selections done
   FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
   
@@ -450,12 +412,6 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       continue ;
     
     FillHistogram("hCluEvsCluM",clu->E(),clu->GetM02()) ;
-
-    FillHistogram(Form("hTofM%d",mod),clu->E(),clu->GetTOF()) ;
-    if(clu->E()>1.)
-      FillHistogram("hCenTOF",fCentrality,clu->GetTOF()) ;
-    if((clu->GetTOF()>1.5e-7) || (clu->GetTOF() <-2.5e-7) )
-      continue ;
     
     
     if(clu->GetNCells()<3) continue ;
@@ -535,6 +491,21 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   for (Int_t i1=0; i1<inPHOS-1; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     
+    AliAODMCParticle * hadronParent1 = 0x0 ;
+    if(ph1->GetPrimary()>=0){
+       AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(ph1->GetPrimary()) ;
+       while(TMath::Abs(tmp->GetPdgCode())<100){ //gamma,mu,e
+         if(tmp->GetMother()>=0){
+	    tmp = (AliAODMCParticle*)fStack->At(tmp->GetMother()) ;
+	 }
+	 else{
+	   tmp=0x0 ;
+	   break ;
+	 }
+       }
+       hadronParent1 = tmp ;
+    }
+    
     AliFemtoTrack track1;
     AliFemtoThreeVector mom1;
     mom1.SetX(ph1->Px()) ;
@@ -553,6 +524,24 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //      if(!SecondaryPi0Cut(ph1,ph2))
 //        continue ;
 
+      //hadron, whose daughter created this cluster
+      AliAODMCParticle * hadronParent2 = 0x0 ;
+      if(ph2->GetPrimary()>=0){
+         AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(ph2->GetPrimary()) ;
+         while(TMath::Abs(tmp->GetPdgCode())<100){ //gamma,mu,e
+           if(tmp->GetMother()>=0){
+	      tmp = (AliAODMCParticle*)fStack->At(tmp->GetMother()) ;
+	   }
+	   else{
+	     tmp=0x0 ;
+	     break ;
+	   }
+         }
+         hadronParent2 = tmp ;
+      }
+	
+	
+	
       AliFemtoTrack track2;
       AliFemtoThreeVector mom2;
       mom2.SetX(ph2->Px()) ;
@@ -607,34 +596,102 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 
 	
-      for(Int_t iCut=0; iCut<7; iCut++){
+      //Test common parent
+     AliAODMCParticle * commonPrim = TestCommonParent(ph1, ph2); 
+     if(commonPrim){
+       Int_t parentPDG = commonPrim->GetPdgCode() ;
+       char key[55];
+       switch(parentPDG){
+	 case 22:
+	 case 11:
+	 case -11: //consversion 
+	     snprintf(key,55,"Conversion") ;
+	     break ;
+	 case 111:
+	     snprintf(key,55,"pi0") ;
+	     break ;
+	 case  211:
+	 case -211:
+	     snprintf(key,55,"pipm") ;
+	     break ;
+	 case 221:
+	     snprintf(key,55,"eta") ;
+	     break ;
+	 case  2212:
+	 case -2212:
+	     snprintf(key,55,"p") ;
+	     break ;
+	 case  2112:
+	 case -2112:
+	     snprintf(key,55,"n") ;
+	     break ;
+	 case 310:
+	     snprintf(key,55,"K0s") ;
+	     break ;
+	 case 130:
+	     snprintf(key,55,"K0l") ;
+	     break ;
+	 case 223:
+	     snprintf(key,55,"omega") ;
+	     break ;
+	 case  3222:
+	 case -3222:
+	 case  3212:
+	 case -3212:
+	 case  3112:
+	 case -3112:
+	     snprintf(key,55,"Sigma") ;
+	     break ;
+	 default:
+	   if(TMath::Abs(parentPDG)<100){ //parton
+ 	     snprintf(key,55,"jet") ;	     
+	   }
+	   else{
+	     if(commonPrim->Charge()!=0)
+ 	       snprintf(key,55,"Charged") ;
+	     else
+ 	       snprintf(key,55,"Neutral") ;
+	   }
+         }
+         for(Int_t iCut=0; iCut<4; iCut++){
+   	   if(!PairCut(ph1,ph2,iCut))
+	    continue ;	  
+	   FillHistogram(Form("hQinv_%s_%s",key,cut[iCut]),qinv,kT) ;
+	 }
+       }
+
+
+       //pi0 HBT
+       if((hadronParent1->GetPdgCode()==111) && (hadronParent2->GetPdgCode()==111)){
+         Double_t hbtWeight = PionHBTWeight(hadronParent1,hadronParent2); 
+         for(Int_t iCut=0; iCut<4; iCut++){
+   	   if(!PairCut(ph1,ph2,iCut))
+	     continue ;	  
+	   FillHistogram(Form("hQinv_pi0HBT_%s",cut[iCut]),qinv,kT,hbtWeight) ;
+	 }	 
+       }
+
+       //Flow
+       if(hadronParent1 && hadronParent2){
+	 Double_t flowWeight =FlowWeight(hadronParent1, hadronParent2) ;
+	 Double_t etaWeight = EtaPhiWeight(hadronParent1, hadronParent2) ;
+         for(Int_t iCut=0; iCut<4; iCut++){
+   	   if(!PairCut(ph1,ph2,iCut))
+	     continue ;	  
+	   FillHistogram(Form("hQinv_flow_%s",cut[iCut]),qinv,kT,flowWeight) ;
+	   FillHistogram(Form("hQinv_etaphi_%s",cut[iCut]),qinv,kT,etaWeight) ;	   
+	 }
+       }
+	        
+       	
+      for(Int_t iCut=0; iCut<4; iCut++){
    	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
-	
-        if(iCut==3){//Both	
-          Double_t dx = ph1->EMCx()-ph2->EMCx() ;
-          Double_t dz = ph1->EMCz()-ph2->EMCz() ;
-	  Double_t r=TMath::Sqrt(dx*dx+dz*dz) ;
-          FillHistogram(Form("hSLfine_%s",kTbin.Data()),qspf,qlpf) ;
-          FillHistogram(Form("hSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
-	}
-	  
+		  
 	FillHistogram(Form("hQinv_%s",cut[iCut]),qinv,kT) ;
-	if(TMath::Abs(qo) < 0.05)
-	  FillHistogram(Form("hQinvCut_%s",cut[iCut]),qinv,kT) ;
-
-        // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-//        FillHistogram(Form("hOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
-   
-        // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-//        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
         FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
         FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
-
-
-//        FillHistogram(Form("hYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
-      
-//        FillHistogram(Form("hYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
         
       }          
     } // end of loop i2
@@ -711,34 +768,17 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       // longitudinal comoving frame
         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
-	for(Int_t iCut=0; iCut<7; iCut++){
+	for(Int_t iCut=0; iCut<4; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-          if(iCut==3){//Both	
-            Double_t dx = ph1->EMCx()-ph2->EMCx() ;
-            Double_t dz = ph1->EMCz()-ph2->EMCz() ;
-	    Double_t r=TMath::Sqrt(dx*dx+dz*dz) ;
-            FillHistogram(Form("hMiSLfine_%s",kTbin.Data()),qspf,qlpf) ;
-            FillHistogram(Form("hMiSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
-	  }  
 	  
 	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
-	   if(TMath::Abs(qo) < 0.05)
-	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
 
-          // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-//          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
-   
-          // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-//          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-
+          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
           FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
           FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
 	  
-//          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
-      
-//          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
 	}
 	
       } // end of loop i2
@@ -764,269 +804,147 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskgg::Terminate(Option_t *)
+void AliAnalysisTaskggMC::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
   
 }
 
-//_____________________________________________________________________________
-void AliAnalysisTaskgg::FillHistogram(const char * key,Double_t x)const{
-  //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1I")){
-    ((TH1I*)tmp)->Fill(x) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1D")){
-    ((TH1D*)tmp)->Fill(x) ;
-    return ;
-  }  
-  AliInfo(Form("can not find 1D histogram <%s> ",key)) ;
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskgg::FillHistogram(const char * key,Double_t x,Double_t y)const{
-  //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA()->GetName())) ;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisTaskgg::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
-  //Fills 1D histograms with Form(
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskgg::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z, Double_t w) const{
-  //Fills 1D histograms with Form(
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z,w) ;
-    return ;
-  }
-}
 
 //___________________________________________________________________________
-Int_t AliAnalysisTaskgg::ConvertRunNumber(Int_t run){
+Double_t AliAnalysisTaskggMC::PionHBTWeight(const AliAODMCParticle * ph1, const AliAODMCParticle * ph2) const{
+  //Calculates weight of the HBT correlations
+  //assuming that particles are pions
+  //Parameterization from 
+// article{Aamodt:2011mr,
+//       author         = "Aamodt, K. and others",
+//       title          = "{Two-pion Bose-Einstein correlations in central Pb-Pb
+//                         collisions at $\sqrt{{s}_{NN}} =$ 2.76 TeV}",
+//       journal        = "Phys. Lett.",
+//       volume         = "B696",
+//       year           = "2011",
+//       pages          = "328-337",
+//       doi            = "10.1016/j.physletb.2010.12.053",
+//       eprint         = "1012.4035",
+// }
+  
+    const Double_t kpiMass=0.135 ;
 
-  switch(run){	
-  case  139517 : return 137; 
-  case  139514 : return 136; 
-  case  139513 : return 135; 
-  case  139511 : return 134; 
-  case  139510 : return 133; 
-  case  139507 : return 132; 
-  case  139505 : return 131; 
-  case  139504 : return 130; 
-  case  139503 : return 129; 
-  case  139470 : return 128; 
-  case  139467 : return 127; 
-  case  139466 : return 126; 
-  case  139465 : return 125; 
-  case  139440 : return 124; 
-  case  139439 : return 123; 
-  case  139438 : return 122; 
-  case  139437 : return 121; 
-  case  139360 : return 120; 
-  case  139329 : return 119; 
-  case  139328 : return 118; 
-  case  139314 : return 117; 
-  case  139311 : return 116; 
-  case  139310 : return 115; 
-  case  139309 : return 114; 
-  case  139308 : return 113; 
-  case  139173 : return 112; 
-  case  139172 : return 111; 
-  case  139110 : return 110; 
-  case  139107 : return 109; 
-  case  139105 : return 108; 
-  case  139104 : return 107; 
-  case  139042 : return 106; 
-  case  139038 : return 105; 
-  case  139037 : return 104; 
-  case  139036 : return 103; 
-  case  139029 : return 102; 
-  case  139028 : return 101; 
-  case  138983 : return 100; 
-  case  138982 : return 99; 
-  case  138980 : return 98; 
-  case  138979 : return 97; 
-  case  138978 : return 96; 
-  case  138977 : return 95; 
-  case  138976 : return 94; 
-  case  138973 : return 93; 
-  case  138972 : return 92; 
-  case  138965 : return 91; 
-  case  138924 : return 90; 
-  case  138872 : return 89; 
-  case  138871 : return 88; 
-  case  138870 : return 87; 
-  case  138837 : return 86; 
-  case  138830 : return 85; 
-  case  138828 : return 84; 
-  case  138826 : return 83; 
-  case  138796 : return 82; 
-  case  138795 : return 81; 
-  case  138742 : return 80; 
-  case  138732 : return 79; 
-  case  138730 : return 78; 
-  case  138666 : return 77; 
-  case  138662 : return 76; 
-  case  138653 : return 75; 
-  case  138652 : return 74; 
-  case  138638 : return 73; 
-  case  138624 : return 72; 
-  case  138621 : return 71; 
-  case  138583 : return 70; 
-  case  138582 : return 69; 
-  case  138579 : return 68; 
-  case  138578 : return 67; 
-  case  138534 : return 66; 
-  case  138469 : return 65; 
-  case  138442 : return 64; 
-  case  138439 : return 63; 
-  case  138438 : return 62; 
-  case  138396 : return 61; 
-  case  138364 : return 60; 
-  case  138359 : return 59; 
-  case  138275 : return 58; 
-  case  138225 : return 57; 
-  case  138201 : return 56; 
-  case  138200 : return 55; 
-  case  138197 : return 54; 
-  case  138192 : return 53; 
-  case  138190 : return 52; 
-  case  138154 : return 51; 
-  case  138153 : return 50; 
-  case  138151 : return 49; 
-  case  138150 : return 48; 
-  case  138126 : return 47; 
-  case  138125 : return 46; 
-  case  137848 : return 45; 
-  case  137847 : return 44; 
-  case  137844 : return 43; 
-  case  137843 : return 42; 
-  case  137752 : return 41; 
-  case  137751 : return 40; 
-  case  137748 : return 39; 
-  case  137724 : return 38; 
-  case  137722 : return 37; 
-  case  137718 : return 36; 
-  case  137704 : return 35; 
-  case  137693 : return 34; 
-  case  137692 : return 33; 
-  case  137691 : return 32; 
-  case  137689 : return 31; 
-  case  137686 : return 30; 
-  case  137685 : return 29; 
-  case  137639 : return 28; 
-  case  137638 : return 27; 
-  case  137608 : return 26; 
-  case  137595 : return 25; 
-  case  137549 : return 24; 
-  case  137546 : return 23; 
-  case  137544 : return 22; 
-  case  137541 : return 21; 
-  case  137539 : return 20; 
-  case  137531 : return 19; 
-  case  137530 : return 18; 
-  case  137443 : return 17; 
-  case  137441 : return 16; 
-  case  137440 : return 15; 
-  case  137439 : return 14; 
-  case  137434 : return 13; 
-  case  137432 : return 12; 
-  case  137431 : return 11; 
-  case  137430 : return 10; 
-  case  137366 : return 9; 
-  case  137243 : return 8; 
-  case  137236 : return 7; 
-  case  137235 : return 6; 
-  case  137232 : return 5; 
-  case  137231 : return 4; 
-  case  137165 : return 3; 
-  case  137162 : return 2; 
-  case  137161 : return 1;
-  default : return 199;
-  } 
-
-}
-
-//___________________________________________________________________________
-Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const{
-  
- // if(cut==kDefault){
-  //Consider only pairs from same mudule
-  if(ph1->Module()!=ph2->Module())
-    return kFALSE ;
-  
-  if(cut==0){
-    return kTRUE ;
-  }
-  if(cut==1){
-    return ph1->IsDispOK() && ph2->IsDispOK() ;  
-  }
-  if(cut==2){
-    return ph1->IsCPVOK() && ph2->IsCPVOK() ;  
-  }
-  if(cut==3){
-    return ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph2->IsCPVOK() ;  
-  }
-  
-  
-  //Distance between clusters in PHOS plane
-  if(cut==4 ||cut==5 || cut==6 ){
-    if(!(ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph2->IsCPVOK()))
-      return kFALSE ;
-    if(ph1->Module() != ph2->Module())
-      return kTRUE ;
-    Double_t dx = ph1->EMCx()-ph2->EMCx() ;
-    Double_t dz = ph1->EMCz()-ph2->EMCz() ;
-    if(cut==4)
-      return (dx*dx+dz*dz > 5.*5.) ;
-    if(cut==5)
-      return (dx*dx+dz*dz > 10.*10.) ;
-    if(cut==6)
-      return (dx*dx+dz*dz > 15.*15.) ;
+    AliFemtoTrack track1;
+    AliFemtoThreeVector mom1;
+    mom1.SetX(ph1->Px()) ;
+    mom1.SetY(ph1->Py()) ;
+    mom1.SetZ(ph1->Pz()) ;
+    track1.SetP(mom1) ;
+    AliFemtoParticle part1(&track1,kpiMass) ;
     
-  }
-  return kTRUE ;
+    AliFemtoTrack track2;
+    AliFemtoThreeVector mom2;
+    mom2.SetX(ph2->Px()) ;
+    mom2.SetY(ph2->Py()) ;
+    mom2.SetZ(ph2->Pz()) ;
+    track2.SetP(mom2) ;
+    AliFemtoParticle part2(&track2,kpiMass) ;
+       
+    AliFemtoParticle *a = &part1 ;
+    AliFemtoParticle *b = &part2 ;
+    if(gRandom->Uniform()>0.5){
+      a = &part2 ;
+      b = &part1 ;
+    }
+    AliFemtoPair pair(a,b);
+
+    Double_t kT = pair.KT() ;  
+    Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
+  
+    Double_t Ro = TMath::Sqrt(8.583283 + 5.453621/kT + 1.269961/kT/kT)/0.197/0.197 ;
+    Double_t Rs = TMath::Sqrt(TMath::Max(0.953404 + 16.412315/kT + -1.440726/kT/kT,0.))/0.197/0.197 ; 
+    Double_t Rl = TMath::Sqrt(TMath::Max(-3.843901 + 21.680994/kT + -0.942183/kT/kT,0.))/0.197/0.197 ; 
+  
+  return 1. + TMath::Exp(-qs*qs*Rs*Rs - qo*qo*Ro*Ro - ql*ql*Rl*Rl) ;
+
+
+}
+//___________________________________________________________________________
+Double_t AliAnalysisTaskggMC::FlowWeight(const AliAODMCParticle * ph1, const AliAODMCParticle * ph2) const{
+  //Calculates weight of the HBT correlations
+  //assuming that particles are pions
+//   TF1 * fv2 = new TF1("fv2","[0]*(1.+[1]*x+[2]*x*x+[3]*x*x*x)/(1+[4]*x+[5]*x*x+[6]*x*x*x)",0.,30);  
+//   // 0-5%:
+//   if(cen==0) //Fit DP .
+//     fv2->SetParameters(-5.732671e-03, -1.132112e+01, 2.977289e+00, -2.351123e-01, 2.422317e-01, -1.353961e-01, 2.552272e-02); 
+//   //5-10%:
+//   if(cen==1)
+//     fv2->SetParameters(-7.227483e-03, -1.327021e+01, 1.192188e+00, -1.424606e-01, 2.690662e-01, -6.946581e-02, 3.566327e-02); 
+//   //10-20%:
+//   if(cen==2)
+//     fv2->SetParameters(-1.062719e-02, -1.339370e+01, 2.393260e+00, -2.391584e-01, 1.998852e-01, -8.818621e-02, 3.052334e-02); 
+//   //20-40%:
+//   if(cen==3)
+//     fv2->SetParameters(-1.605216e-02, -1.238932e+01, -2.932423e-01, -8.134508e-02, 4.570368e-01, -9.297761e-02, 6.322929e-02); 
+//  //30-40%:
+//   if(cen==4)
+//     fv2->SetParameters(-2.284108e-02, -1.073473e+01, 1.355141e+00, -2.276158e-01, 2.680910e-01, -3.884307e-02, 4.643840e-02); 
+//   //40-50%:
+//   if(cen==5)
+//     fv2->SetParameters(-1.958364e-02, -9.395222e+00, -1.042019e+01, -3.846221e-03, 1.043175e+00, 2.247645e-01, 2.563315e-01); 
+//   //0-20%:
+//   if(cen==6)
+//     fv2->SetParameters(-8.399737e-03, -1.274228e+01, 2.237830e+00, -2.186378e-01, 2.452230e-01, -1.077267e-01, 3.325352e-02); 
+//   //0-10%:
+//   if(cen==7)
+//     fv2->SetParameters(-6.620259e-03, -1.220510e+01, 2.233523e+00, -2.018025e-01, 2.742919e-01, -1.208619e-01, 3.477000e-02); 
+//   if(cen==8)
+//     fv2->SetParameters(-2.040839e-02, -1.120741e+01, 1.140065e+00, -1.780665e-01, 1.564463e-01, 4.186171e-02, 3.064791e-02); 
+//   if(cen==9)
+//     fv2->SetParameters(-1.110217e-02, -1.246538e+01, 1.230970e+00, -1.609303e-01, 3.598792e-01, -1.146195e-01, 4.429495e-02); 
+  
+  Double_t x = ph1->Pt() ;
+  Double_t v2a = 6.620259e-03*(-1.+1.220510e+01*x-2.233523e+00*x*x+2.018025e-01*x*x*x)/(1+2.742919e-01*x-1.208619e-01*x*x+3.477000e-02*x*x*x) ;
+  x = ph2->Pt() ;
+  Double_t v2b = 6.620259e-03*(-1.+1.220510e+01*x-2.233523e+00*x*x+2.018025e-01*x*x*x)/(1+2.742919e-01*x-1.208619e-01*x*x+3.477000e-02*x*x*x) ;
+  Double_t dphi = ph1->Phi() - ph2->Phi() ;
+   
+  return 1. + 2.*v2a*v2b*TMath::Cos(2.*dphi) ; ;
+
+}
+//___________________________________________________________________________
+Double_t AliAnalysisTaskggMC::EtaPhiWeight(const AliAODMCParticle * ph1, const AliAODMCParticle * ph2) const{
+  //Calculates weight of the HBT correlations
+  //assuming that particles are pions
+  
+  Double_t x = ph1->Pt() ;
+  Double_t v2a = 6.620259e-03*(-1.+1.220510e+01*x-2.233523e+00*x*x+2.018025e-01*x*x*x)/(1+2.742919e-01*x-1.208619e-01*x*x+3.477000e-02*x*x*x) ;
+  x = ph2->Pt() ;
+  Double_t v2b = 6.620259e-03*(-1.+1.220510e+01*x-2.233523e+00*x*x+2.018025e-01*x*x*x)/(1+2.742919e-01*x-1.208619e-01*x*x+3.477000e-02*x*x*x) ;
+  Double_t dphi = ph1->Phi() - ph2->Phi() ;
+   
+  return 1. + 2.*v2a*v2b*TMath::Cos(2.*dphi) + 0.5*2.*v2a*v2b*TMath::Cos(3.*dphi) + 0.25*2.*v2a*v2b*TMath::Cos(4.*dphi) + + 0.125*2.*v2a*v2b*TMath::Cos(5.*dphi) ;
   
 }
+
+//___________________________________________________________________________
+AliAODMCParticle* AliAnalysisTaskggMC::TestCommonParent(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2) const{
+ //Finds PDG code of common parent
+ //return 0 if there is no common
+  
+  AliAODMCParticle * pdg=0x0 ;
+  
+  Int_t prim1 = ph1->GetPrimary();
+  while(prim1!=-1){ 
+    Int_t prim2 = ph2->GetPrimary();  
+    while(prim2!=-1){       
+      if(prim1==prim2){
+	return (AliAODMCParticle*)fStack->At(prim2) ;
+      }
+      prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
+    }
+    prim1=((AliAODMCParticle*)fStack->At(prim1))->GetMother() ;
+  }
+ 
+  
+  return pdg ;
+}
+
+
