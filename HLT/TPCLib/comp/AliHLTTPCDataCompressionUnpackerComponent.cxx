@@ -94,6 +94,8 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
 {
   /// inherited from AliHLTProcessor: data processing
   int iResult=0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
 
   AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
   if (!IsDataEvent(&eventType)) {
@@ -103,7 +105,7 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
   const AliHLTComponentBlockData* pDesc=NULL;
 
   if (fClusterWriter && fpDecoder) {
-    fClusterWriter->Init(outputPtr, size);
+    fClusterWriter->Init(outputPtr, capacity);
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
          pDesc!=NULL; pDesc=GetNextInputBlock()) {
       fClusterWriter->AddClusterIds(pDesc);
@@ -128,7 +130,12 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
                                                pDesc->fSize,
                                                pDesc->fSpecification);
     }
+    // count track model clusters in the individual partitions to allow correct
+    // memory allocation of the partition cluster blocks
+    int tmClusterCount=fClusterWriter->ProcessTrackModelClusterCount();
+    HLTInfo("extracted %d cluster(s) from track model compressed data", tmClusterCount);
 
+    // now unpack partition cluster blocks
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
          pDesc!=NULL && iResult>=0; pDesc=GetNextInputBlock()) {
       if (pDesc->fSize<=sizeof(AliHLTTPCRawClusterData)) {
@@ -143,6 +150,8 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
                                             pDesc->fSpecification);
     }
 
+    // merge track model clusters into partition cluster blocks and copy output block
+    // descriptors to list
     if (iResult>=0) {
       iResult=fClusterWriter->Finish(outputBlocks);
       if (iResult==-ENOSPC) {
@@ -258,6 +267,11 @@ AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::iterator AliHLTTPCD
   AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetSinglePatchNr(specification);
   assert(partition>=0);
 
+  if (fTrackModelClusterCounts.find(specification)!=fTrackModelClusterCounts.end()) {
+    // add clusters from track model format
+    count+=fTrackModelClusterCounts[specification];
+  }
+
   if (fPartitionBlockDescriptors.find(specification)==fPartitionBlockDescriptors.end()) {
     // reserve a new block
     AliHLTComponentBlockData bd=ReservePartitionClusterBlock(count, specification);
@@ -286,7 +300,7 @@ AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::iterator AliHLTTPCD
   return iterator(ref, slice, partition, clusterIds);
 }
 
-AliHLTComponentBlockData AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::ReservePartitionClusterBlock(int& count, AliHLTUInt32_t specification)
+AliHLTComponentBlockData AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::ReservePartitionClusterBlock(int count, AliHLTUInt32_t specification)
 {
   AliHLTComponentBlockData bd;
   memset (&bd, 0, sizeof(AliHLTComponentBlockData));
@@ -302,11 +316,6 @@ AliHLTComponentBlockData AliHLTTPCDataCompressionUnpackerComponent::AliClusterWr
   assert(fPartitionClusterTargets.find(specification)==fPartitionClusterTargets.end());
   if (fPartitionClusterTargets.find(specification)!=fPartitionClusterTargets.end()) {
     return bd;
-  }
-
-  if (fTrackModelClusterCounts.find(specification)!=fTrackModelClusterCounts.end()) {
-    // add clusters from track model format
-    count+=fTrackModelClusterCounts[specification];
   }
 
   int requiredSpace=sizeof(AliHLTTPCRawClusterData) + count*sizeof(AliHLTTPCRawCluster);
@@ -332,15 +341,21 @@ AliHLTComponentBlockData AliHLTTPCDataCompressionUnpackerComponent::AliClusterWr
   return bd;
 }
 
-int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::IncrementClusterCount(int slice, int partition)
+int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::ProcessTrackModelClusterCount()
 {
-  // increment the cluster count of the specified partition
-  AliHLTUInt32_t specification=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
-  if (fTrackModelClusterCounts.find(specification)==fTrackModelClusterCounts.end()) {
-    fTrackModelClusterCounts[specification]=0;
+  // count track model clusters in the individual partitions
+  for (std::map<AliHLTUInt32_t, AliHLTTPCRawCluster>::const_iterator mapit=fTrackModelClusters.begin();
+       mapit!=fTrackModelClusters.end(); ++mapit) {
+    unsigned slice=AliHLTTPCSpacePointData::GetSlice(mapit->first);
+    unsigned partition=AliHLTTPCSpacePointData::GetPatch(mapit->first);
+    AliHLTUInt32_t specification=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
+    if (fTrackModelClusterCounts.find(specification)==fTrackModelClusterCounts.end()) {
+      fTrackModelClusterCounts[specification]=0;
+    }
+    fTrackModelClusterCounts[specification]+=1;
   }
-  fTrackModelClusterCounts[specification]+=1;
-  return fTrackModelClusterCounts[specification];
+
+  return fTrackModelClusters.size();
 }
 
 void AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::Init(AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size)
@@ -387,8 +402,47 @@ int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::AddClusterIds(c
 int AliHLTTPCDataCompressionUnpackerComponent::AliClusterWriter::Finish(AliHLTComponentBlockDataList& outputBlocks)
 {
   /// finish unpacking of clusters: merge track model clusters, copy block descriptors
-  if (fTrackModelClusters.size()>0) {
-    throw std::runtime_error("merging of track model clusters not yet implemented");
+  std::map<AliHLTUInt32_t, int> writtenPartitionClusters;
+  for (std::map<AliHLTUInt32_t, AliHLTTPCRawCluster>::const_iterator mapit=fTrackModelClusters.begin();
+       mapit!=fTrackModelClusters.end(); ++mapit) {
+    unsigned slice=AliHLTTPCSpacePointData::GetSlice(mapit->first);
+    unsigned partition=AliHLTTPCSpacePointData::GetPatch(mapit->first);
+    AliHLTUInt32_t specification=AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, partition, partition);
+    if (writtenPartitionClusters.find(specification)==writtenPartitionClusters.end()) {
+      // init map for counting of written clusters
+      if (fTrackModelClusterIds.fIds!=NULL) {
+	writtenPartitionClusters[specification]=-1;
+      } else if (fPartitionBlockDescriptors.find(specification)!=fPartitionBlockDescriptors.end()) {
+	// this is a bit awkward to determine the first location for the track
+	// model clusters after all partition clusters have been written
+	unsigned nTotalClusters=(fPartitionBlockDescriptors[specification].fSize-sizeof(AliHLTTPCRawClusterData))/sizeof(AliHLTTPCRawCluster);
+	writtenPartitionClusters[specification]=nTotalClusters-fTrackModelClusterCounts[specification];
+      } else {
+	writtenPartitionClusters[specification]=0;
+      }
+    }
+    if (fPartitionClusterTargets.find(specification)==fPartitionClusterTargets.end()) {
+      // partition cluster block not yet allocated
+      AliHLTComponentBlockData bd=ReservePartitionClusterBlock(fTrackModelClusterCounts[specification], specification);
+      if (bd.fSize>0) fPartitionBlockDescriptors[specification]=bd;
+      else {
+	ALIHLTERRORGUARD(5, "allocation of partition cluster buffer for writing of track model clusters failed, specification 0x%08x", specification);
+	continue;
+      }
+      // indicate that track model clusters are copied into a flat partition buffer
+      // contiguously, ignoring the clusters ids
+      writtenPartitionClusters[specification]=0;
+    }
+    unsigned clusterNo=AliHLTTPCSpacePointData::GetNumber(mapit->first);
+    if (fTrackModelClusterIds.fIds!=NULL && (writtenPartitionClusters[specification]<0)) {
+      clusterNo=AliHLTTPCSpacePointData::GetNumber(fTrackModelClusterIds.fIds[clusterNo]);
+    } else {
+      clusterNo=writtenPartitionClusters[specification]++;
+    }
+    if ((fPartitionClusterTargets[specification])[clusterNo].GetCharge()!=0) {
+      throw std::runtime_error(" cluster position has already been filled");
+    }
+    (fPartitionClusterTargets[specification])[clusterNo]=mapit->second;
   }
 
   unsigned totalSize=0;

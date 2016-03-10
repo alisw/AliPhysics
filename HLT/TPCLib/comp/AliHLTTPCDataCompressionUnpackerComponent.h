@@ -277,10 +277,10 @@ public:
     virtual void  Clear(Option_t * option="");
 
     unsigned GetRequiredSpace() const {return fRequiredSpace;}
+    int ProcessTrackModelClusterCount();
 
   protected:
-    AliHLTComponentBlockData ReservePartitionClusterBlock(int& count, AliHLTUInt32_t specification);
-    int IncrementClusterCount(int slice, int partition);
+    AliHLTComponentBlockData ReservePartitionClusterBlock(int count, AliHLTUInt32_t specification);
 
   private:
     AliClusterWriter(const AliClusterWriter&);
