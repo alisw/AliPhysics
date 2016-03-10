@@ -32,6 +32,8 @@
 #include "TString.h"
 #include "AliGenEMlib.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliGenEMlib)
 
