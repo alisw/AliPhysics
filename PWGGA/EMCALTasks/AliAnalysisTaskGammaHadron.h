@@ -14,6 +14,7 @@ class THnSparse;
 class AliVVZERO;
 class AliEvtPoolManager;
 
+using std::vector;
 
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
  public:
