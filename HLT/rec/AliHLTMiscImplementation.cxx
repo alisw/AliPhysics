@@ -37,6 +37,7 @@
 #include "AliESDHLTDecision.h"
 #include "TGeoGlobalMagField.h"
 #include "AliHLTGlobalTriggerDecision.h"
+#include "TSystem.h"
 #include "TClass.h"
 #include "TStreamerInfo.h"
 #include "TObjArray.h"
@@ -81,6 +82,8 @@ int AliHLTMiscImplementation::InitCDB(const char* cdbpath, const char* cdbsnapsh
     }
   }
   if (cdbsnapshot != NULL) {
+    gSystem->Load("libGeom");
+    gSystem->Load("libGeomBuilder");
     printf("Running in snapshot mode: %s\n", cdbsnapshot);
     pCDB->SetSnapshotMode(cdbsnapshot);
   }
