@@ -5037,6 +5037,12 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       x3 = kcl->GetX();
       //
       double dx13 = x1-x3;
+      if (TMath::Abs(dx13)<0.1) {
+	AliErrorF("Wrong X correction? Sec%d : row%d@X=%.2f->%.2f (z=%.2f) row%d@X=%.2f->%.2f (z=%.2f)\n",sec,
+		  i1-1,x1Def,x1,z1, i1-7,x3Def,x3,z3);
+	continue; // distortions should not make distance so small
+      }
+
       Double_t angley = (y1-y3)/dx13;
       Double_t anglez = (z1-z3)/dx13;
       //
