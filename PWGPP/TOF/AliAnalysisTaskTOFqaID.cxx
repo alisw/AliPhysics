@@ -958,23 +958,23 @@ void    AliAnalysisTaskTOFqaID::AddMatchingEffHisto(TList *list, Int_t charge, T
   HistogramMakeUp(hMatchedPtVsOutPhi,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "#phi_{TPC out} (deg)","p_{T} (GeV/c)");
   list->AddLast(hMatchedPtVsOutPhi) ;
    
-  TH1F* hPrimaryP  = new TH1F(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
+  TH1F* hPrimaryP  = new TH1F(Form("hPrimaryP%s_%s",suffix.Data(),cLabel.Data()), Form("%s primary trk p", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hPrimaryP,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p (GeV/c)","tracks");
   list->AddLast(hPrimaryP) ; 
 
-  TH1F* hPrimaryPt  = new TH1F(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T}", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
+  TH1F* hPrimaryPt  = new TH1F(Form("hPrimaryPt%s_%s",suffix.Data(),cLabel.Data()), Form("%s primary trk p_{T}", cLabel.Data()), nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hPrimaryPt,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "p_{T} (GeV/c)","tracks");
   list->AddLast(hPrimaryPt) ; 
 
-  TH1F* hPrimaryEta = new TH1F(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk #eta", cLabel.Data()), 200, -1., 1.) ; 
+  TH1F* hPrimaryEta = new TH1F(Form("hPrimaryEta%s_%s",suffix.Data(),cLabel.Data()), Form("%s primary trk #eta", cLabel.Data()), 200, -1., 1.) ; 
   HistogramMakeUp(hPrimaryEta,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "#eta","tracks");
   list->AddLast(hPrimaryEta) ; 
 
-  TH1F* hPrimaryPhi = new TH1F(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk #phi_{vtx}", cLabel.Data()), 72, 0., 360.) ; 
+  TH1F* hPrimaryPhi = new TH1F(Form("hPrimaryPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s primary trk #phi_{vtx}", cLabel.Data()), 72, 0., 360.) ; 
   HistogramMakeUp(hPrimaryPhi,((charge>0)? kRed+2 : kBlue+2), 1, "E1", "","", "#phi_{vtx} (deg)","tracks");
   list->AddLast(hPrimaryPhi) ; 
    
-  TH2F* hPrimaryPtVsOutPhi  = new TH2F(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s matched trk p_{T} vs. #phi_{TPC out}", cLabel.Data()), 72, 0.0, 360.0, nBinsX, xBins);// 1000,0.,10.) ;  
+  TH2F* hPrimaryPtVsOutPhi  = new TH2F(Form("hPrimaryPtVsOutPhi%s_%s",suffix.Data(),cLabel.Data()), Form("%s primary trk p_{T} vs. #phi_{TPC out}", cLabel.Data()), 72, 0.0, 360.0, nBinsX, xBins);// 1000,0.,10.) ;  
   HistogramMakeUp(hPrimaryPtVsOutPhi,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","", "#phi_{TPC out} (deg)","p_{T} (GeV/c)");
   list->AddLast(hPrimaryPtVsOutPhi) ; 
   return;
