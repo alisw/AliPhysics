@@ -133,7 +133,6 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
   /// inherited from TObject: supports writing of data to AliTPCClustersRow
   AliTPCClustersRow* rowcl=dynamic_cast<AliTPCClustersRow*>(&object);
   if (rowcl) {
-    int index=rowcl->GetID();
     fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow);
     return;
   }
