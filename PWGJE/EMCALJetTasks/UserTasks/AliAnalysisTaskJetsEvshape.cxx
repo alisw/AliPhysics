@@ -178,8 +178,11 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
            nJets, nAcceptedJets);
 
     fJetsCont->ResetCurrentID();
-    while (AliEmcalJet *jet = fJetsCont->GetNextAcceptJet()) {
-      FillH1(kHistJetPt, jet->Pt());
+    while (AliEmcalJet *jet = fJetsCont->GetNextJet()) {
+      if (fJetsCont->ApplyJetCuts(jet))
+        FillH1(kHistJetPt, jet->Pt());
+      else
+        printf("jet rejected: 0x%08x", fJetsCont->GetRejectionReason());
     }
   }
 
