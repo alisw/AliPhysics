@@ -34,6 +34,11 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   AliHLTTPCDataCompressionDecoder();
   ~AliHLTTPCDataCompressionDecoder();
 
+  // extract the padrow number within partition
+  void SetPadrowModeLocal() {fExtractGlobalPadrow=kFALSE;}
+  // extract global padrow number including offset of first padrow in partition
+  void SetPadrowModeGlobal() {fExtractGlobalPadrow=kTRUE;}
+
   template<typename T>
   int ReadRemainingClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
 
@@ -82,6 +87,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   float fPadShift; //! pad shift
   int fVerbosity; //! verbosity level
   Bool_t fUseClusterMerger; // flag to run the cluster merger
+  Bool_t fExtractGlobalPadrow; //! extract global padrow including offset of first padrow in a partition
   AliHLTDataInflater* fpDataInflaterPartition; //! instance of inflater for partition clusters
   AliHLTDataInflater* fpDataInflaterTrack; //! instance of inflater for track clusters
   AliHLTTPCHWClusterMerger* fpClusterMerger; //! merger instance
@@ -158,8 +164,8 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   }
   // the compressed format stores the difference of the local row number in
   // the partition to the row of the last cluster
-  // add the first row in the partition to get global row number
-  int rowOffset=AliHLTTPCGeometry::GetFirstRow(partition);
+  // in padrow mode 'global', add the first row in the partition to get global row number
+  int rowOffset=fExtractGlobalPadrow?AliHLTTPCGeometry::GetFirstRow(partition):0;
 
   int parameterId=pInflater->NextParameter();
   if (parameterId<0) return parameterId;
@@ -437,6 +443,8 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
     }
     AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(currentTrackPoint->GetId());
     AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId());
+    // subtract first row of partition if padrow mode 'local'
+    unsigned firstRow=fExtractGlobalPadrow?0:AliHLTTPCGeometry::GetFirstRow(partition);
     AliHLTUInt8_t nofClusters=0;
     bReadSuccess=bReadSuccess && pInflater->InputBits(nofClusters, clusterCountBitLength);
     if (!bReadSuccess) break;
@@ -460,7 +468,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
       if (bNextCluster) {
 	// switch to next cluster
 	c.Next(slice, partition);
-	c.SetPadRow(row);
+	c.SetPadRow(row-firstRow);
 	bNextCluster=false;
       }
       const AliHLTTPCDefinitions::AliClusterParameter& parameter
@@ -566,15 +574,21 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
     return iResult;
   }
   if (nCount*sizeof(AliHLTTPCRawCluster) + sizeof(AliHLTTPCRawClusterData) != dataSize) return -EBADF;
-  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
-  AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetSingleSliceNr(specification);
+  AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetSinglePatchNr(specification);
+  if (slice < 0 || partition < 0) {
+    HLTError("can not decode cluster block of multiple partitions, specification 0x%08x", specification);
+    return -1;
+  }
+  // in padrow mode 'global', add the first row in the partition to get global row number
+  int rowOffset=fExtractGlobalPadrow?AliHLTTPCGeometry::GetFirstRow(partition):0;
 
   const AliHLTTPCRawCluster *clusters = clusterData->fClusters;
   for (int i=0; i<nCount; i++) {
     AliHLTUInt32_t id=GetClusterId(i);
     const AliHLTTPCClusterMCLabel* pMC=GetMCLabel(id);
     c.Next(slice, partition);
-    c.SetPadRow(clusters[i].GetPadRow());
+    c.SetPadRow(clusters[i].GetPadRow() + rowOffset);
     c.SetPad(clusters[i].GetPad()+PadShift());
     c.SetTime(clusters[i].GetTime());
     c.SetSigmaY2(clusters[i].GetSigmaPad2());
