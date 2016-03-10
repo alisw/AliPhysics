@@ -165,6 +165,8 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoInit(int argc, const char** arg
   if (!decoder.get()) {
     return -ENOMEM;
   }
+  decoder->SetPadrowModeLocal();
+
   auto_ptr<AliClusterWriter> clw(new AliClusterWriter);
   if (!clw.get())
     return -ENOMEM;
@@ -178,6 +180,16 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoInit(int argc, const char** arg
 int AliHLTTPCDataCompressionUnpackerComponent::DoDeinit()
 {
   /// inherited from AliHLTComponent: component cleanup
+  if (fpDecoder) {
+    fpDecoder->Clear();
+    delete fpDecoder;
+    fpDecoder=NULL;
+  }
+  if (fClusterWriter) {
+    fClusterWriter->Clear();
+    delete fClusterWriter;
+    fClusterWriter=NULL;
+  }
   return 0;
 }
 
