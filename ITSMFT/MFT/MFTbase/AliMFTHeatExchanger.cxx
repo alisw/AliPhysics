@@ -1061,16 +1061,11 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     cooling->AddNode (pipeTube3, 4, transformation);
     
     // -------- Torus shape --------
-    
     //Sides torus
     TGeoVolume *pipeTorus1 = gGeoManager->MakeTorus(Form("pipeTorusone%d_D3_H%d", itube,half), pipe, fradius3[itube], fRWater, fRWater + fDRPipe, 0., fangle3[itube]);
     pipeTorus1->SetLineColor(10);
-    rotation = new TGeoRotation ("rotation", 180., 90., 0.);
-    transformation = new TGeoCombiTrans(fradius3[itube] + fXPosition3[itube], 0., - lMiddle3[itube]/2., rotation);
-    cooling->AddNode (pipeTorus1, 4, transformation);
-    rotation = new TGeoRotation ("rotation", 180., -90., 0.);
-    transformation = new TGeoCombiTrans(fradius3[itube] + fXPosition3[itube], 0., lMiddle3[itube]/2., rotation);
-    cooling->AddNode (pipeTorus1, 5, transformation);
+    cooling->AddNode (pipeTorus1, 4, new TGeoCombiTrans(fradius3[itube] + fXPosition3[itube], 0., - lMiddle3[itube]/2., new TGeoRotation (Form("rotation%d_D3_H%d", itube,half), 180., 90., 0.)));
+    cooling->AddNode (pipeTorus1, 5, new TGeoCombiTrans(fradius3[itube] + fXPosition3[itube], 0., lMiddle3[itube]/2., new TGeoRotation (Form("rotation2%d_D3_H%d", itube,half), 180., -90., 0.)));
     
     
     //Central torus
