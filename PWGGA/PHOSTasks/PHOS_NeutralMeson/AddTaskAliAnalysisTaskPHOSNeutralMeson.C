@@ -8,6 +8,7 @@ AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
 		Float_t clusterMinM02,
 		Float_t distToBadCellOnCellLevel,
 		Float_t distToBadCell,
+		Bool_t doTimingCut,
 		Float_t timingCutMin,
 		Float_t timingCutMax,
 		Float_t zVertexCut,
@@ -18,6 +19,15 @@ AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
 		TString mPtHistoMode,
 		Bool_t applyBadMap_manually,
 		Bool_t useIsVertexSelected2013pA,
+		Bool_t analyseAddedSignals,
+		TString mcParticleToAnalyse,
+		Double_t expoPara1,
+		Double_t expoPara2,
+		Double_t expoPara3,
+		Double_t expoPara4,
+		TString additionalFileNameString,
+		Bool_t fillHitMapsAddedS = kTRUE,
+		Bool_t  fillDecayInfoAddedS = kTRUE,
 		TString badMapName, 
 		Char_t *suffix = "") 
 {
@@ -125,15 +135,41 @@ AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
 	// ***** END OF SET BAD MAP ***************
   
 	//~~~~~~~ Geometry ~~~~~~~~~~~~~~
-	//task->SetEtaAccMinMax(-0.14, 0.14); 	    // Set Min and Max of eta for PHOS / EMCAL acceptance (MC)
-	//task->SetPhiAccMinMax(-1.72568, -0.72635); // Set Min and Max of phi for PHOS / EMCAL acceptance (MC)
-  
+	//task->SetEtaAccMinMax(-0.14, 0.14); 	    
+	//task->SetPhiAccMinMax(-1.72568, -0.72635); 
+	task->SetEtaAccMinMax(-0.13, 0.13);				// Set Min and Max of eta for PHOS acceptance (MC)
+	Double_t phiMin = 260 * (TMath::Pi()/180);
+	Double_t phiMax = 320 * (TMath::Pi()/180);
+	task->SetPhiAccMinMax(phiMin,phiMax); //60 degrees (in rad)
+	
+	
 	//~~~~~~~~ MC related ~~~~~~~~~~~~~
-	task->SetFillFeedDownHistos(false); 
-  
+	task->SetFillFeedDownHistos(true); //so far neccesarry to fill mc histos at all 
+	task->SetAddedSignals(analyseAddedSignals);
+	
+	//mcParticleToAnalyse = "pi0";
+	//expoPara1 = 3.58155;
+	//expoPara2 = 0.790362;
+	//expoPara3 = 6.73985;
+	//expoPara4 = 0.151952;
+	//additionalFileNameString;
+	//fillHitMapsAddedS = kTRUE;
+	//fillDecayInfoAddedS = kTRUE;
+	
+	task->SetAnalyseMCPi0OrEta(mcParticleToAnalyse);  //pi0 eta both
+	task->SetFillFeedDownHistos(true);  //so far neccesarry to fill mc histos at all
+	task->SetExponentialParameters(expoPara1, expoPara2, expoPara3, expoPara4); //for weighing added signals
+  	task->SetAdditionalFileNameString(additionalFileNameString); //String appears at the end of the filname. 
+  	task->SetFillClusterHitmapsAddedSignals(fillHitMapsAddedS);
+  	task->SetFillDecayPhotonInfoAddedSig(fillDecayInfoAddedS);
+	
+	task->SetFillNDaughtersVsPtAndR(kFALSE);				//implement bool to list of arguments of AddTask if needed
+	task->SetFillMPtForSingleOrMultContrClus(kFALSE);	//implement bool to list of arguments of AddTask if needed
+	 
+ 
 	// ~~~~~~ Event Cuts ~~~~~~~~~~~~~
-	task->SetUseOnlyCINT1events(false);
-	task->SetDoZvertexCut(true);
+	task->SetUseOnlyCINT1events(kFALSE);
+	task->SetDoZvertexCut(kTRUE);
 	task->SetUseIsVertexSelected2013pA(useIsVertexSelected2013pA); 
 	task->SetZvertexCut(zVertexCut);	// 10.0									
 	
@@ -142,7 +178,7 @@ AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
 	task->SetClusterMinCells(clusterMinCells); //3
 	task->SetClusterMinE(clusterMinE); 	//0.3 GeV
 	task->SetClusterMinM02(clusterMinM02);  //0.2
-	task->SetDoTimingCut(true);	//for MC: false
+	task->SetDoTimingCut(doTimingCut);	//for MC: false
 	task->SetTimingCutMinMax(timingCutMin, timingCutMax); //-0.10e-6,0.10e-6
 
 	task->SetDoDistToBadCellCut(DoDistToBadCell);  
