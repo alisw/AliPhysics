@@ -170,7 +170,8 @@ void AliMFT::CreateMaterials() {
   Float_t   aCarb = 12.01 ,   zCarb =  6. ,     dCarb    =  2.265 ,   radCarb =  18.8 ,      absCarb = 49.9       ;    // Carbon
   Float_t   aAlu = 26.98 ,    zAlu  = 13. ,     dAlu     =  2.70  ,   radAlu  =  8.897 ,     absAlu  = 39.70      ;    // Aluminum
   Float_t   aBe = 9.012182 ,  zBe   = 4. ,      dBe      =  1.85 ,    radBe   =  65.19/dBe , absBe   = 77.8/dBe  ;     // Beryllium
-  
+  Float_t   aCu = 63.546 ,    zCu  = 29.  ,     dCu      =  8.96  ,   radCu   =  1.436 ,     absCu   = 15.32      ;    // Copper
+
   // Air mixture
   const Int_t nAir = 4;
   Float_t   aAir[nAir] = {12, 14, 16, 36} ,  zAir[nAir] = {6, 7, 8, 18} ,   wAir[nAir]={0.000124, 0.755267, 0.231781, 0.012827} , dAir=0.00120479, dAirVacuum=0.00120479e-4;
@@ -228,6 +229,13 @@ void AliMFT::CreateMaterials() {
 	Float_t   zPEEK[nPEEK] = {1,       6,        8} ;
 	Float_t   wPEEK[nPEEK] = {0.06713, 0.40001,  0.53285} ;
 	Float_t   dPEEK = 1.32;
+
+  // (Printed Circuit Board), material type FR4
+  const Int_t nFR4 = 5;
+  Float_t   aFR4[nFR4] = {1.00794,    12.0107, 15.9994, 28.0855,   79.904} ;
+  Float_t   zFR4[nFR4] = {1,          6,       8,       14,   35} ;
+  Float_t   wFR4[nFR4] = {0.0684428,  0.278042,0.405633, 0.180774,    0.0671091} ;
+  Float_t   dFR4 = 1.7; //Density FR4= 1.7 Cu=8.96
 
   
   Int_t   matId  = 0;                        // tmp material id number
@@ -321,6 +329,12 @@ void AliMFT::CreateMaterials() {
 	
 	AliMixture(++matId, "PEEK$", aPEEK, zPEEK, dPEEK, nPEEK, wPEEK);
 	AliMedium(kPEEK,    "PEEK$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture(++matId, "FR4$", aFR4, zFR4, dFR4, nFR4, wFR4);
+  AliMedium(kFR4,    "FR4$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMaterial(++matId, "Cu$", aCu, zCu, dCu, radCu, absCu);
+  AliMedium(kCu,       "Cu$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 
   AliDebug(1,"End MFT materials");
   
