@@ -39,12 +39,12 @@ void AddTask_GammaCocktailMC(Double_t maxy = 0.8) {
   //================================================
   //            find input container
   AliAnalysisTaskGammaCocktailMC *task=NULL;
-  task= new AliAnalysisTaskGammaCocktailMC("GammaCocktailMC");
+  task= new AliAnalysisTaskGammaCocktailMC(Form("GammaCocktailMC_%1.2f",maxy));
   task->SetMaxY(maxy);
   
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer("GammaCocktailMC", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCocktailMC",AliAnalysisManager::GetCommonFileName()));
+    mgr->CreateContainer(Form("GammaCocktailMC_%1.2f",maxy), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCocktailMC",AliAnalysisManager::GetCommonFileName()));
     
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
