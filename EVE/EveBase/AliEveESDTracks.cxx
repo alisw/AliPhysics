@@ -729,8 +729,21 @@ TEveElementList* AliEveESDTracks::ByType()
     
     int pid = -1;
     AliESDtrack* at = NULL;
-    bool shading = settings.GetValue("tracks.shading",false);
+    bool shading = true;
     int shade = -3;
+    int firstPid;
+    
+    // check if all tracks have the same PID. If no, turn off shading
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        if(n==0){
+            firstPid = esd->GetTrack(n)->GetPID();
+        }
+        else if(esd->GetTrack(n)->GetPID() != firstPid)
+        {
+            shading = false;
+        }
+    }
     
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
     {
@@ -749,8 +762,8 @@ TEveElementList* AliEveESDTracks::ByType()
             AliEveTrack* track = MakeTrack(at, tlist);
             
             if(shading){
-                if((colors[pid]+shade) < 0){shade=0;}
-                track->SetMainColor(colors[pid]+shade);
+                if((kGreen+shade) < 0){shade=0;}
+                track->SetMainColor(kGreen+shade);
                 shade++;
                 if(shade>3)shade=-3;
             }

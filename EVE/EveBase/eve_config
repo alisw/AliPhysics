@@ -22,7 +22,6 @@ tracks.byPt.show:                       0
 tracks.byCategory.show:                 0
 tracks.aod.byPID.show:                  1
 tracks.primary.vertex.show:             0
-tracks.shading:                         0
 
 tracks.byType.electron:                 600
 tracks.byType.muon:                     416
