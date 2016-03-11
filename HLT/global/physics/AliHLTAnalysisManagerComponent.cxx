@@ -86,6 +86,7 @@ AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   fInputHandler(NULL),
   fAddTaskMacro(""),
   fWriteAnalysisToFile(kFALSE),
+  fInitializeGeometry(kTRUE),
   fEnableDebug(kFALSE),
   fResetAfterPush(kTRUE),
   fPushEventModulo(0),
@@ -182,7 +183,7 @@ AliHLTComponent* AliHLTAnalysisManagerComponent::Spawn() {
 
 void* AliHLTAnalysisManagerComponent::AnalysisManagerInit(void*)
 {
-  if (!gGeoManager)
+  if (!gGeoManager && fInitializeGeometry)
   {
     AliCDBPath path("GRP","Geometry","Data");
     if(path.GetPath())
@@ -689,6 +690,10 @@ int AliHLTAnalysisManagerComponent::ProcessOption(TString option, TString value)
   else if (option.EqualTo("NoFullQueueWarning"))
   {
     fAsyncProcessor.SetFullQueueWarning(0);
+  }
+  else if (option.EqualTo("InitializeGeometry"))
+  {
+    fInitializeGeometry =  value.EqualTo("1");
   }
   else if (option.EqualTo("EnableDebug"))
   {
