@@ -1,4 +1,4 @@
-void AddTask_GammaCocktailMC( ) {
+void AddTask_GammaCocktailMC(Double_t maxy = 0.8) {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -40,7 +40,7 @@ void AddTask_GammaCocktailMC( ) {
   //            find input container
   AliAnalysisTaskGammaCocktailMC *task=NULL;
   task= new AliAnalysisTaskGammaCocktailMC("GammaCocktailMC");
-
+  task->SetMaxY(maxy);
   
   //connect containers
   AliAnalysisDataContainer *coutput =
