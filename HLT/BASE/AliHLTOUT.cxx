@@ -299,6 +299,12 @@ int AliHLTOUT::InitHandlers()
   int iResult=0;
   AliHLTOUTIndexList remnants;
   int iCount=0;
+  
+  // -- Sergey Gorbunov  
+  // Clear list of handler pointers, created in previous event, because some of them  may not exist anymore
+  // --
+  fDataHandlers.clear(); 
+
   for (int havedata=SelectFirstDataBlock(kAliHLTAnyDataType, kAliHLTVoidDataSpec); havedata>=0; havedata=SelectNextDataBlock()) {
     iCount++;
     remnants.push_back(GetDataBlockIndex());
@@ -417,7 +423,11 @@ int AliHLTOUT::RemoveEmptyDuplicateHandlers(AliHLTOUTHandlerListEntryVector& lis
       if (FindHandler(list, desc)>=0) {
 	element=list.erase(element);
 	if (pAgent) {
-	  pAgent->DeleteOutputHandler(pHandler);
+	  // -- Sergey Gorbunov
+	  // Do not delete the handler here, only remove it from the input list. 
+	  // When the pointer is deleted form AliHLTSystem::fpChainHandlers list, it is still kept in AliHLTOut::fDataHandlers list and may be used later
+	  // -- 
+	  // pAgent->DeleteOutputHandler(pHandler); 
 	}
 	// we are already at the next element
 	continue;
