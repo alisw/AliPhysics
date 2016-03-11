@@ -103,6 +103,7 @@ void AliEmcalTriggerMakerKernel::Init(){
   fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(0, 63));
   AliEMCALTriggerAlgorithm<double> *jettrigger = CreateJetTriggerAlgorithm(0, 63);
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
+
   if(fJetPatchsize == 8){
     //jettrigger->SetBitMask(jettrigger->GetBitMask() | 1 << fTriggerBitConfig->GetBkgBit());
     jettrigger->SetBitMask(1 << fTriggerBitConfig->GetJetHighBit() | 1 << fTriggerBitConfig->GetJetLowBit() | 1 << fTriggerBitConfig->GetBkgBit());
@@ -111,20 +112,20 @@ void AliEmcalTriggerMakerKernel::Init(){
   }
   if(nrows > 64){
     // Add trigger algorithms for DCAL
-    fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(64, nrows));
-    jettrigger = CreateJetTriggerAlgorithm(64, nrows);
+    fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(64, nrows-1));
+    jettrigger = CreateJetTriggerAlgorithm(64, nrows-1);
     fPatchFinder->AddTriggerAlgorithm(jettrigger);
     if(fJetPatchsize == 8) {
       //jettrigger->SetBitMask(jettrigger->GetBitMask() | 1 << fTriggerBitConfig->GetBkgBit());
       jettrigger->SetBitMask(1 << fTriggerBitConfig->GetJetHighBit() | 1 << fTriggerBitConfig->GetJetLowBit() | 1 << fTriggerBitConfig->GetBkgBit());
     } else {
-      fPatchFinder->AddTriggerAlgorithm(CreateBkgTriggerAlgorithm(64, nrows));
+      fPatchFinder->AddTriggerAlgorithm(CreateBkgTriggerAlgorithm(64, nrows-1));
     }
   }
 
-  fLevel0PatchFinder = new AliEMCALTriggerAlgorithm<double>(0, nrows, 0);
+  fLevel0PatchFinder = new AliEMCALTriggerAlgorithm<double>(0, nrows-1, 0);
   fLevel0PatchFinder->SetPatchSize(2);
-  fLevel0PatchFinder->SetSubregionSize(2);
+  fLevel0PatchFinder->SetSubregionSize(1);
 }
 
 void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromStream(std::istream& stream)
@@ -210,11 +211,19 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // as -1, neglect those
     trigger->GetL1TimeSum(adcAmp);
     if (adcAmp < 0) adcAmp = 0;
+    trigger->GetTriggerBits(bitmap);
 
     if (adcAmp >= fMinL1FastORAmp) {
-      (*fPatchADC)(globCol,globRow) = adcAmp;
-      trigger->GetTriggerBits(bitmap);
-      (*fTriggerBitMap)(globCol, globRow) = bitmap;
+      try {
+        (*fPatchADC)(globCol,globRow) = adcAmp;
+      }
+      catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+      }
+      try {
+        (*fTriggerBitMap)(globCol, globRow) = bitmap;
+      }
+      catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+      }
     }
 
     // Handling for L0 triggers
@@ -265,7 +274,11 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
     amp /= fADCtoGeV;
-    if (amp >= fMinCellAmp) (*fPatchADCSimple)(globCol,globRow) += amp;
+    try {
+      if (amp >= fMinCellAmp) (*fPatchADCSimple)(globCol,globRow) += amp;
+    }
+    catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+    }
   }
 }
 
