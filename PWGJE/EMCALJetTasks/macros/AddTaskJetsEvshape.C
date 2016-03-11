@@ -33,14 +33,14 @@ AliAnalysisTaskJetsEvshape* AddTaskJetsEvshape(const char *ntracks            = 
   if(trackCont) trackCont->SetClassName("AliVTrack");
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
 
-  AliJetContainer *jetCont = task->AddJetContainer(njets, "EMCAL", 0.4);
+  AliJetContainer *jetCont = task->AddJetContainer(njets, "TPC", 0.4);
   printf("just added jet container %p\n", jetCont);
   if(jetCont) {
     jetCont->SetRhoName("");
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
     jetCont->SetZLeadingCut(0.98,0.98);
-    jetCont->SetPercAreaCut(0.6);
+    // jetCont->SetPercAreaCut(0.6);
     jetCont->SetJetPtCut(1.);
     jetCont->SetLeadingHadronType(0);
   }
