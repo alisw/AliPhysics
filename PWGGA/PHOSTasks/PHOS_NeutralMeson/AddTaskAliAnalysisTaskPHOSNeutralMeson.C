@@ -19,16 +19,17 @@ AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
 		TString mPtHistoMode,
 		Bool_t applyBadMap_manually,
 		Bool_t useIsVertexSelected2013pA,
-		Bool_t analyseAddedSignals,
-		TString mcParticleToAnalyse,
-		Double_t expoPara1,
-		Double_t expoPara2,
-		Double_t expoPara3,
-		Double_t expoPara4,
-		TString additionalFileNameString,
-		Bool_t fillHitMapsAddedS = kTRUE,
-		Bool_t  fillDecayInfoAddedS = kTRUE,
-		TString badMapName, 
+		TString badMapName = "defaultTenderBM",
+		Bool_t fillMCHistos = kFALSE,
+		Bool_t analyseAddedSignals = kFALSE,
+		TString mcParticleToAnalyse = "pi0",
+		Double_t expoPara1 = 0.0,
+		Double_t expoPara2 = 0.0,
+		Double_t expoPara3 = 0.0,
+		Double_t expoPara4 = 0.0,
+		TString additionalFileNameString = "",
+		Bool_t fillHitMapsAddedS = kFALSE,
+		Bool_t  fillDecayInfoAddedS = kFALSE, 
 		Char_t *suffix = "") 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -144,20 +145,10 @@ AliAnalysisTaskPHOSNeutralMeson* AddTaskAliAnalysisTaskPHOSNeutralMeson(
 	
 	
 	//~~~~~~~~ MC related ~~~~~~~~~~~~~
-	task->SetFillFeedDownHistos(true); //so far neccesarry to fill mc histos at all 
-	task->SetAddedSignals(analyseAddedSignals);
-	
-	//mcParticleToAnalyse = "pi0";
-	//expoPara1 = 3.58155;
-	//expoPara2 = 0.790362;
-	//expoPara3 = 6.73985;
-	//expoPara4 = 0.151952;
-	//additionalFileNameString;
-	//fillHitMapsAddedS = kTRUE;
-	//fillDecayInfoAddedS = kTRUE;
-	
-	task->SetAnalyseMCPi0OrEta(mcParticleToAnalyse);  //pi0 eta both
-	task->SetFillFeedDownHistos(true);  //so far neccesarry to fill mc histos at all
+	task->SetfFillMCHistos(fillMCHistos);
+	task->SetAnalyseAddedSignals(analyseAddedSignals);
+	//task->SetFillFeedDownHistos(true); 	
+	task->SetAnalyseMCPi0OrEta(mcParticleToAnalyse);  //pi0 eta both 
 	task->SetExponentialParameters(expoPara1, expoPara2, expoPara3, expoPara4); //for weighing added signals
   	task->SetAdditionalFileNameString(additionalFileNameString); //String appears at the end of the filname. 
   	task->SetFillClusterHitmapsAddedSignals(fillHitMapsAddedS);
