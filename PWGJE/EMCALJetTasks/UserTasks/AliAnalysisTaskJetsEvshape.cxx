@@ -174,15 +174,14 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
     const Int_t nJets         = fJetsCont->GetNJets();
     const Int_t nAcceptedJets = fJetsCont->GetNAcceptedJets();
 
-    printf("nJets = %i, nAcceptedJets = %i\n",
-           nJets, nAcceptedJets);
+    // printf("nJets = %i, nAcceptedJets = %i\n",
+    //        nJets, nAcceptedJets);
 
     fJetsCont->ResetCurrentID();
     while (AliEmcalJet *jet = fJetsCont->GetNextJet()) {
-      if (fJetsCont->ApplyJetCuts(jet))
-        FillH1(kHistJetPt, jet->Pt());
-      else
-        printf("jet rejected: 0x%08x", fJetsCont->GetRejectionReason());
+      FillH1(kHistJetPt, jet->Pt());
+      // if (fJetsCont->ApplyJetCuts(jet))
+      //   printf("jet rejected: 0x%08x", fJetsCont->GetRejectionReason());
     }
   }
 
