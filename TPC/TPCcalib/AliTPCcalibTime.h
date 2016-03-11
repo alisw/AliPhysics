@@ -91,6 +91,10 @@ public:
 
   void   SetCutTracks(Int_t maxTracks)  { fCutTracks = maxTracks; }  // set maximal number of tracks
   Int_t  GetCutTracks() const { return fCutTracks; }    // retun maximal number of tracks
+  void   SetMinPt(Double_t m) { fMinPt = m; }
+  Double_t GetMinPt() const { return fMinPt;}
+  void   SetMinPtITSTPCalign (Double_t m) { fMinPtITSTPCalign=m; }
+  Double_t GetMinPtITSTPCalign () const { return fMinPtITSTPCalign; }
 
   static Double_t fgResHistoMergeCut;
   static void SetResHistoMergeCut(Double_t d) {fgResHistoMergeCut=d;}
@@ -115,6 +119,8 @@ protected:
   Float_t fCutTheta;    // maximal distance in theta ditection
   Float_t fCutMinDir;   // direction vector products
   Int_t   fCutTracks;   // maximal number of tracks
+  Double_t   fMinPt;    //pt cut on tracks used for calibration
+  Double_t   fMinPtITSTPCalign; //
  
 
   TH1F* fCosmiMatchingHisto[10];        // cosmic matching histogram

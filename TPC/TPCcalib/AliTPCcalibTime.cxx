@@ -78,6 +78,8 @@ AliTPCcalibTime::AliTPCcalibTime()
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
    fCutTracks(2500),
+   fMinPt(0.2),
+   fMinPtITSTPCalign(0.3),
    fArrayLaserA(0),      //laser  fit parameters C
    fArrayLaserC(0),      //laser  fit parameters A
    fArrayDz(0),          //NEW! Tmap of V drifts for different triggers
@@ -144,6 +146,8 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fCutTheta(5*0.004644),// maximal distan theta
    fCutMinDir(-0.99),    // direction vector products
    fCutTracks(2500),
+   fMinPt(0.2),
+   fMinPtITSTPCalign(0.3),
    fArrayLaserA(new TObjArray(1000)),      //laser  fit parameters C
    fArrayLaserC(new TObjArray(1000)),      //laser  fit parameters A
    fArrayDz(0),            //Tmap of V drifts for different triggers
@@ -851,7 +855,7 @@ void AliTPCcalibTime::ProcessBeam(const AliVEvent *const event){
     AliExternalTrackParam trkprm;
     track->GetTrackParam(trkprm);
     if (TMath::Abs(trkprm.GetTgl())>kMaxTgl) continue;
-    if (TMath::Abs(track->Pt())<kMinPt) continue;
+    if (TMath::Abs(track->Pt())<fMinPt) continue;
 
     AliTPCseed *seed = 0;
     Int_t nA=0, nC=0;
@@ -1569,7 +1573,6 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 3.0;   // outlyer cut in AliRelAlgnmentKalman
-  const Double_t kMinPt   = 0.3;   // minimal pt
   const Double_t kMax1Pt=0.5;        //maximal 1/pt distance
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
@@ -1587,7 +1590,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   AliExternalTrackParam trckOut;
   if ( (track->GetTrackParamOp(trckOut)) < 0) return;
 
-  if (trackIn->Pt()<kMinPt)  return;
+  if (trackIn->Pt()<fMinPtITSTPCalign)  return;
   // exclude crossing track
   if (trckOut.GetZ()*trckIn.GetZ()<0)   return;
   if (TMath::Abs(trackIn->GetZ())<kMinZ/3.)   return;
