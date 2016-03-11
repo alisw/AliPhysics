@@ -83,6 +83,7 @@ void AliAnalysisTaskJetsEvshape::UserCreateOutputObjects()
   fJetCollArray.Print();
   printf("end\n");
   if(fJetsCont) { //get particles and clusters connected to jets
+    fJetsCont->PrintCuts();
     fTracksCont       = fJetsCont->GetParticleContainer();
     fCaloClustersCont = fJetsCont->GetClusterContainer();
   } else {        //no jets, just analysis tracks and clusters
@@ -171,17 +172,12 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
   FillH1(kHistMult, nTracklets);
 
   if (fJetsCont) {
-    const Int_t nJets         = fJetsCont->GetNJets();
-    const Int_t nAcceptedJets = fJetsCont->GetNAcceptedJets();
-
-    // printf("nJets = %i, nAcceptedJets = %i\n",
-    //        nJets, nAcceptedJets);
+    // const Int_t nJets         = fJetsCont->GetNJets();
+    // const Int_t nAcceptedJets = fJetsCont->GetNAcceptedJets();
 
     fJetsCont->ResetCurrentID();
-    while (AliEmcalJet *jet = fJetsCont->GetNextJet()) {
+    while (AliEmcalJet *jet = fJetsCont->GetNextAcceptJet()) {
       FillH1(kHistJetPt, jet->Pt());
-      // if (fJetsCont->ApplyJetCuts(jet))
-      //   printf("jet rejected: 0x%08x", fJetsCont->GetRejectionReason());
     }
   }
 
