@@ -981,7 +981,6 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       fNLooseTracks++;
       }  
   }//Track loop -loose cuts
-  cout<<fNLooseTracks<<endl;
   
   Int_t nGoodTracks=0;
   Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
