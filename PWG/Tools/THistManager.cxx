@@ -786,3 +786,162 @@ TString THistManager::histname(const char *path) const {
 	if(index < 0) return path;    // no directory structure
 	return TString(s(index+1, s.Length() - (index+1))).Data();
 }
+
+/**
+ * Create forward iterator starting at the beginning of the
+ * container
+ * \return Forward iterator at the beginning of the container
+ */
+THistManager::iterator THistManager::begin() const {
+  return iterator(this, 0, iterator::kTHMIforward);
+}
+
+/**
+ * Create backward iterator starting at the end of the
+ * container
+ * \return Backward iterator after the end of the container
+ */
+THistManager::iterator THistManager::rbegin() const {
+  return iterator(this, fHistos->GetEntries()-1, iterator::kTHMIbackward);
+}
+
+/**
+ * Create forward iterator starting behind the end of the container.
+ * Used to terminate the iteration.
+ * \return Forward iterator behind the end of the histogram manager
+ */
+THistManager::iterator THistManager::end() const {
+  return iterator(this, fHistos->GetEntries(), iterator::kTHMIforward);
+}
+
+/**
+ * Create backward iterator starting before the beginning of the container.
+ * Used to terminate the iteration.
+ * \return Backward iterator starting before the beginning of the histogram manager
+ */
+THistManager::iterator THistManager::rend() const {
+  return iterator(this, -1, iterator::kTHMIbackward);
+}
+
+//////////////////////////////////////////////////////////
+///                                                    ///
+/// Implementation of THistManager::iterator           ///
+///                                                    ///
+//////////////////////////////////////////////////////////
+
+/**
+ * Constructor. Initializing the histogram manager to be iterated over, the starting
+ * position for the iteration, and the direction of the iteration.
+ * \param[in] hmgr Histogram manager to be iterated over, containing the data
+ * \param[in] currentpos Starting position for the iteration
+ * \param[in] dir Direction of the iteration
+ */
+THistManager::iterator::iterator(const THistManager * hmgr, Int_t currentpos, THMIDirection_t dir):
+    fkArray(hmgr),
+    fCurrentPos(),
+    fNext(),
+    fDirection(dir)
+{}
+
+/**
+ * Copy constructor. Initializing all
+ * values from the reference.
+ * \param[in] ref Reference for the copy
+ */
+THistManager::iterator::iterator(const THistManager::iterator &ref):
+    fkArray(ref.fkArray),
+    fCurrentPos(ref.fCurrentPos),
+    fNext(ref.fNext),
+    fDirection(ref.fDirection)
+{}
+
+/**
+ * Assignment operator. Initializing all
+ * values from the reference.
+ * \param[in] ref
+ * \return iterator after assignment.
+ */
+THistManager::iterator &THistManager::iterator::operator=(const THistManager::iterator &ref){
+  if(this != &ref){
+    fkArray = ref.fkArray;
+    fCurrentPos = ref.fCurrentPos;
+    fNext = ref.fNext;
+    fDirection = ref.fDirection;
+  }
+  return *this;
+}
+
+/**
+ * Comparison operator for unequalness. The comparison is
+ * performed based on the current position of the iterator.
+ * \param other iterator to compare to
+ * \return True if the iterators are not equal
+ */
+bool THistManager::iterator::operator!=(const THistManager::iterator &other) const{
+  return fCurrentPos == other.fCurrentPos;
+}
+
+/**
+ * Prefix increment operator. Incrementing / decrementing
+ * the current position of the iterator based on the
+ * direction.
+ * \return State after incrementation
+ */
+THistManager::iterator &THistManager::iterator::operator++(){
+  if(fDirection == kTHMIforward)
+    fCurrentPos++;
+  else
+    fCurrentPos--;
+  return *this;
+}
+
+/**
+ * Postfix increment operator. Incrementing / decrementing
+ * the current position of the iterator based on the
+ * direction, but returning the state before iteration
+ * \return State before incrementation
+ */
+THistManager::iterator THistManager::iterator::operator++(int){
+  iterator tmp(*this);
+  operator++();
+  return tmp;
+}
+
+/**
+ * Prefix decrement operator. Decrementing / incrementing
+ * the current position of the iterator based on the
+ * direction.
+ * \return State after decrementation
+ */
+THistManager::iterator &THistManager::iterator::operator--(){
+  if(fDirection == kTHMIforward)
+    fCurrentPos--;
+  else
+    fCurrentPos++;
+  return *this;
+};
+
+/**
+ * Postfix decrement operator. Decrementing / incrementing
+ * the current position of the iterator based on the
+ * direction, but returning the state before iteration
+ * \return State before decrementation
+ */
+THistManager::iterator THistManager::iterator::operator--(int){
+  iterator tmp(*this);
+  operator--();
+  return tmp;
+};
+
+/**
+ * Dereferncing operator. Providing access to the object
+ * connected to the current state of the iterator. Objects
+ * might be histograms or THashLists in case of wheter groups
+ * are defined or not.
+ * @return Object connected ot the current state of the iterator
+ */
+TObject *THistManager::iterator::operator*() const{
+  if(fCurrentPos >=0 && fCurrentPos < fkArray->GetListOfHistograms()->GetEntries())
+    return fkArray->GetListOfHistograms()->At(fCurrentPos);
+  return NULL;
+}
