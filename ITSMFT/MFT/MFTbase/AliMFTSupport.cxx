@@ -52,20 +52,26 @@ AliMFTSupport::~AliMFTSupport() {
 TGeoVolumeAssembly* AliMFTSupport::CreateVolume(Int_t half, Int_t disk){
 
   AliInfo(Form("Creating Support and PCB for half %d and disk %d ",half, disk));
-  
+
+
+  /*
   fSupportVolume = new TGeoVolumeAssembly(Form("SupportPCB_%d_%d", half, disk));
   
   TGeoVolume * supportVolume =  CreateSupport(half, disk);
   TGeoVolumeAssembly * pcbVolume =  CreatePCBs(half, disk);
 
+  
   // Place the core of the support
   fSupportVolume->AddNode(supportVolume, 1);
+  
   
   // Place the front PCB
   fSupportVolume->AddNode(pcbVolume, 1,new TGeoTranslation(0.,0.,(fSupportThickness+ fPCBThickness)/2.));
   // Place the back PCB (supposing both fron and back are the same shapes)
   fSupportVolume->AddNode(pcbVolume, 2,new TGeoCombiTrans (0.,0.,-(fSupportThickness+ fPCBThickness)/2., new TGeoRotation("rot",0.,180.,0.)));
-  
+  */
+
+
   return fSupportVolume;
 }
 

@@ -45,7 +45,7 @@ const Double_t AliMFTConstants::kLadderOffsetToEnd=3.; // [cm] Offset between th
 const Double_t AliMFTConstants::kSensorThickness=50.e-4; // 50 micron
 
 
-const Double_t AliMFTConstants::kFlexThickness=100.e-4; // 100 micron // TODO : Change that
+const Double_t AliMFTConstants::kFlexThickness=165.e-4; // 100 micron // TODO : Change that
 
 // Defaults parameters for track reconstruction
 Double_t AliMFTConstants::fgDiskThicknessInX0[AliMFTConstants::kNDisks] = {0.008, 0.008, 0.008, 0.008, 0.008};

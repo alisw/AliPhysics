@@ -26,6 +26,7 @@
 #include "TGeoMatrix.h"
 #include "TGeoManager.h"
 #include "TGeoBBox.h"
+#include "TGeoTube.h"
 
 #include "AliLog.h"
 
@@ -36,14 +37,16 @@
 #include "AliMFTLadder.h"
 #include "AliMFTConstants.h"
 #include "AliMFTGeometry.h"
+#include "TGeoCompositeShape.h"
+#include "TGeoBoolNode.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMFTLadder);
 /// \endcond
 
 // Units are cm
-const Double_t AliMFTLadder::kLadderDeltaY = AliMFTConstants::kSensorHeight + 2.*AliMFTConstants::kSensorTopOffset;
-const Double_t AliMFTLadder::kLadderDeltaZ = AliMFTConstants::kFlexThickness + AliMFTConstants::kSensorThickness; // TODO: Adjust that value when adding glue layer
+const Double_t AliMFTLadder::kLadderDeltaY = AliMFTGeometry::kSensorHeight + 2.*AliMFTGeometry::kSensorTopOffset;
+const Double_t AliMFTLadder::kLadderDeltaZ = AliMFTGeometry::kFlexThickness + AliMFTGeometry::kSensorThickness; // TODO: Adjust that value when adding glue layer
 
 //=============================================================================================
 /// \brief Default constructor
@@ -55,8 +58,7 @@ TNamed(), fMFTFlex(NULL){
 }
 //=============================================================================================
 /// \brief Constructor
-AliMFTLadder::AliMFTLadder(AliMFTLadderSegmentation *segmentation):TNamed(segmentation->GetName(),segmentation->GetName()),
-fSegmentation(segmentation), fMFTFlex(NULL)
+AliMFTLadder::AliMFTLadder(AliMFTLadderSegmentation *segmentation):TNamed(segmentation->GetName(),segmentation->GetName()),fSegmentation(segmentation), fMFTFlex(NULL)
 {
   AliDebug(1, Form("Creating : %s", GetName()));
   fLadderVolume = new TGeoVolumeAssembly(GetName());
@@ -76,33 +78,23 @@ AliMFTLadder::~AliMFTLadder() {
 /// \brief Build the ladder
 TGeoVolume * AliMFTLadder::CreateVolume() {
 
-  /// \todo Flex need To be added
+  Int_t nChips = fSegmentation->GetNSensors();
+
   // Create the flex
-  
-//  fMFTFlex = new AliMFTFlex(fSegmentation);
-//  TGeoVolumeAssembly * flexVol = fMFTFlex->MakeFlex(fSegmentation->GetNumberOfChips());
-//  fLadderVolume->AddNode(flexVol,1);
-  
-  
+  fMFTFlex = new AliMFTFlex(fSegmentation);         
+  Double_t kFlexLength = nChips*(AliMFTGeometry::kSensorLength+AliMFTGeometry::kSensorInterspace)+AliMFTGeometry::kLadderOffsetToEnd + AliMFTGeometry::kSensorSideOffset;
+  Double_t kShiftY = 2*AliMFTGeometry::kSensorTopOffset+AliMFTGeometry::kSensorHeight-AliMFTGeometry::kFlexHeight/2; // strange
+  TGeoVolumeAssembly * flexVol = fMFTFlex->MakeFlex(fSegmentation->GetNSensors(), kFlexLength);                               
+  fLadderVolume->AddNode(flexVol, 1, new TGeoTranslation(kFlexLength/2+AliMFTGeometry::kSensorSideOffset/2, kShiftY, AliMFTGeometry::kFlexThickness/2));     
+
   // Create the CMOS Sensors
   CreateSensors();
-	/////////// TEST !!!!  ///////////
-	Int_t nChips = fSegmentation->GetNSensors();
-  Double_t kaptonDeltaX = AliMFTConstants::kLadderOffsetToEnd + AliMFTConstants::kSensorSideOffset + nChips * (AliMFTConstants::kSensorLength + AliMFTConstants::kSensorInterspace);
-	Double_t kaptonDeltaY = AliMFTConstants::kSensorHeight + 2.*AliMFTConstants::kSensorTopOffset;
-	Double_t kaptonDeltaZ = 0.0150;
-	// Position of the center on the kapton in the ladder coordinate system
-	Double_t pos[3] ={kaptonDeltaX/2., kaptonDeltaY/2., kaptonDeltaZ/2. - AliMFTConstants::kSensorThickness};
-	TGeoMedium *kMedKapton = gGeoManager->GetMedium("MFT_Kapton$");
-	TGeoVolume* kaptonlayer = gGeoManager->MakeBox(Form("%s_kaptonlayer",GetName()), kMedKapton, kaptonDeltaX/2., kaptonDeltaY/2., kaptonDeltaZ/2.);
-	kaptonlayer->SetVisibility(1);
-	kaptonlayer->SetLineColor(kYellow);
-	fLadderVolume->AddNode(kaptonlayer,    1,  new TGeoTranslation(pos[0],pos[1],pos[2]));
-	//////////////////////
 
   return fLadderVolume;
   
 }
+
+
 
 //=============================================================================================
 /// \brief Build the sensors
@@ -110,16 +102,17 @@ void AliMFTLadder::CreateSensors() {
   // Create Shapes
   
   // The sensor part
-  TGeoBBox *sensor = new TGeoBBox(AliMFTConstants::kSensorLength/2.,AliMFTConstants::kSensorActiveHeight/2.,  AliMFTConstants::kSensorThickness/2.);
+  TGeoBBox *sensor = new TGeoBBox(AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorActiveHeight/2., AliMFTGeometry::kSensorThickness/2.);
   
   // The readout part
-  TGeoBBox *readout = new TGeoBBox(AliMFTConstants::kSensorLength/2.,(AliMFTConstants::kSensorHeight-AliMFTConstants::kSensorActiveHeight)/2.,  AliMFTConstants::kSensorThickness/2.);
+  TGeoBBox *readout = new TGeoBBox(AliMFTGeometry::kSensorLength/2.,(AliMFTGeometry::kSensorHeight-AliMFTGeometry::kSensorActiveHeight)/2.,  AliMFTGeometry::kSensorThickness/2.);
   
   // Get Mediums
   TGeoMedium *medSensorSi  = gGeoManager->GetMedium("MFT_Si$");
   TGeoMedium *medReadoutSi = gGeoManager->GetMedium("MFT_Readout$");
   TGeoMedium *medAir  = gGeoManager->GetMedium("MFT_Air$");
-  
+  TGeoMedium *kMedGlue = gGeoManager->GetMedium("MFT_Epoxy$");  // we assume epoxy glue, the silicone glue has to be defined
+
   
   AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
   
@@ -128,12 +121,19 @@ void AliMFTLadder::CreateSensors() {
                                     mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID()),
                                     mftGeom->GetLadderID(fSegmentation->GetUniqueID()) );
   
-  TGeoVolume * chipVol = gGeoManager->MakeBox(namePrefix.Data(), medAir,AliMFTConstants::kSensorLength/2.,AliMFTConstants::kSensorHeight/2.,  AliMFTConstants::kSensorThickness/2. );
+  TGeoVolume * chipVol = gGeoManager->MakeBox(namePrefix.Data(), medAir,AliMFTGeometry::kSensorLength/2.,AliMFTGeometry::kSensorHeight/2.,  AliMFTGeometry::kSensorThickness/2. );
+  TGeoVolume * glue = gGeoManager->MakeBox(namePrefix.Data(), kMedGlue, (AliMFTGeometry::kSensorLength-AliMFTGeometry::kGlueEdge)/2., 
+					   (AliMFTGeometry::kSensorHeight-AliMFTGeometry::kGlueEdge)/2., AliMFTGeometry::kGlueThickness/2.);
+  glue->SetVisibility(kTRUE);
+  glue->SetLineColor(kRed-10);
+  glue->SetLineWidth(1);
+  glue->SetFillColor(glue->GetLineColor());
+  glue->SetFillStyle(4000); // 0% transparent
 
   // Create Volumes
   // Chip Volume
   chipVol->SetVisibility(kTRUE);
-  
+
   // The sensor Volume
   TGeoVolume *sensorVol = new TGeoVolume("MFTSensor", sensor, medSensorSi);
   sensorVol->SetVisibility(kTRUE);
@@ -156,23 +156,33 @@ void AliMFTLadder::CreateSensors() {
   readoutVol->SetFillStyle(4000); // 0% transparent
 
   // Building up the chip
-  chipVol->AddNode(readoutVol, 1, new TGeoTranslation(0.,-AliMFTConstants::kSensorHeight/2.+readout->GetDY(),  0.));
-  chipVol->AddNode(sensorVol, 1, new TGeoTranslation( 0., AliMFTConstants::kSensorHeight/2.-sensor->GetDY(),0.));
+  chipVol->AddNode(readoutVol, 1, new TGeoTranslation(0.,-AliMFTGeometry::kSensorHeight/2.+readout->GetDY(),  0.));
+  chipVol->AddNode(sensorVol, 1, new TGeoTranslation( 0., AliMFTGeometry::kSensorHeight/2.-sensor->GetDY(),0.));
 
   for (int ichip =0; ichip<fSegmentation->GetNSensors(); ichip++) {
     AliMFTChipSegmentation * chipSeg = fSegmentation->GetSensor(ichip);
     TGeoCombiTrans * chipPos = chipSeg->GetTransformation();
+    TGeoCombiTrans * chipPosGlue = chipSeg->GetTransformation();
     // Position of the center on the chip in the chip coordinate system
-    Double_t pos[3] ={AliMFTConstants::kSensorLength/2., AliMFTConstants::kSensorHeight/2., AliMFTConstants::kSensorThickness/2.};
+    Double_t pos[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kSensorThickness/2. - AliMFTGeometry::kGlueThickness};
+    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kGlueThickness/2-AliMFTGeometry::kSensorThickness};
     Double_t master[3];
+    Double_t masterglue[3];
     chipPos->LocalToMaster(pos, master);
+    chipPosGlue->LocalToMaster(posglue, masterglue);
     
     TGeoBBox* shape = (TGeoBBox*)fLadderVolume->GetShape();
     master[0] -= shape->GetDX();
     master[1] -= shape->GetDY();
     master[2] -= shape->GetDZ();
+
+    masterglue[0] -= shape->GetDX();
+    masterglue[1] -= shape->GetDY();
+    masterglue[2] -= shape->GetDZ();
+
     AliDebug(1,Form("Adding Chip %s_%d ",namePrefix.Data(),ichip));
     fLadderVolume->AddNode(chipVol, ichip, new TGeoTranslation(master[0],master[1],master[2]));
+    fLadderVolume->AddNode(glue, ichip, new TGeoTranslation(masterglue[0],masterglue[1],masterglue[2]));
 
   }
 
