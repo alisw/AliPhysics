@@ -224,10 +224,12 @@ void AliHLTDataDeflaterHuffman::Print(Option_t *option) const
   Print(cout, option);
 }
 
-void AliHLTDataDeflaterHuffman::Print(ostream& out, Option_t * /*option*/) const
+void AliHLTDataDeflaterHuffman::Print(ostream& out, Option_t * option) const
 {
   // print to stream
-  out << "AliHLTDataDeflaterHuffman:" << endl;
+  out << "AliHLTDataDeflaterHuffman: " << fHuffmanCoders.size() << " instance(s)" << endl;
+  std::string stroption(option);
+  if (stroption.find("instances")!=stroption.npos) {
   for (vector<AliHLTHuffman*>::const_iterator it=fHuffmanCoders.begin();
        it!=fHuffmanCoders.end(); it++) {
     (*it)->Print("short"); cout << endl;
@@ -239,6 +241,8 @@ void AliHLTDataDeflaterHuffman::Print(ostream& out, Option_t * /*option*/) const
       pObj->Print("short"); cout << endl;
     }
   }
+  }
+  AliHLTDataDeflater::Print(out, option);
 }
 
 TObject *AliHLTDataDeflaterHuffman::FindObject(const char *name) const

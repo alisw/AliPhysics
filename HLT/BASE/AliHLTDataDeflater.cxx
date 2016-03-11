@@ -1,5 +1,3 @@
-// $Id$
-
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -47,11 +45,7 @@ AliHLTDataDeflater::AliHLTDataDeflater()
   , fParameterCompression(NULL)
   , fParameterSize(NULL)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // constructor, see header file for class documentation
   if (fHistograms) fHistograms->SetOwner(kTRUE);
 }
 
@@ -107,6 +101,7 @@ bool AliHLTDataDeflater::OutputBit( AliHLTUInt32_t const & value )
   // write one bit to the current byte and position
   if ( fBitDataCurrentOutput>=fBitDataCurrentOutputEnd )
     return false;
+  HLTDebug("   code 0x%08x  length 1", value);
   fBitDataCurrentWord |= (value & 1) << fBitDataCurrentPosInWord;
   if ( fBitDataCurrentPosInWord )
     fBitDataCurrentPosInWord--;
@@ -126,6 +121,7 @@ bool AliHLTDataDeflater::OutputBits( AliHLTUInt64_t const & value, UInt_t const 
     HLTFatal( "Internal error: Attempt to write more than 64 bits (%u)", (unsigned)bitCount );
     return false;
   }
+  HLTDebug("  code 0x%08x  length %d", value, bitCount);
   UInt_t bitsToWrite=bitCount;
   UInt_t curBitCount;
   while ( bitsToWrite>0 ) {
@@ -199,6 +195,7 @@ bool AliHLTDataDeflater::OutputBits( std::bitset<64> const & value, UInt_t const
     HLTFatal( "Internal error: Attempt to write more than 64 bits (%u)", (unsigned)bitCount );
     return false;
   }
+  HLTDebug("  code 0x%08x  length %d", value.to_ulong(), bitCount);
   static const std::bitset<64> mask8bit(255ul);
   UInt_t bitsToWrite=bitCount;
   UInt_t curBitCount;
@@ -242,6 +239,7 @@ bool AliHLTDataDeflater::OutputBytes( AliHLTUInt8_t const * data, UInt_t const &
   Pad8Bits();
   if ( fBitDataCurrentOutput+byteCount>fBitDataCurrentOutputEnd )
     return false;
+  HLTDebug("  count %d", byteCount);
   memcpy( fBitDataCurrentOutput, data, byteCount );
   fBitDataCurrentOutput += byteCount;
   return true;
@@ -275,6 +273,10 @@ void AliHLTDataDeflater::Print(ostream& out, Option_t */*option*/) const
 {
   // print to stream
   out << "AliHLTDataDeflater: " << endl;
+  out << "  start   " << (void*)fBitDataCurrentOutputStart;
+  out << "  end "     << (void*)fBitDataCurrentOutputEnd << endl;
+  out << "  current " << (void*)fBitDataCurrentOutput;
+  out << "  position in word: " << fBitDataCurrentPosInWord << endl;
 }
 
 ostream& operator<<(ostream &out, const AliHLTDataDeflater& me)

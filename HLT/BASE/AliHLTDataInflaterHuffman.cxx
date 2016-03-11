@@ -1,5 +1,3 @@
-// $Id$
-
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -38,11 +36,7 @@ AliHLTDataInflaterHuffman::AliHLTDataInflaterHuffman()
   , fInput(0)
   , fInputLength(0)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // constructor, see header file for class documentation
 }
 
 AliHLTDataInflaterHuffman::~AliHLTDataInflaterHuffman()
@@ -142,6 +136,7 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
   }
   AliHLTUInt32_t codeLength=0;
   if (!fHuffmanCoders[fCurrentParameter]->DecodeMSB(fInput, value, length, codeLength)) return false;
+  HLTDebug("  code 0x%08x  length %d  value %d", fInput>>(64-codeLength), codeLength, value);
   if (fInputLength<codeLength) {
     HLTError("huffman decoder '%s' pretends to have %d bit(s) decoded, but only %d available",
 	     fHuffmanCoders[fCurrentParameter]->GetName(), codeLength, fInputLength);
@@ -162,6 +157,7 @@ bool AliHLTDataInflaterHuffman::InputBit( AliHLTUInt8_t & value )
     value = (fInput>>shiftval) & 0x1;
     fInput<<=1;
     fInputLength-=1;
+    HLTDebug("   code 0x%08x  length 1", value);
     return true;
   }
 
