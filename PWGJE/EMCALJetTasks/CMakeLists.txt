@@ -112,6 +112,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
     Tracks/AliAnalysisTaskParticleInJet.cxx
     Tracks/AliAnalysisTaskTrackDensity.cxx
+    Tracks/AliAnalysisTaskTrackDensityData.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
