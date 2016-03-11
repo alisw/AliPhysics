@@ -88,6 +88,7 @@ public:
   void   ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells);
   void   ProcessCell(const AliEmcalCellInfo& cell);
   void   EventCompleted();
+  static Int_t  GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t itype);
 
   THashList* GetListOfHistograms()  { return fHistManager.GetListOfHistograms(); }
 
@@ -96,38 +97,38 @@ public:
 
 protected:
 
-  std::set<Short_t>       fOfflineBadChannels;          ///< Abd ID of offline bad channels
-  std::set<Short_t>       fBadChannels;                 ///< Container of bad channels
-  TArrayF                 fFastORPedestal;              ///< FastOR pedestal
-  Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
-  Bool_t                  fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
-  Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
-  Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
-  Int_t                   fADCperBin;                   ///< ADC counts per bin
-  Int_t                   fDebugLevel;                  ///< Debug level
-  Int_t                   fL0MinTime;                   ///< Minimum L0 time
-  Int_t                   fL0MaxTime;                   ///< Maximum L0 time
-  Double_t                fMinCellAmp;                  ///< Minimum offline amplitude of the cells
-  Int_t                   fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
-  Int_t                   fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
-  THistManager            fHistManager;                 ///< Histogram manager
-  Bool_t                  fDCalPlots;                   ///< Whether to add DCal QA plots
+  std::set<Short_t>          fOfflineBadChannels;          ///< Abd ID of offline bad channels
+  std::set<Short_t>          fBadChannels;                 ///< Container of bad channels
+  TArrayF                    fFastORPedestal;              ///< FastOR pedestal
+  Bool_t                     fEnabledPatchTypes[3];        ///< Patch types to be plotted
+  Bool_t                     fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
+  Int_t                      fFastorL0Th;                  ///< FastOR L0 threshold
+  Int_t                      fFastorL1Th;                  ///< FastOR L1 threshold
+  Int_t                      fADCperBin;                   ///< ADC counts per bin
+  Int_t                      fDebugLevel;                  ///< Debug level
+  Int_t                      fL0MinTime;                   ///< Minimum L0 time
+  Int_t                      fL0MaxTime;                   ///< Maximum L0 time
+  Double_t                   fMinCellAmp;                  ///< Minimum offline amplitude of the cells
+  Int_t                      fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
+  Int_t                      fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
+  THistManager               fHistManager;                 ///< Histogram manager
+  Bool_t                     fDCalPlots;                   ///< Whether to add DCal QA plots
 
-  AliEMCALGeometry       *fGeom;                        //!<! EMCal geometry
-  Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (will be reset each event)
-  Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (will be reset each event)
-  Double_t                fSumOfflineEMCal;             //!<! EMCal sum of all offline energy deposition (will be reset each event)
-  Int_t                   fSumL0EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
-  Int_t                   fSumL1EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
-  Double_t                fSumOfflineDCal;              //!<! DCal sum of all offline energy deposition (will be reset each event)
-  Int_t                   fSumL0DCal;                   //!<! DCal sum of all online energy deposition (will be reset each event)
-  Int_t                   fSumL1DCal;                   //!<! DCal sum of all online energy deposition (will be reset each event)
-  Int_t                   fNCellEMCal;                  //!<! EMCal number of offline cells (will be reset each event)
-  Int_t                   fNL0EMCal;                    //!<! EMCal number of L0 FastORs (will be reset each event)
-  Int_t                   fNL1EMCal;                    //!<! EMCal number of L1 FastORs (will be reset each event)
-  Int_t                   fNCellDCal;                   //!<! DCal number of offline cells (will be reset each event)
-  Int_t                   fNL0DCal;                     //!<! DCal number of L0 FastORs (will be reset each event)
-  Int_t                   fNL1DCal;                     //!<! DCal number of L1 FastORs (will be reset each event)
+  AliEMCALGeometry          *fGeom;                        //!<! EMCal geometry
+  AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[6][3];         //!<! EMCal max patch (will be reset each event)
+  AliEMCALTriggerPatchInfo  *fMaxPatchDCal[6][3];          //!<! DCal max patch (will be reset each event)
+  Double_t                   fSumOfflineEMCal;             //!<! EMCal sum of all offline energy deposition (will be reset each event)
+  Int_t                      fSumL0EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
+  Int_t                      fSumL1EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
+  Double_t                   fSumOfflineDCal;              //!<! DCal sum of all offline energy deposition (will be reset each event)
+  Int_t                      fSumL0DCal;                   //!<! DCal sum of all online energy deposition (will be reset each event)
+  Int_t                      fSumL1DCal;                   //!<! DCal sum of all online energy deposition (will be reset each event)
+  Int_t                      fNCellEMCal;                  //!<! EMCal number of offline cells (will be reset each event)
+  Int_t                      fNL0EMCal;                    //!<! EMCal number of L0 FastORs (will be reset each event)
+  Int_t                      fNL1EMCal;                    //!<! EMCal number of L1 FastORs (will be reset each event)
+  Int_t                      fNCellDCal;                   //!<! DCal number of offline cells (will be reset each event)
+  Int_t                      fNL0DCal;                     //!<! DCal number of L0 FastORs (will be reset each event)
+  Int_t                      fNL1DCal;                     //!<! DCal number of L1 FastORs (will be reset each event)
 
 private:
   AliEmcalTriggerQAPP &operator=(const AliEmcalTriggerQAPP &);
