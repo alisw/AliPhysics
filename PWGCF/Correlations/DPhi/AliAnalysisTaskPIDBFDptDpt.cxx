@@ -113,6 +113,7 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       (0),
 fAnalysisType         ( "RealData" ),
+fSystemType           ( "PbPb" ),
 fExcludeResonancesInMC ( kFALSE ),
 fExcludeElectronsInMC ( kFALSE ),
 particleSpecies       ( 0 ),
@@ -250,9 +251,7 @@ _vertexZ ( 0),
   _vZ_y_eta_POI_AliHelperPID ( 0),
 
   _y_Pt_AllCh_MCAODTruth ( 0 ),
-  _y_Pt_Pion_MCAODTruth ( 0 ),
-  _y_Pt_Kaon_MCAODTruth ( 0 ),
-  _y_Pt_Proton_MCAODTruth ( 0 ),
+  _y_Pt_POI_MCAODTruth ( 0 ),
   
   _phidis_POI_AliHelperPID ( 0),
   _phidis_before_any_cuts ( 0),
@@ -441,6 +440,7 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       ( 0),
 fAnalysisType         ( "RealData" ),
+fSystemType           ( "PbPb" ),
 fExcludeResonancesInMC ( kFALSE ),
 fExcludeElectronsInMC ( kFALSE ),
 particleSpecies       ( 0 ),
@@ -577,9 +577,7 @@ _Ncluster2  ( 0),
   _vZ_y_eta_POI_AliHelperPID ( 0),
 
   _y_Pt_AllCh_MCAODTruth ( 0 ),
-  _y_Pt_Pion_MCAODTruth ( 0 ),
-  _y_Pt_Kaon_MCAODTruth ( 0 ),
-  _y_Pt_Proton_MCAODTruth ( 0 ),
+  _y_Pt_POI_MCAODTruth ( 0 ),
   
   _phidis_POI_AliHelperPID ( 0),
   _phidis_before_any_cuts ( 0),
@@ -1032,9 +1030,7 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
 
     name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    name = "y_Pt_Pion_MCAODTruth";        _y_Pt_Pion_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    name = "y_Pt_Kaon_MCAODTruth";        _y_Pt_Kaon_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    name = "y_Pt_Proton_MCAODTruth";      _y_Pt_Proton_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
+    name = "y_Pt_POI_MCAODTruth";        _y_Pt_POI_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
     
     if ( _singlesOnly )
     {
@@ -1174,9 +1170,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     
     _eventCount++;
     
-    if ( _eventAccounting )
-    { _eventAccounting -> Fill( 0 ); }
-    else { return; }
+    if ( _eventAccounting )  _eventAccounting -> Fill( 0 );
+    else   return;
     
     _eventAccounting -> Fill( 1 );
 
@@ -1219,20 +1214,21 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
         
         switch ( _centralityMethod )
         {
-            case 0: centrality = _mult0; break;
-            case 1: centrality = _mult1; break;
-            case 2: centrality = _mult2; break;
-            case 3: centrality = _mult3; break;
-            case 4: centrality = _mult4; break;
-            case 5: centrality = _mult5; break;
-            case 6: centrality = _mult6; break;
+            case 0: centrality = _mult0;  break;
+            case 1: centrality = _mult1;  break;
+            case 2: centrality = _mult2;  break;
+            case 3: centrality = _mult3;  break;
+            case 4: centrality = _mult4;  break;
+            case 5: centrality = _mult5;  break;
+            case 6: centrality = _mult6;  break;
             case 7: centrality = _mult4a; break;
         }
-        
-        if ( centrality < _centralityMin ||
-	     centrality > _centralityMax )
-	     // || fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
-        { return; }
+
+	if      ( fSystemType == "PbPb" )
+	  { if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
+	else if ( fSystemType == "pPb" || fSystemType == "pp" )
+	  { if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
+	else    return;
 	
         _eventAccounting -> Fill( 2 ); // count all events with right centrality
         
@@ -1507,7 +1503,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    if( !t -> IsPhysicalPrimary() ) continue;
 	    
             q      = t -> Charge();
+
+	    //cout << "step 1 Au-Au: q = " << q << endl; 
+	    
             charge = int( q );
+
+	    //cout << "step 2 Au-Au: charge = " << charge << endl;
+	    
             phi    = t -> Phi();
             pt     = t -> Pt();
             eta    = t -> Eta();
@@ -1533,7 +1535,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 
 	    // Kinematics cuts:
 	    if( charge == 0 ) continue;
-            if( pt < _min_pt_1 || pt > _max_pt_1) continue;         
+            if( pt < _min_pt_1 || pt > _max_pt_1 ) continue;         
 	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
 
 	/*
@@ -1552,9 +1554,19 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    
 	    // fill QA histograms
 	    _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles	    
-	    if( TMath::Abs( t -> GetPdgCode() ) == 211  )  _y_Pt_Pion_MCAODTruth   -> Fill( y, pt ); //Pion	    
-	    if( TMath::Abs( t -> GetPdgCode() ) == 321  )  _y_Pt_Kaon_MCAODTruth   -> Fill( y, pt ); //Kaon
-	    if( TMath::Abs( t -> GetPdgCode() ) == 2212 )  _y_Pt_Proton_MCAODTruth -> Fill( y, pt ); //Proton
+
+	    if( particleSpecies == 0 )
+	      { if( TMath::Abs( t -> GetPdgCode() ) != 211  )  continue; }
+	    else if( particleSpecies == 1 )
+	      { if( TMath::Abs( t -> GetPdgCode() ) != 321  )  continue; }
+	    else if( particleSpecies == 2 )
+	      { if( TMath::Abs( t -> GetPdgCode() ) != 2212 )  continue; }
+	    else   return;
+	    
+	    //cout << "step 3 Au-Au: particle ID: " << t -> GetPdgCode() << endl; 
+
+	    _y_Pt_POI_MCAODTruth -> Fill( y, pt ); //POI	    
+
 	    
 	    //Exclude resonances
 	    if( fExcludeResonancesInMC )
@@ -1574,17 +1586,24 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  }
 		}
 	      }
-	    
+
+	    //cout << "step 4 Au-Au" << endl;
+
+	    /*
 	    //Exclude electrons with PDG                                                              
 	    if( fExcludeElectronsInMC ) {
 	      if( TMath::Abs( t -> GetPdgCode() ) == 11 ) continue;
 	    }
+	    */
 	    
 	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
+
+	    //cout << "step 5 Au-Au" << endl;
 	    
             //Particle 1
-            if ( _requestedCharge_1 == charge )
+	    // if ( _requestedCharge_1 == charge )
 	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+	    if ( q > 0 )
             {
                 iPhi   = int( phi/_width_phi_1);
                 
@@ -1593,13 +1612,18 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
                     return;
                 }
-                
+
+		//cout << "step 6 Au-Au" << endl;
+		
                 iEta    = int((eta-_min_eta_1)/_width_eta_1);
                 if (iEta<0 || iEta>=_nBins_eta_1)
                 {
                     AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
                     continue;
                 }
+
+		//cout << "step 7 Au-Au" << endl;
+		
                 iPt     = int((pt -_min_pt_1 )/_width_pt_1 );
                 if (iPt<0  || iPt >=_nBins_pt_1)
                 {
@@ -1611,6 +1635,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 
                 if (_correctionWeight_1)  corr = _correctionWeight_1[iZEtaPhiPt];
                 else  corr = 1;
+
+		//cout << "step 8 Au-Au" << endl;
 		
                 if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1)
                 {
@@ -1620,7 +1646,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                                 
                 if (_singlesOnly)
                 {
-                    __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+		    __n1_1_vsPt[iPt]               += corr;       //cout << "step 9 Au-Au: __n1_1_vsPt[iPt] = " << __n1_1_vsPt[iPt] << endl;
                     __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;   
                 }
                 else
@@ -1648,9 +1674,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            }//if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            }//if ( q > 0 )
             
-            if ( !_sameFilter && _requestedCharge_2 == charge )
+            if ( q < 0 )
 	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
             {
                 iPhi   = int( phi/_width_phi_2);
@@ -1715,7 +1741,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            } //if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            } //if ( q < 0 )
         } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
      } //end of "if ( fAnalysisType == "MCAOD" )" 
   } //if( fAODEvent )
