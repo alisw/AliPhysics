@@ -32,6 +32,7 @@ class AliAnalysisBGMonitorQA : public AliAnalysisTaskSE {
   AliESDEvent *fESD;        //! ESD event
   AliESDfriend* fESDfriend; //! ESDfriend   
   TTree *fTreeTrack;        //! tree
+  TTree *fTreeTrack2;        //! tree
   TList *fList;             //! list
   TList *fList2;             //! list for additional data 2015.08.20 (blim)
   Int_t fUseTree;
