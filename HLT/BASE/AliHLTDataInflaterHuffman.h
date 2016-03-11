@@ -1,5 +1,4 @@
 //-*- Mode: C++ -*-
-// $Id$
 #ifndef ALIHLTDATAINFLATERHUFFMAN_H
 #define ALIHLTDATAINFLATERHUFFMAN_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -65,6 +64,8 @@ public:
    * pointer appropriately, then calls Pad8Bits of the base class
    */
   void Pad8Bits();
+
+  void RewindCache();
 
   /// Print info
   void Print(Option_t* option = "") const;

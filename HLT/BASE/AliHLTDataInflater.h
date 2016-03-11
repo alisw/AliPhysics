@@ -1,5 +1,4 @@
 //-*- Mode: C++ -*-
-// $Id$
 #ifndef ALIHLTDATAINFLATER_H
 #define ALIHLTDATAINFLATER_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -154,6 +153,8 @@ public:
   /** function pad 8 bits */
   virtual void Pad8Bits();
 
+  virtual void RewindCache() {}
+
   /** function to determine input bytes
    * @param data       AliHLTUInt8_t* pointer to input data
    * @param byteCount  UInt_t const &
@@ -179,6 +180,10 @@ public:
   virtual void Print(ostream& out, Option_t *option="") const;
 
 protected:
+  /// get a number of bits from the data stream
+  template<typename T>
+  bool GetBits( T & value, UInt_t const & bitCount );
+
 private:
   /** copy constructor prohibited */
   AliHLTDataInflater(const AliHLTDataInflater&);
@@ -201,6 +206,13 @@ private:
 
 template<typename T>
 bool AliHLTDataInflater::InputBits( T & value, UInt_t const & bitCount )
+{
+  RewindCache();
+  return GetBits(value, bitCount);
+}
+
+template<typename T>
+bool AliHLTDataInflater::GetBits( T & value, UInt_t const & bitCount )
 {
   // read bits from the input stream into variable
   if (bitCount>sizeof(T)*8) {

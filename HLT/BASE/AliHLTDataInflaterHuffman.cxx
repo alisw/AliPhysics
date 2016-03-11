@@ -128,7 +128,7 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
       inputLength-=(7-GetCurrentBitInputPosition());
     }
     if (64-fInputLength<inputLength) inputLength=64-fInputLength;
-    if (!InputBits(input, inputLength)) return false;
+    if (!GetBits(input, inputLength)) return false;
     input<<=(64-inputLength);
     input>>=fInputLength;
     fInput|=input;
@@ -168,10 +168,15 @@ void AliHLTDataInflaterHuffman::Pad8Bits()
 {
   /// special overload of Pad8Bits method to clear the
   /// internal register and rewind the read pointer
+  RewindCache();
+  AliHLTDataInflater::Pad8Bits();
+}
+
+void AliHLTDataInflaterHuffman::RewindCache()
+{
   RewindBitPosition(fInputLength);
   fInputLength = 0;
   fInput = 0;
-  AliHLTDataInflater::Pad8Bits();
 }
 
 void AliHLTDataInflaterHuffman::Print(Option_t* option) const
