@@ -293,6 +293,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(5,"alpha max");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");    
+    fHistograms->Add(fHistoMesonBGCuts);
     
   } else {
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
@@ -762,7 +763,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   if (fHistoInvMassAfter) fHistoInvMassAfter->Fill(pi0->M());
   
-  if (fIsMergedClusterCut > 0){ 
+  if (fIsMergedClusterCut == 0){ 
     if (fHistoDCAGGMesonBefore)fHistoDCAGGMesonBefore->Fill(pi0->GetDCABetweenPhotons());
     if (fHistoDCARMesonPrimVtxBefore)fHistoDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
 
