@@ -97,8 +97,8 @@ bool AliHLTDataInflater::RewindBitPosition(UInt_t const & bitCount)
     }
     fBitDataCurrentInput-=byteShift;
     fBitDataCurrentWord = *fBitDataCurrentInput;
-    fBitDataCurrentPosInWord = bitDataCurrentPosInWord%8;
   }
+  fBitDataCurrentPosInWord = bitDataCurrentPosInWord%8;
   return true;
 }
 
