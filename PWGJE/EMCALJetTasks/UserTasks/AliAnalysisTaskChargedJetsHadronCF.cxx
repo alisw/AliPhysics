@@ -30,7 +30,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTracksCont(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
+  fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
+  fTrackParticleArrayName(""),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -48,7 +50,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTracksCont(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
+  fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
+  fTrackParticleArrayName(""),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -260,6 +264,19 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
   else
     AliFatal(Form("%s: Object with name %s already in event!", GetName(), Form("%s_%s", GetName(), fJetParticleArrayName.Data())));
 
+  // ### Add the tracks as basic correlation particles to the event (optional)
+  if(fTrackParticleArrayName != "")
+  {
+    if (!(fInputEvent->FindListObject(Form("%s_%s", GetName(), fTrackParticleArrayName.Data()))))
+    {
+      fTracksOutput = new TClonesArray("AliPicoTrack");
+      fTracksOutput->SetName(fTrackParticleArrayName.Data());
+      fInputEvent->AddObject(fTracksOutput);
+    }
+    else
+      AliFatal(Form("%s: Object with name %s already in event!", GetName(), Form("%s_%s", GetName(), fTrackParticleArrayName.Data())));
+  }
+
 }
 
 //________________________________________________________________________
@@ -270,6 +287,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   {
     // Clear the array containing the correlation-like objects. Should be done in Event::Reset()
     fJetsOutput->Delete();
+    if(fTrackParticleArrayName != "")
+      fTracksOutput->Delete();
 
     // ##################
     // In case of special selection criteria, trigger on certain events
@@ -313,7 +332,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     }
 
     // ##################
-    // Create correlation-like objects and save them in a TClonesArray
+    // Create correlation-like objects and save them in a TClonesArray (jets)
     fJetsCont->ResetCurrentID();
     AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
     Int_t count = 0;
@@ -325,6 +344,23 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       jet = fJetsCont->GetNextAcceptJet(); 
       count++;
     }
+
+    // Create correlation-like objects and save them in a TClonesArray (tracks) (optional)
+    if(fTrackParticleArrayName != "")
+    {
+      fTracksCont->ResetCurrentID();
+      AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+      count = 0;
+      while(track) {
+
+        // Add the particle object to the clones array
+        new ((*fTracksOutput)[count]) AliPicoTrack(track->Pt(), track->Eta(), track->Phi(), track->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+
+        track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+        count++;
+      }
+    }
+
     return kTRUE;
   }
   else
