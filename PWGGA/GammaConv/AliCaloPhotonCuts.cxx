@@ -3297,11 +3297,11 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
     if (!fUseM02) fUseM02=1;
     fMinM02=0.002;
     break;
-    case 2:
-        if (!fUseM02) fUseM02=1;
-        fMinM02=0.1;
-        break;
-    case 3:
+  case 2:
+    if (!fUseM02) fUseM02=1;
+    fMinM02=0.1;
+    break;
+  case 3:
     if (!fUseM02) fUseM02=1;
     fMinM02=0.2;
     break;
