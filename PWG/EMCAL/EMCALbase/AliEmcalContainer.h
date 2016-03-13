@@ -29,7 +29,7 @@ class AliVParticle;
  * In addition, kinematical cuts can be applied, accessing only content which is selected
  * using the selection cuts to be applied.
  *
- * The usage of EMCAL containers is described here: \subpage EMCALcontainers
+ * The usage of EMCAL containers is described under \subpage EMCALcontainers
  */
 class AliEmcalContainer : public TObject {
  public:
