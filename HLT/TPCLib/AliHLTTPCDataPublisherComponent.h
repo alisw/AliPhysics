@@ -121,18 +121,18 @@ public:
       AliHLTUInt32_t  fSize; //!
     };
 
-    class iterator {
+    class iterator: public AliHLTLogging {
     public:
-      iterator() : fClusterNo(-1), fCluster(NULL), fClusterId(kAliHLTVoidDataSpec), fContainer(NULL) {}
-      iterator(AliRawClusterContainer* pContainer) : fClusterNo(-1), fCluster(NULL), fClusterId(kAliHLTVoidDataSpec), fContainer(pContainer) {}
-      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fCluster(other.fCluster), fClusterId(other.fClusterId), fContainer(other.fContainer) {}
+      iterator() : fClusterNo(-1), fCluster(NULL), fClusterId(kAliHLTVoidDataSpec), fContainer(NULL), fRowOffset(0)  {}
+      iterator(AliRawClusterContainer* pContainer) : fClusterNo(-1), fCluster(NULL), fClusterId(kAliHLTVoidDataSpec), fContainer(pContainer), fRowOffset(0)  {}
+      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fCluster(other.fCluster), fClusterId(other.fClusterId), fContainer(other.fContainer), fRowOffset(other.fRowOffset)  {}
       iterator& operator=(const iterator& other) {
 	if (this==&other) return *this;
-	fClusterNo=other.fClusterNo; fCluster=other.fCluster, fClusterId=other.fClusterId; fContainer=other.fContainer; return *this;
+	fClusterNo=other.fClusterNo; fCluster=other.fCluster, fClusterId=other.fClusterId; fContainer=other.fContainer; fRowOffset=other.fRowOffset; return *this;
       }
       ~iterator() {fCluster=NULL; fContainer=NULL;}
 
-      void SetPadRow(int row)          {if (fCluster) fCluster->SetPadRow(row);}
+      void SetPadRow(int row)          {if (fCluster) fCluster->SetPadRow(row-fRowOffset);}
       void SetPad(float pad) 	       {if (fCluster) fCluster->SetPad(pad);}
       void SetTime(float time) 	       {if (fCluster) fCluster->SetTime(time);}
       void SetSigmaY2(float sigmaY2)   {if (fCluster) fCluster->SetSigmaPad2(sigmaY2);}
@@ -151,6 +151,7 @@ public:
       AliHLTTPCRawCluster* fCluster; //! pointer to current cluster
       AliHLTUInt32_t fClusterId; //! id of the cluster, from optional cluster id blocks
       AliRawClusterContainer* fContainer; // instance of container
+      int fRowOffset;  //! row offset for current partition      
     };
 
     /// legacy, to be removed later

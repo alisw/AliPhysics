@@ -703,5 +703,16 @@ AliHLTTPCDataPublisherComponent::AliRawClusterContainer::iterator& AliHLTTPCData
   } else {
     fCluster=NULL;
   }
+  //
+  // set row offset for partitions 1-5
+  // clusters are compressed with global row numbers 0-158, 
+  // in HLT they should have local row numbers withing their partition
+  //
+  if( (partition>=0) && (partition<AliHLTTPCGeometry::GetNPatches()) ){
+    fRowOffset = AliHLTTPCGeometry::GetFirstRow(partition);
+  } else {
+    fRowOffset = 0;
+    HLTWarning("invalid partition number %d for decompressed clusters",partition);
+  }
   return *this;
 }
