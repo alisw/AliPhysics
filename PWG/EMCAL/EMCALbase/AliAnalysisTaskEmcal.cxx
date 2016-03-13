@@ -147,7 +147,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
 }
 
 /**
- * Standard constructor.
+ * Standard constructor. Should be used by the user.
+ *
+ * Note: This constructor also handles the general histograms. In
+ * case the second parameter is true, then general histograms (see
+ * UserCreateOutputObjects and FillHistograms) are created and filled
+ * by the task, and a container is provided handling the user histograms.
  * @param[in] name Name of the task
  * @param[in] histo If true then general histograms are filled by the task
  */
@@ -249,6 +254,12 @@ AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 {
 }
 
+/**
+ * Apply cut on \f$ p_{t} \f$ for all clusters in container with
+ * index c
+ * @param[in] cut \f$ p_{t} \f$-cut to be applied
+ * @param[in] c Index of the cluster container affected by the cut
+ */
 void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)
 {
   AliClusterContainer *cont = GetClusterContainer(c);
@@ -256,6 +267,13 @@ void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)
   else AliError(Form("%s in SetClusPtCut(...): container %d not found",GetName(),c));
 }
 
+/**
+ * Apply cut on cluster time for clusters in container with
+ * index c
+ * @param[in] min Min. cluster time
+ * @param[in] max Max. cluster time
+ * @param[in] c Index of the cluster container affected by the cut
+ */
 void AliAnalysisTaskEmcal::SetClusTimeCut(Double_t min, Double_t max, Int_t c)
 {
   AliClusterContainer *cont = GetClusterContainer(c);
@@ -263,6 +281,12 @@ void AliAnalysisTaskEmcal::SetClusTimeCut(Double_t min, Double_t max, Int_t c)
   else AliError(Form("%s in SetClusTimeCut(...): container %d not found",GetName(),c));
 }
 
+/**
+ * Apply cut on the transverse momentum \f$ p_{t} \f$ of all tracks in
+ * the track container with index c.
+ * @param[in] cut \f$ p_{t} \f$-cut to be applied
+ * @param[in] c Index of the particle container affected by the cut
+ */
 void AliAnalysisTaskEmcal::SetTrackPtCut(Double_t cut, Int_t c)
 {
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -272,6 +296,13 @@ void AliAnalysisTaskEmcal::SetTrackPtCut(Double_t cut, Int_t c)
   fTrackPtCut = cut;
 }
 
+/**
+ * Apply cut on the pseudorapidity \f$ \eta \f$ of the all tracks in the
+ * track container with index c
+ * @param[in] min Minimum of the allowed track \f$ \eta \f$ range
+ * @param[in] max Maximum of the allowed track \f$ \eta \f$ range
+ * @param[in] c Index of the particle container affected by the cut
+ */
 void AliAnalysisTaskEmcal::SetTrackEtaLimits(Double_t min, Double_t max, Int_t c)
 {
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -279,6 +310,13 @@ void AliAnalysisTaskEmcal::SetTrackEtaLimits(Double_t min, Double_t max, Int_t c
   else AliError(Form("%s in SetTrackPtCut(...): container %d not found",GetName(),c));
 }
 
+/**
+ * Apply cut on the pseudorapidity \f$ \phi \f$ of the all tracks in the
+ * track container with index c
+ * @param[in] min Minimum of the allowed track \f$ \phi \f$ range
+ * @param[in] max Maximum of the allowed track \f$ \phi \f$ range
+ * @param[in] c Index of the particle container affected by the cut
+ */
 void AliAnalysisTaskEmcal::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c)
 {
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -287,7 +325,23 @@ void AliAnalysisTaskEmcal::SetTrackPhiLimits(Double_t min, Double_t max, Int_t c
 }
 
 /**
- * Create user output.
+ * Performing run-independent initialization. This consists of
+ * - Determining data type (ESD/AOD)
+ * - Creating general QA histograms
+ *
+ * Attention: Histograms are only created in case the task is
+ * configured for this (second argument in the named constructor).
+ * In this case the container fOuput is created which can be used
+ * by the users to handle and store their histograms. In this case
+ * the users must overwrite this function in their tasks and call
+ * this function right at the beginning of their function.
+ *
+ * The general QA histograms monitor event related observables like
+ * the z-position of the primary vertex before and after event selection,
+ * the trigger classes selecting the event and the event rejection
+ * reason, but also Monte-Carlo related observables like the cross
+ * section, the number of trials and the \f$ p_{t} \f$-hard bin in
+ * case of a corresponding production.
  */
 void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 {
@@ -428,6 +482,19 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   PostData(1, fOutput);
 }
 
+/**
+ * Filling general histrograms. Among the general histograms
+ * that are filled only in case of running over MC productions
+ * are
+ * - \f$ p_{t} \f$-hard bin
+ * - Cross section after event selection
+ * - Number of trials after event selection
+ * - Number of events after event selection
+ * In any case the vertex distribution is filled as general
+ * histograms. For heavy ion collisions also the centrality
+ * distribution and the event plane distribution are filled.
+ * @return Always true
+ */
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   if (fIsPythia) {
@@ -457,8 +524,23 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 }
 
 /**
- * Main loop, called for each event.
- * @param
+ * Event loop, called for each event. The function consists of three
+ * steps:
+ * -# Event selection
+ * -# Running the user code
+ * -# Filling general (QA) histograms
+ * The event selection steps are documented in the function IsEventSelected.
+ *
+ * Users must not overwrite this function. Instead the virtual function Run
+ * should be user and implemented by the user. The return value of the Run
+ * function decides on whether general histograms are filled.
+ *
+ * In case the task is not yet initialized, which is the case for the first
+ * event, the UserExec performs several basic initilization steps, documented
+ * in the functions ExecOnce. Note that this is only done for the first event
+ * and only for properties which need the presence of an input event.
+ *
+ * @param[in] Not used
  */
 void AliAnalysisTaskEmcal::UserExec(Option_t *) 
 {
@@ -629,8 +711,17 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 }
 
 /**
- * Called when file changes.
- * @return
+ * Notifying the user that the input data file has
+ * changed and performing steps needed to be done.
+ *
+ * This function is of relevance for analysis of
+ * Monte-Carlo productions in \f$ p_{t} \f$-hard
+ * bins as it reads the pythia cross section and
+ * the number of trials from the file pyxsec.root
+ * and fills the relevant distributions with
+ * the values obtained.
+ * @return False if the data tree or the data file
+ * doesn't exist, true otherwise
  */
 Bool_t AliAnalysisTaskEmcal::UserNotify()
 {
@@ -686,7 +777,14 @@ void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
 }
 
 /**
- * Init the analysis.
+ * Perform steps needed to initialize the analysis.
+ * This function relies on the presence of an input
+ * event (ESD or AOD event). Consequently it is called
+ * internally by UserExec for the first event.
+ *
+ * This function connects all containers attached to
+ * this task to the corresponding arrays in the
+ * input event. Furthermore it initializes the geometry.
  */
 void AliAnalysisTaskEmcal::ExecOnce()
 {
@@ -775,7 +873,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
 /**
  * Get beam type : pp-AA-pA
  * ESDs have it directly, AODs get it from hardcoded run number ranges
- * @return
+ * @return Beam type of the run.
  */
 AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
 {
@@ -856,7 +954,8 @@ ULong_t AliAnalysisTaskEmcal::GetTriggerList()
 /**
  * Check if event has a given trigger type
  * @param trigger
- * @return
+ * @return True fo the trigger type is found in the event,
+ * false otherwise.
  */
 Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 {
@@ -873,7 +972,24 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 }
 
 /**
- * Check if event is selected
+ * Performing event selection. This contains
+ * - Selection of the trigger class
+ * - Selection according to the centrality class
+ * - Selection of event with good vertex quality
+ * - Selection of the event plane orientation
+ * - Selection of the multiplicity (including
+ *   above minimum \f$ p_{t} \f$ and tracks in the
+ *   EMCAL acceptance
+ *
+ * Note that for the vertex selection both the usage
+ * of the analysis util and the range of the z-position
+ * of the primary vertex need to be specified.
+ *
+ * In case the event is rejected, a histogram
+ * monitoring the rejeciton reason is filled with
+ * the bin corresponding to the source of the rejection
+ * of the current event.
+ *
  * @return True if the event is selected.
  */
 Bool_t AliAnalysisTaskEmcal::IsEventSelected()
@@ -1074,10 +1190,12 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 }
 
 /**
- * Get array from event.
- * @param name
- * @param clname
- * @return
+ * Read a TClonesArray from event. Attention: Both the
+ * name of the array and the name of the object stored inside
+ * must match.
+ * @param[in] name Name of the array to be read in
+ * @param[in] clname Name of the type of the objects stored in the array
+ * @return Pointer to the TClonesArray (NULL if not found)
  */
 TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const char *clname)
 {
