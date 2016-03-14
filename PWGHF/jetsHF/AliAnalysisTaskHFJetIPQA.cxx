@@ -858,7 +858,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 				if(abs(dca[0])>1.) continue;
 				if(abs(dca[1])>2.) continue;
 				if(lineardecaylenth > 10.) continue;
-				if (dcatrackjet > 1.) continue;
+				if (dcatrackjet > 0.07) continue;
 
 
 				double cursImParXY =TMath::Abs(GetValImpactParameter(kXY,dca,cov))*sign;
