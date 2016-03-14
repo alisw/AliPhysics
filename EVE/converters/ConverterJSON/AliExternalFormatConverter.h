@@ -79,6 +79,7 @@ private:
     void PopulateEventWithCascadeTracks(
             AliMinimalisticEvent &event, std::set<Int_t> &usedTracks, Int_t &specialID) const;
     void PopulateEventWithMuonTracks(AliMinimalisticEvent &event, Int_t &specialID) const;
+    void PopulateEventWithCaloClusters(AliMinimalisticEvent &event) const;
 
     void AddContentToEvent(
             AliMinimalisticEvent &event,

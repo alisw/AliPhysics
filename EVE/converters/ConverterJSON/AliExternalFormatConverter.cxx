@@ -278,6 +278,7 @@ void AliExternalFormatConverter::PopulateEventWithStandardTracks(
     }
 }
 
+
 /// Extracts data from V0 tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and
 /// pushed back inside AliMinimalisticEvent to which the reference is passed.
 /// Specialized polyline engine is called to create polylines for V0.
@@ -409,7 +410,7 @@ void AliExternalFormatConverter::PopulateEventWithKinkTracks(
                 daughterID, motherID, kKinkDaughter
         );
         AliMinimalisticTrack mother = GenerateMinimalisticTrack(
-                motherID, AliMinimalisticTrack::fgkNoParent, kKinkMother
+                motherID, motherID, kKinkMother
         );
         if (fESDFriend){
             AliMinimalisticCluster motherCluster = GenerateMinimalisticCluster(motherID);
@@ -425,6 +426,9 @@ void AliExternalFormatConverter::PopulateEventWithKinkTracks(
     }
 }
 
+
+/// In this method a minimalist track (identified by trackID) is extracted and gerated. Moreover polylines
+/// representing its trajectory is calculated. Generated minimalistic track is saved inside minimalistic event.
 void AliExternalFormatConverter::AddContentToEvent(
         AliMinimalisticEvent &event, Int_t trackID, Int_t parentID, Int_t childID
 ) const
@@ -441,6 +445,10 @@ void AliExternalFormatConverter::AddContentToEvent(
 }
 
 
+/// Opens a file (given path) and saves generated TString -- e.g. Generated JSON or XML:
+///     const char* path = "Path/To/File";
+///     TString json = GenerateJSON(event);
+///     WriteToFile(path, json);
 void AliExternalFormatConverter::WriteToFile(const char *path, TString fileString) const
 {
     ofstream outfile;
@@ -452,6 +460,7 @@ void AliExternalFormatConverter::WriteToFile(const char *path, TString fileStrin
     outfile << fileString << std::endl;
     outfile.close();
 }
+
 
 AliMinimalisticCluster AliExternalFormatConverter::GenerateMinimalisticCluster(Int_t trackID) const
 {
@@ -507,7 +516,7 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticCascadePare
     Double_t phi = cascade->Phi();
     Double_t theta = cascade->Theta();
     Double_t helixCurvature = 0.0;
-    Int_t parentID = AliMinimalisticTrack::fgkNoParent;
+    Int_t parentID = myID;
 
     AliMinimalisticTrack cascdeParent(
         charge, energy, myID, PID, mass, signedPt, startXYZ, endXYZ, PxPyPz, parentID,
@@ -585,7 +594,8 @@ void AliExternalFormatConverter::PopulateEventWithMuonTracks(
             continue;
         Int_t charge = mTrack->Charge();
         Double_t energy = mTrack->E();
-        Int_t parentID = AliMinimalisticTrack::fgkNoParent;
+        Int_t myID = specialID++;
+        Int_t parentID = myID;
         Double_t signedPT = mTrack->Pt()*charge;
         Double_t mass = mTrack->M();
         Double_t PxPyPz[3]; mTrack->PxPyPz(PxPyPz);
@@ -597,8 +607,8 @@ void AliExternalFormatConverter::PopulateEventWithMuonTracks(
         Double_t theta = mTrack->Theta();
         Double_t phi = mTrack->Phi();
         AliMinimalisticTrack minimalisticMuonTrack(
-                charge, energy, specialID++, AliPID::kMuon, mass, signedPT, startXYZ, endXYZ, PxPyPz,
-                AliMinimalisticTrack::fgkNoParent, phi, theta, .0, 0
+                charge, energy, myID, AliPID::kMuon, mass, signedPT, startXYZ, endXYZ, PxPyPz,
+                myID, phi, theta, .0, 0
         );
         fPolylineEngine.AddPolylinesToMuonTracks(muonTrack, minimalisticMuonTrack);
         event.AddTrack(minimalisticMuonTrack);

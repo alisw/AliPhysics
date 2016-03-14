@@ -1,6 +1,8 @@
-//
-// Created by jniedzie on 9/21/15.
-//
+/// \class AliMinimalisticCaloCluster
+/// In this data containers basic information from calorimeters is stored. Calorime-
+/// ter cluster is represented as a rectangular cuboid.
+///
+/// \author Maciej Grochowicz <maciej.aleksander.grochowicz@cern.ch>, Warsaw University of Technology
 
 #include <iostream>
 
@@ -19,12 +21,14 @@ public:
     
     AliMinimalisticCaloCluster() : TObject() { }
 private:
-    Float_t fR;
-    Float_t fPhi;
-    Float_t fEta;
-    Float_t fPhiHalfLength;
-    Float_t fEtaHalfLength;
-    Float_t fEnergy;
+    /// Coordinates of the position in space in the spherical coordinate system:
+    Float_t fR; /// radial distance to the middle of the cluster
+    Float_t fPhi; /// azimuthal angle
+    Float_t fEta; /// polar angle
+    /// Dimension of faces:
+    Float_t fPhiHalfLength; /// width
+    Float_t fEtaHalfLength; /// length
+    Float_t fEnergy; /// the height of the cuboid is proportional to the measured energy
 };
 
 

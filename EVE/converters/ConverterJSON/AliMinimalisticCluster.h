@@ -1,6 +1,8 @@
-//
-// Created by mgrochow on 7/31/15.
-//
+/// \class AliMinimalisticCluster
+/// \Prepare data for saving as JSON/XML
+/// This class stores all essential data regarding recorded particle trajectory in the
+/// detector. Data is stored in structure of arrays
+/// \author Maciej Grochowicz <maciej.aleksander.grochowicz@cern.ch>, Warsaw University of Technology
 
 #include <iostream>
 
@@ -25,13 +27,13 @@ public:
     void InsertValue(const Int_t *value, Int_t numberOfPoints);
     void SetSource(TString source);
 private:
-    std::vector<Float_t> fXArray;
-    std::vector<Float_t> fYArray;
-    std::vector<Float_t> fZArray;
+    std::vector<Float_t> fXArray; /// X position of registered signal in space
+    std::vector<Float_t> fYArray; /// Y position of registered signal in space
+    std::vector<Float_t> fZArray; /// Z position of registered signal in space
     std::vector<Int_t> fValue;
-    std::vector<TString> fValueDescritpion;
-    Int_t fTrackID;
-    TString fSource;
+    std::vector<TString> fValueDescritpion; /// Name of the detector in which given point was registered (e.g. TOF)
+    Int_t fTrackID; /// id of the track that the cluster corresponds to
+    TString fSource; /// Type of ile from which it was extracted -- for the time being ESD
 };
 
 

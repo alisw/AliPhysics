@@ -8,6 +8,7 @@
  **************************************************************************/
 #include <AliEveConfigManager.h>
 #include <AliEveInit.h>
+//#include <AliEveMyoListener.h>
 
 #include <AliLog.h>
 
@@ -23,12 +24,21 @@
 #include <TPRegexp.h>
 #include <TSystem.h>
 #include <TError.h>
+//#include <TThread.h>
 
 #include <RVersion.h>
 #include <Getline.h>
 #include <iostream>
 
 using namespace std;
+
+//void *MyoListenerThreadHandle(void*)
+//{
+//    cout<<"AliEVE -- Starting Myo Listener thread"<<endl;
+//    AliEveMyoListener *listener = new AliEveMyoListener();
+//    if(listener){delete listener;}
+//    return 0;
+//}
 
 int main(int argc, char **argv)
 {
@@ -95,6 +105,9 @@ int main(int argc, char **argv)
     if(classesMode){
         AliEveInit *init = new AliEveInit(".",dataSource);
     }
+//
+//    TThread *listenerThread = new TThread("listenerThread", MyoListenerThreadHandle,NULL);
+//    listenerThread->Run();
     
     app->Connect("TEveBrowser", "CloseWindow()", "TRint", app, "Terminate()");
     app->Run(kTRUE);
@@ -104,5 +117,6 @@ int main(int argc, char **argv)
     if(gEve) {delete gEve; gEve = 0;}
     
     app->Terminate(0);
+//    listenerThread->Join();
     return 0;
 }

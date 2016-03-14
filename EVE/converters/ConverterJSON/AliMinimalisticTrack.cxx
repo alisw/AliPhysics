@@ -20,7 +20,8 @@ AliMinimalisticTrack::AliMinimalisticTrack(
         Double_t phi,
         Double_t theta,
         Double_t helixCurvature,
-        Int_t type)
+        Int_t type
+)
         :
         fCharge(charge),
         fE(energy),
