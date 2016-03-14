@@ -521,7 +521,7 @@ protected:
     TString vsPtVsPt;
     
     
-    ClassDef(AliAnalysisTaskPIDBFDptDpt,1)
+    ClassDef(AliAnalysisTaskPIDBFDptDpt,2)
 }; 
 
 
