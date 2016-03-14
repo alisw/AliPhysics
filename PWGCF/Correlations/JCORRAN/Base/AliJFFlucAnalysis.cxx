@@ -386,6 +386,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 					fh_Qvector[fCBin][1][ih]->Fill( QnB[ih].Theta() );	
 					QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
 	}
+	NSubTracks[kSubA] = QnA[0].Re(); // this is number of tracks in Sub A
+	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B
 	//-------------- Fill histos with below Values ----
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
 	// use k=0 for check v2, v3 only
@@ -430,11 +432,14 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//************************************************************************
 	// doing this 
 	//Fill the Histos here
-	for(int ih=2; ih< kNH; ih++){
-		if(vn2[ih][0] != -999)	fh_vn[ih][0][fCBin]->Fill( vn2[ih][0] );
+	double ebe_2p_weight = 1;
+	double ebe_4p_weight = 1;
+	if( IsEbEWeighted == kTRUE ) ebe_2p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] ; 	
+	if( IsEbEWeighted == kTRUE ) ebe_4p_weight = NSubTracks[kSubA]* NSubTracks[kSubB] * (NSubTracks[kSubA]-1) * (NSubTracks[kSubB]-1) ; 
 
-		for(int ik=1; ik<nKL; ik++){
-			if(vn2[ih][ik] != -999)	fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] ); // Fill hvn2
+	for(int ih=2; ih< kNH; ih++){
+		for(int ik=0; ik<nKL; ik++){
+			if(vn2[ih][ik] != -999)	fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
 		}
 	}
 
@@ -442,7 +447,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		for( int ik=1; ik<nKL; ik++){
 			for( int ihh=2; ihh<kNH; ihh++){ 
 				for(int ikk=1; ikk<nKL; ikk++){
-					if(vn2_vn2[ih][ik][ihh][ikk] != -999 ) fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
+					if(vn2_vn2[ih][ik][ihh][ikk] != -999 ) fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn 
 				}
 			}
 		}
@@ -460,8 +465,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 
 	// New correlattors (Modified by You's corretion term for self-correlations)
-	NSubTracks[kSubA] = QnA[0].Re(); // this is number of tracks in Sub A
-	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B
 	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
 	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
 	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
@@ -471,7 +474,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// New correlattors (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] )) 
 						- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] ); 
- // 2nd term for slef correlation correct
 	TComplex nV3V3V2V2 = (QnA[3]*QnB_star[3]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[5] * QnA[3] *QnA[2] )) 
 						- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] );
 	// add higher order SC results
@@ -498,15 +500,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
-	// use this to avoid self-correlation
-	// vn2vn2_mean -> nV4V4V2V2 like this.
-	//
-	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() );
-	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() ) ;
+	// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..
+	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() , ebe_4p_weight);
+	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() , ebe_4p_weight);
 
-	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re() );
-	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() );
-	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() );
+	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re() , ebe_4p_weight);
+	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() , ebe_4p_weight);
+	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() , ebe_4p_weight);
 
 
 	if(IsSCptdep == kTRUE){
@@ -788,7 +788,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	// Q-vector[ih][ik] calculated doen. //(need ik??)
 
 	// Save QA plot
-	for(int ih=0; ih<kNH; ih++){
+	for(int ih=2; ih<kNH; ih++){
 		fh_QvectorQC[ih][fCBin]->Fill( QvectorQC[ih][1].Re()/QvectorQC[0][1].Re() , QvectorQC[ih][1].Im()/QvectorQC[0][1].Re() ); // fill normalized Q vector
 		fh_QvectorQCphi[ih][fCBin]->Fill( QvectorQC[ih][1].Theta() );
 	}
