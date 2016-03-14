@@ -320,6 +320,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
  fQC->SetCalculateFlowQC(fCalculateFlow);
  fQC->SetCalculateFlowZDC(fCalculateFlow);
+ fQC->SetCalculateFlowVZ(fCalculateFlow);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);
