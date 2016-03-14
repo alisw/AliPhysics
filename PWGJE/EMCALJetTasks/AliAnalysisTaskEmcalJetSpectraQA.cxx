@@ -36,6 +36,7 @@ AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSpectraQA", kTRUE),
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
+  fAreaAxis(kTRUE),
   fHistManager("AliAnalysisTaskEmcalJetQA")
 
 {
@@ -49,6 +50,7 @@ AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA(const char *n
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
+  fAreaAxis(kTRUE),
   fHistManager("AliAnalysisTaskEmcalJetQA")
 {
   // Standard constructor.
@@ -117,13 +119,15 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(AliJetContainer* jets)
     dim++;
   }
 
-  // area resolution is about 0.01 (w/ ghost area 0.005)
-  // for fNbins = 250 use bin width 0.01
-  title[dim] = "#it{A}_{jet}";
-  nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
-  min[dim] = 0;
-  max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
-  dim++;
+  if (fAreaAxis) {
+    // area resolution is about 0.01 (w/ ghost area 0.005)
+    // for fNbins = 250 use bin width 0.01
+    title[dim] = "#it{A}_{jet}";
+    nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
+    min[dim] = 0;
+    max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
+    dim++;
+  }
 
   if (fClusterCollArray.GetEntriesFast() > 0 && fParticleCollArray.GetEntriesFast() > 0) {
     title[dim] = "NEF";

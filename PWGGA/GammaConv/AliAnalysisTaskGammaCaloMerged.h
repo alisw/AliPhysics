@@ -152,6 +152,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPartConvSecPi0FromK0sPtvsM02;         //!
     TH2F**                  fHistoTrueClusPartConvSecPi0FromLambdaPtvsM02;      //!
     TH2F**                  fHistoTrueClusPartConvEtaPtvsM02;                   //!
+    TH2F**                  fHistoTrueClusPartConvGammaPtvsM02;                 //!
     TH2F**                  fHistoTrueClusBGPtvsM02;                            //!
     TH2F**                  fHistoTrueClusGammaPtvsM02;                         //!
     TH2F**                  fHistoTrueClusElectronPtvsM02;                      //!
@@ -176,6 +177,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusBGPtvsSource;                         //!
     TH2F**                  fHistoTrueClusGammaPtvsSource;                      //!
     TH2F**                  fHistoTrueClusElectronPtvsSource;                   //!
+    TH1F**                  fHistoTrueMergedMissedPDG;                          //!    
+    TH1F**                  fHistoTrueMergedPartConvMissedPDG;                  //!    
+    TH2F**                  fHistoTrueMergedPartConvNonLeadingPtvsM02;          //!
     
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
@@ -223,7 +227,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 5);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 6);
 };
 
 #endif

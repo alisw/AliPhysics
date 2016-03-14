@@ -68,161 +68,192 @@ fh2dJetSignedImpParXY(0x0),
 fh2dJetSignedImpParXYUnidentified(0x0),
 fh2dJetSignedImpParXYudsg(0x0),
 fh2dJetSignedImpParXYb(0x0),
+fh2dJetSignedImpParXYbNonBDecay(0x0),
 fh2dJetSignedImpParXYc(0x0),
 fh2dJetSignedImpParXYSignificance(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentified(0x0),
 fh2dJetSignedImpParXYSignificanceudsg(0x0),
 fh2dJetSignedImpParXYSignificanceb(0x0),
+fh2dJetSignedImpParXYSignificancebNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancec(0x0),
 fh2dJetSignedImpParXYZ(0x0),
 fh2dJetSignedImpParXYZUnidentified(0x0),
 fh2dJetSignedImpParXYZudsg(0x0),
 fh2dJetSignedImpParXYZb(0x0),
+fh2dJetSignedImpParXYZbNonBDecay(0x0),
 fh2dJetSignedImpParXYZc(0x0),
 fh2dJetSignedImpParXYZSignificance(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentified(0x0),
 fh2dJetSignedImpParXYZSignificanceudsg(0x0),
 fh2dJetSignedImpParXYZSignificanceb(0x0),
+fh2dJetSignedImpParXYZSignificancebNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancec(0x0),
 fh2dJetSignedImpParXY_McCorr(0x0),
 fh2dJetSignedImpParXYUnidentified_McCorr(0x0),
 fh2dJetSignedImpParXYudsg_McCorr(0x0),
 fh2dJetSignedImpParXYb_McCorr(0x0),
+fh2dJetSignedImpParXYb_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYc_McCorr(0x0),
 fh2dJetSignedImpParXYSignificance_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentified_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceudsg_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceb_McCorr(0x0),
+fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancec_McCorr(0x0),
 fh2dJetSignedImpParXYZ_McCorr(0x0),
 fh2dJetSignedImpParXYZUnidentified_McCorr(0x0),
 fh2dJetSignedImpParXYZudsg_McCorr(0x0),
 fh2dJetSignedImpParXYZb_McCorr(0x0),
+fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZc_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificance_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentified_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceudsg_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceb_McCorr(0x0),
+fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancec_McCorr(0x0),
 fh2dJetSignedImpParXYFirst(0x0),
 fh2dJetSignedImpParXYUnidentifiedFirst(0x0),
 fh2dJetSignedImpParXYudsgFirst(0x0),
 fh2dJetSignedImpParXYbFirst(0x0),
+fh2dJetSignedImpParXYbFirstNonBDecay(0x0),
 fh2dJetSignedImpParXYcFirst(0x0),
 fh2dJetSignedImpParXYSignificanceFirst(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentifiedFirst(0x0),
 fh2dJetSignedImpParXYSignificanceudsgFirst(0x0),
 fh2dJetSignedImpParXYSignificancebFirst(0x0),
+fh2dJetSignedImpParXYSignificancebFirstNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancecFirst(0x0),
 fh2dJetSignedImpParXYZFirst(0x0),
 fh2dJetSignedImpParXYZUnidentifiedFirst(0x0),
 fh2dJetSignedImpParXYZudsgFirst(0x0),
 fh2dJetSignedImpParXYZbFirst(0x0),
+fh2dJetSignedImpParXYZbFirstNonBDecay(0x0),
 fh2dJetSignedImpParXYZcFirst(0x0),
 fh2dJetSignedImpParXYZSignificanceFirst(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgFirst(0x0),
 fh2dJetSignedImpParXYZSignificancebFirst(0x0),
+fh2dJetSignedImpParXYZSignificancebFirstNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancecFirst(0x0),
 fh2dJetSignedImpParXYSecond(0x0),
 fh2dJetSignedImpParXYUnidentifiedSecond(0x0),
 fh2dJetSignedImpParXYudsgSecond(0x0),
 fh2dJetSignedImpParXYbSecond(0x0),
+fh2dJetSignedImpParXYbSecondNonBDecay(0x0),
 fh2dJetSignedImpParXYcSecond(0x0),
 fh2dJetSignedImpParXYSignificanceSecond(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentifiedSecond(0x0),
 fh2dJetSignedImpParXYSignificanceudsgSecond(0x0),
 fh2dJetSignedImpParXYSignificancebSecond(0x0),
+fh2dJetSignedImpParXYSignificancebSecondNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancecSecond(0x0),
 fh2dJetSignedImpParXYZSecond(0x0),
 fh2dJetSignedImpParXYZUnidentifiedSecond(0x0),
 fh2dJetSignedImpParXYZudsgSecond(0x0),
 fh2dJetSignedImpParXYZbSecond(0x0),
+fh2dJetSignedImpParXYZbSecondNonBDecay(0x0),
 fh2dJetSignedImpParXYZcSecond(0x0),
 fh2dJetSignedImpParXYZSignificanceSecond(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgSecond(0x0),
 fh2dJetSignedImpParXYZSignificancebSecond(0x0),
+fh2dJetSignedImpParXYZSignificancebSecondNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancecSecond(0x0),
 fh2dJetSignedImpParXYThird(0x0),
 fh2dJetSignedImpParXYUnidentifiedThird(0x0),
 fh2dJetSignedImpParXYudsgThird(0x0),
 fh2dJetSignedImpParXYbThird(0x0),
+fh2dJetSignedImpParXYbThirdNonBDecay(0x0),
 fh2dJetSignedImpParXYcThird(0x0),
 fh2dJetSignedImpParXYSignificanceThird(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentifiedThird(0x0),
 fh2dJetSignedImpParXYSignificanceudsgThird(0x0),
 fh2dJetSignedImpParXYSignificancebThird(0x0),
+fh2dJetSignedImpParXYSignificancebThirdNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancecThird(0x0),
 fh2dJetSignedImpParXYZThird(0x0),
 fh2dJetSignedImpParXYZUnidentifiedThird(0x0),
 fh2dJetSignedImpParXYZudsgThird(0x0),
 fh2dJetSignedImpParXYZbThird(0x0),
+fh2dJetSignedImpParXYZbThirdNonBDecay(0x0),
 fh2dJetSignedImpParXYZcThird(0x0),
 fh2dJetSignedImpParXYZSignificanceThird(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedThird(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgThird(0x0),
 fh2dJetSignedImpParXYZSignificancebThird(0x0),
+fh2dJetSignedImpParXYZSignificancebThirdNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancecThird(0x0),
 fh2dJetSignedImpParXYFirst_McCorr(0x0),
 fh2dJetSignedImpParXYUnidentifiedFirst_McCorr(0x0),
 fh2dJetSignedImpParXYudsgFirst_McCorr(0x0),
 fh2dJetSignedImpParXYbFirst_McCorr(0x0),
+fh2dJetSignedImpParXYbFirst_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYcFirst_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceFirst_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentifiedFirst_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr(0x0),
 fh2dJetSignedImpParXYSignificancebFirst_McCorr(0x0),
+fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancecFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZudsgFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZbFirst_McCorr(0x0),
+fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZcFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificancebFirst_McCorr(0x0),
+fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancecFirst_McCorr(0x0),
 fh2dJetSignedImpParXYSecond_McCorr(0x0),
 fh2dJetSignedImpParXYUnidentifiedSecond_McCorr(0x0),
 fh2dJetSignedImpParXYudsgSecond_McCorr(0x0),
 fh2dJetSignedImpParXYbSecond_McCorr(0x0),
+fh2dJetSignedImpParXYbSecond_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYcSecond_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceSecond_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceudsgSecond_McCorr(0x0),
 fh2dJetSignedImpParXYSignificancebSecond_McCorr(0x0),
+fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancecSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZudsgSecond_McCorr(0x0),
-fh2dJetSignedImpParXYZbSecond_McCorr(0x0),
+fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZcSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgSecond_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificancebSecond_McCorr(0x0),
+fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancecSecond_McCorr(0x0),
 fh2dJetSignedImpParXYThird_McCorr(0x0),
 fh2dJetSignedImpParXYUnidentifiedThird_McCorr(0x0),
 fh2dJetSignedImpParXYudsgThird_McCorr(0x0),
 fh2dJetSignedImpParXYbThird_McCorr(0x0),
+fh2dJetSignedImpParXYbThird_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYcThird_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceThird_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceUnidentifiedThird_McCorr(0x0),
 fh2dJetSignedImpParXYSignificanceudsgThird_McCorr(0x0),
 fh2dJetSignedImpParXYSignificancebThird_McCorr(0x0),
+fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYSignificancecThird_McCorr(0x0),
 fh2dJetSignedImpParXYZThird_McCorr(0x0),
 fh2dJetSignedImpParXYZUnidentifiedThird_McCorr(0x0),
 fh2dJetSignedImpParXYZudsgThird_McCorr(0x0),
 fh2dJetSignedImpParXYZbThird_McCorr(0x0),
+fh2dJetSignedImpParXYZbThird_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZcThird_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceThird_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgThird_McCorr(0x0),
 fh2dJetSignedImpParXYZSignificancebThird_McCorr(0x0),
+fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay(0x0),
 fh2dJetSignedImpParXYZSignificancecThird_McCorr(0x0),
 fh1dTracksImpParXY_electron(0x0),
 fh1dTracksImpParXYZ_electron(0x0),
@@ -312,7 +343,320 @@ fh2dJetSignedImpParXYZSignificancecThird_electron(0x0)
 {
 }
 // ######################################################################################## CONSTRUCTORS
-AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysisTaskEmcalJet(name, kTRUE),fJetCutsHF(new AliRDHFJetsCuts())
+AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysisTaskEmcalJet(name, kTRUE),fJetCutsHF(new AliRDHFJetsCuts()),
+		fHFJetUtils(0x0),
+		fh1dEventRejectionRDHFCuts(0x0),
+		fh1dVertexZ(0x0),
+		fh1dVertexZAccepted(0x0),
+		fh1dVertexR(0x0),
+		fh1dVertexRAccepted(0x0),
+		fh1dTracksAccepeted(0x0),
+		fh1dTracksImpParXY(0x0),
+		fh1dTracksImpParXYZ(0x0),
+		fh1dTracksImpParXYSignificance(0x0),
+		fh1dTracksImpParXYZSignificance(0x0),
+		fh1dTracksImpParXYTruth(0x0),
+		fh1dTracksImpParXYZTruth(0x0),
+		fh1dTracksImpParXYResidualTruth(0x0),
+		fh1dTracksImpParXYZResidualTruth(0x0),
+		fh1dTracksImpParXY_McCorr(0x0),
+		fh1dTracksImpParXYZ_McCorr(0x0),
+		fh1dTracksImpParXYSignificance_McCorr(0x0),
+		fh1dTracksImpParXYZSignificance_McCorr(0x0),
+		fh2dVertexChi2NDFNESDTracks(0x0),
+		fh1dJetGenPt(0x0),
+		fh1dJetGenPtUnidentified(0x0),
+		fh1dJetGenPtudsg(0x0),
+		fh1dJetGenPtc(0x0),
+		fh1dJetGenPtb(0x0),
+		fh1dJetRecPt(0x0),
+		fh1dJetRecPtAccepted(0x0),
+		fh1dJetRecEtaPhiAccepted(0x0),
+		fh1dJetRecPtUnidentified(0x0),
+		fh1dJetRecPtudsg(0x0),
+		fh1dJetRecPtc(0x0),
+		fh1dJetRecPtb(0x0),
+		fh1dJetRecPtUnidentifiedAccepted(0x0),
+		fh1dJetRecPtudsgAccepted(0x0),
+		fh1dJetRecPtcAccepted(0x0),
+		fh1dJetRecPtbAccepted(0x0),
+		fh2dJetGenPtVsJetRecPt(0x0),
+		fh2dJetSignedImpParXY(0x0),
+		fh2dJetSignedImpParXYUnidentified(0x0),
+		fh2dJetSignedImpParXYudsg(0x0),
+		fh2dJetSignedImpParXYb(0x0),
+		fh2dJetSignedImpParXYbNonBDecay(0x0),
+		fh2dJetSignedImpParXYc(0x0),
+		fh2dJetSignedImpParXYSignificance(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentified(0x0),
+		fh2dJetSignedImpParXYSignificanceudsg(0x0),
+		fh2dJetSignedImpParXYSignificanceb(0x0),
+		fh2dJetSignedImpParXYSignificancebNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancec(0x0),
+		fh2dJetSignedImpParXYZ(0x0),
+		fh2dJetSignedImpParXYZUnidentified(0x0),
+		fh2dJetSignedImpParXYZudsg(0x0),
+		fh2dJetSignedImpParXYZb(0x0),
+		fh2dJetSignedImpParXYZbNonBDecay(0x0),
+		fh2dJetSignedImpParXYZc(0x0),
+		fh2dJetSignedImpParXYZSignificance(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentified(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsg(0x0),
+		fh2dJetSignedImpParXYZSignificanceb(0x0),
+		fh2dJetSignedImpParXYZSignificancebNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancec(0x0),
+		fh2dJetSignedImpParXY_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYb_McCorr(0x0),
+		fh2dJetSignedImpParXYb_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYc_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificance_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceb_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancec_McCorr(0x0),
+		fh2dJetSignedImpParXYZ_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYZb_McCorr(0x0),
+		fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZc_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificance_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceb_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancec_McCorr(0x0),
+		fh2dJetSignedImpParXYFirst(0x0),
+		fh2dJetSignedImpParXYUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYudsgFirst(0x0),
+		fh2dJetSignedImpParXYbFirst(0x0),
+		fh2dJetSignedImpParXYbFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYcFirst(0x0),
+		fh2dJetSignedImpParXYSignificanceFirst(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgFirst(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst(0x0),
+		fh2dJetSignedImpParXYSignificancebFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecFirst(0x0),
+		fh2dJetSignedImpParXYZFirst(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYZudsgFirst(0x0),
+		fh2dJetSignedImpParXYZbFirst(0x0),
+		fh2dJetSignedImpParXYZbFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcFirst(0x0),
+		fh2dJetSignedImpParXYZSignificanceFirst(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgFirst(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecFirst(0x0),
+		fh2dJetSignedImpParXYSecond(0x0),
+		fh2dJetSignedImpParXYUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYudsgSecond(0x0),
+		fh2dJetSignedImpParXYbSecond(0x0),
+		fh2dJetSignedImpParXYbSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYcSecond(0x0),
+		fh2dJetSignedImpParXYSignificanceSecond(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgSecond(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond(0x0),
+		fh2dJetSignedImpParXYSignificancebSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecSecond(0x0),
+		fh2dJetSignedImpParXYZSecond(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYZudsgSecond(0x0),
+		fh2dJetSignedImpParXYZbSecond(0x0),
+		fh2dJetSignedImpParXYZbSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcSecond(0x0),
+		fh2dJetSignedImpParXYZSignificanceSecond(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgSecond(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecSecond(0x0),
+		fh2dJetSignedImpParXYThird(0x0),
+		fh2dJetSignedImpParXYUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYudsgThird(0x0),
+		fh2dJetSignedImpParXYbThird(0x0),
+		fh2dJetSignedImpParXYbThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYcThird(0x0),
+		fh2dJetSignedImpParXYSignificanceThird(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgThird(0x0),
+		fh2dJetSignedImpParXYSignificancebThird(0x0),
+		fh2dJetSignedImpParXYSignificancebThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecThird(0x0),
+		fh2dJetSignedImpParXYZThird(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYZudsgThird(0x0),
+		fh2dJetSignedImpParXYZbThird(0x0),
+		fh2dJetSignedImpParXYZbThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcThird(0x0),
+		fh2dJetSignedImpParXYZSignificanceThird(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgThird(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird(0x0),
+		fh2dJetSignedImpParXYZSignificancebThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecThird(0x0),
+		fh2dJetSignedImpParXYFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYbFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYbFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYcFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZbFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYbSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYbSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYcSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYThird_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYbThird_McCorr(0x0),
+		fh2dJetSignedImpParXYbThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYcThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZbThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZbThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecThird_McCorr(0x0),
+		fh1dTracksImpParXY_electron(0x0),
+		fh1dTracksImpParXYZ_electron(0x0),
+		fh1dTracksImpParXYSignificance_electron(0x0),
+		fh1dTracksImpParXYZSignificance_electron(0x0),
+		//electrons
+		fh2dJetSignedImpParXY_electron(0x0),
+		fh2dJetSignedImpParXYUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYudsg_electron(0x0),
+		fh2dJetSignedImpParXYb_electron(0x0),
+		fh2dJetSignedImpParXYc_electron(0x0),
+		fh2dJetSignedImpParXYSignificance_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsg_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceb_electron(0x0),
+		fh2dJetSignedImpParXYSignificancec_electron(0x0),
+		fh2dJetSignedImpParXYZ_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYZudsg_electron(0x0),
+		fh2dJetSignedImpParXYZb_electron(0x0),
+		fh2dJetSignedImpParXYZc_electron(0x0),
+		fh2dJetSignedImpParXYZSignificance_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsg_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceb_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancec_electron(0x0),
+		fh2dJetSignedImpParXYFirst_electron(0x0),
+		fh2dJetSignedImpParXYUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYbFirst_electron(0x0),
+		fh2dJetSignedImpParXYcFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificancecFirst_electron(0x0),
+		fh2dJetSignedImpParXYZFirst_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYZudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYZbFirst_electron(0x0),
+		fh2dJetSignedImpParXYZcFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancecFirst_electron(0x0),
+		fh2dJetSignedImpParXYSecond_electron(0x0),
+		fh2dJetSignedImpParXYUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYbSecond_electron(0x0),
+		fh2dJetSignedImpParXYcSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificancecSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSecond_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYZudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYZbSecond_electron(0x0),
+		fh2dJetSignedImpParXYZcSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancecSecond_electron(0x0),
+		fh2dJetSignedImpParXYThird_electron(0x0),
+		fh2dJetSignedImpParXYUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYbThird_electron(0x0),
+		fh2dJetSignedImpParXYcThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificancebThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificancecThird_electron(0x0),
+		fh2dJetSignedImpParXYZThird_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYZudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYZbThird_electron(0x0),
+		fh2dJetSignedImpParXYZcThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancecThird_electron(0x0)
 {
 }
 // ########################################################################################  Main Loop
@@ -350,7 +694,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 			if(fIsPythia)
 			{
 				bool iselectron = false;
-				weight = GetMonteCarloCorrectionFactor(track,iselectron);
+				bool isfromBMeson = false;
+				weight = GetMonteCarloCorrectionFactor(track,iselectron,isfromBMeson);
 				fh1dTracksImpParXY_McCorr->Fill(GetValImpactParameter(kXY,dca,cov),weight);
 				fh1dTracksImpParXYZ_McCorr->Fill(GetValImpactParameter(kXYZ,dca,cov),weight);
 				fh1dTracksImpParXYSignificance_McCorr->Fill(GetValImpactParameter(kXYSig,dca,cov),weight);
@@ -482,7 +827,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 			if(jetflavour==0) fh1dJetRecPtUnidentified->Fill(jetrec->Pt());
 			else if(jetflavour==1)fh1dJetRecPtudsg->Fill(jetrec->Pt());
 			else if(jetflavour==2)fh1dJetRecPtc->Fill(jetrec->Pt());
-			else if(jetflavour==3)fh1dJetRecPtc->Fill(jetrec->Pt());
+			else if(jetflavour==3)fh1dJetRecPtb->Fill(jetrec->Pt());
 		}
 		if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
 		fh1dJetRecEtaPhiAccepted->Fill(jetrec->Eta(),jetrec->Phi());
@@ -491,7 +836,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 			if(jetflavour==0) fh1dJetRecPtUnidentifiedAccepted->Fill(jetrec->Pt());
 			else if(jetflavour==1)fh1dJetRecPtudsgAccepted->Fill(jetrec->Pt());
 			else if(jetflavour==2)fh1dJetRecPtcAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==3)fh1dJetRecPtcAccepted->Fill(jetrec->Pt());
+			else if(jetflavour==3)fh1dJetRecPtbAccepted->Fill(jetrec->Pt());
 		}
 
 		std::vector<myvaluetuple> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
@@ -499,7 +844,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 		{
 			double dcatrackjet =999;
 			double lineardecaylenth = 999;
-			track = (AliAODTrack*)(((AliPicoTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack))))->GetTrack());
+			//track = (AliAODTrack*)(((AliPicoTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack))))->GetTrack());
+			track = (((AliAODTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack)))));
 
 			if(!track) 	continue;
 			if (!IsTrackAccepted(track)) continue;
@@ -520,6 +866,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 				double cursImParXYSig =TMath::Abs(GetValImpactParameter(kXYSig,dca,cov))*sign;
 				double cursImParXYZSig =TMath::Abs(GetValImpactParameter(kXYZSig,dca,cov))*sign;
 				bool iselectron =false;
+				bool isfromBMeson = false;
 
 				fh2dJetSignedImpParXY->Fill(jetpt,cursImParXY);
 				fh2dJetSignedImpParXYZ->Fill(jetpt,cursImParXYZ);
@@ -529,7 +876,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 				if(fIsPythia)
 				{
 					weight =1;
-					weight = GetMonteCarloCorrectionFactor(track,iselectron);
+					weight = GetMonteCarloCorrectionFactor(track,iselectron,isfromBMeson);
 					fh2dJetSignedImpParXY_McCorr->Fill(jetpt,cursImParXY,weight);
 					fh2dJetSignedImpParXYZ_McCorr->Fill(jetpt,cursImParXYZ,weight);
 					fh2dJetSignedImpParXYSignificance_McCorr->Fill(jetpt,cursImParXYSig,weight);
@@ -590,29 +937,40 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 						}
 					}
 					else if(jetflavour ==3){
-						fh2dJetSignedImpParXYc->Fill(jetpt,cursImParXY);
-						fh2dJetSignedImpParXYZc->Fill(jetpt,cursImParXYZ);
-						fh2dJetSignedImpParXYSignificancec->Fill(jetpt,cursImParXYSig);
-						fh2dJetSignedImpParXYZSignificancec->Fill(jetpt,cursImParXYZSig);
-						fh2dJetSignedImpParXYc_McCorr->Fill(jetpt,cursImParXY,weight);
-						fh2dJetSignedImpParXYZc_McCorr->Fill(jetpt,cursImParXYZ,weight);
-						fh2dJetSignedImpParXYSignificancec_McCorr->Fill(jetpt,cursImParXYSig,weight);
-						fh2dJetSignedImpParXYZSignificancec_McCorr->Fill(jetpt,cursImParXYZSig,weight);
+
+						fh2dJetSignedImpParXYb->Fill(jetpt,cursImParXY);
+						fh2dJetSignedImpParXYZb->Fill(jetpt,cursImParXYZ);
+						fh2dJetSignedImpParXYSignificanceb->Fill(jetpt,cursImParXYSig);
+						fh2dJetSignedImpParXYZSignificanceb->Fill(jetpt,cursImParXYZSig);
+
+						if(isfromBMeson){
+							fh2dJetSignedImpParXYb_McCorr->Fill(jetpt,cursImParXY,weight);
+							fh2dJetSignedImpParXYZb_McCorr->Fill(jetpt,cursImParXYZ,weight);
+							fh2dJetSignedImpParXYSignificanceb_McCorr->Fill(jetpt,cursImParXYSig,weight);
+							fh2dJetSignedImpParXYZSignificanceb_McCorr->Fill(jetpt,cursImParXYZSig,weight);
+						}
+						else{
+							fh2dJetSignedImpParXYb_McCorrNonBDecay->Fill(jetpt,cursImParXY,weight);
+							fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay->Fill(jetpt,cursImParXYZ,weight);
+							fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay->Fill(jetpt,cursImParXYSig,weight);
+							fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay->Fill(jetpt,cursImParXYZSig,weight);
+						}
+
 						if(iselectron){
-							fh2dJetSignedImpParXYc_electron->Fill(jetpt,cursImParXY,weight);
-							fh2dJetSignedImpParXYZc_electron->Fill(jetpt,cursImParXYZ,weight);
-							fh2dJetSignedImpParXYSignificancec_electron->Fill(jetpt,cursImParXYSig,weight);
-							fh2dJetSignedImpParXYZSignificancec_electron->Fill(jetpt,cursImParXYZSig,weight);
+							fh2dJetSignedImpParXYb_electron->Fill(jetpt,cursImParXY,weight);
+							fh2dJetSignedImpParXYZb_electron->Fill(jetpt,cursImParXYZ,weight);
+							fh2dJetSignedImpParXYSignificanceb_electron->Fill(jetpt,cursImParXYSig,weight);
+							fh2dJetSignedImpParXYZSignificanceb_electron->Fill(jetpt,cursImParXYZSig,weight);
 						}
 					}
 				}
-				myvaluetuple a(cursImParXY, weight,iselectron);
+				myvaluetuple a(cursImParXY, weight,iselectron,isfromBMeson);
 				sImpParXY.push_back(a);
-				myvaluetuple b(cursImParXYZ, weight,iselectron);
+				myvaluetuple b(cursImParXYZ, weight,iselectron,isfromBMeson);
 				sImpParXYZ.push_back(b);
-				myvaluetuple c(cursImParXYSig, weight,iselectron);
+				myvaluetuple c(cursImParXYSig, weight,iselectron,isfromBMeson);
 				sImpParXYSig.push_back(c);
-				myvaluetuple d(cursImParXYZSig, weight,iselectron);
+				myvaluetuple d(cursImParXYZSig, weight,iselectron,isfromBMeson);
 				sImpParXYZSig.push_back(d);
 			}
 		}
@@ -693,16 +1051,20 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 					if(sImpParXYZSig.at(0).is_electron)	fh2dJetSignedImpParXYZSignificancecFirst_electron->Fill(jetpt,sImpParXYZSig.at(0).first,sImpParXYZSig.at(0).second);
 				}
 				else if(jetflavour ==3){
-					fh2dJetSignedImpParXYcFirst->Fill(jetpt,sImpParXY.at(0).first);
-					fh2dJetSignedImpParXYZcFirst->Fill(jetpt,sImpParXYZ.at(0).first);
-					fh2dJetSignedImpParXYSignificancecFirst->Fill(jetpt,sImpParXYSig.at(0).first);
-					fh2dJetSignedImpParXYZSignificancecFirst->Fill(jetpt,sImpParXYZSig.at(0).first);
+					fh2dJetSignedImpParXYbFirst->Fill(jetpt,sImpParXY.at(0).first);
+					fh2dJetSignedImpParXYZbFirst->Fill(jetpt,sImpParXYZ.at(0).first);
+					fh2dJetSignedImpParXYSignificancebFirst->Fill(jetpt,sImpParXYSig.at(0).first);
+					fh2dJetSignedImpParXYZSignificancebFirst->Fill(jetpt,sImpParXYZSig.at(0).first);
 
-					fh2dJetSignedImpParXYcFirst_McCorr->Fill(jetpt,sImpParXY.at(0).first,sImpParXY.at(0).second);
-					fh2dJetSignedImpParXYZcFirst_McCorr->Fill(jetpt,sImpParXYZ.at(0).first,sImpParXYZ.at(0).second);
-					fh2dJetSignedImpParXYSignificancecFirst_McCorr->Fill(jetpt,sImpParXYSig.at(0).first,sImpParXYSig.at(0).second);
-					fh2dJetSignedImpParXYZSignificancecFirst_McCorr->Fill(jetpt,sImpParXYZSig.at(0).first,sImpParXYZSig.at(0).second);
+					if(sImpParXY.at(0).is_fromB) fh2dJetSignedImpParXYbFirst_McCorr->Fill(jetpt,sImpParXY.at(0).first,sImpParXY.at(0).second);
+					if(sImpParXYZ.at(0).is_fromB) fh2dJetSignedImpParXYZbFirst_McCorr->Fill(jetpt,sImpParXYZ.at(0).first,sImpParXYZ.at(0).second);
+					if(sImpParXYSig.at(0).is_fromB) fh2dJetSignedImpParXYSignificancebFirst_McCorr->Fill(jetpt,sImpParXYSig.at(0).first,sImpParXYSig.at(0).second);
+					if(sImpParXYZSig.at(0).is_fromB) fh2dJetSignedImpParXYZSignificancebFirst_McCorr->Fill(jetpt,sImpParXYZSig.at(0).first,sImpParXYZSig.at(0).second);
 
+					if(!sImpParXY.at(0).is_fromB)fh2dJetSignedImpParXYbFirst_McCorrNonBDecay->Fill(jetpt,sImpParXY.at(0).first,sImpParXY.at(0).second);
+					if(!sImpParXYZ.at(0).is_fromB)fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay->Fill(jetpt,sImpParXYZ.at(0).first,sImpParXYZ.at(0).second);
+					if(!sImpParXYSig.at(0).is_fromB)fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay->Fill(jetpt,sImpParXYSig.at(0).first,sImpParXYSig.at(0).second);
+					if(!sImpParXYZSig.at(0).is_fromB)fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay->Fill(jetpt,sImpParXYZSig.at(0).first,sImpParXYZSig.at(0).second);
 
 					if(sImpParXY.at(0).is_electron)	fh2dJetSignedImpParXYbFirst_electron->Fill(jetpt,sImpParXY.at(0).first,sImpParXY.at(0).second);
 					if(sImpParXYZ.at(0).is_electron)fh2dJetSignedImpParXYZbFirst_electron->Fill(jetpt,sImpParXYZ.at(0).first,sImpParXYZ.at(0).second);
@@ -780,16 +1142,20 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 				}
 				else if(jetflavour ==3)
 				{
-					fh2dJetSignedImpParXYcSecond->Fill(jetpt,sImpParXY.at(1).first);
-					fh2dJetSignedImpParXYZcSecond->Fill(jetpt,sImpParXYZ.at(1).first);
-					fh2dJetSignedImpParXYSignificancecSecond->Fill(jetpt,sImpParXYSig.at(1).first);
-					fh2dJetSignedImpParXYZSignificancecSecond->Fill(jetpt,sImpParXYZSig.at(1).first);
+					fh2dJetSignedImpParXYbSecond->Fill(jetpt,sImpParXY.at(1).first);
+					fh2dJetSignedImpParXYZbSecond->Fill(jetpt,sImpParXYZ.at(1).first);
+					fh2dJetSignedImpParXYSignificancebSecond->Fill(jetpt,sImpParXYSig.at(1).first);
+					fh2dJetSignedImpParXYZSignificancebSecond->Fill(jetpt,sImpParXYZSig.at(1).first);
 
-					fh2dJetSignedImpParXYcSecond_McCorr->Fill(jetpt,sImpParXY.at(1).first,sImpParXY.at(1).second);
-					fh2dJetSignedImpParXYZcSecond_McCorr->Fill(jetpt,sImpParXYZ.at(1).first,sImpParXYZ.at(1).second);
-					fh2dJetSignedImpParXYSignificancecSecond_McCorr->Fill(jetpt,sImpParXYSig.at(1).first,sImpParXYSig.at(1).second);
-					fh2dJetSignedImpParXYZSignificancecSecond_McCorr->Fill(jetpt,sImpParXYZSig.at(1).first,sImpParXYZSig.at(1).second);
+					if(sImpParXY.at(1).is_fromB)fh2dJetSignedImpParXYbSecond_McCorr->Fill(jetpt,sImpParXY.at(1).first,sImpParXY.at(1).second);
+					if(sImpParXYZ.at(1).is_fromB)fh2dJetSignedImpParXYZbSecond_McCorr->Fill(jetpt,sImpParXYZ.at(1).first,sImpParXYZ.at(1).second);
+					if(sImpParXYSig.at(1).is_fromB)fh2dJetSignedImpParXYSignificancebSecond_McCorr->Fill(jetpt,sImpParXYSig.at(1).first,sImpParXYSig.at(1).second);
+					if(sImpParXYZSig.at(1).is_fromB)fh2dJetSignedImpParXYZSignificancebSecond_McCorr->Fill(jetpt,sImpParXYZSig.at(1).first,sImpParXYZSig.at(1).second);
 
+					if(!sImpParXY.at(1).is_fromB)	fh2dJetSignedImpParXYbSecond_McCorrNonBDecay->Fill(jetpt,sImpParXY.at(1).first,sImpParXY.at(1).second);
+					if(!sImpParXYZ.at(1).is_fromB)	fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay->Fill(jetpt,sImpParXYZ.at(1).first,sImpParXYZ.at(1).second);
+					if(!sImpParXYSig.at(1).is_fromB)	fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay->Fill(jetpt,sImpParXYSig.at(1).first,sImpParXYSig.at(1).second);
+					if(!sImpParXYZSig.at(1).is_fromB)	fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay->Fill(jetpt,sImpParXYZSig.at(1).first,sImpParXYZSig.at(1).second);
 
 					if(sImpParXY.at(1).is_electron)		fh2dJetSignedImpParXYbSecond_electron->Fill(jetpt,sImpParXY.at(1).first,sImpParXY.at(1).second);
 					if(sImpParXYZ.at(1).is_electron)	fh2dJetSignedImpParXYZbSecond_electron->Fill(jetpt,sImpParXYZ.at(1).first,sImpParXYZ.at(1).second);
@@ -865,15 +1231,21 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 					if(sImpParXYZSig.at(2).is_electron)  	fh2dJetSignedImpParXYZSignificancecThird_electron->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
 				}
 				else if(jetflavour ==3){
-					fh2dJetSignedImpParXYcThird->Fill(jetpt,sImpParXY.at(2).first);
-					fh2dJetSignedImpParXYZcThird->Fill(jetpt,sImpParXYZ.at(2).first);
-					fh2dJetSignedImpParXYSignificancecThird->Fill(jetpt,sImpParXYSig.at(2).first);
-					fh2dJetSignedImpParXYZSignificancecFirst->Fill(jetpt,sImpParXYZSig.at(2).first);
+					fh2dJetSignedImpParXYbThird->Fill(jetpt,sImpParXY.at(2).first);
+					fh2dJetSignedImpParXYZbThird->Fill(jetpt,sImpParXYZ.at(2).first);
+					fh2dJetSignedImpParXYSignificancebThird->Fill(jetpt,sImpParXYSig.at(2).first);
+					fh2dJetSignedImpParXYZSignificancebFirst->Fill(jetpt,sImpParXYZSig.at(2).first);
 
-					fh2dJetSignedImpParXYcThird_McCorr->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
-					fh2dJetSignedImpParXYZcThird_McCorr->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
-					fh2dJetSignedImpParXYSignificancecThird_McCorr->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
-					fh2dJetSignedImpParXYZSignificancecFirst_McCorr->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
+					if(sImpParXY.at(2).is_fromB) fh2dJetSignedImpParXYbThird_McCorr->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
+					if(sImpParXYZ.at(2).is_fromB)fh2dJetSignedImpParXYZbThird_McCorr->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
+					if(sImpParXYSig.at(2).is_fromB) fh2dJetSignedImpParXYSignificancebThird_McCorr->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
+					if(sImpParXYZSig.at(2).is_fromB)fh2dJetSignedImpParXYZSignificancebFirst_McCorr->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
+
+					if(!sImpParXY.at(2).is_fromB) fh2dJetSignedImpParXYbThird_McCorrNonBDecay->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
+					if(!sImpParXYZ.at(2).is_fromB) fh2dJetSignedImpParXYZbThird_McCorrNonBDecay->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
+					if(!sImpParXYSig.at(2).is_fromB) fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
+					if(!sImpParXYZSig.at(2).is_fromB) fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
+
 
 					if(sImpParXY.at(2).is_electron) 	fh2dJetSignedImpParXYbThird_electron->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
 					if(sImpParXYZ.at(2).is_electron)	fh2dJetSignedImpParXYZbThird_electron->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
@@ -925,16 +1297,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsEventSelected()
 }
 // ######################################################################################## Init histograms
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
-
-	const Int_t nBins2dSignificance =1000;
-	const Int_t nBins3dSignificance =1000;
-	const Int_t nBins2d=500;
-	const Int_t nBins3d =500;
+	const Int_t nBins2dSignificance =500;
+	const Int_t nBins3dSignificance =500;
+	const Int_t nBins2d=250;
+	const Int_t nBins3d =250;
 	fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");
 	fNparents = 7;
 
 	if (!fOutput) fOutput = new TList();
 	fOutput->SetOwner(kTRUE);
+
 	//Event selection histograms
 	fh1dEventRejectionRDHFCuts = new TH1D("fh1dEventRejectionRDHFCuts;reason;count","Rejection reasons",8,0,8);
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(1,"Accepted");
@@ -1057,7 +1429,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedThird","fh2dJetSignedImpParXYSignificanceUnidentifiedThird;pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedThird","fh2dJetSignedImpParXYZSignificanceUnidentifiedThird;pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-		fh2dJetSignedImpParXYudsgThird = new TH2D("fh2dJetSignedImpParXYThirdecond","fh2dJetSignedImpParXYudsgThird;pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYudsgThird = new TH2D("fh2dJetSignedImpParXYudsgThird","fh2dJetSignedImpParXYudsgThird;pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZudsgThird  = new TH2D("fh2dJetSignedImpParXYZudsgThird","fh2dJetSignedImpParXYZudsgThird;pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgThird","fh2dJetSignedImpParXYSignificanceudsgThird;pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgThird","fh2dJetSignedImpParXYZSignificanceudsgThird;pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
@@ -1082,15 +1454,20 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificanceudsg_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificanceudsg_McCorr","fh2dJetSignedImpParXYSignificanceudsg (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsg_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_McCorr","fh2dJetSignedImpParXYZSignificanceudsg (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-		fh2dJetSignedImpParXYc_McCorr= new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_McCorr","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYc_McCorr= new TH2D("fh2dJetSignedImpParXYc_McCorr","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZc_McCorr  = new TH2D("fh2dJetSignedImpParXYZc_McCorr","fh2dJetSignedImpParXYZc (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancec_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancec_McCorr","fh2dJetSignedImpParXYSignificancec (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancec_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancec_McCorr","fh2dJetSignedImpParXYZSignificancec (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYb_McCorr= new TH2D("fh2dJetSignedImpParXYb_McCorr","fh2dJetSignedImpParXYb (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYb_McCorrNonBDecay= new TH2D("fh2dJetSignedImpParXYb_McCorrNonBDecay","fh2dJetSignedImpParXYb (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZb_McCorr  = new TH2D("fh2dJetSignedImpParXYZb_McCorr","fh2dJetSignedImpParXYZb (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay","fh2dJetSignedImpParXYZb (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceb_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificanceb_McCorr","fh2dJetSignedImpParXYSignificanceb (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay","fh2dJetSignedImpParXYSignificanceb (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceb_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificanceb_McCorr","fh2dJetSignedImpParXYZSignificanceb (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificanceb (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+
 		//N=1
 		fh2dJetSignedImpParXYUnidentifiedFirst_McCorr= new TH2D("fh2dJetSignedImpParXYUnidentifiedFirst_McCorr","fh2dJetSignedImpParXYUnidentifiedFirst (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr = new TH2D("fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr","fh2dJetSignedImpParXYZUnidentifiedFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,1000,-1,1);
@@ -1098,7 +1475,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr","fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgFirst_McCorr = new TH2D("fh2dJetSignedImpParXYudsgFirst_McCorr","fh2dJetSignedImpParXYudsgFirst (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		fh2dJetSignedImpParXYZudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYudsgFirst_McCorr","fh2dJetSignedImpParXYZudsgFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZudsgFirst_McCorr","fh2dJetSignedImpParXYZudsgFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr","fh2dJetSignedImpParXYSignificanceudsgFirst (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr","fh2dJetSignedImpParXYZSignificanceudsgFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
@@ -1108,14 +1485,18 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZSignificancecFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancecFirst_McCorr","fh2dJetSignedImpParXYZSignificancecFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYbFirst_McCorr= new TH2D("fh2dJetSignedImpParXYbFirst_McCorr","fh2dJetSignedImpParXYbFirst (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYbFirst_McCorrNonBDecay= new TH2D("fh2dJetSignedImpParXYbFirst_McCorrNonBDecay","fh2dJetSignedImpParXYbFirst (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZbFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZbFirst_McCorr","fh2dJetSignedImpParXYZbFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay","fh2dJetSignedImpParXYZbFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancebFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancebFirst_McCorr","fh2dJetSignedImpParXYSignificancebFirst (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay","fh2dJetSignedImpParXYSignificancebFirst (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancebFirst_McCorr","fh2dJetSignedImpParXYZSignificancebFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificancebFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		//N=2
 		fh2dJetSignedImpParXYUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYUnidentifiedSecond (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYZUnidentifiedSecond (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgSecond_McCorr = new TH2D("fh2dJetSignedImpParXYudsgSecond_McCorr","fh2dJetSignedImpParXYudsgSecond (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
@@ -1128,10 +1509,17 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificancecSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancecSecond_McCorr","fh2dJetSignedImpParXYSignificancecSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancecSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancecSecond_McCorr","fh2dJetSignedImpParXYZSignificancecSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
+
 		fh2dJetSignedImpParXYbSecond_McCorr= new TH2D("fh2dJetSignedImpParXYbSecond_McCorr","fh2dJetSignedImpParXYbSecond (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYbSecond_McCorrNonBDecay= new TH2D("fh2dJetSignedImpParXYbSecond_McCorrNonBDecay","fh2dJetSignedImpParXYbSecond (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZbSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYZbSecond_McCorr","fh2dJetSignedImpParXYZbSecond (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay","fh2dJetSignedImpParXYZbSecond (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancebSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond_McCorr","fh2dJetSignedImpParXYSignificancebSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay","fh2dJetSignedImpParXYSignificancebSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancebSecond_McCorr","fh2dJetSignedImpParXYZSignificancebSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificancebSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+
+
 		//N=3
 		fh2dJetSignedImpParXYUnidentifiedThird_McCorr = new TH2D("fh2dJetSignedImpParXYUnidentifiedThird_McCorr","fh2dJetSignedImpParXYUnidentifiedThird (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZUnidentifiedThird_McCorr = new TH2D("fh2dJetSignedImpParXYZUnidentifiedThird_McCorr","fh2dJetSignedImpParXYZUnidentifiedThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
@@ -1145,13 +1533,20 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 		fh2dJetSignedImpParXYcThird_McCorr= new TH2D("fh2dJetSignedImpParXYcThird_McCorr","fh2dJetSignedImpParXYcThird (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZcThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZcThird_McCorr","fh2dJetSignedImpParXYZcThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancecThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZcThird_McCorr","fh2dJetSignedImpParXYSignificancecThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancecThird_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancecThird_McCorr","fh2dJetSignedImpParXYSignificancecThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancecThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancecThird_McCorr","fh2dJetSignedImpParXYZSignificancecThird (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
+
 		fh2dJetSignedImpParXYbThird_McCorr= new TH2D("fh2dJetSignedImpParXYbThird_McCorr","fh2dJetSignedImpParXYbThird (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYbThird_McCorrNonBDecay= new TH2D("fh2dJetSignedImpParXYbThird_McCorrNonBDecay","fh2dJetSignedImpParXYbThird (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+
 		fh2dJetSignedImpParXYZbThird_McCorr = new TH2D("fh2dJetSignedImpParXYZbThird_McCorr","fh2dJetSignedImpParXYZbThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancebThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZbThird_McCorr","fh2dJetSignedImpParXYSignificancebThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYZbThird_McCorrNonBDecay = new TH2D("fh2dJetSignedImpParXYZbThird_McCorrNonBDecay","fh2dJetSignedImpParXYZbThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+
+		fh2dJetSignedImpParXYSignificancebThird_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancebThird_McCorr","fh2dJetSignedImpParXYSignificancebThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay","fh2dJetSignedImpParXYSignificancebThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird_McCorr","fh2dJetSignedImpParXYZSignificancebThird (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificancebThird (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 
 
@@ -1169,7 +1564,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificanceudsg_electron  = new TH2D("fh2dJetSignedImpParXYSignificanceudsg_electron","fh2dJetSignedImpParXYSignificanceudsg (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsg_electron  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_electron","fh2dJetSignedImpParXYZSignificanceudsg (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-		fh2dJetSignedImpParXYc_electron= new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_electron","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYc_electron= new TH2D("fh2dJetSignedImpParXYc_electron","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZc_electron  = new TH2D("fh2dJetSignedImpParXYZc_electron","fh2dJetSignedImpParXYZc (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancec_electron  = new TH2D("fh2dJetSignedImpParXYSignificancec_electron","fh2dJetSignedImpParXYSignificancec (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancec_electron  = new TH2D("fh2dJetSignedImpParXYZSignificancec_electron","fh2dJetSignedImpParXYZSignificancec (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
@@ -1187,7 +1582,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_electron = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_electron","fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgFirst_electron = new TH2D("fh2dJetSignedImpParXYudsgFirst_electron","fh2dJetSignedImpParXYudsgFirst (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		fh2dJetSignedImpParXYZudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYudsgFirst_electron","fh2dJetSignedImpParXYZudsgFirst (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYZudsgFirst_electron","fh2dJetSignedImpParXYZudsgFirst (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgFirst_electron","fh2dJetSignedImpParXYSignificanceudsgFirst (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgFirst_electron","fh2dJetSignedImpParXYZSignificanceudsgFirst (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
@@ -1204,7 +1599,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		//N=2
 		fh2dJetSignedImpParXYUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYUnidentifiedSecond_electron","fh2dJetSignedImpParXYUnidentifiedSecond (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_electron","fh2dJetSignedImpParXYZUnidentifiedSecond (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_electron","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_electron","fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgSecond_electron = new TH2D("fh2dJetSignedImpParXYudsgSecond_electron","fh2dJetSignedImpParXYudsgSecond (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
@@ -1234,12 +1629,12 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 		fh2dJetSignedImpParXYcThird_electron= new TH2D("fh2dJetSignedImpParXYcThird_electron","fh2dJetSignedImpParXYcThird (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZcThird_electron  = new TH2D("fh2dJetSignedImpParXYZcThird_electron","fh2dJetSignedImpParXYZcThird (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancecThird_electron  = new TH2D("fh2dJetSignedImpParXYZcThird_electron","fh2dJetSignedImpParXYSignificancecThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancecThird_electron  = new TH2D("fh2dJetSignedImpParXYSignificancecThird_electron","fh2dJetSignedImpParXYSignificancecThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancecThird_electron  = new TH2D("fh2dJetSignedImpParXYZSignificancecThird_electron","fh2dJetSignedImpParXYZSignificancecThird (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYbThird_electron= new TH2D("fh2dJetSignedImpParXYbThird_electron","fh2dJetSignedImpParXYbThird (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZbThird_electron = new TH2D("fh2dJetSignedImpParXYZbThird_electron","fh2dJetSignedImpParXYZbThird (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancebThird_electron  = new TH2D("fh2dJetSignedImpParXYZbThird_electron","fh2dJetSignedImpParXYSignificancebThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebThird_electron  = new TH2D("fh2dJetSignedImpParXYSignificancebThird_electron","fh2dJetSignedImpParXYSignificancebThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebThird_electron  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird_electron","fh2dJetSignedImpParXYZSignificancebThird (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 	}
@@ -1367,6 +1762,8 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetSignedImpParXYSignificanceb);
 		fOutput->Add(fh2dJetSignedImpParXYZSignificanceb);
 
+
+
 		fOutput->Add(fh2dJetSignedImpParXYUnidentifiedFirst);
 		fOutput->Add(fh2dJetSignedImpParXYZUnidentifiedFirst);
 		fOutput->Add(fh2dJetSignedImpParXYSignificanceUnidentifiedFirst);
@@ -1441,6 +1838,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetSignedImpParXYZb_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYSignificanceb_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZSignificanceb_McCorr);
+		fOutput->Add(fh2dJetSignedImpParXYb_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay);
 
 		fOutput->Add(fh2dJetSignedImpParXYUnidentifiedFirst_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr);
@@ -1458,6 +1859,11 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetSignedImpParXYZbFirst_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYSignificancebFirst_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZSignificancebFirst_McCorr);
+		fOutput->Add(fh2dJetSignedImpParXYbFirst_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay);
+
 
 		fOutput->Add(fh2dJetSignedImpParXYUnidentifiedSecond_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr);
@@ -1475,6 +1881,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetSignedImpParXYZbSecond_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYSignificancebSecond_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZSignificancebSecond_McCorr);
+		fOutput->Add(fh2dJetSignedImpParXYbSecond_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay);
 
 		fOutput->Add(fh2dJetSignedImpParXYUnidentifiedThird_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZUnidentifiedThird_McCorr);
@@ -1492,6 +1902,11 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetSignedImpParXYZbThird_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYSignificancebThird_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZSignificancebThird_McCorr);
+
+		fOutput->Add(fh2dJetSignedImpParXYbThird_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZbThird_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay);
+		fOutput->Add(fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay);
 
 		fOutput->Add(fh2dJetSignedImpParXY_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZ_McCorr);
@@ -1615,6 +2030,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 	fOutput->Add(fh1dJetRecEtaPhiAccepted);
 
 	if(fIsPythia){
+
 		fOutput->Add(fh1dJetRecPtUnidentified);
 		fOutput->Add(fh1dJetRecPtudsg);
 		fOutput->Add(fh1dJetRecPtc);
@@ -1624,7 +2040,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh1dJetRecPtcAccepted);
 		fOutput->Add(fh1dJetRecPtbAccepted);
 	}
-
 
 	fOutput->Add(fh2dJetSignedImpParXY);
 	fOutput->Add(fh2dJetSignedImpParXYZ);
@@ -1643,7 +2058,12 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 	fOutput->Add(fh2dJetSignedImpParXYSignificanceThird);
 	fOutput->Add(fh2dJetSignedImpParXYZSignificanceThird);
 
-
+	TIter next(fOutput);
+	while (TObject *obj = next.Next()){
+		if(obj->IsA() == TH1D::Class() || obj->IsA() == TH2D::Class()){
+			((TH1*)obj)->Sumw2();
+		}
+	}
 	PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 // ######################################################################################## Calculate impact parameters
@@ -1933,6 +2353,326 @@ void AliAnalysisTaskHFJetIPQA::DoJetLoop()
 		} // jet2 loop
 	} // jet1 loop
 }
+
+
+
+
+
+// ######################################################################################## Jet matching 3/4
+Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpart,bool &isTrackFromPrompt){
+
+	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+
+	if(!mcpart) return -1;
+	//******Check the following cases*****
+	// 1. is from primary D Meson
+	// 2. is from primary K0s or Lambda
+	// 3. is primary charged pion kaon or proton/antiproton
+	// 4. is from primary neutral pion /rho / eta / etap / phi / omega meson
+
+	// check if particle is a primary charged pion or proton
+	Int_t pPdgcode = abs(mcpart->GetPdgCode());
+
+	Bool_t found = kFALSE;
+	Double_t pTWeight =0;
+	Int_t foundPdg =-1;
+	Int_t correctionidx =-1;
+
+	Int_t maPdgcode = 0;
+	Int_t pMotherLabel = 	mcpart->GetMother();
+	bool isprim = false;
+	AliAODMCParticle * mcpartMother = 0x0;
+	mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
+	if (!mcpartMother )isprim =true;
+
+	if(!isprim){
+		maPdgcode = abs(mcpartMother->GetPdgCode());
+		if(maPdgcode>0 && maPdgcode<6) isprim =true;
+		if(maPdgcode==21) isprim =true;
+		if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
+	}
+
+	if(pPdgcode == bProton && 	mcpart->IsPhysicalPrimary() ){
+		//Is Primary proton
+		found = kTRUE;
+		foundPdg =bProton;
+		correctionidx = bIdxProton;
+		pTWeight =mcpart->Pt();
+	}
+	else if(pPdgcode == bPi&& 	mcpart->IsPhysicalPrimary() ){
+		//Is Primary charged pion
+		found = kTRUE;
+		foundPdg =bPi;
+		correctionidx = bIdxPi;
+		pTWeight =mcpart->Pt();
+		return 1;
+	}
+	else if(pPdgcode == bKaon&& 	mcpart->IsPhysicalPrimary() ){
+		//Is Primary charged kaon
+		found = kTRUE;
+		pTWeight =mcpart->Pt();
+		foundPdg =bKaon;
+		correctionidx = bIdxKaon;
+		return 1;
+	}
+	else if(ParticleIsPossibleSource(maPdgcode)){
+		if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
+			found = kTRUE;
+			foundPdg =maPdgcode;
+		}
+
+	}
+	else {
+
+		while (mcpartMother->GetMother() >0){
+			pMotherLabel = 	mcpartMother->GetMother();
+			mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
+			if (!mcpartMother )isprim =true;
+			if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
+
+			if(!isprim){
+				maPdgcode = abs(mcpartMother->GetPdgCode());
+				if(maPdgcode>0 && maPdgcode<6) isprim =true;
+				if(maPdgcode==21) isprim =true;
+			}
+			if(ParticleIsPossibleSource(maPdgcode)){
+				if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
+					found = kTRUE;
+					foundPdg =maPdgcode;
+					break;
+				}
+			}
+			else if (!isprim) continue;
+			else break;
+		}
+	}
+
+	//
+	if (!found) return 1;
+	// Do the weighting
+
+	Double_t factor = 1;
+
+	//calculate pt of array entry
+	// 0.1 -25.GeV 0.05 per bin 498 bins
+
+	double wpos = ((pTWeight - 0.15)/ 0.05);
+	double  fractpart, intpart;
+	fractpart = modf (wpos , &intpart);
+	if (fractpart > 0) intpart = intpart + 1;
+	int  bin = floor(intpart);
+
+	if (bin > 497) bin = 497;			// above weight definition
+	if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
+
+	factor = fBackgroundFactorLinus[correctionidx][bin];
+
+
+	if (factor <= 0) return 1;
+	else
+		return factor;
+}
+
+
+// ########################################################################################
+
+Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) {
+
+	// If a particle is not a physical primary, check if it comes from weak decay
+
+	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+
+
+	Int_t mfl = 0;
+	Int_t indexMoth = particle->GetMother();
+	if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
+	AliAODMCParticle* moth = dynamic_cast<AliAODMCParticle *>(fMCArray->At(indexMoth));
+	Int_t pcodemoth = TMath::Abs(particle->GetPdgCode());
+	Int_t codemoth = TMath::Abs(moth->GetPdgCode());
+
+	// mass of the flavour
+	mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+	if(mfl == 4|| mfl ==5) return kTRUE;
+
+	if(pcodemoth==bPi0){
+		if(codemoth == bK0s) return kTRUE;
+		else if(codemoth == bK0l) return kTRUE;
+		else if(TMath::Abs(codemoth) == bKaon) return kTRUE;
+		else if(TMath::Abs(codemoth) == bLambda) return kTRUE;
+		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
+	}
+	else if (pcodemoth==bPhi){
+		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113) return kTRUE;
+	}
+	else if (pcodemoth==bOmega){
+		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
+	}
+	else if (pcodemoth==bEtaPrime){
+		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113) return kTRUE;
+	}
+	else if (pcodemoth==bRho){
+		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331) return kTRUE;
+	}
+	else if (pcodemoth==bEta){
+		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;    }
+	return kFALSE;
+}
+
+// ########################################################################################
+Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart ,int &pdg,double &pT,int &idx ){
+
+	pT = mcpart->Pt();
+	switch(pdg){
+	case bPi0:
+
+		if(!IsSecondaryFromWeakDecay(mcpart) && !mcpart->IsSecondaryFromMaterial()){
+			idx = bIdxPi0;
+			return kTRUE;
+
+		}
+
+		break;
+	case bEta:
+		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+			idx = bIdxEta;
+			return kTRUE;
+
+		}
+
+		break;
+	case bEtaPrime:
+		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+			idx = bIdxEtaPrime;
+			return kTRUE;
+		}
+
+		break;
+	case bOmega:
+		idx = bIdxOmega;
+		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+			return kTRUE;
+		}
+
+		break;
+	case bPhi:
+		idx = bIdxPhi;
+
+		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+			return kTRUE;
+		}
+
+		break;
+	case bRho:
+		idx = bIdxRho;
+		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+			return kTRUE;
+		}
+		break;
+	case bD0:
+		idx = bIdxD0;
+		if(IsPromptDMeson(mcpart)){
+			return kTRUE;
+		}
+		break;
+	case bDPlus:
+		idx = bIdxDPlus;
+		if(IsPromptDMeson(mcpart)){
+			return kTRUE;
+		}
+		break;
+	case bIdxDSPlus:
+		idx = bDSPlus;
+
+		if(IsPromptDMeson(mcpart)){
+			return kTRUE;
+		}
+		break;
+	case bDStarPlus:
+		idx = bIdxDStarPlus;
+
+		if(IsPromptDMeson(mcpart)){
+			return kTRUE;
+		}
+		break;
+
+	case bLambda:
+		idx = bIdxLambda;
+
+		if(mcpart->IsPhysicalPrimary())
+		{
+			return kTRUE;
+		}
+		break;
+	case bK0s:
+		idx = bIdxK0s;
+
+		if(mcpart->IsPhysicalPrimary())
+		{
+			return kTRUE;
+		}
+		break;
+	default:
+		break;
+	}
+	return kFALSE;
+}
+
+// ########################################################################################
+bool AliAnalysisTaskHFJetIPQA::IsPromptBMeson(AliAODMCParticle * part )
+{
+
+	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+
+	if(!part) return false;
+	int pdg = TMath::Abs(part->GetPdgCode());
+
+	if ((pdg >= 500 && pdg < 600 )||(pdg >= 5000 && pdg < 6000 ))
+	{
+		Int_t imo =  part->GetMother();
+		AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
+		Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+		if (!(mpdg >5000 && mpdg <6000) && !(mpdg >500 && mpdg <600))
+			return true;
+	}
+
+	return false;
+}
+
+// ########################################################################################
+bool AliAnalysisTaskHFJetIPQA::IsPromptDMeson(AliAODMCParticle * part )
+{
+
+	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+
+	if(!part) return false;
+	int pdg = TMath::Abs(part->GetPdgCode());
+
+	if ((pdg >= 400 && pdg < 500 )||(pdg >= 4000 && pdg < 5000 ))
+	{
+		Int_t imo =  part->GetMother();
+		AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
+		Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+		if (!(mpdg >4000 && mpdg <6000) && !(mpdg >400 && mpdg <600))
+			return true;
+
+	}
+
+	return false;
+}
+// ########################################################################################
+Bool_t AliAnalysisTaskHFJetIPQA::ParticleIsPossibleSource(int pdg){
+
+	int pos[14] = {bPi0,bEta,bEtaPrime,bPhi,bRho,bOmega,bK0s,bLambda,bOmegaBaryon,bXiBaryon,bD0,bDPlus,bDStarPlus,bDSPlus};
+
+	for (int i =0 ;i<14 ;++i){
+		if (abs(pdg)==pos[i] ) return kTRUE;
+	}
+	return kFALSE;
+}
 // ######################################################################################## Jet matching 3/4
 void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
 {
@@ -1977,7 +2717,7 @@ void AliAnalysisTaskHFJetIPQA::GetGeometricalMatchingLevel(AliEmcalJet *jet1, Al
 	dphi = TVector2::Phi_mpi_pi(dphi);
 	d = TMath::Sqrt(deta * deta + dphi * dphi);
 }// ######################################################################################## Monte Carlo correction factors
-Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise){
+Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB){
 
 	AliAODMCParticle *pMC = 0x0;
 	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -1989,11 +2729,10 @@ Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* tr
 		pMC = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(track->GetLabel()));
 
 	if(pMC) 	if(TMath::Abs(pMC->PdgCode())==11)ise = true;
-	double val =GetWeightFactor(pMC,0);
+	//double val =GetWeightFactor(pMC,0);
+
+	double val = GetWeightFactorLinus(pMC,fromB);
 	if(val != 0 )return val;
-
-
-
 	return 1.;
 }
 

@@ -107,7 +107,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
 
   Printf("Jet task name: %s", name.Data());
  
-  AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
+  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(name.Data()));
   if (mgrTask) return mgrTask;  
 
   AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);

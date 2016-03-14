@@ -2614,12 +2614,21 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 	}
 
   fCandidateVariables[21] = trke->T();
+  fCandidateVariables[22] = (*v0vars)[9];
+  fCandidateVariables[23] = (*v0vars)[10];
+  fCandidateVariables[24] = (*v0vars)[11];
+  fCandidateVariables[25] = (*v0vars)[12];
+  fCandidateVariables[26] = (*v0vars)[13];
+  fCandidateVariables[27] = (*v0vars)[14];
 
 	fCandidateVariables[32] = 1;
 
   fCandidateVariables[54] = fVtx1->GetX();
   fCandidateVariables[55] = fVtx1->GetY();
   fCandidateVariables[56] = fVtx1->GetZ();
+  fCandidateVariables[57] = (*v0vars)[6];
+  fCandidateVariables[58] = (*v0vars)[7];
+  fCandidateVariables[59] = (*v0vars)[8];
   fCandidateVariables[64] = v0info[0];
 
   fCandidateVariables[90] = fEvNumberCounter;
@@ -2984,7 +2993,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineV0TreeVariables()
 
   const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
   fV0VariablesTree = new TTree(nameoutput,"v0 variables tree");
-  Int_t nVar = 33;
+  Int_t nVar = 36;
   fCandidateV0Variables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -3017,10 +3026,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineV0TreeVariables()
   fCandidateVariableNames[26]="mcv0px";
   fCandidateVariableNames[27]="mcv0py";
   fCandidateVariableNames[28]="mcv0pz";
-  fCandidateVariableNames[29]="EvNumber";
-  fCandidateVariableNames[30]="Centrality";
-  fCandidateVariableNames[31]="PrimVertZ";
-  fCandidateVariableNames[32]="RunNumber";
+  fCandidateVariableNames[29]="mcv0vertx";
+  fCandidateVariableNames[30]="mcv0verty";
+  fCandidateVariableNames[31]="mcv0vertz";
+  fCandidateVariableNames[32]="EvNumber";
+  fCandidateVariableNames[33]="Centrality";
+  fCandidateVariableNames[34]="PrimVertZ";
+  fCandidateVariableNames[35]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fV0VariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateV0Variables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -3096,6 +3108,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 	Float_t mcv0px = -9999;
 	Float_t mcv0py = -9999;
 	Float_t mcv0pz = -9999;
+	Float_t mcv0vertx = -9999;
+	Float_t mcv0verty = -9999;
+	Float_t mcv0vertz = -9999;
 	if(fUseMCInfo)
 	{
 		Int_t pdgdgv0[2]={2212,211};
@@ -3117,6 +3132,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 		if(!mcv0trk) return;
 
 		Bool_t hfv0_flag = kFALSE;
+		Bool_t promptv0_flag = kFALSE;
 		v0pdgcode = mcv0trk->GetPdgCode();
 		Int_t labv0mother = mcv0trk->GetMother();
 		if(labv0mother>=0){
@@ -3134,13 +3150,26 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 					fHistoLambdaPtvsDlFeeddownOmegaMCS->Fill(v0->Pt(),v0propdl);
 				}else{
 					fHistoLambdaPtvsDlMCS->Fill(v0->Pt(),v0propdl);
+          promptv0_flag = kTRUE;
 				}
 			}
 		}
 		if(!hfv0_flag) return;
+		//if(!promptv0_flag) return;
+
 		mcv0px = mcv0trk->Px();
 		mcv0py = mcv0trk->Py();
 		mcv0pz = mcv0trk->Pz();
+
+    Int_t labptrk = cptrack->GetLabel();
+		if(labptrk>=0){
+      AliAODMCParticle *mcv0ptrk = (AliAODMCParticle*)mcArray->At(labptrk);
+      if(mcv0ptrk){
+        mcv0vertx = mcv0ptrk->Xv();
+        mcv0verty = mcv0ptrk->Yv();
+        mcv0vertz = mcv0ptrk->Zv();
+      }
+    }
 	}
 
 
@@ -3158,13 +3187,22 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
       fV0dcaArray1.push_back(v0->DcaV0ToPrimVertex());
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pr);
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pi);
-      TVector *varvec = new TVector(6);
+      TVector *varvec = new TVector(15);
       (*varvec)[0] = xyzR125pr[0];
       (*varvec)[1] = xyzR125pr[1];
       (*varvec)[2] = xyzR125pr[2];
       (*varvec)[3] = xyzR125pi[0];
       (*varvec)[4] = xyzR125pi[1];
       (*varvec)[5] = xyzR125pi[2];
+      (*varvec)[6] = v0->DecayVertexV0X();
+      (*varvec)[7] = v0->DecayVertexV0Y();
+      (*varvec)[8] = v0->DecayVertexV0Z();
+      (*varvec)[9] = v0->MomPosX();
+      (*varvec)[10] = v0->MomPosY();
+      (*varvec)[11] = v0->MomPosZ();
+      (*varvec)[12] = v0->MomNegX();
+      (*varvec)[13] = v0->MomNegY();
+      (*varvec)[14] = v0->MomNegZ();
       fV0CutVarsArray1->AddLast(varvec);
     }else{
       lv->SetXYZM(v0->Px(),v0->Py(),v0->Pz(),v0->MassAntiLambda());
@@ -3173,23 +3211,31 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
       fV0dcaArray2.push_back(v0->DcaV0ToPrimVertex());
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pr);
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pi);
-      TVector *varvec = new TVector(6);
+      TVector *varvec = new TVector(15);
       (*varvec)[0] = xyzR125pr[0];
       (*varvec)[1] = xyzR125pr[1];
       (*varvec)[2] = xyzR125pr[2];
       (*varvec)[3] = xyzR125pi[0];
       (*varvec)[4] = xyzR125pi[1];
       (*varvec)[5] = xyzR125pi[2];
+      (*varvec)[6] = v0->DecayVertexV0X();
+      (*varvec)[7] = v0->DecayVertexV0Y();
+      (*varvec)[8] = v0->DecayVertexV0Z();
+      (*varvec)[9] = v0->MomNegX();
+      (*varvec)[10] = v0->MomNegY();
+      (*varvec)[11] = v0->MomNegZ();
+      (*varvec)[12] = v0->MomPosX();
+      (*varvec)[13] = v0->MomPosY();
+      (*varvec)[14] = v0->MomPosZ();
       fV0CutVarsArray2->AddLast(varvec);
     }
   }
 
 	if(!fWriteEachVariableTree) return;
 
-	for(Int_t i=0;i<32;i++){
+	for(Int_t i=0;i<36;i++){
 		fCandidateV0Variables[i] = -9999.;
 	}
-
 
   fCandidateV0Variables[ 0] = v0->Px();
   fCandidateV0Variables[ 1] = v0->Py();
@@ -3271,10 +3317,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 	fCandidateV0Variables[26] = mcv0px;
 	fCandidateV0Variables[27] = mcv0py;
 	fCandidateV0Variables[28] = mcv0pz;
-	fCandidateV0Variables[29] = fEvNumberCounter;
-	fCandidateV0Variables[30] = fCentrality;
-	fCandidateV0Variables[31] = fVtxZ;
-	fCandidateV0Variables[32] = fRunNumber;
+	fCandidateV0Variables[29] = mcv0vertx;
+	fCandidateV0Variables[30] = mcv0verty;
+	fCandidateV0Variables[31] = mcv0vertz;
+	fCandidateV0Variables[32] = fEvNumberCounter;
+	fCandidateV0Variables[33] = fCentrality;
+	fCandidateV0Variables[34] = fVtxZ;
+	fCandidateV0Variables[35] = fRunNumber;
 
 
 		fV0VariablesTree->Fill();

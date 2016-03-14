@@ -1,9 +1,7 @@
 #ifndef AliEmcalContainer_H
 #define AliEmcalContainer_H
-
-//
-// container with name, TClonesArray
-//
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TLorentzVector;
 class AliTLorentzVector;
@@ -14,45 +12,68 @@ class AliVParticle;
 #include <TNamed.h>
 #include <TClonesArray.h>
 
+/**
+ * @class AliEmcalContainer
+ * @brief Base class for container structures within the EMCAL framework
+ * @ingroup EMCALCOREFW
+ * @author  M. Verweij
+ *
+ * This class is the base class for container object used in the EMCAL framework.
+ * The main purpose is to connect this to objects stored as list objects in the
+ * input event, among them particles, EMCAL clusters, or jets. The core of the container
+ * is a pointer to a TClonesArray representing the the content in the input event.
+ *
+ * Containers can be connected. For example, jet containers need access to the track
+ * container and the cluster container in case constituent information is required.
+ *
+ * In addition, kinematical cuts can be applied, accessing only content which is selected
+ * using the selection cuts to be applied.
+ *
+ * The usage of EMCAL containers is described here: \subpage EMCALcontainers
+ */
 class AliEmcalContainer : public TObject {
  public:
+  /**
+   * @enum RejectionReason
+   * @brief Bit definition for the reason a particle was rejected
+   */
   enum RejectionReason {
     // General
-    kNullObject = 1<<0,
-    kPtCut = 1<<1,
-    kAcceptanceCut = 1<<2,
-    kMCLabelCut = 1<<3,
-    kBitMapCut = 1<<4,
-    kHFCut = 1<<5,
+    kNullObject = 1<<0,                  /// Object is NULL
+    kPtCut = 1<<1,                       /// \f$ p_{t} \f$ cut
+    kAcceptanceCut = 1<<2,               /// particle not in acceptance in \f$ \eta \f$ and/or \f$ \phi \f$
+    kMCLabelCut = 1<<3,                  /// Invalid MC label
+    kBitMapCut = 1<<4,                   /// kBitMapCut
+    kHFCut = 1<<5,                       /// kHFCut
     // leave bit 6 free for future implementations
     
     // AliParticleContainer
-    kNotHybridTrack = 1<<7,
-    kMCFlag = 1<<8,
-    kMCGeneratorCut = 1<<9,
-    kChargeCut = 1<<10,
-    kMinDistanceTPCSectorEdgeCut = 1<<11,
+    kNotHybridTrack = 1<<7,              /// Track did not pass the hybrid track cuts
+    kMCFlag = 1<<8,                      /// Cut on the MC flag
+    kMCGeneratorCut = 1<<9,              /// Generator flag mismatch
+    kChargeCut = 1<<10,                  /// Particle charge did not match
+    kMinDistanceTPCSectorEdgeCut = 1<<11,/// Track too close to the TPC sector boundary
     // leave bit 12 free for future implementations
 
     // AliClusterContainer
-    kIsEMCalCut = 1<<13,
-    kTimeCut = 1<<14,
-    kEnergyCut = 1<<15,
-    kExoticCut = 1<<16,
+    kIsEMCalCut = 1<<13,                 /// Cluster not in the EMCAL
+    kTimeCut = 1<<14,                    /// Cell time cut not passed
+    kEnergyCut = 1<<15,                  /// Energy below threshold
+    kExoticCut = 1<<16,                  /// Cluster is exotic cluster
     // leave bit 17 free for future implementations
 
     // AliJetContainer
-    kAreaCut = 1<<18,
-    kAreaEmcCut = 1<<19,
-    kZLeadingChCut = 1<<20,
-    kZLeadingEmcCut = 1<<21,
-    kNEFCut = 1<<22,
-    kMinLeadPtCut = 1<<23,
-    kMaxTrackPtCut = 1<<24,
-    kMaxClusterPtCut = 1<<25,
-    kFlavourCut = 1<<26,
-    kTagStatus = 1<<27,
-    kMinNConstituents = 1<<28
+    kAreaCut = 1<<18,                    /// Cut on the jet area
+    kAreaEmcCut = 1<<19,                 /// Cut on the jet area in the EMCAL
+    kZLeadingChCut = 1<<20,              /// Cut on the z of the leading charged constituent
+    kZLeadingEmcCut = 1<<21,             /// Cut on the z of the leading particle in the EMCAL
+    kNEFCut = 1<<22,                     /// Cut on the neutral energy fraction
+    kMinLeadPtCut = 1<<23,               /// Cut on the minimum \f$ p_{t} \f$ of the leading particle
+    kMaxTrackPtCut = 1<<24,              /// Cut on the maximum track \f$ p_{t} \f$
+    kMaxClusterPtCut = 1<<25,            /// Cut on the maximum cluster \f$ p_{t} \f$
+    kFlavourCut = 1<<26,                 /// Cut on flavour content in the jet
+    kTagStatus = 1<<27,                  /// Cut on jet tag status
+    kMinNConstituents = 1<<28            /// Cut on the minimum number of constituents
   };
 
   AliEmcalContainer();
@@ -111,33 +132,35 @@ class AliEmcalContainer : public TObject {
   static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
 
  protected:
-  TString                     fName;                    // object name
-  TString                     fClArrayName;             // name of branch
-  TString                     fClassName;               // name of the class in the TClonesArray
-  Bool_t                      fIsParticleLevel;         // whether or not it is a particle level object collection
-  UInt_t                      fBitMap;                  // bitmap mask
-  Double_t                    fMinPt;                   // cut on particle pt
-  Double_t                    fMaxPt;                   // cut on particle pt
-  Double_t                    fMaxE;                    // cut on particle energy
-  Double_t                    fMinE;                    // cut on particle energy
-  Double_t                    fMinEta;                  // cut on particle eta
-  Double_t                    fMaxEta;                  // cut on particle eta
-  Double_t                    fMinPhi;                  // cut on particle phi
-  Double_t                    fMaxPhi;                  // cut on particle phi
-  Int_t                       fMinMCLabel;              // minimum MC label
-  Int_t                       fMaxMCLabel;              // maximum MC label
-  Double_t                    fMassHypothesis;          // if < 0 it will use a PID mass when available
-  TClonesArray               *fClArray;                 //!TClonesArray
-  Int_t                       fCurrentID;               //!current ID for automatic loops
-  AliNamedArrayI             *fLabelMap;                //!Label-Index map
-  Double_t                    fVertex[3];               //!event vertex array
-  UInt_t                      fRejectionReason;         //!reject reason bit map for the last call to an accept object function
-  TClass                     *fLoadedClass;             //!Class of teh objects contained in the TClonesArray
+  TString                     fName;                    /// object name
+  TString                     fClArrayName;             /// name of branch
+  TString                     fClassName;               /// name of the class in the TClonesArray
+  Bool_t                      fIsParticleLevel;         /// whether or not it is a particle level object collection
+  UInt_t                      fBitMap;                  /// bitmap mask
+  Double_t                    fMinPt;                   /// cut on particle pt
+  Double_t                    fMaxPt;                   /// cut on particle pt
+  Double_t                    fMaxE;                    /// cut on particle energy
+  Double_t                    fMinE;                    /// cut on particle energy
+  Double_t                    fMinEta;                  /// cut on particle eta
+  Double_t                    fMaxEta;                  /// cut on particle eta
+  Double_t                    fMinPhi;                  /// cut on particle phi
+  Double_t                    fMaxPhi;                  /// cut on particle phi
+  Int_t                       fMinMCLabel;              /// minimum MC label
+  Int_t                       fMaxMCLabel;              /// maximum MC label
+  Double_t                    fMassHypothesis;          /// if < 0 it will use a PID mass when available
+  TClonesArray               *fClArray;                 //!<!TClonesArray
+  Int_t                       fCurrentID;               //!<!current ID for automatic loops
+  AliNamedArrayI             *fLabelMap;                //!<!Label-Index map
+  Double_t                    fVertex[3];               //!<!event vertex array
+  UInt_t                      fRejectionReason;         //!<!reject reason bit map for the last call to an accept object function
+  TClass                     *fLoadedClass;             //!<!Class of teh objects contained in the TClonesArray
 
  private:
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
+  /// \cond CLASSIMP
   ClassDef(AliEmcalContainer,7);
+  /// \endcond
 };
 #endif

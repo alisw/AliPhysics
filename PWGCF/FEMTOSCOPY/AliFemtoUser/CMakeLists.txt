@@ -35,6 +35,7 @@ set(SRCS
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
   AliFemtoKpmTrackCut.cxx
+  AliFemtoKpm45TrackCut.cxx
   AliFemtoKtBinnedCorrFunc.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx

@@ -103,7 +103,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(
   clusterizeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskClusterizerFast.C(";
   clusterizeradd << "\"ClusterizerFast\", ";
   clusterizeradd << "\"\", ";
-  clusterizeradd << "\"" << tmpClusters << "\", ";
+  clusterizeradd << "\"\", ";
   clusterizeradd << clusterizer << ", ";
   clusterizeradd << cellthresh << ", ";
   clusterizeradd << seedthresh << ", ";
@@ -154,7 +154,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(
   clustermakeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C(";
   clustermakeradd << nonLinFunct << ", ";
   clustermakeradd << (remExoticClus ? "kTRUE" : "kFALSE") << ", ";
-  clustermakeradd << "\"" << tmpClusters << "\", ";
+  clustermakeradd << "0, ";
   clustermakeradd << "\"EmcCaloClusters\", ";
   clustermakeradd << "0., ";
   clustermakeradd << "kTRUE";

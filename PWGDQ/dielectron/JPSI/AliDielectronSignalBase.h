@@ -166,13 +166,14 @@ protected:
   void SetBackgroundEnumMap();	     // set enum string relations
   void SetSignalExtractionEnumMap(); // set enum string relations
   static const char* fgkValueNames[6];  //value names
+  static const Double_t fgkErrorZero;  //statistical error if zero entries
 
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
 
   AliDielectronSignalBase(const AliDielectronSignalBase &c);
   AliDielectronSignalBase &operator=(const AliDielectronSignalBase &c);
 
-  ClassDef(AliDielectronSignalBase,5)         // base and abstract class for signal extraction
+  ClassDef(AliDielectronSignalBase,6)         // base and abstract class for signal extraction
 };
 
 inline void AliDielectronSignalBase::SetSignificanceAndSOB()

@@ -20,13 +20,14 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
  public:
   
   enum JetShapeType {
-    kTrue = 0,   // generated jets only 
+    kMCTrue = 0,   // generated jets only
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
     kDetEmb = 3,  //detector embedded jets
-    kDetEmbPart=4,
+    kDetEmbPart = 4,
     kPythiaDef = 5,
-    kDetEmbPartPythia=6
+    kDetEmbPartPythia=6,
+    kGenOnTheFly = 7
   };
   enum JetShapeSub {
     kNoSub = 0, 

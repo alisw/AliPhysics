@@ -220,7 +220,7 @@ void AliTwoPlusOneContainer::FillParticleDist(Double_t centrality, Float_t zVtx,
 
 
 //____________________________________________________________________
-void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency)
+Int_t AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency)
 {
   //Fill Correlations fills the UEHist fTwoPlusOne with the 2+1 correlation
   //the input variables centrality and zVtx are the centrality and the z vertex of the event
@@ -236,6 +236,9 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   //both positions are used so the results could only be weighted with 0.5*weight
   if(isBackgroundSame && !fUseBackgroundSameOneSide)
      fAlpha*= 0.5;
+
+  //return variable: found triggers
+  Int_t found_triggers = 0;
 
   //efficiency value which is multiplied with the weight
   //this value is always adjusted to the correct value just before the usage
@@ -359,6 +362,9 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
     //if no second trigger particle was found continue to search for the next first trigger particle
     if(ind_found==0)
       continue;
+    else{
+      found_triggers += ind_found;
+    }
 
     //use only the highest energetic particle on the away side, if there is only 1 away side trigger this is already the case
     if(fUseLeadingPt && ind_found>1){
@@ -550,6 +556,8 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
   //put fAlpha back on the old value in case this is for background same
   if(isBackgroundSame && !fUseBackgroundSameOneSide)
      fAlpha*= 2;
+
+  return found_triggers;
 }
 
 //____________________________________________________________________

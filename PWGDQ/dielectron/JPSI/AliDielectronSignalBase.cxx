@@ -42,7 +42,8 @@ ClassImp(AliDielectronSignalBase)
 
 const char* AliDielectronSignalBase::fgkValueNames[6] = {
   "Signal","Background","Significance","Signal/Background","Mass","MassWidth"};
-
+const Double_t AliDielectronSignalBase::fgkErrorZero = 0.5 * TMath::ChisquareQuantile(0.6827,2);
+  
 AliDielectronSignalBase::AliDielectronSignalBase() :
   TNamed(),
   fHistSignal(0),

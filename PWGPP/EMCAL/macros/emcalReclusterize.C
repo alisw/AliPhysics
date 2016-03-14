@@ -141,7 +141,7 @@ void emcalReclusterize(Int_t mode=mLocal)
     Int_t   minEcell  = 50;     // 50  MeV (10 MeV used in reconstruction)
     Int_t   minEseed  = 100;    // 100 MeV
     Int_t   dTime     = 0;      // default, 250 ns
-    Int_t   wTime     = 30;     // default 425 < T < 825 ns, careful if time calibration is on
+    Int_t   wTime     = 0;      // default 425 < T < 825 ns, careful if time calibration is on
     Int_t   unfMinE   = 15;     // Remove cells with less than 15 MeV from cluster after unfolding
     Int_t   unfFrac   = 1;      // Remove cells with less than 1% of cluster energy after unfolding
     

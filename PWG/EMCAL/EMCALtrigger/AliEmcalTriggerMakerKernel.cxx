@@ -44,6 +44,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   TObject(),
   fBadChannels(),
   fOfflineBadChannels(),
+  fFastORPedestal(5000),
   fTriggerBitConfig(NULL),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
@@ -56,6 +57,9 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fL0MinTime(7),
   fL0MaxTime(10),
   fADCtoGeV(1.),
+  fMinCellAmp(0),
+  fMinL0FastORAmp(0),
+  fMinL1FastORAmp(0),
   fJetPatchsize(16),
   fBkgThreshold(-1),
   fL0Threshold(0),
@@ -99,6 +103,7 @@ void AliEmcalTriggerMakerKernel::Init(){
   fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(0, 63));
   AliEMCALTriggerAlgorithm<double> *jettrigger = CreateJetTriggerAlgorithm(0, 63);
   fPatchFinder->AddTriggerAlgorithm(jettrigger);
+
   if(fJetPatchsize == 8){
     //jettrigger->SetBitMask(jettrigger->GetBitMask() | 1 << fTriggerBitConfig->GetBkgBit());
     jettrigger->SetBitMask(1 << fTriggerBitConfig->GetJetHighBit() | 1 << fTriggerBitConfig->GetJetLowBit() | 1 << fTriggerBitConfig->GetBkgBit());
@@ -107,20 +112,20 @@ void AliEmcalTriggerMakerKernel::Init(){
   }
   if(nrows > 64){
     // Add trigger algorithms for DCAL
-    fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(64, nrows));
-    jettrigger = CreateJetTriggerAlgorithm(64, nrows);
+    fPatchFinder->AddTriggerAlgorithm(CreateGammaTriggerAlgorithm(64, nrows-1));
+    jettrigger = CreateJetTriggerAlgorithm(64, nrows-1);
     fPatchFinder->AddTriggerAlgorithm(jettrigger);
     if(fJetPatchsize == 8) {
       //jettrigger->SetBitMask(jettrigger->GetBitMask() | 1 << fTriggerBitConfig->GetBkgBit());
       jettrigger->SetBitMask(1 << fTriggerBitConfig->GetJetHighBit() | 1 << fTriggerBitConfig->GetJetLowBit() | 1 << fTriggerBitConfig->GetBkgBit());
     } else {
-      fPatchFinder->AddTriggerAlgorithm(CreateBkgTriggerAlgorithm(64, nrows));
+      fPatchFinder->AddTriggerAlgorithm(CreateBkgTriggerAlgorithm(64, nrows-1));
     }
   }
 
-  fLevel0PatchFinder = new AliEMCALTriggerAlgorithm<double>(0, nrows, 0);
+  fLevel0PatchFinder = new AliEMCALTriggerAlgorithm<double>(0, nrows-1, 0);
   fLevel0PatchFinder->SetPatchSize(2);
-  fLevel0PatchFinder->SetSubregionSize(2);
+  fLevel0PatchFinder->SetSubregionSize(1);
 }
 
 void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromStream(std::istream& stream)
@@ -137,6 +142,48 @@ void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromFile(const char* fname
 {
   std::ifstream file(fname);
   ReadOfflineBadChannelFromStream(file);
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORBadChannelFromStream(std::istream& stream)
+{
+  Short_t absId = -1;
+
+  while (stream.good()) {
+    stream >> absId;
+    AddFastORBadChannel(absId);
+  }
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORBadChannelFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadFastORBadChannelFromStream(file);
+}
+
+void AliEmcalTriggerMakerKernel::SetFastORPedestal(Short_t absId, Float_t ped)
+{
+  if (absId < 0 || absId >= fFastORPedestal.GetSize()) {
+    AliWarning(Form("Abs. ID %d out of range (0,5000)", absId));
+    return;
+  }
+  fFastORPedestal[absId] = ped;
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORPedestalFromStream(std::istream& stream)
+{
+  Short_t absId = 0;
+  Float_t ped = 0;
+  while (stream.good()) {
+    stream >> ped;
+    SetFastORPedestal(absId, ped);
+    absId++;
+  }
+}
+
+void AliEmcalTriggerMakerKernel::ReadFastORPedestalFromFile(const char* fname)
+{
+  std::ifstream file(fname);
+  ReadFastORPedestalFromStream(file);
 }
 
 void AliEmcalTriggerMakerKernel::Reset(){
@@ -156,14 +203,28 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // get position in global 2x2 tower coordinates
     // A0 left bottom (0,0)
     trigger->GetPosition(globCol, globRow);
+    Int_t absId = -1;
+    fGeometry->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
     // exclude channel completely if it is masked as hot channel
-    if(fBadChannels.HasChannel(globCol, globRow)) continue;
+    if (fBadChannels.find(absId) != fBadChannels.end()) continue;
     // for some strange reason some ADC amps are initialized in reconstruction
     // as -1, neglect those
     trigger->GetL1TimeSum(adcAmp);
-    if (adcAmp>-1) (*fPatchADC)(globCol,globRow) = adcAmp;
+    if (adcAmp < 0) adcAmp = 0;
     trigger->GetTriggerBits(bitmap);
-    (*fTriggerBitMap)(globCol, globRow) = bitmap;
+
+    if (adcAmp >= fMinL1FastORAmp) {
+      try {
+        (*fPatchADC)(globCol,globRow) = adcAmp;
+      }
+      catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+      }
+      try {
+        (*fTriggerBitMap)(globCol, globRow) = bitmap;
+      }
+      catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+      }
+    }
 
     // Handling for L0 triggers
     // For the ADC value we use fCaloTriggers->GetAmplitude()
@@ -173,16 +234,20 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // information, a lookup table with the L0 times for each TRU is created
     Float_t amplitude(0);
     trigger->GetAmplitude(amplitude);
+    amplitude *= 4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
+    amplitude -= fFastORPedestal[absId];
     if(amplitude < 0) amplitude = 0;
-    (*fPatchAmplitudes)(globCol,globRow) = amplitude*4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
-    Int_t nl0times(0);
-    trigger->GetNL0Times(nl0times);
-    if(nl0times){
-      TArrayI l0times(nl0times);
-      trigger->GetL0Times(l0times.GetArray());
-      for(int itime = 0; itime < nl0times; itime++){
-        (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
-        break;
+    if (amplitude >= fMinL0FastORAmp) {
+      (*fPatchAmplitudes)(globCol,globRow) = amplitude;
+      Int_t nl0times(0);
+      trigger->GetNL0Times(nl0times);
+      if(nl0times){
+        TArrayI l0times(nl0times);
+        trigger->GetL0Times(l0times.GetArray());
+        for(int itime = 0; itime < nl0times; itime++){
+          (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
+          break;
+        }
       }
     }
   }
@@ -208,7 +273,12 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Int_t globCol=-1, globRow=-1;
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    (*fPatchADCSimple)(globCol,globRow) += amp/fADCtoGeV;
+    amp /= fADCtoGeV;
+    try {
+      if (amp >= fMinCellAmp) (*fPatchADCSimple)(globCol,globRow) += amp;
+    }
+    catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+    }
   }
 }
 

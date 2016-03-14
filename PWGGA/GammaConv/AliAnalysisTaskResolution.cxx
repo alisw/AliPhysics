@@ -314,9 +314,9 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 		for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
 			AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
 			if(!curTrack->IsPrimaryCandidate()) continue;
-			if(abs(curTrack->Eta())>0.9) continue;
+            if(fabs(curTrack->Eta())>0.9) continue;
 			if(curTrack->Pt()<0.15) continue;
-			if(abs(curTrack->ZAtDCA())>2) continue;
+            if(fabs(curTrack->ZAtDCA())>2) continue;
 			fNumberOfESDTracks++;
 		}
 	}
@@ -373,9 +373,9 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 	} else if(fInputEvent->IsA()==AliAODEvent::Class()){
 		for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
 			AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-			if(abs(curTrack->Eta())<0.9 || abs(curTrack->Eta())>1.4 ) continue;
+            if(fabs(curTrack->Eta())<0.9 || fabs(curTrack->Eta())>1.4 ) continue;
 			if(curTrack->Pt()<0.15) continue;
-			if(abs(curTrack->ZAtDCA())>5) continue;
+            if(fabs(curTrack->ZAtDCA())>5) continue;
 			fNumberOfESDTracks++;
 		}
 	}

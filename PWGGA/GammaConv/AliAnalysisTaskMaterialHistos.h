@@ -87,6 +87,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hNGoodESDTracks14;           //!
 		TH1F**            hNGoodESDTracks09_14;        //!
 		TH2F**            hESDConversionMappingRPhi;      //!
+		TH2F**            hESDConversionMappingRZ;        //!
 		TH1F**            hESDConversionR;                //!  
 		TH2F**            hESDConversionAsymP;            //!  
 		TH1F**            hESDConversionMidPtR;           //!  
@@ -107,6 +108,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hMCConversionPt;               //!
 		TH1F**            hMCAllGammaPt;                 //!
 		TH2F**            hMCTrueConversionMappingRPhi;      //!
+		TH2F**            hMCTrueConversionMappingRZ;        //!
 		TH1F**            hMCTrueConversionR;                //!  
 		TH1F**            hMCTrueConversionMidPtR;           //!  
 		TH1F**            hMCTrueConversionEta;              //!  
@@ -140,7 +142,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-		ClassDef(AliAnalysisTaskMaterialHistos, 1);
+		ClassDef(AliAnalysisTaskMaterialHistos, 2);
 };
 
 #endif

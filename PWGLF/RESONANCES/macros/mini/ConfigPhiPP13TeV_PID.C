@@ -20,7 +20,8 @@ Bool_t ConfigPhiPP13TeV_PID
  TString                monitorOpt="",
  Bool_t                 useMixLS=0,
  Bool_t                 checkReflex=0,
- AliRsnMiniValue::EType yaxisVar=AliRsnMiniValue::kPt
+ AliRsnMiniValue::EType yaxisVar=AliRsnMiniValue::kPt,
+ TString                polarizationOpt="" /* J - Jackson,T - Transversity */
 )
 {
   // manage suffix
@@ -67,6 +68,11 @@ Bool_t ConfigPhiPP13TeV_PID
   /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
   /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP,kFALSE);
   /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP,kFALSE);
+  /* cos(theta) J     */ Int_t ctjID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kFALSE);
+  /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
+  /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
+  /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
+
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -116,7 +122,10 @@ Bool_t ConfigPhiPP13TeV_PID
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
-  }   
+
+    if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,21,-1.,1);
+    if (polarizationOpt.Contains("T")) out->AddAxis(cttID,21,-1.,1);
+  }
 
   if(isMC){   
     //get mothers for phi PDG = 333
@@ -131,6 +140,8 @@ Bool_t ConfigPhiPP13TeV_PID
     else outm->AddAxis(ptID,200,0.,20.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
+    if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
+    if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
     //get phase space of the decay from mothers
     AliRsnMiniOutput* outps=task->CreateOutput(Form("phi_phaseSpace%s", suffix),"HIST","TRUE");
@@ -159,6 +170,8 @@ Bool_t ConfigPhiPP13TeV_PID
       outreflex->AddAxis(ptID,200,0.,20.);
       if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
       else outreflex->AddAxis(centID,400,0.5,400.5);
+      if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,21,-1.,1.);
+      if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections
   }//end MC
 

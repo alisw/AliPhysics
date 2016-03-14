@@ -78,25 +78,30 @@ Bool_t ConfigKStarPPb
   /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt, kFALSE);
   /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP, kFALSE);
   /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP, kFALSE);
+  /* pair pt res      */ Int_t resPt  = task->CreateValue(AliRsnMiniValue::kPairPtRes, kTRUE);
+  /* pair y res       */ Int_t resY   = task->CreateValue(AliRsnMiniValue::kPairYRes, kTRUE);
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
-  // [0] = unlike
-  // [1] = mixing
-  // [2] = like ++
-  // [3] = like --
-
-  Bool_t  use     [12] = {!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly ,isMC,isMC,isMC,isMC, useMixLS , useMixLS    };
-  Bool_t  useIM   [12] = { 1        , 1         ,  1       ,  1       ,  1      ,  1      ,  1      ,  1      ,  0      , 0      , 1         , 1           };
-  TString name    [12] = {"UnlikePM", "UnlikeMP","MixingPM","MixingMP", "LikePP", "LikeMM","TruesPM","TruesMP", "ResPM" ,"ResMP" , "MixingPP", "MixingMM"  };
-  TString comp    [12] = {"PAIR"    , "PAIR"    , "MIX"    , "MIX"    , "PAIR"  , "PAIR"  , "TRUE"  , "TRUE"  , "TRUE"  ,"TRUE"  , "MIX"     , "MIX"       };
-  TString output  [12] = {"SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" , "SPARSE", "SPARSE", "SPARSE","SPARSE" , "SPARSE","SPARSE", "SPARSE"  , "SPARSE"    };
-  Int_t   pdgCode [12] = {313       , 313       , 313      , 313      , 313     , 313     , 313     , -313    ,  313    , -313   ,  313      , 313         };
-  Char_t  charge1 [12] = {'+'       , '-'       , '+'      , '-'      , '+'     , '-'     , '+'     ,  '-'    , '+'     , '-'    , '+'       , '-'         };
-  Char_t  charge2 [12] = {'-'       , '+'       , '-'      , '+'      , '+'     , '-'     , '-'     ,  '+'    , '-'     , '+'    , '+'       , '-'         };
-  Int_t   cutID1  [12] = { iCutK    ,  iCutK    ,  iCutK   ,  iCutK   ,  iCutK  ,  iCutK  ,  iCutK  ,   iCutK ,  iCutK  , iCutK  , iCutK     , iCutK       };
-  Int_t   cutID2  [12] = { iCutPi   ,  iCutPi   ,  iCutPi  ,  iCutPi  ,  iCutPi ,  iCutPi ,  iCutPi ,   iCutPi,  iCutPi , iCutPi , iCutPi    , iCutPi      };
+  // [0][1] = unlike +-, -+ (Minv, pT, multiplicity)
+  // [2][3] = mixing +-, -+ (Minv, pT, multiplicity)
+  // [4][5] = like ++, -- (Minv, pT, multiplicity)
+  // [6][7] = MC true +-, -+ (Minv, pT, multiplicity)
+  // [8][9] = MC true +-, -+ (Minv, pT, y)
+  // [10][11] = mixing ++, -- (Minv, pT, multiplicity)
+  Bool_t  use     [12] = {!IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly, isMC, isMC, isMC, isMC, useMixLS&(!IsMcTrueOnly), useMixLS&(!IsMcTrueOnly)};
+  TString name    [12] = {"UnlikePM", "UnlikeMP","MixingPM","MixingMP", "LikePP", "LikeMM","TruesPM","TruesMP","TruePMY","TrueMPY", "MixingPP", "MixingMM"};
+  TString comp    [12] = {"PAIR"    , "PAIR"    , "MIX"    , "MIX"    , "PAIR"  , "PAIR"  , "TRUE"  , "TRUE"  , "TRUE"  , "TRUE"  , "MIX"     , "MIX"};
+  TString output  [12] = {"SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" , "SPARSE", "SPARSE", "SPARSE","SPARSE" , "SPARSE","SPARSE" , "SPARSE"  , "SPARSE"};
+  Int_t   pdgCode [12] = {313       , 313       , 313      , 313      , 313     , 313     , 313     , -313    , 313     , -313    ,  313      , 313};
+  Char_t  charge1 [12] = {'+'       , '-'       , '+'      , '-'      , '+'     , '-'     , '+'     ,  '-'    , '+'     ,  '-'    , '+'       , '-'};
+  Char_t  charge2 [12] = {'-'       , '+'       , '-'      , '+'      , '+'     , '-'     , '-'     ,  '+'    , '-'     ,  '+'    , '+'       , '-'};
+  Int_t   cutID1  [12] = {iCutK     ,  iCutK    ,  iCutK   ,  iCutK   ,  iCutK  ,  iCutK  ,  iCutK  ,  iCutK  , iCutK   , iCutK   , iCutK     , iCutK};
+  Int_t   cutID2  [12] = {iCutPi    ,  iCutPi   ,  iCutPi  ,  iCutPi  ,  iCutPi ,  iCutPi ,  iCutPi ,  iCutPi , iCutPi  , iCutPi  , iCutPi    , iCutPi};
   
+  /*********************
+     Data and MC true
+    *******************/
   for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("kstar_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
@@ -109,13 +114,9 @@ Bool_t ConfigKStarPPb
     out->SetMotherPDG(pdgCode[i]);
     out->SetMotherMass(0.89594);
     out->SetPairCuts(cutsPair);
-
-    // axis X: invmass (or resolution)
-    if (useIM[i]) 
-      out->AddAxis(imID, 90, 0.6, 1.5);
-    else
-      out->AddAxis(resID, 200, -0.02, 0.02);
     
+    // axis X: invmass
+    out->AddAxis(imID, 90, 0.6, 1.5);
     // axis Y: transverse momentum of pair as default - else chosen value
     if (yaxisVar==AliRsnMiniValue::kFirstDaughterPt)
       out->AddAxis(fdpt, 100, 0.0, 10.0);
@@ -131,18 +132,52 @@ Bool_t ConfigKStarPPb
 	  else 
 	    out->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
     
-    // axis Z: centrality-multiplicity
-    if (!isPP)
-      out->AddAxis(centID, 100, 0.0, 100.0);
-    else 
-      out->AddAxis(centID, 400, 0.0, 400.0);
-    // axis W: pseudorapidity
-    // out->AddAxis(etaID, 20, -1.0, 1.0);
-    // axis J: rapidity
-    // out->AddAxis(yID, 10, -0.5, 0.5);
+    // axis Z: centrality or multiplicity or rapidity
+    if ((i==8) || (i==9)) {
+      out->AddAxis(yID, 400, -2.0, 2.0);
+    } else {
+      if (!isPP)
+	out->AddAxis(centID, 100, 0.0, 100.0);
+      else 
+	out->AddAxis(centID, 400, 0.0, 400.0);
+    }
   }   
   
+  /****************
+     MONTECARLO
+  ****************/
   if (isMC){   
+
+    //Minv resolution, pair's pT and pair's y resolution vs pT vs y
+    //Computed as (Xrec-Xgen)/Xgen, with a MC-true like computation
+    TString nameR[6]    = {"ResPM", "ResMP", "ResPtPM", "ResPtMP", "ResYPM", "ResYMP"};
+    TString compR[6]    = {"TRUE" , "TRUE", "TRUE", "TRUE", "TRUE", "TRUE"};
+    TString outputR[6]  = {"SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE", "SPARSE"};
+    Int_t   pdgCodeR[6] = {313, -313, 313, -313, 313, -313};
+    Char_t  charge1R[6] = {'+', '-', '+', '-', '+', '-'};
+    Char_t  charge2R[6] = {'-', '+', '-', '+', '-', '+'};
+
+    for (Int_t j = 0; j < 6; j++) {
+      AliRsnMiniOutput *outR = task->CreateOutput(Form("Ks_%s%s", nameR[j].Data(), suffix), outputR[j].Data(), compR[j].Data());
+      outR->SetCutID(0, iCutK);
+      outR->SetCutID(1, iCutPi);
+      outR->SetDaughter(0, AliRsnDaughter::kKaon);
+      outR->SetDaughter(1, AliRsnDaughter::kPion);
+      outR->SetCharge(0, charge1R[j]);
+      outR->SetCharge(1, charge2R[j]);
+      outR->SetMotherPDG(pdgCodeR[j]);
+      outR->SetMotherMass(0.89594);
+      outR->SetPairCuts(cutsPair);
+      // axis X: invmass resolution, pt resolution, y resolution
+      if (j<2) outR->AddAxis(resID, 200, -0.02, 0.02);
+      else if (j<4) outR->AddAxis(resPt, 100, -0.05, 0.05);
+      else outR->AddAxis(resY, 100, -0.5, 0.5);
+      //axis Y: mother pt
+      outR->AddAxis(ptID, 200, 0.0, 20.0); 
+      //axis Z: rapidity
+      outR->AddAxis(yID, 400, -2.0, 2.0);
+    }
+
     //get mothers for K* PDG = 313
     AliRsnMiniOutput *outm = task->CreateOutput(Form("Ks_Mother%s", suffix), "SPARSE", "MOTHER");
     outm->SetDaughter(0, AliRsnDaughter::kKaon);
@@ -173,6 +208,28 @@ Bool_t ConfigKStarPPb
       outam->AddAxis(centID, 400, 0.0, 400.0);
     }
     
+    //get mothers for K* PDG = 313
+    AliRsnMiniOutput *outm2 = task->CreateOutput(Form("Ks_MotherY%s", suffix), "SPARSE", "MOTHER");
+    outm2->SetDaughter(0, AliRsnDaughter::kKaon);
+    outm2->SetDaughter(1, AliRsnDaughter::kPion);
+    outm2->SetMotherPDG(313);
+    outm2->SetMotherMass(0.89594);
+    outm2->SetPairCuts(cutsPair);
+    outm2->AddAxis(imID, 90, 0.6, 1.5);
+    outm2->AddAxis(ptID, 200, 0.0, 20.0);
+    outm2->AddAxis(yID, 400, -2.0, 2.0);
+    
+    //get mothers for antiK* PDG = -313
+    AliRsnMiniOutput *outam2 = task->CreateOutput(Form("antiKs_MotherY%s", suffix), "SPARSE", "MOTHER");
+    outam2->SetDaughter(0, AliRsnDaughter::kKaon);
+    outam2->SetDaughter(1, AliRsnDaughter::kPion);
+    outam2->SetMotherPDG(-313);
+    outam2->SetMotherMass(0.89594);
+    outam2->SetPairCuts(cutsPair);
+    outam2->AddAxis(imID, 90, 0.6, 1.5);
+    outam2->AddAxis(ptID, 200, 0.0, 20.0);
+    outam2->AddAxis(yID, 400, -2.0, 2.0);
+
     //get phase space of the decay from mothers
     AliRsnMiniOutput *outps = task->CreateOutput(Form("Ks_phaseSpace%s", suffix), "HIST", "TRUE");
     outps->SetDaughter(0, AliRsnDaughter::kKaon);
@@ -199,6 +256,8 @@ Bool_t ConfigKStarPPb
     outaps->AddAxis(ptID, 100, 0.0, 10.0);
    
     //get reflections
+    //defined as MC-true like computation but checking what happens when 
+    //pions are mis-identified as K and K are mis-identified as pions
     if (checkReflex) { 
 
       AliRsnMiniOutput *outreflex = task->CreateOutput(Form("Ks_reflex%s", suffix), "SPARSE", "TRUE");

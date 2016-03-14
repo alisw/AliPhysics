@@ -55,6 +55,7 @@ class AliEmcalTriggerQATaskPP : public AliAnalysisTaskEmcal {
   void SetTriggerPatchesName(const char *name)      { fTriggerPatchesName      = name; }
   void SetADCperBin(Int_t n);
   void SetMinAmplitude(Int_t m)                     { fMinAmplitude            = m   ; }
+  void EnableDCal(Bool_t e = kTRUE)                 { fDCalPlots               = e   ; }
 
   AliEmcalTriggerQAPP* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fNcentBins ? static_cast<AliEmcalTriggerQAPP*>(fEMCALTriggerQA->At(i)) : 0; }
 
@@ -69,7 +70,7 @@ class AliEmcalTriggerQATaskPP : public AliAnalysisTaskEmcal {
   TObjArray                                *fEMCALTriggerQA;             ///< produces the QA histograms
   Int_t                                     fADCperBin;                  ///< ADC counts per bin
   Int_t                                     fMinAmplitude;               ///< Minimum trigger patch amplitude
-  AliEMCALTriggerChannelContainer           fBadChannels;                ///< Container of bad channels
+  Bool_t                                    fDCalPlots;                  ///< Whether to add DCal QA plots
 
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
 
@@ -78,7 +79,7 @@ class AliEmcalTriggerQATaskPP : public AliAnalysisTaskEmcal {
   AliEmcalTriggerQATaskPP &operator=(const AliEmcalTriggerQATaskPP&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQATaskPP, 1)
+  ClassDef(AliEmcalTriggerQATaskPP, 2)
   /// \endcond
 };
 

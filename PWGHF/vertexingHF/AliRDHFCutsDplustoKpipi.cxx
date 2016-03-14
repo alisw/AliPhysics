@@ -965,3 +965,29 @@ UInt_t AliRDHFCutsDplustoKpipi::GetPIDTrackTPCTOFBitMap(AliAODTrack *track) cons
   return bitmap;
 
 }
+//---------------------------------------------------------------------------
+void AliRDHFCutsDplustoKpipi::PrintAll() const {
+  //
+  // print all cuts values
+  // 
+  AliRDHFCuts::PrintAll();
+  if(fUsed0MeasMinusExpCut){
+    printf("Cuts on d0meas-d0exp:\n");
+    for(Int_t ib=0;ib<fnPtBins;ib++){
+      printf("%f   ",fMaxd0MeasMinusExp[ib]);
+    }
+    printf("\n");
+  }else{
+    printf("No cut on d0meas-d0exp:\n");
+  }
+  if(fScaleNormDLxyBypOverPt){
+    printf("NormDLxy scaled by p/pt\n");
+  }else{
+    printf("NormDLxy NOT scaled by p/pt\n");
+  }
+  if(fUseImpParProdCorrCut){
+    printf("d0K*d0pi1 vs. d0K*d0pi2 cut enabled\n");
+  }else{
+    printf("d0K*d0pi1 vs. d0K*d0pi2 cut disabled\n");
+  }
+}

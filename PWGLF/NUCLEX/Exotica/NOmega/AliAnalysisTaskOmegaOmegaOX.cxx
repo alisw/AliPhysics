@@ -72,12 +72,15 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX() :
 	fVtx1(0x0),
 	fBzkG(0),
 	fRecoTypeDB(0),// Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
-	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
+	fLikeSignDB(0),// Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
 	fRecoSelfCasc(0),// Cascade reconstruction is made by (0:ESD class, 1:by myself)
 	fReqSigmaTPC(3.0),
 	fReqClustersTPC(80),
 	fReqSigmaTOF(3.0),
 	fReqPseudoRap(0.9),
+	fProtonPMax(999.),// Max momentum of proton
+	fPionPMax(1.5),//!!CHECK ALSO ESDtrackCuts!! Max momentum of pion
+	fKaonPMax(1.5),//0.6!!CHECK ALSO ESDtrackCuts!! Max momentum of kaon
 	fCPADibaryon(0.99),//0.99875
 	fMassWinCascade(999.),
 	fCsChi2max(33.),
@@ -118,6 +121,9 @@ AliAnalysisTaskOmegaOmegaOX::AliAnalysisTaskOmegaOmegaOX(const Char_t* name) :
 	fReqClustersTPC(80),
 	fReqSigmaTOF(3.0),
 	fReqPseudoRap(0.9),
+	fProtonPMax(999.),// Max momentum of proton
+	fPionPMax(1.5),//!!CHECK ALSO ESDtrackCuts!! Max momentum of pion
+	fKaonPMax(1.5),//0.6!!CHECK ALSO ESDtrackCuts!! Max momentum of kaon
 	fCPADibaryon(0.99),//0.99875
 	fMassWinCascade(999.),
 	fCsChi2max(33.),
@@ -311,7 +317,7 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 {
 
   //------------------------------------------------------------------------------------------
-  // version OO2-0-4 (2016/03/01)
+  // version OO2-0-5 (2016/03/02)
   // Reconstruct 2 cascade by myself
   // and calculate the invariant mass of Omega-Omega
   //------------------------------------------------------------------------------------------
@@ -557,16 +563,6 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 			casc2->XvYvZv(PosCasc2);
 //			printf("### cascpos: 1(%10f,%10f,%10f), 2(%10f,%10f,%10f)\n",PosCasc1[0],PosCasc1[1],PosCasc1[2],PosCasc2[0],PosCasc2[1],PosCasc2[2]);
 
-			Double_t PVtoCasc1[3], PVtoCasc2[3];
-			for (Int_t i=0; i<3; i++) {
-				PVtoCasc1[i] = PosCasc1[i] - PosPV[i];
-				PVtoCasc2[i] = PosCasc2[i] - PosPV[i];
-			}
-			Double_t rCasc1 = GetPaFromPxPyPz(PVtoCasc1); 
-			Double_t rCasc2 = GetPaFromPxPyPz(PVtoCasc2); 
-			Double_t ctauO1 = rCasc1*mOmegaPDG/casc1->P();
-			Double_t ctauO2 = rCasc2*mOmegaPDG/casc2->P();
-
 			Double_t MomCasc1[3], MomCasc2[3];
 			casc1->PxPyPz(MomCasc1);
 			casc2->PxPyPz(MomCasc2);
@@ -665,11 +661,21 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 
 			Double_t rDB    = GetPaFromPxPyPz(PVtoDB);
 			Double_t ctauDB = rDB/(2*mOmegaPDG)/GetPaFromPxPyPz(MomDB);
-			Double_t cpaDB  = (PVtoDB[0]*MomDB[0]+PVtoDB[1]*MomDB[1])/rDB/GetPaFromPxPyPz(MomDB);
+			Double_t cpaDB  = (PVtoDB[0]*MomDB[0]+PVtoDB[1]*MomDB[1]+PVtoDB[2]*MomDB[2])/rDB/GetPaFromPxPyPz(MomDB);
 			if ( cpaDB < fCPADibaryon ) continue;
 
 			if(trkLikeCasc1) delete trkLikeCasc1;
 			if(trkLikeCasc2) delete trkLikeCasc2;
+
+			Double_t DBtoCasc1[3], DBtoCasc2[3];
+			for (Int_t i=0; i<3; i++) {
+				DBtoCasc1[i] = PosCasc1[i] - PosDB[i];
+				DBtoCasc2[i] = PosCasc2[i] - PosDB[i];
+			}
+			Double_t rCasc1 = GetPaFromPxPyPz(DBtoCasc1); 
+			Double_t rCasc2 = GetPaFromPxPyPz(DBtoCasc2); 
+			Double_t ctauO1 = rCasc1*mOmegaPDG/casc1->P();
+			Double_t ctauO2 = rCasc2*mOmegaPDG/casc2->P();
 
 	//------------------------------------------------------------------------------------------
 	// PID information
@@ -884,8 +890,10 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 	// Other information
 	//------------------------------------------------------------------------------------------
 
-			Double_t CPACasc1 = casc1->GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2]);
-			Double_t CPACasc2 = casc2->GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2]);
+			Double_t CPACasc1PV = casc1->GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2]);
+			Double_t CPACasc2PV = casc2->GetCascadeCosineOfPointingAngle(PosPV[0],PosPV[1],PosPV[2]);
+			Double_t CPACasc1 = casc1->GetCascadeCosineOfPointingAngle(PosDB[0],PosDB[1],PosDB[2]);
+			Double_t CPACasc2 = casc2->GetCascadeCosineOfPointingAngle(PosDB[0],PosDB[1],PosDB[2]);
 			Double_t IPcasc1  = casc1->GetDcascade(PosPV[0],PosPV[1],PosPV[2]);
 			Double_t IPcasc2  = casc2->GetDcascade(PosPV[0],PosPV[1],PosPV[2]);
 			Double_t DCAOmDa1 = casc1->GetDcaXiDaughters();
@@ -981,6 +989,8 @@ void AliAnalysisTaskOmegaOmegaOX::MakeAnalysis(TClonesArray *mcArray,AliESDEvent
 			fCandidateVariables[45] = PtArmV02;
 			fCandidateVariables[46] = AlphaDB;
 			fCandidateVariables[47] = PtArmDB;
+			fCandidateVariables[48] = CPACasc1PV;
+			fCandidateVariables[49] = CPACasc2PV;
 
 			fVariablesTree->Fill();
 
@@ -1039,7 +1049,7 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
 
   const char* nameoutput2 = GetOutputSlot(2)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput2,"Candidates variables tree");
-  Int_t nVar2 = 48;
+  Int_t nVar2 = 50;
   fCandidateVariables = new Float_t [nVar2];
   TString * fCandidateVariableNames = new TString[nVar2];
 
@@ -1091,6 +1101,8 @@ void AliAnalysisTaskOmegaOmegaOX::DefineTreeVariables() {
 	fCandidateVariableNames[45]="PtArmV02";// = PtArmV02;
 	fCandidateVariableNames[46]="AlphaDB";// = AlphaDB;
 	fCandidateVariableNames[47]="PtArmDB";// = PtArmDB;
+	fCandidateVariableNames[48]="CPACs1PV";// = CPACasc1PV;
+	fCandidateVariableNames[49]="CPACs2PV";// = CPACasc2PV;
 
   for (Int_t ivar=0; ivar<nVar2; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1145,7 +1157,7 @@ Bool_t AliAnalysisTaskOmegaOmegaOX::PreTrackCut(AliESDtrack *track) {
 Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambda(Double_t MomPos[3], Double_t MomNeg[3], AliESDtrack *pos, AliESDtrack *neg, Double_t v0Return[1]) {
 
 	//------------------------------------------------------------------------------------------
-	// version 1.11 (2015/10/23)
+	// version 1.20 (2016/03/02)
 	// Input:  MomPos & MomNeg: Array of momentum (positive and negative tracks) (0:Px, 1:Py, 2:Pz)
 	//         pos & neg: AliESDtrack information for each track that has MomPos/MomNeg momentum
 	// Return: Invariant mass of Lambda (Proton(+/-) + Pion(-/+))
@@ -1153,8 +1165,8 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambda(Double_t MomPos[3], Double_t
 	//------------------------------------------------------------------------------------------
 
 	// Set cut parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Double_t cutProtonMomTPC = 999.;
-	Double_t cutPionMomTPC   = 1.5;
+	Double_t cutProtonMomTPC = fProtonPMax;
+	Double_t cutPionMomTPC   = fPionPMax;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	// Prepare constant and parameter ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1171,14 +1183,12 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambda(Double_t MomPos[3], Double_t
 	// For positive track
 	Double_t posTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kProton  ));
 	Double_t posTPCPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kPion    ));
-//	if (posTPCProton>fReqSigmaTPC && posTPCPion>fReqSigmaTPC) return 0.;
-	if (posTPCProton>fReqSigmaTPC) return 0.;
+	if (posTPCProton>fReqSigmaTPC && posTPCPion>fReqSigmaTPC) return 0.;
 
 	// For negative track
 	Double_t negTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kProton  ));
 	Double_t negTPCPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kPion    ));
-//	if (negTPCProton>fReqSigmaTPC && negTPCPion>fReqSigmaTPC) return 0.;
-	if (negTPCPion>fReqSigmaTPC) return 0.;
+	if (negTPCProton>fReqSigmaTPC && negTPCPion>fReqSigmaTPC) return 0.;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	// TOF sigma cut ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1203,8 +1213,7 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambda(Double_t MomPos[3], Double_t
 	if(negStatus&AliESDtrack::kTOFpid) {
 		negTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kProton  ));
 		negTOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kPion    ));
-//		if (negTOFProton>fReqSigmaTOF && negTOFPion>fReqSigmaTOF) return 0.;
-		if (negTOFPion>fReqSigmaTOF) return 0.;
+		if (negTOFProton>fReqSigmaTOF && negTOFPion>fReqSigmaTOF) return 0.;
 		negTOFOn       = kTRUE;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1265,18 +1274,26 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambda(Double_t MomPos[3], Double_t
 	if (LambdaBar) v0Return[0] = -1.;
 
 	TLorentzVector vLambda,vPos,vNeg;
-//	if (Lambda) {
+	if (Lambda) {
 		vPos.SetXYZM(MomPos[0],MomPos[1],MomPos[2],mProtonPDG);
 		vNeg.SetXYZM(MomNeg[0],MomNeg[1],MomNeg[2],mPionPDG);
-//	} else if (LambdaBar) {
-//		vPos.SetXYZM(MomPos[0],MomPos[1],MomPos[2],mPionPDG);
-//		vNeg.SetXYZM(MomNeg[0],MomNeg[1],MomNeg[2],mProtonPDG);
-//	} else {
-//		vPos.SetXYZM(0.,0.,0.,0.);
-//		vNeg.SetXYZM(0.,0.,0.,0.);
-//	}
+	} else if (LambdaBar) {
+		vPos.SetXYZM(MomPos[0],MomPos[1],MomPos[2],mPionPDG);
+		vNeg.SetXYZM(MomNeg[0],MomNeg[1],MomNeg[2],mProtonPDG);
+	} else {
+		vPos.SetXYZM(0.,0.,0.,0.);
+		vNeg.SetXYZM(0.,0.,0.,0.);
+	}
 	vLambda = vPos + vNeg;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//	printf("\n### TPC:  POS Pr:%10f, POS Pi:%10f,\tNEG Pr:%10f, NEG Pi:%10f\n",posTPCProton,posTPCPion,negTPCProton,negTPCPion);
+//	printf("!! Bool:  POS Pr:%10d, POS Pi:%10d,\tNEG Pr:%10d, NEG Pi:%10d,\tL:%d, A:%d\n",posProton,posPion,negProton,negPion,Lambda,LambdaBar);
+//	if (posTOFOn||negTOFOn) { 
+//	  printf("### TOF:  POS Pr:%10f, POS Pi:%10f,\tNEG Pr:%10f, NEG Pi:%10f\n",posTOFProton,posTOFPion,negTOFProton,negTOFPion);
+//	} 
+//	printf("!!! THEREFORE: %f (1:Lambda, -1:Anti-Lambda, 0:Other)\n",v0Return[0]);
+
 
   return vLambda.M();
 
@@ -1285,7 +1302,7 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambda(Double_t MomPos[3], Double_t
 Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambdaStar(Double_t MomPos[3], Double_t MomNeg[3], AliESDtrack *pos, AliESDtrack *neg, Double_t v0Return[1]) {
 
 	//------------------------------------------------------------------------------------------
-	// version 1.11 (2015/10/23)
+	// version 1.20 (2016/03/02)
 	// Input:  MomPos & MomNeg: Array of momentum (positive and negative tracks) (0:Px, 1:Py, 2:Pz)
 	//         pos & neg: AliESDtrack information for each track that has MomPos/MomNeg momentum
 	// Return: Invariant mass of Lambda(1520) (Proton(+/-) + Kaon(-/+))
@@ -1293,10 +1310,8 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambdaStar(Double_t MomPos[3], Doub
 	//------------------------------------------------------------------------------------------
 
 	// Set cut parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//	Double_t cutProtonMomTPC = 1.1;
-	Double_t cutProtonMomTPC = 999.;
-	Double_t cutKaonMomTPC   = 0.6;
-//	Double_t cutKaonMomTPC   = 999.;;
+	Double_t cutProtonMomTPC = fProtonPMax;
+	Double_t cutKaonMomTPC   = fKaonPMax;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	// Prepare constant and parameter ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1313,14 +1328,12 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambdaStar(Double_t MomPos[3], Doub
 	// For positive track
 	Double_t posTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kProton  ));
 	Double_t posTPCKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kKaon    ));
-//	if (posTPCProton>fReqSigmaTPC && posTPCKaon>fReqSigmaTPC) return 0.;
-	if (posTPCProton>fReqSigmaTPC) return 0.;
+	if (posTPCProton>fReqSigmaTPC && posTPCKaon>fReqSigmaTPC) return 0.;
 
 	// For negative track
 	Double_t negTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kProton  ));
 	Double_t negTPCKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kKaon    ));
-//	if (negTPCProton>fReqSigmaTPC && negTPCKaon>fReqSigmaTPC) return 0.;
-	if (negTPCKaon>fReqSigmaTPC) return 0.;
+	if (negTPCProton>fReqSigmaTPC && negTPCKaon>fReqSigmaTPC) return 0.;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	// TOF sigma cut ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1332,8 +1345,7 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambdaStar(Double_t MomPos[3], Doub
 	if(posStatus&AliESDtrack::kTOFpid) {
 		posTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(pos, AliPID::kProton  ));
 		posTOFKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(pos, AliPID::kKaon    ));
-//		if (posTOFProton>fReqSigmaTOF && posTOFKaon>fReqSigmaTOF) return 0.;
-		if (posTOFProton>fReqSigmaTOF) return 0.;
+		if (posTOFProton>fReqSigmaTOF && posTOFKaon>fReqSigmaTOF) return 0.;
 		posTOFOn       = kTRUE;
 	}
 
@@ -1345,8 +1357,7 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambdaStar(Double_t MomPos[3], Doub
 	if(negStatus&AliESDtrack::kTOFpid) {
 		negTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kProton  ));
 		negTOFKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kKaon    ));
-//		if (negTOFProton>fReqSigmaTOF && negTOFKaon>fReqSigmaTOF) return 0.;
-		if (negTOFKaon>fReqSigmaTOF) return 0.;
+		if (negTOFProton>fReqSigmaTOF && negTOFKaon>fReqSigmaTOF) return 0.;
 		negTOFOn       = kTRUE;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1407,114 +1418,20 @@ Double_t AliAnalysisTaskOmegaOmegaOX::InvMassLambdaStar(Double_t MomPos[3], Doub
 	if (LambdaStarBar) v0Return[0] = -1.;
 
 	TLorentzVector vLambdaStar,vPos,vNeg;
-//	if (LambdaStar) {
+	if (LambdaStar) {
 		vPos.SetXYZM(MomPos[0],MomPos[1],MomPos[2],mProtonPDG);
 		vNeg.SetXYZM(MomNeg[0],MomNeg[1],MomNeg[2],mKaonPDG);
-//	} else if (LambdaStarBar) {
-//		vPos.SetXYZM(MomPos[0],MomPos[1],MomPos[2],mKaonPDG);
-//		vNeg.SetXYZM(MomNeg[0],MomNeg[1],MomNeg[2],mProtonPDG);
-//	} else {
-//		vPos.SetXYZM(0.,0.,0.,0.);
-//		vNeg.SetXYZM(0.,0.,0.,0.);
-//	}
+	} else if (LambdaStarBar) {
+		vPos.SetXYZM(MomPos[0],MomPos[1],MomPos[2],mKaonPDG);
+		vNeg.SetXYZM(MomNeg[0],MomNeg[1],MomNeg[2],mProtonPDG);
+	} else {
+		vPos.SetXYZM(0.,0.,0.,0.);
+		vNeg.SetXYZM(0.,0.,0.,0.);
+	}
 	vLambdaStar = vPos + vNeg;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   return vLambdaStar.M();
-
-}
-//______________________________________________________________________________________________________
-void AliAnalysisTaskOmegaOmegaOX::Rotate(Double_t x, Double_t y, Double_t angle) {
-
-	//------------------------------------------------------------------------------------------
-	// version 0.00 (2015/08/07)
-	// Rotate (x,y) counter-clockwise by angle (radian)
-	// Input:  x,y,angle
-	//         x -> x*cos(angle) - y*sin(angle)
-	//         y -> x*sin(angle) + y*cos(angle)
-	// Return: x,y (rotated)
-	//------------------------------------------------------------------------------------------
-
-	// calculate Cosine(angle) and Sine(angle)
-	Double_t cos = TMath::Cos(angle);
-	Double_t sin = TMath::Sin(angle);
-
-	// rotation
-	Double_t xTmp = x*cos - y*sin;
-	Double_t yTmp = x*sin + y*cos;
-	x = xTmp;
-	y = yTmp;
-
-}
-//______________________________________________________________________________________________________
-void AliAnalysisTaskOmegaOmegaOX::Rotate(Double_t x, Double_t y, Double_t angle, Double_t xCenter, Double_t yCenter) {
-
-	//------------------------------------------------------------------------------------------
-	// version 1.01 (2015/08/07)
-	// Rotate (x,y) counter-clockwise by angle (radian)
-	// Input:  x,y,angle,xCenter,yCenter
-	//         x -> [x-xCenter]*cos(angle) - [y-yCenter]*sin(angle) + xCenter
-	//         y -> [x-xCenter]*sin(angle) + [y-yCenter]*cos(angle) + yCenter
-	// Return: x,y (rotated)
-	//------------------------------------------------------------------------------------------
-
-	// calculate Cosine(angle) and Sine(angle)
-	Double_t cos = TMath::Cos(angle);
-	Double_t sin = TMath::Sin(angle);
-
-	// rotation
-	Double_t xTmp = (x-xCenter)*cos - (y-yCenter)*sin;
-	Double_t yTmp = (x-xCenter)*sin + (y-yCenter)*cos;
-	x = xTmp + xCenter;
-	y = yTmp + yCenter;
-
-}
-//______________________________________________________________________________________________________
-Double_t AliAnalysisTaskOmegaOmegaOX::GetAngleFromCosSin(Double_t cos,Double_t sin) {
-
-	//------------------------------------------------------------------------------------------
-	// version 0.00 (2015/08/07)
-	// Input:  cosine,sine
-	// Return: angle (0<angle<2pi)
-	//------------------------------------------------------------------------------------------
-
-	printf("# cos/sin: %11f, %11f (%11f=1)\n",cos,sin,cos*cos+sin*sin);
-	// check
-	if ( TMath::Abs(cos)>1.0 || TMath::Abs(sin)>1.0 ) {
-		printf("##### ERROR IN ROTATION !! (ABS>1)\n");
-		return -999.;
-	}
-
-	// calculate angle from cos and sin
-	Double_t angle;
-	if ( sin>0. ) angle = TMath::ACos(cos);
-	else angle = 2*TMath::Pi() - TMath::ACos(cos);
-
-	return angle;
-
-}
-//______________________________________________________________________________________________________
-Double_t AliAnalysisTaskOmegaOmegaOX::GetPaFromPxPyPz(Double_t Momentum[3]) { 
-
-	//------------------------------------------------------------------------------------------
-	// version 0.00 (2015/07/31)
-	// Input:  Momentum: Array of momentum (0:Px, 1:Py, 2:Pz)
-	// Return: Norm of momentum (Sqrt(Px*Px+Py*Py+Pz*Pz))
-	//------------------------------------------------------------------------------------------
-
-	return TMath::Sqrt( Momentum[0]*Momentum[0] +	Momentum[1]*Momentum[1] + Momentum[2]*Momentum[2] );
-
-}
-//______________________________________________________________________________________________________
-Double_t AliAnalysisTaskOmegaOmegaOX::GetPtFromPxPyPz(Double_t Momentum[3]) { 
-
-	//------------------------------------------------------------------------------------------
-	// version 0.00 (2015/07/31)
-	// Input:  Momentum: Array of momentum (0:Px, 1:Py, 2:Pz)
-	// Return: Pt (Sqrt(Px*Px+Py*Py))
-	//------------------------------------------------------------------------------------------
-
-	return TMath::Sqrt( Momentum[0]*Momentum[0] +	Momentum[1]*Momentum[1] );
 
 }
 //______________________________________________________________________________________________________

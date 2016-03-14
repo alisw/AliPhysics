@@ -50,6 +50,8 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetEventSelSDDstatus            (Bool_t eventselSDDstatus                 ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
         void SetEventSelPhysicsSel           (Bool_t eventselPhysicsSel                ) { fApplyEvSelPhysicsSel           = eventselPhysicsSel;           }
         void SetEventSelNoTPConlyPrimVtx     (Bool_t eventselNoTPConlyPrimVtx          ) { fApplyEvSelNoTPConlyPrimVtx     = eventselNoTPConlyPrimVtx;     }
+        void SetEventSelSPDvtxres            (Bool_t eventselSPDvtxres                 ) { fApplyEvSelSPDvtxres            = eventselSPDvtxres;            }
+        void SetEventSelVtxProximity         (Bool_t eventselVtxProximity              ) { fApplyEvSelVtxProximity         = eventselVtxProximity;         }
         void SetEventSelPileup               (Bool_t eventselPileup                    ) { fApplyEvSelPileup               = eventselPileup;               }
         void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet      ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; } 
         void SetEventSelZprimVtxPos          (Bool_t eventselZprimVtxPos               ) { fApplyEvSelZprimVtxPos          = eventselZprimVtxPos;          }
@@ -59,12 +61,11 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetTrackQualityCutTPCrefit      (Bool_t trackqualityCutTPCrefit           ) { fTrackQualityCutTPCrefit        = trackqualityCutTPCrefit;      }
         void SetTrackQualityCutnTPCcls       (Bool_t trackqualityCutnTPCcls            ) { fTrackQualityCutnTPCcls         = trackqualityCutnTPCcls;       }
         void SetQualityCutMinnTPCcls         (Int_t  minnTPCcls                        ) { fMinnTPCcls                     = minnTPCcls;                   }
-        void SetVertexRange                  (Float_t vtxrangemin, Float_t vtxrangemax ) { fVtxRangeMax                    = vtxrangemax; 
+        void SetVertexRange                  (Float_t vtxrangemin, Float_t vtxrangemax ) { fVtxRangeMax                    = vtxrangemax;     
                                                                                            fVtxRangeMin                    = vtxrangemin;                  }
-        //void SetVertexRangeMax               (Float_t vtxrangemax                      ) { fVtxRangeMax                    = vtxrangemax;                  }
-        //void SetVertexRangeMin               (Float_t vtxrangemin                      ) { fVtxRangeMin                    = vtxrangemin;                  }
         void SetMinptCutOnDaughterTracks     (Float_t minptdaughtrks                   ) { fMinPtCutOnDaughterTracks       = minptdaughtrks;               }
         void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                     ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
+        void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors         ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
         //Setters for the V0 and cascade Vertexer Parameters
         void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
         void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -98,6 +99,8 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         Bool_t            fApplyEvSelSDDstatus;            //
         Bool_t            fApplyEvSelPhysicsSel;           //
         Bool_t            fApplyEvSelNoTPConlyPrimVtx;     //
+        Bool_t            fApplyEvSelSPDvtxres;            //
+        Bool_t            fApplyEvSelVtxProximity;         //
         Bool_t            fApplyEvSelPileup;               //
         Bool_t            fApplyEvSelSPDclustervstracklet; //
         Bool_t            fApplyEvSelZprimVtxPos;          //
@@ -111,6 +114,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         Float_t           fVtxRangeMin;                    // to select events with |zvtx|>fVtxRangeMin cm
         Float_t           fMinPtCutOnDaughterTracks;       // minimum pt cut on daughter tracks
         Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
+        Int_t             fSPDPileUpminContributors;       //
        
         Double_t          fV0Sels[7];                      // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t          fCascSels[8];                    // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -206,7 +210,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadepp(const AliAnalysisTaskCheckCascadepp&);            // not implemented
   AliAnalysisTaskCheckCascadepp& operator=(const AliAnalysisTaskCheckCascadepp&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadepp, 9);
+  ClassDef(AliAnalysisTaskCheckCascadepp, 10);
 };
 
 #endif

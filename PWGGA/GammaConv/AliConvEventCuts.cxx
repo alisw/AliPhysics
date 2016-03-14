@@ -1751,12 +1751,12 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
     fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
   }
   
-  if(abs(fVertexZ)>fMaxVertexZ)return kFALSE;
+  if(fabs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
                           ->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("LHC11h")==0){
-    if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
+    if (fabs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
   }
   if (fIsHeavyIon == 2){
     if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
@@ -3351,8 +3351,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
 //     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
-//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
-//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<fabs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<fabs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
     if (patch->IsGammaHigh()){
 //       cout << "fired L1GA high" << endl;
       nG1++;
@@ -3375,8 +3375,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     }
 //     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
 //          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0() 
-//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << abs(patch->GetPhiMin()-patch->GetPhiMax())
-//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
+//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << fabs(patch->GetPhiMin()-patch->GetPhiMax())
+//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << fabs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
 
   if (nPatch > 0){
