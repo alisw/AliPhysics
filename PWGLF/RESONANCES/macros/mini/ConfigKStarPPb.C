@@ -134,7 +134,7 @@ Bool_t ConfigKStarPPb
     
     // axis Z: centrality or multiplicity or rapidity
     if ((i==8) || (i==9)) {
-      outam2->AddAxis(yID, 400, -2.0, 2.0);
+      out->AddAxis(yID, 400, -2.0, 2.0);
     } else {
       if (!isPP)
 	out->AddAxis(centID, 100, 0.0, 100.0);
@@ -175,7 +175,7 @@ Bool_t ConfigKStarPPb
       //axis Y: mother pt
       outR->AddAxis(ptID, 200, 0.0, 20.0); 
       //axis Z: rapidity
-      outm2->AddAxis(yID, 400, -2.0, 2.0);
+      outR->AddAxis(yID, 400, -2.0, 2.0);
     }
 
     //get mothers for K* PDG = 313
