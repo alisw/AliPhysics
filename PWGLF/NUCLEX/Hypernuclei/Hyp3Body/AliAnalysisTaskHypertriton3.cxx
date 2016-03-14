@@ -20,7 +20,7 @@
 // which decays in 3 prongs: d+p+pi^-
 // This task is optimized for ESDs.root
 //
-// Author: 
+// Author:
 // S. Trogolo, trogolo@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
@@ -130,6 +130,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistXPrimaryVtx(0x0),
   fHistYPrimaryVtx(0x0),
   fHistChi2perTPCcluster(0x0),
+  fHistTrackFlagReco(0x0),
   fHistTPCpid(0x0),
   fHistTPCdeusignal(0x0),
   fHistTPCprosignal(0x0),
@@ -147,7 +148,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistDCApprimary(0x0),
   fHistDCAdprimary(0x0),
   fHistDCAdeupro(0x0),
-  fHistDCApiondeu(0x0),	  
+  fHistDCApiondeu(0x0),
   fHistDCApionpro(0x0),
   fHistDCAdpdpi(0x0),
   fHistDCApdppi(0x0),
@@ -312,7 +313,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fESDtrackCuts->SetRequireTPCRefit(kTRUE);
   fESDtrackCuts->SetRequireITSRefit(fRequestITSrefit);
   fESDtrackCuts->SetEtaRange(-0.9,0.9);
-  
+
   //ESD Track cuts V0
   if(!fESDtrackCutsV0) fESDtrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0","AliESDtrackCutsV0");
   fESDtrackCutsV0->SetAcceptKinkDaughters(kFALSE);
@@ -322,7 +323,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fESDtrackCutsV0->SetRequireITSRefit(fRequestITSrefit);
   fESDtrackCutsV0->SetEtaRange(-0.9,0.9);
   fESDtrackCutsV0->SetPtRange(0.2,1.2);
-  
+
 }
 
 
@@ -358,7 +359,7 @@ Double_t AliAnalysisTaskHypertriton3::GetDCAcut(Int_t part, Double_t dca)const{
     cut = fDCAdpi*(1-(dca/fDCAdp));
     return cut;
   }
-  else if(part == 4){ // p-d vs p-pi 
+  else if(part == 4){ // p-d vs p-pi
     cut = fDCApip*(1-(dca/fDCAdp));
     return cut;
   }
@@ -382,11 +383,11 @@ void AliAnalysisTaskHypertriton3::SetConvertedAODVertices(AliESDVertex *ESDvtxp,
   fVtx1->SetID(ESDvtxp->GetID());
   fVtx1->SetType(AliAODVertex::kPrimary);
 
-  
+
   pos[0] = 0.; pos[1] = 0.; pos[2] = 0.;
   cov[0] = 0.; cov[1] = 0.; cov[2] = 0.; cov[3] = 0.; cov[4] = 0.; cov[5] = 0.;
   chi2perNDF = 0.;
-  
+
   //Conversion of the secondary vertex
   ESDvtxs->GetXYZ(pos);
   ESDvtxs->GetCovMatrix(cov);
@@ -397,7 +398,7 @@ void AliAnalysisTaskHypertriton3::SetConvertedAODVertices(AliESDVertex *ESDvtxp,
   fVtx2->SetChi2perNDF(chi2perNDF);
   fVtx2->SetID(ESDvtxs->GetID());
   fVtx2->SetType(AliAODVertex::kUndef);
-  
+
 }
 
 //________________________________________________________________________
@@ -413,7 +414,7 @@ Bool_t AliAnalysisTaskHypertriton3::HasTOF(AliESDtrack *trk, float &beta_tof){
     }
     else{
         const float time = trk->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
-        
+
         if (time < 0 || time < TOFlength/2.99792457999999984e-02) {
             TOFon = kFALSE;
         } else {
@@ -457,7 +458,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fTrkArray = new TObjArray(3);
   fVtx1 = new AliAODVertex();
   fVtx2 = new AliAODVertex();
-    
+
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("clistHypertriton");
@@ -467,26 +468,34 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistCount->GetXaxis()->SetBinLabel(2,"Trigger sel");
   fHistCount->GetXaxis()->SetBinLabel(3,"Centrality sel");
   fHistCount->GetXaxis()->SetBinLabel(4,"Primary vtx sel");
-  
+
   fHistCentralityClass = new TH1F("fHistCentralityClass","Centrality Class; centrality class; entries",11,-0.5,10.5);
   fHistCentralityPercentile = new TH1F("fHistCentralityPercentile","Centrality; centrality percentile; entries",101,-0.5,100.5);
-  
+
   fHistTrigger = new TH1F("fHistTrigger","Trigger statistics",4,-0.5,3.5);
   fHistTrigger->GetXaxis()->SetBinLabel(1,"kMB");
   fHistTrigger->GetXaxis()->SetBinLabel(2,"kCentral");
   fHistTrigger->GetXaxis()->SetBinLabel(3,"kSemiCentral");
 
   fHistMultiplicity = new TH1F("fHistMultiplicity ", "Multiplicity; multiplicity; entries", 100, 0, 20000);
-  
+
   fHistZPrimaryVtx = new TH1F("fHistZPrimaryVtx","primary vertex - Z coordinate; z_{primary vtx} (cm); entries",40,-10.,10.);
 
   fHistXPrimaryVtx = new TH1F("fHistXPrimaryVtx","primary vertex - X coordinate; x_{primary vtx} (cm); entries",800,-1.,1.);
-  
+
   fHistYPrimaryVtx = new TH1F("fHistYPrimaryVtx","primary vertex - Y coordinate; y_{primary vtx} (cm); entries",800,-1.,1.);
 
   fHistChi2perTPCcluster = new TH1F("fHistChi2perTPCcluster","#Chi^{2}/TPC cluster distribution; #Chi^{2}/TPCcls; entries",44,-0.5,10.5);
- 
-  
+
+  fHistTrackFlagReco = new TH1F("fHistTrackFlagReco","Check track flag",6,-0.5,5.5);
+  fHistTrackFlagReco->GetXaxis()->SetBinLabel(1,"kTPCrefit");
+  fHistTrackFlagReco->GetXaxis()->SetBinLabel(2,"kITSin");
+  fHistTrackFlagReco->GetXaxis()->SetBinLabel(3,"kITSout");
+  fHistTrackFlagReco->GetXaxis()->SetBinLabel(4,"kITSrefit");
+  fHistTrackFlagReco->GetXaxis()->SetBinLabel(5,"kITSin & !kITSrefit");
+  fHistTrackFlagReco->GetXaxis()->SetBinLabel(6,"kITSout & !kITSrefit");
+
+
   //TPC
   fHistTPCpid = new TH2F("fHistTPCpid", "dE/dx for all tracks; p_{TPC} (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCpid->SetOption("scat");
@@ -504,18 +513,18 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistTPCpionsignal= new TH2F("fHistTPCpionsignal", "dE/dx after  #pi^{+}(#pi^{-}) PID; p_{TPC}/Z (GeV/c); TPC signal", 1000, -10., 10, 300, 0, 2100);
   fHistTPCpionsignal->SetOption("scat");
   fHistTPCpionsignal->SetMarkerStyle(kFullCircle);
-  
+
 
   //TOF
-  
+
   fHistTOFsignal = new TH2F("fHistTOFsignal","TOF signal; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
   fHistTOFdeusignal = new TH2F("fHistTOFdeusignal","#beta vs p - deuteron; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
 
   fHistTOFprosignal = new TH2F("fHistTOFprosignal","#beta vs p - proton; p (GeV/c); #beta",400,0.,4.,400,0.,1.1);
-  
+
   //fHistTOFdeumass = new TH1F("fHistTOFdeumass","deuteron mass distribution - TOF; mass (GeV/c^{2}); entries",400,0.8,2.8);
-  
+
   //fHistTOFpromass = new TH1F("fHistTOFpromass","proton mass distribution - TOF; mass (GeV/c^{2}); entries",200,0.5,1.5);
 
 
@@ -526,18 +535,18 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistDCApiprimary = new TH1F("fHistDCApiprimary","DCA pion-primary vertex; DCA (cm); entries",1600,0.f,40.f);
   fHistDCApprimary = new TH1F("fHistDCApprimary","DCA proton-primary vertex; DCA (cm); entries",1600,0.f,40.f);
   fHistDCAdprimary = new TH1F("fHistDCAdprimary","DCA deuteron-primary vertex; DCA (cm); entries",1600,0.f,40.f);
-  
+
   //DCA prongs
   fHistDCAdeupro = new TH1F("fHistDCAdeupro","DCA d-p tracks;d-p DCA (cm);entries",550,-0.5,5.0);
-  
+
   fHistDCApiondeu = new TH1F("fHistDCApiondeu","DCA #pi^{-}-d tracks; #pi^{-}-d DCA (cm); entries",550,-0.5,5.0);
-  
+
   fHistDCApionpro = new TH1F("fHistDCApionpro","DCA #pi^{-}-p tracks; #pi^{-}-p DCA (cm); entries",550,-0.5,5.0);
 
   fHistDCAdpdpi = new TH2F("fHistDCAdpdpi","DCA deu-pro vs DCA deu-pion;DCA_{dp} (cm); DCA_{d#pi} (cm)",100,0.,1.,100,0.,1.);
   fHistDCApdppi = new TH2F("fHistDCApdppi","DCA deu-pro vs DCA pion-pro; DCA_{dp} (cm); DCA_{#pip} (cm)",100,0.,1.,100,0.,1.);
   fHistDCApidpip = new TH2F("fHistDCApidpip","DCA pion-pro vs DCA pion-deu;DCA_{#pip} (cm); DCA_{#pid} (cm)",100,0.,1.,100,0.,1.);
-  
+
   //Decay histo
   fHistZDecayVtx = new TH1F("fHistZDecayVtx","decay vertex - z coordinate; z_{decay vtx} (cm); entries",800,-20.f,20.f);
   fHistXDecayVtx = new TH1F("fHistXDecayVtx","decay vertex - x coordinate; x_{decay vtx} (cm); entries",8000,-20.f,20.f);
@@ -551,7 +560,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistDecayLengthH3L = new TH1F("fHistDecayLengthH3L","decay length ^{3}H_{#Lambda}; decay length (cm); entries",400,0.,400.);
   fHistNormalizedDecayL = new TH1F("fHistNormalizedDecayL","normalized decay length; decL/#sigma_{dL}; entries",400,0.,100.);
   fHistLifetime = new TH1F("fHistLifetime","ct ^{3}H_{#Lambda}; ct(cm); entries",400,0.,400.);
-  
+
   fHistAngle_deu_pro = new TH1F("fHistAngle_deu_pro","Angle between d and p; #alpha_{d_p} (rad); entries/(0.03 rad)",100,0.,TMath::Pi());
   fHistAngle_deu_pion = new TH1F("fHistAngle_deu_pion","Angle between d and #pi; #beta_{d_#pi} (rad); entries/(0.03 rad)",100,0.,TMath::Pi());
   fHistAngle_pro_pion = new TH1F("fHistAngle_pro_pion","Angle between p and #pi; #gamma_{p_#pi} (rad);entries/(0.03 rad)",100,0.,TMath::Pi());
@@ -603,7 +612,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistParticle->GetXaxis()->SetBinLabel(19,"^{3}H_{#Lambda} - 2 body");
     fHistParticle->GetXaxis()->SetBinLabel(20,"anti-^{3}H_{#Lambda} - 2 body");
     fHistParticle->GetXaxis()->SetBinLabel(21,"#Lambda - 2 body");
-    
+
     fHistpionTPCclsMCt = new TH1F("fHistpionTPCclsMCt","#pi^{-} TPC clusters - MCtruth; TPC clusters; entries",201,-0.5,200.5);
     fHistpTpionMCt = new TH1F("fHistpTpionMCt","pion p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTproMCt = new TH1F("fHistpTproMCt","proton p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
@@ -617,11 +626,11 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistDCApiprimaryMCt = new TH1F("fHistDCApiprimaryMCt","DCA pion-primary vertex; DCA (cm); entries",3200,0.f,80.f);
     fHistDCApprimaryMCt = new TH1F("fHistDCApprimaryMCt","DCA proton-primary vertex; DCA (cm); entries",3200,0.f,80.f);
     fHistDCAdprimaryMCt = new TH1F("fHistDCAdprimaryMCt","DCA deuteron-primary vertex; DCA (cm); entries",3200,0.f,80.f);
-    
+
     fHistDCAdeuproMCt = new TH1F("fHistDCAdeuproMCt","DCA d-p tracks - MCtruth;d-p DCA (cm);entries",250,-1.0,1.0);
     fHistDCApiondeuMCt = new TH1F("fHistDCApiondeuMCt","DCA #pi^{-}-d tracks - MCtruth;#pi^{-}-d DCA (cm);entries",250,-1.0,1.0);
     fHistDCApionproMCt = new TH1F("fHistDCApionproMCt","DCA #pi^{-}-p tracks - MCtruth;#pi^{-}-p DCA (cm);entries",250,-1.0,1.0);
-    
+
     fHistZDecayVtxMCt = new TH1F("fHistZDecayVtxMCt","decay vertex - z coordinate - MCtruth; z_{decay vtx} (cm); entries",800,-20.f,20.f);
     fHistXDecayVtxMCt = new TH1F("fHistXDecayVtxMCt","decay vertex - x coordinate - MCtruth; x_{decay vtx} (cm); entries",8000,-20.f,20.f);
     fHistYDecayVtxMCt = new TH1F("fHistYDecayVtxMCt","decay vertex - y coordinate - MCtruth; y_{decay vtx} (cm); entries",8000,-20.f,20.f);
@@ -631,10 +640,10 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistDCAZprovtxMCt = new TH1F("fHistDCAZprovtxMCt","DCA candidate p-decay vertex - z coordinate - MCtruth; DCA_{z} (cm); entries",200,-10.,10.);
     fHistDCAXYpionvtxMCt = new TH1F("fHistDCAXYpionvtxMCt","DCA candidate #pi^{-}-decay vertex - xy coordinate - MCtruth; DCA_{xy} (cm); entries",200,-5.,5.);
     fHistDCAZpionvtxMCt = new TH1F("fHistDCAZpionvtxMCt","DCA candidate #pi^{-}-decay vertex - z coordinate - MCtruth; DCA_{z} (cm); entries",200,-10.,10.);
-    
+
     fHistNormalizedDecayL_MCt = new TH1F("fHistNormalizedDecayL_MCt","normalized decay length - MCtruth; decL/#sigma_{dL}; entries",400,0.,100.);
     fHistLifetime_MCt = new TH1F("fHistLifetime_MCt","ct ^{3}H_{#Lambda} - MCtruth; ct(cm); entries",400,0.,400.);
-    
+
     fHistAngle_deu_pro_MCt = new TH1F("fHistAngle_deu_pro_MCt","Angle between d and p - MCtruth; #alpha_{d_p} (rad) - MCtruth; entries/(0.03 rad)",100,0.,TMath::Pi());
     fHistAngle_deu_pion_MCt = new TH1F("fHistAngle_deu_pion_MCt","Angle between d and #pi - MCtruth; #beta_{d_#pi} (rad); entries/(0.03 rad)",100,0.,TMath::Pi());
     fHistAngle_pro_pion_MCt = new TH1F("fHistAngle_pro_pion_MCt","Angle between p and #pi - MCtruth; #gamma_{p_#pi} (rad);entries/(0.03 rad)",100,0.,TMath::Pi());
@@ -644,13 +653,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistAngleCorr_ppi_dpi_MCt = new TH2F("fHistAngleCorr_ppi_dpi_MCt","Correlation: #gamma_{p_#pi} vs #beta_{d_#pi} - MCtruth;#gamma_{p_#pi};#beta_{d_#pi}",100,0.,TMath::Pi(),100,0.,TMath::Pi());
 
     fHistHypertritonMomMCt = new TH1F("fHistHypertritonMomMCt","^{3}H_{#Lambda} momentum - MCtruth; p_{^{3}H_{#Lambda}} (GeV/c); entries/0.01",1100.,0.,11.);
-    
+
     fHistHyperRapidityMCt =  new TH1F("fHistHyperRapidityMCt","rapidity distribution of ^{3}H_{#Lambda} - MC truth; y; entries",400,-2.f,2.f);
-    
+
     fHistMassHypertritonMCt = new TH1F("fHistMassHypertritonMCt","^{3}H_{#Lambda} invariant mass - MCtruth; invariant mass d+p+#pi^{-} (GeV/c^{2}); entries", 400,2.9,3.1);
     fHistMassAntiHypertritonMCt = new TH1F("fHistMassAntiHypertritonMCt","#bar{^{3}H_{#Lambda}} invariant mass - MCtruth; invariant mass #bar{d}+#bar{p}+#pi^{+} (GeV/c^{2}); entries", 400,2.9,3.1);
   }
-  
+
   fOutput->Add(fHistCount);
   fOutput->Add(fHistCentralityClass);
   fOutput->Add(fHistCentralityPercentile);
@@ -660,6 +669,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistXPrimaryVtx);
   fOutput->Add(fHistYPrimaryVtx);
   fOutput->Add(fHistChi2perTPCcluster);
+  fOutput->Add(fHistTrackFlagReco);
   fOutput->Add(fHistTPCpid);
   fOutput->Add(fHistTPCdeusignal);
   fOutput->Add(fHistTPCprosignal);
@@ -677,7 +687,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistDCApprimary);
   fOutput->Add(fHistDCAdprimary);
   fOutput->Add(fHistDCAdeupro);
-  fOutput->Add(fHistDCApiondeu);	  
+  fOutput->Add(fHistDCApiondeu);
   fOutput->Add(fHistDCApionpro);
   fOutput->Add(fHistDCAdpdpi);
   fOutput->Add(fHistDCApdppi);
@@ -720,7 +730,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
       fOutput->Add(fHistMassHypertriton_LS_SemiCent);
       fOutput->Add(fHistMassAntiHypertriton_LS_SemiCent);
   }
-    
+
   if(fMC){
     fOutput->Add(fHistParticle);
     fOutput->Add(fHistpionTPCclsMCt);
@@ -761,7 +771,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fOutput->Add(fHistMassHypertritonMCt);
     fOutput->Add(fHistMassAntiHypertritonMCt);
   }
-  
+
   // Post output data.
   PostData(1,fOutput);
   //printf("**************************************************\n");
@@ -848,13 +858,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   PostData(2,fTTree);
   } else {
     fTTree = new TTree();
-  } 
+  }
 
-  
+
   //printf("**************************************************\n");
   //printf("end of CreateOutputObjects\n");
   //printf("**************************************************\n");
-  
+
 } // end of UserCreateOutputObjects
 
 //________________________________________________________________________
@@ -867,7 +877,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Double_t protonMass          =     0.93827; // proton mass = TDatabasePDG::Instance()->GetParticle(2212)->Mass() GeV/c2
   Double_t deuteronMass        =     1.87561; // deuteron mass = AliPID::ParticleMass(AliPID::kDeuteron) GeV/c2
   Double_t hypertritonMass     =     2.991106;
-    
+
   //define PDGCodes
   Long_t pdgPionPlus           =              211;
   Long_t pdgPionMinus          =             -211;
@@ -914,9 +924,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   AliESDtrack *trackD = 0x0;
   AliESDtrack *trackP = 0x0;
   AliESDtrack *trackNPi = 0x0;
-  
-  
-  
+
+
+
   //==========ESD event==========
   fESDevent=(AliESDEvent*)InputEvent();
   if(!fESDevent){
@@ -928,7 +938,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   AliInputEventHandler *handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
   fHistCount->Fill(0); // number of reco events opened
-  
+
  //==========MC info==========
   AliStack *stack=0x0;
   AliMCEvent *mcEvent = 0x0;
@@ -953,8 +963,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     }
   } // end of MC info
 
-  
-  
+
+
   //==========Trigger class==========
   UInt_t maskPhysSel = handl->IsEventSelected();
   Bool_t isSelectedCentral = (maskPhysSel & AliVEvent::kCentral);
@@ -968,11 +978,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   if(isSelectedCentral) { // Central
     fHistTrigger->Fill(1);
   }
-  
+
   if(isSelectedSemiCentral) { // SemiCentral
     fHistTrigger->Fill(2);
   }
-  
+
   if(fTriggerConfig == 1){ //kMB + kCentral + kSemiCentral
     if(!isSelectedMB && !isSelectedCentral && !isSelectedSemiCentral){
       PostData(1,fOutput);
@@ -996,14 +1006,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   }
 
   fHistCount->Fill(1); // number of events passing the Trigger Selection
-  
+
   //==========Centrality==========
   if(fESDevent->GetEventSpecie() == 4){ // Event Specie == 4 == PbPb
     AliCentrality *centr=fESDevent->GetCentrality();
-    fCentrality = centr->GetCentralityClass10("V0M");    
+    fCentrality = centr->GetCentralityClass10("V0M");
     fCentralityPercentile = centr->GetCentralityPercentile("V0M");
   }
-  
+
   fHistCentralityClass->Fill(fCentrality);
   fHistCentralityPercentile->Fill(fCentralityPercentile);
 
@@ -1014,17 +1024,17 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   Bool_t isCent = kFALSE;
   Bool_t isSemiCent = kFALSE;
-  
+
   if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) isCent = kTRUE;
   if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) isSemiCent = kTRUE;
-    
+
   fHistCount->Fill(2); // number of reco events passing Centrality Selection
-  
+
   //==========Multiplicity==========
   Int_t refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
   fHistMultiplicity->Fill(refMultTpc);
-  
-  
+
+
   //==========Primary Vertex==========
   fPrimaryVertex = (AliESDVertex*)fESDevent->GetPrimaryVertexTracks();
   if (fPrimaryVertex->GetNContributors()<1) {
@@ -1033,21 +1043,21 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if(fPrimaryVertex->GetNContributors()<1) {
       PostData(1,fOutput);
       return;
-    }  
+    }
   }
-  
+
   if (TMath::Abs(fPrimaryVertex->GetZ()) > 10) {
     PostData(1,fOutput);
     return;
   }
 
   fHistCount->Fill(3); // number of reco events passing Primary Vertex Selection
-  
+
   fHistZPrimaryVtx->Fill(fPrimaryVertex->GetZ());
   fHistXPrimaryVtx->Fill(fPrimaryVertex->GetX());
   fHistYPrimaryVtx->Fill(fPrimaryVertex->GetY());
-  
-  
+
+
   // -------------------------------------------------------
   // Loop for PID on ESD tracks
   // -------------------------------------------------------
@@ -1062,33 +1072,34 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   UInt_t nProTPC = 0;
   TArrayI cpion(ntracks);
   UInt_t nPioTPC = 0;
-  
+
   //vector <Float_t> cmassd;
   //vector <Float_t> cmassp;
-    
+
 
   for(Int_t i=0; i < ntracks; i++) {
     track = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(i));
     beta = 0.;
     useTOF = kFALSE;
+    ULong_t status = track->GetStatus();
     // Chi2/TPCcls
     nClustersTPC = track->GetTPCclusters(0);
     chi2PerClusterTPC = track->GetTPCchi2()/nClustersTPC;
     fHistChi2perTPCcluster->Fill(chi2PerClusterTPC);
 
     if(fMC){if(track->GetLabel()<0) continue;}
-    if(track->GetID()<0) continue;     
+    if(track->GetID()<0) continue;
 
     if(!fESDtrackCuts->AcceptTrack(track)) continue;
     if(!track->GetInnerParam()) continue;
-        
+
     if(track->GetTPCsignalN()<80) continue;
-    
+
     p = track->P(); //track->GetTPCmomentum()
     pOverZ = p*track->GetSign();
     pT = track->Pt();
     //if(p<0.2) continue;
-    
+
     fHistTPCpid->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
     if(fRequestTOFPid){
         useTOF = HasTOF(track, beta);
@@ -1096,7 +1107,16 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     }
     //Filling PID histo
     label = track->GetLabel();
-    
+
+    if(status&AliVTrack::kTPCrefit){
+      fHistTrackFlagReco->Fill(0);
+      if(status&AliVTrack::kITSin) fHistTrackFlagReco->Fill(1);
+      if(status&AliVTrack::kITSout) fHistTrackFlagReco->Fill(2);
+      if(status&AliVTrack::kITSrefit) fHistTrackFlagReco->Fill(3);
+      if((status&AliVTrack::kITSin) && !(status&AliVTrack::kITSrefit)) fHistTrackFlagReco->Fill(4);
+      if((status&AliVTrack::kITSout) && !(status&AliVTrack::kITSrefit)) fHistTrackFlagReco->Fill(5);
+    }
+
     if(fMC){
       TParticle *tparticleDaughter = stack->Particle(TMath::Abs(label));
         if(pT > 7) continue;
@@ -1144,7 +1164,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
      }
     if(pT >= 0.4 && pT <= 4.){
       if(PassPIDSelection(track,AliPID::kProton, useTOF)) { // proton
-          
+
           fHistTPCprosignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
           if(useTOF){
               fHistTOFprosignal->Fill(p,beta);
@@ -1161,20 +1181,20 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       }
     }
   } // end of PID loop
-  
+
   cdeuteron.Set(nDeuTPC);
   cproton.Set(nProTPC);
   cpion.Set(nPioTPC);
-  
+
   // -------------------------------------------------------
   // Loop for Invariant Mass
   // -------------------------------------------------------
-
+/*
   Double_t bz = fESDevent->GetMagneticField();
   fVertexer->SetFieldkG(bz);
   Double_t xthiss(0.0);
   Double_t xpp(0.0);
-  
+
   AliESDVertex *decayVtx = 0x0;
 
   TLorentzVector Hypertriton;
@@ -1189,44 +1209,44 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   TParticle *tparticleD = 0x0;
   TParticle *tparticleP = 0x0;
   TParticle *tparticlePi = 0x0;
-  
+
   for(UInt_t j=0; j<nDeuTPC; j++){ // candidate deuteron loop cdeuteron.size()
-    
+
     trackD = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cdeuteron[j]));
-    
+
     trackD->GetImpactParameters(dprim,dprimc);
     dcadprim = TMath::Sqrt((dprim[0]*dprim[0])+(dprim[1]*dprim[1]));
     fHistDCAdprimary->Fill(dcadprim);
     //fHistCorrDCAdprimary->Fill(dprim[0],dprim[1]);
-    
+
     if(TMath::Abs(dprim[1]) > fDCAzDPVmax) continue;
-    
+
     charge_d = trackD->GetSign();
-    
+
     for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop cproton.size()
-      
+
       trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cproton[m]));
 
       if(trackD->GetID() == trackP->GetID()) continue;
-      
+
       charge_p = trackP->GetSign();
-      
+
       if((charge_d*charge_p)<0) continue; //avoid coupling d-pbar and dbar-p
-      
+
       trackP->GetImpactParameters(pprim,pprimc);
       dcapprim = TMath::Sqrt((pprim[0]*pprim[0])+(pprim[1]*pprim[1]));
       fHistDCApprimary->Fill(dcapprim);
       //fHistCorrDCApprimary->Fill(pprim[0],pprim[1]);
 
       if(TMath::Abs(pprim[1]) > fDCAzPPVmax) continue;
-      
+
       dca_dp = trackD->GetDCA(trackP,bz,xthiss,xpp);
 
       fHistDCAdeupro->Fill(dca_dp);
 
       if(dca_dp > fDCAdp) continue;
 
-      
+
       for(UInt_t s=0; s<nPioTPC; s++ ){ // candidate pion loop cpion.size()
 
 	fTrkArray->Clear();
@@ -1238,31 +1258,31 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	d1.Clear();
 	p1.Clear();
 	pi1.Clear();
-	
+
 	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cpion[s]));
 	brotherHood = kFALSE;
 
-	
+
 	if(trackNPi->GetID() == trackP->GetID()) continue;
 	if(trackNPi->GetID() == trackD->GetID()) continue;
-	
-	
+
+
 	charge_pi = trackNPi->GetSign();
 
     if(fMinvSignal && (charge_p*charge_pi)>0) continue;
     if(fMinvLikeSign && (charge_p*charge_pi)<0) continue;
-	
+
 	fHistpionTPCcls->Fill(trackNPi->GetTPCclusters(0));
 
 	trackNPi->GetImpactParameters(piprim,piprimc);
-	
+
 	dcapiprim = TMath::Sqrt((piprim[0]*piprim[0])+(piprim[1]*piprim[1]));
-	
+
 	fHistDCApiprimary->Fill(dcapiprim);
 	//fHistCorrDCApiprimary->Fill(piprim[0],piprim[1]);
-	
+
 	if(dcapiprim < fDCAPiPVmin) continue;
-	
+
 	dca_dpi = trackNPi->GetDCA(trackD,bz,xthiss,xpp);
 	dca_ppi = trackNPi->GetDCA(trackP,bz,xthiss,xpp);
 
@@ -1270,14 +1290,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDCAdpdpi->Fill(dca_dp,dca_dpi);
 	fHistDCApdppi->Fill(dca_dp,dca_ppi);
 	fHistDCApidpip->Fill(dca_ppi,dca_dpi);
-	
-	
+
+
 	if(dca_dpi > GetDCAcut(5,dca_dp)) continue;
 	if(dca_ppi > GetDCAcut(4,dca_dp)) continue;
 
 	fHistDCApiondeu->Fill(dca_dpi);
 	fHistDCApionpro->Fill(dca_ppi);
-	
+
 	fTrkArray->AddAt(trackD,0);
 	fTrkArray->AddAt(trackP,1);
 	fTrkArray->AddAt(trackNPi,2);
@@ -1286,39 +1306,39 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	decayVtx = (AliESDVertex*)fVertexer->VertexForSelectedESDTracks(fTrkArray);
 
 	SetConvertedAODVertices(fPrimaryVertex,decayVtx);
-	
+
 	fHistZDecayVtx->Fill(decayVtx->GetZ());
 	fHistXDecayVtx->Fill(decayVtx->GetX());
 	fHistYDecayVtx->Fill(decayVtx->GetY());
 	decVt[0] = decayVtx->GetX();
 	decVt[1] = decayVtx->GetY();
 	decVt[2] = decayVtx->GetZ();
-	
+
 	dlh[0]=fESDevent->GetPrimaryVertex()->GetX() - decayVtx->GetX();
 	dlh[1]=fESDevent->GetPrimaryVertex()->GetY() - decayVtx->GetY();
 	dlh[2]=fESDevent->GetPrimaryVertex()->GetZ() - decayVtx->GetZ();
 
 	decayLengthH3L = TMath::Sqrt((dlh[0]*dlh[0]) + (dlh[1]*dlh[1]) + (dlh[2]*dlh[2]));
 	normalizedDecayL = fVtx2->DistanceToVertex(fVtx1)/fVtx2->ErrorDistanceToVertex(fVtx1);
-	
+
 	fHistDecayLengthH3L->Fill(decayLengthH3L);
 	fHistNormalizedDecayL->Fill(normalizedDecayL);
-	
+
 	trackD->PropagateToDCA(decayVtx, bz, 10,dcad);
 	fHistDCAXYdeuvtx->Fill(dcad[0]);
 	fHistDCAZdeuvtx->Fill(dcad[1]);
-	
+
 	trackP->PropagateToDCA(decayVtx, bz, 10,dcap);
 	fHistDCAXYprovtx->Fill(dcap[0]);
 	fHistDCAZprovtx->Fill(dcap[1]);
-	
+
 	trackNPi->PropagateToDCA(decayVtx, bz, 10,dcapi);
-        
+
 	fHistDCAXYpionvtx->Fill(dcapi[0]);
 	fHistDCAZpionvtx->Fill(dcapi[1]);
 
 	delete decayVtx;
-	
+
 	if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
 	if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) continue;
 	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
@@ -1326,16 +1346,16 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(TMath::Abs(dcapi[1]) > fDCAPiSVzmax) continue;
 
 	if(normalizedDecayL < fMinNormalizedDecL) continue;
-	
+
 	posD.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),deuteronMass);
-	
+
 	posP.SetXYZM(trackP->Px(),trackP->Py(),trackP->Pz(),protonMass);
-	
+
 	negPi.SetXYZM(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz(),pionMass);
-	
+
 	Hypertriton=posD+posP+negPi;
 
-	
+
 	pTotHyper = Hypertriton.P();
 	if(Hypertriton.Pt() < fMinPtMother || Hypertriton.Pt() > fMaxPtMother) continue;
 
@@ -1344,41 +1364,41 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistLifetime->Fill(ctau);
 
 	if(ctau < fMinLifeTime || ctau > fMaxLifeTime) continue;
-	
+
 	rapidity = Hypertriton.Rapidity();
 	fHistHyperRapidity->Fill(rapidity);
-	
+
 	if(TMath::Abs(rapidity) > fRapidity) continue;
 
 	h1.SetXYZ(-dlh[0],-dlh[1],-dlh[2]);
 	pointingAngleH = Hypertriton.Angle(h1);
     fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
     if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
-	
-	d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());  
+
+	d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());
 	p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
 	pi1.SetXYZ(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz());
-	
-       
+
+
 	//Angular correlation
-	
+
 	fHistAngle_deu_pro->Fill(d1.Angle(p1));
 	fHistAngle_deu_pion->Fill(d1.Angle(pi1));
 	fHistAngle_pro_pion->Fill(p1.Angle(pi1));
-	
+
 	fHistAngleCorr_dp_dpi->Fill(d1.Angle(p1),d1.Angle(pi1));
 	fHistAngleCorr_dp_ppi->Fill(d1.Angle(p1),p1.Angle(pi1));
 	fHistAngleCorr_ppi_dpi->Fill(p1.Angle(pi1),d1.Angle(pi1));
-  
+
 	if(d1.Angle(p1) > fAngledp) continue;
 	if(d1.Angle(pi1) > fAngledpi) continue;
-	
+
 
 	fHistPtHypertriton->Fill(Hypertriton.Pt());
     fHistPtProton->Fill(trackP->Pt());
     fHistPtDeuteron->Fill(trackD->Pt());
     fHistPtPion->Fill(trackNPi->Pt());
-	
+
     if(fMinvSignal){
         if(charge_d>0 && charge_p>0 && charge_pi<0)	{ //
             fHistMassHypertriton->Fill(Hypertriton.M());
@@ -1401,29 +1421,29 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
             if(isSemiCent) fHistMassAntiHypertriton_LS_SemiCent->Fill(Hypertriton.M());
         }
     }
-	
+
     if(fMC){
 	  lD = trackD->GetLabel();
 	  lP = trackP->GetLabel();
 	  lPi = trackNPi->GetLabel();
-        
+
 	  tparticleD = stack->Particle(TMath::Abs(lD));
 	  tparticleP = stack->Particle(TMath::Abs(lP));
 	  tparticlePi = stack->Particle(TMath::Abs(lPi));
-	  
+
 	  if((tparticleD->GetPdgCode() == pdgDeuteron && tparticleP->GetPdgCode() == pdgProton && tparticlePi->GetPdgCode() == pdgPionMinus) || (tparticleD->GetPdgCode() == pdgAntiDeuteron && tparticleP->GetPdgCode() == pdgAntiProton && tparticlePi->GetPdgCode() == pdgPionPlus)){
           labelM_deu = tparticleD->GetFirstMother();
           labelM_pro = tparticleP->GetFirstMother();
           labelM_pio = tparticlePi->GetFirstMother();
-          
+
           TParticle *tparticleMotherD = stack->Particle(TMath::Abs(labelM_deu));
           TParticle *tparticleMotherP = stack->Particle(TMath::Abs(labelM_pro));
           TParticle *tparticleMotherPi = stack->Particle(TMath::Abs(labelM_pio));
-	    
+
 	    if(labelM_deu == labelM_pro && labelM_pro == labelM_pio){
             if(TMath::Abs(tparticleMotherP->GetPdgCode()) == pdgHypertriton){
                 if(tparticleD->GetUniqueID() == kPDecay && tparticleP->GetUniqueID() == kPDecay && tparticlePi->GetUniqueID() == kPDecay){
-	      
+
                     brotherHood = kTRUE;
 
                     fHistpionTPCclsMCt->Fill(trackNPi->GetTPCclusters(0));
@@ -1469,7 +1489,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  } //end of check pdgCode daughters
 	} //end of if(MC)
 
-	
+
 	if(fFillTree){
 	  fTMCtruth = brotherHood;
 	  fTCentralityPerc = fCentralityPercentile;
@@ -1521,7 +1541,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  fTAngle_dp = d1.Angle(p1);
 	  fTAngle_dpi = d1.Angle(pi1);
 	  fTAngle_ppi = p1.Angle(pi1);
-        
+
 	  fTRapidity = Hypertriton.Rapidity();
 	  fTDecayLength = decayLengthH3L;
 	  fTDecayLengthError = fVtx2->ErrorDistanceToVertex(fVtx1);
@@ -1556,7 +1576,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
         fTuniqID_pro = tparticleP->GetUniqueID();
         fTuniqID_pion = tparticlePi->GetUniqueID();
 	  }
-	  
+
 	  if(charge_d<0 && charge_p<0 && charge_pi>0) fTInvariantMass = -Hypertriton.M();
 	  else fTInvariantMass = Hypertriton.M();
 
@@ -1567,7 +1587,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     } // end of candidate proton loop
   }// end of candidate deuteron loop
 
-
+*/
 
   if(fMC){
     for(Int_t iMC=0; iMC<stack->GetNtrack(); iMC++){ // check MC stack content
@@ -1595,20 +1615,20 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(pstack->GetPdgCode() == 3122 && pstack->GetNDaughters() == 2) fHistParticle->Fill(20); // Lambda
     } //end of MC content truth check
   }
-  
+
   cdeuteron.Reset();
   cproton.Reset();
   cpion.Reset();
 
   //cmassd.clear();
   //cmassp.clear();
-  
+
   // Post output data.
   PostData(1,fOutput);
   if(fFillTree) PostData(2,fTTree);
-  
-  
-  
+
+
+
 } // end of UserExec
 
 //________________________________________________________________________
