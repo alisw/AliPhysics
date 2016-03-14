@@ -297,6 +297,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMultDG_MS(0x0)
 	, fMassNG(0x0)
 	, fMassNG_MS(0x0)
+	, fMassDG(0x0)
 	, fMassDG_MS(0x0)
 	, fTrackCutsInfo(0x0)
 	, fTrackCutsInfo_ITSSA(0x0)
