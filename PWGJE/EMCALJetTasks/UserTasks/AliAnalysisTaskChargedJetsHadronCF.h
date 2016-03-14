@@ -24,6 +24,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   // ######### SETTERS/GETTERS
   void                        SetJetParticleArrayName(const char* name) { fJetParticleArrayName = name; }
+  void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
   void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading;}
@@ -38,8 +39,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsCont;                                //!Jets
   AliParticleContainer       *fTracksCont;                              //!Tracks
   Int_t                       fNumberOfCentralityBins;                  // Number of centrality bins
-  TClonesArray               *fJetsOutput;                              //!Array of basic correlation particles attached to the event
+  TClonesArray               *fJetsOutput;                              //!Array of basic correlation particles attached to the event (jets)
+  TClonesArray               *fTracksOutput;                            //!Array of basic correlation particles attached to the event (tracks)
   TString                     fJetParticleArrayName;                    // Name of fJetsOutput array
+  TString                     fTrackParticleArrayName;                  // Name of fTracksOutput array
 
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fEventCriteriumMode;                      // Mode of event selection
@@ -62,6 +65,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF(const AliAnalysisTaskChargedJetsHadronCF&);            // not implemented
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 1) // Charged jet+h analysis task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 2) // Charged jet+h analysis task
 };
 #endif

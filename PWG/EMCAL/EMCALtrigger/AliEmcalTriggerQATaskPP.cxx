@@ -38,7 +38,7 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP() :
   fEMCALTriggerQA(0),
   fADCperBin(20),
   fMinAmplitude(10),
-  fBadChannels(),
+  fDCalPlots(kTRUE),
   fTriggerPatches(0)
 {
 }
@@ -53,7 +53,7 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP(const char *name) :
   fEMCALTriggerQA(0),
   fADCperBin(20),
   fMinAmplitude(10),
-  fBadChannels(),
+  fDCalPlots(kTRUE),
   fTriggerPatches(0)
 {
   // Constructor.
@@ -101,6 +101,10 @@ void AliEmcalTriggerQATaskPP::ExecOnce()
     AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), fTriggerPatchesName.Data()));
     return;
   }
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    GetTriggerQA(i)->ExecOnce();
+  }
 }
 
 /**
@@ -112,6 +116,7 @@ void AliEmcalTriggerQATaskPP::UserCreateOutputObjects()
 
   if (fOutput) {  
     for (Int_t i = 0; i < fNcentBins; i++) {
+      GetTriggerQA(i)->EnableDCal(fDCalPlots);
       GetTriggerQA(i)->SetDebugLevel(DebugLevel());
       GetTriggerQA(i)->Init();
       fOutput->Add(GetTriggerQA(i)->GetListOfHistograms());
@@ -163,8 +168,6 @@ Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
       // get position in global 2x2 tower coordinates
       // A0 left bottom (0,0)
       fCaloTriggers->GetPosition(globCol, globRow);
-      // exclude channel completely if it is masked as hot channel
-      if (fBadChannels.HasChannel(globCol, globRow)) continue;
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those
       fCaloTriggers->GetL1TimeSum(L1amp);
@@ -187,7 +190,7 @@ Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
 
       fastor.Initialize(L0amp, L1amp, globRow, globCol, time, fGeom);
 
-      GetTriggerQA(fCentBin)->ProcessFastor(&fastor);
+      GetTriggerQA(fCentBin)->ProcessFastor(&fastor, fCaloCells);
     }
   }
 

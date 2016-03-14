@@ -37,7 +37,6 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
   fEMCALTriggerQA(0),
   fADCperBin(20),
   fBkgPatchType(kTMEMCalBkg),
-  fBadChannels(),
   fTriggerPatches(0),
   fHistEMCalTriggers(0),
   fHistEventQA(0)
@@ -54,7 +53,6 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name) :
   fEMCALTriggerQA(0),
   fADCperBin(20),
   fBkgPatchType(kTMEMCalBkg),
-  fBadChannels(),
   fTriggerPatches(0),
   fHistEMCalTriggers(0),
   fHistEventQA(0)
@@ -361,8 +359,6 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
       // get position in global 2x2 tower coordinates
       // A0 left bottom (0,0)
       fCaloTriggers->GetPosition(globCol, globRow);
-      // exclude channel completely if it is masked as hot channel
-      if (fBadChannels.HasChannel(globCol, globRow)) continue;
       // for some strange reason some ADC amps are initialized in reconstruction
       // as -1, neglect those
       fCaloTriggers->GetL1TimeSum(L1amp);

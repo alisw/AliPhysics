@@ -14,7 +14,7 @@
 */
 
 
-#include  "TFile.h"
+#include "TFile.h"
 #include "TTree.h"
 #include "TVectorF.h"
 #include "TSystem.h"
@@ -38,32 +38,37 @@
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliNDLocalRegression.h"
 #include "AliMathBase.h"
-
-
+#include "TGrid.h"
+#include "AliCDBManager.h"
+#include "AliGRPManager.h"
+#include "TGeoGlobalMagField.h"
 
 TTree * treeDist =0;   // global tree used to check the content of the fit
 
 void AliTPCcalibAlignInterpolationLoop(Int_t nchunks, Int_t neventsMax);
-void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const char *outputFile, Int_t delta=1);
+void CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const char *outputFile, Int_t delta=1);
 
 
-void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param1=0){
-  if (action==0)   AliTPCcalibAlignInterpolationLoop(100000,1000000000);
-  if (action==1)    {
+void AliTPCcalibAlignInterpolationMacro(Int_t action, Int_t param0=0, Int_t param1=0){
+
+  Int_t isGrid = TString(gSystem->Getenv("onGrid")).Atoi();
+  if (isGrid > 0) TGrid::Connect("alien://");
+  
+  if (action == 0) AliTPCcalibAlignInterpolationLoop(100000,1000000000);
+  if (action == 1) {
     Int_t startTime=TString(gSystem->Getenv("mapStartTime")).Atoi();
     Int_t stopTime =TString(gSystem->Getenv("mapStopTime" )).Atoi();
     AliTPCcalibAlignInterpolation::FillHistogramsFromChain("residual.list", 6,4,startTime, stopTime, param1,param0);
   }
-  if (action==4)    AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers("residual.list",1,1,1);
-
-
-  if (action==2) {
+  
+  if (action == 2) {
     Int_t startTime=TString(gSystem->Getenv("mapStartTime")).Atoi();
     TString outFile = TString::Format("ResidualHistograms_His%d.root",param0);
     if (startTime>0)  outFile = TString::Format("ResidualHistograms_His%d_Time%d.root",param0,startTime);
     CreateDistortionMapsFromFile(param0, outFile.Data(),TString::Format("ResidualMapFull_%d.root",param0).Data(), param1);
   }
-  if (action==3){ //make distortion fit
+
+  if (action == 3) { //make distortion fit
     TString inputFile=gSystem->Getenv("inputFile");
     TString inputTree=gSystem->Getenv("inputTree");
     Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
@@ -72,18 +77,21 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
     Float_t theta0=TString(gSystem->Getenv("varTheta0")).Atof();
     Float_t theta1=TString(gSystem->Getenv("varTheta1")).Atof();
     ::Info("AliTPCcalibAlignInterpolationM","MakeFit");
-    printf("Env varaible:\n%s\t%s\t%s\t%s\t%s\t%s\t\n",inputFile.Data(), inputTree.Data(), gSystem->Getenv("varSec0") , gSystem->Getenv("varSec1"), 	gSystem->Getenv("varTheta0"), gSystem->Getenv("varTheta1"));	          
+    printf("Env varaible:\n%s\t%s\t%s\t%s\t%s\t%s\t\n",inputFile.Data(), inputTree.Data(), gSystem->Getenv("varSec0") , gSystem->Getenv("varSec1"), gSystem->Getenv("varTheta0"), gSystem->Getenv("varTheta1"));	          
     printf("%s\t%s\t%d\t%d\t%f\t%f\t\n",inputFile.Data(), inputTree.Data(), sec0,sec1,theta0,theta1);		      
 
     AliTPCcalibAlignInterpolation::MakeNDFit(inputFile, inputTree, sec0,sec1,theta0,theta1);		      
   } 
 
-  if (action==5) {
+  if (action == 4) AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers("residual.list",1,1,1);
+
+  if (action == 5) {
     Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
-     AliTPCcalibAlignInterpolation::MakeEventStatInfo("cat residual.list",300,param0,1);
+    Printf("runNumber = %d", runNumber);
+    AliTPCcalibAlignInterpolation::MakeEventStatInfo("cat residual.list",300,param0,1);
   }
 
-  if (action==6){  //fit drift velocity
+  if (action == 6){  //fit drift velocity
     Int_t deltaT=TString(gSystem->Getenv("driftDeltaT" )).Atoi();
     Int_t sigmaT=TString(gSystem->Getenv("driftSigmaT" )).Atoi();
     if (deltaT<=0 || sigmaT<=0){
@@ -94,7 +102,29 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
     AliTPCcalibAlignInterpolation::FitDrift(deltaT, sigmaT);
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","End");
   }
- 
+
+  if (action == 7) {  //exporting of drift velocity calibration to OCDB
+    TString targetOCDBDir = TString(gSystem->Getenv("targetOCDBDir")); // to where OCDB entry are PUT
+    Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
+    AliCDBManager::Instance()->SetDefaultStorage("raw://"); // from where OCDB are READ
+    AliCDBManager::Instance()->SetRun(runNumber);
+    // magnetic field
+    if ( !TGeoGlobalMagField::Instance()->GetField() ) {
+      printf("Loading field map...\n");
+      AliGRPManager grpMan;
+      if( !grpMan.ReadGRPEntry() ) { 
+	printf("Cannot get GRP entry\n"); 
+      }
+      if( !grpMan.SetMagField() ) { 
+	printf("Problem with magnetic field setup\n"); 
+      }
+    }
+    Printf("The entry will be put in %s for run %d", targetOCDBDir.Data(), runNumber);
+    ::Info("AliTPCcalibAlignInterpolation::MakeVDriftOCDB","Begin");
+    AliTPCcalibAlignInterpolation::MakeVDriftOCDB("fitDrift.root", runNumber, targetOCDBDir);
+    ::Info("AliTPCcalibAlignInterpolation::MakeVDriftOCDB","End");
+  }
+
 }
 
 void AliTPCcalibAlignInterpolationLoop(Int_t nchunks, Int_t neventsMax){

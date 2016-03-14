@@ -175,7 +175,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
     void        SetExtendedQA(Int_t extendedQA)                 {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
-    void        FillHistogramsExtendedQA(AliVEvent *event);
+    void        FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
 
@@ -349,6 +349,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistClusterEnergyFracCellsBeforeQA;      // Energy fraction of CellIDs in Cluster
     TH1F*     fHistClusterEnergyFracCellsAfterQA;       // Energy fraction of CellIDs in Cluster of accepted ones
     TH1F*     fHistClusterIncludedCellsTimingAfterQA;   // Timing of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterDistanceInTimeCut;            // distance of clusters: within cluster timing cut + within cluster timing cut
+    TH2F*     fHistClusterDistanceOutTimeCut;           // distance of clusters: within cluster timing cut + outside cluster timing cut
 
     //Track matching histograms
     TH1F*     fHistClusterRBeforeQA;                    // cluster position in R=SQRT(x^2+y^2) (before QA)
@@ -376,7 +378,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,21)
+    ClassDef(AliCaloPhotonCuts,22)
 };
 
 #endif

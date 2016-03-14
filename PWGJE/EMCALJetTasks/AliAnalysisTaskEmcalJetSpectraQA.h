@@ -57,6 +57,7 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
 
   void                        SetHistoType(EHistoType_t t)        { fHistoType             = t; }
   void                        SetJetEPaxis(Bool_t b)              { fJetEPaxis             = b; }
+  void                        SetAreaAxis(Bool_t b)               { fAreaAxis              = b; }
 
  protected:
   void                        AllocateTHX(AliJetContainer* jets);
@@ -67,6 +68,7 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
 
   EHistoType_t                fHistoType;                   ///< histogram type
   Bool_t                      fJetEPaxis;                   ///< whether a EP-jet axis should be included in the THnSparse
+  Bool_t                      fAreaAxis;                    ///< whether the area axis should be included
 
   THistManager                fHistManager;                 //!< Histogram manager
 
@@ -75,7 +77,7 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectraQA &operator=(const AliAnalysisTaskEmcalJetSpectraQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 1)
+  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 2)
   /// \endcond
 };
 #endif

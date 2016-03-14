@@ -70,6 +70,7 @@ set(SRCS
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
     PHOS_PbPb/AliAnalysisTaskgg.cxx
+    PHOS_PbPb/AliAnalysisTaskggMC.cxx
     PHOS_PbPb/AliAnalysisTaskPHOSPCMgg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx

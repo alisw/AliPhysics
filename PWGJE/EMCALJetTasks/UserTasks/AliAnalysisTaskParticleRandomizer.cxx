@@ -27,7 +27,7 @@ ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskSE("AliAnalysisTaskParticleRandomizer"), fInitialized(0), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fRandom()
+  AliAnalysisTaskSE("AliAnalysisTaskParticleRandomizer"), fInitialized(0), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fRandom()
 {
 // constructor
 }
@@ -88,12 +88,19 @@ void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
 
       if(fRandomizeInPhi)
         particle->SetPhi(fMinPhi + fRandom->Rndm()*(fMaxPhi-fMinPhi));
-      if(fRandomizeInEta)
+      if(fRandomizeInTheta)
       {
         Double_t minTheta = 2.*atan(exp(-fMinEta));
-        Double_t maxTheta = 2.*atan(exp(-fMaxEta));;
+        Double_t maxTheta = 2.*atan(exp(-fMaxEta));
         particle->SetTheta(minTheta  + fRandom->Rndm()*(maxTheta-minTheta));
       }
+      if(fRandomizeInEta)
+      {
+        Double_t randomEta = fMinEta  + fRandom->Rndm()*(fMaxEta-fMinEta);
+        Double_t randomTheta = 2.*atan(exp(-randomEta));
+        particle->SetTheta(randomTheta);
+      }
+
       if(fRandomizeInPt)
         particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
     }

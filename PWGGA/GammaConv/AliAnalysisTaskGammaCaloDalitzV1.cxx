@@ -2236,7 +2236,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessAODMCParticles()
 		if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
 		if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
 			fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
-			if (abs(particle->Eta()) < 0.66 ){
+            if (fabs(particle->Eta()) < 0.66 ){
 				if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt());
 			}
 			if(particle->GetMother() >-1){ // Meson Decay Gamma
@@ -2466,7 +2466,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessMCParticles()
 		  
 			
 			
-			if ( abs(particle->Eta()) < 0.66 ){
+            if ( fabs(particle->Eta()) < 0.66 ){
 				if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt());
 			}	
 			
@@ -2725,7 +2725,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 						
 						fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 						
-							if(abs(pi0cand->GetAlpha())<0.1)
+                            if(fabs(pi0cand->GetAlpha())<0.1)
 							fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 							
 							
@@ -2757,7 +2757,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 						
 						    fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 						
-						    if(abs( pi0cand->GetAlpha()) < 0.1 )
+                            if(fabs( pi0cand->GetAlpha()) < 0.1 )
 						    fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 					      
 						    if ( fDoTHnSparse ) {
@@ -3204,14 +3204,14 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueMesonCandidatesAOD(AliAODConve
 				if (isTruePi0){
 					if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
 						fHistoTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
-						fHistoTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->GetAlpha()));
+                        fHistoTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),fabs(Pi0Candidate->GetAlpha()));
 						fHistoTruePi0PtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
 						fHistoTrueMotherPi0ConvPhotonEtaPhi[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPhi(), TrueGammaCandidate0->GetPhotonEta());
 					}
 				} else if (isTrueEta){
 					if ( Pi0Candidate->M() > 0.45 && Pi0Candidate->M() < 0.65){
 						fHistoTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
-						fHistoTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),abs(Pi0Candidate->GetAlpha()));
+                        fHistoTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),fabs(Pi0Candidate->GetAlpha()));
 						fHistoTrueEtaPtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
 						fHistoTrueMotherEtaConvPhotonEtaPhi[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPhi(), TrueGammaCandidate0->GetPhotonEta());
 					}

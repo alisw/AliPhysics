@@ -769,7 +769,7 @@ void AliAnalysisTaskConversionQA::CountTracks(){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
-      if(abs(curTrack->Eta())>0.8) continue;
+      if(fabs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.15) continue;
       fNumberOfESDTracks++;
     }

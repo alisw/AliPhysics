@@ -7,8 +7,7 @@
 #include <iostream>
 
 #include <TObject.h>
-
-#include "AliEMCALTriggerChannelContainer.h"
+#include <TArrayF.h>
 
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
@@ -119,6 +118,32 @@ public:
   void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
 
   /**
+   * Set thresholds applied to FastORs and offline cells before patch reconstruction
+   * @param l0 Threshold for L0 FastOR amplitudes
+   * @param l1 Threshold for L1 FastOR amplitudes
+   * @param cell Threshold for cell amplitudes
+   */
+  void SetFastORandCellThresholds(Int_t l0, Int_t l1, Int_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
+
+  /**
+   * Add a FastOR bad channel to the list
+   * @param absId Absolute ID of the bad channel
+   */
+  void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+
+  /**
+   * Read the FastOR bad channel map from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadFastORBadChannelFromStream(std::istream& stream);
+
+  /**
+   * Read the FastOR bad channel map from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadFastORBadChannelFromFile(const char* fname);
+
+  /**
    * Add an offline bad channel to the set
    * @param absId Absolute ID of the bad channel
    */
@@ -135,6 +160,30 @@ public:
    * @param fname Path and name of the file
    */
   void ReadOfflineBadChannelFromFile(const char* fname);
+
+  /**
+   * Read the FastOR pedestals from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadFastORPedestalFromStream(std::istream& stream);
+
+  /**
+   * Read the FastOR pedestals from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadFastORPedestalFromFile(const char* fname);
+
+  /**
+   * Set the pedestal value for a FastOR
+   * @param absId Absolute ID of a FastOR
+   * @param ped   Pedestal value
+   */
+  void SetFastORPedestal(Short_t absId, Float_t ped);
+
+  /**
+   * Reset the FastOR pedestal array
+   */
+  void ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   /**
    * Reset data grids
@@ -216,8 +265,9 @@ protected:
    */
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
 
-  AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
+  std::set<Short_t>                         fBadChannels;                 ///< Container of bad channels
   std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
+  TArrayF                                   fFastORPedestal;              ///< FastOR pedestal
   const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
 
@@ -233,6 +283,9 @@ protected:
   Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
   Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 
+  Int_t                                     fMinCellAmp;                  ///< Minimum offline amplitude of the cells used to generate the patches
+  Int_t                                     fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs used to generate the patches
+  Int_t                                     fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs used to generate the patches
   Int_t                                     fJetPatchsize;                ///< Size of a jet patch
   Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
   ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
@@ -243,7 +296,7 @@ protected:
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerMakerKernel, 1);
+  ClassDef(AliEmcalTriggerMakerKernel, 3);
   /// \endcond
 };
 

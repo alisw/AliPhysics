@@ -711,7 +711,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
        Int_t ptbin = GetCRCPtBin(dPt);
        if(ptbin==-1) continue;
        wPhiEta *= 1./fEtaWeightsHist[fCenBin][ptbin][cw]->GetBinContent(fEtaWeightsHist[fCenBin][ptbin][cw]->FindBin(dEta));
-       printf("test: cen %e bin %d, pt %e bin %d, name %s \n",fCentralityEBE,fCenBin,dPt,ptbin,fEtaWeightsHist[fCenBin][ptbin][cw]->GetName());
      }
     
     ptEta[0] = dPt;

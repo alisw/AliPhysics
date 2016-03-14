@@ -26,11 +26,8 @@ public:
   virtual void   Terminate(Option_t *);
  
   void SelectPbPb(Bool_t isPbPb=kFALSE){fIsPbPb=isPbPb;} 
-  
-private:
-  AliAnalysisTaskgg(const AliAnalysisTaskgg&); // not implemented
-  AliAnalysisTaskgg& operator=(const AliAnalysisTaskgg&); // not implemented
 
+protected:  
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
@@ -39,13 +36,16 @@ private:
   
   Int_t ConvertRunNumber(Int_t run) ; 
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
-  Bool_t SecondaryPi0Cut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2) const ;
-
+  
+  
 private:
-//  AliStack * fStack ;
+  AliAnalysisTaskgg(const AliAnalysisTaskgg&); // not implemented
+  AliAnalysisTaskgg& operator=(const AliAnalysisTaskgg&); // not implemented
+
+protected:
+
   THashList *   fOutputContainer;        //final histogram container
   AliAODEvent * fEvent ;        //!
-//  TClonesArray * fStack ;  
   TList *       fPHOSEvents[10][10][11] ; //Containers for events with PHOS photons
   TClonesArray* fPHOSEvent ;      //PHOS photons in current event
  

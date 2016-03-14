@@ -293,6 +293,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(5,"alpha max");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");    
+    fHistograms->Add(fHistoMesonBGCuts);
     
   } else {
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
@@ -374,7 +375,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
     }
 
     // Rapidity Cut
-    if(abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> 2y decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -412,7 +413,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
     }
 
     // Rapidity Cut
-    if(abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> 2y decay channel
     if(MCMother->GetNDaughters()!=2)return kFALSE;
@@ -453,7 +454,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
   }
 
   // Rapidity Cut
-  if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -508,7 +509,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   }
 
   // Rapidity Cut
-  if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -563,7 +564,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   }
 
   // Rapidity Cut
-  if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -619,7 +620,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
     }
 
     // Rapidity Cut
-    if(abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> ChiC radiative (JPsi+gamma) decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -697,7 +698,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   else{
     // PseudoRapidity Cut --> But we cut on Rapidity !!!
     cutIndex++;
-    if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
+    if(fabs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
       if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
@@ -747,14 +748,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   if (fIsMergedClusterCut == 1 && fAlphaPtDepCut) fAlphaCutMeson = fFAlphaCut->Eval(pi0->E());
   else if (fAlphaPtDepCut == kTRUE) fAlphaCutMeson = fFAlphaCut->Eval(pi0->Pt());
   
-  if(abs(pi0->GetAlpha())>fAlphaCutMeson){
+  if(fabs(pi0->GetAlpha())>fAlphaCutMeson){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
   cutIndex++;
 
   // Alpha Min Cut
-  if(abs(pi0->GetAlpha())<fAlphaMinCutMeson){
+  if(fabs(pi0->GetAlpha())<fAlphaMinCutMeson){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
@@ -762,7 +763,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   if (fHistoInvMassAfter) fHistoInvMassAfter->Fill(pi0->M());
   
-  if (fIsMergedClusterCut > 0){ 
+  if (fIsMergedClusterCut == 0){ 
     if (fHistoDCAGGMesonBefore)fHistoDCAGGMesonBefore->Fill(pi0->GetDCABetweenPhotons());
     if (fHistoDCARMesonPrimVtxBefore)fHistoDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
 
@@ -785,7 +786,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if (fHistoDCAZMesonPrimVtxBefore)fHistoDCAZMesonPrimVtxBefore->Fill(pi0->GetDCAZMotherPrimVtx());
 
     if (fDCAZMesonPrimVtxCutOn){
-      if (abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
+      if (fabs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
         if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
@@ -1135,6 +1136,18 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowMergedCut(Int_t selectionCut){
     case 2:   //NLM 2
       fEnableMassCut = kTRUE;
       break;
+    case 3:   //NLM 1
+      fEnableMassCut = kTRUE;
+      break;
+    case 4:   //NLM 2
+      fEnableMassCut = kTRUE;
+      break;
+    case 5:   //NLM 1
+      fEnableMassCut = kTRUE;
+      break;
+    case 6:   //NLM 2
+      fEnableMassCut = kTRUE;
+      break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
       return kFALSE;
@@ -1212,8 +1225,99 @@ Float_t AliConversionMesonCuts::FunctionMaxMassCut(Float_t e){
     }
     return mass + nSigma*sigma;
     break;
+  case 3:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 2;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
     
-    break;    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+  case 4:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 2;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+  case 5:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 4;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
+    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+  case 6:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 4;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+    return mass + nSigma*sigma;
+    break;
+    
   default:
     cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
     return -1;
@@ -1293,8 +1397,105 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
     
     return mass - nSigma*sigma;
     break;
+  case 3:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 2;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
     
-    break;    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+    return mass - nSigma*sigma;
+    break;
+  case 4:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 2;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+    
+    return mass - nSigma*sigma;
+    break;
+  case 5:   //NLM 1
+    aMass         = 0.044;
+    bMass         = 0.0049;
+    switchSigma   = 19.;
+    nSigma        = 4;
+    aSigmaLow     = 0.012;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0012;
+    bSigmaHigh    = 6e-4;
+    
+    mass          = aMass + bMass*e;
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+    return mass - nSigma*sigma;
+    break;
+  case 6:  //NLM 2
+    switchMass    = 21;
+    aMassLow      = 0.115;
+    bMassLow      = 9.6e-4;
+    aMassHigh     = 0.1;
+    bMassHigh     = 0.0017;
+    switchSigma   = 10.;
+    nSigma        = 4;
+    aSigmaLow     = 0.009;
+    bSigmaLow     = 0;
+    aSigmaHigh    = 0.0023;
+    bSigmaHigh    = 6.7e-4;
+    
+    mass          = 0;
+    if (e < switchMass){
+      mass        = aMassLow + bMassLow*e;
+    } else {
+      mass        = aMassHigh + bMassHigh*e;
+    }    
+    sigma         = 0;
+    if (e < switchSigma){
+      sigma       = aSigmaLow + bSigmaLow*e;
+    } else {
+      sigma       = aSigmaHigh + bSigmaHigh*e;
+    }
+//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+    
+    return mass - nSigma*sigma;
+    break;
+    
   default:
     cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
     return -1;
@@ -1423,6 +1624,47 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonMergedCut(Int_t alphaMesonCut)
     fAlphaCutMeson    = -1.0;
     fAlphaPtDepCut    = kTRUE;
     break;
+  case 3:  // cut for NLM 1 larger
+    if( fFAlphaCut ) delete fFAlphaCut;
+    fFAlphaCut        = new TF1("fFAlphaCut","[0]+[1]*x+[2]/(x*x*x)",0.,100.);
+    fFAlphaCut->SetParameter(0,0.975);
+    fFAlphaCut->SetParameter(1,0);
+    fFAlphaCut->SetParameter(2,-800);
+    fAlphaMinCutMeson =  0.0;
+    fAlphaCutMeson    = -1.0;
+    fAlphaPtDepCut    = kTRUE;
+    break;
+  case 4:  // cut for NLM 2 larger
+    if( fFAlphaCut ) delete fFAlphaCut;
+    fFAlphaCut        = new TF1("fFAlphaCut","[0]+[1]*x+[2]/(x*x*x)",0.,100.);
+    fFAlphaCut->SetParameter(0,0.97);
+    fFAlphaCut->SetParameter(1,0.0015);
+    fFAlphaCut->SetParameter(2,-200);
+    fAlphaMinCutMeson =  0.0;
+    fAlphaCutMeson    = -1.0;
+    fAlphaPtDepCut    = kTRUE;
+    break;
+  case 5:  // cut for NLM 1 smaller
+    if( fFAlphaCut ) delete fFAlphaCut;
+    fFAlphaCut        = new TF1("fFAlphaCut","[0]+[1]*x+[2]/(x*x*x)",0.,100.);
+    fFAlphaCut->SetParameter(0,0.94);
+    fFAlphaCut->SetParameter(1,0);
+    fFAlphaCut->SetParameter(2,-970);
+    fAlphaMinCutMeson =  0.0;
+    fAlphaCutMeson    = -1.0;
+    fAlphaPtDepCut    = kTRUE;
+    break;
+  case 6:  // cut for NLM 2 smaller
+    if( fFAlphaCut ) delete fFAlphaCut;
+    fFAlphaCut        = new TF1("fFAlphaCut","[0]+[1]*x+[2]/(x*x*x)",0.,100.);
+    fFAlphaCut->SetParameter(0,0.935);
+    fFAlphaCut->SetParameter(1,0.0015);
+    fFAlphaCut->SetParameter(2,-273);
+    fAlphaMinCutMeson =  0.0;
+    fAlphaCutMeson    = -1.0;
+    fAlphaPtDepCut    = kTRUE;
+    break;
+
   default:
     cout<<"Warning: AlphaMesonCut for merged clusters not defined "<<alphaMesonCut<<endl;
     return kFALSE;

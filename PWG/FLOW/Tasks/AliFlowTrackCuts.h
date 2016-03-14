@@ -99,7 +99,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    kTPCbayesian, //bayesian cutTPC
 		   kTPCNuclei,   // added by Natasha for Nuclei
                    kTPCTOFNsigma, // simple cut on combined tpc tof nsigma
-                   kTPCTOFNsigmaPurity // purity>0.8 cut on combined tpc tof nsigma
+                   kTPCTOFNsigmaPurity, // purity>0.8 cut on combined tpc tof nsigma
+				   kTPCTPCTOFNsigma ////cut on sigma tpc below certain pt, on combined tpc tof sigma above (AOD)
                    };
 
   //setters (interface to AliESDtrackCuts)
@@ -297,7 +298,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
     
   void SetTPCTOFNsigmaPIDPurityFunctions(Float_t purityLevel);
   void SetCentralityPercentile(Int_t centMin,Int_t centMax){fCentralityPercentileMin=centMin; fCentralityPercentileMax=centMax;}
-    
+
+  void SetPtTOFPIDoff(Double_t pt) {fPtTOFPIDoff = pt;} // added by B.Hohlweger
+  Double_t GetPtTOFPIDoff() {return fPtTOFPIDoff;}
+
   //gain equalization and recentering
   void SetVZEROgainEqualisation(TH1* g) {fVZEROgainEqualization=g;}
   void SetVZEROgainEqualisationCen(TH2* g) {fVZEROgainEqualizationCen=g;}
@@ -359,7 +363,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track);
   Bool_t TPCTOFagree(const AliVTrack *track);
   // end part added by F. Noferini
-    
+  Bool_t PassesTPCTPCTOFNsigmaCut(const AliAODTrack* track); // added by B. Hohlweger
+
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
   AliMuonTrackCuts* fMuonTrackCuts;  // muon selection cuts // XZhang 20120604
@@ -457,6 +462,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fProbBayes; // bayesian probability
   Float_t fCurrCentr; // current centrality used for set the priors
   // end part added by F. Noferini
+  Double_t fPtTOFPIDoff;
   
   //gain equalization and recentering for vzero
   TH1* fVZEROgainEqualization;     //! equalization histo

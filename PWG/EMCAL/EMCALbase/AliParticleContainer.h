@@ -8,6 +8,11 @@ class AliTLorentzVector;
 
 #include "AliEmcalContainer.h"
 
+/**
+ * @class AliParticleContainer
+ * @brief Container for particles within the EMCAL framework
+ * @ingroup EMCALCOREFW
+ */
 class AliParticleContainer : public AliEmcalContainer {
  public:
 
@@ -53,15 +58,17 @@ class AliParticleContainer : public AliEmcalContainer {
 
  protected:
 
-  Double_t                    fMinDistanceTPCSectorEdge;      // require minimum distance to edge of TPC sector edge
-  Short_t                     fCharge;                        // select particles with charge=fCharge
-  Short_t                     fGeneratorIndex;                // select MC particles with generator index (default = -1 = switch off selection)
+  Double_t                    fMinDistanceTPCSectorEdge;      /// require minimum distance to edge of TPC sector edge
+  Short_t                     fCharge;                        /// select particles with charge=fCharge
+  Short_t                     fGeneratorIndex;                /// select MC particles with generator index (default = -1 = switch off selection)
 
  private:
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
+  /// \cond CLASSIMP
   ClassDef(AliParticleContainer,9);
+  /// \endcond
 
 };
 
