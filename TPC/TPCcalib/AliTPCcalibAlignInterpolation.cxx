@@ -866,31 +866,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   const Double_t kMaxExpArg = -TMath::Log(TMath::Max(kFillGap*0.1, 1e-3)); 
   //
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
-  float bz;
-  if (fixAlignmentBug) {
-    ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain","Alignment bug fix is requested\n");
-    //
-    // this requeres the field and the geometry ...
-    if (runNumber<1) AliFatalClass("FillHistogramsFromChain: Run number is not provided");
-    Bool_t geomOK = AliGeomManager::GetGeometry() != 0;
-    AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-    if (!geomOK || !fld) { // need to setup ocdb?
-      AliCDBManager* man = AliCDBManager::Instance();
-      if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
-      if (man->GetRun()!=runNumber) man->SetRun(runNumber);
-    }
-    if (!geomOK) {
-      AliGeomManager::LoadGeometry();
-      AliGeomManager::ApplyAlignObjsFromCDB("TPC");
-    }
-    if (!fld) {
-      AliGRPManager grpMan;
-      grpMan.ReadGRPEntry();
-      grpMan.SetMagField();
-      fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-      bz = fld->SolenoidField();
-    }
-  }
+  float bz = fixAlignmentBug ? InitForAlignmentBugFix(runNumber) : 0;
 
   // 0.) Load current information file and bookd variables
   // 
@@ -1655,7 +1631,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
 
 
 
-Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, double time0, double_t time1){
+Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, double time0, double_t time1,Bool_t fixAlignmentBug){
   //
   //  Fit time dependence of the drift velocity for ITS-TRD and ITS-TOF scenario
   /*  Intput:
@@ -1691,6 +1667,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     fitDrift(60,00,0);
   */  
   const Double_t kMinEntries=1000;
+  const Double_t kInvalidR = 70;
+  const Double_t kInvalidRes = -900;
   const Double_t kMaxDist0=20;
   const Double_t kMaxDist1=5;
   const Double_t kDumpSample=0.01;
@@ -1711,7 +1689,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   Bool_t autoCache = kFALSE;
   if (gSystem->Getenv("autoCacheSize")) autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
   Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
-//
+  //
   //
   if (deltaT<=0 || sigmaT<=0){
     ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %.1f and sigmaT %.1f", deltaT, sigmaT);
@@ -1761,32 +1739,74 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   //
   AliSysInfo::AddStamp("FitDrift.StartCache",3,0,0);
 
+  float bz = fixAlignmentBug ? InitForAlignmentBugFix(runNumber) : 0;
+
   chainDelta->SetEstimate(maxEntries*160/5.);
-  Int_t entriesFit0 = chainDelta->Draw("tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC","Entry$%5==0","goffpara",maxEntries); 
+  TString toRead = "tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC";
+  //
+  if (fixAlignmentBug) toRead += ":tof0.fElements:trd0.fElements:track.fP[4]"; // needed only in case we need to fix alignment bug
+  //
+  Int_t entriesFit0 = chainDelta->Draw(toRead.Data(),"Entry$%5==0 && vecR.fElements>10","goffpara",maxEntries); 
   chainDelta->PrintCacheStats();
   Int_t entriesFit=entriesFit0/10;
   AliSysInfo::AddStamp("FitDrift.EndCache",3,1,0);
 
   AliSysInfo::AddStamp("FitDrift.BeginFill",4,1,0);
 
-  TVectorD * deltaTOF  = new TVectorD(entriesFit); //
-  TVectorD * deltaTRD  = new TVectorD(entriesFit); //
+  TVectorD * deltaZTOF  = new TVectorD(entriesFit); //
+  TVectorD * deltaZTRD  = new TVectorD(entriesFit); //
+  TVectorD * deltaYTOF  = new TVectorD(entriesFit); //
+  TVectorD * deltaYTRD  = new TVectorD(entriesFit); //
   TVectorD * vecZ      = new TVectorD(entriesFit); //
   TVectorD * vecR      = new TVectorD(entriesFit); //
   TVectorD * vecSec    = new TVectorD(entriesFit); //
   TVectorD * vecPhi    = new TVectorD(entriesFit); //
   TVectorD * vecTime   = new TVectorD(entriesFit); //
   TVectorD * vecTOFBC   = new TVectorD(entriesFit); //
+  
   for (Int_t i=0; i<entriesFit; i++){
     Int_t index=gRandom->Rndm()*entriesFit0;
-    (*deltaTOF)[i]= chainDelta->GetVal(0)[index];
-    (*deltaTRD)[i]= chainDelta->GetVal(1)[index];
+    (*deltaZTOF)[i]= chainDelta->GetVal(0)[index];
+    (*deltaZTRD)[i]= chainDelta->GetVal(1)[index];
     (*vecZ)[i]= chainDelta->GetVal(2)[index];
     (*vecR)[i]= chainDelta->GetVal(3)[index];
     (*vecSec)[i]= chainDelta->GetVal(4)[index];
     (*vecPhi)[i]= chainDelta->GetVal(5)[index];
     (*vecTime)[i]= chainDelta->GetVal(6)[index];    
-    (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];    
+    (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];
+    //
+    if ( (*vecR)[i] < kInvalidR ) continue; // there was no cluster at this point
+    // if needed, fix alignment bug
+    if (fixAlignmentBug) {
+      float dyTOF = chainDelta->GetVal(8)[index];
+      float dyTRD = chainDelta->GetVal(9)[index];
+      float q2pt = chainDelta->GetVal(10)[index];
+      //
+      float dzTOF = (*deltaZTOF)[i];
+      float dzTRD = (*deltaZTRD)[i];
+      float rTOF  = (*vecR)[i], rTRD = rTOF;
+      float zTOF  = (*vecZ)[i], zTRD = zTOF;
+      float phiTOF= (*vecPhi)[i], phiTRD = phiTOF;
+      
+      int rocID = TMath::Nint((*vecSec)[i]);
+
+      if (dyTOF>kInvalidRes) {
+	FixAlignmentBug(rocID, q2pt, bz, phiTOF, rTOF, zTOF, dyTOF, dzTOF);
+	(*deltaZTOF)[i] = dzTOF;
+	(*vecR)[i]      = rTOF;
+	(*vecZ)[i]      = zTOF;
+	(*vecPhi)[i]    = phiTOF;
+      }
+      if (dyTRD>kInvalidRes) {
+	FixAlignmentBug(rocID, q2pt, bz, phiTRD, rTRD, zTRD, dyTRD, dzTRD);
+	//
+	(*deltaZTRD)[i] = dzTRD;
+	(*vecR)[i]      = rTRD;
+	(*vecZ)[i]      = zTRD;
+	(*vecPhi)[i]    = phiTRD;
+      }
+      //
+    }    
   }
   AliSysInfo::AddStamp("FitDrift.EndFill",4,1,0);
 
@@ -1820,6 +1840,10 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 
       Int_t maxPoints= TMath::Min(maxPointsRobust,entriesFit); 
       for (Int_t ipoint=0; ipoint<maxPoints; ipoint++){
+	Double_t  radius= (*vecR)[ipoint];
+	
+	if (radius<kInvalidR) continue;   // bad point
+
 	Double_t pvecFit[10]={0};
 	if (gRandom->Rndm()>0.1) continue;
 	Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
@@ -1828,43 +1852,42 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
 	if (drift>kMaxZ) continue;
 	Double_t phi   = (*vecPhi)[ipoint];
-	Double_t  radius= (*vecR)[ipoint];
 	Double_t gy    = TMath::Sin(phi)*radius;
 	Float_t tofBC=(*vecTOFBC)[ipoint];
 	pvecFit[0]= side;             // z shift (cm)
 	pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
 	pvecFit[2]= drift;            // drift length
-	Double_t dTOF=(*deltaTOF)[ipoint];
-	Double_t dTRD=(*deltaTRD)[ipoint];
+	Double_t dZTOF=(*deltaZTOF)[ipoint];
+	Double_t dZTRD=(*deltaZTRD)[ipoint];
 	Int_t hisIndex=(((1-side)/2)*6);
 
 	if (iter==0){
-	  if ( dTOF!=0. &&TMath::Abs(dTOF)<kMaxDist0) fitterRobust->AddPoint(pvecFit,dTOF*side,1);
-	  if ( dTRD!=0. &&TMath::Abs(dTRD)<kMaxDist0) fitterRobust->AddPoint(pvecFit,dTRD*side,1);
+	  if ( dZTOF>kInvalidRes &&TMath::Abs(dZTOF)<kMaxDist0) fitterRobust->AddPoint(pvecFit,dZTOF*side,1);
+	  if ( dZTRD>kInvalidRes &&TMath::Abs(dZTRD)<kMaxDist0) fitterRobust->AddPoint(pvecFit,dZTRD*side,1);
 	}else{
 	  Double_t expected = paramRobust[0]+paramRobust[1]*pvecFit[0]+paramRobust[2]*pvecFit[1]+paramRobust[3]*pvecFit[2];
-	  if ( dTRD!=0. &&TMath::Abs(dTRD*side-expected)<kMaxDist1) {
-	    fitterRobust->AddPoint(pvecFit,dTRD*side,1);	
-	    fitterTRD->AddPoint(pvecFit,dTRD*side,1);	
-	    hisDeltaZ[hisIndex+0]->Fill(drift, dTRD*side-expected);
-	    hisDeltaZ[hisIndex+1]->Fill(drift, dTRD*side-expected);
+	  if ( dZTRD>kInvalidRes &&TMath::Abs(dZTRD*side-expected)<kMaxDist1) {
+	    fitterRobust->AddPoint(pvecFit,dZTRD*side,1);	
+	    fitterTRD->AddPoint(pvecFit,dZTRD*side,1);	
+	    hisDeltaZ[hisIndex+0]->Fill(drift, dZTRD*side-expected);
+	    hisDeltaZ[hisIndex+1]->Fill(drift, dZTRD*side-expected);
 	    if (tofBC>kBCcutMin&&tofBC<kBCcutMax){
-	      fitterRobustBC->AddPoint(pvecFit,dTRD*side,1);	
-	      fitterTRDBC->AddPoint(pvecFit,dTRD*side,1);	
-	      hisDeltaZ[hisIndex+3]->Fill(drift, dTRD*side-expected);
-	      hisDeltaZ[hisIndex+4]->Fill(drift, dTRD*side-expected);
+	      fitterRobustBC->AddPoint(pvecFit,dZTRD*side,1);	
+	      fitterTRDBC->AddPoint(pvecFit,dZTRD*side,1);	
+	      hisDeltaZ[hisIndex+3]->Fill(drift, dZTRD*side-expected);
+	      hisDeltaZ[hisIndex+4]->Fill(drift, dZTRD*side-expected);
 	    }
 	  }
-	  if ( dTOF!=0. &&TMath::Abs(dTOF*side-expected)<kMaxDist1) {
-	    hisDeltaZ[hisIndex+0]->Fill(drift, dTOF*side-expected);
-	    hisDeltaZ[hisIndex+2]->Fill(drift, dTOF*side-expected);
-	    fitterRobust->AddPoint(pvecFit,dTOF*side,1);
-	    fitterTOF->AddPoint(pvecFit,dTOF*side,1);
+	  if ( dZTOF>kInvalidRes &&TMath::Abs(dZTOF*side-expected)<kMaxDist1) {
+	    hisDeltaZ[hisIndex+0]->Fill(drift, dZTOF*side-expected);
+	    hisDeltaZ[hisIndex+2]->Fill(drift, dZTOF*side-expected);
+	    fitterRobust->AddPoint(pvecFit,dZTOF*side,1);
+	    fitterTOF->AddPoint(pvecFit,dZTOF*side,1);
 	    if (tofBC>kBCcutMin&&tofBC<kBCcutMax){
-	      fitterRobustBC->AddPoint(pvecFit,dTOF*side,1);
-	      fitterTOFBC->AddPoint(pvecFit,dTOF*side,1);
-	      hisDeltaZ[hisIndex+3]->Fill(drift, dTOF*side-expected);
-	      hisDeltaZ[hisIndex+5]->Fill(drift, dTOF*side-expected);
+	      fitterRobustBC->AddPoint(pvecFit,dZTOF*side,1);
+	      fitterTOFBC->AddPoint(pvecFit,dZTOF*side,1);
+	      hisDeltaZ[hisIndex+3]->Fill(drift, dZTOF*side-expected);
+	      hisDeltaZ[hisIndex+5]->Fill(drift, dZTOF*side-expected);
 	    }
 	  }
 
@@ -1884,8 +1907,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	      "zcorrB="<<zcorrB<<
 	      "expected="<<expected<<
 	      "paramRobust.="<<&paramRobust<<      //  drift fit using all tracks
-	      "dTOF="<<dTOF<<
-	      "dTRD="<<dTRD<<
+	      "dZTOF="<<dZTOF<<
+	      "dZTRD="<<dZTRD<<
 	      "\n";
 	  }
 	}
@@ -2011,30 +2034,39 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     hisTOF.Reset();
     for (Int_t ipoint=0; ipoint<entriesFit; ipoint++){
       if (ipoint%10!=iter) continue;  // points correlated - can be skipped
+      Double_t  radius= (*vecR)[ipoint];
+
+      if (radius<kInvalidR) continue;  // no cluster
+
       Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
       Double_t side  = -1.+((sector%36)<18)*2.;
       Double_t z= (*vecZ)[ipoint];
       Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
       if (drift>kMaxZ) continue;
       Double_t phi   = (*vecPhi)[ipoint];
-      Double_t  radius= (*vecR)[ipoint];
       Double_t gy    = TMath::Sin(phi)*radius;
       pvecFit[0]= side;             // z shift (cm)
       pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
       pvecFit[2]= drift;            // drift length
-      Double_t dTOF=(*deltaTOF)[ipoint]*side;
-      Double_t dTRD=(*deltaTRD)[ipoint]*side;
       Double_t expected = paramRobust[0]+paramRobust[1]*pvecFit[0]+paramRobust[2]*pvecFit[1]+paramRobust[3]*pvecFit[2];
       Int_t time=(*vecTime)[ipoint];
       //
-      if ( dTOF!=0. &&TMath::Abs(dTOF-expected)<kMaxDist1) {
-	//      fitterTOF->AddPoint(pvecFit,dTOF,1);
-	hisTOF.Fill(time,(dTOF-expected)/drift,drift/kMaxZ); 
+      Double_t dZTOF=(*deltaZTOF)[ipoint];
+      if (dZTOF>kInvalidRes) {
+	if (TMath::Abs(dZTOF-expected)<kMaxDist1) {
+	  dZTOF *= side;
+	  //      fitterTOF->AddPoint(pvecFit,dZTOF,1);
+	  hisTOF.Fill(time,(dZTOF-expected)/drift,drift/kMaxZ); 
+	}
       }
-      if ( dTRD!=0. &&TMath::Abs(dTRD-expected)<kMaxDist1) {
-	//fitterTOF->AddPoint(pvecFit,dTRD,1);	
-	hisTRD.Fill(time,(dTRD-expected)/drift,drift/kMaxZ); 
-      }    
+      Double_t dZTRD=(*deltaZTRD)[ipoint];
+      if ( dZTRD>kInvalidRes) {
+	if (TMath::Abs(dZTRD-expected)<kMaxDist1) {
+	  //fitterTOF->AddPoint(pvecFit,dZTRD,1);	
+	  hisTRD.Fill(time,(dZTRD-expected)/drift,drift/kMaxZ); 
+	}
+      }  
+
     }
     printf("iter=%d\n",iter);
     TGraphErrors *grTRD=NULL, *grTOF=NULL;
@@ -2176,8 +2208,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   delete grregTOF;
   delete grregQA;
   
-  delete deltaTOF;
-  delete deltaTRD;
+  delete deltaZTOF;
+  delete deltaZTRD;
   delete vecZ;
   delete vecR;
   delete vecSec;
@@ -3156,4 +3188,28 @@ Float_t  AliTPCcalibAlignInterpolation::CalculateDistance(const TVectorF &track0
 }
 
 
-
+Float_t AliTPCcalibAlignInterpolation::InitForAlignmentBugFix(int run, const char* ocdb)
+{
+  ::Info(" AliTPCcalibAlignInterpolation::InitForAlignmentBugFix","Alignment bug fix is requested\n");
+  //
+  // this requires the field and the geometry ...
+  if (run<1) ::Fatal("tstw","InitForBugFix: Run number is not provided");
+  Bool_t geomOK = AliGeomManager::GetGeometry() != 0;
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!geomOK || !fld) { // need to setup ocdb?
+    AliCDBManager* man = AliCDBManager::Instance();
+    if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(ocdb);
+    if (man->GetRun()!=run) man->SetRun(run);
+  }
+  if (!geomOK) {
+    AliGeomManager::LoadGeometry();
+    AliGeomManager::ApplyAlignObjsFromCDB("TPC");
+  }
+  if (!fld) {
+    AliGRPManager grpMan;
+    grpMan.ReadGRPEntry();
+    grpMan.SetMagField();
+    fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  }
+  return fld->SolenoidField();
+}
