@@ -119,7 +119,7 @@ void AliEMCALv0::CreateGeometry()
 {
   // Create the EMCAL geometry for Geant
   // Geometry of a tower
-  
+
   AliEMCALGeometry * geom = GetGeometry() ; 
   TString gn(geom->GetName());
   gn.ToUpper(); 
@@ -182,6 +182,10 @@ void AliEMCALv0::CreateGeometry()
     fCalFrame = new AliEMCALSpaceFrame();
     fCalFrame->CreateGeometry();
   }
+  
+  // Set the sampling fraction used at creation hit level
+  // Previously called in AliEMCALEMCGeometry::Init(), put it here for proper initialization by Geant3/4
+  geom->GetEMCGeometry()->DefineSamplingFraction(TVirtualMC::GetMC()->GetName(),TVirtualMC::GetMC()->GetTitle());
 }
 
 //______________________________________________________________________
