@@ -144,7 +144,12 @@ void AliAnalysisTaskDielectronsPbPb_Efficiency::UserCreateOutputObjects()  {
     fHistoEvents = new TH1F ("fHistoEvents","",2,0,2);
     fOutputList -> Add(fHistoEvents);
     
+    //Centrality Bins
+    Double_t centralityBins[] = {0.0,5.0,10.0,20.0,40.0,50.0};
+    const Int_t nCentralityBins = sizeof(centralityBins)/sizeof(Double_t)-1;
+    fHistoCentralityBins = new TH1F ("fHistoCentralityBins","",nCentralityBins,centralityBins);
     
+
     //Pair Efficiency
     fHistoInvMass_Gen =                new TH2F ("fHistoInvMass_Gen","",500,0,5,20,0,10);
     fHistoInvMass_Rec =                new TH2F ("fHistoInvMass_Rec","",500,0,5,20,0,10);
@@ -450,28 +455,33 @@ Bool_t AliAnalysisTaskDielectronsPbPb_Efficiency::IsPrimaryElectron (TParticle *
     return false;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDielectronsPbPb_Efficiency::IsLightFlavorParticle (TParticle *particle)  {
+Bool_t AliAnalysisTaskDielectronsPbPb_Efficiency::IsLightFlavorParticle (TParticle *parent)  {
     
     Bool_t IsPrimaryPart = (false);
     Bool_t IsFromCocktail = (false);
    
     //Primary Particle
-    if (particle->GetMother(0) == -1) IsPrimaryPart=true;
+    Double_t xv = fMCEvent->GetPrimaryVertex()->GetX();
+    Double_t yv = fMCEvent->GetPrimaryVertex()->GetY();
+    Double_t xp = parent->Vx();
+    Double_t yp = parent->Vy();
+    Double_t Dr = TMath::Sqrt(  (xv-xp)*(xv-xp) + (yv-yp)*(yv-yp) );
+    if (Dr < 1.0e-15) IsPrimaryPart=true;
     
     //Cocktail Particle
     Int_t pdgMeson[] = { 111,221,331,113,223,333 };
     const Int_t nPart = sizeof(pdgMeson)/sizeof(Int_t);
     for ( Int_t i=0 ; i<nPart ; i++ )
-        if (  TMath::Abs(particle->GetPdgCode()) == pdgMeson[i] ) { IsFromCocktail=true; break; }
+        if (  TMath::Abs(parent->GetPdgCode()) == pdgMeson[i] ) { IsFromCocktail=true; break; }
     
     if ( IsPrimaryPart && IsFromCocktail ) return true;
     return false;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDielectronsPbPb_Efficiency::IsHeavyFlavorParticle (TParticle *particle)  {
+Bool_t AliAnalysisTaskDielectronsPbPb_Efficiency::IsHeavyFlavorParticle (TParticle *parent)  {
     
     Bool_t IsFromHF = (false);
-    Int_t pdg = TMath::Abs(particle->GetPdgCode());
+    Int_t pdg = TMath::Abs(parent->GetPdgCode());
     
     switch (pdg) {
             
@@ -577,7 +587,7 @@ Double_t AliAnalysisTaskDielectronsPbPb_Efficiency::Weight (TParticle *particle)
     
     //Find Bins
     Int_t nx = fHisto_Hijing_PizeroWeight->GetXaxis()->FindBin(parent->Pt());
-    Int_t ny = fHisto_Hijing_PizeroWeight->GetYaxis()->FindBin(centralityPerc);
+    Int_t ny = fHistoCentralityBins->FindBin(centralityPerc);
     
     Double_t weight(1);
     switch (pdg) {
@@ -612,7 +622,7 @@ Double_t AliAnalysisTaskDielectronsPbPb_Efficiency::WeightConversions (TParticle
     
     //Find Bins
     Int_t nx = fHisto_Hijing_PizeroWeight->GetXaxis()->FindBin(gparent->Pt());
-    Int_t ny = fHisto_Hijing_PizeroWeight->GetYaxis()->FindBin(centralityPerc);
+    Int_t ny = fHistoCentralityBins->FindBin(centralityPerc);
     
     Double_t weight(1);
     switch (pdg) {
