@@ -273,6 +273,10 @@ UInt_t AliHLTCreateGRP::createDetectorMask(TObjArray* listOfDetectors)
 			cout << "   *** Detector list contains unknown detector name, skipping ..." << endl;
 		}
 	}
+	
+	//Always enable HLT and CTP flags
+	mask |= AliDAQ::kHLT;
+	mask |= AliDAQ::kTRG;
 
 	return mask;
 }
