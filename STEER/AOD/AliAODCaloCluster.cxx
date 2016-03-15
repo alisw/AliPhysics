@@ -280,7 +280,7 @@ Bool_t AliAODCaloCluster::HasTrackMatched(TObject *trk) const
 ///  " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 ///
 //_______________________________________________________________________
-void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
+void AliAODCaloCluster::GetMomentum(TLorentzVector& p, const Double_t *vertex ) const
 {
   Double32_t energy = E();
   Float_t    pos[3];
@@ -310,7 +310,7 @@ void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const
 ///  " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 ///
 //_______________________________________________________________________
-void AliAODCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const 
+void AliAODCaloCluster::GetMomentum(TLorentzVector& p, const Double_t *vertex, VCluUserDefEnergy_t t ) const
 {
   Double32_t energy = GetUserDefEnergy(t);
   Float_t    pos[3];

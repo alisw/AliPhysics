@@ -335,7 +335,7 @@ void AliESDCaloCluster::SetPID(const Float_t *p)
 ///    " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 ///
 //_______________________________________________________________________
-void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, const Double_t *vertex ) const
 {
   Double32_t pos[3]={ fGlobalPos[0], fGlobalPos[1], fGlobalPos[2]};
   if(vertex){//calculate direction from vertex
@@ -360,7 +360,7 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const
 ///   " Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 ///
 //_______________________________________________________________________
-void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const 
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, const Double_t *vertex, VCluUserDefEnergy_t t ) const
 {
   Double32_t energy = GetUserDefEnergy(t);
   Float_t    pos[3];
