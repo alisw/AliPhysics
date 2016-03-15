@@ -102,6 +102,7 @@ ClassImp(AliTPCPreprocessorOffline)
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   TNamed("TPCPreprocessorOffline","TPCPreprocessorOffline"),
   fNormaliseQA(kTRUE),
+  fGainCalibrationType(kFullGainCalib),  // gain calibration type
   fMinEntries(500),                      // minimal number of entries for fit
   fStartRun(0),                         // start Run - used to make fast selection in THnSparse
   fEndRun(0),                           // end   Run - used to make fast selection in THnSparse
@@ -116,6 +117,7 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fFitMIP(0),                  // fit of dependence - MIP
   fFitCosmic(0),               // fit of dependence - Plateu
   fGainArray(new TObjArray),               // array to be stored in the OCDB
+  fGainArrayCombined(0x0),
   fArrQAhist(0x0),
   fGainMIP(0),          // calibration component for MIP
   fGainCosmic(0),       // calibration component for cosmic
@@ -357,8 +359,17 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
   Float_t maxGain = fMaxGain;
 
   TGraphErrors *gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
+
+  // ===| treat the case if the combined calibration should be used |==========
+  if (fGainCalibrationType==kCombinedGainCalib) {
+    gr = (TGraphErrors*)fGainArrayCombined->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
+  }
+
   if (!gr) {
     gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL");
+    if (fGainCalibrationType==kCombinedGainCalib) {
+      gr = (TGraphErrors*)fGainArrayCombined->FindObject("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL");
+    }
     if (!gr) 
     { 
       fCalibrationStatus |= kCalibFailedTimeGain;
@@ -383,7 +394,447 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
     }
   }
 
-return kTRUE;
+  AliInfo("Validation successful");
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+AliTPCPreprocessorOffline::EGainCalibType AliTPCPreprocessorOffline::GetGainCalibrationTypeFromString(const TString& type)
+{
+  //
+  // return the gain calibration type analysing the string 'type'
+  // if an error occurs, return kNGainCalibTypes
+  //
+  if (type.IsNull()) {
+    ::Warning("AliTPCPreprocessorOffline::GetGainCalibrationTypeFromString","Empty gain calibration type string");
+    return kNGainCalibTypes;
+  }
+
+  if (!type.IsDigit()) {
+    ::Warning("AliTPCPreprocessorOffline::GetGainCalibrationTypeFromString","Gain calibration string '%s' is not a digit", type.Data());
+    return kNGainCalibTypes;
+  }
+
+  const Int_t gainType = type.Atoi();
+  if (gainType<0 || gainType>=Int_t(kNGainCalibTypes)) {
+    ::Warning("AliTPCPreprocessorOffline::GetGainCalibrationTypeFromString","Gain calibration string '%s' is not a valid gain calibration type (0-%d)", type.Data(), kNGainCalibTypes-1);
+    return kNGainCalibTypes;
+  }
+
+  return EGainCalibType(gainType);
+}
+
+//_____________________________________________________________________________
+Bool_t AliTPCPreprocessorOffline::SetGainCalibrationType(const TString& type)
+{
+  //
+  // set the gain calibration type analysing the string 'type'
+  //
+  EGainCalibType gainType=GetGainCalibrationTypeFromString(type);
+  if (type==kNGainCalibTypes) return kFALSE;
+
+  fGainCalibrationType=gainType;
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
+{
+  //
+  // This function will produce the combined calibratin of the objects presently stored in the OCDB
+  // and the calibration extracted in this calibration
+  //
+
+  // ===| write some info |=====================================================
+  AliCDBManager *cdbMan = AliCDBManager::Instance();
+  TString calibTimeGainStorage=cdbMan->GetDefaultStorage()->GetURI();
+  const AliCDBEntry *e=cdbMan->Get("TPC/Calib/TimeGain");
+  const TString timeGainID=e->GetId().ToString();
+  if (cdbMan->GetSpecificStorage("TPC/Calib/TimeGain")) {
+    calibTimeGainStorage=cdbMan->GetSpecificStorage("TPC/Calib/TimeGain")->GetURI();
+  }
+  AliInfoF("Using TimeGain '%s','%s' for combined gain calibration", calibTimeGainStorage.Data(), timeGainID.Data());
+
+  // ===| get latest gain calibration from OCDB |===============================
+  TObjArray *gainOCDB = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+  if (!gainOCDB) {
+    AliError("Could not retrieve gain calibration from OCDB. Cannot perform combined calibration.");
+    return kFALSE;
+  }
+
+  const Int_t nOCDB=gainOCDB->GetEntriesFast();
+  const Int_t nThis=fGainArray->GetEntriesFast();
+
+//   // ===| check consistency of entries |=======================================
+//   TString type("this");
+//   if ( nOCDB != nThis ) {
+//     AliError(TString::Format("Entries in present OCDB calibration and this pass differ: %d != %d", nOCDB, nThis));
+//     TObjArray *a1=gainOCDB->GetEntriesFast();
+//     TObjArray *a2=fGainArray->GetEntriesFast();
+//     if (nThis>nOCDB) {
+//       a2=gainOCDB->GetEntriesFast();
+//       a1=fGainArray->GetEntriesFast();
+//       type="OCDB";
+//     }
+//
+//     for (Int_t icalib=0; icalib<a1->GetEntriesFast(); ++icalib) {
+//       const TObject *o=a1->At(icalib);
+//       if (!o) continue;
+//       if (!a2->FindObject(o->GetName())) {
+//         AliError(TString::Format("Could not find '%s' in %s calibration", o->GetName(), type.Data()));
+//       }
+//     }
+//     return kFALSE;
+//   }
+
+  // ===| create combined gain array if needed and reset |=====================
+  if (!fGainArrayCombined) fGainArrayCombined=new TObjArray(nThis);
+  //fGainArrayCombined->SetOwner(); // either not owner, or all steering objects must be cloned
+  fGainArrayCombined->Clear();
+
+  // ===| explicitly treat entries |===========================================
+  TGraphErrors *grOCDB     = 0x0;
+  TGraphErrors *grThis     = 0x0;
+  TGraphErrors *grCombined = 0x0;
+  AliSplineFit *splineFit  = 0x0;
+
+  Bool_t error=kFALSE;
+
+  // ---| gain vs time |--------------------------------------------------------
+  GetGraphs("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL", grOCDB, grThis);
+  printf("Graphs: %p, %p: %s, %s\n", grOCDB, grThis, grOCDB?grOCDB->GetName():"", grThis?grThis->GetName():"");
+  if (!grOCDB || !grThis) {
+    AliError("Gain vs. time for beam cannot be processed");
+    if (fGainMIP) {
+      error=kTRUE;
+    }
+  } else {
+    grCombined = CombineGraphs(grOCDB, grThis, 1 );
+    printf("Combined: %p: %s\n", grCombined, grCombined?grCombined->GetName():"");
+    if (grCombined) {
+      splineFit = AliTPCcalibTimeGain::MakeSplineFit(grCombined);
+      fGainArrayCombined->AddAt(splineFit ,0);
+      fGainArrayCombined->AddAt(grCombined,2);
+    } else {
+      AliError("Gain vs. time for beam cannot be processed");
+      error=kTRUE;
+    }
+  }
+
+  GetGraphs("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL", grOCDB, grThis);
+  printf("Graphs: %p, %p: %s, %s\n", grOCDB, grThis, grOCDB?grOCDB->GetName():"", grThis?grThis->GetName():"");
+  if (!grOCDB || !grThis) {
+    AliError("Gain vs. time from cosmics cannot be processed");
+    if (fGainCosmic) {
+      error=kTRUE;
+    }
+  } else {
+    grCombined = CombineGraphs(grOCDB, grThis, 1);
+    printf("Combined: %p: %s\n", grCombined, grCombined?grCombined->GetName():"");
+    if (grCombined) {
+      splineFit = AliTPCcalibTimeGain::MakeSplineFit(grCombined);
+      fGainArrayCombined->AddAt(splineFit ,1);
+      fGainArrayCombined->AddAt(grCombined,3);
+    } else {
+      AliError("Gain vs. time from cosmics cannot be processed");
+      error=kTRUE;
+    }
+
+  }
+
+  // ===| steering objects |====================================================
+  TObjArray steeringObjectNames;
+  steeringObjectNames.Add(new TNamed("GainSlopesHV","1"));
+  steeringObjectNames.Add(new TNamed("GainSlopesPT","1"));
+  steeringObjectNames.Add(new TNamed("AliTPCClusterParam","1"));
+  steeringObjectNames.Add(new TNamed("TObjArray","1"));
+
+  for (Int_t isteer=0; isteer<steeringObjectNames.GetEntriesFast(); ++isteer) {
+    TObject *objName  = steeringObjectNames.At(isteer);
+    TObject *steerObj = fGainArray->FindObject(objName->GetName());
+    if (!steerObj) {
+      AliErrorF("%s cannot be processed", objName->GetName());
+      // ---| check if missing object should produce an error |---
+      if (TString(objName->GetTitle()).Atoi()) {
+        error=kTRUE;
+      }
+      continue;
+    }
+    fGainArrayCombined->AddLast(steerObj);
+  }
+
+  // ===| attachement is not applied, simply copy |=============================
+  fGainArrayCombined->AddLast(fGainArray->FindObject("TGRAPHERRORS_MEAN_ATTACHMENT_BEAM_ALL"));
+
+  // ===| multiplicative corrections |==========================================
+  TObjArray graphsToCombine;
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEANQMAX_MULTIPLICITYDEPENDENCE_BEAM_ALL","0"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL","0"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEAN_CHAMBERGAIN_SHORT_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEAN_CHAMBERGAIN_MEDIUM_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_MEAN_CHAMBERGAIN_LONG_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QMAX_DIPANGLE_SHORT_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QTOT_DIPANGLE_SHORT_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QMAX_DIPANGLE_MEDIUM_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QTOT_DIPANGLE_MEDIUM_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QMAX_DIPANGLE_LONG_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QTOT_DIPANGLE_LONG_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QMAX_DIPANGLE_ABSOLUTE_BEAM_ALL","1"));
+  graphsToCombine.Add(new TNamed("TGRAPHERRORS_QTOT_DIPANGLE_ABSOLUTE_BEAM_ALL","1"));
+
+  for (Int_t igraph=0; igraph<graphsToCombine.GetEntriesFast(); ++igraph) {
+    TObject *graphObj=graphsToCombine.At(igraph);
+    GetGraphs(graphObj->GetName(), grOCDB, grThis);
+
+    // --- check graphs
+    if (!grOCDB || !grThis) {
+      AliError(TString::Format("%s cannot be processed missing object(s) OCDB: %d, This: %d", graphObj->GetName(), grOCDB!=0x0, grThis!=0x0));
+      if (TString(graphObj->GetTitle()).Atoi()) {
+        error=kTRUE;
+      }
+      continue;
+    }
+
+    // --- combine graphs
+    grCombined = CombineGraphs(grOCDB, grThis);
+    fGainArrayCombined->AddLast(grCombined);
+
+    // --- normalize pad region gain
+    if ( TString(graphObj->GetName()).Contains("PADREGIONGAIN") ) {
+      // first normalize to the weighted mean using the number of
+      // rows in the different pad regions
+      NormaliseYToWeightedMeandEdx(grCombined);
+      // now correct for the effect the truncated mean in the dE/dx
+      // calculation would have
+      NormaliseYToTruncateddEdx(grCombined);
+    }
+
+    // --- for dip angle graphs normalize and do fit
+    if ( TString(graphObj->GetName()).Contains("DIPANGLE") ) {
+      NormaliseYToMean(grCombined);
+      TF1 * fun= new TF1("","1++abs(x)++abs(x*x)");
+      grCombined->Fit(fun,"w","rob=0.9",-0.8,0.8);
+      TString funName(graphObj->GetName());
+      funName.ReplaceAll("TGRAPHERRORS","TF1");
+      fun->SetNameTitle(funName,funName);
+      fGainArrayCombined->AddLast(fun);
+    }
+  }
+
+  return !error;
+}
+
+//_____________________________________________________________________________
+void AliTPCPreprocessorOffline::GetGraphs(const char* name, TGraphErrors* &grOCDB, TGraphErrors* &grThis)
+{
+  //
+  // get graphs from OCDB gain array and local gain array
+  //
+
+  grOCDB=0x0;
+  grThis=0x0;
+
+  TObjArray *gainOCDB = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+  if (!gainOCDB) return;
+
+  grOCDB = dynamic_cast<TGraphErrors*>(gainOCDB  ->FindObject(name));
+  grThis = dynamic_cast<TGraphErrors*>(fGainArray->FindObject(name));
+
+  if (!grOCDB) {
+    AliError(TString::Format("Could not find graph '%s' in OCDB",name));
+  }
+
+  if (!grThis) {
+    AliError(TString::Format("Could not find graph '%s' in present calibration",name));
+  }
+}
+
+//_____________________________________________________________________________
+TGraphErrors* AliTPCPreprocessorOffline::CombineGraphs(TGraphErrors *grOCDB, TGraphErrors *grThis, const Int_t type/*=0*/, const Bool_t multiply/*=kTRUE*/)
+{
+  //
+  // Combine two graphs.
+  // type
+  //      0: Combine point by point, only do interpolation using Eval
+  //      1: Combine using EvalConst
+  //      2: Combine using Eval
+  //
+  // If mult is true, multiply the data points, otherwise add
+  //
+
+  Double_t x1,y1,x2,y2,x1Err,y1Err,y2Err,yNew,yNewErr;
+  x1=y1=x2=y2=x1Err=y1Err=y2Err=yNew=yNewErr=0;
+
+  const Int_t nOCDB=grOCDB->GetN();
+  const Int_t nThis=grThis->GetN();
+
+  // ===| output graph |========================================================
+  //      copy from gThis to retain the attributes
+  TGraphErrors *grCombined=new TGraphErrors(*grThis);
+  grCombined->Set(0);
+
+  // ===| sort graphs for better comparison |===================================
+  grOCDB->Sort();
+  grThis->Sort();
+
+  const Double_t xMinOCDB = grOCDB->GetX()[0];
+  const Double_t xMaxOCDB = grOCDB->GetX()[nOCDB-1];
+  const Double_t xMinThis = grThis->GetX()[0];
+  const Double_t xMaxThis = grThis->GetX()[nThis-1];
+
+  // ===========================================================================
+  // ===| treat combination types |=============================================
+  //
+  const Double_t kVerySmall=1e-10;
+  Int_t ninterpol=0;
+
+  const Bool_t interpol  = (type==1) || (type==2);
+  const Bool_t evalConst = type!=2;
+
+  Bool_t fallback=kFALSE;
+
+  if (type==0) {
+    if ( (xMinOCDB+kVerySmall < xMinThis) || (xMaxOCDB-kVerySmall > xMaxThis) ) {
+      AliErrorF("Point by point combination of %s requested, but ranges are not compatible: [%.2f, %.2f] != [%.2f,%.2f]", grThis->GetName(), xMinOCDB, xMaxOCDB, xMinThis, xMaxThis);
+      return 0x0;
+    }
+  }
+
+  for (Int_t ipoint=0; ipoint<nThis; ++ipoint) {
+    x2=y2=0;
+    grThis->GetPoint(ipoint, x1, y1);
+    x1Err=grThis->GetErrorX(ipoint);
+    y1Err=grThis->GetErrorY(ipoint);
+
+    if (type==0 && !fallback) {
+      if (ipoint<nOCDB) {
+        grOCDB->GetPoint(ipoint, x2, y2);
+        y2Err=grOCDB->GetErrorY(ipoint);
+        fallback=!TMath::AreEqualAbs(x1, x2, kVerySmall);
+      }
+      else {
+        fallback=kTRUE;
+      }
+    }
+
+    if (interpol || fallback) {
+      GetPointWithError(grOCDB, x1, y2, y2Err, evalConst);
+      ++ninterpol;
+    }
+
+    if (multiply) {
+      yNew = y1*y2;
+      yNewErr=0.;
+      if (!TMath::AreEqualAbs(yNew, 0., kVerySmall)) {
+        yNewErr = TMath::Sqrt( (y1Err*y1Err)/(y1*y1) + (y2Err*y2Err)/(y2*y2) ) * yNew;
+      } else {
+        AliErrorF("Cannot combined points from graph %s This y = %.4g +- %.4g, OCDB y = %.4g +- %.4g", grCombined->GetName(), y1, y1Err, y2, y2Err);
+      }
+    }
+    else {
+      yNew = y1+y2;
+      yNewErr = TMath::Sqrt( (y1Err*y1Err) + (y2Err*y2Err) );
+    }
+
+    const Int_t point=grCombined->GetN();
+    grCombined->SetPoint     (point, x1   , yNew   );
+    grCombined->SetPointError(point, x1Err, yNewErr);
+  }
+
+  if ( (type==0) && ninterpol ) AliWarningF("%d number of points were interpolated for %s, although point-by-point combination was requested",ninterpol, grCombined->GetName());
+
+  return grCombined;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTPCPreprocessorOffline::GetPointWithError(const TGraphErrors *gr, const Double_t xPos, Double_t &y, Double_t &ey, Bool_t evalConst/*=kTRUE*/)
+{
+  //
+  // The function assumes the points to be sorted in x
+  //
+  // Evaluate the graph at xPos, do linear interpolation between neighbouring points
+  // if 'evalConst' is true, the first/last point will be returned in case xPos is outside the graph range
+  //
+  // Errors in y are also calculated by linear interpolation between neighbouring points
+  // Errors in x are not treated
+  //
+  // Return value indicates if xPos was inside the range
+
+  // ===| reset input values |==================================================
+  y=ey=0.;
+
+  // ===| treat case of 0 point |===============================================
+  if (!gr || gr->GetN()==0) return kFALSE;
+
+  // ===| init variables |======================================================
+  Double_t x1,x2,y1,y2, ey1,ey2;
+  x1=x2=y1=y2=ey1=ey2=0.;
+
+  const Int_t npoints=gr->GetN();
+  const Double_t xmin=gr->GetX()[0];
+  const Double_t xmax=gr->GetX()[npoints-1];
+
+  const Bool_t belowBound = xPos<xmin;
+  const Bool_t aboveBound = xPos>xmax;
+  const Bool_t returnValue = !(belowBound || aboveBound);
+
+  // ===| treat case of 1 point |===============================================
+  if (npoints==1) {
+    y  = gr->GetY()[0];
+    ey = gr->GetErrorY(0);
+    return returnValue;
+  }
+
+  // ===| treat eval const case |===============================================
+  if (evalConst) {
+    if (belowBound) {
+      y  = gr->GetY()[0];
+      ey = gr->GetErrorY(0);
+      return returnValue;
+    }
+
+    if (aboveBound) {
+      y  = gr->GetY()[npoints-1];
+      ey = gr->GetErrorY(npoints-1);
+      return returnValue;
+    }
+  }
+
+  // ===| 2 and more points |===================================================
+  Int_t point = TMath::BinarySearch(npoints, gr->GetX(), xPos);
+  printf("n, i: %d, %d\n", npoints, point);
+  if (point==-1)        point=0;
+  if (point==npoints-1) --point;
+
+  gr->GetPoint(point, x1, y1);
+  ey1 = gr->GetErrorY(point);
+
+  gr->GetPoint(point+1, x2, y2);
+  ey2 = gr->GetErrorY(point+1);
+
+  printf("%d, (%.2f, %.2f), (%.2f, %.2f)\n", point, x1, y1, x2, y2);
+
+  if ( !(x2>x1) ) {
+     AliTPCPreprocessorOffline p;
+     p.Error("GetPointWithError","Graph not sorted, or error in extracting points");
+     return kFALSE;
+  }
+
+  y = y1 + (y2-y1)  /(x2-x1) * (xPos-x1);
+  ey=ey1 + (ey2-ey1)/(x2-x1) * (xPos-x1);
+
+  // ===| linear error increase outside bounds |================================
+  if (belowBound) {
+    ey=ey1 + (ey1)/(x2-x1) * TMath::Abs(xPos-x1);
+  }
+  else if (aboveBound) {
+    ey=ey2 + (ey1)/(x2-x1) * TMath::Abs(xPos-x2);
+  }
+
+  return returnValue;
 }
 
 //_____________________________________________________________________________
@@ -942,14 +1393,23 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
 }
 
 //_____________________________________________________________________________
-void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* pocdbStorage){
+void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* fullStorage, AliCDBStorage* residualStorage){
   //
   // Update OCDB gain
+  // fullStorage is where the full calibration object should go
+  // residualStorage is where the residual calibration for QA purposes should go
   //
-  if (pocdbStorage==0) {
-    TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-    pocdbStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  if (fullStorage==0) {
+    const TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    fullStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());
   }
+  if ( (fGainCalibrationType==kResidualGainQA || fGainCalibrationType==kCombinedGainCalib) && residualStorage==0x0) {
+    const TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/residualOCDB";
+    residualStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  }
+
+  // dump info
+  AliInfoF("Analyse gain from file %s", fileName);
 
   //
   // 1. Read gain values
@@ -969,6 +1429,17 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   AnalyzeGainDipAngle(1); // medium pads
   AnalyzeGainDipAngle(2); // long pads
   AnalyzeGainDipAngle(3); // absolute calibration on full track
+
+  //
+  // 2.a produce combined calibration if requested
+  //
+
+  Bool_t combinedGainSuccessful=kTRUE;
+  if (fGainCalibrationType==kCombinedGainCalib) {
+    combinedGainSuccessful=ProduceCombinedGainCalibration();
+    AliInfoF("Result of combined gain calibration: %d", combinedGainSuccessful);
+  }
+
   //
   // 3. Make control plots
   //
@@ -977,7 +1448,9 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   //
   // 4. validate OCDB entries
   //
-  if(fSwitchOnValidation==kTRUE && ValidateTimeGain()==kFALSE) { 
+  if(fSwitchOnValidation==kTRUE &&
+     (fGainCalibrationType==kFullGainCalib || fGainCalibrationType==kCombinedGainCalib) &&
+     (!combinedGainSuccessful || !ValidateTimeGain()) ) {
     Printf("TPC time gain OCDB parameters out of range!");
     return;
   }
@@ -985,7 +1458,9 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   //
   // 5. Update OCDB
   //
-  UpdateOCDBGain( startRunNumber, endRunNumber, pocdbStorage);
+  if (fGainCalibrationType != kNoGainCalib ) {
+    UpdateOCDBGain( startRunNumber, endRunNumber, fullStorage, residualStorage);
+  }
 }
 
 //_____________________________________________________________________________
@@ -1273,12 +1748,31 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
   fitPadRegionQmax->RemovePoint(3);
   fitPadRegionQtot->RemovePoint(3);
 
-  Double_t *yMax=fitPadRegionQmax->GetY();
-  Double_t *yTot=fitPadRegionQtot->GetY();
-  Double_t truncationFactor=AliTPCcalibGainMult::GetTruncatedMeanPosition(yTot[0],yTot[1],yTot[2],1000);
-  for (Int_t i=0;i<3; i++){
-    yMax[i]*=truncationFactor;
-    yTot[i]*=truncationFactor;
+  Double_t *yMax =fitPadRegionQmax->GetY();
+  Double_t *yTot =fitPadRegionQtot->GetY();
+  Double_t *eyMax=fitPadRegionQmax->GetEY();
+  Double_t *eyTot=fitPadRegionQtot->GetEY();
+  Double_t truncationFactorMax=AliTPCcalibGainMult::GetTruncatedMeanPosition(yMax[0],yMax[1],yMax[2],1000);
+  Double_t truncationFactorTot=AliTPCcalibGainMult::GetTruncatedMeanPosition(yTot[0],yTot[1],yTot[2],1000);
+
+  if (truncationFactorMax>0) {
+    for (Int_t i=0;i<3; i++){
+      yMax[i] /=truncationFactorMax;
+      eyMax[i]/=truncationFactorMax;
+    }
+  }
+  else {
+    AliError("truncationFactorMax<=0, could not normalize");
+  }
+
+  if (truncationFactorTot>0) {
+    for (Int_t i=0;i<3; i++){
+      yTot[i] /=truncationFactorTot;
+      eyTot[i]/=truncationFactorTot;
+    }
+  }
+  else {
+    AliError("truncationFactorTot<=0, could not normalize");
   }
 
   //
@@ -1397,8 +1891,14 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
     return kFALSE;
   }
   //
-  for (Int_t ipoint=0; ipoint<graphMax->GetN(); ipoint++) {graphMax->GetY()[ipoint]/=meanMax;}
-  for (Int_t ipoint=0; ipoint<graphTot->GetN(); ipoint++) {graphTot->GetY()[ipoint]/=meanTot;}
+  for (Int_t ipoint=0; ipoint<graphMax->GetN(); ipoint++) {
+    graphMax->GetY()[ipoint]/=meanMax;
+    graphMax->GetEY()[ipoint]/=meanMax;
+  }
+  for (Int_t ipoint=0; ipoint<graphTot->GetN(); ipoint++) {
+    graphTot->GetY()[ipoint]/=meanTot;
+    graphTot->GetEY()[ipoint]/=meanTot;
+  }
   //
   graphMax->SetNameTitle(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
 			Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
@@ -1570,18 +2070,43 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
 }
 
 //_____________________________________________________________________________
-void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage *storage){
+void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, AliCDBStorage *fullStorage, AliCDBStorage* residualStorage/*=0x0*/)
+{
   //
   // Update OCDB entry
   //
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("TObjArray");
-  metaData->SetResponsible("Alexander Kalweit");
+  metaData->SetResponsible("Jens Wiechula");
   metaData->SetBeamPeriod(1);
   metaData->SetAliRootVersion("05-24-00"); //root version
   metaData->SetComment("Calibration of the time dependence of the gain due to pressure and temperature changes.");
   AliCDBId id1("TPC/Calib/TimeGain", startRunNumber, endRunNumber);
-  storage->Put(fGainArray, id1, metaData);    
+  if (fGainCalibrationType==kFullGainCalib) {
+    AliInfoF("Writing gain calibration object to the full storage: %s", fullStorage->GetURI().Data());
+    fullStorage->Put(fGainArray, id1, metaData);
+  }
+  else if (fGainCalibrationType==kResidualGainQA) {
+    AliInfoF("Writing gain calibration object to the residual storage: %s", residualStorage->GetURI().Data());
+    residualStorage->Put(fGainArray, id1, metaData);
+  }
+  else if (fGainCalibrationType==kCombinedGainCalib) {
+    if (residualStorage){
+      AliInfoF("Writing residual gain calibration object to the residual storage: %s", residualStorage->GetURI().Data());
+      residualStorage->Put(fGainArray, id1, metaData);
+    }
+    else {
+      AliError("No residual storage set, but calibration type is combined + residual QA");
+    }
+
+    // write the combined calibration after the residual calibration to make sure this is the
+    //   latest object in case fullStorage and residualStorage are identical
+    AliInfoF("Writing combined gain calibration object to the full storage: %s", fullStorage->GetURI().Data());
+    fullStorage->Put(fGainArrayCombined, id1, metaData);
+  }
+  else {
+    AliFatalF("Unsupported gain calibration type: %d", Int_t(fGainCalibrationType));
+  }
 }
 
 //_____________________________________________________________________________
@@ -2145,6 +2670,53 @@ void AliTPCPreprocessorOffline::MakeQAPlotsGain(TString outputDirectory/*=""*/, 
   }
 
   delete f;
+}
+
+
+void AliTPCPreprocessorOffline::ScaleY(TGraphErrors *graph, Double_t normval)
+{
+  for (Int_t ipoint=0; ipoint<graph->GetN(); ipoint++) {
+    graph->GetY()[ipoint]*=normval;
+    graph->GetEY()[ipoint]*=normval;
+  }
+}
+
+Bool_t AliTPCPreprocessorOffline::NormaliseYToMean(TGraphErrors *graph)
+{
+  const Double_t mean = TMath::Mean(graph->GetN(), graph->GetY());
+
+  if (mean<=0){
+    AliError(Form("mean=%f",mean));
+    return kFALSE;
+  }
+
+  ScaleY(graph, 1./mean);
+}
+
+Bool_t AliTPCPreprocessorOffline::NormaliseYToWeightedMeandEdx(TGraphErrors *graph)
+{
+  const Double_t *y=graph->GetY();
+  Double_t scaleFactor=(63.*y[0] + 64.*y[1] + 32*y[2])/159.;
+
+  if (scaleFactor<=0){
+    AliError(Form("scaleFactor=%f",scaleFactor));
+    return kFALSE;
+  }
+
+  ScaleY(graph, 1./scaleFactor);
+}
+
+Bool_t AliTPCPreprocessorOffline::NormaliseYToTruncateddEdx(TGraphErrors *graph)
+{
+  const Double_t *y=graph->GetY();
+  Double_t truncationFactor=AliTPCcalibGainMult::GetTruncatedMeanPosition(y[0],y[1],y[2],1000);
+
+  if (truncationFactor<=0){
+    AliError(Form("truncationFactor=%f",truncationFactor));
+    return kFALSE;
+  }
+
+  ScaleY(graph, 1./truncationFactor);
 }
 
 /*
