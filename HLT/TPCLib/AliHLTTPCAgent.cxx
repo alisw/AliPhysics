@@ -132,13 +132,6 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
       }
     }
 
-    //
-    //  Temporary: only run on raw data
-    //  at the moment, running on compressed clusters causes inconsistency in hltout
-    //  due to duplicated cluster blocks
-    //
-    tpcInputMode = 1; 
-
     // This the tracking configuration for the full TPC
     // - 216 clusterfinders (1 per partition)
     // - 36 slice trackers
@@ -159,7 +152,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString compressorInput;
     TString trackerInput;
 
-    arg.Form("-publish-clusters all -publish-raw filtered");
+    arg.Form("-publish-clusters off -publish-raw filtered");
 
     if( tpcInputMode==1 ){
       arg.Form("-publish-clusters off -publish-raw all");
