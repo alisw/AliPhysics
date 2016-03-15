@@ -1636,7 +1636,7 @@ Bool_t   AliTPCPIDResponse::RegisterSpline(const char * name, Int_t index){
 }
 
 //_____________________________________________________________________________
-Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const char* pass, const char* oadbFile/*="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root"*/)
+Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const char* pass, const char* oadbFile/*="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root"*/, Bool_t initMultiplicityCorrection/*=kTRUE*/)
 {
   //
   //
@@ -1689,13 +1689,17 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const char* pass, const 
   SetSplinesFromArray(arrSplines);
 
   //===| Set up multiplicity correction |=======================================
-  const TObject *multiplicityCorrection=arr->FindObject("MultiplicityCorrection");
-  if (multiplicityCorrection) {
-    const TString multiplicityData(multiplicityCorrection->GetTitle());
-    const Bool_t res=SetMultiplicityCorrectionFromString(multiplicityData);
-    if (!res) {
-      AliError("Problem setting up multiplicity correction for TPC PID");
+  if (initMultiplicityCorrection) {
+    const TObject *multiplicityCorrection=arr->FindObject("MultiplicityCorrection");
+    if (multiplicityCorrection) {
+      const TString multiplicityData(multiplicityCorrection->GetTitle());
+      const Bool_t res=SetMultiplicityCorrectionFromString(multiplicityData);
+      if (!res) {
+        AliError("Problem setting up multiplicity correction for TPC PID");
+      }
     }
+  } else {
+    AliInfo("Multiplicity correction explicitly disabled");
   }
 
   //===| Set up of dEdx type |==================================================

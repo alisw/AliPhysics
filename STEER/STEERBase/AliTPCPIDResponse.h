@@ -240,7 +240,7 @@ public:
   Double_t GetTrackdEdx(const AliVTrack* track) const;
 
   //===| Initialisation |=======================================================
-  Bool_t InitFromOADB(const Int_t run, const char* pass, const char* oadbFile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root");
+  Bool_t InitFromOADB(const Int_t run, const char* pass, const char* oadbFile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root", Bool_t initMultiplicityCorrection=kTRUE);
 
   Bool_t SetSplinesFromArray                (const TObjArray* arrSplines);
   Bool_t SetMultiplicityCorrectionFromString(const TString& multiplicityData);
