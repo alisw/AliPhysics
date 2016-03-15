@@ -599,8 +599,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
     AliError(Form("%s:Container %d not found",GetName(),c));
     return 0;
   }
-
-  return cont->AcceptCluster(clus);
+  UInt_t rejectionReason = 0;
+  return cont->AcceptCluster(clus, rejectionReason);
 }
 
 /**
@@ -623,7 +623,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
     return 0;
   }
 
-  return cont->AcceptParticle(track);
+  UInt_t rejectionReason = 0;
+  return cont->AcceptParticle(track, rejectionReason);
 }
 
 /**

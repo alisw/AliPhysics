@@ -345,9 +345,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
     jets->ResetCurrentID();
     while ((jet = jets->GetNextJet())) {
 
-      if (!jets->AcceptJet(jet)) {
+      UInt_t rejectionReason = 0;
+      if (!jets->AcceptJet(jet, rejectionReason)) {
         histname = TString::Format("%s/fHistRejectionReason_%d", jets->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(), jet->Pt());
+        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
         continue;
       }
 

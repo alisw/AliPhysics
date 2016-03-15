@@ -80,7 +80,7 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer(const char *name); 
   virtual ~AliEmcalContainer(){;}
 
-  virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom);
+  virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
   TClonesArray               *GetArray() const                      { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
   const TString&              GetClassName()                  const { return fClassName                 ; }
@@ -96,21 +96,19 @@ class AliEmcalContainer : public TObject {
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
   Int_t                       GetNEntries()                   const { return fClArray->GetEntriesFast() ; }
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) = 0;
-  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) = 0;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
+  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const = 0;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom) = 0;
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom) = 0;
-  virtual Bool_t              AcceptObject(Int_t i) = 0;
-  virtual Bool_t              AcceptObject(const TObject* obj) = 0;
+  virtual Bool_t              AcceptObject(Int_t i, UInt_t &rejectionReason) const = 0;
+  virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const = 0;
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
   void                        SetBitMap(UInt_t m)                   { fBitMap = m                       ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
   void                        SortArray()                           { fClArray->Sort()                  ; }
-  UInt_t                      GetRejectionReason()            const { return fRejectionReason           ; }
-  UInt_t                      TestRejectionReason(UInt_t rs)  const { return fRejectionReason & rs      ; }
-  UShort_t                    GetRejectionReasonBitPosition() const;
+  UShort_t                    GetRejectionReasonBitPosition(UInt_t rejectionReason) const;
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
   virtual void                NextEvent() {;}
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
@@ -152,7 +150,6 @@ class AliEmcalContainer : public TObject {
   Int_t                       fCurrentID;               //!<!current ID for automatic loops
   AliNamedArrayI             *fLabelMap;                //!<!Label-Index map
   Double_t                    fVertex[3];               //!<!event vertex array
-  UInt_t                      fRejectionReason;         //!<!reject reason bit map for the last call to an accept object function
   TClass                     *fLoadedClass;             //!<!Class of teh objects contained in the TClonesArray
 
  private:

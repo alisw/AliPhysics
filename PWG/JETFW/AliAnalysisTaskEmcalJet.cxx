@@ -86,7 +86,8 @@ Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Int_t c)
     return 0;
   }
 
-  return cont->AcceptJet(jet);
+  UInt_t rejectionReason = 0;
+  return cont->AcceptJet(jet, rejectionReason);
 }
 
 //________________________________________________________________________
