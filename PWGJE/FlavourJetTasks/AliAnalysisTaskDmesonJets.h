@@ -43,6 +43,7 @@ class AliClusterContainer;
 class THnSparse;
 class AliFJWrapper;
 class THashList;
+class TTree;
 
 #include <list>
 #include <vector>
@@ -87,49 +88,144 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
    kDeltaEta          = BIT(5) , // Add the delta eta axis in the THnSparse
    kDeltaPhi          = BIT(6) , // Add the delta phi axis in the THnSparse
    kPositionJet       = BIT(7) , // Add the jet eta/phi axis in the THnSparse
-   kLeadingPt         = BIT(8), // Add the leading pt axis in the THnSparse
-   kJetConstituents   = BIT(9), // Add the jet constituent axis in the THnSparse
-   kDaughterDistances = BIT(10), // Add n axis in THnSparse with the daughters' distances
+   kJetConstituents   = BIT(8)   // Add the jet constituent axis in the THnSparse
+  };
+
+  /// \class AliJetInfo
+  /// \brief Class that encapsulates jets
+  ///
+  /// This class encapsulates jet
+  /// information that can be easily passed to a function.
+  class AliJetInfo {
+  public:
+    AliJetInfo() : fMomentum(), fNConstituents(0) {}
+
+    Double_t Pt()        const { return fMomentum.Pt()       ; }
+    Double_t Eta()       const { return fMomentum.Eta()      ; }
+    Double_t Phi()       const { return fMomentum.Phi()      ; }
+    Double_t Phi_0_2pi() const { return fMomentum.Phi_0_2pi(); }
+
+    AliTLorentzVector fMomentum             ; ///< 4-momentum of the jet
+    Int_t             fNConstituents        ; ///< Number of constituents of the jet
   };
 
   /// \class AliEmcalDmesonJetInfo
-  /// \brief Struct that encapsulates D meson jets
+  /// \brief Class that encapsulates D meson jets
   ///
-  /// This struct encapsulates D meson jet
+  /// This class encapsulates D meson jet
   /// information that can be easily passed to a function.
-  struct AliDmesonJetInfo {
-    AliDmesonJetInfo() : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJet(), fJetLeadingPt(0), fJetNConstituents(0), fDaughterDistances(3) {}
+  class AliDmesonJetInfo {
+  public:
+    AliDmesonJetInfo() : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJet() {}
+    AliDmesonJetInfo(UInt_t n) : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJet(n) {}
 
-    AliTLorentzVector fD                   ; ///< 4-momentum of the D meson candidate
-    Double_t          fSoftPionPt          ; ///< Transverse momentum of the soft pion of the D* candidate
-    Double_t          fInvMass2Prong       ; ///< 2-prong mass of the D* candidate (w/o the soft pion)
-    AliTLorentzVector fJet                 ; ///< 4-momentum of the jet
-    Double_t          fJetLeadingPt        ; ///< Transverse momentum of the leading particle of the jet
-    Int_t             fJetNConstituents    ; ///< Number of constituents of the jet
-    TArrayD           fDaughterDistances   ; ///< Distance of the D meson daughters from the jet axis
+    AliTLorentzVector  fD                       ; //!<! 4-momentum of the D meson candidate
+    Double_t           fSoftPionPt              ; //!<! Transverse momentum of the soft pion of the D* candidate
+    Double_t           fInvMass2Prong           ; //!<! 2-prong mass of the D* candidate (w/o the soft pion)
+    vector<AliJetInfo> fJet                     ; //!<! 4-momentum of the jet
 
     void Reset();
-
+    Double_t GetZ(Int_t i) const;
+    Double_t GetDistance(Int_t i, Double_t& deta, Double_t& dphi) const;
+    Double_t GetDistance(Int_t i) const;
     void Print() const;
   };
 
-  class AliJetDefinition : public TObject {
+  /// \class AliJetInfoSummary
+  /// \brief Lightweight class that encapsulates D meson jets
+  ///
+  /// This class encapsulates D meson jet
+  /// information in a very compact data structure (45 bits)
+  class AliJetInfoSummary {
   public:
-    AliJetDefinition();
-    AliJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
-    AliJetDefinition(const AliJetDefinition &source);
+    AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
+    AliJetInfoSummary(const AliDmesonJetInfo& source, UInt_t i);
 
-    AliJetDefinition& operator=(const AliJetDefinition& source);
+    virtual void Set(const AliDmesonJetInfo& source, UInt_t i);
+
+    /// Transverse momentum of the jet in GeV/c
+    Double32_t  fPt        ; //[0,200,12]
+    /// Eta of the jet
+    Double32_t  fEta       ; //[-2,2,8]
+    /// Phi of the jet
+    Double32_t  fPhi       ; //[0,2*pi,8]
+    /// Distance between D meson and jet axis
+    Double32_t  fR         ; //[0,2,7]
+    /// Z of the D meson
+    Double32_t  fZ         ; //[0,1,10]
+  };
+
+  /// \class AliDmesonInfoSummary
+  /// \brief Lightweight class that encapsulates D meson jets
+  ///
+  /// This class encapsulates D meson
+  /// information in a very compact data structure (28 bits)
+  class AliDmesonInfoSummary {
+  public:
+    AliDmesonInfoSummary() : fPt(0), fEta(0), fPhi(0) {;}
+    AliDmesonInfoSummary(const AliDmesonJetInfo& source);
+
+    virtual void Set(const AliDmesonJetInfo& source);
+
+    /// Transverse momentum of the D meson in GeV/c
+    Double32_t   fPt     ; //[0,200,12]
+    /// Eta of the jet
+    Double32_t   fEta    ; //[-2,2,8]
+    /// Phi of the jet
+    Double32_t   fPhi    ; //[0,2*pi,8]
+  };
+
+  /// \class AliD0InfoSummary
+  /// \brief Lightweight class that encapsulates D0
+  ///
+  /// This class encapsulates D0 jet
+  /// information in a very compact data structure (40 bits)
+  class AliD0InfoSummary : public AliDmesonInfoSummary {
+  public:
+    AliD0InfoSummary() : AliDmesonInfoSummary(), fInvMass(0) {}
+    AliD0InfoSummary(const AliDmesonJetInfo& source);
+
+    virtual void Set(const AliDmesonJetInfo& source);
+
+    /// Invariant mass of the D0 meson candidate in GeV/c2
+    Double32_t   fInvMass   ; //[0,5,12]
+  };
+
+  /// \class AliDStarJetInfoSummary
+  /// \brief Lightweight class that encapsulates D*
+  ///
+  /// This class encapsulates D*
+  /// information in a very compact data structure (52 bits)
+  class AliDStarInfoSummary : public AliDmesonInfoSummary {
+  public:
+    AliDStarInfoSummary() : AliDmesonInfoSummary(), f2ProngInvMass(0), fDeltaInvMass(0) {}
+    AliDStarInfoSummary(const AliDmesonJetInfo& source);
+
+    virtual void Set(const AliDmesonJetInfo& source);
+
+    ///< Invariant mass of the D0 meson candidate in GeV/c2
+    Double32_t   f2ProngInvMass   ; //[0,5,12]
+    ///< Difference between the Kpipi and the Kpi invariant masses in GeV/c2
+    Double32_t   fDeltaInvMass    ; //[0,1,12]
+  };
+
+  class AliHFJetDefinition : public TObject {
+  public:
+    AliHFJetDefinition();
+    AliHFJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
+    AliHFJetDefinition(const AliHFJetDefinition &source);
+
+    AliHFJetDefinition& operator=(const AliHFJetDefinition& source);
 
     const char* GetName() const;
 
-    friend bool        operator< (const AliJetDefinition& lhs, const AliJetDefinition& rhs);
-    friend inline bool operator> (const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return rhs < lhs    ; }
-    friend inline bool operator<=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs > rhs) ; }
-    friend inline bool operator>=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs < rhs) ; }
+    friend bool        operator< (const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
+    friend inline bool operator> (const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return rhs < lhs    ; }
+    friend inline bool operator<=(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return !(lhs > rhs) ; }
+    friend inline bool operator>=(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return !(lhs < rhs) ; }
 
-    friend bool        operator==(const AliJetDefinition& lhs, const AliJetDefinition& rhs);
-    friend inline bool operator!=(const AliJetDefinition& lhs, const AliJetDefinition& rhs){ return !(lhs == rhs); }
+    friend bool        operator==(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
+    friend inline bool operator!=(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return !(lhs == rhs); }
 
   protected:
     friend class AliAnalysisTaskDmesonJets;
@@ -139,11 +235,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Double_t                  fRadius        ; ///<  Jet radius
     EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
     ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
-    vector<AliDmesonJetInfo>  fDmesonJets    ; //!<! Array containing the D meson jets
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliJetDefinition, 1);
+    ClassDef(AliHFJetDefinition, 1);
     /// \endcond
   };
 
@@ -174,11 +269,15 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     void SetAcceptedDecayMap(UInt_t m)              { fAcceptedDecay  = m    ; }
 
     const char* GetName() const;
-    const char* GetName(const AliJetDefinition& jetDef) const;
+    const char* GetName(const AliHFJetDefinition& jetDef) const;
 
-    AliJetDefinition* AddJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
-    AliJetDefinition* AddJetDefinition(const AliJetDefinition& def);
-    std::list<AliJetDefinition>::iterator FindJetDefinition(const AliJetDefinition& eng);
+    AliHFJetDefinition* AddJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
+    AliHFJetDefinition* AddJetDefinition(const AliHFJetDefinition& def);
+    std::vector<AliHFJetDefinition>::iterator FindJetDefinition(const AliHFJetDefinition& eng);
+
+    TTree* BuildTree();
+    TTree* GetTree() { return fTree; }
+    Bool_t FillTree();
 
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
@@ -205,7 +304,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     UInt_t                             fRejectedOrigin        ; ///<  Bit mask with D meson origins that are rejected
     UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted
     Bool_t                             fInhibit               ; ///<  Inhibit the task
-    list<AliJetDefinition>             fJetDefinitions        ; ///<  Jet definitions
+    vector<AliHFJetDefinition>         fJetDefinitions        ; ///<  Jet definitions
+    TTree                             *fTree                  ; //!<! Output tree
+    AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
+    AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
+    vector<AliDmesonJetInfo>           fDmesonJets            ; //!<! Array containing the D meson jets
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer       *fMCContainer           ; //!<! MC particle container
     AliHFTrackContainer               *fTrackContainer        ; //!<! Track container
@@ -228,7 +331,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Bool_t              ExtractRecoDecayAttributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractD0Attributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractDstarAttributes(const AliAODRecoCascadeHF* DstarCand, AliDmesonJetInfo& DmesonJet, UInt_t i);
-    Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliJetDefinition& jetDef);
+    Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef);
 
     /// \cond CLASSIMP
     ClassDef(AnalysisEngine, 2);
@@ -240,7 +343,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   virtual ~AliAnalysisTaskDmesonJets();
 
   AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString cutfname = "");
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, const AliJetDefinition& jetDef, TString cutfname = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString cutfname = "");
   std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AnalysisEngine& eng);
 
   void SetShowPositionD(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kPositionD         : fEnabledAxis & ~kPositionD         ; }
@@ -251,9 +354,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   void SetShowDeltaEta(Bool_t b = kTRUE)          { fEnabledAxis = b ?  fEnabledAxis | kDeltaEta          : fEnabledAxis & ~kDeltaEta          ; }
   void SetShowDeltaPhi(Bool_t b = kTRUE)          { fEnabledAxis = b ?  fEnabledAxis | kDeltaPhi          : fEnabledAxis & ~kDeltaPhi          ; }
   void SetShowPositionJet(Bool_t b = kTRUE)       { fEnabledAxis = b ?  fEnabledAxis | kPositionJet       : fEnabledAxis & ~kPositionJet       ; }
-  void SetShowLeadingPt(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kLeadingPt         : fEnabledAxis & ~kLeadingPt         ; }
   void SetShowJetConstituents(Bool_t b = kTRUE)   { fEnabledAxis = b ?  fEnabledAxis | kJetConstituents   : fEnabledAxis & ~kJetConstituents   ; }
-  void SetShowDaughterDistances(Bool_t b = kTRUE) { fEnabledAxis = b ?  fEnabledAxis | kDaughterDistances : fEnabledAxis & ~kDaughterDistances ; }
+
+  void SetTreeOutput(Bool_t b)                    { fTreeOutput = b; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -264,13 +367,14 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 
   AliRDHFCuts*         LoadDMesonCutsFromFile(TString cutfname, TString cutsname);
   void                 AllocateTHnSparse(const AnalysisEngine& param);
-  void                 FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet);
+  void                 FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, Int_t ij);
   
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
   list<AnalysisEngine> fAnalysisEngines           ; ///<  Array of analysis parameters
   UInt_t               fEnabledAxis               ; ///<  Use bit defined in EAxis_t to enable axis in the THnSparse
+  Bool_t               fTreeOutput                ; ///<  If true, output will be posted in a TTree rather than a THnSparse
   THistManager         fHistManager               ; ///<  Histogram manager
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
@@ -281,7 +385,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 1);
+  ClassDef(AliAnalysisTaskDmesonJets, 2);
   /// \endcond
 };
 
