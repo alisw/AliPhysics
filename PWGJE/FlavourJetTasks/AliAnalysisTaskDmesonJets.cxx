@@ -1271,8 +1271,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
   AliTLorentzVector part;
   for (Int_t i = 0; i < cont->GetNEntries(); i++) {
     cont->GetMomentum(part, i);
-    if (!cont->AcceptObject(i)) {
-      rejectHist->Fill(cont->GetRejectionReasonBitPosition(), part.Pt());
+    UInt_t rejectionReason = 0;
+    if (!cont->AcceptObject(i, rejectionReason)) {
+      rejectHist->Fill(cont->GetRejectionReasonBitPosition(rejectionReason), part.Pt());
       continue;
     }
     Int_t uid = offset >= 0 ? i : -i;

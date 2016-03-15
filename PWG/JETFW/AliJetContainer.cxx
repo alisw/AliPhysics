@@ -271,12 +271,13 @@ AliEmcalJet* AliJetContainer::GetJet(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) {
+AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
 
   //Only return jet if is accepted
 
+  UInt_t rejectionReason = 0;
   AliEmcalJet *jet = GetJet(i);
-  if(!AcceptJet(jet)) return 0;
+  if(!AcceptJet(jet, rejectionReason)) return 0;
 
   return jet;
 }
@@ -291,7 +292,7 @@ AliEmcalJet* AliJetContainer::GetJetWithLabel(Int_t lab) const {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) {
+AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) const {
 
   //Get particle with label lab in array
 
@@ -347,7 +348,7 @@ Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const {
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass)
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const
 {
   Double_t p = jet->P();
   Double_t e = TMath::Sqrt(mass*mass + p*p);
@@ -358,7 +359,7 @@ Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet,
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet)
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet) const
 {
   if (jet) {
     if (fMassHypothesis >= 0) {
@@ -376,7 +377,7 @@ Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet)
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
   //Get momentum of the i^th particle in array
 
@@ -394,7 +395,7 @@ Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom)
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
   //Get momentum of the i^th jet in array
 
@@ -412,133 +413,131 @@ Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
+Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReason) const
 {
   // Return true if jet is accepted.
 
-  Bool_t r = ApplyJetCuts(jet);
+  Bool_t r = ApplyJetCuts(jet, rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
   GetMomentum(mom, jet);
 
-  return ApplyKinematicCuts(mom);
+  return ApplyKinematicCuts(mom, rejectionReason);
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::AcceptJet(Int_t i)
+Bool_t AliJetContainer::AcceptJet(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if jet is accepted.
 
-  Bool_t r = ApplyJetCuts(GetJet(i));
+  Bool_t r = ApplyJetCuts(GetJet(i), rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
   GetMomentum(mom, i);
 
-  return ApplyKinematicCuts(mom);
+  return ApplyKinematicCuts(mom, rejectionReason);
 }
 
 
 //________________________________________________________________________
-Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet)
+Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet, UInt_t &rejectionReason) const
 {   
   // Return true if jet is accepted.
 
-  fRejectionReason = 0;
-
   if (!jet) {
     AliDebug(11,"No jet found");
-    fRejectionReason |= kNullObject;
+    rejectionReason |= kNullObject;
     return kFALSE;
   }
 
   if (jet->TestBits(fBitMap) != (Int_t)fBitMap) {
     AliDebug(11,"Cut rejecting jet: Bit map");
-    fRejectionReason |= kBitMapCut;
+    rejectionReason |= kBitMapCut;
     return kFALSE;
   }
 
   if (jet->Area() <= fJetAreaCut)  {
     AliDebug(11,"Cut rejecting jet: Area");
-    fRejectionReason |= kAreaCut;
+    rejectionReason |= kAreaCut;
     return kFALSE;
   }
 
   if (jet->AreaEmc() < fAreaEmcCut) {
     AliDebug(11,"Cut rejecting jet: AreaEmc");
-    fRejectionReason |= kAreaEmcCut;
+    rejectionReason |= kAreaEmcCut;
     return kFALSE;
   }
 
   if (fZLeadingChCut < 1 && GetZLeadingCharged(jet) > fZLeadingChCut) {
     AliDebug(11,"Cut rejecting jet: ZLeading");
-    fRejectionReason |= kZLeadingChCut;
+    rejectionReason |= kZLeadingChCut;
     return kFALSE;
   }
 
   if (fZLeadingEmcCut < 1 && GetZLeadingEmc(jet) > fZLeadingEmcCut) {
     AliDebug(11,"Cut rejecting jet: ZLeadEmc");
-    fRejectionReason |= kZLeadingEmcCut;
+    rejectionReason |= kZLeadingEmcCut;
     return kFALSE;
   }
 
   if (jet->NEF() < fNEFMinCut || jet->NEF() > fNEFMaxCut) {
     AliDebug(11,"Cut rejecting jet: NEF");
-    fRejectionReason |= kNEFCut;
+    rejectionReason |= kNEFCut;
     return kFALSE;
   }
 
   if(fMinNConstituents>0 && jet->GetNumberOfConstituents()<fMinNConstituents) {
     AliDebug(11,"Cut rejecting jet: minimum number of constituents");
-    fRejectionReason |= kMinNConstituents;
+    rejectionReason |= kMinNConstituents;
     return kFALSE;
   }
 
   if (fLeadingHadronType == 0) {
     if (jet->MaxTrackPt() < fMinTrackPt) {
       AliDebug(11,"Cut rejecting jet: Bias");
-      fRejectionReason |= kMinLeadPtCut;
+      rejectionReason |= kMinLeadPtCut;
       return kFALSE;
     }
   }
   else if (fLeadingHadronType == 1) {
     if (jet->MaxClusterPt() < fMinClusterPt) {
       AliDebug(11,"Cut rejecting jet: Bias");
-      fRejectionReason |= kMinLeadPtCut;
+      rejectionReason |= kMinLeadPtCut;
       return kFALSE;
     }
   }
   else {
     if (jet->MaxTrackPt() < fMinTrackPt && jet->MaxClusterPt() < fMinClusterPt) {
       AliDebug(11,"Cut rejecting jet: Bias");
-      fRejectionReason |= kMinLeadPtCut;
+      rejectionReason |= kMinLeadPtCut;
       return kFALSE;
     }
   }
 
   if (jet->MaxTrackPt() > fMaxTrackPt) {
     AliDebug(11,"Cut rejecting jet: MaxTrackPt");
-    fRejectionReason |= kMaxTrackPtCut;
+    rejectionReason |= kMaxTrackPtCut;
     return kFALSE;
 
   }
 
   if (jet->MaxClusterPt() > fMaxClusterPt) {
     AliDebug(11,"Cut rejecting jet: MaxClusPt");
-    fRejectionReason |= kMaxClusterPtCut;
+    rejectionReason |= kMaxClusterPtCut;
     return kFALSE;
   }
 
   if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection)) {
     AliDebug(11,"Cut rejecting jet: Flavour");
-    fRejectionReason |= kFlavourCut;
+    rejectionReason |= kFlavourCut;
     return kFALSE;
   }
 
   if (fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus) {
     AliDebug(11,"Cut rejecting jet: tag status");
-    fRejectionReason |= kTagStatus;
+    rejectionReason |= kTagStatus;
     return kFALSE;
   }
 

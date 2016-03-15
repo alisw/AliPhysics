@@ -174,12 +174,13 @@ AliVTrack* AliTrackContainer::GetTrack(Int_t i) const
 }
 
 //________________________________________________________________________
-AliVTrack* AliTrackContainer::GetAcceptTrack(Int_t i)
+AliVTrack* AliTrackContainer::GetAcceptTrack(Int_t i) const
 {
   //return pointer to particle if particle is accepted
 
+  UInt_t rejectionReason;
   if (i == -1) i = fCurrentID;
-  if (AcceptTrack(i)) {
+  if (AcceptTrack(i, rejectionReason)) {
       return GetTrack(i);
   }
   else {
@@ -221,7 +222,7 @@ AliVTrack* AliTrackContainer::GetNextTrack()
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass)
+Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass) const
 {
   if (part) {
     if (mass < 0) mass = part->M();
@@ -235,13 +236,13 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part)
+Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part) const
 {
   return GetMomentum(mom,part,fMassHypothesis);
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
   //Get momentum of the i^th particle in array
 
@@ -353,10 +354,10 @@ Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp)
+Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
-  Bool_t r = ApplyTrackCuts(vp);
+  Bool_t r = ApplyTrackCuts(vp, rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
@@ -369,28 +370,28 @@ Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp)
     GetMomentum(mom, vp);
   }
 
-  return ApplyKinematicCuts(mom);
+  return ApplyKinematicCuts(mom, rejectionReason);
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::AcceptTrack(Int_t i)
+Bool_t AliTrackContainer::AcceptTrack(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
-  Bool_t r = ApplyTrackCuts(GetTrack(i));
+  Bool_t r = ApplyTrackCuts(GetTrack(i), rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
   GetMomentum(mom, i);
 
-  return ApplyKinematicCuts(mom);
+  return ApplyKinematicCuts(mom, rejectionReason);
 }
 
 //________________________________________________________________________
-Bool_t AliTrackContainer::ApplyTrackCuts(const AliVTrack* vp)
+Bool_t AliTrackContainer::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const
 {
   // Return true if i^th particle is accepted.
 
-  return ApplyParticleCuts(vp);
+  return ApplyParticleCuts(vp, rejectionReason);
 }
 
 //________________________________________________________________________

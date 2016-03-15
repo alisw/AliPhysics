@@ -1110,7 +1110,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
     else {
       mt = static_cast<AliVTrack*>(clust->GetTrackMatched(0));
-      if (!tracks->AcceptParticle(mt)) mt = 0;
+      UInt_t rejectionReason = 0;
+      if (!tracks->AcceptParticle(mt, rejectionReason)) mt = 0;
     }
 
   //  Int_t imt = partC->GetMatchedObjId(i);

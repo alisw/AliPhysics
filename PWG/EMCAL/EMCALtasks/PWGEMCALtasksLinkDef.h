@@ -30,4 +30,5 @@
 #pragma link C++ class  AliEMCALConfigHandler+;
 #pragma link C++ class  AliEMCALConfigurationMatcher+;
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
+#pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
 #endif
