@@ -50,11 +50,11 @@ if(ZEROMQ_FOUND)
 endif(ZEROMQ_FOUND)
 
 # alimyo executable
-add_executable(alimyo hello-myo.cxx)
-set(MYO_LIBRARY ${AliRoot_SOURCE_DIR}/EVE/resources/myo/myo.framework)
-target_link_libraries(alimyo ${MYO_LIBRARY})
-SET_TARGET_PROPERTIES(alimyo PROPERTIES INSTALL_RPATH "${AliRoot_SOURCE_DIR}/EVE/resources/myo/")
+#add_executable(alimyo hello-myo.cxx)
+#set(MYO_LIBRARY ${AliRoot_SOURCE_DIR}/EVE/resources/myo/myo.framework)
+#target_link_libraries(alimyo ${MYO_LIBRARY})
+#SET_TARGET_PROPERTIES(alimyo PROPERTIES INSTALL_RPATH "${AliRoot_SOURCE_DIR}/EVE/resources/myo/")
 
 
 # Installation
-install(TARGETS alieve aliceToJson alimyo RUNTIME DESTINATION bin)
+install(TARGETS alieve aliceToJson RUNTIME DESTINATION bin)
