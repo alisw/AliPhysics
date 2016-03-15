@@ -101,8 +101,6 @@ void AliGenExtFile::Generate()
   Int_t i=0, j, nt;
   //
   //
-  if (fVertexSmear == kPerEvent) Vertex();
-
   // Fast forward up to start Event
   for (Int_t ie=0; ie<fStartEvent; ++ie ) {
     Int_t nTracks = fReader->NextEvent(); 	
@@ -120,6 +118,7 @@ void AliGenExtFile::Generate()
   fStartEvent = 0; // do not skip events the second time 
 
   while(1) {
+    if (fVertexSmear == kPerEvent) Vertex();
     Int_t nTracks = fReader->NextEvent(); 	
     if (nTracks == 0) {
       // printf("\n No more events !!! !\n");
