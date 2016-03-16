@@ -40,6 +40,7 @@
 // Oct 11: added Pb-Pb at 2.76 TeV (S. Grigoryan)
 // June 12: added p-Pb & Pb-p at 5 TeV (S. Grigoryan)
 // April 13: added p-p at 2.76 and 8 TeV (S. Grigoryan)
+// March 16: added p-p at 5 and 13 TeV (S. Grigoryan)
 // 
 //-------------------------------------------------------------------------
 // How it works (for the given flavor and p-p energy):
@@ -171,10 +172,14 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP8PythiaMNRwmi.root";
       else if (fEnergy == 10)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP10PythiaMNRwmi.root";
+      else if (fEnergy == 13)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP13PythiaMNRwmi.root";
       else if (fEnergy == 14)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP14PythiaMNRwmi.root";
       else if (fEnergy == 2)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP276PythiaMNRwmi.root";
+      else if (fEnergy == 50)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP5PythiaMNRwmi.root";
       else if (fEnergy == 3)
 	   fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPbPb276PythiaMNR.root";
       else if (fEnergy == 4)
@@ -193,10 +198,14 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP8PythiaMNRwmi.root";
       else if (fEnergy == 10)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP10PythiaMNRwmi.root";
+      else if (fEnergy == 13)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP13PythiaMNRwmi.root";
       else if (fEnergy == 14)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP14PythiaMNRwmi.root";
       else if (fEnergy == 2)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP276PythiaMNRwmi.root";
+      else if (fEnergy == 50)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP5PythiaMNRwmi.root";
       else if (fEnergy == 3)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPbPb276PythiaMNR.root";
       else if (fEnergy == 4)
