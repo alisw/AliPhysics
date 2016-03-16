@@ -81,7 +81,8 @@ public:
 	bDStarPlus=413,
 	bDSPlus=431,
 	bK0l=431,
-	bSigmaPlus = 3222
+	bSigmaPlus = 3222,
+	bRhoPlus=213
 	};
 
 	enum particlearraxidx
