@@ -44,6 +44,7 @@ class THnSparse;
 class AliFJWrapper;
 class THashList;
 class TTree;
+class AliEMCALGeometry;
 
 #include <list>
 #include <vector>
@@ -63,6 +64,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
+  typedef AliJetContainer::JetAcceptanceType EJetAcceptanceType_t;
 
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi };
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth };
@@ -98,7 +100,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   /// information that can be easily passed to a function.
   class AliJetInfo {
   public:
-    AliJetInfo() : fMomentum(), fNConstituents(0) {}
+    AliJetInfo() : fMomentum(), fNConstituents(0), fNEF(0), fMaxChargedPt(0), fMaxNeutralPt(0) {}
 
     Double_t Pt()        const { return fMomentum.Pt()       ; }
     Double_t Eta()       const { return fMomentum.Eta()      ; }
@@ -107,6 +109,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 
     AliTLorentzVector fMomentum             ; ///< 4-momentum of the jet
     Int_t             fNConstituents        ; ///< Number of constituents of the jet
+    Double_t          fNEF                  ; ///< Neutral Energy Fraction of the jet
+    Double_t          fMaxChargedPt         ; ///< Transverse momentum of the leading charged particle (or track)
+    Double_t          fMaxNeutralPt         ; ///< Transverse momentum of the leading neutral particle (or cluster)
   };
 
   /// \class AliEmcalDmesonJetInfo
@@ -116,18 +121,18 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   /// information that can be easily passed to a function.
   class AliDmesonJetInfo {
   public:
-    AliDmesonJetInfo() : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJet() {}
-    AliDmesonJetInfo(UInt_t n) : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJet(n) {}
+    AliDmesonJetInfo() : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets() {}
 
     AliTLorentzVector  fD                       ; //!<! 4-momentum of the D meson candidate
     Double_t           fSoftPionPt              ; //!<! Transverse momentum of the soft pion of the D* candidate
     Double_t           fInvMass2Prong           ; //!<! 2-prong mass of the D* candidate (w/o the soft pion)
-    vector<AliJetInfo> fJet                     ; //!<! 4-momentum of the jet
+    std::map<std::string, AliJetInfo>
+                       fJets                    ; //!<! list of jets
 
     void Reset();
-    Double_t GetZ(Int_t i) const;
-    Double_t GetDistance(Int_t i, Double_t& deta, Double_t& dphi) const;
-    Double_t GetDistance(Int_t i) const;
+    Double_t GetZ(std::string n) const;
+    Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
+    Double_t GetDistance(std::string n) const;
     void Print() const;
   };
 
@@ -135,31 +140,35 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson jet
-  /// information in a very compact data structure (45 bits)
+  /// information in a very compact data structure (49 bits)
   class AliJetInfoSummary {
   public:
     AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
-    AliJetInfoSummary(const AliDmesonJetInfo& source, UInt_t i);
+    AliJetInfoSummary(const AliDmesonJetInfo& source, std::string n);
 
-    virtual void Set(const AliDmesonJetInfo& source, UInt_t i);
+    virtual void Set(const AliDmesonJetInfo& source, std::string n);
 
     /// Transverse momentum of the jet in GeV/c
     Double32_t  fPt        ; //[0,200,12]
     /// Eta of the jet
-    Double32_t  fEta       ; //[-2,2,8]
+    Double32_t  fEta       ; //[-2,2,10]
     /// Phi of the jet
-    Double32_t  fPhi       ; //[0,2*pi,8]
+    Double32_t  fPhi       ; //[0,2*pi,10]
     /// Distance between D meson and jet axis
     Double32_t  fR         ; //[0,2,7]
     /// Z of the D meson
     Double32_t  fZ         ; //[0,1,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliJetInfoSummary, 1);
+    /// \endcond
   };
 
   /// \class AliDmesonInfoSummary
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson
-  /// information in a very compact data structure (28 bits)
+  /// information in a very compact data structure (30 bits)
   class AliDmesonInfoSummary {
   public:
     AliDmesonInfoSummary() : fPt(0), fEta(0), fPhi(0) {;}
@@ -170,16 +179,20 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     /// Transverse momentum of the D meson in GeV/c
     Double32_t   fPt     ; //[0,200,12]
     /// Eta of the jet
-    Double32_t   fEta    ; //[-2,2,8]
+    Double32_t   fEta    ; //[-2,2,9]
     /// Phi of the jet
-    Double32_t   fPhi    ; //[0,2*pi,8]
+    Double32_t   fPhi    ; //[0,2*pi,9]
+
+    /// \cond CLASSIMP
+    ClassDef(AliDmesonInfoSummary, 1);
+    /// \endcond
   };
 
   /// \class AliD0InfoSummary
   /// \brief Lightweight class that encapsulates D0
   ///
   /// This class encapsulates D0 jet
-  /// information in a very compact data structure (40 bits)
+  /// information in a very compact data structure (42 bits)
   class AliD0InfoSummary : public AliDmesonInfoSummary {
   public:
     AliD0InfoSummary() : AliDmesonInfoSummary(), fInvMass(0) {}
@@ -189,13 +202,17 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 
     /// Invariant mass of the D0 meson candidate in GeV/c2
     Double32_t   fInvMass   ; //[0,5,12]
+
+    /// \cond CLASSIMP
+    ClassDef(AliD0InfoSummary, 1);
+    /// \endcond
   };
 
   /// \class AliDStarJetInfoSummary
   /// \brief Lightweight class that encapsulates D*
   ///
   /// This class encapsulates D*
-  /// information in a very compact data structure (52 bits)
+  /// information in a very compact data structure (54 bits)
   class AliDStarInfoSummary : public AliDmesonInfoSummary {
   public:
     AliDStarInfoSummary() : AliDmesonInfoSummary(), f2ProngInvMass(0), fDeltaInvMass(0) {}
@@ -207,6 +224,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Double32_t   f2ProngInvMass   ; //[0,5,12]
     ///< Difference between the Kpipi and the Kpi invariant masses in GeV/c2
     Double32_t   fDeltaInvMass    ; //[0,1,12]
+
+    /// \cond CLASSIMP
+    ClassDef(AliDStarInfoSummary, 1);
+    /// \endcond
   };
 
   class AliHFJetDefinition : public TObject {
@@ -218,6 +239,15 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     AliHFJetDefinition& operator=(const AliHFJetDefinition& source);
 
     const char* GetName() const;
+
+    void SetJetPhiRange(Double_t min, Double_t max)       { fMinJetPhi    = min; fMaxJetPhi    = max; }
+    void SetJetEtaRange(Double_t min, Double_t max)       { fMinJetEta    = min; fMaxJetEta    = max; }
+    void SetJetPtMin(Double_t min)                        { fMinJetPt     = min;                      }
+    void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
+    void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
+    void SetAcceptanceType(EJetAcceptanceType_t a)        { fAcceptance   = a  ;                      }
+
+    Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
 
     friend bool        operator< (const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
     friend inline bool operator> (const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return rhs < lhs    ; }
@@ -231,14 +261,26 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     friend class AliAnalysisTaskDmesonJets;
     friend class AnalysisEngine;
 
+    void                      SetDetectorJetEtaPhiRange(const AliEMCALGeometry* const geom, Int_t run);
+
     EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
     Double_t                  fRadius        ; ///<  Jet radius
     EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
     ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
+    EJetAcceptanceType_t      fAcceptance    ; ///<  Jet acceptance
+    Double_t                  fMinJetPt      ; ///<  Minimum jet pT
+    Double_t                  fMinJetPhi     ; ///<  Minimum jet phi
+    Double_t                  fMaxJetPhi     ; ///<  Maximum jet phi
+    Double_t                  fMinJetEta     ; ///<  Minimum jet eta
+    Double_t                  fMaxJetEta     ; ///<  Maximum jet eta
+    Double_t                  fMinChargedPt  ; ///<  Minimum pt of the leading charged particle (or track)
+    Double_t                  fMaxChargedPt  ; ///<  Maximum pt of the leading charged particle (or track)
+    Double_t                  fMinNeutralPt  ; ///<  Minimum pt of the leading neutral particle (or cluster)
+    Double_t                  fMaxNeutralPt  ; ///<  Maximum pt of the leading neutral particle (or cluster)
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliHFJetDefinition, 1);
+    ClassDef(AliHFJetDefinition, 2);
     /// \endcond
   };
 
@@ -274,7 +316,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     AliHFJetDefinition* AddJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
     AliHFJetDefinition* AddJetDefinition(const AliHFJetDefinition& def);
     std::vector<AliHFJetDefinition>::iterator FindJetDefinition(const AliHFJetDefinition& eng);
+    std::vector<AliAnalysisTaskDmesonJets::AliHFJetDefinition>& GetJetDefinitions() { return fJetDefinitions; }
+    Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
 
+    void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
     TTree* BuildTree();
     TTree* GetTree() { return fTree; }
     Bool_t FillTree();
@@ -367,7 +412,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
 
   AliRDHFCuts*         LoadDMesonCutsFromFile(TString cutfname, TString cutsname);
   void                 AllocateTHnSparse(const AnalysisEngine& param);
-  void                 FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, Int_t ij);
+  void                 FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
   
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
