@@ -3196,11 +3196,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     Int_t largeTimeInCellCluster = kFALSE;
     FillShowerShapeHistograms(calo,tag,maxCellFraction,largeTimeInCellCluster);
-    aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container
+    aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
     //if(largeTimeInCellCluster > 1) printf("Set n cells large time %d, pt %2.2f\n",aodph.GetFiducialArea(),aodph.Pt());
     
     aodph.SetM02(calo->GetM02());
-    //aodph.SetM20(calo->GetM20());
+    aodph.SetM20(calo->GetM20());
     aodph.SetNLM(nMaxima);
     
     Float_t time = calo->GetTOF()*1e9;
