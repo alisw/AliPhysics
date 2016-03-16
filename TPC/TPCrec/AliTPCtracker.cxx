@@ -767,8 +767,8 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
-  Double_t angle = seed->GetSnp()*seed->GetSnp();
-  angle = TMath::Sqrt(TMath::Abs(angle/(1.-angle)));
+  double   angle2 = seed->GetSnp()*seed->GetSnp();
+  double   angle = TMath::Sqrt(TMath::Abs(angle2/(1.f-angle2)));
   Double_t erry2 = clparam->GetError0Par(0,type, z,angle);
   if (ctype<0) {
     erry2+=0.5;  // edge cluster
@@ -778,16 +778,19 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
   const Double_t *errInnerDeep = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepY();
   double dr = TMath::Abs(cl->GetX()-85.);
-  addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
+  if (errInner[0]>0) addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
   if (errInnerDeep[0]>0) addErr += errInnerDeep[0]*TMath::Exp(-dr/errInnerDeep[1]);
   erry2+=addErr*addErr;
+
   const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
   erry2+=errCluster[0]*errCluster[0];
   //
   double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorY();
   if (useDist>0) {
-    useDist *= cl->GetDistortionY();
-    erry2 += useDist*useDist;
+    float dstY = cl->GetDistortionY()*useDist;
+    float dstX = cl->GetDistortionX()*useDist;
+    float errDist2 = dstY*dstY +angle2*dstX*dstX;
+    erry2 += dstY*dstY +angle2*dstX*dstX;
   }
   seed->SetErrorY2(erry2);
   //
@@ -933,7 +936,7 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
   //
-  Double_t angle2 = seed->GetSnp()*seed->GetSnp();
+  double angle2 = seed->GetSnp()*seed->GetSnp();
   angle2 = seed->GetTgl()*seed->GetTgl()*(1+angle2/(1-angle2)); 
   Double_t angle = TMath::Sqrt(TMath::Abs(angle2));
   Double_t errz2 = clparam->GetError0Par(1,type, z,angle);
@@ -945,7 +948,7 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
   const Double_t *errInnerDeepZ = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepZ();
   double dr = TMath::Abs(cl->GetX()-85.);
-  addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
+  if (errInner[0]>0)      addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
   if (errInnerDeepZ[0]>0) addErr += errInnerDeepZ[0]*TMath::Exp(-dr/errInnerDeepZ[1]);
   errz2+=addErr*addErr;
   const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ? AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
@@ -953,8 +956,9 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorZ();
   if (useDist>0) {
-    useDist *= cl->GetDistortionZ();
-    errz2 += useDist*useDist;
+    float dstZ = cl->GetDistortionZ()*useDist;
+    float dstX = cl->GetDistortionX()*useDist*seed->GetTgl();
+    errz2 += dstZ*dstZ+dstX*dstX;
   }
   seed->SetErrorZ2(errz2);
   //
@@ -1987,7 +1991,10 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   Int_t idROC = cluster->GetDetector();
   transform->Transform(x,&idROC,0,1);
   const float* clCorr = transform->GetLastMapCorrection();
-  cluster->SetDistortions(clCorr[0],clCorr[1],clCorr[2]); // memorize distortions
+  const float* clCorrRef = transform->GetLastMapCorrectionRef();
+  cluster->SetDistortions(clCorr[0]-clCorrRef[0],
+			  clCorr[1]-clCorrRef[1],
+			  clCorr[2]-clCorrRef[2]); // memorize distortions (difference to reference one)
   //
   // in debug mode  check the transformation
   //

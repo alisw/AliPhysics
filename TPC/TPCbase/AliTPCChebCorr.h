@@ -35,6 +35,7 @@
 class AliTPCChebCorr : public TNamed
 {
  public:
+  enum {kFieldAny, kFieldPos, kFieldNeg, kFieldZero};
   enum {kNSectors=18,kNSectorsIROC=2*kNSectors,kNRows=159,kNRowsIROC=63,kMaxIROCSector=kNSectorsIROC-1};
   enum {kParamDone=BIT(14), // parameterization done
 	kUseParF=BIT(15),   // if ON - internal FLOAT representation, otherwise - SHORT
@@ -47,6 +48,8 @@ class AliTPCChebCorr : public TNamed
   AliTPCChebCorr();
   AliTPCChebCorr(const char* name, const char* title, int nps=1,int nzs=1, float zmaxAbs=250, float deadZone=1.5, const float *xi=0);
   virtual ~AliTPCChebCorr();
+  Int_t    GetFieldType()                        const {return fFieldType;}
+  void     SetFieldType(Char_t t=kFieldAny)            {fFieldType = t;}
   void     Parameterize(stFun_t fun,int dimOut,const int np[2], const float *prec=0);
   void     Parameterize(stFun_t fun,int dimOut,const int np[][2], const float *prec=0);
   void     SetBinning(int nps=1,int nzs=1, float zmxAbs=250);
@@ -90,6 +93,7 @@ class AliTPCChebCorr : public TNamed
   int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
   //
  protected:
+  Char_t   fFieldType;              // info about the field type
   Int_t    fNRows;                  // number of slices along the radius (e.g. rows)
   Int_t    fNStacksSect;            // number of stacks per sector in phi
   Int_t    fNStacksZSect;           // number of stacks per sector (side) in Z 
@@ -111,12 +115,13 @@ class AliTPCChebCorr : public TNamed
   //
   static const float fgkY2XHSpan;   // half span of sector
   static const float fgkPadRowX[];  // nominal rows
+  static const char* fgkFieldTypeName[]; // names of field types
  protected:
   //
   AliTPCChebCorr(const AliTPCChebCorr& src);            // dummy
   AliTPCChebCorr& operator=(const AliTPCChebCorr& rhs); // dummy
   //
-  ClassDef(AliTPCChebCorr,3)
+  ClassDef(AliTPCChebCorr,4)
 };
 
 //_________________________________________________________________

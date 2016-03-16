@@ -21,6 +21,8 @@
 
 ClassImp(AliTPCChebCorr)
 
+const char* AliTPCChebCorr::fgkFieldTypeName[4] = {"Any","B>0"," B<0","B=0"};
+
 const float AliTPCChebCorr::fgkY2XHSpan = TMath::Tan(TMath::Pi()/18);
 
 const float AliTPCChebCorr::fgkPadRowX[AliTPCChebCorr::kNRows] = {
@@ -40,6 +42,7 @@ const float AliTPCChebCorr::fgkPadRowX[AliTPCChebCorr::kNRows] = {
 //____________________________________________________________________
 AliTPCChebCorr::AliTPCChebCorr()
   : TNamed()
+  ,fFieldType(kFieldAny)
   ,fNRows(0)
   ,fNStacksSect(0)
   ,fNStacksZSect(0)
@@ -61,6 +64,7 @@ AliTPCChebCorr::AliTPCChebCorr()
 AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title, 
 			       int nps, int nzs, float zmaxAbs, float deadZone, const float *xrow)
   : TNamed(name,title)
+  ,fFieldType(kFieldAny)
   ,fNRows(kNRows)
   ,fNStacksSect(0)
   ,fNStacksZSect(0)
@@ -214,8 +218,8 @@ void AliTPCChebCorr::Print(const Option_t* opt) const
   printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector. DeadZone: %.1fcm\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
 	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect,fDeadZone);
-  printf("Time span: %ld:%ld TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
-	 GetTimeDependent() ? "ON":"OFF");
+  printf("Time span: %ld:%ld TimeDependent flag: %s Field type: %s\n",fTimeStampStart,fTimeStampEnd,
+	 GetTimeDependent() ? "ON ":"OFF", fgkFieldTypeName[fFieldType]);
   TString opts = opt; opts.ToLower();
   if (opts.Contains("p") && TestBit(kParamDone)) {
     for (int iz=0;iz<fNStacksZ;iz++) {
