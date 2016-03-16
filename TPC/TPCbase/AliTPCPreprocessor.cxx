@@ -608,9 +608,9 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   TMap *map = fHighVoltage->ExtractDCS(dcsAliasMap);
   if (map) {
     fHighVoltage->ClearFit();
+    fHighVoltage->SetGraph(map);
     fHighVoltage->RemoveGraphDuplicates(kHighVoltageDifference);
                // don't keep new point if too similar to previous one
-    fHighVoltage->SetGraph(map);
   } else {
     Log("No high voltage recordings extracted. \n");
     result=9;
@@ -698,9 +698,9 @@ UInt_t AliTPCPreprocessor::MapGasComposition(TMap* dcsAliasMap)
   TMap *map = fGasComposition->ExtractDCS(dcsAliasMap);
   if (map) {
     fGasComposition->ClearFit();
+    fGasComposition->SetGraph(map);
     fGasComposition->RemoveGraphDuplicates(kGasCompositionDifference);
                // don't keep new point if too similar to previous one
-    fGasComposition->SetGraph(map);
   } else {
     Log("No gas composition recordings extracted. \n");
     result=9;
