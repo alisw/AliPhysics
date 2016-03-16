@@ -145,7 +145,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   // setup calibration component
   //
 
-  Bool_t useQmax = (grpData->GetBeamType()).Contains("Pb-Pb");
+  Bool_t useQmax = (grpData->GetBeamType()).Contains("Pb-Pb") || (grpData->GetBeamType()).Contains("A-A");
 
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain(name,"calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 10*60);
@@ -314,7 +314,6 @@ void SetupCalibTaskTrain1(TObject* task){
   AddCalibAlignInterpolation(task);
 }
 
-
 void SetupCalibTaskTrainAlign(TObject* task){
   //
   // Setup tasks for calibration train
@@ -323,14 +322,12 @@ void SetupCalibTaskTrainAlign(TObject* task){
   AddCalibLaser(task);
 }
 
-
 void SetupCalibTaskTrainCluster(TObject* task){
   //
   // Setup tasks for calibration train
   //
   AddCalibTracks(task);
 }
-
 
 //_____________________________________________________________________________
 void ConfigOCDB(Int_t run){
@@ -378,33 +375,58 @@ void ConfigOCDB(Int_t run){
   // 0 - Low Flux (pp), 1- High Flux (Pb-Pb)
   Int_t fluxType=0;
   if (beamType.Contains("p-p")) {fluxType=0;}
-  if (beamType.Contains("A-A")) {fluxType=1;}
+  if (beamType.Contains("Pb-Pb") || beamType.Contains("A-A")) {fluxType=1;}
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
   ::Info("AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
 
-  // enabling the Gain correction in CPass1, same settings as in CPass0 are used
-  tpcRecoParam->SetUseGainCorrectionTime(0);
-  tpcRecoParam->SetUseRPHICorrection(kFALSE); 
-  tpcRecoParam->SetUseTOFCorrection(kFALSE);
-  tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
+  // ===| set up gain calibration type |========================================
+  //
+  // default is Combined Calibration + Residual QA in CPass1
+  // will be overwritte by recCPass1.sh
+  // NOTE: This must be consistent to the settings in mergeMakeOCDB.byComponent.perStage.sh (makeOCDB.C)
+  //
+  AliTPCPreprocessorOffline::EGainCalibType tpcGainCalibType=AliTPCPreprocessorOffline::kResidualGainQA;
 
-  // for the rest, in CPass1 use a default setting
-//   //
-//   tpcRecoParam->SetUseDriftCorrectionTime(0);
-//   tpcRecoParam->SetUseDriftCorrectionGY(0);
-//   //
-//   tpcRecoParam->SetUseRadialCorrection(kFALSE);
-//   tpcRecoParam->SetUseQuadrantAlignment(kFALSE);
-//   //
-//   tpcRecoParam->SetUseSectorAlignment(kFALSE);
-//   tpcRecoParam->SetUseFieldCorrection(kFALSE);
-//   tpcRecoParam->SetUseExBCorrection(kFALSE);
-//   //
-//   tpcRecoParam->SetUseAlignmentTime(kFALSE);
-//   tpcRecoParam->SetUseComposedCorrection(kTRUE);
+  // --- check for overwrites from environment variable
+  //
+  const TString sGainTypeFromEnv(gSystem->Getenv("TPC_CPass1_GainCalibType"));
+  if (!sGainTypeFromEnv.IsNull()) {
+    const AliTPCPreprocessorOffline::EGainCalibType tpcGainCalibTypeEnv=AliTPCPreprocessorOffline::GetGainCalibrationTypeFromString(sGainTypeFromEnv);
+    if (tpcGainCalibTypeEnv==AliTPCPreprocessorOffline::kNGainCalibTypes) {
+      ::Fatal("AddTaskTPCCalib","Could not set up gain calibration type from environment variable TPC_CPass1_GainCalibType: %s",sGainTypeFromEnv.Data());
+    }
 
-  AliTPCcalibDB::Instance()->SetRun(run); 
+    ::Info("AddTaskTPCCalib","Setting gain calibration type from environment variable TPC_CPass1_GainCalibType: %d", tpcGainCalibTypeEnv);
+    tpcGainCalibType=tpcGainCalibTypeEnv;
+  }
+
+  if (tpcGainCalibType==AliTPCPreprocessorOffline::kFullGainCalib) {
+    tpcRecoParam->SetUseGainCorrectionTime(0);
+    tpcRecoParam->SetUseRPHICorrection(kFALSE);
+    tpcRecoParam->SetUseTOFCorrection(kFALSE);
+    tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
+    tpcRecoParam->SetCorrectionHVandPTMode(1);
+  }
+
+  // ===| For the rest, in CPass1 use a default setting |=======================
+  //
+// tpcRecoParam->SetUseDriftCorrectionTime(0);
+// tpcRecoParam->SetUseDriftCorrectionGY(0);
+// //
+// tpcRecoParam->SetUseRadialCorrection(kFALSE);
+// tpcRecoParam->SetUseQuadrantAlignment(kFALSE);
+// //
+// tpcRecoParam->SetUseSectorAlignment(kFALSE);
+// tpcRecoParam->SetUseFieldCorrection(kFALSE);
+// tpcRecoParam->SetUseExBCorrection(kFALSE);
+// //
+// tpcRecoParam->SetUseAlignmentTime(kFALSE);
+// tpcRecoParam->SetUseComposedCorrection(kTRUE);
+
+  // ===| Initialise AliTPCcalibDB |============================================
+  //
+  AliTPCcalibDB::Instance()->SetRun(run);
 }
