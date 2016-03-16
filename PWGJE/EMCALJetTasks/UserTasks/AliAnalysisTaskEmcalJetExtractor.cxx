@@ -202,7 +202,7 @@ Bool_t AliAnalysisTaskEmcalJetExtractor::Run()
     }
     else if( (fExtractionType==1) || (fExtractionType==2) )// AliBasicJet
     {
-      AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fJetsCont->GetRhoVal(), eventID);
+      AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fJetsCont->GetRhoVal(), eventID, fCent);
       if(fExtractionType==1)
         fJetBuffer = &basicJet;
       else if(fExtractionType==2) // AliBasicJet w/ constituents
