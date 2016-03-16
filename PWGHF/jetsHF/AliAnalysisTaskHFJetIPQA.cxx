@@ -2388,21 +2388,21 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 		if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
 	}
 
-	if(pPdgcode == bProton && 	mcpart->IsPhysicalPrimary() ){
+	if(pPdgcode == bProton && 	isprim ){
 		//Is Primary proton
 		found = kTRUE;
 		foundPdg =bProton;
 		correctionidx = bIdxProton;
 		pTWeight =mcpart->Pt();
 	}
-	else if(pPdgcode == bPi&& 	mcpart->IsPhysicalPrimary() ){
+	else if(pPdgcode == bPi&& 	isprim){
 		//Is Primary charged pion
 		found = kTRUE;
 		foundPdg =bPi;
 		correctionidx = bIdxPi;
 		pTWeight =mcpart->Pt();
 	}
-	else if(pPdgcode == bKaon&& 	mcpart->IsPhysicalPrimary() ){
+	else if(pPdgcode == bKaon&& 	isprim ){
 		//Is Primary charged kaon
 		found = kTRUE;
 		pTWeight =mcpart->Pt();
@@ -2451,11 +2451,11 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 	// 0.1 -25.GeV 0.05 per bin 498 bins
 
 	double wpos = ((pTWeight - 0.15)/ 0.05);
+
 	double  fractpart, intpart;
 	fractpart = modf (wpos , &intpart);
 	if (fractpart > 0) intpart = intpart + 1;
 	int  bin = floor(intpart);
-
 	if (bin > 497) bin = 497;			// above weight definition
 	if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
 
@@ -2491,25 +2491,25 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * pa
 
 	if(pcodemoth==bPi0){
 		if(codemoth == bK0s) return kTRUE;
-		else if(codemoth == bK0l) return kTRUE;
-		else if(TMath::Abs(codemoth) == bKaon) return kTRUE;
-		else if(TMath::Abs(codemoth) == bLambda) return kTRUE;
-		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
-	}
+		if(codemoth == bK0l) return kTRUE;
+		if(TMath::Abs(codemoth) == bKaon) return kTRUE;
+		if(TMath::Abs(codemoth) == bLambda) return kTRUE;
+		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113 || codemoth == bRhoPlus) return kTRUE;
+		}
 	else if (pcodemoth==bPhi){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113) return kTRUE;
+		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bOmega){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
+		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bEtaPrime){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113) return kTRUE;
+		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bRho){
-		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331) return kTRUE;
+		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bEta){
-		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;    }
+		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;    }
 	return kFALSE;
 }
 
@@ -2519,16 +2519,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart
 	pT = mcpart->Pt();
 	switch(pdg){
 	case bPi0:
-
-		if(!IsSecondaryFromWeakDecay(mcpart) && !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart) ){
 			idx = bIdxPi0;
 			return kTRUE;
-
 		}
 
 		break;
 	case bEta:
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart) ){
 			idx = bIdxEta;
 			return kTRUE;
 
@@ -2536,30 +2534,27 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart
 
 		break;
 	case bEtaPrime:
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart) ){
 			idx = bIdxEtaPrime;
 			return kTRUE;
 		}
-
 		break;
 	case bOmega:
 		idx = bIdxOmega;
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart)){
 			return kTRUE;
 		}
-
 		break;
 	case bPhi:
 		idx = bIdxPhi;
-
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart)){
 			return kTRUE;
 		}
 
 		break;
 	case bRho:
 		idx = bIdxRho;
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart)){
 			return kTRUE;
 		}
 		break;
