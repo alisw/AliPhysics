@@ -27,7 +27,7 @@ Trigger types used: PHYSICS_EVENT CALIBRATION_EVENT
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
-#define OFFLINE
+//#define OFFLINE
 
 extern "C" {
 #include <daqDA.h>
