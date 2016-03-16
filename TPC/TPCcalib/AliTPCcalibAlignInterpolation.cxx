@@ -846,10 +846,13 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
   Bool_t autoCache = kFALSE;
   if (gSystem->Getenv("autoCacheSize")) {
-    Printf("env variable autoCacheSize = %s", TString(gSystem->Getenv("autoCacheSize")).Data());
     autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
   }
-  Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
+  Int_t cacheLearnEntries = 1;
+  if (gSystem->Getenv("cacheLearnEntriesProjection")) {
+    cacheLearnEntries = TString(gSystem->Getenv("cacheLearnEntriesProjection")).Atoi();
+  }
+  Printf("************* cacheSize = %d, autoCache = %d, cacheLearnEntries = %d", cacheSize, (Int_t)autoCache, cacheLearnEntries);
 
   const Int_t kNDim1 = kNDim-1;
   const Double_t kernelSigma2I[4]={1./0.25,1./0.25,1./0.25,1./0.25};  // inverse kernel sigma in bin width units
@@ -978,7 +981,10 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       TFile *esdFile = TFile::Open(fileNameString.Data(),"read");
       if (!esdFile) continue;
       TTree *tree = (TTree*)esdFile->Get("delta");
-      if (!autoCache) tree->SetCacheSize(cacheSize);
+      if (!autoCache) {
+	tree->SetCacheSize(cacheSize);
+	tree->SetCacheLearnEntries(cacheLearnEntries);
+      }
       tree->SetBranchStatus("*",kFALSE);
       if (!tree) continue;
       ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain", "Processing file \t %s\n",esdArray->At(iesd)->GetName());
@@ -1048,6 +1054,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       if (!autoCache) {
 	tree->SetCacheSize(0);
 	tree->SetCacheSize(cacheSize);
+	tree->SetCacheLearnEntries(cacheLearnEntries);
 	tree->AddBranchToCache("*", kTRUE);
       }
       //
@@ -1443,15 +1450,21 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
   if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
   Bool_t autoCache = kFALSE;
   if (gSystem->Getenv("autoCacheSize")) autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
-  Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
+  Int_t cacheLearnEntries = 1;
+  if (gSystem->Getenv("cacheLearnEntriesStatInfo")) {
+    cacheLearnEntries = TString(gSystem->Getenv("cacheLearnEntriesStatInfo")).Atoi();
+  }
+  Printf("************* cacheSize = %d, autoCache = %d, cacheLearnEntries = %d", cacheSize, (Int_t)autoCache, cacheLearnEntries);
 
   TChain * chainInfo  = AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1);
   if (!autoCache) {
     chainInfo->SetCacheSize(cacheSize);
+    chainInfo->SetCacheLearnEntries(cacheLearnEntries);
   }
   TChain * chainTracks  = AliXRDPROOFtoolkit::MakeChain("residual.list","delta",0,-1);
   if (!autoCache) {
     chainTracks->SetCacheSize(cacheSize);
+    chainTracks->SetCacheLearnEntries(cacheLearnEntries);
   }
   //
   Int_t gidRounding=128;                        // git has to be rounded
@@ -1534,6 +1547,7 @@ void AliTPCcalibAlignInterpolation::MakeEventStatInfo(const char * inputList, In
     if (treeInfo==NULL) continue;
     if (!autoCache) {
       treeInfo->SetCacheSize(cacheSize);
+      treeInfo->SetCacheLearnEntries(cacheLearnEntries);
     }
     treeInfo->SetBranchAddress("vecNClTPC.",&vecNClTPC);
     treeInfo->SetBranchAddress("vecNClTPCused.",&vecNClTPCused);
@@ -1688,7 +1702,12 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   if (gSystem->Getenv("treeCacheSize")) cacheSize=TString(gSystem->Getenv("treeCacheSize")).Atoi();
   Bool_t autoCache = kFALSE;
   if (gSystem->Getenv("autoCacheSize")) autoCache = Bool_t(TString(gSystem->Getenv("autoCacheSize")).Atoi());
-  Printf("************* cacheSize = %d, autoCache = %d", cacheSize, (Int_t)autoCache);
+  Int_t cacheLearnEntries = 1;
+  if (gSystem->Getenv("cacheLearnEntriesVDrift")) {
+    cacheLearnEntries = TString(gSystem->Getenv("cacheLearnEntriesVDrift")).Atoi();
+  }
+  Printf("************* cacheSize = %d, autoCache = %d, cacheLearnEntries = %d", cacheSize, (Int_t)autoCache, cacheLearnEntries);
+
   //
   //
   if (deltaT<=0 || sigmaT<=0){
@@ -1701,6 +1720,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   if (!autoCache) {
     chainDelta->SetCacheSize(0);
     chainDelta->SetCacheSize(cacheSize);
+    chainDelta->SetCacheLearnEntries(cacheLearnEntries);
   }
   AliSysInfo::AddStamp("FitDrift.chainDeltaGetEntriesBegin",1,0,0);
   entriesAll = chainDelta->GetEntries();
@@ -1717,7 +1737,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     TChain * chainInfo=  AliXRDPROOFtoolkit::MakeChain("residual.list","eventInfo",0,-1); 
     if (!autoCache) {
       chainInfo->SetCacheSize(cacheSize);
-      chainInfo->SetCacheLearnEntries(1);
+      chainInfo->SetCacheLearnEntries(cacheLearnEntries);
     }
     //    chainInfo->SetEstimate(-1); // i cashed here -1 does not work
     chainInfo->SetEstimate(maxEntries); // i cashed here -1 does not work
