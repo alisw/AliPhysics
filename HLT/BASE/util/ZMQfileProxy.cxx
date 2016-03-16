@@ -76,15 +76,15 @@ int fNumberOfTObjectsInMessage=0;
 ULong64_t iterations=0;
 
 const char* fUSAGE = 
-    "ZMQfileSink: dump contents of a multipart message into a file\n"
+    "ZMQfileProxy: proxy between a (multi-part) message and a ROOT file (sink/source)\n"
     "options: \n"
     " -in : data in (can be file://)\n"
     " -out : data out (can be file://)\n"
-    " -sleep : how long to sleep in between requests for data in s (if applicable) (-1 means dump just once)\n"
-    " -once : write one file and exit (same as -sleep=-1)"
-    " -timeout : how long to wait for the server to reply (s)\n"
+    " -sleep : how long to sleep in between requests for data in/out (s) (if applicable) (-1 means send/dump once and exit)\n"
+    " -once : write one file (send contents of one file) and exit (same as -sleep=-1)\n"
+    " -timeout : how long to wait for the server (when using a REQ socket) to reply before retrying (s)\n"
     " -Verbose : be verbose\n"
-    " -select : request selected objects (by regexp)\n"
+    " -select : request selected objects by name with a (perl compatible-) regexp\n"
     " -unselect : as select, only inverted\n"
     ;
 
