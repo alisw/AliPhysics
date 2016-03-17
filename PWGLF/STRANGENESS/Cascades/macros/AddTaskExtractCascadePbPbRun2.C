@@ -1,4 +1,4 @@
-AliAnalysisTaskExtractCascadePbPbRun2 *AddTaskExtractCascade( const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskExtractCascadePbPbRun2 *AddTaskExtractCascadePbPbRun2( const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
