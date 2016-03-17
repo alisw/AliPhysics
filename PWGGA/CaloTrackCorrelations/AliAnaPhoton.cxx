@@ -3443,13 +3443,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             if ( fFillSSHistograms )
             {
               Float_t m02 = ph->GetM02();
-              Float_t m20 = 0;//ph->GetM20();
+              Float_t m20 = ph->GetM20();
               
-              // Change when possible
-              Int_t iclus = -1;
-              AliVCluster *cluster = FindCluster(GetEMCALClusters(),ph->GetCaloLabel(0),iclus);
-              if(cluster) m20 = cluster->GetM20();
-
               Int_t convR = -1;
               if      ( prodR < 75.  ) convR = 0;
               else if ( prodR < 275. ) convR = 1;
