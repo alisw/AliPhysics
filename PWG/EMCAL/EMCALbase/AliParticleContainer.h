@@ -1,5 +1,7 @@
 #ifndef ALIPARTICLECONTAINER_H
 #define ALIPARTICLECONTAINER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 #include <iterator>
 #include <TArrayI.h>
@@ -14,6 +16,10 @@ class AliTLorentzVector;
  * @class AliParticleContainer
  * @brief Container for particles within the EMCAL framework
  * @ingroup EMCALCOREFW
+ * @author Martha Verweij
+ * @author Salvatore Aiola
+ *
+ * Container with name, TClonesArray and cuts for particles
  */
 class AliParticleContainer : public AliEmcalContainer {
  public:

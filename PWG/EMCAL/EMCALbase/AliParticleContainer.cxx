@@ -1,8 +1,17 @@
-//
-// Container with name, TClonesArray and cuts for particles
-#include <algorithm>
-//
-// Author: M. Verweij, S. Aiola
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -18,35 +27,39 @@
 ClassImp(AliParticleContainer)
 /// \endcond
 
-//________________________________________________________________________
+/**
+ * Default constructor.
+ */
 AliParticleContainer::AliParticleContainer():
   AliEmcalContainer(),
   fMinDistanceTPCSectorEdge(-1),
   fCharge(-1),
   fGeneratorIndex(-1)
 {
-  // Default constructor.
-
   fClassName = "AliVParticle";
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor.
+ * @param name
+ */
 AliParticleContainer::AliParticleContainer(const char *name) :
   AliEmcalContainer(name),
   fMinDistanceTPCSectorEdge(-1),
   fCharge(-1),
   fGeneratorIndex(-1)
 {
-  // Standard constructor.
-
   fClassName = "AliVParticle";
 }
 
-//________________________________________________________________________
+/**
+ * Get the leading particle in the container. If "p" is contained in the parameter opt,
+ * then the absolute momentum is use instead of the transverse momentum.
+ * @param[in] opt Options for the selection of the leading particle
+ * @return Leading particle in the container
+ */
 AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt) 
 {
-  // Get the leading particle; use p if "p" is contained in opt
-
   TString option(opt);
   option.ToLower();
 
@@ -72,21 +85,28 @@ AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt)
   return partMax;
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$ i^{th} \f$ particle in the container.
+ * @param[in] i Index of the particle to access
+ * @return Parrticle at the given index (NULL if the index is out of range)
+ */
 AliVParticle* AliParticleContainer::GetParticle(Int_t i) const 
 {
-  //Get i^th jet in array
-
+  //
   if (i == -1) i = fCurrentID;
   if (i < 0 || i >= this->fClArray->GetEntriesFast()) return 0;
   AliVParticle *vp = static_cast<AliVParticle*>(fClArray->At(i));
   return vp;
 }
 
-//________________________________________________________________________
+/**
+ * Get \f$ i^{th} \f$ particle in the container if it is accepted.
+ * In case it is not accepted a nullpointer is returned.
+ * @param[in] i Index of the particle
+ * @return Particle at the index if it is accepted, NULL otherwise
+ */
 AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const
 {
-  //return pointer to particle if particle is accepted
   UInt_t rejectionReason = 0;
   if (i == -1) i = fCurrentID;
   if (AcceptParticle(i, rejectionReason)) {
@@ -98,11 +118,14 @@ AliVParticle* AliParticleContainer::GetAcceptParticle(Int_t i) const
   }
 }
 
-//________________________________________________________________________
+/**
+ * Iterator over accepted particles in the container. Get the next accepted
+ * particle in the array. If the end is reached, NULL is returned.
+ * @deprecated Only for backward compatibility - use accept_iterator instead
+ * @return Next accepted particle in the array (NULL if the end is reached)
+ */
 AliVParticle* AliParticleContainer::GetNextAcceptParticle()
 {
-  //Get next accepted particle
-
   const Int_t n = GetNEntries();
   AliVParticle *p = 0;
   do {
@@ -114,11 +137,14 @@ AliVParticle* AliParticleContainer::GetNextAcceptParticle()
   return p;
 }
 
-//________________________________________________________________________
+/**
+ * Iterator over all particles in the container. Get the next particle in
+ * the array. If the end is reached, NULL is returned.
+ * @deprecated Only for backward compatibility - use all_iterator instead.
+ * @return Next particle in the array (NULL if the end is reached)
+ */
 AliVParticle* AliParticleContainer::GetNextParticle()
 {
-  //Get next particle
-
   const Int_t n = GetNEntries();
   AliVParticle *p = 0;
   do {
@@ -130,7 +156,15 @@ AliVParticle* AliParticleContainer::GetNextParticle()
   return p;
 }
 
-//________________________________________________________________________
+/**
+ * Retrieve momentum information of a particle (part) and fill a TLorentzVector
+ * with it. In case the optional parameter mass is provided, it is used as mass
+ * hypothesis, otherwise the mass hypothesis from the particle itself is used.
+ * @param[out] mom Momentum vector to be filled
+ * @param[in] part Particle from which the momentum information is obtained.
+ * @param[in] mass (Optional) Mass hypothesis
+ * @return
+ */
 Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
 {
   if (part) {
@@ -144,17 +178,29 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle
   }
 }
 
-//________________________________________________________________________
+/**
+ * Fills a TLorentzVector with the momentum information of the particle provided
+ * under a global mass hypothesis.
+ * @param[out] mom Momentum vector of the particle provided
+ * @param[in] part Particle from which to obtain the momentum information
+ * @return Always true
+ */
 Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part) const
 {
   return GetMomentum(mom,part,fMassHypothesis);
 }
 
-//________________________________________________________________________
+/**
+ * Fills a TLorentzVector with the monentum infomation of the
+ * \f$ i^{th} \f$ particle in the container, using a global
+ * mass hypothesis. In case the provided index is out of
+ * range, false is returned as return value.
+ * @param[out] mom Momentum vector of the \f$ i^{th} \f$ particle in the array
+ * @param[in] i Index of th particle to check
+ * @return True if the request was successfull, false otherwise
+ */
 Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
-  //Get momentum of the i^th particle in array
-
   Double_t mass = fMassHypothesis;
 
   if (i == -1) i = fCurrentID;
@@ -170,11 +216,17 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
   }
 }
 
-//________________________________________________________________________
+/**
+ * Fills a TLorentzVector with the monentum infomation of the
+ * next particle in the container, using a global mass hypothesis.
+ * In case the iterator reached the end of the array, false
+ * is returned as return value.
+ * @deprecated Old style iterator - use all_iterator instead
+ * @param[out] mom Momentum vector of the next particle
+ * @return True if the request was successfull, false otherwise
+ */
 Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the next particle in array
-
   Double_t mass = fMassHypothesis;
 
   AliVParticle *vp = GetNextParticle();
@@ -189,11 +241,18 @@ Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Fills a TLorentzVector with the monentum infomation of the
+ * \f$ i^{th} \f$ accepted particle in the container, using a
+ * global mass hypothesis. In case the provided index is out of
+ * range, or the particle under the index is not accepted, false
+ * is returned as return value.
+ * @param[out] mom Momentum vector of the accepted particle
+ * @param[in] i Index to check
+ * @return True if the request was successfull, false otherwise
+ */
 Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
-  //Get momentum of the i^th particle in array
-
   Double_t mass = fMassHypothesis;
 
   if (i == -1) i = fCurrentID;
@@ -209,11 +268,17 @@ Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) con
   }
 }
 
-//________________________________________________________________________
+/**
+ * Fills a TLorentzVector with the monentum infomation of the
+ * next accepted particle in the container, using a global
+ * mass hypothesis. In case the iteration reached the end of
+ * the array, false is returned as return value.
+ * @deprecated Old style iterator - use accept_iterator instead
+ * @param[out] mom Momentum vector of the next particle in the array
+ * @return True if the request was successfull, false (no more entries) otherwise
+ */
 Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the next accepted particle in array
-
   Double_t mass = fMassHypothesis;
 
   AliVParticle *vp = GetNextAcceptParticle();
@@ -228,10 +293,18 @@ Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Perform full particle selection consisting of kinematical and particle property
+ * selection on the particle provided. In case the particle is rejected, the
+ * reason for the rejection is encoded in the bitmap rejectionReason.
+ * @param vp Particle for which to perform the selection
+ * @param rejectionReason Bitmap with the reason why the particle was accepted.
+ * Note: The value is not set to 0 in the function in order to combine the information
+ * with other selection steps.
+ * @return True if the particle is accepted, false otherwise.
+ */
 Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp, UInt_t &rejectionReason) const
 {
-  // Return true if vp is accepted.
   Bool_t r = ApplyParticleCuts(vp, rejectionReason);
   if (!r) return kFALSE;
 
@@ -248,10 +321,18 @@ Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp, UInt_t &reje
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-//________________________________________________________________________
+/**
+ * Perform full particle selection consisting of kinematical and particle property
+ * selection on the \f$ i^{th} \f$ particle in the array. In case the particle is
+ * rejected, the reason for the rejection is encoded in the bitmap rejectionReason.
+ * @param[in] i Index of the particle to select.
+ * @param[out] rejectionReason Bitmap with the reason why the particle was accepted.
+ * Note: The value is not set to 0 in the function in order to combine the information
+ * with other selection steps.
+ * @return True if the particle was accepted, false otherwise
+ */
 Bool_t AliParticleContainer::AcceptParticle(Int_t i, UInt_t &rejectionReason) const
 {
-  // Return true if vp is accepted.
   Bool_t r = ApplyParticleCuts(GetParticle(i), rejectionReason);
   if (!r) return kFALSE;
 
@@ -261,13 +342,20 @@ Bool_t AliParticleContainer::AcceptParticle(Int_t i, UInt_t &rejectionReason) co
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-//________________________________________________________________________
+/**
+ * Apply cuts on the particle properties. Implemented are
+ * - Monte-Carlo label
+ * - Charge
+ * - Generator index
+ *
+ * @param[in] vp Particle for which the selection is performed
+ * @param[out] rejectionReason Bitmap with the reason why the particle was accepted.
+ * Note: The value is not set to 0 in the function in order to combine the information
+ * with other selection steps.
+ * @return True if the particle is accepted, False otherwise
+ */
 Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp, UInt_t &rejectionReason) const
 {
-  // Return true if i^th particle is accepted.
-
-  // Cuts on the particle properties
-
   if (!vp) {
     rejectionReason |= kNullObject;
     return kFALSE;
@@ -301,7 +389,17 @@ Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp, UInt_t &r
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Apply kinematical cuts to the momentum vector provided. In addition
+ * to the standard kinematical cuts in \f$ p_{t} \f$, \f$ \eta \f$ and
+ * \f$ \phi \f$, implemented in the AliEmcalContainer::ApplyKinematicCuts,
+ * also the distance to the TPC sector boundary is checked.
+ * @param[in] mom Momentum vector for which
+ * @param[out] rejectionReason  Bitmap with the reason why the particle was accepted.
+ * Note: The value is not set to 0 in the function in order to combine the information
+ * with other selection steps.
+ * @return True if the momentum vector was selected under the given cuts, false otherwise
+ */
 Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const
 {
   if(fMinDistanceTPCSectorEdge>0.) {
@@ -317,11 +415,14 @@ Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UI
   return AliEmcalContainer::ApplyKinematicCuts(mom, rejectionReason);
 }
 
-//________________________________________________________________________
+/**
+ * Get number of accepted particles. In order to get this number,
+ * the selection has to be applied to each particle within this
+ * function.
+ * @return Number of selected particles under the given particle selection
+ */
 Int_t AliParticleContainer::GetNAcceptedParticles() const
 {
-  // Get number of accepted particles
-
   Int_t nPart = 0;
   for(int ipart = 0; ipart < this->GetNParticles(); ipart++){
     UInt_t rejectionReason = 0;
@@ -330,7 +431,10 @@ Int_t AliParticleContainer::GetNAcceptedParticles() const
   return nPart;
 }
 
-//________________________________________________________________________
+/**
+ * Set the name of the class of the objets inside the underlying array.
+ * @param[in] clname Name of the class of the object inside the underlying array.
+ */
 void AliParticleContainer::SetClassName(const char *clname)
 {
   // Set the class name
@@ -340,7 +444,11 @@ void AliParticleContainer::SetClassName(const char *clname)
   else AliError(Form("Unable to set class name %s for a AliParticleContainer, it must inherits from AliVParticle!",clname));
 }
 
-//________________________________________________________________________
+/**
+ * Make a title of the container name based on the min \f$ p_{t} \f$ used
+ * in the particle selection process.
+ * @return Title of the container
+ */
 const char* AliParticleContainer::GetTitle() const
 {
   static TString trackString;
