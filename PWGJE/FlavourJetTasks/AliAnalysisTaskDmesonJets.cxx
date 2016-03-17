@@ -130,6 +130,26 @@ Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(std::string n)
   return GetDistance(n, deta, dphi);
 }
 
+const AliAnalysisTaskDmesonJets::AliJetInfo* AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet(std::string n) const
+{
+  std::map<std::string, AliJetInfo>::const_iterator it = fJets.find(n);
+  if (it == fJets.end()) {
+    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!", n.c_str());
+    return 0;
+  }
+  return &((*it).second);
+}
+
+AliAnalysisTaskDmesonJets::AliJetInfo* AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet(std::string n)
+{
+  std::map<std::string, AliJetInfo>::iterator it = fJets.find(n);
+  if (it == fJets.end()) {
+    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!", n.c_str());
+    return 0;
+  }
+  return &((*it).second);
+}
+
 // Definitions of class AliAnalysisTaskDmesonJets::AliJetInfoSummary
 
 /// \cond CLASSIMP
@@ -364,6 +384,17 @@ Bool_t AliAnalysisTaskDmesonJets::AliHFJetDefinition::IsJetInAcceptance(const Al
   return kTRUE;
 }
 
+/// Decides whether the jet passes the acceptance cut defined in the object
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \return kTRUE if the jet passes the cuts
+Bool_t AliAnalysisTaskDmesonJets::AliHFJetDefinition::IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const
+{
+  const AliJetInfo* jet = dMesonJet.GetJet(n);
+  if (!jet) return kFALSE;
+  return IsJetInAcceptance((*jet));
+}
+
 /// Sets the eta/phi acceptance of the jets to the detector boundaries
 ///
 /// \param geom Const pointer to the EMCal/DCal geometry
@@ -589,12 +620,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine& AliAnalysisTaskDmesonJets::AnalysisEn
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const
 {
   for (UInt_t i = 0; i < fJetDefinitions.size(); i++) {
-    std::map<std::string, AliJetInfo>::const_iterator it = dMesonJet.fJets.find(fJetDefinitions[i].GetName());
-    if (it == dMesonJet.fJets.end()) {
-      AliError(Form("Could not find jet info for the jet definition '%s'!", fJetDefinitions[i].GetName()));
-      continue;
-    }
-    if (fJetDefinitions[i].IsJetInAcceptance((*it).second)) return kTRUE;
+    if (fJetDefinitions[i].IsJetInAcceptance(dMesonJet, fJetDefinitions[i].GetName())) return kTRUE;
   }
 
   return kFALSE;
@@ -1344,28 +1370,282 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
   return fTree;
 }
 
+/// Allocate a THnSparse histogram
+///
+/// \param param Analysis parameters used to properly set some of the axis
+void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis, Int_t nBins, Double_t minBinPt, Double_t maxBinPt)
+{
+  TString hname;
+
+  for (std::vector<AliHFJetDefinition>::const_iterator it = fJetDefinitions.begin(); it != fJetDefinitions.end(); it++) {
+    const AliHFJetDefinition* jetDef = &(*it);
+
+    AliDebug(2,Form("Now working on '%s'", jetDef->GetName()));
+
+    Double_t radius = jetDef->fRadius;
+
+    TString  title[30] = {""};
+    Int_t    nbins[30] = {0 };
+    Double_t min  [30] = {0.};
+    Double_t max  [30] = {0.};
+    Int_t    dim       = 0   ;
+
+    title[dim] = "#it{p}_{T,D} (GeV/#it{c})";
+    nbins[dim] = nBins;
+    min[dim] = 0;
+    max[dim] = 100;
+    dim++;
+
+    if ((enabledAxis & kPositionD) != 0) {
+      title[dim] = "#eta_{D}";
+      nbins[dim] = 50;
+      min[dim] = -1;
+      max[dim] = 1;
+      dim++;
+
+      title[dim] = "#phi_{D} (rad)";
+      nbins[dim] = 150;
+      min[dim] = 0;
+      max[dim] = TMath::TwoPi();
+      dim++;
+    }
+
+    if ((enabledAxis & kInvMass) != 0 && fCandidateType == kDstartoKpipi) {
+      title[dim] = "#it{M}_{K#pi#pi} (GeV/#it{c}^{2})";
+      nbins[dim] = fNMassBins;
+      min[dim] = fMinMass;
+      max[dim] = fMaxMass;
+      dim++;
+    }
+
+    if (fCandidateType == kD0toKpi) {
+      title[dim] = "#it{M}_{K#pi} (GeV/#it{c}^{2})";
+      nbins[dim] = fNMassBins;
+      min[dim] = fMinMass;
+      max[dim] = fMaxMass;
+      dim++;
+    }
+
+    if ((enabledAxis & k2ProngInvMass) != 0 && fCandidateType == kDstartoKpipi) {
+      title[dim] = "#it{M}_{K#pi} (GeV/#it{c}^{2})";
+      nbins[dim] = fNMassBins;
+      CalculateMassLimits(fMaxMass - fMinMass, 421, fNMassBins, min[dim], max[dim]);
+      dim++;
+    }
+
+    if (fCandidateType == kDstartoKpipi) {
+      title[dim] = "#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2})";
+      nbins[dim] = fNMassBins*6;
+      CalculateMassLimits(0.20, 413, nbins[dim], min[dim], max[dim]);
+
+      // subtract mass of D0
+      Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
+      min[dim] -= D0mass;
+      max[dim] -= D0mass;
+
+      dim++;
+    }
+
+    if ((enabledAxis & kSoftPionPt) != 0 && fCandidateType == kDstartoKpipi) {
+      title[dim] = "#it{p}_{T,#pi} (GeV/#it{c})";
+      nbins[dim] = 100;
+      min[dim] = 0;
+      max[dim] = 25;
+      dim++;
+    }
+
+    title[dim] = "#it{z}_{D}";
+    nbins[dim] = 110;
+    min[dim] = 0;
+    max[dim] = 1.10;
+    dim++;
+
+    if ((enabledAxis & kDeltaR) != 0) {
+      title[dim] = "#Delta R_{D-jet}";
+      nbins[dim] = 100;
+      min[dim] = 0;
+      max[dim] = radius * 1.5;
+      dim++;
+    }
+
+    if ((enabledAxis & kDeltaEta) != 0) {
+      title[dim] = "#eta_{D} - #eta_{jet}";
+      nbins[dim] = 100;
+      min[dim] = -radius * 1.2;
+      max[dim] = radius * 1.2;
+      dim++;
+    }
+
+    if ((enabledAxis & kDeltaPhi) != 0) {
+      title[dim] = "#phi_{D} - #phi_{jet} (rad)";
+      nbins[dim] = 100;
+      min[dim] = -radius * 1.2;
+      max[dim] = radius * 1.2;
+      dim++;
+    }
+
+    title[dim] = "#it{p}_{T,jet} (GeV/#it{c})";
+    nbins[dim] = nBins;
+    min[dim] = minBinPt;
+    max[dim] = maxBinPt;
+    dim++;
+
+    if ((enabledAxis & kPositionJet) != 0) {
+      title[dim] = "#eta_{jet}";
+      nbins[dim] = 50;
+      min[dim] = -1;
+      max[dim] = 1;
+      dim++;
+
+      title[dim] = "#phi_{jet} (rad)";
+      nbins[dim] = 150;
+      min[dim] = 0;
+      max[dim] = TMath::TwoPi();
+      dim++;
+    }
+
+    if ((enabledAxis & kJetConstituents) != 0) {
+      title[dim] = "No. of constituents";
+      nbins[dim] = 50;
+      min[dim] = -0.5;
+      max[dim] = 49.5;
+      dim++;
+    }
+
+    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef->GetName());
+    THnSparse* h = fHistManager->CreateTHnSparse(hname,hname,dim,nbins,min,max);
+    for (Int_t j = 0; j < dim; j++) {
+      h->GetAxis(j)->SetTitle(title[j]);
+    }
+  }
+}
+
 /// Post the output with D meson jets found in the current event
 ///
 /// \return kTRUE on success
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
 {
+  TString hname;
+
   for (Int_t id = 0; id < fDmesonJets.size(); id++) {
-    if (applyKinCuts && !IsAnyJetInAcceptance(fDmesonJets[id])) continue;
     fCurrentDmesonJetInfo->Set(fDmesonJets[id]);
-    Int_t ij = 0;
+    Int_t accJets = 0;
     for (UInt_t ij = 0; ij < fJetDefinitions.size(); ij++) {
       fCurrentJetInfo[ij]->Reset();
-      std::map<std::string, AliJetInfo>::const_iterator it = fDmesonJets[id].fJets.find(fJetDefinitions[ij].GetName());
-      if (it == fDmesonJets[id].fJets.end()) {
-        AliError(Form("Could not find jet for definition '%s'", fJetDefinitions[ij].GetName()));
+      AliJetInfo* jet = fDmesonJets[id].GetJet(fJetDefinitions[ij].GetName());
+      if (!jet) continue;
+      if (applyKinCuts && !fJetDefinitions[ij].IsJetInAcceptance(*jet)) {
+        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), fJetDefinitions[ij].GetName());
+        fHistManager->FillTH1(hname, jet->Pt());
+        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), fJetDefinitions[ij].GetName());
+        fHistManager->FillTH1(hname, jet->Phi_0_2pi());
+        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), fJetDefinitions[ij].GetName());
+        fHistManager->FillTH1(hname, jet->Eta());
         continue;
       }
-      if (applyKinCuts && !fJetDefinitions[ij].IsJetInAcceptance((*it).second)) continue;
-      fCurrentJetInfo[ij]->Set(fDmesonJets[id], (*it).first);
-      ij++;
+      fCurrentJetInfo[ij]->Set(fDmesonJets[id], fJetDefinitions[ij].GetName());
+      accJets++;
     }
-    fTree->Fill();
+    if (accJets > 0) {
+      fTree->Fill();
+    }
+    else {
+      hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
+      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Pt());
+      hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
+      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Phi_0_2pi());
+      hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
+      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Eta());
+    }
   }
+  return kTRUE;
+}
+
+/// Post the output with D meson jets found in the current event
+///
+/// \return kTRUE on success
+Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillHnSparse(Bool_t applyKinCuts)
+{
+  TString hname;
+
+  for (Int_t id = 0; id < fDmesonJets.size(); id++) {
+    if (!IsAnyJetInAcceptance(fDmesonJets[id])) {
+      hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
+      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Pt());
+      hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
+      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Phi_0_2pi());
+      hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
+      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Eta());
+    }
+  }
+
+  for (std::vector<AliHFJetDefinition>::iterator itdef = fJetDefinitions.begin(); itdef != fJetDefinitions.end(); itdef++) {
+
+    AliHFJetDefinition* jetDef = &(*itdef);
+
+    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef->GetName());
+    THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname));
+
+    for (Int_t id = 0; id < fDmesonJets.size(); id++) {
+      const AliJetInfo* jet = fDmesonJets[id].GetJet(jetDef->GetName());
+      if (!jet) continue;
+      if (!jetDef->IsJetInAcceptance(*jet)) {
+        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), jetDef->GetName());
+        fHistManager->FillTH1(hname, jet->Pt());
+        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), jetDef->GetName());
+        fHistManager->FillTH1(hname, jet->Phi_0_2pi());
+        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), jetDef->GetName());
+        fHistManager->FillTH1(hname, jet->Eta());
+        continue;
+      }
+      FillHnSparse(h, fDmesonJets[id], (*itdef).GetName());
+    }
+  }
+
+  return kTRUE;
+}
+
+/// Fill a THnSparse using information from a AliDmesonJetInfo object
+///
+/// \param h          Valid pointer to a THnSparse object
+/// \param DmesonJet  Const reference to an AliDmesonJetInfo object
+/// \param n          Jet name
+Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n)
+{
+  // Fill the THnSparse histogram.
+
+  Double_t contents[30] = {0.};
+
+  Double_t z = DmesonJet.GetZ(n);
+  Double_t deltaPhi = 0;
+  Double_t deltaEta = 0;
+  Double_t deltaR = DmesonJet.GetDistance(n, deltaEta, deltaPhi);
+
+  std::map<std::string, AliJetInfo>::const_iterator it = DmesonJet.fJets.find(n);
+  if (it == DmesonJet.fJets.end()) return kFALSE;
+
+  for (Int_t i = 0; i < h->GetNdimensions(); i++) {
+    TString title(h->GetAxis(i)->GetTitle());
+    if      (title=="#it{p}_{T,D} (GeV/#it{c})")                     contents[i] = DmesonJet.fD.Pt();
+    else if (title=="#eta_{D}")                                      contents[i] = DmesonJet.fD.Eta();
+    else if (title=="#phi_{D} (rad)")                                contents[i] = DmesonJet.fD.Phi_0_2pi();
+    else if (title=="#it{M}_{K#pi} (GeV/#it{c}^{2})")                contents[i] = DmesonJet.fInvMass2Prong > 0 ? DmesonJet.fInvMass2Prong : DmesonJet.fD.M();
+    else if (title=="#it{M}_{K#pi#pi} (GeV/#it{c}^{2})")             contents[i] = DmesonJet.fD.M();
+    else if (title=="#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2})") contents[i] = DmesonJet.fD.M() - DmesonJet.fInvMass2Prong;
+    else if (title=="#it{p}_{T,#pi} (GeV/#it{c})")                   contents[i] = DmesonJet.fSoftPionPt;
+    else if (title=="#it{z}_{D}")                                    contents[i] = z;
+    else if (title=="#Delta R_{D-jet}")                              contents[i] = deltaR;
+    else if (title=="#eta_{D} - #eta_{jet}")                         contents[i] = deltaEta;
+    else if (title=="#phi_{D} - #phi_{jet} (rad)")                   contents[i] = deltaPhi;
+    else if (title=="#it{p}_{T,jet} (GeV/#it{c})")                   contents[i] = (*it).second.Pt();
+    else if (title=="#eta_{jet}")                                    contents[i] = (*it).second.Eta();
+    else if (title=="#phi_{jet} (rad)")                              contents[i] = (*it).second.Phi_0_2pi();
+    else if (title=="No. of constituents")                           contents[i] = (*it).second.fNConstituents;
+    else AliWarning(Form("Unable to fill dimension '%s'!",title.Data()));
+  }
+
+  h->Fill(contents);
+
   return kTRUE;
 }
 
@@ -1382,7 +1662,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fEnabledAxis(0),
   fTreeOutput(kFALSE),
   fHistManager(),
-  fApplyKinematicCuts(),
+  fApplyKinematicCuts(kTRUE),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
@@ -1398,7 +1678,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name) :
   fEnabledAxis(k2ProngInvMass),
   fTreeOutput(kFALSE),
   fHistManager(name),
-  fApplyKinematicCuts(),
+  fApplyKinematicCuts(kTRUE),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
@@ -1550,6 +1830,18 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     htitle = hname + ";Rejection reason;counts";
     h = fHistManager.CreateTH1(hname, htitle, 32, 0, 32);
 
+    hname = TString::Format("%s/fHistRejectedDMesonPt", param->GetName());
+    htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});counts";
+    fHistManager.CreateTH1(hname, htitle, 150, 0, 150);
+
+    hname = TString::Format("%s/fHistRejectedDMesonEta", param->GetName());
+    htitle = hname + ";#it{#eta}_{D};counts";
+    fHistManager.CreateTH1(hname, htitle, 100, -2, 2);
+
+    hname = TString::Format("%s/fHistRejectedDMesonPhi", param->GetName());
+    htitle = hname + ";#it{#phi}_{D};counts";
+    fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
+
     for (std::vector<AliHFJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
       AliHFJetDefinition* jetDef = &(*itdef);
       ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
@@ -1573,172 +1865,32 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 
       hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", param->GetName(), jetDef->GetName());
       htitle = hname + ";#it{p}_{T,track} (GeV/#it{c});counts";
-      fHistManager.CreateTH1(hname, htitle, 400, 0, 100);
-      SetRejectionReasonLabels(h->GetXaxis());
+      fHistManager.CreateTH1(hname, htitle, 200, 0, 100);
+
+      hname = TString::Format("%s/%s/fHistRejectedJetPt", param->GetName(), jetDef->GetName());
+      htitle = hname + ";#it{p}_{T,jet} (GeV/#it{c});counts";
+      fHistManager.CreateTH1(hname, htitle, 150, 0, 150);
+
+      hname = TString::Format("%s/%s/fHistRejectedJetEta", param->GetName(), jetDef->GetName());
+      htitle = hname + ";#it{#eta}_{jet};counts";
+      fHistManager.CreateTH1(hname, htitle, 100, -2, 2);
+
+      hname = TString::Format("%s/%s/fHistRejectedJetPhi", param->GetName(), jetDef->GetName());
+      htitle = hname + ";#it{#phi}_{jet};counts";
+      fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
     }
     if (fTreeOutput) {
       TTree* tree = param->BuildTree();
       fOutput->Add(tree);
     }
     else {
-      AllocateTHnSparse(*param);
+      param->BuildHnSparse(fEnabledAxis, fNbins, fMinBinPt, fMaxBinPt);
     }
   }
 
-  TIter next(fHistManager.GetListOfHistograms());
-  while ((next())) fOutput->Add(next());
+  fOutput->Add(fHistManager.GetListOfHistograms());
 
   PostData(1, fOutput);
-}
-
-/// Allocate a THnSparse histogram
-///
-/// \param param Analysis parameters used to properly set some of the axis
-void AliAnalysisTaskDmesonJets::AllocateTHnSparse(const AnalysisEngine& param)
-{
-  TString hname;
-
-  for (std::vector<AliHFJetDefinition>::const_iterator it = param.fJetDefinitions.begin(); it != param.fJetDefinitions.end(); it++) {
-    const AliHFJetDefinition* jetDef = &(*it);
-
-    AliDebug(2,Form("Now working on '%s'", jetDef->GetName()));
-
-    Double_t radius = jetDef->fRadius;
-
-    TString  title[30] = {""};
-    Int_t    nbins[30] = {0 };
-    Double_t min  [30] = {0.};
-    Double_t max  [30] = {0.};
-    Int_t    dim       = 0   ;
-
-    title[dim] = "#it{p}_{T,D} (GeV/#it{c})";
-    nbins[dim] = fNbins;
-    min[dim] = 0;
-    max[dim] = 100;
-    dim++;
-
-    if ((fEnabledAxis & kPositionD) != 0) {
-      title[dim] = "#eta_{D}";
-      nbins[dim] = 50;
-      min[dim] = -1;
-      max[dim] = 1;
-      dim++;
-
-      title[dim] = "#phi_{D} (rad)";
-      nbins[dim] = 150;
-      min[dim] = 0;
-      max[dim] = TMath::TwoPi();
-      dim++;
-    }
-
-    if ((fEnabledAxis & kInvMass) != 0 && param.fCandidateType == kDstartoKpipi) {
-      title[dim] = "#it{M}_{K#pi#pi} (GeV/#it{c}^{2})";
-      nbins[dim] = param.fNMassBins;
-      min[dim] = param.fMinMass;
-      max[dim] = param.fMaxMass;
-      dim++;
-    }
-
-    if (param.fCandidateType == kD0toKpi) {
-      title[dim] = "#it{M}_{K#pi} (GeV/#it{c}^{2})";
-      nbins[dim] = param.fNMassBins;
-      min[dim] = param.fMinMass;
-      max[dim] = param.fMaxMass;
-      dim++;
-    }
-
-    if ((fEnabledAxis & k2ProngInvMass) != 0 && param.fCandidateType == kDstartoKpipi) {
-      title[dim] = "#it{M}_{K#pi} (GeV/#it{c}^{2})";
-      nbins[dim] = param.fNMassBins;
-      CalculateMassLimits(param.fMaxMass - param.fMinMass, 421, param.fNMassBins, min[dim], max[dim]);
-      dim++;
-    }
-
-    if (param.fCandidateType == kDstartoKpipi) {
-      title[dim] = "#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2})";
-      nbins[dim] = param.fNMassBins*6;
-      CalculateMassLimits(0.20, 413, nbins[dim], min[dim], max[dim]);
-
-      // subtract mass of D0
-      Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
-      min[dim] -= D0mass;
-      max[dim] -= D0mass;
-
-      dim++;
-    }
-
-    if ((fEnabledAxis & kSoftPionPt) != 0 && param.fCandidateType == kDstartoKpipi) {
-      title[dim] = "#it{p}_{T,#pi} (GeV/#it{c})";
-      nbins[dim] = 100;
-      min[dim] = 0;
-      max[dim] = 25;
-      dim++;
-    }
-
-    title[dim] = "#it{z}_{D}";
-    nbins[dim] = 110;
-    min[dim] = 0;
-    max[dim] = 1.10;
-    dim++;
-
-    if ((fEnabledAxis & kDeltaR) != 0) {
-      title[dim] = "#Delta R_{D-jet}";
-      nbins[dim] = 100;
-      min[dim] = 0;
-      max[dim] = radius * 1.5;
-      dim++;
-    }
-
-    if ((fEnabledAxis & kDeltaEta) != 0) {
-      title[dim] = "#eta_{D} - #eta_{jet}";
-      nbins[dim] = 100;
-      min[dim] = -radius * 1.2;
-      max[dim] = radius * 1.2;
-      dim++;
-    }
-
-    if ((fEnabledAxis & kDeltaPhi) != 0) {
-      title[dim] = "#phi_{D} - #phi_{jet} (rad)";
-      nbins[dim] = 100;
-      min[dim] = -radius * 1.2;
-      max[dim] = radius * 1.2;
-      dim++;
-    }
-
-    title[dim] = "#it{p}_{T,jet} (GeV/#it{c})";
-    nbins[dim] = fNbins;
-    min[dim] = fMinBinPt;
-    max[dim] = fMaxBinPt;
-    dim++;
-
-    if ((fEnabledAxis & kPositionJet) != 0) {
-      title[dim] = "#eta_{jet}";
-      nbins[dim] = 50;
-      min[dim] = -1;
-      max[dim] = 1;
-      dim++;
-
-      title[dim] = "#phi_{jet} (rad)";
-      nbins[dim] = 150;
-      min[dim] = 0;
-      max[dim] = TMath::TwoPi();
-      dim++;
-    }
-
-    if ((fEnabledAxis & kJetConstituents) != 0) {
-      title[dim] = "No. of constituents";
-      nbins[dim] = 50;
-      min[dim] = -0.5;
-      max[dim] = 49.5;
-      dim++;
-    }
-
-    hname = TString::Format("%s/%s/fDmesonJets", param.GetName(), jetDef->GetName());
-    THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dim,nbins,min,max);
-    for (Int_t j = 0; j < dim; j++) {
-      h->GetAxis(j)->SetTitle(title[j]);
-    }
-  }
 }
 
 /// Does some specific initializations for the analysis engines,
@@ -1875,61 +2027,10 @@ Bool_t AliAnalysisTaskDmesonJets::FillHistograms()
       param->FillTree(fApplyKinematicCuts);
     }
     else {
-      for (std::vector<AliHFJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
-
-        AliHFJetDefinition* jetDef = &(*itdef);
-
-        hname = TString::Format("%s/%s/fDmesonJets", param->GetName(), jetDef->GetName());
-        THnSparse* h = static_cast<THnSparse*>(fHistManager.FindObject(hname));
-
-        for (Int_t id = 0; id < param->fDmesonJets.size(); id++) {
-          FillTHnSparse(h, param->fDmesonJets[id], (*itdef).GetName());
-        }
-      }
+      param->FillHnSparse(fApplyKinematicCuts);
     }
   }
   return kTRUE;
-}
-
-/// Fill a THnSparse using information from a AliDmesonJetInfo object
-///
-/// \param h          Valid pointer to a THnSparse object
-/// \param DmesonJet  Const reference to an AliDmesonJetInfo object
-void AliAnalysisTaskDmesonJets::FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n)
-{
-  // Fill the THnSparse histogram.
-
-  Double_t contents[30] = {0.};
-
-  Double_t z = DmesonJet.GetZ(n);
-  Double_t deltaPhi = 0;
-  Double_t deltaEta = 0;
-  Double_t deltaR = DmesonJet.GetDistance(n, deltaEta, deltaPhi);
-
-  std::map<std::string, AliJetInfo>::const_iterator it = DmesonJet.fJets.find(n);
-  if (it == DmesonJet.fJets.end()) return;
-
-  for (Int_t i = 0; i < h->GetNdimensions(); i++) {
-    TString title(h->GetAxis(i)->GetTitle());
-    if      (title=="#it{p}_{T,D} (GeV/#it{c})")                     contents[i] = DmesonJet.fD.Pt();
-    else if (title=="#eta_{D}")                                      contents[i] = DmesonJet.fD.Eta();
-    else if (title=="#phi_{D} (rad)")                                contents[i] = DmesonJet.fD.Phi_0_2pi();
-    else if (title=="#it{M}_{K#pi} (GeV/#it{c}^{2})")                contents[i] = DmesonJet.fInvMass2Prong > 0 ? DmesonJet.fInvMass2Prong : DmesonJet.fD.M();
-    else if (title=="#it{M}_{K#pi#pi} (GeV/#it{c}^{2})")             contents[i] = DmesonJet.fD.M();
-    else if (title=="#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2})") contents[i] = DmesonJet.fD.M() - DmesonJet.fInvMass2Prong;
-    else if (title=="#it{p}_{T,#pi} (GeV/#it{c})")                   contents[i] = DmesonJet.fSoftPionPt;
-    else if (title=="#it{z}_{D}")                                    contents[i] = z;
-    else if (title=="#Delta R_{D-jet}")                              contents[i] = deltaR;
-    else if (title=="#eta_{D} - #eta_{jet}")                         contents[i] = deltaEta;
-    else if (title=="#phi_{D} - #phi_{jet} (rad)")                   contents[i] = deltaPhi;
-    else if (title=="#it{p}_{T,jet} (GeV/#it{c})")                   contents[i] = (*it).second.Pt();
-    else if (title=="#eta_{jet}")                                    contents[i] = (*it).second.Eta();
-    else if (title=="#phi_{jet} (rad)")                              contents[i] = (*it).second.Phi_0_2pi();
-    else if (title=="No. of constituents")                           contents[i] = (*it).second.fNConstituents;
-    else AliWarning(Form("Unable to fill dimension '%s'!",title.Data()));
-  }
-
-  h->Fill(contents);
 }
 
 /// Set the mass limits for the histograms using information from TDatabasePDG.
