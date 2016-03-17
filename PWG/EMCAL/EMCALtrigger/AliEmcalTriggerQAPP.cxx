@@ -385,11 +385,11 @@ void AliEmcalTriggerQAPP::Init()
 
     for (Int_t idet = 0; idet < ndet; idet++) {
       hname = Form("EMCTRQA_hist%s%sMaxOfflineVsRecalc", det[idet], kEMCalTriggerNames[itrig].Data());
-      htitle = Form("EMCTRQA_hist%s%sMaxOfflineVsRecalc;Offline;Recalc;entries", det[idet], kEMCalTriggerNames[itrig].Data());
+      htitle = Form("EMCTRQA_hist%s%sMaxOfflineVsRecalc;Recalc;Offline;entries", det[idet], kEMCalTriggerNames[itrig].Data());
       fHistManager.CreateTH2(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig], fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
 
       hname = Form("EMCTRQA_hist%s%sOfflineVsRecalc", det[idet], kEMCalTriggerNames[itrig].Data());
-      htitle = Form("EMCTRQA_hist%s%sOfflineVsRecalc;Offline;Recalc;entries", det[idet], kEMCalTriggerNames[itrig].Data());
+      htitle = Form("EMCTRQA_hist%s%sOfflineVsRecalc;Recalc;Offline;entries", det[idet], kEMCalTriggerNames[itrig].Data());
       fHistManager.CreateTH2(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig], fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
     }
 
