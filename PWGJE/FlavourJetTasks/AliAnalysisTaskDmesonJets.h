@@ -146,6 +146,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
     AliJetInfoSummary(const AliDmesonJetInfo& source, std::string n);
 
+    virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source, std::string n);
 
     /// Transverse momentum of the jet in GeV/c
@@ -322,7 +323,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
     TTree* BuildTree();
     TTree* GetTree() { return fTree; }
-    Bool_t FillTree();
+    Bool_t FillTree(Bool_t applyKinCuts);
 
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
@@ -401,7 +402,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   void SetShowPositionJet(Bool_t b = kTRUE)       { fEnabledAxis = b ?  fEnabledAxis | kPositionJet       : fEnabledAxis & ~kPositionJet       ; }
   void SetShowJetConstituents(Bool_t b = kTRUE)   { fEnabledAxis = b ?  fEnabledAxis | kJetConstituents   : fEnabledAxis & ~kJetConstituents   ; }
 
-  void SetTreeOutput(Bool_t b)                    { fTreeOutput = b; }
+  void SetApplyKinematicCuts(Bool_t b)            { fApplyKinematicCuts = b; }
+  void SetTreeOutput(Bool_t b)                    { fTreeOutput         = b; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -421,6 +423,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   UInt_t               fEnabledAxis               ; ///<  Use bit defined in EAxis_t to enable axis in the THnSparse
   Bool_t               fTreeOutput                ; ///<  If true, output will be posted in a TTree rather than a THnSparse
   THistManager         fHistManager               ; ///<  Histogram manager
+  Bool_t               fApplyKinematicCuts        ; ///<  Apply jet kinematic cuts
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
 
@@ -430,7 +433,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 2);
+  ClassDef(AliAnalysisTaskDmesonJets, 3);
   /// \endcond
 };
 
