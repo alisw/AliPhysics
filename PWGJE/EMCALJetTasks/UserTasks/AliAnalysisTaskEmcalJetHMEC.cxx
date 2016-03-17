@@ -57,6 +57,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
+  fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fRunType(0),
   fCentBinSize(1),
@@ -112,6 +113,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
+  fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fRunType(0),
   fCentBinSize(1),
@@ -499,12 +501,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     Double_t leadjet=0;
     if (ijet==ijethi) leadjet=1;
 
-    fHistJetPt[centbin]->Fill(jet->Pt());
-    fHistLeadJetPt[centbin]->Fill(jet->Pt());
+    FillHist(fHistJetPt[centbin], jet->Pt());
+    FillHist(fHistLeadJetPt[centbin], jet->Pt());
     
     if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-      fHistJetPtBias[centbin]->Fill(jet->Pt());
-      fHistLeadJetPtBias[centbin]->Fill(jet->Pt());
+      FillHist(fHistJetPtBias[centbin], jet->Pt());
+      FillHist(fHistLeadJetPtBias[centbin], jet->Pt());
     }
 
     fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
@@ -516,7 +518,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     }
 
     if(passedTTcut)
-	  fHistJetPtTT[centbin]->Fill(jet->Pt());
+        FillHist(fHistJetPtTT[centbin], jet->Pt());
 
       Int_t iptjet=-1;
       iptjet=GetpTjetBin(jetPt);
@@ -577,20 +579,20 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
           if(fDoLessSparseAxes) { // check if we want all dimensions
           	if ( fRunType > 0 ) { //pA and AA
                   Double_t triggerEntries[6] = {fCent,jetPt,trackpt,deta,dphijh,leadjet};
-                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           	}
           	else if (0==fRunType) {
 		  Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet};
-                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           	}
           } else { 
           	if ( fRunType > 0 ) { //pA and AA
 	          Double_t triggerEntries[8] = {fCent,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
-                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           	}
           	else if (0==fRunType) {
 		  Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
-                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           	}
           }
 	    }
@@ -695,20 +697,20 @@ if(trigger & fTriggerEventType) {
             if(fDoLessSparseAxes) {  // check if we want all the axis filled
              	if ( fRunType > 0 ) { //pA and AA
                   Double_t triggerEntries[6] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet};
-                  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
              	}
              	else if (0 == fRunType) { //pp
 		  Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet};
-                  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
              	}
             } else {
             	if ( fRunType > 0 ) { //pA and AA
 		  Double_t triggerEntries[8] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
-                  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
             	}
             	else if (0==fRunType) {
 		  Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
-            	  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
             	}
 		    }
 		    }
@@ -1035,3 +1037,82 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 
   return TRefficiency;
 }
+
+void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Double_t weight, Bool_t noCorrection)
+{
+    if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
+    {
+        hist->Fill(fillValue, weight);
+    }
+    else
+    {
+        // Determine where to get the values in the correction hist
+        Int_t xBin = fEmbeddingCorrectionHist->GetXaxis()->FindBin(fillValue);
+
+        std::vector <Double_t> yBinsContent;
+        accessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+
+        // Loop over all possible bins to contribute.
+        // If content is 0 then calling Fill won't make a difference
+        for (Int_t index = 1; index <= fEmbeddingCorrectionHist->GetYaxis()->GetNbins(); index++)
+        {
+            // Determine the value to fill based on the center of the bins.
+            // This in principle allows the binning between the correction and hist to be different
+            Double_t fillLocation = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+            Printf("fillLocation: %f, weight: %f", fillLocation, yBinsContent.at(index-1));
+            // minus 1 since loop starts at 1
+            hist->Fill(fillLocation, weight*yBinsContent.at(index-1));
+        }
+
+        //TEMP
+        //hist->Draw();
+        //END TEMP
+    }
+}
+
+void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight, Bool_t noCorrection)
+{
+    if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
+    {
+        hist->Fill(fillValue, weight);
+    }
+    else
+    {
+        // Jet pt is always located in the second position
+        Double_t jetPt = fillValue[1];
+
+        // Determine where to get the values in the correction hist
+        Int_t xBin = fEmbeddingCorrectionHist->GetXaxis()->FindBin(jetPt);
+
+        std::vector <Double_t> yBinsContent;
+        accessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+
+        // Loop over all possible bins to contribute.
+        // If content is 0 then calling Fill won't make a difference
+        for (Int_t index = 1; index <= fEmbeddingCorrectionHist->GetYaxis()->GetNbins(); index++)
+        {
+            // Determine the value to fill based on the center of the bins.
+            // This in principle allows the binning between the correction and hist to be different
+            fillValue[1]  = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+            Printf("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1));
+            // minus 1 since loop starts at 1
+            hist->Fill(fillValue, weight*yBinsContent.at(index-1));
+        }
+    }
+}
+
+void AliAnalysisTaskEmcalJetHMEC::accessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
+{
+    for (Int_t index = 1; index <= hist->GetYaxis()->GetNbins(); index++)
+    {
+        //yBinsContent[index-1] = hist->GetBinContent(hist->GetBin(xBin,index));
+        yBinsContent.push_back(hist->GetBinContent(hist->GetBin(xBin,index)));
+
+        if (scaleFactor >= 0)
+        {
+            // -1 since index starts at 1
+            hist->SetBinContent(hist->GetBin(xBin,index), yBinsContent.at(index-1)/scaleFactor);
+        }
+    }
+}
+

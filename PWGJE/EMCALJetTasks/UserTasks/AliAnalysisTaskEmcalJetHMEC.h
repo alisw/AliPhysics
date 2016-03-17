@@ -60,6 +60,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetDoEffCorr(Int_t effcorr)          { fDoEffCorrection = effcorr; }
   virtual void            SetEffCorrFunc(Double_t efffunc)     { fEffFunctionCorrection = efffunc; }
 
+  // Set embedding correction
+  void                    SetEmbeddingCorrectionHist(TH2F * embeddingCorrectionHist) { fEmbeddingCorrectionHist = embeddingCorrectionHist; }
+
   void			  SetRunType(const Short_t runtype) { fRunType = runtype; }
 
  protected:
@@ -69,6 +72,11 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual Int_t          GetEtaBin(Double_t eta) const;
   virtual Int_t          GetpTjetBin(Double_t pt) const;
   virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
+
+  // Fill methods which allow for the embedding correction
+  void                   FillHist(TH1 * hist, Double_t fillValue, Double_t weight = 1.0, Bool_t noCorrection = kTRUE);
+  void                   FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight = 1.0, Bool_t noCorrection = kTRUE);
+  void                   accessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor = -1.0);
 
   TString                fTracksName;              // name of tracks collection
   TString                fJetsName;                // name of Jet collection
@@ -94,6 +102,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // efficiency correction
   Int_t          fDoEffCorrection;
   Double_t       fEffFunctionCorrection;
+
+  // Embedding correction
+  TH2F                   *fEmbeddingCorrectionHist;
 
   Bool_t         fDoLessSparseAxes;
   Bool_t         fDoWiderTrackBin;
