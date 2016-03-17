@@ -106,6 +106,7 @@ class AliClusterContainer : public AliEmcalContainer {
    * for(auto it : cont){
    *   std::cout << "Cluster energy: " << it->E() std::endl;      // do something with the cluster inside
    * }
+   * ~~~
    *
    * using c++11 range-based iterations.
    *
@@ -214,8 +215,10 @@ class AliClusterContainer : public AliEmcalContainer {
 /**
  * Unit test for the iterators. Comparing iterators against for-loop of clusters.
  * All clusters selected in the for-loop must be found in order to pass the test.
+ * @ingroup EMCALCOREFW
  * @param cont Cluster container used for the test.
  * @param iteratorType type of the iterator (0 = accept_iterator, 1 = all_iterator)
+ * @param verbose Switch on verbosity in case of true
  * @return Result of the unit test (0 - passed, 1 - clusters missing, 2 - excess clusters)
  */
 int TestClusterContainerIterator(const AliClusterContainer *const cont, int iteratorType = 0, bool verbose = false);
