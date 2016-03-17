@@ -139,9 +139,14 @@ struct AvailableSoftware
       TObject* o = l->FindObject(Form("%s::%s",name.Data(),query.Data()));
       return o;
     }
-    
-    TPRegexp pRele(Form("%s::v[0-9]-[0-9]+-(Rev-|)[0-9]+.*",name.Data()));
-    TPRegexp pAnat(Form("%s::vAN-[0-9]{8}.*", name.Data()));
+
+    TString relPat;
+    relPat.Form("%s::v[0-9]-[0-9]{2}+-(Rev-|)[0-9]{2}", name.Data());
+    if (name.Contains("AliPhysics")) relPat.Append("-[0-9]{2}");
+    if (name.Contains("ROOT"))       relPat.Append("(-alice[0-9]*|)");
+    relPat.Append("(-[0-9]+|)$");
+    TPRegexp pRele(relPat);
+    TPRegexp pAnat(Form("%s::vAN-[0-9]{8}(-[0-9]+|)$", name.Data()));
     TString  vers(Form("%s::%s", name.Data(), query.Data()));
 
     if (list) {
