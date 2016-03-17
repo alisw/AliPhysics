@@ -99,6 +99,7 @@ class AliParticleContainer : public AliEmcalContainer {
    * for(auto it : cont){
    *   std::cout << "Particle pt: " << it->Pt() std::endl;      // do something with the particle inside
    * }
+   * ~~~
    *
    * using c++11 range-based iterations.
    *
@@ -201,8 +202,10 @@ class AliParticleContainer : public AliEmcalContainer {
 /**
  * Unit test for the iterators. Comparing iterators against for-loop of particles.
  * All particles selected in the for-loop must be found in order to pass the test.
+ * @ingroup EMCALCOREFW
  * @param cont Particle container used for the test.
  * @param iteratorType type of the iterator (0 = accept_iterator, 1 = all_iterator)
+ * @param verbose Switch on verbosity in case of true
  * @return Result of the unit test (0 - passed, 1 - particles missing, 2 - excess particles)
  */
 int TestParticleContainerIterator(const AliParticleContainer *const cont, int iteratorType = 0, bool verbose = false);

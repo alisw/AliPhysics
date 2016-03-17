@@ -540,9 +540,9 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
  * in the functions ExecOnce. Note that this is only done for the first event
  * and only for properties which need the presence of an input event.
  *
- * @param[in] Not used
+ * @param[in] option Not used
  */
-void AliAnalysisTaskEmcal::UserExec(Option_t *) 
+void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
   if (!fInitialized)
     ExecOnce();
@@ -1555,7 +1555,7 @@ AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) 
 
 /**
  * Get number of particles in container attached to this task with index i
- * @param[i] i Index of then particle container
+ * @param[in] i Index of then particle container
  * @return Number of particles in container
  */
 Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const 
