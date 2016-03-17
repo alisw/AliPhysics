@@ -710,7 +710,7 @@ goMergeCPass()
   fi
   echo "$0 $*"
 
-  mergingScript="mergeMakeOCDB.byComponent.sh"
+  mergingScript="mergeMakeOCDB.byComponent.perStage.sh"
 
   if [[ $cpass -ge 1 ]]; then
     qaMergedOutputFileName="QAresults_merged.root"
@@ -733,11 +733,10 @@ goMergeCPass()
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh" ) ;;
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C" ) ;;
 
     1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${qaFilesToMerge}"
@@ -748,11 +747,10 @@ goMergeCPass()
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                          "${batchWorkingDirectory}/QAtrain_duo.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                          "${trustedQAtrainMacro}" ) ;;
@@ -1875,6 +1873,7 @@ goSubmitBatch()
       #copy the scripts
       filesMergeCPass0=(
                         "${configPath}/OCDB.root"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
                         "${configPath}/mergeMakeOCDB.byComponent.sh"
                         "${configPath}/mergeMakeOCDB.sh"
                         "${configPath}/localOCDBaccessConfig.C"
@@ -2001,6 +2000,7 @@ goSubmitBatch()
       filesMergeCPass1=(
                         "${configPath}/OCDB.root"
                         "${configPath}/localOCDBaccessConfig.C"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
                         "${configPath}/mergeMakeOCDB.byComponent.sh"
                         "${configPath}/mergeByComponent.C"
                         "${configPath}/makeOCDB.C"
