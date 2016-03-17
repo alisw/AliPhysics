@@ -895,7 +895,7 @@ void AliTrackletdNdetaUtils::SetAxis(TAxis&         axis,
   TObjString* token = 0;
   TIter       next(tokens);
   Int_t       i = 0;
-  while (token = static_cast<TObjString*>(next())) {
+  while ((token = static_cast<TObjString*>(next()))) {
     Double_t v = token->String().Atof();
     bins[i] = v;
     i++;
@@ -1037,7 +1037,6 @@ TH1* AliTrackletdNdetaUtils::AverageOverIPz(TH2*        h,
       Int_t    ipzBin = hb[l];
       Double_t hvv    = hv[l];      
       Double_t hee    = he[l];
-      Double_t hrr    = hr[l];
       Double_t x      = TMath::Sqrt(nsume+hee*hee)/(nsum+hvv);
       if (x > rat) {
 	continue; // Ignore - does not help
