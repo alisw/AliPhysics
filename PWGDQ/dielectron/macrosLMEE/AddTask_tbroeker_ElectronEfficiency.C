@@ -1,7 +1,6 @@
 AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_tbroeker_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
-                                                     TString resolutionfile = "",
                                                      Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree'! (needed for LEGO trains)
                                                      )
 {
@@ -44,11 +43,11 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   
-  if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
-    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-    TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
-    task->SetResolution(arr);
-  }
+//   if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+//     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+//     TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
+//     task->SetResolution(arr);
+//   }
   
   SetupMCSignals(task);
   //event related
@@ -65,6 +64,12 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
   // pair efficiency
   if(doPairing){
+    task->SetKineTrackCuts(SetupTrackCutsAndSettings(100));
+    //task->SetPairCuts(SetupTrackCutsAndSettings(101));
+    SetupTrackCutsAndSettings(101);
+    task->SetPairCutMee(rejCutMee);
+    task->SetPairCutTheta(rejCutTheta);
+    task->SetPairCutPhiV(rejCutPhiV);
     Double_t MeeBins[nBinsMee+1];
     for(Int_t i=0;i<=nBinsMee;i++) { MeeBins[i] = MeeMin + i*(MeeMax-MeeMin)/nBinsMee; }
     Double_t PteeBins[nBinsPtee+1];

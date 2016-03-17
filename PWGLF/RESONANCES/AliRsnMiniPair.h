@@ -49,11 +49,15 @@ public:
    Double_t        PtRatio(Bool_t mc)        const;
    Double_t        DipAngle(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
+   Double_t        CosThetaJackson(Bool_t mc);
+   Double_t        CosThetaTransversity(Bool_t mc);
    Double_t        DaughterPt(Int_t daughterId, Bool_t mc);
    Double_t        DaughterDCA(Int_t daughterId); 
    Double_t        DCAProduct();                                                   
    void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
    Short_t         NSisters()  {return fNSisters;}
+   Double_t        PairPtRes()              const;
+   Double_t        PairYRes()               const;
 
  private:
    

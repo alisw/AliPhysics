@@ -23,6 +23,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
 
 						     Float_t momemtumlimitforTOFPID = 0.75,
                                                      Bool_t kusecrrfindratiocut = kFALSE,
+                                                     Bool_t kusecrrowcut = kFALSE,
                                                      Bool_t kusetpcip = kFALSE,
                                                      Float_t cutipxy = 0.1,      // TPC 2.4 protons 1. pions GLOBAL 0.1 protons pions
                                                      Float_t cutipz = 0.15,      // TPC 3.2 protons 1. pions GLOBAL 0.15 protons pions
@@ -34,6 +35,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Float_t cutipbac = 0.1,     //0.03,
                                                      Bool_t kapplyycutcasc = kFALSE,
                                                      Bool_t kpropagateglobal = kTRUE,
+                                                     Bool_t kpropagatefixedr = kFALSE,
                                                      Bool_t kcutonttcprop = kFALSE,
                                                      const char* outlistsubwagon = ""  // "pXi"
                                                    ) {
@@ -97,6 +99,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   task->SetNEventsToMix(nevmixing);
   task->SetMomentumLimitForTOFPID(momemtumlimitforTOFPID);
   task->SetApplyRatioCrRnFindCut(kusecrrfindratiocut);
+  task->SetApplyCrossedRowCut(kusecrrowcut);
   task->SetCutOnTPCIP(kusetpcip); 
   task->SetIPCutxy(cutipxy); 
   task->SetIPCutz(cutipz); 
@@ -107,6 +110,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   task->SetIPCutBac(cutipbac);
   task->SetApplyYcutCasc(kapplyycutcasc);
   task->SetPropagateGlobal(kpropagateglobal);
+  task->SetPropagateAtFixedR(kpropagatefixedr);
   task->SetCutOnttcProp(kcutonttcprop);
 
   mgr->AddTask(task);

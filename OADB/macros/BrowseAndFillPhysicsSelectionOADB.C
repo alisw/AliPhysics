@@ -112,7 +112,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kINT8,"+CINT8-[B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !TPCHVdip");
-
+  
+  triggerCount++;
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kMUSPB,"+CINT7-B-NOPF-MUFAST","B",triggerCount);
+  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
+  oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C");
+  
   triggerCount++;
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kMuonSingleHighPt7,"+CMSH7-[B|S]-NOPF-[MUON|MUFAST|ALLNOTRD]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
@@ -383,17 +388,17 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   // LHC11h
   AliOADBPhysicsSelection * oadbLHC11h = new AliOADBPhysicsSelection("oadbDefaultlhc11h");
   triggerCount=0;
-  oadbLHC11h->AddCollisionTriggerClass(AliVEvent::kMB,"+CPBI[1|2_B1]-[NOPF|PF]-NOPF-ALLNOTRD","B",triggerCount);
+  oadbLHC11h->AddCollisionTriggerClass(AliVEvent::kMB,"+CPBI[1|2_B1]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
   oadbLHC11h->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC11h->SetOfflineTrigger       (triggerCount,"V0A && V0C && !TPCLaserWarmUp && ZDCTime");
 
   triggerCount++;
-  oadbLHC11h->AddCollisionTriggerClass(AliVEvent::kCentral,"+C[SEMI|CENT|VLH|VHN][|_B2|_R1|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
+  oadbLHC11h->AddCollisionTriggerClass(AliVEvent::kCentral,"+C[SEMI|CENT|VLN|VHN][|_B2|_R1|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
   oadbLHC11h->SetHardwareTrigger      (triggerCount,"V0A && V0C && Central");
   oadbLHC11h->SetOfflineTrigger       (triggerCount,"V0A && V0C && !TPCLaserWarmUp && ZDCTime");
   
   triggerCount++;
-  oadbLHC11h->AddCollisionTriggerClass(AliVEvent::kSemiCentral,"+C[SEMI|CENT|VLH|VHN][|_B2|_R1|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
+  oadbLHC11h->AddCollisionTriggerClass(AliVEvent::kSemiCentral,"+C[SEMI|CENT|VLN|VHN][|_B2|_R1|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
   oadbLHC11h->SetHardwareTrigger      (triggerCount,"V0A && V0C && SemiCentral && !Central");
   oadbLHC11h->SetOfflineTrigger       (triggerCount,"V0A && V0C && !TPCLaserWarmUp && ZDCTime");
 

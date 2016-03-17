@@ -1,4 +1,5 @@
-AliAnalysisTaskMuonRefitVtx* AddTaskMuonRefitVtx(Bool_t useMeanVtxSPD = kFALSE, Bool_t useMCVtx = kFALSE)
+AliAnalysisTaskMuonRefitVtx* AddTaskMuonRefitVtx(Bool_t useMeanVtxSPD = kFALSE, Bool_t useMCVtx = kFALSE,
+                                                 Bool_t useTrackVtx = kFALSE)
 {
   /// Add AliAnalysisTaskMuonRefitVtx to the train (Philippe Pillot)
   
@@ -24,6 +25,7 @@ AliAnalysisTaskMuonRefitVtx* AddTaskMuonRefitVtx(Bool_t useMeanVtxSPD = kFALSE, 
   }
   task->UseMeanVtxSPD(useMeanVtxSPD);
   task->UseMCVtx(useMCVtx);
+  task->UseTrackVtx(useTrackVtx);
   
   // Add task to analysis manager
   mgr->AddTask(task);

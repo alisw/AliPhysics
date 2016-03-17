@@ -83,6 +83,7 @@ struct FastAnalysis : public TSelector
   ULong_t fOK;
   /** Monitor frequency in seconds */
   Int_t fMonitor;
+  Bool_t fCompatB;
   /** 
    * Constructor.  Opens the file passed and sets internal pointers to
    * tree, header, and particle list.
@@ -98,7 +99,8 @@ struct FastAnalysis : public TSelector
       fCentMethod(""),
       fCentHist(0),
       fOK(0),
-      fMonitor(monitor)
+      fMonitor(monitor),
+      fCompatB(false)
   {
   }
   /**
@@ -161,10 +163,13 @@ struct FastAnalysis : public TSelector
     fParticles = new TClonesArray("TParticle");
     fTree->SetBranchAddress("header",    &(fHeader->fRunNo));
     fTree->SetBranchAddress("particles", &fParticles);
-    if (!fCentMethod.IsNull())
-      fTree->SetBranchAddress(fCentMethod, &fEventMult);
-    return true;
-   
+    if (!fCentMethod.IsNull()) {
+      if (fCentMethod.EqualTo("B") && !fTree->GetBranch("B"))
+	fCompatB = true;
+      else 
+	fTree->SetBranchAddress(fCentMethod, &fEventMult);
+    }
+    return true;   
   }
   /** 
    * Set-up the estimator is one is chosen.  We get a pointer to the
@@ -175,7 +180,30 @@ struct FastAnalysis : public TSelector
   virtual Bool_t SetupEstimator()
   {
     if (fCentMethod.IsNull()) return true;
-
+    if (fCompatB) {
+      Warning("SetupEstimator", "Using fixed estimator");
+      Double_t bs[] = { 0,      1.57,  2.22,  2.71,  3.13,
+			3.50,   4.94,  6.05,  6.98,  7.81,
+			8.55,   9.23,  9.88, 10.47, 11.04,
+			11.58, 12.09, 12.58, 13.05, 13.52,
+			13.97, 14.43, 14.96, 15.67, 20.00 };
+      Double_t cs[] = { 0.5,   1.5,   2.5,   3.5,   4.5,
+			7.5,   12.5,  17.5,  22.5,  27.5,
+			32.5,  37.5,  42.5,  47.5,  52.5,
+			57.5,  62.5,  67.5,  72.5,  77.5,
+			82.5,  87.5,  92.5,  97.5 };
+      TH1* h = new TH1D("rawB", "B to Centrality", 28, bs);
+      h->SetDirectory(0);
+      h->SetXTitle("b\\hbox{ [fm]}");
+      h->SetYTitle("c\\hbox{ [\\%]}");
+      h->SetBinContent(0,1);
+      for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+	h->SetBinContent(i, cs[i-1]);
+      }
+      // fCentHist = h;
+      return true;
+    }
+    
     if (!fTree) {
       Warning("SetupEstimator", "No tree defined!");
       return false;
@@ -326,6 +354,10 @@ struct FastAnalysis : public TSelector
    */
   Double_t GetCentrality() const
   {
+#if 0
+    Info("GetCentrality", "fCentHist=%p, fCentMethod=%s cent=%f",
+	 fCentHist, fCentMethod.Data(), fHeader->fC);
+#endif 
     if (!fCentHist) return fHeader->fC;
     Int_t nBin = fCentHist->GetNbinsX();
     Int_t bin  = fCentHist->GetXaxis()->FindBin(fEventMult);

@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGGAPHOSTasks)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
@@ -45,7 +46,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
                    )
 
@@ -67,6 +70,8 @@ set(SRCS
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
     PHOS_PbPb/AliAnalysisTaskgg.cxx
+    PHOS_PbPb/AliAnalysisTaskggMC.cxx
+    PHOS_PbPb/AliAnalysisTaskPHOSPCMgg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx
@@ -157,6 +162,7 @@ install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCali
 install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
 install(FILES PHOS_GAFlow/AddTaskThermalGAFlow.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)
+install(FILES PHOS_GAFlow/AddTaskThermalGAFlowMC.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)
 install(FILES PHOS_NeutralMeson/AddTaskAliAnalysisTaskPHOSNeutralMeson.C DESTINATION PWGGA/PHOSTasks/PHOS_NeutralMeson)
 install(FILES PHOS_Tagging/AddTaskPHOSTagging.C DESTINATION PWGGA/PHOSTasks/PHOS_Tagging)
 install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)

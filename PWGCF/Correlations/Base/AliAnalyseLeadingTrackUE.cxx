@@ -887,7 +887,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   // only charged
   if (onlyCharged && !part->Charge())return 0;
   
-  part->SetUniqueID(fEventCounter * 100000 + ipart);
+  part->SetUniqueID((fEventCounter * 50000 + ipart) * 10);
   return part;
 }
 

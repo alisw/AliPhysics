@@ -148,6 +148,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
    void  FillTPCdEdxCheck();                  // Quick check for the TPC dEdx 
    void  FillTPCdEdxMC();                     // Fill all info + TIdenMC from MC to do MC closure test
    void  FastGen();                           // Run over galice.root for Fastgen
+   void  FillDnchDeta();                      // Fill dnch/deta values for each cent and eta bin  
    void  FillTPCdEdxMCEffMatrix();            // Prepare efficiency matrix
    void  FillCleanElectrons();                // Fill Clean Electrons 
    void  FillCleanPions();                    // Fill Clean Pions
@@ -174,6 +175,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   TTreeSRedirector * fTreeSRedirector;        //! temp tree to dump output
   TTree            * fTreeMCrec;              // tree for reconstructed moments
   TTree            * fTreeMCgen;              // tree for reconstructed moments
+  TTree            * fTreeDnchDeta;           // tree for dnch/deta calculation
   TTree            * fTreeMC;                 // tree for mc samples
   TTree            * fTreedEdxCheck;          // tree to check dEdx performance for a small data sample 
   TTree            * fTreeBayes;              // tree to save bayesian probabilities
@@ -331,16 +333,16 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   //
   // control and QA histograms
   //
-  THnF             * fHistPosEffMatrixRec;       //! histogram efficiency matrix --> reconstructed traks
-  THnF             * fHistNegEffMatrixRec;       //! histogram efficiency matrix --> generated traks
-  THnF             * fHistPosEffMatrixGen;       //! histogram efficiency matrix --> reconstructed pions
-  THnF             * fHistNegEffMatrixGen;       //! histogram efficiency matrix --> generated pions
+  THnF             * fHistPosEffMatrixRec;       // histogram efficiency matrix --> reconstructed traks
+  THnF             * fHistNegEffMatrixRec;       // histogram efficiency matrix --> generated traks
+  THnF             * fHistPosEffMatrixGen;       // histogram efficiency matrix --> reconstructed pions
+  THnF             * fHistNegEffMatrixGen;       // histogram efficiency matrix --> generated pions
  
-  TH1F             * fHistEmptyEvent;         //! control histogram for empty event
-  TH1F             * fHistCentrality;         //! control histogram for centrality
-  TH1F             * fHistVertex;             //! control histogram for vertexZ
-  THnF             * fHistdEdxTPC;            //! 5D hist of dEdx from all TPC
-  TH2F             * fHistArmPod;             //! control histogram for Armanteros Podolanski plot
+  TH1F             * fHistEmptyEvent;         // control histogram for empty event
+  TH1F             * fHistCentrality;         // control histogram for centrality
+  TH1F             * fHistVertex;             // control histogram for vertexZ
+  THnF             * fHistdEdxTPC;            // 5D hist of dEdx from all TPC
+  TH2F             * fHistArmPod;             // control histogram for Armanteros Podolanski plot
    
   ClassDef(AliAnalysisTaskEbyeIterPID, 1);
   

@@ -539,6 +539,7 @@ void AliAnalysisTaskSpectraBoth::UserExec(Option_t *)
 
  // cout<< ntracks<<endl;
   fHistMan->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->Fill(npar,ntracks);
+    fPID->SetoldT0();
   PostData(1, fHistMan  );
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);

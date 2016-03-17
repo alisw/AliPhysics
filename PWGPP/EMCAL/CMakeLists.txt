@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGPPEMCAL)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGPP/EMCAL)
@@ -22,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGPP/EMCAL)
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                    )
 
 # Sources in alphabetical order

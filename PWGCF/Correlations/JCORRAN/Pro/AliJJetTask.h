@@ -43,6 +43,7 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   void SetDebug(int n) {debug = n; }
+  void SetMC(int mc) {fIsMC = mc;} 
   int  GetDebug(){ return debug; }
   vector<TString> &GetJetFinderString() { return fJetFinderString;}
 
@@ -86,6 +87,7 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
 
   Int_t fNJetFinder;
   Int_t debug;
+  Int_t fIsMC;
 
   ClassDef(AliJJetTask, 4) // jet sample analysis task
 

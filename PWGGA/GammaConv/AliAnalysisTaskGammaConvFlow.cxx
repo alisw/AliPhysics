@@ -146,14 +146,20 @@ fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
 fhistoEPVZ(NULL),
-fMinMass(0),
-fMaxMass(0),
-fMinKappa(0),
-fMaxKappa(0),
+fMinMass(-1),
+fMaxMass(10),
+fMinKappa(-1),
+fMaxKappa(100),
+fFilterVariable(1),
+fMinFilter(0),
+fMaxFilter(0.2),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
-fFlowEvent(0)
+fFlowEvent(0),
+fIsMC(0),
+fMCEvent(NULL),
+fMCStack(NULL)
 {
 	// DefineOutput(1, TList::Class());
 	// DefineOutput(2, AliFlowEventSimple::Class());
@@ -241,14 +247,20 @@ fDoMesonQA(0),
 fDoPhotonQA(0),
 fIsFromMBHeader(kTRUE),
 fhistoEPVZ(NULL),
-fMinMass(0),
-fMaxMass(0),
-fMinKappa(0),
-fMaxKappa(0),
+fMinMass(-1),
+fMaxMass(10),
+fMinKappa(-1),
+fMaxKappa(100),
+fFilterVariable(1),
+fMinFilter(0),
+fMaxFilter(0.2),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
-fFlowEvent(0)
+fFlowEvent(0),
+fIsMC(0),
+fMCEvent(NULL),
+fMCStack(NULL)
 
 {
     // Define output slots here
@@ -314,6 +326,10 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	cc->SetNbinsQ(500);
 	cc->SetQMin(0.0);
 	cc->SetQMax(3.0);
+  
+  cc->SetMassMin(fMinFilter);
+  cc->SetMassMax(fMaxFilter);
+  cc->SetNbinsMass(100);
 
 	// Array of current cut's gammas
 	fGammaCandidates = new TList();
@@ -425,8 +441,10 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		hKappaTPC[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt",200,0,10,250,0,25);
 		fESDList[iCut]->Add(hKappaTPC[iCut]);
     
-    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
+    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt_after","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
     fESDList[iCut]->Add(hKappaTPC_after[iCut]);
+    
+    //2d histogram filling the cut and value - control check for selections
 		
 		if (fDoPhotonQA == 2){
 			fPhotonDCAList[iCut] = new TList();
@@ -586,6 +604,8 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 	}
 	
 	fInputEvent = InputEvent();
+  if(fIsMC) fMCEvent = MCEvent();
+  if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){ fMCStack = fMCEvent->Stack(); }
 
 	fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 	
@@ -650,8 +670,10 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
         AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
         if(!PhotonCandidate) continue;
         fIsFromMBHeader = kTRUE;
-
         
+        hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+        if (PhotonCandidate->GetInvMassPair() < fMinMass || PhotonCandidate->GetInvMassPair() > fMaxMass) continue;
+        if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent) < fMinKappa || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent) > fMaxKappa) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
@@ -661,7 +683,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
             if(fIsFromMBHeader){
                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
                 hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
-                hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+                hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
                 if (fDoPhotonQA > 0){
                     hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
                     hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
@@ -710,7 +732,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
                 if(fIsFromMBHeader){
                     hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
                     hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
-                    hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+                    hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
                     if (fDoPhotonQA > 0){
                         hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
                         hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
@@ -751,7 +773,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
             if(fIsFromMBHeader){
                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
                 hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
-                hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+                hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
                 if (fDoPhotonQA > 0){
                     hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
                     hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
@@ -826,13 +848,29 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 		
 		AliAODConversionPhoton *gammaForv2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
 		if (gammaForv2 == NULL) return;
-    if (gammaForv2->GetInvMassPair() < fMinMass || gammaForv2->GetInvMassPair() > fMaxMass) return;
-    if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent) < fMinKappa || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent) > fMaxKappa) return;
-    hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent),gammaForv2->Pt());
     AliFlowTrack *sTrack = new AliFlowTrack();
 		sTrack->SetForRPSelection(kFALSE);
 		sTrack->SetForPOISelection(kTRUE);
-		sTrack->SetMass(263732);
+    
+    if(fFilterVariable==1){//using mass for POI selections
+      sTrack->SetMass(gammaForv2->GetInvMassPair());
+    }else if(fFilterVariable==2){//using Kappa for POI selections
+      sTrack->SetMass(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent));
+    }else if(fFilterVariable==3 && fIsMC){//MC ElectronElectron + mass
+      if(!MCElectronElectron(gammaForv2)) return;
+      sTrack->SetMass(gammaForv2->GetInvMassPair());
+    }else if(fFilterVariable==4 && fIsMC){//MC ElectronElectron + kappa
+      if(!MCElectronElectron(gammaForv2)) return;
+      sTrack->SetMass(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent));
+    }else if(fFilterVariable==5 && fIsMC){//MC Not ElectronElectron + mass
+      if(MCElectronElectron(gammaForv2)) return;
+      sTrack->SetMass(gammaForv2->GetInvMassPair());
+    }else if(fFilterVariable==6 && fIsMC){//MC Not ElectronElectron + kappa
+      if(MCElectronElectron(gammaForv2)) return;
+      sTrack->SetMass(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(gammaForv2,fInputEvent));
+    }else{//no additional POI selection
+      sTrack->SetMass(123456);
+    }
 		sTrack->SetPt(gammaForv2->Pt());
 		sTrack->SetPhi(gammaForv2->GetPhotonPhi());
 		sTrack->SetEta(gammaForv2->GetPhotonEta());
@@ -877,6 +915,28 @@ void AliAnalysisTaskGammaConvFlow::PrepareFlowEvent(Int_t iMulti, AliFlowEvent *
     FlowEv->SetReferenceMultiplicity(iMulti);
     FlowEv->DefineDeadZone(0, 0, 0, 0);
     //  FlowEv->TagSubeventsInEta(-0.7, 0, 0, 0.7);
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskGammaConvFlow::MCElectronElectron( AliAODConversionPhoton *MCPhoton ){
+  
+  
+  TParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCStack);
+  TParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCStack);
+  if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
+  Int_t pdgCodePos = 0; 
+  Int_t pdgCodeNeg = 0;
+  Bool_t IsItElectronElectron;
+  
+  if( posDaughter->GetMother(0) != negDaughter->GetMother(0)  || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) {
+    pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
+    pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+    if(pdgCodePos==11 && pdgCodeNeg==11) IsItElectronElectron = kTRUE;
+  }else{
+    IsItElectronElectron = kFALSE;
+  }
+  
+  return IsItElectronElectron;
+    
 }
 
 

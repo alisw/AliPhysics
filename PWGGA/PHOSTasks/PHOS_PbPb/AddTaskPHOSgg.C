@@ -1,5 +1,6 @@
 AliAnalysisTaskgg* AddTaskPHOSgg(const char* name = "PHOSgg",
-                                 UInt_t offlineTriggerMask = AliVEvent::kCentral)
+                                 UInt_t offlineTriggerMask = AliVEvent::kCentral,
+				 Bool_t isPbPb=kTRUE)
 {
   //Add a task AliAnalysisTaskGammaFlow to the analysis train
   //Author: Dmitri Peressounko
@@ -18,7 +19,8 @@ AliAnalysisTaskgg* AddTaskPHOSgg(const char* name = "PHOSgg",
  
   AliAnalysisTaskgg* task = new AliAnalysisTaskgg(Form("%sTask", name));
   task->SelectCollisionCandidates(offlineTriggerMask);
-
+  task->SelectPbPb(isPbPb) ;
+  
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   

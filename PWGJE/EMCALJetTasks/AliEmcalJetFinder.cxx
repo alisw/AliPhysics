@@ -147,11 +147,11 @@ Bool_t AliEmcalJetFinder::Filter(AliEmcalJet *pJet, AliJetContainer *pContJets, 
 //=============================================================================
 
   if (pJet->HasGhost()) {
-    const std::vector<AliEmcalJet::Ghost> aGhosts = pJet->GetGhosts();
-    for (UInt_t i=0; i<aGhosts.size(); i++) AddInputGhost(aGhosts[i].fPx,
-                                                          aGhosts[i].fPy,
-                                                          aGhosts[i].fPz,
-                                                          aGhosts[i].fE);
+    const std::vector<TLorentzVector> aGhosts = pJet->GetGhosts();
+    for (UInt_t i=0; i<aGhosts.size(); i++) AddInputGhost(aGhosts[i].Px(),
+                                                          aGhosts[i].Py(),
+                                                          aGhosts[i].Pz(),
+                                                          aGhosts[i].E());
   }
 //=============================================================================
 

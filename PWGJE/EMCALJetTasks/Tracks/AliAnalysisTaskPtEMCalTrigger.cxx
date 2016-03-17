@@ -25,6 +25,7 @@
 #include <TDirectory.h>
 #include <TH1.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TList.h>
 #include <TKey.h>
 #include <TMath.h>
@@ -48,10 +49,9 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalPhysicsSelection.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
-#include "AliEMCalHistoContainer.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
-#include "AliEMCalPtTaskTrackSelectionESD.h"
-#include "AliEMCalPtTaskTrackSelectionAOD.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelectionESD.h"
+#include "AliEmcalTrackSelectionAOD.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
@@ -73,18 +73,18 @@ namespace EMCalTriggerPtAnalysis {
    * Dummy constructor, initialising the values with default (NULL) values
    */
   AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger():
-                		    AliAnalysisTaskEmcalJet(),
-                		    fHistos(NULL),
-                		    fListTrackCuts(NULL),
-                		    fEtaRange(),
-                		    fPtRange(),
-                		    fEnergyRange(),
-                		    fVertexRange(),
-                		    fJetContainersMC(),
-                		    fJetContainersData(),
-                		    fSelectAllTracks(kFALSE),
-                		    fSwapEta(kFALSE),
-                		    fUseTriggersFromTriggerMaker(kFALSE)
+                		                AliAnalysisTaskEmcalJet(),
+                		                fHistos(NULL),
+                		                fListTrackCuts(NULL),
+                		                fEtaRange(),
+                		                fPtRange(),
+                		                fEnergyRange(),
+                		                fVertexRange(),
+                		                fJetContainersMC(),
+                		                fJetContainersData(),
+                		                fSelectAllTracks(kFALSE),
+                		                fSwapEta(kFALSE),
+                		                fUseTriggersFromTriggerMaker(kFALSE)
   {
   }
 
@@ -93,18 +93,18 @@ namespace EMCalTriggerPtAnalysis {
    * @param name Name of the task
    */
   AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger(const char *name):
-                		    AliAnalysisTaskEmcalJet(name, kTRUE),
-                		    fHistos(NULL),
-                		    fListTrackCuts(NULL),
-                		    fEtaRange(),
-                		    fPtRange(),
-                        fEnergyRange(),
-                        fVertexRange(),
-                        fJetContainersMC(),
-                        fJetContainersData(),
-                        fSelectAllTracks(kFALSE),
-                		    fSwapEta(kFALSE),
-                		    fUseTriggersFromTriggerMaker(kFALSE)
+                		                AliAnalysisTaskEmcalJet(name, kTRUE),
+                		                fHistos(NULL),
+                		                fListTrackCuts(NULL),
+                		                fEtaRange(),
+                		                fPtRange(),
+                		                fEnergyRange(),
+                		                fVertexRange(),
+                		                fJetContainersMC(),
+                		                fJetContainersData(),
+                		                fSelectAllTracks(kFALSE),
+                		                fSwapEta(kFALSE),
+                		                fUseTriggersFromTriggerMaker(kFALSE)
   {
 
     fListTrackCuts = new TList;
@@ -134,7 +134,7 @@ namespace EMCalTriggerPtAnalysis {
   void AliAnalysisTaskPtEMCalTrigger::UserCreateOutputObjects(){
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
     SetCaloTriggerPatchInfoName("EmcalTriggers");
-    fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
+    fHistos = new THistManager("PtEMCalTriggerHistograms");
     fHistos->ReleaseOwner();
 
     if(fJetContainersMC.GetEntries()){
@@ -234,72 +234,66 @@ namespace EMCalTriggerPtAnalysis {
     DefineAxis(hpatchampaxes[4],  "emcalgood", "EMCAL good event", 2, -0.5, 1.5);
     const TAxis *patchampaxes[5];
     for(int iaxis = 0; iaxis < 5; ++iaxis) patchampaxes[iaxis] = hpatchampaxes + iaxis;
-    try{
-      std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
-      for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
-        fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
-        fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
-        fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 5, patchampaxes, "s");
-      }
-
-      // Create histogram for MC-truth
-      fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes, "s");
-      if(fJetCollArray.GetEntries()){
-        for(int irad = 0; irad < kNJetRadii; irad++){
-          fHistos->CreateTHnSparse(Form("hMCtrueParticlesRad%02d", int(kJetRadii[irad]*10)),
-              Form("Particle-based histogram for MC-true particles in Jets with radius %.1f", kJetRadii[irad]*10), 5, trackaxes, "s");
-        }
-        // histogram for isolated particles
-        fHistos->CreateTHnSparse("hMCtrueParticlesIsolated", "Particle-based histogram for isolated MC-true particles", 5, trackaxes, "s");
-      }
-      for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
-        const std::string name = it->first, &title = it->second;
-        // Create event-based histogram
-        fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
-        // Create track-based histogram
-        fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events  for tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
-        // Create cluster-based histogram (Uncalibrated and calibrated clusters)
-        fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
-        fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
-        if(fJetCollArray.GetEntries()){
-          // Create histograms for particles in different jetfinder radii, only track-based
-          for(int irad = 0; irad < kNJetRadii; irad++){
-            fHistos->CreateTHnSparse(Form("hTrackHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
-                Form("Track-based data for %s events for tracks in jets with Radius %.1f", title.c_str(), kJetRadii[irad]), 7, trackaxes, "s");
-            fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
-                Form("Track-based data for %s events for tracks matched to EMCal clusters in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
-                7, trackaxes, "s");
-            fHistos->CreateTHnSparse(Form("hMCTrackHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
-                Form("Track-based data for %s events with MC kinematics for tracks in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
-                7, trackaxes, "s");
-            fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
-                Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
-                7, trackaxes, "s");
-            fHistos->CreateTHnSparse(Form("hClusterCalibHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
-                Form("Calib. cluster-based histogram for %s events for clusters in Jets with radius %.1f", title.c_str(), kJetRadii[irad]), 4, clusteraxes, "s");
-          }
-        }
-        // Create also histograms for isolated particles
-        fHistos->CreateTHnSparse(Form("hTrackHist%sIsolated", name.c_str()), Form("Track-based data for %s events for isolated tracks", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%sIsolated", name.c_str()), Form("Track-based data for %s events for isolated tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hMCTrackHist%sIsolated", name.c_str()), Form("Track-based data for %s events with MC kinematics for isolated tracks", title.c_str()), 7, trackaxes, "s");
-        fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%sIsolated", name.c_str()), Form("Track-based data for %s events with MC kinematics for isolated tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
-      }
-      fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
-      fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
-    } catch (HistoContainerContentException &e){
-      std::stringstream errormessage;
-      errormessage << "Creation of histogram failed: " << e.what();
-      AliError(errormessage.str().c_str());
+    std::string patchnames[] = {"Level0", "JetHigh", "JetLow", "GammaHigh", "GammaLow"};
+    for(std::string * triggerpatch = patchnames; triggerpatch < patchnames + sizeof(patchnames)/sizeof(std::string); ++triggerpatch){
+      fHistos->CreateTHnSparse(Form("Energy%s", triggerpatch->c_str()), Form("Patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
+      fHistos->CreateTHnSparse(Form("EnergyRough%s", triggerpatch->c_str()), Form("Rough patch energy for %s trigger patches", triggerpatch->c_str()), 5, patchenergyaxes, "s");
+      fHistos->CreateTHnSparse(Form("Amplitude%s", triggerpatch->c_str()), Form("Patch amplitude for %s trigger patches", triggerpatch->c_str()), 5, patchampaxes, "s");
     }
+
+    // Create histogram for MC-truth
+    fHistos->CreateTHnSparse("hMCtrueParticles", "Particle-based histogram for MC-true particles", 5, trackaxes, "s");
+    if(fJetCollArray.GetEntries()){
+      for(int irad = 0; irad < kNJetRadii; irad++){
+        fHistos->CreateTHnSparse(Form("hMCtrueParticlesRad%02d", int(kJetRadii[irad]*10)),
+            Form("Particle-based histogram for MC-true particles in Jets with radius %.1f", kJetRadii[irad]*10), 5, trackaxes, "s");
+      }
+      // histogram for isolated particles
+      fHistos->CreateTHnSparse("hMCtrueParticlesIsolated", "Particle-based histogram for isolated MC-true particles", 5, trackaxes, "s");
+    }
+    for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
+      const std::string name = it->first, &title = it->second;
+      // Create event-based histogram
+      fHistos->CreateTH2(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), pileupaxis, zvertexBinning);
+      // Create track-based histogram
+      fHistos->CreateTHnSparse(Form("hTrackHist%s", name.c_str()), Form("Track-based data for %s events", title.c_str()), 7, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events  for tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hMCTrackHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics", title.c_str()), 7, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%s", name.c_str()), Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
+      // Create cluster-based histogram (Uncalibrated and calibrated clusters)
+      fHistos->CreateTHnSparse(Form("hClusterCalibHist%s", name.c_str()), Form("Calib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
+      fHistos->CreateTHnSparse(Form("hClusterUncalibHist%s", name.c_str()), Form("Uncalib. cluster-based histogram for %s events", title.c_str()), 4, clusteraxes, "s");
+      if(fJetCollArray.GetEntries()){
+        // Create histograms for particles in different jetfinder radii, only track-based
+        for(int irad = 0; irad < kNJetRadii; irad++){
+          fHistos->CreateTHnSparse(Form("hTrackHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+              Form("Track-based data for %s events for tracks in jets with Radius %.1f", title.c_str(), kJetRadii[irad]), 7, trackaxes, "s");
+          fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+              Form("Track-based data for %s events for tracks matched to EMCal clusters in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
+              7, trackaxes, "s");
+          fHistos->CreateTHnSparse(Form("hMCTrackHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+              Form("Track-based data for %s events with MC kinematics for tracks in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
+              7, trackaxes, "s");
+          fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+              Form("Track-based data for %s events with MC kinematics for tracks matched to EMCal clusters in jets with Radius %.1f", title.c_str(), kJetRadii[irad]),
+              7, trackaxes, "s");
+          fHistos->CreateTHnSparse(Form("hClusterCalibHist%sRad%02d", name.c_str(), int(kJetRadii[irad]*10)),
+              Form("Calib. cluster-based histogram for %s events for clusters in Jets with radius %.1f", title.c_str(), kJetRadii[irad]), 4, clusteraxes, "s");
+        }
+      }
+      // Create also histograms for isolated particles
+      fHistos->CreateTHnSparse(Form("hTrackHist%sIsolated", name.c_str()), Form("Track-based data for %s events for isolated tracks", title.c_str()), 7, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hTrackInAcceptanceHist%sIsolated", name.c_str()), Form("Track-based data for %s events for isolated tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hMCTrackHist%sIsolated", name.c_str()), Form("Track-based data for %s events with MC kinematics for isolated tracks", title.c_str()), 7, trackaxes, "s");
+      fHistos->CreateTHnSparse(Form("hMCTrackInAcceptanceHist%sIsolated", name.c_str()), Form("Track-based data for %s events with MC kinematics for isolated tracks matched to EMCal clusters", title.c_str()), 7, trackaxes, "s");
+    }
+    fHistos->CreateTHnSparse("hEventTriggers", "Trigger type per event", 5, triggeraxis);
+    fHistos->CreateTHnSparse("hEventsTriggerbit", "Trigger bits for the different events", 4, bitaxes);
     fOutput->Add(fHistos->GetListOfHistograms());
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       TIter cutIter(fListTrackCuts);
-      AliEMCalPtTaskVTrackSelection *cutObject(NULL);
-      while((cutObject = dynamic_cast<AliEMCalPtTaskVTrackSelection *>(cutIter()))){
+      AliEmcalTrackSelection *cutObject(NULL);
+      while((cutObject = dynamic_cast<AliEmcalTrackSelection *>(cutIter()))){
         AliESDtrackCuts *cuts = dynamic_cast<AliESDtrackCuts *>(cutObject->GetTrackCuts(0));
         if(cuts){
           cuts->DefineHistograms();
@@ -383,13 +377,7 @@ namespace EMCalTriggerPtAnalysis {
     if(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE){
       triggerbits[3] = 1.;
     }
-    try{
-      fHistos->FillTHnSparse("hEventsTriggerbit", triggerbits);
-    } catch(HistoContainerContentException &e) {
-      std::stringstream errormessage;
-      errormessage << "Filling of histogram failed: " << e.what();
-      AliError(errormessage.str().c_str());
-    }
+    fHistos->FillTHnSparse("hEventsTriggerbit", triggerbits);
 
     std::vector<std::string> triggerstrings;
     // EMCal-triggered event, distinguish types
@@ -424,13 +412,7 @@ namespace EMCalTriggerPtAnalysis {
         triggerstrings.push_back("EMCLowGammaOnly");
     }
 
-    try{
-      fHistos->FillTHnSparse("hEventTriggers", triggers);
-    } catch (HistoContainerContentException &e){
-      std::stringstream errormessage;
-      errormessage << "Filling of histogram failed: " << e.what();
-      AliError(errormessage.str().c_str());
-    }
+    fHistos->FillTHnSparse("hEventTriggers", triggers);
 
     // apply event selection: Combine the Pileup cut from SPD with the other pA Vertex selection cuts.
     bool isPileupEvent = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.);
@@ -458,7 +440,7 @@ namespace EMCalTriggerPtAnalysis {
     AliVParticle *part(NULL);
     if(fMCEvent){
       if(fJetCollArray.GetEntries() &&
-                  (jetContMC = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject((static_cast<TObjString *>(fJetContainersMC.At(0)))->String().Data())))){
+          (jetContMC = dynamic_cast<AliJetContainer *>(fJetCollArray.FindObject((static_cast<TObjString *>(fJetContainersMC.At(0)))->String().Data())))){
         // In case we have a jet array we loop over all MC selected particles in the particle container of the jet array
         TIter particles(jetContMC->GetParticleContainer()->GetArray());
         while((part = dynamic_cast<AliVParticle *>(particles()))){
@@ -533,7 +515,7 @@ namespace EMCalTriggerPtAnalysis {
     // found in a jet, and check for different cone radii around a jet
     if(fListTrackCuts && fListTrackCuts->GetEntries()){
       for(int icut = 0; icut < fListTrackCuts->GetEntries(); icut++){
-        AliEMCalPtTaskVTrackSelection *trackSelection = static_cast<AliEMCalPtTaskVTrackSelection *>(fListTrackCuts->At(icut));
+        AliEmcalTrackSelection *trackSelection = static_cast<AliEmcalTrackSelection *>(fListTrackCuts->At(icut));
         TIter trackIter(trackSelection->GetAcceptedTracks(fTracks));
         while((track = dynamic_cast<AliVTrack *>(trackIter()))){
           if(fMCEvent && !IsTrueTrack(track)) continue;   // Reject fake tracks in case of MC
@@ -731,21 +713,9 @@ namespace EMCalTriggerPtAnalysis {
       double vz, bool isPileup) {
     char histname[1024];
     sprintf(histname, "hEventHist%s", trigger);
-    try{
-      fHistos->FillTH2(histname, 0., vz);
-    } catch (HistoContainerContentException &e){
-      std::stringstream errormessage;
-      errormessage << "Filling of histogram failed: " << e.what();
-      AliError(errormessage.str().c_str());
-    }
+    fHistos->FillTH2(histname, 0., vz);
     if(!isPileup){
-      try{
-        fHistos->FillTH2(histname, 1., vz);
-      } catch(HistoContainerContentException &e){
-        std::stringstream errormessage;
-        errormessage << "Filling of histogram failed: " << e.what();
-        AliError(errormessage.str().c_str());
-      }
+      fHistos->FillTH2(histname, 1., vz);
     }
   }
 
@@ -799,32 +769,20 @@ namespace EMCalTriggerPtAnalysis {
         isEMCAL = kTRUE;
       }
     }
-    try{
+    fHistos->FillTHnSparse(histname, data);
+    if(fMCEvent) fHistos->FillTHnSparse(histnameMC, dataMC);
+    if(isEMCAL){
+      fHistos->FillTHnSparse(histnameAcc, data);
+      if(fMCEvent) fHistos->FillTHnSparse(histnameMCAcc, dataMC);
+    }
+    if(!isPileup){
+      data[4] = 1;
+      dataMC[4] = 1;
       fHistos->FillTHnSparse(histname, data);
       if(fMCEvent) fHistos->FillTHnSparse(histnameMC, dataMC);
       if(isEMCAL){
         fHistos->FillTHnSparse(histnameAcc, data);
         if(fMCEvent) fHistos->FillTHnSparse(histnameMCAcc, dataMC);
-      }
-    } catch (HistoContainerContentException &e){
-      std::stringstream errormessage;
-      errormessage << "Filling of histogram failed: " << e.what();
-      AliError(errormessage.str().c_str());
-    }
-    if(!isPileup){
-      data[4] = 1;
-      dataMC[4] = 1;
-      try{
-        fHistos->FillTHnSparse(histname, data);
-        if(fMCEvent) fHistos->FillTHnSparse(histnameMC, dataMC);
-        if(isEMCAL){
-          fHistos->FillTHnSparse(histnameAcc, data);
-          if(fMCEvent) fHistos->FillTHnSparse(histnameMCAcc, dataMC);
-        }
-      } catch (HistoContainerContentException &e){
-        std::stringstream errormessage;
-        errormessage << "Filling of histogram failed: " << e.what();
-        AliError(errormessage.str().c_str());
       }
     }
   }
@@ -840,22 +798,10 @@ namespace EMCalTriggerPtAnalysis {
   void AliAnalysisTaskPtEMCalTrigger::FillClusterHist(const char* histname,
       const AliVCluster* clust, double vz, bool isPileup, bool isMinBias) {
     double data[4] =  {clust->E(), vz, 0, isMinBias ? 1. : 0.};
-    try{
-      fHistos->FillTHnSparse(histname, data);
-    } catch (HistoContainerContentException &e){
-      std::stringstream errormessage;
-      errormessage << "Filling of histogram failed: " << e.what();
-      AliError(errormessage.str().c_str());
-    }
+    fHistos->FillTHnSparse(histname, data);
     if(!isPileup){
       data[2] = 1.;
-      try{
-        fHistos->FillTHnSparse(histname, data);
-      } catch (HistoContainerContentException &e){
-        std::stringstream errormessage;
-        errormessage << "Filling of histogram failed: " << e.what();
-        AliError(errormessage.str().c_str());
-      }
+      fHistos->FillTHnSparse(histname, data);
     }
   }
 
@@ -893,7 +839,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param trackCuts Object of type AliESDtrackCuts
    */
   void AliAnalysisTaskPtEMCalTrigger::AddESDTrackCuts(AliESDtrackCuts* trackCuts) {
-    fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionESD(trackCuts));
+    fListTrackCuts->AddLast(new AliEmcalTrackSelectionESD(trackCuts));
   }
 
   /**
@@ -902,7 +848,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param trackCuts Object of type AliESDtrackCuts
    */
   void AliAnalysisTaskPtEMCalTrigger::AddCutsForAOD(AliESDtrackCuts* trackCuts, UInt_t filterbits) {
-    fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionAOD(trackCuts, filterbits));
+    fListTrackCuts->AddLast(new AliEmcalTrackSelectionAOD(trackCuts, filterbits));
   }
 
 
@@ -951,7 +897,8 @@ namespace EMCalTriggerPtAnalysis {
   {
 
     const AliEmcalJet *result = NULL;
-    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    jets->ResetCurrentID();
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet();
     while(tmp){
       if(TrackInJet(track, tmp, jets->GetParticleContainer())){
         result = tmp;
@@ -1031,7 +978,8 @@ namespace EMCalTriggerPtAnalysis {
   const AliEmcalJet* AliAnalysisTaskPtEMCalTrigger::FoundClusterInJet(const AliVCluster* const clust, AliJetContainer* const jets) const {
 
     const AliEmcalJet *result = NULL;
-    const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
+    jets->ResetCurrentID();
+    const AliEmcalJet *tmp = jets->GetNextAcceptJet();
     while(tmp){
       if(ClusterInJet(clust, tmp, jets->GetClusterContainer())){
         result = tmp;

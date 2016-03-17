@@ -271,9 +271,11 @@ void AliAnalysisHadEtCorrections::GetTotalEt(Float_t hadEt,Float_t hadEtErr, Boo
   //Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr);
   Float_t emEt = 0;
   if(minEt>0){
+    cout<<"emEt = "<<scale<<"*("<<rawEmEt<<"-"<<hadronCorr<<"-"<<kaonCorr<<"-"<<neutronCorr<<"-"<<secondaryCorr<<")/"<<minEt<<endl;
     emEt = scale*(rawEmEt-hadronCorr-kaonCorr-neutronCorr-secondaryCorr)/minEt;
     totEtStatError = TMath::Sqrt(hadEtErr*hadEtErr+TMath::Power(scale*rawEmEtError/minEt,2));
   }
+  cout<<"totEt = "<<totEt<<" hadEt "<<hadEt<<" emEt "<<emEt<<endl;
   totEt = emEt+hadEt;
   //first add variance due to had et
   Float_t variance = (neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+backgroundFracErr*backgroundFracErr)*hadEt*hadEt;
@@ -295,7 +297,7 @@ void AliAnalysisHadEtCorrections::GetTotalEt(Float_t hadEt,Float_t hadEtErr, Boo
 
 
 }
-Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC) const{
+Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC, Bool_t withPID) const{
   //we calculate factors for each value and then multiply them to get the overall bounds
   //neutral corrections, pt cut, pid, efficiency, background
 
@@ -316,6 +318,10 @@ Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t i
     ptcutFracErr = (ffpTcutCorrectionTPCHigh-fpTcutCorrectionTPC)/fpTcutCorrectionTPC;
   }
   Float_t pidFracErr = (fNotIDConstTPCHigh-fNotIDConstTPC)/fNotIDConstTPC;
+  if(withPID){
+    if(fNotIDConstTPCNoID>0) pidFracErr = (fNotIDConstTPCNoIDHigh-fNotIDConstTPCNoID)/fNotIDConstTPCNoID;
+    else{cerr<<"No PID correction not set!"<<endl;}
+  }
   Float_t efficiencyFracErr = (fEfficiencyErrorHigh-fEfficiencyErrorLow)/2.0;
   Float_t backgroundFracErr = (fBackgroundErrorHigh-fBackgroundErrorLow)/2.0;
   if(fConstBackground) backgroundFracErr = (fConstBackgroundErrorHigh-fConstBackgroundErrorLow)/2.0;

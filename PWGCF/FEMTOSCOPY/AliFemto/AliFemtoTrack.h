@@ -196,7 +196,7 @@ public:
   void                   SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz);
 
 
-  void SetPrimaryVertex(double *vertex);
+  void SetPrimaryVertex(const double *vertex);
   void GetPrimaryVertex(double *vertex);
 
   //Alice stuff

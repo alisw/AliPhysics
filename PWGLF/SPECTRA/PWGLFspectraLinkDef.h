@@ -53,17 +53,6 @@
 
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectraMultiplicity+;
 
-#pragma link C++ class AliLnID+;
-#pragma link C++ class AliLnHistoMap+;
-#pragma link C++ class AliLnAODtrackCuts+;
-#pragma link C++ class AliAnalysisTaskB2+;
-#pragma link C++ class AliAnalysisTaskB2AOD+;
-#pragma link C++ class AliAnalysisNucleiMass+;
-#pragma link C++ class AliAnalysisNuclMult+;
-#pragma link C++ class AliAnalysisMCNuclMult+;
-
-#pragma link C++ class AliAnalysisDeuteronpA+;
-#pragma link C++ class AliAnalysisDeuteronTree+;
 
 #pragma link C++ class AliXtAnalysis+;
 #pragma link C++ class AliJXtHistos+;

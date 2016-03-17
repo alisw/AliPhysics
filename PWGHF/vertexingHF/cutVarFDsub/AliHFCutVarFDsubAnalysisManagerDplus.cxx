@@ -24,7 +24,7 @@ AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus()
   : AliHFCutVarFDsubAnalysisManager()
   , fNevents(0.)
   , fPID(kTRUE)
-  , fPIDAxis(7)
+  , fPIDAxis(3)
 {
   /// Default constructor
 }
@@ -102,6 +102,8 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Double_t*** cutslowset,
                                                    Int_t Rebin,
                                                    Int_t fsig,
                                                    Int_t fbkg,
+                                                   Double_t min,
+                                                   Double_t max,
                                                    Int_t nSets,
                                                    Int_t nPtBins,
                                                    Int_t nCutVariables) {
@@ -125,7 +127,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Double_t*** cutslowset,
         cutset[iSet]->AddCut(new AliHFCutVarFDsubCut(iCutVar,cutslowset[iSet][iPt][iCutVar],cutshighset[iSet][iPt][iCutVar]));
       }
       if(fPID) {
-        cutset[iSet]->AddCut(new AliHFCutVarFDsubCut(nCutVariables,1.5,2.5));
+        cutset[iSet]->AddCut(new AliHFCutVarFDsubCut(nCutVariables,1.51,2.49));
       }
       ptBin->Add((TObject*)cutset[iSet]);
     }
@@ -196,7 +198,7 @@ TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFil
       
       TH1F* hPtAcc = new TH1F("hPtAcc","",nPtBins,PtLims);
       hPtAcc->Divide(hPtGenAccReb,hPtGenLimAccReb,1.,1.,"B");
-
+      
       TH1F* hCrossSec = new TH1F(Form("hCrossSec%s",PromptOrFD.Data()),"",nPtBins,PtLims);
 
       Double_t BR=0.0913;

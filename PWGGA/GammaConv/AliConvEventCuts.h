@@ -184,6 +184,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
+      Bool_t    GetUseNewMultiplicityFramework(TString period); 
       void      GetCorrectEtaShiftFromPeriod(TString periodName);
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent); 
       TClonesArray*     GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
@@ -319,6 +320,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
       //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
       TH1F*                       hVertexZ;                               // vertex z distribution for selected events
+      TH1F*                       hEventPlaneAngle;                       //
+      Double_t                    fEventPlaneAngle;                       // EventPlaneAngle
       TH1F*                       hTriggerClass;                          // fired offline trigger class
       TH1F*                       hTriggerClassSelected;                  // selected fired offline trigger class
       TH1F*                       hTriggerClassesCorrelated;              // selected trigger class correlation with others
@@ -363,7 +366,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,17)
+      ClassDef(AliConvEventCuts,18)
 };
 
 

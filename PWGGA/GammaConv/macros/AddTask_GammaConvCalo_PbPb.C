@@ -1,3 +1,63 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                       *
+ * Author: Friederike Bock, Daniel Mühlheim                     *
+ * Version 1.0                                 *
+ *                                       *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its    *
+ * documentation strictly for non-commercial purposes is hereby granted    *
+ * without fee, provided that the above copyright notice appears in all    *
+ * copies and that both the copyright notice and this permission notice    *
+ * appear in the supporting documentation. The authors make no claims    *
+ * about the suitability of this software for any purpose. It is      *
+ * provided "as is" without express or implied warranty.               *
+ **************************************************************************/
+
+//***************************************************************************************
+//This AddTask is supposed to set up the main task
+//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaConvCalo.cxx) for
+//PbPb together with all supporting classes
+//***************************************************************************************
+
+//***************************************************************************************
+//CutHandler contains all cuts for a certain analysis and trainconfig,
+//it automatically checks length of cutStrings and takes care of the number of added cuts,
+//no specification of the variable 'numberOfCuts' needed anymore.
+//***************************************************************************************
+class CutHandlerConvCalo{
+  public:
+    CutHandlerConvCalo(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; clusterCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut, TString clusterCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvCalo: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || clusterCut.Length()!=19 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConvCalo: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; clusterCutArray[nCuts]=clusterCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvCalo: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvCalo: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConvCalo: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvCalo: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+    TString* clusterCutArray;
+    TString* mesonCutArray;
+};
+
+//***************************************************************************************
+//main function
+//***************************************************************************************
 void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                 = 1,                  // change different set of cuts
                                   Int_t     isMC                        = 0,               // run MC 
                                   Int_t     enableQAMesonTask           = 0,                 // enable QA in AliAnalysisTaskGammaConvV1
@@ -116,92 +176,97 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                 = 1,    
   task= new AliAnalysisTaskGammaConvCalo(Form("GammaConvCalo_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-  // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 5;
-  if (trainConfig == 4 || trainConfig == 5 || trainConfig == 6 ||
-      trainConfig == 7 || trainConfig == 8 || trainConfig == 9 ||
-      trainConfig == 10 || trainConfig == 11) 
-      numberOfCuts = 1;
-  
-  TString *eventCutArray    = new TString[numberOfCuts];
-  TString *photonCutArray   = new TString[numberOfCuts];
-  TString *clusterCutArray  = new TString[numberOfCuts];
-  TString *mesonCutArray    = new TString[numberOfCuts];
+
+  //create cut handler
+  CutHandlerConvCalo cuts;
+
+  // cluster cuts
+  // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
+  // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
   
   if (trainConfig == 1){ // EMCAL clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
-    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[ 1] = "0163103100000010"; // 5-10%
-    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000010"; // 0-10%
-    eventCutArray[ 3] = "52400013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000010"; // 20-40%
-    eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000010"; // 20-50%
+    cuts.AddCut("60100013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 0-10%
+    cuts.AddCut("52400013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 20-40%
+    cuts.AddCut("52500013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 20-50%
   } else if (trainConfig == 2){ // EMCAL clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
-    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[ 1] = "0163103100000010"; // 5-10%
-    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000010"; // 0-10%
-    eventCutArray[ 3] = "51200013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000010"; // 10-20%
-    eventCutArray[ 4] = "52400013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000010"; // 20-40%
+    cuts.AddCut("60100013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 0-10%
+    cuts.AddCut("51200013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 10-20%
+    cuts.AddCut("52400013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 20-40%
   } else if (trainConfig == 3){ // EMCAL clusters
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000010"; // 40-60%
-    eventCutArray[ 1] = "56800013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[ 1] = "0163103100000010"; // 60-80%
-    eventCutArray[ 2] = "52600013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000010"; // 20-60%
-    eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000010"; // 40-80%
-    eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000010"; // 20-50%
+    cuts.AddCut("54600013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 40-60%
+    cuts.AddCut("56800013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 60-80%
+    cuts.AddCut("52600013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 20-60%
+    cuts.AddCut("54800013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 40-80%
+    cuts.AddCut("52500013","00200009297002008250400000","1111100050032230000","0163103100000010"); // 20-50%
   } else if (trainConfig == 4){ // EMCAL clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
+    cuts.AddCut("60100013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 0-5%
   } else if (trainConfig == 5){ // EMCAL clusters
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 5-10%
+    cuts.AddCut("61200013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 5-10%
   } else if (trainConfig == 6){ // EMCAL clusters
-    eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 0-10%
+    cuts.AddCut("50100013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 0-10%
   } else if (trainConfig == 7){ // EMCAL clusters  
-    eventCutArray[ 0] = "51200013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 10-20%
+    cuts.AddCut("51200013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 10-20%
   } else if (trainConfig == 8){ // EMCAL clusters
-    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 20-40%
+    cuts.AddCut("52400013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 20-40%
   } else if (trainConfig == 9){ // EMCAL clusters
-    eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 20-50%
+    cuts.AddCut("52500013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 20-50%
   } else if (trainConfig == 10){ // EMCAL clusters
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 40-60%
+    cuts.AddCut("54600013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 40-60%
   } else if (trainConfig == 11){ // EMCAL clusters  
-    eventCutArray[ 0] = "56800013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[ 0] = "0163103100000010"; // 60-80%
+    cuts.AddCut("56800013","00200009297002008250400000","1111100053032230000","0163103100000010"); // 60-80%
   } else if (trainConfig == 31){ // PHOS clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
-    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[ 1] = "0163103100000010"; // 5-10%
-    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "2444400048033200000"; mesonCutArray[ 2] = "0163103100000010"; // 0-10%
-    eventCutArray[ 3] = "52400013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "2444400048033200000"; mesonCutArray[ 3] = "0163103100000010"; // 20-40%
-    eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "2444400048033200000"; mesonCutArray[ 4] = "0163103100000010"; // 20-50%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-40%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 32){ // PHOS clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
-    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[ 1] = "0163103100000010"; // 5-10%
-    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "2444400048033200000"; mesonCutArray[ 2] = "0163103100000010"; // 0-10%
-    eventCutArray[ 3] = "51200013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "2444400048033200000"; mesonCutArray[ 3] = "0163103100000010"; // 10-20%
-    eventCutArray[ 4] = "52400013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "2444400048033200000"; mesonCutArray[ 4] = "0163103100000010"; // 20-40%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("51200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 10-20%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-40%
   } else if (trainConfig == 33){ // PHOS clusters
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[ 0] = "0163103100000010"; // 40-60%
-    eventCutArray[ 1] = "56800013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[ 1] = "0163103100000010"; // 60-80%
-    eventCutArray[ 2] = "52600013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "2444400048033200000"; mesonCutArray[ 2] = "0163103100000010"; // 20-60%
-    eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "2444400048033200000"; mesonCutArray[ 3] = "0163103100000010"; // 40-80%
-    eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "2444400048033200000"; mesonCutArray[ 4] = "0163103100000010"; // 20-50%
+    cuts.AddCut("54600013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 40-60%
+    cuts.AddCut("56800013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 60-80%
+    cuts.AddCut("52600013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-60%
+    cuts.AddCut("54800013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 40-80%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 34){ // PHOS clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
-    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[ 1] = "0163103100000010"; // 5-10%
-    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "2444400048033200000"; mesonCutArray[ 2] = "0163103100000010"; // 0-10%
-    eventCutArray[ 3] = "52400013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "2444400048033200000"; mesonCutArray[ 3] = "0163103100000010"; // 20-40%
-    eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "2444400048033200000"; mesonCutArray[ 4] = "0163103100000010"; // 20-50%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-40%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-50%
   } else if (trainConfig == 35){ // PHOS clusters
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[ 0] = "0163103100000010"; // 0-5%
-    eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[ 1] = "0163103100000010"; // 5-10%
-    eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "2444400048033200000"; mesonCutArray[ 2] = "0163103100000010"; // 0-10%
-    eventCutArray[ 3] = "51200013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "2444400048033200000"; mesonCutArray[ 3] = "0163103100000010"; // 10-20%
-    eventCutArray[ 4] = "52400013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "2444400048033200000"; mesonCutArray[ 4] = "0163103100000010"; // 20-40%
+    cuts.AddCut("60100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-5%
+    cuts.AddCut("61200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 5-10%
+    cuts.AddCut("50100013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 0-10%
+    cuts.AddCut("51200013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 10-20%
+    cuts.AddCut("52400013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-40%
   } else if (trainConfig == 36){ // PHOS clusters
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "00200009297002008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[ 0] = "0163103100000010"; // 40-60%
-    eventCutArray[ 1] = "56800013"; photonCutArray[ 1] = "00200009297002008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[ 1] = "0163103100000010"; // 60-80%
-    eventCutArray[ 2] = "52600013"; photonCutArray[ 2] = "00200009297002008250400000"; clusterCutArray[2] = "2444400048033200000"; mesonCutArray[ 2] = "0163103100000010"; // 20-60%
-    eventCutArray[ 3] = "54800013"; photonCutArray[ 3] = "00200009297002008250400000"; clusterCutArray[3] = "2444400048033200000"; mesonCutArray[ 3] = "0163103100000010"; // 40-80%
-    eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00200009297002008250400000"; clusterCutArray[4] = "2444400048033200000"; mesonCutArray[ 4] = "0163103100000010"; // 20-50%
+    cuts.AddCut("54600013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 40-60%
+    cuts.AddCut("56800013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 60-80%
+    cuts.AddCut("52600013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-60%
+    cuts.AddCut("54800013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 40-80%
+    cuts.AddCut("52500013","00200009297002008250400000","2444400048033200000","0163103100000010"); // 20-50%
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConvCalo! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+
+  Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *EventCutList     = new TList();
   TList *ConvCutList      = new TList();
@@ -257,7 +322,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                 = 1,    
 //         if ( i == 4 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 //       }  
 //     } 
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
       if (headerSelectionInt == 1) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
       if (headerSelectionInt == 2) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
@@ -266,18 +331,18 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                 = 1,    
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
-    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
         
 	analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
-    analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+    analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);

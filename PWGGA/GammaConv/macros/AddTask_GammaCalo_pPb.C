@@ -1,3 +1,61 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                       *
+ * Author: Friederike Bock, Daniel Mühlheim                     *
+ * Version 1.0                                 *
+ *                                       *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its    *
+ * documentation strictly for non-commercial purposes is hereby granted    *
+ * without fee, provided that the above copyright notice appears in all    *
+ * copies and that both the copyright notice and this permission notice    *
+ * appear in the supporting documentation. The authors make no claims    *
+ * about the suitability of this software for any purpose. It is      *
+ * provided "as is" without express or implied warranty.               *
+ **************************************************************************/
+
+//***************************************************************************************
+//This AddTask is supposed to set up the main task
+//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaCalo.cxx) for
+//pPb together with all supporting classes
+//***************************************************************************************
+
+//***************************************************************************************
+//CutHandler contains all cuts for a certain analysis and trainconfig,
+//it automatically checks length of cutStrings and takes care of the number of added cuts,
+//no specification of the variable 'numberOfCuts' needed anymore.
+//***************************************************************************************
+class CutHandlerCalo{
+  public:
+    CutHandlerCalo(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString clusterCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerCalo: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerCalo: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; clusterCutArray[nCuts]=clusterCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerCalo: GetEventCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerCalo: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerCalo: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* clusterCutArray;
+    TString* mesonCutArray;
+};
+
+//***************************************************************************************
+//main function
+//***************************************************************************************
 void AddTask_GammaCalo_pPb(  
                             Int_t      trainConfig                = 1,                // change different set of cuts
                             Int_t      isMC                       = 0,                // run MC
@@ -116,31 +174,9 @@ void AddTask_GammaCalo_pPb(
   task= new AliAnalysisTaskGammaCalo(Form("GammaCalo_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-  // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 2;
-  // change to 1 cuts per cutselection
-  if (  trainConfig == 7   || trainConfig == 8   || trainConfig == 32   || trainConfig == 33  )
-      numberOfCuts = 1;
-  // change to 3 cuts per cutselection
-  if (trainConfig == 14)
-      numberOfCuts = 3;
-  // change to 4 cuts per cutselection
-  if (  trainConfig == 10  || trainConfig == 11  || trainConfig == 12  || trainConfig == 13   || trainConfig == 15  ||  trainConfig == 18  ||
-        trainConfig == 40  || trainConfig == 41  || trainConfig == 43  || trainConfig == 44   || 
-        trainConfig == 50  || trainConfig == 51  || trainConfig == 53  || trainConfig == 54   ||
-        trainConfig == 60  || trainConfig == 61  || trainConfig == 63  || trainConfig == 64   ||
-        trainConfig == 70  || trainConfig == 71  || trainConfig == 73  || trainConfig == 74   ||
-        trainConfig == 80 )
-      numberOfCuts = 4;
-  // change to 5 cuts per cutselection
-  if (  trainConfig == 5   || trainConfig == 6   || trainConfig == 9   || trainConfig == 16   || trainConfig == 17 || 
-        trainConfig == 42  || trainConfig == 52   || trainConfig == 62    ||
-        trainConfig == 72)
-      numberOfCuts = 5;
-  
-  TString *eventCutArray    = new TString[numberOfCuts];
-  TString *clusterCutArray  = new TString[numberOfCuts];
-  TString *mesonCutArray    = new TString[numberOfCuts];
+
+  //create cut handler
+  CutHandlerCalo cuts;
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
@@ -148,220 +184,225 @@ void AddTask_GammaCalo_pPb(
   
   //************************************************ EMCAL clusters *************************************************
   if (trainConfig == 1){ // min energy = 0.3 GeV/c
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050022230000"; mesonCutArray[0] = "0163103100000050"; //standart cut, kINT7 // EMCAL clusters
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163103100000050"; //standard cut, kEMC7 // EMCAL clusters
+    cuts.AddCut("80000013","1111141050022230000","0163103100000050"); //standart cut, kINT7 // EMCAL clusters
+    cuts.AddCut("80052013","1111141050022230000","0163103100000050"); //standard cut, kEMC7 // EMCAL clusters
   } else if (trainConfig == 2){  // min energy = 0.3 GeV/c
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141050022230000"; mesonCutArray[0] = "0163103100000050"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163103100000050"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+    cuts.AddCut("80083013","1111141050022230000","0163103100000050"); //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
+    cuts.AddCut("80085013","1111141050022230000","0163103100000050"); //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
   } else if (trainConfig == 3){ // min energy = 0.4 GeV/c
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163103100000050"; //standart cut, kINT7 // EMCAL clusters
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163103100000050"; //standard cut, kEMC7 // EMCAL clusters
+    cuts.AddCut("80000013","1111141050032230000","0163103100000050"); //standart cut, kINT7 // EMCAL clusters
+    cuts.AddCut("80052013","1111141050032230000","0163103100000050"); //standard cut, kEMC7 // EMCAL clusters
   } else if (trainConfig == 4){ // min energy = 0.4 GeV/c
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163103100000050"; //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163103100000050"; //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
+    cuts.AddCut("80083013","1111141050032230000","0163103100000050"); //standard cut, kEMCEG1 based on INT7 // EMCAL clusters
+    cuts.AddCut("80085013","1111141050032230000","0163103100000050"); //standard cut, kEMCEG2 based on INT7 // EMCAL clusters
   } else if (trainConfig == 5){ //EMCAL minEnergy variation
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050012230000"; mesonCutArray[0] = "0163103100000050"; //0.2 GeV/c
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163103100000050"; //0.3 GeV/c
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111141050042230000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
-    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111141050052230000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    cuts.AddCut("80000013","1111141050012230000","0163103100000050"); //0.5 GeV/c
+    cuts.AddCut("80000013","1111141050022230000","0163103100000050"); //0.6 GeV/c
+    cuts.AddCut("80000013","1111141050032230000","0163103100000050"); //0.7 GeV/c default
+    cuts.AddCut("80000013","1111141050042230000","0163103100000050"); //0.8 GeV/c
+    cuts.AddCut("80000013","1111141050052230000","0163103100000050"); //0.9 GeV/c
   } else if (trainConfig == 6){ //EMCAL minNCells variation
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050031230000"; mesonCutArray[0] = "0163103100000050"; //n cells >= 1
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050033230000"; mesonCutArray[1] = "0163103100000050"; //n cells >= 3
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050032000000"; mesonCutArray[2] = "0163103100000050"; //no M02 cut
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1112141050032230000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
-    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111341050032230000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
+    cuts.AddCut("80000013","1111141050031230000","0163103100000050"); //n cells >= 1
+    cuts.AddCut("80000013","1111141050033230000","0163103100000050"); //n cells >= 3
+    cuts.AddCut("80000013","1111141050032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("80000013","1112141050032230000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("80000013","1111341050032230000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 7){ // Validation EMCAL
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032000000"; mesonCutArray[0] = "0163103100000050";
+    cuts.AddCut("80000013","1111141050032000000","0163103100000050");
   } else if (trainConfig == 8){ // Validation EMCAL, only added signals
-    eventCutArray[ 0] = "80000023"; clusterCutArray[0] = "1111141050032000000"; mesonCutArray[0] = "0163103100000050";
+    cuts.AddCut("80000023","1111141050032000000","0163103100000050");
   } else if (trainConfig == 9){ // non linearity variations INT7
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111142050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
-    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111149050032230000"; mesonCutArray[4] = "0163103100000050"; // calo
+    cuts.AddCut("80000013","1111100050032230000","0163103100000050"); // non nonlinearity
+    cuts.AddCut("80000013","1111101050032230000","0163103100000050"); // kSDM
+    cuts.AddCut("80000013","1111141050032230000","0163103100000050"); // conv calo
+    cuts.AddCut("80000013","1111142050032230000","0163103100000050"); // calo
+    cuts.AddCut("80000013","1111149050032230000","0163103100000050"); // calo
   } else if (trainConfig == 10){ // non linearity variations EMC7
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111142050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
-  } else if (trainConfig == 11){ /// non linearity variations EG2
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111142050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
+    cuts.AddCut("80052013","1111100050032230000","0163103100000050"); // non nonlinearity
+    cuts.AddCut("80052013","1111101050032230000","0163103100000050"); // kSDM
+    cuts.AddCut("80052013","1111141050032230000","0163103100000050"); // conv calo
+    cuts.AddCut("80052013","1111142050032230000","0163103100000050"); // calo
+  } else if (trainConfig == 11){ // non linearity variations EG2
+    cuts.AddCut("80085013","1111100050032230000","0163103100000050"); // non nonlinearity
+    cuts.AddCut("80085013","1111101050032230000","0163103100000050"); // kSDM
+    cuts.AddCut("80085013","1111141050032230000","0163103100000050"); // conv calo
+    cuts.AddCut("80085013","1111142050032230000","0163103100000050"); // calo
   } else if (trainConfig == 12){ // non linearity variations EG1
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
-    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111142050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
+    cuts.AddCut("80083013","1111100050032230000","0163103100000050"); // non nonlinearity
+    cuts.AddCut("80083013","1111101050032230000","0163103100000050"); // kSDM
+    cuts.AddCut("80083013","1111141050032230000","0163103100000050"); // conv calo
+    cuts.AddCut("80083013","1111142050032230000","0163103100000050"); // calo
   } else if (trainConfig == 13){ // no non linearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // kINT7 // EMCAL clusters
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[1] = "0163103100000050"; // kEMC7 // EMCAL clusters
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[2] = "0163103100000050"; // kEMCEG1 based on INT7 // EMCAL clusters
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[3] = "0163103100000050"; // kEMCEG2 based on INT7 // EMCAL clusters
+    cuts.AddCut("80000013","1111100050032230000","0163103100000050"); // kINT7 // EMCAL clusters
+    cuts.AddCut("80052013","1111100050032230000","0163103100000050"); // kEMC7 // EMCAL clusters
+    cuts.AddCut("80083013","1111100050032230000","0163103100000050"); // kEMCEG1 based on INT7 // EMCAL clusters
+    cuts.AddCut("80085013","1111100050032230000","0163103100000050"); // kEMCEG2 based on INT7 // EMCAL clusters
   } else if(trainConfig == 14){ // variation opening angle
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050022230000"; mesonCutArray[0] = "0163103100000050"; // standard
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163103100000060"; // 2 EMCal cell diagonals
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050022230000"; mesonCutArray[2] = "0163103100000040"; // 0.75 EMCal cell diagonals
+    cuts.AddCut("80000013","1111141050022230000","0163103100000050"); // standard
+    cuts.AddCut("80000013","1111141050022230000","0163103100000060"); // 2 EMCal cell diagonals
+    cuts.AddCut("80000013","1111141050022230000","0163103100000040"); // 0.75 EMCal cell diagonals
   } else if(trainConfig == 15){
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // MB
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163403100000050"; // EMC7
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163403100000050"; // EG1
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163403100000050"; // EG2
+    cuts.AddCut("80000013","1111141050032230000","0163403100000050"); // MB
+    cuts.AddCut("80052013","1111141050032230000","0163403100000050"); // EMC7
+    cuts.AddCut("80083013","1111141050032230000","0163403100000050"); // EG1
+    cuts.AddCut("80085013","1111141050032230000","0163403100000050"); // EG2
   } else if (trainConfig == 16){ // non linearity variations INT7 with TM
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100051032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111101051032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141051032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111142051032230000"; mesonCutArray[3] = "0163103100000050"; // calo
-    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111149051032230000"; mesonCutArray[4] = "0163103100000050"; // calo
+    cuts.AddCut("80000013","1111100051032230000","0163103100000050"); // non nonlinearity
+    cuts.AddCut("80000013","1111101051032230000","0163103100000050"); // kSDM
+    cuts.AddCut("80000013","1111141051032230000","0163103100000050"); // conv calo
+    cuts.AddCut("80000013","1111142051032230000","0163103100000050"); // calo
+    cuts.AddCut("80000013","1111149051032230000","0163103100000050"); // calo
   } else if (trainConfig == 17){ // non linearity variations INT7 
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141051032230000"; mesonCutArray[0] = "0163103100000050"; // TM variations
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141052032230000"; mesonCutArray[1] = "0163103100000050"; 
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141053032230000"; mesonCutArray[2] = "0163103100000050"; 
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111141054032230000"; mesonCutArray[3] = "0163103100000050"; 
-    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111141055032230000"; mesonCutArray[4] = "0163103100000050"; 
+    cuts.AddCut("80000013","1111141051032230000","0163103100000050"); // TM variations
+    cuts.AddCut("80000013","1111141052032230000","0163103100000050");
+    cuts.AddCut("80000013","1111141053032230000","0163103100000050");
+    cuts.AddCut("80000013","1111141054032230000","0163103100000050");
+    cuts.AddCut("80000013","1111141055032230000","0163103100000050");
   } else if (trainConfig == 18){ // no non linearity with TM
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100051032230000"; mesonCutArray[0] = "0163103100000050"; // kINT7 // EMCAL clusters
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100051032230000"; mesonCutArray[1] = "0163103100000050"; // kEMC7 // EMCAL clusters
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111100051032230000"; mesonCutArray[2] = "0163103100000050"; // kEMCEG1 based on INT7 // EMCAL clusters
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111100051032230000"; mesonCutArray[3] = "0163103100000050"; // kEMCEG2 based on INT7 // EMCAL clusters
+    cuts.AddCut("80000013","1111100051032230000","0163103100000050"); // kINT7 // EMCAL clusters
+    cuts.AddCut("80052013","1111100051032230000","0163103100000050"); // kEMC7 // EMCAL clusters
+    cuts.AddCut("80083013","1111100051032230000","0163103100000050"); // kEMCEG1 based on INT7 // EMCAL clusters
+    cuts.AddCut("80085013","1111100051032230000","0163103100000050"); // kEMCEG2 based on INT7 // EMCAL clusters
 
     
-  // SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 10-09-2015
+  // SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 02-02-2016
   } else if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // default
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111142050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111151050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111152050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
-  } else if(trainConfig == 41){ // second set of variations CLUSTER ====>> SETTING TENDER: M_seed=100MeV
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050012230000"; mesonCutArray[0] = "0163403100000050"; // min energy cluster variation 1  200 MeV
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163403100000050"; // min energy cluster variation 2  300 MeV
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050042230000"; mesonCutArray[2] = "0163403100000050"; // min energy cluster variation 3  500 MeV
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111141050052230000"; mesonCutArray[3] = "0163403100000050"; // min energy cluster variation 4  600 MeV
+    cuts.AddCut("80000013","1111141051032230000","0163403100000050"); // default
+    cuts.AddCut("80000013","1111142051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80000013","1111151051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80000013","1111152051032230000","0163403100000050"); // calo nonlinearity variation
+  } else if(trainConfig == 41){ // second set of variations CLUSTER
+    cuts.AddCut("80000013","1111141051022230000","0163403100000050"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("80000013","1111141051042230000","0163403100000050"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("80000013","1111141051052230000","0163403100000050"); // min energy cluster variation 3  900 MeV
   } else if(trainConfig == 42){ // third set of variations CLUSTER
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032030000"; mesonCutArray[0] = "0163403100000050"; // min/max M02  0<M<0.5
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050032200000"; mesonCutArray[1] = "0163403100000050"; // min/max M02  0.1<M<100
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050031230000"; mesonCutArray[2] = "0163403100000050"; // min number of cells variation 1  1 cell
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1112141050032230000"; mesonCutArray[3] = "0163403100000050"; // only modules with TRD infront
-    eventCutArray[ 4] = "80000013"; clusterCutArray[4] = "1111341050032230000"; mesonCutArray[4] = "0163403100000050"; // no modules with TRD infront
+    cuts.AddCut("80000013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
+    cuts.AddCut("80000013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80000013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
+    cuts.AddCut("80000013","1112141051032230000","0163403100000050"); // only modules with TRD infront
+    cuts.AddCut("80000013","1111341051032230000","0163403100000050"); // no modules with TRD infront
   } else if(trainConfig == 43){ // third set of variations MESON
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163406100000050"; // alpha meson variation 1   0<alpha<0.8
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163405100000050"; // alpha meson variation 2  0<alpha<0.75
-  } else if(trainConfig == 44){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
-    eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111141055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
-    eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
-    eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+    cuts.AddCut("80000013","1111141051032230000","0163303100000050"); // rapidity variation  y<0.6
+    cuts.AddCut("80000013","1111141051032230000","0163103100000050"); // rapidity variation  y<0.8
+    cuts.AddCut("80000013","1111141051032230000","0163406100000050"); // alpha meson variation 1   0<alpha<0.8
+    cuts.AddCut("80000013","1111141051032230000","0163405100000050"); // alpha meson variation 2  0<alpha<0.75
+  } else if(trainConfig == 44){ // fourth set of variations
+    cuts.AddCut("80000013","1111141050032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80000013","1111141055032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80000013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80000013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
   
   //EMC7
   } else if(trainConfig == 50){ // default cutstring and first set of variations nonlinearity
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // default
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111142050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111143050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111144050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
-  } else if(trainConfig == 51){ // second set of variations CLUSTER ====>> SETTING TENDER: M_seed=100MeV
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111141050012230000"; mesonCutArray[0] = "0163403100000050"; // min energy cluster variation 1  200 MeV
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163403100000050"; // min energy cluster variation 2  300 MeV
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111141050042230000"; mesonCutArray[2] = "0163403100000050"; // min energy cluster variation 3  500 MeV
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111141050052230000"; mesonCutArray[3] = "0163403100000050"; // min energy cluster variation 4  600 MeV
+    cuts.AddCut("80052013","1111141051032230000","0163403100000050"); // default
+    cuts.AddCut("80052013","1111142051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80052013","1111151051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80052013","1111152051032230000","0163403100000050"); // calo nonlinearity variation
+  } else if(trainConfig == 51){ // second set of variations CLUSTER
+    cuts.AddCut("80052013","1111141051022230000","0163403100000050"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("80052013","1111141051042230000","0163403100000050"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("80052013","1111141051052230000","0163403100000050"); // min energy cluster variation 3  900 MeV
   } else if(trainConfig == 52){ // third set of variations CLUSTER
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111141050032030000"; mesonCutArray[0] = "0163403100000050"; // min/max M02  0<M<0.5
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032200000"; mesonCutArray[1] = "0163403100000050"; // min/max M02  0.1<M<100
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111141050031230000"; mesonCutArray[2] = "0163403100000050"; // min number of cells variation 1  1 cell
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1112141050032230000"; mesonCutArray[3] = "0163403100000050"; // only modules with TRD infront
-    eventCutArray[ 4] = "80052013"; clusterCutArray[4] = "1111341050032230000"; mesonCutArray[4] = "0163403100000050"; // no modules with TRD infront
+    cuts.AddCut("80052013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
+    cuts.AddCut("80052013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80052013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
+    cuts.AddCut("80052013","1112141051032230000","0163403100000050"); // only modules with TRD infront
+    cuts.AddCut("80052013","1111341051032230000","0163403100000050"); // no modules with TRD infront
   } else if(trainConfig == 53){ // third set of variations MESON
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163401100000050"; // alpha meson variation 1  0.5<alpha<1
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163402100000050"; // alpha meson variation 2  0.6<alpha<1
+    cuts.AddCut("80052013","1111141051032230000","0163303100000050"); // rapidity variation  y<0.6
+    cuts.AddCut("80052013","1111141051032230000","0163103100000050"); // rapidity variation  y<0.8
+    cuts.AddCut("80052013","1111141051032230000","0163401100000050"); // alpha meson variation 1  0.5<alpha<1
+    cuts.AddCut("80052013","1111141051032230000","0163402100000050"); // alpha meson variation 2  0.6<alpha<1
   } else if(trainConfig == 54){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111141051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
-    eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
-    eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+    cuts.AddCut("80052013","1111141050032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80052013","1111141055032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80052013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80052013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
 
   //EG1
   } else if(trainConfig == 60){ // default cutstring and first set of variations nonlinearity
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // default
-    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111142050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111143050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111144050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
-  } else if(trainConfig == 61){ // second set of variations CLUSTER ====>> SETTING TENDER: M_seed=100MeV
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141050012230000"; mesonCutArray[0] = "0163403100000050"; // min energy cluster variation 1  200 MeV
-    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163403100000050"; // min energy cluster variation 2  300 MeV
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050042230000"; mesonCutArray[2] = "0163403100000050"; // min energy cluster variation 3  500 MeV
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141050052230000"; mesonCutArray[3] = "0163403100000050"; // min energy cluster variation 4  600 MeV
+    cuts.AddCut("80083013","1111141051032230000","0163403100000050"); // default
+    cuts.AddCut("80083013","1111142051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80083013","1111151051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80083013","1111152051032230000","0163403100000050"); // calo nonlinearity variation
+  } else if(trainConfig == 61){ // second set of variations CLUSTER
+    cuts.AddCut("80083013","1111141051022230000","0163403100000050"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("80083013","1111141051042230000","0163403100000050"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("80083013","1111141051052230000","0163403100000050"); // min energy cluster variation 3  900 MeV
   } else if(trainConfig == 62){ // third set of variations CLUSTER
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141050032030000"; mesonCutArray[0] = "0163403100000050"; // min/max M02  0<M<0.5
-    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111141050032200000"; mesonCutArray[1] = "0163403100000050"; // min/max M02  0.1<M<100
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050031230000"; mesonCutArray[2] = "0163403100000050"; // min number of cells variation 1  1 cell
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1112141050032230000"; mesonCutArray[3] = "0163403100000050"; // only modules with TRD infront
-    eventCutArray[ 4] = "80083013"; clusterCutArray[4] = "1111341050032230000"; mesonCutArray[4] = "0163403100000050"; // no modules with TRD infront
+    cuts.AddCut("80083013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
+    cuts.AddCut("80083013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80083013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
+    cuts.AddCut("80083013","1112141051032230000","0163403100000050"); // only modules with TRD infront
+    cuts.AddCut("80083013","1111341051032230000","0163403100000050"); // no modules with TRD infront
   } else if(trainConfig == 63){ // third set of variations MESON
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
-    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163401100000050"; // alpha meson variation 1  0.5<alpha<1
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163402100000050"; // alpha meson variation 2  0.6<alpha<1
+    cuts.AddCut("80083013","1111141051032230000","0163303100000050"); // rapidity variation  y<0.6
+    cuts.AddCut("80083013","1111141051032230000","0163103100000050"); // rapidity variation  y<0.8
+    cuts.AddCut("80083013","1111141051032230000","0163401100000050"); // alpha meson variation 1  0.5<alpha<1
+    cuts.AddCut("80083013","1111141051032230000","0163402100000050"); // alpha meson variation 2  0.6<alpha<1
   } else if(trainConfig == 64){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80083013"; clusterCutArray[0] = "1111141051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
-    eventCutArray[ 1] = "80083013"; clusterCutArray[1] = "1111141055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
-    eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+    cuts.AddCut("80083013","1111141050032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80083013","1111141055032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80083013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80083013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
    //EG2
   } else if(trainConfig == 70){ // default cutstring and first set of variations nonlinearity
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // default
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111142050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111143050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111144050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
-  } else if(trainConfig == 71){ // second set of variations CLUSTER ====>> SETTING TENDER: M_seed=100MeV
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111141050012230000"; mesonCutArray[0] = "0163403100000050"; // min energy cluster variation 1  200 MeV
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111141050022230000"; mesonCutArray[1] = "0163403100000050"; // min energy cluster variation 2  300 MeV
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050042230000"; mesonCutArray[2] = "0163403100000050"; // min energy cluster variation 3  500 MeV
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111141050052230000"; mesonCutArray[3] = "0163403100000050"; // min energy cluster variation 4  600 MeV
+    cuts.AddCut("80085013","1111141051032230000","0163403100000050"); // default
+    cuts.AddCut("80085013","1111142051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80085013","1111151051032230000","0163403100000050"); // calo nonlinearity variation
+    cuts.AddCut("80085013","1111152051032230000","0163403100000050"); // calo nonlinearity variation
+  } else if(trainConfig == 71){ // second set of variations CLUSTER
+    cuts.AddCut("80085013","1111141051022230000","0163403100000050"); // min energy cluster variation 1  600 MeV
+    cuts.AddCut("80085013","1111141051042230000","0163403100000050"); // min energy cluster variation 2  800 MeV
+    cuts.AddCut("80085013","1111141051052230000","0163403100000050"); // min energy cluster variation 3  900 MeV
   } else if(trainConfig == 72){ // third set of variations CLUSTER
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111141050032030000"; mesonCutArray[0] = "0163403100000050"; // min/max M02  0<M<0.5
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111141050032200000"; mesonCutArray[1] = "0163403100000050"; // min/max M02  0.1<M<100
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050031230000"; mesonCutArray[2] = "0163403100000050"; // min number of cells variation 1  1 cell
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1112141050032230000"; mesonCutArray[3] = "0163403100000050"; // only modules with TRD infront
-    eventCutArray[ 4] = "80085013"; clusterCutArray[4] = "1111341050032230000"; mesonCutArray[4] = "0163403100000050"; // no modules with TRD infront
+    cuts.AddCut("80085013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
+    cuts.AddCut("80085013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80085013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
+    cuts.AddCut("80085013","1112141051032230000","0163403100000050"); // only modules with TRD infront
+    cuts.AddCut("80085013","1111341051032230000","0163403100000050"); // no modules with TRD infront
   } else if(trainConfig == 73){ // third set of variations MESON
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation  y<0.6
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation  y<0.8  
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163401100000050"; // alpha meson variation 1  0.5<alpha<1
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163402100000050"; // alpha meson variation 2  0.6<alpha<1
+    cuts.AddCut("80085013","1111141051032230000","0163303100000050"); // rapidity variation  y<0.6
+    cuts.AddCut("80085013","1111141051032230000","0163103100000050"); // rapidity variation  y<0.8
+    cuts.AddCut("80085013","1111141051032230000","0163401100000050"); // alpha meson variation 1  0.5<alpha<1
+    cuts.AddCut("80085013","1111141051032230000","0163402100000050"); // alpha meson variation 2  0.6<alpha<1
   } else if(trainConfig == 74){ // default cutstring for different tender settings
-    eventCutArray[ 0] = "80085013"; clusterCutArray[0] = "1111141051032230000"; mesonCutArray[0] = "0163403100000050"; // tm variation
-    eventCutArray[ 1] = "80085013"; clusterCutArray[1] = "1111141055032230000"; mesonCutArray[1] = "0163403100000050"; // tm variation
-    eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163403100000040"; // min opening angle 0.75 cell diag
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163403100000060"; // min opening angle 2 cell diag
+    cuts.AddCut("80085013","1111141050032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80085013","1111141055032230000","0163403100000050"); // tm variation
+    cuts.AddCut("80085013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80085013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
 
   //all default triggers
   } else if(trainConfig == 80){
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111141050032230000"; mesonCutArray[0] = "0163403100000050"; // default MB
-    eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111141050032230000"; mesonCutArray[1] = "0163403100000050"; // default EMC7
-    eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111141050032230000"; mesonCutArray[2] = "0163403100000050"; // default EG1
-    eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111141050032230000"; mesonCutArray[3] = "0163403100000050"; // default EG2
+    cuts.AddCut("80000013","1111141051032230000","0163403100000050"); // default MB
+    cuts.AddCut("80052013","1111141051032230000","0163403100000050"); // default EMC7
+    cuts.AddCut("80083013","1111141051032230000","0163403100000050"); // default EG1
+    cuts.AddCut("80085013","1111141051032230000","0163403100000050"); // default EG2
     
 
   //************************************************ PHOS clusters *************************************************
   } else if (trainConfig == 31) {  // min energy = 0.3 GeV/c
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "2444400040033200000"; mesonCutArray[0] = "0163103100000050"; //standart cut, kINT7 // PHOS clusters
-    eventCutArray[ 1] = "80062013"; clusterCutArray[1] = "2444400040033200000"; mesonCutArray[1] = "0163103100000050"; //standard cut, kPHI7  // PHOS clusters  
+    cuts.AddCut("80000013","2444400040033200000","0163103100000050"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCut("80062013","2444400040033200000","0163103100000050"); //standard cut, kPHI7  // PHOS clusters
   } else if (trainConfig == 32){ // Validation PHOS
-    eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "2444400040053200000"; mesonCutArray[0] = "0163103100000050";   
+    cuts.AddCut("80000013","2444400040053200000","0163103100000050");
   } else if (trainConfig == 33){ // Validation PHOS, only added signals
-    eventCutArray[ 0] = "80000023"; clusterCutArray[0] = "2444400040053200000"; mesonCutArray[0] = "0163103100000050";   
+    cuts.AddCut("80000023","2444400040053200000","0163103100000050");
 
     
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerCalo! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+
+  Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *EventCutList     = new TList();
   TList *ClusterCutList   = new TList();
@@ -395,19 +436,19 @@ void AddTask_GammaCalo_pPb(
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
-    analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+    analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
-    analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
+    analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");

@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGGAGammaConv)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv)
@@ -23,12 +24,15 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
-		    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
-		    ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
 # Sources in alphabetical order
@@ -48,11 +52,13 @@ set(SRCS
     AliAnalysisTaskGammaConvV1.cxx
     AliAnalysisTaskGCPartToPWG4Part.cxx
     AliAnalysisTaskMaterial.cxx
+    AliAnalysisTaskMaterialHistos.cxx
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
     AliAnalysisTaskPi0v2.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
+    AliAnalysisTaskGammaCocktailMC.cxx
     AliAODConversionMother.cxx
     AliAODConversionParticle.cxx
     AliAODConversionPhoton.cxx
@@ -84,7 +90,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils)
 
 # Generate the ROOT map
 # Dependecies

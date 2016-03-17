@@ -1,4 +1,3 @@
-// $Id$
 //
 // Calculation of rho for flow bias studies
 //
@@ -13,6 +12,7 @@
 #include "AliVTrack.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliParticleContainer.h"
 
 ClassImp(AliAnalysisTaskRhoFlow)
 
@@ -93,19 +93,16 @@ void AliAnalysisTaskRhoFlow::UserCreateOutputObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskRhoFlow::Run() 
 {
-  if (!fTracks)
-    return kFALSE;
+  AliParticleContainer* tracks = GetParticleContainer(0);
+  if (!tracks) return kFALSE;
   
   Double_t jetRadius = GetJetRadius();
   Double_t maxTrackPhi = -1;
   Double_t maxTrackPt  = 0;
 
-  for (Int_t i = 0; i < fTracks->GetEntriesFast(); i++) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(i));
-    if (!track)
-      continue;
-    if (!AcceptTrack(track))
-      continue;
+  AliVParticle *track = 0;
+  tracks->ResetCurrentID();
+  while ((track = tracks->GetNextAcceptParticle())) {
 
     if (track->Pt() > maxTrackPt) {
       maxTrackPt  = track->Pt();

@@ -48,6 +48,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODCaloCells.h"
 #include "AliEMCALGeometry.h"
+#include "AliOADBContainer.h"
 
 #include "AliAnalysisTaskEMCALTimeCalib.h"
 
@@ -79,7 +80,6 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fMinCellEnergy(0),
   fReferenceFileName(),
   fReferenceRunByRunFileName(),
-  fReferenceWrongL1PhasesRunByRunFileName(),
   fPileupFromSPD(kFALSE),
   fMinTime(0),
   fMaxTime(0),
@@ -92,11 +92,19 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fEnergyNbins  (0),
   fEnergyMin(0),
   fEnergyMax(0),
+  fEnergyLGNbins  (0),
+  fEnergyLGMin(0),
+  fEnergyLGMax(0),
   fFineNbins(0),
   fFineTmin(0),
   fFineTmax(0),
   fL1PhaseList(0),
-  fWrongL1PhaseList(0),
+  fBadReco(kFALSE),
+  fFillHeavyHisto(kFALSE),
+  fBadChannelMapArray(),
+  fBadChannelMapSet(kFALSE),
+  fSetBadChannelMapSource(0),
+  fBadChannelFileName(),
   fhcalcEvtTime(0),
   fhEvtTimeHeader(0),
   fhEvtTimeDiff(0),
@@ -117,9 +125,10 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhAllAverageBC(),
   fhAllAverageLGBC(),
   fhRefRuns(0),
-  fhWrongL1Phases(0),
   fhTimeDsup(),
   fhTimeDsupBC(),
+  fhTimeDsupLG(),
+  fhTimeDsupLGBC(),
   fhRawTimeVsIdBC(),
   fhRawTimeSumBC(),
   fhRawTimeEntriesBC(),
@@ -127,8 +136,11 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhRawTimeVsIdLGBC(),
   fhRawTimeSumLGBC(),
   fhRawTimeEntriesLGBC(),
-  fhRawTimeSumSqLGBC()
-
+  fhRawTimeSumSqLGBC(),
+  fhRawCorrTimeVsIdBC(),
+  fhRawCorrTimeVsIdLGBC(),
+  fhTimeVsIdBC(),
+  fhTimeVsIdLGBC()
 {
   for(Int_t i = 0; i < kNBCmask; i++) 
   {
@@ -152,6 +164,11 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
     fhRawTimeSumLGBC[i]=0;
     fhRawTimeEntriesLGBC[i]=0;
     fhRawTimeSumSqLGBC[i]=0;
+    fhRawCorrTimeVsIdBC[i]=0;
+    fhRawCorrTimeVsIdLGBC[i]=0;
+    fhTimeVsIdBC[i]=0;
+    fhTimeVsIdLGBC[i]=0;
+
   }
 
   //set default cuts for calibration and geometry name
@@ -169,16 +186,6 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   DefineOutput(1, TList::Class());
   
 } // End ctor
-
-//________________________________________________________________________
-/// Destructor
-AliAnalysisTaskEMCALTimeCalib::~AliAnalysisTaskEMCALTimeCalib() {
-  fL1PhaseList->SetOwner();
-  fL1PhaseList->Delete();
-  fWrongL1PhaseList->SetOwner();
-  fWrongL1PhaseList->Delete();
-}
-
 
 //_____________________________________________________________________
 /// HKD Move from constructor
@@ -253,36 +260,6 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
   }
 } // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceRunByRunHistos()
 
-/// Load reference Histograms (run-by-run in one period) from file into memory
-/// The set of wrong L1 phases is loaded to revert them back 
-/// This method should be called at the beginning of processing only once
-//_____________________________________________________________________
-void AliAnalysisTaskEMCALTimeCalib::LoadWrongReferenceRunByRunHistos()
-{
-  // connect ref run here
-  if(fReferenceWrongL1PhasesRunByRunFileName.Length()!=0){
-    TFile *referenceFile = TFile::Open(fReferenceWrongL1PhasesRunByRunFileName.Data());
-    if(referenceFile==0x0) {
-      AliFatal("*** NO REFERENCE R-B-R FILE with WRONG L1 PHASES");
-      return;
-    } else {
-      AliInfo(Form("Reference R-b-R file with wrong L1 phases: %s, pointer %p",fReferenceWrongL1PhasesRunByRunFileName.Data(),referenceFile));
-
-      //load wrong L1 phases to memory
-      fWrongL1PhaseList=new TObjArray(referenceFile->GetNkeys());
-      TIter next(referenceFile->GetListOfKeys());
-      TKey *key;
-      while ((key=(TKey*)next())) {
-        fWrongL1PhaseList->AddLast((TH1F*)referenceFile->Get(key->GetName()) );
-        //printf("key: %s points to an object of class: %s at %dn",key->GetName(),key->GetClassName(),key->GetSeekKey());
-      }
-    }
-  } else { //reference file is not provided
-    AliFatal("You require to load reference run-by-run histos with wrong L1 phases from file but FILENAME is not provided");
-    return;
-  }
-} // End of AliAnalysisTaskEMCALTimeCalib::LoadWrongReferenceRunByRunHistos
-
 /// Load reference histogram with L1 phases for given run
 /// This method should be called per run
 ////_____________________________________________________________________
@@ -313,36 +290,6 @@ void AliAnalysisTaskEMCALTimeCalib::SetL1PhaseReferenceForGivenRun()
   AliDebug(1,Form("hRefRuns entries %d", (Int_t)fhRefRuns->GetEntries() )); 
 }
 
-/// Load reference histogram with wrong L1 phases in the reconstruction for given run
-/// This method should be called per run
-////_____________________________________________________________________
-void AliAnalysisTaskEMCALTimeCalib::SetWrongL1PhaseReferenceForGivenRun()
-{
-  fhWrongL1Phases=NULL;
-  if(!fWrongL1PhaseList) {
-    AliFatal("Array with reference with wrong L1 phase histograms do not exist in memory");
-    return;
-  }
-  if(fRunNumber<0) {
-    AliFatal("Negative run number, why?");
-    return;
-  }
-
-  fhWrongL1Phases=(TH1C*)fWrongL1PhaseList->FindObject(Form("h%d",fRunNumber));
-  if(fhWrongL1Phases==0x0){
-    AliError(Form("Reference histogram with wrong L1 phase does not exist for run %d. Use Default",fRunNumber));
-    fhWrongL1Phases=(TH1C*)fWrongL1PhaseList->FindObject("h0");
-  }
-  if(fhWrongL1Phases==0x0) {
-    AliFatal(Form("No default histogram with wrong L1 phases! Add default histogram to file %s!!!",fReferenceWrongL1PhasesRunByRunFileName.Data()));
-    return;
-  }
-
-  AliDebug(1,Form("Reference R-b-R with wrong L1 phases histo %p, list %p, run number %d",fhWrongL1Phases,fWrongL1PhaseList,fRunNumber));
-  if(fhWrongL1Phases->GetEntries()==0)AliWarning("fhWrongL1Phases->GetEntries() = 0");
-  AliDebug(1,Form("fhWrongL1Phases entries %d", (Int_t)fhWrongL1Phases->GetEntries() ));
-}
-
 //_____________________________________________________________________
 /// Connect ESD or AOD here
 /// Called when run is changed
@@ -366,13 +313,12 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   if (!fgeom) SetEMCalGeometry();
   //Init EMCAL geometry done
 
-  //set wrong L1 phases for current run
-  if(fReferenceWrongL1PhasesRunByRunFileName.Length()!=0)
-    SetWrongL1PhaseReferenceForGivenRun();
-
   //set L1 phases for current run
   if(fReferenceRunByRunFileName.Length()!=0)
     SetL1PhaseReferenceForGivenRun();
+
+  // set bad channel map
+  if(!fBadChannelMapSet && fSetBadChannelMapSource>0) LoadBadChannelMap();
 
   return;
 }
@@ -439,27 +385,34 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
   const Int_t nChannels = 17664;
   //book histograms
-  fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",fFineNbins, fFineNbins,fFineTmax);
-  fhcalcEvtTime->GetXaxis()->SetTitle("T ");
-  fhcalcEvtTime->GetYaxis()->SetTitle("Counts (a.u.)");
+  if(fFillHeavyHisto){
+    fhcalcEvtTime = new TH1F("fhcalcEvtTime","calculated event time from T0",fFineNbins, fFineNbins,fFineTmax);
+    fhcalcEvtTime->GetXaxis()->SetTitle("T ");
+    fhcalcEvtTime->GetYaxis()->SetTitle("Counts (a.u.)");
   
-  fhEvtTimeHeader = new TH1F("fhEvtTimeHeader","event time from header",fFineNbins, fFineNbins,fFineTmax);
-  fhEvtTimeHeader->GetXaxis()->SetTitle("T ");
-  fhEvtTimeHeader->GetYaxis()->SetTitle("Counts (a.u.)");
+    fhEvtTimeHeader = new TH1F("fhEvtTimeHeader","event time from header",fFineNbins, fFineNbins,fFineTmax);
+    fhEvtTimeHeader->GetXaxis()->SetTitle("T ");
+    fhEvtTimeHeader->GetYaxis()->SetTitle("Counts (a.u.)");
 
-  fhEvtTimeDiff = new TH1F("fhEvtTimeDiff","event time difference",fFineNbins, fFineNbins,fFineTmax);
-  fhEvtTimeDiff->GetXaxis()->SetTitle("#Delta T ");
-  fhEvtTimeDiff->GetYaxis()->SetTitle("Counts (a.u.)");
+    fhEvtTimeDiff = new TH1F("fhEvtTimeDiff","event time difference",fFineNbins, fFineNbins,fFineTmax);
+    fhEvtTimeDiff->GetXaxis()->SetTitle("#Delta T ");
+    fhEvtTimeDiff->GetYaxis()->SetTitle("Counts (a.u.)");
+  }
 
   fhEventType = new TH1F("fhEventType","event type",10, 0.,10.);
   fhEventType ->GetXaxis()->SetTitle("Type ");
   fhEventType ->GetYaxis()->SetTitle("Counts (a.u.)");
-  fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
-  fhTcellvsTOFT0HD = new TH2F("hTcellvsTOFT0HD", " T_cell vs TOFT0,HighEnergy", 500,-600.0,+400.0,4*fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+  if(fFillHeavyHisto){
+    fhTcellvsTOFT0 = new TH2F("hTcellvsTOFT0", " T_cell vs TOFT0", 500,-600.0,+400.0,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+    fhTcellvsTOFT0HD = new TH2F("hTcellvsTOFT0HD", " T_cell vs TOFT0,HighEnergy", 500,-600.0,+400.0,4*fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+  }
   fhTcellvsSM = new TH2F("hTcellvsSM", " T_cell vs SM", (Int_t)kNSM,0,(Double_t)kNSM,(Int_t)(fRawTimeNbins/2),fRawTimeMin,fRawTimeMax);
-  fhEneVsAbsIdHG = new TH2F("fhEneVsAbsIdHG", "energy vs ID for HG",1000,0,18000,200,0,10);
-  fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,200,0,40);
-  
+
+  if(fFillHeavyHisto){
+    fhEneVsAbsIdHG = new TH2F("fhEneVsAbsIdHG", "energy vs ID for HG",1000,0,18000,200,0,10);
+    fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,200,0,40);
+  }
+
   for (Int_t i = 0; i < kNBCmask ;  i++)
   {
     //already after correction
@@ -503,11 +456,13 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
     //raw time histograms
     //high gain
-    fhRawTimeVsIdBC[i] = new TH2F(Form("RawTimeVsIdBC%d", i),
-				  Form("cell raw time vs ID for high gain BC %d ", i),
-				  nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
-    fhRawTimeVsIdBC[i]->SetXTitle("AbsId");
-    fhRawTimeVsIdBC[i]->SetYTitle("Time");
+    if(fFillHeavyHisto){
+      fhRawTimeVsIdBC[i] = new TH2F(Form("RawTimeVsIdBC%d", i),
+				    Form("cell raw time vs ID for high gain BC %d ", i),
+				    nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+      fhRawTimeVsIdBC[i]->SetXTitle("AbsId");
+      fhRawTimeVsIdBC[i]->SetYTitle("Time");
+    }
 
     fhRawTimeSumBC[i] = new TH1F(Form("RawTimeSumBC%d", i),
 				 Form("sum of cell raw time for high gain BC %d ", i),
@@ -528,11 +483,13 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fhRawTimeSumSqBC[i]->SetYTitle("Sum Sq Time");
 
     //low gain
-    fhRawTimeVsIdLGBC[i] = new TH2F(Form("RawTimeVsIdLGBC%d", i),
-			      Form("cell raw time vs ID for low gain BC %d ", i),
-				    nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
-    fhRawTimeVsIdLGBC[i]->SetXTitle("AbsId");
-    fhRawTimeVsIdLGBC[i]->SetYTitle("Time");
+    if(fFillHeavyHisto){
+      fhRawTimeVsIdLGBC[i] = new TH2F(Form("RawTimeVsIdLGBC%d", i),
+				      Form("cell raw time vs ID for low gain BC %d ", i),
+				      nChannels,0.,(Double_t)nChannels,fRawTimeNbins,fRawTimeMin,fRawTimeMax);
+      fhRawTimeVsIdLGBC[i]->SetXTitle("AbsId");
+      fhRawTimeVsIdLGBC[i]->SetYTitle("Time");
+    }
 
     fhRawTimeSumLGBC[i] = new TH1F(Form("RawTimeSumLGBC%d", i),
 				 Form("sum of cell raw time for low gain BC %d ", i),
@@ -552,21 +509,62 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fhRawTimeSumSqLGBC[i]->SetXTitle("AbsId");
     fhRawTimeSumSqLGBC[i]->SetYTitle("Sum Sq Time");
 
+    //histograms with corrected raw time for L1 shift and 100ns
+    if(fBadReco && fFillHeavyHisto){
+      fhRawCorrTimeVsIdBC[i] = new TH2F(Form("RawCorrTimeVsIdBC%d", i),
+					Form("cell L1 shift and 100ns corrected raw time vs ID for high gain BC %d ", i),
+					nChannels,0.,(Double_t)nChannels,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhRawCorrTimeVsIdBC[i]->SetXTitle("AbsId");
+      fhRawCorrTimeVsIdBC[i]->SetYTitle("Time");
+      
+      fhRawCorrTimeVsIdLGBC[i] = new TH2F(Form("RawCorrTimeVsIdLGBC%d", i),
+					  Form("cell L1 shift and 100ns corrected raw time vs ID for low gain BC %d ", i),
+					  nChannels,0.,(Double_t)nChannels,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhRawCorrTimeVsIdLGBC[i]->SetXTitle("AbsId");
+      fhRawCorrTimeVsIdLGBC[i]->SetYTitle("Time");
+    }
+
+    //histograms with corrected raw time for L1 shift and 100ns + new L1 phase
+    if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto){
+      fhTimeVsIdBC[i] = new TH2F(Form("TimeVsIdBC%d", i),
+				 Form("cell time corrected for L1 shift, 100ns and L1 phase vs ID for high gain BC %d ", i),
+				 nChannels,0.,(Double_t)nChannels,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhTimeVsIdBC[i]->SetXTitle("AbsId");
+      fhTimeVsIdBC[i]->SetYTitle("Time");
+      
+      fhTimeVsIdLGBC[i] = new TH2F(Form("TimeVsIdLGBC%d", i),
+				   Form("cell time corrected for L1 shift, 100ns and L1 phase vs ID for low gain BC %d ", i),
+				   nChannels,0.,(Double_t)nChannels,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhTimeVsIdLGBC[i]->SetXTitle("AbsId");
+      fhTimeVsIdLGBC[i]->SetYTitle("Time");
+    }
 
     for (Int_t j = 0; j < kNSM ;  j++) 
     {
+      //High gain
       //fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),500,0.0,20.0,2200,-350.0,750.0);
-      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E  BC %d",j,i),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhTimeDsupBC[j][i]= new TH2F(Form("SupMod%dBC%d",j,i), Form("SupMod %d time_vs_E, high gain, BC %d",j,i),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
       fhTimeDsupBC[j][i]->SetYTitle(" Time (ns) "); 
       fhTimeDsupBC[j][i]->SetXTitle(" E (GeV) "); 
+
+      //low gain
+      fhTimeDsupLGBC[j][i]= new TH2F(Form("SupMod%dBC%dLG",j,i), Form("SupMod %d time_vs_E, low gain, BC %d",j,i),fEnergyLGNbins,fEnergyLGMin,fEnergyLGMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+      fhTimeDsupLGBC[j][i]->SetYTitle(" Time (ns) "); 
+      fhTimeDsupLGBC[j][i]->SetXTitle(" E (GeV) "); 
     }
   }
 
   for (Int_t jj = 0; jj < kNSM ;  jj++) 
   {
-    fhTimeDsup[jj] =  new TH2F(Form("SupMod%d",jj), Form("SupMod %d time_vs_E ",jj),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+    //high gain
+    fhTimeDsup[jj] =  new TH2F(Form("SupMod%d",jj), Form("SupMod %d time_vs_E, high gain",jj),fEnergyNbins,fEnergyMin,fEnergyMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
     fhTimeDsup[jj]->SetYTitle(" Time (ns) "); 
     fhTimeDsup[jj]->SetXTitle(" E (GeV) "); 
+
+    //low gain
+    fhTimeDsupLG[jj] =  new TH2F(Form("SupMod%dLG",jj), Form("SupMod %d time_vs_E, low gain ",jj),fEnergyLGNbins,fEnergyLGMin,fEnergyLGMax,fPassTimeNbins,fPassTimeMin,fPassTimeMax);
+    fhTimeDsupLG[jj]->SetYTitle(" Time (ns) "); 
+    fhTimeDsupLG[jj]->SetXTitle(" E (GeV) "); 
   }
   
   fhTimeVsBC = new TH2F("TimeVsBC"," SupMod time_vs_BC ", 4001,-0.5,4000.5,(Int_t)(fRawTimeNbins/2.),fRawTimeMin,fRawTimeMax); 
@@ -574,16 +572,18 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 
   //add histos to list
   fOutputList = new TList();
-  
-  fOutputList->Add(fhcalcEvtTime);
-  fOutputList->Add(fhEvtTimeHeader);
-  fOutputList->Add(fhEvtTimeDiff);
   fOutputList->Add(fhEventType);
-  fOutputList->Add(fhTcellvsTOFT0);
-  fOutputList->Add(fhTcellvsTOFT0HD);
+  if(fFillHeavyHisto){
+    fOutputList->Add(fhcalcEvtTime);
+    fOutputList->Add(fhEvtTimeHeader);
+    fOutputList->Add(fhEvtTimeDiff);
+
+    fOutputList->Add(fhTcellvsTOFT0);
+    fOutputList->Add(fhTcellvsTOFT0HD);
+    fOutputList->Add(fhEneVsAbsIdHG);
+    fOutputList->Add(fhEneVsAbsIdLG);
+  }
   fOutputList->Add(fhTcellvsSM);
-  fOutputList->Add(fhEneVsAbsIdHG);
-  fOutputList->Add(fhEneVsAbsIdLG);
 
   for (Int_t i = 0; i < kNBCmask ;  i++) 
   {
@@ -595,24 +595,38 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fOutputList->Add(fhTimeLGEnt[i]);
     fOutputList->Add(fhTimeLGSum[i]);
 
-    fOutputList->Add(fhRawTimeVsIdBC[i]);
+    if(fFillHeavyHisto) {
+      fOutputList->Add(fhRawTimeVsIdBC[i]);
+      fOutputList->Add(fhRawTimeVsIdLGBC[i]);
+    }
+
     fOutputList->Add(fhRawTimeSumBC[i]);
     fOutputList->Add(fhRawTimeEntriesBC[i]);
     fOutputList->Add(fhRawTimeSumSqBC[i]);
 
-    fOutputList->Add(fhRawTimeVsIdLGBC[i]);
     fOutputList->Add(fhRawTimeSumLGBC[i]);
     fOutputList->Add(fhRawTimeEntriesLGBC[i]);
     fOutputList->Add(fhRawTimeSumSqLGBC[i]);
 
+    if(fBadReco && fFillHeavyHisto) {
+      fOutputList->Add(fhRawCorrTimeVsIdBC[i]);
+      fOutputList->Add(fhRawCorrTimeVsIdLGBC[i]);
+    }
+    if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto) {
+      fOutputList->Add(fhTimeVsIdBC[i]);
+      fOutputList->Add(fhTimeVsIdLGBC[i]);
+    }
+
     for (Int_t j = 0; j < kNSM ;  j++){
       fOutputList->Add(fhTimeDsupBC[j][i]);
+      fOutputList->Add(fhTimeDsupLGBC[j][i]);
     }
   }
   
   for (Int_t j = 0; j < kNSM ;  j++)
   {
     fOutputList->Add(fhTimeDsup[j]);
+    fOutputList->Add(fhTimeDsupLG[j]);
   }
 	
   fOutputList->Add(fhTimeVsBC);
@@ -633,7 +647,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   //cout<<"T0TOF "<<event->GetT0TOF()<<endl;//bad idea
   //cout<< fEvent->GetTOFHeader()->GetDefaultEventTimeVal()<<endl;
   AliDebug(2,Form("TOF time from header %f ps",event->GetTOFHeader()->GetDefaultEventTimeVal()));
-  fhEvtTimeHeader->Fill(event->GetTOFHeader()->GetDefaultEventTimeVal());
+  if(fFillHeavyHisto) fhEvtTimeHeader->Fill(event->GetTOFHeader()->GetDefaultEventTimeVal());
 
   //fEvent = dynamic_cast<AliESDEvent*>(event);
   if (!event) {
@@ -723,15 +737,12 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
     calcolot0=timeTOFtable[0];
   }
 
-  if (!fhcalcEvtTime) {
-    AliWarning("<E> fhcalcEvtTime not available");
-    return;
-  }// fi no simple histo present
-  
-  fhcalcEvtTime->Fill(calcolot0);
-  if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
-    fhEvtTimeDiff->Fill(calcolot0-event->GetTOFHeader()->GetDefaultEventTimeVal());
-  
+  if(fFillHeavyHisto) {
+    fhcalcEvtTime->Fill(calcolot0);
+    if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
+      fhEvtTimeDiff->Fill(calcolot0-event->GetTOFHeader()->GetDefaultEventTimeVal());
+  }
+
   TRefArray* caloClusters = new TRefArray();
   event->GetEMCALClusters(caloClusters);
   //           	cout << " ###########Bunch Cross nb  = " << event->GetBunchCrossNumber() << endl;
@@ -740,15 +751,15 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   
   Float_t offset=0.;
   Float_t offsetPerSM=0.;
-  Float_t wrongOffsetPerSM=0.;
+  Int_t L1phaseshift=0;
   Int_t L1phase=0;
-  Int_t wrongL1phase=0;
+  Int_t L1shiftOffset=0;
 
   Int_t nBC = 0;
   nBC = BunchCrossNumber%4;
   //Int_t nTriggerMask =event->GetTriggerMask();
   //	cout << " nBC " << nBC << " nTriggerMask " << nTriggerMask<< endl;
-  Float_t timeBCoffset = 0.; //manual offest
+  Float_t timeBCoffset = 0.; //manual offset
   //	if( nBC%4 ==0 || nBC%4==1) timeBCoffset = 100.; // correction was for LHC11 when BC was not corrected
   
   Int_t nclus = caloClusters->GetEntries();
@@ -780,16 +791,26 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       amp        = cells.GetCellAmplitude(absId) ;
       isHighGain = cells.GetCellHighGain(absId);
       //cout<<"cell absID: "<<absId<<" cellTime: "<<hkdtime<<" cellaplit: "<< amp<<endl;	
+      // GEOMETRY tranformations
+      fgeom->GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
+      fgeom->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
+
+      //bad channel check. 0: good channel, 1-5: bad channel
+      if(fSetBadChannelMapSource==1){
+	if(GetEMCALChannelStatus(nSupMod,ieta,iphi)) continue;//printf("bad\n");
+      } else if(fSetBadChannelMapSource==2){
+	if(GetEMCALChannelStatus(absId)) continue;//printf("bad\n");
+      }
 
       //main histograms with raw time information 
       if(amp>fMinCellEnergy){
 	if(isHighGain){
-	  fhRawTimeVsIdBC[nBC]->Fill(absId,hkdtime);
+	  if(fFillHeavyHisto) fhRawTimeVsIdBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeSumBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeEntriesBC[nBC]->Fill(absId,1.);
 	  fhRawTimeSumSqBC[nBC]->Fill(absId,hkdtime*hkdtime);
 	}else{
-	  fhRawTimeVsIdLGBC[nBC]->Fill(absId,hkdtime);
+	  if(fFillHeavyHisto) fhRawTimeVsIdLGBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeSumLGBC[nBC]->Fill(absId,hkdtime);
 	  fhRawTimeEntriesLGBC[nBC]->Fill(absId,1.);
 	  fhRawTimeSumSqLGBC[nBC]->Fill(absId,hkdtime*hkdtime);
@@ -797,18 +818,15 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       }
       //fgeom->PrintCellIndexes(absId);
       //fgeom->PrintCellIndexes(absId,1);
-      
-      // GEOMETRY tranformations
-      fgeom->GetCellIndex(absId,  nSupMod, nModule, nIphi, nIeta);
-      fgeom->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
 
       // other histograms for cross-check      
       CheckCellRCU(nSupMod,ieta,iphi);//SM, column, row
 
       fhTcellvsSM->Fill(nSupMod,hkdtime);
-      if(isHighGain==kTRUE) {fhEneVsAbsIdHG->Fill(absId,amp);}
-      else {fhEneVsAbsIdLG->Fill(absId,amp);}
-      
+      if(fFillHeavyHisto) {
+	if(isHighGain==kTRUE) {fhEneVsAbsIdHG->Fill(absId,amp);}
+	else {fhEneVsAbsIdLG->Fill(absId,amp);}
+      }
       fhTimeVsBC->Fill(1.*BunchCrossNumber,hkdtime-timeBCoffset);
       //important remark: We use 'Underflow bin' for absid=0 in OADB for time calibration 
       if(isHighGain==kTRUE){
@@ -826,51 +844,74 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       }
       //if(offset==0)cout<<"offset 0 in SM "<<nSupMod<<endl;
 
-      // Solution for 2015 data where L1 phase is not correct in data. We need to calibrate run by run.
-      // The shift is done per SM (0-19).
-
-      //for runs with 100ns shift for BC0 and BC1 and wrong L1 phase we need to revert them and apply next step
-      if(fhWrongL1Phases!=0){//comming from file provoded by Martin, from raw data extraction before the first iteration
-	wrongL1phase = (Int_t)(fhWrongL1Phases->GetBinContent(nSupMod));//SM0 = bin0
-        if(nBC >= wrongL1phase)
-          wrongOffsetPerSM = (nBC - wrongL1phase)*25;
-        else
-          wrongOffsetPerSM = (nBC - wrongL1phase + 4)*25;
-	if(nBC==0 || nBC==1) wrongOffsetPerSM+=100;
-
-      } else if(fReferenceWrongL1PhasesRunByRunFileName.Length()!=0){//protection against missing reference histogram
-        AliFatal("Reference histogram run-by-run with erong L1 phases not properly loaded");
-      }
-      //end of load additional wrong offset
-
-      //works for reconstructed runs without 100ns shift for BC0 and BC1 and no L1 phase 
-      // valid for muon_calo_pass1 of LHC15n (pp@2.76) and later reconstructions 
+      // Solution for 2015 data where L1 phase and L1 shift is not correct in data. We need to calibrate run by run.
+      // The shift and phase are done per SM (0-19).
+      // L1 phase is necessary in run 2. 
+      // L1 shift is necessary only for bad reconstructed runs (muon_calo_pass1 lhc15f-m)
       if(fhRefRuns!=0) {//comming from file after the first iteration
-	//offsetPerSM = (Float_t)(fhRefRuns->GetBinContent(nBC*kNSM+nSupMod));//BC0SM0 = bin0
-	L1phase = (Int_t)(fhRefRuns->GetBinContent(nSupMod));//SM0 = bin0
+	L1phaseshift = (Int_t)(fhRefRuns->GetBinContent(nSupMod));//SM0 = bin0
+	
+	// to correct for L1 phase
+	// this part works for both: muon_calo_pass1 of LHC15n (pp@2.76) and later reconstructions
+	// wrong reconstruction done before in run2 
+	L1phase = L1phaseshift & 3; //bit operation
 	if(nBC >= L1phase)
 	  offsetPerSM = (nBC - L1phase)*25;
 	else
 	  offsetPerSM = (nBC - L1phase + 4)*25;
+	
+	// to correct for L1 shift
+	// this part is only for wrongly reconstructed runs before LHC15n in run2
+	if(fBadReco){
+	  L1shiftOffset = L1phaseshift>>2; //bit operation
+	  L1shiftOffset*=25;
+	  //(we subtract it here because we subtract the whole wrong offset later --=+)
+	  if(nBC==0 || nBC==1) L1shiftOffset-=100.;//additional shift for muon_calo_pass1 up to lhc15f-m 
+	}
       } else if(fReferenceRunByRunFileName.Length()!=0){//protection against missing reference histogram
 	AliFatal("Reference histogram run-by-run not properly loaded");
       }
       //end of load additional offset 
+      
+      //fill the raw time with L1 shift correction and 100ns
+      if(fBadReco && fFillHeavyHisto && amp>fMinCellEnergy){
+        if(isHighGain){
+	  fhRawCorrTimeVsIdBC[nBC]->Fill(absId,hkdtime-L1shiftOffset);
+	}else{
+	  fhRawCorrTimeVsIdLGBC[nBC]->Fill(absId,hkdtime-L1shiftOffset);
+	}
+      }
 
-      if(amp>0.5) {					
-	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM+wrongOffsetPerSM);
-	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM+wrongOffsetPerSM);
+      //fill time after L1 shift correction and 100ns and new L1 phase
+      if(fReferenceRunByRunFileName.Length()!=0 && fFillHeavyHisto && amp>fMinCellEnergy){
+        if(isHighGain){
+          fhTimeVsIdBC[nBC]->Fill(absId,hkdtime-L1shiftOffset-offsetPerSM);
+        }else{
+          fhTimeVsIdLGBC[nBC]->Fill(absId,hkdtime-L1shiftOffset-offsetPerSM);
+        }
+      }
+
+      //other control histograms
+      if(amp>0.5) {
+	if(isHighGain){				
+	  fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	  fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	}else{
+	  fhTimeDsupLG[nSupMod]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	  fhTimeDsupLGBC[nSupMod][nBC]->Fill(amp,hkdtime-offset-offsetPerSM-L1shiftOffset);
+	}
       }
       
-      if(amp>0.9) {
-	fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
+      if(fFillHeavyHisto) {
+	if(amp>0.9) {
+	  fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
+	}
+	fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM-L1shiftOffset);
       }
-
-      fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM+wrongOffsetPerSM);
 
       hkdtime = hkdtime-timeBCoffset;//time corrected by manual offset (default=0)
       Float_t hkdtimecorr;
-      hkdtimecorr= hkdtime-offset-offsetPerSM+wrongOffsetPerSM;//time after first iteration
+      hkdtimecorr= hkdtime-offset-offsetPerSM-L1shiftOffset;//time after first iteration
 
       //main histograms after the first itereation for calibration constants
       //if(hkdtimecorr>=-20. && hkdtimecorr<=20. && amp>0.9 ) {
@@ -884,9 +925,8 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //	fhTimeSumSq[nBC]->SetBinContent(absId,sumTimeSq);
 //	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
 
-        //correction in 2015 for wrong phase
-	if(offsetPerSM != 0) hkdtime = hkdtime - offsetPerSM;
-	if(wrongOffsetPerSM != 0) hkdtime = hkdtime + wrongOffsetPerSM;
+        //correction in 2015 for wrong L1 phase and L1 shift
+	hkdtime = hkdtime - offsetPerSM - L1shiftOffset;
 
 	if(isHighGain){
 	  fhTimeEnt[nBC]->Fill(absId,1.);
@@ -922,6 +962,16 @@ void AliAnalysisTaskEMCALTimeCalib::Terminate(Option_t *)
   
   if(fTOFmaker) delete fTOFmaker;
 
+  if(fL1PhaseList) {
+    fL1PhaseList->SetOwner();
+    fL1PhaseList->Clear();
+    delete fL1PhaseList;
+  }
+
+  if (fBadChannelMapArray) { 
+    fBadChannelMapArray->Clear();
+    delete fBadChannelMapArray;
+  }
 
   if (!fOutputList) 
   {
@@ -1047,21 +1097,30 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="";//Reference.root
   fReferenceRunByRunFileName="";
-  fReferenceWrongL1PhasesRunByRunFileName="";
+  fBadReco=kFALSE;
+  fFillHeavyHisto=kFALSE;
   fGeometryName="";//EMCAL_COMPLETE12SMV1_DCAL_8SM
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
   fMaxTime=20.;
+
+  fBadChannelMapSet=kFALSE;
+  fSetBadChannelMapSource=0;
+  fBadChannelFileName="";
+
   //histograms
-  fRawTimeNbins  = 600;  // Raw time settings should be like that all the time
-  fRawTimeMin    = 300.; // importent in pass1
-  fRawTimeMax    = 900.;
-  fPassTimeNbins = 1400; // in pass2 should be (600,300,900)
-  fPassTimeMin   = -350.;// in pass3 should be (1400,-350,350)
-  fPassTimeMax   = 350.;
-  fEnergyNbins   = 500;  // default settings
+  fRawTimeNbins  = 400;  // Raw time settings should be like that all the time
+  fRawTimeMin    = 400.; // importent in pass1
+  fRawTimeMax    = 800.;
+  fPassTimeNbins = 1000; // in pass2 should be (400,400,800)
+  fPassTimeMin   = -250.;// in pass3 should be (1000,-250,250)
+  fPassTimeMax   = 250.;
+  fEnergyNbins   = 100;  // default settings was 500
   fEnergyMin     = 0.;
   fEnergyMax     = 20.;
+  fEnergyLGNbins = 200;  // default settings
+  fEnergyLGMin   = 0.;
+  fEnergyLGMax   = 100.;
   fFineNbins     = 90; //was 4500 for T0 time studies
   fFineTmin      = -500;
   fFineTmax      = 400;
@@ -1251,20 +1310,26 @@ const  Double_t upperLimit[]={
   
   TH1C *hRun=new TH1C(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
   Int_t fitResult=0;
-  Double_t minimumValue=10000;
+  Double_t minimumValue=10000.;
   Int_t minimumIndex=-1;
   Double_t meanBC[4];
 
   Double_t fitParameter=0;
   TF1 *f1=new TF1("f1","pol0",0,17664);
+  Bool_t orderTest=kTRUE;
+  Int_t iorder=0;//order index
+  Int_t j=0;//BC index
+  Int_t L1shift=0;
+  Int_t totalValue=0;
+
   for(Int_t i=0;i<20;i++){
     minimumValue=10000;
-    for(Int_t j=0;j<kNBCmask;j++){
+    for(j=0;j<kNBCmask;j++){
       fitResult=ccBC[j]->Fit("f1","CQ","",lowerLimit[i],upperLimit[i]);
       if(fitResult<0){
-	hRun->SetBinContent(i,0);//correct it please
+	//hRun->SetBinContent(i,0);//correct it please
 	meanBC[j]=-1;
-	printf("Fit failed for SM %d BC%d\n",i,j);
+	printf("Fit failed for SM %d BC%d, integral %f\n",i,j,ccBC[j]->Integral(lowerLimit[i],upperLimit[i]));
 	continue;
       } else {
 	fitParameter = f1->GetParameter(0);
@@ -1275,13 +1340,31 @@ const  Double_t upperLimit[]={
       }
       meanBC[j]=fitParameter;
 	
-      if(fitParameter<minimumValue){
+      if(fitParameter>0 && fitParameter<minimumValue){
 	minimumValue = fitParameter;
 	minimumIndex = j;
       }
     }
-    hRun->SetBinContent(i,minimumIndex);
-    printf("SM %d, min index %d meanBC %f %f %f %f\n",i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3]);
+
+    if( minimumValue/25-(Int_t)(minimumValue/25)>0.5 ) {
+      L1shift=(Int_t)(minimumValue/25.)+1;
+    } else {
+      L1shift=(Int_t)(minimumValue/25.);
+    }
+
+    if(TMath::Abs(minimumValue/25-(Int_t)(minimumValue/25)-0.5)<0.05)
+      printf("Run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min%%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25., (Int_t)((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
+
+    totalValue = L1shift<<2 | minimumIndex ;
+    //printf("L1 phase %d, L1 shift %d *25ns= %d, L1p+L1s %d, total %d, L1pback %d, L1sback %d\n",minimumIndex,L1shift,L1shift*25,minimumIndex+L1shift,totalValue,totalValue&3,totalValue>>2);
+
+    hRun->SetBinContent(i,totalValue);
+    orderTest=kTRUE;
+    for(iorder=minimumIndex;iorder<minimumIndex+4-1;iorder++){
+      if( meanBC[(iorder+1)%4] <= meanBC[iorder%4] ) orderTest=kFALSE;
+    }
+    if(!orderTest)
+      printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
   }
   delete f1;
   TFile *fileNew=new TFile(outputFile.Data(),"update");
@@ -1291,4 +1374,58 @@ const  Double_t upperLimit[]={
 
   file->Close();
   delete file;
+}
+
+//____________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
+{
+  if(fBadChannelMapSet) return;
+  AliOADBContainer *contBC=new AliOADBContainer("");
+  contBC->InitFromFile(Form("%s/EMCALBadChannels.root","alien://$ALICE_PHYSICS/OADB/EMCAL"),"AliEMCALBadChannels"); 
+  printf("contBC %p, ent  %d\n",contBC,contBC->GetNumberOfEntries());
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
+  if(arrayBC) {
+    AliInfo("Remove EMCAL bad cells");
+    fBadChannelMapArray = new TObjArray(kNSM);
+    for (Int_t i=0; i<kNSM; ++i) {
+      TH2I *hbm = (TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+      if (!hbm) {
+	AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+	continue;
+      }
+      hbm->SetDirectory(0);
+      fBadChannelMapArray->AddAt(hbm,i);
+          
+    } // loop over SMs
+  } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      
+  delete contBC;
+  fBadChannelMapSet=kTRUE;
+}  // Bad channel map loaded
+
+//____________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapFile()
+{
+  if(fBadChannelMapSet) return;
+
+  TFile *referenceFile = TFile::Open(fBadChannelFileName.Data());
+  if(referenceFile==0x0) {
+    AliFatal("*** NO bad channel map FILE");
+  }
+
+  TH1F *hbm = (TH1F*)referenceFile->Get("h1");
+  if (!hbm) {
+    AliError("Can not get EMCALBadChannelMap");
+  }
+  fBadChannelMapArray = new TObjArray(1);
+  fBadChannelMapArray->AddAt(hbm,0);
+  fBadChannelMapSet=kTRUE;
+}  // Bad channel map loaded
+
+
+//_____________________________________________________________________
+/// Load Bad Channel Map from different source
+void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMap(){
+  if(fSetBadChannelMapSource==1) LoadBadChannelMapOADB();
+  else if(fSetBadChannelMapSource==2) LoadBadChannelMapFile();
 }

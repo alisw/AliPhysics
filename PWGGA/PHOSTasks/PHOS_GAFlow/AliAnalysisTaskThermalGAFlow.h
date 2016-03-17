@@ -40,6 +40,11 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     virtual void SetMinLambdaDisp(Double_t x) {fMinLambdaDisp = x;}
     virtual void SetMinCPVStd(Double_t x) {fMinCPVStd = x;}
 
+    virtual void SetMixVertxbins(Int_t x) {fMixVertxbins = x;}
+    virtual void SetMixCentbins(Int_t x) {fMixCentbins = x;}
+    virtual void SetMixEvbins(Int_t x) {fMixEvbins = x;}
+    virtual void SetNptbins(Int_t x) {fNptbins = x;}
+
   protected:
 
     Int_t fRunNumber; //Run number of present run
@@ -57,7 +62,9 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     AliAODEvent       *faod; //fEvent, when aod
     Double_t          fvertexx[3]; //The position of the event vertex in the global coordinate system
     Float_t           fcentrality; //Centrality information
-    Double_t          fevPlane; //Event Plane Inforamtion -- not yet implimented!
+    Double_t          fevPlane; //Event Plane Inforamtion -- A and C averaged
+    Double_t          fevPlaneA; //Event Plane Inforamtion -- A only
+    Double_t          fevPlaneC; //Event Plane Inforamtion -- C only
     Double_t          fevScaler; //The V0A and V0C difference squared.  Used for QA.
     TF1               *fNonLinearCorr; //Nonlinear energy correction for core energy correction
 
@@ -72,6 +79,11 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     Double_t fMinCoreEnergyRatio;
     Double_t fMinLambdaDisp;
     Double_t fMinCPVStd;
+
+    Int_t fMixVertxbins;
+    Int_t fMixCentbins;
+    Int_t fMixEvbins;
+    Int_t fNptbins;
 
 //    void FillHist(const char * key, Double_t x, Double_t y) const;
 //    void FillHist(const char * key, Double_t x) const;
@@ -97,6 +109,7 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     Int_t *GetPos(AliESDCaloCluster* cluster, Int_t x[4]);
     Int_t *GetPos(AliAODCaloCluster* cluster, Int_t x[4]);
     void Hypnotic();
+    void IncFlow();
     Bool_t WeakCuts(AliESDCaloCluster *cluster);
     void FillHist(const char * key, Double_t x, Double_t y) const;
     void FillHist(const char * key, Double_t x) const;

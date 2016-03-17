@@ -6,111 +6,68 @@
 #  $pass         e.g. cpass1,pass1,passMC
 #  #ocdbStorage  e.g. "raw://", "local://./OCDB"
 
-WriteMuonConfig()
+ParseMUconfig()
 {
-  # FIXME
-  # This function allows to create special configuration files
-  # steer the MU.sh in special cases
-  # (e.g. problems with CDB, Physics Selection, etc.)
-  # When the macro will run at CERN it will be possible to
-  # put custom cfg files when needed
-  # and this function can be commented
-  local cfgFilename="$1"
-  if [ -e $cfgFilename ]; then
+  # Parse muon configuration file
 
-    # Change previous configuration if needed
-    if [[ "$period" =~ ^LHC15[a-l]$ ]]; then
-      local hasFeature=$(grep -c "MUenablePhysSel=0" $cfgFilename)
-      if [ $hasFeature -gt 0 ]; then
-        local tmpCfgFile=${cfgFilename/".txt"/"_tmp.txt"}
-        sed 's/MUenablePhysSel=0/MUenablePhysSel=1/;' $cfgFilename > $tmpCfgFile
-        mv $tmpCfgFile $cfgFilename
-      fi
-    fi
-    return
-  fi
-  local cfgDir=$(dirname "$cfgFilename")
-  if [ ! -e $cfgDir ]; then
-    mkdir "$cfgDir"
-  fi
-
-  if [ "$period" = "LHC15e" ]; then
-    echo "MUcheckTrigScalers=0" >> $cfgFilename
-  fi
-}
-
-GetCfgVarFromFile()
-{
-  # Read special configuration variables for muon
-  # Usually one does not need special configuration
-  # However, it might be needed in case of issues
-  # (arising e.g. when there are problems with CDB, Physics Selection, etc.)
+  local cfgFilename="$ALICE_PHYSICS/PWGPP/MUON/lite/MU.config"
   local what="$1"
-  local filename="$2"
-  local fullFlag=""
-  if [ -e $filename ]; then
-    fullFlag=$(grep "$what" $filename | xargs)
-    fullFlag=${fullFlag/"$what"/""}
-    fullFlag=${fullFlag/"="/""}
-    fullFlag=${fullFlag/" "/""}
-  fi
-  echo $fullFlag
+
+  awk -v swhat="$what" -v cond="${dataType}:${period}:${pass}" '{
+    if ( index($0,cond) ) {
+      while ( getline ) {
+        if ( index($0,"type:period:pass") ) break;
+        if ( index($0,swhat) ) {
+          matchLine=$0
+          gsub(swhat,"",matchLine)
+          gsub("=","",matchLine)
+          gsub("{","",matchLine)
+          if ( match(matchLine, /[a-zA-Z0-9]/) ) print matchLine
+          while ( getline ) {
+            if ( index($0,"=") ) break;
+            matchLine=$0
+            gsub("{","",matchLine)
+            gsub("}","",matchLine)
+            if ( match(matchLine, /[a-zA-Z0-9]/) ) print matchLine
+          }
+        }
+      }
+    }
+  }' $cfgFilename
+
 }
 
 GetMUvar()
 {
-  # Get configuration variable for muon.
 
-  # Assume that "outputDir" is known from the steering runQA.sh
-  local cfgFileDir="${outputDir}/configFiles"
-  local cfgFilePrefix="${dataType}_${period}_${pass}"
-  local cfgFilename="${cfgFileDir}/${cfgFilePrefix}_cfgMU.txt"
-
-  # FIXME: comment the following line when we will run at CERN
-#  WriteMuonConfig "$cfgFilename"
+  # Get configuration variable for muon
 
   local what="$1"
-  local output=""
-  local filename=""
+  local filename="${outputDir}/${what}.txt"
 
   if [ "$what" = "triggerList" ]; then
-    filename="${cfgFileDir}/${cfgFilePrefix}_trigList.txt"
-    if [ -e "$filename" ]; then
+    ParseMUconfig "$what" > $filename
+    if [ -s "$filename" ]; then
       output="\"${filename}\""
     else
+      rm $filename
       output="0x0"
     fi
-  elif [ "$what" = "runList" ]; then
-    filename="${cfgFileDir}/${cfgFilePrefix}_runList.txt"
-    if [ -e "$filename" ]; then
-      output="$(cat ${filename} | xargs)"
-    else
-      output=""
-    fi
-  elif [ "$what" = "isMC" ]; then
-    if [ "$dataType" = "sim" ]; then
-      output="1"
-    else
-      output="0"
-    fi
-  elif [ "$what" = "MUenablePhysSel" ]; then
-    output=$(GetCfgVarFromFile "MUenablePhysSel" "$cfgFilename")
+  else
+    output="$(ParseMUconfig $what)"
     if [ "$output" = "" ]; then
-      if [ "$dataType" = "sim" ]; then
-        output="0"
-      else
+      # Flag not specified: use default
+      if [ "$what" = "isMC" ]; then
+        output="0" && [[ "$dataType" = "sim" ]] && output="1"
+      elif [ "$what" = "MUenablePhysSel" ]; then
+        output="1" && [[ "$dataType" = "sim" ]] && output="0"
+      elif [ "$what" = "MUcheckTrigScalers" ]; then
         output="1"
       fi
-    fi
-  elif [ "$what" = "MUcheckTrigScalers" ]; then
-    output=$(GetCfgVarFromFile "MUcheckTrigScalers" "$cfgFilename")
-    if [ "$output" = "" ]; then
-      output="1"
     fi
   fi
   echo "$output"
 }
-
 
 runLevelQA()
 {
@@ -153,6 +110,11 @@ periodLevelQA()
     done
   fi
 
+  local excludeRuns=$(GetMUvar "excludeRuns")
+  for irun in $excludeRuns; do
+    sed -n -i'' '/'"$irun"'/!p' $fileList
+  done
+
   #if run list is provided, filter the output limiting to this list
   local runList=$(GetMUvar "runList")
   if [ "$runList" != "" ]; then
@@ -191,6 +153,9 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
 .q
 EOF
   rm PlotMuonQA.C
+  if [ -e "${triggerList}" ]; then
+    rm "${triggerList}"
+  fi
 
   # Then run trigger
   local MUcheckTrigScalers=$(GetMUvar "MUcheckTrigScalers")

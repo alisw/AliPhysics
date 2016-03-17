@@ -97,7 +97,7 @@ void AliTender::ConnectInputData(Option_t* option)
   }
   
   if (fESDhandler) {
-     fESD = fESDhandler->GetEvent();
+    fESD = (AliESDEvent*)fESDhandler->GetEvent();
   } else {
      AliFatal("No ESD input event handler connected") ; 
   }
@@ -145,7 +145,7 @@ void AliTender::UserExec(Option_t* option)
     Long64_t entry = fESDhandler->GetReadEntry();
     Printf("AliTender::Exec() %s ==> processing event %lld\n", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry);
   }  
-  fESD = fESDhandler->GetEvent();
+  fESD = (AliESDEvent*)fESDhandler->GetEvent();
 
 // Call the user analysis
   // Unlock CDB

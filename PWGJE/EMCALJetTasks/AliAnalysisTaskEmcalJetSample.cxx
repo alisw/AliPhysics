@@ -237,7 +237,7 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   if (fTracksCont) {
      fHistNTracks[fCentBin]->Fill(fTracksCont->GetNAcceptedParticles());
      fTracksCont->ResetCurrentID();
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
       track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
@@ -246,7 +246,8 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   }
 
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
@@ -261,7 +262,8 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
 
   if (fJetsCont) {
      Int_t count = 0;
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(); 
     while(jet) {
        count++;
       fHistJetsPtArea[fCentBin]->Fill(jet->Pt(), jet->Area());
@@ -297,7 +299,8 @@ void AliAnalysisTaskEmcalJetSample::CheckClusTrackMatching()
   Double_t dphi = 999;
 
   //Get closest cluster to track
-  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+  fTracksCont->ResetCurrentID();
+  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
   while(track) {
     //Get matched cluster
     Int_t emc1 = track->GetEMCALcluster();
@@ -312,7 +315,8 @@ void AliAnalysisTaskEmcalJetSample::CheckClusTrackMatching()
   }
   
   //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  fCaloClustersCont->ResetCurrentID();
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
   while(cluster) {
     TLorentzVector nPart;
     cluster->GetMomentum(nPart, fVertex);

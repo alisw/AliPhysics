@@ -144,6 +144,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fHistPID(0),
   fhnPID(0x0), fhnMixedEvents(0x0), fhnJH(0x0), fhnCorr(0x0),
   fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), // test
+  fTracksFromContainer(0),
   fJetsCont(0), fTracksCont(0), fCaloClustersCont(0),
   fContainerAllJets(0), fContainerPIDJets(1)//, fTrgJet(0)
 {
@@ -264,6 +265,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fHistPID(0),
   fhnPID(0x0), fhnMixedEvents(0x0), fhnJH(0x0), fhnCorr(0x0),
   fChi2A(0x0), fChi2C(0x0), fChi3A(0x0), fChi3C(0x0), fUseChiWeightForVZERO(kTRUE), // test
+  fTracksFromContainer(0),
   fJetsCont(0), fTracksCont(0), fCaloClustersCont(0),
   fContainerAllJets(0), fContainerPIDJets(1)//, fTrgJet(0)
 {   
@@ -861,6 +863,10 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     if(hn)hn->Sumw2();
   }
 
+  // Added March14, 2016 - used for new framework (track container)
+  fTracksCont = GetParticleContainer(0);
+  fTracksCont->SetClassName("AliVTrack");
+
   PostData(1, fOutput);
 }
 
@@ -868,6 +874,11 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 void AliAnalysisTaskEmcalJetHadEPpid::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
+
+  // Added March14, 2016 - used for new framework, to filled ClonesArray with container contents
+  fTracksFromContainer = new TClonesArray("AliVParticle");
+  fTracksFromContainer->SetName("TracksFromContainer");    
+  fTracksFromContainer->SetOwner(kTRUE);
 
   if (fJetsCont && fJetsCont->GetArray() == 0) fJetsCont = 0;
   if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
@@ -1003,26 +1014,42 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   fHistEventQA->Fill(6); // events after list check
 
+//test
+  GetTriggerList();
+
   // initialize TClonesArray pointers to jets and tracks
   TClonesArray *jets = 0;
   TClonesArray *tracks = 0; 
   TClonesArray *tracksME = 0;
   TClonesArray *clusters = 0;
 
-//test
-  GetTriggerList();
+  // method for filling collection output array of 'saved' tracks - Added March14, 2016 for new framework
+  Int_t tacc = 0;
+  fTracksFromContainer->Clear();
+  if(fTracksCont) {
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+    while(track) {
+      // add container tracks to clones array
+      (*fTracksFromContainer)[tacc] = track;
+      ++tacc;
+
+      // get next track
+      track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+    } // accepted track loop
+  }
 
   // get Tracks object
-  tracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracks));
+  tracks = fTracksFromContainer; // added March14, 2016
   if (!tracks) {
-    AliError(Form("Pointer to tracks %s == 0", fTracks->GetName()));
+    AliError(Form("Pointer to tracks: %s == 0", fTracksCont->GetName()));
     return kTRUE;
   } // verify existence of tracks
 
   // get ME Tracks object
-  tracksME = dynamic_cast<TClonesArray*>(list->FindObject(fTracksNameME));
+  tracksME = fTracksFromContainer; // Added March14, 2016
   if (!tracksME) {
-    AliError(Form("Pointer to tracks %s == 0", fTracksNameME.Data()));
+    AliError(Form("Pointer to ME tracks: %s == 0", fTracksCont->GetName()));
     return kTRUE;
   } // verify existence of tracks
 
@@ -1031,7 +1058,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   if(fJets) {
     jets = dynamic_cast<TClonesArray*>(list->FindObject(fJets));
     if(!jets){
-      AliError(Form("Pointer to jets %s == 0", fJets->GetName()));
+      AliError(Form("Pointer to jets: %s == 0", fJets->GetName()));
       //return kTRUE;
     } // verify existence of jets
     Njets = jets->GetEntries();
@@ -1055,7 +1082,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // get cluster collection (mainly QA at this point)
   clusters = dynamic_cast<TClonesArray*>(list->FindObject(fCaloClustersName));
   if (!clusters) {
-    AliError(Form("Pointer to clusters %s == 0", fCaloClustersName.Data()));
+    AliError(Form("Pointer to clusters: %s == 0", fCaloClustersName.Data()));
     return kTRUE;
   } // verify existence of clusters
 
@@ -1157,9 +1184,9 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   Double_t highestjetpt=0.0;
   Int_t passedTTcut=0;
   Int_t NjetAcc = 0;
-  Double_t leadhadronPT = 0;
-  Double_t maxclusterpt = 0;
-  Double_t maxtrackpt = 0;
+  Double_t leadhadronPT = 0.0;
+  Double_t maxclusterpt = 0.0;
+  Double_t maxtrackpt = 0.0;
 
   // loop over jets in an event - to find highest jet pT and apply some cuts
   for (Int_t ijet = 0; ijet < Njets; ijet++){

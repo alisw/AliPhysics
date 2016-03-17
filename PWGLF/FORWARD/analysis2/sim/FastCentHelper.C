@@ -46,7 +46,11 @@ struct FastCentHelper
     TString    axis("default");
     TString    meth(method);
     TObjArray* tokens = meth.Tokenize(":");
-    
+
+    if (fCentMeth.IsNull()) {
+      SetCentAxis(axis);
+      return;
+    }
     fCentMeth = tokens->At(0)->GetName();
     if (tokens->GetEntriesFast() > 1)
       axis = tokens->At(1)->GetName();

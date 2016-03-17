@@ -44,10 +44,16 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
+  void CreateMCAcceptanceHistos();
+  Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+
+  void NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC);
   void SetArray(Int_t type=AliAnalysisTaskSED0Mass::kD0){fArray=type;}
   enum{kD0,kLS};
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
+  void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;}
   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;}
   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;}
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
@@ -61,6 +67,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetWriteVariableTree(Bool_t flag) { fWriteVariableTree=flag; }
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
+  void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
 
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -95,6 +102,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TList    *fOutputMassY;        //!<! list send on output slot 9
   TList    *fDistr;               //!<! list send on output slot 2
   TH1F     *fNentries;            //!<! histogram with number of events on output slot 3
+  THnSparseF *fMCAccPrompt;       //!<!histo for StepMCAcc for D0 prompt (pt,y,ptB)
+  THnSparseF *fMCAccBFeed;        //!<!histo for StepMCAcc for D0 FD (pt,y,ptB)
+  Bool_t fStepMCAcc;              // flag to activate histos for StepMCAcc
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
   THnSparseF *fHistMassPtImpParTC[5];   //!<! histograms for impact paramter studies
   Int_t     fArray;               ///  can be D0 or Like Sign candidates
@@ -120,10 +130,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Double_t *fCandidateVariables;      //!<!  variables to be written to the tree
   Bool_t	fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
+  Bool_t fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
+  THnSparseF *fhStudyImpParSingleTrackSign; //!<! sparse with imp par residual cuts for MC
+  THnSparseF *fhStudyImpParSingleTrackCand;  //!<! sparse with imp par residual cuts for Data
+  THnSparseF *fhStudyImpParSingleTrackFd;   //!<! sparse with imp par residual cuts for MC
   TList	   *fDetSignal;		//!<!Detector signal histograms (on output slot 8)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,19); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,20); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

@@ -18,6 +18,10 @@
 /// \param minCellEne: Double_t, minimum cell energy
 /// \param referenceFileName: TString, name of reference file
 /// \param referenceSMFileName: TString, name of reference file for SM by SM calib.
+/// \param badReconstruction: Bool_t, flag to find L1 shift dur to errors in reconstruction
+/// \param fillHeavyHistos: Bool_t, flag to fill heavy histograms with time per channel
+/// \param badMapType: Int_t,settype of bad channel map acces
+/// \param badMapFileName: TString, file with bad channels map (absID)
 ///
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 ///
@@ -39,7 +43,10 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Bool_t   pileupFromSPDFlag = kFALSE,
 							     TString  referenceFileName = "",//Reference.root
 							     TString  referenceSMFileName = "",//ReferenceSM.root
-							     TString  referenceWrongL1SMFileName = "")//ReferenceWrongSM.root
+							     Bool_t   badReconstruction = kFALSE,
+							     Bool_t   fillHeavyHistos = kFALSE,
+							     Int_t    badMapType = 0,
+							     TString  badMapFileName = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -74,28 +81,36 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
 
-  //add in pass1 for runs before LHC15n muon_calo_pass1
-  if(referenceWrongL1SMFileName.Length()!=0){
-    taskmbemcal->SetReferenceWrongL1PhasesRunByRunFileName(referenceWrongL1SMFileName);
-    taskmbemcal->LoadWrongReferenceRunByRunHistos();
-    taskmbemcal->SetPassTimeHisto(1200,300.,900.);
-  }
+  if(fillHeavyHistos) taskmbemcal->SwithOnFillHeavyHisto();
+  else taskmbemcal->SwithOffFillHeavyHisto();
 
+  // pass1
+  taskmbemcal->SetRawTimeHisto(200,400.,800.);
+  taskmbemcal->SetPassTimeHisto (200,400.,800.);
   // pass2
   if(referenceSMFileName.Length()!=0){
     taskmbemcal->SetReferenceRunByRunFileName(referenceSMFileName);
     taskmbemcal->LoadReferenceRunByRunHistos();
-    taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+    taskmbemcal->SetPassTimeHisto(800,400.,800.);
+    if(badReconstruction) {  //add for runs before LHC15n muon_calo_pass1 in run2
+      taskmbemcal->SwitchOnBadReco();
+      taskmbemcal->SetPassTimeHisto(500,-100.,150.);
+    }
   }
 
   //pass3
   if(referenceFileName.Length()!=0){   
     taskmbemcal->SetReferenceFileName(referenceFileName);
     taskmbemcal->LoadReferenceHistos();
-    taskmbemcal->SetPassTimeHisto(1400,-350.,350.);
+    taskmbemcal->SetPassTimeHisto(1000,-250.,250.);
   }
   if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
   else taskmbemcal->SwitchOffPileupFromSPD();
+
+  //bad channel map
+  taskmbemcal->SetBadChannelMapSource(badMapType);
+  if(badMapType==2) taskmbemcal->SetBadChannelFileName(badMapFileName);
+
 
   //taskmbemcal->PrintInfo();
 

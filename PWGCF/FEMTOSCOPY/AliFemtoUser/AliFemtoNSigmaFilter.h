@@ -28,7 +28,7 @@
 ///    NSigma > -999.
 ///  * Momentum variables are named with P (or Mom), but
 ///    AliFemtoV0TrackCutNSigmaFilter will allow the user to cut on NSigma in p
-///    or pT. (14/12/2015 - not yet implemented)
+///    or pT. (02/10/2016 - not yet implemented)
 ///  * Struct variables have a lower case first letter (excluding "a").
 ///  * Function parameters begin with "a".
 ///
@@ -112,15 +112,41 @@
 ///   4. If neither the NSigmaTPC nor the NSigmaTOF value is valid, the particle
 ///      fails the cut.
 ///
-///      In this case, if both the NSigmaTPC and NSigmaTOF values are valid, the
-///      TPC cut will be evaulated if the particle has a momentum <=
-///      fMomMaxPreferTPC, and the TOF cut will be evaluated if the momentum is >
-///      fMomMaxPreferTPC. If the NSigmaTPC value is valid by NSigmaTOF is not,
-///      the TPC cut will be evaluated If the NSigmaTOF value is valid by
-///      NSigmaTPC is not, the TOF cut will be evaluated If neither the
-///      NSigmaTPC nor the NSigmaTOF value is valid, the particle will fail the
-///      cut.
 ///
+/// ----------------------------------------------------------------------------
+///
+/// ### Improper configuration
+///
+///   When building the various cuts, the method CheckForOverlap checks the 
+///   user's configuration for a few simple errors.  If an error is found, the 
+///   member fImproperConfig is set the true, and all candidates will fail.  
+///   For now, each cut collection is checked for:
+///    1. A negative pMin value
+///    2. A negative pMax value
+///    3. pMin > pMax
+///    4. Overlapping bins in a cut collection
+///       NOTE:  This checks for overlapping bins within a single cut collection 
+///              (for instance, overlapping bins in the fTPCCutCollection).  
+///              Overlapping bins amongst the (3) different cut collections is 
+///              allowed, and in many cases, is desired. 
+
+///   The configurations are obviously defined improper by the authors.  However, 
+///   the user may notice some novel way to use the filter with a configuration 
+///   we deem "bad".  In this case, the user may set fOverrideImproperConfig=true 
+///   (via SetOverrideImproperConfig(true)), which will negate the
+///   fImproperConfig guard.  We have implemented this guard for a reason. 
+///   Therefore, the user should have a deep understanding of the functionality
+///   of this class, and must understand completely how the ("improper") 
+///   configuration will function, before overriding the improper configuration
+///   guard.
+
+///   Note:  SetOverrideImproperConfig(bool aOverride) should be called before 
+///          the cut collections are made.  However, if it is called after, 
+///          the override will still function properly, but the error messages 
+///          will read as if fOverrideImproperConfig=false
+///
+///
+/// ----------------------------------------------------------------------------
 ///
 /// ## EXAMPLES
 ////

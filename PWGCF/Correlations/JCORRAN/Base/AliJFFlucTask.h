@@ -92,6 +92,13 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 					cout << "setting z vertex cut = " << fzvtxCut << endl;};
   void SetSCptdep( Bool_t isSCptdep){ IsSCptdep = isSCptdep;
 					cout << "setting : SCpt dep = " << isSCptdep << endl;};
+  void SetParticleCharge( int charge ){ fPcharge = charge;
+					cout << "setting particle charge = " << charge << endl;};
+  void SetSCwithQC( Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC;
+					cout << "setting : SC with QC = " << isSCwithQC << endl;};
+  void SetEbEWeight( Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted;
+					cout << "setting : EbE weight = " << isEbEWeighted << endl;};
+
 //  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
 
@@ -104,6 +111,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   int fFilterBit; 
   int fEffMode;
   int fEffFilterBit;
+  int fPcharge;
   double fEta_min;
   double fEta_max;
   double fPt_min;
@@ -116,6 +124,8 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t IsCentFlat;
   Bool_t IsPhiModule;
   Bool_t IsSCptdep;
+  Bool_t IsSCwithQC;
+  Bool_t IsEbEWeighted;
   TClonesArray * fInputList;  // tracklist 
   TH1D *h_ratio; 
   AliJFFlucAnalysis *fFFlucAna; // analysis code

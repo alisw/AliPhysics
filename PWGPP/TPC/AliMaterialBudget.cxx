@@ -153,7 +153,7 @@ void AliMaterialBudget::ConnectInputData(Option_t *)
     }
     else {
       esdH->SetActiveBranches("ESDfriend");
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       //Printf("*** CONNECTED NEW EVENT ****");
     }  
   }

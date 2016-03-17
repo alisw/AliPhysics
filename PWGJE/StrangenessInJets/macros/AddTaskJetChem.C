@@ -110,7 +110,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(useExtraTracks)task->UseExtraTracks();
   if(useExtraOnlyTracks)task->UseExtraonlyTracks();
   if(useExtraJetPt)task->SetUseExtraJetPt(kTRUE);//Use smeared jet pt for MC truth reference
-
+  task->SetUseEmbeddedJetPt(kFALSE);
 
   //task->SetCutRatioTPC(0.8);//Cut on Ratio of crossed Rows over findable clusters in TPC -> not used anymore by Strangeness PAG group
    //task->SetCuttrackPosNcls(70);

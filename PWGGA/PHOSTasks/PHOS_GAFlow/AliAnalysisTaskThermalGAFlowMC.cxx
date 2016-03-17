@@ -55,11 +55,12 @@ void AliAnalysisTaskThermalGAFlowMC::UserCreateOutputObjects() {
 AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects(); //Do setup and add normal Data hists
 //now add MC hists
 
-  Int_t Nbins = 150; //("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 20.5); and exp scaling
-  Double_t Ptbins[151];
+  Int_t Nbins = fNptbins; //("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 20.5); and exp scaling
+  const Int_t somebins = Nbins+1;
+  Double_t Ptbins[somebins];
   Double_t a = TMath::Power(10, 1);
-  for(Int_t ibin = 0; ibin < 151; ibin++){
-  Ptbins[ibin] = 0.5 - (20/(a - 1)) + ((20/(a - 1)) * TMath::Power(10, ibin/150.));
+  for(Int_t ibin = 0; ibin < somebins; ibin++){
+  Ptbins[ibin] = 0.5 - (20/(a - 1)) + ((20/(a - 1)) * TMath::Power(10, ibin/(Nbins*1.0)));
   }
 
   TH1F *Clus_PrimeERatio = new TH1F("Clus_PrimeERatio", "Ratio of Highest Energy Prime to total cluster Energy", 50, 0, 1);
@@ -102,22 +103,107 @@ AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects(); //Do setup and add norm
   PionDaughter_M->GetYaxis()->SetTitle("Pt");
   fAnalist->Add(PionDaughter_M);
 
-  TH1I *Stat_Purity = new TH1I("Stat_Purity", "Purity of each cut number", 20, 0, 20);
+  TH1I *Stat_Purity = new TH1I("Stat_Purity", "Purity of each cut number", Nbins, Ptbins);
   Stat_Purity->GetXaxis()->SetTitle("Counts");
   Stat_Purity->GetYaxis()->SetTitle("Cut Number");
   fAnalist->Add(Stat_Purity);
+
+  TH1F *Stat_Flavor_dir = new TH1F("Stat_Flavor_dir", "Flavor of photon spectrum-dir", Nbins, Ptbins);
+  Stat_Flavor_dir->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_dir->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_dir);
+
+  TH1F *Stat_Flavor_pi = new TH1F("Stat_Flavor_pi", "Flavor of photon spectrum-pi", Nbins, Ptbins);
+  Stat_Flavor_pi->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_pi->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_pi);
+
+  TH1F *Stat_Flavor_eta = new TH1F("Stat_Flavor_eta", "Flavor of photon spectrum-eta", Nbins, Ptbins);
+  Stat_Flavor_eta->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_eta->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_eta);
+
+  TH1F *Stat_Flavor_f0 = new TH1F("Stat_Flavor_f0", "Flavor of photon spectrum-f0", Nbins, Ptbins);
+  Stat_Flavor_f0->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_f0->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_f0);
+
+  TH1F *Stat_Flavor_omega = new TH1F("Stat_Flavor_omega", "Flavor of photon spectrum-omega", Nbins, Ptbins);
+  Stat_Flavor_omega->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_omega->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_omega);
+
+  TH1F *Stat_Flavor_kaon = new TH1F("Stat_Flavor_kaon", "Flavor of photon spectrum-kaon", Nbins, Ptbins);
+  Stat_Flavor_kaon->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_kaon->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_kaon);
+
+  TH1F *Stat_Flavor_total = new TH1F("Stat_Flavor_total", "Flavor of photon spectrum-total", Nbins, Ptbins);
+  Stat_Flavor_total->GetXaxis()->SetTitle("Pt");
+  Stat_Flavor_total->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Stat_Flavor_total);
 
 PostData(1,fAnalist);
 }
 
 //_______________________________Main Loop_________________________________//
 void AliAnalysisTaskThermalGAFlowMC::UserExec( Option_t * option){
+//printf("Anything.\n");
+FillHist("Stat_Efficiency", 15);
+PostData(1,fAnalist);
+AliAnalysisTaskThermalGAFlow::CaptainsLog(0);
+
+//Step 0: Configure the environment - take out your toys
+AliAnalysisTaskThermalGAFlow::ConfigureEvent();
+FillHist("Stat_Efficiency", 16);
+PostData(1,fAnalist);
+if(fRunNumber != fEvent->GetRunNumber()){fRunNumber = fEvent->GetRunNumber(); InitializeGeometry();}
+FillHist("Stat_Efficiency", 17);
+PostData(1,fAnalist);
+AliAnalysisTaskThermalGAFlow::ScanBasicEventParameters();
+AliAnalysisTaskThermalGAFlow::CaptainsLog(1);
+
+//Step 1: Internal Triggering and QA - set up your toys
+if(!AliAnalysisTaskThermalGAFlow::ApplyEventCuts()){PostData(1,fAnalist);}
+else {
+FillHist("Stat_Efficiency", 18);
+AliAnalysisTaskThermalGAFlow::ScanClusters();
+AliAnalysisTaskThermalGAFlow::SaveEvent();
+AliAnalysisTaskThermalGAFlow::CaptainsLog(2);
+
+//Step 2: Extract the diphoton mass - play with your toys
+//printf("fSextant = %p\n", fSextant);
+AliAnalysisTaskThermalGAFlow::MesonExclusion();
+AliAnalysisTaskThermalGAFlow::CaptainsLog(3);
+//Step 3: Compute thermal photon spectrum - have fun and be happy
+AliAnalysisTaskThermalGAFlow::Hypnotic();
+
+//Step 4: Compute thermal photon flow - put away your toys when you're done with them 
+//Invalid - In MC, there is no flow.
+
+//delete fSextant;
+fSextant = 0x0;
+
+//Step 5: Extract extra information since we're in MC - use your imagination!
 fStack = GetMCStack();
-AliAnalysisTaskThermalGAFlow::UserExec(option); //Do the Same thing as Data
 ScanClustersMC();  //Then extract the needed MC information.
 ExtractRealPions(); //Extract the real pion distribution, no cuts.
+TasteFlavor();
 
 PostData(1,fAnalist);
+}
+
+
+//if(!ApplyEventCuts()){PostData(1,fAnalist);}
+//else{
+//fStack = GetMCStack();
+//AliAnalysisTaskThermalGAFlow::UserExec(option); //Do the Same thing as Data
+//ScanClustersMC();  //Then extract the needed MC information.
+//ExtractRealPions(); //Extract the real pion distribution, no cuts.
+
+//PostData(1,fAnalist);
+//}
+
 }
 
 //_________________Final step,  Called once at the end of the Task_________//
@@ -157,7 +243,7 @@ TLorentzVector p;
 if(fesd){
 for(Int_t icluster = 0; icluster < fesd->GetNumberOfCaloClusters(); icluster++) {
   AliESDCaloCluster *cluster = fesd->GetCaloCluster(icluster);
-  GuessPure(cluster);
+//  GuessPure(cluster); //Note:  Might mess up some other plots.  Try to only guess pure when you need to.  Post analysis macro should give full purity anyways.
   if(ApplyClusterCuts(cluster)){
   if(IsPhotonShower(cluster)){
     cluster->GetMomentum(p, fvertexx);
@@ -171,23 +257,24 @@ for(Int_t icluster = 0; icluster < fesd->GetNumberOfCaloClusters(); icluster++) 
 void AliAnalysisTaskThermalGAFlowMC::GuessPure(AliESDCaloCluster *cluster){
 //if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 0);} //This can't work - you haven't done basic cuts yet, so labels are meaningless.
 
+//Note:  Might mess up some other plots.  Try to only guess pure when you need to.  Post analysis macro should give full purity anyways.
 if(WeakCuts(cluster)){
- if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 1);}
+ if(IsPhotonShower(cluster)){FillHist("Stat_Purity", 2);}
 
  if(cluster->GetTOF() > -0.0000001 && cluster->GetTOF() < 0.0000001){
-  if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 2);}
+  if(IsPhotonShower(cluster)){FillHist("Stat_Purity", 3);}
 
-  if(cluster->GetDistanceToBadChannel() > 4.4){
-   if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 3);}
+  if(cluster->GetDistanceToBadChannel() > 2.2){
+   if(IsPhotonShower(cluster)){FillHist("Stat_Purity", 4);}
 
    if(ApplyCPCuts(cluster)){
-    if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 4);}
+    if(IsPhotonShower(cluster)){FillHist("Stat_Purity", 5);}
 
     if(ApplyCoreShapeCut(cluster)){
-     if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 5);}
+     if(IsPhotonShower(cluster)){FillHist("Stat_Purity", 6);}
 
      if(ApplyDispMatrixCut(cluster)){
-      if(!IsPhotonShower(cluster)){FillHist("Stat_Purity", 6);}   
+      if(IsPhotonShower(cluster)){FillHist("Stat_Purity", 7);}   
 }}}}}}
 }
 
@@ -199,7 +286,7 @@ TParticle *p = fStack->Particle(cluster->GetLabelAt(0));
 Int_t pCode = p->GetPdgCode(); //This is the MC PID code.
 Float_t primaryERatio = p->Energy() / cluster->E(); //Prime Energy Ratio.  PHOS_PbPb used 0.9.  I'm going to use something smaller to start.
 FillHist("Clus_PrimeERatio", primaryERatio);
-if(pCode == 22 && primaryERatio > 0.1){return 1;} 
+if(pCode == 22 && primaryERatio > 0.80){return 1;} 
 //22 is the photon code... I think.  11 is electron, -11 is position... again... I think. (This is verified - See "Monte Carlo Particle Numbering Scheme" June 2006, Garren et al.)
 //pi0 = 111, eta = 221, f0 = 10221
 return 0;
@@ -211,19 +298,24 @@ void AliAnalysisTaskThermalGAFlowMC::ExtractRealPions()
 const TObjArray *pArray = fStack->Particles();
 Int_t Npart = pArray->GetEntriesFast();
 TParticle *D0, *D1;
+TParticle *part;
 TLorentzVector p0, p1, p; 
 for(Int_t ipart = 0; ipart < Npart; ipart++){
- TParticle *part = static_cast<TParticle*> (pArray->At(ipart));
- if(part->GetPdgCode() == (111/* || 221*/)){
-  if(part->GetDaughter(0) >= 1 && part->GetDaughter(1) >= 1){
+ part = static_cast<TParticle*> (pArray->At(ipart));
+// FillHist("Stat_Efficiency", 12);
+ if(part->GetPdgCode() == 111){
+// FillHist("Stat_Efficiency", 13);
+  if(part->GetDaughter(0) > -1 && part->GetDaughter(1) > -1){
+// FillHist("Stat_Efficiency", 14);
    D0 = static_cast<TParticle*> (pArray->At(part->GetDaughter(0)));
    D1 = static_cast<TParticle*> (pArray->At(part->GetDaughter(1)));
-//   if(D0->GetPdgCode() == 22 && D1->GetPdgCode() == 22){
+   if(D0->GetPdgCode() == 22 && D1->GetPdgCode() == 22){
+// FillHist("Stat_Efficiency", 15);
     D0->Momentum(p0);
     D1->Momentum(p1);
     p = p0+p1;
     FillHist("PionDaughter_M", sqrt(p.E()*p.E()-p.Px()*p.Px()-p.Py()*p.Py()-p.Pz()*p.Pz()), sqrt(p.Px()*p.Px()+p.Py()*p.Py()));
-//}
+}
   }
  part->Momentum(p);
  FillHist("Pion_MCalc", sqrt(p.E()*p.E()-p.Px()*p.Px()-p.Py()*p.Py()-p.Pz()*p.Pz()), sqrt(p.Px()*p.Px()+p.Py()*p.Py())); 
@@ -232,12 +324,31 @@ for(Int_t ipart = 0; ipart < Npart; ipart++){
  FillHist("Pion_Pt", part->Pt());
  FillHist("Pion_E", part->Energy());
  }
-
 }
 //pi0 = 111, eta = 221, f0 = 10221
 }
 
-
+//____________________Break down photons into catagories based on their mothers_______//
+void AliAnalysisTaskThermalGAFlowMC::TasteFlavor()
+{
+const TObjArray *pArray = fStack->Particles();
+Int_t Npart = pArray->GetEntriesFast();
+TParticle *part, *mother;
+for(Int_t ipart = 0; ipart < Npart; ipart++){
+ part = static_cast<TParticle*> (pArray->At(ipart));
+ if(part->GetPdgCode() == (22)){
+  if(part->IsPrimary()){FillHist("Stat_Flavor_dir", part->Pt());} //direct gamma
+  else{
+   mother = static_cast<TParticle*> (pArray->At(part->GetMother(0)));
+   if(mother->GetPdgCode() == 111 && mother->IsPrimary()){FillHist("Stat_Flavor_pi", part->Pt());} //primary pi0
+   if(mother->GetPdgCode() == 221){FillHist("Stat_Flavor_eta", part->Pt());} //eta
+   if(mother->GetPdgCode() == 10221){FillHist("Stat_Flavor_f0", part->Pt());} //f0(1710)
+   if(mother->GetPdgCode() == 30223){FillHist("Stat_Flavor_omega", part->Pt());}  //omega(1650)
+   if(mother->GetPdgCode() == 111 && mother->GetMother(0)>-1 && (static_cast<TParticle*>(pArray->At(mother->GetMother(0))))->GetPdgCode() == 311){FillHist("Stat_Flavor_kaon", part->Pt());} //K0 short (or long, just to be safe)
+  }
+  FillHist("Stat_Flavor_total", part->Pt());
+}}
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //                                                                                  //

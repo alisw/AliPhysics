@@ -313,12 +313,12 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   if (fITSSumTP) fITSSumTP->Reset();
 
   if(!esd) {
-    printf("AliAnalysisTaskITSAlignQA::Exec(): bad ESD\n");
+    AliInfo("No ESD");
     return;
   } 
-
-  if(!ESDfriend()) {
-    printf("AliAnalysisTaskITSAlignQA::Exec(): bad ESDfriend\n");
+  AliESDfriend* fr = ESDfriend();
+  if(!fr || !fr->GetNumberOfTracks()) {
+    AliInfo("No or empty ESDfriend");
     return;
   }
   //
@@ -373,9 +373,9 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     //
     AliESDtrack * track = esd->GetTrack(itrack);
     if(!track) continue;
-    if(!AcceptTrack(track, vtx)) continue;
     array = track->GetTrackPointArray();
     if(!array) continue;
+    if(!AcceptTrack(track, vtx)) continue;
     arrayITS = PrepareTrack(array, vtx);
     if (fITSSumTP) {
       arrayITSNoVtx = PrepareTrack(array, 0);

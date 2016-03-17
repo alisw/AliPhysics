@@ -12,6 +12,10 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 		Error("AddTask_CDPWA", "This task requires an input event handler");
 		return 0;
 	}
+	//ESD handler
+	AliInputEventHandler* hdl = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+	if (hdl) hdl->SetNeedField(kTRUE);
+
 	TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 	Bool_t isMC = kFALSE;
 	if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
@@ -24,6 +28,7 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 	//task->SetRunSyst(runSyst);
 	//task->SelectCollisionCandidates(AliVEvent::kMB);
 
+	/*
 	// Load other task
 	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
 
@@ -39,14 +44,18 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 	oadb->SetHardwareTrigger(1,"SPDGFO >= 1");
 	oadb->SetOfflineTrigger(1,"SPDGFO >= 1 && !V0ABG && !V0CBG && !ADABG && !ADCBG && !TPCLaserWarmUp");
 	physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadb,0);
+	*/
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TTree::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+	AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TTree::Class(), AliAnalysisManager::kOutputContainer,
+			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer,
+			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
 
 	// Add task
 	mgr->AddTask(task);
+	mgr->SetDebugLevel(0);
 
 	// Connect input/output
 	mgr->ConnectInput(task, 0, cinput);

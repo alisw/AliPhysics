@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGUDdiffractive)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
@@ -106,4 +107,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
-install(DIRECTORY . DESTINATION PWGUD/DIFFRACTIVE FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY . DESTINATION PWGUD/DIFFRACTIVE FILES_MATCHING PATTERN "*.C" PATTERN "*.pl" PATTERN "*.sh")

@@ -88,10 +88,10 @@ void AliEmcalJetUtilityConstSubtractor::Init()
 
   // Add constituent subtracted jets to event
   if (!fJetsSubName.IsNull()) {
-    if (!(fJetTask->GetEvent()->FindListObject(fJetsSubName)) ) {
+    if (!(fJetTask->InputEvent()->FindListObject(fJetsSubName)) ) {
       fJetsSub = new TClonesArray("AliEmcalJet");
       fJetsSub->SetName(fJetsSubName);
-      fJetTask->GetEvent()->AddObject(fJetsSub);
+      fJetTask->InputEvent()->AddObject(fJetsSub);
     } 
     else {
       AliError(Form("%s: Object for subtracted jet branch with name %s already in event! Returning", GetName(), fJetsSubName.Data()));
@@ -101,10 +101,10 @@ void AliEmcalJetUtilityConstSubtractor::Init()
 
   // Add tracks from constituent subtracted jets to event
   if (!fParticlesSubName.IsNull()) {
-    if (!(fJetTask->GetEvent()->FindListObject(fParticlesSubName))) {
+    if (!(fJetTask->InputEvent()->FindListObject(fParticlesSubName))) {
       fParticlesSub = new TClonesArray("AliEmcalParticle");
       fParticlesSub->SetName(fParticlesSubName);
-      fJetTask->GetEvent()->AddObject(fParticlesSub);
+      fJetTask->InputEvent()->AddObject(fParticlesSub);
     } else {
       AliError(Form("%s: Object with name %s already in event! Returning", GetName(), fParticlesSubName.Data()));
       return;
@@ -112,7 +112,7 @@ void AliEmcalJetUtilityConstSubtractor::Init()
   }
 
   if (!fRhoName.IsNull() && !fRhoParam) { // get rho from the event
-    fRhoParam = dynamic_cast<AliRhoParameter*>(fJetTask->GetEvent()->FindListObject(fRhoName));
+    fRhoParam = dynamic_cast<AliRhoParameter*>(fJetTask->InputEvent()->FindListObject(fRhoName));
     if (!fRhoParam) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
       return;
@@ -120,7 +120,7 @@ void AliEmcalJetUtilityConstSubtractor::Init()
   }
 
   if (!fRhomName.IsNull() && !fRhomParam) { // get rhom from the event
-    fRhomParam = dynamic_cast<AliRhoParameter*>(fJetTask->GetEvent()->FindListObject(fRhomName));
+    fRhomParam = dynamic_cast<AliRhoParameter*>(fJetTask->InputEvent()->FindListObject(fRhomName));
     if (!fRhomParam) {
       AliError(Form("%s: Could not retrieve rho_m %s!", GetName(), fRhomName.Data()));
       return;
@@ -191,7 +191,7 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
       // Fill constituent info
       std::vector<fastjet::PseudoJet> constituents_unsub(fjw.GetJetConstituents(ijet));
       std::vector<fastjet::PseudoJet> constituents_sub = jets_sub[ijet].constituents();
-      fJetTask->FillJetConstituents(jet_sub, constituents_sub, fJetTask->GetTracks(), fJetTask->GetClusters(), constituents_unsub, 1, fParticlesSub);
+      fJetTask->FillJetConstituents(jet_sub, constituents_sub, constituents_unsub, 1, fParticlesSub);
       jetCount++;
     }
   }

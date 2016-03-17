@@ -29,7 +29,7 @@
 #include "AliAnalysisTask.h"
 #include "AliUEHist.h"
 #include "TString.h"
-#include "AliVParticle.h"
+#include "AliBasicParticle.h"
 #include "AliLog.h"
 #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
@@ -39,7 +39,6 @@ class AliInputEventHandler;
 class AliMCEvent;
 class AliMCEventHandler;
 class AliUEHistograms;
-class AliVParticle;
 class TH1;
 class TObjArray;
 class AliEventPoolManager;
@@ -50,6 +49,8 @@ class TFormula;
 class TMap;
 class AliGenEventHeader;
 class AliVEvent;
+
+using std::vector;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -63,6 +64,7 @@ public:
   virtual     void   ConnectInputData(Option_t *);
   virtual     void   CreateOutputObjects();
   virtual     void   Exec(Option_t *option);
+  virtual     void   FinishTaskOutput();
 
   // Setters/Getters
   // general configuration
@@ -162,6 +164,18 @@ public:
   void SetExclusionRadius(Float_t r) { fExclusionRadius = r; }
   Float_t GetExclusionRadius() const { return fExclusionRadius; }
 
+  // Custom particle arrays
+  void SetCustomParticlesA(const char* customA) { fCustomParticlesA = customA; }
+  void SetCustomParticlesB(const char* customB) { fCustomParticlesB = customB; }
+
+  // ##### External event pool configuration
+  void SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
+  AliEventPoolManager* GetEventPoolManager() {return fPoolMgr;}
+  void SetUsePtBinnedEventPool(Bool_t val) {fUsePtBinnedEventPool = val;}
+
+  // Set which pools will be saved
+  void AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
+
 private:
   AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
   AliAnalysisTaskPhiCorrelations&   operator=(const  AliAnalysisTaskPhiCorrelations &det);
@@ -171,7 +185,7 @@ private:
   void            AnalyseDataMode();                                  // main algorithm to get raw distributions
   void            Initialize(); 			                // initialize some common pointer
   Double_t        GetCentrality(AliVEvent* inputEvent, TObject* mc);
-  TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
+  TObjArray* CloneAndReduceTrackList(TObjArray* tracks, Double_t minPt = 0., Double_t maxPt = -1.);
   void RemoveDuplicates(TObjArray* tracks);
   void CleanUp(TObjArray* tracks, TObject* mcObj, Int_t maxLabel);
   void RemoveWeakDecaysInMC(TObjArray* tracks, TObject* mcObj);
@@ -221,7 +235,7 @@ private:
   AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
   AliMCEvent*              fMcEvent;         //! MC event
   AliInputEventHandler*    fMcHandler;       //! MCEventHandler
-  AliEventPoolManager*     fPoolMgr;         //! event pool manager
+  AliEventPoolManager*     fPoolMgr;         // event pool manager
 
   // Histogram settings
   TList*              fListOfHistos;    //  Output list of containers
@@ -272,8 +286,8 @@ private:
   Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
   TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
   Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
-  Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
-  Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets
+  Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets; 6, 7 = arbitrary AliVParticle-TClonesArrays (see SetCustomParticleArrayA())
+  Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons; 5 = tracks w/o jets; 6,7 = arbitrary AliVParticle-TClonesArrays (see SetCustomParticleArrayB())
   Bool_t fUseUncheckedCentrality; // use unchecked centrality; default: kFALSE
   Int_t fCheckCertainSpecies;    // make eta,pt distribution of MC particles with the label of fCheckCertainSpecies, by default switched off (value: -1)
   Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
@@ -292,60 +306,15 @@ private:
   Int_t   fJetConstMin;          // minimum number of constituents
   Float_t fExclusionRadius;      // radius around jet in which tracks are rejected
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 59); // Analysis task for delta phi correlations
-};
+  // Variables for arbitrary triggers/associates
+  TString fCustomParticlesA;   // name of TClonesArray of AliVParticle-derived particles attached to fInputEvent
+  TString fCustomParticlesB;   // name of TClonesArray of AliVParticle-derived particles attached to fInputEvent
 
-class AliDPhiBasicParticle : public AliVParticle
-{
-public:
-  AliDPhiBasicParticle() : fEta(0), fPhi(0), fpT(0), fCharge(0) {}
-  AliDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-  : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
-  {
-  }
-  ~AliDPhiBasicParticle() {}
+  // Event pool variables
+  vector<vector<Double_t> >   fEventPoolOutputList; // vector representing a list of pools (given by value range) that will be saved
+  Bool_t                      fUsePtBinnedEventPool; // uses event pool in pt bins
 
-  // kinematics
-  virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Pt() const { return fpT; }
-  virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
-  virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-  virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
-  virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-  virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Phi()        const { return fPhi; }
-  virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
-
-
-  virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
-
-  virtual Double_t Eta()        const { return fEta; }
-  virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
-
-  virtual Short_t Charge()      const { return fCharge; }
-  virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
-  // PID
-  virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
-  virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
-
-  virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
-
-  virtual void SetPhi(Double_t phi) { fPhi = phi; }
-
-private:
-  Float_t fEta;      // eta
-  Float_t fPhi;      // phi
-  Float_t fpT;       // pT
-  Short_t fCharge;   // charge
-
-  ClassDef( AliDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+  ClassDef(AliAnalysisTaskPhiCorrelations, 61); // Analysis task for delta phi correlations
 };
 
 #endif

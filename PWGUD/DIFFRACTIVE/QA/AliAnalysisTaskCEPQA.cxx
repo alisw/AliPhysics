@@ -554,7 +554,7 @@ Bool_t AliAnalysisTaskCEPQA::CheckInput()
 {
 	// General protection
 	if (const AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler)) {
-		fESDEvent = esdH->GetEvent();
+	  fESDEvent = (AliESDEvent*)esdH->GetEvent();
 	}
 
 	if (!fESDEvent) {

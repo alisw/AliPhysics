@@ -123,13 +123,26 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   }
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb or pPb
-//     AliCentrality *centrality = realEvent->GetCentrality();
-//     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
-//     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
-    AliCentrality *centrality =  realEvent->GetCentrality();
-    fCentBin = GetCentralityBin(fNCentBins, centrality);
+//   if(fDataSet==20100||fDataSet==2011){//If this is Pb+Pb or pPb
+// //     AliCentrality *centrality = realEvent->GetCentrality();
+// //     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+// //     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+//     AliCentrality *centrality =  realEvent->GetCentrality();
+//     fCentBin = GetCentralityBin(fNCentBins, centrality);
+//     if(fCentBin ==-1){
+//       if(fDataSet==2013){
+// 	fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
+//       }
+//       else{
+// 	fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
+//       }
+//     }
+//   }
+     //if( fDataSet==2015){
+    AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
+    fCentBin = GetCentralityBin(fNCentBins, MultSelection);
     if(fCentBin ==-1){
+      fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
       if(fDataSet==2013){
 	fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
       }
@@ -137,12 +150,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
       }
     }
-  }
-  if( fDataSet==2015){
-    AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
-    fCentBin = GetCentralityBin(fNCentBins, MultSelection);
-    if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
-  }
+    //}
   //for PID
 //   AliESDpid *pID = new AliESDpid();
 //   pID->MakePID(realEvent);
@@ -495,6 +503,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNegEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNegEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCPosEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCPosEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCLimitedPhiCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCLimitedPhi(),1.0);
+      FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDNegEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDNegEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDPosEtaCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDPosEta(),1.0);
       FillHisto1D(Form("RecoTotEtFullAcceptanceTPCNoPIDLimitedPhiCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPCNoPIDLimitedPhi(),1.0);

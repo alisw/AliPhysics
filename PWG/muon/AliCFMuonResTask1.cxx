@@ -279,7 +279,7 @@ void AliCFMuonResTask1::UserExec(Option_t *)
     return;
   }      
       
-  fESD = esdH->GetEvent();
+  fESD = (AliESDEvent*)esdH->GetEvent();
   Int_t mult1 = fESD->GetNumberOfMuonTracks() ;
 
  

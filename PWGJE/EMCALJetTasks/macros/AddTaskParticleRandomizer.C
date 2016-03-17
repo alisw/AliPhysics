@@ -1,0 +1,51 @@
+// AddTaskParticleRandomizer.C
+
+AliAnalysisTaskParticleRandomizer* AddTaskParticleRandomizer(
+  const char *inputParticles     = "tracks",
+  const char *outputParticles    = "tracks_randomized",
+  Bool_t      randomizeInPhi     = kTRUE,
+  Bool_t      randomizeInEta     = kFALSE,
+  Bool_t      randomizeInPt      = kFALSE,
+  Bool_t      deactivate         = kFALSE
+)
+{  
+  // This option is for convenience when running on the LEGO train
+  if(deactivate)
+    return 0;
+
+  cout << " ############ MACRO EXECUTION STARTED: AddTaskParticleRandomizer.C ############\n";
+  //==============================================================================
+  // Prepare analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskParticleRandomizer", "No analysis manager to connect to.");
+    return NULL;
+  }
+  if (!mgr->GetInputEventHandler())
+  {
+    ::Error("AddTaskParticleRandomizer", "This task requires an input event handler");
+    return NULL;
+  }
+
+  //==============================================================================
+  // Adding and configuring tasks
+
+  AliAnalysisTaskParticleRandomizer* randomizer = new AliAnalysisTaskParticleRandomizer();
+  randomizer->SetInputArrayName(inputParticles);
+  randomizer->SetOutputArrayName(outputParticles);
+  randomizer->SetRandomizeInPhi(randomizeInPhi);
+  randomizer->SetRandomizeInEta(randomizeInEta);
+  randomizer->SetRandomizeInPt(randomizeInPt);
+
+  mgr->AddTask(randomizer);
+
+  //==============================================================================
+  // Finalization
+
+  mgr->ConnectInput(randomizer, 0, mgr->GetCommonInputContainer() );
+
+  cout << " ############ MACRO EXECUTION DONE: AddTaskParticleRandomizer.C ############\n";
+
+  return randomizer;
+}

@@ -83,6 +83,12 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   void           SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection = kTRUE  ; }
   void           SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection = kFALSE ; }
   
+  void           SwitchOnAliCentrality ()                { fUseAliCentrality    = kTRUE  ; }
+  void           SwitchOffAliCentrality()                { fUseAliCentrality    = kFALSE ; }
+  
+  void           SetCentralityClass(TString name)        { fCentralityClass   = name     ; }
+  TString        GetCentralityClass()              const { return fCentralityClass       ; }
+
  private:
   
   Bool_t               fAcceptFastCluster;   ///< Accept events from fast cluster, exclude these events for LHC11a.
@@ -94,8 +100,12 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
 //AliTriggerAnalysis * fTriggerAnalysis;     ///< Trigger algorithm.
   TString              fCurrFileName;        ///< Current file path name.
   Bool_t               fCheckMCCrossSection; ///< Retrieve from the pyxsec.root file only if requested.
+  Bool_t               fUseAliCentrality;    ///< Use the centrality estimator from AliCentrality or AliMultSelection
+  TString              fCentralityClass;     ///< Multiplicity percentile/centrality estimator, for ex. V0M
   
-  //Histograms
+  //
+  // Histograms
+  //
   TH1I *  fhNEvents;         //!<! Events that delivers the analysis frame after different assumptions.  
   TH1F *  fhXVertex;         //!<! X Vertex distribution.
   TH1F *  fhYVertex;         //!<! Y Vertex distribution.
@@ -116,7 +126,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCounter, 6) ;
+  ClassDef(AliAnalysisTaskCounter, 7) ;
   /// \endcond
   
 };

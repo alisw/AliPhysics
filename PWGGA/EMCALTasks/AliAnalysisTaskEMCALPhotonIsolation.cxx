@@ -2507,7 +2507,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
     // I would like to remove this part and fill the tracks multiplicity histogram in FillQAHistograms, is that ok for thnSparses? (especially cause here the histogram is filled several times per event)
  // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
     AliParticleContainer *tracks = GetParticleContainer(0);
-  AliVTrack *emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle(0));
+  tracks->ResetCurrentID();
+  AliVTrack *emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle());
 //
   int nTracks=0;
 // tracks->ResetCurrentID();

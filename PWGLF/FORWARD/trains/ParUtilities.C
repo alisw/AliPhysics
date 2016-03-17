@@ -616,7 +616,8 @@ struct ParUtilities
 	TString dest = TString::Format("%s/%s", cur.Data(), 
 				       gSystem->BaseName(fn.Data()));
 	if (verbose) Printf("%s -> %s", fn.Data(), dest.Data());
-	Int_t ret = gSystem->CopyFile(fn, dest, true);
+	// Int_t ret = gSystem->CopyFile(fn, dest, true);
+	Int_t ret = gSystem->Exec(Form("cp -f %s %s", fn.Data(), dest.Data()));
 	switch (ret) { 
 	case -1: throw TString::Format("Couldn't open %s for copy", fn.Data());
 	case -2: throw TString::Format("File %s exists", dest.Data());

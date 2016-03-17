@@ -37,20 +37,19 @@ AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kFALSE, TStrin
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
     
-    if ( lCalibration ){
-        AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cCalibrationTree",
-                                                                     TTree::Class(),
-                                                                     AliAnalysisManager::kOutputContainer,
-                                                                     outputFileName );
-        //This one you should merge in file-resident ways...
-        coutputTree->SetSpecialOutput();
-    }
-    
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskMultSelection, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskMultSelection, 1, coutputList);
     
-    if ( lCalibration ) mgr->ConnectOutput(taskMultSelection, 2, coutputTree);
+    if ( lCalibration ) {
+      AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cCalibrationTree",
+                                                                   TTree::Class(),
+                                                                   AliAnalysisManager::kOutputContainer,
+                                                                   outputFileName );
+      //This one you should merge in file-resident ways...
+      coutputTree->SetSpecialOutput();
+      mgr->ConnectOutput(taskMultSelection, 2, coutputTree);
+    }
     
     return taskMultSelection;
 }   

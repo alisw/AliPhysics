@@ -531,7 +531,8 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   //Tracks
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
-    AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
+    partCont->ResetCurrentID();
+    AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     while(track) {
       Double_t trkphi = track->Phi()*TMath::RadToDeg();
       fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());

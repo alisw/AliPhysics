@@ -1,6 +1,6 @@
-AliAnalysisTaskNorm *AddTaskNorm ( Bool_t isESD = kFALSE, Bool_t isMC = kFALSE, TString sBeamConf = "p-Pb" )
+AliAnalysisTaskNorm *AddTaskNorm ( Bool_t isESD = kFALSE, Bool_t isMC = kFALSE, TString sBeamConf = "p-Pb", TString sYear = "2013" )
 {
-  /// Add AliAnalysisTaskDimuon to the train 
+  /// Add AliAnalysisTaskNorm to the train 
   Info("AddTaskNorm", Form("beamConf %s isESD %d, isMC %d", sBeamConf.Data(), isESD, isMC));
   
   // Get the pointer to the existing analysis manager via the static access method.
@@ -30,8 +30,10 @@ AliAnalysisTaskNorm *AddTaskNorm ( Bool_t isESD = kFALSE, Bool_t isMC = kFALSE, 
   task->SetIsESD(isESD);
   task->SetBeamConf(sBeamConf);
   ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetFilterMask ( AliMuonEventCuts::kSelectedTrig );
-  //  ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigInputsMap();
-  ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigClassPatterns("CINT7-B-NOPF-ALLNOTRD,CINT7-B-NOPF-ALLNOTRD&0MSL,CINT7-B-NOPF-ALLNOTRD&0MUL,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON&0MUL,CMUL7-B-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD","0MSL:12,0MUL:14");
+  // 2013 p-Pb and Pb-p
+  if ( sYear.Contains("2013") )   ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigClassPatterns("CINT7-B-NOPF-ALLNOTRD,CINT7-B-NOPF-ALLNOTRD&0MSL,CINT7-B-NOPF-ALLNOTRD&0MUL,CMSL7-B-NOPF-MUON,CMSL7-B-NOPF-MUON&0MUL,CMUL7-B-NOPF-MUON,CMUL7-B-NOPF-ALLNOTRD","0MSL:12,0MUL:14");
+  //2015 Pb-Pb
+  if ( sYear.Contains("2015") ) ((AliMuonEventCuts*) task->GetMuonEventCuts())->SetTrigClassPatterns("CINT7-B-NOPF-MUFAST,CINT7-B-NOPF-MUFAST&0MSL,CINT7-B-NOPF-MUFAST&0MUL,CMSL7-B-NOPF-MUFAST,CMSL7-B-NOPF-MUFAST&0MUL,CMUL7-B-NOPF-MUFAST","0MSL:12,0MUL:14");
   // Add task to analysis manager
   mgr->AddTask(task);
   

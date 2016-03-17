@@ -4,7 +4,7 @@
 
 #include "AliAnalysisTaskPtEfficiencyJets.h"
 #include "AliAnalysisManager.h"
-#include "AliEMCalPtTaskTrackSelectionESD.h"
+#include "AliEmcalTrackSelectionESD.h"
 #include "AliESDtrackCuts.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
@@ -35,7 +35,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets *AddTaskTrackingEffTrack
   standardTrackCuts->SetName("Standard Track cuts");
   standardTrackCuts->SetMinNCrossedRowsTPC(120);
   standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-  analysis->SetTrackCuts(new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts));
+  analysis->SetTrackCuts(new AliEmcalTrackSelectionESD(standardTrackCuts));
 
   // connect containers
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

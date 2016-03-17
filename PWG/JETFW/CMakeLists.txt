@@ -14,6 +14,7 @@
 # **************************************************************************
 
 set(MODULE PWGJETFW)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(
@@ -22,7 +23,8 @@ include_directories(
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-  ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+  ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+  ${AliPhysics_SOURCE_DIR}/PWG/Tools
   )
 
 # Sources in alphabetical order
@@ -31,7 +33,6 @@ set(SRCS
   AliEmcalJet.cxx
   AliJetContainer.cxx
   AliLocalRhoParameter.cxx
-  AliPythiaInfo.cxx
   AliRhoParameter.cxx
   )
 
@@ -44,7 +45,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES PWGEMCAL)
+set(ALIROOT_DEPENDENCIES PWGEMCALbase)
 
 # Generate the ROOT map
 # Dependecies

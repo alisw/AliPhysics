@@ -79,7 +79,7 @@ class EmcEvent {
 	Float_t TrigPhi; // phi of highest pT hit on EMCal
   Float_t TrigTheta; // eta of highest pT hit ...
   
-  const static int nMaxHit = 200;
+  const static int nMaxHit = 500;
   
   int nHits;
   int nV0Hits;
@@ -145,6 +145,7 @@ public:
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
   void         SetRotateMixed(Bool_t b)                       { fRotateMixed   = b;         }
   void         SetAddedSignal(Bool_t b)                       { fAddedSignal   = b;         }
+  void         SetDataPeriod(Int_t b)                         { fDataPeriod   = b;         }
   void         SetDoManualRecal(Bool_t b)                     { fDoManualRecal = b;         }
   void         SetDnDpT(Int_t i, Double_t par0, Double_t par1, Double_t par2, Double_t par3, Double_t par4);
   
@@ -235,7 +236,7 @@ protected:
   Bool_t                 fIsGeoMatsSet;           // indicate that geo matrices are set
   Bool_t                 fRotateMixed;            // rotates the events before mixing such that the highest pT cluster has same phi as in real event
   Bool_t                 fAddedSignal;            // added signals in MC?
-  
+  Int_t                  fDataPeriod;             // which period(s)
 
   // derived members (ie with ! after //)
   //AliV0ReaderV1 	*fV0Reader;               //!v0 reader
@@ -275,10 +276,14 @@ protected:
   TH1                   *fHVertexZ2;              //!histo for vtxz after vtx cuts
   TH1                   *fHCent;                  //!histo for cent
   TH1                   *fHCentQual;              //!histo for cent after quality flag cut
-  TH1                   *fHTclsBeforeCuts;        //!histo for trigger classes before cuts
-  TH1                   *fHTclsAfterCuts;         //!histo for trigger classes after cuts
+  
+  // QA profile histograms
+  TProfile              *fHMeanClusterEnergy;    //!profile for cluster energy vs. runnumber
+  TProfile              *fHMeanClusterNumber;    //!profile for number of clusters in each event
   
   // histograms for clusters
+  TH1                   *fHClusters;                  //!histo for cuts
+  TH1                   *fHClustAllEtaPhi;        //!histo for all clusters eta and phi
   TH1                   *fHClustNoEvt;            //!histo for number of clusters in event
   TH1                   *fHClustAccEvt;            //!histo for number of clusters after cuts in event
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity

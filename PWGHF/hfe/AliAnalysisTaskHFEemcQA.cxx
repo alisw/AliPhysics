@@ -152,6 +152,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fEleCanSPDOr(0),
   fInvmassULS(0),
   fInvmassLS(0),
+  fMCcheckMother(0),
   fSparseElectron(0),
   fvalueElectron(0)
 {
@@ -248,6 +249,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fEleCanSPDOr(0),
   fInvmassULS(0),
   fInvmassLS(0),
+  fMCcheckMother(0), 
   fSparseElectron(0),
   fvalueElectron(0)
 {
@@ -487,6 +489,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fInvmassULS = new TH1F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
   fOutputList->Add(fInvmassULS);
 
+  fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
+  fOutputList->Add(fMCcheckMother);
+
   //Int_t bins[8]={8,500,200,400,400,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
   //Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
   //Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
@@ -563,22 +568,21 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   ///////////////////
   // centrality
  /////////////////////
-  /*
+  
   Double_t centrality = -1;
   AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality(); 
-  centrality = fCentrality->GetCentralityPercentile("V0M");
-  */
+  //centrality = fCentrality->GetCentralityPercentile("V0M");
 
-  Double_t centrality = -1;
+  //Double_t centrality = -1;
   if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
   if( !fMultSelection) {
-   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-    AliWarning("AliMultSelection object not found!");
+    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    //AliWarning("AliMultSelection object not found!");
+    centrality = fCentrality->GetCentralityPercentile("V0M");
   }else{
    //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
    centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
  }
-  //cout << "cent = " << centrality << endl; 
   //printf("mim cent selection %d\n",fcentMim);
   //printf("max cent selection %d\n",fcentMax);
   //printf("cent selection %d\n",centrality);
@@ -847,6 +851,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
       Int_t pdg = fMCparticle->GetPdgCode();
       if(TMath::Abs(pdg)==11)pid_ele = 1.0;
+      Int_t pidM = -1;
+      Int_t ilabelM = -1;
+      if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
+      if(pidM==22) // from pi0 & eta
+        {
+          //cout << "check photonic " << endl;
+          AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+          FindMother(fMCparticleM, ilabelM, pidM);
+        }
+      fMCcheckMother->Fill(abs(pidM));
     }
 
     ////////////////////
@@ -1099,6 +1113,18 @@ void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *tr
       flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
   }
   fFlagPhotonicElec = flagPhotonicElec;
+}
+
+void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, int &label, int &pid)
+{
+
+ if(part->GetMother()>-1)
+   {
+    label = part->GetMother();
+    AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
+    pid = partM->GetPdgCode();
+   }
+   //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 
 //________________________________________________________________________

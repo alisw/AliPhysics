@@ -86,6 +86,7 @@ protected:
 
     // Step 4:
     void SetCentrality();
+    void SetCentralityRun2();
     Bool_t RejectCentrality();
 
     // Step 5:

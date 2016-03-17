@@ -53,6 +53,8 @@ public:
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
+    void FindMother(AliAODMCParticle* part, int &label, int &pid);
+
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -150,6 +152,7 @@ private:
     TH2F        *fEleCanSPDOr;//!ele cand SPD or
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
+    TH1F        *fMCcheckMother;
     
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info

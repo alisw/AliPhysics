@@ -20,14 +20,15 @@
 class TTree;
 class TClonesArray;
 
-#include "AliCentrality.h"
-
 // EMCAL
 class AliEMCALGeometry;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
 class AliEMCALRecPoint;
 class AliAODCaloCluster;
+class AliCentrality;
+class AliMultSelection;
+
 #include "AliEMCALRecParam.h"
 #include "AliEMCALRecoUtils.h"
 
@@ -138,13 +139,18 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
     
   void           SetOADBFilePath(TString path)                  { fOADBFilePath      = path    ; }
   
+  void           SetConstantTimeShift(Float_t shift)            { fConstantTimeShift = shift   ; }
+
   // Centrality selection
   
-  AliCentrality* GetCentrality()                                { return InputEvent()->GetCentrality() ; } //Look in AOD reader, different there
+  AliCentrality* GetCentrality()                          const { return InputEvent()->GetCentrality() ; } 
+  AliMultSelection* GetMultSelCen()                       const { return (AliMultSelection * ) InputEvent()->FindListObject("MultSelection") ; }
+  void           SwitchOnAliCentrality ()                       { fUseAliCentrality  = kTRUE  ; }
+  void           SwitchOffAliCentrality()                       { fUseAliCentrality  = kFALSE ; }
+  
   void           SetCentralityClass(TString name)               { fCentralityClass   = name            ; }
   TString        GetCentralityClass()                     const { return fCentralityClass              ; }
-  Float_t        GetEventCentrality()                           { if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
-                                                                  else                return -1.       ; }
+  Float_t        GetEventCentrality()                     const ;
   void           SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                                 { fCentralityBin[0]=min ; fCentralityBin[1]=max ; }
   Float_t        GetCentralityBin(Int_t i)                const { if(i < 0 || i > 1) return -1 ; 
@@ -153,15 +159,20 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // MC label properly assignation methods
   
   void           RemapMCLabelForAODs(Int_t &label);
-  void           SwitchOnRemapMCLabelForAODs()                  { fRemapMCLabelForAODs  = kTRUE   ; }
-  void           SwitchOffRemapMCLabelForAODs()                 { fRemapMCLabelForAODs  = kFALSE  ; }
+  void           SwitchOnRemapMCLabelForAODs()                  { fRemapMCLabelForAODs       = kTRUE   ; }
+  void           SwitchOffRemapMCLabelForAODs()                 { fRemapMCLabelForAODs       = kFALSE  ; }
 
   void           SetClustersMCLabelFrom2SelectedLabels(AliEMCALRecPoint* recPoint, AliAODCaloCluster *clus) ;
   void           SetClustersMCLabelFromOriginalClusters(AliAODCaloCluster * clus) ;
   
-  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 2) { fSetCellMCLabelFromCluster = opt ; }
-  void           SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = 0   ; }
+  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 2){ fSetCellMCLabelFromCluster = opt     ; }
+  void           SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = 0       ; }
 
+  void           SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE  ;  
+                                                                   fSetCellMCLabelFromCluster = 0      ; }
+  void           SwitchOffUseMCEdepFracLabelForCell()           { fSetCellMCLabelFromEdepFrac = kFALSE ; }
+
+  
 private:
     
   virtual void   FillCaloClusterInEvent();
@@ -235,11 +246,13 @@ private:
   Bool_t                 fOADBSet ;                ///<  AODB parameters already set
   Bool_t                 fAccessOADB ;             ///<  Get calibration from OADB for EMCAL
   TString                fOADBFilePath ;           ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change
-    
+  Float_t                fConstantTimeShift;       ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
+
   // Centrality
   TString                fCentralityClass;         ///<  Name of selected centrality class     
   Float_t                fCentralityBin[2];        ///<  Minimum and maximum value of the centrality for the analysis
-  
+  Bool_t                 fUseAliCentrality;        ///<  Use the centrality estimator from AliCentrality or AliMultSelection
+
   //  Event selection with some signal in EMCAL
   Bool_t                 fSelectEMCALEvent;        ///<   Process the event if there is some high energy cluster.
   Float_t                fEMCALEnergyCut;          ///<   At least an EMCAL cluster with this energy in the event.
@@ -250,6 +263,10 @@ private:
   ///<   * 1 - from old way, select 2 most likely labels
   ///<   * 2 - from new way, get the original clusters, add all the MC labels (useful for any reclusterization with output V1 clusters)
   Int_t                  fSetCellMCLabelFromCluster;
+  
+  ///< For MC generated with aliroot > v5-07-21, check the EDep information 
+  ///< stored in ESDs/AODs to set the cell MC labels
+  Bool_t                 fSetCellMCLabelFromEdepFrac;  
     
   Bool_t                 fRemapMCLabelForAODs ;    ///<  Remap AOD cells MC label. Needed in old AOD productions.
 
@@ -263,7 +280,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 30) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 32) ;
   /// \endcond
 
 };

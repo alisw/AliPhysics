@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGHFjetsHF)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/JETFW)
@@ -32,7 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice	
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
@@ -47,7 +48,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources in alphabetical order
 set(SRCS
     AliHFJetsTagging.cxx
-    AliHFJetTaggingIP.cxx		
+    AliHFJetTaggingIP.cxx	
+    AliAnalysisTaskHFJetIPQA.cxx	
     AliAnalysisHFjetTagHFE.cxx
     AliAnalysisTaskEmcalHFCJQA.cxx	    
     AliAnalysisTaskEmcalHFeJetCorrel.cxx		    

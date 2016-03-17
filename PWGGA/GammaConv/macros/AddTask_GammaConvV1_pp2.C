@@ -1,3 +1,31 @@
+class CutHandlerConv{
+  public:
+    CutHandlerConv(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+    TString* mesonCutArray;
+};
+
 void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,                              //change different set of cuts
                                Int_t    isMC                        = 0,                              //run MC
                                Int_t    enableQAMesonTask           = 0,                              //enable QA in AliAnalysisTaskGammaConvV1
@@ -116,63 +144,69 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 1;
-
-  TString *eventCutArray = new TString[numberOfCuts];
-  TString *photonCutArray = new TString[numberOfCuts];
-  TString *mesonCutArray = new TString[numberOfCuts];
+  
+  CutHandlerConv cuts;
 
   if (trainConfig == 1){
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , only boxes
+    cuts.AddCut("00000123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , only boxes
   } else if (trainConfig == 2) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
+    cuts.AddCut("00000123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
   } else if (trainConfig == 3) {
-    eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009326000003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Gamma pp 2-76TeV , only boxes
+    cuts.AddCut("00000123", "00200009326000003800000000", "0163103100900000"); //standard cut Gamma pp 2-76TeV , only boxes
   } else if (trainConfig == 4) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
   } else if (trainConfig == 5) {
-    eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+    cuts.AddCut("00010113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD, V0AND
   } else if (trainConfig == 6) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009326000003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Gamma pp 2.76TeV
+    cuts.AddCut("00000113", "00200009326000003800000000", "0163103100900000"); //standard cut Gamma pp 2.76TeV
   } else if (trainConfig == 7) {
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+    cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
   } else if (trainConfig == 8) {
-    eventCutArray[ 0] = "00013113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
+    cuts.AddCut("00013113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
   } else if (trainConfig == 9) {
-    eventCutArray[ 0] = "00003123"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+    cuts.AddCut("00003123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
   } else if (trainConfig == 10) {
-    eventCutArray[ 0] = "00013123"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
+    cuts.AddCut("00013123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
   } else if (trainConfig == 11) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
+    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
   } else if (trainConfig == 12) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00700009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
+    cuts.AddCut("00000113", "00700009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
   } else if (trainConfig == 13) {
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
+    cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
   } else if (trainConfig == 14) {
-    eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00700009366300003800000000"; mesonCutArray[0] = "0163103100900000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
+    cuts.AddCut("00003113", "00700009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
   } else if (trainConfig == 15) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[0] = "0152506500000000"; //standard cut LHC11h pp 2.76TeV
+    cuts.AddCut("00000113", "00200009297002008250400000", "0152506500000000"); //standard cut LHC11h pp 2.76TeV
   } else if (trainConfig == 16) {
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009257002008250400000"; mesonCutArray[0] = "0152106500000000"; //standard cut pp 8 TeV
+    cuts.AddCut("00000113", "00200009257002008250400000", "0152106500000000"); //standard cut pp 8 TeV
   } else if (trainConfig == 17){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 18){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 19){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000002"; //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000002"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 20){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000022"; //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000022"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 21){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 22){
-    eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009217302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009217302008250404000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 23){
-    eventCutArray[ 0] = "00010113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000000"; // like trainconfig 18 but with special trigger INT7
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000"); // like trainconfig 18 but with special trigger INT7
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
 
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+
+  Int_t numberOfCuts = cuts.GetNCuts();
+  
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
@@ -194,12 +228,12 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
-    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     if (trainConfig == 21){
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
     }
@@ -207,7 +241,7 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
 

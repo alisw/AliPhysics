@@ -46,12 +46,14 @@ AliAnalysisTaskSE(),
 fDefaultStorage(""),
 fOCDBLoaded(kFALSE),
 fUseMeanVtxSPD(kFALSE),
-fUseMCVtx(kFALSE)
+fUseMCVtx(kFALSE),
+fUseTrackVtx(kFALSE)
 {
   /// Default constructor
   for (Int_t i = 0; i < 3; i++) {
     fVtxPos[i] = 0.;
     fVtxSig[i] = 0.;
+    fVtxShift[i] = 0.;
   }
 }
 
@@ -61,13 +63,15 @@ AliAnalysisTaskSE(name),
 fDefaultStorage("raw://"),
 fOCDBLoaded(kFALSE),
 fUseMeanVtxSPD(kFALSE),
-fUseMCVtx(kFALSE)
+fUseMCVtx(kFALSE),
+fUseTrackVtx(kFALSE)
 {
   /// Constructor
   fBranchNames = "ESD:AliESDRun.,AliESDHeader.,MuonTracks,MuonClusters,MuonPads";
   for (Int_t i = 0; i < 3; i++) {
     fVtxPos[i] = 0.;
     fVtxSig[i] = 0.;
+    fVtxShift[i] = 0.;
   }
 }
 
@@ -95,19 +99,16 @@ void AliAnalysisTaskMuonRefitVtx::UserExec(Option_t *)
   
   LoadBranches();
   
+  // load the MC vertex position
   if (fUseMCVtx) {
-    
-    // Load MC event 
     AliMCEventHandler* mcH = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if ( ! mcH ) {
-      AliError ("MCH event handler not found. Nothing done!");
+      AliError("MCH event handler not found. Nothing done!");
       return;
     }
-    
-    // Get the vertex position
     mcH->MCEvent()->GetPrimaryVertex()->GetXYZ(fVtxPos);
+    for (Int_t i = 0; i < 3; i++) fVtxPos[i] += fVtxShift[i];
     fVtxSig[0] = fVtxSig[1] = fVtxSig[2] = 0.;
-    
   }
   
   // loop over the list of ESD tracks
@@ -118,6 +119,14 @@ void AliAnalysisTaskMuonRefitVtx::UserExec(Option_t *)
     // get the ESD track
     AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
     if (!esdTrack->ContainTrackerData()) continue;
+    
+    // keep the same vertex (from track position)
+    if (fUseTrackVtx) {
+      fVtxPos[0] = esdTrack->GetNonBendingCoor() + fVtxShift[0];
+      fVtxPos[1] = esdTrack->GetBendingCoor() + fVtxShift[1];
+      fVtxPos[2] = esdTrack->GetZ() + fVtxShift[2];
+      fVtxSig[0] = fVtxSig[1] = fVtxSig[2] = 0.;
+    }
     
     // extrapolate to the new vertex position
     AliMUONESDInterface::GetParamAtFirstCluster(*esdTrack, trackParam);
@@ -167,8 +176,11 @@ void AliAnalysisTaskMuonRefitVtx::NotifyRun()
       printf("SPD Vertex position from OCDB --> x = %g ± %g, y = %g ± %g, z = %g ± %g\n",
 	     fVtxPos[0], fVtxSig[0], fVtxPos[1], fVtxSig[1], fVtxPos[2], fVtxSig[2]);
     } else {
+      fVtxPos[0] = fVtxPos[1] = fVtxPos[2] = 0.;
+      fVtxSig[0] = fVtxSig[1] = fVtxSig[2] = 0.;
       printf("SPD Vertex position not valid --> x = 0 ± 0, y = 0 ± 0, z = 0 ± 0\n");
     }
+    for (Int_t i = 0; i < 3; i++) fVtxPos[i] += fVtxShift[i];
   }
   
   fOCDBLoaded = kTRUE;

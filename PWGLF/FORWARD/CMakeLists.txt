@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFforward2)
+set(MODULE PWGLFforward2)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD)
@@ -286,8 +287,6 @@ install ( FILES analysis2/AddTaskdNdeta.C
 		analysis2/MakeFMDEventPlane.C
                 analysis2/MakeForwardQA.C
 		analysis2/MakeMCCorr.C		
-                analysis2/OtherData.C
-                analysis2/other.root
            DESTINATION PWGLF/FORWARD/analysis2 )
 
 # Install corrections 

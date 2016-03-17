@@ -38,6 +38,8 @@
 #include "AliAODInputHandler.h"
 #include "AliOADBContainer.h"
 #include "AliAODMCParticle.h"
+#include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 // --- EMCAL
 #include "AliEMCALAfterBurnerUF.h"
@@ -80,9 +82,11 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),       fAccessOADB(kTRUE),         fOADBFilePath("")
-, fCentralityClass(""),   fSelectEMCALEvent(0)
+, fConstantTimeShift(0)
+, fCentralityClass(""),   fUseAliCentrality(0),       fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),    fEMCALNcellsCut (0)
 , fSetCellMCLabelFromCluster(0)
+, fSetCellMCLabelFromEdepFrac(0)
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
 {
@@ -119,9 +123,11 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
 , fImportGeometryFromFile(kTRUE), fImportGeometryFilePath("")
 , fOADBSet(kFALSE),         fAccessOADB(kTRUE),        fOADBFilePath("")
-, fCentralityClass(""),     fSelectEMCALEvent(0)
+, fConstantTimeShift(0)
+, fCentralityClass(""),     fUseAliCentrality(0),      fSelectEMCALEvent(0)
 , fEMCALEnergyCut(0.),      fEMCALNcellsCut (0)
 , fSetCellMCLabelFromCluster(0)
+, fSetCellMCLabelFromEdepFrac(0)
 , fRemapMCLabelForAODs(0)
 , fInputFromFilter(0)
 {
@@ -557,42 +563,56 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 
   ResetArrays();
 
-  // Loop on original clusters, get MC labels.
-  for (Int_t i = 0; i < nClusters; i++)
+  // Loop on original clusters, get MC labels, cluster time (OLD AODs), 
+  // or track matching residuals (if matching is not requested)
+  if(fSetCellMCLabelFromEdepFrac || fSetCellMCLabelFromCluster || fRecalibrateWithClusterTime || !fDoTrackMatching)
   {
-    AliVCluster *clus = 0;
-    if(aodIH && aodIH->GetEventToMerge()) //Embedding
-      clus = aodIH->GetEventToMerge()->GetCaloCluster(i); //Get clusters directly from embedded signal
-    else      
-      clus = fEvent->GetCaloCluster(i);
-    
-    if(!clus) return;
-    
-    if(clus->IsEMCAL())
+    for (Int_t i = 0; i < nClusters; i++)
     {
-      Int_t label = clus->GetLabel();
-      Int_t label2 = -1 ;
-      //printf("Org cluster E %f, Time  %e, Index = %d, ID %d, MC label %d\n", clus->E(), clus->GetTOF(),i, clus->GetID(),label );
-      //printf("Original list of labels from old cluster : \n");
-      //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) printf("\t Label %d\n",clus->GetLabelAt(imc));
+      AliVCluster *clus = 0;
+      if(aodIH && aodIH->GetEventToMerge()) //Embedding
+        clus = aodIH->GetEventToMerge()->GetCaloCluster(i); //Get clusters directly from embedded signal
+      else      
+        clus = fEvent->GetCaloCluster(i);
       
-      if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
-      UShort_t * index    = clus->GetCellsAbsId() ;
-      for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
+      if(!clus) return;
+      
+      if(clus->IsEMCAL())
       {
-        //printf("\t cell %d, MC label %d\n",index[icell],fEvent->GetEMCALCells()->GetCellMCLabel(index[icell]));
-        fOrgClusterCellId[index[icell]] = i;
-        fCellLabels[index[icell]]       = label;
-        fCellSecondLabels[index[icell]] = label2;
-        fCellTime[index[icell]]         = clus->GetTOF();
-        fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
-        fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
+        Int_t label = clus->GetLabel();
+        Int_t label2 = -1 ;
+        if (clus->GetNLabels() >=2 ) label2 = clus->GetLabelAt(1) ;
+        
+        //printf("Org cluster %d) ID = %d, E %2.2f, Time  %3.0f,  N Cells %d, N MC labels %d, main MC label %d, all MC labels:\n", 
+        //       i, clus->GetID(), clus->E(), clus->GetTOF()*1e9, clus->GetNCells(), clus->GetNLabels(), label);
+        //
+        //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
+        //  printf("%d) Label %d, E dep frac %0.2f; ",
+        //         imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
+        //if(clus->GetNLabels() > 0) printf("\n");
+        
+        UShort_t * index    = clus->GetCellsAbsId() ;
+        for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
+        {
+          fOrgClusterCellId[index[icell]] = i;
+          fCellTime[index[icell]]         = clus->GetTOF();
+          fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
+          fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
+          
+          if(!fSetCellMCLabelFromEdepFrac)
+          {
+            fCellLabels[index[icell]]       = label;
+            fCellSecondLabels[index[icell]] = label2;
+          }
+          
+          Float_t eDepFrac[4];
+          clus->GetCellMCEdepFractionArray(icell,eDepFrac);
+        }
+
+        nClustersOrg++;
       }
-      nClustersOrg++;
-    }
-    // printf("\n");
-  } 
-  
+    } 
+  }
   // Transform CaloCells into Digits
   
   Int_t    idigit =  0;
@@ -609,7 +629,8 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     // Get cell values, recalibrate and not include bad channels found in analysis, nor cells with too low energy, nor exotic cell
     id = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
-    
+    time-=fConstantTimeShift*1e-9; // only in case of simulations done before 2015
+
     // Do not include cells with too low energy, nor exotic cell
     if( amp  < fRecParam->GetMinECut() ||
         time > fRecParam->GetTimeMax() ||
@@ -630,20 +651,23 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
     if( !accept )
     {
-        AliDebug(2,Form("Remove channel absId %d, index %d of %d, amp %f, time %f",
+      AliDebug(2,Form("Remove channel absId %d, index %d of %d, amp %f, time %f",
                id,icell, cells->GetNumberOfCells(), amp, time*1.e9));
       continue;
     }
     
     Int_t mcLabel = cells->GetMCLabel(icell);
-    //printf("AliAnalysisTaksEMCALClusterize::ClusterizeCells() - cell %d, mc label %d\n",id,mcLabel);
-
-    //if(fCellLabels[id]!=mcLabel)printf("mcLabel %d - %d\n",mcLabel,fCellLabels[id]);
-    if     ( fSetCellMCLabelFromCluster == 1 ) mcLabel = fCellLabels[id]; // Older aliroot MC productions
-    else if( fSetCellMCLabelFromCluster == 0 && fRemapMCLabelForAODs) RemapMCLabelForAODs(mcLabel);
-    else mcLabel = -1; // found later
     
-    //printf("\t new label %d\n",mcLabel);
+    // Old way to recover/set the cell MC label
+    if(!fSetCellMCLabelFromEdepFrac)
+    {
+      if     ( fSetCellMCLabelFromCluster == 1 ) mcLabel = fCellLabels[id]; // Older aliroot MC productions
+     
+      else if( fSetCellMCLabelFromCluster == 0 && 
+               fRemapMCLabelForAODs)             RemapMCLabelForAODs(mcLabel);
+      
+      else                                       mcLabel = -1; // found later
+    }
     
     // Create the digit, put a fake primary deposited energy to trick the clusterizer
     // when checking the most likely primary
@@ -652,28 +676,85 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
     //When checking the MC of digits, give weight to cells with embedded signal
     if (mcLabel > 0 && efrac < 1.e-6) efrac = 1;
-    
-    //printf("******* Cell %d, id %d, e %f,  fraction %f, MC label %d, used MC label %d\n",icell,id,amp,cells->GetEFraction(icell),cells->GetMCLabel(icell),mcLabel);
-    
-    new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp*efrac);
-    // Last parameter should be MC deposited energy, since it is not available, add just the cell amplitude so that
-    // we give more weight to the MC label of the cell with highest energy in the cluster
         
+    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp*efrac);
+
+    // Last parameter should be MC deposited energy, since it is not available in aliroot before year 2016, add just the cell amplitude so that
+    // we give more weight to the MC label of the cell with highest energy in the cluster
+
+    // New way, valid only for MC productions with aliroot > v5-07-21
+    if(fSetCellMCLabelFromEdepFrac)
+    {
+      // Map the digit to cell index for later to calculate the cell MC energy deposition map
+      fCellLabels[id] = idigit; 
+      //printf("\t absId %d, idigit %d\n",id,idigit);
+
+      if(fOrgClusterCellId[id] >= 0) // index can be negative if noisy cell that did not form cluster 
+      {
+        AliVCluster *clus = 0;
+        Int_t iclus = fOrgClusterCellId[id];
+        
+        if(iclus < 0)
+        {
+          AliInfo("Negative original cluster index, skip \n");
+          continue;
+        }
+        
+        if(aodIH && aodIH->GetEventToMerge()) //Embedding
+          clus = aodIH->GetEventToMerge()->GetCaloCluster(iclus); //Get clusters directly from embedded signal
+        else      
+          clus = fEvent->GetCaloCluster(iclus);
+        
+        for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
+        {
+          if(id != clus->GetCellAbsId(icluscell)) continue ;
+          
+          // Get the energy deposition fraction.
+          Float_t eDepFrac[4];
+          clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
+          
+          // Select the MC label contributing, only if enough energy deposition
+          TArrayI labeArr(0);
+          TArrayF eDepArr(0);
+          Int_t nLabels = 0;
+          for(Int_t imc = 0; imc < 4; imc++)
+          {
+            if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
+            {
+              nLabels++;
+              
+              labeArr.Set(nLabels);
+              labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
+              
+              eDepArr.Set(nLabels);
+              eDepArr.AddAt(eDepFrac[imc]*amp    , nLabels-1);
+              // use as deposited energy a fraction of the simulated energy (smeared and with noise)
+            }
+          }
+          
+          if(nLabels > 0)
+          {
+            digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
+          }
+        }
+      }
+    } // cell MC label, new
+    
     idigit++;
   }
-  
+
   fDigitsArr->Sort();
   
   //-------------------------------------------------------------------------------------
-  //Do the clusterization
+  // Do the clusterization
   //-------------------------------------------------------------------------------------        
   
   fClusterizer->Digits2Clusters("");
   
   //-------------------------------------------------------------------------------------
-  //Transform the recpoints into AliVClusters
+  // Transform the recpoints into AliVClusters
   //-------------------------------------------------------------------------------------
-  
+
   RecPoints2Clusters();
   
   if(!fCaloClusterArr)
@@ -843,10 +924,13 @@ void AliAnalysisTaskEMCALClusterize::FillAODHeader()
   header->SetEventType(fEvent->GetEventType());
   
   // Centrality
-  if(fEvent->GetCentrality())
-    header->SetCentrality(new AliCentrality(*(fEvent->GetCentrality())));
-  else
-    header->SetCentrality(0);
+  if(fUseAliCentrality)
+  {
+    if(fEvent->GetCentrality())
+      header->SetCentrality(new AliCentrality(*(fEvent->GetCentrality())));
+    else
+      header->SetCentrality(0);
+  }
   
   // Trigger
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
@@ -932,7 +1016,7 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
   // Put the new clusters in the AOD list
   
   Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntriesFast();
-
+  
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++)
   {
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
@@ -965,6 +1049,14 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
     //printf("New cluster E %f, Time  %e, Id = ", newCluster->E(), newCluster->GetTOF() );
     //for(Int_t icell=0; icell < newCluster->GetNCells(); icell++ ) printf(" %d,", newCluster->GetCellsAbsId() [icell] );
     //printf("\n");
+    //
+    //printf("New cluster %d) ID = %d, E %2.2f, Time  %3.0f,  N Cells %d, N MC labels %d, main MC label %d, all MC labels:\n", 
+    //       i, newCluster->GetID(), newCluster->E(), newCluster->GetTOF()*1e9, newCluster->GetNCells(), newCluster->GetNLabels(), newCluster->GetLabel());
+    //
+    //for(Int_t imc = 0; imc < newCluster->GetNLabels(); imc++) 
+    //  printf("%d) Label %d, E dep frac %0.2f; ",
+    //         imc,newCluster->GetLabelAt(imc),newCluster->GetClusterMCEdepFraction(imc));
+    //if(newCluster->GetNLabels() > 0) printf("\n");
     
     // Calculate distance to bad channel for new cluster. Make sure you give the list of bad channels.
     fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
@@ -977,6 +1069,26 @@ void AliAnalysisTaskEMCALClusterize::FillCaloClusterInEvent()
   } // cluster loop
   
   fOutputAODBranch->Expand(kNumberOfCaloClusters); // resize TObjArray to 'remove' slots
+}
+
+
+//________________________________________________________________
+/// Get centrality/multiplicity percentile
+//________________________________________________________________
+Float_t AliAnalysisTaskEMCALClusterize::GetEventCentrality() const                          
+{ 
+  if(fUseAliCentrality)
+  {
+    if(GetCentrality()) return GetCentrality()->GetCentralityPercentile(fCentralityClass) ;
+    else                return -1.       ; 
+  }
+  else
+  {
+    if(GetMultSelCen()) return GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass,kTRUE) ;
+    else                return -1.       ; 
+  }
+  
+  return -1.;
 }
 
 //_______________________________________________
@@ -1062,6 +1174,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fCentralityClass  = clus->fCentralityClass;
     fCentralityBin[0] = clus->fCentralityBin[0];
     fCentralityBin[1] = clus->fCentralityBin[1];
+    fUseAliCentrality = clus->fUseAliCentrality;
   }
 }  
 
@@ -1278,6 +1391,8 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
     
     Int_t absID   = cells->GetCellNumber(icell);
     Bool_t accept = fRecoUtils->AcceptCalibrateCell(absID,bc,ecell,tcell,cells);
+    tcell-=fConstantTimeShift*1e-9;// Only for MC simulations done before 2015
+
     if(accept && !fRecoUtils->IsExoticCell(absID,cells,bc)) totCellE += ecell;
   }
   
@@ -1455,24 +1570,83 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       fRecoUtils->RecalculateClusterShowerShapeParameters(fGeom,cells,clus);
       fRecoUtils->RecalculateClusterPID(clus);
       fRecoUtils->RecalculateClusterPosition(fGeom,cells,clus); 
-      
     }
     
     // MC
 
     if     ( fSetCellMCLabelFromCluster == 1 ) SetClustersMCLabelFrom2SelectedLabels(recPoint,clus) ;
     else if( fSetCellMCLabelFromCluster == 2 ) SetClustersMCLabelFromOriginalClusters(clus) ;
-    else
+    else 
     {
+      //
       // Normal case, trust what the clusterizer has found
-      Int_t  parentMult = 0;
-      Int_t *parentList = recPoint->GetParents(parentMult);
+      //
+      Int_t    parentMult = 0;
+      Int_t   *parentList   = recPoint->GetParents(parentMult);
+      Float_t *parentListDE = recPoint->GetParentsDE();         // deposited energy
+      
       clus->SetLabel(parentList, parentMult);
-//      printf("Label list : ");
-//      for(Int_t ilabel = 0; ilabel < parentMult; ilabel++ ) printf(" %d ",parentList[ilabel]);
-//      printf("\n");
-    }
-    
+      clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+      
+      //
+      // Set the cell energy deposition fraction map:
+      //
+      if( parentMult > 0 && fSetCellMCLabelFromEdepFrac )
+      {
+        UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
+        
+        // Get the digit that originated this cell cluster
+        AliVCaloCells* cells = 0x0; 
+        if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
+        else                                  cells = InputEvent()->GetEMCALCells();
+        
+        for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
+        {
+          Int_t   idigit  = fCellLabels[absIds[icell]];
+                    
+          const AliEMCALDigit * dig = (const AliEMCALDigit*)fDigitsArr->At(idigit);
+          
+          // Find the 4 MC labels that contributed to the cluster and their 
+          // deposited energy in the current digit
+          
+          mcEdepFracPerCell[icell] = 0; // init
+
+          Int_t  nparents   = dig->GetNiparent();
+          if ( nparents > 0 ) 
+          {
+            Int_t   digLabel   =-1 ; 
+            Float_t edep       = 0 ;
+            Float_t edepTot    = 0 ;
+            Float_t mcEDepFrac[4] = {0,0,0,0};
+            
+            // all parents in digit
+            for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
+            { 
+              digLabel = dig->GetIparent (jndex+1);
+              edep     = dig->GetDEParent(jndex+1);
+              edepTot += edep;
+              
+              if       ( digLabel == parentList[0] ) mcEDepFrac[0] = edep; 
+              else  if ( digLabel == parentList[1] ) mcEDepFrac[1] = edep;
+              else  if ( digLabel == parentList[2] ) mcEDepFrac[2] = edep;
+              else  if ( digLabel == parentList[3] ) mcEDepFrac[3] = edep;
+            } // all prarents in digit
+            
+            // Divide energy deposit by total deposited energy
+            // Do this only when deposited energy is significant, use 10 MeV although 50 MeV should be expected
+            if(edepTot > 0.01) 
+            {
+              mcEdepFracPerCell[icell] = clus->PackMCEdepFraction(mcEDepFrac);
+            }
+          } // at least one parent label in digit
+        } // cell in cluster loop
+        
+        clus->SetCellsMCEdepFractionMap(mcEdepFracPerCell);
+        
+        delete [] mcEdepFracPerCell;
+        
+      } // at least one parent in cluster, do the cell primary packing
+    } /// Set the MC labels, normal procedure in reconstruction
   } // recPoints loop
 }
 
@@ -1755,7 +1929,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   // Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   // If we need a centrality bin, we select only those events in the corresponding bin.
-  if( GetCentrality() && fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
+  if( fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
   {
     Float_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return ; //reject events out of bin.

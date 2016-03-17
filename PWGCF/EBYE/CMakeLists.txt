@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGCFebye)
+set(MODULE PWGCFebye)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/EBYE)
@@ -39,6 +40,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskEffContBF.cxx
+  BalanceFunctions/AliAnalysisTaskEffContPIDBF.cxx
   BalanceFunctions/AliBalance.cxx
   BalanceFunctions/AliBalancePsi.cxx
   BalanceFunctions/AliBalanceEbyE.cxx

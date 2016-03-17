@@ -41,6 +41,7 @@ class AliMCEvent;
 class AliMixedEvent;
 class AliAODMCHeader;
 class AliCentrality;
+class AliMultSelection;
 class AliESDtrackCuts;
 //class AliTriggerAnalysis;
 class AliEventplane;
@@ -112,6 +113,9 @@ public:
   enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
                   kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
                   kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
+  
+  /// Smearing function enum.
+  enum smearingFunction     { kNoSmearing, kSmearingLandau, kSmearingLandauShift           } ;
 
   // Minimum pt setters and getters
   
@@ -139,6 +143,9 @@ public:
   void             SetPHOSEMin  (Float_t  e)               { SetPHOSPtMin (e)              ; }
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
+  
+  void             SetSmearingFunction(Float_t smearfunct) {fSmearingFunction = smearfunct ; }
+  Float_t          GetSmearingFunction()             const {return fSmearingFunction       ; }
   
   // Track DCA cut
   
@@ -506,8 +513,17 @@ public:
   // Centrality / Event Plane
   //--------------------------
 
-  virtual AliCentrality* GetCentrality()             const { if(fDataType!=kMC) return fInputEvent->GetCentrality() ;
-                                                             else               return 0x0       ; } 
+  virtual AliCentrality*    GetCentrality()          const { 
+    if(fDataType!=kMC) return fInputEvent->GetCentrality() ;
+    else               return 0x0                          ; } 
+  
+  virtual AliMultSelection* GetMultSelCen()          const { 
+    if(fDataType!=kMC) return (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ; 
+    else               return 0x0                                                                ; } 
+
+  virtual void     SwitchOnAliCentrality ()                { fUseAliCentrality  = kTRUE          ; }
+  virtual void     SwitchOffAliCentrality()                { fUseAliCentrality  = kFALSE         ; }
+  
   virtual void     SetCentralityClass(TString name)        { fCentralityClass   = name           ; }
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
   virtual TString  GetCentralityClass()              const { return fCentralityClass             ; }
@@ -685,6 +701,7 @@ public:
   Float_t          fCTSPtMax;                      ///<  pT Threshold on charged particles.
   Float_t          fEMCALPtMax;                    ///<  pT Threshold on emcal clusters.
   Float_t          fPHOSPtMax;                     ///<  pT Threshold on phos clusters.
+  Float_t          fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05).
   Bool_t           fUseEMCALTimeCut;               ///<  Do time cut selection.
   Bool_t           fUseParamTimeCut;               ///<  Use simple or parametrized time cut.
   Bool_t           fUseTrackTimeCut;               ///<  Do time cut selection.
@@ -843,7 +860,7 @@ public:
   Bool_t           fRecalculateVertexBC;           ///<  Recalculate vertex BC from tracks pointing to vertex.
   
   // Centrality/Event plane
-  
+  Bool_t           fUseAliCentrality;              ///<  Select as centrality estimator AliCentrality (Run1) or AliMultSelection (Run1 and Run2)
   TString          fCentralityClass;               ///<  Name of selected centrality class.     
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
@@ -875,7 +892,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,71) ;
+  ClassDef(AliCaloTrackReader,72) ;
   /// \endcond
 
 } ;

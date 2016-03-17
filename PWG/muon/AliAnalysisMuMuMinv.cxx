@@ -272,8 +272,12 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
                                             const AliVParticle& tracki,
                                             const AliVParticle& trackj)
 {
-  /// Fill histograms for unlike-sign muon pairs
+  /// Fill histograms for unlike-sign muon pairs for :
+  ///   - Reconstructed pairs (both data and MC)
+  ///   - input MC particle if running on MC
+  /// A weight is also applied if specified (see inside)
   
+  // Usual cuts
   if ( ( tracki.Charge() == trackj.Charge() ) ) return;
   if (!AliAnalysisMuonUtility::IsMuonTrack(&tracki) ) return;
   if (!AliAnalysisMuonUtility::IsMuonTrack(&trackj) ) return;
@@ -301,10 +305,10 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
   ////           AliAnalysisMuonUtility::GetRabs(&trackj));
   ////  }
   
-  
+  // ---- Compute weighted histo for data ----
   AliMergeableCollectionProxy* proxy = HistogramCollection()->CreateProxy(BuildPath(eventSelection,triggerClassName,centrality,pairCutName));
   
-  
+  // Select weight acooring to <systLevel>
   Double_t inputWeight = WeightDistribution(pair4Momentum.Pt(),pair4Momentum.Rapidity());
   
   if ( !IsHistogramDisabled("Pt") )
@@ -365,12 +369,10 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
         mcProxy->Histo("Eta")->Fill(mcpj.Eta());
       }
       pair4MomentumMC = &mcpj;
-      
     }
-    delete mcProxy;
   }
   
-  
+  // --- Fill Inv. Mass histo. (can be weighted) ----
   TIter nextBin(fBinsToFill);
   AliAnalysisMuMuBinning::Range* r;
   
@@ -670,30 +672,23 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
       TString minvName = GetMinvHistoName(*r,kFALSE);
       
       if (!IsHistogramDisabled(minvName.Data()))
-
       {
         TH1* h(0x0);
         if ( ok )
-        {
+        { 
           h = proxy->Histo(minvName.Data());
           
-          if (!h)
-          {
-            AliError(Form("Could not get %s",minvName.Data()));
-            //continue;
-          }
+          if (!h) AliError(Form("Could not get %s",minvName.Data()));
+          
           else h->Fill(pair4Momentum.M(),inputWeight);
         }
         if( okMC )
-        {
+        { 
           h = mcProxy->Histo(minvName.Data());
           
-          if (!h)
-          {
-            AliError(Form("Could not get MC %s",minvName.Data()));
-            //continue;
-          }
-          else h->Fill(pair4MomentumMC->M(),inputWeightMC);
+          if (!h) AliError(Form("Could not get MC %s",minvName.Data()));
+          
+          else h->Fill(pair4MomentumMC->M(),inputWeightMC); 
         }
         
         if ( fcomputeMeanPt )
@@ -832,8 +827,8 @@ void AliAnalysisMuMuMinv::FillHistosForPair(const char* eventSelection,
       }
     }
   }
-  
   delete proxy;
+  delete mcProxy;
 }
 
 
@@ -843,23 +838,22 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
   // Fill the input Monte-Carlo histograms related to muons.
   
   if ( !HasMC() ) return;
-  
-  TString mcPath = BuildMCPath(eventSelection,triggerClassName,centrality);
-  
+
+  // Create general proxies to the Histogram Collection
+  TString mcPath = BuildMCPath(eventSelection,triggerClassName,centrality); 
   AliMergeableCollectionProxy* mcProxy = HistogramCollection()->CreateProxy(mcPath);
 
   TString mcInYRangeProxyPath = mcPath;
-  
-  mcInYRangeProxyPath += "/";
-  mcInYRangeProxyPath += "/INYRANGE";
-  
+  mcInYRangeProxyPath += "INYRANGE/";
   AliMergeableCollectionProxy* mcInYRangeProxy = HistogramCollection()->CreateProxy(mcInYRangeProxyPath);
+  if(!mcInYRangeProxy) printf("Warning :  unable to create proxy for mcInYRangeProxy, will not be filled \n");
+
 
   Int_t nMCTracks = MCEvent()->GetNumberOfTracks();
-  
+
   TIter nextBin(fBinsToFill);
   AliAnalysisMuMuBinning::Range* r;
-  
+
   for ( Int_t i = 0; i < nMCTracks; ++i )
   {
     AliVParticle* part = MCEvent()->GetTrack(i);// Get particle
@@ -868,12 +862,11 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
          part->GetMother()==-1)
     {
       Double_t inputWeight = WeightDistribution(part->Pt(),part->Y());// get the default WeightDistribution
-      
       mcProxy->Histo("Pt")->Fill(part->Pt(),inputWeight);
       mcProxy->Histo("Y")->Fill(part->Y(),inputWeight);
       mcProxy->Histo("Eta")->Fill(part->Eta());
       
-      if ( part->Y() < -2.5 && part->Y() > -4.0 )
+      if ( part->Y() <= -2.5 && part->Y() >= -4.0 && mcInYRangeProxy )
       {
         mcInYRangeProxy->Histo("Pt")->Fill(part->Pt(),inputWeight);
         mcInYRangeProxy->Histo("Y")->Fill(part->Y(),inputWeight);
@@ -940,7 +933,7 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
             
             h->Fill(part->M(),inputWeight);
             
-            if ( part->Y() < -2.5 && part->Y() > -4.0 )
+            if ( part->Y() <= -2.5 && part->Y() >= -4.0 && mcInYRangeProxy  )
             {
               h = mcInYRangeProxy->Histo(hname.Data());
               if (!h)

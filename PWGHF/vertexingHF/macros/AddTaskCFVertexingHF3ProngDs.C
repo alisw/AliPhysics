@@ -551,7 +551,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 
 	TF1* funcWeight = 0x0;
 	if (task->GetUseWeight()) {
-		funcWeight = (TF1*)cutFile->Get("funcWeight");
+		funcWeight = (TF1*)fileCuts->Get("funcWeight");
 		if (funcWeight == 0x0){
 			Printf("FONLL Weights will be used");
 		}
@@ -568,7 +568,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	if (task->GetUseWeight()) {
-		funcWeight = (TF1*)cutFile->Get("funcWeight");
+		funcWeight = (TF1*)fileCuts->Get("funcWeight");
 		if (funcWeight == 0x0){
 			Printf("FONLL Weights will be used");
 		}

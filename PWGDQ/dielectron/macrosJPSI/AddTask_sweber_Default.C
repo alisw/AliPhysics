@@ -1,7 +1,7 @@
 Bool_t isAOD=kFALSE;
 Bool_t hasMC=kFALSE;
 Int_t iPeriod=-1;
-enum { k10b=0, k10c, k10d, k10e, k10f, k10h,k10pp, k11a, k11d, k11h, k12h, k13b, k13c, k13d, k13e, k13f };
+enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k10pp, k11a, k11d, k11h, k12h, k13b, k13c, k13d, k13e, k13f, k15f, k15h };
 
 
 AliAnalysisTask* AddTask_sweber_Default(
@@ -48,6 +48,8 @@ AliAnalysisTask* AddTask_sweber_Default(
   else if( !prod.CompareTo("LHC13d") ) iPeriod = k13d;
   else if( !prod.CompareTo("LHC13e") ) iPeriod = k13e;
   else if( !prod.CompareTo("LHC13f") ) iPeriod = k13f;
+  else if( !prod.CompareTo("LHC15f") ) iPeriod = k15f;
+  else if( !prod.CompareTo("LHC15h") ) iPeriod = k15h;
 
 
   // create task and add it to the manager
@@ -66,6 +68,8 @@ AliAnalysisTask* AddTask_sweber_Default(
     case k13d: task->SetTriggerMask(AliVEvent::kAnyINT); break;
     case k13e: task->SetTriggerMask(AliVEvent::kAnyINT); break;
     case k13f: task->SetTriggerMask(AliVEvent::kAnyINT); break;
+    case k15f: task->SetTriggerMask(AliVEvent::kINT7); break;
+    case k15h: task->SetTriggerMask(AliVEvent::kINT7); break;
   }
   mgr->AddTask(task);
   

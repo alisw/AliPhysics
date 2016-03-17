@@ -2262,7 +2262,7 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
     printf("ERROR: Could not get ESDInputHandler");
     return;
   } 
-  fESD = esdH->GetEvent();
+  fESD = (AliESDEvent*)esdH->GetEvent();
   if(!fESD) {
     printf("ERROR: fESD not available \n");
     return ;

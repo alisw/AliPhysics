@@ -8,7 +8,7 @@
   /// \endcond
 #endif
 
-
+//------------------------------
 AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fInvMassLambdaMin(0.0),
   fInvMassLambdaMax(99.0),
@@ -34,15 +34,106 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fPtMaxPosDaughter(99.0),
   fPtMinNegDaughter(0.0),
   fPtMaxNegDaughter(99.0),
-  fMinAvgSepDaughters(0)
+  fMinAvgSepDaughters(0),
+
+  fBuildPurityAidV0(false),
+  fMinvPurityAidHistoV0(0)
 {
   // Default constructor
 }
+
 //------------------------------
 AliFemtoV0TrackCut::~AliFemtoV0TrackCut()
 {
   /* noop */
 }
+
+//------------------------------
+AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
+  AliFemtoParticleCut(aCut),
+
+  fInvMassLambdaMin(aCut.fInvMassLambdaMin),
+  fInvMassLambdaMax(aCut.fInvMassLambdaMax),
+  fInvMassK0sMin(aCut.fInvMassK0sMin),
+  fInvMassK0sMax(aCut.fInvMassK0sMax),
+  fMinDcaDaughterPosToVert(aCut.fMinDcaDaughterPosToVert),
+  fMinDcaDaughterNegToVert(aCut.fMinDcaDaughterNegToVert),
+  fMaxDcaV0Daughters(aCut.fMaxDcaV0Daughters),
+  fMaxDcaV0(aCut.fMaxDcaV0),
+  fMinDcaV0(aCut.fMinDcaV0),
+  fMaxDecayLength(aCut.fMaxDecayLength),
+
+  fMaxCosPointingAngle(aCut.fMaxCosPointingAngle),
+  fMinCosPointingAngle(aCut.fMinCosPointingAngle),
+  fParticleType(aCut.fParticleType),
+  fEta(aCut.fEta),
+  fPtMin(aCut.fPtMin),
+  fPtMax(aCut.fPtMax),
+  fOnFlyStatus(aCut.fOnFlyStatus),
+
+  fMaxEtaDaughters(aCut.fMaxEtaDaughters),
+  fTPCNclsDaughters(aCut.fTPCNclsDaughters),
+  fNdofDaughters(aCut.fNdofDaughters),
+  fStatusDaughters(aCut.fStatusDaughters),
+  fPtMinPosDaughter(aCut.fPtMinPosDaughter),
+  fPtMaxPosDaughter(aCut.fPtMaxPosDaughter),
+  fPtMinNegDaughter(aCut.fPtMinNegDaughter),
+  fPtMaxNegDaughter(aCut.fPtMaxNegDaughter),
+  fMinAvgSepDaughters(aCut.fMinAvgSepDaughters),
+
+  fBuildPurityAidV0(aCut.fBuildPurityAidV0)
+{
+  //copy constructor
+  if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
+  else fMinvPurityAidHistoV0 = 0;
+}
+
+//------------------------------
+AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut)
+{
+  //assignment operator
+  if (this == &aCut) return *this;
+
+  AliFemtoParticleCut::operator=(aCut);
+
+  fInvMassLambdaMin = aCut.fInvMassLambdaMin;
+  fInvMassLambdaMax = aCut.fInvMassLambdaMax;
+  fInvMassK0sMin = aCut.fInvMassK0sMin;
+  fInvMassK0sMax = aCut.fInvMassK0sMax;
+  fMinDcaDaughterPosToVert = aCut.fMinDcaDaughterPosToVert;
+  fMinDcaDaughterNegToVert = aCut.fMinDcaDaughterNegToVert;
+  fMaxDcaV0Daughters = aCut.fMaxDcaV0Daughters;
+  fMaxDcaV0 = aCut.fMaxDcaV0;
+  fMinDcaV0 = aCut.fMinDcaV0;
+  fMaxDecayLength = aCut.fMaxDecayLength;
+
+  fMaxCosPointingAngle = aCut.fMaxCosPointingAngle;
+  fMinCosPointingAngle = aCut.fMinCosPointingAngle;
+  fParticleType = aCut.fParticleType;
+  fEta = aCut.fEta;
+  fPtMin = aCut.fPtMin;
+  fPtMax = aCut.fPtMax;
+  fOnFlyStatus = aCut.fOnFlyStatus;
+
+  fMaxEtaDaughters = aCut.fMaxEtaDaughters;
+  fTPCNclsDaughters = aCut.fTPCNclsDaughters;
+  fNdofDaughters = aCut.fNdofDaughters;
+  fStatusDaughters = aCut.fStatusDaughters;
+  fPtMinPosDaughter = aCut.fPtMinPosDaughter;
+  fPtMaxPosDaughter = aCut.fPtMaxPosDaughter;
+  fPtMinNegDaughter = aCut.fPtMinNegDaughter;
+  fPtMaxNegDaughter = aCut.fPtMaxNegDaughter;
+  fMinAvgSepDaughters = aCut.fMinAvgSepDaughters;
+
+  fBuildPurityAidV0 = aCut.fBuildPurityAidV0;
+
+  if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
+  else fMinvPurityAidHistoV0 = 0;
+
+  return *this;
+}
+
+
 //------------------------------
 bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 {
@@ -133,6 +224,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     if (IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP())) //proton
       if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) { //pion
         pid_check = true;
+        if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassLambda());
         //invariant mass lambda
         if (aV0->MassLambda() < fInvMassLambdaMin || aV0->MassLambda() > fInvMassLambdaMax)
           return false;
@@ -143,6 +235,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     if (IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) //proton
       if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) { //pion
         pid_check = true;
+        if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassAntiLambda());
         //invariant mass antilambda
         if (aV0->MassAntiLambda() < fInvMassLambdaMin || aV0->MassAntiLambda() > fInvMassLambdaMax)
           return false;
@@ -153,6 +246,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
       if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) { //pion+
         pid_check = true;
         //invariant mass K0s
+        if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassK0Short());
         if (aV0->MassK0Short() < fInvMassK0sMin || aV0->MassK0Short() > fInvMassK0sMax)
           return false;
       }
@@ -408,3 +502,20 @@ bool AliFemtoV0TrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigm
 
   return false;
 }
+
+void AliFemtoV0TrackCut::SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+{
+  fBuildPurityAidV0 = true;
+  fMinvPurityAidHistoV0 = new TH1D(name,title,nbins,aInvMassMin,aInvMassMax);
+  fMinvPurityAidHistoV0->Sumw2();
+}
+
+TList *AliFemtoV0TrackCut::GetOutputList()
+{
+  TList *tOutputList = AliFemtoCutMonitorHandler::GetOutputList();  //add all of the typical objects
+
+  if(fBuildPurityAidV0) tOutputList->Add(fMinvPurityAidHistoV0);
+
+  return tOutputList;
+}
+

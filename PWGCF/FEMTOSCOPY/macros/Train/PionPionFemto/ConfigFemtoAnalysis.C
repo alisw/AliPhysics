@@ -72,7 +72,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
+  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
     rdr->SetFilterBit(7);
     rdr->SetEPVZERO(kTRUE);
     rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
@@ -157,7 +157,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       }
 
       if (macro_config.do_deltaeta_deltaphi_cf) {
-        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", 1.6,
+        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_d", 1.6,
               // 100, 0.0, 1.6,
               // 100, 0.0, 2.0
               // 200, 0.0, 0.5,
@@ -210,197 +210,6 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       //
 
       manager->AddAnalysis(analysis);
-
-
-      continue;
-
-      // analysis->SetNumEventsToMix(10 /*analysis_config.num_events_to_mix*/);
-      // analysis->SetMinSizePartCollection(1 /*analysis_config.min_coll_size*/);
-
-      // AliFemtoBasicEventCut *ev_cut = new AliFemtoBasicEventCut();
-      // ev_cut->SetEventMult(0.001, 100000);
-      // ev_cut->SetVertZPos(-8, 8);
-
-    // if (!analysis_config.is_mc_analysis) {
-    //   ev_cut->SetAcceptOnlyPhysics(kTRUE);
-    // }
-
-    ev_cut->AddCutMonitor(
-      new AliFemtoCutMonitorEventMult(TString::Format("cutPass%stpcM%i", chrgs[ichg], imult)),
-      new AliFemtoCutMonitorEventMult(TString::Format("cutFail%stpcM%i", chrgs[ichg], imult))
-    );
-    ev_cut->AddCutMonitor(
-      new AliFemtoCutMonitorEventVertex(TString::Format("cutPass%stpcM%i", chrgs[ichg], imult)),
-      new AliFemtoCutMonitorEventVertex(TString::Format("cutFail%stpcM%i", chrgs[ichg], imult))
-    );
-    analysis->SetEventCut(ev_cut);
-
-    //
-    // Setup Track Cuts
-    //
-
-    AliFemtoBasicTrackCut *track_cut1 = new AliFemtoBasicTrackCut(),
-                          *track_cut2 = (ichg == 2) ? new AliFemtoBasicTrackCut() : NULL;
-    if (ichg == 2) {
-      analysis->SetFirstParticleCut(track_cut1);
-      analysis->SetSecondParticleCut(track_cut2);
-    } else {
-      analysis->SetFirstParticleCut(track_cut1);
-      analysis->SetSecondParticleCut(track_cut1);
-    }
-
-    switch (ichg) {
-    case 0:
-      track_cut1->SetCharge(1.0);
-      break;
-    case 1:
-      track_cut1->SetCharge(-1.0);
-      break;
-    case 2:
-      track_cut1->SetCharge(-1.0);
-      track_cut2->SetCharge(1.0);
-    }
-
-//     track_cut1->SetEta(-0.8, 0.8);
-    track_cut1->SetMass(PionMass);
-    track_cut1->SetNSigmaPion(-0.02, 0.02);
-    track_cut1->SetPt(0.3, 1.0);
-    track_cut1->SetRapidity(-0.8, 0.8);
-    track_cut1->SetDCA(0.5, 4.0);
-//     track_cut1->SetMostProbablePion();
-
-    track_cut1->AddCutMonitor(
-      new AliFemtoCutMonitorParticleYPt("PionPass", PionMass),
-      new AliFemtoCutMonitorParticleYPt("PionFail", PionMass)
-    );
-
-    // Track quality cuts
-/*
-    switch (runtype) {
-    case 0:
-      track_cut1->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
-      track_cut1->SetminTPCncls(80);
-      track_cut1->SetRemoveKinks(kTRUE);
-      track_cut1->SetLabel(kFALSE);
-      track_cut1->SetMaxTPCChiNdof(4.0);
-      track_cut1->SetMaxImpactXY(0.2);
-      track_cut1->SetMaxImpactZ(0.15);
-      break;
-    case 1:
-      track_cut1->SetStatus(AliESDtrack::kITSrefit);
-      track_cut1->SetRemoveKinks(kTRUE);
-      track_cut1->SetLabel(kFALSE);
-      track_cut1->SetMaxImpactXY(0.2);
-      track_cut1->SetMaxImpactZ(0.25);
-      break;
-    case 2:
-      track_cut1->SetStatus(AliESDtrack::kTPCin);
-      track_cut1->SetminTPCncls(80);
-      track_cut1->SetRemoveKinks(kTRUE);
-      track_cut1->SetLabel(kFALSE);
-      track_cut1->SetMaxTPCChiNdof(4.0);
-      track_cut1->SetMaxImpactXY(2.4);
-      track_cut1->SetMaxImpactZ(3.0);
-
-      if (ichg == 2) {
-        track_cut2->SetStatus(AliESDtrack::kTPCin);
-        track_cut2->SetminTPCncls(80);
-        track_cut2->SetRemoveKinks(kTRUE);
-        track_cut2->SetLabel(kFALSE);
-        track_cut2->SetMaxTPCChiNdof(4.0);
-        track_cut2->SetMaxImpactXY(0.25);
-        track_cut2->SetMaxImpactZ(0.15);
-      }
-      break;
-    }
-*/
-
-    AliFemtoPairCutAntiGamma *pair_cut = new AliFemtoPairCutAntiGamma();
-
-    switch (runtype) {
-    case 0:
-      pair_cut->SetShareQualityMax(1.0);
-      pair_cut->SetShareFractionMax(0.05);
-      pair_cut->SetRemoveSameLabel(kFALSE);
-      break;
-    case 1:
-      pair_cut->SetShareQualityMax(1.0);
-      pair_cut->SetShareFractionMax(1.05);
-      pair_cut->SetRemoveSameLabel(kFALSE);
-      break;
-    case 2:
-      // pair_cut->SetUseAOD(kTRUE);
-      pair_cut->SetShareQualityMax(1.0);
-      pair_cut->SetShareFractionMax(0.05);
-      pair_cut->SetRemoveSameLabel(kFALSE);
-
-      if (gammacut == 0) {
-        pair_cut->SetMaxEEMinv(0.0);
-        pair_cut->SetMaxThetaDiff(0.0);
-      } else if (gammacut == 1) {
-        pair_cut->SetMaxEEMinv(0.002);
-        pair_cut->SetMaxThetaDiff(0.008);
-      }
-      break;
-    }
-
-    analysis->SetPairCut(pair_cut);
-/*
-    AliFemtoCorrFctn *cf = (ichg == 2)
-                         ? new AliFemtoCorrFctnNonIdDR(
-                             Form("ckstar%stpcM%i", chrgs[ichg], imult),
-                             nbinssh, 0.0, shqmax);
-                         : new AliFemtoQinvCorrFctn(
-                             Form("cqinv%stpcM%i", chrgs[ichg], imult),
-                             nbinssh, 0.0, shqmax);
-*/
-
-    // KtRange()
-    AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(
-                             Form("cqinv%stpcM%i", chrgs[ichg], imult),
-                             nbinssh, 0.0, shqmax);
-    analysis->AddCorrFctn(cf);
-
-    analysis->AddCorrFctn(
-      new AliFemtoCorrFctnDirectYlm(
-        Form("cylm%stpcM%i", chrgs[ichg], imult),
-        3,
-        nbinssh,
-        0.0,
-        shqmax,
-        runshlcms
-      )
-    );
-
-    if (runktdep) {
-      for (int ikt = 0; ikt < numOfkTbins; ikt++) {
-        int ktm = aniter * numOfkTbins + ikt;
-
-        AliFemtoKTPairCut *kt_cut = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
-        AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
-          Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),
-          3,
-          nbinssh,
-          0.0,
-          shqmax,
-          0
-        );
-
-        ylm_cf->SetPairSelectionCut(kt_cut);
-        analysis->AddCorrFctn(ylm_cf);
-
-
-        AliFemtoCorrFctn *qcf = new AliFemtoQinvCorrFctn(
-          Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),
-          nbinssh,
-          0.0,
-          (imult > 6) ? shqmax * 2.5 : shqmax
-        );
-
-        qcf->SetPairSelectionCut(kt_cut);
-        analysis->AddCorrFctn(qcf);
-      }
-    }
 
     }
   }

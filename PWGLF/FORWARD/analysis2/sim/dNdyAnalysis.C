@@ -412,7 +412,8 @@ struct dNdyMaker : public FastAnalysis::Maker
 	    w.BeginsWith("V0M") ||
 	    w.BeginsWith("V0A") ||
 	    w.BeginsWith("V0C") ||
-	    w.BeginsWith("B"))) {
+	    w.BeginsWith("B")   ||
+	    w.IsNull())) {
 	Printf("Warning: dNdyMaker::Make: Unknown estimator: %s",
 	       w.Data());
 	return 0;

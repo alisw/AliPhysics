@@ -659,10 +659,15 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 		aodTrack->SetPIDForTracking(AliPID::kMuon);
 		aodTrack->SetXYAtDCA(esdMuTrack->GetNonBendingCoorAtDCA(), esdMuTrack->GetBendingCoorAtDCA());
 		aodTrack->SetPxPyPzAtDCA(esdMuTrack->PxAtDCA(), esdMuTrack->PyAtDCA(), esdMuTrack->PzAtDCA());
+		aodTrack->SetRAtAbsorberEnd(esdMuTrack->GetRAtAbsorberEnd());
 		aodTrack->ConvertAliPIDtoAODPID();
 		aodTrack->SetChi2perNDF(esdMuTrack->GetChi2() / (2.*esdMuTrack->GetNHit() - 5.));
 		aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
-		aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+		UInt_t pattern = esdMuTrack->GetHitsPatternInTrigCh();
+		AliESDMuonTrack::AddEffInfo(pattern, 0, esdMuTrack->LoCircuit(), (AliESDMuonTrack::EAliTriggerChPatternFlag)0);
+		esdMuTrack->AddMuonTrigDevSignInfo(pattern);
+		aodTrack->SetMUONtrigHitsMapTrg(pattern);
+		aodTrack->SetMUONtrigHitsMapTrk(esdMuTrack->GetHitsPatternInTrigChTrk());
 		aodTrack->SetMuonClusterMap(esdMuTrack->GetMuonClusterMap());
 		aodTrack->SetMatchTrigger(esdMuTrack->GetMatchTrigger());
 		

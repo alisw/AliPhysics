@@ -63,7 +63,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Float_t maxCellEFraction) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, 
+                                         Float_t maxCellEFraction, Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
@@ -81,6 +82,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
+  void         SetConstantTimeShift(Float_t shift)    { fConstantTimeShift     = shift  ; }
+  
   // Analysis parameters setters getters
     
   // ** Cluster selection methods **
@@ -164,6 +167,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
+  
+  Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
   
   //
   // Histograms
@@ -359,13 +364,65 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. 
   TH2F * fhMCConversionVertexTRD;                   //!<! Conversion distance for photon clusters that have at least a contributor from the conversion, SM covered by TRD.
-  TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape of photon conversions, depending on conversion vertex.
-  TH2F * fhMCConversionLambda0RcutTRD[6];           //!<! Shower shape of photon conversions, depending on conversion vertex, SM covered by TRD
+  TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape M02 of photon conversions, depending on conversion vertex.
+  TH2F * fhMCConversionLambda0RcutTRD[6];           //!<! Shower shape M02 of photon conversions, depending on conversion vertex, SM covered by TRD
+  TH2F * fhMCConversionLambda1Rcut[6];              //!<! Shower shape M20 of photon conversions, depending on conversion vertex.
+  TH2F * fhMCConversionLambda1RcutTRD[6];           //!<! Shower shape M20 of photon conversions, depending on conversion vertex, SM covered by TRD
 
-  TH2F * fhLam0EMCALRegion   [4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
-  TH2F * fhLam0EMCALRegionTRD[4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
-  TH2F * fhLam0EMCALRegionMCConvRcut   [4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
-  TH2F * fhLam0EMCALRegionTRDMCConvRcut[4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
+//TH2F * fhLam0EMCALRegion   [4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions
+//TH2F * fhLam0EMCALRegionTRD[4][3];                //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD
+//TH2F * fhLam0EMCALRegionMCConvRcut   [4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, MC photon conversions, depending on conversion vertex
+//TH2F * fhLam0EMCALRegionTRDMCConvRcut[4][3][6];   //!<! Cluster lambda0 vs  E, in different EMCal regions, SM covered by TRD,  MC photon conversions, depending on conversion vertex
+  
+  TH2F * fhLam0EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda0 vs  Pt, in different EMCal regions
+  TH2F * fhLam1EMCALRegionPerSM[4][3][20];          //!<! Cluster lambda1 vs  Pt, in different EMCal regions
+  
+  //
+  // Clusters within a shower shape bin, 2 bins [0.23,0.26] (photon) and [0.3,0.4] (tail), if cell weight > 0
+  //
+  TH2F * fhLam1Lam0BinPerSM                [2][20]; //!<! Cluster lambda1, in a l0 bin per SM 
+  TH2F * fhTimeLam0BinPerSM                [2][20]; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM 
+  TH2F * fhTimeLam0BinPerSMWeighted        [2][20]; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
+  TH2F * fhDTimeLam0BinPerSM               [2][20]; //!<! t_max-t_cell, not maximum cluster cell, in a l0 bin per SM 
+  TH2F * fhDTimeLam0BinPerSMWeighted       [2][20]; //!<! t_max-t_cell, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
+  TH2F * fhCellClusterEFracLam0BinPerSM    [2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM  
+//TH2F * fhCellClusterEFracLam0BinPerSMWeighted[2][20]; //!<! Cell E / Cluster E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight  
+  TH2F * fhCellClusterELam0BinPerSM        [2][20]; //!<! Cell E vs cluster pT, not maximum cluster cell, in a l0 bin per SM  
+  TH2F * fhCellClusterELam0BinPerSMWeighted[2][20]; //!<! Cell E vs cluster pT, not maximum cluster cell, in a l0 bin per SM, log weight Cell E / Cluster E
+
+  // plus different Pt bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
+  TH2F * fhEtaPhiLam0BinPtBin              [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins
+  TH2F * fhColRowLam0BinPtBin              [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
+  TH2F * fhColRowLam0BinPtBinWeighted      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins and log weight Cell E / Cluster E 
+  TH2F * fhCellClusterIndexEAndTime        [2][7] ; //!<! Cell in Cluster index (low index high energy, high index low energy) vs cell Time  
+  TH2F * fhCellClusterEAndTime             [2][7] ; //!<! Cell in Cluster E cell vs cell Time,  in a l0 bin, different Pt bins
+  TH2F * fhCellClusterEFracAndTime         [2][7] ; //!<! Cell in Cluster E cell/ E cluster vs cell Time,  in a l0 bin, different Pt bins
+
+//  // Shared clusters
+//  TH2F * fhLam0PerSMShared                   [12] ; //!<! Cluster lambda0 vs  Pt, for shared clusters, EMCal
+//  TH2F * fhLam1PerSMShared                   [12] ; //!<! Cluster lambda1 vs  Pt, for shared clusters, EMCal
+//  TH2F * fhTimeLam0BinPerSMShared         [2][12] ; //!<! Cell time, not maximum cluster cell, in a l0 bin per SM, shared SM
+//  
+//  TH2F * fhEtaPhiLam0BinPtBinSMShared      [2][7] ; //!<! Cluster eta/phi in a l0 bin, different Pt bins, SM shared clusters
+//  TH2F * fhColRowLam0BinPtBinSMShared      [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins 
+  
+  // Cells with large time
+  TH2F * fhEtaPhiLargeTimeInClusterCell    [2][7] ; //!<! Cluster eta/phi, with at least one significant cell with large time
+  TH2F * fhColRowLam0BinPtBinLargeTime     [2][7] ; //!<! Cell hits, not maximum cluster cell, in a l0 bin, different Pt bins, cell with large time  
+  TH2F * fhCellClusterEFracLam0BinPerSMLargeTime [2][20]; //!<! Cell in Cluster E cell / Ecluster vs cluster pT, with large time
+  TH2F * fhCellClusterEFracLam0BinPerSMLargeTimeTotal[2][20]; //!<! Sum of all Cell in Cluster , with large time E cell / Ecluster vs cluster pT
+  TH2F * fhCellClusterELam0BinPerSMLargeTime     [2][20]; //!<! Cell in Cluster E cell vs cluster pT, with large time
+  TH2F * fhCellClusterIndexELam0BinPerSMLargeTime[2][20]; //!<! Cell in Cluster index (low index high energy, high index low energy) vs cluster pT, with large time  
+  TH2F * fhNCellsWithLargeTimeInCluster    [2][20]; //!<! Number of cells in cluster with large time  
+  
+  TH2F * fhLam0PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
+  TH2F * fhLam1PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
+  TH2F * fhLam0PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda0 vs  Pt, when any secondary cell has t > 50 ns, in different SM
+  TH2F * fhLam1PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, in different SM  
+  TH2F * fhLam0PerNLargeTimeInClusterCell     [5] ; //!<! Cluster lambda0 vs  Pt, when any secondary cell has t > 50 ns, per number of large time secondary cells
+  TH2F * fhLam1PerNLargeTimeInClusterCell     [5] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, per number of large time secondary cells 
+//TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
+//TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
@@ -374,7 +431,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,41) ;
+  ClassDef(AliAnaPhoton,43) ;
   /// \endcond
 
 } ;

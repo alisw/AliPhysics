@@ -149,10 +149,12 @@ class AliAnalysisTaskEmcalJetCDFUE : public AliAnalysisTaskEmcalJet
     AliParticleContainer      *fTracksCont;                 //!<! Tracks Container
     AliClusterContainer       *fCaloClustersCont;           //!<! Clusters Container
     TClonesArray              *fTracksContArray;            //!<! the array of tracks from the tracks container
+    TClonesArray              *fCaloClustContArray;         //!<! the array of clusters from the tracks container
 
     AliEmcalJet               *fJet1;                       //!<! Leading Jet
     UInt_t                     fNJets_accepted;             ///<  Number of Jets found in event - accepted cuts applied by JetContainer
     UInt_t                     fNaccPart;                   ///<  Multiplicity in event - accepted tracks in tracks container
+    Int_t                      fNaccClus;                   //!<! Multiplicity in event - accepted clusters in cluster container
     Double_t                   fEvPt;                       ///<  Scalar sum of pt off all accepted tracks in events
 
     std::vector<Int_t>         fJet1_sorted_idxvec;         ///< vector of sorted indexes of particles in leading jet

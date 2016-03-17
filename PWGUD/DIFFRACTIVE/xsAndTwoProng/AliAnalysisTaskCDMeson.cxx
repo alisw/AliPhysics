@@ -1230,7 +1230,7 @@ Bool_t AliAnalysisTaskCDMeson::CheckInput()
 	//
 	if (const AliESDInputHandler *esdH =
 	    dynamic_cast<AliESDInputHandler*>(fInputHandler)) {
-		fESDEvent = esdH->GetEvent();
+	  fESDEvent = (AliESDEvent*)esdH->GetEvent();
 	}
 	else if (const AliAODInputHandler *aodH =
 	         dynamic_cast<AliAODInputHandler*>(fInputHandler)) {

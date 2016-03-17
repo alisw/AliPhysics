@@ -77,6 +77,7 @@ fExoNDTimeCuts(0),                     fExoDTimeCuts(),
 
 fClusterMomentum(),                    fClusterMomentum2(),
 fPrimaryMomentum(),
+fConstantTimeShift(0),
 // Histograms
 fhE(0),                                fhPt(0),                                
 fhPhi(0),                              fhEta(0),                               
@@ -203,13 +204,19 @@ fhTrackMatchedDEtaPosMod(0),           fhTrackMatchedDPhiPosMod(0)
   // Weight studies
   for(Int_t i =0; i < 12; i++)
   {
-    fhLambda0ForW0[i] = 0;
-    //fhLambda1ForW0[i] = 0;
-    
+    for(Int_t j = 0; j < 4; j++)
+    {    
+      for(Int_t k = 0; k < 3; k++)
+      {
+        fhLambda0ForW0AndCellCuts    [i][j][k] = 0;
+//      fhLambda1ForW0AndCellCuts    [i][j][k] = 0;
+        fhLambda0ForW0AndCellCutsEta0[i][j][k] = 0;
+      }
+    }
     for(Int_t j = 0; j < 5; j++)
     {
       fhLambda0ForW0MC[i][j] = 0;
-      //fhLambda1ForW0MC[i][j] = 0;
+//    fhLambda1ForW0MC[i][j] = 0;
     }
   }
   
@@ -284,6 +291,8 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   //         clus->E(),clus->GetNCells(),absIdMax,maxCellFraction);
       
   Double_t tof    = clus->GetTOF()*1.e9;
+  if(tof > 400) tof-=fConstantTimeShift;
+  
   Float_t  energy = clus->E();
   
   fhBadClusterEnergy       ->Fill(energy,                  GetEventWeight());
@@ -314,7 +323,9 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
     
     if(IsGoodCluster(absIdMax2, clus->GetM02(), clus->GetNCells(), cells) &&  clus2->GetM02() > 0.1 )
     {
-      Double_t tof2   = clus2->GetTOF()*1.e9;      
+      Double_t tof2   = clus2->GetTOF()*1.e9;     
+      if(tof2>400) tof2-=fConstantTimeShift;
+      
       fhBadClusterPairDiffTimeE  ->Fill(clus->E(), (tof-tof2), GetEventWeight());
     }
   } // loop
@@ -344,8 +355,8 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
       {
         Double_t time  = cells->GetCellTime(absId);
         GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
-
-        Float_t diff = (tmax-time*1e9);
+        
+        Float_t diff = (tmax-(time*1e9-fConstantTimeShift));
         fhBadCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
         
       } 
@@ -443,8 +454,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     eCellsInModule[imod] = 0.;
   }
   
-  Int_t    icol   = -1;
-  Int_t    irow   = -1;
+  Int_t    icol   = -1, icolAbs = -1;
+  Int_t    irow   = -1, irowAbs = -1;
   Int_t    iRCU   = -1;
   Float_t  amp    = 0.;
   Double_t time   = 0.;
@@ -459,9 +470,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
     AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
    
-    Int_t nModule = GetModuleNumberCellIndexes(cells->GetCellNumber(iCell),GetCalorimeter(), icol, irow, iRCU);
+    Int_t nModule = GetModuleNumberCellIndexesAbsCaloMap(cells->GetCellNumber(iCell),GetCalorimeter(), 
+                                                         icol   , irow, iRCU,
+                                                         icolAbs, irowAbs    );
     
-    AliDebug(2,Form("\t module %d, column %d, row %d", nModule,icol,irow));
+    AliDebug(2,Form("\t module %d, column %d (%d), row %d (%d)", nModule,icolAbs,icol,irowAbs,irow));
     
     if(nModule < fNModules) 
     {	
@@ -483,7 +496,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       id      = cells->GetCellNumber(iCell);
       highG   = cells->GetCellHighGain(id);
       if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
-              
+      
       // Amplitude recalibration if set
       GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
       
@@ -492,7 +505,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       
       // Transform time to ns
       time *= 1.0e9;
- 
+      time-=fConstantTimeShift;
+
       if(time < fTimeCutMin || time > fTimeCutMax)
       {
         AliDebug(1,Form("Remove cell with Time %f",time));
@@ -524,39 +538,13 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
 
         if(!fStudyWeight) eCellsInModule[nModule]+=amp ;
         
-        Int_t icols = icol;
-        Int_t irows = irow;
-        
-        if ( GetCalorimeter() == kEMCAL)
-        {
-          //
-          // Shift collumns in even SM
-          Int_t shiftEta = fNMaxCols;
-
-          // Shift collumn even more due to smaller acceptance of DCal collumns
-          if ( nModule >  11 && nModule < 18) shiftEta+=fNMaxCols/3;
-          
-          icols = (nModule % 2) ? icol + shiftEta : icol;	
-          
-          //
-          // Shift rows per sector
-          irows = irow + fNMaxRows * Int_t(nModule / 2); 
-          
-          // Shift row less due to smaller acceptance of SM 10 and 11 to count DCal rows
-          if ( nModule >  11 && nModule < 20) irows -= (2*fNMaxRows / 3);
-        }
-        else // PHOS
-        {
-          irows = irow + fNMaxRows * nModule;
-        }
-                
-        fhGridCells ->Fill(icols, irows, GetEventWeight());
-        fhGridCellsE->Fill(icols, irows, amp             );
+        fhGridCells ->Fill(icolAbs, irowAbs, GetEventWeight());
+        fhGridCellsE->Fill(icolAbs, irowAbs, amp             );
         
         if(!highG)
         {
-          fhGridCellsLowGain ->Fill(icols, irows, GetEventWeight());
-          fhGridCellsELowGain->Fill(icols, irows, amp             );
+          fhGridCellsLowGain ->Fill(icolAbs, irowAbs, GetEventWeight());
+          fhGridCellsELowGain->Fill(icolAbs, irowAbs, amp             );
         }
         
         if(fFillAllCellTimeHisto)
@@ -571,8 +559,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           fhTimeId ->Fill(time, id  , GetEventWeight());
           fhTimeAmp->Fill(amp , time, GetEventWeight());
             
-          fhGridCellsTime->Fill(icols, irows, time);
-          if(!highG) fhGridCellsTimeLowGain->Fill(icols, irows, time);
+          fhGridCellsTime->Fill(icolAbs, irowAbs, time);
+          if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
             
           fhTimeMod->Fill(time, nModule, GetEventWeight());
           fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
@@ -693,6 +681,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         
         // Transform time to ns
         time *= 1.0e9;
+        time -= fConstantTimeShift;
         
         if(time < fTimeCutMin || time > fTimeCutMax)
         {
@@ -908,6 +897,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
                                             Double_t tmax)
 {
   Double_t tof = clus->GetTOF()*1.e9;
+  if(tof>400) tof-=fConstantTimeShift;
   
   fhLambda0             ->Fill(clus->E(), clus->GetM02()       , GetEventWeight());
   fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
@@ -933,7 +923,9 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
     {
       Int_t    nModule2 = GetModuleNumber(clus2);
 
-      Double_t tof2   = clus2->GetTOF()*1.e9;          
+      Double_t tof2   = clus2->GetTOF()*1.e9;    
+      if(tof2>400) tof2-=fConstantTimeShift;
+
       fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-tof2, GetEventWeight());
       
       if ( nModule2 == nModule )
@@ -969,7 +961,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
         Double_t time  = cells->GetCellTime(absId);
         GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
         
-        Float_t diff = (tmax-time*1.0e9);
+        Float_t diff = (tmax-(time*1.0e9-fConstantTimeShift));
         fhCellTimeSpreadRespectToCellMax->Fill(clus->E(), diff, GetEventWeight());
         if(TMath::Abs(TMath::Abs(diff) > 100) && clus->E() > 1 ) fhCellIdCellLargeTimeSpread->Fill(absId, GetEventWeight());
       }
@@ -1081,6 +1073,8 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     // Cut on time of clusters
     Double_t tof = clus->GetTOF()*1.e9;
+    if(tof>400) tof-=fConstantTimeShift;
+
     if( tof < fTimeCutMin || tof > fTimeCutMax )
     { 
       AliDebug(1,Form("Remove cluster with TOF %f",tof));
@@ -1112,7 +1106,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Double_t tmax  = cells->GetCellTime(absIdMax);
     GetCaloUtils()->RecalibrateCellTime(tmax, GetCalorimeter(), absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tmax*=1.e9;
-    
+    tmax-=fConstantTimeShift;
     //
     // Fill histograms related to single cluster 
     //
@@ -1903,7 +1897,7 @@ void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
   Float_t  l1   = clus->GetM20();
   Float_t  en   = clus->E();
   Int_t    nc   = clus->GetNCells();  
-  Double_t tmax = clus->GetTOF()*1.e9; // recalibrated elsewhere
+  Double_t tmax = clus->GetTOF()*1.e9-fConstantTimeShift; // recalibrated elsewhere
   
   Float_t eCrossFrac = 1-GetECross(absIdMax,cells, 10000000)/ampMax;
 
@@ -1932,17 +1926,19 @@ void AliAnaCalorimeterQA::ExoticHistograms(Int_t absIdMax, Float_t ampMax,
           fhExoL1NCell[ie][idt]->Fill(nc, l1, GetEventWeight());
         } 
         
-        // Diff time, do for one cut in e cross
-        if(ie == 0)
+        // Diff time, do for one cut in time
+        if(idt == 0)
         {
           for (Int_t icell = 0; icell < clus->GetNCells(); icell++) 
           {
             Int_t absId  = clus->GetCellsAbsId()[icell]; 
             Double_t time  = cells->GetCellTime(absId);
             GetCaloUtils()->RecalibrateCellTime(time, GetCalorimeter(), absId,GetReader()->GetInputEvent()->GetBunchCrossNumber());
+            time *= 1e9;
+            time -= fConstantTimeShift;
             
-            Float_t diff = (tmax-time)*1e9;
-            fhExoDTime[idt]->Fill(en, diff, GetEventWeight());
+            Float_t diff = tmax-time;
+            fhExoDTime[ie]->Fill(en, diff, GetEventWeight());
           }
         }
       }
@@ -2496,24 +2492,49 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhECellTotalLogRatioMod[imod]);
     }
     
+    // To be done properly with setters and data members ...
+    Float_t cellEmin [] = {0.05,0.1,0.15,0.2};
+    Float_t cellTmin [] = {50.,100.,1000000.};
+
     for(Int_t iw = 0; iw < 12; iw++)
     {
-      Float_t w0 = 3+0.25*iw;
-      fhLambda0ForW0[iw]  = new TH2F (Form("hLambda0ForW0%d",iw),Form("shower shape, #lambda^{2}_{0} vs E, w0 = %1.1f",w0),
-                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhLambda0ForW0[iw]->SetXTitle("#it{E}_{cluster}");
-      fhLambda0ForW0[iw]->SetYTitle("#lambda^{2}_{0}");
-      outputContainer->Add(fhLambda0ForW0[iw]); 
+      Float_t w0 = 4+0.05*iw; // 3+0.25*iw;
+      for(Int_t iEmin = 0; iEmin < 4; iEmin++)
+      {    
+        for(Int_t iTmin = 0; iTmin < 3; iTmin++)
+        {
+          fhLambda0ForW0AndCellCuts[iw][iEmin][iTmin]  = new TH2F (Form("hLambda0ForW0%d_CellEMin%d_TimeMax%d",iw,iEmin,iTmin),
+                                                            Form("#lambda^{2}_{0} vs E, w0=%1.2f, cell E>%2.2f MeV, |t|<%2.0f ns",
+                                                                 w0, cellEmin[iEmin], cellTmin[iTmin]),
+                                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhLambda0ForW0AndCellCuts[iw][iEmin][iTmin]->SetXTitle("#it{E}_{cluster}");
+          fhLambda0ForW0AndCellCuts[iw][iEmin][iTmin]->SetYTitle("#lambda^{2}_{0}");
+          outputContainer->Add(fhLambda0ForW0AndCellCuts[iw][iEmin][iTmin]); 
+
+          
+//          fhLambda1ForW0AndCellCuts[iw][iEmin][iTmin]  = new TH2F (Form("hLambda1ForW0%d_CellEMin%d_TimeMax%d",iw,iEmin,iTmin),
+//                                                            Form("#lambda^{2}_{1} vs E, w0=%1.2f, cell E>%2.2f MeV, |t|<%2.0f ns"",
+//                                                                 w0, cellEmin[iEmin], cellTmin[iTmin]),
+//                                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//          fhLambda1ForW0AndCellCuts[iw][iEmin][iTmin]->SetXTitle("#it{E}_{cluster}");
+//          fhLambda1ForW0AndCellCuts[iw][iEmin][iTmin]->SetYTitle("#lambda^{2}_{1}");
+//          outputContainer->Add(fhLambda1ForW0AndCellCuts[iw][iEmin][iTmin]); 
+
+          fhLambda0ForW0AndCellCutsEta0[iw][iEmin][iTmin]  = new TH2F (Form("hLambda0ForW0%d_CellEMin%d_TimeMax%d_Eta0",iw,iEmin,iTmin),
+                                                                Form("#lambda^{2}_{0} vs E, w0=%1.2f, cell E>%2.2f MeV, |t|<%2.0f ns, |#eta| < 0.15",
+                                                                     w0, cellEmin[iEmin], cellTmin[iTmin]),
+                                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhLambda0ForW0AndCellCutsEta0[iw][iEmin][iTmin]->SetXTitle("#it{E}_{cluster}");
+          fhLambda0ForW0AndCellCutsEta0[iw][iEmin][iTmin]->SetYTitle("#lambda^{2}_{0}");
+          outputContainer->Add(fhLambda0ForW0AndCellCutsEta0[iw][iEmin][iTmin]); 
+        }
+      }
       
-//      fhLambda1ForW0[iw]  = new TH2F (Form("hLambda1ForW0%d",iw),Form("shower shape, #lambda^{2}_{1} vs E, w0 = %1.1f",w0),
-//                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-//      fhLambda1ForW0[iw]->SetXTitle("#it{E}_{cluster}");
-//      fhLambda1ForW0[iw]->SetYTitle("#lambda^{2}_{1}");
-//      outputContainer->Add(fhLambda1ForW0[iw]); 
-      
-      if(IsDataMC()){
+      if(IsDataMC())
+      {
         TString mcnames[] = {"Photon", "Electron","Conversion","Pi0","Hadron"};
-        for(Int_t imc = 0; imc < 5; imc++){
+        for(Int_t imc = 0; imc < 5; imc++)
+        {
           fhLambda0ForW0MC[iw][imc]  = new TH2F (Form("hLambda0ForW0%d_MC%s",iw,mcnames[imc].Data()),
                                                  Form("shower shape, #lambda^{2}_{0} vs E, w0 = %1.1f, for MC %s",w0,mcnames[imc].Data()),
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
@@ -3745,7 +3766,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
   if(phi1 < 0) phi1 += TMath::TwoPi();    
   
   Double_t tof1 =  ((AliVCluster*) caloClusters->At(iclus))->GetTOF()*1.e9;
-  
+  if(tof1>400) tof1-=fConstantTimeShift;
+
   for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) 
   {
     AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(jclus);
@@ -3754,7 +3776,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
     Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
 
     Double_t tof2 =  clus2->GetTOF()*1.e9;
-    
+    if(tof2>400) tof2-=fConstantTimeShift;
+
     Double_t diffTof = tof1-tof2;
     
     // Try to reduce background with a mild shower shape cut and no more 
@@ -3934,7 +3957,8 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,  Int_t nModule, c
       Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
       
       Double_t tof2 =  clus2->GetTOF()*1.e9;
-      
+      if(tof2>400) tof2-=fConstantTimeShift;
+
       Double_t diffTof = TMath::Abs(tof1-tof2);
       
       // Try to reduce background with a mild shower shape cut and no more 
@@ -4283,15 +4307,17 @@ void AliAnaCalorimeterQA::MCHistograms()
 }
 
 //_________________________________________________________________________________
-/// Calculate cluster weights.
+/// Check cluster weights, check the effect of different w0 parameter on shower shape
+/// Check effect of time and energy cuts at cell level on the shower shape
 //_________________________________________________________________________________
 void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cells)
 {
   // First recalculate energy in case non linearity was applied
   Float_t  energy = 0;
   Float_t  ampMax = 0;
-  Float_t  energyOrg = clus->E();
-  
+  Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
+  Float_t  enOrg  = clus->E();
+
   // Do study when there are enough cells in cluster
   if(clus->GetNCells() < 3) return ;
   
@@ -4335,13 +4361,16 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
     fhECellClusterLogRatio->Fill(energy, TMath::Log(amp/energy), GetEventWeight());
   }        
   
-  // Recalculate shower shape for different W0
-  if(GetCalorimeter()==kEMCAL)
+  //
+  // Recalculate shower shape for different W0 and cell cuts
+  //
+  if ( GetCalorimeter() == kEMCAL )
   {
     Float_t l0org = clus->GetM02();
     Float_t l1org = clus->GetM20();
     Float_t dorg  = clus->GetDispersion();
-
+    Float_t w0org = GetCaloUtils()->GetEMCALRecoUtils()->GetW0();
+    
     Int_t tagMC = -1;
     if(IsDataMC() && clus->GetNLabels() > 0)
     {
@@ -4369,13 +4398,39 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
       } // Hadron
     } // Is MC
     
+    // To be done properly with setters and data members ... 
+    Float_t cellEmin [] = {0.05,0.1,0.15,0.2}; 
+    Float_t cellTmin [] = {50.,100.,1000000.}; 
+
     for(Int_t iw = 0; iw < 12; iw++)
     {
-      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(3+iw*0.25);
-      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
-      
-      fhLambda0ForW0[iw]->Fill(energy, clus->GetM02(), GetEventWeight());
-//    fhLambda1ForW0[iw]->Fill(energy, clus->GetM20(), GetEventWeight());
+      for(Int_t iEmin = 0; iEmin < 4; iEmin++)
+      {
+        for(Int_t iTmin = 0; iTmin < 3; iTmin++)
+        {
+          GetCaloUtils()->GetEMCALRecoUtils()->SetW0(4+iw*0.05);
+          
+          Float_t newEnergy = 0; 
+          Float_t l0   = 0, l1   = 0;
+          Float_t disp = 0, dEta = 0, dPhi    = 0;
+          Float_t sEta = 0, sPhi = 0, sEtaPhi = 0;
+          
+          GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersWithCellCuts(GetEMCALGeometry(),  
+                                                                                                   GetReader()->GetEMCALCells(), clus, 
+                                                                                                   cellEmin[iEmin], cellTmin[iTmin], bc, 
+                                                                                                   newEnergy, l0, l1, disp, dEta, dPhi, 
+                                                                                                   sEta, sPhi, sEtaPhi);
+
+          
+
+          fhLambda0ForW0AndCellCuts[iw][iEmin][iTmin]->Fill(enOrg, l0, GetEventWeight());
+//        fhLambda1ForW0AndCellCuts[iw][iEmin][iTmin]->Fill(enOrg, l0, GetEventWeight());
+          
+          if(TMath::Abs(fClusterMomentum.Eta()) < 0.15)
+            fhLambda0ForW0AndCellCutsEta0[iw][iEmin][iTmin]->Fill(enOrg, l0, GetEventWeight());
+          
+        } // E cell loop
+      } // Time loop
       
       if(IsDataMC() && tagMC >= 0)
       {
@@ -4389,10 +4444,194 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
     clus->SetM20(l1org);
     clus->SetDispersion(dorg);
     
+    GetCaloUtils()->GetEMCALRecoUtils()->SetW0(w0org);
+    
   } // EMCAL
-
-  clus->SetE(energyOrg);
+  
+  clus->SetE(enOrg);
 }
+
+
+/// Comment out, done in AliEMCALRecoUtils, except few details, keep for the moment in this manner
+////___________________________________________________________________________________________________________________
+///// Calculates new center of gravity in the local EMCAL-module coordinates
+///// and tranfers into global ALICE coordinates.
+///// Calculates Dispersion and main axis.
+////___________________________________________________________________________________________________________________
+//void AliAnaCalorimeterQA::RecalculateClusterShowerShapeParametersWithCellCut(const AliEMCALGeometry * geom,
+//                                                                             AliVCaloCells* cells, AliVCluster * cluster,
+//                                                                             Float_t eCellMin, Float_t & newEnergy,
+//                                                                             Float_t & l0,   Float_t & l1,
+//                                                                             Float_t & disp, Float_t & dEta, Float_t & dPhi,
+//                                                                             Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi)
+//{
+//  if(!cluster)
+//  {
+//    AliWarning("Cluster pointer null!");
+//    return;
+//  }
+//  
+//  Double_t eCell       = 0.;
+//  Float_t  fraction    = 1.;
+//  Float_t  recalFactor = 1.;
+//  
+//  Int_t    iSupMod = -1;
+//  Int_t    iTower  = -1;
+//  Int_t    iIphi   = -1;
+//  Int_t    iIeta   = -1;
+//  Int_t    iphi    = -1;
+//  Int_t    ieta    = -1;
+//  Double_t etai    = -1.;
+//  Double_t phii    = -1.;
+//  
+//  Int_t    nstat   = 0 ;
+//  Float_t  wtot    = 0.;
+//  Double_t w       = 0.;
+//  Double_t etaMean = 0.;
+//  Double_t phiMean = 0.;
+//  
+//  newEnergy = 0;
+//  
+//  Bool_t  shared = GetCaloUtils()-> IsClusterSharedByTwoSuperModules(geom,cluster);
+//  
+//  Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(cluster, cells);
+//  
+////  Float_t simuTotWeight = 0;
+////  if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+////  {
+////    simuTotWeight =  GetCaloUtils()->RecalibrateClusterEnergyWeightCell(cluster, cells,energy);
+////    simuTotWeight/= energy;
+////  }
+//  
+//  // Loop on cells, get weighted parameters
+//  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
+//  {
+//    // Get from the absid the supermodule, tower and eta/phi numbers
+//    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
+//    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+//    
+//    // Get the cell energy, if recalibration is on, apply factors
+//    fraction  = cluster->GetCellAmplitudeFraction(iDigit);
+//    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+//    
+//    if(GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
+//    {
+//      recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+//    }
+//    
+//    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+//    
+//    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+//    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+//    if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
+//    
+//    if(energy > 0 && eCell > eCellMin)
+//    {
+//      if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+//        eCell*=GetCaloUtils()->GetMCECellClusFracCorrection(eCell,energy);// /simuTotWeight;
+//      
+//      newEnergy+=eCell;
+//      
+//      w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
+//      
+//      // correct weight, ONLY in simulation
+//      //w *= (fWSimu[0] - fWSimu[1] * w );
+//      
+//      etai=(Double_t)ieta;
+//      phii=(Double_t)iphi;
+//      
+//      if(w > 0.0)
+//      {
+//        wtot += w ;
+//        nstat++;
+//        //Shower shape
+//        sEta     += w * etai * etai ;
+//        etaMean  += w * etai ;
+//        sPhi     += w * phii * phii ;
+//        phiMean  += w * phii ;
+//        sEtaPhi  += w * etai * phii ;
+//      }
+//    }
+//    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f", eCell, energy));
+//  }//cell loop
+//  
+//  // Normalize to the weight
+//  if (wtot > 0)
+//  {
+//    etaMean /= wtot ;
+//    phiMean /= wtot ;
+//  }
+//  //else
+//  //  AliError(Form("Wrong weight %f", wtot));
+//  
+//  // Calculate dispersion
+//  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
+//  {
+//    // Get from the absid the supermodule, tower and eta/phi numbers
+//    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
+//    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+//    
+//    // Get the cell energy, if recalibration is on, apply factors
+//    fraction  = cluster->GetCellAmplitudeFraction(iDigit);
+//    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+//    if (GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
+//    {
+//      recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+//    }
+//    
+//    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+//    
+//    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
+//    // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
+//    if(shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
+//    
+//    if(energy > 0 && eCell > eCellMin)
+//    {
+//      if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+//        eCell*=GetCaloUtils()->GetMCECellClusFracCorrection(eCell,energy); // /simuTotWeight;
+//      
+//      w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
+//      
+//      //correct weight, ONLY in simulation
+//      //w *= (fWSimu[0] - fWSimu[1] * w );
+//      
+//      etai=(Double_t)ieta;
+//      phii=(Double_t)iphi;
+//      if(w > 0.0)
+//      {
+//        disp +=  w *((etai-etaMean)*(etai-etaMean)+(phii-phiMean)*(phii-phiMean));
+//        dEta +=  w * (etai-etaMean)*(etai-etaMean) ;
+//        dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
+//      }
+//    }
+//    else if(energy == 0 || (eCellMin <0.01 && eCell == 0)) AliError(Form("Wrong energy %f and/or amplitude %f", eCell, energy));
+//  } // cell loop
+//  
+//  // Normalize to the weigth and set shower shape parameters
+//  if (wtot > 0 && nstat > 1)
+//  {
+//    disp    /= wtot ;
+//    dEta    /= wtot ;
+//    dPhi    /= wtot ;
+//    sEta    /= wtot ;
+//    sPhi    /= wtot ;
+//    sEtaPhi /= wtot ;
+//    
+//    sEta    -= etaMean * etaMean ;
+//    sPhi    -= phiMean * phiMean ;
+//    sEtaPhi -= etaMean * phiMean ;
+//    
+//    l0 = (0.5 * (sEta + sPhi) + TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
+//    l1 = (0.5 * (sEta + sPhi) - TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
+//  }
+//  else
+//  {
+//    l0   = 0. ;
+//    l1   = 0. ;
+//    dEta = 0. ; dPhi = 0. ; disp    = 0. ;
+//    sEta = 0. ; sPhi = 0. ; sEtaPhi = 0. ;
+//  }
+//}
 
 
 

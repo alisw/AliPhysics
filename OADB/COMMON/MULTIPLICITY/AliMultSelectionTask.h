@@ -30,6 +30,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TH3F;
+class TProfile;
 class TVector3;
 class THnSparse;
 class TObject;
@@ -71,8 +72,15 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
+    TString GetPeriodNameByLPM(); //try userInfo first
     TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    Bool_t CheckOADB( TString lProdName ) const;
+    
+    //Check MC type
+    Bool_t IsHijing() const;
+    Bool_t IsDPMJet() const; 
+ 
     void CreateEmptyOADB(); //In case we really didn't get anything ...
     
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
@@ -235,9 +243,25 @@ private:
     Int_t fMC_NchEta05;
     Int_t fMC_NchEta08;
     Int_t fMC_NchEta10;
+    
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
     
+    //Simple QA histograms
+    TH1D *fHistQA_V0M; 
+    TH1D *fHistQA_CL0; 
+    TH1D *fHistQA_CL1; 
+    TProfile *fHistQA_TrackletsVsV0M; 
+    TProfile *fHistQA_TrackletsVsCL0; 
+    TProfile *fHistQA_TrackletsVsCL1; 
+    
+    TH1D *fHistQASelected_V0M; 
+    TH1D *fHistQASelected_CL0; 
+    TH1D *fHistQASelected_CL1; 
+    TProfile *fHistQASelected_TrackletsVsV0M; 
+    TProfile *fHistQASelected_TrackletsVsCL0; 
+    TProfile *fHistQASelected_TrackletsVsCL1; 
+
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;
     AliMultInput         *fInput;

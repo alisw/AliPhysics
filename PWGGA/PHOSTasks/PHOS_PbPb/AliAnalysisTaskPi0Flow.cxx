@@ -49,6 +49,7 @@
 #include "AliCDBManager.h"
 #include <AliAODCaloCluster.h>
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventplane.h"
 #include "TProfile.h"
@@ -451,7 +452,9 @@ void AliAnalysisTaskPi0Flow::UserExec(Option_t *)
 
   // Step 4: Centrality
   // fCentrality, fCentBin
-  SetCentrality();
+  if (fRunNumber < 224994) SetCentrality();
+    else SetCentralityRun2();
+    
   if( RejectCentrality() ){
     PostData(1, fOutputContainer);
     return; // Reject! 
@@ -2691,31 +2694,65 @@ void AliAnalysisTaskPi0Flow::SetCentrality()
 }
 
 //_____________________________________________________________________________
+void AliAnalysisTaskPi0Flow::SetCentralityRun2()
+{
+    // Centrality calculation of Run2.
+    // See https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+    
+    fCentrality = 300;
+    AliMultSelection *MultSelection = 0x0;
+    
+    MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+    
+    if( !MultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+    }else{
+        fCentrality = MultSelection->GetMultiplicityPercentile(fCentralityEstimator);
+    }
+    
+    FillHistogram("hCentrality",fCentrality,fInternalRunNumber-0.5) ;
+    fCentBin = GetCentralityBin(fCentrality);
+    
+    if ( fDebug >= 2 )
+        AliInfo(Form("Centrality (bin) is: %f (%d)", fCentrality, fCentBin));
+    
+}
+
+//_____________________________________________________________________________
 Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
 {
-  if( ! fEvent->GetCentrality() )
-    return true; // reject
-  LogSelection(kHasCentrality, fInternalRunNumber);
-
-//   if( fCentrality <= 0. || fCentrality>80. )
-//     return true; // reject
     
-  int lastBinUpperIndex = fCentEdges.GetSize() -1;
-  if( fCentrality > fCentEdges[lastBinUpperIndex] ) {
-    if( fDebug )
-      AliInfo("Rejecting due to centrality outside of binning.");
-    return true; // reject
-  }
-  LogSelection(kCentUnderUpperBinUpperEdge, fInternalRunNumber);
-
-  if( fCentrality < fCentEdges[0] ) {
-    if( fDebug )
-      AliInfo("Rejecting due to centrality outside of binning.");
-    return true; // reject
-  }
-  LogSelection(kCentOverLowerBinLowerEdge, fInternalRunNumber);
-
-  return false;
+    if (fRunNumber < 224994) { // Run1
+        if( ! fEvent->GetCentrality() )
+            return true; // reject
+    }
+    else { // Run2
+        if (! fEvent->FindListObject("MultSelection") )
+            return true;
+    }
+    
+    LogSelection(kHasCentrality, fInternalRunNumber);
+    
+    //   if( fCentrality <= 0. || fCentrality>80. )
+    //     return true; // reject
+    
+    int lastBinUpperIndex = fCentEdges.GetSize() -1;
+    if( fCentrality > fCentEdges[lastBinUpperIndex] ) {
+        if( fDebug )
+            AliInfo("Rejecting due to centrality outside of binning.");
+        return true; // reject
+    }
+    LogSelection(kCentUnderUpperBinUpperEdge, fInternalRunNumber);
+    
+    if( fCentrality < fCentEdges[0] ) {
+        if( fDebug )
+            AliInfo("Rejecting due to centrality outside of binning.");
+        return true; // reject
+    }
+    LogSelection(kCentOverLowerBinLowerEdge, fInternalRunNumber);
+    
+    return false;
 }
 
 

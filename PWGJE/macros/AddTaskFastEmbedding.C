@@ -35,6 +35,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    // ## set event selection for events of the addition AOD ##
    // kEventsAll=0; kEventsJetPt
    task->SetEvtSelecMode(AliAnalysisTaskFastEmbedding::kEventsJetPt);
+   task->SetQAMode(kTRUE);
 
    // event selection
    task->SetOfflineTrgMask(AliVEvent::kMB);

@@ -37,6 +37,7 @@
 #include "AliAODMCParticle.h"
 #include "AliStack.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -83,6 +84,7 @@ fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
+fSmearingFunction(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
@@ -122,7 +124,7 @@ fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
 fTimeStampRunMin(0),         fTimeStampRunMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
-fCentralityClass(""),        fCentralityOpt(0),
+fUseAliCentrality(0),        fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),
 fAcceptOnlyHIJINGLabels(0),  fNMCProducedMin(0), fNMCProducedMax(0),
 fFillInputNonStandardJetBranch(kFALSE),
@@ -838,6 +840,7 @@ void AliCaloTrackReader::InitParameters()
   fPtHardAndClusterPtFactor = 1.;
   
   //Centrality
+  fUseAliCentrality = kFALSE;
   fCentralityClass  = "V0M";
   fCentralityOpt    = 100;
   fCentralityBin[0] = fCentralityBin[1]=-1;
@@ -1217,7 +1220,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //If we need a centrality bin, we select only those events in the corresponding bin.
   Int_t cen = -1;
-  if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100)
+  if ( fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
   {
     cen = GetEventCentrality();
       
@@ -1299,15 +1302,28 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
 //__________________________________________________
 Int_t AliCaloTrackReader::GetEventCentrality() const
 {  
-  if( !GetCentrality() ) return -1;
-  
-  if     (fCentralityOpt==100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
-  else if(fCentralityOpt==10)  return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
-  else if(fCentralityOpt==20)  return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
+  if(fUseAliCentrality)
+  {
+    if ( !GetCentrality() ) return -1;
+    
+    if     (fCentralityOpt == 100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
+    else if(fCentralityOpt ==  10) return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
+    else if(fCentralityOpt ==  20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
+    else
+    {
+      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt));
+      return -1;
+    }
+  }
   else
   {
-    AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt));
-    return -1;
+    if ( !GetMultSelCen() ) return -1;
+    
+    return GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass, kTRUE); // returns centrality only for events used in calibration
+                                                                     
+    // equivalent to
+    //GetMultSelCen()->GetMultiplicityPercentile("V0M", kFALSE); // returns centrality for any event
+    //Int_t    qual = GetMultSelCen()->GetEvSelCode(); if (qual ! = 0) cent = qual;
   }
 }
 
@@ -1753,7 +1769,14 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if( fSmearShowerShape  && clus->GetNCells() > 2)
   {
     AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
-    clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+    if(fSmearingFunction == kSmearingLandau)
+    {
+      clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+    }
+    else if(fSmearingFunction == kSmearingLandauShift)
+    {
+      if(iclus%3 == 0 && clus->GetM02() > 0.1) clus->SetM02( clus->GetM02() + fRandom.Landau(0.05, fSmearShowerShapeWidth) );     //fSmearShowerShapeWidth = 0.035
+    }
     //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
     AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
   }

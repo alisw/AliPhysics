@@ -195,7 +195,7 @@ void AliPWG4HighPtSpectra::ConnectInputData(Option_t *)
       AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
       return;
     } else
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
   }
 
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());

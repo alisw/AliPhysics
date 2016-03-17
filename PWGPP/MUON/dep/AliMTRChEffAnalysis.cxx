@@ -215,13 +215,13 @@ TArrayI AliMTRChEffAnalysis::BoardsInRPC ( Int_t irpc ) const
 }
 
 //________________________________________________________________________
-void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
+Int_t AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
   TString srcs(sources);
   if ( srcs.Contains("raw://") ) {
     AliError("The method assumes that the specified storage is a SpecificStorage. Hence, please replace raw:// with the actual path in alien, e.g.: alien://folder=/alice/data/<year>/OCDB");
-    return;
+    return -2;
   }
   TObjArray* sourceList = srcs.Tokenize(",");
   TObjArray effMapList;
@@ -261,16 +261,18 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char*
     effMapList.Add(effMap);
   }
 
-  CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
+  return CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
 }
 
 //________________________________________________________________________
-void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const
+Int_t AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
 
   TString sTitles(titles);
   TObjArray* titleList = sTitles.Tokenize(",");
+
+  Int_t nDiffs = 0;
 
   Int_t nLists = effMapList->GetEntriesFast();
 
@@ -291,6 +293,7 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
     iopt = kPull;
     yTitle = "(Eff - (ref.Eff)) / err";
   }
+  else nDiffs = -1;
 
   Bool_t needsLegend = ( nLists > 1 );
 //  if ( iopt != kEff ) needsLegend = nLists > 2;
@@ -330,10 +333,12 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
               for ( Int_t ipt=0; ipt<graph->GetN(); ipt++ ) {
                 refGraph->GetPoint(ipt,xref,yref);
                 graph->GetPoint(ipt,xpt,ypt);
-                if ( iopt == kDiff ) graph->SetPoint(ipt,xpt,ypt-yref);
+                Double_t diff = ypt - yref;
+                if ( TMath::Abs(diff) > 1.e-4 ) nDiffs++;
+                if ( iopt == kDiff ) graph->SetPoint(ipt,xpt,diff);
                 else if ( iopt == kPull ) {
                   Double_t err = GetError(graph->GetErrorYlow(ipt),graph->GetErrorYhigh(ipt));
-                  Double_t pull = ( err > 0. ) ? (ypt-yref)/err : 0.;
+                  Double_t pull = ( err > 0. ) ? diff/err : 0.;
                   graph->SetPoint(ipt,xpt,pull);
                 }
               } // loop on points
@@ -375,6 +380,8 @@ void AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const cha
   } // loop on types
 
   delete titleList;
+
+  return nDiffs;
 }
 
 //________________________________________________________________________
@@ -738,7 +745,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
 }
 
 //________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t miny, Double_t maxy ) const
+Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
 {
   /// Get systematic envelop for merged efficiencies
   if ( ! HasMergedResults() ) return kFALSE;
@@ -838,7 +845,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),pos,pos,1200,800);
     can->Divide(4,2,0,0);
 
-    TObjArray* refCond = static_cast<TObjArray*>(fConditions->UncheckedAt(0));
     for ( Int_t icount=0; icount<2; icount++ ) {
       for ( Int_t ich=0; ich<4; ich++ ) {
         Int_t iplane = 4*icount+ich;
@@ -889,12 +895,12 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC, Double_t min
     canSyst->SetLogy();
     TLegend* leg = new TLegend(0.15,0.7,0.9,0.4);
 //    leg->SetHeader(trigOut->GetHistoName(-1,icount,ich,-1,-1,-1));
-    TH1* sumHisto = 0x0;
     TH1* histo[nConditions];
     for ( Int_t icond=0; icond<nConditions; icond++ ) {
       if ( isEmpty[icond] == 1 ) continue;
       histo[icond] = new TH1D(Form("TriggerEff_syst_%s_%s",condTitle[icond]->GetName(),trigOut->GetName()),"Dispersion of trigger probability (3/4)",200,-0.1,0.1);
       histo[icond]->GetXaxis()->SetTitle("Trig. prob. - (ref. trig. prob)");
+      histo[icond]->GetYaxis()->SetTitle("1/#sigma^{2}");
     }
 
     for ( Int_t ipt=0; ipt<nDE; ipt++ ) {
@@ -996,13 +1002,15 @@ Double_t AliMTRChEffAnalysis::FitRangesFunc ( Double_t* x, Double_t* par )
 Double_t AliMTRChEffAnalysis::GetAverageStat ( Int_t firstRun, Int_t lastRun, Int_t itype,Bool_t excludePeriphericBoard ) const
 {
   TH1* statHisto = 0x0;
-  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
+
+  UInt_t uFirstRun = (UInt_t)firstRun;
+  UInt_t uLastRun = (UInt_t)lastRun;
 
   TIter next(fOutputs);
   TList* effHistoList = 0x0;
   while ( (effHistoList = static_cast<TList*>(next()) ) ) {
     UInt_t run = effHistoList->GetUniqueID();
-    if ( run < firstRun || run > lastRun ) continue;
+    if ( run < uFirstRun || run > uLastRun ) continue;
     TH1* histo = GetHisto(effHistoList,itype,AliTrigChEffOutput::kAllTracks,0);
 //    if ( ! histo ) continue;
     if ( statHisto ) statHisto->Add(histo);
@@ -1429,7 +1437,6 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
     if ( idetelem < 0 && ichamber >=0 ) idetelem = 11+ichamber;
   }
   TH1* outHisto = 0x0;
-  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
 
   TIter next(fOutputs);
   TList* effHistoList = 0x0;
@@ -1543,15 +1550,16 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
       firstRun = GetRunNumber(firstRun);
       lastRun = GetRunNumber(lastRun);
     }
+    UInt_t uFirstRun = (UInt_t)firstRun;
+    UInt_t uLastRun = (UInt_t)lastRun;
 
     TString filename = "";
 
-    TObjArray* mergedOut = 0x0;
     TIter next(fOutputs);
     TFileMerger fileMerger;
     while ( (effHistoList = static_cast<TList*>(next()) ) ) {
       UInt_t run = effHistoList->GetUniqueID();
-      if ( run < firstRun || run > lastRun ) continue;
+      if ( run < uFirstRun || run > uLastRun ) continue;
       filename = effHistoList->GetName();
       if ( firstRun == lastRun ) continue;
       fileMerger.AddFile(filename.Data(),kFALSE);

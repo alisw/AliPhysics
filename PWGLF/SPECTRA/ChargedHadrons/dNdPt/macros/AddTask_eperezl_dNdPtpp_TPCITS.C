@@ -1,6 +1,6 @@
 /*
  * 
- * Last modified: July 20 2015
+ * Last modified:  12/02/2016
  * By: Edgar Perez Lezama <eperezle@cern.ch>, GSI-Darmstadt
  *  
  * 
@@ -9,14 +9,17 @@
 
 
 
-void AddTask_eperezl_dNdPtpp_TPCITS()
+void AddTask_eperezl_dNdPtpp_TPCITS(const int cutMode=223, const char *taskMode = "AllPart kINT7", char *suffix="")
 {
-/*
+
+ /*
 CheckLoadLibrary("libPWG0base");
 CheckLoadLibrary("libPWG0dep");
 CheckLoadLibrary("libPWG0selectors");
 */
 
+  TString TaskMode(taskMode);
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -58,14 +61,13 @@ CheckLoadLibrary("libPWG0selectors");
   //
   // Create standard esd track cuts
   //
-  Int_t cutMode = 222;
+  //   Int_t cutMode = 222;
  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
     return;
   } else {
-    //esdTrackCuts->SetHistogramsOn(kTRUE);
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
@@ -78,8 +80,9 @@ CheckLoadLibrary("libPWG0selectors");
   task->SetUseMCInfo(hasMC);
 
   // trigger  
-  task->SelectCollisionCandidates(AliVEvent::kMB); 
-
+  if(TaskMode.Contains("MB"))    task->SelectCollisionCandidates(AliVEvent::kMB); 
+  if(TaskMode.Contains("INT7"))  task->SelectCollisionCandidates(AliVEvent::kINT7); 
+//    task->SelectCollisionCandidates(AliVEvent::kINT7);
 
   //
   // set analysis options from the Helper here !!!
@@ -87,8 +90,16 @@ CheckLoadLibrary("libPWG0selectors");
 
   //AliTriggerAnalysis::Trigger trigger = AliTriggerAnalysis::kMB1;
   AlidNdPtHelper::AnalysisMode analysisMode = AlidNdPtHelper::kTPCITS;
-  AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kAllPart ;
+  
+  if(TaskMode.Contains("AllPart"))    AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kAllPart;
+  if(TaskMode.Contains("Pion"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCPion;
+  if(TaskMode.Contains("Proton"))     AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCProton;
+  if(TaskMode.Contains("Kaon"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCKaon;
+  if(TaskMode.Contains("Rest"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMCRest;
+  if(TaskMode.Contains("Plus"))       AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kPlus;
+  if(TaskMode.Contains("Minus"))      AlidNdPtHelper::ParticleMode particleMode = AlidNdPtHelper::kMinus;
 
+  
   //
   // Create analysis object
   //
@@ -97,26 +108,16 @@ CheckLoadLibrary("libPWG0selectors");
   fdNdPtAnalysis->SetEventCuts(evtCuts);
   fdNdPtAnalysis->SetAcceptanceCuts(accCuts);
   fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
-  //fdNdPtAnalysis->SetBackgroundCuts(backCuts);
   fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
   fdNdPtAnalysis->SetParticleMode(particleMode); 
-  //fdNdPtAnalysis->SetTrigger(trigger);
-  fdNdPtAnalysis->SetTriggerMask(AliVEvent::kMB);
+  if(TaskMode.Contains("MB"))     fdNdPtAnalysis->SetTriggerMask(AliVEvent::kMB);
+  if(TaskMode.Contains("INT7"))   fdNdPtAnalysis->SetTriggerMask(AliVEvent::kINT7);
+//   fdNdPtAnalysis->SetTriggerMask(AliVEvent::kINT7);
   //fdNdPtAnalysis->SetTriggerMask(AliVEvent::kEMC1);  
-  if(hasMC) 
-  {
-    //physTrigSel->SetAnalyzeMC();
-    //fdNdPtAnalysis->SetPhysicsTriggerSelection(physTrigSel); 
-    fdNdPtAnalysis->SetUseMCInfo(kTRUE);
-    fdNdPtAnalysis->SetHistogramsOn(kTRUE);
-    //fdNdPtAnalysis->SetHistogramsOn(kFALSE);
-  }
-  else { // online trigger
-//     physTrigSel->SetUseBXNumbers();
-//     physTrigSel->SetComputeBG();
-//     fdNdPtAnalysis->SetPhysicsTriggerSelection(physTrigSel); 
-  }
-  
+
+  fdNdPtAnalysis->SetUseMCInfo(hasMC);
+  fdNdPtAnalysis->SetHistogramsOn(hasMC);
+
     // change binning
     Int_t multNbins = 252;  
     Double_t binsMult[253];
@@ -131,14 +132,7 @@ CheckLoadLibrary("libPWG0selectors");
     fdNdPtAnalysis->SetBinsPtCorr(ptNbins, binsPt);  
     fdNdPtAnalysis->SetBinsMult(multNbins, binsMult);
     
-    // for mean pt use tpc tracks as mult. estimator
-    AlidNdPtAcceptanceCuts *multAccCuts = new AlidNdPtAcceptanceCuts("MultaccCuts","Geom. acceptance cuts");
-    multAccCuts->SetEtaRange(-0.3,0.3);
-    multAccCuts->SetPtRange(0.0,1.e10); 
-    AliESDtrackCuts* multTrackCuts = CreatedNdPtTrackCuts(222);
-    fdNdPtAnalysis->SetMultAcceptanceCuts(multAccCuts);
-    fdNdPtAnalysis->SetMultTrackCuts(multTrackCuts);  
-  
+
 
   // Add analysis object
   task->AddAnalysisObject( fdNdPtAnalysis );
@@ -150,12 +144,18 @@ CheckLoadLibrary("libPWG0selectors");
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("eperezl_dNdPtpp_TPCITS",
-                                                           TList::Class(),
-                                                           AliAnalysisManager::kOutputContainer,
-                                                           Form("%s:dNdPtHistos", mgr->GetCommonFileName())); 
+//   AliAnalysisDataContainer *coutput = mgr->CreateContainer("eperezl_dNdPtpp_TPCITS",
+//                                                            TList::Class(),
+//                                                            AliAnalysisManager::kOutputContainer,
+//                                                            Form("%s:dNdPtHistos", mgr->GetCommonFileName())); 
 
+   TString outputFile("AnalysisResults.root");
 
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("dNdPtpp_%d",cutMode),
+							   TList::Class(),
+							   AliAnalysisManager::kOutputContainer,
+							   Form("%s:dNdPt_eperezl", outputFile.Data())); 
+  
   mgr->ConnectOutput(task, 1, coutput);
 
 }

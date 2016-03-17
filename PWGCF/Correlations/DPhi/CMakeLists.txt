@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGCFCorrelationsDPhi)
+set(MODULE PWGCFCorrelationsDPhi)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/DPhi)
@@ -43,6 +44,7 @@ set(SRCS
     AliAnalysisTaskLongRangeCorrelations.cxx
     AliAnalysisTaskMinijet.cxx
     AliAnalysisTaskPhiCorrelations.cxx
+    AliAnalysisTaskCorrelationsDev.cxx
     AliAnalysisTaskpxpx.cxx
     AliAnalysisTaskpxpy.cxx
     AliAnalysisTaskpxpy.cxx

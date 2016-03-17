@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisHelperJetTasks+;
+#pragma link C++ class AliBasicParticle+;
 #pragma link C++ class AliFigure+;
 #pragma link C++ class AliCanvas+;
 #pragma link C++ class AliHelperPID+;
@@ -28,4 +29,5 @@
 #pragma link C++ class AliJSONBool+;
 #pragma link C++ class AliJSONString+;
 #pragma link C++ class AliAnalysisTaskDummy+;
+#pragma link C++ class AliTLorentzVector+;
 #endif
