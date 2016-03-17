@@ -106,23 +106,30 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
-     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.7571/(0.7571+0.017));
-     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*0.7571/(0.7571-0.017));
+     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.7571/(0.7571+0.0165));
+     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*0.7571/(0.7571-0.0165));
    }
    else{
-     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.7571/(0.7571+0.017));
-     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*0.7571/(0.7571-0.017));
+     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.7275/(0.7275+0.0165));
+     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*0.7275/(0.7275-0.0165));
    }
 
    float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut,dataset);
    hadCorrectionEMCAL->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
-     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(0.5665/(0.5665+0.009)));
-     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(0.5665/(0.5665-0.009)));
+       hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(0.559243/(0.559243+0.016564)));
+       hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(0.559243/(0.559243-0.016564)));
    }
    else{
-     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(0.5665/(0.5665+0.009)));
-     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(0.5665/(0.5665-0.009)));
+     if(dataset==2015){
+       cout<<"Hello!  I am here!! "<<hadronicCorr<<endl;
+       hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*0.547882/(0.547882-0.02792498));//3.33149690798611731e-02));
+       hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*0.547882/(0.547882+0.02792498));//3.33149690798611731e-02));
+     }
+     else{
+     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(0.559243/(0.559243+0.016564)));
+     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(0.559243/(0.559243-0.016564)));
+     }
    }
    float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,ispp,forSim);
    hadCorrectionEMCAL->SetpTCutCorrectionITS(ptcutITS);
@@ -154,10 +161,10 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    }
    else{
      if(dataset==2015){
-       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./(NotIDConstTPC*(1.0-0.01)));
-       hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./(NotIDConstITS*(1.0-0.1)));
-       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./(NotIDConstTPC*(1.0+0.01)));
-       hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./(NotIDConstITS*(1.0+0.01)));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.01));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.01));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.01));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.01));
      }
      else{
        hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.0022));
@@ -360,19 +367,31 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.017));
    }
    else{
-     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.017));
-     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.017));
+     if(dataset==2015){
+       hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-3.33149690798611731e-02));
+       hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+3.33149690798611731e-02));
+     }
+     else{
+       hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.017));
+       hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.017));
+     }
    }
 
    float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut,dataset);
    hadCorrectionPHOS->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
-     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.009));
-     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.009));
+     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(hadronicCorr*(1.0-0.009));
+     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(hadronicCorr*(1.0+0.009));
    }
    else{
-     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.009));
-     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.009));
+     if(dataset==2015){
+       hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(hadronicCorr*0.547882/(0.547882-0.02792498));//3.33149690798611731e-02));
+       hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(hadronicCorr*0.547882/(0.547882+0.02792498));//3.33149690798611731e-02));
+     }
+     else{
+       hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(hadronicCorr*(1.0-0.009));
+       hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(hadronicCorr*(1.0+0.009));
+     }
    }
 
    float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,ispp,forSim);
@@ -565,6 +584,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
 Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp, bool forSim, bool TPC, bool hadronic, float etacut, int dataset){
   if(!forSim){//for data we have evaluated the neutral correction from ALICE data
     if(hadronic){//for tot et from had et
+      if(2015) return 1.0/0.547882;
       return 1/0.5665;//0.5665 0.0145 <-- Correct - what should be applied
     }
     else{//for had et only

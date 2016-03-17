@@ -221,6 +221,7 @@ class AliBalancePsi : public TObject {
   TH3D *GetQAHistQbefore() {return fHistQbefore;}
   TH3D *GetQAHistQafter() {return fHistQafter;}
 
+  void UseMomentumOrdering(Bool_t momentumOrdering = kTRUE) {fMomentumOrdering = momentumOrdering;}
   void UseResonancesCut() {fResonancesCut = kTRUE;}
   void UseHBTCut(Double_t setHBTCutValue = 0.02) {
     fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
@@ -269,6 +270,7 @@ class AliBalancePsi : public TObject {
   Double_t fPsiInterval;// interval in Psi-phi1
   Double_t fDeltaEtaMax;// maximum delta eta for output THnSparse
 
+  Bool_t fMomentumOrdering;//use momentum ordering pT,trig > pT,assoc (default = kTRUE)
   Bool_t fResonancesCut;//resonances cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)

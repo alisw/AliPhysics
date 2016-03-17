@@ -49,6 +49,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
+  void SetUseV0Topology(Int_t a) { fUseV0Topology=a; }
+  Int_t GetUseV0Topology() { return fUseV0Topology; }
 
   Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
   Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
@@ -65,6 +67,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdAODFilterBit(Int_t a){fProdAODFilterBit=a;}
   void SetProdRejectTrackWithShared(Bool_t a){fProdRejectTrackWithShared=a;}
+  void SetProdV0KinkRejection(Bool_t a){fProdV0KinkRejection=a;}
   void SetProdV0MassTolLambda(Double_t a){fProdV0MassTolLambda=a;}
   void SetProdV0MassTolLambdaRough(Double_t a){fProdV0MassTolLambdaRough=a;}
   void SetProdV0PtMin(Double_t a){fProdV0PtMin=a;}
@@ -93,6 +96,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Int_t   GetProdAODFilterBit(){return fProdAODFilterBit;}
   Bool_t   GetProdRejectTrackWithShared(){return fProdRejectTrackWithShared;}
+  Bool_t   GetProdV0KinkRejection(){return fProdV0KinkRejection;}
   Double_t GetProdV0MassTolLambda(){return fProdV0MassTolLambda;}
   Double_t GetProdV0MassTolLambdaRough(){return fProdV0MassTolLambdaRough;}
   Double_t GetProdV0PtMin(){return fProdV0PtMin;}
@@ -165,6 +169,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF *fPidObjProton;         /// PID object for proton from Lc
   AliAODPidHF *fPidObjPion;         /// PID object for proton from Lc
   Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
+  Int_t   fUseV0Topology;          /// 0: Cowboy+Sailor 1: Cowboy 2:Sailor
   Double_t fBzkG; ///B field
   Double_t fPrimVert[3]; ///Primary vertex
   
@@ -173,6 +178,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
   Int_t    fProdAODFilterBit;    /// AOD filter Bit used before object creation
   Bool_t   fProdRejectTrackWithShared;    /// Flag to Reject tracks with shared clusters
+  Bool_t   fProdV0KinkRejection;    /// Flag to Reject v0 kinks
   Double_t fProdV0MassTolLambda;       /// Lambda mass selection  used before object creation
   Double_t fProdV0MassTolLambdaRough;       /// Lambda mass selection  used before object creation
   Double_t fProdV0PtMin;            /// Minimum Lambda pT used before object creation
@@ -214,7 +220,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fConversionMassMax; /// Conversion mass
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,7);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,9);
   /// \endcond
 };
 

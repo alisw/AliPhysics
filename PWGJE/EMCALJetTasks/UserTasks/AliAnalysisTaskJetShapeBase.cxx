@@ -221,6 +221,21 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
+  if(!fPathTreeinputFile.IsNull()){
+     SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
+     if(!fTreeEmb) AliFatal("Something went wrong in setting the tree");
+     
+     fTreeEmb->SetBranchAddress(fBranchJDetName, &fVecD);
+     fTreeEmb->SetBranchAddress(fBranchJParName, &fVecP);
+     
+     fMaxTreeEntries = fTreeEmb->GetEntries();
+     
+     fTreeEmb->GetEntry(0);
+     fTreeEmb->Show();
+     
+     
+  }
+  
   const Int_t nBinsPt  = 200;
   const Double_t minPt = -50.;
   const Double_t maxPt = 150.;
@@ -270,6 +285,12 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
   const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
 
+  const Int_t nBinsSparse0b = 6;
+  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
+  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt};
+  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt};
+  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt};
+  
   const Int_t nBinsSparse1 = 7;
   // #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
   const Int_t nBins1[nBinsSparse1] = {nBinsDM,nBinsDpT,nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPt};
@@ -324,8 +345,15 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
     fOutput->Add(fh3PtTrueDeltaMRelLeadPt[i]);
 
     histName = Form("fhnMassResponse_%d",i);
-    histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}",i,varName.Data(),varName.Data());
-    fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
+    Printf("What is fFromTree ? %d", fFromTree);
+    if(fFromTree) {
+       histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}", i, varName.Data(),varName.Data(), varName.Data());
+       fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0b, nBins0b, xmin0b, xmax0b);
+
+    } else{
+       histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}",i,varName.Data(),varName.Data());
+       fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
+    }
     fOutput->Add(fhnMassResponse[i]);
     
     histName = Form("fhnDeltaMass_%d", i);
@@ -365,20 +393,7 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
 
-  if(!fPathTreeinputFile.IsNull()){
-     SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
-     if(!fTreeEmb) AliFatal("Something went wrong in setting the tree");
-     
-     fTreeEmb->SetBranchAddress(fBranchJDetName, &fVecD);
-     fTreeEmb->SetBranchAddress(fBranchJParName, &fVecP);
-     
-     fMaxTreeEntries = fTreeEmb->GetEntries();
-     
-     fTreeEmb->GetEntry(0);
-     fTreeEmb->Show();
-     
-     
-  }
+  
 
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========

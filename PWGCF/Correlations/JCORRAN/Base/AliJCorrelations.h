@@ -19,6 +19,7 @@
 #include <TRandom3.h>  //FK//
 
 #include  <AliJConst.h>
+#include "AliJHistos.h"
 
 using namespace std;
 
@@ -44,7 +45,7 @@ public:
   void FillAzimuthHistos (fillType fTyp,    int cBin, int zBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2);
   
   double GetGeoAccCorrFlat(double deltaEta);
-  double GetGeoAccCorrIncl(double deltaEta);
+  double GetGeoAccCorrIncl(double deltaEta, int assocBin, int assocType);
   
   void SetSampligInclusive(){fsamplingMethod = 1;}
   
@@ -83,12 +84,15 @@ protected:
   int fptaBin;  // Bin index for the associated pT bin
   double fPhiTrigger;  // Azimuthal angle of the trigger particle
   double fPhiAssoc;  // Asimuthal angle of the associated particle
+  double fEtaTrigger;  // Pseodurapidity of the trigger particle
+  double fEtaAssoc;  // Pseudorapidity of the associated particle
   double fDeltaPhi;  // Difference of the azimuthal angles of trigger and associated particles
   double fDeltaPhiPiPi;  // The same as above but measured from -pi to pi
   double fDeltaEta;  // Difference of the pseudorapidities of the trigger and associated particles
   double fXlong;  // The xlong value of the trigger and associated particles
   
   bool fNearSide;  // true if near side correlation, false if away side
+  bool fNearSide3D; // near side defined by the half ball around the trigger
   int fEtaGapBin;  // Bin index for the current eta gap
   int fPhiGapBinNear;  // Bin index for the phi gap in the near side
   int fPhiGapBinAway;  // Bin index for the phi gap in the away side
@@ -99,7 +103,8 @@ protected:
 
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
-  double fGeometricAcceptanceCorrection;  // Acceptance correction due to the detector geometry
+  double fGeometricAcceptanceCorrection;   // Acceptance correction due to the detector geometry
+  double fGeometricAcceptanceCorrection3D; // Acceptance correction due to the detector geometry for 3D near side
   
 private:
   
@@ -110,6 +115,9 @@ private:
   void FillDeltaPhiHistograms(fillType fTyp);
   void FillPtaHistograms(fillType fTyp);
   void FillIAAAndMoonHistograms(fillType fTyp, int zBin);
+  void FillJtDistributionHistograms(fillType fTyp, int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hDistribution, AliJTH1D &hDistributionLikeSign, AliJTH1D &hDistributionUnlikeSign, AliJTH1D &hInvariantMass, AliJTH1D &hInvariantMassLikeSign, AliJTH1D &hInvariantMassUnlikeSign);
+  void FillJtBackgroundHistograms(int assocType, int gapType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hBackground, AliJTH1D &hBackgroundLikeSign, AliJTH1D &hBackgroundUnlikeSign, AliJTH1D &hPtAssoc, AliJTH2D &hBackground2D, bool fill2DBackground);
+  int GetBinIndex(int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc);
 };
 
 #endif

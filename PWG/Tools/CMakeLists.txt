@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGTools)
+set(MODULE PWGTools)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/Tools)
@@ -27,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisHelperJetTasks.cxx 
+  AliBasicParticle.cxx 
   AliTHn.cxx 
   AliPWGHistoTools.cxx
   AliPWGFunc.cxx
@@ -40,6 +42,7 @@ set(SRCS
   AliJSONReader.cxx
   AliJSONData.cxx
   AliAnalysisTaskDummy.cxx
+  AliTLorentzVector.cxx
   )
 
 # Headers from sources

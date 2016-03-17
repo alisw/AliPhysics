@@ -97,6 +97,8 @@ public:
     virtual     void    SetRejectPairConversion(int v)      { _rejectPairConversion = v; }
     virtual     void    SetVertexZMin(double v)             { _vertexZMin           = v; }
     virtual     void    SetVertexZMax(double v)             { _vertexZMax           = v; }
+    virtual     void    SetVertexZWidth(double v)           { _vertexZWidth         = v; }
+    virtual     void    SetEtaWidth(double v)               { _etaWidth             = v; }
     virtual     void    SetVertexXYMin(double v)            { _vertexXYMin          = v; }
     virtual     void    SetVertexXYMax(double v)            { _vertexXYMax          = v; }
     virtual     void    SetCentralityMethod(int v)          { _centralityMethod     = v; }
@@ -109,12 +111,12 @@ public:
     virtual     void    SetRequestedCharge_2(int v)     { _requestedCharge_2 = v; }
     virtual     void    SetPtMin1( double v)            { _min_pt_1          = v; }
     virtual     void    SetPtMax1( double v)            { _max_pt_1          = v; }
-    virtual     void    SetEtaMin1(double v)            { _min_eta_1         = v; }
-    virtual     void    SetEtaMax1(double v)            { _max_eta_1         = v; }
+    virtual     void    SetEtaMin1(double v)            { _min_eta_1         = v; } // SetYMin1 acturally 
+    virtual     void    SetEtaMax1(double v)            { _max_eta_1         = v; } // SetYMax1 acturally
     virtual     void    SetPtMin2( double v)            { _min_pt_2          = v; }
     virtual     void    SetPtMax2( double v)            { _max_pt_2          = v; }
-    virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; }
-    virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; }
+    virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; } // SetYMin2 acturally
+    virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; } // SetYMax2 acturally
     virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; }
     virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; }
     virtual     void    SetDcaXYMin(double v)           { _dcaXYMin          = v; }
@@ -128,13 +130,18 @@ public:
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
-
-    AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
+    
+    AliHelperPID                   * GetHelperPID()     { return fHelperPID; }
     //AliHelperPID* helperpid;
  
-    void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid; }
+    void SetHelperPID(AliHelperPID* pid)                { fHelperPID = pid; }
 
     void SetParticleSpecies( int species ){ particleSpecies = species; }
+
+    void SetAnalysisType( const char * analysisType ) { fAnalysisType = analysisType; }
+    void SetSystemType( const char * systemType )     { fSystemType = systemType; }
+    void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
+    void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
     
 protected:
     
@@ -166,6 +173,8 @@ protected:
     int      _rejectPairConversion;
     double   _vertexZMin;
     double   _vertexZMax;
+    double   _vertexZWidth;
+    double   _etaWidth;
     double   _vertexXYMin;
     double   _vertexXYMax;
     int      _centralityMethod;
@@ -182,15 +191,15 @@ protected:
     int      _nClusterMin;
     int      _trackFilterBit;
     Double_t particleSpecies;
+
+    TString      fAnalysisType;
+    TString      fSystemType;
+
+    Bool_t fExcludeResonancesInMC;
+    Bool_t fExcludeElectronsInMC;
     
     int _tpcnclus;
     double _chi2ndf;
-    
-    //double _min_eta_1;
-    //double _max_eta_1;
-    //double _min_eta_2;
-    //double _max_eta_2;
-    
     
     // event and track wise variables
     
@@ -329,32 +338,37 @@ protected:
     TH1F * _nsigmakaon_1d;
     TH1F * _nsigmaTOFkaon_1d;
     
-    TH1F * _etadis_pion_AliHelperPID;
-    TH1F * _ydis_pion_AliHelperPID;
-    TH1F * _etadis_without_PID;
-    TH1F * _etadis_before_any_cuts;  
+    TH1F * _etadis_POI_AliHelperPID;
+    TH1F * _etadis_before_any_cuts;
+
+    TH1F * _ydis_POI_AliHelperPID;
     
-    TH1F * _phidis_pion_AliHelperPID;
-    TH1F * _phidis_without_PID;
+    TH3F * _vZ_y_Pt_POI_AliHelperPID;
+    TH3F * _vZ_y_eta_POI_AliHelperPID;
+
+    TH2F * _y_Pt_AllCh_MCAODTruth;
+    TH2F * _y_Pt_POI_MCAODTruth;
+    
+    TH1F * _phidis_POI_AliHelperPID;
     TH1F * _phidis_before_any_cuts;
     
     TH1F * _dcaz;
     TH1F * _dcaxy;
 
     TH2F *  _dedx_p;
-    TH2F *  _dedx_p_pion_AliHelperPID;
+    TH2F *  _dedx_p_POI_AliHelperPID;
     TH2F *  _dedx_p_AliHelperPID_no_Undefined;
     
     TH2F *  _beta_p;
-    TH2F *  _beta_p_pion_AliHelperPID;
+    TH2F *  _beta_p_POI_AliHelperPID;
     TH2F *  _beta_p_AliHelperPID_no_Undefined;
     
     TH2F *  _inverse_beta_p;
-    TH2F *  _inverse_beta_p_pion_AliHelperPID;
+    TH2F *  _inverse_beta_p_POI_AliHelperPID;
     TH2F *  _inverse_beta_p_AliHelperPID_no_Undefined;
     
     TH2F *  _msquare_p;
-    TH2F *  _msquare_p_pion_AliHelperPID;
+    TH2F *  _msquare_p_POI_AliHelperPID;
     TH2F *  _msquare_p_AliHelperPID_no_Undefined;
     
     // PARTICLE 1 (satisfies filter 1)
@@ -507,7 +521,7 @@ protected:
     TString vsPtVsPt;
     
     
-    ClassDef(AliAnalysisTaskPIDBFDptDpt,1)
+    ClassDef(AliAnalysisTaskPIDBFDptDpt,2)
 }; 
 
 

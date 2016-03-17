@@ -16,8 +16,11 @@ public:
   
   static enum enPairCut {
     kPairCut_OFF=0,
+    kPairCut_theta20,
+    kPairCut_theta50,
+    kPairCut_theta100,
     kPairCut_mee10_theta30,
-    kPairCut_mee20_theta20, // not yet done (maybe for prefilter with SPD+SDD or as default PairCut for final pairs)
+    kPairCut_mee20_theta20, // maybe for prefilter with SPD+SDD
     kPairCut_mee20_theta50,
     kPairCut_mee30_theta60,
     kPairCut_mee40_theta80,
@@ -40,7 +43,8 @@ public:
     kKineCut_pt200_eta090,
     kKineCut_pt300_eta080,
     kKineCut_pt300_eta090,
-    kKineCut_pt400_eta080,
+    kKineCut_switch_PIDcorr,// for all cutSets with global (ana) track pt cuts below 400 MeV, the PID correction made with pt>200 MeV is used.
+    kKineCut_pt400_eta080=kKineCut_switch_PIDcorr,
     kKineCut_pt400_eta090
   };
   
@@ -48,11 +52,6 @@ public:
     //kCutSetMIN=0,
     kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_7_V0excl,          // syst 8
     kPbPb2011_pidITSTPCTOFif_trkSPDfirst_7_V0excl,          // syst 7
-    kPbPb2011_V0select_2_looseNoTOF,
-    kPbPb2011_V0select_1,
-    kPbPb2011_V0select_1_Arm,
-    kPbPb2011V0_2_loose,  // (NO FULL CUTSET)
-    kPbPb2011V0_1,        // (NO FULL CUTSET)
     kPbPb2011MC_pi0Dal_1,
     kPbPb2011_pidITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight,  // syst 6 (no train run yet)
     kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst5cls_6_tight,   // syst 5 (no train run yet)
@@ -73,17 +72,21 @@ public:
     kCutSetMAX,
     //
     // PID
-    kPbPb2011PID_ITSTPCTOFif_1=kCutSetMAX, // ITS+TPC+TOFf
+    kPbPb2011PID_ITSTPCTOFif_1=kCutSetMAX,  // ITS+TPC+TOFf
     kPbPb2011PID_ITSTPCTOFif_2,
     kPbPb2011PID_ITSTPCTOFif_3,
     kPbPb2011PID_ITSTPCTOFif_LOOSE,
-    kPbPb2011PID_ITSTPC_1,      // ITS+TPC
-    kPbPb2011PID_TPCTOF_1,      // TPC+TOF
+    kPbPb2011PID_ITSTPC_1,                  // ITS+TPC
+    kPbPb2011PID_TPCTOF_1,                  // TPC+TOF
     kPbPb2011PID_TPCTOF_LOOSE,
-    kPbPb2011PID_TPC_1,         // TPC
+    kPbPb2011PID_TPC_1,                     // TPC
     kPbPb2011PID_TPC_2,
     kPbPb2011PID_TPC_pre,
-    kPbPb2011PID_ITS_1,         // ITS
+    kPbPb2011PID_ITS_1,                     // ITS
+    kPbPb2011PID_V0_1,                      // V0
+    kPbPb2011PID_V0_1_pionCont,             // additional pion cut in TPC to check pion contamination in ITS dEdx
+    kPbPb2011PID_V0_2_TOFif,
+    kPbPb2011PID_V0_2_TOFif_pionCont,
     kPIDMAX,
     //
     // Quality
@@ -92,6 +95,9 @@ public:
     kPbPb2011TRK_SDDfirstSPDnone_1,     // complimentary tracks. strictly without SPD, to be combined with others!
     kPbPb2011TRK_SDDfirstSPDnone_2,     // complimentary tracks. >4 ITS cls
     kPbPb2011TRK_Minimal_1,
+    kPbPb2011TRK_V0_1,
+    kPbPb2011TRK_V0_2_loose,
+    kPbPb2011TRK_V0_3_Arm,
     kQualityMAX
   };
   
@@ -111,6 +117,7 @@ public:
   AliAnalysisCuts* GetTrackCutsAna();
   AliAnalysisCuts* GetTrackCutsPre();
   AliAnalysisCuts* GetESDTrackCutsAna();
+  AliAnalysisCuts* GetKineCutsAna(); // needed public for efficiency task
   
   void      SetIsQATask(Bool_t b=kTRUE)         { fIsQATask=b; }
   void      SetIsRandomRejTask(Bool_t b=kTRUE)  { fIsRandomRejTask=b; }
@@ -141,25 +148,9 @@ public:
   
   
 private:
-  // internal track cut functions (called by GetTrackCuts):
-  AliAnalysisCuts* GetKineCutsAna();
-  AliAnalysisCuts* GetKineCutsPre(Int_t cutSet=-1);
-  AliAnalysisCuts* GetPIDCuts(Int_t cutSet=-1);
-  AliAnalysisCuts* GetQualityCuts(Int_t cutSet=-1, Int_t doExclusion=0);
-  AliAnalysisCuts* GetMCTrackCuts();
-  // helper functions
-  TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
-  TVectorD* GetVector(Int_t var);
-  
-  Bool_t    fIsQATask;
-  Bool_t    fIsRandomRejTask;
-  Bool_t    fDoRejectionStep;
-  Bool_t    fFillPureMC;
-  
   static enum enCutType {
     kInclude = 0,
-    kExclude = 1,
-    kCUTTYPEMAX
+    kExclude = 1
   };
   
   static enum enHistVars {
@@ -170,6 +161,21 @@ private:
     kSigmaEle, kSigmaOther, kTPCdEdx,
     kPairDCAsigXY, kPairDCAabsXY, kPairLinDCAsigXY, kPairLinDCAabsXY
   };
+  
+  // internal track cut functions (called by GetTrackCuts):
+  //AliAnalysisCuts* GetKineCutsAna(); // needed public for efficiency task
+  AliAnalysisCuts* GetKineCutsPre(Int_t cutSet=-1);
+  AliAnalysisCuts* GetPIDCuts(Int_t cutSet=-1);
+  AliAnalysisCuts* GetQualityCuts(Int_t cutSet=-1, Int_t doExclusion=kInclude);
+  AliAnalysisCuts* GetMCTrackCuts();
+  // helper functions
+  TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
+  TVectorD* GetVector(Int_t var);
+  
+  Bool_t    fIsQATask;
+  Bool_t    fIsRandomRejTask;
+  Bool_t    fDoRejectionStep;
+  Bool_t    fFillPureMC;
   
 };
 
@@ -213,22 +219,125 @@ void LMEECutLib::SetITSSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, In
   
   if (corrZdim==AliDielectronVarManager::kRefMultTPConly)
   {
-    fCntrdCorr = new TF2("fCntrdCorr", "[0]+0.*[1]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    fWdthCorr  = new TF2("fWdthCorr",  "[0]+0.*[1]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    Double_t parCntrd[]={0.,0.}; //-0.5 for tests
-    Double_t parWdth[] ={1.,0.};
-    fCntrdCorr->SetParameters(parCntrd);
-    fWdthCorr ->SetParameters(parWdth);
-  }
+    const int netabins=18; // typically the number of eta bins incl over & underflow.
+    TF1* fcnMean_px[netabins];
+    TF1* fcnWidth_px[netabins];
+    for (int i=0; i<netabins; i++) {
+      fcnMean_px[i]  = new TF1(Form("fcnMean_px_%i" , i), "[0]+[1]*x", fitMinZdim, fitMaxZdim);
+      fcnWidth_px[i] = new TF1(Form("fcnWidth_px_%i", i), "[0]+[1]*x", fitMinZdim, fitMaxZdim);
+    }
+    if (selectedKineCutsAna<kKineCut_switch_PIDcorr) { // use PID correction for pt>200 MeV/c
+      fcnMean_px[0]->SetParameters(-2.317592e-01, 2.015334e-05);
+      fcnMean_px[1]->SetParameters(-2.317592e-01, 2.015334e-05);
+      fcnMean_px[2]->SetParameters(-2.388820e-01, 2.100415e-05);
+      fcnMean_px[3]->SetParameters(-2.368509e-01, 2.649807e-05);
+      fcnMean_px[4]->SetParameters(-2.335289e-01, 2.771517e-05);
+      fcnMean_px[5]->SetParameters(-2.203853e-01, 2.299109e-05);
+      fcnMean_px[6]->SetParameters(-2.231970e-01, 2.695141e-05);
+      fcnMean_px[7]->SetParameters(-2.019306e-01, 2.349839e-05);
+      fcnMean_px[8]->SetParameters(-1.999166e-01, 2.257996e-05);
+      fcnMean_px[9]->SetParameters(-1.980436e-01, 1.807920e-05);
+      fcnMean_px[10]->SetParameters(-1.823919e-01, 9.162104e-06);
+      fcnMean_px[11]->SetParameters(-2.069340e-01, 1.779933e-05);
+      fcnMean_px[12]->SetParameters(-1.953123e-01, 5.935998e-06);
+      fcnMean_px[13]->SetParameters(-2.010407e-01, 1.546144e-05);
+      fcnMean_px[14]->SetParameters(-1.978739e-01, 8.981407e-06);
+      fcnMean_px[15]->SetParameters(-2.224901e-01, 1.851342e-05);
+      fcnMean_px[16]->SetParameters(-2.160992e-01, 1.541774e-05);
+      fcnMean_px[17]->SetParameters(-2.160992e-01, 1.541774e-05);
+      //
+      fcnWidth_px[0]->SetParameters(1.042039e+00, 7.178529e-05);
+      fcnWidth_px[1]->SetParameters(1.042039e+00, 7.178529e-05);
+      fcnWidth_px[2]->SetParameters(1.042571e+00, 6.053239e-05);
+      fcnWidth_px[3]->SetParameters(1.055642e+00, 5.049183e-05);
+      fcnWidth_px[4]->SetParameters(1.062871e+00, 4.467255e-05);
+      fcnWidth_px[5]->SetParameters(1.077608e+00, 3.696654e-05);
+      fcnWidth_px[6]->SetParameters(1.071887e+00, 4.272863e-05);
+      fcnWidth_px[7]->SetParameters(1.079705e+00, 4.932264e-05);
+      fcnWidth_px[8]->SetParameters(1.091248e+00, 4.373216e-05);
+      fcnWidth_px[9]->SetParameters(1.089759e+00, 4.158001e-05);
+      fcnWidth_px[10]->SetParameters(1.094837e+00, 3.824771e-05);
+      fcnWidth_px[11]->SetParameters(1.075169e+00, 4.479051e-05);
+      fcnWidth_px[12]->SetParameters(1.083042e+00, 3.299472e-05);
+      fcnWidth_px[13]->SetParameters(1.067151e+00, 4.178259e-05);
+      fcnWidth_px[14]->SetParameters(1.052284e+00, 4.735530e-05);
+      fcnWidth_px[15]->SetParameters(1.030472e+00, 6.617467e-05);
+      fcnWidth_px[16]->SetParameters(1.043461e+00, 7.115885e-05);
+      fcnWidth_px[17]->SetParameters(1.043461e+00, 7.115885e-05);
+    }
+    else {  // use PID correction for pt>400 MeV/c
+      fcnMean_px[0]->SetParameters(-3.529055e-01, 1.327113e-05);
+      fcnMean_px[1]->SetParameters(-3.529055e-01, 1.327113e-05);
+      fcnMean_px[2]->SetParameters(-3.592750e-01, 2.087731e-05);
+      fcnMean_px[3]->SetParameters(-3.969130e-01, 5.324868e-05);
+      fcnMean_px[4]->SetParameters(-3.743942e-01, 3.691861e-05);
+      fcnMean_px[5]->SetParameters(-3.694300e-01, 3.904927e-05);
+      fcnMean_px[6]->SetParameters(-3.607261e-01, 1.917498e-05);
+      fcnMean_px[7]->SetParameters(-3.600538e-01, 2.700674e-05);
+      fcnMean_px[8]->SetParameters(-3.536578e-01, 2.846538e-05);
+      fcnMean_px[9]->SetParameters(-3.552292e-01, 2.991948e-05);
+      fcnMean_px[10]->SetParameters(-3.186401e-01, 6.020452e-06);
+      fcnMean_px[11]->SetParameters(-3.146004e-01, 1.215062e-06);
+      fcnMean_px[12]->SetParameters(-3.221104e-01, 5.948753e-06);
+      fcnMean_px[13]->SetParameters(-3.221268e-01, 1.084347e-05);
+      fcnMean_px[14]->SetParameters(-2.931151e-01, -1.277723e-05);
+      fcnMean_px[15]->SetParameters(-3.357687e-01, 1.147554e-05);
+      fcnMean_px[16]->SetParameters(-3.835154e-01, 4.926267e-05);
+      fcnMean_px[17]->SetParameters(-3.835154e-01, 4.926267e-05);
+      //
+      fcnWidth_px[0]->SetParameters(1.065834e+00, 4.059001e-05);
+      fcnWidth_px[1]->SetParameters(1.065834e+00, 4.059001e-05);
+      fcnWidth_px[2]->SetParameters(1.047882e+00, 4.991033e-05);
+      fcnWidth_px[3]->SetParameters(1.045476e+00, 5.880931e-05);
+      fcnWidth_px[4]->SetParameters(1.062518e+00, 4.287982e-05);
+      fcnWidth_px[5]->SetParameters(1.062254e+00, 4.977838e-05);
+      fcnWidth_px[6]->SetParameters(1.059952e+00, 4.242825e-05);
+      fcnWidth_px[7]->SetParameters(1.059177e+00, 5.430946e-05);
+      fcnWidth_px[8]->SetParameters(1.080617e+00, 4.751661e-05);
+      fcnWidth_px[9]->SetParameters(1.067084e+00, 5.367871e-05);
+      fcnWidth_px[10]->SetParameters(1.097499e+00, 3.357789e-05);
+      fcnWidth_px[11]->SetParameters(1.084897e+00, 3.741411e-05);
+      fcnWidth_px[12]->SetParameters(1.080744e+00, 3.506669e-05);
+      fcnWidth_px[13]->SetParameters(1.079388e+00, 3.235666e-05);
+      fcnWidth_px[14]->SetParameters(1.081288e+00, 2.310908e-05);
+      fcnWidth_px[15]->SetParameters(1.043360e+00, 5.170997e-05);
+      fcnWidth_px[16]->SetParameters(1.010796e+00, 8.893934e-05);
+      fcnWidth_px[17]->SetParameters(1.010796e+00, 8.893934e-05);
+    }
+    Bool_t isFcnZdim=kTRUE; // true if 1D functions go along X direction of 2D histogram.
+    Int_t  extrapolate=1;   // fill underflow and overflow bins.
+    TH2F *hMean_2Dfit  = new TH2F("hMean_2Dfit" ,"hMean_2Dfit" ,19,400,2300,16,-0.8,0.8);
+    TH2F *hWidth_2Dfit = new TH2F("hWidth_2Dfit","hWidth_2Dfit",19,400,2300,16,-0.8,0.8);
+    for (int ix=1-extrapolate; ix<=hMean_2Dfit->GetNbinsX()+extrapolate; ix++) {
+      for (int iy=1-extrapolate; iy<=hMean_2Dfit->GetNbinsY()+extrapolate; iy++) {
+        if (isFcnZdim) {
+          //cout << " hMean_2Dfit->GetBinCenter(ix) = " << hMean_2Dfit->GetXaxis()->GetBinCenter(ix) << endl;
+          hMean_2Dfit->SetBinContent(ix, iy, fcnMean_px[iy]->Eval(hMean_2Dfit->GetXaxis()->GetBinCenter(ix)));
+          hWidth_2Dfit->SetBinContent(ix, iy, fcnWidth_px[iy]->Eval(hWidth_2Dfit->GetXaxis()->GetBinCenter(ix)));
+        } else {
+          //cout << " hMean_2Dfit->GetBinCenter(iy) = " << hMean_2Dfit->GetYaxis()->GetBinCenter(iy) << endl;
+          hMean_2Dfit->SetBinContent(ix, iy, fcnMean_px[ix]->Eval(hMean_2Dfit->GetYaxis()->GetBinCenter(iy)));
+          hWidth_2Dfit->SetBinContent(ix, iy, fcnWidth_px[ix]->Eval(hWidth_2Dfit->GetYaxis()->GetBinCenter(iy)));
+        }
+      }
+    }
+  } // end: if (kRefMultTPConly)
   else {
     printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
     printf(" no correction applied!\n");
     return;
   }
   
-//  die->SetCentroidCorrFunctionITS(fCntrdCorr, corrZdim, corrYdim);
-//  die->SetWidthCorrFunctionITS(fWdthCorr, corrZdim, corrYdim);
-//  printf(" ITS PID eta correction loaded!\n");
+//  TCanvas* c1 = new TCanvas("c1","c1",800,750);
+//  c1->SetRightMargin(0.22);
+//  hMean_2Dfit->DrawCopy("colz");
+//  c1->Print(Form("cITScorr_mean_kinecut%i.pdf",selectedKineCutsAna));
+//  hWidth_2Dfit->DrawCopy("colz");
+//  c1->Print(Form("cITScorr_width_kinecut%i.pdf",selectedKineCutsAna));
+  
+  die->SetCentroidCorrFunctionITS(hMean_2Dfit, corrZdim, corrYdim);
+  die->SetWidthCorrFunctionITS(hWidth_2Dfit, corrZdim, corrYdim);
+  printf(" ITS PID eta correction loaded!\n");
 }
 
 //_______________________________________________________________________________________________
@@ -254,33 +363,134 @@ void LMEECutLib::SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrZdim, In
   // if(pidResponse) hasTuneOnData = pidResponse->IsTunedOnData();
   // printf("man %p inp %p pid %p ====> %d \n",man,inputHandler,pidResponse,hasTuneOnData);
   
-  TF2 *fCntrdCorr=0x0;
-  TF2 *fWdthCorr=0x0;
+  //TF2 *fCntrdCorr=0x0;
+  //TF2 *fWdthCorr=0x0;
   Double_t fitMinZdim=   0;
   Double_t fitMaxZdim=4000;
-  Double_t fitMinEta=-0.9, fitMaxEta=+0.9; // Ydim, usually eta
+  //Double_t fitMinEta=-0.9, fitMaxEta=+0.9; // Ydim, usually eta
   
   if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
   
   if (corrZdim==AliDielectronVarManager::kRefMultTPConly)
   {
-    fCntrdCorr = new TF2("fCntrdCorr", "[9]*([0]+[1]*x+[2]*x*x)+[10]*([3]+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y+[8]*y*y*y*y*y)+[11]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    fWdthCorr  = new TF2("fWdthCorr",  "[9]*([0]+[1]*x+[2]*x*x)+[10]*([3]+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y+[8]*y*y*y*y*y)+[11]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    Double_t parCntrd[]={2.003967e-01, -2.584087e-04, 1.123938e-08, 1.559636e-01, 2.542528e-01, -3.392378e+00, -7.109151e-01, 5.374647e+00, 6.646497e-01, 1.015413e+00, 1.007024e+00, 1.289175e-01}; // fit of 00-50% (fitrange 400-2300, |eta| < 0.8)
-    //  Double_t parCntrd[]={1.984011e-01, -2.538876e-04, 7.636316e-09, 2.731183e-01, 2.190149e-01, -3.437725e+00, -6.438784e-01, 5.317945e+00, 6.089976e-01, 1.018070e+00, 1.002105e+00, 2.428792e-02}; // fit of 20-50% (fitrange 400-1400, |eta| < 0.8)
-    Double_t parWdth[] ={1.122035e+00, 3.897153e-05, -2.394857e-10, 1.219613e+00, -4.266204e-02, -5.047624e-01, 1.818052e-01, 7.607361e-01, -2.020611e-01, 1.005953e+00, 1.024095e+00, -1.209148e+00}; // fit of 00-50% (fitrange 400-2300, |eta| < 0.8)
-    //  Double_t parWdth[] ={1.116969e+00, 5.063439e-05, -5.526647e-09, 1.207224e+00, -3.633499e-02, -5.340433e-01, 1.557123e-01, 7.865346e-01, -1.619051e-01, 1.019816e+00, 1.004669e+00, -1.185922e+00}; // fit of 20-50% (fitrange 400-1400, |eta| < 0.8)
-    fCntrdCorr->SetParameters(parCntrd);
-    fWdthCorr ->SetParameters(parWdth);
-  }
+    const int netabins=18; // typically the number of eta bins incl over & underflow.
+    TF1* fcnMean_px[netabins];
+    TF1* fcnWidth_px[netabins];
+    for (int i=0; i<netabins; i++) {
+      fcnMean_px[i]  = new TF1(Form("fcnMean_px_%i" , i), "[0]+[1]*x", fitMinZdim, fitMaxZdim);
+      fcnWidth_px[i] = new TF1(Form("fcnWidth_px_%i", i), "[0]+[1]*x", fitMinZdim, fitMaxZdim);
+    }
+    if (selectedKineCutsAna<kKineCut_switch_PIDcorr) { // use PID correction for pt>200 MeV/c
+      fcnMean_px[0]->SetParameters(-1.156716e-02, -1.301817e-04);
+      fcnMean_px[1]->SetParameters(-1.156716e-02, -1.301817e-04);
+      fcnMean_px[2]->SetParameters(-1.312152e-01, -1.587708e-04);
+      fcnMean_px[3]->SetParameters(-1.907976e-01, -1.956057e-04);
+      fcnMean_px[4]->SetParameters(-1.797112e-01, -2.172959e-04);
+      fcnMean_px[5]->SetParameters(-1.161102e-01, -2.236802e-04);
+      fcnMean_px[6]->SetParameters(-1.083095e-02, -2.269384e-04);
+      fcnMean_px[7]->SetParameters(8.482330e-02, -2.245246e-04);
+      fcnMean_px[8]->SetParameters(1.047848e-01, -2.000582e-04);
+      fcnMean_px[9]->SetParameters(1.647767e-01, -1.951507e-04);
+      fcnMean_px[10]->SetParameters(1.140301e-01, -1.948394e-04);
+      fcnMean_px[11]->SetParameters(6.306847e-03, -1.913186e-04);
+      fcnMean_px[12]->SetParameters(-1.084654e-01, -1.771152e-04);
+      fcnMean_px[13]->SetParameters(-1.757320e-01, -1.619230e-04);
+      fcnMean_px[14]->SetParameters(-1.746252e-01, -1.296587e-04);
+      fcnMean_px[15]->SetParameters(-1.006578e-01, -8.307905e-05);
+      fcnMean_px[16]->SetParameters(1.223413e-02, -5.322799e-05);
+      fcnMean_px[17]->SetParameters(1.223413e-02, -5.322799e-05);
+      //
+      fcnWidth_px[0]->SetParameters(1.086622e+00, 6.606505e-05);
+      fcnWidth_px[1]->SetParameters(1.086622e+00, 6.606505e-05);
+      fcnWidth_px[2]->SetParameters(1.082054e+00, 5.711400e-05);
+      fcnWidth_px[3]->SetParameters(1.077950e+00, 5.009987e-05);
+      fcnWidth_px[4]->SetParameters(1.088628e+00, 4.443494e-05);
+      fcnWidth_px[5]->SetParameters(1.111643e+00, 4.061893e-05);
+      fcnWidth_px[6]->SetParameters(1.146064e+00, 3.688119e-05);
+      fcnWidth_px[7]->SetParameters(1.169822e+00, 3.917164e-05);
+      fcnWidth_px[8]->SetParameters(1.200732e+00, 3.658010e-05);
+      fcnWidth_px[9]->SetParameters(1.213068e+00, 3.089858e-05);
+      fcnWidth_px[10]->SetParameters(1.185535e+00, 3.263566e-05);
+      fcnWidth_px[11]->SetParameters(1.155687e+00, 2.876342e-05);
+      fcnWidth_px[12]->SetParameters(1.118644e+00, 3.407548e-05);
+      fcnWidth_px[13]->SetParameters(1.089084e+00, 3.803547e-05);
+      fcnWidth_px[14]->SetParameters(1.076255e+00, 4.455558e-05);
+      fcnWidth_px[15]->SetParameters(1.074615e+00, 5.149723e-05);
+      fcnWidth_px[16]->SetParameters(1.080458e+00, 5.354965e-05);
+      fcnWidth_px[17]->SetParameters(1.080458e+00, 5.354965e-05);
+    }
+    else {  // use PID correction for pt>400 MeV/c
+      fcnMean_px[0]->SetParameters(1.069692e-01, -1.853931e-04);
+      fcnMean_px[1]->SetParameters(1.069692e-01, -1.853931e-04);
+      fcnMean_px[2]->SetParameters(-4.447889e-02, -2.098573e-04);
+      fcnMean_px[3]->SetParameters(-8.858894e-02, -2.446114e-04);
+      fcnMean_px[4]->SetParameters(-1.794249e-02, -2.697981e-04);
+      fcnMean_px[5]->SetParameters(1.061417e-01, -2.766702e-04);
+      fcnMean_px[6]->SetParameters(2.621812e-01, -2.810459e-04);
+      fcnMean_px[7]->SetParameters(4.075723e-01, -2.616764e-04);
+      fcnMean_px[8]->SetParameters(4.933002e-01, -2.473390e-04);
+      fcnMean_px[9]->SetParameters(5.797911e-01, -2.468768e-04);
+      fcnMean_px[10]->SetParameters(4.790437e-01, -2.384890e-04);
+      fcnMean_px[11]->SetParameters(3.266869e-01, -2.333392e-04);
+      fcnMean_px[12]->SetParameters(1.541458e-01, -2.282300e-04);
+      fcnMean_px[13]->SetParameters(1.676668e-02, -2.212672e-04);
+      fcnMean_px[14]->SetParameters(-2.689889e-02, -2.052884e-04);
+      fcnMean_px[15]->SetParameters(1.024606e-02, -1.558609e-04);
+      fcnMean_px[16]->SetParameters(1.380813e-01, -1.459855e-04);
+      fcnMean_px[17]->SetParameters(1.380813e-01, -1.459855e-04);
+      //
+      fcnWidth_px[0]->SetParameters(1.100951e+00, 5.283585e-05);
+      fcnWidth_px[1]->SetParameters(1.100951e+00, 5.283585e-05);
+      fcnWidth_px[2]->SetParameters(1.069972e+00, 5.493703e-05);
+      fcnWidth_px[3]->SetParameters(1.084033e+00, 4.183144e-05);
+      fcnWidth_px[4]->SetParameters(1.097820e+00, 4.153080e-05);
+      fcnWidth_px[5]->SetParameters(1.115891e+00, 4.219773e-05);
+      fcnWidth_px[6]->SetParameters(1.138289e+00, 4.310334e-05);
+      fcnWidth_px[7]->SetParameters(1.162934e+00, 3.682753e-05);
+      fcnWidth_px[8]->SetParameters(1.198148e+00, 2.239657e-05);
+      fcnWidth_px[9]->SetParameters(1.174714e+00, 3.120157e-05);
+      fcnWidth_px[10]->SetParameters(1.153562e+00, 3.546540e-05);
+      fcnWidth_px[11]->SetParameters(1.136738e+00, 3.161306e-05);
+      fcnWidth_px[12]->SetParameters(1.112814e+00, 3.477281e-05);
+      fcnWidth_px[13]->SetParameters(1.089942e+00, 3.794432e-05);
+      fcnWidth_px[14]->SetParameters(1.075360e+00, 4.227114e-05);
+      fcnWidth_px[15]->SetParameters(1.073305e+00, 4.787609e-05);
+      fcnWidth_px[16]->SetParameters(1.108154e+00, 4.165704e-05);
+      fcnWidth_px[17]->SetParameters(1.108154e+00, 4.165704e-05);      
+    }
+    Bool_t isFcnZdim=kTRUE; // true if 1D functions go along X direction of 2D histogram.
+    Int_t  extrapolate=1;   // fill underflow and overflow bins.
+    TH2F *hMean_2Dfit  = new TH2F("hMean_2Dfit" ,"hMean_2Dfit" ,19,400,2300,16,-0.8,0.8);
+    TH2F *hWidth_2Dfit = new TH2F("hWidth_2Dfit","hWidth_2Dfit",19,400,2300,16,-0.8,0.8);
+    for (int ix=1-extrapolate; ix<=hMean_2Dfit->GetNbinsX()+extrapolate; ix++) {
+      for (int iy=1-extrapolate; iy<=hMean_2Dfit->GetNbinsY()+extrapolate; iy++) {
+        if (isFcnZdim) {
+          //cout << " hMean_2Dfit->GetBinCenter(ix) = " << hMean_2Dfit->GetXaxis()->GetBinCenter(ix) << endl;
+          hMean_2Dfit->SetBinContent(ix, iy, fcnMean_px[iy]->Eval(hMean_2Dfit->GetXaxis()->GetBinCenter(ix)));
+          hWidth_2Dfit->SetBinContent(ix, iy, fcnWidth_px[iy]->Eval(hWidth_2Dfit->GetXaxis()->GetBinCenter(ix)));
+        } else {
+          //cout << " hMean_2Dfit->GetBinCenter(iy) = " << hMean_2Dfit->GetYaxis()->GetBinCenter(iy) << endl;
+          hMean_2Dfit->SetBinContent(ix, iy, fcnMean_px[ix]->Eval(hMean_2Dfit->GetYaxis()->GetBinCenter(iy)));
+          hWidth_2Dfit->SetBinContent(ix, iy, fcnWidth_px[ix]->Eval(hWidth_2Dfit->GetYaxis()->GetBinCenter(iy)));
+        }
+      }
+    }
+  } // end: if (kRefMultTPConly)
   else {
     printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
     printf(" no correction applied!\n");
     return;
   }
   
-  die->SetCentroidCorrFunction(fCntrdCorr, corrZdim, corrYdim);
-  die->SetWidthCorrFunction(fWdthCorr, corrZdim, corrYdim);
+//  TCanvas* c1 = new TCanvas("c1","c1",800,750);
+//  c1->SetRightMargin(0.22);
+//  hMean_2Dfit->DrawCopy("colz");
+//  c1->Print(Form("cTPCcorr_mean_kinecut%i.pdf",selectedKineCutsAna));
+//  hWidth_2Dfit->DrawCopy("colz");
+//  c1->Print(Form("cTPCcorr_width_kinecut%i.pdf",selectedKineCutsAna));
+  
+  die->SetCentroidCorrFunction(hMean_2Dfit, corrZdim, corrYdim);
+  die->SetWidthCorrFunction(hWidth_2Dfit, corrZdim, corrYdim);
   printf(" TPC PID eta correction loaded!\n");
 }
 
@@ -290,65 +500,97 @@ void LMEECutLib::SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *t
   //
   // MC post-correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
   //
-  TF2 *fCntrdCorr=0x0;
-  TF2 *fWdthCorr=0x0;
-  Double_t fitMinZdim=   0;
-  Double_t fitMaxZdim=4000;
-  Double_t fitMinEta=-0.9, fitMaxEta=+0.9; // Ydim, usually eta
+  printf("starting LMEECutLib::SetITSSigmaEleCorrectionMC()\n");
+  printf(" correction Zdim = %s\n", AliDielectronVarManager::GetValueName(corrZdim));
+  printf(" correction Ydim = %s\n", AliDielectronVarManager::GetValueName(corrYdim));
+  Bool_t use1Dfunctions;  // true if 1D functions are used instead of a fully defined 2D map.
+  Bool_t isFcnZdim;       // true if 1D functions go along X direction of 2D histogram.
+  Int_t  extrapolate=0;   // =1 to fill underflow and overflow bins.
+  TH2F *hMean_2Dfit=0x0;
+  TH2F *hWidth_2Dfit=0x0;
+  TF1* fcnMean_px[20];
+  TF1* fcnWidth_px[20];
+  Double_t fitMinEta =-0.8, fitMaxEta =+0.8; // Ydim, usually eta
+  Double_t fitMinZdim, fitMaxZdim;
   
   if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
   
-  if (corrZdim==AliDielectronVarManager::kNacc)
+  // in MC (LHC14a1b) the P-dependence is much stronger than the Nacc-dependence, so we correct for P...
+  if (corrZdim==AliDielectronVarManager::kP)
   {
-    fCntrdCorr = new TF2("fCntrdCorr", "[0]+0.*[1]*x*y", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    fWdthCorr  = new TF2("fWdthCorr",  "[0]+0.*[1]*x*y", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    Double_t parCntrd[]={0.,0.}; //-0.5 for tests
-    Double_t parWdth[] ={1.,0.};
-    fCntrdCorr->SetParameters(parCntrd);
-    fWdthCorr ->SetParameters(parWdth);
-  }
+    use1Dfunctions=kTRUE;  isFcnZdim=kTRUE;  extrapolate=1;
+    fitMinEta=-0.8, fitMaxEta=+0.8;
+    fitMinZdim=0  , fitMaxZdim=5.; // GeV/c
+    const int netabins=8;
+    const int nZbins=25;
+    hMean_2Dfit  = new TH2F("hMean_2Dfit" ,"hMean_2Dfit" ,nZbins,fitMinZdim,fitMaxZdim,netabins,fitMinEta,fitMaxEta);
+    hWidth_2Dfit = new TH2F("hWidth_2Dfit","hWidth_2Dfit",nZbins,fitMinZdim,fitMaxZdim,netabins,fitMinEta,fitMaxEta);
+    
+    for (int i=1-extrapolate; i<=netabins+extrapolate; i++) {
+      fcnMean_px[i]  = new TF1(Form("fcnMean_px_%i" , i), "[0]+[1]*x", fitMinZdim, fitMaxZdim);
+      fcnWidth_px[i] = new TF1(Form("fcnWidth_px_%i", i), "[0]+[1]*x", fitMinZdim, fitMaxZdim);
+    }
+    // corrections are done on the 10-50% centrality MC (LHC14a1b).
+    // entries [0] and [max] have to stay empty if extrapolate=0.
+    fcnMean_px[0]->SetParameters(2.392202e-02, -1.973464e-01);
+    fcnMean_px[1]->SetParameters(2.392202e-02, -1.973464e-01);
+    fcnMean_px[2]->SetParameters(-7.582297e-02, -1.854471e-01);
+    fcnMean_px[3]->SetParameters(-1.338714e-01, -2.262040e-01);
+    fcnMean_px[4]->SetParameters(-1.568579e-01, -2.689306e-01);
+    fcnMean_px[5]->SetParameters(-1.644852e-01, -2.093024e-01);
+    fcnMean_px[6]->SetParameters(-1.260372e-01, -2.248881e-01);
+    fcnMean_px[7]->SetParameters(-7.303062e-02, -2.098463e-01);
+    fcnMean_px[8]->SetParameters(3.796873e-03, -1.959614e-01);
+    fcnMean_px[9]->SetParameters(3.796873e-03, -1.959614e-01);
+    //
+    fcnWidth_px[0]->SetParameters(1.062272e+00, -1.527472e-02);
+    fcnWidth_px[1]->SetParameters(1.062272e+00, -1.527472e-02);
+    fcnWidth_px[2]->SetParameters(1.083509e+00, -1.745190e-02);
+    fcnWidth_px[3]->SetParameters(1.099541e+00, -2.316445e-02);
+    fcnWidth_px[4]->SetParameters(1.123306e+00, -4.434398e-02);
+    fcnWidth_px[5]->SetParameters(1.111333e+00, -2.527514e-02);
+    fcnWidth_px[6]->SetParameters(1.101949e+00, -2.525758e-02);
+    fcnWidth_px[7]->SetParameters(1.089704e+00, -2.994100e-02);
+    fcnWidth_px[8]->SetParameters(1.068866e+00, -2.793530e-02);
+    fcnWidth_px[9]->SetParameters(1.068866e+00, -2.793530e-02);
+  } // end: if (kP)
   else {
     printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
     printf(" no correction applied!\n");
     return;
   }
   
-//  task->SetCentroidCorrFunctionITS(fCntrdCorr, corrZdim, corrYdim);
-//  task->SetWidthCorrFunctionITS(fWdthCorr, corrZdim, corrYdim);
-//  printf(" MC ITS PID eta correction loaded!\n");
+  if (use1Dfunctions) {
+    for (int ix=1-extrapolate; ix<=hMean_2Dfit->GetNbinsX()+extrapolate; ix++) {
+      for (int iy=1-extrapolate; iy<=hMean_2Dfit->GetNbinsY()+extrapolate; iy++) {
+        if (isFcnZdim) {
+          //cout << " hMean_2Dfit->GetBinCenter(ix) = " << hMean_2Dfit->GetXaxis()->GetBinCenter(ix) << endl;
+          hMean_2Dfit->SetBinContent(ix, iy, fcnMean_px[iy]->Eval(hMean_2Dfit->GetXaxis()->GetBinCenter(ix)));
+          hWidth_2Dfit->SetBinContent(ix, iy, fcnWidth_px[iy]->Eval(hWidth_2Dfit->GetXaxis()->GetBinCenter(ix)));
+        } else {
+          //cout << " hMean_2Dfit->GetBinCenter(iy) = " << hMean_2Dfit->GetYaxis()->GetBinCenter(iy) << endl;
+          hMean_2Dfit->SetBinContent(ix, iy, fcnMean_px[ix]->Eval(hMean_2Dfit->GetYaxis()->GetBinCenter(iy)));
+          hWidth_2Dfit->SetBinContent(ix, iy, fcnWidth_px[ix]->Eval(hWidth_2Dfit->GetYaxis()->GetBinCenter(iy)));
+        }
+      }
+    }
+  }
+  task->SetCentroidCorrFunctionITS(hMean_2Dfit, corrZdim, corrYdim);
+  task->SetWidthCorrFunctionITS(hWidth_2Dfit, corrZdim, corrYdim);
+  printf(" MC ITS PID eta correction loaded!\n");
 }
-  
+
 //_______________________________________________________________________________________________
 void LMEECutLib::SetTPCSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim) {
   //
   // MC post-correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
-  TF2 *fCntrdCorr=0x0;
-  TF2 *fWdthCorr=0x0;
-  Double_t fitMinZdim=   0;
-  Double_t fitMaxZdim=4000;
-  Double_t fitMinEta=-0.9, fitMaxEta=+0.9; // Ydim, usually eta
-  
-  if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
-  
-  if (corrZdim==AliDielectronVarManager::kNacc)
-  {
-    fCntrdCorr = new TF2("fCntrdCorr", "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    fWdthCorr  = new TF2("fWdthCorr",  "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
-    Double_t parCntrd[]={0.}; //0.2 for tests
-    Double_t parWdth[] ={1.0};
-    fCntrdCorr->SetParameters(parCntrd);
-    fWdthCorr ->SetParameters(parWdth);
-  }
-  else {
-    printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
-    printf(" no correction applied!\n");
-    return;
-  }
-  
-//  task->SetCentroidCorrFunction(fCntrdCorr, corrZdim, corrYdim);
-//  task->SetWidthCorrFunction(fWdthCorr, corrZdim, corrYdim);
-//  printf(" MC TPC PID eta correction loaded!\n");
+  printf("TPC PID post-correction not needed for LHC14a1[a,b].\n"); return;
+  //  printf("starting LMEECutLib::SetTPCSigmaEleCorrectionMC()\n");
+  //  printf(" correction Zdim = %s\n", AliDielectronVarManager::GetValueName(corrZdim));
+  //  printf(" correction Ydim = %s\n", AliDielectronVarManager::GetValueName(corrYdim));
+  //
+  //  printf(" MC TPC PID eta correction loaded!\n");
 }
 
 
@@ -502,6 +744,17 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet) {
   }
   AliDielectronVarCuts* pairVarCuts = new AliDielectronVarCuts("pairVarCuts","pairVarCuts");
   switch (cutSet) {
+      // Just opening angle
+    case kPairCut_theta20:
+      pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.02);
+      break;
+    case kPairCut_theta50:
+      pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.05);
+      break;
+    case kPairCut_theta100:
+      pairVarCuts->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.10);
+      break;
+      
       // Mee and opening angle
     case kPairCut_mee10_theta30:
       pairVarCuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.01);
@@ -578,7 +831,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna() {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* cgTrackCutsAna = new AliDielectronCutGroup("cgTrackCutsAna","cgTrackCutsAna",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAna->AddCut( GetPIDCuts(selectedPIDAna) );
-  cgTrackCutsAna->AddCut( GetQualityCuts(selectedQualityAna) );
+  cgTrackCutsAna->AddCut( GetQualityCuts(selectedQualityAna, kInclude) );
   cgTrackCutsAna->AddCut( GetKineCutsAna() );
   
   return cgTrackCutsAna;
@@ -589,7 +842,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsPre() {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* cgTrackCutsPre = new AliDielectronCutGroup("cgTrackCutsPre","cgTrackCutsPre",AliDielectronCutGroup::kCompAND);
   cgTrackCutsPre->AddCut( GetPIDCuts(selectedPIDPre) );
-  cgTrackCutsPre->AddCut( GetQualityCuts(selectedQualityPre) );
+  cgTrackCutsPre->AddCut( GetQualityCuts(selectedQualityPre, kInclude) );
   cgTrackCutsPre->AddCut( GetKineCutsPre() );
   
   // in case the prefilter cuts do not include all needed global tracks, we create an "OR" cutgroup:
@@ -790,23 +1043,30 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t cutSet) {
       /// ITS
       ///
     case kPbPb2011PID_ITS_1:
-      pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3., 3.);
+      pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3.);
       return pidCuts;
       break;
       
       ///
       /// Other
       ///
-    case kPbPb2011_V0select_1_Arm:
-    case kPbPb2011_V0select_1:
-      // PID for V0 task
+      ///
+      /// PID for V0 tasks
+    case kPbPb2011PID_V0_1_pionCont:
+      pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -3. , 3. , 0. ,100., kFALSE);
+      // no break here to add the cuts below...
+    case kPbPb2011PID_V0_1:
       pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-12. ,20. , 0. ,100., kFALSE);
       pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -1.5, 1.5, 0. ,100., kFALSE);
       return pidCuts;
       break;
-    case kPbPb2011_V0select_2_looseNoTOF:
+    case kPbPb2011PID_V0_2_TOFif_pionCont:
+      pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -3. , 3. , 0. ,100., kFALSE);
+      // no break here to add the cuts below...
+    case kPbPb2011PID_V0_2_TOFif:
       pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-12. ,20. , 0. ,100., kFALSE);
-      // no TOF to really see what gets rejected...
+      pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+      // helps to see what gets rejected...
       return pidCuts;
       break;
       
@@ -829,8 +1089,6 @@ AliAnalysisCuts* LMEECutLib::GetQualityCuts(Int_t cutSet, Int_t doExclusion) {
   AliDielectronCutGroup* trackCuts=0x0;
   
   if (cutSet<0) {
-    // for the default function call, pick the cutSet according to 'selectedQualityAna', which is set via the Config file.
-    //cutSet = selectedQualityAna;
     cout << "Invalid cutSet selected! " << endl;
     return 0x0;
   }
@@ -841,7 +1099,7 @@ AliAnalysisCuts* LMEECutLib::GetQualityCuts(Int_t cutSet, Int_t doExclusion) {
       // combine 
       cgTrackCutsAna = new AliDielectronCutGroup("cgTrackCutsAna","cgTrackCutsAna",AliDielectronCutGroup::kCompAND);
       cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_1));
-      cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011V0_2_loose, kExclude));
+      cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011TRK_V0_2_loose, kExclude));
       trackCuts = cgTrackCutsAna;
       break;
       
@@ -849,15 +1107,15 @@ AliAnalysisCuts* LMEECutLib::GetQualityCuts(Int_t cutSet, Int_t doExclusion) {
       // combine 
       cgTrackCutsAna = new AliDielectronCutGroup("cgTrackCutsAna","cgTrackCutsAna",AliDielectronCutGroup::kCompAND);
       cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1));
-      cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011V0_2_loose, kExclude));
+      cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011TRK_V0_2_loose, kExclude));
       //// instead, only FOR DOING A COMPARISON: ////
       ////      cgTrackCutsAna->AddCut(GetQualityCuts(kPbPb2011_pidITSTPCTOFif_trkSPDorSDD_1));
       trackCuts = cgTrackCutsAna;
       break;
       
-    case kPbPb2011_V0select_2_looseNoTOF: doExclusion = kInclude; // and go on with kPbPb2011V0_2_loose... (no break)
-    case kPbPb2011V0_2_loose:
-      // primarily used for exclusion of V0s from track samples.
+    case kPbPb2011TRK_V0_1:
+      // primarily used for selection of V0s for TPC eta correction. with additional track cuts.
+      // inspired by "AliDielectronV0Cuts.cxx"
       AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
       // which V0 finder you want to use
       gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly // kOnTheFly better for small radii (quote Julian)
@@ -868,27 +1126,54 @@ AliAnalysisCuts* LMEECutLib::GetQualityCuts(Int_t cutSet, Int_t doExclusion) {
       //gammaV0Cuts->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
       // add the pair cuts for V0 candidates
       // variations from Julian in ( ... )
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.05),   1.0,  kFALSE); // ( 0.02 -- 0.05 )
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE); // ( 0.02 -- 0.05 )
       gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
       gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
       gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.20, kFALSE); // ( 0.05 -- 0.2 )
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE); // ( 0.05 -- 0.1 )
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE); // ( 0.05 -- 0.2 )
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE); // ( 0.05 -- 0.1 )
       gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
-      //      gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // ( |0.35|   ------- 0.3 )
+      //gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // ( |0.35|   ------- 0.3 ) // should increase purity...
       // selection or rejection of V0 tracks
       if (doExclusion==kExclude)  gammaV0Cuts->SetExcludeTracks(kTRUE);
       else                        gammaV0Cuts->SetExcludeTracks(kFALSE);
       // add the V0cuts directly to the track filter or to some cut group of it
       
+      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
+      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
       // some more default cuts automatically set by AliDielectronV0Cuts::InitEvent() !!!
       
+      cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
+      cgTrackCutsV0select->AddCut(gammaV0Cuts);
+      cgTrackCutsV0select->AddCut(trackCutsAOD);
+      trackCuts = cgTrackCutsV0select;
+      break;
+      
+    case kPbPb2011TRK_V0_2_loose:
+      // primarily used for exclusion of V0s from track samples.
+      AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
+      gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+      gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.05),   1.0,  kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.20, kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
+      gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+      //      gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE);
+      if (doExclusion==kExclude)  gammaV0Cuts->SetExcludeTracks(kTRUE);
+      else                        gammaV0Cuts->SetExcludeTracks(kFALSE);
+      // only default track cuts from AliDielectronV0Cuts::InitEvent() used here...
       cgTrackCutsV0excl = new AliDielectronCutGroup("cgTrackCutsV0excl","cgTrackCutsV0excl",AliDielectronCutGroup::kCompAND);
       cgTrackCutsV0excl->AddCut(gammaV0Cuts);
       trackCuts = cgTrackCutsV0excl;
       break;
       
-    case kPbPb2011_V0select_1_Arm: doExclusion = kInclude;
+    case kPbPb2011TRK_V0_3_Arm:
+      // primarily meant for inclusion, for quite pure sample...
       AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
       gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
       gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
@@ -906,44 +1191,6 @@ AliAnalysisCuts* LMEECutLib::GetQualityCuts(Int_t cutSet, Int_t doExclusion) {
       trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
       trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
       trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
-      cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
-      cgTrackCutsV0select->AddCut(gammaV0Cuts);
-      cgTrackCutsV0select->AddCut(trackCutsAOD);
-      trackCuts = cgTrackCutsV0select;
-      break;
-      
-    case kPbPb2011_V0select_1: doExclusion = kInclude; // and go on with kPbPb2011V0_1... (no break)
-    case kPbPb2011V0_1:
-      // primarily used for selection of V0s for TPC eta correction. with additional track cuts.
-      // inspired by "AliDielectronV0Cuts.cxx"
-      AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
-      // which V0 finder you want to use
-      gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
-      // add some pdg codes (they are used then by the KF package and important for gamma conversions)
-      gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
-      // add default PID cuts (defined in AliDielectronPID)
-      // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
-      //gammaV0Cuts->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
-      // add the pair cuts for V0 candidates
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
-      gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
-      //gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
-      // selection or rejection of V0 tracks
-      if (doExclusion==kExclude)  gammaV0Cuts->SetExcludeTracks(kTRUE);
-      else                        gammaV0Cuts->SetExcludeTracks(kFALSE);
-      // add the V0cuts directly to the track filter or to some cut group of it
-      
-      AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-      trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
-      trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
-      // some more default cuts automatically set by AliDielectronV0Cuts::InitEvent() !!!
-      
       cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
       cgTrackCutsV0select->AddCut(gammaV0Cuts);
       cgTrackCutsV0select->AddCut(trackCutsAOD);
@@ -1124,7 +1371,7 @@ AliAnalysisCuts* LMEECutLib::GetESDTrackCutsAna() {
   //cout << " >>>>>>>>>>>>>>>>>>>>>> ( do we run on ESD?! ) >>>>>>>>>>>>>>>>>>>>>> " << endl;
   //cout << " >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliESDtrackCuts* esdTrackCutsH = 0x0;
-  switch (selectedPIDAna) {
+  switch (selectedQualityAna) {
     default:
       // standard cuts with very loose DCA: Bit4 (Int: 16), AOD095&115
       
@@ -1161,7 +1408,7 @@ AliAnalysisCuts* LMEECutLib::GetMCTrackCuts() {
   cout << " >>>>>>>>>>>>>>>>>>>>>>  GetMCTrackCuts()  >>>>>>>>>>>>>>>>>>>>>> " << endl;
   //cout << " >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliAnalysisCuts* trackCuts=0x0;
-  switch (selectedPIDAna) {
+  switch (selectedQualityAna) {
     default:
       AliDielectronVarCuts* trackCutsMC =new AliDielectronVarCuts("trackCutsMC","trackCutsMC");
       trackCutsMC->SetCutOnMCtruth(kTRUE);

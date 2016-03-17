@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # process QA output into plots and trending
 # run without arguments for examples
 # origin: Mikolaj Krzewicki, mkrzewic@cern.ch
@@ -8,12 +8,18 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
-#include $ALICE_PHYSICS/PWGPP/scripts/utilities.sh (with dummy argument to execute)
-if ! source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh false; then
-  [[ -z "${ALICE_PHYSICS}" ]] && echo "\$ALICE_PHYSICS not defined!"
-  echo "could not source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh exiting..."
-  exit 1
-fi
+#run in proper mode depending on the selection
+for scr in "utilities.sh" "alilog4bash.sh"; do
+  if [[ -e $scr ]]; then
+    echo "Sourcing $scr from current directory"
+    source $scr false
+  elif [[ -e $ALICE_PHYSICS/PWGPP/scripts/$scr ]]; then
+    echo "Sourcing $scr from AliPhysics"
+    source $ALICE_PHYSICS/PWGPP/scripts/$scr false
+  else
+    exit 1
+  fi
+done
 
 [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && exit 1
 
@@ -216,6 +222,7 @@ updateQA()
 
       tmpRunDir=${tmpProductionDir}/000${runNumber}
       mkdir -p ${tmpRunDir}
+
       cd ${tmpRunDir}
 
       #check what kind of input file we have, default is a zip archive

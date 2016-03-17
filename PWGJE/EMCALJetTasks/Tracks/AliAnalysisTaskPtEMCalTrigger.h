@@ -13,6 +13,7 @@
 
 class TArrayD;
 class Axis;
+class THistManager;
 class AliClusterContainer;
 class AliEmcalJet;
 class AliESDtrack;
@@ -29,7 +30,6 @@ class AliVParticle;
  * triggered events.
  */
 namespace EMCalTriggerPtAnalysis {
-class AliEMCalHistoContainer;
 
 /**
  * \class AliAnalysisTaskPtEMCalTrigger
@@ -89,7 +89,7 @@ private:
   bool IsInRadius(const AliVCluster *const clust, const AliEmcalJet *reconstructedJet, Double_t radius) const;
 
   /// Histogram container for the task
-  AliEMCalHistoContainer        *fHistos;                 //!
+  THistManager                  *fHistos;                 //!
   TList 						            *fListTrackCuts;		      ///< List of track cuts
 
   // Cuts

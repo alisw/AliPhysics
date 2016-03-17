@@ -325,8 +325,8 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //!
   
-  TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
-  TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
+  TH3D *fHistCorrectionPlus[kCENTRALITY]; //====correction  Changed it from TH3F to TH3D
+  TH3D *fHistCorrectionMinus[kCENTRALITY]; //===correction  Changed it from TH3F to TH3D
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
 

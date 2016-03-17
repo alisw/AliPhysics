@@ -15,9 +15,11 @@
 
 # Module
 set(MODULE PWGUDupc)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/UPC
+		    ${AliPhysics_SOURCE_DIR}/PWGUD/UPC/nanoAOD
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -36,6 +38,9 @@ set(SRCS
     AliUPCMuonTrack.cxx
     AliUpcParticle.cxx
     AliUPCTrack.cxx
+    nanoAOD/AliAnalysisTaskFilterUPCNanoAOD.cxx
+    nanoAOD/AliAODUPCReplicator.cxx
+    nanoAOD/AliAnalysisTaskUpcTriggerCounter.cxx
    )
 
 # Headers from sources

@@ -302,13 +302,15 @@ Bool_t AliAnalysisTaskEmcalJetFlavourTagExample::Run()
   if(Njets<1)     return kTRUE;
   
   if (fTracksCont) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     while(track) {
       track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     }
   }
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0);
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster();
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);

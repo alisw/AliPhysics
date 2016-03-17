@@ -323,7 +323,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t collisionS
             else
             {
                 //seperate settings for ConvCalo and CaloCalo for pp/pPb
-                if (mode == 2){ //ConvCalo
+                if (mode == 2 || mode == 3){ //ConvCalo
                     Double_t fBinLimitsArrayMultiplicitypp_pPbConvCalo[5] = {1., 2., 3., 4., 9999};
                     for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                         fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicitypp_pPbConvCalo[i];

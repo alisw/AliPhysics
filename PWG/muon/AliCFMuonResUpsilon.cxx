@@ -324,7 +324,7 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 			AliError("Cannot get input event handler");
 			return;
 		}
-  	fESD = esdH->GetEvent();
+		fESD = (AliESDEvent*)esdH->GetEvent();
 
 	
 		Int_t ntrk=fESD->GetNumberOfMuonTracks();

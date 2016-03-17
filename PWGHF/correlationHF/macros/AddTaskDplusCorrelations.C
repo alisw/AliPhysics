@@ -2,6 +2,7 @@
 
 /* $Id: AddTaskDplusCorrelations.C 58712 2012-09-20 08:38:36Z prino $ */
 //AddTask for the Dplus - Hadron (or Kaon/K0) Corelation with same/mixed event
+//Jitendra Kumar (Last updated on 31.01.2016)
 
 AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Int_t  fOption = 1,
@@ -17,6 +18,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              TString fileTrackeff="",
                                                              Bool_t isDplusEff = kFALSE,
                                                              TString fileDplusEff="",
+                                                             Bool_t PoolbyPool=kFALSE,
                                                              Bool_t useCentrality = kFALSE)
 {
     
@@ -128,8 +130,9 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetTrackEffActive(isTrackEff);
     dpluscorrTask->SetDplusEffActive(isDplusEff);
     dpluscorrTask->SetSystem(useCentrality); //TRUE means pbpb Or pA
+    dpluscorrTask->SetPoolByPoolCorr(PoolbyPool); //TRUE means pbpb Or pA
     if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator);
-    
+    dpluscorrTask->SetCheckCutDist(kTRUE);
     
     
     //7. Create container for input/output

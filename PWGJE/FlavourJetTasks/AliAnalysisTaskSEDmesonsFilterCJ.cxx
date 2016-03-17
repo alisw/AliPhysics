@@ -67,6 +67,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fMaxMass(0.),
   fInhibitTask(kFALSE),
   fCombineDmesons(kFALSE),
+  fMultCand(kFALSE),
+  fAnalyseCand(0),
   fRejectQuarkNotFound(kTRUE),
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
@@ -134,6 +136,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fMaxMass(0.),
   fInhibitTask(kFALSE),
   fCombineDmesons(kFALSE),
+  fMultCand(kFALSE),
+  fAnalyseCand(0),
   fRejectQuarkNotFound(kTRUE),
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
@@ -587,10 +591,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   // For MC background fill fSideBandArray
   if (fUseMCInfo && !charmPart) {
     if (fUseReco) {
-      new ((*fSideBandArray)[fNSBCand]) AliAODRecoDecayHF2Prong(*charmCand);
+      if(!fMultCand) new ((*fSideBandArray)[fNSBCand]) AliAODRecoDecayHF2Prong(*charmCand);
+      else if(fNSBCand==fAnalyseCand) new ((*fSideBandArray)[0]) AliAODRecoDecayHF2Prong(*charmCand);
 
       if (fCombineDmesons) {
-        new ((*fCombinedDmesonsBkg)[fNSBCand]) AliEmcalParticle(charmCand);
+        if(!fMultCand) new ((*fCombinedDmesonsBkg)[fNSBCand]) AliEmcalParticle(charmCand);
+        else if(fNSBCand==fAnalyseCand) new ((*fCombinedDmesonsBkg)[0]) AliEmcalParticle(charmCand);
       }
 
       fHistImpParB->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
@@ -605,10 +611,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   else {
     // For data or MC with the requirement fUseReco fill with candidates
     if (fUseReco) {
-      new ((*fCandidateArray)[fNCand]) AliAODRecoDecayHF2Prong(*charmCand);
+      if(!fMultCand) new ((*fCandidateArray)[fNCand]) AliAODRecoDecayHF2Prong(*charmCand);
+      else if(fNCand==fAnalyseCand) new ((*fCandidateArray)[0]) AliAODRecoDecayHF2Prong(*charmCand);
 
       if (fCombineDmesons) {
-        new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(charmCand);
+        if(!fMultCand) new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(charmCand);
+        else if(fNCand==fAnalyseCand) new ((*fCombinedDmesons)[0]) AliEmcalParticle(charmCand);
       }
 
       fHistImpParS->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
@@ -618,7 +626,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
     }
     // For MC with requirement particle level fill with AliAODMCParticle
     else {
-      new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
+      if(!fMultCand) new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
+      else if(fNCand==fAnalyseCand) new ((*fCandidateArray)[0]) AliAODMCParticle(*charmPart);
     }
     fHistStat->Fill(3);
     fNCand++;
@@ -701,10 +710,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
   // For MC background fill fSideBandArray
   if (fUseMCInfo && !charmPart) {
     if (fUseReco) {
-      new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
+      if(!fMultCand) new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
+      else if(fNSBCand==fAnalyseCand) new ((*fSideBandArray)[0]) AliAODRecoCascadeHF(*dstar);
 
       if (fCombineDmesons) {
-        new ((*fCombinedDmesonsBkg)[fNSBCand]) AliEmcalParticle(dstar);
+        if(!fMultCand) new ((*fCombinedDmesonsBkg)[fNSBCand]) AliEmcalParticle(dstar);
+        else if(fNSBCand==fAnalyseCand) new ((*fCombinedDmesonsBkg)[0]) AliEmcalParticle(dstar);
       }
 
       fHistInvMassB->Fill(dstar->DeltaInvMass());
@@ -719,15 +730,18 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
   else {
     // For data or MC signal with the requirement fUseReco fill with candidates
     if (fUseReco) {
-      new ((*fCandidateArray)[fNCand]) AliAODRecoCascadeHF(*dstar);
+      if(!fMultCand) new ((*fCandidateArray)[fNCand]) AliAODRecoCascadeHF(*dstar);
+      else if(fNCand==fAnalyseCand) new ((*fCandidateArray)[0]) AliAODRecoCascadeHF(*dstar);
 
       if (fCombineDmesons) {
-        new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(dstar);
+        if(!fMultCand) new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(dstar);
+        else if(fNCand==fAnalyseCand) new ((*fCombinedDmesons)[0]) AliEmcalParticle(dstar);
       }
     }
     // For MC signal with requirement particle level fill with AliAODMCParticle
     else {
-      new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
+      if(!fMultCand) new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
+      else if(fNCand==fAnalyseCand) new ((*fCandidateArray)[0]) AliAODMCParticle(*charmPart);
     }
     fNCand++;
 
@@ -911,7 +925,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillDstarSideBands(AliAODRecoCascadeHF* d
   if (((dstar->InvMassD0() < (mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0() > (mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/   ||
       ((dstar->InvMassD0() > (mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0() < (mPDGD0+10.*fSigmaD0[bin]))) /*right side band*/) {
 
-    new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
+    if(!fMultCand) new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
+    else if(fNSBCand==fAnalyseCand) new ((*fSideBandArray)[0]) AliAODRecoCascadeHF(*dstar);
     fNSBCand++;
   }
 }

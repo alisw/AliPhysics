@@ -305,7 +305,7 @@ fOutput->Add(fhEventCounter);
     fOutput->Add(fhTriggerBitCounter);
 
     //  ########### DEFINE THE TRIGGER MASK ENERGY DISTRIBUTION ############    
-    fClustersEnergydistribution = new TH2F("fClustersEnergydistribution","Counter of Trigger Masks Energy Distributions; Bit; Energy",10,-0.5,9.5,300,0,150);
+    fClustersEnergydistribution = new TH2F("fClustersEnergydistribution","Counter of Trigger Masks Energy Distributions; Bit; Energy",12,-0.5,11.5,300,0,150);
     fClustersEnergydistribution->GetXaxis()->SetBinLabel(1,"ALL");
     fClustersEnergydistribution->GetXaxis()->SetBinLabel(2,"L0");
     fClustersEnergydistribution->GetXaxis()->SetBinLabel(3,"EGA1");
@@ -450,7 +450,8 @@ void AliAnalysisTaskEmcalHFCJQA::CheckClusTrackMatching()
   Double_t dphi = 999;
 
   //Get closest cluster to track
-  AliPicoTrack* PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetNextAcceptParticle(0));
+  fTracksCont->ResetCurrentID();
+  AliPicoTrack* PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetNextAcceptParticle());
   while(PicoTrack)
   {
 	AliVTrack* track = PicoTrack->GetTrack();
@@ -470,7 +471,8 @@ void AliAnalysisTaskEmcalHFCJQA::CheckClusTrackMatching()
   }
 
   //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  fCaloClustersCont->ResetCurrentID();
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
   while(cluster)
   {
     TLorentzVector nPart;
@@ -530,6 +532,7 @@ TriggersHistogram(InputEvent()->GetFiredTriggerClasses());
 fhTriggerMaskCounter->Fill(0);
 TriggersMaskHistogram(InputEvent()->GetTriggerMask());    
 TriggersBitHistogram(aod, fReadMC);
+
 
 //===========================
 //========================================================================================
@@ -628,10 +631,6 @@ for(Int_t itraod=0;itraod<aod->GetNumberOfTracks();itraod++){
   //======================================================================
 
 //======================================================================
-//Check EMCAL Clusters Energy "trigger"
-EnergyTriggers();
-
-//======================================================================
   //======================================================================
   //PID
   //Double_t nsigma=fpidResp->NumberOfSigmasTPC(atrack, AliPID::kElectron);
@@ -672,6 +671,12 @@ EnergyTriggers();
     fhnSigmaTPCTOFProton->Fill(p,nsigmaProtonTPC,nsigmaProtonTOF);
   }
  }
+
+
+//======================================================================
+//Check EMCAL Clusters Energy "trigger"
+EnergyTriggers();
+
 
 //======================================================================
 //JetContainer
@@ -784,7 +789,7 @@ PrintDebug(9,"Tracks Container");
        fhnSigmaTPCTOFKaon->Fill(p,nsigmaKaonTPC,nsigmaKaonTOF);
        fhnSigmaTPCTOFProton->Fill(p,nsigmaProtonTPC,nsigmaProtonTOF);
        //======================================================================
-       
+            
        //======================================================================
        //EMCal Clusters
        Int_t nClsId = track->GetEMCALcluster();

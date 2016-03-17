@@ -54,6 +54,7 @@ Double_t myFunc(Double_t* xp, Double_t* pp);
 /**
  * Class to draw dN/deta results 
  * 
+ * @deprecated Use new GSE based drawing 
  * @ingroup pwglf_forward_dndeta
  */
 struct dNdetaDrawer 
@@ -527,6 +528,12 @@ struct dNdetaDrawer
 	   Float_t     vzMax=-999, 
 	   const char* base="")
   {
+    Warning("Run","\n"
+	    "============================================================\n"
+	    "\n"
+	    "This script is deprecated.  Please use new GSE based drawing\n"
+	    "\n"
+	    "============================================================\n");
     TString  ostr(others); ostr.ToUpper();
     UShort_t obits = 0x0;
     if (ostr.EqualTo("ALL")) obits = 0xf;
@@ -3423,6 +3430,7 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 /** 
  * Display usage information
  * 
+ * @deprecated Use new GSE based drawing 
  */
 void
 Usage()
@@ -3504,6 +3512,7 @@ Usage()
  * @param centMax   Largest centrality 
  *
  * @ingroup pwglf_forward_dndeta
+ * @deprecated Use new GSE based drawing 
  */
 void
 DrawdNdeta(const char* filename="forward_dndeta.root", 

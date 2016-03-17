@@ -10,6 +10,10 @@ class TString;
 #endif
 
 
+/** 
+ * Extract information on a production. 
+ * 
+ */
 struct ExtractProd
 {
   TString fTmp;
@@ -17,12 +21,22 @@ struct ExtractProd
   TString fPass;
   TString fRuns;
   Bool_t  fDebug;
-
+  /** 
+   * Constructor 
+   */
   ExtractProd() 
     : fTmp(""), fPath(""), fPass(""), fRuns(""), fDebug(false)
   {
   }
-  
+  /** 
+   * Run the code.  Query MonALisa for information.  
+   * 
+   * @param name      Production identifier 
+   * @param mc        If true, assume simulations 
+   * @param minSize   Least size of runs to use 
+   * 
+   * @return true on success. 
+   */  
   Bool_t Run(const TString& name, Bool_t mc=false, ULong_t minSize=1000000)
   {
     fTmp = "prod";
@@ -46,6 +60,15 @@ struct ExtractProd
     gSystem->Unlink(fTmp);
     return true;
   }
+  /** 
+   * Get the job url. 
+   * 
+   * @param name  Production name  
+   * @param mc    Should be true for MC 
+   * @param url   On return, the job url 
+   * 
+   * @return true on success 
+   */
   Bool_t GetJobUrl(const TString& name, Bool_t mc, TString& url)
   {
     url = "";
@@ -75,6 +98,15 @@ struct ExtractProd
 
     return true;
   }
+  /** 
+   * Get list of runs associated with production
+   *  
+   * @param url     The production URL 
+   * @param mc      True of MC
+   * @param minSize Least size of runs to use 
+   * 
+   * @return true on success
+   */
   Bool_t GetRuns(const TString& url, Bool_t mc, ULong_t minSize)
   {
     TString index("job");
@@ -119,6 +151,16 @@ struct ExtractProd
 
     return true;
   }
+  /** 
+   * Get the size of a given run 
+   * 
+   * @param in       Input stream 
+   * @param runNo    Run number to search for 
+   * @param mc       True for simulations 
+   * @param minSize  Least size 
+   * 
+   * @return true on success 
+   */
   Bool_t GetSize(std::istream& in, ULong_t runNo, 
 		 Bool_t mc, ULong_t minSize=100000)
   {
@@ -164,6 +206,15 @@ struct ExtractProd
     } while (!in.eof());
     return true;
   }
+  /** 
+   * Get a directory 
+   * 
+   * @param in    Input stream
+   * @param runNo The run number 
+   * @param mc    True for MC 
+   * 
+   * @return true on success 
+   */
   Bool_t GetDir(std::istream& in, ULong_t runNo, Bool_t mc)
   {
     TString line;
@@ -206,6 +257,16 @@ struct ExtractProd
     } while (!in.eof());
     return true;
   }
+  /** 
+   * Get the pass from the path 
+   * 
+   * @param dir   Directory
+   * @param run   Run number 
+   * @param path  On return, the path 
+   * @param pass  On return, the pass 
+   * 
+   * @return true on success 
+   */
   Bool_t GetPathPass(const TString& dir, ULong_t run, 
 		     TString& path, TString& pass) 
   {
@@ -221,6 +282,14 @@ struct ExtractProd
     pass = dir(last+1,dir.Length()-last-1);
     return true;
   }
+  /** 
+   * Download a file from monalisa 
+   * 
+   * @param url URL to download 
+   * @param out On return, the content of the file 
+   * 
+   * @return true on success 
+   */
   Bool_t Download(const TString& url, TString& out)
   {
     const TString base("http://alimonitor.cern.ch");
@@ -238,3 +307,6 @@ struct ExtractProd
   }
 };
 
+//
+// EOF
+// 

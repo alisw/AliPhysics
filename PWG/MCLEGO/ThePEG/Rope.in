@@ -1,6 +1,6 @@
 read LHCpp.in
 
-set LHCGenerator:EventHandler:LuminosityFunction:Energy 7000
+set LHCGenerator:EventHandler:LuminosityFunction:Energy 13000
 
 ## setup outputs/analyses
 create ThePEG::HepMCFile HepMCFile HepMCAnalysis.so

@@ -345,6 +345,7 @@ Ratio(TH1* h, TF1* f, const char* title)
  * 
  * @return Merged histogram or null 
  *
+ * @deprecated Use new GSE based drawing 
  * @ingroup pwglf_forward_scripts
  */
 TH1D* 
@@ -389,6 +390,7 @@ GetUA5Data(UShort_t type, TH1*& p, TH1*& n,
  * @param fname Input file name 
  * @param rebin Re-binning factor 
  *
+ * @deprecated Use new GSE based drawing 
  * @ingroup pwglf_forward_scripts
  */
 void

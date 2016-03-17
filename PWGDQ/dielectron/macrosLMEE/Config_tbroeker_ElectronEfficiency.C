@@ -17,15 +17,15 @@ Double_t    rejCutPhiV;
 // eta bins
 const Double_t EtaMin   = -1.;
 const Double_t EtaMax   =  1.;
-const Int_t    nBinsEta = 20; //flexible to rebin
+const Int_t    nBinsEta = 10; //flexible to rebin
 // phi bins
 const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
-const Int_t    nBinsPhi = 50; //flexible to rebin
+const Int_t    nBinsPhi = 60; //flexible to rebin
 const Double_t PtBins[] = {
   0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
-  4.00,5.0,6.0,7.0,8.0,10.0,20.0
+  4.00,5.0,6.0,7.0,10.0,20.0
 };
 Bool_t CalcResolution = kTRUE;
 Bool_t doPairing = kTRUE;
@@ -129,6 +129,22 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   // -----
   // produce analysis filter by using functions in this config:
   // -----
+  
+  if (cutInstance==100) {
+    // kinematic cuts for the legs during pair efficiency determination:
+    AliDielectronVarCuts *kineCuts = new AliDielectronVarCuts("kineCuts","kineCuts");  
+    kineCuts->AddCut(AliDielectronVarManager::kEta, -0.8, 0.8);
+    kineCuts->AddCut(AliDielectronVarManager::kPt,   0.2, 1000.);
+    anaFilter->AddCuts( kineCuts );
+    return anaFilter; // return here because we dont want any other cuts.
+  }
+  if(cutInstance == 101){
+    rejCutMee=-1;
+    rejCutTheta=-1.;/*50.e-3*/;
+    rejCutPhiV=3.2;
+    return 0x0;
+  }
+  
   anaFilter->AddCuts( SetupTrackCuts(cutInstance) );
   if(cutInstance == 25){
     AliDielectronVarCuts *pInCut = new AliDielectronVarCuts("pInCut","pInCut");  
@@ -157,6 +173,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   // selection or rejection of V0 tracks
   if(cutInstance < 20)  
   anaFilter->AddCuts( noconv );
+  
   
   
   std::cout << "...cuts added!" <<std::endl; 

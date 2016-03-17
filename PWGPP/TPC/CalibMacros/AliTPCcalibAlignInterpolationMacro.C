@@ -14,7 +14,7 @@
 */
 
 
-#include  "TFile.h"
+#include "TFile.h"
 #include "TTree.h"
 #include "TVectorF.h"
 #include "TSystem.h"
@@ -38,33 +38,37 @@
 #include "AliTPCcalibAlignInterpolation.h"
 #include "AliNDLocalRegression.h"
 #include "AliMathBase.h"
-
-
+#include "TGrid.h"
+#include "AliCDBManager.h"
+#include "AliGRPManager.h"
+#include "TGeoGlobalMagField.h"
 
 TTree * treeDist =0;   // global tree used to check the content of the fit
 
 void AliTPCcalibAlignInterpolationLoop(Int_t nchunks, Int_t neventsMax);
-void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const char *outputFile, Int_t delta=1);
-void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1);
+void CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const char *outputFile, Int_t delta=1);
 
 
-void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param1=0){
-  if (action==0)   AliTPCcalibAlignInterpolationLoop(100000,1000000000);
-  if (action==1)    {
+void AliTPCcalibAlignInterpolationMacro(Int_t action, Int_t param0=0, Int_t param1=0){
+
+  Int_t isGrid = TString(gSystem->Getenv("onGrid")).Atoi();
+  if (isGrid > 0) TGrid::Connect("alien://");
+  
+  if (action == 0) AliTPCcalibAlignInterpolationLoop(100000,1000000000);
+  if (action == 1) {
     Int_t startTime=TString(gSystem->Getenv("mapStartTime")).Atoi();
     Int_t stopTime =TString(gSystem->Getenv("mapStopTime" )).Atoi();
     AliTPCcalibAlignInterpolation::FillHistogramsFromChain("residual.list", 6,4,startTime, stopTime, param1,param0);
   }
-  if (action==4)    AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers("residual.list",1,1,1);
-
-
-  if (action==2) {
+  
+  if (action == 2) {
     Int_t startTime=TString(gSystem->Getenv("mapStartTime")).Atoi();
     TString outFile = TString::Format("ResidualHistograms_His%d.root",param0);
     if (startTime>0)  outFile = TString::Format("ResidualHistograms_His%d_Time%d.root",param0,startTime);
     CreateDistortionMapsFromFile(param0, outFile.Data(),TString::Format("ResidualMapFull_%d.root",param0).Data(), param1);
   }
-  if (action==3){ //make distortion fit
+
+  if (action == 3) { //make distortion fit
     TString inputFile=gSystem->Getenv("inputFile");
     TString inputTree=gSystem->Getenv("inputTree");
     Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
@@ -73,30 +77,60 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
     Float_t theta0=TString(gSystem->Getenv("varTheta0")).Atof();
     Float_t theta1=TString(gSystem->Getenv("varTheta1")).Atof();
     ::Info("AliTPCcalibAlignInterpolationM","MakeFit");
-    printf("Env varaible:\n%s\t%s\t%s\t%s\t%s\t%s\t\n",inputFile.Data(), inputTree.Data(), gSystem->Getenv("varSec0") , gSystem->Getenv("varSec1"), 	gSystem->Getenv("varTheta0"), gSystem->Getenv("varTheta1"));	          
+    printf("Env varaible:\n%s\t%s\t%s\t%s\t%s\t%s\t\n",inputFile.Data(), inputTree.Data(), gSystem->Getenv("varSec0") , gSystem->Getenv("varSec1"), gSystem->Getenv("varTheta0"), gSystem->Getenv("varTheta1"));	          
     printf("%s\t%s\t%d\t%d\t%f\t%f\t\n",inputFile.Data(), inputTree.Data(), sec0,sec1,theta0,theta1);		      
 
-    MakeNDFit(inputFile, inputTree, sec0,sec1,theta0,theta1);		      
+    AliTPCcalibAlignInterpolation::MakeNDFit(inputFile, inputTree, sec0,sec1,theta0,theta1);		      
   } 
 
-  if (action==5) {
+  if (action == 4) AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers("residual.list",1,1,1);
+
+  if (action == 5) {
     Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
-     AliTPCcalibAlignInterpolation::MakeEventStatInfo("cat residual.list",300,param0,1);
+    Printf("runNumber = %d", runNumber);
+    AliTPCcalibAlignInterpolation::MakeEventStatInfo("cat residual.list",300,param0,1);
   }
 
-  if (action==6){  //fit drift velocity
+  if (action == 6){  //fit drift velocity
     Int_t deltaT=TString(gSystem->Getenv("driftDeltaT" )).Atoi();
     Int_t sigmaT=TString(gSystem->Getenv("driftSigmaT" )).Atoi();
+    if (deltaT<=0 || sigmaT<=0){
+      ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %d and sigmaT", deltaT, sigmaT);
+      return;
+    }
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","Begin");
     AliTPCcalibAlignInterpolation::FitDrift(deltaT, sigmaT);
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","End");
   }
- 
+
+  if (action == 7) {  //exporting of drift velocity calibration to OCDB
+    TString targetOCDBDir = TString(gSystem->Getenv("targetOCDBDir")); // to where OCDB entry are PUT
+    Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
+    AliCDBManager::Instance()->SetDefaultStorage("raw://"); // from where OCDB are READ
+    AliCDBManager::Instance()->SetRun(runNumber);
+    // magnetic field
+    if ( !TGeoGlobalMagField::Instance()->GetField() ) {
+      printf("Loading field map...\n");
+      AliGRPManager grpMan;
+      if( !grpMan.ReadGRPEntry() ) { 
+	printf("Cannot get GRP entry\n"); 
+      }
+      if( !grpMan.SetMagField() ) { 
+	printf("Problem with magnetic field setup\n"); 
+      }
+    }
+    Printf("The entry will be put in %s for run %d", targetOCDBDir.Data(), runNumber);
+    ::Info("AliTPCcalibAlignInterpolation::MakeVDriftOCDB","Begin");
+    AliTPCcalibAlignInterpolation::MakeVDriftOCDB("fitDrift.root", runNumber, targetOCDBDir);
+    ::Info("AliTPCcalibAlignInterpolation::MakeVDriftOCDB","End");
+  }
+
 }
 
 void AliTPCcalibAlignInterpolationLoop(Int_t nchunks, Int_t neventsMax){
   //
-  //
+  // Invocation of the AliTPCcalibAlignInterpolation from the macro for test purposes (instead of train usage)
+  //  
   //
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
   calibInterpolation->SetStreamLevel( AliTPCcalibAlignInterpolation::kStremInterpolation);
@@ -289,147 +323,6 @@ void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const cha
 }
 
 
-void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1){
-  //
-  /*
-    const char * inputFile="ResidualMapFull_1.root"
-    const char * inputTree="deltaRPhiTPCITSTRDDist"
-    Float_t sector0=2, sector1 =3;
-    Float_t theta0=0, theta1=1;
-  */
-  TTreeSRedirector * pcstream = new TTreeSRedirector(TString::Format("%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
-  TTreeSRedirector * pcstreamFit = new TTreeSRedirector(TString::Format("fitTree_%sFit_sec%d_%d_theta%d_%d.root",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data(),"recreate");
-
-  Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
-  TFile * fdist = TFile::Open(inputFile);
-  if (!fdist){
-    ::Error("MakeNDFit","Intput file %s not accessible\n",inputFile);
-    return;
-  }
-  treeDist = (TTree*)fdist->Get(inputTree);
-  if (!treeDist){
-    ::Error("MakeNDFit","Intput tree %s not accessible\n",inputTree);
-    return;    
-  }
-  const Double_t pxmin=8.48499984741210938e+01; //param.GetPadRowRadii(0,0)-param.GetPadPitchLength(0,0)/2
-  const Double_t pxmax=2.46600006103515625e+02; //2.46600006103515625e+02param.GetPadRowRadii(36,param.GetNRow(36)-1)+param.GetPadPitchLength(36,param.GetNRow(36)-1)/2.
-  Int_t     ndim=4;
-  Int_t     nbins[4]= {10,  (sector1-sector0-0.1)*15,        abs(theta1-theta0)*10,        3};  // {radius, phi bin, }
-  Double_t  xmin[4] = {pxmin,  sector0+0.05,   theta0,                            -2.0};
-  Double_t  xmax[4] = {pxmax, sector1-0.05,   theta1,               2.0};
-  //
-
-  THnF* hN= new THnF("exampleFit","exampleFit", ndim, nbins, xmin,xmax);
-  treeDist->SetAlias("isOK","rms>0&&entries>50&&abs(rmsG/rms)<2&&abs(mean-meanG)<6");
-  TCut cutFit="isOK&&abs(mean-meanG)<6.0";
-  TCut cutAcceptFit=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0-0.5,sector1+0.5,theta0,theta1).Data();
-  TCut cutAcceptDraw=TString::Format("sectorCenter>%f&&sectorCenter<%f&&kZCenter>%f&&kZCenter<%f", sector0,sector1,theta0,theta1).Data();
-  
-  AliNDLocalRegression *fitCorrs[6]={0};
-  for (Int_t icorr=0; icorr<2; icorr++){
-    fitCorrs[icorr]= new  AliNDLocalRegression();
-    fitCorrs[icorr]->SetName(TString::Format("%sFit%d_sec%d_%d_theta%d_%d",inputTree,icorr, Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data());  
-    Int_t hashIndex=fitCorrs[icorr]->GetVisualCorrectionIndex();
-    fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
-    TStopwatch timer;
-    fitCorrs[0]->SetStreamer(pcstream);
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"5:0.05:0.1:3","2:2:2:2",0.0001);
-    if (icorr==1) fitCorrs[icorr]->MakeFit(treeDist,"mean:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"7.:0.075:0.15:3","2:2:2:2",0.0001);
-    timer.Print();
-    AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
-    treeDist->SetAlias(TString::Format("meanG_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());
-  }
-  //
-  // Make smoothing at boundaries
-  //    
-  fitCorrs[2]=(AliNDLocalRegression *)fitCorrs[0]->Clone();
-  fitCorrs[3]=(AliNDLocalRegression *)fitCorrs[1]->Clone();
-  Int_t nDims=4;
-  Int_t indexes[4]={0,1,2,3};
-  Double_t relWeight0[12]={1,1,1,   1,1,1, 1,1,1, 1,1,1};
-  Double_t relWeightC[12]={0.25,1,1,   0.25,1,1, 0.5,1,1, 0.25,1,1};
-  for (Int_t iter=0; iter<3; iter++){
-    fitCorrs[2]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, 0);
-    fitCorrs[3]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeight0, 0);
-  }
-  fitCorrs[4]=(AliNDLocalRegression *)fitCorrs[2]->Clone();
-  fitCorrs[5]=(AliNDLocalRegression *)fitCorrs[3]->Clone();
-  fitCorrs[4]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeightC, 0, kTRUE);
-  fitCorrs[5]->AddWeekConstrainsAtBoundaries(nDims, indexes,relWeightC, 0, kTRUE);
-  fitCorrs[2]->SetName(TString::Format("%s_Smooth3",fitCorrs[0]->GetName()).Data());
-  fitCorrs[3]->SetName(TString::Format("%s_Smooth3",fitCorrs[1]->GetName()).Data());
-  fitCorrs[4]->SetName(TString::Format("%s_SmoothConst3",fitCorrs[0]->GetName()).Data());
-  fitCorrs[5]->SetName(TString::Format("%s_SmoothConst3",fitCorrs[1]->GetName()).Data());  
-  //
-  // Make QA and Store fit
-  //
-  TCanvas *canvasQA = new TCanvas("canvasQA","canvasQA",1200,1000);
-  canvasQA->Divide(1,4);
-  
-  TH1* his=0;
-  TFile * fout = pcstream->GetFile();
-  pcstream->GetFile()->cd();
-  for (Int_t iter=0; iter<6; iter++){
-    fitCorrs[iter]->Write();
-    fitCorrs[iter]->DumpToTree(4, (*pcstreamFit)<<TString::Format("tree%s", fitCorrs[iter]->GetName()).Data());
-  }
-  canvasQA->cd(1)->SetLogz();
-  treeDist->Draw("meanG_Fit0:meanG>>hisQA2D(200,-1,1,200,-1,1)",cutFit+cutAcceptDraw,"colz");
-  treeDist->GetHistogram()->Write("hisQA2D");
-  canvasQA->cd(2)->SetLogy();
-  //
-  treeDist->SetLineColor(1); treeDist->SetMarkerColor(1);
-  treeDist->Draw("meanG_Fit0-meanG>>hisQA1D(300,-0.5,0.5)",cutFit+cutAcceptDraw,"");
-  his=treeDist->GetHistogram();
-  Double_t mean=his->GetMean();
-  Double_t rms=his->GetRMS();
-  treeDist->GetHistogram()->Write("hisQA1D");
-  treeDist->SetLineColor(2); treeDist->SetMarkerColor(2);
-  treeDist->Draw("meanG_Fit0-meanG_Fit1>>hisQA1DifFit(300,-0.5,0.5)",cutFit+cutAcceptDraw,"same");
-  his=treeDist->GetHistogram();
-  Double_t meanDiffFit=his->GetMean();
-  Double_t rmsDiffFit=his->GetRMS();
-  treeDist->GetHistogram()->Write("hisQA1DifFit");
-
-  treeDist->SetLineColor(1); treeDist->SetMarkerColor(1);
-  canvasQA->cd(3)->SetLogy();
-  treeDist->Draw("(meanG_Fit0-meanG)/(rms/sqrt(entries))>>hisQAPull(100,-10,10)",cutFit+cutAcceptDraw,"");
-  his=treeDist->GetHistogram();
-  Double_t meanPull=his->GetMean();
-  Double_t rmsPull=his->GetRMS();
-  treeDist->GetHistogram()->Write("hisQAPull");
-  treeDist->SetLineColor(2); treeDist->SetMarkerColor(2);
-  treeDist->Draw("(meanG_Fit0-meanG_Fit1)/(rms/sqrt(entries))>>hisQAPullDifFit(100,-10,10)",cutFit+cutAcceptDraw,"same");
-  his=treeDist->GetHistogram();
-  Double_t meanPullDiffFit=his->GetMean();
-  Double_t rmsPullDiffFit=his->GetRMS();
-  treeDist->GetHistogram()->Write("hisQAPullDiffFit");
-
-  canvasQA->SaveAs((TString::Format("%sFit_sec%d_%d_theta%d_%dQA.png",inputTree,Int_t(sector0),Int_t(sector1),Int_t(theta0),Int_t(theta1)).Data()));
-  TObjString input=inputTree;
- 
-  (*pcstream)<<"qa"<<
-    "input.="<<&input<<
-    "runNumber="<<runNumber<<
-    "sec0="<<sector0<<
-    "sec1="<<sector1<<
-    "theta0="<<theta0<<
-    "theta1="<<theta1<<
-    "mean="<<mean<<
-    "rms="<<rms<<
-    "meanPull="<<meanPull<<
-    "rmsPull="<<rmsPull<<
-    //
-    "meanDiffFit="<<meanDiffFit<<
-    "rmsDiffFit="<<rmsDiffFit<<
-    "meanPullDiffFit="<<meanPullDiffFit<<
-    "rmsPullDiffFit="<<rmsPullDiffFit<<
-    "\n";
-  
-  delete pcstream;
-  delete pcstreamFit;
-
-}
 
 void loadDistortionTree(){
   //
@@ -489,107 +382,17 @@ void makeCurrentTrend(){
 }
 
 
-Bool_t  FitDrift(TTree * treeIn, Int_t timeStampMin, Int_t timeStampMax, Int_t npointMax, const char delta){
-  //
-  // Make drift velocity+radial distortion rough linear fit 
-  // see  fitDriftString string - radial components idnependent on A side and C side
-  //
-  //   1.) Make fit 
-  //   2.) Make QA plots
-  //   3.) Store fit value in the tree user info
-  //
-  /*
-    const char * chInput="/hera/alice/alien/calib/alice/data/2015/LHC15o/000245231/cpass0_pass1/ResidualMerge/001/ResidualTrees.root";    
-    TFile * finput = TFile::Open(chInput);
-    TTree * treeIn = (TTree*)finput->Get("delta");
-    npointMax=10000;
-    delta="tof1.fElements";
-
-  */
-  const Int_t kMinPoints=100;
-  treeIn->SetAlias("drift","(1-abs(vecZ.fElements)/250.)");
-  treeIn->SetAlias("normR","(vecR.fElements/250.)");
-  treeIn->SetAlias("normGY","(sin(vecPhi.fElements)*vecR.fElements/250.)");
-  treeIn->SetAlias("sideA","(int(vecSec.fElements)%36)<18");
-  treeIn->SetAlias("sideC","(int(vecSec.fElements)%36)>=18");
-  treeIn->SetAlias("delta","tof1.fElements");
-  //
-  // 1.) Make fit
-  //
-  Int_t  npointsMax=2000;
-  TStatToolkit toolkit;
-  Double_t chi2=0;
-  Int_t    npoints=0;
-  TVectorD param;
-  TMatrixD covar;
-  TString fitDriftString="";
-  fitDriftString+="drift*(2*sideA-1)++";
-  fitDriftString+="drift*normGY*(2*sideA-1)++";
-  fitDriftString+="sideA*normR++";         // elements to correct for the radial distortions
-  fitDriftString+="sideA*normR*drift++";   // 
-  fitDriftString+="sideC*normR++";
-  fitDriftString+="sideC*normR*drift++";
-  // 
-  TCut cutFit="Iteration$<npValid&&vecZ.fElements!=0&&abs(delta)<20";  
-  TString *strDrift = TStatToolkit::FitPlane(treeIn,"delta:1", fitDriftString.Data(),cutFit, chi2,npoints,param,covar,-1,0, npointsMax/5);
-  if (npoints==kMinPoints) return kFALSE;
-  
-  //
-  treeIn->SetAlias("fitDrift",strDrift->Data());
-  strDrift = TStatToolkit::FitPlane(treeIn,"delta:1", fitDriftString.Data(),cutFit+"abs(fitDrift-delta)<5", chi2,npoints,param,covar,-1,0, npointsMax/2);
-  treeIn->SetAlias("fitDrift",strDrift->Data());
-  strDrift = TStatToolkit::FitPlane(treeIn,"delta:1", fitDriftString.Data(),cutFit+"abs(fitDrift-delta)<5", chi2,npoints,param,covar,-1,0, npointsMax);
-  treeIn->SetAlias("fitDrift",strDrift->Data());
-  TObjArray* tokArr = strDrift->Tokenize("++");
-  tokArr->Print();
-  //
-  // 2.) drift QA plots
-  //
-  TH1 * hisQA[4]={0};
-  TObjArray fitArray(3);
-  treeIn->Draw("delta-fitDrift:vecR.fElements:vecPhi.fElements>>hisSecA(90,-3.14,3.14,20,85,245)",cutFit+"sideA&&abs(fitDrift-delta)<2.5","profcolzgoff",4*npointsMax);
-  hisQA[0]=(TH1*)treeIn->GetHistogram()->Clone();
-  treeIn->Draw("delta-fitDrift:vecR.fElements:vecPhi.fElements>>hisSecC(90,-3.14,3.14,20,85,245)",cutFit+"sideC&&abs(fitDrift-delta)<2.5","profcolzgoff",4*npointsMax);
-  hisQA[1]=(TH1*)treeIn->GetHistogram()->Clone();
-  //
-  treeIn->Draw("delta-fitDrift:vecZ.fElements>>hisZ(44,-220,220,100,-3,3)",cutFit+"","colzgoff",4*npointsMax);
-  hisQA[2]=(TH1*)treeIn->GetHistogram()->Clone();
-  ((TH2*)hisQA[2])->FitSlicesY(0,0,-1,0,"QNR",&fitArray);
-  //
-  //
-  //
-  TCanvas *canvasZFit = new TCanvas("canvasZFit","canvasZFit",1000,800);
-  canvasZFit->Divide(1,3);
-  canvasZFit->cd(1);
-  hisQA[0]->Draw("colz");
-  canvasZFit->cd(2);
-  hisQA[1]->Draw("colz");
-  canvasZFit->cd(3);
-  hisQA[2]->Draw("colz");
-  fitArray.At(1)->Draw("same");
-  canvasZFit->SaveAs("ATO-108_canvasZFit.png");
-  //
-  //gStyle->SetOptStat();
-  TCanvas *canvasZFitModel = new TCanvas("canvasZFitModel","canvasZFitModel",1000,800);
-  canvasZFitModel->Divide(3,1);
-  canvasZFitModel->cd(1);
-  treeIn->Draw("delta:vecZ.fElements",cutFit+"","",npointsMax);
-  canvasZFitModel->cd(2);
-  treeIn->Draw("delta:fitDrift",cutFit+"","",npointsMax);
-  canvasZFitModel->cd(3);
-  treeIn->Draw("fitDrift*(2*sideA-1):vecZ.fElements:vecR.fElements",cutFit+"","profcolz",4*npointsMax);
-  canvasZFitModel->SaveAs("ATO-108_canvasZFitModel.png");
-  //
-  // 
-  //
-
-}
 
 
-void DrawFailedFits(const char * fname, const char * treeName, Int_t firstEntry=0, Int_t entriesDraw=9){
+void DrawFailedFitsExample(const char * fname, const char * treeName, Int_t firstEntry=0, Int_t entriesDraw=9){
+  //
+  // Function to draw the TH1 where the Gaussian fit failed
+  //   this function was important at the moment when we considered gaussian fit to be default position estimator
+  // Later on decided LTM estimator used instead
   //
   //
-  /*
+  //
+  /* 
     fname="/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o0901/000245231/Time1448613300/his1/ResidualMapFull_1.root";
     treeName="deltaRPhiTPCITSTRDDistDump";
     firstEntry=0;
@@ -691,9 +494,10 @@ void DumpDiffEstimators(const char *fname0,const char *fname1, const char *treeN
 }
 
 Bool_t LTMHisto(TH1 *his, TVectorD &params , Float_t fraction){
-  //
-  // LTM : Trimmed mean on histogram - Modified version for binned data
   // 
+  // LTM : Trimmed mean on histogram - Modified version for binned data
+  //       Using binned information     
+  //
   // Robust statistic to estimate properties of the distribution
   // To handle binning error special treatment
   // for definition of unbinned data see:
@@ -735,3 +539,4 @@ Bool_t LTMHisto(TH1 *his, TVectorD &params , Float_t fraction){
   params[3]=rms/TMath::Sqrt(fraction*all);
   return kTRUE;
 }
+

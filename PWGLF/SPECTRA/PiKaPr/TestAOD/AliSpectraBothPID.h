@@ -21,11 +21,13 @@ class AliVTrack;
 class AliAODMCParticle;
 class TParticle;
 class AliPIDResponse;  
-class AliSpectraBothTrackCuts; 
+class AliSpectraBothTrackCuts;
+class AliESDtrack; 
 
 #include "TNamed.h"
 #include "TParticle.h"
-#include "AliSpectraBothHistoManager.h" 
+#include "AliSpectraBothHistoManager.h"
+#include "AliPID.h" 
 
 /*namespace AliSpectraNameSpaceBoth {
 
@@ -61,10 +63,11 @@ public:
   Int_t  GetParticleSpecie(AliSpectraBothHistoManager * hman,AliVTrack * trk, AliSpectraBothTrackCuts * trackCuts, Bool_t* rec);
   Int_t GetParticleSpecie(AliAODMCParticle * trk);
   Int_t GetParticleSpecie(TParticle * trk);
-  
+  void SetoldT0();
   
   
   Long64_t Merge(TCollection* list);
+  Float_t GetMissMatchNsigma(AliVTrack* track ,AliPID::EParticleType type);
 
 
 private:
@@ -74,11 +77,13 @@ private:
   AliPIDResponse   *fPIDResponse;     // ! PID response object
   Float_t fshiftTPC; // shift of the nsigma TPC
  Float_t fshiftTOF; // shift of the nsigma TPC
+  Float_t* foldT0; //! old TOF Response 
+  Int_t fNoldT0bins; // N bins for T0 array 	
 
   AliSpectraBothPID(const AliSpectraBothPID&);
   AliSpectraBothPID& operator=(const AliSpectraBothPID&);
 
-  ClassDef(AliSpectraBothPID, 3);
+  ClassDef(AliSpectraBothPID, 43);
 
 };
 #endif

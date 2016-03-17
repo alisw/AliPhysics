@@ -36,6 +36,10 @@
 /// 2015.11.19 Added histogram settings
 /// 2016.01.18 L1 phases read once at the beginning of lego train
 /// 2016.01.23 revert L1 phase and 100ns shift for runs before LHC15n muon calo pass1
+/// 2016.01.28 correction for L1 phase shift for runs before LHC15n muon calo pass1
+/// 2016.02.02 added flag to fill heavy histograms
+/// 2016.02.03 added bad channel map
+/// 2016.02.08 added control histograms for low gain separatelly
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -82,7 +86,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMinCellEnergy(0),
     fReferenceFileName(),
     fReferenceRunByRunFileName(),
-    fReferenceWrongL1PhasesRunByRunFileName(),
     fPileupFromSPD(kFALSE),
     fMinTime(0),
     fMaxTime(0),
@@ -95,11 +98,19 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fEnergyNbins  (0),
     fEnergyMin(0),
     fEnergyMax(0),
+    fEnergyLGNbins  (0),
+    fEnergyLGMin(0),
+    fEnergyLGMax(0),
     fFineNbins(0),
     fFineTmin(0),
     fFineTmax(0),
     fL1PhaseList(0),
-    fWrongL1PhaseList(0),
+    fBadReco(kFALSE),
+    fFillHeavyHisto(kFALSE),
+    fBadChannelMapArray(),
+    fBadChannelMapSet(kFALSE),
+    fSetBadChannelMapSource(0),
+    fBadChannelFileName(),
     fhcalcEvtTime(0),
     fhEvtTimeHeader(0),
     fhEvtTimeDiff(0),
@@ -120,9 +131,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhAllAverageBC(),
     fhAllAverageLGBC(),
     fhRefRuns(0),
-    fhWrongL1Phases(0),
     fhTimeDsup(),
     fhTimeDsupBC(),
+    fhTimeDsupLG(),
+    fhTimeDsupLGBC(),
     fhRawTimeVsIdBC(),
     fhRawTimeSumBC(),
     fhRawTimeEntriesBC(),
@@ -130,12 +142,15 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhRawTimeVsIdLGBC(),
     fhRawTimeSumLGBC(),
     fhRawTimeEntriesLGBC(),
-    fhRawTimeSumSqLGBC()
+    fhRawTimeSumSqLGBC(),
+    fhRawCorrTimeVsIdBC(),
+    fhRawCorrTimeVsIdLGBC(),
+    fhTimeVsIdBC(),
+    fhTimeVsIdLGBC()
     { ; }
   
   AliAnalysisTaskEMCALTimeCalib(const char *name);
-  //virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
-  ~AliAnalysisTaskEMCALTimeCalib();
+  virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
   
   //  virtual void   LocalInit();
   //virtual Bool_t Notify();
@@ -158,10 +173,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
   TString  GetReferenceRunByRunFileName() { return fReferenceRunByRunFileName ; }
-  TString  GetReferenceWrongL1PhasesRunByRunFileName() { return fReferenceWrongL1PhasesRunByRunFileName ; }
   TString  GetGeometryName()      { return fGeometryName      ; }
   Double_t GetMinTime()           { return fMinTime           ; }
   Double_t GetMaxTime()           { return fMaxTime           ; }
+  TString  GetBadChannelFileName() { return fBadChannelFileName ; }
 
   void SetRunNumber        (Int_t    v) { fRunNumber        = v ; }
   void SetMinClusterEnergy (Double_t v) { fMinClusterEnergy = v ; }
@@ -176,10 +191,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
   void SetReferenceRunByRunFileName(TString  v) { fReferenceRunByRunFileName= v ; }
-  void SetReferenceWrongL1PhasesRunByRunFileName(TString  v) { fReferenceWrongL1PhasesRunByRunFileName= v ; }
   void SetGeometryName     (TString  v) { fGeometryName     = v ; }
   void SetMinTime          (Double_t v) { fMinTime          = v ; }	   
   void SetMaxTime          (Double_t v) { fMaxTime          = v ; }	
+  void SetBadChannelFileName(TString  v) { fBadChannelFileName = v ; }
 
   //histogram settings
   void SetRawTimeHisto (Int_t nbins,Double_t lower,Double_t upper) { 
@@ -192,11 +207,17 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fPassTimeMin = lower ;
     fPassTimeMax = upper ;
   }
-  void SetEnergyHisto (Int_t nbins,Double_t lower,Double_t upper) { 
+  void SetEnergyHistoHG (Int_t nbins,Double_t lower,Double_t upper) { 
     fEnergyNbins = nbins;
     fEnergyMin = lower ;
     fEnergyMax = upper ;
   }
+  void SetEnergyHistoLG (Int_t nbins,Double_t lower,Double_t upper) { 
+    fEnergyLGNbins = nbins;
+    fEnergyLGMin = lower ;
+    fEnergyLGMax = upper ;
+  }
+
   void SetFineT0Histo (Int_t nbins,Double_t lower,Double_t upper) { 
     fFineNbins = nbins;
     fFineTmin = lower ;
@@ -208,14 +229,30 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SwitchOnPileupFromSPD()  { fPileupFromSPD = kTRUE ; }
   void SwitchOffPileupFromSPD() { fPileupFromSPD = kFALSE ; }
 
+  void SwitchOnBadReco()  { fBadReco = kTRUE ; }
+  void SwitchOffBadReco() { fBadReco = kFALSE ; }
+
+  void SwithOnFillHeavyHisto()  { fFillHeavyHisto = kTRUE ; }
+  void SwithOffFillHeavyHisto() { fFillHeavyHisto = kFALSE ; }
+
+  void SetBadChannelMapSource(Int_t v) { fSetBadChannelMapSource = v ; }
+  Int_t GetBadChannelMapSource() { return fSetBadChannelMapSource ; }
+
   void SetDefaultCuts();
   void LoadReferenceHistos(); //loaded once per period to the memory
 
   void LoadReferenceRunByRunHistos(); //loaded once to the memory at the beginning, phases for all runs 
   void SetL1PhaseReferenceForGivenRun();//set refernce L1phase per run 
 
-  void LoadWrongReferenceRunByRunHistos(); //loaded once to the memory at the beginning, wrong phases for all runs 
-  void SetWrongL1PhaseReferenceForGivenRun();//set reference wrong L1 phase per run
+  void LoadBadChannelMap(); //load bad channel map, main
+  void LoadBadChannelMapFile(); //load bad channel map from file
+  void LoadBadChannelMapOADB();//load bad channel map from OADB
+  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 0;}//Channel is ok by default
+  Int_t GetEMCALChannelStatus(Int_t absId) const {
+    if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(0))->GetBinContent(absId+1);
+    else return 0;}//Channel is ok by default
 
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE);
@@ -260,7 +297,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   TString        fReferenceFileName ;   //!<! name of reference file (for one period)
   TString        fReferenceRunByRunFileName ;   ///< name of reference file (run-by-run)
-  TString        fReferenceWrongL1PhasesRunByRunFileName ;   ///< name of reference file (run-by-run) with wrong L1 phases
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
@@ -274,15 +310,26 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Int_t          fPassTimeNbins;        ///< number of bins of histo with time in passX
   Double_t       fPassTimeMin  ;        ///< lower range of histo with time in passX
   Double_t       fPassTimeMax  ;        ///< upper range of histo with time in passX
-  Int_t          fEnergyNbins  ;        ///< number of bins of histo with energy
-  Double_t       fEnergyMin    ;        ///< lower range of histo with energy	
-  Double_t       fEnergyMax    ;        ///< upper range of histo with energy   
+  Int_t          fEnergyNbins  ;        ///< number of bins of histo with energy HG
+  Double_t       fEnergyMin    ;        ///< lower range of histo with energy	 HG
+  Double_t       fEnergyMax    ;        ///< upper range of histo with energy    HG
+  Int_t          fEnergyLGNbins;        ///< number of bins of histo with energy LG
+  Double_t       fEnergyLGMin  ;        ///< lower range of histo with energy	 LG
+  Double_t       fEnergyLGMax  ;        ///< upper range of histo with energy    LG
   Int_t          fFineNbins    ;        ///< number of bins of histo with T0 time
   Double_t       fFineTmin     ;        ///< lower range of histo with T0 time
   Double_t       fFineTmax     ;        ///< upper range of histo with T0 time
 
   TObjArray     *fL1PhaseList;          ///< array with phases for set of runs 
-  TObjArray     *fWrongL1PhaseList;     ///< array with wrong L1 phases for set of runs 
+  Bool_t         fBadReco;              ///< flag to apply 100ns shift and L1 shift
+
+  Bool_t         fFillHeavyHisto;       ///< flag to fill heavy histograms
+
+  // bad channel map
+  TObjArray     *fBadChannelMapArray;   ///< bad channel map array
+  Bool_t         fBadChannelMapSet;     ///< flag whether bad channel map is set
+  Int_t          fSetBadChannelMapSource;///< switch to load BC map 0-no BC,1-OADB,2-file
+  TString        fBadChannelFileName ;  //!<! name of file with bad channels
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
@@ -311,11 +358,12 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   // histo with reference values run-by-run after the first iteration 
   TH1C		*fhRefRuns; ///< 20 entries per run: nSM
-  TH1C          *fhWrongL1Phases; ///< 20 entries per run to revert L1 phases
 
   // control histos
-  TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
-  TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4
+  TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM high gain
+  TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4 high gain
+  TH2F		*fhTimeDsupLG  [kNSM];            //!<! 20 SM low gain
+  TH2F		*fhTimeDsupLGBC[kNSM][kNBCmask];  //!<! 20 x 4 low gain
 
   //main histos for raw time
   TH2F          *fhRawTimeVsIdBC     [kNBCmask]; //!<! 4 BCmask HG
@@ -326,6 +374,14 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F          *fhRawTimeSumLGBC    [kNBCmask]; //!<! 4 BCmask LG
   TH1F          *fhRawTimeEntriesLGBC[kNBCmask]; //!<! 4 BCmask LG
   TH1F          *fhRawTimeSumSqLGBC  [kNBCmask]; //!<! 4 BCmask LG
+
+  //histos for raw time after wrong reconstruction correction (100ns and L1 phase)
+  TH2F          *fhRawCorrTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
+  TH2F          *fhRawCorrTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
+
+  //histos for raw time after wrong reconstruction correction (100ns and L1 phase) and new L1 phase
+  TH2F          *fhTimeVsIdBC  [kNBCmask]; //!<! 4 BCmask HG
+  TH2F          *fhTimeVsIdLGBC[kNBCmask]; //!<! 4 BCmask LG
 
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALTimeCalib(           const AliAnalysisTaskEMCALTimeCalib&);

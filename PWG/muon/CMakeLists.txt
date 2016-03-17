@@ -20,7 +20,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DLOG_NO_DEBUG ")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ")
 
 #Module
-set (MODULE PWGmuon)
+set(MODULE PWGmuon)
+add_definitions(-D_MODULE_="${MODULE}")
 
 add_subdirectory(aaf)
 message(STATUS "PWG muon aaf enabled")

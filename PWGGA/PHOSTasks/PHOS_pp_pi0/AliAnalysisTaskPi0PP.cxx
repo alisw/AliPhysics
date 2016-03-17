@@ -49,7 +49,7 @@
 // Analysis task to fill histograms with PHOS AOD clusters and cells
 // Authors: Pooja Pareek
 // Date   : 26.01.2016
-
+// Date   : 29.01.2016
 ClassImp(AliAnalysisTaskPi0PP)
 
 //________________________________________________________________________
@@ -364,15 +364,17 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
 
-  if(event->GetPrimaryVertexTracks())
-    if(event->GetPrimaryVertexTracks()->GetNContributors()>0)
-      eventVtxExist    = kTRUE;
-  else if (event->GetPrimaryVertexSPD())
-    if(event->GetPrimaryVertexSPD()->GetNContributors()>0)
-    eventVtxExist    = kTRUE;
+  // if(event->GetPrimaryVertexTracks())
+  //   if(event->GetPrimaryVertexTracks()->GetNContributors()>0)
+  //     eventVtxExist    = kTRUE;
+
+  // if (event->GetPrimaryVertexSPD())
+  //   if(event->GetPrimaryVertexSPD()->GetNContributors()>0)
+  //     eventVtxExist    = kTRUE;
+  
   if (event->GetPrimaryVertex())
     if(event->GetPrimaryVertex()->GetNContributors()>0)
-    eventVtxExist    = kTRUE;
+      eventVtxExist    = kTRUE;
 
   const AliAODVertex *esdVertexBest = event->GetPrimaryVertex();
   const AliAODVertex *esdVertexSPD  = event->GetPrimaryVertexSPD();
@@ -396,28 +398,28 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
   // Check for pileup and fill pileup histograms
   if (event->IsPileupFromSPD()) {
     eventPileup = kTRUE;
-//     TClonesArray *pileupVertices = event->GetPileupVerticesSPD();
-//     Int_t nPileupVertices = pileupVertices->GetEntriesFast();
+    //     TClonesArray *pileupVertices = event->GetPileupVerticesSPD();
+    //     Int_t nPileupVertices = pileupVertices->GetEntriesFast();
     FillHistogram("hNPileupVtx",event->GetNumberOfPileupVerticesSPD());
-//     for (Int_t puVtx=0; puVtx<nPileupVertices; puVtx++) {
-//       Double_t dZpileup = esdVertexSPD->GetZ() - event->GetPileupVertexSPD(puVtx)->GetZ();
-//       FillHistogram("hZPileupVtx",dZpileup);
-//     }
+    //     for (Int_t puVtx=0; puVtx<nPileupVertices; puVtx++) {
+    //       Double_t dZpileup = esdVertexSPD->GetZ() - event->GetPileupVertexSPD(puVtx)->GetZ();
+    //       FillHistogram("hZPileupVtx",dZpileup);
+    //     }
   }
 
-//   eventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
-//   
-//   ULong64_t GetTriggerMask()        const { return fHeader ? fHeader->GetTriggerMask() : 0;}
-//   UChar_t   GetTriggerCluster()     const { return fHeader ? fHeader->GetTriggerCluster() : 0;}
-//   TString   GetFiredTriggerClasses()const { return fHeader->GetFiredTriggerClasses();};
-//   
-//  // Checks if corresponding bit in mask is on
-//   ULong64_t trigmask = aEsd->GetTriggerMask();
-//   return (trigmask & (1ull << (tclass-1)));
-// } 
-
+  //   eventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
+  //   
+  //   ULong64_t GetTriggerMask()        const { return fHeader ? fHeader->GetTriggerMask() : 0;}
+  //   UChar_t   GetTriggerCluster()     const { return fHeader ? fHeader->GetTriggerCluster() : 0;}
+  //   TString   GetFiredTriggerClasses()const { return fHeader->GetFiredTriggerClasses();};
+  //   
+  //  // Checks if corresponding bit in mask is on
+  //   ULong64_t trigmask = aEsd->GetTriggerMask();
+  //   return (trigmask & (1ull << (tclass-1)));
+  // } 
+  
   ULong64_t trigmask = event->GetTriggerMask();
-
+  
   eventV0AND = (trigmask & (1ull << (AliTriggerAnalysis::kV0AND-1)));
 
   // Fill event statistics for different selection criteria
@@ -437,28 +439,28 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
     FillHistogram("hSelEvents",7) ;
   if(eventVtxZ10cm)
     FillHistogram("hSelEvents",8) ;  
- 
+  
   //Vtx class z-bin
   Int_t zvtx = (Int_t)((vtxBest[2]+10.)/2.) ;
   if(zvtx<0)zvtx=0 ;
   if(zvtx>9)zvtx=9 ;
-
+  
   if (trigClasses.Contains("CINT1B")) fnCINT1B++;
   if (trigClasses.Contains("CINT1A")) fnCINT1A++;
   if (trigClasses.Contains("CINT1C")) fnCINT1C++;
   if (trigClasses.Contains("CINT1-E")) fnCINT1E++;
-
+  
   //Calculate charged multiplicity
-//   Int_t trackMult = 0;
-//   for (Int_t i=0;i<event->GetNumberOfTracks();++i) {
-//     AliAODtrack *track = new AliAODtrack(*event->GetTrack(i)) ;
-//     if(fAODtrackCuts->AcceptTrack(track) &&  TMath::Abs(track->Eta())< 0.8)
-//       trackMult++;
-//     delete track;
-//   }
+  //   Int_t trackMult = 0;
+  //   for (Int_t i=0;i<event->GetNumberOfTracks();++i) {
+  //     AliAODtrack *track = new AliAODtrack(*event->GetTrack(i)) ;
+  //     if(fAODtrackCuts->AcceptTrack(track) &&  TMath::Abs(track->Eta())< 0.8)
+  //       trackMult++;
+  //     delete track;
+  //   }
   Int_t trackMult =event->GetNumberOfTracks() ;
   FillHistogram("hTrackMult",trackMult+0.5) ;
-
+  
   Float_t tV0A = event->GetVZEROData()->GetV0ATime();
   Float_t tV0C = event->GetVZEROData()->GetV0CTime();
   FillHistogram("hV0Atime",tV0A);
@@ -469,7 +471,7 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
   //always zero centrality
   if(!fPHOSEvents[zvtx][centr]) fPHOSEvents[zvtx][centr]=new TList() ;
   TList * prevPHOS = fPHOSEvents[zvtx][centr] ;
-
+  
   if(trackMult<=2)
     centr=0 ;
   else 
@@ -526,20 +528,20 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
   FillHistogram("hClusterMult",multClust);
   FillHistogram("hCellMultEvent",multCells);
 
-//   Printf("Event %d, trig.class %s, period %d, bc %d, orbit %d",
-//      eventNumberInFile,trigClasses.Data(),event->GetPeriodNumber(),
-//      event->GetBunchCrossNumber(),event->GetOrbitNumber());
-//   Printf("\tthere are %d caloclusters and %d calocells",
-//      multClust,multCells);
+  //   Printf("Event %d, trig.class %s, period %d, bc %d, orbit %d",
+  //      eventNumberInFile,trigClasses.Data(),event->GetPeriodNumber(),
+  //      event->GetBunchCrossNumber(),event->GetOrbitNumber());
+  //   Printf("\tthere are %d caloclusters and %d calocells",
+  //      multClust,multCells);
 
   // Get PHOS rotation matrices from AOD and set them to the PHOS geometry
-  if(fEventCounter == 0) {
-    for(Int_t mod=0; mod<5; mod++) {
-      if(!event->GetPHOSMatrix(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
-      Printf("PHOS geo matrix %p for module # %d is set\n", event->GetPHOSMatrix(mod), mod);
-    }
-  }
+  // if(fEventCounter == 0) {
+  //   for(Int_t mod=0; mod<5; mod++) {
+  //     if(!event->GetPHOSMatrix(mod)) continue;
+  //     fPHOSGeo->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
+  //     Printf("PHOS geo matrix %p for module # %d is set\n", event->GetPHOSMatrix(mod), mod);
+  //   }
+  // }
 
   Float_t  energy, tof;
   Int_t    mod1, relId[4], cellAbsId, cellX, cellZ;
@@ -577,13 +579,13 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
   FillHistogram("hCellMultEventM1",nCellModule[0]);
   FillHistogram("hCellMultEventM2",nCellModule[1]);
   FillHistogram("hCellMultEventM3",nCellModule[2]);
-
+  
   // Single loop over clusters fills cluster histograms
-
+  
   Int_t    digMult;
   Int_t    multPHOSClust[4]  = {0,0,0,0};
   Float_t  position[3];
-
+  
   for (Int_t i1=0; i1<multClust; i1++) {
     clu1 = event->GetCaloCluster(i1);
     if ( !clu1->IsPHOS() ) continue;
@@ -689,15 +691,15 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
     cellX = relId[2];
     cellZ = relId[3] ;
     if ( !IsGoodChannel("PHOS",mod1,cellX,cellZ) ) continue ;
-
+    
     if (mod1 < 1 || mod1 > 3) {
       AliError(Form("Wrong module number %d",mod1));
       return;
     }
 
-    //..................................................
+    //.................................Not required for pass4 AOD.................
     // Apply module misalignment
-    
+    /*
     Float_t dXmodule[3] = {-2.30, -2.11, -1.53}; // X-shift in local system for module 1,2,3
     Float_t dZmodule[3] = {-0.40, +0.52, +0.80}; // Z-shift in local system for module 1,2,3
 
@@ -707,14 +709,14 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
     fPHOSGeo->Local2Global(mod1,localXYZ.X()+dXmodule[mod1-1],localXYZ.Z()+dZmodule[mod1-1],globalXYZ);
     for (Int_t ixyz=0; ixyz<3; ixyz++) position[ixyz]=globalXYZ[ixyz] ;
     clu1->SetPosition(position) ;
-    
+    */
     //..................................................
 
     clu1 ->GetMomentum(p1 ,vtx0);
     clu1 ->GetMomentum(pv1,vtxBest);
-
+    
     p1 *= fRecalib[mod1-1];
-
+    
     digMult   = clu1->GetNCells();
     new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(p1.X(),p1.Py(),p1.Z(),p1.E()) ;
     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(inPHOS) ;
@@ -727,7 +729,7 @@ void AliAnalysisTaskPi0PP::UserExec(Option_t *)
     ph->SetDispBit(TestLambda(clu1->GetM20(),clu1->GetM02())) ;
     ph->SetCPVBit(clu1->GetEmcCpvDistance()>10.) ;
     ph->SetBC(TestBC(clu1->GetTOF()));
-
+    
     inPHOS++ ;
   }
 

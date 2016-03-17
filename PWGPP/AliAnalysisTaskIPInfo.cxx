@@ -127,7 +127,7 @@ void AliAnalysisTaskIPInfo::ConnectInputData(Option_t *)
     tree->SetBranchAddress("ESDfriend.",&fESDfriend);
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());    
     if (!esdH) Printf("ERROR: Could not get ESDInputHandler");
-    else fESD = esdH->GetEvent();
+    else fESD = (AliESDEvent*)esdH->GetEvent();
   }
   //
   return;

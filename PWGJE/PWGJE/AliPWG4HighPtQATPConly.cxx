@@ -277,7 +277,7 @@ void AliPWG4HighPtQATPConly::ConnectInputData(Option_t *)
     AliDebug(2,Form("ERROR: Could not get ESDInputHandler")); 
     return;
   } else
-    fESD = esdH->GetEvent();
+    fESD = (AliESDEvent*)esdH->GetEvent();
  
   fESDfriend = esdH->GetESDfriend();
  

@@ -83,8 +83,27 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
   //track related
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
+  // resolution calculation
+  task->SetCalcResolution(calcResolution);
+  if(calcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(resoCutInstance));
+  // pair efficiency
+  task->SetDoPairing(doPairing);
+  if(doPairing){
+    task->SetKineTrackCuts(SetupTrackCutsAndSettings(100));
+    //task->SetPairCuts(SetupTrackCutsAndSettings(101));
+    SetupTrackCutsAndSettings(101);
+    task->SetPairCutMee(rejCutMee);
+    task->SetPairCutTheta(rejCutTheta);
+    task->SetPairCutPhiV(rejCutPhiV);
+    Double_t MeeBins[nBinsMee+1];
+    for(Int_t i=0;i<=nBinsMee;i++) { MeeBins[i] = MeeMin + i*(MeeMax-MeeMin)/nBinsMee; }
+    Double_t PteeBins[nBinsPtee+1];
+    for(Int_t i=0;i<=nBinsPtee;i++) { PteeBins[i] = PteeMin + i*(PteeMax-PteeMin)/nBinsPtee; }
+    task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins,nBinsMee,MeeBins,nBinsPtee,PteeBins);
+  } else {
+    task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
+  }
   //output related
-  task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
   task->SetRunBins(sRuns);
   if (deactivateTree) task->SetWriteTree(kFALSE);
   else                task->SetWriteTree(writeTree);
@@ -105,7 +124,6 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
       Int_t success = SetupPrefilterPairCuts(i);
       if (!success) { std::cout << "WARNING: no/bad Prefilter PairCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
     }
-    //
     // fill std vectors with all information which is individual per track setting:
     task->AttachTrackCuts(trackCuts);
     task->AttachDoPrefilterEff(isPrefilterCutset);

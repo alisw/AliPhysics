@@ -35,7 +35,6 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
-#include "AliPythiaInfo.h"
 #include "TRandom3.h"
 #include "AliEmcalJetFinder.h"
 #include "AliAODEvent.h"

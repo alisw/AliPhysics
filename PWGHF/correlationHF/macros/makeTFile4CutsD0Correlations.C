@@ -1,9 +1,9 @@
 #include <Riostream.h>
 #include <TFile.h>
-#include <AliRDHFCutsD0toKpi.h>
+//#include <AliRDHFCutsD0toKpi.h>
 #include <TClonesArray.h>
 #include <TParameter.h>
-#include "AliHFAssociatedTrackCuts.h"
+//#include "AliHFAssociatedTrackCuts.h"
 
 //Use:
 //Set hard coded commentet with //set this!!
@@ -26,6 +26,10 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   RDHFD0Corr->SetTitle("Cuts for D0 analysis");
 
   RDHFD0Corr->SetMinVtxContr(1);
+
+  //Trigger selection - USING THE DEFAULT, WHICH IS CINT1 (ok for pp 2010)
+  //RDHFD0Corr->SetTriggerClass("");
+  //RDHFD0Corr->SetTriggerMask(AliVEvent::kMB); //this shall be enabled!
 
   //Quality tracks for daughters
   AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
@@ -68,14 +72,14 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.80,0.,0.},/* pt<0.5*/
 						  {0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.80,0.,0.},/* 0.5<pt<1*/
 						  {0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.80,0.,0.},/* 1<pt<2 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.85,0.,0.},/* 2<pt<3 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 3<pt<4 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 4<pt<5 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,0.},/* 2<pt<3 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,0.},/* 3<pt<4 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,0.},/* 4<pt<5 */
 						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 5<pt<6 */
 						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 6<pt<7 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-7000.*1E-8,0.85,0.,0.},/* 7<pt<8 */
-						  {0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85,0.,0.},/* 8<pt<12 */
-						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 12<pt<16 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 7<pt<8 */
+						  {0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 8<pt<12 */
+						  {0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 12<pt<16 */
 						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,999999.*1E-8,0.85,0.,0.},/* 16<pt<20 */
 						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,999999.*1E-8,0.85,0.,0.},/* 20<pt<24 */
 						  {0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,999999.*1E-8,0.85,0.,0.}};/* pt>24 */
@@ -156,19 +160,22 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   AliHFAssociatedTrackCuts* HFCorrelationCuts=new AliHFAssociatedTrackCuts();
   HFCorrelationCuts->SetName("AssociatedTrkCuts");
   HFCorrelationCuts->SetTitle("Cuts for associated track");
-  Float_t eta = 0.9;
+  Float_t eta = 0.8;
 
   // Set quality cuts on tracks
   AliESDtrackCuts *esdHadrCuts = new AliESDtrackCuts("AliESDHadrCuts","default");
   esdHadrCuts->SetRequireSigmaToVertex(kFALSE);
   esdHadrCuts->SetRequireTPCRefit(kTRUE);
-  esdHadrCuts->SetRequireITSRefit(kTRUE);
-  esdHadrCuts->SetMinNClustersITS(2); //as for D*
-  esdHadrCuts->SetMinNClustersTPC(80); //as for D*
+  esdHadrCuts->SetRequireITSRefit(kFALSE);
+  esdHadrCuts->SetMinNClustersITS(3);
+  esdHadrCuts->SetMinNClustersTPC(70);
+  esdHadrCuts->SetMaxChi2PerClusterTPC(4);
 //esdHadrCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  esdHadrCuts->SetMinDCAToVertexXY(0.);
+  esdHadrCuts->SetMaxDCAToVertexZ(1.);
+  esdHadrCuts->SetMaxDCAToVertexXY(0.25);
   esdHadrCuts->SetEtaRange(-eta,eta);
-  esdHadrCuts->SetPtRange(0.,1.e10);
+  esdHadrCuts->SetPtRange(0.3,1.e10);
+
   HFCorrelationCuts->AddTrackCuts(esdHadrCuts);
 
   // Set kinematics cuts for AOD track 
@@ -177,13 +184,13 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   trackcutsarray=new Float_t[nofcuts];
   trackcutsarray[0] = 0.3;//track min pt
   trackcutsarray[1] = 10000.;//track max pt
-  trackcutsarray[2] = -99999999.;//track min impact parameter. DON'T put 0 since default value is -999999. and it would skip all tracks if d0 is not calculated!
+  trackcutsarray[2] = -1000000000.;//track min impact parameter. DON'T put 0 since default value is -999999. and it would skip all tracks if d0 is not calculated!
   trackcutsarray[3] = 10000.;//track max impact parameter
   HFCorrelationCuts->SetNVarsTrack(nofcuts);
   HFCorrelationCuts->SetAODTrackCuts(trackcutsarray);
 
   HFCorrelationCuts->SetCharge(0); // -1/+1 to look for opposite/same charge, 0 no charge selection 
-  HFCorrelationCuts->SetFilterBit(0); // set 0 for analysis with AOD from 2010
+  HFCorrelationCuts->SetFilterBit(AliAODTrack::kTrkTPCOnly); // set 0 for analysis with AOD from 2010, il 4 è kTrkGlobalNoDCA
 	
   // Set kinematics cuts for AOD v0 
   const int nofcuts2 = 7;
@@ -192,8 +199,8 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   vzerocutsarray[0] = 0.2; // max dca between two daugters (cm)
   vzerocutsarray[1] = 2; //  max chi square
   vzerocutsarray[2] = 2.; // min decay length (cm) 
-  vzerocutsarray[3] = 15; // max decay length (cm)
-  vzerocutsarray[4] = 100.; // max opening angle between two daugters
+  vzerocutsarray[3] = 1000; // max decay length (cm)
+  vzerocutsarray[4] = 1000.; // max opening angle between two daugters
   vzerocutsarray[5] = 0; // min pt of k0 (GeV/c)
   vzerocutsarray[6] = 0.9; // set eta acceptance
   HFCorrelationCuts->SetNVarsVzero(nofcuts2);
@@ -205,7 +212,7 @@ void makeInputAliAnalysisTaskSED0Correlations(){
   AliAODPidHF* pidObj=new AliAODPidHF();
   pidObj->SetMatch(1);  //A.Rossi mode
   pidObj->SetAsym(kTRUE);
-  pidObj->SetPLimit(ptlimit);
+  pidObj->SetPLimit(ptlimit,2);
   pidObj->SetSigma(0,2.);  //TPC sigma, in three pT ranges
   pidObj->SetSigma(1,1.);
   pidObj->SetSigma(2,0.);  
@@ -220,22 +227,44 @@ void makeInputAliAnalysisTaskSED0Correlations(){
 
   //Event Mixing settings
   HFCorrelationCuts->SetMaxNEventsInPool(200);
-  HFCorrelationCuts->SetMinNTracksInPool(1000);
-  HFCorrelationCuts->SetMinEventsToMix(8);
-  HFCorrelationCuts->SetNofPoolBins(5,5);
+  HFCorrelationCuts->SetMinNTracksInPool(10000);
+  HFCorrelationCuts->SetMinEventsToMix(1); //reduce to 1?
+  HFCorrelationCuts->SetTargetFracTracks(0.0025);
+  HFCorrelationCuts->SetNofPoolBins(3,3);
 
-  Double_t MBins[]={0,20,40,60,80,500};
+  Double_t MBins[]={0,20,35,200};
   Double_t * MultiplicityBins = MBins;
-  Double_t ZBins[]={-10,-5,-2.5,2.5,5,10};
+  Double_t ZBins[]={-10,-2.5,2.5,10};
   Double_t *ZVrtxBins = ZBins;
 
   HFCorrelationCuts->SetPoolBins(ZVrtxBins,MultiplicityBins);
 
+  //Select MC production process
+  HFCorrelationCuts->SetNofMCEventTypes(3); //1 for only one
+  Int_t MCEvType[]={28,53,68}; //28 = Flavour excitation, 53 = Pair production, 68 = Gluon splitting
+  Int_t *MCEvTypeArray = MCEvType;
+  HFCorrelationCuts->SetMCEventTypes(MCEvTypeArray);
+
+  //Define sideband edges (if set externally in the AddTask file)
+  Double_t LSBLow[15] = {0.,0.,0.,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,0.,0.,0.,0.}; //to be filled looking at results from invariant mass fits!
+  Double_t LSBUpp[15] = {0.,0.,0.,1.8168,1.8088,1.8008,1.7888,1.7928,1.7928,1.7528,1.7648,0.,0.,0.,0.};
+  Double_t RSBLow[15] = {0.,0.,0.,1.9168,1.9248,1.9288,1.9448,1.9448,1.9488,1.9728,1.9768,0.,0.,0.,0.};
+  Double_t RSBUpp[15] = {0.,0.,0.,1.9688,1.9848,1.9928,2.0248,2.0208,2.0248,2.0848,2.0808,0.,0.,0.,0.};
+
+  TVectorD vLSBLow(15,LSBLow);
+  TVectorD vLSBUpp(15,LSBUpp);
+  TVectorD vRSBLow(15,RSBLow);
+  TVectorD vRSBUpp(15,RSBUpp);
+
   // Save to *.root file
   HFCorrelationCuts->PrintAll();
-  TFile* fout=new TFile("AssocPartCuts.root","recreate");   //set this!! 
+  TFile* fout=new TFile("AssocPartCuts_Std_pp.root","recreate");   //set this!! 
   fout->cd();
   HFCorrelationCuts->Write();
+  vLSBLow.Write("vLSBLow");
+  vLSBUpp.Write("vLSBUpp");
+  vRSBLow.Write("vRSBLow");
+  vRSBUpp.Write("vRSBUpp");
   fout->Close();
 
 }

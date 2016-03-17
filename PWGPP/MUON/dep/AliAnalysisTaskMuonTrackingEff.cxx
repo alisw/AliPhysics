@@ -315,8 +315,8 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   fExtraHistList->AddAt(fHistTheta,3);
   TH1F *fHistP = new TH1F("fHistP", "momentum distribution", 250, 0., 500.);
   fExtraHistList->AddAt(fHistP,4);
-  TH1F *fHistZ = new TH1F("fHistZ", "Z distribution", 200, -100., 100.);
-  fExtraHistList->AddAt(fHistZ,5);
+  TH1F *fHistZVtx = new TH1F("fHistZVtx", "Z vertex distribution", 200, -50., 50.);
+  fExtraHistList->AddAt(fHistZVtx,5);
   TH1F *fHistPhi = new TH1F("fHistPhi", "phi distribution", 60, 0., TMath::TwoPi());
   fExtraHistList->AddAt(fHistPhi,6);
   TH1F *fHistPtRap2p5To2p75 = new TH1F("fHistPtRap2p5To2p75", "2.5 < y < 2.75", 250, 0., 50.);
@@ -351,6 +351,11 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   
   THnSparse *hKine = new THnSparseT<TArrayF>("hKine", "kinematics distribution", nDims-1, &nBins[1], &xMin[1], &xMax[1]);
   fExtraHistList->AddAt(hKine,21);
+  
+  TH1F *fHistXVtx = new TH1F("fHistXVtx", "X vertex distribution", 200, -1., 1.);
+  fExtraHistList->AddAt(fHistXVtx,22);
+  TH1F *fHistYVtx = new TH1F("fHistYVtx", "Y vertex distribution", 200, -1., 1.);
+  fExtraHistList->AddAt(fHistYVtx,23);
   
   // post the output data at least once
   PostData(1, fClusters);  
@@ -401,6 +406,8 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
     static_cast<TH1F*>(fExtraHistList->At(3))->Fill(esdTrack->Theta());
     static_cast<TH1F*>(fExtraHistList->At(4))->Fill(esdTrack->P());
     static_cast<TH1F*>(fExtraHistList->At(5))->Fill(esdTrack->GetZ());
+    static_cast<TH1F*>(fExtraHistList->At(22))->Fill(esdTrack->GetNonBendingCoor());
+    static_cast<TH1F*>(fExtraHistList->At(23))->Fill(esdTrack->GetBendingCoor());
     static_cast<TH1F*>(fExtraHistList->At(6))->Fill(phi);
     if ( (y < -2.5) && (y > -2.75) ) static_cast<TH1F*>(fExtraHistList->At(7))->Fill(pT);
     if ( (y < -2.75) && (y > -3.0) ) static_cast<TH1F*>(fExtraHistList->At(8))->Fill(pT);

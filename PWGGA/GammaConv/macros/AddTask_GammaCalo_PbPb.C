@@ -1,3 +1,61 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                       *
+ * Author: Friederike Bock, Daniel Mühlheim                     *
+ * Version 1.0                                 *
+ *                                       *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its    *
+ * documentation strictly for non-commercial purposes is hereby granted    *
+ * without fee, provided that the above copyright notice appears in all    *
+ * copies and that both the copyright notice and this permission notice    *
+ * appear in the supporting documentation. The authors make no claims    *
+ * about the suitability of this software for any purpose. It is      *
+ * provided "as is" without express or implied warranty.               *
+ **************************************************************************/
+
+//***************************************************************************************
+//This AddTask is supposed to set up the main task
+//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaCalo.cxx) for
+//PbPb together with all supporting classes
+//***************************************************************************************
+
+//***************************************************************************************
+//CutHandler contains all cuts for a certain analysis and trainconfig,
+//it automatically checks length of cutStrings and takes care of the number of added cuts,
+//no specification of the variable 'numberOfCuts' needed anymore.
+//***************************************************************************************
+class CutHandlerCalo{
+  public:
+    CutHandlerCalo(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; mesonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString clusterCut, TString mesonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerCalo: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerCalo: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; clusterCutArray[nCuts]=clusterCut; mesonCutArray[nCuts]=mesonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerCalo: GetEventCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerCalo: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerCalo: GetMesonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* clusterCutArray;
+    TString* mesonCutArray;
+};
+
+//***************************************************************************************
+//main function
+//***************************************************************************************
 void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,                  // change different set of cuts
                               Int_t     isMC                      = 0,                  // run MC
                               Int_t     enableQAMesonTask         = 0,                 // enable QA in AliAnalysisTaskGammaConvV1
@@ -115,77 +173,78 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   task= new AliAnalysisTaskGammaCalo(Form("GammaCalo_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-  // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 5;
-  if (trainConfig == 4 || trainConfig == 5 || trainConfig == 6 ||
-      trainConfig == 7 || trainConfig == 8 || trainConfig == 9 ||
-      trainConfig == 10 || trainConfig == 11) 
-      numberOfCuts = 1;
 
-  
-  TString *eventCutArray    = new TString[numberOfCuts];
-  TString *clusterCutArray  = new TString[numberOfCuts];
-  TString *mesonCutArray    = new TString[numberOfCuts];
+  //create cut handler
+  CutHandlerCalo cuts;
 
   // meson cuts
   // meson type (Dalitz or not), BG scheme, pool depth, rotation degrees, rapidity cut, radius cut, alpha, chi2, shared electrons, reject to close v0, MC smearing, dca, dca, dca
   
   if (trainConfig == 1){ // EMCAL clusters
-        eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 0-5%
-        eventCutArray[ 1] = "61200013"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[ 1] = "0163103100000050"; // 5-10%
-        eventCutArray[ 2] = "50100013"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000050"; // 0-10%
-        eventCutArray[ 3] = "52400013"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000050"; // 20-40%
-        eventCutArray[ 4] = "52500013"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000050"; // 20-50%
+    cuts.AddCut("60100013","1111100050032230000","0163103100000050"); // 0-5%
+    cuts.AddCut("61200013","1111100050032230000","0163103100000050"); // 5-10%
+    cuts.AddCut("50100013","1111100050032230000","0163103100000050"); // 0-10%
+    cuts.AddCut("52400013","1111100050032230000","0163103100000050"); // 20-40%
+    cuts.AddCut("52500013","1111100050032230000","0163103100000050"); // 20-50%
   } else if (trainConfig == 2){ // EMCAL clusters
-        eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 0-5%
-        eventCutArray[ 1] = "61200013"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[ 1] = "0163103100000050"; // 5-10%
-        eventCutArray[ 2] = "50100013"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000050"; // 0-10%
-        eventCutArray[ 3] = "51200013"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000050"; // 10-20%
-        eventCutArray[ 4] = "52400013"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000050"; // 20-40%
+    cuts.AddCut("60100013","1111100050032230000","0163103100000050"); // 0-5%
+    cuts.AddCut("61200013","1111100050032230000","0163103100000050"); // 5-10%
+    cuts.AddCut("50100013","1111100050032230000","0163103100000050"); // 0-10%
+    cuts.AddCut("51200013","1111100050032230000","0163103100000050"); // 10-20%
+    cuts.AddCut("52400013","1111100050032230000","0163103100000050"); // 20-40%
   } else if (trainConfig == 3){ // EMCAL clusters
-        eventCutArray[ 0] = "54600013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 40-60%
-        eventCutArray[ 1] = "56800013"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[ 1] = "0163103100000050"; // 60-80%
-        eventCutArray[ 2] = "52600013"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000050"; // 20-60%
-        eventCutArray[ 3] = "54800013"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000050"; // 40-80%
-        eventCutArray[ 4] = "52500013"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000050"; // 20-50%
+    cuts.AddCut("54600013","1111100050032230000","0163103100000050"); // 40-60%
+    cuts.AddCut("56800013","1111100050032230000","0163103100000050"); // 60-80%
+    cuts.AddCut("52600013","1111100050032230000","0163103100000050"); // 20-60%
+    cuts.AddCut("54800013","1111100050032230000","0163103100000050"); // 40-80%
+    cuts.AddCut("52500013","1111100050032230000","0163103100000050"); // 20-50%
   } else if (trainConfig == 4){ // EMCAL clusters  
-    eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 0-5%
+    cuts.AddCut("60100013","1111100050032230000","0163103100000050"); // 0-5%
   } else if (trainConfig == 5){ // EMCAL clusters  
-    eventCutArray[ 0] = "61200013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 5-10%
+    cuts.AddCut("61200013","1111100050032230000","0163103100000050"); // 5-10%
   } else if (trainConfig == 6){ // EMCAL clusters  
-    eventCutArray[ 0] = "50100013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 0-10%
+    cuts.AddCut("50100013","1111100050032230000","0163103100000050"); // 0-10%
   } else if (trainConfig == 7){ // EMCAL clusters  
-    eventCutArray[ 0] = "51200013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 10-20%
+    cuts.AddCut("51200013","1111100050032230000","0163103100000050"); // 10-20%
   } else if (trainConfig == 8){ // EMCAL clusters  
-    eventCutArray[ 0] = "52400013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 20-40%
+    cuts.AddCut("52400013","1111100050032230000","0163103100000050"); // 20-40%
   } else if (trainConfig == 9){ // EMCAL clusters  
-    eventCutArray[ 0] = "52500013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 20-50%
+    cuts.AddCut("52500013","1111100050032230000","0163103100000050"); // 20-50%
   } else if (trainConfig == 10){ // EMCAL clusters  
-    eventCutArray[ 0] = "54600013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 40-60%
+    cuts.AddCut("54600013","1111100050032230000","0163103100000050"); // 40-60%
   } else if (trainConfig == 11){ // EMCAL clusters  
-    eventCutArray[ 0] = "56800013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000050"; // 60-80%    
+    cuts.AddCut("56800013","1111100050032230000","0163103100000050"); // 60-80%
   } else if (trainConfig == 31){ // PHOS clusters
-    eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "2444400040033200000"; mesonCutArray[ 0] = "0163103100000050"; // 0-5%
-    eventCutArray[ 1] = "61200013"; clusterCutArray[1] = "2444400040033200000"; mesonCutArray[ 1] = "0163103100000050"; // 5-10%
-    eventCutArray[ 2] = "50100013"; clusterCutArray[2] = "2444400040033200000"; mesonCutArray[ 2] = "0163103100000050"; // 0-10%
-    eventCutArray[ 3] = "52400013"; clusterCutArray[3] = "2444400040033200000"; mesonCutArray[ 3] = "0163103100000050"; // 20-40%
-    eventCutArray[ 4] = "52500013"; clusterCutArray[4] = "2444400040033200000"; mesonCutArray[ 4] = "0163103100000050"; // 20-50%
+    cuts.AddCut("60100013","2444400040033200000","0163103100000050"); // 0-5%
+    cuts.AddCut("61200013","2444400040033200000","0163103100000050"); // 5-10%
+    cuts.AddCut("50100013","2444400040033200000","0163103100000050"); // 0-10%
+    cuts.AddCut("52400013","2444400040033200000","0163103100000050"); // 20-40%
+    cuts.AddCut("52500013","2444400040033200000","0163103100000050"); // 20-50%
   } else if (trainConfig == 32){ // PHOS clusters
-    eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "2444400040033200000"; mesonCutArray[ 0] = "0163103100000050"; // 0-5%
-    eventCutArray[ 1] = "61200013"; clusterCutArray[1] = "2444400040033200000"; mesonCutArray[ 1] = "0163103100000050"; // 5-10%
-    eventCutArray[ 2] = "50100013"; clusterCutArray[2] = "2444400040033200000"; mesonCutArray[ 2] = "0163103100000050"; // 0-10%
-    eventCutArray[ 3] = "51200013"; clusterCutArray[3] = "2444400040033200000"; mesonCutArray[ 3] = "0163103100000050"; // 10-20%
-    eventCutArray[ 4] = "52400013"; clusterCutArray[4] = "2444400040033200000"; mesonCutArray[ 4] = "0163103100000050"; // 20-40%    
+    cuts.AddCut("60100013","2444400040033200000","0163103100000050"); // 0-5%
+    cuts.AddCut("61200013","2444400040033200000","0163103100000050"); // 5-10%
+    cuts.AddCut("50100013","2444400040033200000","0163103100000050"); // 0-10%
+    cuts.AddCut("51200013","2444400040033200000","0163103100000050"); // 10-20%
+    cuts.AddCut("52400013","2444400040033200000","0163103100000050"); // 20-40%
   } else if (trainConfig == 33){ // PHOS clusters
-    eventCutArray[ 0] = "54600013"; clusterCutArray[0] = "2444400040033200000"; mesonCutArray[ 0] = "0163103100000050"; // 40-60%
-    eventCutArray[ 1] = "56800013"; clusterCutArray[1] = "2444400040033200000"; mesonCutArray[ 1] = "0163103100000050"; // 60-80%
-    eventCutArray[ 2] = "52600013"; clusterCutArray[2] = "2444400040033200000"; mesonCutArray[ 2] = "0163103100000050"; // 20-60%
-    eventCutArray[ 3] = "54800013"; clusterCutArray[3] = "2444400040033200000"; mesonCutArray[ 3] = "0163103100000050"; // 40-80%
-    eventCutArray[ 4] = "52500013"; clusterCutArray[4] = "2444400040033200000"; mesonCutArray[ 4] = "0163103100000050"; // 20-50%            
+    cuts.AddCut("54600013","2444400040033200000","0163103100000050"); // 40-60%
+    cuts.AddCut("56800013","2444400040033200000","0163103100000050"); // 60-80%
+    cuts.AddCut("52600013","2444400040033200000","0163103100000050"); // 20-60%
+    cuts.AddCut("54800013","2444400040033200000","0163103100000050"); // 40-80%
+    cuts.AddCut("52500013","2444400040033200000","0163103100000050"); // 20-50%
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerCalo! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+
+  Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *HeaderList = new TList();
   if (periodName.CompareTo("LHC13d2")==0){
@@ -229,19 +288,19 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]    = new AliConvEventCuts();   
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
     analysisClusterCuts[i]  = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
-    analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+    analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
-    analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
+    analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i]    = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");

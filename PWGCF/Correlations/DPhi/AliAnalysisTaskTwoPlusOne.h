@@ -67,6 +67,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
 
   void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
+  void   SetUEHist_name(const char* ueHist_name) { fUEHist_name = ueHist_name; }
   
   void   SetAlpha(Double_t val){fAlpha = val; }
   void   SetUseLeadingPt(Bool_t flag) { fUseLeadingPt = flag; }
@@ -75,6 +76,10 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetUseBackgroundSameFromMixedComb(Bool_t flag) { fUseBackgroundSameFromMixedComb  = flag; }
   void   SetUseSmallerPtAssoc(Bool_t flag) { fUseSmallerPtAssoc = flag; }
   void   SetRunCorrelations(Bool_t flag) { fRunCorrelations = flag; }
+  void   SetRunIfPoolReady(Bool_t flag) { fRunIfPoolReady = flag; }
+  void   SetRandomPosition(Bool_t flag) { fRandomPosition = flag; }
+  void   SetSelectCentrality(Bool_t flag) { fSelectCentrality = flag; }
+  void   SetMixOnlyBiasedEvents(Bool_t flag) { fMixOnlyBiasedEvents = flag; }
 
   void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
 
@@ -130,6 +135,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t              fUsePP;                 //0 PbPb collisions; 1 pp collisions
 
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
+    TString fUEHist_name;	   // name of the AliUEHist in the AliTwoPlusOneContainer
     Double_t fAlpha;            //sets the alpha parameter in the container
     Bool_t fUseLeadingPt;        //decides if all particles of a cone are used as trigger particles or only the leading particles within alpha (apply this on near and away side)
     Bool_t fUseAllT1;            //decides if the near side yield is filled for all away side yields or only for the highest one
@@ -137,6 +143,10 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t fUseBackgroundSameFromMixedComb; //decides if the background same method is filled with the same event or with the mixed combinatorics events
     Bool_t fUseSmallerPtAssoc;                  //uses only pT which is smaller than the trigger pT
     Bool_t fRunCorrelations;                    //run correlation analysis, otherwise only the particle distribution is analyzed
+    Bool_t fRunIfPoolReady;                    //run whole analysis only if the pool exists and it is ready
+    Bool_t fRandomPosition;                    //use randomized position of the particles in the eveng
+    Bool_t fSelectCentrality;                  //sort out centralities 7.5% - 30% and >50% because they are not used for the analysis anyway
+    Bool_t fMixOnlyBiasedEvents;               //use for the mixing only events which have a T1
     
     THnF* fEfficiencyCorrection;     // if non-0 this efficiency correction is applied on the fly to the filling for all particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
 
@@ -144,7 +154,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-    ClassDef(AliAnalysisTaskTwoPlusOne, 8); // two plus one analysis with two trigger particles and particle correlations to these triggers
+    ClassDef(AliAnalysisTaskTwoPlusOne, 10); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif

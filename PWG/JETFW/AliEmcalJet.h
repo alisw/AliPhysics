@@ -1,14 +1,17 @@
 #ifndef AliEmcalJet_H
 #define AliEmcalJet_H
 
+#include <Riosfwd.h>
 #include <vector>
 #include <algorithm>
 #include <utility>
+
 #include <TArrayS.h>
-#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TClonesArray.h>
 #include <TVector2.h>
+#include <TLorentzVector.h>
+#include <TString.h>
 
 #include "AliVParticle.h"
 #include "AliVCluster.h"
@@ -28,18 +31,15 @@ class AliEmcalJet : public AliVParticle
        //.....
     };
 
-  struct Ghost {
-    Double_t fPx;
-    Double_t fPy;
-    Double_t fPz;
-    Double_t fE;
-  } ghost;
-
   AliEmcalJet();
   AliEmcalJet(Double_t px, Double_t py, Double_t pz);
   AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m);
   AliEmcalJet(const AliEmcalJet &jet);
   AliEmcalJet& operator=(const AliEmcalJet &jet);
+  friend std::ostream &operator<<(std::ostream &in, const AliEmcalJet &jet);
+
+  std::ostream &Print(std::ostream &in) const;
+  TString toString() const;
 
   Double_t          Px()                         const { return fPt*TMath::Cos(fPhi);  }
   Double_t          Py()                         const { return fPt*TMath::Sin(fPhi);  }
@@ -53,6 +53,7 @@ class AliEmcalJet : public AliVParticle
   Bool_t            XvYvZv(Double_t x[3])        const { x[0]=0;x[1]=0;x[2]=0; return 1;                  }
   Double_t          OneOverPt()                  const { return 1./fPt;  }
   Double_t          Phi()                        const { return fPhi;    }
+  Double_t          Phi_0_2pi()                  const { return TVector2::Phi_0_2pi(fPhi);    }
   Double_t          Theta()                      const { return 2*TMath::ATan(TMath::Exp(-fEta));         }
   Double_t          E()                          const { Double_t p=P(); return TMath::Sqrt(fM*fM+p*p); }
   Double_t          M()                          const { return fM; }
@@ -62,7 +63,8 @@ class AliEmcalJet : public AliVParticle
   Int_t             GetLabel()                   const { return fLabel;  }
   Int_t             PdgCode()                    const { return 0;       }
   const Double_t   *PID()                        const { return 0;       }
-  void              GetMom(TLorentzVector &vec)  const;
+  void              GetMom(TLorentzVector &vec)  const {GetMomentum(vec);}
+  void              GetMomentum(TLorentzVector &vec) const;
 
   Double_t          Area()                       const { return fArea;                     }
   Double_t          AreaPt()                     const { return fArea;                     }
@@ -265,17 +267,14 @@ class AliEmcalJet : public AliVParticle
   void              ClearFlavourTracks()               { if (fFlavourTracks) fFlavourTracks->Clear(); }
   
   void AddGhost(const Double_t dPx, const Double_t dPy, const Double_t dPz, const Double_t dE) {
-    ghost.fPx = dPx;
-    ghost.fPy = dPy;
-    ghost.fPz = dPz;
-    ghost.fE  = dE;
+    TLorentzVector ghost(dPx, dPy, dPz, dE);
     fGhosts.push_back(ghost);
     if (!fHasGhost) fHasGhost = kTRUE;
     return;
   }
 
   Bool_t HasGhost() const { return fHasGhost; }
-  const std::vector<AliEmcalJet::Ghost> GetGhosts() const { return fGhosts; }
+  const std::vector<TLorentzVector> GetGhosts() const { return fGhosts; }
 
   void Print(Option_t* /*opt*/ = "") const;
   void PrintConstituents(TClonesArray* tracks, TClonesArray* clusters) const;
@@ -355,7 +354,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapeLeSubSecondSub;       //!   result from shape derivatives for jet LeSub: 2nd order subtracted
 
   Bool_t fHasGhost;
-  std::vector<AliEmcalJet::Ghost> fGhosts;
+  std::vector<TLorentzVector> fGhosts;
 
   private:
     struct sort_descend
@@ -366,4 +365,6 @@ class AliEmcalJet : public AliVParticle
 
   ClassDef(AliEmcalJet,17) // Emcal jet class in cylindrical coordinates
 };
+
+std::ostream &operator<<(std::ostream &in, const AliEmcalJet &jet);
 #endif

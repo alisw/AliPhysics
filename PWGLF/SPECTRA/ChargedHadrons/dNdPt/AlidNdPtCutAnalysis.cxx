@@ -115,33 +115,33 @@ ClassImp(AlidNdPtCutAnalysis)
   fDCAyEtaPhiMCSec(0),
   fDCAzEtaPhiMCSec(0),
   //
-  fDCAyEtaPtSecMCDecays(0),
-  fDCAzEtaPtSecMCDecays(0),
-  fDCAyPhiPtSecMCDecays(0),
-  fDCAzPhiPtSecMCDecays(0),
-  fDCAyEtaPhiSecMCDecays(0),
-  fDCAzEtaPhiSecMCDecays(0),
+  fDCAyEtaPtMCSecDecays(0),
+  fDCAzEtaPtMCSecDecays(0),
+  fDCAyPhiPtMCSecDecays(0),
+  fDCAzPhiPtMCSecDecays(0),
+  fDCAyEtaPhiMCSecDecays(0),
+  fDCAzEtaPhiMCSecDecays(0),
   //
-  fDCAyEtaPtSecMCDecaysK0s(0),
-  fDCAzEtaPtSecMCDecaysK0s(0),
-  fDCAyPhiPtSecMCDecaysK0s(0),
-  fDCAzPhiPtSecMCDecaysK0s(0),
-  fDCAyEtaPhiSecMCDecaysK0s(0),
-  fDCAzEtaPhiSecMCDecaysK0s(0),
+  fDCAyEtaPtMCSecDecaysK0s(0),
+  fDCAzEtaPtMCSecDecaysK0s(0),
+  fDCAyPhiPtMCSecDecaysK0s(0),
+  fDCAzPhiPtMCSecDecaysK0s(0),
+  fDCAyEtaPhiMCSecDecaysK0s(0),
+  fDCAzEtaPhiMCSecDecaysK0s(0),
   //
-  fDCAyEtaPtSecMCDecaysLambda(0),
-  fDCAzEtaPtSecMCDecaysLambda(0),
-  fDCAyPhiPtSecMCDecaysLambda(0),
-  fDCAzPhiPtSecMCDecaysLambda(0),
-  fDCAyEtaPhiSecMCDecaysLambda(0),
-  fDCAzEtaPhiSecMCDecaysLambda(0),
+  fDCAyEtaPtMCSecDecaysLambda(0),
+  fDCAzEtaPtMCSecDecaysLambda(0),
+  fDCAyPhiPtMCSecDecaysLambda(0),
+  fDCAzPhiPtMCSecDecaysLambda(0),
+  fDCAyEtaPhiMCSecDecaysLambda(0),
+  fDCAzEtaPhiMCSecDecaysLambda(0),
   //
-  fDCAyEtaPtSecMCMaterial(0),
-  fDCAzEtaPtSecMCMaterial(0),
-  fDCAyPhiPtSecMCMaterial(0),
-  fDCAzPhiPtSecMCMaterial(0),
-  fDCAyEtaPhiSecMCMaterial(0),
-  fDCAzEtaPhiSecMCMaterial(0)
+  fDCAyEtaPtMCSecMaterial(0),
+  fDCAzEtaPtMCSecMaterial(0),
+  fDCAyPhiPtMCSecMaterial(0),
+  fDCAzPhiPtMCSecMaterial(0),
+  fDCAyEtaPhiMCSecMaterial(0),
+  fDCAzEtaPhiMCSecMaterial(0)
 {
   // default constructor
   Init();
@@ -204,33 +204,33 @@ AlidNdPtCutAnalysis::AlidNdPtCutAnalysis(Char_t* name, Char_t* title): AlidNdPt(
   fDCAyEtaPhiMCSec(0),
   fDCAzEtaPhiMCSec(0),
   //
-  fDCAyEtaPtSecMCDecays(0),
-  fDCAzEtaPtSecMCDecays(0),
-  fDCAyPhiPtSecMCDecays(0),
-  fDCAzPhiPtSecMCDecays(0),
-  fDCAyEtaPhiSecMCDecays(0),
-  fDCAzEtaPhiSecMCDecays(0),
+  fDCAyEtaPtMCSecDecays(0),
+  fDCAzEtaPtMCSecDecays(0),
+  fDCAyPhiPtMCSecDecays(0),
+  fDCAzPhiPtMCSecDecays(0),
+  fDCAyEtaPhiMCSecDecays(0),
+  fDCAzEtaPhiMCSecDecays(0),
   //
-  fDCAyEtaPtSecMCDecaysK0s(0),
-  fDCAzEtaPtSecMCDecaysK0s(0),
-  fDCAyPhiPtSecMCDecaysK0s(0),
-  fDCAzPhiPtSecMCDecaysK0s(0),
-  fDCAyEtaPhiSecMCDecaysK0s(0),
-  fDCAzEtaPhiSecMCDecaysK0s(0),
+  fDCAyEtaPtMCSecDecaysK0s(0),
+  fDCAzEtaPtMCSecDecaysK0s(0),
+  fDCAyPhiPtMCSecDecaysK0s(0),
+  fDCAzPhiPtMCSecDecaysK0s(0),
+  fDCAyEtaPhiMCSecDecaysK0s(0),
+  fDCAzEtaPhiMCSecDecaysK0s(0),
   //
-  fDCAyEtaPtSecMCDecaysLambda(0),
-  fDCAzEtaPtSecMCDecaysLambda(0),
-  fDCAyPhiPtSecMCDecaysLambda(0),
-  fDCAzPhiPtSecMCDecaysLambda(0),
-  fDCAyEtaPhiSecMCDecaysLambda(0),
-  fDCAzEtaPhiSecMCDecaysLambda(0),
+  fDCAyEtaPtMCSecDecaysLambda(0),
+  fDCAzEtaPtMCSecDecaysLambda(0),
+  fDCAyPhiPtMCSecDecaysLambda(0),
+  fDCAzPhiPtMCSecDecaysLambda(0),
+  fDCAyEtaPhiMCSecDecaysLambda(0),
+  fDCAzEtaPhiMCSecDecaysLambda(0),
   //
-  fDCAyEtaPtSecMCMaterial(0),
-  fDCAzEtaPtSecMCMaterial(0),
-  fDCAyPhiPtSecMCMaterial(0),
-  fDCAzPhiPtSecMCMaterial(0),
-  fDCAyEtaPhiSecMCMaterial(0),
-  fDCAzEtaPhiSecMCMaterial(0)
+  fDCAyEtaPtMCSecMaterial(0),
+  fDCAzEtaPtMCSecMaterial(0),
+  fDCAyPhiPtMCSecMaterial(0),
+  fDCAzPhiPtMCSecMaterial(0),
+  fDCAyEtaPhiMCSecMaterial(0),
+  fDCAzEtaPhiMCSecMaterial(0)
 {
   // constructor
   Init();
@@ -292,33 +292,33 @@ AlidNdPtCutAnalysis::~AlidNdPtCutAnalysis() {
     if(fDCAyEtaPhiMCSec) delete fDCAyEtaPhiMCSec;
     if(fDCAzEtaPhiMCSec) delete fDCAzEtaPhiMCSec;
 
-    if(fDCAyEtaPtSecMCDecays) delete fDCAyEtaPtSecMCDecays;
-    if(fDCAzEtaPtSecMCDecays) delete fDCAzEtaPtSecMCDecays;
-    if(fDCAyPhiPtSecMCDecays) delete fDCAyPhiPtSecMCDecays;
-    if(fDCAzPhiPtSecMCDecays) delete fDCAzPhiPtSecMCDecays;
-    if(fDCAyEtaPhiSecMCDecays) delete fDCAyEtaPhiSecMCDecays;
-    if(fDCAzEtaPhiSecMCDecays) delete fDCAzEtaPhiSecMCDecays;
+    if(fDCAyEtaPtMCSecDecays) delete fDCAyEtaPtMCSecDecays;
+    if(fDCAzEtaPtMCSecDecays) delete fDCAzEtaPtMCSecDecays;
+    if(fDCAyPhiPtMCSecDecays) delete fDCAyPhiPtMCSecDecays;
+    if(fDCAzPhiPtMCSecDecays) delete fDCAzPhiPtMCSecDecays;
+    if(fDCAyEtaPhiMCSecDecays) delete fDCAyEtaPhiMCSecDecays;
+    if(fDCAzEtaPhiMCSecDecays) delete fDCAzEtaPhiMCSecDecays;
 
-    if(fDCAyEtaPtSecMCDecaysK0s) delete fDCAyEtaPtSecMCDecaysK0s;
-    if(fDCAzEtaPtSecMCDecaysK0s) delete fDCAzEtaPtSecMCDecaysK0s;
-    if(fDCAyPhiPtSecMCDecaysK0s) delete fDCAyPhiPtSecMCDecaysK0s;
-    if(fDCAzPhiPtSecMCDecaysK0s) delete fDCAzPhiPtSecMCDecaysK0s;
-    if(fDCAyEtaPhiSecMCDecaysK0s) delete fDCAyEtaPhiSecMCDecaysK0s;
-    if(fDCAzEtaPhiSecMCDecaysK0s) delete fDCAzEtaPhiSecMCDecaysK0s;
+    if(fDCAyEtaPtMCSecDecaysK0s) delete fDCAyEtaPtMCSecDecaysK0s;
+    if(fDCAzEtaPtMCSecDecaysK0s) delete fDCAzEtaPtMCSecDecaysK0s;
+    if(fDCAyPhiPtMCSecDecaysK0s) delete fDCAyPhiPtMCSecDecaysK0s;
+    if(fDCAzPhiPtMCSecDecaysK0s) delete fDCAzPhiPtMCSecDecaysK0s;
+    if(fDCAyEtaPhiMCSecDecaysK0s) delete fDCAyEtaPhiMCSecDecaysK0s;
+    if(fDCAzEtaPhiMCSecDecaysK0s) delete fDCAzEtaPhiMCSecDecaysK0s;
 
-    if(fDCAyEtaPtSecMCDecaysLambda) delete fDCAyEtaPtSecMCDecaysLambda;
-    if(fDCAzEtaPtSecMCDecaysLambda) delete fDCAzEtaPtSecMCDecaysLambda;
-    if(fDCAyPhiPtSecMCDecaysLambda) delete fDCAyPhiPtSecMCDecaysLambda;
-    if(fDCAzPhiPtSecMCDecaysLambda) delete fDCAzPhiPtSecMCDecaysLambda;
-    if(fDCAyEtaPhiSecMCDecaysLambda) delete fDCAyEtaPhiSecMCDecaysLambda;
-    if(fDCAzEtaPhiSecMCDecaysLambda) delete fDCAzEtaPhiSecMCDecaysLambda;
+    if(fDCAyEtaPtMCSecDecaysLambda) delete fDCAyEtaPtMCSecDecaysLambda;
+    if(fDCAzEtaPtMCSecDecaysLambda) delete fDCAzEtaPtMCSecDecaysLambda;
+    if(fDCAyPhiPtMCSecDecaysLambda) delete fDCAyPhiPtMCSecDecaysLambda;
+    if(fDCAzPhiPtMCSecDecaysLambda) delete fDCAzPhiPtMCSecDecaysLambda;
+    if(fDCAyEtaPhiMCSecDecaysLambda) delete fDCAyEtaPhiMCSecDecaysLambda;
+    if(fDCAzEtaPhiMCSecDecaysLambda) delete fDCAzEtaPhiMCSecDecaysLambda;
 
-    if(fDCAyEtaPtSecMCMaterial) delete fDCAyEtaPtSecMCMaterial;
-    if(fDCAzEtaPtSecMCMaterial) delete fDCAzEtaPtSecMCMaterial;
-    if(fDCAyPhiPtSecMCMaterial) delete fDCAyPhiPtSecMCMaterial;
-    if(fDCAzPhiPtSecMCMaterial) delete fDCAzPhiPtSecMCMaterial;
-    if(fDCAyEtaPhiSecMCMaterial) delete fDCAyEtaPhiSecMCMaterial;
-    if(fDCAzEtaPhiSecMCMaterial) delete fDCAzEtaPhiSecMCMaterial;
+    if(fDCAyEtaPtMCSecMaterial) delete fDCAyEtaPtMCSecMaterial;
+    if(fDCAzEtaPtMCSecMaterial) delete fDCAzEtaPtMCSecMaterial;
+    if(fDCAyPhiPtMCSecMaterial) delete fDCAyPhiPtMCSecMaterial;
+    if(fDCAzPhiPtMCSecMaterial) delete fDCAzPhiPtMCSecMaterial;
+    if(fDCAyEtaPhiMCSecMaterial) delete fDCAyEtaPhiMCSecMaterial;
+    if(fDCAzEtaPhiMCSecMaterial) delete fDCAzEtaPhiMCSecMaterial;
 
     if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
@@ -335,9 +335,9 @@ void AlidNdPtCutAnalysis::Init(){
   Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
   */
   // set pt bins
-  const Int_t ptNbins = 50;
-  const Double_t ptMin = 1.e-2, ptMax = 50.;
-  Double_t *binsPt = CreateLogAxis(ptNbins,ptMin,ptMax);
+  const Int_t ptNbins = 100;
+  const Double_t ptMin = 0, ptMax = 10.;
+  Double_t *binsPt = CreateLogAxis(ptNbins,ptMin+0.001,ptMax);
 
   //
   Int_t binsEventCount[2]={2,2};
@@ -405,12 +405,12 @@ void AlidNdPtCutAnalysis::Init(){
   // THnSparse track histograms
   //
 
- //nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge
+ //nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:isWeakDecay:isFromMaterial:isPrim:charge
   Int_t binsRecMCTrackHist[13]=  { 160,  10,  20,  20, 50,  50,   20,  90,             ptNbins, 2,  2,  2,  3  };
-  Double_t minRecMCTrackHist[13]={ 0.,   0.,  0.,  0., -0.5,-0.5,-1.0, 0.,             ptMin,   0., 0., 0.,-1. };
+  Double_t minRecMCTrackHist[13]={ 0.,   0.,  0.,  0., -0.5,-0.5,-1.0, 0.,             ptMin+0.001,   0., 0., 0.,-1. };
   Double_t maxRecMCTrackHist[13]={ 160., 10., 1.,  1., 0.5, 0.5,  1.0, 2.*TMath::Pi(), ptMax,   2., 2., 2., 2. };
 
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge",13,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:isWeakDecay:isFromMaterial:isPrim:charge",13,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(8,binsPt);
   fRecMCTrackHist->GetAxis(0)->SetTitle("nCrossRows");
   fRecMCTrackHist->GetAxis(1)->SetTitle("chi2PerClust");
@@ -421,7 +421,7 @@ void AlidNdPtCutAnalysis::Init(){
   fRecMCTrackHist->GetAxis(6)->SetTitle("#eta");
   fRecMCTrackHist->GetAxis(7)->SetTitle("#phi (rad)");
   fRecMCTrackHist->GetAxis(8)->SetTitle("p_{T} (GeV/c)");
-  fRecMCTrackHist->GetAxis(9)->SetTitle("hasStrangeMother");
+  fRecMCTrackHist->GetAxis(9)->SetTitle("isWeakDecay");
   fRecMCTrackHist->GetAxis(10)->SetTitle("isFromMaterial");
   fRecMCTrackHist->GetAxis(11)->SetTitle("isPrim");
   fRecMCTrackHist->GetAxis(12)->SetTitle("charge");
@@ -434,68 +434,68 @@ void AlidNdPtCutAnalysis::Init(){
   fChi2PerClustEtaPt = new TH3D("fChi2PerClustEtaPt","chi2PerClust:eta:pt; chi2PerClust; eta; pt (GeV/c)", 100,0,10,20,-1,1,ptNbins,ptMin,ptMax);
   fCrossRowsOverFindEtaPt = new TH3D("fCrossRowsOverFindEtaPt","nCrossRows/nFindableClust:eta:pt; nCrossRows/nFindableClust; eta; pt (GeV/c)", 100,0,2,20,-1,1,ptNbins,ptMin,ptMax);
   fFracSharedClustEtaPt = new TH3D("fFracSharedClustEtaPt","fracSharedClust:eta:pt;fracSharedClust; eta; pt (GeV/c)", 100,0,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyEtaPt = new TH3D("fDCAyEtaPt","DCAy:eta:pt;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPt = new TH3D("fDCAzEtaPt","DCAz:eta:pt;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyEtaPt = new TH3D("fDCAyEtaPt","DCAy:eta:pt;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPt = new TH3D("fDCAzEtaPt","DCAz:eta:pt;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
 
   //
   fCrossRowsPhiPt = new TH3D("fCrossRowsPhiPt","nCrossRows:eta:pt; nCrossRows; phi (rad); pt (GeV/c)", 160,0,160,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
   fChi2PerClustPhiPt = new TH3D("fChi2PerClustPhiPt","chi2PerClust:eta:pt; chi2PerClust; phi (rad); pt (GeV/c)", 100,0,10,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
   fCrossRowsOverFindPhiPt = new TH3D("fCrossRowsOverFindPhiPt","nCrossRows/nFindableClust:eta:pt; nCrossRows/nFindableClust; phi (rad); pt (GeV/c)", 100,0,2,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
   fFracSharedClustPhiPt = new TH3D("fFracSharedClustPhiPt","fracSharedClust:eta:pt;fracSharedClust; phi (rad); pt (GeV/c)", 100,0,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyPhiPt = new TH3D("fDCAyPhiPt","DCAy:eta:pt;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPt = new TH3D("fDCAzPhiPt","DCAz:eta:pt;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyPhiPt = new TH3D("fDCAyPhiPt","DCAy:phi:pt;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPt = new TH3D("fDCAzPhiPt","DCAz:phi:pt;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
 
   //
   fCrossRowsEtaPhi = new TH3D("fCrossRowsEtaPhi","nCrossRows:eta:phi; nCrossRows; eta; phi (rad)", 160,0,160,20,-1,1,90,0,2.*TMath::Pi());
   fChi2PerClustEtaPhi = new TH3D("fChi2PerClustEtaPhi","chi2PerClust:eta:phi; chi2PerClust; eta; phi (rad)", 100,0,10,20,-1,1,90,0,2.*TMath::Pi());
   fCrossRowsOverFindEtaPhi = new TH3D("fCrossRowsOverFindEtaPhi","nCrossRows/nFindableClust:eta:phi; nCrossRows/nFindableClust; eta; phi (rad)", 100,0,2,20,-1,1,90,0,2.*TMath::Pi());
   fFracSharedClustEtaPhi = new TH3D("fFracSharedClustEtaPhi","fracSharedClust:eta:phi;fracSharedClust; eta; phi (rad)", 100,0,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAyEtaPhi = new TH3D("fDCAyEtaPhi","DCAy:eta:phi;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhi = new TH3D("fDCAzEtaPhi","DCAz:eta:phi;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPhi = new TH3D("fDCAyEtaPhi","DCAy:eta:phi;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhi = new TH3D("fDCAzEtaPhi","DCAz:eta:phi;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
   //
-  fDCAyEtaPtMCPrim = new TH3D("fDCAyEtaPtMCPrim","DCAy:eta:pt primary;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPtMCPrim = new TH3D("fDCAzEtaPtMCPrim","DCAz:eta:pt primary;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyPhiPtMCPrim = new TH3D("fDCAyPhiPtMCPrim","DCAy primary:eta:pt primary;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPtMCPrim = new TH3D("fDCAzPhiPtMCPrim","DCAz:eta:pt primary;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyEtaPhiMCPrim = new TH3D("fDCAyEtaPhiMCPrim","DCAy:eta:phi primary;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhiMCPrim = new TH3D("fDCAzEtaPhiMCPrim","DCAz:eta:phi primary;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPtMCPrim = new TH3D("fDCAyEtaPtMCPrim","DCAy:eta:pt primary;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPtMCPrim = new TH3D("fDCAzEtaPtMCPrim","DCAz:eta:pt primary;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyPhiPtMCPrim = new TH3D("fDCAyPhiPtMCPrim","DCAy primary:phi:pt primary;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPtMCPrim = new TH3D("fDCAzPhiPtMCPrim","DCAz:phi:pt primary;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyEtaPhiMCPrim = new TH3D("fDCAyEtaPhiMCPrim","DCAy:eta:phi primary;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhiMCPrim = new TH3D("fDCAzEtaPhiMCPrim","DCAz:eta:phi primary;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
   //
-  fDCAyEtaPtMCSec = new TH3D("fDCAyEtaPtMCSec","DCAy:eta:pt secondary;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPtMCSec = new TH3D("fDCAzEtaPtMCSec","DCAz:eta:pt secondary;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyPhiPtMCSec = new TH3D("fDCAyPhiPtMCSec","DCAy secondary:eta:pt secondary;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPtMCSec = new TH3D("fDCAzPhiPtMCSec","DCAz:eta:pt secondary;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyEtaPhiMCSec = new TH3D("fDCAyEtaPhiMCSec","DCAy:eta:phi secondary;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhiMCSec = new TH3D("fDCAzEtaPhiMCSec","DCAz:eta:phi secondary;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPtMCSec = new TH3D("fDCAyEtaPtMCSec","DCAy:eta:pt secondary;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPtMCSec = new TH3D("fDCAzEtaPtMCSec","DCAz:eta:pt secondary;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyPhiPtMCSec = new TH3D("fDCAyPhiPtMCSec","DCAy secondary:phi:pt secondary;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPtMCSec = new TH3D("fDCAzPhiPtMCSec","DCAz:eta:pt secondary;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyEtaPhiMCSec = new TH3D("fDCAyEtaPhiMCSec","DCAy:eta:phi secondary;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhiMCSec = new TH3D("fDCAzEtaPhiMCSec","DCAz:eta:phi secondary;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
-  fDCAyEtaPtSecMCDecays = new TH3D("fDCAyEtaPtSecMCDecays","DCAy:eta:pt secondary decays;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPtSecMCDecays = new TH3D("fDCAzEtaPtSecMCDecays","DCAz:eta:pt secondary decays;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyPhiPtSecMCDecays = new TH3D("fDCAyPhiPtSecMCDecays","DCAy secondary decays:eta:pt secondary decays;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPtSecMCDecays = new TH3D("fDCAzPhiPtSecMCDecays","DCAz:eta:pt secondary decays;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyEtaPhiSecMCDecays = new TH3D("fDCAyEtaPhiSecMCDecays","DCAy:eta:phi secondary decays;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhiSecMCDecays = new TH3D("fDCAzEtaPhiSecMCDecays","DCAz:eta:phi secondary decays;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPtMCSecDecays = new TH3D("fDCAyEtaPtMCSecDecays","DCAy:eta:pt secondary decays;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPtMCSecDecays = new TH3D("fDCAzEtaPtMCSecDecays","DCAz:eta:pt secondary decays;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyPhiPtMCSecDecays = new TH3D("fDCAyPhiPtMCSecDecays","DCAy secondary decays:phi:pt secondary decays;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPtMCSecDecays = new TH3D("fDCAzPhiPtMCSecDecays","DCAz:eta:pt secondary decays;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyEtaPhiMCSecDecays = new TH3D("fDCAyEtaPhiMCSecDecays","DCAy:eta:phi secondary decays;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhiMCSecDecays = new TH3D("fDCAzEtaPhiMCSecDecays","DCAz:eta:phi secondary decays;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
-  fDCAyEtaPtSecMCDecaysK0s = new TH3D("fDCAyEtaPtSecMCDecaysK0s","DCAy:eta:pt secondary decays from K0s;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPtSecMCDecaysK0s = new TH3D("fDCAzEtaPtSecMCDecaysK0s","DCAz:eta:pt secondary decays from K0s;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyPhiPtSecMCDecaysK0s = new TH3D("fDCAyPhiPtSecMCDecaysK0s","DCAy secondary decays from K0s:eta:pt secondary decays from K0s;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPtSecMCDecaysK0s = new TH3D("fDCAzPhiPtSecMCDecaysK0s","DCAz:eta:pt secondary decays from K0s;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyEtaPhiSecMCDecaysK0s = new TH3D("fDCAyEtaPhiSecMCDecaysK0s","DCAy:eta:phi secondary decays from K0s;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhiSecMCDecaysK0s = new TH3D("fDCAzEtaPhiSecMCDecaysK0s","DCAz:eta:phi secondary decays from K0s;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPtMCSecDecaysK0s = new TH3D("fDCAyEtaPtMCSecDecaysK0s","DCAy:eta:pt secondary decays from K0s;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPtMCSecDecaysK0s = new TH3D("fDCAzEtaPtMCSecDecaysK0s","DCAz:eta:pt secondary decays from K0s;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyPhiPtMCSecDecaysK0s = new TH3D("fDCAyPhiPtMCSecDecaysK0s","DCAy secondary decays from K0s:phi:pt secondary decays from K0s;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPtMCSecDecaysK0s = new TH3D("fDCAzPhiPtMCSecDecaysK0s","DCAz:eta:pt secondary decays from K0s;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyEtaPhiMCSecDecaysK0s = new TH3D("fDCAyEtaPhiMCSecDecaysK0s","DCAy:eta:phi secondary decays from K0s;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhiMCSecDecaysK0s = new TH3D("fDCAzEtaPhiMCSecDecaysK0s","DCAz:eta:phi secondary decays from K0s;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
-  fDCAyEtaPtSecMCDecaysLambda = new TH3D("fDCAyEtaPtSecMCDecaysLambda","DCAy:eta:pt secondary decays from Lambda;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPtSecMCDecaysLambda = new TH3D("fDCAzEtaPtSecMCDecaysLambda","DCAz:eta:pt secondary decays from Lambda;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyPhiPtSecMCDecaysLambda = new TH3D("fDCAyPhiPtSecMCDecaysLambda","DCAy secondary decays from Lambda:eta:pt secondary decays from Lambda;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPtSecMCDecaysLambda = new TH3D("fDCAzPhiPtSecMCDecaysLambda","DCAz:eta:pt secondary decays from Lambda;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyEtaPhiSecMCDecaysLambda = new TH3D("fDCAyEtaPhiSecMCDecaysLambda","DCAy:eta:phi secondary decays from Lambda;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhiSecMCDecaysLambda = new TH3D("fDCAzEtaPhiSecMCDecaysLambda","DCAz:eta:phi secondary decays from Lambda;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPtMCSecDecaysLambda = new TH3D("fDCAyEtaPtMCSecDecaysLambda","DCAy:eta:pt secondary decays from Lambda;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPtMCSecDecaysLambda = new TH3D("fDCAzEtaPtMCSecDecaysLambda","DCAz:eta:pt secondary decays from Lambda;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyPhiPtMCSecDecaysLambda = new TH3D("fDCAyPhiPtMCSecDecaysLambda","DCAy secondary decays from Lambda:phi:pt secondary decays from Lambda;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPtMCSecDecaysLambda = new TH3D("fDCAzPhiPtMCSecDecaysLambda","DCAz:eta:pt secondary decays from Lambda;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyEtaPhiMCSecDecaysLambda = new TH3D("fDCAyEtaPhiMCSecDecaysLambda","DCAy:eta:phi secondary decays from Lambda;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhiMCSecDecaysLambda = new TH3D("fDCAzEtaPhiMCSecDecaysLambda","DCAz:eta:phi secondary decays from Lambda;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
-  fDCAyEtaPtSecMCMaterial = new TH3D("fDCAyEtaPtSecMCMaterial","DCAy:eta:pt secondary material;DCAy (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAzEtaPtSecMCMaterial = new TH3D("fDCAzEtaPtSecMCMaterial","DCAz:eta:pt secondary material;DCAz (cm); eta; pt (GeV/c)", 100,-1,1,20,-1,1,ptNbins,ptMin,ptMax);
-  fDCAyPhiPtSecMCMaterial = new TH3D("fDCAyPhiPtSecMCMaterial","DCAy secondary material:eta:pt secondary material;DCAy (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAzPhiPtSecMCMaterial = new TH3D("fDCAzPhiPtSecMCMaterial","DCAz:eta:pt secondary material;DCAz (cm); phi (rad); pt (GeV/c)", 100,-1,1,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
-  fDCAyEtaPhiSecMCMaterial = new TH3D("fDCAyEtaPhiSecMCMaterial","DCAy:eta:phi secondary material;DCAy (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
-  fDCAzEtaPhiSecMCMaterial = new TH3D("fDCAzEtaPhiSecMCMaterial","DCAz:eta:phi secondary material;DCAz (cm); eta; phi (rad)", 100,-1,1,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAyEtaPtMCSecMaterial = new TH3D("fDCAyEtaPtMCSecMaterial","DCAy:eta:pt secondary material;DCAy (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAzEtaPtMCSecMaterial = new TH3D("fDCAzEtaPtMCSecMaterial","DCAz:eta:pt secondary material;DCAz (cm); eta; pt (GeV/c)", 100,-3,3,20,-1,1,ptNbins,ptMin,ptMax);
+  fDCAyPhiPtMCSecMaterial = new TH3D("fDCAyPhiPtMCSecMaterial","DCAy secondary material:phi:pt secondary material;DCAy (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAzPhiPtMCSecMaterial = new TH3D("fDCAzPhiPtMCSecMaterial","DCAz:eta:pt secondary material;DCAz (cm); phi (rad); pt (GeV/c)", 100,-3,3,90,0,2.*TMath::Pi(),ptNbins,ptMin,ptMax);
+  fDCAyEtaPhiMCSecMaterial = new TH3D("fDCAyEtaPhiMCSecMaterial","DCAy:phi:phi secondary material;DCAy (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
+  fDCAzEtaPhiMCSecMaterial = new TH3D("fDCAzEtaPhiMCSecMaterial","DCAz:phi:phi secondary material;DCAz (cm); eta; phi (rad)", 100,-3,3,20,-1,1,90,0,2.*TMath::Pi());
 
   //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity
   /*
@@ -581,7 +581,6 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
-  AliPWG0Helper::MCProcessType evtType = AliPWG0Helper::kInvalidProcess;
 
   if(IsUseMCInfo())
   {
@@ -604,9 +603,6 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       return;
     }
 
-    // get event type (ND=0x1, DD=0x2, SD=0x4)
-    evtType = AliPWG0Helper::GetEventProcessType(header);
-    AliDebug(AliLog::kDebug+1, Form("Found process type %d", evtType));
 
     // get MC vertex
     genHeader = header->GenEventHeader();
@@ -840,7 +836,7 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   // Fill rec vs MC information
   //
   Bool_t isPrim = kFALSE;
-  Bool_t hasStrangeMother = kFALSE;
+  Bool_t isWeakDecay = kFALSE;
   Bool_t isFromMaterial = kFALSE;
   Bool_t isFromK0s = kFALSE;
   Bool_t isFromLambda = kFALSE;
@@ -851,33 +847,24 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
     TParticle* particle = stack->Particle(label);
     if(!particle) return;
     if(particle->GetPDG() && particle->GetPDG()->Charge()==0.) return;
+
+    //
     isPrim = stack->IsPhysicalPrimary(label);
+    isWeakDecay = stack->IsSecondaryFromWeakDecay(label);
+    isFromMaterial = stack->IsSecondaryFromMaterial(label);
 
     // check whether has stange mother
     //
     Int_t motherPdg = -1;
     TParticle* mother = 0;
 
-    Int_t motherLabel = particle->GetMother(0);
+    Int_t motherLabel = particle->GetFirstMother();
     if(motherLabel>=0) mother = stack->Particle(motherLabel);
     if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
     Int_t mech = particle->GetUniqueID(); // production mechanism
 
-
-    if(motherPdg==3122 || motherPdg==310) // lambda, antilambda, k0s
-    {
-      if(mech == 4 || mech == 5) {
-          hasStrangeMother = kTRUE;
-          if(motherPdg == 310) isFromK0s = kTRUE;
-          if(motherPdg == 3122) isFromLambda = kTRUE;
-      }
-    }
-    else {
-      //if(isPrim==0 && mech == 13)
-      //printf("mech %d \n", mech);
-      if(!isPrim) isFromMaterial = kTRUE;
-    }
-    //if(isPrim && pt > 1.5 && kinkIdx == -1) printf("nClust  %d \n", nClust);
+    if(isWeakDecay && motherPdg == 310) isFromK0s = kTRUE;
+    if(isWeakDecay && motherPdg == 3122) isFromLambda = kTRUE;
   }
 
   // fill histo
@@ -886,7 +873,7 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   //Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,kinkIdx,isPrim, polarity };
   //fRecMCTrackHist->Fill(vRecMCTrackHist);
 
-  Double_t vRecMCTrackHist[13] = { static_cast<Double_t>(nCrossedRowsTPC), chi2PerCluster, ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared , b[0], b[1], eta, phi, pt, static_cast<Double_t>(hasStrangeMother), static_cast<Double_t>(isFromMaterial), static_cast<Double_t>(isPrim), static_cast<Double_t>(charge) };
+  Double_t vRecMCTrackHist[13] = { static_cast<Double_t>(nCrossedRowsTPC), chi2PerCluster, ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared , b[0], b[1], eta, phi, pt, static_cast<Double_t>(isWeakDecay), static_cast<Double_t>(isFromMaterial), static_cast<Double_t>(isPrim), static_cast<Double_t>(charge) };
   if(fFillSparseHisto) { fRecMCTrackHist->Fill(vRecMCTrackHist); }
 
   fCrossRowsEtaPt->Fill(static_cast<Double_t>(nCrossedRowsTPC),eta,pt);
@@ -927,41 +914,42 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
       fDCAyEtaPhiMCSec->Fill(b[0],eta,phi);
       fDCAzEtaPhiMCSec->Fill(b[1],eta,phi);
 
-      if(hasStrangeMother) {
-        fDCAyEtaPtSecMCDecays->Fill(b[0],eta,pt);
-        fDCAzEtaPtSecMCDecays->Fill(b[1],eta,pt);
-        fDCAyPhiPtSecMCDecays->Fill(b[0],phi,pt);
-        fDCAzPhiPtSecMCDecays->Fill(b[1],phi,pt);
-        fDCAyEtaPhiSecMCDecays->Fill(b[0],eta,phi);
-        fDCAzEtaPhiSecMCDecays->Fill(b[1],eta,phi);
+      if(isWeakDecay) {
+        fDCAyEtaPtMCSecDecays->Fill(b[0],eta,pt);
+        fDCAzEtaPtMCSecDecays->Fill(b[1],eta,pt);
+        fDCAyPhiPtMCSecDecays->Fill(b[0],phi,pt);
+        fDCAzPhiPtMCSecDecays->Fill(b[1],phi,pt);
+        fDCAyEtaPhiMCSecDecays->Fill(b[0],eta,phi);
+        fDCAzEtaPhiMCSecDecays->Fill(b[1],eta,phi);
 
             if(isFromK0s) {
-                fDCAyEtaPtSecMCDecaysK0s->Fill(b[0],eta,pt);
-                fDCAzEtaPtSecMCDecaysK0s->Fill(b[1],eta,pt);
-                fDCAyPhiPtSecMCDecaysK0s->Fill(b[0],phi,pt);
-                fDCAzPhiPtSecMCDecaysK0s->Fill(b[1],phi,pt);
-                fDCAyEtaPhiSecMCDecaysK0s->Fill(b[0],eta,phi);
-                fDCAzEtaPhiSecMCDecaysK0s->Fill(b[1],eta,phi);
+                fDCAyEtaPtMCSecDecaysK0s->Fill(b[0],eta,pt);
+                fDCAzEtaPtMCSecDecaysK0s->Fill(b[1],eta,pt);
+                fDCAyPhiPtMCSecDecaysK0s->Fill(b[0],phi,pt);
+                fDCAzPhiPtMCSecDecaysK0s->Fill(b[1],phi,pt);
+                fDCAyEtaPhiMCSecDecaysK0s->Fill(b[0],eta,phi);
+                fDCAzEtaPhiMCSecDecaysK0s->Fill(b[1],eta,phi);
             }
 
             if(isFromLambda) {
-                fDCAyEtaPtSecMCDecaysLambda->Fill(b[0],eta,pt);
-                fDCAzEtaPtSecMCDecaysLambda->Fill(b[1],eta,pt);
-                fDCAyPhiPtSecMCDecaysLambda->Fill(b[0],phi,pt);
-                fDCAzPhiPtSecMCDecaysLambda->Fill(b[1],phi,pt);
-                fDCAyEtaPhiSecMCDecaysLambda->Fill(b[0],eta,phi);
-                fDCAzEtaPhiSecMCDecaysLambda->Fill(b[1],eta,phi);
+                fDCAyEtaPtMCSecDecaysLambda->Fill(b[0],eta,pt);
+                fDCAzEtaPtMCSecDecaysLambda->Fill(b[1],eta,pt);
+                fDCAyPhiPtMCSecDecaysLambda->Fill(b[0],phi,pt);
+                fDCAzPhiPtMCSecDecaysLambda->Fill(b[1],phi,pt);
+                fDCAyEtaPhiMCSecDecaysLambda->Fill(b[0],eta,phi);
+                fDCAzEtaPhiMCSecDecaysLambda->Fill(b[1],eta,phi);
             }
-        } else {
-            fDCAyEtaPtSecMCMaterial->Fill(b[0],eta,pt);
-            fDCAzEtaPtSecMCMaterial->Fill(b[1],eta,pt);
-            fDCAyPhiPtSecMCMaterial->Fill(b[0],phi,pt);
-            fDCAzPhiPtSecMCMaterial->Fill(b[1],phi,pt);
-            fDCAyEtaPhiSecMCMaterial->Fill(b[0],eta,phi);
-            fDCAzEtaPhiSecMCMaterial->Fill(b[1],eta,phi);
-        }
+      }
+      if(isFromMaterial) {
+            fDCAyEtaPtMCSecMaterial->Fill(b[0],eta,pt);
+            fDCAzEtaPtMCSecMaterial->Fill(b[1],eta,pt);
+            fDCAyPhiPtMCSecMaterial->Fill(b[0],phi,pt);
+            fDCAzPhiPtMCSecMaterial->Fill(b[1],phi,pt);
+            fDCAyEtaPhiMCSecMaterial->Fill(b[0],eta,phi);
+            fDCAzEtaPhiMCSecMaterial->Fill(b[1],eta,phi);
       }
     }
+  }
 }
 
 //_____________________________________________________________________________
@@ -996,8 +984,8 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list)
 
     fRecEventXYZ->Add(fRecEventXYZ);
     fRecEventXYMult->Add(fRecEventXYMult);
-    fRecEventXZMult->Add(fRecEventYZMult);
-    fRecEventYZMult->Add(fRecEventZResZMult);
+    fRecEventXZMult->Add(fRecEventXZMult);
+    fRecEventYZMult->Add(fRecEventYZMult);
     fRecEventZResZMult->Add(fRecEventZResZMult);
 
     fMCEventXYZ->Add(fMCEventXYZ);
@@ -1046,33 +1034,33 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list)
     fDCAyEtaPhiMCSec->Add(entry->fDCAyEtaPhiMCSec);
     fDCAzEtaPhiMCSec->Add(entry->fDCAzEtaPhiMCSec);
 
-    fDCAyEtaPtSecMCDecays->Add(entry->fDCAyEtaPtSecMCDecays);
-    fDCAzEtaPtSecMCDecays->Add(entry->fDCAzEtaPtSecMCDecays);
-    fDCAyPhiPtSecMCDecays->Add(entry->fDCAyPhiPtSecMCDecays);
-    fDCAzPhiPtSecMCDecays->Add(entry->fDCAzPhiPtSecMCDecays);
-    fDCAyEtaPhiSecMCDecays->Add(entry->fDCAyEtaPhiSecMCDecays);
-    fDCAzEtaPhiSecMCDecays->Add(entry->fDCAzEtaPhiSecMCDecays);
+    fDCAyEtaPtMCSecDecays->Add(entry->fDCAyEtaPtMCSecDecays);
+    fDCAzEtaPtMCSecDecays->Add(entry->fDCAzEtaPtMCSecDecays);
+    fDCAyPhiPtMCSecDecays->Add(entry->fDCAyPhiPtMCSecDecays);
+    fDCAzPhiPtMCSecDecays->Add(entry->fDCAzPhiPtMCSecDecays);
+    fDCAyEtaPhiMCSecDecays->Add(entry->fDCAyEtaPhiMCSecDecays);
+    fDCAzEtaPhiMCSecDecays->Add(entry->fDCAzEtaPhiMCSecDecays);
 
-    fDCAyEtaPtSecMCDecaysK0s->Add(entry->fDCAyEtaPtSecMCDecaysK0s);
-    fDCAzEtaPtSecMCDecaysK0s->Add(entry->fDCAzEtaPtSecMCDecaysK0s);
-    fDCAyPhiPtSecMCDecaysK0s->Add(entry->fDCAyPhiPtSecMCDecaysK0s);
-    fDCAzPhiPtSecMCDecaysK0s->Add(entry->fDCAzPhiPtSecMCDecaysK0s);
-    fDCAyEtaPhiSecMCDecaysK0s->Add(entry->fDCAyEtaPhiSecMCDecaysK0s);
-    fDCAzEtaPhiSecMCDecaysK0s->Add(entry->fDCAzEtaPhiSecMCDecaysK0s);
+    fDCAyEtaPtMCSecDecaysK0s->Add(entry->fDCAyEtaPtMCSecDecaysK0s);
+    fDCAzEtaPtMCSecDecaysK0s->Add(entry->fDCAzEtaPtMCSecDecaysK0s);
+    fDCAyPhiPtMCSecDecaysK0s->Add(entry->fDCAyPhiPtMCSecDecaysK0s);
+    fDCAzPhiPtMCSecDecaysK0s->Add(entry->fDCAzPhiPtMCSecDecaysK0s);
+    fDCAyEtaPhiMCSecDecaysK0s->Add(entry->fDCAyEtaPhiMCSecDecaysK0s);
+    fDCAzEtaPhiMCSecDecaysK0s->Add(entry->fDCAzEtaPhiMCSecDecaysK0s);
 
-    fDCAyEtaPtSecMCDecaysLambda->Add(entry->fDCAyEtaPtSecMCDecaysLambda);
-    fDCAzEtaPtSecMCDecaysLambda->Add(entry->fDCAzEtaPtSecMCDecaysLambda);
-    fDCAyPhiPtSecMCDecaysLambda->Add(entry->fDCAyPhiPtSecMCDecaysLambda);
-    fDCAzPhiPtSecMCDecaysLambda->Add(entry->fDCAzPhiPtSecMCDecaysLambda);
-    fDCAyEtaPhiSecMCDecaysLambda->Add(entry->fDCAyEtaPhiSecMCDecaysLambda);
-    fDCAzEtaPhiSecMCDecaysLambda->Add(entry->fDCAzEtaPhiSecMCDecaysLambda);
+    fDCAyEtaPtMCSecDecaysLambda->Add(entry->fDCAyEtaPtMCSecDecaysLambda);
+    fDCAzEtaPtMCSecDecaysLambda->Add(entry->fDCAzEtaPtMCSecDecaysLambda);
+    fDCAyPhiPtMCSecDecaysLambda->Add(entry->fDCAyPhiPtMCSecDecaysLambda);
+    fDCAzPhiPtMCSecDecaysLambda->Add(entry->fDCAzPhiPtMCSecDecaysLambda);
+    fDCAyEtaPhiMCSecDecaysLambda->Add(entry->fDCAyEtaPhiMCSecDecaysLambda);
+    fDCAzEtaPhiMCSecDecaysLambda->Add(entry->fDCAzEtaPhiMCSecDecaysLambda);
 
-    fDCAyEtaPtSecMCMaterial->Add(entry->fDCAyEtaPtSecMCMaterial);
-    fDCAzEtaPtSecMCMaterial->Add(entry->fDCAzEtaPtSecMCMaterial);
-    fDCAyPhiPtSecMCMaterial->Add(entry->fDCAyPhiPtSecMCMaterial);
-    fDCAzPhiPtSecMCMaterial->Add(entry->fDCAzPhiPtSecMCMaterial);
-    fDCAyEtaPhiSecMCMaterial->Add(entry->fDCAyEtaPhiSecMCMaterial);
-    fDCAzEtaPhiSecMCMaterial->Add(entry->fDCAzEtaPhiSecMCMaterial);
+    fDCAyEtaPtMCSecMaterial->Add(entry->fDCAyEtaPtMCSecMaterial);
+    fDCAzEtaPtMCSecMaterial->Add(entry->fDCAzEtaPtMCSecMaterial);
+    fDCAyPhiPtMCSecMaterial->Add(entry->fDCAyPhiPtMCSecMaterial);
+    fDCAzPhiPtMCSecMaterial->Add(entry->fDCAzPhiPtMCSecMaterial);
+    fDCAyEtaPhiMCSecMaterial->Add(entry->fDCAyEtaPhiMCSecMaterial);
+    fDCAzEtaPhiMCSecMaterial->Add(entry->fDCAzEtaPhiMCSecMaterial);
 
     // physics selection
     //collPhysSelection->Add(entry->GetPhysicsTriggerSelection());

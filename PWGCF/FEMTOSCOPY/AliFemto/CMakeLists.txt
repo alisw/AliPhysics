@@ -1,6 +1,7 @@
 
 #Module
-set (MODULE PWGCFfemtoscopy)
+set(MODULE PWGCFfemtoscopy)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto)
@@ -66,6 +67,7 @@ set(SRCS
   AliFemtoCorrFctn3DSpherical.cxx
   AliFemtoEventReaderAOD.cxx
   AliFemtoEventReaderAODChain.cxx
+  AliFemtoEventReaderAODMultSelection.cxx
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
@@ -86,7 +88,7 @@ set(SRCS
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
-  AliFemtoDeltaPtPairCut.cxx	
+  AliFemtoDeltaPtPairCut.cxx
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.cxx
   AliFemtoXiTrackCut.cxx
   AliFemtoXiPairCut.cxx

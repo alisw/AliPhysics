@@ -84,6 +84,48 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
 }
 
 //__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaJackson(Bool_t useMC)
+{
+//
+// Return cosine of angle of one daughter in the resonance rest frame to beam z-axis (Jackson frame)
+//
+
+   TLorentzVector &mother    = fSum[ID(useMC)];
+   TLorentzVector daughter = fP1[ID(useMC)];
+//    TLorentzVector daughter = fP2[ID(useMC)];
+   daughter.Boost(-mother.BoostVector());
+
+//   TVector3 beamAxis(0,0,1);
+//   TVector3 momentumD = daughter.Vect();
+     // cos(theta) via dot product
+//   Double_t cosTheta = momentumD.Dot(beamAxis)/TMath::Sqrt(momentumD.Mag2()*beamAxis.Mag2());
+     // Faster way (less computing)
+//   Double_t cosTheta = daughter.CosTheta();
+
+   return daughter.CosTheta();
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaTransversity(Bool_t useMC)
+{
+//
+// Return cosine of angle of one daughter in the resonance rest frame to normal of
+// beam z-axis and resonance production plane (Transversity frame)
+//
+
+	TLorentzVector &mother = fSum[ID(useMC)];
+	TLorentzVector daughter = fP1[ID(useMC)];
+	//    TLorentzVector daughter = fP2[ID(useMC)];
+	daughter.Boost(-mother.BoostVector());
+
+	TVector3 beamAxis(0, 0, 1);
+	TVector3 transFrame = beamAxis.Cross(mother.Vect());
+	TVector3 momentumD = daughter.Vect();
+
+	return momentumD.Dot(transFrame) / TMath::Sqrt((momentumD.Mag2() * transFrame.Mag2()));
+}
+
+//__________________________________________________________________________________________________
 void AliRsnMiniPair::InvertP(Bool_t first)
 {
 //
@@ -215,4 +257,24 @@ void AliRsnMiniPair::DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpyp
     pxpypz[2]=fP2[ID(mc)].Pz();
   }
   return;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairPtRes() const
+{
+//
+// Return pair pt resolution
+//
+   if (Pt(1) <= 0.0) return 1E20;
+   return (Pt(0) - Pt(1)) / Pt(1);
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairYRes() const
+{
+//
+// Return pair rapidity resolution
+//
+  if (Y(1) <= 0.0) return 1E20;
+  return (Y(0) - Y(1)) / Y(1);
 }

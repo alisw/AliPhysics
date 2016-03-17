@@ -123,10 +123,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
     //
     printf("AliAnaPi0: EMCal-EMCal invariant mass\n");
     maker->AddAnalysis(ConfigurePi0Analysis   (col, simulation, "EMCAL", kFALSE, year, tm, mixOn  , printSettings, debug), n++);
-    
-    // Temporal addition to study the minimum angle cut
-    maker->AddAnalysis(ConfigurePi0Analysis2  (col, simulation, "EMCAL", kFALSE, year, tm, mixOn  , printSettings, debug), n++);
-    maker->AddAnalysis(ConfigurePi0Analysis3  (col, simulation, "EMCAL", kFALSE, year, tm, mixOn  , printSettings, debug), n++);
   }
 
   if(calorimeter.Contains("PHOS"))
@@ -694,7 +690,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
     ana->SetNMaxEvMix(10);
     ana->SetMinPt(1.5);
   }
-  else if(collision =="pPb")
+  else if(col =="pPb")
   {
     ana->SetNCentrBin(1);
     ana->SetNZvertBin(10);
@@ -706,7 +702,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   // Angle cut, avoid pairs with too large angle
   ana->SwitchOnAngleSelection(); 
   ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
-  ana->SetAngleCut(0.); // Minimum angle open
+  ana->SetAngleCut(0.014); // Minimum angle open, cell size
   
   //if(!bothCalo) ana->SwitchOnSMCombinations();
   ana->SwitchOnSMCombinations();
@@ -725,186 +721,6 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
     
   return ana;
 }
-
-
-///
-/// Configure the task doing the 2 cluster invariant mass analysis. Temporal, include min angle cut, 1 cell.
-///
-AliAnaPi0* ConfigurePi0Analysis2(TString col,           Bool_t simulation,
-                                 TString calorimeter,   Bool_t bothCalo,   Int_t year,
-                                 Int_t tm,              Bool_t mixOn,
-                                 Bool_t  printSettings, Int_t   debug)
-{
-  AliAnaPi0 *ana = new AliAnaPi0();
-  
-  ana->SetDebug(debug);
-  
-  // Input delta AOD settings
-  ana->SetInputAODName(Form("Photon_%s_%s",calorimeter.Data(),kAnaPi0.Data()));
-  
-  if(bothCalo)
-  {
-    ana->SwitchOnPairWithOtherDetector();
-    if ( calorimeter == "EMCAL" ) ana->SetOtherDetectorInputName(Form("Photon_PHOS_%s" ,kAnaPi0.Data()));
-    else                          ana->SetOtherDetectorInputName(Form("Photon_EMCAL_%s",kAnaPi0.Data()));
-  }
-  
-  // Calorimeter settings
-  ana->SetCalorimeter(calorimeter);
-  
-  // settings for pp collision mixing
-  if(mixOn) ana->SwitchOnOwnMix();
-  else      ana->SwitchOffOwnMix();
-  
-  // Cuts
-  if (calorimeter == "EMCAL" ) 
-  {
-    if(year < 2014) ana->SetPairTimeCut(50);
-    else            ana->SetPairTimeCut(200); // REMEMBER to remove this when time calib is on
-  }
-  
-  ana->SetNPIDBits(1);
-  ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
-                        // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
-  
-  if     (col == "pp"  )
-  {
-    ana->SetNCentrBin(1);
-    ana->SwitchOffTrackMultBins();
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(1);
-    ana->SetNMaxEvMix(100);
-    ana->SetMinPt(0.5); // 0.5
-  }
-  else if(col == "PbPb")
-  {
-    ana->SetNCentrBin(10);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(10);
-    ana->SetMinPt(1.5);
-  }
-  else if(collision =="pPb")
-  {
-    ana->SetNCentrBin(1);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(100);
-    ana->SetMinPt(0.5);
-  }
-  
-  // Angle cut, avoid pairs with too large angle
-  ana->SwitchOnAngleSelection(); 
-  ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
-  ana->SetAngleCut(0.014); // Minimum angle open
-  
-  //if(!bothCalo) ana->SwitchOnSMCombinations();
-  ana->SwitchOnSMCombinations();
-  ana->SwitchOffMultipleCutAnalysis();
-  ana->SwitchOnFillAngleHisto();
-  ana->SwitchOnFillOriginHisto(); // MC
-  
-  // Set Histograms name tag, bins and ranges
-  
-  if(!bothCalo) ana->AddToHistogramsName(Form("AnaPi02_%s_TM%d_",calorimeter.Data(),tm));
-  else          ana->AddToHistogramsName(Form("AnaPi02_%sPlusOther_TM%d_",calorimeter.Data(),tm));
-  
-  SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
-  
-  if(printSettings) ana->Print("");
-  
-  return ana;
-}
-
-///
-/// Configure the task doing the 2 cluster invariant mass analysis. Temporal, include min angle cut 2 cells.
-///
-AliAnaPi0* ConfigurePi0Analysis3(TString col,           Bool_t simulation,
-                                 TString calorimeter,   Bool_t bothCalo,   Int_t year,
-                                 Int_t tm,              Bool_t mixOn,
-                                 Bool_t  printSettings, Int_t   debug)
-{
-  AliAnaPi0 *ana = new AliAnaPi0();
-  
-  ana->SetDebug(debug);
-  
-  // Input delta AOD settings
-  ana->SetInputAODName(Form("Photon_%s_%s",calorimeter.Data(),kAnaPi0.Data()));
-  
-  if(bothCalo)
-  {
-    ana->SwitchOnPairWithOtherDetector();
-    if ( calorimeter == "EMCAL" ) ana->SetOtherDetectorInputName(Form("Photon_PHOS_%s" ,kAnaPi0.Data()));
-    else                          ana->SetOtherDetectorInputName(Form("Photon_EMCAL_%s",kAnaPi0.Data()));
-  }
-  
-  // Calorimeter settings
-  ana->SetCalorimeter(calorimeter);
-  
-  // settings for pp collision mixing
-  if(mixOn) ana->SwitchOnOwnMix();
-  else      ana->SwitchOffOwnMix();
-  
-  // Cuts
-  if (calorimeter == "EMCAL" ) 
-  {
-    if(year < 2014) ana->SetPairTimeCut(50);
-    else            ana->SetPairTimeCut(200); // REMEMBER to remove this when time calib is on
-  }
-  
-  ana->SetNPIDBits(1);
-  ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
-                        // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
-  
-  if     (col == "pp"  )
-  {
-    ana->SetNCentrBin(1);
-    ana->SwitchOffTrackMultBins();
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(1);
-    ana->SetNMaxEvMix(100);
-    ana->SetMinPt(0.5); // 0.5
-  }
-  else if(col == "PbPb")
-  {
-    ana->SetNCentrBin(10);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(10);
-    ana->SetMinPt(1.5);
-  }
-  else if(collision =="pPb")
-  {
-    ana->SetNCentrBin(1);
-    ana->SetNZvertBin(10);
-    ana->SetNRPBin(4);
-    ana->SetNMaxEvMix(100);
-    ana->SetMinPt(0.5);
-  }
-  
-  // Angle cut, avoid pairs with too large angle
-  ana->SwitchOnAngleSelection(); 
-  ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
-  ana->SetAngleCut(0.028); // Minimum angle open
-  
-  //if(!bothCalo) ana->SwitchOnSMCombinations();
-  ana->SwitchOnSMCombinations();
-  ana->SwitchOffMultipleCutAnalysis();
-  ana->SwitchOnFillAngleHisto();
-  ana->SwitchOnFillOriginHisto(); // MC
-  
-  // Set Histograms name tag, bins and ranges
-  
-  if(!bothCalo) ana->AddToHistogramsName(Form("AnaPi03_%s_TM%d_",calorimeter.Data(),tm));
-  else          ana->AddToHistogramsName(Form("AnaPi03_%sPlusOther_TM%d_",calorimeter.Data(),tm));
-  
-  SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
-  
-  if(printSettings) ana->Print("");
-  
-  return ana;
-}
-
 
 ///
 /// Set common histograms binning 

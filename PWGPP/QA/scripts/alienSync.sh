@@ -393,39 +393,40 @@ exitScript()
 
 reformatXMLCollection()
 {
-  #parse the xml collection on stdinput
-  #output a collection in format: file md5 ctime size
-  local nfields=""
-  local turl=""
-  local md5=""
-  local ctime=""
-  local size=""
-  local x=""
-  while read -a fields; do
-    nfields=${#fields[*]}
-    turl=""
-    md5=""
-    ctime=""
-    size=""
-    for ((x=1;x<=${nfields};x++)); do
-      field=${fields[${x}]}
-      if [[ "${field}" == "md5="* ]]; then
-        eval ${field}
-      fi
-      if [[ "${field}" == "turl="* ]]; then
-        eval ${field}
-      fi
-      if [[ "${field}" == "ctime="* ]]; then
-        eval "${field} ${fields[((x+1))]}"
-      fi
-      if [[ "${field}" == "size="* ]]; then
-        eval ${field}" "${fields[((x+1))]}
-      fi
-    done
-    ctime=$( date -d "${ctime}" +%s 2>/dev/null)
-    [[ -z $md5 ]] && md5="."
-    [[ -n "$turl" ]] && echo "${turl//"alien://"/} ${md5} ${ctime} ${size}"
-  done
+  gawk '/turl=.+/ { 
+  size="-1";
+  turl="";
+  md5=".";
+  ctime="-1";
+  for (i=1; i<=NF; i++) {
+    if ($i ~ /md5=/) {
+      gsub("md5=","",$i);
+      md5=$i;
+      gsub("\"","",md5);
+      if (length(md5)==0) md5=".";
+    }
+    else if ($i ~ /turl=/) {
+      gsub("turl=","",$i);
+      turl=$i;
+      gsub("\"","",turl);
+      gsub(/^alien:\/\//,"",turl);
+    }
+    else if ($i ~ /ctime=/) {
+      ctime=$i" "$(i+1);
+      gsub("ctime=","",ctime);
+      gsub(/[-:]/," ",ctime);
+      gsub("\"","",ctime);
+      ctime=mktime(ctime);
+    }
+    else if ($i ~ /size=/) {
+      gsub("size=","",$i);
+      size=$i;
+      gsub("\"","",size);
+      if (length(size)==0) size="-1";
+    };
+  };
+  print turl" "md5" "ctime" "size
+  }'
 }
 
 alien_find()
@@ -436,6 +437,7 @@ alien_find()
   executable+=" find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
+  local tmp=$(mktemp /tmp/XXXXXXXXXXX 2>/dev/null)
 
   [[ -z $maxCollectionLength ]] && local maxCollectionLength=10000
 
@@ -449,14 +451,15 @@ alien_find()
   iterationNumber=0
   numberOfFiles=$maxCollectionLength
   rm -f $logOutputPath/alien_find.err
-  while [[ $numberOfFiles -ge $maxCollectionLength && $iterationNumber -lt 100 ]]; do
-    numberOfFiles=0
+  while [[ ( $numberOfFiles -ge $maxCollectionLength ) && ( $iterationNumber -lt 100 ) ]]; do
     offset=$((maxCollectionLength*iterationNumber-1)); 
     [[ $offset -lt 0 ]] && offset=0; 
     $executable -x coll -l ${maxCollectionLength} -o ${offset} "$@" 2>>$logOutputPath/alien_find.err \
-    | reformatXMLCollection
+    | reformatXMLCollection | tee "$tmp"
+    numberOfFiles=$(cat "$tmp" 2>/dev/null | wc -l)
     ((iterationNumber++))
   done
+  rm -f "$tmp"
   return 0
 }
 

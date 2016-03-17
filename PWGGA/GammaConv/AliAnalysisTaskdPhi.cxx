@@ -533,13 +533,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		if ( f && !f->GetPIDResponse() ) {
 			if ( inputHandler->GetPIDResponse() ){
 				f->SetPIDResponse( inputHandler->GetPIDResponse() );
-			} else {
-				if (isAOD){
-					if (!f->GetPIDResponse()){
-						f->InitAODpidUtil(1);
-					}
-				}
-			}
+			} 
 		} else {
 			break;
 		}
@@ -550,13 +544,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		if ( f && !f->GetPIDResponse() ) {
 			if ( inputHandler->GetPIDResponse() ){
 				f->SetPIDResponse( inputHandler->GetPIDResponse() );
-			} else {
-				if (isAOD){
-					if (!f->GetPIDResponse()){
-						f->InitAODpidUtil(1);
-					}
-				}
-			}
+			} 
 		} else {
 			break;
 		}
@@ -566,13 +554,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	if ( fV0FilterPhoton && !fV0FilterPhoton->GetPIDResponse() ) {
 		if ( inputHandler->GetPIDResponse() ){
 			fV0FilterPhoton->SetPIDResponse( inputHandler->GetPIDResponse() );
-		} else {
-			//AOD case
-			if (isAOD){
-				if (!fV0FilterPhoton->GetPIDResponse()){
-					fV0FilterPhoton->InitAODpidUtil(1);
-				}
-			}
 		}
 	}
 

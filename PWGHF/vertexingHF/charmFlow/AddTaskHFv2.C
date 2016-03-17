@@ -55,6 +55,12 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
     suffix.Prepend("Dstar");
     pdgmes=413;
   }
+  else if(decCh==AliAnalysisTaskSEHFv2::kDstoKKpi) {
+    analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutsobjname);
+    suffix.Prepend("Ds");
+    pdgmes=431;
+  }
+
   if(pdgmes==-1){
     AliFatal("Wrong meson setting");
   }
@@ -67,10 +73,11 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
   v2Task->SetReadMC(readMC);
   v2Task->SetEtaGapFeatureForEventplaneFromTracks(kFALSE);
   if(decCh == AliAnalysisTaskSEHFv2::kDstartoKpipi){
-     v2Task->SetNMassBins(200);}
-  else if(decCh == AliAnalysisTaskSEHFv2::kDplustoKpipi || decCh == AliAnalysisTaskSEHFv2::kD0toKpi){
+     v2Task->SetNMassBins(200);
+  }else if(decCh == AliAnalysisTaskSEHFv2::kDplustoKpipi || decCh == AliAnalysisTaskSEHFv2::kD0toKpi || decCh == AliAnalysisTaskSEHFv2::kDstoKKpi) {
      v2Task->SetNMassBins(104);
-     v2Task->SetMassLimits(0.2,pdgmes);}
+     v2Task->SetMassLimits(0.2,pdgmes);
+  }
   v2Task->SetMinCentrality(minC);
   v2Task->SetMaxCentrality(maxC);
   v2Task->SetDebugLevel(0);

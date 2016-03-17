@@ -77,6 +77,10 @@ public:
     void SetSaveK0Short (Bool_t lSaveK0Short = kTRUE ) {
         fkSaveK0Short   = lSaveK0Short;
     }
+    
+    void SetApplySPDClsVsTrackletsCut(Bool_t lSPDClsVsTrk = kTRUE) {
+        fkApplyTrackletsVsClustersCut = lSPDClsVsTrk;
+    }
 
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection 

@@ -48,6 +48,7 @@ class AliGenEventHeader ;
 class AliEMCALGeometry;
 class AliPHOSGeoUtils;
 class AliCentrality;
+class AliMultSelection;
 class AliEventplane;
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
@@ -95,14 +96,12 @@ public:
   
   virtual Int_t          GetEventNumber() const ;
   
-  // Track multiplicity
+  // Centrality, multiplicity selection
   
-  virtual Int_t GetTrackMultiplicity()                     const { return fReader->GetTrackMultiplicity() ; }
-  
-  // Centrality
-  
-  virtual AliCentrality* GetCentrality()                   const { return fReader->GetCentrality()       ; }
-  virtual Int_t          GetEventCentrality()              const { if(fUseTrackMultBins)
+  virtual Int_t             GetTrackMultiplicity()        const { return fReader->GetTrackMultiplicity() ; }
+  virtual AliCentrality*    GetCentrality()               const { return fReader->GetCentrality() ; }
+  virtual AliMultSelection* GetMultSelCen()               const { return fReader->GetMultSelCen() ; }
+  virtual Int_t             GetEventCentrality()          const { if(fUseTrackMultBins)
                                                                         return GetTrackMultiplicity();
                                                                    else return fReader->GetEventCentrality(); }
   
@@ -297,6 +296,11 @@ public:
   
   virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const 
   { return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
+
+  virtual Int_t          GetModuleNumberCellIndexesAbsCaloMap(Int_t absId, Int_t calo, 
+                                                              Int_t & icol, Int_t & irow, Int_t &iRCU,
+                                                              Int_t & icolAbs, Int_t & irowAbs) const 
+  { return fCaloUtils->GetModuleNumberCellIndexesAbsCaloMap(absId, calo, icol, irow,iRCU,icolAbs,irowAbs) ; }
   
   virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const 
   { return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent())          ; }
@@ -406,7 +410,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,26) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,27) ;
   /// \endcond
 
 } ;

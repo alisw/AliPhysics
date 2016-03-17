@@ -35,6 +35,8 @@ public:
       kPtRatio,       // ratio |pt1 - pt2|/(pt1 + pt2) of daughter transverse momenta
       kDipAngle,      // inverse cosine of the angle between daughter vector momenta
       kCosThetaStar,  // polarization angle
+      kCosThetaJackson,  // polarization angle in Jackson frame
+      kCosThetaTransversity, // polarization angle in transversity frame
       kAngleLeading,  // angle to leading particle
       kFirstDaughterPt,  //pt of the first daughter of the pair
       kSecondDaughterPt, //pt of the second daughter of the pair
@@ -44,6 +46,8 @@ public:
       kFirstDaughterDCA,  //DCA to PV of the first daughter of the pair
       kSecondDaughterDCA, //DCA to PV of the second daughter of the pair
       kNSisters,    // number of daughters (only for MC)
+      kPairPtRes,       // pair pT resolution
+      kPairYRes,        // pair rapidity resolution
       kTypes          // -- general limit ----------------------------------------------------------
    };
 

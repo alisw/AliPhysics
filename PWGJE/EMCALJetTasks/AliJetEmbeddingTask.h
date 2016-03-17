@@ -40,9 +40,6 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   
   void           SetTreeBranchName(TString brDet = "fJetDet.") {fBranchJDetName = brDet; }
   void           SetTreeBranchPartName(TString brPar = "fJetPart.") {fBranchJParName = brPar; }
-  void           SetMassDistributionFromFile(TString filename, TString histoname);
-  void           SetpTDistributionFromFile(TString filename, TString histoname);
-  void           SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
   void           SetTreeFromFile(TString filenameM, TString treename);
   void           SetMinEmbpT(Double_t minpt)     {fMinPtEmb = minpt;}
   void           SetUseRandomEntry(Bool_t isrdm = kTRUE)       {fRandomEntry = isrdm; }
@@ -54,17 +51,16 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
  protected:
   void           Run();
   void           SetTree(TTree *tree);
-  void           SetMassDistribution(TH1F *hM);
+
   void           FillHistograms();
   Float_t        GetDownscalinigFactor();
   void           Terminate();
  private:
   Bool_t         fMassless;               ///< make particles massless
-  Bool_t         fMassFromDistr;          ///< draw the particle mass from fHMassDistrib
+  
   Double_t       fNeutralFraction;        ///< assign charge==0 to fraction of particles
   Double_t       fNeutralMass;            ///< assign this mass to neutral particles
   Double_t       fMass;                   ///< assign this mass to particle
-  TH1F*          fHMassDistrib;           ///< shape of mass distribution of embedded tracks
   TString        fPathMinputFile;         ///< path to the file where the external input Mass distribution is (can be from alien)
   TString        fPathpTinputFile;        ///< path to the file where the external input pT distribution is (can be from alien)
   TString        fMinputName;             ///< name of the external input Mass histogram
@@ -92,11 +88,12 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TH1F           *fhEtaPart;              //!<! Eta particle corresponding to embedded from tree
   TH1F           *fhPhiPart;              //!<! Phi particle corresponding to embedded from tree
   TH1F           *fhTreeEntriesUsed;      //!<! Entries of the TTree used
+  Long64_t        fNTreeEntries;           ///< Tree entry number
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 10) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 12) /// Jet embedding task
   /// \endcond
 };
 #endif

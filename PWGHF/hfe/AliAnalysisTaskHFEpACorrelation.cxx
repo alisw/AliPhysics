@@ -19,7 +19,7 @@
 //      Task for Heavy-flavour electron analysis in pPb collisions    //
 //      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 //																	  //
-//		version: November 13, 2015.							          //
+//		version: February 29, 2016.							          //
 //                                                                    //
 //	    Authors 							                          //
 //		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -516,6 +516,15 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fCetaPhi_MC_HFE_RECO_MC_PhyPrimH(0)
 ,fCetaPhi_Data_Data_RECO_MC_PhyPrimH(0)
 ,fpT_Data_HFE_RECO_Data(0)
+,fCetaPhi_MC_HFE_pTofReco(0)
+,fCetaPhi_Reco_with_MChadrons(0)
+,fpTReco_vs_MC(0)
+,fpTShifHadronsMC(0)
+,fpTShiftHadronsReco(0)
+,fpTEffHadronsMC(0)
+,fpTEffHadronsReco(0)
+,fCEtaPhi_DataHFE_with_onlyPhysPriHadron(0)
+
 //,fEMCALRecoUtils(0)//exotic
 
 {
@@ -922,6 +931,15 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fCetaPhi_MC_HFE_RECO_MC_PhyPrimH(0)
 ,fCetaPhi_Data_Data_RECO_MC_PhyPrimH(0)
 ,fpT_Data_HFE_RECO_Data(0)
+,fCetaPhi_MC_HFE_pTofReco(0)
+,fCetaPhi_Reco_with_MChadrons(0)
+,fpTReco_vs_MC(0)
+,fpTShifHadronsMC(0)
+,fpTShiftHadronsReco(0)
+,fpTEffHadronsMC(0)
+,fpTEffHadronsReco(0)
+,fCEtaPhi_DataHFE_with_onlyPhysPriHadron(0)
+
 //,fEMCALRecoUtils(0)//exotic
 {
     // Constructor
@@ -1027,17 +1045,48 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     if(fIsMC){
         
+        //pT shift
+        fpTShifHadronsMC = new TH1F("fpTShifHadronsMC","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
+        fOutputList->Add(fpTShifHadronsMC);
+        fpTShiftHadronsReco = new TH1F("fpTShiftHadronsReco","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
+        fOutputList->Add(fpTShiftHadronsReco);
+    
+        //Efficiency of Hadrons
+        fpTEffHadronsMC = new TH1F("fpTEffHadronsMC","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
+        fOutputList->Add(fpTEffHadronsMC);
+        fpTEffHadronsReco = new TH1F("fpTEffHadronsReco","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
+        fOutputList->Add(fpTEffHadronsReco);
+        
+        //Secundary particles
+        
+        fCEtaPhi_DataHFE_with_onlyPhysPriHadron = new TH2F *[6];
+        
+        fCetaPhi_MC_HFE_pTofReco = new TH2F *[6];
+        fCetaPhi_Reco_with_MChadrons = new TH2F *[6];
+        
+        fpTReco_vs_MC = new TH2F("fpTReco_vs_MC","pT Reco vs MC;pT Reco (Gev/c); pT MC (GeV/c)",1000,0,10,1000,0,10);
+        fOutputList->Add(fpTReco_vs_MC);
         fpT_MC_HFE_RECO_MC = new TH1F("fpT_MC_HFE_RECO_MC","HFE generated pT; p_{T} (GeV/c); Count",300,0,30);
         fOutputList->Add(fpT_MC_HFE_RECO_MC);
-        fpT_Data_HFE_RECO_Data =new TH1F("fpT_Data_HFE_RECO_Data","HFE generated pT; p_{T} (GeV/c); Count",300,0,30);
+        fpT_Data_HFE_RECO_Data =new TH1F("fpT_Data_HFE_RECO_Data","HFE reco pT; p_{T} (GeV/c); Count",300,0,30);
         fOutputList->Add(fpT_Data_HFE_RECO_Data);
+        
         fCetaPhi_MC_HFE_RECO_MC_PhyPrimH = new TH2F *[6];
         fCetaPhi_Data_Data_RECO_MC_PhyPrimH = new TH2F *[6];
         Int_t fPtBin[7] = {1,2,4,6,8,10,15};
         for(Int_t i = 0; i < 6; i++)
         {
+            fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i] = new TH2F(Form("fCEtaPhi_DataHFE_with_onlyPhysPriHadron%d",i),Form("Full MC WITH PT Reco: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fOutputList->Add(fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i]);
+
+            fCetaPhi_MC_HFE_pTofReco[i] = new TH2F(Form("fCetaPhi_MC_HFE_pTofReco%d",i),Form("Full MC WITH PT Reco: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fOutputList->Add(fCetaPhi_MC_HFE_pTofReco[i]);
+            
+            fCetaPhi_Reco_with_MChadrons[i] = new TH2F(Form("fCetaPhi_Reco_with_MChadrons%d",i),Form("HFE(reco)-h(MC) %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fOutputList->Add(fCetaPhi_Reco_with_MChadrons[i]);
             fCetaPhi_MC_HFE_RECO_MC_PhyPrimH[i] = new TH2F(Form("fCetaPhi_MC_HFE_RECO_MC_PhyPrimH%d",i),Form("Full MC: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i] = new TH2F(Form("CetaPhi_Data_Data_RECO_MC_PhyPrimH%d",i),Form("Full MC: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i] = new TH2F(Form("CetaPhi_Data_Data_RECO_MC_PhyPrimH%d",i),Form("Full Data: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            
             fOutputList->Add(fCetaPhi_MC_HFE_RECO_MC_PhyPrimH[i]);
             fOutputList->Add(fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]);
         }
@@ -2898,9 +2947,55 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     
+    //To calculate the efficiency of the Hadrons we look in all the Monte Carlo sample, which of them have a track associeted with them, ad if they have, we check if they meet the requeriments to be reconstructed
     
+    if (fIsMC)
+    {
+        
+        for(Int_t iTracksMC = 0; iTracksMC < fMCarray->GetEntries(); iTracksMC++)
+        {
+            //first we check if the MC particle is charged and is at the acceptance
+            
+            fMCparticle = (AliAODMCParticle*) fMCarray->At(iTracksMC);
+            
+            if (fMCparticle->Eta()<fEtaCutMin || fMCparticle->Eta()>fEtaCutMax) continue;
+            
+            if (fMCparticle->Charge() == 0) continue;
+            if (!fMCparticle->IsPhysicalPrimary()) continue; //Physical primary
+            
+            //Save the pT of all Charged hadrons in the acceptance (This is the denominator of the efficiency)
+            fpTEffHadronsMC->Fill(fMCparticle->Pt());
+            
+            //Now loop over the tracks
+            for(Int_t iTracks = 0; iTracks < NTracks; iTracks++)
+            {
+                AliVParticle* Vtrack = 0x0;
+                
+                if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+                
+                AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+                
+                AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+
+                //Them we check if it has a matching AliVTrack
+                
+                if (track->GetLabel() == iTracksMC)
+                {
+                    //Now we check if the track has requisited bits, the eta range and the minimun number of TPC clusters
+                    if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax && atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly) && atrack->GetStatus()&AliESDtrack::kITSrefit && atrack->GetStatus()&AliESDtrack::kTPCrefit && atrack->GetTPCNcls() >= 80)
+                    {
+                        //If positive, the particle is a reconstructed particle and should be saved in the pT spectrum (This is the numerator of the efficiency)
+                        
+                        fpTEffHadronsReco->Fill(track->Pt());
+                    }
+                }
+            }
+            
+        }
+    }
     
-    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     
     
     ///_____________________________________________________________________
@@ -2920,7 +3015,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         //AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
         //printf("\n\n Track label of track %d is %d  - from Vevent \n\n", iTracks, track->GetLabel());
         
-        
+
         /*
          if(fIsMC  && track->GetLabel()>=0)
          {
@@ -2956,6 +3051,18 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             if(fIsAOD)
             {
                 fMCparticle = (AliAODMCParticle*) fMCarray->At(atrack->GetLabel());
+                
+                
+                //checking the same filter bits and cuts we use for hadrons and saving them to separete a possible pT shift. Only Reco hadrons are considered
+                if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax && atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly) && atrack->GetStatus()&AliESDtrack::kITSrefit && atrack->GetStatus()&AliESDtrack::kTPCrefit && atrack->GetTPCNcls() >= 80)
+                {
+                    fpTShifHadronsMC->Fill(fMCparticle->Pt());
+                    fpTShiftHadronsReco->Fill(track->Pt());
+
+                }
+                
+
+                
                 Int_t pdg = fMCparticle->GetPdgCode();
                 if (TMath::Abs(pdg) == 11 && fMCparticle->Eta()>fEtaCutMin && fMCparticle->Eta()<fEtaCutMax)
                 {
@@ -5436,6 +5543,8 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 if (fIsHFE1)
                 {
                     fpT_MC_HFE_RECO_MC->Fill(fMCparticle->Pt());
+                    fpTReco_vs_MC->Fill(track->Pt(),fMCparticle->Pt());
+                    
                     for(int hadron_index = 0; hadron_index < fMCarray->GetEntries(); hadron_index++)
                     {
                         if (hadron_index == track->GetLabel() ) continue;//self
@@ -5469,7 +5578,56 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                             }
                         }
                         
+                        for(Int_t i = 0; i < 6; i++)
+                        {
+                            if(track->Pt()>=fPtBin[i] && track->Pt()<fPtBin[i+1])
+                            {
+                                if(hadron_MC->IsPhysicalPrimary())
+                                    fCetaPhi_MC_HFE_pTofReco[i]->Fill(delta_phi_MC,delta_eta_MC);
+                            }
+                        }
                     }
+
+                    
+                
+                    
+                    //now I correlate the Reco HFE with the MC phys primary hadrons
+                    
+                    
+                    for(int hadron_index = 0; hadron_index < fMCarray->GetEntries(); hadron_index++)
+                    {
+                        if (hadron_index == track->GetLabel() ) continue;//self
+                        
+                        AliAODMCParticle *hadron_MC = (AliAODMCParticle*) fMCarray->At(hadron_index);
+                        
+                        if (hadron_MC->Eta()<fEtaCutMin || hadron_MC->Eta()>fEtaCutMax) continue;
+                        
+                        if (hadron_MC->Charge() == 0) continue;
+                        
+                        if(hadron_MC->Pt()<fAssHadronPtMin || hadron_MC->Pt()>fAssHadronPtMax) continue;
+                        
+                        float delta_phi_MC;
+                        float delta_eta_MC;
+                        double pi =  TMath::Pi();
+                        delta_phi_MC = track->Phi() - hadron_MC->Phi();
+                        delta_eta_MC = track->Eta() - hadron_MC->Eta();
+                        
+                        if (delta_phi_MC> 3*pi/2) delta_phi_MC = delta_phi_MC - 2*pi;
+                        if (delta_phi_MC < -pi/2)  delta_phi_MC= delta_phi_MC + 2*pi;
+                        
+                        
+                        Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+                        
+                        for(Int_t i = 0; i < 6; i++)
+                        {
+                            if(track->Pt()>=fPtBin[i] && track->Pt()<fPtBin[i+1])
+                            {
+                                if(hadron_MC->IsPhysicalPrimary())
+                                    fCetaPhi_Reco_with_MChadrons[i]->Fill(delta_phi_MC,delta_eta_MC);
+                            }
+                        }
+                    }
+                    
                     
                 }
                 
@@ -5897,6 +6055,10 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                         if (fIsHFE1)
                         {
                             fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]->Fill(fDphi,fDeta);
+                            if(IsPhyPrimaryHadron)
+                                fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i]->Fill(fDphi,fDeta);
+                                
+        
                         }
                     
                 }

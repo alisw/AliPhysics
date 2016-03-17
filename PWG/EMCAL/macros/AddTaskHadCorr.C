@@ -18,22 +18,65 @@ AliHadCorrTask* AddTaskHadCorr(
   if (!mgr)
   {
     ::Error("AddTaskHadCorr", "No analysis manager to connect to.");
-    return NULL;
+    return 0;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
     ::Error("AddTaskHadCorr", "This task requires an input event handler");
-    return NULL;
+    return 0;
+  }
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
   }
   
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(Form("HadCorr_%s_%s", nTracks, nClusters));
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  TString name(Form("HadCorr_%s_%s", trackName.Data(), clusName.Data()));
   if (strcmp(outClusName, "") != 0) name += Form("_%s", outClusName);
   AliHadCorrTask *hcor = new AliHadCorrTask(name, histo);
   hcor->SetOutClusName(outClusName);
@@ -43,9 +86,16 @@ AliHadCorrTask* AddTaskHadCorr(
   hcor->SetEexcl(Eexcl);
   hcor->SetTrackClus(trackClus);
 
-  AliParticleContainer *trackCont = hcor->AddParticleContainer(nTracks);  
-  if (trackCont) trackCont->SetParticlePtCut(minPt);
-  AliClusterContainer *clusCont = hcor->AddClusterContainer(nClusters);
+  AliParticleContainer* trackCont = 0;
+  if (trackName == "Tracks" || trackName == "tracks") {
+    trackCont = hcor->AddTrackContainer(trackName);
+  }
+  else {
+    trackCont = hcor->AddParticleContainer(trackName);
+  }
+  trackCont->SetParticlePtCut(minPt);
+
+  AliClusterContainer *clusCont = hcor->AddClusterContainer(clusName);
   if (clusCont) clusCont->SetClusNonLinCorrEnergyCut(minPt);
 
   //-------------------------------------------------------

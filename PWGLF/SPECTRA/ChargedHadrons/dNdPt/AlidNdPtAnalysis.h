@@ -5,7 +5,7 @@
 // AlidNdPtAnalysis class used for dNdPt analysis. 
 // 
 // Author: J.Otwinowski 04/11/2008 
-// last change: 2013-06-13 by M.Knichel
+// last change: 2016-02-11 by E. Perez Lezama
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -24,6 +24,10 @@ class AliESD;
 class AliESDfriend;
 class AliESDfriendTrack;
 class AlidNdPtHelper;
+
+class AliTRDTriggerAnalysis;
+class AliESDVertex;
+class AliTRDSensorArray;
 
 #include "AlidNdPt.h"
 
@@ -71,13 +75,18 @@ public :
 //   void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = CloneArray(nbins+1,edges); }
 
     // Set binning for Histograms (if not set default binning is used)
-      void SetBinsMult(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); } }
-      void SetBinsPt(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtNbins = nbins; fBinsPt = CloneArray(fPtNedges = nbins+1,edges); } }
-      void SetBinsPtCorr(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(fPtCorrNedges = nbins+1,edges); } }
-      void SetBinsEta(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); } }
-      void SetBinsZv(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fZvNbins = nbins; fBinsZv = CloneArray(fZvNedges = nbins+1,edges); } }
+  void SetBinsMult(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); } }
+  void SetBinsPt(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtNbins = nbins; fBinsPt = CloneArray(fPtNedges = nbins+1,edges); } }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(fPtCorrNedges = nbins+1,edges); } }
+  void SetBinsEta(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); } }
+  void SetBinsZv(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fZvNbins = nbins; fBinsZv = CloneArray(fZvNedges = nbins+1,edges); } }
+  
   
 
+  void SetTRDTriggerHQU(const Bool_t require = kFALSE) { fTRDTriggerRequiredHQU = require;}
+  void SetTRDTriggerHJT(const Bool_t require = kFALSE) { fTRDTriggerRequiredHJT = require;}
+  
+  
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj, Int_t multMB);
   void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj);
@@ -303,6 +312,7 @@ private:
   THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
   THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multTrueMC  
   TH1D       *fPileUpCount; // if pileup x<0 
+  TH1D       *fSPDBGCount;  // spd background 
 
   //
   // candle events track corrections
@@ -330,13 +340,17 @@ private:
   
   Bool_t fIsInit;
   
+  Bool_t fTRDTriggerRequiredHQU;
+  Bool_t fTRDTriggerRequiredHJT;
+  Bool_t triggerResult;
+  
   // generic function to change binning
   Bool_t CanChangeBins();
 
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,8);
+  ClassDef(AlidNdPtAnalysis,10);
 };
 
 #endif

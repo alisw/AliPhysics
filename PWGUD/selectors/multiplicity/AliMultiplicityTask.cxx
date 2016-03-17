@@ -139,7 +139,7 @@ void AliMultiplicityTask::ConnectInputData(Option_t *)
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
     } else
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
   }
 
   // disable info messages of AliMCEvent (per event)

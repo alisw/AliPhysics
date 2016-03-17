@@ -98,7 +98,7 @@ void AliGloAlgTask::UserExec(Option_t *)
   //
   AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
   AliESDInputHandler *handler = (AliESDInputHandler*)anMan->GetInputEventHandler();
-  AliESDEvent* esdEv = handler->GetEvent();
+  AliESDEvent* esdEv = (AliESDEvent*)handler->GetEvent();
   AliESDfriend *esdFr = handler->GetESDfriend(); // get the input friend
   //
   if(!esdEv) {AliInfo("no ESD"); return;} 

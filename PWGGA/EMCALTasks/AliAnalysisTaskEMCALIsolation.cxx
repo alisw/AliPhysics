@@ -183,7 +183,7 @@ void AliAnalysisTaskEMCALIsolation::UserExec(Option_t *)
 	}
 
 	if(esdH){
-		fESD = esdH->GetEvent();
+	  fESD = (AliESDEvent*)esdH->GetEvent();
 		am->LoadBranch("AliESDRun.");
 		am->LoadBranch("AliESDHeader.");
 	}

@@ -379,7 +379,7 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
         AliError("Cannot get input event handler");
         return;
       }  
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
       Int_t mult1 = fESD->GetNumberOfMuonTracks() ;
 
       Int_t trigfired=-1;

@@ -13,6 +13,12 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
    const Double_t fMinCoreEnergyRatio = 0.4,
    const Double_t fMinLambdaDisp = 0.3,
    const Double_t fMinCPVStd = 2.5,
+
+   const Int_t fMixVertxbins = 1, //Actually, Vertx binning is probably irrelevent ("Inclusive pi-0 production in Pb-Pb collisions at ..." by Peressounko)
+   const Int_t fMixCentbins = 1,
+   const Int_t fMixEvbins = 1,
+   const Int_t fNptbins = 150,
+
 //End Default Cuts
 
    const char *tag            = ""
@@ -53,6 +59,11 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
   PHOSGAtask->SetMinCoreEnergyRatio(fMinCoreEnergyRatio);
   PHOSGAtask->SetMinLambdaDisp(fMinLambdaDisp);
   PHOSGAtask->SetMinCPVStd(fMinCPVStd);
+
+  PHOSGAtask->SetMixVertxbins(fMixVertxbins);
+  PHOSGAtask->SetMixCentbins(fMixCentbins);
+  PHOSGAtask->SetMixEvbins(fMixEvbins);
+  PHOSGAtask->SetNptbins(fNptbins);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

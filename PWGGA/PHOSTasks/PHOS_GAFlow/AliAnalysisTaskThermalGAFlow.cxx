@@ -50,6 +50,8 @@ AliAnalysisTaskThermalGAFlow::AliAnalysisTaskThermalGAFlow( const char *name) :
  fvertexx(),
  fcentrality(0),
  fevPlane(0),
+ fevPlaneA(0),
+ fevPlaneC(0),
  fevScaler(0),
  fNonLinearCorr(0x0),
 
@@ -66,7 +68,12 @@ AliAnalysisTaskThermalGAFlow::AliAnalysisTaskThermalGAFlow( const char *name) :
  fCoreRadius(3.5),
  fMinCoreEnergyRatio(0.4),
  fMinLambdaDisp(0.3),
- fMinCPVStd(0)
+ fMinCPVStd(0),
+
+ fMixVertxbins(1),
+ fMixCentbins(1),
+ fMixEvbins(1),
+ fNptbins(150)
 // END CUTS! //
 
 {
@@ -89,7 +96,7 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   fAnalist = new TList();
   fAnalist->SetOwner();
 
-  Int_t CompassBinning = 10*10*10; //Vertex Binning * Centrality Binning * ev Plane Binning
+  Int_t CompassBinning = fMixVertxbins*fMixCentbins*fMixEvbins; //Vertex Binning * Centrality Binning * ev Plane Binning
   fCompass = new TObjArray(CompassBinning);
   fCompass->SetOwner();
 
@@ -129,7 +136,7 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Clus_Trackdr->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_Trackdr);
 
-  TH1F *Clus_TrackMatchStd = new TH1F("Clus_TrackMatchStd", "Track Match Std", 100, 0, 10);
+  TH1F *Clus_TrackMatchStd = new TH1F("Clus_TrackMatchStd", "Track Match Std", 100, 0, 20);
   Clus_TrackMatchStd->GetXaxis()->SetTitle("TrackMatchStd");
   Clus_TrackMatchStd->GetYaxis()->SetTitle("dN/do");
   fAnalist->Add(Clus_TrackMatchStd);
@@ -139,11 +146,12 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Clus_TOF->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_TOF);
 
-  Int_t Nbins = 150; //("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 20.5); and exp scaling
-  Double_t Ptbins[151];
+  Int_t Nbins = fNptbins; //("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 20.5); and exp scaling
+  const Int_t somebins = Nbins+1;
+  Double_t Ptbins[somebins];
   Double_t a = TMath::Power(10, 1);
-  for(Int_t ibin = 0; ibin < 151; ibin++){
-  Ptbins[ibin] = 0.5 - (20/(a - 1)) + ((20/(a - 1)) * TMath::Power(10, ibin/150.));
+  for(Int_t ibin = 0; ibin < somebins; ibin++){
+  Ptbins[ibin] = 0.5 - (20/(a - 1)) + ((20/(a - 1)) * TMath::Power(10, ibin/(Nbins*1.0)));
   }
 
   TH1F *Clus_Pt_MB = new TH1F("Clus_Pt_MB", "Single Photon Pt Spectrum (MB)", Nbins, Ptbins);
@@ -236,6 +244,61 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Stat_Efficiency->GetYaxis()->SetTitle("Cut Number");
   fAnalist->Add(Stat_Efficiency);
 
+  TH2F *InclGamma_PhiVsPt = new TH2F("InclGamma_PhiVsPt", "Inclusive Gamma Azimuthal yield", 200, -1*TMath::Pi(), TMath::Pi(), Nbins, Ptbins);
+  InclGamma_PhiVsPt->GetXaxis()->SetTitle("Phi");
+  InclGamma_PhiVsPt->GetYaxis()->SetTitle("Pt");
+  fAnalist->Add(InclGamma_PhiVsPt);
+
+//  TH2F *DecGamma_PhiVsPt = new TH2F("DecGamma_PhiVsPt", "Decay Gamma Azimuthal yield", 200, -1*TMath::Pi(), TMath::Pi(), Nbins, Ptbins);
+//  DecGamma_PhiVsPt->GetXaxis()->SetTitle("Phi");
+//  DecGamma_PhiVsPt->GetYaxis()->SetTitle("Pt");
+//  fAnalist->Add(DecGamma_PhiVsPt);
+
+  TH2F *InclGamma_DPhiVsPt_A = new TH2F("InclGamma_DPhiVsPt_A", "Inclusive Gamma Azimuthal yield wrt evplane_A", 100, 0, TMath::Pi(), Nbins, Ptbins);
+  InclGamma_DPhiVsPt_A->GetXaxis()->SetTitle("DPhi");
+  InclGamma_DPhiVsPt_A->GetYaxis()->SetTitle("Pt");
+  fAnalist->Add(InclGamma_DPhiVsPt_A);
+
+//  TH2F *DecGamma_DPhiVsPt_A = new TH2F("DecGamma_DPhiVsPt_A", "Decay Gamma Azimuthal yield wrt explane_A", 100, 0, TMath::Pi(), Nbins, Ptbins);
+//  DecGamma_DPhiVsPt_A->GetXaxis()->SetTitle("DPhi");
+//  DecGamma_DPhiVsPt_A->GetYaxis()->SetTitle("Pt");
+//  fAnalist->Add(DecGamma_DPhiVsPt_A);
+
+  TH2F *InclGamma_DPhiVsPt_C = new TH2F("InclGamma_DPhiVsPt_C", "Inclusive Gamma Azimuthal yield wrt evplane_C", 100, 0, TMath::Pi(), Nbins, Ptbins);
+  InclGamma_DPhiVsPt_C->GetXaxis()->SetTitle("DPhi");
+  InclGamma_DPhiVsPt_C->GetYaxis()->SetTitle("Pt");
+  fAnalist->Add(InclGamma_DPhiVsPt_C);
+
+//  TH2F *DecGamma_DPhiVsPt_C = new TH2F("DecGamma_DPhiVsPt_C", "Decay Gamma Azimuthal yield wrt explane_C", 100, 0, TMath::Pi(), Nbins, Ptbins);
+//  DecGamma_DPhiVsPt_C->GetXaxis()->SetTitle("DPhi");
+//  DecGamma_DPhiVsPt_C->GetYaxis()->SetTitle("Pt");
+//  fAnalist->Add(DecGamma_DPhiVsPt_C);
+
+  TH2F *InclGamma_DPhiVsPt_AC = new TH2F("InclGamma_DPhiVsPt_AC", "Inclusive Gamma Azimuthal yield wrt evplane_AC (average of A and C)", 100, 0, TMath::Pi(), Nbins, Ptbins);
+  InclGamma_DPhiVsPt_AC->GetXaxis()->SetTitle("DPhi");
+  InclGamma_DPhiVsPt_AC->GetYaxis()->SetTitle("Pt");
+  fAnalist->Add(InclGamma_DPhiVsPt_AC);
+
+//  TH2F *DecGamma_DPhiVsPt_AC = new TH2F("DecGamma_DPhiVsPt_AC", "Decay Gamma Azimuthal yield wrt explane_AC", 100, 0, TMath::Pi(), Nbins, Ptbins);
+//  DecGamma_DPhiVsPt_AC->GetXaxis()->SetTitle("DPhi");
+//  DecGamma_DPhiVsPt_AC->GetYaxis()->SetTitle("Pt");
+//  fAnalist->Add(DecGamma_DPhiVsPt_AC);
+
+  TH2F *InclGamma_DPhiVsCent_A = new TH2F("InclGamma_DPhiVsCent_A", "Inclusive Gamma Azimuthal yield wrt evplane_A", 100, 0, 25, 0, 100);
+  InclGamma_DPhiVsCent_A->GetXaxis()->SetTitle("DPhi");
+  InclGamma_DPhiVsCent_A->GetYaxis()->SetTitle("Cent");
+  fAnalist->Add(InclGamma_DPhiVsCent_A);
+
+  TH2F *InclGamma_DPhiVsCent_C = new TH2F("InclGamma_DPhiVsCent_C", "Inclusive Gamma Azimuthal yield wrt evplane_C", 100, 0, TMath::Pi(), 25, 0, 100);
+  InclGamma_DPhiVsCent_C->GetXaxis()->SetTitle("DPhi");
+  InclGamma_DPhiVsCent_C->GetYaxis()->SetTitle("Cent");
+  fAnalist->Add(InclGamma_DPhiVsCent_C);
+
+  TH2F *InclGamma_DPhiVsCent_AC = new TH2F("InclGamma_DPhiVsCent_AC", "Inclusive Gamma Azimuthal yield wrt evplane_AC", 100, 0, 25, 0 , 100);
+  InclGamma_DPhiVsCent_AC->GetXaxis()->SetTitle("DPhi");
+  InclGamma_DPhiVsCent_AC->GetYaxis()->SetTitle("Cent");
+  fAnalist->Add(InclGamma_DPhiVsCent_AC);
+
 //  TH2F *Meson_RawM = new TH2F("Meson_RawM", "Raw Diphoton Mass", 280,0,.7,500,0,25);
 //  Meson_RawM->GetXaxis()->SetTitle("M (GeV/c^2)");
 //  Meson_RawM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
@@ -322,6 +385,8 @@ CaptainsLog(3);
 Hypnotic();
 
 //Step 4: Compute thermal photon flow - put away your toys when you're done with them 
+IncFlow();
+
 //delete fSextant;
 fSextant = 0x0;
 PostData(1,fAnalist);
@@ -403,6 +468,9 @@ RPscaler = TMath::Abs(TMath::Cos((V0A_RP - V0C_RP)));
 FillHist("Event_EPAC", V0A_RP, V0C_RP);
 
 fevPlane = RP;
+fevPlaneA = V0A_RP;
+fevPlaneC = V0C_RP;
+
 fevScaler = RPscaler;
 
 //printf("EP: %f \n", fevPlane);
@@ -415,7 +483,7 @@ if(fDebug == 1){printf("Vert: %f ;; Cent: %f \n", fvertexx[2], fcentrality);}
 if(!(TMath::Abs(fvertexx[2]) < fMaxVertexx)){return 0;}
 if(!((fcentrality > fMinCentrality) && (fcentrality < fMaxCentrality))){return 0;}
 if(!(fesd->GetNumberOfCaloClusters() > 2)){return 0;}
-if(!(fevScaler > 0)){return 0;}
+if(!(fevScaler > 0.7)){return 0;}
 
 //Temporary Mod 1 Corruption Cut
 AliESDCaloCells* PHOSCells = fesd->GetPHOSCells();
@@ -507,7 +575,7 @@ if(!(cluster->E() >= fMinE)){return 0;}
   FillHist("Stat_Efficiency", 2);
 if(!(cluster->GetTOF() > -0.0000001 && cluster->GetTOF() < 0.0000001)){return 0;}
   FillHist("Stat_Efficiency", 3);
-if(!(cluster->GetDistanceToBadChannel() > 4.4)){return 0;}
+if(!(cluster->GetDistanceToBadChannel() > 2.2)){return 0;}
   FillHist("Stat_Efficiency", 4);
 //CPV
 if(!(ApplyCPCuts(cluster))){return 0;}
@@ -573,7 +641,7 @@ Double_t r = TMath::Sqrt(rx*rx+rz*rz); //I understand this to be the number of s
 
 FillHist("Clus_TrackMatchStd", r);
 
-if(r > fMinCPVStd){return 0;}
+if(r < fMinCPVStd){return 0;}
 return 1;
 }
 
@@ -735,9 +803,9 @@ for(Int_t i1 = 0; i1 < fSextant->GetEntriesFast(); i1++){
 TList* AliAnalysisTaskThermalGAFlow::ReferenceAtlas(Double_t vertx, Double_t cent, Double_t evplane){
 TList* atlas;
 Int_t index;
-Int_t vertxbins = 5;
-Int_t centbins = 5;
-Int_t evplanebins = 5;
+Int_t vertxbins = fMixVertxbins;
+Int_t centbins = fMixCentbins;
+Int_t evplanebins = fMixEvbins;
 
 Int_t vertx_index = std::floor( ((vertx / (2*fMaxVertexx)) + 0.5) * vertxbins );
 Int_t cent_index = std::floor( (((cent - fMinCentrality) / (fMaxCentrality - fMinCentrality)) * centbins) );
@@ -786,6 +854,49 @@ TLorentzVector ppi = *p1 + *p2;
 Double_t Ptshared = sqrt((ppi.Px()*ppi.Px()+ppi.Py()*ppi.Py()));
 return Ptshared;
 }
+
+//____________________________Compute Flow___________________________________//
+void AliAnalysisTaskThermalGAFlow::IncFlow(){
+AliCaloPhoton *y;
+Float_t phi, Dphi, DphiA, DphiC, pt;
+
+if(fSextant == 0x0){return;}
+
+for(Int_t i = 0; i < fSextant->GetEntriesFast(); i++){
+ y = static_cast<AliCaloPhoton*> (fSextant->At(i));
+ phi = y->Phi(); //This *should* be the phi in the global coordinate system computed by taking the arctan of the position vector's y (vertical height) and x (left-right) in the ALICE coordinate system.  However, it might also be y and x in momentum space *or* x and z in PHOS coordinate system (that's what Dmitri seems to use - but surely that's not right?  Whatever - we'll see what happens when we do it.  If it returns 0.0, then it implies x or z is zero.)
+
+ pt = sqrt((y->Px()*y->Px()+y->Py()*y->Py())); 
+
+ Dphi = phi - fevPlane;
+ DphiA = phi - fevPlaneA;
+ DphiC = phi - fevPlaneC;
+
+while(Dphi < 0){Dphi = Dphi + TMath::Pi();}
+while(DphiA < 0){DphiA = DphiA + TMath::Pi();}
+while(DphiC < 0){DphiC = DphiC + TMath::Pi();}
+while(Dphi > TMath::Pi()){Dphi = Dphi - TMath::Pi();}
+while(DphiA > TMath::Pi()){DphiA = DphiA - TMath::Pi();}
+while(DphiC > TMath::Pi()){DphiC = DphiC - TMath::Pi();}
+
+// FillHist("InclGamma_PhiVsPt", Dphi, sqrt((y->Px()*y->Px()+y->Py()*y->Py()))); //Remember to Fourier expand in each pt bin in post analysis! 
+//printf("Dphi: %f, Pt: %f\n", -1*phi, sqrt((y->Px()*y->Px()+y->Py()*y->Py())));
+
+ FillHist("InclGamma_PhiVsPt", phi, pt); //Remember to Fourier expand in each pt bin in post analysis! 
+ FillHist("InclGamma_DPhiVsPt_AC", Dphi, pt); //Remember to Fourier expand in each pt bin in post analysis! 
+ FillHist("InclGamma_DPhiVsCent_AC", Dphi, fcentrality); //Remember to Fourier expand in each pt bin in post analysis! 
+ FillHist("InclGamma_DPhiVsPt_A", DphiA, pt); //Remember to Fourier expand in each pt bin in post analysis! 
+ FillHist("InclGamma_DPhiVsCent_A", DphiA, fcentrality); //Remember to Fourier expand in each pt bin in post analysis! 
+ FillHist("InclGamma_DPhiVsPt_C", DphiC, pt); //Remember to Fourier expand in each pt bin in post analysis! 
+ FillHist("InclGamma_DPhiVsCent_C", DphiC, fcentrality); //Remember to Fourier expand in each pt bin in post analysis! 
+
+//Also, might need to correct for EP resolution - recommended by Dmitri in "Elliptic and triangular flow of inclusive and direct photons...".  Otherwise... that *should* do it for InclGamma phi. ...It's really pretty straitforward.  OR at least it should be.
+}
+
+}
+
+//___________________________Compute Decay Flow_______________________________//
+
 
 //////////////////////////////////////////////////////////////////////////////////////
 //                                                                                  //

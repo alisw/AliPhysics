@@ -8,14 +8,22 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
+# Load alilog4bash.sh from the same directory containing this script.
+source "$(dirname "${BASH_SOURCE[0]}")"/alilog4bash.sh false
+
 PWGPP_runMap="
-2010 108350 139517
-2011 140441 170593
-2012 171590 193766
-2013 194308 199146
-2014 202369 206695
-2015 208505 999999
-2016 999999 999999
+2010 136833 139517 pbpb
+2010 108350 136832 pp
+2011 165747 170593 pbpb
+2011 140441 165746 pp
+2012 188230 188366 ppb
+2012 171590 193766 pp
+2013 195344 197388 ppb
+2013 197469 197692 pp
+2014 200008 208364 NONE
+2015 244908 246994 pbpb
+2015 224956 244628 pp
+2016 999999 999999 NONE
 "
 
 parseConfig()
@@ -223,17 +231,71 @@ run2year()
 {
   #for a given run print the year.
   #the run-year table is ${PWGPP_runMap} (a string)
-  #one line per year, format: year runMin runMax
+  #one line per year, format: year runMin runMax collisionSystem
   local run=$1
   [[ -z ${run} ]] && return 1
   local year=""
   local runMin=""
   local runMax=""
-  while read year runMin runMax; do
+  local collisionSystem
+  while read year runMin runMax collisionSystem; do
     [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
     [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${year} && break
   done < <(echo "${PWGPP_runMap}")
   return 0
+}
+
+run2collisionSystem()
+{
+  #for a given run print the year.
+  #the run-year table is ${PWGPP_runMap} (a string)
+  #one line per year, format: year runMin runMax collisionSystem
+  local run=$1
+  [[ -z ${run} ]] && return 1
+  local year=""
+  local runMin=""
+  local runMax=""
+  while read year runMin runMax collisionSystem; do
+    [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
+    [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${collisionSystem} && break
+  done < <(echo "${PWGPP_runMap}")
+  return 0
+}
+
+gitInfo(){
+    #
+    # print git information in alilog format - to enable parsing
+    # in case rquested  diff file created in the $ALICE_ROOT and $ALICE_PHYSICS instalation directory
+    #
+    # USAGE:
+    #     during code development to keep track of the software version  ( git describe ) as we can not use tags
+    #
+    makeDiff=$1
+    if [[ -z ${makeDiff} ]] ; then
+       echo "gitInfo <makeDiff>"; 
+       makeDiff=2;
+    fi
+    alilog_info  "utilities.sh/gitInfo  START"
+    alilog_info  "wdir="`pwd`
+    alilog_info  "\$ALICE_ROOT="$ALICE_ROOT
+    alilog_info  "\$ALICE_ROOT git describe="$(git -C $ALICE_ROOT/../src/ describe)
+    alilog_info  "\$ALICE_PHYSICS="$ALICE_PHYSICS
+    alilog_info  "\$ALICE_PHYSICS git describe="$(git -C $ALICE_PHYSICS/../src/ describe)
+    alilog_info  "\$ROOTSYS="$ROOTSYS
+    alilog_info  "\$ROOTSYS git describe="$(git -C $ROOTSYS/../src/ describe)
+    if [ $makeDiff -eq 1 ] ; then    # dump diff file  to the install directory
+	alilog_info "git  -C $ALICE_ROOT/../src/ diff >\$ALICE_ROOT/ALICE_ROOT.diff"
+	git  -C $ALICE_ROOT/../src/ diff >$ALICE_ROOT/ALICE_ROOT.diff
+	alilog_info "git  -C $ALICE_PHYSICS/../src/ diff >\$ALICE_PHYSICS/ALICE_PHYSICS.diff"
+	git  -C $ALICE_PHYSICS/../src/ diff >$ALICE_PHYSICS/ALICE_PHYSICS.diff
+    fi;
+    if [ $makeDiff -eq 2 ] ; then      # copy software diff  if exist to the current directory
+	alilog_info "cp -f $ALICE_ROOT/ALICE_ROOT.diff `pwd`"
+	cp -f $ALICE_ROOT/ALICE_ROOT.diff .
+	alilog_info "cp -f $ALICE_PHYSICS/ALICE_PHYSICS.diff `pwd`"
+	cp -f $ALICE_PHYSICS/ALICE_PHYSICS.diff .
+    fi;
+    alilog_info  "utilities.sh/gitInfo  END"
 }
 
 hostInfo(){
@@ -322,11 +384,9 @@ parseListOfFiles()
   #generate a list of files, one per line out of arguments.
   #names starting with "@" are assumed to be file lists and will
   #be expanded
-  for file in "${@}"; do
-    if [[ "$file" =~ ^@ ]]; then
-      while IFS= read x; do
-        echo "$x"
-      done < "${file#@}"
+  for file in "$@"; do
+    if [[ ${file:0:1} == @ ]]; then
+      [[ -r "${file:1}" ]] && cat "${file:1}"
     else
       echo "$file"
     fi
@@ -368,7 +428,7 @@ summarizeLogs()
   for file in "${files[@]}"; do
     [[ ! -f "${file}" ]] && continue
     #keep track of core files for later processing
-    [[ "${file##*/}" =~ ^core$ ]] && coreFiles[${file}]="${file}" && continue
+    [[ "${file##*/}" =~ ^core ]] && coreFiles[${file}]="${file}" && continue
     [[ ! "${file##*/}" =~ ${logFiles} ]] && continue
     errorSummary=$(validateLog "${file}")
     validationStatus=$?
@@ -385,19 +445,20 @@ summarizeLogs()
 
   #report core files
   for x in "${coreFiles[@]}"; do
-    echo "${x}"
+    echo "core ${x}"
     chmod 644 "${x}"
+    stacktraceLog=${x}.stacktrace.log
     #gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > stacktrace.log
+    gdb --batch --quiet -ex "bt" -ex "quit" aliroot "${x}" > "$stacktraceLog"
     local nLines[2]
     #nLines=($(wc -l stacktrace_${x//\//_}.log))
-    nLines=($(wc -l stacktrace.log))
+    nLines=($(wc -l "$stacktraceLog"))
     if [[ ${nLines[0]} -eq 0 ]]; then
       #rm stacktrace_${x//\//_}.log
-      rm stacktrace.log
+      rm "$stacktraceLog"
     else
       logStatus=1
-      echo "${x%/*}/stacktrace.log BAD"
+      echo "stacktrace $stacktraceLog"
     fi
   done
 
@@ -428,6 +489,8 @@ validateLog()
             ': comando non trovato'
             'core dumped'
             'core file'
+            'Exception catched'
+            'core\.'
   )
 
   warningConditions=(
@@ -468,7 +531,7 @@ validateLog()
 
 mergeSysLogs()
 {
-  if [[ $# -lt 2 ]]; then
+  if [[ $# -lt 1 ]]; then
     echo 'merge syslogs to an output file'
     echo 'usage:'
     echo 'mergeSysLogs outputFile inputFile1 inputFile2 ...'
@@ -480,16 +543,38 @@ mergeSysLogs()
   local i
   local x
   local runNumber
+  local fsize
   outputFile=${1}
   shift
   inputFiles="$@"
-  i=0
-  parseListOfFiles "$inputFiles" | while IFS= read x; do
-    runNumber=$(guessRunNumber "${x}")
-    [[ -z ${runNumber} ]] && echo "run number cannot be guessed for ${x}" && continue
-    gawk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' "${x}"
-    (( i++ ))
-  done > "${outputFile}"
+  fileNumber=0
+  parseListOfFiles ${inputFiles[@]} | while IFS= read logFile; do
+    if [[ $fileNumber == 0 ]]; then
+      tableHeader=$( head -n 1 "$logFile" )
+      tableHeader+=":year/I:period/C:run/I:pass/C:line/D:itree/D:nstamps/D:treeName/C"
+      echo $tableHeader
+    fi
+
+    guessRunData "$logFile"
+    [[ -z "$year" ]] && year=0
+    [[ -z "$period" ]] && period=0
+    [[ -z $runNumber ]] && runNumber=0
+    [[ -z "$pass" ]] && pass=0
+    
+    nLines=$(wc -l 2>/dev/null < "$logFile"); ((nLines--))
+
+    lineNumber=-1
+    while read line; do
+      ((lineNumber++))
+      [[ $lineNumber == 0 ]] && continue
+      
+      extraBranches="$year $period $runNumber $pass $lineNumber $fileNumber $nLines"
+      echo "$line $extraBranches"
+
+    done < "$logFile"
+    
+    (( fileNumber++ ))
+  done > "$outputFile"
   return 0
 }
 
@@ -655,62 +740,25 @@ createUniquePID()
   echo "${id}"
 }
 
-copyFileToLocal()
-(
-  #copies a single file to a local destination: the file may either come from
-  #a local filesystem or from a remote location (whose protocol must be
-  #supported)
-  #copy is "robust" and it is repeated some times in case of failure before
-  #giving up (1 is returned in that case)
-  #origin: Dario Berzano, dario.berzano@cern.ch
-  src="$1"
-  dst="$2"
-  ok=0
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
+printExec() {
+  alilog_info "[command] [PWD=$PWD]: $*" >&2
+  "$@"
+}
 
-  proto="${src%%://*}"
+bigEcho() {
+  # Outputs big text to stderr.
+  which figlet &> /dev/null \
+    && figlet -- "$@" >&2 \
+    || ( printf "\n\n$*\n\n" | tr '[[:lower:]]' '[[:upper:]]' >&2 )
+  true
+}
 
-  echo "copy file to local dest started: $src -> $dst"
-
-  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
-
-    echo "...attempt $i of $maxCopyTries"
-    rm -f "$dst"
-
-    if [[ "$proto" == "$src" ]]; then
-      echo "==> cp $src $dst"
-      cp "$src" "$dst"
-    else
-      case "$proto" in
-        root)
-          echo "==> xrdcp -f $src $dst"
-          xrdcp -f "$src" "$dst"
-        ;;
-        http)
-          echo "==> curl -L $src -O $dst"
-          curl -L "$src" -O "$dst"
-        ;;
-        *)
-          echo "protocol not supported: $proto"
-          return 2
-        ;;
-      esac
-    fi
-
-    if [ $? == 0 ] ; then
-      ok=1
-      break
-    fi
-
-  done
-
-  if [[ "$ok" == 1 ]] ; then
-    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
-    return 0
-  fi
-
-  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
-  return 1
+listDir() (
+  dir="$(cd "$1"; pwd)"
+  echo
+  alilog_info "[listDir] Content of ${dir}${2:+" ($2)"}"
+  find "$dir" -ls
+  echo
 )
 
 mkdirLocal() (
@@ -722,15 +770,123 @@ mkdirLocal() (
     dir=$1
     shift
     if [[ "${dir%%://*}" != "$dir" ]]; then
-      echo "mkdirLocal: skipping creation of $dir: it is not local"
+      alilog_warning "[mkdirLocal] skipping creation of $dir: it is not local"
       continue
     fi
     mkdir -p "$dir"
     [[ -d "$dir" ]]
     rv=$?
     err=$((err + ($rv & 1)))
-    echo "mkdirLocal: creation of dir $([[ $rv == 0 ]] && echo "OK" || echo "FAILED")"
+    [[ $rv == 0 ]] && alilog_success "[mkdirLocal] creation of dir $dir OK" \
+                   || alilog_fail    "[mkdirLocal] creation of dir $dir FAILED"
   done
+  return $((err & 1))
+)
+
+statRemote() (
+  # Check if file exists, whether it is local or remote. Returns 0 on success, 1 on failure.
+  file=$1
+  proto="${file%%://*}"
+  [[ "$proto" == "$file" ]] && proto=local
+  case "$proto" in
+    local) [[ -f $file ]] ;;
+    root)  path=${file:$((${#proto}+3))}
+           host=${path%%/*}
+           path=${path:$((${#host}))}
+           while [[ ${path:0:2} == // ]]; do path=${path:1}; done
+           xrd "$host" stat "$path" 2>&1 | grep -q Modtime: ;;
+    *)     alilog_error "[statRemote] for path $file: protocol not supported: $proto"
+           return 2 ;;
+  esac
+  rv=$?
+  alilog_info "[statRemote] path $file (proto=${proto}$([[ $proto == local ]] && echo ", pwd=$PWD")) $([[ $rv == 0 ]] && echo "exists" || echo "does NOT exist")"
+  return $rv
+)
+
+lsRemote() (
+  # List remote files on stdout. Returns 0 on success, 1 on failure.
+  dir=$1
+  proto="${dir%%://*}"
+  [[ "$proto" == "$dir" ]] && proto=local
+  case "$proto" in
+    local) find "$dir" -maxdepth 1 -mindepth 1 ;;
+    root)  path=${dir:$((${#proto}+3))}
+           host=${path%%/*}
+           path=${path:$((${#host}))}
+           while [[ ${path:0:2} == // ]]; do path=${path:1}; done
+           xrd "$host" ls "$path" 2>&1 | grep -v "No such file or directory" | \
+                                         grep -o "${path}.*" | \
+                                         sed -e 's|^\(.*\)$|'$proto://$host/'\1|' ;;
+    *)     alilog_error "[lsRemote] for directory $dir: protocol not supported: $proto" >&2
+           return 2 ;;
+  esac
+  rv=$?
+  [[ $rv != 0 ]] && alilog_error "[lsRemote] cannot list directory $dir" >&2
+  return $rv
+)
+
+copyFileFromRemote() (
+  # Copy a list of remote files ($1, $2...${n-1}) to a certain dest dir ($n).
+  # The last parameter must then be a local directory. Files can be local too.
+  # Dest dir is created if not existing.
+  # If only one parameter is specified download this file to the current directory.
+  # If a source file is in the form @list.txt, then the list of files (one per
+  # line) in list.txt will be expanded and copied.
+  # On success 0 is returned - 1 otherwise.
+  # Example: copyFileFromRemote root://localhost//file1.txt @list.txt /tmp/localdir/foo
+
+  [[ $# == 1 ]] && dstdir=. || dstdir=${!#}
+  maxCopyTries=${maxCopyTries-10}
+  sleepRetry=0
+  err=0
+  if which timeout &>/dev/null; then
+    timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  elif which gtimeout &>/dev/null; then
+    timeoutPrefix="gtimeout -s 9 ${remoteCpTimeout-600}"
+  else
+    timeoutPrefix=""
+  fi
+  $timeoutPrefix true || timeoutPrefix=
+  opname="[copyFileFromRemote]"
+  mkdir -p "$dstdir"
+
+  while [[ $# -gt 1 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read -u 4 src; do
+      thiserr=1
+      proto="${src%%://*}"
+      [[ "$proto" == "$src" ]] && proto=local
+      dst="$dstdir/$(basename "$src")"
+      alilog_info "$opname (proto=$proto) started: $src -> $dst"
+      for ((i=1; i<=maxCopyTries; i++)); do
+        [[ $i -gt 1 ]] && alilog_warning "$opname $src -> $dst failed $i out of $maxCopyTries time(s), retrying in $sleepRetry s"
+        sleep $sleepRetry
+        sleepRetry=$((sleepRetry+1))
+        case "$proto" in
+          local) fullsrc=$(get_realpath "$src")
+                 fulldst=$(get_realpath "$dst")
+                 printExec $timeoutPrefix cp "$src" "$dst"
+                 if [[ $? != 0  && "$fullsrc" != "$fulldst" ]]; then
+                   rm -f "$dst"
+                   false
+                 fi ;;
+          root)  printExec $timeoutPrefix xrdcp -f "$src" "$dst" ;;
+          http*) printExec $timeoutPrefix curl -LsSfo "$dst" "$src" ;;
+          *)     alilog_error "protocol not supported: $proto"
+                 return 2 ;;
+        esac
+        if [[ $? == 0 ]]; then
+          thiserr=0
+          break
+        fi
+      done  # cp attempts
+      [[ $thiserr == 0 ]] && alilog_success "$opname (proto=$proto) OK after $i attempt(s): $src -> $dst" \
+                          || alilog_error   "$opname (proto=$proto) FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      err=$((err+thiserr))
+    done 4< <($inputcmd)
+    shift
+  done
+
   return $((err & 1))
 )
 
@@ -748,34 +904,42 @@ copyFileToRemote() (
   dstdir=${!#}
   maxCopyTries=${maxCopyTries-10}
   proto="${dstdir%%://*}"
+  sleepRetry=0
   err=0
+  if which timeout &>/dev/null; then
+    timeoutPrefix="timeout -s 9 ${remoteCpTimeout-600}"
+  elif which gtimeout &>/dev/null; then
+    timeoutPrefix="gtimeout -s 9 ${remoteCpTimeout-600}"
+  else
+    timeoutPrefix=""
+  fi
+  $timeoutPrefix true || timeoutPrefix=
   [[ "$proto" == "$dstdir" ]] && proto=local
-  opname="copy file to remote dst (proto=$proto)"
-
-  # Remove trailing slashes.
-  while [[ "${dstdir:$((${#dstdir}-1))}" == / ]]; do
-    dstdir=${dstdir:0:$((${#dstdir}-1))}
-  done
+  opname="[copyFileToRemote] (proto=$proto)"
 
   while [[ $# -gt 1 ]]; do
     [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
-    while read src; do
+    while read -u 4 src; do
       thiserr=1
       dst="$dstdir/$(basename "$src")"
-      echo "$opname started: $src -> $dst"
       for ((i=1; i<=maxCopyTries; i++)); do
-        echo "...$opname attempt $i of $maxCopyTries"
+        [[ -d "$src" ]] && echo "$opname $src -> $dst skipping, is a directory" && thiserr=0 && break
+        # TODO use shopt -s nullglob
+        [[ ! -r "$src" ]] && echo "$opname $src -> $dst skipping, cannot access source" && thiserr=0 && break
+        [[ $i -gt 1 ]] && alilog_warning "$opname $src -> $dst failed $i out of $maxCopyTries time(s), retrying in $sleepRetry s"
+        sleep $sleepRetry
+        sleepRetry=$((sleepRetry+1))
         case "$proto" in
-          local) echo "==> cp $src $dst"
-                 mkdir -p "$(dirname "$dst")"
-                 cp "$src" "$dst"
-                 if [[ $? != 0 ]]; then
+          local) mkdir -p "$(dirname "$dst")"
+                 fullsrc=$(get_realpath "$src")
+                 fulldst=$(get_realpath "$dst")
+                 printExec $timeoutPrefix cp "$src" "$dst"
+                 if [[ $? != 0 && "$fullsrc" != "$fulldst" ]]; then
                    rm -f "$dst"
                    false
                  fi ;;
-          root)  echo "==> xrdcp -f $src $dst"
-                 xrdcp -f "$src" "$dst" ;;
-          *)     echo "protocol not supported: $proto"
+          root)  printExec $timeoutPrefix xrdcp -f "$src" "$dst" ;;
+          *)     alilog_error "protocol not supported: $proto"
                  return 2 ;;
         esac
         if [[ $? == 0 ]]; then
@@ -783,15 +947,90 @@ copyFileToRemote() (
           break
         fi
       done  # cp attempts
-      [[ $thiserr == 0 ]] && echo "$opname OK after $i attempt(s): $src -> $dst" \
-                          || echo "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
+      [[ $thiserr == 0 ]] && alilog_success "$opname OK after $i attempt(s): $src -> $dst" \
+                          || alilog_error   "$opname FAILED after $maxCopyTries attempt(s): $src -> $dst"
       err=$((err+thiserr))
-    done < <($inputcmd)
+    done 4< <($inputcmd)
     shift
   done
 
   return $((err & 1))
 )
+
+function xCopy() {
+  # Recursive and parallel copy for files. Usage:
+  #   xCopy -w 10 -d proto://host//destpath file1 file2 @list dir...
+  # Where:
+  #   -d is the destination directory (can be local, or remote)
+  #   -w is the number of parallel workers (defaults to 15)
+  #   -f does not preserve the source dir structure and copies all flat to destpath
+  #   -c skips copy if local source does not exist
+  #   -C skips copy if local destination already exists
+  # Note that if one of the sources is a local directory, it will be inspected recursively. This
+  # does not apply to remote directories instead.
+
+  opname="[xCopy]"
+  workers=0
+  flat=0
+  checklocalsrc=0
+  checklocaldest=0
+  while [[ "$1" != -- ]]; do
+    case "$1" in
+      --destdir|-d) dstdir="$2"; shift 2 ;;
+      --flat|-f) flat=1; shift ;;
+      --check-local-src|-c) checklocalsrc=1; shift ;;
+      --check-local-dest|-C) checklocaldest=1; shift ;;
+      --workers|-w) workers=$(($2)); shift 2 ;;
+      *) break ;;
+    esac
+  done
+  [[ "$dstdir" == '' ]] && { alilog_error "$opname Missing --destdir" ; exit 1 ; }
+  [[ $workers == 0 ]] && workers=15  # default
+  alilog_info "$opname Copying files to $dstdir using $workers workers"
+  [[ "${dstdir%%://*}" == "$dstdir" ]] && copyFunc=copyFileFromRemote || copyFunc=copyFileToRemote
+
+  # Create a directory of symlinks: readlink will tell us what is each source
+  # file, with respect to the *current* directory. Symlinks are used because
+  # operations on them are atomic.
+  t=$(mktemp -d /tmp/xcp.XXXXX)
+  count=0
+  while [[ $# -gt 0 ]]; do
+    [[ ${1:0:1} == @ ]] && inputcmd="cat ${1:1}" || inputcmd="echo $1"
+    while read src; do
+      [[ "${src%%://*}" == "$src" && -d "$src" ]] && inputcmd="find $src -type f" \
+                                                  || inputcmd="echo $src"
+      while read -u 4 src2; do
+        [[ $checklocalsrc == 1 && "${src2%%://*}" == "$src2" && ! -f "${src2}" ]] \
+          && { alilog_warning "Skipping local nonexisting source $src2" ; continue ; }
+        ln -nfs $src2 $t/$count
+        count=$((count+1))
+      done 4< <($inputcmd)
+    done < <($inputcmd)
+    shift
+  done
+
+  # Start workers.
+  for ((i=0; i<workers; i++)); do
+    ( while [[ 1 ]]; do
+        placeholder=$(find $t -type l -print -quit 2> /dev/null)
+        [[ "$placeholder" == '' ]] && break
+        src=$(readlink $placeholder)
+        rm $placeholder 2> /dev/null || continue
+        dstdir_flat=$dstdir/$([[ $flat == 0 ]] && dirname $src)
+        [[ $copyFunc == copyFileFromRemote && $checklocaldest == 1 \
+                                           && -f $dstdir_flat/$(basename $src) ]] \
+          && { alilog_warning "Skipping $src: local destination exists" ; continue ; }
+        $copyFunc $src $dstdir_flat
+      done
+    ) &
+  done
+
+  # Do not leave rubbish behind if dying. Kills the whole process group (-$$).
+  trap "rm -rf $t; kill -9 -$$" SIGHUP SIGINT SIGTERM
+
+  wait
+  rm -rf $t
+}
 
 paranoidCp()
 (
@@ -916,8 +1155,73 @@ reformatXMLCollection()
   done
 }
 
+reportDoneFile()
+{
+  #print a report on a file if exists
+  #args: tag filename directory
+  local tag=$1
+  local file=$2
+  local dir=$3
+  [[ -r $file ]] && echo "$tag ${dir}/${file}"
+}
+
+
+mergeAliSysInfo(){
+    #
+    # marian.ivanov@cern.ch
+    # I think this method should be in $ALICE_ROOT/STEER/AliSysInfo.sh script  
+    # 
+    # mergeAliSysInfo trees
+    # in addition to the original branches file information is appended to the tree
+    # New info appended
+    # Parameters:
+    #   1.) inputList  as ascii file
+    #   2.) outputFile 
+    #       in case outputFile is root file - tree is written as root file therwise plane txt used
+    # example usage 
+    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchHis.list syswatchHis.root; )
+    # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchMap.list syswatchMap.root; )
+    inputList=$1
+    outputFile=$2
+    alilog_info "mergeAliSysInfo  inputList=$1 outputFile=$2 BEGIN"
+    if [[ -z ${inputList} ]] ; then
+       echo "mergeAliSysInfo [inputList] [outputFile]"; 
+       return 0;
+    fi
+    if [[ -z ${outputFile} ]] ; then
+       echo "mergeAliSysInfo [inputList] [outputFile]"; 
+       return 0;
+    fi
+    #
+    counter=0
+    desc=`head  -n 1 $inputList  | xargs head -n 1`  
+    echo $desc:line/D:itree/D:nstamps/D:treeName/C  >$outputFile
+    fsize=0
+    for afile in `cat  $inputList`; do 
+	fsize=$(wc -l < $afile)
+	((counter++))
+	#echo $counter $fsize $afile 
+	lineCounter=0
+	cat $afile | grep -v "hname" | while read -r line; 	
+	  do 
+	  ((lineCounter++))
+	  echo "$line" $lineCounter $counter $fsize $afile; 
+	done 
+    done >> $outputFile
+    [[ $outputFile =~ .root$ ]] &&  echo "AliSysInfo::MakeTree(\"$outputFile\",\"$outputFile\")" | aliroot -b 
+    alilog_info "mergeAliSysInfo  inputList=$1 outputFile=$2 END"
+    return 1;
+}
+
+
+
+
+
 #this makes debugging easier:
 #executes the command given as an argument in this environment
 #use case:
 #  bashdb utilities.sh summarizeLogs * */*
 [[ $# != 0 ]] && eval "$@" || true
+
+
+# vi:syntax=zsh

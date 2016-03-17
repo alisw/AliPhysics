@@ -66,6 +66,12 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   void   SetCombineDmesons(Bool_t c)       { fCombineDmesons = c          ; }
   Bool_t GetCombineDmesons() const         { return fCombineDmesons       ; }
 
+  void   SetMultipleCandidates(Bool_t c)   { fMultCand = c                ; }
+  Bool_t GetMultipleCandidates() const     { return fMultCand             ; }
+
+  void   SetAnalysedCandidate(Int_t c)     { fAnalyseCand = c             ; }
+  Int_t  GetAnalysedCandidate() const      { return fAnalyseCand          ; }
+
   void   SetRejectQuarkNotFound(Bool_t c)  { fRejectQuarkNotFound = c     ; }
   Bool_t GetRejectQuarkNotFound() const    { return fRejectQuarkNotFound  ; }
 
@@ -116,6 +122,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Double_t        fMaxMass;                //  mass upper limit histogram
   Bool_t          fInhibitTask;            //
   Bool_t          fCombineDmesons;         //  create an additional collection with D meson candidates and the rest of the tracks (for jet finding)
+  Bool_t          fMultCand;               //  In case of multiple candidates per event
+  Int_t           fAnalyseCand;            //  Number of the candidate to be analysed
   Bool_t          fRejectQuarkNotFound;    //  reject D mesons for which the original charm or bottom quark could not be found (MC)
   Bool_t          fRejectDfromB;           //  reject D mesons coming from a B meson decay (MC)
   Bool_t          fKeepOnlyDfromB;         //  only accept D mesons coming from a B meson decay (MC)

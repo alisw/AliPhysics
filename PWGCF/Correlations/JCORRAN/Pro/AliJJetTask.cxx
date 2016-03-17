@@ -65,7 +65,8 @@ AliJJetTask::AliJJetTask() :
 	fJetFinderString(),
 	fTrackArrayName("nonejk"),
 	fNJetFinder(0),
-	debug(0)
+	debug(0),
+	fIsMC(0)
 
 {
 	// Default constructor.
@@ -86,7 +87,8 @@ AliJJetTask::AliJJetTask(const char *name, const int nJetFinder) :
 	fJetFinderString(nJetFinder),
 	fTrackArrayName("nonejk"),
 	fNJetFinder(nJetFinder),
-	debug(0)
+	debug(0),
+	fIsMC(0)
 {
 	SetMakeGeneralHistograms(kTRUE);
 }
@@ -102,7 +104,8 @@ AliJJetTask::AliJJetTask(const AliJJetTask& ap) :
 	fJetFinderString(ap.fJetFinderString),
 	fTrackArrayName(ap.fTrackArrayName),
 	fNJetFinder(ap.fNJetFinder),
-	debug(ap.debug)
+	debug(ap.debug),
+	fIsMC(ap.fIsMC)
 {
 
 }
@@ -147,14 +150,20 @@ void AliJJetTask::UserCreateOutputObjects()
 
 
 	fJetFinderString.clear();
+
 	for (int i=0; i<fNJetFinder; i++){
 		fJetsCont[i]           = GetJetContainer(i);
 		fJetFinderString.push_back(fJetsCont[i]->GetArrayName());
 		cout << i <<"\t" << fJetFinderString[i] << endl;
 		fTracksCont[i]       = GetParticleContainer(0);
 		fCaloClustersCont[i] = GetClusterContainer(0);
-		fTracksCont[i]->SetClassName("AliVTrack");
-		fCaloClustersCont[i]->SetClassName("AliAODCaloCluster");
+		if(!fIsMC){
+			fTracksCont[i]->SetClassName("AliVTrack");
+			fCaloClustersCont[i]->SetClassName("AliAODCaloCluster");
+		}
+		else{
+			fTracksCont[i]->SetClassName("AliAODMCParticle");
+		}
 		//fJJets.push_back(TClonesArray("AliJJet",1000));
 	}
 
@@ -176,7 +185,8 @@ Bool_t AliJJetTask::FillHistograms()
 
 
 	for (int i=0; i<fNJetFinder; i++){
-		AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet(0);
+		fJetsCont[i]->ResetCurrentID();
+		AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet();
 		int iJet =0; 
 
 		//fills fJJets[icontainer][ijet] and histograms        

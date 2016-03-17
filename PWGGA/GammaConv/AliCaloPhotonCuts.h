@@ -23,6 +23,7 @@
 #include "AliPHOSGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliAODCaloCluster.h"
+#include "AliCalorimeterUtils.h"
 #include <vector>
 
 
@@ -171,10 +172,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        FillClusterCutIndex(Int_t photoncut)            {if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
     void        InitializeEMCAL(AliVEvent *event);
     void        InitializePHOS(AliVEvent *event);
-
+    
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
     void        SetExtendedQA(Int_t extendedQA)                 {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
-    void        FillHistogramsExtendedQA(AliVEvent *event);
+    void        FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
 
@@ -232,6 +233,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
+    AliCalorimeterUtils* fEMCALCaloUtils;               // pointer to CalorimeterUtils for EMCal
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
     AliPHOSGeometry*    fGeomPHOS;                      // pointer to PHOS geometry
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
@@ -303,7 +305,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     // Histograms
     TH1F*     fHistCutIndex;                            // bookkeeping for cuts
     TH1F*     fHistAcceptanceCuts;                      // bookkeeping for acceptance cuts
-    TH1F*     fHistClusterIdentificationCuts;           // bookkeeping for cluster identification cuts
+    TH2F*     fHistClusterIdentificationCuts;           // bookkeeping for cluster identification cuts
     
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
@@ -329,6 +331,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistDispersionAfterQA;                   // dispersion after cluster quality cuts
     TH1F*     fHistNLMBeforeQA;                         // number of local maxima in cluster before acceptance cuts
     TH1F*     fHistNLMAfterQA;                          // number of local maxima in cluster after cluster quality cuts
+    TH2F*     fHistNLMAvsNLMBBeforeQA;                  // number of local maxima in cluster after cluster quality cuts
     TH2F*     fHistNLMVsNCellsAfterQA;                  // number of local maxima vs Ncells in cluster after cluster quality cuts
     TH2F*     fHistNLMVsEAfterQA;                       // number of local maxima vs E in cluster after cluster quality cuts
     //More histograms
@@ -345,6 +348,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistClusterIncludedCellsAfterQA;         // CellIDs in Cluster of accepted ones
     TH1F*     fHistClusterEnergyFracCellsBeforeQA;      // Energy fraction of CellIDs in Cluster
     TH1F*     fHistClusterEnergyFracCellsAfterQA;       // Energy fraction of CellIDs in Cluster of accepted ones
+    TH1F*     fHistClusterIncludedCellsTimingAfterQA;   // Timing of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterDistanceInTimeCut;            // distance of clusters: within cluster timing cut + within cluster timing cut
+    TH2F*     fHistClusterDistanceOutTimeCut;           // distance of clusters: within cluster timing cut + outside cluster timing cut
 
     //Track matching histograms
     TH1F*     fHistClusterRBeforeQA;                    // cluster position in R=SQRT(x^2+y^2) (before QA)
@@ -372,7 +378,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,20)
+    ClassDef(AliCaloPhotonCuts,22)
 };
 
 #endif

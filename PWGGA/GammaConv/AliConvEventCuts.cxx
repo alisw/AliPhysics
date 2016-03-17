@@ -118,6 +118,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hCentralityNotFlat(NULL),
   //hCentralityVsNumberOfPrimaryTracks(NULL),
   hVertexZ(NULL),
+  hEventPlaneAngle(NULL),
+  fEventPlaneAngle(0),
   hTriggerClass(NULL),
   hTriggerClassSelected(NULL),
   hTriggerClassesCorrelated(NULL),
@@ -216,6 +218,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hCentralityNotFlat(ref.hCentralityNotFlat),
   //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
   hVertexZ(ref.hVertexZ),
+  hEventPlaneAngle(ref.hEventPlaneAngle),
+  fEventPlaneAngle(ref.fEventPlaneAngle),
   hTriggerClass(NULL),
   hTriggerClassSelected(NULL),
   hTriggerClassesCorrelated(NULL),
@@ -348,6 +352,12 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
   hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
   fHistograms->Add(hVertexZ);
+
+  if(fIsHeavyIon == 1){
+    hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
+    fHistograms->Add(hEventPlaneAngle);
+  }
+
 
   // Event Cuts and Info
   if(preCut){
@@ -584,7 +594,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   //      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
   //                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
   //                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-
+  
+  if(fIsHeavyIon == 1){
+    AliEventplane *EventPlane = fInputEvent->GetEventplane();
+    fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
+    if(hEventPlaneAngle)hEventPlaneAngle->Fill(TMath::Abs(fEventPlaneAngle));
+  }
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   fEventQuality = 0;
@@ -848,7 +863,6 @@ void AliConvEventCuts::PrintCutsWithValues() {
     printf("%d",fCuts[ic]);
   }
   printf("\n\n");
-
   if (fIsHeavyIon == 0) {
     printf("Running in pp mode \n");
     if (fSpecialTrigger == 0){
@@ -1543,6 +1557,20 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
   return kTRUE;
 }
 
+//-------------------------------------------------------------
+Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(TString period){ 
+
+  if((period.CompareTo("LHC15o")==0)||(period.CompareTo("LHC15k1_plus3")==0)||(period.CompareTo("LHC15k1a1")==0)
+     ||(period.CompareTo("LHC15k1b1")==0)||(period.CompareTo("LHC15k1a2")==0)||(period.CompareTo("LHC15k1a3")==0)
+     ||(period.CompareTo("LHC15k1b2")==0)||(period.CompareTo("LHC15k1b3")==0)||(period.CompareTo("LHC15k1_plus")==0)
+     ||(period.CompareTo("LHC15k1")==0)||(period.CompareTo("LHC15k1_plus2")==0)||(period.CompareTo("LHC15k1_plus21")==0)
+     ||(period.CompareTo("LHC15k1_plus31")==0)||(period.CompareTo("LHC15k1_plus32")==0)){ 
+     return kTRUE;
+  }
+  else{
+     return kFALSE;
+  } 
+}
 
 //-------------------------------------------------------------
 Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
@@ -1551,27 +1579,25 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   if(esdEvent){
     TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
-    if ((periodName.CompareTo("LHC15o")==0) || periodName.Contains("LHC15k") ){
-       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
-       return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);  // only V0M available so far for 5TeV
-    }else{
-      AliCentrality *fESDCentrality=(AliCentrality*)esdEvent->GetCentrality();
+    if(GetUseNewMultiplicityFramework(periodName)){
+      AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+      AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
-        if (fIsHeavyIon==2){
-          return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
-        } else{
-          return fESDCentrality->GetCentralityPercentile("V0M"); // default
-        }
-      }
-      if(fDetectorCentrality==1){
-        return fESDCentrality->GetCentralityPercentile("CL1");
-      }
+        if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+        else                           return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+      }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+    }else{
+      AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
+      if(fDetectorCentrality==0){
+        if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+        else                           return fESDCentrality->GetCentralityPercentile("V0M"); // default
+      }else if(fDetectorCentrality==1) return fESDCentrality->GetCentralityPercentile("CL1");
     }
   }
 
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
-          if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
   }
 
   return -1;
@@ -1725,12 +1751,12 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
     fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
   }
   
-  if(abs(fVertexZ)>fMaxVertexZ)return kFALSE;
+  if(fabs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
                           ->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("LHC11h")==0){
-    if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
+    if (fabs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
   }
   if (fIsHeavyIon == 2){
     if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
@@ -3010,7 +3036,12 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 //    hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
 //                        ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
 //                        ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-
+  
+  if(fIsHeavyIon == 1){
+    AliEventplane *EventPlane = InputEvent->GetEventplane();
+    fEventPlaneAngle = EventPlane->GetEventplane("V0",InputEvent,2);
+    if(hEventPlaneAngle)hEventPlaneAngle->Fill(TMath::Abs(fEventPlaneAngle));
+  }
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   return 0;
@@ -3320,8 +3351,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
 //     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
-//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
-//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<fabs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<fabs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
     if (patch->IsGammaHigh()){
 //       cout << "fired L1GA high" << endl;
       nG1++;
@@ -3344,8 +3375,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     }
 //     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
 //          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0() 
-//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << abs(patch->GetPhiMin()-patch->GetPhiMax())
-//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
+//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << fabs(patch->GetPhiMin()-patch->GetPhiMax())
+//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << fabs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
 
   if (nPatch > 0){

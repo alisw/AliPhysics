@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGCFfemtoscopyUser)
+set(MODULE PWGCFfemtoscopyUser)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemtoUser)
@@ -33,6 +34,8 @@ set(SRCS
   AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
+  AliFemtoKpmTrackCut.cxx
+  AliFemtoKpm45TrackCut.cxx
   AliFemtoKtBinnedCorrFunc.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
@@ -101,6 +104,8 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
   AliFemtoV0TrackCutNSigmaFilter.cxx
+  AliFemtoCutMonitorEventPartCollSize.cxx
+  Faddeeva.cxx
 )
 
 # Headers from sources

@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include <THistManager.h>
 #include <TMath.h>
 #include <TString.h>
 
@@ -29,7 +30,6 @@
 #include "AliVParticle.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerKineCuts.h"
@@ -127,7 +127,8 @@ void AliEMCalTriggerMCJetAnalysisComponent::Process(const AliEMCalTriggerEventDa
   }
 
   AliJetContainer *cont = data->GetJetContainerMC();
-  AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet(0);
+  cont->ResetCurrentID();
+  AliEmcalJet *reconstructedJet = cont->GetNextAcceptJet();
   AliAODMCParticle *foundtrack(NULL);
   while(reconstructedJet){
     if(TMath::Abs(reconstructedJet->Pt()) > fMinimumJetPt){

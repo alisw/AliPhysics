@@ -63,6 +63,7 @@
 #pragma link C++ class AliFemtoCutMonitorEventVertex+;
 #pragma link C++ class AliFemtoEventReaderAOD+;
 #pragma link C++ class AliFemtoEventReaderAODChain+;
+#pragma link C++ class AliFemtoEventReaderAODMultSelection+;
 #pragma link C++ class AliFemtoAODTrackCut+;
 #pragma link C++ class AliAnalysisTaskFemto+;
 #pragma link C++ class AliAnalysisTaskFemtoMJ+;

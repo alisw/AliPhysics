@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGGAEMCALTasks)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/EMCALTasks)
@@ -22,8 +23,9 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/EMCALTasks)
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
@@ -51,6 +53,7 @@ set(SRCS
     Alipi0mixedDiClusterStatStruct.cxx
     AliStaObjects.cxx
     AliAnalysisTaskNeutralMesons.cxx
+    AliAnalysisTaskGammaHadron.cxx
    )
 
 # Headers from sources
@@ -62,7 +65,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils PWGEMCAL EMCALbase EMCALrec  ESD ESDfilter PWGGAUtils STEER STEERBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec  ESD ESDfilter PWGGAUtils STEER STEERBase)
 
 # Generate the ROOT map
 # Dependecies

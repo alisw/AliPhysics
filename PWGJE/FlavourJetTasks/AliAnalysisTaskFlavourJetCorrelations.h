@@ -24,13 +24,10 @@
 
 #include <TH2F.h>
 #include "AliAODEvent.h"
-#include "AliPicoTrack.h"
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliRhoParameter.h"
 
-class TH3F;
-class TParticle ;
-class TClonesArray ;
+class TParticle;
+class TClonesArray;
 class THnSparse;
 class AliMCParticle;
 class AliAODMCParticle;
@@ -49,6 +46,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
 public:
    
    enum ECandidateType{ kD0toKpi, kDstartoKpipi };
+   enum ECorrelationMethod{ kConstituent, kAngular, kResponseMatrix };
    
    AliAnalysisTaskFlavourJetCorrelations();
    AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
@@ -69,51 +67,34 @@ public:
    // set usage of reconstructed tracks
    void   SetUseReco(Bool_t reco) {fUseReco=reco;}
    Bool_t GetUseReco() const {return fUseReco;}
-   //no setter because needed in the constructor
-   void SetTypeDJetSelection(Int_t type) {fTypeDInJet=type;} //see IsDInJet for possibilities
-   Int_t GetTypeDJetSelection() const {return fTypeDInJet;} 
    
    void SetMassLimits(Double_t range, Int_t pdg);
    void SetMassLimits(Double_t lowlimit, Double_t uplimit);
    
-   //jet and track arrays
-   void SetJetArrayName(TString jetArrName) {fJetArrName=jetArrName;}
-   TString GetJetArrayName() const {return fJetArrName;}
-   void SetTrackArrayName(TString trackArrName) {fTrackArrName=trackArrName;}
-   TString GetTrackArrayName() const {return fTrackArrName;}
-   
-   // resolution parameter used in this task
-   void SetRadius(Double_t r){fJetRadius=r;}
-   Double_t GetRadius() const {return fJetRadius;}
-   
+   void SetCorrelationMethod(Int_t c) {fCorrelationMethod=c;}
+   Int_t GetCorrelationMethod() const {return fCorrelationMethod;}
+
+   void SetUseCandArray(Bool_t b) {fUseCandArray=b;}
+   Bool_t GetUseCandArray() const {return fUseCandArray;}
+
+   void SetUseSBArray(Bool_t b) {fUseSBArray=b;}
+   Bool_t GetUseSBArray() const {return fUseSBArray;}
+
    // Array of D0 width for the Dstar
    Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
-   
-   //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
-   void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet, AliAODEvent* aodEvent);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t phij, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
-   
-   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi,  Double_t z, Double_t ptD, Double_t ptj, Double_t phij, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
-   void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t z,Double_t ptD,Double_t ptjet, Double_t phij, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
-   void SideBandBackground(AliAODRecoCascadeHF *candDstar, AliEmcalJet *jet);
-   void MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet);
-   void FillMassHistograms(Double_t mass,Double_t ptD);
-   void FlagFlavour(AliEmcalJet* jet);
+   void ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
+   void AngularCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
+   void CreateResponseMatrix();
+   void FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
+   void GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t phij, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
+   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Double_t phij, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t phij, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
    Bool_t InEMCalAcceptance(AliVParticle *vpart);
-   
-   void LightTHnSparse(){
-      fSwitchOnSB=0;
-      fSwitchOnPhiAxis=0;
-      fSwitchOnOutOfConeAxis=0;
-   }
-   void HeavyTHnSparse(){
-      fSwitchOnSB=1;
-      fSwitchOnPhiAxis=1;
-      fSwitchOnOutOfConeAxis=1;
-   }
-   
-   void TurnOffTHnSparse() {fSwitchOnSparses=kFALSE;}
+
+   void SetAnalyseDBackground(Bool_t b){ fAnalyseDBkg=b; }
+   Bool_t GetAnalyseDBackground() const {return fAnalyseDBkg;}
    
    
 private:
@@ -121,53 +102,36 @@ private:
    AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
    AliAnalysisTaskFlavourJetCorrelations& operator=(const AliAnalysisTaskFlavourJetCorrelations& source); 
    
-   Double_t Z(AliVParticle* part,AliEmcalJet* jet, Bool_t transverse=kFALSE) const;
+   Double_t Z(AliVParticle* part, AliEmcalJet* jet, Double_t rho) const;
+   Double_t Z(AliVParticle* part, AliEmcalJet* jet) const;
    Double_t Z(Double_t* p, Double_t *pj) const;
    Double_t ZT(Double_t* p, Double_t *pj) const;
-   Float_t DeltaR(AliEmcalJet *p1, AliVParticle *p2) const;
-   Float_t CheckDeltaR(AliEmcalJet *p1, AliVParticle *p2) const; 
-   Bool_t AreDaughtersInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Int_t*& daughOutOfJet, AliAODTrack**& dtrks, Bool_t fillH);
-   Bool_t IsDInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Bool_t fillH=kFALSE);
-   void RecalculateMomentum(Double_t* pj, const Double_t* pmissing) const;
-   
-   
-   Bool_t fUseMCInfo;             //  Use MC info
-   Bool_t fUseReco;               // use reconstructed tracks when running on MC
-   Int_t  fCandidateType;         // Dstar or D0
-   Int_t  fPDGmother;             // PDG code of D meson
-   Int_t  fNProngs;               // number of prong of the decay channel  
-   Int_t  fPDGdaughters[4];       // PDG codes of daughters
-   Float_t fSigmaD0[30];          //
-   TString fBranchName;           // AOD branch name
-   AliRDHFCuts *fCuts;            // Cuts 
-   
-   Double_t fMinMass;             // mass lower limit histogram
-   Double_t fMaxMass;             // mass upper limit histogram
-   
-   TString  fJetArrName;          // name of the jet array, taken from the task running the jet finder
-   TString fTrackArrName;         // name of the array of tracks, default "PicoTracks"
-   TString fCandArrName;          // string which correspond to the candidate type
+   Float_t DeltaR(AliEmcalJet *p1, AliVParticle *p2, Double_t rho) const;
+   Float_t CheckDeltaR(AliEmcalJet *p1, AliVParticle *p2) const;
 
-   Double_t fJetRadius;           // jet radius (filled from the JetContainer)
+
+   Bool_t fUseMCInfo;               // Use MC info
+   Bool_t fUseReco;                 // use reconstructed tracks when running on MC
+   Int_t  fCandidateType;           // Dstar or D0
+   Int_t  fCorrelationMethod;       // Method to correlate D mesons and jets
+   Int_t  fPDGmother;               // PDG code of D meson
+   Int_t  fNProngs;                 // number of prong of the decay channel
+   Int_t  fPDGdaughters[4];         // PDG codes of daughters
+   Float_t fSigmaD0[30];            // Sigma of D0 for D*
+   TString fBranchName;             // AOD branch name
+   AliRDHFCuts *fCuts;              // Cuts
+
+   Double_t fMinMass;               // mass lower limit histogram
+   Double_t fMaxMass;               // mass upper limit histogram
+
    TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
    TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
-   Double_t fPmissing[3];             // jet missing momentum due to D mesons out of cone
-   Double_t fPtJet;                   // pt jet, if requeted corrected with the missing pt
-   Double_t fRhoValue;                   // Rho value of the event
-   Bool_t   fIsDInJet;                // flag D meson in jet
-   Int_t    fTypeDInJet;              // way of selecting D in jets (see IsDInJet in cxx)
-   TClonesArray *fTrackArr;      //array of the tracks used in the jet finder 
-   Bool_t fSwitchOnSB;          // flag to switch off/on the SB analysis (default is off)
-   Bool_t fSwitchOnPhiAxis;     // flag to switch off/on the DeltaPhi axis in THnSparse (to be used in combination with switch OutOfCone)
-   Bool_t fSwitchOnOutOfConeAxis; //flag to switch off/on the out of cone axis in THnSparse (to be switch on if DeltaPhi is on)
-   Bool_t fSwitchOnSparses;     // turn on/off all THnSparse
+   Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
     
-   Int_t fNAxesBigSparse;      // number of axis
-   AliJetContainer      *fJetCont;      //! jets attachedto the task
-   AliParticleContainer *fTrackCont;    //! tracks attached to the jet container
-   AliClusterContainer  *fClusterCont;  //! Clusters  attached to the jet container 
-  
-   
+   Int_t fNAxesBigSparse;           // number of axis
+   Bool_t fUseCandArray;            //! Use D meson candidates array
+   Bool_t fUseSBArray;              //! Use D meson SB array
+
    // Histograms
    TH1I* fhstat;                    //!
    TH1F* fhCentDjet;                //!
@@ -178,9 +142,6 @@ private:
    TH1F* fhPtJet;                   //!
    TH1F* fhPhiJet;                  //!
    TH1F* fhEtaJet;                  //!
-   TH1F* fhNtrArr;                  //!
-   TH1F* fhNJetPerEv;               //!
-   TH1F* fhdeltaRJetTracks;         //!
 
    //D mesons
    TH2F* fhInvMassptD;              //!
@@ -188,24 +149,9 @@ private:
    TH2F* fhInvMassptDbg;            //!
    TH1F* fhPtPion;                  //!
                                     //!
-   //histograms for checks
-   TH1I* fhControlDInJ;             //!
-   TH1I* fhIDddaugh   ;             //!
-   TH1I* fhIDddaughOut;             //!
-   TH1I* fhIDjetTracks;             //!
-   TH1F* fhDRdaughOut ;             //!
-   TH1F* fhzDinjet;                 //!
-   TH1F* fhmissingp;                //!
-   TH1F**fhMissPi;                  //!
-   TH1F* fhDeltaPtJet;              //!
-   TH1F* fhRelDeltaPtJet;           //!
-   // D-jet correlation histograms  
-   TH1F* fhzDT;                     //!
-   TH1F* fhDeltaRD;                 //!
-   TH3F* fhDeltaRptDptj;            //!
-   TH3F* fhDeltaRptDptjB;           //!
-   //main histograms                
+   //main histograms
    THnSparse* fhsDphiz;             //!
+   THnSparse* fResponseMatrix;      //!
    
 
    ClassDef(AliAnalysisTaskFlavourJetCorrelations,7); // class for charm-jet CorrelationsExch

@@ -15,6 +15,7 @@
 
 # Module
 set(MODULE PWGDQdielectron)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron)
@@ -73,6 +74,9 @@ set(SRCS
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
       JPSI/AliDielectronSpectrum.cxx
+      LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
+      LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
+      LMEE/AliDielectronReducedTrack.cxx
    )
 
 # Headers from sources

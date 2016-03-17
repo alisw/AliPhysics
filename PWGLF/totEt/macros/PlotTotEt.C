@@ -2,18 +2,29 @@
 void PrintCent(int i);
 float etaacc = 1.0;
 //void PlotSimPbPb(char *filename = "rootFiles/LHC11a4_bis/Et.ESD.new.sim.LHC11a4_bis.root", Bool_t sim = kFALSE, Bool_t sysErr = kTRUE, char *corrfilename = "rootFiles/corrections/corrections.LHC11a4_bis.PbPb.ForData.root", Bool_t isEMCal = kTRUE, Bool_t isTPC = kTRUE){
-void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.root", Bool_t sim = kFALSE, Bool_t sysErr = kTRUE, char *corrfilename = "rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForData.root", Bool_t isEMCal = kTRUE, Bool_t isTPC = kFALSE, Int_t nCB = 20){
+void PlotTotEt(char *filename = "rootFiles/LHC15oPass1/Et.ESD.sim.LHC15oPass1.Run244918.root", Bool_t sim = kFALSE, Bool_t sysErr = kTRUE, char *corrfilename = "rootFiles/corrections/corrections.LHC15k1.PbPb.244918.ForData.2015.root", Bool_t isEMCal = kTRUE, Bool_t isTPC = kTRUE, Int_t nCB = 20){
+// void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.root", Bool_t sim = kFALSE, Bool_t sysErr = kTRUE, char *corrfilename = "rootFiles/corrections/corrections.LHC11a10a_bis.PbPb.ForData.root", Bool_t isEMCal = kTRUE, Bool_t isTPC = kFALSE, Int_t nCB = 20){
   const Int_t nCentBins = nCB;
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  gROOT->LoadMacro("macros/loadCompiledLibraries.C");
-  loadCompiledLibraries();
+//   gROOT->LoadMacro("macros/loadCompiledLibraries.C");
+//   loadCompiledLibraries();
+//   TFile *corrfile = new TFile(corrfilename);
+//   AliAnalysisHadEtCorrections *corrections = NULL;
+//   if(isEMCal) corrections= (AliAnalysisHadEtCorrections *) corrfile->Get("hadCorrectionEMCAL");
+//   else{ corrections= (AliAnalysisHadEtCorrections *) corrfile->Get("hadCorrectionPHOS");}
+//   if(!corrections){cerr<<"Error could not find corrections in "<<corrfilename<<endl; corrfile->ls(); return;}
+
+  gROOT->LoadMacro("macros/loadLocalHadLibraries.C");
+  loadLocalHadLibraries();
   TFile *corrfile = new TFile(corrfilename);
-  AliAnalysisHadEtCorrections *corrections = NULL;
-  if(isEMCal) corrections= (AliAnalysisHadEtCorrections *) corrfile->Get("hadCorrectionEMCAL");
-  else{ corrections= (AliAnalysisHadEtCorrections *) corrfile->Get("hadCorrectionPHOS");}
+  AliAnalysisHadEtCorrectionsLocal *corrections = NULL;
+  if(isEMCal) corrections= (AliAnalysisHadEtCorrectionsLocal *) corrfile->Get("hadCorrectionEMCAL");
+  else{ corrections= (AliAnalysisHadEtCorrectionsLocal *) corrfile->Get("hadCorrectionPHOS");}
   if(!corrections){cerr<<"Error could not find corrections in "<<corrfilename<<endl; corrfile->ls(); return;}
+
+
   etaacc = 2*corrections->GetEtaCut();
   cout<<"etaacc corr "<<etaacc<<endl;
 
@@ -58,10 +69,40 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
   Float_t etNchRecErr[9] = new Float_t[9];
   Float_t hadsyserr[nCentBins] = new Float_t[nCentBins];
   Float_t totsyserr[nCentBins] = new Float_t[nCentBins];
+  Float_t totsyserrNoPID[nCentBins] = new Float_t[nCentBins];
+  Float_t totsyserrNoPIDNegEta[nCentBins] = new Float_t[nCentBins];
+  Float_t totsyserrNoPIDPosEta[nCentBins] = new Float_t[nCentBins];
+  Float_t totsyserrNoPIDLimitedPhi[nCentBins] = new Float_t[nCentBins];
+
+  Float_t etTotRecNoPID[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSNoPID[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecErrNoPID[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSErrNoPID[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecNoPIDNegEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSNoPIDNegEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecErrNoPIDNegEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSErrNoPIDNegEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecNoPIDPosEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSNoPIDPosEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecErrNoPIDPosEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSErrNoPIDPosEta[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecNoPIDLimitedPhi[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSNoPIDLimitedPhi[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecErrNoPIDLimitedPhi[nCentBins] = new Float_t[nCentBins];
+  Float_t etTotRecITSErrNoPIDLimitedPhi[nCentBins] = new Float_t[nCentBins];
+
   TObjArray histoHadReco(nCentBins);
   TObjArray histoHadRecoITS(nCentBins);
   TObjArray histoTotReco(nCentBins);
   TObjArray histoTotRecoITS(nCentBins);
+  TObjArray histoTotRecoNoPID(nCentBins);
+  TObjArray histoTotRecoNoPIDITS(nCentBins);
+  TObjArray histoTotRecoNoPIDNegEta(nCentBins);
+  TObjArray histoTotRecoNoPIDNegEtaITS(nCentBins);
+  TObjArray histoTotRecoNoPIDPosEta(nCentBins);
+  TObjArray histoTotRecoNoPIDPosEtaITS(nCentBins);
+  TObjArray histoTotRecoNoPIDLimitedPhi(nCentBins);
+  TObjArray histoTotRecoNoPIDLimitedPhiITS(nCentBins);
   Int_t colors[] = {TColor::kRed,TColor::kOrange+7,TColor::kOrange+1,TColor::kOrange-2,TColor::kYellow+1,TColor::kSpring+9,TColor::kSpring-5,TColor::kGreen+1,TColor::kGreen-2,TColor::kTeal+5,TColor::kTeal-5,TColor::kCyan-7,TColor::kCyan-2,TColor::kAzure+2,TColor::kAzure+7,TColor::kAzure-1,TColor::kAzure-6,TColor::kBlue+3,1,1,1};
 
   for(int i=0;i<=nbins;i++){
@@ -94,6 +135,34 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
     ((TH1D*)histoTotRecoITS[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoITS[i])->GetNbinsX() );
     etTotRecITS[i]=((TH1D*)histoTotRecoITS[i])->GetMean();
     etTotRecITSErr[i]=((TH1D*)histoTotRecoITS[i])->GetMeanError();//had
+
+    histoTotRecoNoPID[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceTPCNoPIDCB%i",i));
+    ((TH1D*)histoTotRecoNoPID[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoNoPID[i])->GetNbinsX() );
+    etTotRecNoPID[i]=((TH1D*)histoTotRecoNoPID[i])->GetMean();
+    etTotRecErrNoPID[i]=((TH1D*)histoTotRecoNoPID[i])->GetMeanError();
+    cout<<"i "<<i<< " ET "<<etTotRecNoPID[i]<<" +/- "<<etTotRecErrNoPID[i]<<" entries "<<((TH1D*)histoTotRecoNoPID[i])->GetEntries()<<" name "<<Form("RecoTotEtFullAcceptanceTPCNoPIDCB%i",i)<<endl;
+    histoTotRecoNoPIDITS[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceITSNoPIDCB%i",i));
+    ((TH1D*)histoTotRecoNoPIDITS[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoNoPIDITS[i])->GetNbinsX() );
+    etTotRecITSNoPID[i]=((TH1D*)histoTotRecoNoPIDITS[i])->GetMean();
+    etTotRecITSErrNoPID[i]=((TH1D*)histoTotRecoNoPIDITS[i])->GetMeanError();//Reco
+
+    histoTotRecoNoPIDNegEta[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceTPCNoPIDNegEtaCB%i",i));
+    ((TH1D*)histoTotRecoNoPIDNegEta[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoNoPIDNegEta[i])->GetNbinsX() );
+    etTotRecNoPIDNegEta[i]=((TH1D*)histoTotRecoNoPIDNegEta[i])->GetMean();
+    etTotRecErrNoPIDNegEta[i]=((TH1D*)histoTotRecoNoPIDNegEta[i])->GetMeanError();
+
+    histoTotRecoNoPIDPosEta[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceTPCNoPIDPosEtaCB%i",i));
+    ((TH1D*)histoTotRecoNoPIDPosEta[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoNoPIDPosEta[i])->GetNbinsX() );
+    etTotRecNoPIDPosEta[i]=((TH1D*)histoTotRecoNoPIDPosEta[i])->GetMean();
+    etTotRecErrNoPIDPosEta[i]=((TH1D*)histoTotRecoNoPIDPosEta[i])->GetMeanError();
+
+
+    histoTotRecoNoPIDLimitedPhi[i] =  out2->FindObject(Form("RecoTotEtFullAcceptanceTPCNoPIDLimitedPhiCB%i",i));
+    ((TH1D*)histoTotRecoNoPIDLimitedPhi[i])->GetXaxis()->SetRange(2, ((TH1D*)histoTotRecoNoPIDLimitedPhi[i])->GetNbinsX() );
+    etTotRecNoPIDLimitedPhi[i]=((TH1D*)histoTotRecoNoPIDLimitedPhi[i])->GetMean();
+    etTotRecErrNoPIDLimitedPhi[i]=((TH1D*)histoTotRecoNoPIDLimitedPhi[i])->GetMeanError();
+
+
   }
   TCanvas *c1 = new TCanvas("c1","Reconstructed Et",1200,1000);
   c1->SetTopMargin(0.04);
@@ -157,10 +226,22 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
 
   ofstream myfileHad;
   ofstream myfileTot;
+  ofstream myfileTotNoPID;
+  ofstream myfileTotNoPIDNegEta;
+  ofstream myfileTotNoPIDPosEta;
+  ofstream myfileTotNoPIDLimitedPhi;
   TString texfilenameHad = "HadEtFromTracks.dat";
   TString texfilenameTot = "TotEtFromTracks.dat";
+  TString texfilenameTotNoPID = "TotEtFromTracksNoPID.dat";
+  TString texfilenameTotNoPIDNegEta = "TotEtFromTracksNoPIDNegEta.dat";
+  TString texfilenameTotNoPIDPosEta = "TotEtFromTracksNoPIDPosEta.dat";
+  TString texfilenameTotNoPIDLimitedPhi = "TotEtFromTracksNoPIDLimitedPhi.dat";
   myfileHad.open (texfilenameHad.Data());
   myfileTot.open (texfilenameTot.Data());
+  myfileTotNoPID.open (texfilenameTotNoPID.Data());
+  myfileTotNoPIDNegEta.open (texfilenameTotNoPIDNegEta.Data());
+  myfileTotNoPIDPosEta.open (texfilenameTotNoPIDPosEta.Data());
+  myfileTotNoPIDLimitedPhi.open (texfilenameTotNoPIDLimitedPhi.Data());
 
 
   cout<<"Hadronic and total et errors"<<endl;
@@ -176,6 +257,14 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
     float high = corrections->GetSystematicErrorBound(etHadRec[i],kFALSE,kTRUE, isTPC);
     float lowtot = corrections->GetSystematicErrorBound(etTotRec[i],kTRUE,kFALSE, isTPC);
     float hightot = corrections->GetSystematicErrorBound(etTotRec[i],kFALSE,kFALSE, isTPC);
+    float lowtotnopid = corrections->GetSystematicErrorBound(etTotRecNoPID[i],kTRUE,kFALSE, isTPC,kFALSE);
+    float hightotnopid = corrections->GetSystematicErrorBound(etTotRecNoPID[i],kFALSE,kFALSE, isTPC,kFALSE);
+    float lowtotnopidnegeta = corrections->GetSystematicErrorBound(etTotRecNoPIDNegEta[i],kTRUE,kFALSE, isTPC,kFALSE);
+    float hightotnopidnegeta = corrections->GetSystematicErrorBound(etTotRecNoPIDNegEta[i],kFALSE,kFALSE, isTPC,kFALSE);
+    float lowtotnopidposeta = corrections->GetSystematicErrorBound(etTotRecNoPIDPosEta[i],kTRUE,kFALSE, isTPC,kFALSE);
+    float hightotnopidposeta = corrections->GetSystematicErrorBound(etTotRecNoPIDPosEta[i],kFALSE,kFALSE, isTPC,kFALSE);
+    float lowtotnopidlimitedphi = corrections->GetSystematicErrorBound(etTotRecNoPIDLimitedPhi[i],kTRUE,kFALSE, isTPC,kFALSE);
+    float hightotnopidlimitedphi = corrections->GetSystematicErrorBound(etTotRecNoPIDLimitedPhi[i],kFALSE,kFALSE, isTPC,kFALSE);
     float errFracNpart = nparterr[i]/npart[i];
     float syserrorLow = scale/npart[i] * low; 
     float syserrorHigh = scale/npart[i] * high;
@@ -190,12 +279,24 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
     if(TMath::Abs(low-etHadRec[i])>hadsyserr[i]) hadsyserr[i] = TMath::Abs(low-etHadRec[i]);
     totsyserr[i] = TMath::Abs(hightot-etTotRec[i]);
     if(TMath::Abs(lowtot-etTotRec[i])>totsyserr[i]) totsyserr[i] = TMath::Abs(lowtot-etTotRec[i]);
+    totsyserrNoPID[i] = TMath::Abs(hightotnopid-etTotRecNoPID[i]);
+    if(TMath::Abs(lowtotnopid-etTotRecNoPID[i])>totsyserrNoPID[i]) totsyserrNoPID[i] = TMath::Abs(lowtotnopid-etTotRecNoPID[i]);
+    totsyserrNoPIDNegEta[i] = TMath::Abs(hightotnopidnegeta-etTotRecNoPIDNegEta[i]);
+    if(TMath::Abs(lowtotnopidnegeta-etTotRecNoPIDNegEta[i])>totsyserrNoPIDNegEta[i]) totsyserrNoPIDNegEta[i] = TMath::Abs(lowtotnopidnegeta-etTotRecNoPIDNegEta[i]);
+    totsyserrNoPIDPosEta[i] = TMath::Abs(hightotnopidposeta-etTotRecNoPIDPosEta[i]);
+    if(TMath::Abs(lowtotnopidposeta-etTotRecNoPIDPosEta[i])>totsyserrNoPIDPosEta[i]) totsyserrNoPIDPosEta[i] = TMath::Abs(lowtotnopidposeta-etTotRecNoPIDPosEta[i]);
+    totsyserrNoPIDLimitedPhi[i] = TMath::Abs(hightotnopidlimitedphi-etTotRecNoPIDLimitedPhi[i]);
+    if(TMath::Abs(lowtotnopidlimitedphi-etTotRecNoPIDLimitedPhi[i])>totsyserrNoPIDLimitedPhi[i]) totsyserrNoPIDLimitedPhi[i] = TMath::Abs(lowtotnopidlimitedphi-etTotRecNoPID[i]);
     
     float myscale = 1/etaacc;
     if(i<nbins){
       PrintCent(i);
       myfileHad<<Form("%i\t%i\t%2.1f\t%2.1f\t%2.1f \n",i*5,i*5+5,myscale*etHadRec[i],myscale*etHadRecErr[i],myscale*hadsyserr[i]);
       myfileTot<<Form("%i\t%i\t%2.1f\t%2.1f\t%2.1f \n",i*5,i*5+5,myscale*etTotRec[i],myscale*etTotRecErr[i],myscale*totsyserr[i]);
+      myfileTotNoPID<<Form("%i\t%i\t%2.1f\t%2.1f\t%2.1f \n",i*5,i*5+5,myscale*etTotRecNoPID[i],myscale*etTotRecErrNoPID[i],myscale*totsyserrNoPID[i]);
+      myfileTotNoPIDNegEta<<Form("%i\t%i\t%2.1f\t%2.1f\t%2.1f \n",i*5,i*5+5,myscale*etTotRecNoPIDNegEta[i],myscale*etTotRecErrNoPIDNegEta[i],myscale*totsyserrNoPIDNegEta[i]);
+      myfileTotNoPIDPosEta<<Form("%i\t%i\t%2.1f\t%2.1f\t%2.1f \n",i*5,i*5+5,myscale*etTotRecNoPIDPosEta[i],myscale*etTotRecErrNoPIDPosEta[i],myscale*totsyserrNoPIDPosEta[i]);
+      myfileTotNoPIDLimitedPhi<<Form("%i\t%i\t%2.1f\t%2.1f\t%2.1f \n",i*5,i*5+5,myscale*etTotRecNoPIDLimitedPhi[i],myscale*etTotRecErrNoPIDLimitedPhi[i],myscale*totsyserrNoPIDLimitedPhi[i]);
       cout<<Form("%2.1f & ",npart[i]);
       cout<<Form("%2.1f $\\pm$ %2.1f $\\pm$ %2.1f & ",myscale*etHadRec[i],myscale*etHadRecErr[i],myscale*hadsyserr[i]);
       cout<<Form("%2.1f $\\pm$ %2.1f $\\pm$ %2.1f",myscale*etTotRec[i],myscale*etTotRecErr[i],myscale*totsyserr[i]);
@@ -204,6 +305,10 @@ void PlotTotEt(char *filename = "rootFiles/LHC10h/Et.ESD.sim.LHC10h.Run139465.ro
   }
   myfileHad.close();
   myfileTot.close();
+  myfileTotNoPID.close();
+  myfileTotNoPIDNegEta.close();
+  myfileTotNoPIDPosEta.close();
+  myfileTotNoPIDLimitedPhi.close();
 
   graphHadEtReco->GetYaxis()->SetTitle("dE_{T}^{had}/d#eta/0.5 N_{part}");
   graphHadEtReco->GetXaxis()->SetTitle("N_{part}");

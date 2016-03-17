@@ -36,7 +36,7 @@ class AliDielectronVarCuts;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
-  enum DetType {kITS, kTPC, kTRD, kTRDeleEff, kTRDeleEff2D, kTOF, kEMCAL};
+  enum DetType {kITS, kTPC, kTRD, kTRDeleEff, kTRDeleEff2D, kTRDeleEff3D, kTRDeleEff7D, kTOF, kEMCAL};
   enum PIDbitType {kIgnore=0, kRequire, kIfAvailable};
   
   AliDielectronPID();

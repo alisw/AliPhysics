@@ -15,7 +15,6 @@ void AddTask_GammaConvFlow_PbPb2(
                                TString uniqueID = "",
                                Int_t harmonic=2,
                                Int_t trainConfig = 1,  //change different set of cuts
-                               //Bool_t isMC   = kFALSE, //run MC
                                Int_t enableQAMesonTask = 0, //enable QA in AddTask_GammaConvFlow_PbPb2
                                Int_t enableQAPhotonTask = 0, // enable additional QA task
                                //TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
@@ -28,7 +27,12 @@ void AddTask_GammaConvFlow_PbPb2(
                                Float_t MaxMass = 0.2,
                                Bool_t UseKappaSel = kFALSE,
                                Float_t MinKappa = 0,
-                               Float_t MaxKappa = 10
+                               Float_t MaxKappa = 10,
+                               Int_t FilterVariable = 1, // 1 = Mass, 2 = Kappa, 3 = MCee mass, 4 = MCee kappa, 5 = !MCee mass, 6 = !MCee kappa
+                               const Int_t NFilterBins = 1,
+                               Double_t MinFilter = 0.0,
+                               Double_t MaxFilter = 0.2,
+                               Bool_t isMC = kFALSE
                                ) {
     
   // ================= Load Librariers =================================
@@ -122,7 +126,7 @@ void AddTask_GammaConvFlow_PbPb2(
   AliAnalysisTaskGammaConvFlow *task=NULL;
   task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic));
   task->SetIsHeavyIon(isHeavyIon);
-  //task->SetIsMC(isMC);
+  task->AliAnalysisTaskGammaConvFlow::SetIsMC(isMC);
   
   cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
   if(!cutsRP) {
@@ -138,20 +142,31 @@ void AddTask_GammaConvFlow_PbPb2(
   if(UseMassSel==kTRUE)  task->SetMassWindow(MinMass,MaxMass);
   if(UseKappaSel==kTRUE) task->SetKappaWindow(MinKappa,MaxKappa);
   
-  AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
-//     POIfilterVZERO->SetEtaMin(-0.8);
-//     POIfilterVZERO->SetEtaMax(0.8);
-//     POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
-  
   if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
   AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
   mgr->ConnectOutput(task, 2, flowEvent);
-  if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
-  AddSPmethod(Form("SPVZEROQa_in_%s", uniqueID.Data()), "Qa", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
-  if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-  AddSPmethod(Form("SPVZEROQb_in_%s", uniqueID.Data()), "Qb", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
-  if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
   
+  task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
+  Double_t NFilterBinValues[NFilterBins+1];
+  if(NFilterBins > 1){
+    for(Int_t i=0;i<NFilterBins+1;i++){
+      NFilterBinValues[i] = MinFilter + i*(MaxFilter-MinFilter)/NFilterBins;
+    }
+  }else{
+    NFilterBinValues[0] = MinFilter;
+    NFilterBinValues[1] = MaxFilter;
+  }
+  
+  for(Int_t i=0;i<NFilterBins;i++){
+    AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
+    POIfilterVZERO->SetMassMin(NFilterBinValues[i]); POIfilterVZERO->SetMassMax(NFilterBinValues[i+1]);
+    
+    if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
+    AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), i), "Qa", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
+    if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
+    AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), i), "Qb", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
+    if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
+  }
   
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 1;
@@ -235,7 +250,7 @@ void AddTask_GammaConvFlow_PbPb2(
     eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 36) {
     eventCutArray[ 0] = "52300013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 37){                           
+  } else if (trainConfig == 37){
     eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 38) {
     eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
@@ -262,21 +277,23 @@ void AddTask_GammaConvFlow_PbPb2(
   } else if (trainConfig == 49) {
     eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009797005000500000000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 50) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 51) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 52) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 53) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 54) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 55) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 56) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else if (trainConfig == 57) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009097002008250400000"; mesonCutArray[ 0] = "0152506500000000";
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
+  } else if (trainConfig == 58) {
+    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "03200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;

@@ -122,7 +122,7 @@ void AliTRDPIDmatching::UserExec(Option_t *)
     {
 	Printf("ERROR: Could not get ESDInputHandler \n");
     }
-    else fESD = esdH->GetEvent();
+    else fESD = (AliESDEvent*)esdH->GetEvent();
 
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
 

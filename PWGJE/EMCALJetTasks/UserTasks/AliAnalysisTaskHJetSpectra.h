@@ -8,6 +8,7 @@ class TH2F;
 class TH2D;
 class TH1D;
 class TArrayD;
+class TArrayF;
 class THnSparse;
 class TProfile;
 class TList;
@@ -23,10 +24,8 @@ class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
 
-#include <vector>
 #include "AliAnalysisTaskEmcalJet.h"
 
-using std::vector;
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
 // Author Filip Krizek   (5.Nov. 2015)
 
@@ -72,7 +71,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
     kC0100 = 0,  
     kC020   = 1,  
     kC2050,  
-    kC50100, 
+    kC50100,
+    kCOverflow, 
     kCAll
   };
 
@@ -138,12 +138,12 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
   // ######### MAIN CALCULATION FUNCTIONS
   void    GetDeltaPt(Int_t nrho,  TArrayD &rho, Double_t *dpt, 
-                     Double_t ttPhi, Double_t ttEta, TClonesArray *trkArray, Bool_t isGen,
-                     Double_t leadingJetExclusionProbability = 0); 
+                     Double_t ttPhi, Double_t ttEta, AliParticleContainer *trkArray, Bool_t isGen);
+                     //Double_t leadingJetExclusionProbability = 0); 
                      
 
 
-  Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius, TClonesArray *trkArray, Bool_t isGen); 
+  Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius, AliParticleContainer *trkArray, Bool_t isGen); 
   //Double_t    GetPtHard();             
   Double_t    GetImpactParameter();   
   Double_t    GetSimPrimaryVertex(); 
@@ -157,13 +157,13 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   
 
    Double_t RelativePhi(Double_t mphi,Double_t vphi); 
-   Double_t EstimateBgCone(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron, Bool_t isGen=kFALSE);   
-   Double_t EstimateBgKT(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* trackTT);  // median p/A of kt jets
-   Double_t EstimateBgKTcms(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron); //CMS background
+   Double_t EstimateBgCone(AliJetContainer *jetCont, AliParticleContainer *trkArray, AliVParticle* triggerHadron, Bool_t isGen=kFALSE);   
+   Double_t EstimateBgKT(AliJetContainer *jetCont, AliParticleContainer  *trkArray, AliVParticle* trackTT);  // median p/A of kt jets
+   Double_t EstimateBgKTcms(AliJetContainer *jetCont, AliParticleContainer *trkArray, AliVParticle* triggerHadron); //CMS background
    
 
 
-  Double_t GetNcoll(Double_t centr);  //gen Ncoll for given centrality
+  //Double_t GetNcoll(Double_t centr);  //gen Ncoll for given centrality
   Double_t GetDeltaR(Double_t phi1, Double_t phi2, Double_t eta1, Double_t eta2);
   Double_t GetFractionSharedPt(AliEmcalJet *jRec, AliJetContainer *jconRec, AliEmcalJet *jGen, AliJetContainer *jconGen);
 
@@ -230,6 +230,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1D    *fhDeltaPt[kCAll][kRho-1]; //!  delta pT 
    TH1D    *fhDeltaPtEmb[kCAll][kRho-1]; //! embedded delta pT 
    TH2D    *fhDeltaPtEmb2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
+   TH1D    *fhDeltaPtEmbPerp[kCAll][kRho-1]; //! embedded delta pT (emb track is perp to TT)
+   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
    TH1D    *fhDeltaPtIncl[kCAll][kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
    TH2F    *fhKTAreaPt;//!KT jets area versus PT
@@ -275,11 +277,6 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D     *fh2TrackMultVsCent; //! track multiplicity versus centrality 
    TH2D     *fh2TrackMultVsCentTT; //! track multiplicity versus centrality
 
-   TH1D     *fhSumPt[kCAll];   //! sum of track pT 
-   TH1D     *fhSumPtTT[kCAll]; //! sum of track pT in events with TT
-   TH2D     *fh2SumPtVsCent; //! sum of track pT  versus centrality 
-   TH2D     *fh2SumPtVsCentTT; //! sum of track pT  versus centrality
-
    THnSparse  *fhZNAVzeroATrack[kCAll]; //! ZNA energy versus Vzero A mult versus track mult.
    THnSparse  *fhZNAVzeroATrackTT[kCAll]; //! ZNA energy versus Vzero mult. versus track mult. in events with TT
 
@@ -308,13 +305,19 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    Double_t fZVertexCut; // vertex cut in z 
    Double_t fCutPhi;     // azimuthal cat around TT  to exclude TTjet + recoil jet in perp rho estimate
 
-   std::vector<int> fTrigTracksGen; //list of trigger particle indices true MC
-   std::vector<int> fTrigTracks; //list pf trigger particle indices
+   AliVParticle* fTrigTracksGen[999]; //list of trigger particle indices true MC
+   AliVParticle* fTrigTracks[999]; //list pf trigger particle indices
 
-  AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
-  AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
+   Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
+   Double_t ftmpArray[2]; //tmp array
+   Double_t ftmpArrayX[3]; //tmp array
+   TArrayF fpyVtx;   //primaru vertex
+   Double_t frhovec[999]; //auxiliary array to store pT/A of kT jets
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 11); // Charged jet analysis for pA
+   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
+   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
+
+   ClassDef(AliAnalysisTaskHJetSpectra, 14); // Charged jet analysis for pA
 
 };
 #endif

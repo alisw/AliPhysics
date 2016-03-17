@@ -341,7 +341,7 @@ void AliAnalysisTaskPtFlucPbPb::UserExec(Option_t *)
       Printf("ERROR: Could not get ESDInputHandler");
     }
     else {
-      fESD = esdH->GetEvent();
+      fESD = (AliESDEvent*)esdH->GetEvent();
     }
 
     if (!fESD) {

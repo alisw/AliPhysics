@@ -1,10 +1,12 @@
 
 
 //Specific Single Track efficiency Addtask for the Dh corr analysis
+//Last ModifiedFor:  Track cutfile ON/OFF
+//Modified on: Feb16, 2016
+//Jitendra
 
-//
+
 // Particle cuts
-//
 const Double_t etamin = -0.8;
 const Double_t etamax =  0.8;
 const Double_t ptmin = 0.3;
@@ -245,36 +247,31 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
         
     }
     
-    //
     //  Track Quality cuts via ESD track cuts
-    //
     AliESDtrackCuts* QualityCuts = new AliESDtrackCuts();
-
-    Bool_t loadCutsFromFile=kTRUE;
-    TFile* fileeff=TFile::Open(effName.Data());
-    if(!fileeff->IsOpen()){
-      cout<<"*** Track efficiency input file not found/not set! Using hardcoded selection... ***"<<endl;
-      loadCutsFromFile=kFALSE;
+    if(!effName.Contains(".root")){
+        cout<<"*** Track efficiency input file not found/set! Using hardcoded selection... ***"<<endl;
+        QualityCuts->SetRequireSigmaToVertex(kFALSE);
+        QualityCuts->SetRequireITSRefit(kFALSE);
+        QualityCuts->SetRequireTPCRefit(kTRUE);
+        QualityCuts->SetMinNClustersITS(3);
+        QualityCuts->SetMinNClustersTPC(70);
+        QualityCuts->SetMaxChi2PerClusterTPC(4);
+        QualityCuts->SetEtaRange(etamin,etamax);
+        QualityCuts->SetPtRange(ptmin,ptmax);
+        QualityCuts->SetMaxDCAToVertexZ(1.0);
+        QualityCuts->SetMaxDCAToVertexXY(0.25);
+    }else {
+        cout<<"Track efficiency input file is set !"<<endl;
+        TFile* fileeff=TFile::Open(effName.Data());
+        if(!fileeff->IsOpen())cout<<"*** Not able to open file... ***"<<endl;
+        else cout<<".... File Quality Seems Ok !"<<endl;
+        AliHFAssociatedTrackCuts* HFTrackcuts = (AliHFAssociatedTrackCuts*)fileeff->Get(cutObjName.Data());
+        if(!HFTrackcuts) {::Error("AddTask: cutFile","Wrong objectname or file! Exiting..."); return NULL;}
+        QualityCuts = (AliESDtrackCuts*)HFTrackcuts->GetESDTrackCuts();
     }
     
-    if(loadCutsFromFile) {
-       AliHFAssociatedTrackCuts* HFTrackcuts = (AliHFAssociatedTrackCuts*)fileeff->Get(cutObjName.Data());
-       if(!HFTrackcuts) {::Error("AddTask","Wrong settings in the cut file! Exiting..."); return NULL;}
-       QualityCuts = (AliESDtrackCuts*)HFTrackcuts->GetESDTrackCuts();                    
-    }
-    else {
-      QualityCuts->SetRequireSigmaToVertex(kFALSE);
-      QualityCuts->SetRequireITSRefit(kFALSE);
-      QualityCuts->SetRequireTPCRefit(kTRUE);
-      QualityCuts->SetMinNClustersITS(3);
-      QualityCuts->SetMinNClustersTPC(70);
-      QualityCuts->SetMaxChi2PerClusterTPC(4);
-      QualityCuts->SetEtaRange(etamin,etamax);
-      QualityCuts->SetPtRange(ptmin,ptmax);
-      QualityCuts->SetMaxDCAToVertexZ(1.0);
-      QualityCuts->SetMaxDCAToVertexXY(0.25);
-    }
-
+    
     //CREATE THE TASK
     printf("CREATE CF Single track task\n");
     

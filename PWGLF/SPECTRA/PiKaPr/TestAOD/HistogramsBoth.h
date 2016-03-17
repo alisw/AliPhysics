@@ -128,7 +128,12 @@ namespace AliSpectraNameSpaceBoth
       
       kHistGenMulvsRawMul,
 
-      kHistDoubleCounts,			
+      kHistDoubleCounts,
+
+      kHistNSigPionPtTOFmissmatch,                              
+      kHistNSigKaonPtTOFmissmatch, 
+      kHistNSigProtonPtTOFmissmatch,           
+      kHistNSigPtTOFmissmatch=kHistNSigProtonPtTOFmissmatch, 				
                                 
       kNHist,                                   // Total number of histos
    };  // Type of events plotted in Pt Histogram

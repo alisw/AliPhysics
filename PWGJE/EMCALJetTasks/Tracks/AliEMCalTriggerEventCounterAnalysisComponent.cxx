@@ -19,6 +19,7 @@
 #include <TArrayD.h>
 #include <TAxis.h>
 #include <THnSparse.h>
+#include <THistManager.h>
 
 #include "AliVEvent.h"
 #include "AliVVertex.h"
@@ -26,7 +27,6 @@
 #include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCalTriggerEventCounterAnalysisComponent.h"
 
 /// \cond CLASSIMP

@@ -9,6 +9,7 @@
 #include <AliLog.h>
 #include <TGrid.h>
 #include <THnSparse.h>
+#include <AliPicoTrack.h>
 
 #include "AliJetEmbeddingTask.h"
 
@@ -18,11 +19,9 @@ ClassImp(AliJetEmbeddingTask)
 AliJetEmbeddingTask::AliJetEmbeddingTask() : 
   AliJetModelBaseTask("AliJetEmbeddingTask", kTRUE),
   fMassless(kFALSE),
-  fMassFromDistr(kFALSE),
   fNeutralFraction(0),
   fNeutralMass(0.135),
   fMass(0.1396),
-  fHMassDistrib(0),
   fPathMinputFile(""),
   fPathpTinputFile(""),
   fMinputName(""),
@@ -46,7 +45,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fhPartJet(0),
   fhEtaPart(0),
   fhPhiPart(0),
-  fhTreeEntriesUsed(0)
+  fhTreeEntriesUsed(0),
+  fNTreeEntries(0)
   
 {
   // Default constructor.
@@ -58,11 +58,9 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
 AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) : 
   AliJetModelBaseTask(name, kTRUE),
   fMassless(kFALSE),
-  fMassFromDistr(kFALSE),
   fNeutralFraction(0),
   fNeutralMass(0.135),
   fMass(0.1396),
-  fHMassDistrib(0),
   fPathMinputFile(""),
   fPathpTinputFile(""),
   fMinputName(""),
@@ -86,7 +84,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fhPartJet(0),
   fhEtaPart(0),
   fhPhiPart(0),
-  fhTreeEntriesUsed(0)
+  fhTreeEntriesUsed(0),
+  fNTreeEntries(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -122,12 +121,12 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
       fTreeJet4Vect->SetBranchAddress(fBranchJDetName, &detjet);
       fTreeJet4Vect->GetEntry(0);
       fTreeJet4Vect->Show();
-      Int_t nentries = fTreeJet4Vect->GetEntries();
-      fhTreeEntriesUsed = new TH1F("fhTreeEntriesUsed", "Entries;Entry in TTree", nentries, 0, nentries-1);
+      fNTreeEntries = fTreeJet4Vect->GetEntries();
+      fhTreeEntriesUsed = new TH1F("fhTreeEntriesUsed", "Entries;Entry in TTree", fNTreeEntries, 0, fNTreeEntries-1);
       fOutput->Add(fhTreeEntriesUsed);
       
-      fCurrentEntry = gRandom->Integer(nentries); //in each worker it starts from a different entry
-      
+      fCurrentEntry = gRandom->Integer(fNTreeEntries); //in each worker it starts from a different entry
+      Printf("Entries %lld, start from %d", fNTreeEntries, fCurrentEntry);
    }
    
    if(!fPathMinputFile.IsNull() && fPathpTinputFile.IsNull()){
@@ -152,7 +151,7 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    PostData(2, fInput);
    
    const Int_t ndim = 4;
-   Int_t nbins = 60, mind = -30, maxd = 30, minm = -10, maxm = 20, minpt = -20, maxpt = 120;
+   Int_t nbins = 60, mind = -30, maxd = 30, minm = 0, maxm = 40, minpt = 0, maxpt = 120;
    const Int_t nbinshnsp[ndim] = {nbins, nbins, nbins, nbins};  
    const Double_t minhnsp[ndim] = {(Double_t)mind, (Double_t)mind, (Double_t)minm, (Double_t)minpt};
    const Double_t maxhnsp[ndim] = {(Double_t)maxd, (Double_t)maxd, (Double_t)maxm, (Double_t)maxpt};
@@ -175,7 +174,6 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
 void AliJetEmbeddingTask::Run() 
 {
   // Embed particles.
-  
   if (fNClusters > 0 && fOutClusters) {
     if (fCopyArray) 
       CopyClusters();
@@ -199,6 +197,7 @@ void AliJetEmbeddingTask::Run()
        }
        // Add track from tree of 4-vectors (jet reco) and save the particle level somewhere
        if(fFromTree){
+       	  
        	  if(!fTreeJet4Vect || fBranchJDetName.IsNull()) {
        	     AliFatal(Form("Tree or branch name not found"));
        	  }
@@ -208,9 +207,9 @@ void AliJetEmbeddingTask::Run()
        	  //fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet, &bDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJParName.Data(), &jetPar);
-       	  Int_t nentries = fTreeJet4Vect->GetEntries();
+       	  
        	  Double_t pTemb = -1;
-       	  if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;
        	     AliWarning("Starting from first entry again");
@@ -220,49 +219,51 @@ void AliJetEmbeddingTask::Run()
        	  
        	  // selected pT range 
        	  if((fPtMin != 0 && fPtMax != 0) && !fRandomEntry) {
-       	     while(!(pTemb > fPtMin && pTemb < fPtMax)){
+       	     Int_t countWhile = 0;
+       	     while(!(pTemb > fPtMin && pTemb < fPtMax) && countWhile < fNTreeEntries){
        	     	fCurrentEntry++;
-       	     	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	     	if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	else {
        	     	   fCurrentEntry = 0;
        	     	   AliWarning("Starting from first entry again");
        	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	}
        	     	pTemb = jetDet->Pt();
+       	     	countWhile++;
        	     }
        	  }
        	  // exclude a fraction of the entries -- doesn't work very well
-       	  if(fRandomEntry){
-  
-     	     if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     else {
-       	     	fCurrentEntry = 0;
-       	     	AliWarning("Starting from first entry again");
-       	     	fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     }
-       	     pTemb = jetDet->Pt();
-       	     
-       	     Float_t downscl = GetDownscalinigFactor();
-       	     Float_t random = gRandom->Rndm();
-       	     
-       	     while (random > downscl){
-       	     	fCurrentEntry++;
-       	     	random = gRandom->Rndm();
-       	     	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     	else {
-       	     	   fCurrentEntry = 0;
-       	     	   AliWarning("Starting from first entry again");
-       	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	     	}
-       	     	pTemb = jetDet->Pt();
-       	     	if(pTemb < fPtRanges[fCurrentBin]) {
-       	     	   random = gRandom->Rndm();
-       	     	   
-       	     	}
-       	     	   
-       	     }
-       	     
-       	  }
+       	  //if(fRandomEntry){
+          //
+     	  //   if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   else {
+       	  //   	fCurrentEntry = 0;
+       	  //   	AliWarning("Starting from first entry again");
+       	  //   	fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   }
+       	  //   pTemb = jetDet->Pt();
+       	  //   
+       	  //   Float_t downscl = GetDownscalinigFactor();
+       	  //   Float_t random = gRandom->Rndm();
+       	  //   
+       	  //   while (random > downscl){
+       	  //   	fCurrentEntry++;
+       	  //   	random = gRandom->Rndm();
+       	  //   	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   	else {
+       	  //   	   fCurrentEntry = 0;
+       	  //   	   AliWarning("Starting from first entry again");
+       	  //   	   fTreeJet4Vect->GetEntry(fCurrentEntry);
+       	  //   	}
+       	  //   	pTemb = jetDet->Pt();
+       	  //   	if(pTemb < fPtRanges[fCurrentBin]) {
+       	  //   	   random = gRandom->Rndm();
+       	  //   	   
+       	  //   	}
+       	  //   	   
+       	  //   }
+       	  //   
+       	  //}
 
        	  fhTreeEntriesUsed->Fill(fCurrentEntry);
        	  // Add the track that complies with the settings 
@@ -289,14 +290,8 @@ void AliJetEmbeddingTask::Run()
        	     }
        	  }
        	  if(fMassless) mass = 0.;
-       	  if(fMassFromDistr) {
-       	     if(fHMassDistrib)
-       	     	mass = fHMassDistrib->GetRandom();
-       	     else {
-       	     	AliError(Form("Template distribution for mass of track embedding not found, use %f", fMass));
-       	     	mass = fMass;
-       	     }
-       	  }
+       	  if(fMassFromDistr) mass = -999;
+       	  
        	  AddTrack(-999,-999,-999,0,0,0,0,kFALSE,0,charge,mass);
        }
     }
@@ -324,79 +319,7 @@ Float_t AliJetEmbeddingTask::GetDownscalinigFactor(){
    }
    return fDownscale[fCurrentBin];
 }
-//________________________________________________________________________
 
-void AliJetEmbeddingTask::SetMassDistribution(TH1F *hM)  {
-   if(!hM){
-      AliError("Null histogram for mass distribution");
-      return;
-   }
-   fMassFromDistr = kTRUE; 
-   fHMassDistrib = hM;
-   AliInfo("Input mass distribution set");
-   
-   return;
-}
-//________________________________________________________________________
-void AliJetEmbeddingTask::SetMassDistributionFromFile(TString filename, TString histoname){
-   
-   if(filename.Contains("alien")) {
-      TGrid::Connect("alien://");
-   }
-   TFile *f = TFile::Open(filename);
-   if(!f){
-      AliFatal(Form("File %s not found, cannot SetMassDistribution", filename.Data()));
-      return;
-   }
-   
-   TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
-   if(!h) {
-      AliError("Input file for Mass not found");
-      f->ls();
-   }
-   SetMassDistribution(h);
-   
-   //f->Close();
-   //delete f;
-   
-   return;
-
-}
-
-//________________________________________________________________________
-
-void AliJetEmbeddingTask::SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT){
-   SetMassDistributionFromFile(filenameM, histonameM);
-   SetpTDistributionFromFile(filenamepT, histonamepT);
-   return;
-}
-
-//________________________________________________________________________
-void AliJetEmbeddingTask::SetpTDistributionFromFile(TString filename, TString histoname){
-   
-   if(filename.Contains("alien")) {
-      TGrid::Connect("alien://");
-   }
-   TFile *f = TFile::Open(filename);
-   if(!f){
-      AliFatal(Form("File %s not found, cannot SetpTDistribution", filename.Data()));
-      return;
-   }
-
-   TH1F* h = dynamic_cast<TH1F*> (f->Get(histoname));
-   if(!h) {
-      AliError("Input file for pT not found");
-      f->ls();
-   }
-
-   AliJetModelBaseTask::SetPtSpectrum(h);
-
-   //f->Close();
-   //delete f;
-
-   return;
-
-}
 
 //________________________________________________________________________
 void AliJetEmbeddingTask::SetTree(TTree *tree)  {

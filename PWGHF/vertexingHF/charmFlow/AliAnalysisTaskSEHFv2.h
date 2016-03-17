@@ -33,7 +33,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
 
  public:
 
-  enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi}; //more particles can be added
+  enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC}; //Event plane to be calculated in the task
   //  enum SubEvents{kFullTPC,kPosTPC,kNegTPC,kSingleV0Side}; //Sub-events for V0 EP
   
@@ -93,6 +93,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD);
+  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD);
   Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, const TVector2* q,AliEventplane *pl,const TVector2* qsub1,const TVector2* qsub2);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
 

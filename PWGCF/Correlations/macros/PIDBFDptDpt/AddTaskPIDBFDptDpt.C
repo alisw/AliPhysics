@@ -1,91 +1,108 @@
-// Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
-// Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
-//           system:  0: PbPb                 1: pPb
-//      singlesOnly:  0: full correlations    1: singles only
-//       useWeights:  0: no                   1: yes
-// centralityMethod:  3: track count  4: V0 centrality  7: V0A centrality for pPb
-//        chargeSet:  0: ++    1: +-    2: -+    3: --
+//  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
+//  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
+//
+//   PbPb 10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
+//   pPb  13:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).     
+//   pp   10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
-(int    system                  = 0,
- int    singlesOnly             = 0,
- int    useWeights              = 0,
- int    useRapidity             = 1,
- int    centralityMethod        = 4,
- int    chargeSet               = 1,
- double zMin                    = -10.,
- double zMax                    =  10.,
- int    trackFilterBit          = 1, // Global tracks =1; TPConly = 128; Hybrid = 272.
- int    nClusterMin             = 70,
- double eta1Min                 = -0.8,
- double eta1Max                 =  0.8,
- double eta2Min                 = -0.8,
- double eta2Max                 =  0.8,
+(
+ TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ TString System                 = "PbPb",     // "PbPb", "pPb", "pp"
+ int    CentralityGroup         =  1,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    singlesOnly             =  1,   // 0: full correlations    1: singles only
+ int    useWeights              =  0,   // 0: no                   1: yes  
+ int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
+ double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
+ double zMax                    =  6.,  // set vertexZ cut   
+ double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
+ int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
+ int    nClusterMin             =  70,
+ double ptMin                   =  0.2,
+ double ptMax                   =  2.0,
+ double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
+ double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
+ double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
+ double eta2Max                 =  0.8, // set y2max acturally if useRapidity==1
+ double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  4,
- Bool_t trigger                 = kFALSE,
- int particleID                 = 1, // pion=0, kaon=1, proton=2
- double nSigmaCut               = 3.0,
- int pidType                    = 2, // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
- Bool_t requestTOFPID           = 1,
- double ptTOFPID                = 0.5,
- Bool_t isMC                    = 0,
+ int nCentrality                =  1,
+ int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
+ double nSigmaCut               =  3.0,
+ int pidType                    =  2,   // kNSigmaTPC=0, kNSigmaTOF=1, kNSigmaTPCTOF=2
+ Bool_t requestTOFPID           =  1,
+ double ptTOFPID                =  0.5,
+ Bool_t isMC                    =  0,
  const char* taskname           = "ChPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/BF_DptDpt_PID_Lego/BF_DptDpt_PID_Lego_Stage1_Step2.root" )
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/Kaon_08y16_6vZ24_Cent8_G086_Pos_S1S2/Kaon_08y16_6vZ24_Cent8_G086_Pos_S1S2.root" )
 
 {
   // Set Default Configuration of this analysis
   // ==========================================
+  int    useRapidity            = 1; // 0: no      1: yes
+  Bool_t NoResonances           = kTRUE; // only for MCAOD
+  Bool_t NoElectron             = kTRUE; // only for MCAOD
   int    debugLevel             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
-    
-  //int    nCentrality;
+  int    centralityMethod       = 4; 
+  Bool_t trigger                = kFALSE;
+  
+  if      ( System == "PbPb" )    { centralityMethod = 4; trigger = kFALSE; }
+  else if ( System == "pPb" )     { centralityMethod = 7; trigger = kTRUE;  }
+  else if ( System == "pp" )      { centralityMethod = 3; trigger = kFALSE; }
+  else    return 0;
+  
   double minCentrality[10];
   double maxCentrality[10];
-    
-  if (system==0) // PbPb
-    {
-      if (centralityMethod == 4)
-        {
-	  minCentrality[0] = 0.0;    maxCentrality[0]  = 20.0;
-	  minCentrality[1] = 20.0;   maxCentrality[1]  = 40.;
-	  minCentrality[2] = 40.0;   maxCentrality[2]  = 60.;
-	  minCentrality[3] = 60.0;   maxCentrality[3]  = 80.;
-        }
-      else
-        {
-	  return 0;
-        }
-    }
-  else if (system==1) // PbPb  //splited to take care of memory problem
-    {
-      if (centralityMethod == 4)
-        {
-	  //minCentrality[0] = 30.0;   maxCentrality[0]  = 40.0;
-	  //minCentrality[1] = 50.0;   maxCentrality[1]  = 60.0;
-	  //minCentrality[2] = 70.0;   maxCentrality[2]  = 80.0;
-            
-	  minCentrality[0] = 10.0;   maxCentrality[0]  = 20.0;
-	  minCentrality[1] = 40.0;   maxCentrality[1]  = 50.0;
-	  minCentrality[2] = 60.0;   maxCentrality[2]  = 70.0;
-        }
-      else
-        {
-	  return 0;
-        }
-    }
-  else
-    {
-      return 0;
-    }
-  double ptMin                  =  0.2;
-  double ptMax                  =  2.0;
+
+  if ( CentralityGroup == 1 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+      minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+      minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+      minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+      minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+      minCentrality[5] = 50.;     maxCentrality[5]  = 60.;
+      minCentrality[6] = 60.;     maxCentrality[6]  = 70.;
+      minCentrality[7] = 70.;     maxCentrality[7]  = 80.; }
+  else if ( CentralityGroup == 2 )
+    { minCentrality[0] = 40.;     maxCentrality[0]  = 50.;
+      minCentrality[1] = 50.;     maxCentrality[1]  = 60.;
+      minCentrality[2] = 60.;     maxCentrality[2]  = 70.;
+      minCentrality[3] = 70.;     maxCentrality[3]  = 80.; }
+  else if ( CentralityGroup == 3 )
+    { minCentrality[0] = 20.;     maxCentrality[0]  = 30.;
+      minCentrality[1] = 30.;     maxCentrality[1]  = 40.; }
+  else if ( CentralityGroup == 4 )
+    { minCentrality[0] = 60.;     maxCentrality[0]  = 70.;
+      minCentrality[1] = 70.;     maxCentrality[1]  = 80.; }
+  else if ( CentralityGroup == 5 )
+    { minCentrality[0] = 10.;     maxCentrality[0]  = 20.; }
+  else if ( CentralityGroup == 6 )
+    { minCentrality[0] = 30.;     maxCentrality[0]  = 40.; }
+  else if ( CentralityGroup == 7 )
+    { minCentrality[0] = 50.;     maxCentrality[0]  = 60.; }
+  else if ( CentralityGroup == 8 )
+    { minCentrality[0] = 70.;     maxCentrality[0]  = 80.; }
+  else if ( CentralityGroup == 9 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 20.;
+      minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
+      minCentrality[2] = 40.;     maxCentrality[2]  = 60.;
+      minCentrality[3] = 60.;     maxCentrality[3]  = 80.; }
+  else if ( CentralityGroup == 10 )
+    { minCentrality[0] = 40.;     maxCentrality[0]  = 60.;
+      minCentrality[1] = 60.;     maxCentrality[1]  = 80.; }
+  else if ( CentralityGroup == 11 )
+    { minCentrality[0] = 20.;     maxCentrality[0]  = 40.; }
+  else if ( CentralityGroup == 12 )
+    { minCentrality[0] = 60.;     maxCentrality[0]  = 80.; }
+  else    return 0;
+  
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
   int    requestedCharge1       =  1; //default
@@ -128,7 +145,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     
   for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     {
-      switch (chargeSet)
+      switch ( chargeSet )
         {
 	case 0: part1Name = "P_"; part2Name = "P_"; requestedCharge1 =  1; requestedCharge2 =  1; sameFilter = 1;   break;
 	case 1: part1Name = "P_"; part2Name = "M_"; requestedCharge1 =  1; requestedCharge2 = -1; sameFilter = 0;   break;
@@ -172,18 +189,17 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       baseName     +=  "_";
       baseName     +=  particleID;
       listName     =   baseName;
-      taskName     =   baseName;
-        
+      taskName     =   baseName;        
         
       outputHistogramFileName = baseName;
-      if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
+      //if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";      
         
       TFile  * inputFile  = 0;
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
       TH3F   * weight_2   = 0;
-      if (useWeights)
+      if ( useWeights )
         {
 	  TGrid::Connect("alien:");
 	  inputFile = TFile::Open(inputHistogramFileName,"OLD");
@@ -235,6 +251,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
                 }
             }
         }
+      
       task = new  AliAnalysisTaskPIDBFDptDpt(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      );
@@ -246,22 +263,24 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetRejectPairConversion(rejectPairConversion);
       task->SetVertexZMin(          zMin            );
       task->SetVertexZMax(          zMax            );
-      task->SetVertexXYMin(         -1.            );
-      task->SetVertexXYMax(          1.            );
+      task->SetVertexZWidth(        vZwidth         );
+      task->SetEtaWidth(        etaBinWidth         );
+      task->SetVertexXYMin(         -1.             );
+      task->SetVertexXYMax(          1.             );
       task->SetCentralityMethod(    centralityMethod);
       task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
       task->SetPtMin1(              ptMin           );
       task->SetPtMax1(              ptMax           );
-      task->SetEtaMin1(             eta1Min          );
-      task->SetEtaMax1(             eta1Max          );
+      task->SetEtaMin1(             eta1Min         ); // SetYMin1 acturally
+      task->SetEtaMax1(             eta1Max         ); // SetYMax1 acturally
       task->SetPtMin2(              ptMin           );
       task->SetPtMax2(              ptMax           );
-      task->SetEtaMin2(             eta2Min          );
-      task->SetEtaMax2(             eta2Max          );
+      task->SetEtaMin2(             eta2Min         ); // SetYMin2 acturally
+      task->SetEtaMax2(             eta2Max         ); // SetYMax2 acturally
       task->SetDcaZMin(             dcaZMin         );
       task->SetDcaZMax(             dcaZMax         );
       task->SetDcaXYMin(            dcaXYMin        );
-      task->SetDcaXYMax(            dcaXYMax        ); //checking by prp
+      task->SetDcaXYMax(            dcaXYMax        );
       task->SetDedxMin(             dedxMin         );
       task->SetDedxMax(             dedxMax         );
       task->SetNClusterMin(         nClusterMin     );
@@ -270,7 +289,11 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetRequestedCharge_2(   requestedCharge2);
       task->SetWeigth_1(            weight_1        );
       task->SetWeigth_2(            weight_2        );
-      task->SetParticleSpecies(       particleID    );
+      task->SetParticleSpecies(     particleID      );
+      task->SetAnalysisType(        AnalysisDataType);
+      task->SetSystemType(          System          );
+      task->SetResonancesCut(       NoResonances    );
+      task->SetElectronCut(         NoElectron      );
         
       // assign initial values to AliHelperPID object
       AliHelperPID* helperpid = new AliHelperPID();
@@ -282,8 +305,8 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 
       task->SetHelperPID( helperpid );
   
-      if(trigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
-      else task->SelectCollisionCandidates(AliVEvent::kMB);
+      if(trigger) task -> SelectCollisionCandidates(AliVEvent::kINT7); //pPb
+      else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb & pp
         
       cout << "Creating task output container" << endl;
         
@@ -292,18 +315,13 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 							     AliAnalysisManager::kOutputContainer,
 							     Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname));
 
-
       cout << "Add task to analysis manager and connect it to input and output containers" << endl;
         
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
       analysisManager->ConnectOutput(task,  0, taskOutputContainer );
-
-      //cout << "Task added ...." << endl;
         
       iTask++;
-
-    }        
-    
+    }            
   return task;
 }

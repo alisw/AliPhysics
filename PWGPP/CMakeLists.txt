@@ -23,7 +23,8 @@ add_subdirectory(EMCAL)
 add_subdirectory(Alignment)
 
 #Module
-set (MODULE PWGPP)
+set(MODULE PWGPP)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGPP)
@@ -214,7 +215,9 @@ set ( SRCS18
   AD/AliAnalysisTaskADQA.cxx
   AD/AliAnalysisTaskADVVQA.cxx
   AD/AliAnalysisTaskADPilot.cxx
+  AD/ADESDFriendUtils.cxx
   AD/AliAnalysisTaskADCalib.cxx
+  AD/AliAnalysisTaskADChargeMonitoring.cxx
   )  
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19 
@@ -334,6 +337,7 @@ install(FILES AD/AddTaskADQA.C
 	      AD/AddTaskADVVQA.C 
 	      AD/AddTaskADPilot.C
 	      AD/AddTaskADCalib.C
+	      AD/AddTaskADChargeMonitoring.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C 
  	      AD/trending/MakeTrendingADQA.C 
@@ -345,6 +349,7 @@ install(FILES VZERO/trending/DrawTrendingV0QA.C
 	      DESTINATION PWGPP/VZERO/trending)
 install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
 install(DIRECTORY MUON/dep DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.config")
 install(DIRECTORY EVS DESTINATION PWGPP)
 install(DIRECTORY scripts DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/scripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)

@@ -181,7 +181,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   }
 
   SetKinkIndexes((int*)t.fKinkIndexes);
-  SetPrimaryVertex((double*)t.fVertex);
+  SetPrimaryVertex(t.fVertex);
 }
 
 AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
@@ -705,7 +705,7 @@ void                   AliFemtoTrack::SetGlobalEmissionPoint(Double_t aRx, Doubl
 //_______________________
 
 
-void AliFemtoTrack::SetPrimaryVertex(double* vertex)
+void AliFemtoTrack::SetPrimaryVertex(const double* vertex)
 {
   fVertex[0] = vertex[0];
   fVertex[1] = vertex[1];

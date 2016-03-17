@@ -35,7 +35,9 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
    *    20.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
    *    21.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings)
    *    22.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE
-   *   
+   *    23.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE
+   *    24.) FullSinul is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins EffMatrix
+   *    25.) FullSinul is used: Tight Cuts         16EtaBin_150pBins_9centBins EffMatrix
    */
   cout << " ===== In the AddTask_marsland_EbyeIterPID ===== " << endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -101,6 +103,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   coutput9  = mgr->CreateContainer("fTreedEdxCheck",TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput10 = mgr->CreateContainer("fTreeBayes",    TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput11 = mgr->CreateContainer("fTreeCuts",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
+  coutput12 = mgr->CreateContainer("dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
@@ -112,6 +115,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   mgr->ConnectOutput (task,  9, coutput9);
   mgr->ConnectOutput (task,  10, coutput10);
   mgr->ConnectOutput (task,  11, coutput11);
+  mgr->ConnectOutput (task,  12, coutput12);
   cout << " === Containers are ready === " << endl;
   return task;
 }

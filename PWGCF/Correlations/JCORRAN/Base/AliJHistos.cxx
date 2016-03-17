@@ -51,16 +51,22 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhDphiAssoc2D(),
   fhDphiDetaKlong(),
   fhDphiDetaKlongR(),
+  fhDphiDetaKlongPhi(),
   fhDphiDetaXe(),
   fhDphiDetaXeR(),
+  fhDphiDetaXePhi(),
   fhDphiDetaPta(),
   fhDphiDetaPtaR(),
+  fhDphiDetaPtaPhi(),
   fhBgAssocKlong(),
   fhBgAssocKlongR(),
+  fhBgAssocKlongPhi(),
   fhBgAssocXe(),
   fhBgAssocXeR(),
+  fhBgAssocXePhi(),
   fhBgAssocPta(),
   fhBgAssocPtaR(),
+  fhBgAssocPtaPhi(),
   fhInvariantMassXe(),
   fhInvariantMassKlong(),
   fhInvariantMassPta(),
@@ -116,30 +122,39 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhJT(),
   fhJTBg(),
   fhJTBgR(),
+  fhJTBgPhi(),
   fhJTLikeSign(),
   fhJTBgLikeSign(),
   fhJTBgRLikeSign(),
+  fhJTBgPhiLikeSign(),
   fhJTUnlikeSign(),
   fhJTBgUnlikeSign(),
   fhJTBgRUnlikeSign(),
+  fhJTBgPhiUnlikeSign(),
   fhJTKlong(),
   fhJTKlongBg(),
   fhJTKlongBgR(),
+  fhJTKlongBgPhi(),
   fhJTKlongLikeSign(),
   fhJTKlongBgLikeSign(),
   fhJTKlongBgRLikeSign(),
+  fhJTKlongBgPhiLikeSign(),
   fhJTKlongUnlikeSign(),
   fhJTKlongBgUnlikeSign(),
   fhJTKlongBgRUnlikeSign(),
+  fhJTKlongBgPhiUnlikeSign(),
   fhJTPta(),
   fhJTPtaBg(),
   fhJTPtaBgR(),
+  fhJTPtaBgPhi(),
   fhJTPtaLikeSign(),
   fhJTPtaBgLikeSign(),
   fhJTPtaBgRLikeSign(),
+  fhJTPtaBgPhiLikeSign(),
   fhJTPtaUnlikeSign(),
   fhJTPtaBgUnlikeSign(),
   fhJTPtaBgRUnlikeSign(),
+  fhJTPtaBgPhiUnlikeSign(),
   fHmgInclusive(NULL),
   fhIetaTriggFromFile(),
   fhIetaAssocFromFile(),
@@ -330,16 +345,22 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhDphiAssoc2D(obj.fhDphiAssoc2D),
   fhDphiDetaKlong(obj.fhDphiDetaKlong),
   fhDphiDetaKlongR(obj.fhDphiDetaKlongR),
+  fhDphiDetaKlongPhi(obj.fhDphiDetaKlongPhi),
   fhDphiDetaXe(obj.fhDphiDetaXe),
   fhDphiDetaXeR(obj.fhDphiDetaXeR),
+  fhDphiDetaXePhi(obj.fhDphiDetaXePhi),
   fhDphiDetaPta(obj.fhDphiDetaPta),
   fhDphiDetaPtaR(obj.fhDphiDetaPtaR),
+  fhDphiDetaPtaPhi(obj.fhDphiDetaPtaPhi),
   fhBgAssocKlong(obj.fhBgAssocKlong),
   fhBgAssocKlongR(obj.fhBgAssocKlongR),
+  fhBgAssocKlongPhi(obj.fhBgAssocKlongPhi),
   fhBgAssocXe(obj.fhBgAssocXe),
   fhBgAssocXeR(obj.fhBgAssocXeR),
+  fhBgAssocXePhi(obj.fhBgAssocXePhi),
   fhBgAssocPta(obj.fhBgAssocPta),
   fhBgAssocPtaR(obj.fhBgAssocPtaR),
+  fhBgAssocPtaPhi(obj.fhBgAssocPtaPhi),
   fhInvariantMassXe(obj.fhInvariantMassXe),
   fhInvariantMassKlong(obj.fhInvariantMassKlong),
   fhInvariantMassPta(obj.fhInvariantMassPta),
@@ -395,30 +416,39 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhJT(obj.fhJT),
   fhJTBg(obj.fhJTBg),
   fhJTBgR(obj.fhJTBgR),
+  fhJTBgPhi(obj.fhJTBgPhi),
   fhJTLikeSign(obj.fhJTLikeSign),
   fhJTBgLikeSign(obj.fhJTBgLikeSign),
   fhJTBgRLikeSign(obj.fhJTBgRLikeSign),
+  fhJTBgPhiLikeSign(obj.fhJTBgPhiLikeSign),
   fhJTUnlikeSign(obj.fhJTUnlikeSign),
   fhJTBgUnlikeSign(obj.fhJTBgUnlikeSign),
   fhJTBgRUnlikeSign(obj.fhJTBgRUnlikeSign),
+  fhJTBgPhiUnlikeSign(obj.fhJTBgPhiUnlikeSign),
   fhJTKlong(obj.fhJTKlong),
   fhJTKlongBg(obj.fhJTKlongBg),
   fhJTKlongBgR(obj.fhJTKlongBgR),
+  fhJTKlongBgPhi(obj.fhJTKlongBgPhi),
   fhJTKlongLikeSign(obj.fhJTKlongLikeSign),
   fhJTKlongBgLikeSign(obj.fhJTKlongBgLikeSign),
   fhJTKlongBgRLikeSign(obj.fhJTKlongBgRLikeSign),
+  fhJTKlongBgPhiLikeSign(obj.fhJTKlongBgPhiLikeSign),
   fhJTKlongUnlikeSign(obj.fhJTKlongUnlikeSign),
   fhJTKlongBgUnlikeSign(obj.fhJTKlongBgUnlikeSign),
   fhJTKlongBgRUnlikeSign(obj.fhJTKlongBgRUnlikeSign),
+  fhJTKlongBgPhiUnlikeSign(obj.fhJTKlongBgPhiUnlikeSign),
   fhJTPta(obj.fhJTPta),
   fhJTPtaBg(obj.fhJTPtaBg),
   fhJTPtaBgR(obj.fhJTPtaBgR),
+  fhJTPtaBgPhi(obj.fhJTPtaBgPhi),
   fhJTPtaLikeSign(obj.fhJTPtaLikeSign),
   fhJTPtaBgLikeSign(obj.fhJTPtaBgLikeSign),
   fhJTPtaBgRLikeSign(obj.fhJTPtaBgRLikeSign),
+  fhJTPtaBgPhiLikeSign(obj.fhJTPtaBgPhiLikeSign),
   fhJTPtaUnlikeSign(obj.fhJTPtaUnlikeSign),
   fhJTPtaBgUnlikeSign(obj.fhJTPtaBgUnlikeSign),
   fhJTPtaBgRUnlikeSign(obj.fhJTPtaBgRUnlikeSign),
+  fhJTPtaBgPhiUnlikeSign(obj.fhJTPtaBgPhiUnlikeSign),
   fHmgInclusive(obj.fHmgInclusive),
   fhIetaTriggFromFile(),
   fhIetaAssocFromFile(),
@@ -508,7 +538,8 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fnUE(obj.fnUE),
   fnUEfar(obj.fnUEfar),
   fLowRange(obj.fLowRange),
-  fHighRange(obj.fHighRange)
+  fHighRange(obj.fHighRange),
+  fenable2DHistos(obj.fenable2DHistos)
 {
     // copy constructor
     JUNUSED(obj);
@@ -746,6 +777,10 @@ void AliJHistos::CreateAzimuthCorrHistos()
     fhJTBgR
         << TH1D( "hJTBgR", "",  nJT, logBinsJt) 
         <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
+  
+    fhJTBgPhi
+        << TH1D( "hJTBgPhi", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
     fhJTLikeSign
         << TH1D( "hJTLikeSign", "",  nJT, logBinsJt) 
@@ -758,6 +793,10 @@ void AliJHistos::CreateAzimuthCorrHistos()
     fhJTBgRLikeSign
         << TH1D( "hJTBgRLikeSign", "",  nJT, logBinsJt) 
         <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
+  
+    fhJTBgPhiLikeSign
+        << TH1D( "hJTBgPhiLikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
     fhJTUnlikeSign
         << TH1D( "hJTUnlikeSign", "",  nJT, logBinsJt) 
@@ -770,6 +809,10 @@ void AliJHistos::CreateAzimuthCorrHistos()
     fhJTBgRUnlikeSign
         << TH1D( "hJTBgRUnlikeSign", "",  nJT, logBinsJt) 
         <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
+  
+    fhJTBgPhiUnlikeSign
+        << TH1D( "hJTBgPhiUnlikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
     fhBgAssocXe
         << TH1D( "hBgAssocXe", "",  fnUE, fUEBinsx) 
@@ -778,549 +821,624 @@ void AliJHistos::CreateAzimuthCorrHistos()
     fhBgAssocXeR
         << TH1D( "hBgAssocXeR", "",  fnUE, fUEBinsx) 
         <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
+  
+    fhBgAssocXePhi
+        << TH1D( "hBgAssocXePhi", "",  fnUE, fUEBinsx)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
-	if(fenable2DHistos) {
-		fhDphiDetaXe
-			<< TH2D( "hDphiDetaXe", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2) 
-			<<  fCentBin << fEtaGapBin << fPTtBin << fXEBin  << "END";
+    if(fenable2DHistos){
+      
+      fhDphiDetaXe
+          << TH2D( "hDphiDetaXe", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fEtaGapBin << fPTtBin << fXEBin  << "END";
 
-		fhDphiDetaXeR
-			<< TH2D( "hDphiDetaXeR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2) 
-			<<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
-	}
+      fhDphiDetaXeR
+          << TH2D( "hDphiDetaXeR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
+  
+      fhDphiDetaXePhi
+          << TH2D( "hDphiDetaXePhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
-	// Histograms in klong bins
+    }
+  
+    // Histograms in klong bins
 
-	fhJTKlong
-		<< TH1D( "hJTKlong", "",  nJT, logBinsJt) 
-		<<  fTypBin << fCentBin << fPTtBin << fKLongBin  << "END";
+    fhJTKlong
+        << TH1D( "hJTKlong", "",  nJT, logBinsJt) 
+        <<  fTypBin << fCentBin << fPTtBin << fKLongBin  << "END";
+    
+    fhJTKlongBg
+        << TH1D( "hJTKlongBg", "",  nJT, logBinsJt) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongBg
-		<< TH1D( "hJTKlongBg", "",  nJT, logBinsJt) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
+    fhJTKlongBgR
+        << TH1D( "hJTKlongBgR", "",  nJT, logBinsJt) 
+        <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+  
+    fhJTKlongBgPhi
+        << TH1D( "hJTKlongBgPhi", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongBgR
-		<< TH1D( "hJTKlongBgR", "",  nJT, logBinsJt) 
-		<<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+    fhJTKlongLikeSign
+        << TH1D( "hJTKlongLikeSign", "",  nJT, logBinsJt) 
+        <<  fTypBin << fCentBin << fPTtBin << fKLongBin  << "END";
+    
+    fhJTKlongBgLikeSign
+        << TH1D( "hJTKlongBgLikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongLikeSign
-		<< TH1D( "hJTKlongLikeSign", "",  nJT, logBinsJt) 
-		<<  fTypBin << fCentBin << fPTtBin << fKLongBin  << "END";
+    fhJTKlongBgRLikeSign
+        << TH1D( "hJTKlongBgRLikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+  
+    fhJTKlongBgPhiLikeSign
+        << TH1D( "hJTKlongBgPhiLikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongBgLikeSign
-		<< TH1D( "hJTKlongBgLikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
+    fhJTKlongUnlikeSign
+        << TH1D( "hJTKlongUnlikeSign", "",  nJT, logBinsJt) 
+        <<  fTypBin << fCentBin << fPTtBin << fKLongBin  << "END";
+    
+    fhJTKlongBgUnlikeSign
+        << TH1D( "hJTKlongBgUnlikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongBgRLikeSign
-		<< TH1D( "hJTKlongBgRLikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+    fhJTKlongBgRUnlikeSign
+        << TH1D( "hJTKlongBgRUnlikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+  
+    fhJTKlongBgPhiUnlikeSign
+        << TH1D( "hJTKlongBgPhiUnlikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongUnlikeSign
-		<< TH1D( "hJTKlongUnlikeSign", "",  nJT, logBinsJt) 
-		<<  fTypBin << fCentBin << fPTtBin << fKLongBin  << "END";
+    fhBgAssocKlong
+        << TH1D( "hBgAssocKlong", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongBgUnlikeSign
-		<< TH1D( "hJTKlongBgUnlikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
+    fhBgAssocKlongR
+        << TH1D( "hBgAssocKlongR", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+  
+    fhBgAssocKlongPhi
+        << TH1D( "hBgAssocKlongPhi", "",  fnUE, fUEBinsx)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhJTKlongBgRUnlikeSign
-		<< TH1D( "hJTKlongBgRUnlikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+    if(fenable2DHistos){
+  
+      fhDphiDetaKlong
+          << TH2D( "hDphiDetaKlong", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhBgAssocKlong
-		<< TH1D( "hBgAssocKlong", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
+      fhDphiDetaKlongR
+          << TH2D( "hDphiDetaKlongR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+  
+      fhDphiDetaKlongPhi
+          << TH2D( "hDphiDetaKlongPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-	fhBgAssocKlongR
-		<< TH1D( "hBgAssocKlongR", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+    }
+      
+    // Histograms in pta bins
 
-	if(fenable2DHistos) {
-		fhDphiDetaKlong
-			<< TH2D( "hDphiDetaKlong", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2) 
-			<<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
+    fhJTPta
+        << TH1D( "hJTPta", "",  nJT, logBinsJt) 
+        <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
-		fhDphiDetaKlongR
-			<< TH2D( "hDphiDetaKlongR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2) 
-			<<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
-	}
+    fhJTPtaBg
+        << TH1D( "hJTPtaBg", "",  nJT, logBinsJt) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-	// Histograms in pta bins
+    fhJTPtaBgR
+        << TH1D( "hJTPtaBgR", "",  nJT, logBinsJt) 
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+  
+    fhJTPtaBgPhi
+        << TH1D( "hJTPtaBgPhi", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPta
-		<< TH1D( "hJTPta", "",  nJT, logBinsJt) 
-		<<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaLikeSign
+        << TH1D( "hJTPtaLikeSign", "",  nJT, logBinsJt) 
+        <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaBg
-		<< TH1D( "hJTPtaBg", "",  nJT, logBinsJt) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgLikeSign
+        << TH1D( "hJTPtaBgLikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaBgR
-		<< TH1D( "hJTPtaBgR", "",  nJT, logBinsJt) 
-		<<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgRLikeSign
+        << TH1D( "hJTPtaBgRLikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+  
+    fhJTPtaBgPhiLikeSign
+        << TH1D( "hJTPtaBgPhiLikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaLikeSign
-		<< TH1D( "hJTPtaLikeSign", "",  nJT, logBinsJt) 
-		<<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaUnlikeSign
+        << TH1D( "hJTPtaUnlikeSign", "",  nJT, logBinsJt) 
+        <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaBgLikeSign
-		<< TH1D( "hJTPtaBgLikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgUnlikeSign
+        << TH1D( "hJTPtaBgUnlikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaBgRLikeSign
-		<< TH1D( "hJTPtaBgRLikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgRUnlikeSign
+        << TH1D( "hJTPtaBgRUnlikeSign", "",  nJT, logBinsJt) 
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+  
+    fhJTPtaBgPhiUnlikeSign
+        << TH1D( "hJTPtaBgPhiUnlikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaUnlikeSign
-		<< TH1D( "hJTPtaUnlikeSign", "",  nJT, logBinsJt) 
-		<<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
+    fhBgAssocPta
+        << TH1D( "hBgAssocPta", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaBgUnlikeSign
-		<< TH1D( "hJTPtaBgUnlikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+    fhBgAssocPtaR
+        << TH1D( "hBgAssocPtaR", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+  
+    fhBgAssocPtaPhi
+        << TH1D( "hBgAssocPtaPhi", "",  fnUE, fUEBinsx)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhJTPtaBgRUnlikeSign
-		<< TH1D( "hJTPtaBgRUnlikeSign", "",  nJT, logBinsJt) 
-		<<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+    if(fenable2DHistos){
+  
+      fhDphiDetaPta
+          << TH2D( "hDphiDetaPta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-	fhBgAssocPta
-		<< TH1D( "hBgAssocPta", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
-
-	fhBgAssocPtaR
-		<< TH1D( "hBgAssocPtaR", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
-
-	if(fenable2DHistos) {
-		fhDphiDetaPta
-			<< TH2D( "hDphiDetaPta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2) 
-			<<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
-
-		fhDphiDetaPtaR
-			<< TH2D( "hDphiDetaPtaR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2) 
-			<<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
-	}
+      fhDphiDetaPtaR
+          << TH2D( "hDphiDetaPtaR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+  
+      fhDphiDetaPtaPhi
+          << TH2D( "hDphiDetaPtaPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+      
+    }
 }
 
 
 void AliJHistos::CreateIAAMoons()
 {
-	fHMG->cd();
-	//--- IAA signal ---
-	fhDRNearPt
-		<< TH1D( "hDRNearPt", "",  fnUE, fUEBinsx) 
-		<<  fTypBin << fCentBin << fVtxBin << fRGapBin << fPTtBin  << "END";
-	fhDRFarPt
-		<< TH1D( "hDRFarPt", "",  fnUEfar, fUEBinsxFar) 
-		<<  fTypBin << fCentBin << fVtxBin << fRGapBin << fPTtBin  << "END";
+    fHMG->cd();
+    //--- IAA signal ---
+    fhDRNearPt
+        << TH1D( "hDRNearPt", "",  fnUE, fUEBinsx) 
+        <<  fTypBin << fCentBin << fVtxBin << fRGapBin << fPTtBin  << "END";
+    fhDRFarPt
+        << TH1D( "hDRFarPt", "",  fnUEfar, fUEBinsxFar) 
+        <<  fTypBin << fCentBin << fVtxBin << fRGapBin << fPTtBin  << "END";
 
-	// --- Moons ---
-	fhDRNearPtMoon
-		<< TH1D( "hDRNearPtMoon", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
-	fhDRNearPtMoonM
-		<< TH1D( "hDRNearPtMoonM", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
+    // --- Moons ---
+    fhDRNearPtMoon
+        << TH1D( "hDRNearPtMoon", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
+    fhDRNearPtMoonM
+        << TH1D( "hDRNearPtMoonM", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
 
-	fhDRFarPtMoon
-		<< TH1D( "hDRFarPtMoon", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
-	fhDRFarPtMoonM
-		<< TH1D( "hDRFarPtMoonM", "",  fnUE, fUEBinsx) 
-		<<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
+    fhDRFarPtMoon
+        << TH1D( "hDRFarPtMoon", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
+    fhDRFarPtMoonM
+        << TH1D( "hDRFarPtMoonM", "",  fnUE, fUEBinsx) 
+        <<  fCentBin << fVtxBin << fRGapBin << fPhiGapBin << fPTtBin  << "END";
 
-	//==========================
-	// 2D fhistos 
-	//==========================
-	if(fenable2DHistos) {
-		fhDphiAssoc2DIAA
-			<< TH2D( "hDphiAssoc2DIAA", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, fLowRange, fHighRange) 
-			<<  fTypBin << fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
-		fhDphiAssoc2D
-			<< TH2D( "hDphiAssoc2D", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, fLowRange, fHighRange) 
-			<<  fRGapBin << fPhiGapBin  << "END";
-	}
+    //==========================
+    // 2D fhistos 
+    //==========================
+  
+    if(fenable2DHistos){
+      fhDphiAssoc2DIAA
+          << TH2D( "hDphiAssoc2DIAA", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, fLowRange, fHighRange)
+          <<  fTypBin << fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+      fhDphiAssoc2D
+          << TH2D( "hDphiAssoc2D", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, fLowRange, fHighRange)
+          <<  fRGapBin << fPhiGapBin  << "END";
+    }
 }
 
 void AliJHistos::CreateXEHistos(){
-	//==================================
-	//  xe slopes
-	//==================================
-	fHMG->cd();
-	double xel=0.0, xeh=1.2;
-	int nbxE = int((xeh-xel)/0.04);
+    //==================================
+    //  xe slopes
+    //==================================
+    fHMG->cd();
+    double xel=0.0, xeh=1.2;
+    int nbxE = int((xeh-xel)/0.04);
 
-	fhxEPtBin
-		<< TH1D( "hxEPtBin", "",  nbxE, xel, xeh) 
-		<<  fTypBin3 << fPTtBin << fPTaBin  << "END";
-	fhxEF 
-		<< TH1D( "hxEF", "", nbxE, xel, xeh)
-		<< fTypBin << fPTtBin <<"END";
-	fhxEFIsolTrigg
-		<< TH1D( "hxEFIsoTrigg", "", nbxE, xel, xeh)
-		<< fTypBin << fPTtBin << "END";
-	fhxEN 
-		<< TH1D("hxEN", "", nbxE, xel, xeh)
-		<< fTypBin << fPTtBin << "END";
+    fhxEPtBin
+        << TH1D( "hxEPtBin", "",  nbxE, xel, xeh) 
+        <<  fTypBin3 << fPTtBin << fPTaBin  << "END";
+    fhxEF 
+        << TH1D( "hxEF", "", nbxE, xel, xeh)
+        << fTypBin << fPTtBin <<"END";
+    fhxEFIsolTrigg
+        << TH1D( "hxEFIsoTrigg", "", nbxE, xel, xeh)
+        << fTypBin << fPTtBin << "END";
+    fhxEN 
+        << TH1D("hxEN", "", nbxE, xel, xeh)
+        << fTypBin << fPTtBin << "END";
 
 }
 
 void AliJHistos::CreatePairPtCosThetaStar(){
-	// pairs
-	fHMG->cd();
-	int    bins = 288; // 12*24    -1/3 and  0.5 and 5/3  are bin edges 
-	double lowRange = -1./3, highRange= 5./3;
-	//=================
-	//pairPT
-	//=================
-	fhPairPtDphi
-		<< TH1D( "hPairPtDphi", "",  bins, lowRange, highRange) 
-		<<  fTypBin << fPTtBin << fPTaBin  << "END";
-	fhPairPt
-		<< TH1D( "hPairPt", "",  210, 0, 70) 
-		<<  fTypBin << fPTtBin << fPTaBin  << "END";
-	//==================================
-	//  CosThetaStar fhistos 
-	//==================================
-	//cout<<"ippt="<<fPairPtBin<<" "<<fCard->IsLessThanUpperPairPtCut(-fPairPtBin)<<endl;
-	fhCosThetaStar
-		<< TH1D( "hCosThetaStar", "",  100, 0, 1) 
-		<<  fTypBin << fPairPtBin << fMassBin  << "END";
-	fhCMSrap
-		<< TH2D( "hCMSrap", "",  100, 0, 1, 50, -1, 1) 
-		<<  fPairPtBin << fMassBin  << "END";
-	fhInvMass
-		<< TH1D( "hInvMass", "",  200, 0, 40) 
-		<<  fPairPtBin << "END";
+    // pairs
+    fHMG->cd();
+    int    bins = 288; // 12*24    -1/3 and  0.5 and 5/3  are bin edges 
+    double lowRange = -1./3, highRange= 5./3;
+    //=================
+    //pairPT
+    //=================
+    fhPairPtDphi
+        << TH1D( "hPairPtDphi", "",  bins, lowRange, highRange) 
+        <<  fTypBin << fPTtBin << fPTaBin  << "END";
+    fhPairPt
+        << TH1D( "hPairPt", "",  210, 0, 70) 
+        <<  fTypBin << fPTtBin << fPTaBin  << "END";
+    //==================================
+    //  CosThetaStar fhistos 
+    //==================================
+    //cout<<"ippt="<<fPairPtBin<<" "<<fCard->IsLessThanUpperPairPtCut(-fPairPtBin)<<endl;
+    fhCosThetaStar
+        << TH1D( "hCosThetaStar", "",  100, 0, 1) 
+        <<  fTypBin << fPairPtBin << fMassBin  << "END";
+    fhCMSrap
+        << TH2D( "hCMSrap", "",  100, 0, 1, 50, -1, 1) 
+        <<  fPairPtBin << fMassBin  << "END";
+    fhInvMass
+        << TH1D( "hInvMass", "",  200, 0, 40) 
+        <<  fPairPtBin << "END";
 
-	fhPairPtMass
-		<< TH1D( "hPairPtMass", "",  250, 0, 50) 
-		<<  fMassBin  << "END";
-	fhPairDPhi
-		<< TH1D( "hPairDPhi", "",   bins, lowRange, highRange) 
-		<<  fMassBin  << "END";
-	fhPairDpT
-		<< TH1D( "hPairDpT", "",  150, 0-25./150./2., 25-25./150./2.) 
-		<<  fMassBin  << "END";
-	fpCMSrap
-		<< TProfile("pCMSrap","no pair pT cut",100,-1,1) 
-		<< "END";
+    fhPairPtMass
+        << TH1D( "hPairPtMass", "",  250, 0, 50) 
+        <<  fMassBin  << "END";
+    fhPairDPhi
+        << TH1D( "hPairDPhi", "",   bins, lowRange, highRange) 
+        <<  fMassBin  << "END";
+    fhPairDpT
+        << TH1D( "hPairDpT", "",  150, 0-25./150./2., 25-25./150./2.) 
+        <<  fMassBin  << "END";
+    fpCMSrap
+        << TProfile("pCMSrap","no pair pT cut",100,-1,1) 
+        << "END";
 }
 
 //______________________________________________________________________________
 void AliJHistos::CreatePtCorrHistos(){
-	// pt corr histos
-	fHMG->cd();
-	int ptbins=30;
-	double lpt=0,upt=8;
-	fhPtNear
-		<< TH1D( "hPtNear", "",  ptbins, lpt, upt) 
-		<<  fTypBin << 3 << fCentBin  << "END";
-	fhPtFar
-		<< TH1D( "hPtFar", "",  ptbins, lpt, upt) 
-		<<  fTypBin << 3 << fCentBin  << "END";
+    // pt corr histos
+    fHMG->cd();
+    int ptbins=30;
+    double lpt=0,upt=8;
+    fhPtNear
+        << TH1D( "hPtNear", "",  ptbins, lpt, upt) 
+        <<  fTypBin << 3 << fCentBin  << "END";
+    fhPtFar
+        << TH1D( "hPtFar", "",  ptbins, lpt, upt) 
+        <<  fTypBin << 3 << fCentBin  << "END";
 }
 
 //______________________________________________________________________________
 void AliJHistos::CreateRunByRunHistos(int runID, int runcounter) const {
-	// Todo
-	fHMG->cd();
-	JUNUSED(runID);
-	JUNUSED(runcounter);
+  // Todo
+  fHMG->cd();
+  JUNUSED(runID);
+  JUNUSED(runcounter);
 } //TODO
 
 
 //______________________________________________________________________________
 void AliJHistos::CreateEventTrackHistos(){
-	// comment needed
-	fHMG->cd();
-	int nBINS=150;
-	double logBinsX[nBINS+1], limL=0.1, limH=100;
-	double logBW = (log(limH)-log(limL))/nBINS;
-	for(int ij=0;ij<=nBINS;ij++) logBinsX[ij]=limL*exp(ij*logBW);
+  // comment needed
+  fHMG->cd();
+    int nBINS=150;
+    double logBinsX[nBINS+1], limL=0.1, limH=100;
+    double logBW = (log(limH)-log(limL))/nBINS;
+    for(int ij=0;ij<=nBINS;ij++) logBinsX[ij]=limL*exp(ij*logBW);
 
-	fhLPpt       <<  TH1D("hLPpt","LP pt", nBINS, logBinsX ) << "END";
-	fhLPpairPt   << TH1D("hLPpairPt","LP pair pt", nBINS, logBinsX )<< "END";
-	fhChargedEta << TH1D("hChargedEta","All eta",100,-1.0,1.0)<< "END";
-	fhLPeta      << TH1D("hLPeta","LP eta",100,-1.0,1.0)<< "END";
-	fhIsolatedLPpt << TH1D("hIsolatedLPpt","Isolated LP pt", nBINS, logBinsX )<< "END";
-	fhChargedPtFiete << TH1D("hChargedPtFiete", "Jan Fiete bins", fNJanFiete, fJanFiete )<< "END";
+    fhLPpt       <<  TH1D("hLPpt","LP pt", nBINS, logBinsX ) << "END";
+    fhLPpairPt   << TH1D("hLPpairPt","LP pair pt", nBINS, logBinsX )<< "END";
+    fhChargedEta << TH1D("hChargedEta","All eta",100,-1.0,1.0)<< "END";
+    fhLPeta      << TH1D("hLPeta","LP eta",100,-1.0,1.0)<< "END";
+    fhIsolatedLPpt << TH1D("hIsolatedLPpt","Isolated LP pt", nBINS, logBinsX )<< "END";
+    fhChargedPtFiete << TH1D("hChargedPtFiete", "Jan Fiete bins", fNJanFiete, fJanFiete )<< "END";
 
 
-	fhAssocMult << TH1D("hAssocMult","Assoc  mlt",100,-0.5,99.5)<< "END";
+    fhAssocMult << TH1D("hAssocMult","Assoc  mlt",100,-0.5,99.5)<< "END";
 
-	fhChargedMult 
-		<< TH1D("hChargedMult","", 300, 0., 3500.)
-		<< fCentBin << "END"; 
-	fhChargedMultCut 
-		<< TH1D("hChargedMultCut","",  300, 0., 3500.)
-		<< fCentBin << "END"; 
-	fhZVert 
-		<< TH1D("hZVert", "", 100, -30., 30.)
-		<< fCentBin << "END";
-	fhChargedPt 
-		<< TH1D("hChargedPt","", nBINS, logBinsX )
-		<< fCentBin << "END";
-	fhChargedPtNoCorr 
-		<< TH1D("hChargedPtNoCorr","", nBINS, logBinsX )
-		<< fCentBin << "END";
-	fhChargedPtJacek 
-		<< TH1D("hChargedPtJacek","", fNJacek, fPttJacek )
-		<< fCentBin << "END";
-	fhChargedPtJacekEta
-		<< TH1D("hChargedPtJacekEta","", fNJacek, fPttJacek )
-		<< fCentBin << 3 << "END";
+    fhChargedMult 
+        << TH1D("hChargedMult","", 300, 0., 3500.)
+        << fCentBin << "END"; 
+    fhChargedMultCut 
+        << TH1D("hChargedMultCut","",  300, 0., 3500.)
+        << fCentBin << "END"; 
+    fhZVert 
+        << TH1D("hZVert", "", 100, -30., 30.)
+        << fCentBin << "END";
+    fhChargedPt 
+        << TH1D("hChargedPt","", nBINS, logBinsX )
+        << fCentBin << "END";
+    fhChargedPtNoCorr 
+        << TH1D("hChargedPtNoCorr","", nBINS, logBinsX )
+        << fCentBin << "END";
+    fhChargedPtJacek 
+        << TH1D("hChargedPtJacek","", fNJacek, fPttJacek )
+        << fCentBin << "END";
+    fhChargedPtJacekEta
+        << TH1D("hChargedPtJacekEta","", fNJacek, fPttJacek )
+        << fCentBin << 3 << "END";
 
-	fhVdelta2 << TH1D("hVdelta2","", 100, -0.2, 5)
-		<< fCentBin << "END";
-	fhVdelta3 << TH1D("hVdelta3","", 100, -0.2, 5)
-		<< fCentBin << "END";
-	fhVN << TH1D("hVN","", 100, -kJPi, kJPi)
-		<< fCentBin << "END";
-	fhTrackingEfficiency << TProfile("hTrackingEff","",fNJacek, fPttJacek)
-		<< fCentBin << "END";
-	fhV0AMult << TH1D("hV0Mult","", 2000,0,2000 )
-		<< fCentBin << "END";
-	fpV2 << TProfile("pV2", "v2 with cent", 50, 0, 90) << "END";
-	fpV3 << TProfile("pV3", "v3 with cent", 50, 0, 90) << "END";
-	fpVdeltaNorm << TProfile("pVdeltaNorm", "mult with cent", 50, 0, 90) << "END";
-	fhChargedMultCent << TH2D("hChargedMultCent ", "log(fmult) vs cent", 100, 0, 90, 100, 1, 10) << "END";
-	fhZVertRaw << TH1D("hZVertRaw","vertex 0", 120, -30., 30.) << "END";
-	fhZVertRawErr << TH1D("hZVertRawErr","vertex 0 Err", 100, 0, 0.1) << "END";
-	fhCentr << TH1D("hCentr","centrality", 101, -0.5, 100.5) << "END";
-	fhiCentr << TH1D("hiCentr","centrality",10, -0.5, 9.5) << "END";
-	fhEventPerRun << TH1D("hEventPerRun","log(eve)/run",200, 0, 30.0) << "END";
-	fhBkgActivity 
-		<< TH1D("hBkgActivity", "", 200, 0, 20) 
-		<< fPTtBin <<"END";
+    fhVdelta2 << TH1D("hVdelta2","", 100, -0.2, 5)
+        << fCentBin << "END";
+    fhVdelta3 << TH1D("hVdelta3","", 100, -0.2, 5)
+        << fCentBin << "END";
+    fhVN << TH1D("hVN","", 100, -kJPi, kJPi)
+        << fCentBin << "END";
+    fhTrackingEfficiency << TProfile("hTrackingEff","",fNJacek, fPttJacek)
+        << fCentBin << "END";
+    fhV0AMult << TH1D("hV0Mult","", 2000,0,2000 )
+        << fCentBin << "END";
+    fpV2 << TProfile("pV2", "v2 with cent", 50, 0, 90) << "END";
+    fpV3 << TProfile("pV3", "v3 with cent", 50, 0, 90) << "END";
+    fpVdeltaNorm << TProfile("pVdeltaNorm", "mult with cent", 50, 0, 90) << "END";
+    fhChargedMultCent << TH2D("hChargedMultCent ", "log(fmult) vs cent", 100, 0, 90, 100, 1, 10) << "END";
+    fhZVertRaw << TH1D("hZVertRaw","vertex 0", 120, -30., 30.) << "END";
+    fhZVertRawErr << TH1D("hZVertRawErr","vertex 0 Err", 100, 0, 0.1) << "END";
+    fhCentr << TH1D("hCentr","centrality", 101, -0.5, 100.5) << "END";
+    fhiCentr << TH1D("hiCentr","centrality",10, -0.5, 9.5) << "END";
+    fhEventPerRun << TH1D("hEventPerRun","log(eve)/run",200, 0, 30.0) << "END";
+    fhBkgActivity 
+        << TH1D("hBkgActivity", "", 200, 0, 20) 
+        << fPTtBin <<"END";
 
-	//------------------ for Abs Norm FK --------------------------------
-	double   binsVertexMult[] = {0,1,2,3,4,5,10000};
-	int   nbinsVertexMult  = sizeof(binsVertexMult)/sizeof(double)-1;
-	//double binsVertexZ[]    = {-10,-5,-2,0,2,5,10};
-	double binsVertexZ[]    = {-10,-6,-3,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,3,6,10};
-	int   nbinsVertexZ   = sizeof(binsVertexZ)/sizeof(double)-1;
-	fhVertexZTriggVtx << TH2D("hVertexZTriggVtx","Vertex counts", nbinsVertexMult, binsVertexMult, nbinsVertexZ, binsVertexZ) << "END";
+    //------------------ for Abs Norm FK --------------------------------
+    double   binsVertexMult[] = {0,1,2,3,4,5,10000};
+    int   nbinsVertexMult  = sizeof(binsVertexMult)/sizeof(double)-1;
+    //double binsVertexZ[]    = {-10,-5,-2,0,2,5,10};
+    double binsVertexZ[]    = {-10,-6,-3,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,3,6,10};
+    int   nbinsVertexZ   = sizeof(binsVertexZ)/sizeof(double)-1;
+    fhVertexZTriggVtx << TH2D("hVertexZTriggVtx","Vertex counts", nbinsVertexMult, binsVertexMult, nbinsVertexZ, binsVertexZ) << "END";
 
-	// event counter
-	fhEvents        
-		<< TH1D("hEvents","events passing cuts", 100, -0.5, 100-0.5 ) << "END";
-	fhEventTrigger  
-		<< TH1D("hEventTrigger","Trigger count", 50, -0.5, 50.-.5 )
-		<< "END";
-	fhTrackSelection
-		<< TH1D("hTrackSelection","checking bit convention", 100, -0.5, 100-0.5) << "END";
-	// TODO fhEvents->SetXTitle( "0 - all, 1 - SDD selected, 2 - has vertex, 3 - good vertex, 4 - trigger + MB, 5 - trigger, 6 - BX, 7 - centrality" );
+    // event counter
+    fhEvents        
+        << TH1D("hEvents","events passing cuts", 100, -0.5, 100-0.5 ) << "END";
+    fhEventTrigger  
+        << TH1D("hEventTrigger","Trigger count", 50, -0.5, 50.-.5 )
+        << "END";
+    fhTrackSelection
+        << TH1D("hTrackSelection","checking bit convention", 100, -0.5, 100-0.5) << "END";
+    // TODO fhEvents->SetXTitle( "0 - all, 1 - SDD selected, 2 - has vertex, 3 - good vertex, 4 - trigger + MB, 5 - trigger, 6 - BX, 7 - centrality" );
 }
 
 void AliJHistos::CreateJetHistos(){
-	fHMG->cd();
-	// jet histos
-	int nBINS=200;
-	double logBinsX[nBINS+1], limL=0.1, limH=200;
-	double logBW = (log(limH)-log(limL))/nBINS;
-	for(int ij=0;ij<=nBINS;ij++) logBinsX[ij]=limL*exp(ij*logBW);
+    fHMG->cd();
+    // jet histos
+    int nBINS=200;
+    double logBinsX[nBINS+1], limL=0.1, limH=200;
+    double logBW = (log(limH)-log(limL))/nBINS;
+    for(int ij=0;ij<=nBINS;ij++) logBinsX[ij]=limL*exp(ij*logBW);
 
-	fhLPJetPt
-		<< TH1D( "hLPJetPt", "",   nBINS, logBinsX) 
-		<<  fCentBin  << "END";
-	fhJetPt
-		<< TH1D( "hJetPt", "",   nBINS, logBinsX) 
-		<<  fCentBin  << "END";
-	fhLeadingJetPt
-		<< TH1D( "hLeadingJetPt", "",   nBINS, logBinsX) 
-		<<  fCentBin  << "END";
-	fhLeadingJetWLPPt
-		<< TH1D( "hLeadingJetWLPPt", "",   nBINS, logBinsX) 
-		<<  fCentBin  << "END";
-	fhLPJetPTt
-		<< TH1D( "hLPJetPTt", "",   nBINS, logBinsX) 
-		<<  fCentBin << fPTtBin  << "END";
-	fhLeadingJetWLPPTt
-		<< TH1D( "hLeadingJetWLPPTt", "",   nBINS, logBinsX) 
-		<<  fCentBin << fPTtBin  << "END";
-	fhLPJetEtaPTt
-		<< TH1D( "hLPJetEtaPTt", "",  100, -1, 1) 
-		<<  fCentBin << fPTtBin  << "END";
-	fhLPJetRapidityPTt
-		<< TH1D( "hLPJetRapidityPTt", "",  100, -1, 1) 
-		<<  fCentBin << fPTtBin  << "END";
-	fhLPJetMassPTt
-		<< TH1D( "hLPJetMassPTt", "",   nBINS, logBinsX) 
-		<<  fCentBin << fPTtBin  << "END";
-	fhDphiLPJet
-		<< TH1D( "hDphiLPJet", "",  160, -kJPi/2., kJPi/2.) 
-		<<  fCentBin << fPTtBin  << "END";
-	fhDEtaLPJet
-		<< TH1D( "hDEtaLPJet", "",   240, -1.2, 1.2) 
-		<<  fCentBin << fPTtBin  << "END";
-	// LP jet vs Leading Jet
-	fhDPtLPJet
-		<< TH1D( "hDPtLPJet", "",  100, 0, 10.) 
-		<<  fCentBin << fPTtBin  << "END";
-	//==================================
-	fhJetDphi << TH1D( "hJetDphi", "#Delta#phi", 100,-TMath::Pi(), TMath::Pi())
-		<< fTypBin << fPTtBin <<"END";
-	fhJetDeta << TH1D("hJetDeta","#Delta#eta ",100,-1, 1)
-		<< fTypBin << fPTtBin <<"END";
-	fhJetMultPt << TH1D("hJetMultPt","Jet Multiplicity ",100,0-0.5, 100-0.5)
-		<< fPTtBin <<"END";
-	fhJetRho << TH1D("hJetRho","#rho",200,0, 50)
-		<< fPTtBin <<"END";
-	fhJetRhoSigma << TH1D("hJetRhoSigma","#sigma",200,0, 50)
-		<< fPTtBin <<"END";
-	// How many particles in a jet
-	fhJetPartMult << TH1D("hJetPartMult","Number of consituents",100, 0-0.5, 100-0.5)
-		<< fPTtBin <<"END";
-	fhRecoDiJetM
-		<< TH1D("hRecoDiJetM", "Invariant Mass", 201,-0.5, 200 ) 
-		<< "END";
-	fhJetUEPt
-		<< TH1D("hJetUEPt","UE particles p_{T} by Jet substract",nBINS,logBinsX) 
-		<< "END";
-	// pytfPTaBin
-	fhNParton71
-		<< TH1D("hNParton71", "hNParton71", 100, -0.5, 100-0.5) 
-		<<"END";
-	fhNStringGroup
-		<< TH1D("hNStringGroup", "hNStringGroup", 100, -0.5, 100-0.5) 
-		<<"END";
-	fhNStringGroupFrom << TH1D("hNStringGroupFrom", "hNStringGroupFrom", 100, -0.5, 100-0.5) << 2 <<"END";
-	fhNTracksInStringGroupFrom << TH1D("hNTracksInStringGroupFrom", "hNTracksInStringGroupFrom", 100, -0.5, 100-0.5) << 2 << "END";
-	fhRapidity71From << TH1D("hRapidity71From", "hRapidity71From", 100, -8, 8 ) << 2 << "END";
-	fhPt71From
-		<< TH1D("hPt71From", "hPt71From", 1000, 0, 100) 
-		<< 2 << "END";
+    fhLPJetPt
+        << TH1D( "hLPJetPt", "",   nBINS, logBinsX) 
+        <<  fCentBin  << "END";
+    fhJetPt
+        << TH1D( "hJetPt", "",   nBINS, logBinsX) 
+        <<  fCentBin  << "END";
+    fhLeadingJetPt
+        << TH1D( "hLeadingJetPt", "",   nBINS, logBinsX) 
+        <<  fCentBin  << "END";
+    fhLeadingJetWLPPt
+        << TH1D( "hLeadingJetWLPPt", "",   nBINS, logBinsX) 
+        <<  fCentBin  << "END";
+    fhLPJetPTt
+        << TH1D( "hLPJetPTt", "",   nBINS, logBinsX) 
+        <<  fCentBin << fPTtBin  << "END";
+    fhLeadingJetWLPPTt
+        << TH1D( "hLeadingJetWLPPTt", "",   nBINS, logBinsX) 
+        <<  fCentBin << fPTtBin  << "END";
+    fhLPJetEtaPTt
+        << TH1D( "hLPJetEtaPTt", "",  100, -1, 1) 
+        <<  fCentBin << fPTtBin  << "END";
+    fhLPJetRapidityPTt
+        << TH1D( "hLPJetRapidityPTt", "",  100, -1, 1) 
+        <<  fCentBin << fPTtBin  << "END";
+    fhLPJetMassPTt
+        << TH1D( "hLPJetMassPTt", "",   nBINS, logBinsX) 
+        <<  fCentBin << fPTtBin  << "END";
+    fhDphiLPJet
+        << TH1D( "hDphiLPJet", "",  160, -kJPi/2., kJPi/2.) 
+        <<  fCentBin << fPTtBin  << "END";
+    fhDEtaLPJet
+        << TH1D( "hDEtaLPJet", "",   240, -1.2, 1.2) 
+        <<  fCentBin << fPTtBin  << "END";
+    // LP jet vs Leading Jet
+    fhDPtLPJet
+        << TH1D( "hDPtLPJet", "",  100, 0, 10.) 
+        <<  fCentBin << fPTtBin  << "END";
+    //==================================
+    fhJetDphi << TH1D( "hJetDphi", "#Delta#phi", 100,-TMath::Pi(), TMath::Pi())
+        << fTypBin << fPTtBin <<"END";
+    fhJetDeta << TH1D("hJetDeta","#Delta#eta ",100,-1, 1)
+        << fTypBin << fPTtBin <<"END";
+    fhJetMultPt << TH1D("hJetMultPt","Jet Multiplicity ",100,0-0.5, 100-0.5)
+        << fPTtBin <<"END";
+    fhJetRho << TH1D("hJetRho","#rho",200,0, 50)
+        << fPTtBin <<"END";
+    fhJetRhoSigma << TH1D("hJetRhoSigma","#sigma",200,0, 50)
+        << fPTtBin <<"END";
+    // How many particles in a jet
+    fhJetPartMult << TH1D("hJetPartMult","Number of consituents",100, 0-0.5, 100-0.5)
+        << fPTtBin <<"END";
+    fhRecoDiJetM
+        << TH1D("hRecoDiJetM", "Invariant Mass", 201,-0.5, 200 ) 
+        << "END";
+    fhJetUEPt
+        << TH1D("hJetUEPt","UE particles p_{T} by Jet substract",nBINS,logBinsX) 
+        << "END";
+    // pytfPTaBin
+    fhNParton71
+        << TH1D("hNParton71", "hNParton71", 100, -0.5, 100-0.5) 
+        <<"END";
+    fhNStringGroup
+        << TH1D("hNStringGroup", "hNStringGroup", 100, -0.5, 100-0.5) 
+        <<"END";
+    fhNStringGroupFrom << TH1D("hNStringGroupFrom", "hNStringGroupFrom", 100, -0.5, 100-0.5) << 2 <<"END";
+    fhNTracksInStringGroupFrom << TH1D("hNTracksInStringGroupFrom", "hNTracksInStringGroupFrom", 100, -0.5, 100-0.5) << 2 << "END";
+    fhRapidity71From << TH1D("hRapidity71From", "hRapidity71From", 100, -8, 8 ) << 2 << "END";
+    fhPt71From
+        << TH1D("hPt71From", "hPt71From", 1000, 0, 100) 
+        << 2 << "END";
 
 }
 
 //______________________________________________________________________________
 void AliJHistos::CreateXtHistos() {
-	// TODO comment
-	//
-	fHMG->cd();
-	// Esko
-	TH1::SetDefaultSumw2(kTRUE);
-	cout << "GetDefaultSumw2() = " << TH1::GetDefaultSumw2() << endl;
+    // TODO comment
+    //
+    fHMG->cd();
+    // Esko
+    TH1::SetDefaultSumw2(kTRUE);
+    cout << "GetDefaultSumw2() = " << TH1::GetDefaultSumw2() << endl;
 
-	// xT binning
-	int nBinsXt=200;
-	double logBinsXt[nBinsXt+1];
-	double xTLimL = 1e-5, xTLimH = 1.0, xTlogBW = (log(xTLimH)-log(xTLimL))/nBinsXt;
-	for(int ij=0;ij<=nBinsXt;ij++) logBinsXt[ij]=xTLimL*exp(ij*xTlogBW);
+    // xT binning
+    int nBinsXt=200;
+    double logBinsXt[nBinsXt+1];
+    double xTLimL = 1e-5, xTLimH = 1.0, xTlogBW = (log(xTLimH)-log(xTLimL))/nBinsXt;
+    for(int ij=0;ij<=nBinsXt;ij++) logBinsXt[ij]=xTLimL*exp(ij*xTlogBW);
 
 
-	// pT binning
-	int nBinsPt=200;
-	double logBinsPt[nBinsPt+1];
-	double pTLimL=0.1, pTLimH=200 , pTlogBW = (log(pTLimH)-log(pTLimL))/nBinsPt;
-	for(int ij=0;ij<=nBinsPt;ij++) logBinsPt[ij]=pTLimL*exp(ij*pTlogBW);
+    // pT binning
+    int nBinsPt=200;
+    double logBinsPt[nBinsPt+1];
+    double pTLimL=0.1, pTLimH=200 , pTlogBW = (log(pTLimH)-log(pTLimL))/nBinsPt;
+    for(int ij=0;ij<=nBinsPt;ij++) logBinsPt[ij]=pTLimL*exp(ij*pTlogBW);
 
-	fhConeActivity << TProfile("hActivity", "Mean activity inside cone", nBinsPt, logBinsPt );
-	fhPerpConeActivity << TProfile("hPerpActivity", "Mean activity inside perpendicular cone", nBinsPt, logBinsPt );
-	fhConeActivityIsolated << TProfile("hActivityIsolated", "Mean pion activity inside cone isolated", nBinsPt, logBinsPt );
+    fhConeActivity << TProfile("hActivity", "Mean activity inside cone", nBinsPt, logBinsPt );
+    fhPerpConeActivity << TProfile("hPerpActivity", "Mean activity inside perpendicular cone", nBinsPt, logBinsPt );
+    fhConeActivityIsolated << TProfile("hActivityIsolated", "Mean pion activity inside cone isolated", nBinsPt, logBinsPt );
 
-	fhPerpConeActivityIsolated << TProfile("hPerpActivityIsolated", "Mean activity inside perpendicular cone", nBinsPt, logBinsPt );
-	fhPtForXt 
-		<< TH1D("hPtForXt","", fNJacek, fPttJacek )
-		<< 3 << fCentBin <<"END";
+    fhPerpConeActivityIsolated << TProfile("hPerpActivityIsolated", "Mean activity inside perpendicular cone", nBinsPt, logBinsPt );
+    fhPtForXt 
+        << TH1D("hPtForXt","", fNJacek, fPttJacek )
+        << 3 << fCentBin <<"END";
 
-	fhXt 
-		<< TH1D("hXt", "Charged xT", nBinsXt, logBinsXt )
-		<< 3 << fCentBin <<"END";
+    fhXt 
+        << TH1D("hXt", "Charged xT", nBinsXt, logBinsXt )
+        << 3 << fCentBin <<"END";
 
-	fhXtWeighted 
-		<< TH1D("hXtWeighted", "Charged xT", nBinsXt, logBinsXt )
-		<< 3 << fCentBin <<"END";
+    fhXtWeighted 
+        << TH1D("hXtWeighted", "Charged xT", nBinsXt, logBinsXt )
+        << 3 << fCentBin <<"END";
 
-	fhXtWeightedHT 
-		<< TH1D("hXtWeightedHT", "", nBinsXt, logBinsXt )
-		<< 3 << fCentBin <<"END";
+    fhXtWeightedHT 
+        << TH1D("hXtWeightedHT", "", nBinsXt, logBinsXt )
+        << 3 << fCentBin <<"END";
 }
 
 //______________________________________________________________________________
-//void AliJHistos::ReadInclusiveHistos(TFile *inFile){
 void AliJHistos::ReadInclusiveHistos(const char *inclusFileName){
-	// read inclusive histos
-	fHMG->cd();
-
-	TPMERegexp sep("::");
-	int ncol = sep.Split( inclusFileName );
-	TString filename = sep[0];
-
-	if (TString(inclusFileName).BeginsWith("alien:"))  TGrid::Connect("alien:");
-	TFile *inclusFile = TFile::Open(filename);
-	TDirectory * dir =  (TDirectory*) inclusFile;
-	if( ncol > 1 ) dir = (TDirectory*)( inclusFile->Get(sep[1]));
-	if( !dir ) {
-		cout << " ReadInclusiveHistos wrong file name or dirname !!!!" << endl;
-		return;
-	}
-
-	cout<<inclusFileName<<"\t"<<filename<<"\t";
-	if( ncol > 1 ) cout<<sep[1];
-	cout<<endl;
-	dir->Print();
-
-	//dir->cd();    // Not needed in new implementation of AliJHistManager
-
-	fHmgInclusive = new AliJHistManager("hst",sep[1]);
-	fHmgInclusive->LoadConfig();
-
-	fhIetaTriggFromFile = fHmgInclusive->GetTH1D("hIetaTrigg");
-	fhIetaTriggFromFile.Print();
-	fhIetaTriggFromFile[0][0]->Print();
-
-	fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg"); // TODO
-	fhIphiTriggFromFile.Print();
-	fhIetaAssocFromFile = fHmgInclusive->GetTH1D("hIetaAssoc");
-	fhIetaAssocFromFile.Print();
-	fhIphiAssocFromFile = fHmgInclusive->GetTH1D("fhIphiAssoc");
-	fhIphiAssocFromFile.Print();
-
-	int numCent = fCard->GetNoOfBins(kCentrType);
-	int numPtt  = fCard->GetNoOfBins(kTriggType);
-	int numPta  = fCard->GetNoOfBins(kAssocType);
-	int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
-	int numZvtx = fCard->GetNoOfBins(kZVertType);
-
-	//------------ R e a d   mixed  D a t a ------------    
-	const int zFirstBin = 0 ;
-	const int etaGapFirstBin = 0 ;
-	AliJTH1D hDEtaNearTmp = fHmgInclusive->GetTH1D("hDEtaNear");
-	for (int hic = 0;hic < numCent; hic++) {
-		for (int hit = 0; hit < numPtt;hit++){
-			for (int hia = 0; hia < numPta; hia++){
-				fhDEtaNearMixFromFile[hic][hit][hia]= hDEtaNearTmp[hic][zFirstBin][etaGapFirstBin][hit][hia]; 
-				for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices 
-					for (int hiz = 0; hiz < numZvtx; hiz++) {
-						if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
-						TH1D *hid = hDEtaNearTmp[hic][hiz][iEtaGap][hit][hia];
-						fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
-					}
-				}
-				//normalize to traingle
-				double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
-				double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
-				int rebin = 4;
-				if(counts<5000) rebin=8;
-				if(counts<3000) rebin=10;
-				if(counts<1000) rebin=16;
-				fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
-				if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
-				//if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
-				//cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl; 
-
-			}   
-		}   
-	}   
-
-
-	//for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
-	//   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
-	//      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
-	//         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
-	//      }
-	//   }
-	//}
+  // read inclusive histos
+  fHMG->cd();
+  
+  TPMERegexp sep("::");
+  int ncol = sep.Split( inclusFileName );
+  TString filename = sep[0];
+  
+  if (TString(inclusFileName).BeginsWith("alien:"))  TGrid::Connect("alien:");
+  TFile *inclusFile = TFile::Open(filename);
+  TDirectory * dir =  (TDirectory*) inclusFile;
+  if( ncol > 1 ) dir = (TDirectory*)( inclusFile->Get(sep[1]));
+  if( !dir ) {
+    cout << " ReadInclusiveHistos wrong file name or dirname !!!!" << endl;
+    return;
+  }
+  
+  cout<<inclusFileName<<"\t"<<filename<<"\t";
+  if( ncol > 1 ) cout<<sep[1];
+  cout<<endl;
+  dir->Print();
+  
+  //dir->cd();    // Not needed in new implementation of AliJHistManager
+  
+  fHmgInclusive = new AliJHistManager("hst",sep[1]);
+  fHmgInclusive->LoadConfig();
+  
+  fhIetaTriggFromFile = fHmgInclusive->GetTH1D("hIetaTrigg");
+  fhIetaTriggFromFile.Print();
+  fhIetaTriggFromFile[0][0]->Print();
+  
+  fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg"); // TODO
+  fhIphiTriggFromFile.Print();
+  fhIetaAssocFromFile = fHmgInclusive->GetTH1D("hIetaAssoc");
+  fhIetaAssocFromFile.Print();
+  fhIphiAssocFromFile = fHmgInclusive->GetTH1D("fhIphiAssoc");
+  fhIphiAssocFromFile.Print();
+  
+  int numCent = fCard->GetNoOfBins(kCentrType);
+  int numPtt  = fCard->GetNoOfBins(kTriggType);
+  int numPta  = fCard->GetNoOfBins(kAssocType);
+  int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
+  int numZvtx = fCard->GetNoOfBins(kZVertType);
+  int numXlong = fCard->GetNoOfBins(kXeType);
+  
+  //------------ R e a d   mixed  D a t a ------------
+  const int zFirstBin = 0 ;
+  const int etaGapFirstBin = 0 ;
+  AliJTH1D hDEtaNearTmp = fHmgInclusive->GetTH1D("hDEtaNear");
+  AliJTH1D hDEta3DNearTmp = fHmgInclusive->GetTH1D("hDEtaNearXEbin");
+  for (int hic = 0;hic < numCent; hic++) {
+    for (int hit = 0; hit < numPtt;hit++){
+      for (int hia = 0; hia < numPta; hia++){
+        fhDEtaNearMixFromFile[hic][hit][hia]= hDEtaNearTmp[hic][zFirstBin][etaGapFirstBin][hit][hia];
+        for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices
+          for (int hiz = 0; hiz < numZvtx; hiz++) {
+            if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
+            TH1D *hid = hDEtaNearTmp[hic][hiz][iEtaGap][hit][hia];
+            fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
+          }
+        }
+        //normalize to triangle
+        double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
+        double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
+        int rebin = 4;
+        if(counts<5000) rebin=8;
+        if(counts<3000) rebin=10;
+        if(counts<1000) rebin=16;
+        fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
+        if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
+        //if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
+        //cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl;
+        
+      }
+      for(int iXlong = 0; iXlong < numXlong; iXlong++){
+        fhDEta3DNearMixFromFile[hic][hit][iXlong] = hDEta3DNearTmp[hic][zFirstBin][etaGapFirstBin][hit][iXlong];
+        for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices
+          for (int hiz = 0; hiz < numZvtx; hiz++) {
+            if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
+            TH1D *hid = hDEta3DNearTmp[hic][hiz][iEtaGap][hit][iXlong];
+            fhDEta3DNearMixFromFile[hic][hit][iXlong]->Add(hid);
+          }
+        }
+        //normalize to triangle
+        double counts  = fhDEta3DNearMixFromFile[hic][hit][iXlong]->Integral();
+        double bw      = fhDEta3DNearMixFromFile[hic][hit][iXlong]->GetBinWidth(1);
+        int rebin = 4;
+        if(counts<5000) rebin=8;
+        if(counts<3000) rebin=10;
+        if(counts<1000) rebin=16;
+        fhDEta3DNearMixFromFile[hic][hit][iXlong]->Rebin(rebin);
+        if(counts>0)  fhDEta3DNearMixFromFile[hic][hit][iXlong]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
+      }
+    }
+  }
+  
+  
+  //for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
+  //   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
+  //      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
+  //         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
+  //      }
+  //   }
+  //}
 }

@@ -22,7 +22,6 @@
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision)
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig)
 /// \endcond
 
 namespace EMCalTriggerPtAnalysis {
@@ -191,22 +190,6 @@ void AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
         << "], Patches[" << (fDecisionFromPatches[icase] ? "yes" : "no") << "]" << std::endl;
   }
 }
-
-/*
- * Resources of class AliEMCalTriggerAnaTriggerDecisionConfig
- */
-
-/**
- * Default constructor
- */
-AliEMCalTriggerAnaTriggerDecisionConfig::AliEMCalTriggerAnaTriggerDecisionConfig():
-	fSwapThresholds(kFALSE),
-	fUseOfflinePatches(kFALSE),
-	fEnergyType(kAmplitudeOnline)
-{
-	memset(fEnergyThresholds, 0, sizeof(double) * 4);
-}
-
 
 } /* namespace EMCalTriggerPtAnalysis */
 

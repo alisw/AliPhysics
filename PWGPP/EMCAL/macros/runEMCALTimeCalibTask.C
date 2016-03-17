@@ -129,25 +129,32 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
 
   taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
   //taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
-
-  //to load reference with wrong L1 phases to revert them back in pass1
-  //taskmbemcal->SetReferenceWrongL1PhasesRunByRunFileName("ReferenceSMwrongL1_LHC15n.root");
-  //taskmbemcal->LoadWrongReferenceRunByRunHistos();
-  //taskmbemcal->SetMinTime(300);
-  //taskmbemcal->SetMaxTime(900);
-  //taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+  //taskmbemcal->SwithOffFillHeavyHisto();
 
   // to load reference histograms run-by-run in pass2
   //taskmbemcal->SetReferenceRunByRunFileName("ReferenceSM_LHC15n.root");
   //taskmbemcal->LoadReferenceRunByRunHistos();
-  //taskmbemcal->SetMinTime(300);
-  //taskmbemcal->SetMaxTime(900);
-  //taskmbemcal->SetPassTimeHisto(1200,300.,900.);
+  ///taskmbemcal->SwitchOffBadReco(); 
+  //taskmbemcal->SetMinTime(200);
+  //taskmbemcal->SetMaxTime(800);
+  //taskmbemcal->SetPassTimeHisto(800,400.,800.);
+
+  //to apply L1 shift correction for badly reconstructed runs in muon_calo_pass1 LHC15f-m in run2
+  //additionally do in pass2:
+  //taskmbemcal->SwitchOnBadReco();
+  //taskmbemcal->SetMinTime(-200);
+  //taskmbemcal->SetMaxTime(200);    
+  //taskmbemcal->SetPassTimeHisto(800,-200.,200.);
+
 
   // to load reference calibration constants in pass3
   //taskmbemcal->SetReferenceFileName("Reference_LHC15i.root");
   //taskmbemcal->LoadReferenceHistos();
   //taskmbemcal->SetPassTimeHisto(1400,-350.,350.);
+
+  taskmbemcal->SetBadChannelMapSource(0);
+  if(taskmbemcal->GetBadChannelMapSource()==2) taskmbemcal->SetBadChannelFileName("badMap.root");
+
 
   //taskmbemcal->SelectCollisionCandidates(AliVEvent::kAnyINT);
   //taskmbemcal->SetDebugLevel(10);

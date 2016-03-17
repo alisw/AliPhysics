@@ -1,4 +1,3 @@
-// $Id$
 //
 // Calculation of rho, method: median all particle pt / multiplicity density.
 //
@@ -9,10 +8,12 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 
+#include "TLorentzVector.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
+#include "AliClusterContainer.h"
 #include "AliParticleContainer.h"
 
 ClassImp(AliAnalysisTaskRhoAverage)
@@ -53,122 +54,82 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
 
   // push all jets within selected acceptance into stack
 
+  AliParticleContainer* tracks = GetParticleContainer(0);
+  AliClusterContainer* clusters = GetClusterContainer(0);
+
   if (fNExclLeadPart > 0) {
 
-    if (fTracks && (fRhoType == 0 || fRhoType == 1)) {
-      
-      const Int_t Ntracks = fTracks->GetEntriesFast();
-      
-      for (Int_t it = 0; it < Ntracks; ++it) {
-	
-	AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(it));
-	
-	if (!track) {
-	  AliError(Form("%s: Could not receive track %d", GetName(), it));
-	  continue;
-	} 
-	
-	if (!AcceptTrack(track))
-	  continue;
-	
-	if (track->Pt() > maxPartPts[0]) {
-	  maxPartPts[1] = maxPartPts[0];
-	  maxPartIds[1] = maxPartIds[0];
-	  maxPartPts[0] = track->Pt();
-	  maxPartIds[0] = it+1;
-	} 
-	else if (track->Pt() > maxPartPts[1]) {
-	  maxPartPts[1] = track->Pt();
-	  maxPartIds[1] = it+1;
-	}
+    if (tracks && (fRhoType == 0 || fRhoType == 1)) {
+
+      AliVParticle *track = 0;
+      tracks->ResetCurrentID();
+      while ((track = tracks->GetNextAcceptParticle())) {
+
+        if (track->Pt() > maxPartPts[0]) {
+          maxPartPts[1] = maxPartPts[0];
+          maxPartIds[1] = maxPartIds[0];
+          maxPartPts[0] = track->Pt();
+          maxPartIds[0] = tracks->GetCurrentID()+1;
+        }
+        else if (track->Pt() > maxPartPts[1]) {
+          maxPartPts[1] = track->Pt();
+          maxPartIds[1] = tracks->GetCurrentID()+1;
+        }
       }
     }
 
-    if (fCaloClusters && (fRhoType == 0 || fRhoType == 2)) {
+    if (clusters && (fRhoType == 0 || fRhoType == 2)) {
 
-      const Int_t Nclusters = fCaloClusters->GetEntriesFast();
-      
-      for (Int_t ic = 0; ic < Nclusters; ++ic) {
-	
-	AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(ic));
-	
-	if (!cluster) {
-	  AliError(Form("%s: Could not receive cluster %d", GetName(), ic));
-	  continue;
-	} 
-	
-	if (!AcceptCluster(cluster))
-	  continue;
-	
-	TLorentzVector nPart;
-	cluster->GetMomentum(nPart, fVertex);
-	
-	if (nPart.Pt() > maxPartPts[0]) {
-	  maxPartPts[1] = maxPartPts[0];
-	  maxPartIds[1] = maxPartIds[0];
-	  maxPartPts[0] = nPart.Pt();
-	  maxPartIds[0] = -ic-1;
-	} 
-	else if (nPart.Pt() > maxPartPts[1]) {
-	  maxPartPts[1] = nPart.Pt();
-	  maxPartIds[1] = -ic-1;
-	}
+      AliVCluster *cluster = 0;
+      clusters->ResetCurrentID();
+      while ((cluster = clusters->GetNextAcceptCluster())) {
+        TLorentzVector nPart;
+        clusters->GetMomentum(nPart, clusters->GetCurrentID());
+
+        if (nPart.Pt() > maxPartPts[0]) {
+          maxPartPts[1] = maxPartPts[0];
+          maxPartIds[1] = maxPartIds[0];
+          maxPartPts[0] = nPart.Pt();
+          maxPartIds[0] = -clusters->GetCurrentID()-1;
+        }
+        else if (nPart.Pt() > maxPartPts[1]) {
+          maxPartPts[1] = nPart.Pt();
+          maxPartIds[1] = -clusters->GetCurrentID()-1;
+        }
       }
     }
- 
+
     if (fNExclLeadPart < 2) {
       maxPartIds[1] = 0;
       maxPartPts[1] = 0;
     }
   }
-  
-  if (fTracks && (fRhoType == 0 || fRhoType == 1)) {
 
-    const Int_t Ntracks = fTracks->GetEntriesFast();
-
-    for (Int_t it = 0; it < Ntracks && NpartAcc < NMAX; ++it) {
+  if (tracks && (fRhoType == 0 || fRhoType == 1)) {
+    AliVParticle *track = 0;
+    tracks->ResetCurrentID();
+    while ((track = tracks->GetNextAcceptParticle()) && NpartAcc < NMAX) {
 
       // exlcuding lead particles
-      if (it == maxPartIds[0]-1 || it == maxPartIds[1]-1)
-	continue;
-      
-      AliVTrack *track = static_cast<AliVTrack*>(fTracks->At(it));
-  
-      if (!track) {
-	AliError(Form("%s: Could not receive track %d", GetName(), it));
-	continue;
-      } 
-
-      if (!AcceptTrack(track))
-	continue;
+      if (tracks->GetCurrentID() == maxPartIds[0]-1 || tracks->GetCurrentID() == maxPartIds[1]-1)
+        continue;
 
       rhovec[NpartAcc] = track->Pt();
       ++NpartAcc;
     }
   }
 
-  if (fCaloClusters && (fRhoType == 0 || fRhoType == 2)) {
+  if (clusters && (fRhoType == 0 || fRhoType == 2)) {
 
-    const Int_t Nclusters = fCaloClusters->GetEntriesFast();
-
-    for (Int_t ic = 0; ic < Nclusters && NpartAcc < NMAX; ++ic) {
-
+    AliVCluster *cluster = 0;
+    clusters->ResetCurrentID();
+    while ((cluster = clusters->GetNextAcceptCluster()) && NpartAcc < NMAX) {
       // exlcuding lead particles
-      if (ic == -maxPartIds[0]-1 || ic == -maxPartIds[1]-1)
-	continue;
-      
-      AliVCluster *cluster = static_cast<AliVCluster*>(fCaloClusters->At(ic));
-      
-      if (!cluster) {
-	AliError(Form("%s: Could not receive cluster %d", GetName(), ic));
-	continue;
-      } 
-      
-      if (!AcceptCluster(cluster))
-	continue;
-      
+      if (clusters->GetCurrentID() == -maxPartIds[0]-1 || clusters->GetCurrentID() == -maxPartIds[1]-1)
+        continue;
+
       TLorentzVector nPart;
-      cluster->GetMomentum(nPart, fVertex);
+      clusters->GetMomentum(nPart, clusters->GetCurrentID());
 
       rhovec[NpartAcc] = nPart.Pt();
       ++NpartAcc;
@@ -180,13 +141,13 @@ Bool_t AliAnalysisTaskRhoAverage::Run()
   }
 
   Double_t rho = 0;
-  
+
   if (NpartAcc > 0) {
     if (fUseMedian)
       rho = TMath::Median(NpartAcc, rhovec);
     else
       rho = TMath::Mean(NpartAcc, rhovec);
-    
+
     rho *= NpartAcc / fTotalArea;
   }
 

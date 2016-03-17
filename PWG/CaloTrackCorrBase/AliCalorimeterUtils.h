@@ -185,6 +185,8 @@ class AliCalorimeterUtils : public TObject {
   Int_t         GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent* inputEvent) const;
   Int_t         GetModuleNumber(AliVCluster * cluster) const;
   Int_t         GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
+  Int_t         GetModuleNumberCellIndexesAbsCaloMap(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU, 
+                                                     Int_t & icolAbs, Int_t & irowAbs) const ;
 	
   //------------------------------
   // Modules fiducial region

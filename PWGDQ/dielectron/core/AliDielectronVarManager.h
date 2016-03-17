@@ -60,7 +60,7 @@
 #include <AliExternalTrackParam.h>
 #include <AliESDpid.h>
 #include <AliCentrality.h>
-#include <AliMultSelection.h>
+#include "AliMultSelection.h"
 #include <AliAODpidUtil.h>
 #include <AliPID.h>
 #include <AliPIDResponse.h>
@@ -92,18 +92,23 @@ public:
     kPy,                     // py
     kPz,                     // pz
     kPt,                     // transverse momentum
+    kPtMC,                   // MC transverse momentum
     kPtSq,                   // transverse momentum squared
     kP,                      // momentum
+    kPMC,                    // MC momentum
     kXv,                     // vertex position in x
     kYv,                     // vertex position in y
     kZv,                     // vertex position in z
     kOneOverPt,              // 1/pt
     kPhi,                    // phi angle
+    kPhiMC,                  // MC phi angle
     kTheta,                  // theta angle
     kEta,                    // pseudo-rapidity
+    kEtaMC,                  // MC pseudo-rapidity
     kY,                      // rapidity
     kE,                      // energy
     kM,                      // mass
+    kMMC,                    // MC mass
     kCharge,                 // charge
     kNclsITS,                // number of clusters assigned in the ITS
     kITSchi2Cl,              // chi2/cl in the ITS
@@ -125,7 +130,7 @@ public:
     
     kTPCActiveLength,       // TPC length in active volume
     kTPCGeomLength,         // TPC pT dependent geometrical length
-    
+
     kTrackStatus,            // track status bits
     kFilterBit,              // AOD filter bits
 
@@ -133,24 +138,31 @@ public:
     kTRDntracklets,          // number of TRD tracklets used for tracking/PID TODO: correct getter
     kTRDpidQuality,          // number of TRD tracklets used for PID
     kTRDchi2,                // chi2 in TRD
-    kTRDchi2Trklt,	     // chi2/trklts in TRD 
+    kTRDchi2Trklt,	     // chi2/trklts in TRD
     kTRDprobEle,             // TRD electron pid probability
-    kTRDprobPio,             // TRD electron pid probability
-    kTRDprob2DEle,           // TRD electron pid probability 2D LQ 
-    kTRDprob2DPio,           // TRD electron pid probability 2D LQ
+    kTRDprobPio,             // TRD pion pid probability
+    kTRDprob2DEle,           // TRD electron pid probability 2D LQ
+    kTRDprob2DPio,           // TRD pion pid probability 2D LQ
+    kTRDprob2DPro,           // TRD proton pid probability 2D LQ
+    kTRDprob3DEle,           // TRD electron pid probability 3D LQ
+    kTRDprob3DPio,           // TRD pion pid probability 3D LQ
+    kTRDprob3DPro,           // TRD proton pid probability 3D LQ
+    kTRDprob7DEle,           // TRD electron pid probability 7D LQ
+    kTRDprob7DPio,           // TRD pion pid probability 7D LQ
+    kTRDprob7DPro,           // TRD proton pid probability 7D LQ
     kTRDphi,                 // Phi angle of the track at the entrance of the TRD
     kTRDpidEffLeg,           // TRD pid efficiency from conversion electrons
     kTRDsignal,              // TRD signal
     kTRDeta,                 // eta of the track at the entrance of the TRD
     kInTRDacceptance,        // in TRD acceptance
-      
+
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
     kTrackLength,            // Track length
 
 
     kPdgCode,                // PDG code
-    kPdgCodeMother, 
+    kPdgCodeMother,
     kPdgCodeGrandMother,     // PDG code of the grandmother
     kHasCocktailMother,      // true if particle is added via MC generator cocktail (AliDielectronSignal::kDirect)
     kHasCocktailGrandMother, // true if particle is added via MC generator cocktail (AliDielectronSignal::kDirect)
@@ -473,6 +485,19 @@ public:
     kCentralityV0C,          // event centrality fraction V0C
     kCentralityZNA,          // event centrality fraction ZNA
     kCentralitySPD,          // centrality using SPD (from second layer)
+    //centrality determination for Run 2    
+    kCentralityNew,          //event centrality V0M
+    kCentralityCL0,          //event centrality CL0
+    kCentralityCL1,          //event centrality CL1
+    kCentralitySPDClusters,          //event centrality SPD
+    kCentralitySPDTracklets,          //event centrality SPDTracklets
+    kCentralityCL0plus05,    //event centrality VO AP +0.5%
+    kCentralityCL0minus05,    //event centrality VO AP -0.5%
+    kCentralityCL0plus10,    //event centrality VO AP +1.0%
+    kCentralityCL0minus10,    //event centrality VO AP -1.0%
+    
+    
+    
     kTriggerInclONL,         // online trigger bits fired (inclusive)
     kTriggerInclOFF,         // offline trigger bits fired (inclusive)
     kTriggerExclOFF,         // offline only this trigger bit fired (exclusive)
@@ -634,6 +659,22 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
 
   values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
 
+  if(Req(kPtMC)||Req(kPMC)||Req(kPhiMC)||Req(kEtaMC)){
+    values[AliDielectronVarManager::kPtMC]      = -999.;
+    values[AliDielectronVarManager::kPMC]       = -999.;
+    values[AliDielectronVarManager::kPhiMC]     = -999.;
+    values[AliDielectronVarManager::kEtaMC]     = -999.;
+    AliVParticle *mcTrack(0x0);
+    if(AliDielectronMC::Instance()->HasMC())
+      mcTrack = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs(particle->GetLabel()));
+    if(mcTrack){
+      values[AliDielectronVarManager::kPtMC]   = mcTrack->Pt();
+      values[AliDielectronVarManager::kPMC]    = mcTrack->P();
+      values[AliDielectronVarManager::kPhiMC]  = TVector2::Phi_0_2pi(mcTrack->Phi());
+      values[AliDielectronVarManager::kEtaMC]  = mcTrack->Eta();
+    }
+  }
+
 //   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
   for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
     values[i]=fgData[i];
@@ -702,12 +743,6 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   for(j=63; j<159; ++j) n+=tpcClusterMap.TestBitNumber(j);
   if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
 
-  int mode = particle->GetInnerParam() ? 1:0;
-  
-  values[kTPCActiveLength] = particle->GetLengthInActiveZone(mode, 2., 220., fgEvent->GetMagneticField());
-  values[kTPCGeomLength] = particle->GetTPCClusterInfo(2,1) / ( 130 - TMath::Power( TMath::Abs( particle->GetSigned1Pt() ),1.5 ) );
-  
-  
   values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
   values[AliDielectronVarManager::kFilterBit]     = 0;
   
@@ -880,21 +915,22 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if(Req(kTRDonlineA)||Req(kTRDonlineLayerMask)||Req(kTRDonlinePID)||Req(kTRDonlinePt)||Req(kTRDonlineStack)||Req(kTRDonlineTrackInTime)||Req(kTRDonlineSector)||Req(kTRDonlineFlagsTiming)||Req(kTRDonlineLabel)||Req(kTRDonlineNTracklets)||Req(kTRDonlineFirstLayer))
     FillVarVTrdTrack(particle,values);
 
-  if(out){
-    AliExternalTrackParam out_tmp(*out);
-    out_tmp.PropagateTo(AliTRDgeometry::GetXtrdBeg(),fgEvent->GetMagneticField());
-    values[AliDielectronVarManager::kTRDeta]     = out_tmp.Eta();
+  if( fgEvent && fgEvent->GetMagneticField() ){
+    if(out){
+      AliExternalTrackParam out_tmp(*out);
+      out_tmp.PropagateTo(AliTRDgeometry::GetXtrdBeg(), fgEvent->GetMagneticField());
+      values[AliDielectronVarManager::kTRDeta] = out_tmp.Eta();
+    }
+    else{
+      AliESDtrack particle_tmp(*particle);
+      particle_tmp.PropagateTo(AliTRDgeometry::GetXtrdBeg(), fgEvent->GetMagneticField());
+      values[AliDielectronVarManager::kTRDeta] = particle_tmp.Eta();
+    }
+    int mode = particle->GetInnerParam() ? 1:0;
+    values[kTPCActiveLength] = particle->GetLengthInActiveZone(mode, 2., 220., fgEvent->GetMagneticField());
+    values[kTPCGeomLength] = values[kTPCActiveLength] / ( 130 - TMath::Power( TMath::Abs( particle->GetSigned1Pt() ),1.5 ) );
+    values[AliDielectronVarManager::kInTRDacceptance] = TMath::Abs( values[AliDielectronVarManager::kTRDeta] )<0.85 && (  (values[AliDielectronVarManager::kCharge]<0&&(  values[AliDielectronVarManager::kPhi]<1.32 || (values[AliDielectronVarManager::kPhi]>1.98 && values[AliDielectronVarManager::kPhi]<4.10)||  ( values[AliDielectronVarManager::kPhi]>5.12  && values[AliDielectronVarManager::kPhi]<5.48  && TMath::Abs( values[AliDielectronVarManager::kTRDeta] )>0.155 )  || values[AliDielectronVarManager::kPhi]>5.48 )) ||   (values[AliDielectronVarManager::kCharge]>0&&(  values[AliDielectronVarManager::kPhi]<1.52 || (values[AliDielectronVarManager::kPhi]>2.20 && values[AliDielectronVarManager::kPhi]<4.32)||  ( values[AliDielectronVarManager::kPhi]>5.32  && values[AliDielectronVarManager::kPhi]<5.68  && TMath::Abs( values[AliDielectronVarManager::kTRDeta]  )>0.155 )  || values[AliDielectronVarManager::kPhi]>5.68 )) )  ? 1: 0;
   }
-  else{
-    AliESDtrack particle_tmp(*particle);
-    particle_tmp.PropagateTo(AliTRDgeometry::GetXtrdBeg(),fgEvent->GetMagneticField());
-    values[AliDielectronVarManager::kTRDeta]     = particle_tmp.Eta();
-  }
-  
-  values[AliDielectronVarManager::kInTRDacceptance] = TMath::Abs( values[AliDielectronVarManager::kTRDeta] )<0.85 && (  (values[AliDielectronVarManager::kCharge]<0&&(  values[AliDielectronVarManager::kPhi]<1.32 || (values[AliDielectronVarManager::kPhi]>1.98 && values[AliDielectronVarManager::kPhi]<4.10)||  ( values[AliDielectronVarManager::kPhi]>5.12  && values[AliDielectronVarManager::kPhi]<5.48  && TMath::Abs( values[AliDielectronVarManager::kTRDeta] )>0.155 )  || values[AliDielectronVarManager::kPhi]>5.48 )) ||   (values[AliDielectronVarManager::kCharge]>0&&(  values[AliDielectronVarManager::kPhi]<1.52 || (values[AliDielectronVarManager::kPhi]>2.20 && values[AliDielectronVarManager::kPhi]<4.32)||  ( values[AliDielectronVarManager::kPhi]>5.32  && values[AliDielectronVarManager::kPhi]<5.68  && TMath::Abs( values[AliDielectronVarManager::kTRDeta]  )>0.155 )  || values[AliDielectronVarManager::kPhi]>5.68 )) )  ? 1: 0;
-  
-  
-  
   
 }
 
@@ -1091,16 +1127,35 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     Double_t prob[AliPID::kSPECIES]={0.0};
     // switch computation off since it takes 70% of the CPU time for filling all AODtrack variables
     // TODO: find a solution when this is needed (maybe at fill time in histos, CFcontainer and cut selection)
+    // 1D TRD PID
     if( Req(kTRDprobEle) || Req(kTRDprobPio) ){
       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
       values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
       values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
     }
-    if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) ){
+    // 2D TRD PID
+    if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) || Req(kTRDprob2DPro) ){
       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
       values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
       values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
+      values[AliDielectronVarManager::kTRDprob2DPro]    = prob[AliPID::kProton];
     }
+    // 3D TRD PID
+     if( Req(kTRDprob3DEle) || Req(kTRDprob3DPio) || Req(kTRDprob3DPro) ){
+       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D); 
+       values[AliDielectronVarManager::kTRDprob3DEle]    = prob[AliPID::kElectron]; 
+       values[AliDielectronVarManager::kTRDprob3DPio]    = prob[AliPID::kPion]; 
+       values[AliDielectronVarManager::kTRDprob3DPro]    = prob[AliPID::kProton]; 
+     } 
+    // 7D TRD PID
+     if( Req(kTRDprob7DEle) || Req(kTRDprob7DPio) || Req(kTRDprob7DPro) ){ 
+       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ7D); 
+       values[AliDielectronVarManager::kTRDprob7DEle]    = prob[AliPID::kElectron]; 
+       values[AliDielectronVarManager::kTRDprob7DPio]    = prob[AliPID::kPion]; 
+       values[AliDielectronVarManager::kTRDprob7DPro]    = prob[AliPID::kProton]; 
+     } 
+
+
     //restore TPC signal if it was changed
     pid->SetTPCsignal(origdEdx);
   }
@@ -1367,6 +1422,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
                        2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
   values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
+  values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
+  values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);  
 
@@ -1704,6 +1761,26 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
 	values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
+        // Calculate pair variables for corresponding generated pair
+        if(AliDielectronMC::Instance()->HasMC() && (Req(kMMC)||Req(kPtMC)||Req(kPMC)||Req(kEtaMC)||Req(kPhiMC))){
+          values[AliDielectronVarManager::kMMC]   = -999.;
+          values[AliDielectronVarManager::kPtMC]  = -999.; 
+          values[AliDielectronVarManager::kPMC]   = -999.;
+          values[AliDielectronVarManager::kPhiMC] = -999.;
+          values[AliDielectronVarManager::kEtaMC] = -999.;
+          AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetFirstDaughterP() )->GetLabel()));
+          AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetSecondDaughterP())->GetLabel()));
+          if(mcDaughter1 && mcDaughter2){
+            TLorentzVector lv1MC,lv2MC;
+            lv1MC.SetPtEtaPhiM(mcDaughter1->Pt(),mcDaughter1->Eta(),mcDaughter1->Phi(),mElectron);
+            lv2MC.SetPtEtaPhiM(mcDaughter2->Pt(),mcDaughter2->Eta(),mcDaughter2->Phi(),mElectron);
+            values[AliDielectronVarManager::kMMC]   = (lv1MC+lv2MC).M();
+            values[AliDielectronVarManager::kPtMC]  = (lv1MC+lv2MC).Pt();
+            values[AliDielectronVarManager::kPMC]   = (lv1MC+lv2MC).P();
+            values[AliDielectronVarManager::kPhiMC] = TVector2::Phi_0_2pi( (lv1MC+lv2MC).Phi() );
+            values[AliDielectronVarManager::kEtaMC] = (lv1MC+lv2MC).Eta();
+          }
+        }
 	/*
 	//Also not overwritten, still coming from KF particle
 	//where needed to be replaced by independent determination
@@ -1962,8 +2039,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   }
   values[AliDielectronVarManager::kMixingBin]=0;
 
-  const AliVVertex *primVtx = event->GetPrimaryVertex();
-  
   values[AliDielectronVarManager::kXvPrim]       = 0;
   values[AliDielectronVarManager::kYvPrim]       = 0;
   values[AliDielectronVarManager::kZvPrim]       = 0;
@@ -1980,7 +2055,36 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNevents]         = 0; //always fill bin 0;
   values[AliDielectronVarManager::kRefMult]         = 0;
   values[AliDielectronVarManager::kRefMultTPConly]  = 0;
-  
+
+  //Centrality Run2 - from 2015 on
+  values[AliDielectronVarManager::kCentralityNew] = 0.;
+  values[AliDielectronVarManager::kCentralityCL0] = 0.;
+  values[AliDielectronVarManager::kCentralityCL1] = 0.;
+  values[AliDielectronVarManager::kCentralitySPDClusters]  = 0.;
+  values[AliDielectronVarManager::kCentralitySPDTracklets] = 0.;
+  values[AliDielectronVarManager::kCentralityCL0plus05]    = 0.;
+  values[AliDielectronVarManager::kCentralityCL0minus05]   = 0.;
+  values[AliDielectronVarManager::kCentralityCL0plus10]    = 0.;
+  values[AliDielectronVarManager::kCentralityCL0minus10]   = 0.;
+
+  AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+  if(!multSelection){
+    // only for debugging purpose 
+    // printf("Did not find AliMultSelection!!! Mostly defined for run2 data");
+  }
+  else {
+    values[AliDielectronVarManager::kCentralityNew]          = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+    values[AliDielectronVarManager::kCentralityCL0]          = multSelection->GetMultiplicityPercentile("CL0",kFALSE);
+    values[AliDielectronVarManager::kCentralityCL1]          = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    values[AliDielectronVarManager::kCentralitySPDClusters]  = multSelection->GetMultiplicityPercentile("SPDClustersCorr",kFALSE);
+    values[AliDielectronVarManager::kCentralitySPDTracklets] = multSelection->GetMultiplicityPercentile("SPDTrackletsCorr",kFALSE);
+    values[AliDielectronVarManager::kCentralityCL0plus05]    = multSelection->GetMultiplicityPercentile("CL0plus05",kFALSE);
+    values[AliDielectronVarManager::kCentralityCL0minus05]   = multSelection->GetMultiplicityPercentile("CL0minus05",kFALSE);
+    values[AliDielectronVarManager::kCentralityCL0plus10]    = multSelection->GetMultiplicityPercentile("CL0plus10",kFALSE);
+    values[AliDielectronVarManager::kCentralityCL0minus10]   = multSelection->GetMultiplicityPercentile("CL0minus10",kFALSE);
+  }
+
+  const AliVVertex *primVtx = event->GetPrimaryVertex();
   if (primVtx){
     //    printf("prim vertex reco: %f \n",primVtx->GetX());
     values[AliDielectronVarManager::kXvPrim]       = primVtx->GetX();
@@ -2196,29 +2300,22 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   // Fill common AliVEvent interface information
   FillVarVEvent(event, values);
 
+  // Centrality Run1
   Double_t centralityF=-1; 
   Double_t centralitySPD=-1; 
   Double_t centralityV0A = -1; 
   Double_t centralityV0C = -1;
   Double_t centralityZNA = -1;
 
-  //centrality 2015 only C0M, CL0, CL1 supported at the moment 18.01.2016
-  AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(event)->FindListObject("MultSelection");
-  if(MultSelection){
-    centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-    centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    
-  }else{
-    printf("did not find AliMultSelection!");
-  }
   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(event)->GetCentrality();
+  if(esdCentrality) {
+    centralityF   = esdCentrality->GetCentralityPercentile("V0M");
+    centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+    centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
+    centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
+    centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
+  }
 
-  //  if (esdCentrality) centralityF = esdCentrality->GetCentralityPercentile("V0M");
-  // if (esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
-  if (esdCentrality) centralityV0A = esdCentrality->GetCentralityPercentile("V0A");
-  if (esdCentrality) centralityV0C = esdCentrality->GetCentralityPercentile("V0C");
-  if (esdCentrality) centralityZNA = esdCentrality->GetCentralityPercentile("ZNA");
-  
   // Fill AliESDEvent interface specific information
   const AliESDVertex *primVtx = event->GetPrimaryVertex();
   values[AliDielectronVarManager::kXRes]       = primVtx->GetXRes();
@@ -2229,7 +2326,7 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
-  
+
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC(); 
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
 
@@ -2291,23 +2388,29 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
   assert(header&&"Not a standard AOD");
 
+  const AliAODEvent* ev = static_cast<const AliAODEvent*>(event);
+
+
+  // Centrality Run1
   Double_t centralityF=-1; 
   Double_t centralitySPD=-1; 
   Double_t centralityV0A = -1; 
   Double_t centralityV0C = -1;
   Double_t centralityZNA = -1;
+
   AliCentrality *aodCentrality = header->GetCentralityP();
   if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
   if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
   if (aodCentrality) centralityV0A = aodCentrality->GetCentralityPercentile("V0A");
   if (aodCentrality) centralityV0C = aodCentrality->GetCentralityPercentile("V0C");
   if (aodCentrality) centralityZNA = aodCentrality->GetCentralityPercentile("ZNA");
+
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
   values[AliDielectronVarManager::kCentralityV0A] = centralityV0A;
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
-
+  
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
 
@@ -2901,13 +3004,13 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   if(event->IsA() == AliESDEvent::Class()) {
     const AliESDEvent* esdEv = static_cast<const AliESDEvent*>(event);
     //   }
-  //  AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
-    //if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
+   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
+    if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
     //2015 cent    
-     AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
-    if(MultSelection){
-      centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-      }
+    // AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
+    //if(MultSelection){
+    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    // }
   }
   if(event->IsA() == AliAODEvent::Class()) {
     const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
@@ -2915,6 +3018,12 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     assert(header&&"Not a standard AOD");
     AliCentrality *aodCentrality = header->GetCentralityP();
     if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
+        //2015 cent    
+// AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
+    //if(MultSelection){
+    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    // }
+   
   }
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   if(!primVtx) return;

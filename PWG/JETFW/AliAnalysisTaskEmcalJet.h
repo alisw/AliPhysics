@@ -15,6 +15,11 @@ class AliVParticle;
 
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
  public:
+  typedef AliJetContainer::EJetType_t EJetType_t;
+  typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
+  typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
+  typedef AliJetContainer::JetAcceptanceType JetAcceptanceType;
+
   AliAnalysisTaskEmcalJet();
   AliAnalysisTaskEmcalJet(const char *name, Bool_t histo=kFALSE); 
   virtual ~AliAnalysisTaskEmcalJet();
@@ -47,13 +52,18 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   const TString&              GetRhoName(Int_t c = 0) const;
   AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius = 0.4);
   AliJetContainer            *AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType = AliJetContainer::kUser, Float_t jetRadius = 0.4);
+  AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
+      JetAcceptanceType accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
+  AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
+      JetAcceptanceType accType, TString tag = "Jet");
+  void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray.Add(cont)  ;}
+
   void                        RemoveJetContainer(Int_t i)                        { fJetCollArray.RemoveAt(i);} 
   AliJetContainer            *GetJetContainer(Int_t i=0)                                               const;
   AliJetContainer            *GetJetContainer(const char* name)                                        const;
 
  protected:
   virtual Bool_t              AcceptJet(AliEmcalJet* jet, Int_t c =0);
-  Bool_t                      AcceptBiasJet(AliEmcalJet* jet, Int_t c =0);
   Double_t                    GetLeadingHadronPt(AliEmcalJet* jet, Int_t c =0);
   void                        ExecOnce()                                                                    ;
 
@@ -69,14 +79,14 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Int_t                       GetNJets(Int_t i=0)                                                      const;
   Double_t                    GetRhoVal(Int_t i=0)                                                     const;
 
-  TString                     fRhoName;                    // rho name
-  TString                     fLocalRhoName;               // name for local rho
-  TObjArray                   fJetCollArray;               // jet collection array
+  TString                     fRhoName;                    /// rho name
+  TString                     fLocalRhoName;               /// name for local rho
+  TObjArray                   fJetCollArray;               /// jet collection array
 
-  TClonesArray               *fJets;                       //!jets
-  AliRhoParameter            *fRho;                        //!event rho
-  AliLocalRhoParameter       *fLocalRho;                   //!local event rho
-  Double_t                    fRhoVal;                     //!event rho value, same for local rho
+  TClonesArray               *fJets;                       //!<!jets
+  AliRhoParameter            *fRho;                        //!<!event rho
+  AliLocalRhoParameter       *fLocalRho;                   //!<!local event rho
+  Double_t                    fRhoVal;                     //!<!event rho value, same for local rho
 
  private:
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented

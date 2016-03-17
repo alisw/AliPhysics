@@ -43,6 +43,7 @@ public:
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
     void ProcessPhotonCandidates();
+    void SetIsMC(Bool_t isMC){ fIsMC = isMC;}
   //  void CalculatePi0Candidates();
     //void CalculateBackground();
   //  void CalculateBackgroundRP();
@@ -80,6 +81,7 @@ public:
     void                                 ProcessPhotonCandidatesforV2();
     void                                 SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
     void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
+    void                                 SetFilterVariable(Int_t FilterVariable, Double_t MinFilter, Double_t MaxFilter) { fFilterVariable = FilterVariable; fMinFilter = MinFilter; fMaxFilter = MaxFilter;}
     
     
 protected:
@@ -183,6 +185,12 @@ protected:
   Float_t               fMaxMass;                        //
   Float_t               fMinKappa;                       //
   Float_t               fMaxKappa;                       //
+  Int_t                  fFilterVariable;                //
+  Double_t               fMinFilter;                      //
+  Double_t               fMaxFilter;                      //
+  Bool_t                fIsMC;                            //
+  AliMCEvent*                 fMCEvent;                   //
+  AliStack*                   fMCStack;                   //
 
     
 private:
@@ -190,10 +198,12 @@ private:
 	AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
 	AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
 	AliFlowEvent         *fFlowEvent; //! flow events Inclusive e
+  
+  Bool_t MCElectronElectron( AliAODConversionPhoton *MCPhoton );
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-	ClassDef(AliAnalysisTaskGammaConvFlow, 3);
+	ClassDef(AliAnalysisTaskGammaConvFlow, 5);
 };
 
 #endif

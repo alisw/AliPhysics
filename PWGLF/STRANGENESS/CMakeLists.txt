@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFSTRANGENESS)
+set(MODULE PWGLFSTRANGENESS)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS)
@@ -27,7 +28,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
-                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Hypernuclei
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
@@ -51,6 +51,7 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
   Cascades/AliAnalysisTaskExtractCascade.cxx
+  Cascades/AliAnalysisTaskExtractCascadePbPbRun2.cxx
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
@@ -58,26 +59,8 @@ set(SRCS
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   Correlations/AliAnalysisTaskV0ChCorrelations.cxx
-  Cascades/AliAnalysisTaskCheckCascadepp276.cxx
-  Cascades/AliAnalysisTaskCheckPerformanceCascadepp276.cxx
-  Hypernuclei/AliAnalysisTaskLambdaNAOD.cxx
-  Hypernuclei/AliAnalysisTaskHdibaryonLPpi.cxx
-  Hypernuclei/AliAnalysisTaskHelium3Pi.cxx
-  Hypernuclei/AliAnalysisTaskHelium3PiAOD.cxx
-  Hypernuclei/AliAnalysisTaskHelium3PiMC.cxx
-  Hypernuclei/AliAODRecoDecayLF.cxx
-  Hypernuclei/AliAODRecoDecayLF2Prong.cxx
-  Hypernuclei/AliAODNuclExReplicator.cxx
-  Hypernuclei/AliAnalysisTaskESDNuclExFilter.cxx
-  Hypernuclei/AliAODMCNuclExReplicator.cxx
-  Hypernuclei/AliAnalysisTaskESDNuclExFilterMC.cxx
-  Hypernuclei/AliAnalysisTaskReadNuclexAOD.cxx
-  Hypernuclei/AliAnalysisTaskAntiHe4.cxx
-  Hypernuclei/AliAnalysisTaskNucleiv2.cxx
-  Hypernuclei/AliAnalysisTaskNucleiv2SP.cxx
-  Hypernuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
+  Cascades/AliAnalysisTaskCheckCascadepp.cxx
+  Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
   )
@@ -121,7 +104,6 @@ install(FILES ${HDRS} DESTINATION include)
 # install macros
 install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
-install(DIRECTORY Hypernuclei DESTINATION PWGLF/STRANGENESS)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)

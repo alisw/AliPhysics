@@ -445,6 +445,10 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     cutsobj=((AliRDHFCutsDStartoKpipi*)dir->Get(dir->GetListOfKeys()->At(2)->GetName()));
     massD=(TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass()); 
   }
+  if(partname.Contains("Ds")) {
+    cutsobj=((AliRDHFCutsDstoKKpi*)dir->Get(dir->GetListOfKeys()->At(2)->GetName()));
+    massD=(TDatabasePDG::Instance()->GetParticle(431)->Mass());
+  }
 
   TList *list =(TList*)dir->Get(listname.Data());
   if(!list){

@@ -154,6 +154,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.67);
 	str.ReplaceAll("#cbar",",");
+	str.ReplaceAll("+","#plus"); 
+	str.ReplaceAll("-","#minus"); 
 	tl->SetTitle("");
 	tl->SetTextSize(0.042);
 	dZeroUnc=str.Data();
@@ -164,6 +166,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.595); 
 	str.ReplaceAll("#cbar",","); 
+	str.ReplaceAll("+","#plus"); 
+	str.ReplaceAll("-","#minus"); 
 	tl->SetTitle("");
 	tl->SetTextSize(0.042);
 	dStarUnc=str.Data();
@@ -173,6 +177,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(0.5);
 	tl->SetY(0.52); 
 	str.ReplaceAll("#cbar",","); 
+	str.ReplaceAll("+","#plus"); 
+	str.ReplaceAll("-","#minus"); 
 	tl->SetTitle("");
 	tl->SetTextSize(0.042);
 	dPlusUnc=str.Data();	
@@ -181,14 +187,17 @@ void RestylePlot(TPad * pad, Int_t pos){
     } //end of TLatex 'if'
 
     if(strName.Contains("TH1")) {
-      TH1D *hist = (TH1D*)lc->At(jl);  
+      TH1D *hist = (TH1D*)lc->At(jl); 
       if(hist->GetMarkerColor()==kRed) {
 	maxY[0] = hist->GetBinContent(hist->GetMaximumBin());
-	hist->SetMarkerSize(hist->GetMarkerSize()+0.15);
+	hist->SetMarkerSize(1.8);
 	hist->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+	hist->GetXaxis()->CenterTitle(kTRUE);
 	hist->GetXaxis()->SetTitleSize(0.05);
 	hist->GetXaxis()->SetTitleOffset(1.00);
 	hist->GetXaxis()->SetLabelSize(0.04);
+	hist->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
+	hist->GetYaxis()->CenterTitle(kTRUE);
 	hist->GetYaxis()->SetTitleSize(0.05);
 	hist->GetYaxis()->SetTitleOffset(1.14);
 	hist->GetYaxis()->SetLabelSize(0.04);
@@ -202,7 +211,8 @@ void RestylePlot(TPad * pad, Int_t pos){
       }
       if(hist->GetMarkerColor()==kAzure-2) {
 	maxY[1] = hist->GetBinContent(hist->GetMaximumBin());
-	hist->SetMarkerSize(hist->GetMarkerSize()+0.4);	
+	hist->SetMarkerSize(2.5);	
+	hist->SetMarkerStyle(33);
 	hist->SetLineColor(kAzure-2);
 	hist->SetLineWidth(1);		
 	nextMeson=2;
@@ -211,7 +221,7 @@ void RestylePlot(TPad * pad, Int_t pos){
       }
       if(hist->GetMarkerColor()==kGreen+3) {
 	maxY[2] = hist->GetBinContent(hist->GetMaximumBin());
-	hist->SetMarkerSize(hist->GetMarkerSize()+0.3);	
+	hist->SetMarkerSize(1.8);
 	hist->SetLineColor(kGreen+3);
 	hist->SetLineWidth(1);			
 	nextMeson=3;

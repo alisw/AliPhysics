@@ -114,6 +114,8 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPtRatio:      return "PtRatio";
       case kDipAngle:     return "DipAngle";
       case kCosThetaStar: return "CosThetaStar";
+      case kCosThetaJackson:    return "CosThetaJackson";
+      case kCosThetaTransversity:    return "CosThetaTransversity";
       case kAngleLeading: return "AngleToLeading";
       case kFirstDaughterPt: return "FirstDaughterPt";
       case kSecondDaughterPt: return "SecondDaughterPt";
@@ -123,6 +125,8 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kFirstDaughterDCA: return "FirstDaughterDCA";
       case kSecondDaughterDCA: return "SecondDaughterDCA";
       case kNSisters:     return "NumberOfSisters";
+      case kPairPtRes:        return "PairPtResolution";
+      case kPairYRes:         return "PairYResolution";
       default:            return "Undefined";
    }
 }
@@ -188,6 +192,10 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->DipAngle(fUseMCInfo);
       case kCosThetaStar:
          return pair->CosThetaStar(fUseMCInfo);
+      case kCosThetaJackson:
+         return pair->CosThetaJackson(fUseMCInfo);
+      case kCosThetaTransversity:
+         return pair->CosThetaTransversity(fUseMCInfo);
       case kAngleLeading:
          l = event->LeadingParticle();
          if (l) {
@@ -219,6 +227,10 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->DaughterDCA(1);
       case kNSisters:
          return pair->NSisters();
+      case kPairPtRes:
+         return pair->PairPtRes();
+      case kPairYRes:
+         return pair->PairYRes();     
       default:
          AliError("Invalid value type");
          return 1E20;

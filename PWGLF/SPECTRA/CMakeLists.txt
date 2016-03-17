@@ -14,7 +14,8 @@
 # **************************************************************************/
 
 #Module
-set (MODULE PWGLFspectra)
+set(MODULE PWGLFspectra)
+add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA)
@@ -26,9 +27,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
-		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+            		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
+		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
   )
 
 # Sources - alphabetical order
@@ -81,16 +83,6 @@ set(SRCS
   PiKaPr/TestAOD/AliSpectraBothPID.cxx
   PiKaPr/TestAOD/AliAnalysisTaskSpectraBoth.cxx
   PiKaPr/TestAOD/AliMultiplictyLoaderTask.cxx
-  Nuclei/B2/AliLnID.cxx
-  Nuclei/B2/AliLnHistoMap.cxx
-  Nuclei/B2/AliLnAODtrackCuts.cxx
-  Nuclei/B2/AliAnalysisTaskB2.cxx
-  Nuclei/B2/AliAnalysisTaskB2AOD.cxx
-  Nuclei/masses/AliAnalysisNucleiMass.cxx
-  Nuclei/masses/AliAnalysisNuclMult.cxx
-  Nuclei/masses/AliAnalysisMCNuclMult.cxx
-  Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
-  Nuclei/deuteronpA/AliAnalysisDeuteronTree.cxx
   XtAnalysis/AliXtAnalysis.cxx
   XtAnalysis/AliJXtHistos.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
@@ -151,7 +143,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
@@ -162,8 +154,6 @@ install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
-install(DIRECTORY Nuclei/B2/macros DESTINATION PWGLF/SPECTRA/Nuclei/B2)
-install(DIRECTORY Nuclei/masses  DESTINATION PWGLF/SPECTRA/Nuclei)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)

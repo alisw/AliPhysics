@@ -205,10 +205,11 @@ protected:
     UShort_t cLow     = centAxis && !onlyMB ? centAxis->GetXmin() : 0;
     UShort_t cHigh    = centAxis && !onlyMB ? centAxis->GetXmax() : 100;
 
-    CompileScript("OtherData.C", "", "RefData", false);
+    // CompileScript("OtherData.C", "", "RefData", false);
 
     // If we have V0AND trigger, get NSD other data
     TMultiGraph* other = 0;
+#if 0
     if (!centAxis) {
       Int_t   oT = (trigger == 0x2000) ? 0x4 : trigger;
       TString oC = Form("RefData::GetData(%hu,%hu,%hu,%hu,%hu,0xF)", 
@@ -227,6 +228,7 @@ protected:
 	if (oM) other->Add(oM);
       }
     }
+#endif     
     if (other) {
       // p1->Clear();
       // other->Draw("ap");
@@ -241,7 +243,6 @@ protected:
         g->DrawClone("same p");
       }
     }
-    
 
     fBody->cd();
     p2->Draw();
