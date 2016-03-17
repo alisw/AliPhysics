@@ -148,7 +148,7 @@ private:
     Float_t fTreeCascVarV0CosPointingAngleSpecial;   //!
     Float_t fTreeCascVarV0Radius;             //!
     Int_t   fTreeCascVarLeastNbrClusters;     //!
-    Int_t   fTreeCascVarCentrality;         //!
+    Float_t fTreeCascVarCentrality;         //!
     Float_t fTreeCascVarDistOverTotMom;       //!
 
     Float_t fTreeCascVarNegNSigmaPion;   //!
