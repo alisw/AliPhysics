@@ -37,7 +37,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskT0Analysis.C");
   //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskMeanVertexCalib.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskSDDCalib.C"); 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/AD/AddTaskADCalib.C")
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/AD/AddTaskADCalib.C");
 
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);
