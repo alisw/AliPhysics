@@ -294,7 +294,6 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha min");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"out");    
     fHistograms->Add(fHistoMesonBGCuts);
-    
   } else {
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
@@ -319,11 +318,10 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"dca gamma gamma");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"dca R prim Vtx");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"dca Z prim Vtx");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(10,"out");    
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(10,"out");
+    fHistograms->Add(fHistoMesonBGCuts);
   }  
   
-  fHistograms->Add(fHistoMesonBGCuts);
-
   if (fIsMergedClusterCut == 1){
     fHistoInvMassBefore=new TH1F(Form("InvMassMeson Before %s",GetCutNumber().Data()),"InvMassMeson Before",1000,0,1);
     fHistograms->Add(fHistoInvMassBefore);
@@ -340,7 +338,6 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
 
     fHistoDCAZMesonPrimVtxBefore=new TH1F(Form("DCAZMesonPrimVtx Before %s",GetCutNumber().Data()),"DCAZMesonPrimVtx Before",401,-10,10);
     fHistograms->Add(fHistoDCAZMesonPrimVtxBefore);
-
   }
 
   if (fIsMergedClusterCut == 0){
