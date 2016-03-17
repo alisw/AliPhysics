@@ -57,6 +57,9 @@ public:
   
   void SetADCTail(Float_t adc[16])
     {for(Int_t i=0;i<16;i++) fAdcTail[i]=adc[i];}
+    
+  void SetADCTrigger(Float_t adc[16])
+    {for(Int_t i=0;i<16;i++) fAdcTrigger[i]=adc[i];}
 
   // Getters  
   virtual Short_t  GetNbPMADA() const;
@@ -100,7 +103,11 @@ public:
   
   virtual Float_t  GetAdcTail(Int_t i) const;
   virtual Float_t  GetAdcTailADA(Int_t i) const; 
-  virtual Float_t  GetAdcTailADC(Int_t i) const;   
+  virtual Float_t  GetAdcTailADC(Int_t i) const; 
+  
+  virtual Float_t  GetAdcTrigger(Int_t i) const;
+  virtual Float_t  GetAdcTriggerADA(Int_t i) const; 
+  virtual Float_t  GetAdcTriggerADC(Int_t i) const;    
   
   AliESDAD &operator=(const AliESDAD& source);
     
@@ -134,8 +141,9 @@ protected:
   Bool_t   fIsBG[16][21];  // BG flag for all channels and 21 clocks
   
   Float_t fAdcTail[16];      //  tail of charge signal for each channel
+  Float_t fAdcTrigger[16];   //  charge trigger signal for each channel
 
-  ClassDef(AliESDAD,12)
+  ClassDef(AliESDAD,13)
 };
 
 #endif
