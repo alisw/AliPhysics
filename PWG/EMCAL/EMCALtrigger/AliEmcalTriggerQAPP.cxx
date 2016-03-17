@@ -493,7 +493,7 @@ void AliEmcalTriggerQAPP::ProcessPatch(AliEMCALTriggerPatchInfo* patch)
       }
 
       hname = Form("EMCTRQA_hist%s%sOfflineVsRecalc", det.Data(), kEMCalTriggerNames[itrig].Data());
-      fHistManager.FillTH2(hname, amplitudes[2], amplitudes[1]);
+      fHistManager.FillTH2(hname, amplitudes[1], amplitudes[2]);
 
       hname = Form("EMCTRQA_hist%sPatchAmp%s%s", det.Data(), kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
       fHistManager.FillTH1(hname, amplitudes[itype]);
