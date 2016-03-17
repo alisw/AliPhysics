@@ -692,6 +692,8 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       }
     }
     AliExternalTrackParam * ip = (AliExternalTrackParam *)esdTrack->GetInnerParam();
+    Bool_t saveBit = ip->TestBit(kAlignmentBugFixedBit);
+    ip->SetBit(kAlignmentBugFixedBit,kTRUE);    // Flag that the alignment bug is fixed
     Int_t timeStamp= esdEvent->GetTimeStamp();
     (*fStreamer)<<"delta"<<
       "nTracks="<<nTracks<<               // number of tracks in event (pileup indicator)
@@ -725,6 +727,8 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       "\n";    
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("FittTree",fTrackCounter,4,0,0);  
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("FillHistos",fTrackCounter,5,0,0);  
+    //
+    ip->SetBit(kAlignmentBugFixedBit,saveBit);
   }
   transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection( backupUseComposedCorrection);
   //
@@ -1001,6 +1005,19 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       tree->SetBranchAddress("vecPhi.",&vecPhi);
       tree->SetBranchAddress("vecZ.",&vecZ);
       tree->SetBranchAddress("track.",&param);
+      //
+      // before doing anything else, check if alignment bug indeed must be fixed
+      Bool_t fixAlignmentBugForFile = fixAlignmentBug;
+      if (fixAlignmentBugForFile) {
+	TBranch *brParam = tree->GetBranch("track.");
+	brParam->GetEntry(0);
+	if (param->TestBit(kAlignmentBugFixedBit)) {
+	  ::Info(" AliTPCcalibAlignInterpolation::FillHistogramsFromChain",
+		 "AlignmentBugFix is requested but is not needed for this chunk\n");
+	  fixAlignmentBugForFile = kFALSE;
+	}
+      }
+      //
       br->SetAddress(&timeStamp);
       if (tree->GetBranch("npValid")!=NULL) {
 	tree->SetBranchStatus("npValid",kTRUE);
@@ -1010,7 +1027,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       tree->SetBranchAddress(branches[ihis],&vecDelta);
       // 
       // if aligment bug fix is needed, we need also other delta
-      if (fixAlignmentBug) {
+      if (fixAlignmentBugForFile) {
 	int ihisOther = ihis<=2 ? ihis+3 : ihis-3;
 	tree->SetBranchStatus(branches[ihisOther],kTRUE);
 	tree->SetBranchAddress(branches[ihisOther],&vecDeltaOther);
@@ -1019,7 +1036,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       if (ihis<=2 &&ihis!=0){
 	tree->SetBranchStatus(branches[0],kTRUE);
 	tree->SetBranchAddress(branches[0],&vecDeltaITS);
-	if (fixAlignmentBug) {
+	if (fixAlignmentBugForFile) {
 	  tree->SetBranchStatus(branches[3],kTRUE);
 	  tree->SetBranchAddress(branches[3],&vecDeltaOtherITS);
 	}
@@ -1027,7 +1044,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
       else if (ihis>2 && ihis!=3){
 	tree->SetBranchStatus(branches[3],kTRUE);
 	tree->SetBranchAddress(branches[3],&vecDeltaITS);
-	if (fixAlignmentBug) {
+	if (fixAlignmentBugForFile) {
 	  tree->SetBranchStatus(branches[0],kTRUE);
 	  tree->SetBranchAddress(branches[0],&vecDeltaOtherITS);
 	}
@@ -1105,7 +1122,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  float deltaRefUse = vDelta[ipoint];
 	  int rocID = TMath::Nint(vSec[ipoint]);
 
-	  if (fixAlignmentBug) {
+	  if (fixAlignmentBugForFile) { // was it produced w/o bug fix
 	    float dAux = vDeltaOther[ipoint];
 	    if (ihis<3) FixAlignmentBug(rocID, param->GetParameter()[4], bz, phiUse, rUse, zUse, deltaRefUse, dAux);
 	    else        FixAlignmentBug(rocID, param->GetParameter()[4], bz, phiUse, rUse, zUse, dAux, deltaRefUse);
@@ -1717,6 +1734,21 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   if (TString(gSystem->GetFromPipe("cat residual.list | grep -c alien://")).Atoi()>0) TGrid::Connect("alien");
 
   TChain * chainDelta = AliXRDPROOFtoolkit::MakeChain("residual.list","delta",0,-1);
+  //
+  // before doing anything else, check if alignment bug indeed must be fixed
+  Bool_t fixAlignmentBugForFile = fixAlignmentBug;
+  AliExternalTrackParam* param = 0;
+  if (fixAlignmentBugForFile) {
+    TBranch *brParam = chainDelta->GetBranch("track.");
+    brParam->SetAddress(&param);
+    brParam->GetEntry(0);
+    if (param->TestBit(kAlignmentBugFixedBit)) {
+      ::Info(" AliTPCcalibAlignInterpolation::FitDrift",
+	     "AlignmentBugFix is requested but is not needed for this chunk\n");
+      fixAlignmentBugForFile = kFALSE;
+    }
+  }
+  //
   if (!autoCache) {
     chainDelta->SetCacheSize(0);
     chainDelta->SetCacheSize(cacheSize);
@@ -1759,12 +1791,12 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   //
   AliSysInfo::AddStamp("FitDrift.StartCache",3,0,0);
 
-  float bz = fixAlignmentBug ? InitForAlignmentBugFix(runNumber) : 0;
+  float bz = fixAlignmentBugForFile ? InitForAlignmentBugFix(runNumber) : 0;
 
   chainDelta->SetEstimate(maxEntries*160/5.);
   TString toRead = "tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC";
   //
-  if (fixAlignmentBug) toRead += ":tof0.fElements:trd0.fElements:track.fP[4]"; // needed only in case we need to fix alignment bug
+  if (fixAlignmentBugForFile) toRead += ":tof0.fElements:trd0.fElements:track.fP[4]"; // needed only in case we need to fix alignment bug
   //
   Int_t entriesFit0 = chainDelta->Draw(toRead.Data(),"Entry$%5==0 && vecR.fElements>10","goffpara",maxEntries); 
   chainDelta->PrintCacheStats();
@@ -1797,7 +1829,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     //
     if ( (*vecR)[i] < kInvalidR ) continue; // there was no cluster at this point
     // if needed, fix alignment bug
-    if (fixAlignmentBug) {
+    if (fixAlignmentBugForFile) {
       float dyTOF = chainDelta->GetVal(8)[index];
       float dyTRD = chainDelta->GetVal(9)[index];
       float q2pt = chainDelta->GetVal(10)[index];
