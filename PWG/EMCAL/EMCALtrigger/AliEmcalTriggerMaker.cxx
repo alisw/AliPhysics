@@ -498,7 +498,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
       (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))) ||
       (type == kTMEMCalRecalcJet && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) ||
-      (type == kTMEMCalRecalcGamma && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) )
+      (type == kTMEMCalRecalcGamma && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit())))==0) )
     return 0;
 
   // save primary vertex in vector

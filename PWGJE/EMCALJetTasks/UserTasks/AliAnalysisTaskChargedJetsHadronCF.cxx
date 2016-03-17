@@ -18,6 +18,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
+#include "AliVParticle.h"
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
@@ -33,6 +34,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
   fTrackParticleArrayName(""),
+  fUseFakejetRejection(kFALSE),
+  fMinFakeFactor(0),
+  fMaxFakeFactor(0),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -53,6 +57,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
   fTrackParticleArrayName(""),
+  fUseFakejetRejection(kFALSE),
+  fMinFakeFactor(0),
+  fMaxFakeFactor(0),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -140,7 +147,7 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hSubleadingJetAreaPt", "Jet area vs. p_{T}", "LEGO2", 200, 0., 2., 400, -100., 300., "Jet A", "p_{T, jet} (GeV/c)", "dN^{Jets}/dA dp_{T}");
   AddHistogram2D<TH2D>("hSubleadingJetPtLeadingHadron", "Jet leading hadron p_{T} distribution vs. jet p_{T}", "", 300, 0., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T,lead had} (GeV/c)", "dN^{Jets}/dp_{T}dp_{T,had}");
 
-
+  AddHistogram2D<TH2D>("hFakeFactor", "Fake factor distribution", "LEGO2", 1000, 0., 100., fNumberOfCentralityBins, 0, 100, "Fake factor","Centrality", "dN^{Jets}/df");
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 1000, 0., 50., fNumberOfCentralityBins, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
 
 
@@ -338,6 +345,18 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     Int_t count = 0;
     while(jet) {
 
+      // Fake jet rejection (0810.1219)
+      if(fUseFakejetRejection)
+      {
+        Double_t fakeFactor = CalculateFakeFactor(jet);
+        FillHistogram("hFakeFactor", fakeFactor, fCent);
+        if((fakeFactor < fMinFakeFactor) || (fakeFactor >= fMaxFakeFactor))
+        {
+          jet = fJetsCont->GetNextAcceptJet(); 
+          continue;
+        }
+      }
+
       // Add the particle object to the clones array
       new ((*fJetsOutput)[count]) AliPicoTrack(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Eta(), jet->Phi(), jet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
 
@@ -370,6 +389,25 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 //########################################################################
 // HELPERS
 //########################################################################
+
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskChargedJetsHadronCF::CalculateFakeFactor(AliEmcalJet* jet)
+{
+  Double_t fakeFactor = 0;
+
+  // Loop over all jet constituents
+  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
+  {
+    AliVParticle* constituent = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
+
+    Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-constituent->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-constituent->Phi()));
+    Double_t deltaR = TMath::Sqrt( (jet->Eta() - constituent->Eta())*(jet->Eta() - constituent->Eta()) + deltaPhi*deltaPhi );
+    fakeFactor += constituent->Pt() * TMath::Sin(deltaR);
+  }
+
+  return fakeFactor;
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::SetEventCriteriumSelection(Int_t type)

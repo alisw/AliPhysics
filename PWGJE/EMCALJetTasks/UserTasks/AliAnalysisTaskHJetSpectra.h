@@ -8,6 +8,7 @@ class TH2F;
 class TH2D;
 class TH1D;
 class TArrayD;
+class TArrayF;
 class THnSparse;
 class TProfile;
 class TList;
@@ -23,10 +24,8 @@ class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
 
-#include <vector>
 #include "AliAnalysisTaskEmcalJet.h"
 
-using std::vector;
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
 // Author Filip Krizek   (5.Nov. 2015)
 
@@ -306,13 +305,19 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    Double_t fZVertexCut; // vertex cut in z 
    Double_t fCutPhi;     // azimuthal cat around TT  to exclude TTjet + recoil jet in perp rho estimate
 
-   std::vector<AliVParticle*> fTrigTracksGen; //list of trigger particle indices true MC
-   std::vector<AliVParticle*> fTrigTracks; //list pf trigger particle indices
+   AliVParticle* fTrigTracksGen[999]; //list of trigger particle indices true MC
+   AliVParticle* fTrigTracks[999]; //list pf trigger particle indices
 
-  AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
-  AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
+   Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
+   Double_t ftmpArray[2]; //tmp array
+   Double_t ftmpArrayX[3]; //tmp array
+   TArrayF fpyVtx;   //primaru vertex
+   Double_t frhovec[999]; //auxiliary array to store pT/A of kT jets
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 13); // Charged jet analysis for pA
+   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
+   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
+
+   ClassDef(AliAnalysisTaskHJetSpectra, 14); // Charged jet analysis for pA
 
 };
 #endif

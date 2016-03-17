@@ -82,24 +82,161 @@ ClassImp(AliAnalysisTaskSEHFQA);
 
 //____________________________________________________________________________
 
-AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
-  fOutputEntries(0x0),
-  fOutputPID(0x0),
-  fOutputTrack(0x0),
-  fOutputCounters(0x0),
-  fOutputCheckCentrality(0x0),
-  fOutputEvSelection(0x0),
-  fOutputFlowObs(0x0),
-  fDecayChannel(AliAnalysisTaskSEHFQA::kD0toKpi),
-  fCuts(0x0),
-  fFlowEvent(0x0),
-  fRFPcuts(0x0),
-  fEstimator(AliRDHFCuts::kCentTRK),
-  fReadMC(kFALSE),
-  fSimpleMode(kFALSE),
-  fUseSelectionBit(kTRUE),
-  fOnOff(),
-  fFillDistrTrackEffChecks(kFALSE)
+AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
+  , fOutputEntries(0x0)
+  , fOutputPID(0x0)
+  , fOutputTrack(0x0)
+  , fOutputCounters(0x0)
+  , fOutputCheckCentrality(0x0)
+  , fOutputEvSelection(0x0)
+  , fOutputFlowObs(0x0)
+  , fDecayChannel(AliAnalysisTaskSEHFQA::kD0toKpi)
+  , fCuts(0x0)
+  , fFlowEvent(0x0)
+  , fRFPcuts(0x0)
+  , fEstimator(AliRDHFCuts::kCentTRK)
+  , fReadMC(kFALSE)
+  , fSimpleMode(kFALSE)
+  , fUseSelectionBit(kTRUE)
+  , fOnOff()
+  , fFillDistrTrackEffChecks(kFALSE)
+  , fHisNentries(0)
+  , fHisNentriesSelBit(0)
+  , fHisTOFflags(0)
+  , fHisTOFsig(0)
+  , fHisTOFstartTimeMask(0)
+  , fHisTOFstartTimeRes(0)
+  , fHisTOFstartTimeDistrib(0)
+  , fHisTOFtime(0)
+  , fHisTOFtimeKaonHyptime(0)
+  , fHisTOFtimeKaonHyptimeAC(0)
+  , fHisTOFsigmaKSigPid(0)
+  , fHisTOFsigmaPionSigPid(0)
+  , fHisTOFsigmaProtonSigPid(0)
+  , fHisTOFsigPid3sigPion(0)
+  , fHisTOFsigPid3sigKaon(0)
+  , fHisTOFsigPid3sigProton(0)
+  , fHisTPCsig(0)
+  , fHisTPCsigvsp(0)
+  , fHisTPCsigvspAC(0)
+  , fHisTPCsigmaK(0)
+  , fHisTPCsigmaPion(0)
+  , fHisTPCsigmaProton(0)
+  , fHisTPCsigNvsPtAllTracks(0)
+  , fHisTPCsigNvsPhiAllTracks(0)
+  , fHisTPCsigNvsEtaAllTracks(0)
+  , fHisTPCsigNvsPtDaughters(0)
+  , fHisTPCsigNvsPhiDaughters(0)
+  , fHisTPCsigNvsEtaDaughters(0)
+  , fHisTOFsigmaMCKSigPid(0)
+  , fHisTOFsigmaMCPionSigPid(0)
+  , fHisTOFsigmaMCProtonSigPid(0)
+  , fHisTPCsigmaMCK(0)
+  , fHisTPCsigmaMCPion(0)
+  , fHisTPCsigmaMCProton(0)
+  , fHisnClsITS(0)
+  , fHisnClsITSselTr(0)
+  , fHisnClsITSSA(0)
+  , fHisnLayerITS(0)
+  , fHisnLayerITSselTr(0)
+  , fHisnLayerITSsa(0)
+  , fHisnClsSPD(0)
+  , fHisptGoodTr(0)
+  , fHisptGoodTrFromDaugh(0)
+  , fHisptGoodTrFromDaugh_filt(0)
+  , fHisdistrGoodTr(0)
+  , fHisdistrSelTr(0)
+  , fHisd0dau(0)
+  , fHisd0dau_filt(0)
+  , fHisd0dauphi(0)
+  , fHisd0dauphi_filt(0)
+  , fHisd0zdau(0)
+  , fHisd0zdau_filt(0)
+  , fHisd0zdauphi(0)
+  , fHisd0zdauphi_filt(0)
+  , fHisd0TracksSPDin(0)
+  , fHisd0TracksSPDany(0)
+  , fHisd0TracksFilterBit4(0)
+  , fHisd0TracksTPCITSSPDany(0)
+  , fHisPtDaughters(0)
+  , fHisPhiDaughters(0)
+  , fHisEtaDaughters(0)
+  , fHisEtavsPhiDaughters(0)
+  , fHisNTPCclsvsPtDaughters(0)
+  , fHisNTPCclsvsPhiDaughters(0)
+  , fHisNTPCclsvsEtaDaughters(0)
+  , fHisNTPCCrossedRowsvsPtDaughters(0)
+  , fHisNTPCCrossedRowsvsPhiDaughters(0)
+  , fHisNTPCCrossedRowsvsEtaDaughters(0)
+  , fHisRatioCRowsOverFclsvsPtDaughters(0)
+  , fHisRatioCRowsOverFclsvsPhiDaughters(0)
+  , fHisRatioCRowsOverFclsvsEtaDaughters(0)
+  , fHisNITSclsvsPtDaughters(0)
+  , fHisNITSclsvsPhiDaughters(0)
+  , fHisNITSclsvsEtaDaughters(0)
+  , fHisSPDclsDaughters(0)
+  , fHisPtAllTracks(0)
+  , fHisPhiAllTracks(0)
+  , fHisEtaAllTracks(0)
+  , fHisEtavsPhiAllTracks(0)
+  , fHisNTPCclsvsPtAllTracks(0)
+  , fHisNTPCclsvsPhiAllTracks(0)
+  , fHisNTPCclsvsEtaAllTracks(0)
+  , fHisNTPCCrossedRowsvsPtAllTracks(0)
+  , fHisNTPCCrossedRowsvsPhiAllTracks(0)
+  , fHisNTPCCrossedRowsvsEtaAllTracks(0)
+  , fHisRatioCRowsOverFclsvsPtAllTracks(0)
+  , fHisRatioCRowsOverFclsvsPhiAllTracks(0)
+  , fHisRatioCRowsOverFclsvsEtaAllTracks(0)
+  , fHisNITSclsvsPtAllTracks(0)
+  , fHisNITSclsvsPhiAllTracks(0)
+  , fHisNITSclsvsEtaAllTracks(0)
+  , fHisSPDclsAllTracks(0)
+  , fHisdistrFakeTr(0)
+  , fHisd0f(0)
+  , fHisd0f_filt(0)
+  , fHisptFakeTr(0)
+  , fHisptFakeTrFromDaugh(0)
+  , fHisptFakeTrFromDaughFilt(0)
+  , fHisNtracklets(0)
+  , fHisNtracklets01(0)
+  , fHisNtracklets01AllEv(0)
+  , fHisMult(0)
+  , fHisMultFBit4(0)
+  , fHisMultComb05(0)
+  , fHisMultComb08(0)
+  , fHisNtrackletsIn(0)
+  , fHisMultIn(0)
+  , fHisNtrackletsOut(0)
+  , fHisMultOut(0)
+  , fHisMultvsPercentile(0)
+  , fHisntrklvsPercentile(0)
+  , fHisntrklvsPercentile01(0)
+  , fHisntrklvsPercentile01AllEv(0)
+  , fHisnTPCTracksvsPercentile(0)
+  , fHisnTPCITSTracksvsPercentile(0)
+  , fHisnTPCITS1SPDTracksvsPercentile(0)
+  , fHisStdEstimSignalPercentile(0)
+  , fHisStdEstimSignalNtrackletsIn(0)
+  , fHisStdEstimSignal(0)
+  , fHisStdPercentileSecondPercentile(0)
+  , fHisStdSignalSecondSignal(0)
+  , fHisxvtx(0)
+  , fHisyvtx(0)
+  , fHiszvtx(0)
+  , fHisxvtxSelEv(0)
+  , fHisyvtxSelEv(0)
+  , fHiszvtxSelEv(0)
+  , fHisWhichVert(0)
+  , fHisWhichVertSelEv(0)
+  , fHisTrigCent(0)
+  , fHisTrigMul(0)
+  , fHisTrigCentSel(0)
+  , fHisTrigMulSel(0)
+  , fHisWhyEvRejected(0)
+  , fHisFEvents(0)
+  , fHisTPCVZE_AngleQ(0)
+  , fHisCentVsMultRPS(0)
 {
   /// default constructor
   fOnOff[0]=kTRUE;
@@ -107,28 +244,171 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
   fOnOff[2]=kTRUE;
   fOnOff[3]=kTRUE;
   fOnOff[4]=kTRUE;
+
+  for (Int_t iii=0; iii<3; iii++) {
+    fHisQ[iii]=0;
+    fHisAngleQ[iii]=0;
+    fHisPhiEta[iii]=0;
+  }
 }
 
 //____________________________________________________________________________
 AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSEHFQA::DecChannel ch,AliRDHFCuts* cuts):
-  AliAnalysisTaskSE(name),
-  fOutputEntries(0x0),
-  fOutputPID(0x0),
-  fOutputTrack(0x0),
-  fOutputCounters(0x0),
-  fOutputCheckCentrality(0x0),
-  fOutputEvSelection(0x0),
-  fOutputFlowObs(0x0),
-  fDecayChannel(ch),
-  fCuts(0x0),
-  fFlowEvent(0x0),
-  fRFPcuts(0x0),
-  fEstimator(AliRDHFCuts::kCentTRK),
-  fReadMC(kFALSE),
-  fSimpleMode(kFALSE),
-  fUseSelectionBit(kTRUE),
-  fOnOff(),
-  fFillDistrTrackEffChecks(kFALSE)
+  AliAnalysisTaskSE(name)
+  , fOutputEntries(0x0)
+  , fOutputPID(0x0)
+  , fOutputTrack(0x0)
+  , fOutputCounters(0x0)
+  , fOutputCheckCentrality(0x0)
+  , fOutputEvSelection(0x0)
+  , fOutputFlowObs(0x0)
+  , fDecayChannel(ch)
+  , fCuts(0x0)
+  , fFlowEvent(0x0)
+  , fRFPcuts(0x0)
+  , fEstimator(AliRDHFCuts::kCentTRK)
+  , fReadMC(kFALSE)
+  , fSimpleMode(kFALSE)
+  , fUseSelectionBit(kTRUE)
+  , fOnOff()
+  , fFillDistrTrackEffChecks(kFALSE)
+  , fHisNentries(0)
+  , fHisNentriesSelBit(0)
+  , fHisTOFflags(0)
+  , fHisTOFsig(0)
+  , fHisTOFstartTimeMask(0)
+  , fHisTOFstartTimeRes(0)
+  , fHisTOFstartTimeDistrib(0)
+  , fHisTOFtime(0)
+  , fHisTOFtimeKaonHyptime(0)
+  , fHisTOFtimeKaonHyptimeAC(0)
+  , fHisTOFsigmaKSigPid(0)
+  , fHisTOFsigmaPionSigPid(0)
+  , fHisTOFsigmaProtonSigPid(0)
+  , fHisTOFsigPid3sigPion(0)
+  , fHisTOFsigPid3sigKaon(0)
+  , fHisTOFsigPid3sigProton(0)
+  , fHisTPCsig(0)
+  , fHisTPCsigvsp(0)
+  , fHisTPCsigvspAC(0)
+  , fHisTPCsigmaK(0)
+  , fHisTPCsigmaPion(0)
+  , fHisTPCsigmaProton(0)
+  , fHisTPCsigNvsPtAllTracks(0)
+  , fHisTPCsigNvsPhiAllTracks(0)
+  , fHisTPCsigNvsEtaAllTracks(0)
+  , fHisTPCsigNvsPtDaughters(0)
+  , fHisTPCsigNvsPhiDaughters(0)
+  , fHisTPCsigNvsEtaDaughters(0)
+  , fHisTOFsigmaMCKSigPid(0)
+  , fHisTOFsigmaMCPionSigPid(0)
+  , fHisTOFsigmaMCProtonSigPid(0)
+  , fHisTPCsigmaMCK(0)
+  , fHisTPCsigmaMCPion(0)
+  , fHisTPCsigmaMCProton(0)
+  , fHisnClsITS(0)
+  , fHisnClsITSselTr(0)
+  , fHisnClsITSSA(0)
+  , fHisnLayerITS(0)
+  , fHisnLayerITSselTr(0)
+  , fHisnLayerITSsa(0)
+  , fHisnClsSPD(0)
+  , fHisptGoodTr(0)
+  , fHisptGoodTrFromDaugh(0)
+  , fHisptGoodTrFromDaugh_filt(0)
+  , fHisdistrGoodTr(0)
+  , fHisdistrSelTr(0)
+  , fHisd0dau(0)
+  , fHisd0dau_filt(0)
+  , fHisd0dauphi(0)
+  , fHisd0dauphi_filt(0)
+  , fHisd0zdau(0)
+  , fHisd0zdau_filt(0)
+  , fHisd0zdauphi(0)
+  , fHisd0zdauphi_filt(0)
+  , fHisd0TracksSPDin(0)
+  , fHisd0TracksSPDany(0)
+  , fHisd0TracksFilterBit4(0)
+  , fHisd0TracksTPCITSSPDany(0)
+  , fHisPtDaughters(0)
+  , fHisPhiDaughters(0)
+  , fHisEtaDaughters(0)
+  , fHisEtavsPhiDaughters(0)
+  , fHisNTPCclsvsPtDaughters(0)
+  , fHisNTPCclsvsPhiDaughters(0)
+  , fHisNTPCclsvsEtaDaughters(0)
+  , fHisNTPCCrossedRowsvsPtDaughters(0)
+  , fHisNTPCCrossedRowsvsPhiDaughters(0)
+  , fHisNTPCCrossedRowsvsEtaDaughters(0)
+  , fHisRatioCRowsOverFclsvsPtDaughters(0)
+  , fHisRatioCRowsOverFclsvsPhiDaughters(0)
+  , fHisRatioCRowsOverFclsvsEtaDaughters(0)
+  , fHisNITSclsvsPtDaughters(0)
+  , fHisNITSclsvsPhiDaughters(0)
+  , fHisNITSclsvsEtaDaughters(0)
+  , fHisSPDclsDaughters(0)
+  , fHisPtAllTracks(0)
+  , fHisPhiAllTracks(0)
+  , fHisEtaAllTracks(0)
+  , fHisEtavsPhiAllTracks(0)
+  , fHisNTPCclsvsPtAllTracks(0)
+  , fHisNTPCclsvsPhiAllTracks(0)
+  , fHisNTPCclsvsEtaAllTracks(0)
+  , fHisNTPCCrossedRowsvsPtAllTracks(0)
+  , fHisNTPCCrossedRowsvsPhiAllTracks(0)
+  , fHisNTPCCrossedRowsvsEtaAllTracks(0)
+  , fHisRatioCRowsOverFclsvsPtAllTracks(0)
+  , fHisRatioCRowsOverFclsvsPhiAllTracks(0)
+  , fHisRatioCRowsOverFclsvsEtaAllTracks(0)
+  , fHisNITSclsvsPtAllTracks(0)
+  , fHisNITSclsvsPhiAllTracks(0)
+  , fHisNITSclsvsEtaAllTracks(0)
+  , fHisSPDclsAllTracks(0)
+  , fHisdistrFakeTr(0)
+  , fHisd0f(0)
+  , fHisd0f_filt(0)
+  , fHisptFakeTr(0)
+  , fHisptFakeTrFromDaugh(0)
+  , fHisptFakeTrFromDaughFilt(0)
+  , fHisNtracklets(0)
+  , fHisNtracklets01(0)
+  , fHisNtracklets01AllEv(0)
+  , fHisMult(0)
+  , fHisMultFBit4(0)
+  , fHisMultComb05(0)
+  , fHisMultComb08(0)
+  , fHisNtrackletsIn(0)
+  , fHisMultIn(0)
+  , fHisNtrackletsOut(0)
+  , fHisMultOut(0)
+  , fHisMultvsPercentile(0)
+  , fHisntrklvsPercentile(0)
+  , fHisntrklvsPercentile01(0)
+  , fHisntrklvsPercentile01AllEv(0)
+  , fHisnTPCTracksvsPercentile(0)
+  , fHisnTPCITSTracksvsPercentile(0)
+  , fHisnTPCITS1SPDTracksvsPercentile(0)
+  , fHisStdEstimSignalPercentile(0)
+  , fHisStdEstimSignalNtrackletsIn(0)
+  , fHisStdEstimSignal(0)
+  , fHisStdPercentileSecondPercentile(0)
+  , fHisStdSignalSecondSignal(0)
+  , fHisxvtx(0)
+  , fHisyvtx(0)
+  , fHiszvtx(0)
+  , fHisxvtxSelEv(0)
+  , fHisyvtxSelEv(0)
+  , fHiszvtxSelEv(0)
+  , fHisWhichVert(0)
+  , fHisWhichVertSelEv(0)
+  , fHisTrigCent(0)
+  , fHisTrigMul(0)
+  , fHisTrigCentSel(0)
+  , fHisTrigMulSel(0)
+  , fHisWhyEvRejected(0)
+  , fHisFEvents(0)
+  , fHisTPCVZE_AngleQ(0)
+  , fHisCentVsMultRPS(0)
 {
   /// constructor
 
@@ -140,6 +420,12 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOnOff[2]=kTRUE;
   fOnOff[3]=kTRUE;
   fOnOff[4]=kTRUE;
+
+  for (Int_t iii=0; iii<3; iii++) {
+    fHisQ[iii]=0;
+    fHisAngleQ[iii]=0;
+    fHisPhiEta[iii]=0;
+  }
 
   // Output slot #1 writes into a TList container (number of events)
   DefineOutput(1,TList::Class());
@@ -204,6 +490,7 @@ AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
     delete fOutputFlowObs;
     delete fFlowEvent;
   }
+
 }
 
 //___________________________________________________________________________
@@ -282,32 +569,32 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
 
   TString hnameEntries="hNentries";
-  TH1F* hNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 10,-0.5,9.5);
-  hNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  hNentries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
-  hNentries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
-  hNentries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
-  hNentries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
-  hNentries->GetXaxis()->SetBinLabel(6,"N candidates");
+  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 10,-0.5,9.5);
+  fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
+  fHisNentries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
+  fHisNentries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
+  fHisNentries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
+  fHisNentries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
+  fHisNentries->GetXaxis()->SetBinLabel(6,"N candidates");
   if(fReadMC){
-    hNentries->GetXaxis()->SetBinLabel(7,"MC Cand from c");
-    hNentries->GetXaxis()->SetBinLabel(8,"MC Cand from b");
-    hNentries->GetXaxis()->SetBinLabel(9,"N fake Trks");
-    hNentries->GetXaxis()->SetBinLabel(10,"N true Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(7,"MC Cand from c");
+    fHisNentries->GetXaxis()->SetBinLabel(8,"MC Cand from b");
+    fHisNentries->GetXaxis()->SetBinLabel(9,"N fake Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(10,"N true Trks");
   }
 
-  hNentries->GetXaxis()->SetNdivisions(1,kFALSE);
+  fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   hnameEntries="HasSelBit";
-  TH2F* hNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 5,0.,5.,100,0.,30.);
-  hNentriesSelBit->GetXaxis()->SetBinLabel(1,"Dplus");
-  hNentriesSelBit->GetXaxis()->SetBinLabel(2,"Ds");
-  hNentriesSelBit->GetXaxis()->SetBinLabel(3,"LcKpi");
-  hNentriesSelBit->GetXaxis()->SetBinLabel(4,"D0toKpi");
-  hNentriesSelBit->GetXaxis()->SetBinLabel(5,"Dstar");
+  fHisNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 5,0.,5.,100,0.,30.);
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(1,"Dplus");
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(2,"Ds");
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(3,"LcKpi");
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(4,"D0toKpi");
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(5,"Dstar");
 
-  fOutputEntries->Add(hNentries);
-  fOutputEntries->Add(hNentriesSelBit);
+  fOutputEntries->Add(fHisNentries);
+  fOutputEntries->Add(fHisNentriesSelBit);
 
 
   //PID
@@ -317,161 +604,161 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->SetName(GetOutputSlot(2)->GetContainer()->GetName());
 
     //TOF pid
-    TH1F* hTOFflags=new TH1F("hTOFflags","TOF flags",7,-0.5,6.5);
-    hTOFflags->SetMinimum(0.);
-    hTOFflags->GetXaxis()->SetBinLabel(1,"All Tracks");
-    hTOFflags->GetXaxis()->SetBinLabel(2,"kTPCout");
-    hTOFflags->GetXaxis()->SetBinLabel(3,"kTOFout");
-    hTOFflags->GetXaxis()->SetBinLabel(4,"kTIME");
-    hTOFflags->GetXaxis()->SetBinLabel(5,"kTOFpid");
-    hTOFflags->GetXaxis()->SetBinLabel(6,"kTOFmismatch");
-    hTOFflags->GetXaxis()->SetBinLabel(7,"kDetPidOK");
+    fHisTOFflags=new TH1F("hTOFflags","TOF flags",7,-0.5,6.5);
+    fHisTOFflags->SetMinimum(0.);
+    fHisTOFflags->GetXaxis()->SetBinLabel(1,"All Tracks");
+    fHisTOFflags->GetXaxis()->SetBinLabel(2,"kTPCout");
+    fHisTOFflags->GetXaxis()->SetBinLabel(3,"kTOFout");
+    fHisTOFflags->GetXaxis()->SetBinLabel(4,"kTIME");
+    fHisTOFflags->GetXaxis()->SetBinLabel(5,"kTOFpid");
+    fHisTOFflags->GetXaxis()->SetBinLabel(6,"kTOFmismatch");
+    fHisTOFflags->GetXaxis()->SetBinLabel(7,"kDetPidOK");
 
     TString hname="hTOFsig";
-    TH1F* hTOFsig=new TH1F(hname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
+    fHisTOFsig=new TH1F(hname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
 
     hname="hTOFstartTimeMask";
-    TH1F* hTOFstartTimeMask=new TH1F(hname.Data(),"TOF start time mask; Mask ;Entries", 8, -0.5,7.5);
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(1,"FILL");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(2,"TOF");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(3,"T0A");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(4,"TOF.and.T0A");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(5,"T0C");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(6,"TOF.and.T0C");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(7,"T0AC");
-    hTOFstartTimeMask->GetXaxis()->SetBinLabel(8,"TOF.and.T0AC");
+    fHisTOFstartTimeMask=new TH1F(hname.Data(),"TOF start time mask; Mask ;Entries", 8, -0.5,7.5);
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(1,"FILL");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(2,"TOF");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(3,"T0A");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(4,"TOF.and.T0A");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(5,"T0C");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(6,"TOF.and.T0C");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(7,"T0AC");
+    fHisTOFstartTimeMask->GetXaxis()->SetBinLabel(8,"TOF.and.T0AC");
 
     hname="hTOFstartTimeRes";
-    TH1F* hTOFstartTimeRes=new TH1F(hname.Data(),"TOF start time resolution; Resolution (ps) ;Entries", 100, 0.,300.);
+    fHisTOFstartTimeRes=new TH1F(hname.Data(),"TOF start time resolution; Resolution (ps) ;Entries", 100, 0.,300.);
 
     hname="hTOFstartTimeDistrib";
-    TH1F* hTOFstartTimeDistrib=new TH1F(hname.Data(),"TOF start time distribution; Start time ;Entries", 400, -1000.,1000.);
+    fHisTOFstartTimeDistrib=new TH1F(hname.Data(),"TOF start time distribution; Start time ;Entries", 400, -1000.,1000.);
 
     hname="hTOFtime";
-    TH1F* hTOFtime=new TH1F(hname.Data(),"Distribution of TOF time Kaon;TOF time(Kaon) [ps];Entries", 1000, 0.,50000.);
+    fHisTOFtime=new TH1F(hname.Data(),"Distribution of TOF time Kaon;TOF time(Kaon) [ps];Entries", 1000, 0.,50000.);
 
     hname="hTOFtimeKaonHyptime";
-    TH2F* hTOFtimeKaonHyptime=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
+    fHisTOFtimeKaonHyptime=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
 
     hname="hTOFtimeKaonHyptimeAC";
-    TH2F* hTOFtimeKaonHyptimeAC=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
+    fHisTOFtimeKaonHyptimeAC=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
 
     hname="hTOFsigmaKSigPid";
-    TH2F* hTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,400,-20,20);
+    fHisTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,400,-20,20);
 
     hname="hTOFsigmaPionSigPid";
-    TH2F* hTOFsigmaPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,400,-20,20);
+    fHisTOFsigmaPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,400,-20,20);
 
     hname="hTOFsigmaProtonSigPid";
-    TH2F* hTOFsigmaProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,400,-20,20);
+    fHisTOFsigmaProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,400,-20,20);
 
     hname="hTOFsigPid3sigPion";
-    TH1F* hTOFsigPid3sigPion=new TH1F(hname.Data(),"TOF PID resolution (#pi) [ps]",500,0.,1000.);
+    fHisTOFsigPid3sigPion=new TH1F(hname.Data(),"TOF PID resolution (#pi) [ps]",500,0.,1000.);
 
     hname="hTOFsigPid3sigKaon";
-    TH1F* hTOFsigPid3sigKaon=new TH1F(hname.Data(),"TOF PID resolution (K) [ps]",500,0.,1000.);
+    fHisTOFsigPid3sigKaon=new TH1F(hname.Data(),"TOF PID resolution (K) [ps]",500,0.,1000.);
 
     hname="hTOFsigPid3sigProton";
-    TH1F* hTOFsigPid3sigProton=new TH1F(hname.Data(),"TOF PID resolution (p) [ps]",500,0.,1000.);
+    fHisTOFsigPid3sigProton=new TH1F(hname.Data(),"TOF PID resolution (p) [ps]",500,0.,1000.);
 
 
     //TPC pid
     hname="hTPCsig";
-    TH1F* hTPCsig=new TH1F(hname.Data(),"Distribution of TPC signal;TPC sig;Entries", 100, 35.,100.);
+    fHisTPCsig=new TH1F(hname.Data(),"Distribution of TPC signal;TPC sig;Entries", 100, 35.,100.);
 
     hname="hTPCsigvsp";
-    TH2F* hTPCsigvsp=new TH2F(hname.Data(),"TPCsig vs p;TPC p[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
+    fHisTPCsigvsp=new TH2F(hname.Data(),"TPCsig vs p;TPC p[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
  
     hname="hTPCsigvspAC";
-    TH2F* hTPCsigvspAC=new TH2F(hname.Data(),"TPCsig vs p;TPCp[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
+    fHisTPCsigvspAC=new TH2F(hname.Data(),"TPCsig vs p;TPCp[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
 
     hname="hTPCsigmaK";
-    TH2F* hTPCsigmaK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",500,0.,10.,400,-20,20);
+    fHisTPCsigmaK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",500,0.,10.,400,-20,20);
 
     hname="hTPCsigmaPion";
-    TH2F* hTPCsigmaPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",500,0.,10.,400,-20,20);
+    fHisTPCsigmaPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",500,0.,10.,400,-20,20);
 
     hname="hTPCsigmaProton";
-    TH2F* hTPCsigmaProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",500,0.,10.,400,-20,20);
+    fHisTPCsigmaProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",500,0.,10.,400,-20,20);
 
 
-    fOutputPID->Add(hTOFflags);
-    fOutputPID->Add(hTOFsig);
-    fOutputPID->Add(hTPCsig);
-    fOutputPID->Add(hTOFstartTimeMask);
-    fOutputPID->Add(hTOFstartTimeRes);
-    fOutputPID->Add(hTOFstartTimeDistrib);
-    fOutputPID->Add(hTOFtime);
-    fOutputPID->Add(hTOFtimeKaonHyptime);
-    fOutputPID->Add(hTOFtimeKaonHyptimeAC);
-    fOutputPID->Add(hTOFsigmaKSigPid);
-    fOutputPID->Add(hTOFsigmaPionSigPid);
-    fOutputPID->Add(hTOFsigmaProtonSigPid);
-    fOutputPID->Add(hTOFsigPid3sigPion);
-    fOutputPID->Add(hTOFsigPid3sigKaon);
-    fOutputPID->Add(hTOFsigPid3sigProton);
-    fOutputPID->Add(hTPCsigvsp);
-    fOutputPID->Add(hTPCsigvspAC);
-    fOutputPID->Add(hTPCsigmaK);
-    fOutputPID->Add(hTPCsigmaPion);
-    fOutputPID->Add(hTPCsigmaProton);
+    fOutputPID->Add(fHisTOFflags);
+    fOutputPID->Add(fHisTOFsig);
+    fOutputPID->Add(fHisTPCsig);
+    fOutputPID->Add(fHisTOFstartTimeMask);
+    fOutputPID->Add(fHisTOFstartTimeRes);
+    fOutputPID->Add(fHisTOFstartTimeDistrib);
+    fOutputPID->Add(fHisTOFtime);
+    fOutputPID->Add(fHisTOFtimeKaonHyptime);
+    fOutputPID->Add(fHisTOFtimeKaonHyptimeAC);
+    fOutputPID->Add(fHisTOFsigmaKSigPid);
+    fOutputPID->Add(fHisTOFsigmaPionSigPid);
+    fOutputPID->Add(fHisTOFsigmaProtonSigPid);
+    fOutputPID->Add(fHisTOFsigPid3sigPion);
+    fOutputPID->Add(fHisTOFsigPid3sigKaon);
+    fOutputPID->Add(fHisTOFsigPid3sigProton);
+    fOutputPID->Add(fHisTPCsigvsp);
+    fOutputPID->Add(fHisTPCsigvspAC);
+    fOutputPID->Add(fHisTPCsigmaK);
+    fOutputPID->Add(fHisTPCsigmaPion);
+    fOutputPID->Add(fHisTPCsigmaProton);
 
     if(fFillDistrTrackEffChecks){
 
       hname="hTPCsigNvsPtAllTracks";
-      TH2F* hTPCsigNvsPtAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. p_{T};p_{T} [GeV/c]; n. points", 200, 0.,20.,161,-0.5,160.5);
+      fHisTPCsigNvsPtAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. p_{T};p_{T} [GeV/c]; n. points", 200, 0.,20.,161,-0.5,160.5);
       
       hname="hTPCsigNvsPhiAllTracks";
-      TH2F* hTPCsigNvsPhiAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #phi;#phi [rad]; n. points", 100, 0.,2*TMath::Pi(),161,-0.5,160.5);
+      fHisTPCsigNvsPhiAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #phi;#phi [rad]; n. points", 100, 0.,2*TMath::Pi(),161,-0.5,160.5);
       
       hname="hTPCsigNvsEtaAllTracks";
-      TH2F* hTPCsigNvsEtaAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #eta;eta; n. points", 80,-2.,2.,161,-0.5,160.5);
+      fHisTPCsigNvsEtaAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #eta;eta; n. points", 80,-2.,2.,161,-0.5,160.5);
       
       hname="hTPCsigNvsPtDaughters";
-      TH2F* hTPCsigNvsPtDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. p_{T};p_{T} [GeV/c]; n. points", 200, 0.,20.,161,-0.5,160.5);
+      fHisTPCsigNvsPtDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. p_{T};p_{T} [GeV/c]; n. points", 200, 0.,20.,161,-0.5,160.5);
       
       hname="hTPCsigNvsPhiDaughters";
-      TH2F* hTPCsigNvsPhiDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #phi;#phi [rad]; n. points", 100, 0.,2*TMath::Pi(),161,-0.5,160.5);
+      fHisTPCsigNvsPhiDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #phi;#phi [rad]; n. points", 100, 0.,2*TMath::Pi(),161,-0.5,160.5);
       
       hname="hTPCsigNvsEtaDaughters";
-      TH2F* hTPCsigNvsEtaDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #eta;eta; n. points", 80,-2.,2.,161,-0.5,160.5);
+      fHisTPCsigNvsEtaDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #eta;eta; n. points", 80,-2.,2.,161,-0.5,160.5);
       
-      fOutputPID->Add(hTPCsigNvsPtAllTracks);
-      fOutputPID->Add(hTPCsigNvsPhiAllTracks);
-      fOutputPID->Add(hTPCsigNvsEtaAllTracks);
-      fOutputPID->Add(hTPCsigNvsPtDaughters);
-      fOutputPID->Add(hTPCsigNvsPhiDaughters);
-      fOutputPID->Add(hTPCsigNvsEtaDaughters);
+      fOutputPID->Add(fHisTPCsigNvsPtAllTracks);
+      fOutputPID->Add(fHisTPCsigNvsPhiAllTracks);
+      fOutputPID->Add(fHisTPCsigNvsEtaAllTracks);
+      fOutputPID->Add(fHisTPCsigNvsPtDaughters);
+      fOutputPID->Add(fHisTPCsigNvsPhiDaughters);
+      fOutputPID->Add(fHisTPCsigNvsEtaDaughters);
     }
     
     
     if(fReadMC){
       //TOF
       hname="hTOFsigmaMCKSigPid";
-      TH2F* hTOFsigmaMCKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,400,-20,20);
+      fHisTOFsigmaMCKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,400,-20,20);
 
       hname="hTOFsigmaMCPionSigPid";
-      TH2F* hTOFsigmaMCPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,400,-20,20);
+      fHisTOFsigmaMCPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,400,-20,20);
 
       hname="hTOFsigmaMCProtonSigPid";
-      TH2F* hTOFsigmaMCProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,400,-20,20);
+      fHisTOFsigmaMCProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,400,-20,20);
 
       //TPC
       hname="hTPCsigmaMCK";
-      TH2F* hTPCsigmaMCK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",500,0.,10.,400,-20,20);
+      fHisTPCsigmaMCK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",500,0.,10.,400,-20,20);
 
       hname="hTPCsigmaMCPion";
-      TH2F* hTPCsigmaMCPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",500,0.,10.,400,-20,20);
+      fHisTPCsigmaMCPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",500,0.,10.,400,-20,20);
 
       hname="hTPCsigmaMCProton";
-      TH2F* hTPCsigmaMCProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",500,0.,10.,400,-20,20);
+      fHisTPCsigmaMCProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",500,0.,10.,400,-20,20);
 
-      fOutputPID->Add(hTOFsigmaMCKSigPid);
-      fOutputPID->Add(hTOFsigmaMCPionSigPid);
-      fOutputPID->Add(hTOFsigmaMCProtonSigPid);
-      fOutputPID->Add(hTPCsigmaMCK);
-      fOutputPID->Add(hTPCsigmaMCPion);
-      fOutputPID->Add(hTPCsigmaMCProton);
+      fOutputPID->Add(fHisTOFsigmaMCKSigPid);
+      fOutputPID->Add(fHisTOFsigmaMCPionSigPid);
+      fOutputPID->Add(fHisTOFsigmaMCProtonSigPid);
+      fOutputPID->Add(fHisTPCsigmaMCK);
+      fOutputPID->Add(fHisTPCsigmaMCPion);
+      fOutputPID->Add(fHisTPCsigmaMCProton);
 
     }
   }
@@ -483,313 +770,313 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->SetName(GetOutputSlot(3)->GetContainer()->GetName());
 
     TString hname="hnClsITS";
-    TH1F* hnClsITS=new TH1F(hname.Data(),"Distribution of number of ITS clusters;nITScls;Entries",7,-0.5,6.5);
+    fHisnClsITS=new TH1F(hname.Data(),"Distribution of number of ITS clusters;nITScls;Entries",7,-0.5,6.5);
 
     hname="hnClsITSselTr";
-    TH1F* hnClsITSselTr=new TH1F(hname.Data(),"Distribution of number of ITS clusters selected tracks;nITScls;Entries",7,-0.5,6.5);
+    fHisnClsITSselTr=new TH1F(hname.Data(),"Distribution of number of ITS clusters selected tracks;nITScls;Entries",7,-0.5,6.5);
 
     hname="hnClsITS-SA";
-    TH1F* hnClsITSSA=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA);nITScls;Entries",7,-0.5,6.5);
+    fHisnClsITSSA=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA);nITScls;Entries",7,-0.5,6.5);
 
 
     hname="hnLayerITS";
-    TH1F* hnLayerITS=new TH1F(hname.Data(),"Number of tracks with point in layer;ITS layer;",7,-1.5,5.5);
-    hnLayerITS->GetXaxis()->SetBinLabel(1,"n tracks");
-    hnLayerITS->GetXaxis()->SetBinLabel(2,"SPDin");
-    hnLayerITS->GetXaxis()->SetBinLabel(3,"SPDout");
-    hnLayerITS->GetXaxis()->SetBinLabel(4,"SDDin");
-    hnLayerITS->GetXaxis()->SetBinLabel(5,"SDDout");
-    hnLayerITS->GetXaxis()->SetBinLabel(6,"SSDin");
-    hnLayerITS->GetXaxis()->SetBinLabel(7,"SSDout");
+    fHisnLayerITS=new TH1F(hname.Data(),"Number of tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    fHisnLayerITS->GetXaxis()->SetBinLabel(1,"n tracks");
+    fHisnLayerITS->GetXaxis()->SetBinLabel(2,"SPDin");
+    fHisnLayerITS->GetXaxis()->SetBinLabel(3,"SPDout");
+    fHisnLayerITS->GetXaxis()->SetBinLabel(4,"SDDin");
+    fHisnLayerITS->GetXaxis()->SetBinLabel(5,"SDDout");
+    fHisnLayerITS->GetXaxis()->SetBinLabel(6,"SSDin");
+    fHisnLayerITS->GetXaxis()->SetBinLabel(7,"SSDout");
 
     hname="hnLayerITSselTr";
-    TH1F* hnLayerITSselTr=new TH1F(hname.Data(),"Number of selected tracks with point in layer;ITS layer;",7,-1.5,5.5);
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(1,"n tracks");
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(2,"SPDin");
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(3,"SPDout");
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(4,"SDDin");
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(5,"SDDout");
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(6,"SSDin");
-    hnLayerITSselTr->GetXaxis()->SetBinLabel(7,"SSDout");
+    fHisnLayerITSselTr=new TH1F(hname.Data(),"Number of selected tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(1,"n tracks");
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(2,"SPDin");
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(3,"SPDout");
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(4,"SDDin");
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(5,"SDDout");
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(6,"SSDin");
+    fHisnLayerITSselTr->GetXaxis()->SetBinLabel(7,"SSDout");
 
     hname="hnLayerITSsa";
-    TH1F* hnLayerITSsa=new TH1F(hname.Data(),"Number of ITSsa tracks with point in layer;ITS layer;",7,-1.5,5.5);
-    hnLayerITSsa->GetXaxis()->SetBinLabel(1,"n tracks");
-    hnLayerITSsa->GetXaxis()->SetBinLabel(2,"SPDin");
-    hnLayerITSsa->GetXaxis()->SetBinLabel(3,"SPDout");
-    hnLayerITSsa->GetXaxis()->SetBinLabel(4,"SDDin");
-    hnLayerITSsa->GetXaxis()->SetBinLabel(5,"SDDout");
-    hnLayerITSsa->GetXaxis()->SetBinLabel(6,"SSDin");
-    hnLayerITSsa->GetXaxis()->SetBinLabel(7,"SSDout");
+    fHisnLayerITSsa=new TH1F(hname.Data(),"Number of ITSsa tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(1,"n tracks");
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(2,"SPDin");
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(3,"SPDout");
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(4,"SDDin");
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(5,"SDDout");
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(6,"SSDin");
+    fHisnLayerITSsa->GetXaxis()->SetBinLabel(7,"SSDout");
    
     hname="hnClsSPD";
-    TH1F* hnClsSPD=new TH1F(hname.Data(),"Distribution of number of SPD clusters;nSPDcls;Entries",3,-0.5,2.5);
+    fHisnClsSPD=new TH1F(hname.Data(),"Distribution of number of SPD clusters;nSPDcls;Entries",3,-0.5,2.5);
 
     hname="hptGoodTr";
-    TH1F* hptGoodTr=new TH1F(hname.Data(),"Pt distribution of 'good' tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-    hptGoodTr->SetTitleOffset(1.3,"Y");
+    fHisptGoodTr=new TH1F(hname.Data(),"Pt distribution of 'good' tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+    fHisptGoodTr->SetTitleOffset(1.3,"Y");
 
     if(!fSimpleMode){
       hname="hptGoodTrFromDaugh";
-      TH1F* hptGoodTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-      hptGoodTrFromDaugh->SetTitleOffset(1.3,"Y");
-      fOutputTrack->Add(hptGoodTrFromDaugh);
+      fHisptGoodTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+      fHisptGoodTrFromDaugh->SetTitleOffset(1.3,"Y");
+      fOutputTrack->Add(fHisptGoodTrFromDaugh);
       hname="hptGoodTrFromDaugh_filt";
-      TH1F* hptGoodTrFromDaugh_filt=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters, cuts level;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-      hptGoodTrFromDaugh_filt->SetTitleOffset(1.3,"Y");
-      fOutputTrack->Add(hptGoodTrFromDaugh_filt);
+      fHisptGoodTrFromDaugh_filt=new TH1F(hname.Data(),"Pt distribution of 'good' candidate's daughters, cuts level;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+      fHisptGoodTrFromDaugh_filt->SetTitleOffset(1.3,"Y");
+      fOutputTrack->Add(fHisptGoodTrFromDaugh_filt);
     }
 
     hname="hdistrGoodTr";
-    TH1F* hdistrGoodTr=new TH1F(hname.Data(),"Distribution of number of 'good' candidate's daughters per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
-    hdistrGoodTr->SetTitleOffset(1.3,"Y");
+    fHisdistrGoodTr=new TH1F(hname.Data(),"Distribution of number of 'good' candidate's daughters per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
+    fHisdistrGoodTr->SetTitleOffset(1.3,"Y");
 
     hname="hdistrSelTr";
-    TH1F* hdistrSelTr=new TH1F(hname.Data(),"Distribution of number of Selected tracks per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
-    hdistrSelTr->SetTitleOffset(1.3,"Y");
+    fHisdistrSelTr=new TH1F(hname.Data(),"Distribution of number of Selected tracks per event;no.good-tracks/ev;Entries",4000,-0.5,3999.5);
+    fHisdistrSelTr->SetTitleOffset(1.3,"Y");
 
     hname="hd0dau";
-    TH1F* hd0dau=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    fHisd0dau=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
     hname="hd0dau_filt";
-    TH1F* hd0dau_filt=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks, cut level;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    fHisd0dau_filt=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks, cut level;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
     hname="hd0dauphi";
-    TH2F* hd0dauphi=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
+    fHisd0dauphi=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
 
     hname="hd0dauphi_filt";
-    TH2F* hd0dauphi_filt=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi, cut level; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
+    fHisd0dauphi_filt=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi, cut level; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
     
     hname="hd0zdau";
-    TH1F* hd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    fHisd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
     hname="hd0zdau_filt";
-    TH1F* hd0zdau_filt=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks, cut level;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    fHisd0zdau_filt=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks, cut level;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
 
     hname="hd0zdauphi";
-    TH2F* hd0zdauphi=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
+    fHisd0zdauphi=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
 
     hname="hd0zdauphi_filt";
-    TH2F* hd0zdauphi_filt=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi, filtering level; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
+    fHisd0zdauphi_filt=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi, filtering level; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
 
     hname="hd0TracksSPDin";
-    TH1F* hd0TracksSPDin=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDinner; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+    fHisd0TracksSPDin=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDinner; d_{0rphi}[cm];Entries",200,-0.5,0.5);
 
     hname="hd0TracksSPDany";
-    TH1F* hd0TracksSPDany=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDany; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+    fHisd0TracksSPDany=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDany; d_{0rphi}[cm];Entries",200,-0.5,0.5);
 
     hname="hd0TracksFilterBit4";
-    TH1F* hd0TracksFilterBit4=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks FilterBit4; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+    fHisd0TracksFilterBit4=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks FilterBit4; d_{0rphi}[cm];Entries",200,-0.5,0.5);
 
     hname="hd0TracksTPCITSSPDany";
-    TH1F* hd0TracksTPCITSSPDany=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks TPC+ITScuts+SPDany; d_{0rphi}[cm];Entries",200,-0.5,0.5);
+    fHisd0TracksTPCITSSPDany=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks TPC+ITScuts+SPDany; d_{0rphi}[cm];Entries",200,-0.5,0.5);
 
 
     if(fFillDistrTrackEffChecks){
       hname="hPtDaughters";
-      TH1F *hPtDaughters=new TH1F(hname.Data(),"p_{T} distributions of the daughter tracks;p_{T} [GeV/c];Entries",200,0.,20.);
+      fHisPtDaughters=new TH1F(hname.Data(),"p_{T} distributions of the daughter tracks;p_{T} [GeV/c];Entries",200,0.,20.);
 
       hname="hPhiDaughters";
-      TH1F *hPhiDaughters=new TH1F(hname.Data(),"#phi distribution of the daughter tracks;#phi [rad];Entries",100,0.,2*(TMath::Pi()));
+      fHisPhiDaughters=new TH1F(hname.Data(),"#phi distribution of the daughter tracks;#phi [rad];Entries",100,0.,2*(TMath::Pi()));
 
       hname="hEtaDaughters";
-      TH1F *hEtaDaughters=new TH1F(hname.Data(),"#eta distribution of the daughter tracks;#eta;Entries",80,-2.,2.);
+      fHisEtaDaughters=new TH1F(hname.Data(),"#eta distribution of the daughter tracks;#eta;Entries",80,-2.,2.);
 
       hname="hEtavsPhiDaughters";
-      TH2F *hEtavsPhiDaughters=new TH2F(hname.Data(),"#eta vs #phi distribution of the daughter tracks;#phi;#eta",100,0.,2*(TMath::Pi()),80,-2.,2.);
+      fHisEtavsPhiDaughters=new TH2F(hname.Data(),"#eta vs #phi distribution of the daughter tracks;#phi;#eta",100,0.,2*(TMath::Pi()),80,-2.,2.);
 
       hname="hNTPCclsvsPtDaughters";
-      TH2F *hNTPCclsvsPtDaughters=new TH2F(hname.Data(),"N TPC clusters vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];N TPC cls",200,0.,20.,85,-0.5,169.5);
+      fHisNTPCclsvsPtDaughters=new TH2F(hname.Data(),"N TPC clusters vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];N TPC cls",200,0.,20.,85,-0.5,169.5);
 
       hname="hNTPCclsvsPhiDaughters";
-      TH2F *hNTPCclsvsPhiDaughters=new TH2F(hname.Data(),"N TPC clusters vs #phi distribution of the daughter tracks;#phi [rad];N TPC cls",100,0.,2*(TMath::Pi()),85,-0.5,169.5);
+      fHisNTPCclsvsPhiDaughters=new TH2F(hname.Data(),"N TPC clusters vs #phi distribution of the daughter tracks;#phi [rad];N TPC cls",100,0.,2*(TMath::Pi()),85,-0.5,169.5);
 
       hname="hNTPCclsvsEtaDaughters";
-      TH2F *hNTPCclsvsEtaDaughters=new TH2F(hname.Data(),"N TPC clusters vs #eta distribution of the daughter tracks;#eta;N TPC cls",80,-2.,2.,85,-0.5,169.5);
+      fHisNTPCclsvsEtaDaughters=new TH2F(hname.Data(),"N TPC clusters vs #eta distribution of the daughter tracks;#eta;N TPC cls",80,-2.,2.,85,-0.5,169.5);
 
       hname="hNTPCCrossedRowsvsPtDaughters";
-      TH2F *hNTPCCrossedRowsvsPtDaughters=new TH2F(hname.Data(),"N TPC crossed rows vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];N TPC cros. rows",200,0.,20.,100,-0.5,199.5);
+      fHisNTPCCrossedRowsvsPtDaughters=new TH2F(hname.Data(),"N TPC crossed rows vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];N TPC cros. rows",200,0.,20.,100,-0.5,199.5);
 
       hname="hNTPCCrossedRowsvsPhiDaughters";
-      TH2F *hNTPCCrossedRowsvsPhiDaughters=new TH2F(hname.Data(),"N TPC crossed rows vs #phi distribution of the daughter tracks;#phi [rad];N TPC cros. rows",100,0.,2*(TMath::Pi()),100,-0.5,199.5);
+      fHisNTPCCrossedRowsvsPhiDaughters=new TH2F(hname.Data(),"N TPC crossed rows vs #phi distribution of the daughter tracks;#phi [rad];N TPC cros. rows",100,0.,2*(TMath::Pi()),100,-0.5,199.5);
 
       hname="hNTPCCrossedRowsvsEtaDaughters";
-      TH2F *hNTPCCrossedRowsvsEtaDaughters=new TH2F(hname.Data(),"N TPC crossed rows vs #eta distribution of the daughter tracks;#eta;N TPC cros. rows",80,-2.,2.,100,-0.5,199.5);
+      fHisNTPCCrossedRowsvsEtaDaughters=new TH2F(hname.Data(),"N TPC crossed rows vs #eta distribution of the daughter tracks;#eta;N TPC cros. rows",80,-2.,2.,100,-0.5,199.5);
 
       hname="hRatioCRowsOverFclsvsPtDaughters";
-      TH2F *hRatioCRowsOverFclsvsPtDaughters=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];CRows/FCls",200,0.,20,100,0.,1.);
+      fHisRatioCRowsOverFclsvsPtDaughters=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];CRows/FCls",200,0.,20,100,0.,1.);
 
       hname="hRatioCRowsOverFclsvsPhiDaughters";
-      TH2F *hRatioCRowsOverFclsvsPhiDaughters=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #phi distribution of the daughter tracks;#phi [rad];CRows/FCls",100,0.,2*(TMath::Pi()),100,0.,1.);
+      fHisRatioCRowsOverFclsvsPhiDaughters=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #phi distribution of the daughter tracks;#phi [rad];CRows/FCls",100,0.,2*(TMath::Pi()),100,0.,1.);
 
       hname="hRatioCRowsOverFclsvsEtaDaughters";
-      TH2F *hRatioCRowsOverFclsvsEtaDaughters=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #eta distribution of the daughter tracks;#eta;CRows/FCls",80,-2.,2.,100,0.,1.);
+      fHisRatioCRowsOverFclsvsEtaDaughters=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #eta distribution of the daughter tracks;#eta;CRows/FCls",80,-2.,2.,100,0.,1.);
 
       hname="hNITSclsvsPtDaughters";
-      TH2F *hNITSclsvsPtDaughters=new TH2F(hname.Data(),"N ITS clusters vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];N ITS cls",200,0.,20,7,-0.5,6.5);
+      fHisNITSclsvsPtDaughters=new TH2F(hname.Data(),"N ITS clusters vs p_{T} distribution of the daughter tracks;p_{T} [GeV/c];N ITS cls",200,0.,20,7,-0.5,6.5);
 
       hname="hNITSclsvsPhiDaughters";
-      TH2F *hNITSclsvsPhiDaughters=new TH2F(hname.Data(),"N ITS clusters vs #phi distribution of the daughter tracks;#phi [rad];N ITS cls",100,0.,2*(TMath::Pi()),7,-0.5,6.5);
+      fHisNITSclsvsPhiDaughters=new TH2F(hname.Data(),"N ITS clusters vs #phi distribution of the daughter tracks;#phi [rad];N ITS cls",100,0.,2*(TMath::Pi()),7,-0.5,6.5);
 
       hname="hNITSclsvsEtaDaughters";
-      TH2F *hNITSclsvsEtaDaughters=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the daughter tracks;#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
+      fHisNITSclsvsEtaDaughters=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the daughter tracks;#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
 
       hname="hSPDclsDaughters";
-      TH1I *hSPDclsDaughters = new TH1I(hname.Data(),"N SPD points distribution;;Entries",4,-0.5,3.5);
-      hSPDclsDaughters->GetXaxis()->SetBinLabel(1, "no SPD");
-      hSPDclsDaughters->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
-      hSPDclsDaughters->GetXaxis()->SetBinLabel(3, "kOnlySecond");
-      hSPDclsDaughters->GetXaxis()->SetBinLabel(4, "kBoth");
+      fHisSPDclsDaughters = new TH1I(hname.Data(),"N SPD points distribution;;Entries",4,-0.5,3.5);
+      fHisSPDclsDaughters->GetXaxis()->SetBinLabel(1, "no SPD");
+      fHisSPDclsDaughters->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
+      fHisSPDclsDaughters->GetXaxis()->SetBinLabel(3, "kOnlySecond");
+      fHisSPDclsDaughters->GetXaxis()->SetBinLabel(4, "kBoth");
 
       hname="hPtAllTracks";
-      TH1F *hPtAllTracks=new TH1F(hname.Data(),"p_{T} distributions of the AOD tracks (ID>0);p_{T} [GeV/c];Entries",200,0.,20.);
+      fHisPtAllTracks=new TH1F(hname.Data(),"p_{T} distributions of the AOD tracks (ID>0);p_{T} [GeV/c];Entries",200,0.,20.);
 
       hname="hPhiAllTracks";
-      TH1F *hPhiAllTracks=new TH1F(hname.Data(),"#phi distribution of the AOD tracks (ID>0);#phi [rad];Entries",100,0.,2*(TMath::Pi()));
+      fHisPhiAllTracks=new TH1F(hname.Data(),"#phi distribution of the AOD tracks (ID>0);#phi [rad];Entries",100,0.,2*(TMath::Pi()));
 
       hname="hEtaAllTracks";
-      TH1F *hEtaAllTracks=new TH1F(hname.Data(),"#eta distribution of the AOD tracks (ID>0);#eta;Entries",80,-2.,2.);
+      fHisEtaAllTracks=new TH1F(hname.Data(),"#eta distribution of the AOD tracks (ID>0);#eta;Entries",80,-2.,2.);
 
       hname="hEtavsPhiAllTracks";
-      TH2F *hEtavsPhiAllTracks=new TH2F(hname.Data(),"#eta vs #phi distribution of the AOD tracks (ID>0);#phi;#eta",100,0.,2*(TMath::Pi()),80,-2.,2.);
+      fHisEtavsPhiAllTracks=new TH2F(hname.Data(),"#eta vs #phi distribution of the AOD tracks (ID>0);#phi;#eta",100,0.,2*(TMath::Pi()),80,-2.,2.);
 
       hname="hNTPCclsvsPtAllTracks";
-      TH2F *hNTPCclsvsPtAllTracks=new TH2F(hname.Data(),"N TPC clusters vs p_{T} distribution of the AOD tracks (ID>0);p_{T} [GeV/c];N TPC cls",200,0.,20,85,-0.5,169.5);
+      fHisNTPCclsvsPtAllTracks=new TH2F(hname.Data(),"N TPC clusters vs p_{T} distribution of the AOD tracks (ID>0);p_{T} [GeV/c];N TPC cls",200,0.,20,85,-0.5,169.5);
 
       hname="hNTPCclsvsPhiAllTracks";
-      TH2F *hNTPCclsvsPhiAllTracks=new TH2F(hname.Data(),"N TPC clusters vs #phi distribution of the AOD tracks (ID>0);#phi [rad];N TPC cls",100,0.,2*(TMath::Pi()),85,-0.5,169.5);
+      fHisNTPCclsvsPhiAllTracks=new TH2F(hname.Data(),"N TPC clusters vs #phi distribution of the AOD tracks (ID>0);#phi [rad];N TPC cls",100,0.,2*(TMath::Pi()),85,-0.5,169.5);
 
       hname="hNTPCclsvsEtaAllTracks";
-      TH2F *hNTPCclsvsEtaAllTracks=new TH2F(hname.Data(),"N TPC clusters vs #eta distribution of the AOD tracks (ID>0);#eta;N TPC cls",80,-2.,2.,85,-0.5,169.5);
+      fHisNTPCclsvsEtaAllTracks=new TH2F(hname.Data(),"N TPC clusters vs #eta distribution of the AOD tracks (ID>0);#eta;N TPC cls",80,-2.,2.,85,-0.5,169.5);
 
       hname="hNTPCCrossedRowsvsPtAllTracks";
-      TH2F *hNTPCCrossedRowsvsPtAllTracks=new TH2F(hname.Data(),"N TPC crossed rows vs p_{T} distribution of the AOD tracks;p_{T} [GeV/c];N TPC cros. rows",200,0.,20.,100,-0.5,199.5);
+      fHisNTPCCrossedRowsvsPtAllTracks=new TH2F(hname.Data(),"N TPC crossed rows vs p_{T} distribution of the AOD tracks;p_{T} [GeV/c];N TPC cros. rows",200,0.,20.,100,-0.5,199.5);
 
       hname="hNTPCCrossedRowsvsPhiAllTracks";
-      TH2F *hNTPCCrossedRowsvsPhiAllTracks=new TH2F(hname.Data(),"N TPC crossed rows vs #phi distribution of the AOD tracks;#phi [rad];N TPC cros. rows",100,0.,2*(TMath::Pi()),100,-0.5,199.5);
+      fHisNTPCCrossedRowsvsPhiAllTracks=new TH2F(hname.Data(),"N TPC crossed rows vs #phi distribution of the AOD tracks;#phi [rad];N TPC cros. rows",100,0.,2*(TMath::Pi()),100,-0.5,199.5);
 
       hname="hNTPCCrossedRowsvsEtaAllTracks";
-      TH2F *hNTPCCrossedRowsvsEtaAllTracks=new TH2F(hname.Data(),"N TPC crossed rows vs #eta distribution of the AOD tracks;#eta;N TPC cros. rows",80,-2.,2.,100,-0.5,199.5);
+      fHisNTPCCrossedRowsvsEtaAllTracks=new TH2F(hname.Data(),"N TPC crossed rows vs #eta distribution of the AOD tracks;#eta;N TPC cros. rows",80,-2.,2.,100,-0.5,199.5);
 
       hname="hRatioCRowsOverFclsvsPtAllTracks";
-      TH2F *hRatioCRowsOverFclsvsPtAllTracks=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs p_{T} distribution of the AOD tracks (ID>0);p_{T} [GeV/c];CRows/FCls",200,0.,20,100,0.,1.);
+      fHisRatioCRowsOverFclsvsPtAllTracks=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs p_{T} distribution of the AOD tracks (ID>0);p_{T} [GeV/c];CRows/FCls",200,0.,20,100,0.,1.);
 
       hname="hRatioCRowsOverFclsvsPhiAllTracks";
-      TH2F *hRatioCRowsOverFclsvsPhiAllTracks=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #phi distribution of the AOD tracks (ID>0);#phi [rad];CRows/FCls",100,0.,2*(TMath::Pi()),100,0.,1.);
+      fHisRatioCRowsOverFclsvsPhiAllTracks=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #phi distribution of the AOD tracks (ID>0);#phi [rad];CRows/FCls",100,0.,2*(TMath::Pi()),100,0.,1.);
 
       hname="hRatioCRowsOverFclsvsEtaAllTracks";
-      TH2F *hRatioCRowsOverFclsvsEtaAllTracks=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #eta distribution of the AOD tracks (ID>0);#eta;CRows/FCls",80,-2.,2.,100,0.,1.);
+      fHisRatioCRowsOverFclsvsEtaAllTracks=new TH2F(hname.Data(),"CrossedRows/FindableClusters vs #eta distribution of the AOD tracks (ID>0);#eta;CRows/FCls",80,-2.,2.,100,0.,1.);
 
       hname="hNITSclsvsPtAllTracks";
-      TH2F *hNITSclsvsPtAllTracks=new TH2F(hname.Data(),"N ITS clusters vs p_{T} distribution of the AOD tracks (ID>0);p_{T} [GeV/c];N ITS cls",200,0.,20,7,-0.5,6.5);
+      fHisNITSclsvsPtAllTracks=new TH2F(hname.Data(),"N ITS clusters vs p_{T} distribution of the AOD tracks (ID>0);p_{T} [GeV/c];N ITS cls",200,0.,20,7,-0.5,6.5);
 
       hname="hNITSclsvsPhiAllTracks";
-      TH2F *hNITSclsvsPhiAllTracks=new TH2F(hname.Data(),"N ITS clusters vs #phi distribution of the AOD tracks (ID>0);#phi [rad];N ITS cls",100,0.,2*(TMath::Pi()),7,-0.5,6.5);
+      fHisNITSclsvsPhiAllTracks=new TH2F(hname.Data(),"N ITS clusters vs #phi distribution of the AOD tracks (ID>0);#phi [rad];N ITS cls",100,0.,2*(TMath::Pi()),7,-0.5,6.5);
 
       hname="hNITSclsvsEtaAllTracks";
-      TH2F *hNITSclsvsEtaAllTracks=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the AOD tracks (ID>0);#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
+      fHisNITSclsvsEtaAllTracks=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the AOD tracks (ID>0);#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
 
       hname="hSPDclsAllTracks";
-      TH1I *hSPDclsAllTracks = new TH1I(hname.Data(),"N SPD points distribution AOD tracks (ID>0);;Entries",4,-0.5,3.5);
-      hSPDclsAllTracks->GetXaxis()->SetBinLabel(1, "no SPD");
-      hSPDclsAllTracks->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
-      hSPDclsAllTracks->GetXaxis()->SetBinLabel(3, "kOnlySecond");
-      hSPDclsAllTracks->GetXaxis()->SetBinLabel(4, "kBoth");
+      fHisSPDclsAllTracks = new TH1I(hname.Data(),"N SPD points distribution AOD tracks (ID>0);;Entries",4,-0.5,3.5);
+      fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(1, "no SPD");
+      fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
+      fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(3, "kOnlySecond");
+      fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(4, "kBoth");
 
 
-      fOutputTrack->Add(hPtDaughters);
-      fOutputTrack->Add(hPhiDaughters);
-      fOutputTrack->Add(hEtaDaughters);
-      fOutputTrack->Add(hEtavsPhiDaughters);
-      fOutputTrack->Add(hNTPCclsvsPtDaughters);
-      fOutputTrack->Add(hNTPCclsvsPhiDaughters);
-      fOutputTrack->Add(hNTPCclsvsEtaDaughters);
-      fOutputTrack->Add(hNTPCCrossedRowsvsPtDaughters);
-      fOutputTrack->Add(hNTPCCrossedRowsvsPhiDaughters);
-      fOutputTrack->Add(hNTPCCrossedRowsvsEtaDaughters);
-      fOutputTrack->Add(hRatioCRowsOverFclsvsPtDaughters);
-      fOutputTrack->Add(hRatioCRowsOverFclsvsPhiDaughters);
-      fOutputTrack->Add(hRatioCRowsOverFclsvsEtaDaughters);
-      fOutputTrack->Add(hNITSclsvsPtDaughters);
-      fOutputTrack->Add(hNITSclsvsPhiDaughters);
-      fOutputTrack->Add(hNITSclsvsEtaDaughters);
-      fOutputTrack->Add(hSPDclsDaughters);
-      fOutputTrack->Add(hPtAllTracks);
-      fOutputTrack->Add(hPhiAllTracks);
-      fOutputTrack->Add(hEtaAllTracks);
-      fOutputTrack->Add(hEtavsPhiAllTracks);
-      fOutputTrack->Add(hNTPCclsvsPtAllTracks);
-      fOutputTrack->Add(hNTPCclsvsPhiAllTracks);
-      fOutputTrack->Add(hNTPCclsvsEtaAllTracks);
-      fOutputTrack->Add(hNTPCCrossedRowsvsPtAllTracks);
-      fOutputTrack->Add(hNTPCCrossedRowsvsPhiAllTracks);
-      fOutputTrack->Add(hNTPCCrossedRowsvsEtaAllTracks);
-      fOutputTrack->Add(hRatioCRowsOverFclsvsPtAllTracks);
-      fOutputTrack->Add(hRatioCRowsOverFclsvsPhiAllTracks);
-      fOutputTrack->Add(hRatioCRowsOverFclsvsEtaAllTracks);
-      fOutputTrack->Add(hNITSclsvsPtAllTracks);
-      fOutputTrack->Add(hNITSclsvsPhiAllTracks);
-      fOutputTrack->Add(hNITSclsvsEtaAllTracks);
-      fOutputTrack->Add(hSPDclsAllTracks);
+      fOutputTrack->Add(fHisPtDaughters);
+      fOutputTrack->Add(fHisPhiDaughters);
+      fOutputTrack->Add(fHisEtaDaughters);
+      fOutputTrack->Add(fHisEtavsPhiDaughters);
+      fOutputTrack->Add(fHisNTPCclsvsPtDaughters);
+      fOutputTrack->Add(fHisNTPCclsvsPhiDaughters);
+      fOutputTrack->Add(fHisNTPCclsvsEtaDaughters);
+      fOutputTrack->Add(fHisNTPCCrossedRowsvsPtDaughters);
+      fOutputTrack->Add(fHisNTPCCrossedRowsvsPhiDaughters);
+      fOutputTrack->Add(fHisNTPCCrossedRowsvsEtaDaughters);
+      fOutputTrack->Add(fHisRatioCRowsOverFclsvsPtDaughters);
+      fOutputTrack->Add(fHisRatioCRowsOverFclsvsPhiDaughters);
+      fOutputTrack->Add(fHisRatioCRowsOverFclsvsEtaDaughters);
+      fOutputTrack->Add(fHisNITSclsvsPtDaughters);
+      fOutputTrack->Add(fHisNITSclsvsPhiDaughters);
+      fOutputTrack->Add(fHisNITSclsvsEtaDaughters);
+      fOutputTrack->Add(fHisSPDclsDaughters);
+      fOutputTrack->Add(fHisPtAllTracks);
+      fOutputTrack->Add(fHisPhiAllTracks);
+      fOutputTrack->Add(fHisEtaAllTracks);
+      fOutputTrack->Add(fHisEtavsPhiAllTracks);
+      fOutputTrack->Add(fHisNTPCclsvsPtAllTracks);
+      fOutputTrack->Add(fHisNTPCclsvsPhiAllTracks);
+      fOutputTrack->Add(fHisNTPCclsvsEtaAllTracks);
+      fOutputTrack->Add(fHisNTPCCrossedRowsvsPtAllTracks);
+      fOutputTrack->Add(fHisNTPCCrossedRowsvsPhiAllTracks);
+      fOutputTrack->Add(fHisNTPCCrossedRowsvsEtaAllTracks);
+      fOutputTrack->Add(fHisRatioCRowsOverFclsvsPtAllTracks);
+      fOutputTrack->Add(fHisRatioCRowsOverFclsvsPhiAllTracks);
+      fOutputTrack->Add(fHisRatioCRowsOverFclsvsEtaAllTracks);
+      fOutputTrack->Add(fHisNITSclsvsPtAllTracks);
+      fOutputTrack->Add(fHisNITSclsvsPhiAllTracks);
+      fOutputTrack->Add(fHisNITSclsvsEtaAllTracks);
+      fOutputTrack->Add(fHisSPDclsAllTracks);
 
     }
     
-    fOutputTrack->Add(hnClsITS);
-    fOutputTrack->Add(hnClsITSselTr);
-    fOutputTrack->Add(hnClsITSSA);
-    fOutputTrack->Add(hnLayerITS);
-    fOutputTrack->Add(hnLayerITSselTr);
-    fOutputTrack->Add(hnLayerITSsa);
-    fOutputTrack->Add(hnClsSPD);
-    fOutputTrack->Add(hptGoodTr);
-    fOutputTrack->Add(hdistrGoodTr);
-    fOutputTrack->Add(hdistrSelTr);
-    fOutputTrack->Add(hd0TracksSPDin);
-    fOutputTrack->Add(hd0TracksSPDany);
-    fOutputTrack->Add(hd0TracksFilterBit4);
-    fOutputTrack->Add(hd0TracksTPCITSSPDany);
-    fOutputTrack->Add(hd0dau);
-    fOutputTrack->Add(hd0dauphi);
-    fOutputTrack->Add(hd0zdau);
-    fOutputTrack->Add(hd0zdauphi);
-    fOutputTrack->Add(hd0dau_filt);
-    fOutputTrack->Add(hd0dauphi_filt);
-    fOutputTrack->Add(hd0zdau_filt);
-    fOutputTrack->Add(hd0zdauphi_filt);
+    fOutputTrack->Add(fHisnClsITS);
+    fOutputTrack->Add(fHisnClsITSselTr);
+    fOutputTrack->Add(fHisnClsITSSA);
+    fOutputTrack->Add(fHisnLayerITS);
+    fOutputTrack->Add(fHisnLayerITSselTr);
+    fOutputTrack->Add(fHisnLayerITSsa);
+    fOutputTrack->Add(fHisnClsSPD);
+    fOutputTrack->Add(fHisptGoodTr);
+    fOutputTrack->Add(fHisdistrGoodTr);
+    fOutputTrack->Add(fHisdistrSelTr);
+    fOutputTrack->Add(fHisd0TracksSPDin);
+    fOutputTrack->Add(fHisd0TracksSPDany);
+    fOutputTrack->Add(fHisd0TracksFilterBit4);
+    fOutputTrack->Add(fHisd0TracksTPCITSSPDany);
+    fOutputTrack->Add(fHisd0dau);
+    fOutputTrack->Add(fHisd0dauphi);
+    fOutputTrack->Add(fHisd0zdau);
+    fOutputTrack->Add(fHisd0zdauphi);
+    fOutputTrack->Add(fHisd0dau_filt);
+    fOutputTrack->Add(fHisd0dauphi_filt);
+    fOutputTrack->Add(fHisd0zdau_filt);
+    fOutputTrack->Add(fHisd0zdauphi_filt);
     
 
     if(fReadMC){
       hname="hdistrFakeTr";
-      TH1F* hdistrFakeTr=new TH1F(hname.Data(),"Distribution of number of fake tracks per event;no.fake-tracks/ev;Entries",4000,-0.5,3999.5);
-      hdistrFakeTr->SetTitleOffset(1.3,"Y");
+      fHisdistrFakeTr=new TH1F(hname.Data(),"Distribution of number of fake tracks per event;no.fake-tracks/ev;Entries",4000,-0.5,3999.5);
+      fHisdistrFakeTr->SetTitleOffset(1.3,"Y");
 
       hname="hd0f";
-      TH1F* hd0f=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+      fHisd0f=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
       hname="hd0f_filt";
-      TH1F* hd0f_filt=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks, cut level;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+      fHisd0f_filt=new TH1F(hname.Data(),"Impact parameter distribution of fake tracks, cut level;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
 
       hname="hptFakeTr";
-      TH1F* hptFakeTr=new TH1F(hname.Data(),"Pt distribution of fake tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-      hptFakeTr->SetTitleOffset(1.3,"Y");
+      fHisptFakeTr=new TH1F(hname.Data(),"Pt distribution of fake tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+      fHisptFakeTr->SetTitleOffset(1.3,"Y");
       if(!fSimpleMode){
 	hname="hptFakeTrFromDaugh";
-	TH1F* hptFakeTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-	hptFakeTrFromDaugh->SetTitleOffset(1.3,"Y");
-	fOutputTrack->Add(hptFakeTrFromDaugh);
+	fHisptFakeTrFromDaugh=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+	fHisptFakeTrFromDaugh->SetTitleOffset(1.3,"Y");
+	fOutputTrack->Add(fHisptFakeTrFromDaugh);
 
 	hname="hptFakeTrFromDaugh_filt";
-	TH1F* hptFakeTrFromDaughFilt=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters, cut level;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-	hptFakeTrFromDaughFilt->SetTitleOffset(1.3,"Y");
-	fOutputTrack->Add(hptFakeTrFromDaughFilt);
+	fHisptFakeTrFromDaughFilt=new TH1F(hname.Data(),"Pt distribution of fake tracks from daughters, cut level;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
+	fHisptFakeTrFromDaughFilt->SetTitleOffset(1.3,"Y");
+	fOutputTrack->Add(fHisptFakeTrFromDaughFilt);
       }
 
-      fOutputTrack->Add(hptFakeTr);
-      fOutputTrack->Add(hdistrFakeTr);
-      fOutputTrack->Add(hd0f);
-      fOutputTrack->Add(hd0f_filt);
+      fOutputTrack->Add(fHisptFakeTr);
+      fOutputTrack->Add(fHisdistrFakeTr);
+      fOutputTrack->Add(fHisd0f);
+      fOutputTrack->Add(fHisd0f_filt);
     }
   }
 
@@ -819,96 +1106,96 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->SetName(GetOutputSlot(6)->GetContainer()->GetName());
 
     TString hname="hNtrackletsIn";
-    TH1F* hNtrackletsIn=new TH1F(hname.Data(),"Number of tracklets in Centrality range;ntracklets;Entries",5000,-0.5,4999.5);
+    fHisNtrackletsIn=new TH1F(hname.Data(),"Number of tracklets in Centrality range;ntracklets;Entries",5000,-0.5,4999.5);
 
     hname="hMultIn";
-    TH1F* hMultIn=new TH1F(hname.Data(),"Multiplicity;multiplicity in Centrality range;Entries",10000,-0.5,9999.5);
+    fHisMultIn=new TH1F(hname.Data(),"Multiplicity;multiplicity in Centrality range;Entries",10000,-0.5,9999.5);
 
     hname="hNtrackletsOut";
-    TH1F* hNtrackletsOut=new TH1F(hname.Data(),"Number of tracklets out of Centrality range;ntracklets;Entries",5000,-0.5,4999.5);
+    fHisNtrackletsOut=new TH1F(hname.Data(),"Number of tracklets out of Centrality range;ntracklets;Entries",5000,-0.5,4999.5);
 
     hname="hMultOut";
-    TH1F* hMultOut=new TH1F(hname.Data(),"Multiplicity out of Centrality range;multiplicity;Entries",10000,-0.5,9999.5);
+    fHisMultOut=new TH1F(hname.Data(),"Multiplicity out of Centrality range;multiplicity;Entries",10000,-0.5,9999.5);
 
     hname="hMultvsPercentile";
-    TH2F* hMultvsPercentile=new TH2F(hname.Data(),"Multiplicity vs Percentile;multiplicity;percentile",10000,-0.5,9999.5,240,-10.,110);
+    fHisMultvsPercentile=new TH2F(hname.Data(),"Multiplicity vs Percentile;multiplicity;percentile",10000,-0.5,9999.5,240,-10.,110);
 
     hname="hntrklvsPercentile";
-    TH2F* hntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
+    fHisntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
     hname="hntrklvsPercentile01";
-    TH2F* hntrklvsPercentile01=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
+    fHisntrklvsPercentile01=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
       
     hname="hntrklvsPercentile01AllEv";
-    TH2F* hntrklvsPercentile01AllEv=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1 - All Events;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
+    fHisntrklvsPercentile01AllEv=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1 - All Events;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
     hname="hnTPCTracksvsPercentile";
-    TH2F* hnTPCTracksvsPercentile=new TH2F(hname.Data(),"N TPC tracks vs Percentile;nTPCTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
+    fHisnTPCTracksvsPercentile=new TH2F(hname.Data(),"N TPC tracks vs Percentile;nTPCTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
 
     hname="hnTPCITSTracksvsPercentile";
-    TH2F* hnTPCITSTracksvsPercentile=new TH2F(hname.Data(),"N TPC+ITS tracks vs Percentile;nTPCITSTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
+    fHisnTPCITSTracksvsPercentile=new TH2F(hname.Data(),"N TPC+ITS tracks vs Percentile;nTPCITSTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
 
     hname="hnTPCITS1SPDTracksvsPercentile";
-    TH2F* hnTPCITS1SPDTracksvsPercentile=new TH2F(hname.Data(),"N TPC+ITS+1SPD tracks vs Percentile;nTPCITS1SPDTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
+    fHisnTPCITS1SPDTracksvsPercentile=new TH2F(hname.Data(),"N TPC+ITS+1SPD tracks vs Percentile;nTPCITS1SPDTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
 
     hname="hStdEstimSignalPercentile";
-    TH2F*hStdEstimSignalPercentile = new TH2F(hname.Data(),"Std estimator signal vs Percentile;Std estimator signal;percentile",1000,-0.5,9999.5,120,-10.,110);
+    fHisStdEstimSignalPercentile = new TH2F(hname.Data(),"Std estimator signal vs Percentile;Std estimator signal;percentile",1000,-0.5,9999.5,120,-10.,110);
 
     hname="hStdEstimSignalNtrackletsIn";
-    TH2F*hStdEstimSignalNtrackletsIn = new TH2F(hname.Data(),"Std estimator signal vs Number of tracklets in the CC;Std estimator signal;number of tracklets",1000,-0.5,9999.5,5000,-0.5,4999.5);
+    fHisStdEstimSignalNtrackletsIn = new TH2F(hname.Data(),"Std estimator signal vs Number of tracklets in the CC;Std estimator signal;number of tracklets",1000,-0.5,9999.5,5000,-0.5,4999.5);
 
     hname="hStdEstimSignal";
-    TH1F*hStdEstimSignal = new TH1F(hname.Data(),"Std estimator signal",700,0,1400);
+    fHisStdEstimSignal = new TH1F(hname.Data(),"Std estimator signal",700,0,1400);
 
     hname="hStdPercentileSecondPercentile";
-    TH2F* hStdPercentileSecondPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs Second Estimator Percentile;Std estimator percentile;Second estimator percentile",120,-10.,110,120,-10.,110);
+    fHisStdPercentileSecondPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs Second Estimator Percentile;Std estimator percentile;Second estimator percentile",120,-10.,110,120,-10.,110);
 
     hname="hStdSignalSecondSignal";
-    TH2F* hStdSignalSecondSignal = new TH2F(hname.Data(),"Std estimator signal Vs Second Estimator signal;Std estimator;Second estimator",1000,-0.5,9999.5,1000,-0.5,9999.5);
+    fHisStdSignalSecondSignal = new TH2F(hname.Data(),"Std estimator signal Vs Second Estimator signal;Std estimator;Second estimator",1000,-0.5,9999.5,1000,-0.5,9999.5);
 
-    fOutputCheckCentrality->Add(hNtrackletsIn);
-    fOutputCheckCentrality->Add(hNtrackletsOut);
-    fOutputCheckCentrality->Add(hMultIn);
-    fOutputCheckCentrality->Add(hMultOut);
-    fOutputCheckCentrality->Add(hMultvsPercentile);
-    fOutputCheckCentrality->Add(hntrklvsPercentile);
-    fOutputCheckCentrality->Add(hntrklvsPercentile01);
-    fOutputCheckCentrality->Add(hntrklvsPercentile01AllEv);
-    fOutputCheckCentrality->Add(hnTPCTracksvsPercentile);
-    fOutputCheckCentrality->Add(hnTPCITSTracksvsPercentile);
-    fOutputCheckCentrality->Add(hnTPCITS1SPDTracksvsPercentile);
-    fOutputCheckCentrality->Add(hStdEstimSignalPercentile);
-    fOutputCheckCentrality->Add(hStdEstimSignal);
-    fOutputCheckCentrality->Add(hStdEstimSignalNtrackletsIn);
-    fOutputCheckCentrality->Add(hStdPercentileSecondPercentile);
-    fOutputCheckCentrality->Add(hStdSignalSecondSignal);
+    fOutputCheckCentrality->Add(fHisNtrackletsIn);
+    fOutputCheckCentrality->Add(fHisNtrackletsOut);
+    fOutputCheckCentrality->Add(fHisMultIn);
+    fOutputCheckCentrality->Add(fHisMultOut);
+    fOutputCheckCentrality->Add(fHisMultvsPercentile);
+    fOutputCheckCentrality->Add(fHisntrklvsPercentile);
+    fOutputCheckCentrality->Add(fHisntrklvsPercentile01);
+    fOutputCheckCentrality->Add(fHisntrklvsPercentile01AllEv);
+    fOutputCheckCentrality->Add(fHisnTPCTracksvsPercentile);
+    fOutputCheckCentrality->Add(fHisnTPCITSTracksvsPercentile);
+    fOutputCheckCentrality->Add(fHisnTPCITS1SPDTracksvsPercentile);
+    fOutputCheckCentrality->Add(fHisStdEstimSignalPercentile);
+    fOutputCheckCentrality->Add(fHisStdEstimSignal);
+    fOutputCheckCentrality->Add(fHisStdEstimSignalNtrackletsIn);
+    fOutputCheckCentrality->Add(fHisStdPercentileSecondPercentile);
+    fOutputCheckCentrality->Add(fHisStdSignalSecondSignal);
 
     PostData(6,fOutputCheckCentrality);
   
   } else{
     if(fOnOff[0]){
       TString hname="hNtracklets";
-      TH1F* hNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
+      fHisNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
       hname="hNtracklets01";
-      TH1F* hNtracklets01=new TH1F(hname.Data(),"Number of tracklets |#eta|<1;ntracklets;Entries",5000,-0.5,4999.5);
+      fHisNtracklets01=new TH1F(hname.Data(),"Number of tracklets |#eta|<1;ntracklets;Entries",5000,-0.5,4999.5);
       hname="hNtracklets01AllEv";
-      TH1F* hNtracklets01AllEv=new TH1F(hname.Data(),"Number of tracklets |#eta|<1 - All events;ntracklets;Entries",5000,-0.5,4999.5);
+      fHisNtracklets01AllEv=new TH1F(hname.Data(),"Number of tracklets |#eta|<1 - All events;ntracklets;Entries",5000,-0.5,4999.5);
       hname="hMult";
-      TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
+      fHisMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultFBit4";
-      TH1F* hMultFBit4=new TH1F(hname.Data(),"Multiplicity (global+tracklet) with filter bit 4;multiplicity;Entries",10000,-0.5,9999.5);
+      fHisMultFBit4=new TH1F(hname.Data(),"Multiplicity (global+tracklet) with filter bit 4;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb05";
-      TH1F* hMultC05=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.5;multiplicity;Entries",10000,-0.5,9999.5);
+      fHisMultComb05=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.5;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb08";
-      TH1F* hMultC08=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.8;multiplicity;Entries",10000,-0.5,9999.5);
+      fHisMultComb08=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.8;multiplicity;Entries",10000,-0.5,9999.5);
 
-      fOutputTrack->Add(hNtracklets);
-      fOutputTrack->Add(hNtracklets01);
-      fOutputTrack->Add(hNtracklets01AllEv);
-      fOutputTrack->Add(hMult);
-      fOutputTrack->Add(hMultFBit4);
-      fOutputTrack->Add(hMultC05);
-      fOutputTrack->Add(hMultC08);
+      fOutputTrack->Add(fHisNtracklets);
+      fOutputTrack->Add(fHisNtracklets01);
+      fOutputTrack->Add(fHisNtracklets01AllEv);
+      fOutputTrack->Add(fHisMult);
+      fOutputTrack->Add(fHisMultFBit4);
+      fOutputTrack->Add(fHisMultComb05);
+      fOutputTrack->Add(fHisMultComb08);
     }
   }
 
@@ -922,126 +1209,126 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     evselection->AddRubric("evnonsel","zvtx");
     evselection->Init();
 
-    TH1F* hxvtx=new TH1F("hxvtx", "Distribution of x_{VTX};x_{VTX} [cm];Entries",800,-1,1);
-    TH1F* hyvtx=new TH1F("hyvtx", "Distribution of y_{VTX};y_{VTX} [cm];Entries",800,-1,1);
-    TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",800,-30,30);
-    TH1F* hxvtxSelEv=new TH1F("hxvtxSelEv", "Distribution of x_{VTX} Selected Ev;x_{VTX} [cm];Entries",800,-1,1);
-    TH1F* hyvtxSelEv=new TH1F("hyvtxSelEv", "Distribution of y_{VTX} Selected Ev;y_{VTX} [cm];Entries",800,-1,1);
-    TH1F* hzvtxSelEv=new TH1F("hzvtxSelEv", "Distribution of z_{VTX} Selected Ev;z_{VTX} [cm];Entries",800,-30,30);
-    TH1F* hWhichVert=new TH1F("hWhichVert","Vertex Type",4,-1.5,2.5);
-    hWhichVert->GetXaxis()->SetBinLabel(1,"Not found");
-    hWhichVert->GetXaxis()->SetBinLabel(2,"Track");
-    hWhichVert->GetXaxis()->SetBinLabel(3,"SPD-3D");
-    hWhichVert->GetXaxis()->SetBinLabel(4,"SPD-z");
-    TH1F* hWhichVertSelEv=new TH1F("hWhichVertSelEv","Vertex Type",4,-1.5,2.5);
-    hWhichVertSelEv->GetXaxis()->SetBinLabel(1,"Not found");
-    hWhichVertSelEv->GetXaxis()->SetBinLabel(2,"Track");
-    hWhichVertSelEv->GetXaxis()->SetBinLabel(3,"SPD-3D");
-    hWhichVertSelEv->GetXaxis()->SetBinLabel(4,"SPD-z");
+    fHisxvtx=new TH1F("hxvtx", "Distribution of x_{VTX};x_{VTX} [cm];Entries",800,-1,1);
+    fHisyvtx=new TH1F("hyvtx", "Distribution of y_{VTX};y_{VTX} [cm];Entries",800,-1,1);
+    fHiszvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",800,-30,30);
+    fHisxvtxSelEv=new TH1F("hxvtxSelEv", "Distribution of x_{VTX} Selected Ev;x_{VTX} [cm];Entries",800,-1,1);
+    fHisyvtxSelEv=new TH1F("hyvtxSelEv", "Distribution of y_{VTX} Selected Ev;y_{VTX} [cm];Entries",800,-1,1);
+    fHiszvtxSelEv=new TH1F("hzvtxSelEv", "Distribution of z_{VTX} Selected Ev;z_{VTX} [cm];Entries",800,-30,30);
+    fHisWhichVert=new TH1F("hWhichVert","Vertex Type",4,-1.5,2.5);
+    fHisWhichVert->GetXaxis()->SetBinLabel(1,"Not found");
+    fHisWhichVert->GetXaxis()->SetBinLabel(2,"Track");
+    fHisWhichVert->GetXaxis()->SetBinLabel(3,"SPD-3D");
+    fHisWhichVert->GetXaxis()->SetBinLabel(4,"SPD-z");
+    fHisWhichVertSelEv=new TH1F("hWhichVertSelEv","Vertex Type",4,-1.5,2.5);
+    fHisWhichVertSelEv->GetXaxis()->SetBinLabel(1,"Not found");
+    fHisWhichVertSelEv->GetXaxis()->SetBinLabel(2,"Track");
+    fHisWhichVertSelEv->GetXaxis()->SetBinLabel(3,"SPD-3D");
+    fHisWhichVertSelEv->GetXaxis()->SetBinLabel(4,"SPD-z");
 
-    TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",24,-1.5,22.5,12,-10,110);
-    hTrigCent->GetXaxis()->SetBinLabel(1,"All");
-    hTrigCent->GetXaxis()->SetBinLabel(2,"kAny");
-    hTrigCent->GetXaxis()->SetBinLabel(3,"kMB");
-    hTrigCent->GetXaxis()->SetBinLabel(4,"kINT7");
-    hTrigCent->GetXaxis()->SetBinLabel(5,"kINT8");
-    hTrigCent->GetXaxis()->SetBinLabel(6,"kCINT5");
-    hTrigCent->GetXaxis()->SetBinLabel(7,"kCent");
-    hTrigCent->GetXaxis()->SetBinLabel(8,"kSemiCent");
-    hTrigCent->GetXaxis()->SetBinLabel(9,"kEMC1");
-    hTrigCent->GetXaxis()->SetBinLabel(10,"kEMC7");
-    hTrigCent->GetXaxis()->SetBinLabel(11,"kEMC8");
-    hTrigCent->GetXaxis()->SetBinLabel(12,"kEMCJET7");
-    hTrigCent->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
-    hTrigCent->GetXaxis()->SetBinLabel(14,"kEMCJET8");
-    hTrigCent->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
-    hTrigCent->GetXaxis()->SetBinLabel(16,"Muons");
-    hTrigCent->GetXaxis()->SetBinLabel(17,"PHOS");
-    hTrigCent->GetXaxis()->SetBinLabel(18,"TRD");
-    hTrigCent->GetXaxis()->SetBinLabel(19,"TRDHJT");
-    hTrigCent->GetXaxis()->SetBinLabel(20,"TRDHSE");
-    hTrigCent->GetXaxis()->SetBinLabel(21,"HighMult");
-    hTrigCent->GetXaxis()->SetBinLabel(22,"SPI7");
-    hTrigCent->GetXaxis()->SetBinLabel(23,"SPI8");
-    hTrigCent->GetXaxis()->SetBinLabel(24,"Others");
+    fHisTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",24,-1.5,22.5,12,-10,110);
+    fHisTrigCent->GetXaxis()->SetBinLabel(1,"All");
+    fHisTrigCent->GetXaxis()->SetBinLabel(2,"kAny");
+    fHisTrigCent->GetXaxis()->SetBinLabel(3,"kMB");
+    fHisTrigCent->GetXaxis()->SetBinLabel(4,"kINT7");
+    fHisTrigCent->GetXaxis()->SetBinLabel(5,"kINT8");
+    fHisTrigCent->GetXaxis()->SetBinLabel(6,"kCINT5");
+    fHisTrigCent->GetXaxis()->SetBinLabel(7,"kCent");
+    fHisTrigCent->GetXaxis()->SetBinLabel(8,"kSemiCent");
+    fHisTrigCent->GetXaxis()->SetBinLabel(9,"kEMC1");
+    fHisTrigCent->GetXaxis()->SetBinLabel(10,"kEMC7");
+    fHisTrigCent->GetXaxis()->SetBinLabel(11,"kEMC8");
+    fHisTrigCent->GetXaxis()->SetBinLabel(12,"kEMCJET7");
+    fHisTrigCent->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
+    fHisTrigCent->GetXaxis()->SetBinLabel(14,"kEMCJET8");
+    fHisTrigCent->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
+    fHisTrigCent->GetXaxis()->SetBinLabel(16,"Muons");
+    fHisTrigCent->GetXaxis()->SetBinLabel(17,"PHOS");
+    fHisTrigCent->GetXaxis()->SetBinLabel(18,"TRD");
+    fHisTrigCent->GetXaxis()->SetBinLabel(19,"TRDHJT");
+    fHisTrigCent->GetXaxis()->SetBinLabel(20,"TRDHSE");
+    fHisTrigCent->GetXaxis()->SetBinLabel(21,"HighMult");
+    fHisTrigCent->GetXaxis()->SetBinLabel(22,"SPI7");
+    fHisTrigCent->GetXaxis()->SetBinLabel(23,"SPI8");
+    fHisTrigCent->GetXaxis()->SetBinLabel(24,"Others");
 
-    TH2F* hTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",24,-1.5,22.5,1000,0.,10000.);
-    hTrigMul->GetXaxis()->SetBinLabel(1,"All");
-    hTrigMul->GetXaxis()->SetBinLabel(2,"kAny");
-    hTrigMul->GetXaxis()->SetBinLabel(3,"kMB");
-    hTrigMul->GetXaxis()->SetBinLabel(4,"kINT7");
-    hTrigMul->GetXaxis()->SetBinLabel(5,"kINT8");
-    hTrigMul->GetXaxis()->SetBinLabel(6,"kCINT5");
-    hTrigMul->GetXaxis()->SetBinLabel(7,"kCent");
-    hTrigMul->GetXaxis()->SetBinLabel(8,"kSemiCent");
-    hTrigMul->GetXaxis()->SetBinLabel(9,"kEMC1");
-    hTrigMul->GetXaxis()->SetBinLabel(10,"kEMC7");
-    hTrigMul->GetXaxis()->SetBinLabel(11,"kEMC8");
-    hTrigMul->GetXaxis()->SetBinLabel(12,"kEMCJET7");
-    hTrigMul->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
-    hTrigMul->GetXaxis()->SetBinLabel(14,"kEMCJET8");
-    hTrigMul->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
-    hTrigMul->GetXaxis()->SetBinLabel(16,"Muons");
-    hTrigMul->GetXaxis()->SetBinLabel(17,"PHOS");
-    hTrigMul->GetXaxis()->SetBinLabel(18,"TRD");
-    hTrigMul->GetXaxis()->SetBinLabel(19,"TRDHJT");
-    hTrigMul->GetXaxis()->SetBinLabel(20,"TRDHSE");
-    hTrigMul->GetXaxis()->SetBinLabel(21,"HighMult");
-    hTrigMul->GetXaxis()->SetBinLabel(22,"SPI7");
-    hTrigMul->GetXaxis()->SetBinLabel(23,"SPI8");
-    hTrigMul->GetXaxis()->SetBinLabel(24,"Others");
+    fHisTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",24,-1.5,22.5,1000,0.,10000.);
+    fHisTrigMul->GetXaxis()->SetBinLabel(1,"All");
+    fHisTrigMul->GetXaxis()->SetBinLabel(2,"kAny");
+    fHisTrigMul->GetXaxis()->SetBinLabel(3,"kMB");
+    fHisTrigMul->GetXaxis()->SetBinLabel(4,"kINT7");
+    fHisTrigMul->GetXaxis()->SetBinLabel(5,"kINT8");
+    fHisTrigMul->GetXaxis()->SetBinLabel(6,"kCINT5");
+    fHisTrigMul->GetXaxis()->SetBinLabel(7,"kCent");
+    fHisTrigMul->GetXaxis()->SetBinLabel(8,"kSemiCent");
+    fHisTrigMul->GetXaxis()->SetBinLabel(9,"kEMC1");
+    fHisTrigMul->GetXaxis()->SetBinLabel(10,"kEMC7");
+    fHisTrigMul->GetXaxis()->SetBinLabel(11,"kEMC8");
+    fHisTrigMul->GetXaxis()->SetBinLabel(12,"kEMCJET7");
+    fHisTrigMul->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
+    fHisTrigMul->GetXaxis()->SetBinLabel(14,"kEMCJET8");
+    fHisTrigMul->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
+    fHisTrigMul->GetXaxis()->SetBinLabel(16,"Muons");
+    fHisTrigMul->GetXaxis()->SetBinLabel(17,"PHOS");
+    fHisTrigMul->GetXaxis()->SetBinLabel(18,"TRD");
+    fHisTrigMul->GetXaxis()->SetBinLabel(19,"TRDHJT");
+    fHisTrigMul->GetXaxis()->SetBinLabel(20,"TRDHSE");
+    fHisTrigMul->GetXaxis()->SetBinLabel(21,"HighMult");
+    fHisTrigMul->GetXaxis()->SetBinLabel(22,"SPI7");
+    fHisTrigMul->GetXaxis()->SetBinLabel(23,"SPI8");
+    fHisTrigMul->GetXaxis()->SetBinLabel(24,"Others");
 
-    TH2F* hTrigCentSel=new TH2F("hTrigCentSel","Trigger types",24,-1.5,22.5,12,-10,110);
-    hTrigCentSel->GetXaxis()->SetBinLabel(1,"All");
-    hTrigCentSel->GetXaxis()->SetBinLabel(2,"kAny");
-    hTrigCentSel->GetXaxis()->SetBinLabel(3,"kMB");
-    hTrigCentSel->GetXaxis()->SetBinLabel(4,"kINT7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(5,"kINT8");
-    hTrigCentSel->GetXaxis()->SetBinLabel(6,"kCINT5");
-    hTrigCentSel->GetXaxis()->SetBinLabel(7,"kCent");
-    hTrigCentSel->GetXaxis()->SetBinLabel(8,"kSemiCent");
-    hTrigCentSel->GetXaxis()->SetBinLabel(9,"kEMC1");
-    hTrigCentSel->GetXaxis()->SetBinLabel(10,"kEMC7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(11,"kEMC8");
-    hTrigCentSel->GetXaxis()->SetBinLabel(12,"kEMCJET7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(14,"kEMCJET8");
-    hTrigCentSel->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
-    hTrigCentSel->GetXaxis()->SetBinLabel(16,"Muons");
-    hTrigCentSel->GetXaxis()->SetBinLabel(17,"PHOS");
-    hTrigCentSel->GetXaxis()->SetBinLabel(18,"TRD");
-    hTrigCentSel->GetXaxis()->SetBinLabel(19,"TRDHJT");
-    hTrigCentSel->GetXaxis()->SetBinLabel(20,"TRDHSE");
-    hTrigCentSel->GetXaxis()->SetBinLabel(21,"HighMult");
-    hTrigCentSel->GetXaxis()->SetBinLabel(22,"SPI7");
-    hTrigCentSel->GetXaxis()->SetBinLabel(23,"SPI8");
-    hTrigCentSel->GetXaxis()->SetBinLabel(24,"Others");
+    fHisTrigCentSel=new TH2F("hTrigCentSel","Trigger types",24,-1.5,22.5,12,-10,110);
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(1,"All");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(2,"kAny");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(3,"kMB");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(4,"kINT7");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(5,"kINT8");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(6,"kCINT5");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(7,"kCent");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(8,"kSemiCent");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(9,"kEMC1");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(10,"kEMC7");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(11,"kEMC8");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(12,"kEMCJET7");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(14,"kEMCJET8");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(16,"Muons");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(17,"PHOS");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(18,"TRD");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(19,"TRDHJT");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(20,"TRDHSE");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(21,"HighMult");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(22,"SPI7");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(23,"SPI8");
+    fHisTrigCentSel->GetXaxis()->SetBinLabel(24,"Others");
 
-    TH2F* hTrigMulSel=new TH2F("hTrigMulSel","Multiplicity after selection vs. Trigger types",24,-1.5,22.5,1000,0.,10000.);
-    hTrigMulSel->GetXaxis()->SetBinLabel(1,"All");
-    hTrigMulSel->GetXaxis()->SetBinLabel(2,"kAny");
-    hTrigMulSel->GetXaxis()->SetBinLabel(3,"kMB");
-    hTrigMulSel->GetXaxis()->SetBinLabel(4,"kINT7");
-    hTrigMulSel->GetXaxis()->SetBinLabel(5,"kINT8");
-    hTrigMulSel->GetXaxis()->SetBinLabel(6,"kCINT5");
-    hTrigMulSel->GetXaxis()->SetBinLabel(7,"kCent");
-    hTrigMulSel->GetXaxis()->SetBinLabel(8,"kSemiCent");
-    hTrigMulSel->GetXaxis()->SetBinLabel(9,"kEMC1");
-    hTrigMulSel->GetXaxis()->SetBinLabel(10,"kEMC7");
-    hTrigMulSel->GetXaxis()->SetBinLabel(11,"kEMC8");
-    hTrigMulSel->GetXaxis()->SetBinLabel(12,"kEMCJET7");
-    hTrigMulSel->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
-    hTrigMulSel->GetXaxis()->SetBinLabel(14,"kEMCJET8");
-    hTrigMulSel->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
-    hTrigMulSel->GetXaxis()->SetBinLabel(16,"Muons");
-    hTrigMulSel->GetXaxis()->SetBinLabel(17,"PHOS");
-    hTrigMulSel->GetXaxis()->SetBinLabel(18,"TRD");
-    hTrigMulSel->GetXaxis()->SetBinLabel(19,"TRDHJT");
-    hTrigMulSel->GetXaxis()->SetBinLabel(20,"TRDHSE");
-    hTrigMulSel->GetXaxis()->SetBinLabel(21,"HighMult");
-    hTrigMulSel->GetXaxis()->SetBinLabel(22,"SPI7");
-    hTrigMulSel->GetXaxis()->SetBinLabel(23,"SPI8");
-    hTrigMulSel->GetXaxis()->SetBinLabel(24,"Others");
+    fHisTrigMulSel=new TH2F("hTrigMulSel","Multiplicity after selection vs. Trigger types",24,-1.5,22.5,1000,0.,10000.);
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(1,"All");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(2,"kAny");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(3,"kMB");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(4,"kINT7");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(5,"kINT8");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(6,"kCINT5");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(7,"kCent");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(8,"kSemiCent");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(9,"kEMC1");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(10,"kEMC7");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(11,"kEMC8");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(12,"kEMCJET7");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(13,"kEMCGAMMA7");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(14,"kEMCJET8");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(15,"kEMCGAMMA8");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(16,"Muons");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(17,"PHOS");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(18,"TRD");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(19,"TRDHJT");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(20,"TRDHSE");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(21,"HighMult");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(22,"SPI7");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(23,"SPI8");
+    fHisTrigMulSel->GetXaxis()->SetBinLabel(24,"Others");
 
     AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
     trigCounter->AddRubric("run",500000);
@@ -1053,33 +1340,33 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     trigCounter2->AddRubric("triggerType","All/Any/MB/CINT7/INT8/NoPhysSelEvNot7/NoPhysSelMB/HighMult/SPI7/SPI8/EMC1/EMC7/EMC8/EMCJET7/EMCJET8/EMCGAMMA/TRD/TRDHJT/TRDHSE");
     trigCounter2->Init();
 
-    TH1F* hWhyEvRejected=new TH1F("hWhyEvRejected", "Why Event rejected",7,-1.5,5.5);
+    fHisWhyEvRejected=new TH1F("hWhyEvRejected", "Why Event rejected",7,-1.5,5.5);
 
-    hWhyEvRejected->GetXaxis()->SetBinLabel(1,"N events");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(2,"pileup");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(3,"centrality");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(4,"Vertex not found");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(5,"trigger");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(6,"z vertex out of 10 cm");
-    hWhyEvRejected->GetXaxis()->SetBinLabel(7,"physics sel");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(1,"N events");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(2,"pileup");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(3,"centrality");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(4,"Vertex not found");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(5,"trigger");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(6,"z vertex out of 10 cm");
+    fHisWhyEvRejected->GetXaxis()->SetBinLabel(7,"physics sel");
 
 
     fOutputEvSelection->Add(evselection);
-    fOutputEvSelection->Add(hxvtx);
-    fOutputEvSelection->Add(hyvtx);
-    fOutputEvSelection->Add(hzvtx);
-    fOutputEvSelection->Add(hxvtxSelEv);
-    fOutputEvSelection->Add(hyvtxSelEv);
-    fOutputEvSelection->Add(hzvtxSelEv);
-    fOutputEvSelection->Add(hWhichVert);
-    fOutputEvSelection->Add(hWhichVertSelEv);
-    fOutputEvSelection->Add(hTrigCent);
-    fOutputEvSelection->Add(hTrigMul);
-    fOutputEvSelection->Add(hTrigMulSel);
-    fOutputEvSelection->Add(hTrigCentSel);
+    fOutputEvSelection->Add(fHisxvtx);
+    fOutputEvSelection->Add(fHisyvtx);
+    fOutputEvSelection->Add(fHiszvtx);
+    fOutputEvSelection->Add(fHisxvtxSelEv);
+    fOutputEvSelection->Add(fHisyvtxSelEv);
+    fOutputEvSelection->Add(fHiszvtxSelEv);
+    fOutputEvSelection->Add(fHisWhichVert);
+    fOutputEvSelection->Add(fHisWhichVertSelEv);
+    fOutputEvSelection->Add(fHisTrigCent);
+    fOutputEvSelection->Add(fHisTrigMul);
+    fOutputEvSelection->Add(fHisTrigMulSel);
+    fOutputEvSelection->Add(fHisTrigCentSel);
     fOutputEvSelection->Add(trigCounter);
     fOutputEvSelection->Add(trigCounter2);
-    fOutputEvSelection->Add(hWhyEvRejected);
+    fOutputEvSelection->Add(fHisWhyEvRejected);
 
   }
   if(fOnOff[4]){ // FLOW OBSERVABLES
@@ -1090,59 +1377,56 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fFlowEvent = new AliFlowEvent(3000);
     fRFPcuts = new AliFlowTrackCuts("rfpCuts");
 
-    TH2F *hFEvents = new TH2F("hFlowEvents","FlowEvent Selection",7,0,7,7,-10,60);
-    hFEvents->GetXaxis()->SetBinLabel(1,"REACHED");
-    hFEvents->GetXaxis()->SetBinLabel(2,"TRIGGERED");
-    hFEvents->GetXaxis()->SetBinLabel(3,"kMB");
-    hFEvents->GetXaxis()->SetBinLabel(4,"kCent");
-    hFEvents->GetXaxis()->SetBinLabel(5,"kSemiC");
-    hFEvents->GetXaxis()->SetBinLabel(6,"Triggered + vtx cut");
-    hFEvents->GetXaxis()->SetBinLabel(7,"UnexpectedBehaviour");
-    fOutputFlowObs->Add(hFEvents);
+    fHisFEvents = new TH2F("hFlowEvents","FlowEvent Selection",7,0,7,7,-10,60);
+    fHisFEvents->GetXaxis()->SetBinLabel(1,"REACHED");
+    fHisFEvents->GetXaxis()->SetBinLabel(2,"TRIGGERED");
+    fHisFEvents->GetXaxis()->SetBinLabel(3,"kMB");
+    fHisFEvents->GetXaxis()->SetBinLabel(4,"kCent");
+    fHisFEvents->GetXaxis()->SetBinLabel(5,"kSemiC");
+    fHisFEvents->GetXaxis()->SetBinLabel(6,"Triggered + vtx cut");
+    fHisFEvents->GetXaxis()->SetBinLabel(7,"UnexpectedBehaviour");
+    fOutputFlowObs->Add(fHisFEvents);
 
-    TProfile2D *hQ[3];
-    TH2F *hAngleQ[3];
-    TH3F *hPhiEta[3];
     TString ref[3] = {"FB1","FB128","VZE"};
     Int_t etabin[3] = {40,40,20};
     Int_t etamax[3] = { 1, 1, 5};
     for(Int_t i=0; i<3; ++i) {
-      hQ[i]= new TProfile2D( Form("h%s_Q",ref[i].Data()),
+      fHisQ[i]= new TProfile2D( Form("h%s_Q",ref[i].Data()),
 			     Form("Q_{2} components for %s",ref[i].Data()),
 			     4,0,4,12,0,60,"s");
-      hQ[i]->GetXaxis()->SetBinLabel(1,"Qx^{-}");
-      hQ[i]->GetXaxis()->SetBinLabel(2,"Qy^{-}");
-      hQ[i]->GetXaxis()->SetBinLabel(3,"Qx^{+}");
-      hQ[i]->GetXaxis()->SetBinLabel(4,"Qy^{+}");
-      hQ[i]->GetYaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(hQ[i]);
+      fHisQ[i]->GetXaxis()->SetBinLabel(1,"Qx^{-}");
+      fHisQ[i]->GetXaxis()->SetBinLabel(2,"Qy^{-}");
+      fHisQ[i]->GetXaxis()->SetBinLabel(3,"Qx^{+}");
+      fHisQ[i]->GetXaxis()->SetBinLabel(4,"Qy^{+}");
+      fHisQ[i]->GetYaxis()->SetTitle("Centrality");
+      fOutputFlowObs->Add(fHisQ[i]);
 
-      hAngleQ[i] = new TH2F( Form("h%s_AngleQ",ref[i].Data()),
+      fHisAngleQ[i] = new TH2F( Form("h%s_AngleQ",ref[i].Data()),
 			     Form("#Psi_{2} for %s",ref[i].Data()),
 			     72,0,TMath::Pi(),12,0,60);
-      hAngleQ[i]->GetXaxis()->SetTitle( Form("#Psi_{2}^{%s}",ref[i].Data()) );
-      hAngleQ[i]->GetYaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(hAngleQ[i]);
+      fHisAngleQ[i]->GetXaxis()->SetTitle( Form("#Psi_{2}^{%s}",ref[i].Data()) );
+      fHisAngleQ[i]->GetYaxis()->SetTitle("Centrality");
+      fOutputFlowObs->Add(fHisAngleQ[i]);
 
-      hPhiEta[i] = new TH3F( Form("h%s_PhiEta",ref[i].Data()),
+      fHisPhiEta[i] = new TH3F( Form("h%s_PhiEta",ref[i].Data()),
 			     Form("Eta vs Phi for %s",ref[i].Data()),
 			     144,0,TMath::TwoPi(),etabin[i],-1.0*etamax[i],+1.0*etamax[i],12,0,60);
-      hPhiEta[i]->GetXaxis()->SetTitle("Phi");
-      hPhiEta[i]->GetYaxis()->SetTitle("Eta");
-      hPhiEta[i]->GetZaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(hPhiEta[i]);
+      fHisPhiEta[i]->GetXaxis()->SetTitle("Phi");
+      fHisPhiEta[i]->GetYaxis()->SetTitle("Eta");
+      fHisPhiEta[i]->GetZaxis()->SetTitle("Centrality");
+      fOutputFlowObs->Add(fHisPhiEta[i]);
 
     }
-    TH3F *hTPCVZE_AngleQ = new TH3F("hTPCVZE_AngleQ","#Psi_{2}^{VZERO} vs #Psi_{2}^{TPC}",   72,0,TMath::Pi(),72,0,TMath::Pi(),12,0,60);
-    hTPCVZE_AngleQ->GetXaxis()->SetTitle("#Psi_{2}^{TPC}");
-    hTPCVZE_AngleQ->GetYaxis()->SetTitle("#Psi_{2}^{VZE}");
-    hTPCVZE_AngleQ->GetZaxis()->SetTitle("Centrality");
-    fOutputFlowObs->Add(hTPCVZE_AngleQ);
+    fHisTPCVZE_AngleQ = new TH3F("hTPCVZE_AngleQ","#Psi_{2}^{VZERO} vs #Psi_{2}^{TPC}",   72,0,TMath::Pi(),72,0,TMath::Pi(),12,0,60);
+    fHisTPCVZE_AngleQ->GetXaxis()->SetTitle("#Psi_{2}^{TPC}");
+    fHisTPCVZE_AngleQ->GetYaxis()->SetTitle("#Psi_{2}^{VZE}");
+    fHisTPCVZE_AngleQ->GetZaxis()->SetTitle("Centrality");
+    fOutputFlowObs->Add(fHisTPCVZE_AngleQ);
 
-    TH2F *hCentVsMultRPS = new TH2F("hCentVsMultRPS", " Centrality Vs. Multiplicity RPs",5000, 0, 5000.,12,0,60 );
-    hCentVsMultRPS->GetXaxis()->SetTitle("Multiplicity RPs");
-    hCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
-    fOutputFlowObs->Add(hCentVsMultRPS);
+    fHisCentVsMultRPS = new TH2F("hCentVsMultRPS", " Centrality Vs. Multiplicity RPs",5000, 0, 5000.,12,0,60 );
+    fHisCentVsMultRPS->GetXaxis()->SetTitle("Multiplicity RPs");
+    fHisCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
+    fOutputFlowObs->Add(fHisCentVsMultRPS);
   }
 
   // Post the data
@@ -1366,7 +1650,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only track related histograms\n");
     isSimpleMode=kTRUE;
-    ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(2);
+    fHisNentries->Fill(2);
   }
   
   TClonesArray *mcArray = 0;
@@ -1451,13 +1735,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     PostData(8,fOutputFlowObs);
   }
   if(fOnOff[3]){
-    TH2F* hTrigC=(TH2F*)fOutputEvSelection->FindObject("hTrigCent");
-    TH2F* hTrigM=(TH2F*)fOutputEvSelection->FindObject("hTrigMul");
     AliCounterCollection* trigCount=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter");
     AliCounterCollection* trigCount2=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter2");
 
-    hTrigC->Fill(-1.,centrality);
-    hTrigM->Fill(-1.,multiplicity);
+    fHisTrigCent->Fill(-1.,centrality);
+    fHisTrigMul->Fill(-1.,multiplicity);
     trigCount->Count(Form("triggerType:All/Run:%d",runNumber));
     trigCount2->Count(Form("triggerType:All/Run:%d",runNumber));
     if(evSelMask==0){
@@ -1478,59 +1760,59 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
     }
     if(evSelMask & AliVEvent::kAny){
-      hTrigC->Fill(0.,centrality);
-      hTrigM->Fill(0.,multiplicity);
+      fHisTrigCent->Fill(0.,centrality);
+      fHisTrigMul->Fill(0.,multiplicity);
       trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:Any/Run:%d",runNumber));
     }  
     if(evSelMask & AliVEvent::kMB){
-      hTrigC->Fill(1.,centrality);
-      hTrigM->Fill(1.,multiplicity);
+      fHisTrigCent->Fill(1.,centrality);
+      fHisTrigMul->Fill(1.,multiplicity);
       trigCount->Count(Form("triggerType:MB/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:MB/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kINT7){ 
-      hTrigC->Fill(2.,centrality);
-      hTrigM->Fill(2.,multiplicity);
+      fHisTrigCent->Fill(2.,centrality);
+      fHisTrigMul->Fill(2.,multiplicity);
       trigCount->Count(Form("triggerType:CINT7/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:CINT7/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kINT8){ 
-      hTrigC->Fill(3.,centrality);
-      hTrigM->Fill(3.,multiplicity);
+      fHisTrigCent->Fill(3.,centrality);
+      fHisTrigMul->Fill(3.,multiplicity);
       trigCount->Count(Form("triggerType:INT8/Run:%d",runNumber));   
       trigCount2->Count(Form("triggerType:INT8/Run:%d",runNumber));      
     }
     if(evSelMask & AliVEvent::kCINT5){ 
-      hTrigC->Fill(4.,centrality);
-      hTrigM->Fill(4.,multiplicity);
+      fHisTrigCent->Fill(4.,centrality);
+      fHisTrigMul->Fill(4.,multiplicity);
     }
     if(evSelMask & AliVEvent::kCentral){
-      hTrigC->Fill(5.,centrality);
-      hTrigM->Fill(5.,multiplicity);
+      fHisTrigCent->Fill(5.,centrality);
+      fHisTrigMul->Fill(5.,multiplicity);
       trigCount->Count(Form("triggerType:Cent/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kSemiCentral){ 
-      hTrigC->Fill(6.,centrality);
-      hTrigM->Fill(6.,multiplicity);
+      fHisTrigCent->Fill(6.,centrality);
+      fHisTrigMul->Fill(6.,multiplicity);
       trigCount->Count(Form("triggerType:SemiCent/Run:%d",runNumber));
     }
 
     if(evSelMask & AliVEvent::kEMC1){
-      hTrigC->Fill(7.,centrality);
-      hTrigM->Fill(7.,multiplicity);
+      fHisTrigCent->Fill(7.,centrality);
+      fHisTrigMul->Fill(7.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC1/Run:%d",runNumber));
     }
     if((evSelMask & AliVEvent::kEMC7) && trigClass.Contains("CEMC7")){
-      hTrigC->Fill(8.,centrality);
-      hTrigM->Fill(8.,multiplicity);
+      fHisTrigCent->Fill(8.,centrality);
+      fHisTrigMul->Fill(8.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC7/Run:%d",runNumber));
     }
     if((evSelMask & AliVEvent::kEMC8) && trigClass.Contains("CEMC8")){
-      hTrigC->Fill(9.,centrality);
-      hTrigM->Fill(9.,multiplicity);
+      fHisTrigCent->Fill(9.,centrality);
+      fHisTrigMul->Fill(9.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC8/Run:%d",runNumber));
     }
@@ -1538,74 +1820,74 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
        trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
        if(trigClass.Contains("CEMC7EJE")) {
 	 trigCount2->Count(Form("triggerType:EMCJET7/Run:%d",runNumber));
-	 hTrigC->Fill(10.,centrality);
-	 hTrigM->Fill(10.,multiplicity);
+	 fHisTrigCent->Fill(10.,centrality);
+	 fHisTrigMul->Fill(10.,multiplicity);
 
        }
        else if(trigClass.Contains("CEMC8EJE")) {
 	 trigCount2->Count(Form("triggerType:EMCJET8/Run:%d",runNumber));
-	 hTrigC->Fill(12.,centrality);
-	 hTrigM->Fill(12.,multiplicity);
+	 fHisTrigCent->Fill(12.,centrality);
+	 fHisTrigMul->Fill(12.,multiplicity);
        }
     }
     if(evSelMask & AliVEvent::kEMCEGA){
       if(trigClass.Contains("CEMC7EGA")) {
-	hTrigC->Fill(11.,centrality);
-	hTrigM->Fill(11.,multiplicity);
+	fHisTrigCent->Fill(11.,centrality);
+	fHisTrigMul->Fill(11.,multiplicity);
       } else if (trigClass.Contains("CEMC8EGA")){
-	hTrigC->Fill(13.,centrality);
-	hTrigM->Fill(13.,multiplicity);
+	fHisTrigCent->Fill(13.,centrality);
+	fHisTrigMul->Fill(13.,multiplicity);
 
       }
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMCGAMMA/Run:%d",runNumber));
     }
     if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
-      hTrigC->Fill(14.,centrality);
-      hTrigM->Fill(14.,multiplicity);
+      fHisTrigCent->Fill(14.,centrality);
+      fHisTrigMul->Fill(14.,multiplicity);
       trigCount->Count(Form("triggerType:MUON/Run:%d",runNumber));
     }
     if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
-      hTrigC->Fill(15.,centrality);
-      hTrigM->Fill(15.,multiplicity);
+      fHisTrigCent->Fill(15.,centrality);
+      fHisTrigMul->Fill(15.,multiplicity);
     }
     if(evSelMask & (AliVEvent::kTRD)){
-      hTrigC->Fill(16.,centrality);
-      hTrigM->Fill(16.,multiplicity);
+      fHisTrigCent->Fill(16.,centrality);
+      fHisTrigMul->Fill(16.,multiplicity);
       trigCount2->Count(Form("triggerType:TRD/Run:%d",runNumber));
     }
     if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
-      hTrigC->Fill(17.,centrality);
-      hTrigM->Fill(17.,multiplicity);
+      fHisTrigCent->Fill(17.,centrality);
+      fHisTrigMul->Fill(17.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHJT/Run:%d",runNumber));
     }
     if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
-      hTrigC->Fill(18.,centrality);
-      hTrigM->Fill(18.,multiplicity);
+      fHisTrigCent->Fill(18.,centrality);
+      fHisTrigMul->Fill(18.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHSE/Run:%d",runNumber));
     }
     if(evSelMask & (AliVEvent::kHighMult)){
-      hTrigC->Fill(19.,centrality);
-      hTrigM->Fill(19.,multiplicity);
+      fHisTrigCent->Fill(19.,centrality);
+      fHisTrigMul->Fill(19.,multiplicity);
       trigCount2->Count(Form("triggerType:HighMult/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kSPI7){
       if(trigClass.Contains("CSPI7")) {
-	hTrigC->Fill(20.,centrality);
-	hTrigM->Fill(20.,multiplicity);
+	fHisTrigCent->Fill(20.,centrality);
+	fHisTrigMul->Fill(20.,multiplicity);
 	trigCount2->Count(Form("triggerType:SPI7/Run:%d",runNumber));
       }
     }
     if(evSelMask & AliVEvent::kSPI){
       if(trigClass.Contains("CSPI8")) {
-	hTrigC->Fill(21.,centrality);
-	hTrigM->Fill(21.,multiplicity);
+	fHisTrigCent->Fill(21.,centrality);
+	fHisTrigMul->Fill(21.,multiplicity);
         trigCount2->Count(Form("triggerType:SPI8/Run:%d",runNumber));
       }
     }
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
-      hTrigC->Fill(22.,centrality);
-      hTrigM->Fill(22.,multiplicity);
+      fHisTrigCent->Fill(22.,centrality);
+      fHisTrigMul->Fill(22.,multiplicity);
     }
   }
   
@@ -1619,7 +1901,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   // count event
-  ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(0);
+  fHisNentries->Fill(0);
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -1629,142 +1911,138 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   const AliESDVertex vESD(pos,cov,100.,100);
 
   TString primTitle = vtx1->GetTitle();
-  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(4);
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(4);
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //TString trigclass=aod->GetFiredTriggerClasses();
-  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) hNentries->Fill(5); //tmp
+  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHisNentries->Fill(5); //tmp
 
 
 
 
   Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kTRUE,evSelByPS=kTRUE;
 
-  TH1F* hWhyEvRejected=0x0;
   if(fOnOff[3]){
-    hWhyEvRejected=(TH1F*)fOutputEvSelection->FindObject("hWhyEvRejected");
-     if(hWhyEvRejected) hWhyEvRejected->Fill(-1); 
+     fHisWhyEvRejected->Fill(-1); 
   }
 
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
     if(fCuts->IsEventRejectedDueToPileup()) {
-      if(hWhyEvRejected) hWhyEvRejected->Fill(0); 
+      fHisWhyEvRejected->Fill(0); 
       evselByPileup=kFALSE;
     }// rejected for pileup
     if(fCuts->IsEventRejectedDueToCentrality()) {
-      if(hWhyEvRejected) hWhyEvRejected->Fill(1); 
+      fHisWhyEvRejected->Fill(1); 
       evSelbyCentrality=kFALSE; //rejected by centrality
     }
     if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
        fCuts->IsEventRejectedDueToVertexContributors()){ 
       evSelByVertex=kFALSE; 
-      if(hWhyEvRejected) hWhyEvRejected->Fill(2);
+      fHisWhyEvRejected->Fill(2);
     }
     if(fCuts->IsEventRejectedDueToTrigger()){
-      if(hWhyEvRejected) hWhyEvRejected->Fill(3);
+      fHisWhyEvRejected->Fill(3);
     }
     if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) {
       evSelByVertex=kFALSE; 
       if(fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); 
-      if(hWhyEvRejected) hWhyEvRejected->Fill(4);
+      fHisWhyEvRejected->Fill(4);
     }
     if(fCuts->IsEventRejectedDuePhysicsSelection()) { 
       evSelByPS=kFALSE;
-      if(hWhyEvRejected) hWhyEvRejected->Fill(5); 
+      fHisWhyEvRejected->Fill(5); 
     }
   }
   if(evSelected && fOnOff[3]){
-    TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");
-    TH2F* hTrigSM=(TH2F*)fOutputEvSelection->FindObject("hTrigMulSel");
-    hTrigS->Fill(-1.,centrality);
-    hTrigSM->Fill(-1.,multiplicity);
+    fHisTrigCentSel->Fill(-1.,centrality);
+    fHisTrigMulSel->Fill(-1.,multiplicity);
     if(evSelMask & AliVEvent::kAny) {
-      hTrigS->Fill(0.,centrality);
-      hTrigSM->Fill(0.,multiplicity);}
+      fHisTrigCentSel->Fill(0.,centrality);
+      fHisTrigMulSel->Fill(0.,multiplicity);}
     if(evSelMask & AliVEvent::kMB) {
-      hTrigS->Fill(1.,centrality);
-      hTrigSM->Fill(1.,multiplicity);}
+      fHisTrigCentSel->Fill(1.,centrality);
+      fHisTrigMulSel->Fill(1.,multiplicity);}
     if(evSelMask & AliVEvent::kINT7){
-      hTrigS->Fill(2.,centrality);
-      hTrigSM->Fill(2.,multiplicity);}
+      fHisTrigCentSel->Fill(2.,centrality);
+      fHisTrigMulSel->Fill(2.,multiplicity);}
     if(evSelMask & AliVEvent::kINT8){
-      hTrigS->Fill(3.,centrality);
-      hTrigSM->Fill(3.,multiplicity);}
+      fHisTrigCentSel->Fill(3.,centrality);
+      fHisTrigMulSel->Fill(3.,multiplicity);}
     if(evSelMask & AliVEvent::kCINT5){ 
-      hTrigS->Fill(4.,centrality);
-      hTrigSM->Fill(4.,multiplicity);}
+      fHisTrigCentSel->Fill(4.,centrality);
+      fHisTrigMulSel->Fill(4.,multiplicity);}
     if(evSelMask & AliVEvent::kCentral){
-      hTrigS->Fill(5.,centrality);
-      hTrigSM->Fill(5.,multiplicity);}
+      fHisTrigCentSel->Fill(5.,centrality);
+      fHisTrigMulSel->Fill(5.,multiplicity);}
     if(evSelMask & AliVEvent::kSemiCentral){
-      hTrigS->Fill(6.,centrality);
-      hTrigSM->Fill(6.,multiplicity);}
+      fHisTrigCentSel->Fill(6.,centrality);
+      fHisTrigMulSel->Fill(6.,multiplicity);}
     if(evSelMask & AliVEvent::kEMC1){
-      hTrigS->Fill(7.,centrality);
-      hTrigSM->Fill(7.,multiplicity);
+      fHisTrigCentSel->Fill(7.,centrality);
+      fHisTrigMulSel->Fill(7.,multiplicity);
     }
     if((evSelMask & AliVEvent::kEMC7) && trigClass.Contains("CEMC7")){
-      hTrigS->Fill(8.,centrality);
-      hTrigSM->Fill(8.,multiplicity);
+      fHisTrigCentSel->Fill(8.,centrality);
+      fHisTrigMulSel->Fill(8.,multiplicity);
     }
     if((evSelMask & AliVEvent::kEMC8) && trigClass.Contains("CEMC8")){
-      hTrigS->Fill(9.,centrality);
-      hTrigSM->Fill(9.,multiplicity);
+      fHisTrigCentSel->Fill(9.,centrality);
+      fHisTrigMulSel->Fill(9.,multiplicity);
     }
       if((evSelMask & AliVEvent::kEMCEJE) && trigClass.Contains("CEMC7EJE")){
-      hTrigS->Fill(10.,centrality);
-      hTrigSM->Fill(10.,multiplicity);
+      fHisTrigCentSel->Fill(10.,centrality);
+      fHisTrigMulSel->Fill(10.,multiplicity);
     }
     if((evSelMask & AliVEvent::kEMCEGA) && trigClass.Contains("CEMC7EGA")){
-      hTrigS->Fill(11.,centrality);
-      hTrigSM->Fill(11.,multiplicity);
+      fHisTrigCentSel->Fill(11.,centrality);
+      fHisTrigMulSel->Fill(11.,multiplicity);
     }
     if((evSelMask & AliVEvent::kEMCEJE) && trigClass.Contains("CEMC8EJE")){
-      hTrigS->Fill(12.,centrality);
-      hTrigSM->Fill(12.,multiplicity);
+      fHisTrigCentSel->Fill(12.,centrality);
+      fHisTrigMulSel->Fill(12.,multiplicity);
     }
     if((evSelMask & AliVEvent::kEMCEGA) && trigClass.Contains("CEMC8EGA")){
-      hTrigS->Fill(13.,centrality);
-      hTrigSM->Fill(13.,multiplicity);
+      fHisTrigCentSel->Fill(13.,centrality);
+      fHisTrigMulSel->Fill(13.,multiplicity);
     }
     if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
-      hTrigS->Fill(14.,centrality);
-      hTrigSM->Fill(14.,multiplicity);}
+      fHisTrigCentSel->Fill(14.,centrality);
+      fHisTrigMulSel->Fill(14.,multiplicity);}
     if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){
-      hTrigS->Fill(15.,centrality);
-      hTrigSM->Fill(15.,multiplicity);}
+      fHisTrigCentSel->Fill(15.,centrality);
+      fHisTrigMulSel->Fill(15.,multiplicity);}
     if(evSelMask & (AliVEvent::kTRD)){
-      hTrigS->Fill(16.,centrality);
-      hTrigSM->Fill(16.,multiplicity);
+      fHisTrigCentSel->Fill(16.,centrality);
+      fHisTrigMulSel->Fill(16.,multiplicity);
     }
     if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
-      hTrigS->Fill(17.,centrality);
-      hTrigSM->Fill(17.,multiplicity);
+      fHisTrigCentSel->Fill(17.,centrality);
+      fHisTrigMulSel->Fill(17.,multiplicity);
     }
     if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
-      hTrigS->Fill(18.,centrality);
-      hTrigSM->Fill(18.,multiplicity);
+      fHisTrigCentSel->Fill(18.,centrality);
+      fHisTrigMulSel->Fill(18.,multiplicity);
     }
     if(evSelMask & (AliVEvent::kHighMult)){
-      hTrigS->Fill(19.,centrality);
-      hTrigSM->Fill(19.,multiplicity);}
+      fHisTrigCentSel->Fill(19.,centrality);
+      fHisTrigMulSel->Fill(19.,multiplicity);}
     if(evSelMask & AliVEvent::kSPI7){
       if(trigClass.Contains("CSPI7")) {
-	hTrigS->Fill(20.,centrality);
-	hTrigSM->Fill(20.,multiplicity);
+	fHisTrigCentSel->Fill(20.,centrality);
+	fHisTrigMulSel->Fill(20.,multiplicity);
       }
     }
     if(evSelMask & AliVEvent::kSPI){
       if(trigClass.Contains("CSPI8")) {
-	hTrigS->Fill(21.,centrality);
-	hTrigSM->Fill(21.,multiplicity);
+	fHisTrigCentSel->Fill(21.,centrality);
+	fHisTrigMulSel->Fill(21.,multiplicity);
       }
     }
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
-      hTrigS->Fill(22.,centrality);
-      hTrigSM->Fill(22.,multiplicity);}
+      fHisTrigCentSel->Fill(22.,centrality);
+      fHisTrigMulSel->Fill(22.,multiplicity);}
   }
   
   if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
@@ -1828,44 +2106,44 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
 
       if(stdCent<fCuts->GetMinCentrality() || stdCent>fCuts->GetMaxCentrality()){
-	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsOut"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-	((TH1F*)fOutputCheckCentrality->FindObject("hMultOut"))->Fill(header->GetRefMultiplicity());
+	fHisNtrackletsOut->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	fHisMultOut->Fill(header->GetRefMultiplicity());
       }else{
-	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsIn"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-	((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(header->GetRefMultiplicity());
+	fHisNtrackletsIn->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	fHisMultIn->Fill(header->GetRefMultiplicity());
       }
-      ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(header->GetRefMultiplicity(),stdCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),stdCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCTracksvsPercentile"))->Fill(nSelTracksTPCOnly,stdCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITSTracksvsPercentile"))->Fill(nSelTracksTPCITS,stdCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITS1SPDTracksvsPercentile"))->Fill(nSelTracksTPCITS1SPD,stdCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalPercentile"))->Fill(stdSignal,stdCentf);
-      ((TH1F*)fOutputCheckCentrality->FindObject("hStdEstimSignal"))->Fill(stdSignal);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalNtrackletsIn"))->Fill(stdSignal,aod->GetTracklets()->GetNumberOfTracklets());
-      ((TH2F*)fOutputCheckCentrality->FindObject("hStdPercentileSecondPercentile"))->Fill(stdCentf,secondCentf);
-      ((TH2F*)fOutputCheckCentrality->FindObject("hStdSignalSecondSignal"))->Fill(stdSignal,secondSignal);
+      fHisMultvsPercentile->Fill(header->GetRefMultiplicity(),stdCentf);
+      fHisntrklvsPercentile->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
+      fHisntrklvsPercentile01->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),stdCentf);
+      fHisnTPCTracksvsPercentile->Fill(nSelTracksTPCOnly,stdCentf);
+      fHisnTPCITSTracksvsPercentile->Fill(nSelTracksTPCITS,stdCentf);
+      fHisnTPCITS1SPDTracksvsPercentile->Fill(nSelTracksTPCITS1SPD,stdCentf);
+      fHisStdEstimSignalPercentile->Fill(stdSignal,stdCentf);
+      fHisStdEstimSignal->Fill(stdSignal);
+      fHisStdEstimSignalNtrackletsIn->Fill(stdSignal,aod->GetTracklets()->GetNumberOfTracklets());
+      fHisStdPercentileSecondPercentile->Fill(stdCentf,secondCentf);
+      fHisStdSignalSecondSignal->Fill(stdSignal,secondSignal);
 
       PostData(6,fOutputCheckCentrality);
 
     } else{
       if(fOnOff[0]){
-	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-	((TH1F*)fOutputTrack->FindObject("hNtracklets01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
-	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(header->GetRefMultiplicity());
-	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
-	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(header->GetRefMultiplicityComb05());
-	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(header->GetRefMultiplicityComb08());
+	fHisNtracklets->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	fHisNtracklets01->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+	fHisMult->Fill(header->GetRefMultiplicity());
+	fHisMultFBit4->Fill(ntracksFBit4);
+	fHisMultComb05->Fill(header->GetRefMultiplicityComb05());
+	fHisMultComb08->Fill(header->GetRefMultiplicityComb08());
       }
     }
   }
 
   if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS) || (!evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
     if(fOnOff[2] && fCuts->GetUseCentrality()){
-      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile01AllEv"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),fCuts->GetCentrality(aod));
+      fHisntrklvsPercentile01AllEv->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),fCuts->GetCentrality(aod));
     }else{
       if(fOnOff[0]){
-  	((TH1F*)fOutputTrack->FindObject("hNtracklets01AllEv"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+  	fHisNtracklets01AllEv->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
       }
     }
   }
@@ -1880,15 +2158,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     TString title=vertex->GetTitle();
     if(title.Contains("Z")) vtxTyp=2;
     if(title.Contains("3D")) vtxTyp=1;    
-    ((TH1F*)fOutputEvSelection->FindObject("hxvtx"))->Fill(xvtx);
-    ((TH1F*)fOutputEvSelection->FindObject("hyvtx"))->Fill(yvtx);
-    ((TH1F*)fOutputEvSelection->FindObject("hzvtx"))->Fill(zvtx);
-    ((TH1F*)fOutputEvSelection->FindObject("hWhichVert"))->Fill(vtxTyp);
+    fHisxvtx->Fill(xvtx);
+    fHisyvtx->Fill(yvtx);
+    fHiszvtx->Fill(zvtx);
+    fHisWhichVert->Fill(vtxTyp);
     if(evSelected){
-      ((TH1F*)fOutputEvSelection->FindObject("hxvtxSelEv"))->Fill(xvtx);
-      ((TH1F*)fOutputEvSelection->FindObject("hyvtxSelEv"))->Fill(yvtx);
-      ((TH1F*)fOutputEvSelection->FindObject("hzvtxSelEv"))->Fill(zvtx);
-      ((TH1F*)fOutputEvSelection->FindObject("hWhichVertSelEv"))->Fill(vtxTyp);
+      fHisxvtxSelEv->Fill(xvtx);
+      fHisyvtxSelEv->Fill(yvtx);
+      fHiszvtxSelEv->Fill(zvtx);
+      fHisWhichVertSelEv->Fill(vtxTyp);
     }
   }
 
@@ -1917,9 +2195,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
-	if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(0.0,ptCand_selBit);
-       	if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(1.0,ptCand_selBit);
-	if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(2.0,ptCand_selBit);
+	if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
+       	if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) fHisNentriesSelBit->Fill(1.0,ptCand_selBit);
+	if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) fHisNentriesSelBit->Fill(2.0,ptCand_selBit);
       }
     }
     // D0kpi
@@ -1927,7 +2205,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
-	if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(4.0,ptCand_selBit);
+	if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
       }     
     }
     // Dstar
@@ -1935,7 +2213,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
-       	if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) ((TH2F*)fOutputEntries->FindObject("HasSelBit"))->Fill(3.0,ptCand_selBit);
+       	if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
       }
     }
   }
@@ -1969,14 +2247,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       Double_t d0z0[2],covd0z0[3];
       if(!track->PropagateToDCA(vtx1,magField,99999.,d0z0,covd0z0)) continue;
       if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
-	((TH1F*)fOutputTrack->FindObject("hd0TracksFilterBit4"))->Fill(d0z0[0]);
+	fHisd0TracksFilterBit4->Fill(d0z0[0]);
       }
       ULong_t trStatus=track->GetStatus();
       if(trStatus&AliESDtrack::kITSrefit){
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
-	  ((TH1F*)fOutputTrack->FindObject("hd0TracksSPDany"))->Fill(d0z0[0]);
+	  fHisd0TracksSPDany->Fill(d0z0[0]);
 	  if(track->HasPointOnITSLayer(0)){
-	    ((TH1F*)fOutputTrack->FindObject("hd0TracksSPDin"))->Fill(d0z0[0]);
+	    fHisd0TracksSPDin->Fill(d0z0[0]);
 	  }
 	}
       }
@@ -2001,7 +2279,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       Bool_t selTrackNoSPD=selTrack;
       if(selTrack){
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
-	  ((TH1F*)fOutputTrack->FindObject("hd0TracksTPCITSSPDany"))->Fill(d0z0[0]);
+	  fHisd0TracksTPCITSSPDany->Fill(d0z0[0]);
 	}
       }
       
@@ -2016,20 +2294,19 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pid->GetTOFpidResolution(tofRes);
 
 	//check TOF
-	TH1F* htmpfl=((TH1F*)fOutputPID->FindObject("hTOFflags"));
-	htmpfl->Fill(0.);
-	if (trStatus&AliESDtrack::kTPCout) htmpfl->Fill(1.);
-	if (trStatus&AliESDtrack::kTOFout) htmpfl->Fill(2.);
-	if (trStatus&AliESDtrack::kTIME) htmpfl->Fill(3.);
-	if (trStatus&AliESDtrack::kTOFpid) htmpfl->Fill(4.);
-	if (trStatus&AliESDtrack::kTOFmismatch) htmpfl->Fill(5.);
+	fHisTOFflags->Fill(0.);
+	if (trStatus&AliESDtrack::kTPCout) fHisTOFflags->Fill(1.);
+	if (trStatus&AliESDtrack::kTOFout) fHisTOFflags->Fill(2.);
+	if (trStatus&AliESDtrack::kTIME) fHisTOFflags->Fill(3.);
+	if (trStatus&AliESDtrack::kTOFpid) fHisTOFflags->Fill(4.);
+	if (trStatus&AliESDtrack::kTOFmismatch) fHisTOFflags->Fill(5.);
 
 	Bool_t isTOFok=kFALSE;
 	if(pidResp){
 	  Double_t prob[AliPID::kSPECIES];
 	  if(pidResp->ComputeTOFProbability(track,AliPID::kSPECIES,prob)==AliPIDResponse::kDetPidOk){
 	    isTOFok=kTRUE;
-	    htmpfl->Fill(6.);
+	    fHisTOFflags->Fill(6.);
 	  }
 	}
       
@@ -2042,34 +2319,34 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    Double_t startTime = tofResp.GetStartTime(track->P());
 	    Float_t startTimeRes = tofResp.GetStartTimeRes(track->P());  
 	    Int_t startTimeMask = tofResp.GetStartTimeMask(track->P());  
-	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeDistrib"))->Fill(startTime);
-	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeMask"))->Fill(startTimeMask);
-	    ((TH1F*)fOutputPID->FindObject("hTOFstartTimeRes"))->Fill(startTimeRes);
+	    fHisTOFstartTimeDistrib->Fill(startTime);
+	    fHisTOFstartTimeMask->Fill(startTimeMask);
+	    fHisTOFstartTimeRes->Fill(startTimeRes);
 	    tofTime-=startTime;
 	    for (Int_t type=0;type<AliPID::kSPECIES;type++) tofRes[type]=tofResp.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMassZ(type)); 
 	  }
-	  ((TH1F*)fOutputPID->FindObject("hTOFtime"))->Fill(times[AliPID::kProton]);
-	  ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptime"))->Fill(track->P(),tofTime-times[3]); //3 is kaon
-	  ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(tofTime);
-	  if (pid->GetTOFsignal()< 0) ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(-1);
+	  fHisTOFtime->Fill(times[AliPID::kProton]);
+	  fHisTOFtimeKaonHyptime->Fill(track->P(),tofTime-times[3]); //3 is kaon
+	  fHisTOFsig->Fill(tofTime);
+	  if (pid->GetTOFsignal()< 0) fHisTOFsig->Fill(-1);
 
 	  Double_t nsigma[3]={-10,-10,-10};
 	  nsigma[0]=pidResp->NumberOfSigmasTOF(track,AliPID::kPion);
 	  nsigma[1]=pidResp->NumberOfSigmasTOF(track,AliPID::kKaon);
 	  nsigma[2]=pidResp->NumberOfSigmasTOF(track,AliPID::kProton);
 
-	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),nsigma[1]);
-	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaPionSigPid"))->Fill(track->P(),nsigma[0]);
-	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaProtonSigPid"))->Fill(track->P(),nsigma[2]);
+	  fHisTOFsigmaKSigPid->Fill(track->P(),nsigma[1]);
+	  fHisTOFsigmaPionSigPid->Fill(track->P(),nsigma[0]);
+	  fHisTOFsigmaProtonSigPid->Fill(track->P(),nsigma[2]);
 	  if(fReadMC){
 	    Int_t label=track->GetLabel();
 	    if(label<=0) continue;
 	    AliMCParticle* mcpart=(AliMCParticle*)mcArray->At(label);
 	    if(mcpart){
 	      Int_t abspdgcode=TMath::Abs(mcpart->PdgCode());
-	      if(abspdgcode==211) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCPionSigPid"))->Fill(track->P(),nsigma[0]);
-	      if(abspdgcode==321) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCKSigPid"))->Fill(track->P(),nsigma[1]);
-	      if(abspdgcode==2212) ((TH2F*)fOutputPID->FindObject("hTOFsigmaMCProtonSigPid"))->Fill(track->P(),nsigma[2]);
+	      if(abspdgcode==211) fHisTOFsigmaMCPionSigPid->Fill(track->P(),nsigma[0]);
+	      if(abspdgcode==321) fHisTOFsigmaMCKSigPid->Fill(track->P(),nsigma[1]);
+	      if(abspdgcode==2212) fHisTOFsigmaMCProtonSigPid->Fill(track->P(),nsigma[2]);
 
 	    }
 	  }
@@ -2078,13 +2355,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if ( TMath::Abs(nsigma[iS-2])<3.){
 	      switch (iS) {
 	      case AliPID::kPion:
-		((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigPion"))->Fill(tofRes[iS]);
+		fHisTOFsigPid3sigPion->Fill(tofRes[iS]);
 		break;
 	      case AliPID::kKaon:
-		((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigKaon"))->Fill(tofRes[iS]);
+		fHisTOFsigPid3sigKaon->Fill(tofRes[iS]);
 		break;
 	      case AliPID::kProton:
-		((TH1F*)fOutputPID->FindObject("hTOFsigPid3sigProton"))->Fill(tofRes[iS]);
+		fHisTOFsigPid3sigProton->Fill(tofRes[iS]);
 		break;
 	      default:
 		break;
@@ -2099,18 +2376,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  Double_t TPCp=pid->GetTPCmomentum();
 	  Double_t TPCsignal=pid->GetTPCsignal();
 	  UShort_t TPCsignalN=pid->GetTPCsignalN();
-	  ((TH1F*)fOutputPID->FindObject("hTPCsig"))->Fill(TPCsignal);
-	  ((TH1F*)fOutputPID->FindObject("hTPCsigvsp"))->Fill(TPCp,TPCsignal);
+	  fHisTPCsig->Fill(TPCsignal);
+	  fHisTPCsigvsp->Fill(TPCp,TPCsignal);
 	  //if (pidHF->IsKaonRaw(track, "TOF"))
 	  Double_t nsigma[3]={-10,-10,-10};
 	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kPion,nsigma[0]);	 
 	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kKaon,nsigma[1]);	 
 	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kProton,nsigma[2]);	 
 
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,nsigma[1]);
+	  fHisTPCsigmaK->Fill(TPCp,nsigma[1]);
 	  
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,nsigma[0]);	  
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,nsigma[2]);
+	  fHisTPCsigmaPion->Fill(TPCp,nsigma[0]);	  
+	  fHisTPCsigmaProton->Fill(TPCp,nsigma[2]);
 	  
 	  if(fReadMC){
 	    Int_t label=track->GetLabel();
@@ -2118,17 +2395,17 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    AliMCParticle* mcpart=(AliMCParticle*)mcArray->At(label);
 	    if(mcpart){
 	      Int_t abspdgcode=TMath::Abs(mcpart->PdgCode());
-	      if(abspdgcode==211) ((TH2F*)fOutputPID->FindObject("hTPCsigmaMCPion"))->Fill(track->P(),nsigma[0]);
-	      if(abspdgcode==321) ((TH2F*)fOutputPID->FindObject("hTPCsigmaMCK"))->Fill(track->P(),nsigma[1]);
-	      if(abspdgcode==2212) ((TH2F*)fOutputPID->FindObject("hTPCsigmaMCProton"))->Fill(track->P(),nsigma[2]);
+	      if(abspdgcode==211) fHisTPCsigmaMCPion->Fill(track->P(),nsigma[0]);
+	      if(abspdgcode==321) fHisTPCsigmaMCK->Fill(track->P(),nsigma[1]);
+	      if(abspdgcode==2212) fHisTPCsigmaMCProton->Fill(track->P(),nsigma[2]);
 
 	    }
 
 	  }
 	  if(fFillDistrTrackEffChecks && track->GetStatus()&AliESDtrack::kITSrefit && track->GetStatus()&AliESDtrack::kTPCrefit){
-	    ((TH2F*)fOutputPID->FindObject("hTPCsigNvsPtAllTracks"))->Fill(track->Pt(),(Float_t)TPCsignalN);
-	    ((TH2F*)fOutputPID->FindObject("hTPCsigNvsPhiAllTracks"))->Fill(track->Phi(),(Float_t)TPCsignalN);
-	    ((TH2F*)fOutputPID->FindObject("hTPCsigNvsEtaAllTracks"))->Fill(track->Eta(),(Float_t)TPCsignalN);
+	    fHisTPCsigNvsPtAllTracks->Fill(track->Pt(),(Float_t)TPCsignalN);
+	    fHisTPCsigNvsPhiAllTracks->Fill(track->Phi(),(Float_t)TPCsignalN);
+	    fHisTPCsigNvsEtaAllTracks->Fill(track->Eta(),(Float_t)TPCsignalN);
 	  }
 	  
 	}//if TPC status
@@ -2139,51 +2416,51 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       //check clusters of the tracks
       if(fOnOff[0]){
 
-	((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(-1);
-	if(selTrackNoSPD) ((TH1F*)fOutputTrack->FindObject("hnLayerITSselTr"))->Fill(-1);
+	fHisnLayerITS->Fill(-1);
+	if(selTrackNoSPD) fHisnLayerITSselTr->Fill(-1);
 	for(Int_t l=0;l<6;l++) {
 	  if(TESTBIT(track->GetITSClusterMap(),l)) {
-	    ((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(l);
-	    if(selTrackNoSPD) ((TH1F*)fOutputTrack->FindObject("hnLayerITSselTr"))->Fill(l);
+	    fHisnLayerITS->Fill(l);
+	    if(selTrackNoSPD) fHisnLayerITSselTr->Fill(l);
 	    nclsTot++; if(l<2) nclsSPD++;
 	  }
 	}
-	((TH1F*)fOutputTrack->FindObject("hnClsITS"))->Fill(nclsTot);
-	((TH1F*)fOutputTrack->FindObject("hnClsSPD"))->Fill(nclsSPD);
+	fHisnClsITS->Fill(nclsTot);
+	fHisnClsSPD->Fill(nclsSPD);
 	
 	if(fFillDistrTrackEffChecks && track->GetStatus()&AliESDtrack::kITSrefit && track->GetStatus()&AliESDtrack::kTPCrefit){
 
-	  ((TH1F*)fOutputTrack->FindObject("hPtAllTracks"))->Fill(track->Pt());
-	  ((TH1F*)fOutputTrack->FindObject("hPhiAllTracks"))->Fill(track->Phi());
-	  ((TH1F*)fOutputTrack->FindObject("hEtaAllTracks"))->Fill(track->Eta());
-	  ((TH2F*)fOutputTrack->FindObject("hEtavsPhiAllTracks"))->Fill(track->Phi(),track->Eta());
-	  ((TH2F*)fOutputTrack->FindObject("hNTPCclsvsPtAllTracks"))->Fill(track->Pt(),track->GetTPCNcls());
-	  ((TH2F*)fOutputTrack->FindObject("hNTPCclsvsPhiAllTracks"))->Fill(track->Phi(),track->GetTPCNcls());
-	  ((TH2F*)fOutputTrack->FindObject("hNTPCclsvsEtaAllTracks"))->Fill(track->Eta(),track->GetTPCNcls());
+	  fHisPtAllTracks->Fill(track->Pt());
+	  fHisPhiAllTracks->Fill(track->Phi());
+	  fHisEtaAllTracks->Fill(track->Eta());
+	  fHisEtavsPhiAllTracks->Fill(track->Phi(),track->Eta());
+	  fHisNTPCclsvsPtAllTracks->Fill(track->Pt(),track->GetTPCNcls());
+	  fHisNTPCclsvsPhiAllTracks->Fill(track->Phi(),track->GetTPCNcls());
+	  fHisNTPCclsvsEtaAllTracks->Fill(track->Eta(),track->GetTPCNcls());
 
-	  ((TH2F*)fOutputTrack->FindObject("hNTPCCrossedRowsvsPtAllTracks"))->Fill(track->Pt(),nCrossedRowsTPC);
-	  ((TH2F*)fOutputTrack->FindObject("hNTPCCrossedRowsvsPhiAllTracks"))->Fill(track->Phi(),nCrossedRowsTPC);
-	  ((TH2F*)fOutputTrack->FindObject("hNTPCCrossedRowsvsEtaAllTracks"))->Fill(track->Eta(),nCrossedRowsTPC);
+	  fHisNTPCCrossedRowsvsPtAllTracks->Fill(track->Pt(),nCrossedRowsTPC);
+	  fHisNTPCCrossedRowsvsPhiAllTracks->Fill(track->Phi(),nCrossedRowsTPC);
+	  fHisNTPCCrossedRowsvsEtaAllTracks->Fill(track->Eta(),nCrossedRowsTPC);
 
-	  ((TH2F*)fOutputTrack->FindObject("hRatioCRowsOverFclsvsPtAllTracks"))->Fill(track->Pt(),ratioCrossedRowsOverFindableClustersTPC);
-	  ((TH2F*)fOutputTrack->FindObject("hRatioCRowsOverFclsvsPhiAllTracks"))->Fill(track->Phi(),ratioCrossedRowsOverFindableClustersTPC);
-	  ((TH2F*)fOutputTrack->FindObject("hRatioCRowsOverFclsvsEtaAllTracks"))->Fill(track->Eta(),ratioCrossedRowsOverFindableClustersTPC);
+	  fHisRatioCRowsOverFclsvsPtAllTracks->Fill(track->Pt(),ratioCrossedRowsOverFindableClustersTPC);
+	  fHisRatioCRowsOverFclsvsPhiAllTracks->Fill(track->Phi(),ratioCrossedRowsOverFindableClustersTPC);
+	  fHisRatioCRowsOverFclsvsEtaAllTracks->Fill(track->Eta(),ratioCrossedRowsOverFindableClustersTPC);
 
 	  if(!(track->HasPointOnITSLayer(0)) && !(track->HasPointOnITSLayer(1))){ //no SPD points
-	    ((TH1I*)fOutputTrack->FindObject("hSPDclsAllTracks"))->Fill(0);
+	    fHisSPDclsAllTracks->Fill(0);
 	  } 
 	  if(track->HasPointOnITSLayer(0) && !(track->HasPointOnITSLayer(1))){ //kOnlyFirst
-	    ((TH1I*)fOutputTrack->FindObject("hSPDclsAllTracks"))->Fill(1);
+	    fHisSPDclsAllTracks->Fill(1);
 	  } 
 	  if(!(track->HasPointOnITSLayer(0)) && track->HasPointOnITSLayer(1)){ //kOnlySecond
-	    ((TH1I*)fOutputTrack->FindObject("hSPDclsAllTracks"))->Fill(2);
+	    fHisSPDclsAllTracks->Fill(2);
 	  }
 	  if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)){ //kBoth
-	    ((TH1I*)fOutputTrack->FindObject("hSPDclsAllTracks"))->Fill(3);
+	    fHisSPDclsAllTracks->Fill(3);
 	  } 
-	  ((TH2F*)fOutputTrack->FindObject("hNITSclsvsPtAllTracks"))->Fill(track->Pt(), nclsTot);
-	  ((TH2F*)fOutputTrack->FindObject("hNITSclsvsPhiAllTracks"))->Fill(track->Phi(), nclsTot);
-	  ((TH2F*)fOutputTrack->FindObject("hNITSclsvsEtaAllTracks"))->Fill(track->Eta(), nclsTot);
+	  fHisNITSclsvsPtAllTracks->Fill(track->Pt(), nclsTot);
+	  fHisNITSclsvsPhiAllTracks->Fill(track->Phi(), nclsTot);
+	  fHisNITSclsvsEtaAllTracks->Fill(track->Eta(), nclsTot);
 
 	}
 	
@@ -2192,22 +2469,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	   track->GetStatus()&AliESDtrack::kITSrefit &&
 	   track->GetStatus()&AliESDtrack::kTPCrefit &&
 	   nclsSPD>0){
-	  ((TH1F*)fOutputTrack->FindObject("hnClsITSselTr"))->Fill(nclsTot);
+	  fHisnClsITSselTr->Fill(nclsTot);
 	}
 	if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kITSpureSA)){//tracks retrieved in the ITS and not reconstructed in the TPC
-	  ((TH1F*)fOutputTrack->FindObject("hnClsITS-SA"))->Fill(nclsTot);
-	  ((TH1F*)fOutputTrack->FindObject("hnLayerITSsa"))->Fill(-1);
+	  fHisnClsITSSA->Fill(nclsTot);
+	  fHisnLayerITSsa->Fill(-1);
 	  for(Int_t l=0;l<6;l++) {
 	    if(TESTBIT(track->GetITSClusterMap(),l)) {
-	      ((TH1F*)fOutputTrack->FindObject("hnLayerITSsa"))->Fill(l);
+	      fHisnLayerITSsa->Fill(l);
 	    }
 	  }
 	}
 	Int_t label=0;
 	if(fReadMC){
 	  label=track->GetLabel();
-	  if (label<0)((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(8);
-	  else ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(9);
+	  if (label<0) fHisNentries->Fill(8);
+	  else fHisNentries->Fill(9);
 	}
 
 
@@ -2219,10 +2496,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 	
 	  if(fReadMC && label<0) {
-	    ((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
+	    fHisptFakeTr->Fill(track->Pt());
 	    isFakeTrack++;	
 	  } else {
-	    ((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
+	    fHisptGoodTr->Fill(track->Pt());
 	    isGoodTrack++;
 	  }
 
@@ -2236,9 +2513,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
     //fill once per event
     if(fOnOff[0]){
-      if (fReadMC) ((TH1F*)fOutputTrack->FindObject("hdistrFakeTr"))->Fill(isFakeTrack);
-      ((TH1F*)fOutputTrack->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
-      ((TH1F*)fOutputTrack->FindObject("hdistrSelTr"))->Fill(isSelTrack);
+      if (fReadMC) fHisdistrFakeTr->Fill(isFakeTrack);
+      fHisdistrGoodTr->Fill(isGoodTrack);
+      fHisdistrSelTr->Fill(isSelTrack);
     }
 
     if(!isSimpleMode){
@@ -2289,12 +2566,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if(mot){
 	      Int_t pdgMotCode = mot->GetPdgCode();
 	
-	      if(TMath::Abs(pdgMotCode)==4) ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(6); //from primary charm
-	      if(TMath::Abs(pdgMotCode)==5) ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(7); //from beauty
+	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(6); //from primary charm
+	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(7); //from beauty
 	    }
 	  }
 	}//end MC
-	((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(5);//count the candidates (data and MC)
+	fHisNentries->Fill(5);//count the candidates (data and MC)
 
 	for(Int_t id=0;id<ndaugh;id++){
 	  //other histograms to be filled when the cut object is given
@@ -2322,20 +2599,20 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      
 	      if(fReadMC && label<0) {
 		isFakeTrack++;
-		((TH1F*)fOutputTrack->FindObject("hptFakeTrFromDaugh_filt"))->Fill(track->Pt());
+		fHisptFakeTrFromDaughFilt->Fill(track->Pt());
 	   
-		((TH1F*)fOutputTrack->FindObject("hd0f_filt"))->Fill(d->Getd0Prong(id));
+		fHisd0f_filt->Fill(d->Getd0Prong(id));
 	      } else {
-		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh_filt"))->Fill(track->Pt());
-		((TH1F*)fOutputTrack->FindObject("hd0dau_filt"))->Fill(d->Getd0Prong(id));
+		fHisptGoodTrFromDaugh_filt->Fill(track->Pt());
+		fHisd0dau_filt->Fill(d->Getd0Prong(id));
                 Double_t phidaughter = d->PhiProng(id);
 		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
-		((TH2F*)fOutputTrack->FindObject("hd0dauphi_filt"))->Fill(phidaughter, d->Getd0Prong(id));
+		fHisd0dauphi_filt->Fill(phidaughter, d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
 		Bool_t isDCA=track->PropagateToDCA(vtx1,magField,9999.,d0rphiz,covd0);
 		if(isDCA){
-		  ((TH1F*)fOutputTrack->FindObject("hd0zdau_filt"))->Fill(d0rphiz[1]);
-		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi_filt"))->Fill(phidaughter,d0rphiz[1]);
+		  fHisd0zdau_filt->Fill(d0rphiz[1]);
+		  fHisd0zdauphi_filt->Fill(phidaughter,d0rphiz[1]);
 		}
 	      }
 	    }
@@ -2353,20 +2630,20 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      
 	      if(fReadMC && label<0) {
 		isFakeTrack++;
-		((TH1F*)fOutputTrack->FindObject("hptFakeTrFromDaugh"))->Fill(track->Pt());
+		fHisptFakeTrFromDaugh->Fill(track->Pt());
 	   
-		((TH1F*)fOutputTrack->FindObject("hd0f"))->Fill(d->Getd0Prong(id));
+		fHisd0f->Fill(d->Getd0Prong(id));
 	      } else {
-		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh"))->Fill(track->Pt());
-		((TH1F*)fOutputTrack->FindObject("hd0dau"))->Fill(d->Getd0Prong(id));
+		fHisptGoodTrFromDaugh->Fill(track->Pt());
+		fHisd0dau->Fill(d->Getd0Prong(id));
                 Double_t phidaughter = d->PhiProng(id);
 		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
-		((TH2F*)fOutputTrack->FindObject("hd0dauphi"))->Fill(phidaughter, d->Getd0Prong(id));
+		fHisd0dauphi->Fill(phidaughter, d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
 		Bool_t isDCA=track->PropagateToDCA(vtx1,magField,9999.,d0rphiz,covd0);
 		if(isDCA){
-		  ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
-		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi"))->Fill(phidaughter,d0rphiz[1]);
+		  fHisd0zdau->Fill(d0rphiz[1]);
+		  fHisd0zdauphi->Fill(phidaughter,d0rphiz[1]);
 		}
 	      }
 	    }
@@ -2385,37 +2662,37 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		}
 	      }
 
-	      ((TH1F*)fOutputTrack->FindObject("hPtDaughters"))->Fill(track->Pt());
-	      ((TH1F*)fOutputTrack->FindObject("hPhiDaughters"))->Fill(track->Phi());
-	      ((TH1F*)fOutputTrack->FindObject("hEtaDaughters"))->Fill(track->Eta());
-	      ((TH2F*)fOutputTrack->FindObject("hEtavsPhiDaughters"))->Fill(track->Phi(),track->Eta());
+	      fHisPtDaughters->Fill(track->Pt());
+	      fHisPhiDaughters->Fill(track->Phi());
+	      fHisEtaDaughters->Fill(track->Eta());
+	      fHisEtavsPhiDaughters->Fill(track->Phi(),track->Eta());
 
-	      ((TH2F*)fOutputTrack->FindObject("hNTPCclsvsPtDaughters"))->Fill(track->Pt(),track->GetTPCNcls());
-	      ((TH2F*)fOutputTrack->FindObject("hNTPCclsvsPhiDaughters"))->Fill(track->Phi(),track->GetTPCNcls());
-	      ((TH2F*)fOutputTrack->FindObject("hNTPCclsvsEtaDaughters"))->Fill(track->Eta(),track->GetTPCNcls());
+	      fHisNTPCclsvsPtDaughters->Fill(track->Pt(),track->GetTPCNcls());
+	      fHisNTPCclsvsPhiDaughters->Fill(track->Phi(),track->GetTPCNcls());
+	      fHisNTPCclsvsEtaDaughters->Fill(track->Eta(),track->GetTPCNcls());
 
-	      ((TH2F*)fOutputTrack->FindObject("hNTPCCrossedRowsvsPtDaughters"))->Fill(track->Pt(),nTPCCrossedRows);
-	      ((TH2F*)fOutputTrack->FindObject("hNTPCCrossedRowsvsPhiDaughters"))->Fill(track->Phi(),nTPCCrossedRows);
-	      ((TH2F*)fOutputTrack->FindObject("hNTPCCrossedRowsvsEtaDaughters"))->Fill(track->Eta(),nTPCCrossedRows);
+	      fHisNTPCCrossedRowsvsPtDaughters->Fill(track->Pt(),nTPCCrossedRows);
+	      fHisNTPCCrossedRowsvsPhiDaughters->Fill(track->Phi(),nTPCCrossedRows);
+	      fHisNTPCCrossedRowsvsEtaDaughters->Fill(track->Eta(),nTPCCrossedRows);
 
-	      ((TH2F*)fOutputTrack->FindObject("hRatioCRowsOverFclsvsPtDaughters"))->Fill(track->Pt(),ratioCrossedRowsOverFcls);
-	      ((TH2F*)fOutputTrack->FindObject("hRatioCRowsOverFclsvsPhiDaughters"))->Fill(track->Phi(),ratioCrossedRowsOverFcls);
-	      ((TH2F*)fOutputTrack->FindObject("hRatioCRowsOverFclsvsEtaDaughters"))->Fill(track->Eta(),ratioCrossedRowsOverFcls);
+	      fHisRatioCRowsOverFclsvsPtDaughters->Fill(track->Pt(),ratioCrossedRowsOverFcls);
+	      fHisRatioCRowsOverFclsvsPhiDaughters->Fill(track->Phi(),ratioCrossedRowsOverFcls);
+	      fHisRatioCRowsOverFclsvsEtaDaughters->Fill(track->Eta(),ratioCrossedRowsOverFcls);
 
-	      ((TH2F*)fOutputTrack->FindObject("hNITSclsvsPtDaughters"))->Fill(track->Pt(), nITScls);
-	      ((TH2F*)fOutputTrack->FindObject("hNITSclsvsPhiDaughters"))->Fill(track->Phi(), nITScls);
-	      ((TH2F*)fOutputTrack->FindObject("hNITSclsvsEtaDaughters"))->Fill(track->Eta(), nITScls);
+	      fHisNITSclsvsPtDaughters->Fill(track->Pt(), nITScls);
+	      fHisNITSclsvsPhiDaughters->Fill(track->Phi(), nITScls);
+	      fHisNITSclsvsEtaDaughters->Fill(track->Eta(), nITScls);
 	      if(!(track->HasPointOnITSLayer(0)) && !(track->HasPointOnITSLayer(1))){ //no SPD points
-		((TH1I*)fOutputTrack->FindObject("hSPDclsDaughters"))->Fill(0);
+		fHisSPDclsDaughters->Fill(0);
 	      } 
 	      if(track->HasPointOnITSLayer(0) && !(track->HasPointOnITSLayer(1))){ //kOnlyFirst
-		((TH1I*)fOutputTrack->FindObject("hSPDclsDaughters"))->Fill(1);
+		fHisSPDclsDaughters->Fill(1);
 	      } 
 	      if(!(track->HasPointOnITSLayer(0)) && track->HasPointOnITSLayer(1)){ //kOnlySecond
-		((TH1I*)fOutputTrack->FindObject("hSPDclsDaughters"))->Fill(2);
+		fHisSPDclsDaughters->Fill(2);
 	      }
 	      if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)){ //kBoth
-		((TH1I*)fOutputTrack->FindObject("hSPDclsDaughters"))->Fill(3);
+		fHisSPDclsDaughters->Fill(3);
 	      }
 
 
@@ -2423,9 +2700,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		AliAODPid *pid = track->GetDetPid();
 		if(pid){
 		  if(pidHF && pidHF->CheckStatus(track,"TPC")){
-		    ((TH2F*)fOutputPID->FindObject("hTPCsigNvsPtDaughters"))->Fill(track->Pt(),pid->GetTPCsignalN());
-		    ((TH2F*)fOutputPID->FindObject("hTPCsigNvsPhiDaughters"))->Fill(track->Phi(),pid->GetTPCsignalN());
-		    ((TH2F*)fOutputPID->FindObject("hTPCsigNvsEtaDaughters"))->Fill(track->Eta(),pid->GetTPCsignalN());
+		    fHisTPCsigNvsPtDaughters->Fill(track->Pt(),pid->GetTPCsignalN());
+		    fHisTPCsigNvsPhiDaughters->Fill(track->Phi(),pid->GetTPCsignalN());
+		    fHisTPCsigNvsEtaDaughters->Fill(track->Eta(),pid->GetTPCsignalN());
 		  }
 		}
 	      }
@@ -2433,7 +2710,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
-	       ((TH1F*)fOutputEntries->FindObject("hNentries"))->Fill(3); //candidates passing analysis cuts
+	       fHisNentries->Fill(3); //candidates passing analysis cuts
 
 	    AliAODPid *pid = track->GetDetPid();
 	      if(pid){
@@ -2449,9 +2726,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		    Double_t startTime=tofResp.GetStartTime(track->P());
 		    tofTime-=startTime;
 		  }
-		  ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),tofTime-times[AliPID::kKaon]);
+		  fHisTOFtimeKaonHyptimeAC->Fill(track->P(),tofTime-times[AliPID::kKaon]);
 		}
-		if(pidHF && pidHF->CheckStatus(track,"TPC")) ((TH2F*)fOutputPID->FindObject("hTPCsigvspAC"))->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
+		if(pidHF && pidHF->CheckStatus(track,"TPC")) fHisTPCsigvspAC->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
 	      }
 	      
 	    } //end analysis cuts
@@ -2477,15 +2754,15 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
   /// fills the flow observables
   Double_t cc;
   cc = fCuts->GetCentrality(aod);
-  ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(0., cc);
+  fHisFEvents->Fill(0., cc);
 
   UInt_t mask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   UInt_t trigger=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   if(mask & trigger) {
-    ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(1.,cc); // fired
-    if (mask & AliVEvent::kMB) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(2.,cc);
-    if (mask & AliVEvent::kCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(3.,cc);
-    if (mask & AliVEvent::kSemiCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(4.,cc);
+    fHisFEvents->Fill(1.,cc); // fired
+    if (mask & AliVEvent::kMB) fHisFEvents->Fill(2.,cc);
+    if (mask & AliVEvent::kCentral) fHisFEvents->Fill(3.,cc);
+    if (mask & AliVEvent::kSemiCentral) fHisFEvents->Fill(4.,cc);
     Bool_t rejected=false;
     if(cc<0 || cc>60) rejected=true;
     const AliVVertex *vertex = aod->GetPrimaryVertex();
@@ -2497,7 +2774,7 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
   }
 
   // event accepted
-  ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(5.,cc);
+  fHisFEvents->Fill(5.,cc);
   fRFPcuts->SetParamType(AliFlowTrackCuts::kGlobal);
   fRFPcuts->SetPtRange(0.2,5.);
   fRFPcuts->SetEtaRange(-0.8,0.8);
@@ -2507,7 +2784,7 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
   fRFPcuts->SetAcceptKinkDaughters(kFALSE);
   fRFPcuts->SetEvent(aod);
 
-  TString ref[3] = {"FB1","FB128","VZE"};
+  // "FB1" (i=0), "FB128" (i=1), "VZE" (i=2)
   Double_t psi[3];
   for(Int_t i=0; i!=3; ++i) {
     if(i==0) { // switching to bit 1
@@ -2532,31 +2809,31 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
     Double_t dMa=vQaQb[0].GetMult();
     Double_t dMb=vQaQb[1].GetMult();
     if( dMa<2 || dMb<2 ) {
-      ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(6.,cc); //???
+      fHisFEvents->Fill(6.,cc); //???
       continue;
     }
     psi[i] = vQ.Phi()/2;
     // publishing
-    ((TProfile2D*) fOutputFlowObs->FindObject( Form("h%s_Q",ref[i].Data())))->Fill(0,cc,vQaQb[0].X()/dMa,dMa); // Qx-
-    ((TProfile2D*) fOutputFlowObs->FindObject( Form("h%s_Q",ref[i].Data())))->Fill(1,cc,vQaQb[0].Y()/dMa,dMa); // Qy-
-    ((TProfile2D*) fOutputFlowObs->FindObject( Form("h%s_Q",ref[i].Data())))->Fill(2,cc,vQaQb[1].X()/dMb,dMb); // Qx+
-    ((TProfile2D*) fOutputFlowObs->FindObject( Form("h%s_Q",ref[i].Data())))->Fill(3,cc,vQaQb[1].Y()/dMb,dMb); // Qy+
-    ((TH2F*) fOutputFlowObs->FindObject( Form("h%s_AngleQ",ref[i].Data()) ))->Fill(psi[i],cc); // Psi
+    fHisQ[i]->Fill(0,cc,vQaQb[0].X()/dMa,dMa); // Qx-
+    fHisQ[i]->Fill(1,cc,vQaQb[0].Y()/dMa,dMa); // Qy-
+    fHisQ[i]->Fill(2,cc,vQaQb[1].X()/dMb,dMb); // Qx+
+    fHisQ[i]->Fill(3,cc,vQaQb[1].Y()/dMb,dMb); // Qy+
+    fHisAngleQ[i]->Fill(psi[i],cc); // Psi
     AliFlowTrackSimple *track;
     for(Int_t t=0; t!=fFlowEvent->NumberOfTracks(); ++t) {
       track = (AliFlowTrackSimple*) fFlowEvent->GetTrack(t);
       if(!track) continue;
       if(!track->InRPSelection()) continue;
-      ((TH3F*) fOutputFlowObs->FindObject( Form("h%s_PhiEta",ref[i].Data()) ))->Fill(track->Phi(),track->Eta(),cc,track->Weight()); //PhiEta
+      fHisPhiEta[i]->Fill(track->Phi(),track->Eta(),cc,track->Weight()); //PhiEta
     }
   
   //histo filled only for TPCFB1
   if (i==0) {
-    ((TH2F*) fOutputFlowObs->FindObject("hCentVsMultRPS"))->Fill(fFlowEvent->GetNumberOfRPs(),cc);
+    fHisCentVsMultRPS->Fill(fFlowEvent->GetNumberOfRPs(),cc);
   }
   }
   // TPC vs VZERO
-  ((TH3F*) fOutputFlowObs->FindObject( "hTPCVZE_AngleQ" ))->Fill(psi[0],psi[2],cc);
+  fHisTPCVZE_AngleQ->Fill(psi[0],psi[2],cc);
 }
 
 //____________________________________________________________________________

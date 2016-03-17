@@ -231,7 +231,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     TF1 *fitVtxX, *fitVtxY, *fitVtxZ;
     
     if (useTRKvtx || useITSSAvtx){
-      histTRKvtxX ->Fit("gaus", "M");
+      histTRKvtxX ->Fit("gaus", "M", "", -0.3, 0.3);
       fitVtxX = histTRKvtxX -> GetFunction("gaus");
       xMeanVtx = fitVtxX -> GetParameter(1);
       if (TMath::Abs(xMeanVtx) > 2.) {
@@ -239,8 +239,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	writeMeanVertexSPD=kTRUE;
 	fStatus=kWriteMeanVertexSPD;
       }	
-      
-      histTRKvtxY ->Fit("gaus", "M");
+
+      histTRKvtxY ->Fit("gaus", "M", "", -0.4, 0.7);
       fitVtxY = histTRKvtxY -> GetFunction("gaus");
       yMeanVtx = fitVtxY -> GetParameter(1);
       if (TMath::Abs(yMeanVtx) > 2.) {
@@ -248,7 +248,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	writeMeanVertexSPD=kTRUE;
 	fStatus=kWriteMeanVertexSPD;
       }	
-      
+
       histTRKvtxZ ->Fit("gaus", "M", "", -12, 12);
       fitVtxZ = histTRKvtxZ -> GetFunction("gaus");
       zMeanVtx = fitVtxZ -> GetParameter(1);

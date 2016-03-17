@@ -824,19 +824,19 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 
 		fh1dJetRecPt->Fill(jetrec->Pt());
 		if(fIsPythia){
-			if(jetflavour==0) fh1dJetRecPtUnidentified->Fill(jetrec->Pt());
-			else if(jetflavour==1)fh1dJetRecPtudsg->Fill(jetrec->Pt());
-			else if(jetflavour==2)fh1dJetRecPtc->Fill(jetrec->Pt());
-			else if(jetflavour==3)fh1dJetRecPtb->Fill(jetrec->Pt());
+			if(jetflavour==0) fh1dJetRecPtUnidentified->Fill(jetpt);
+			else if(jetflavour==1)fh1dJetRecPtudsg->Fill(jetpt);
+			else if(jetflavour==2)fh1dJetRecPtc->Fill(jetpt);
+			else if(jetflavour==3)fh1dJetRecPtb->Fill(jetpt);
 		}
 		if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
 		fh1dJetRecEtaPhiAccepted->Fill(jetrec->Eta(),jetrec->Phi());
 		fh1dJetRecPtAccepted->Fill(jetpt);
 		if(fIsPythia){
-			if(jetflavour==0) fh1dJetRecPtUnidentifiedAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==1)fh1dJetRecPtudsgAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==2)fh1dJetRecPtcAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==3)fh1dJetRecPtbAccepted->Fill(jetrec->Pt());
+			if(jetflavour==0) fh1dJetRecPtUnidentifiedAccepted->Fill(jetpt);
+			else if(jetflavour==1)fh1dJetRecPtudsgAccepted->Fill(jetpt);
+			else if(jetflavour==2)fh1dJetRecPtcAccepted->Fill(jetpt);
+			else if(jetflavour==3)fh1dJetRecPtbAccepted->Fill(jetpt);
 		}
 
 		std::vector<myvaluetuple> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
@@ -858,8 +858,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 				if(abs(dca[0])>1.) continue;
 				if(abs(dca[1])>2.) continue;
 				if(lineardecaylenth > 10.) continue;
-				if (dcatrackjet > 1.) continue;
-
+				if (dcatrackjet > 0.07) continue;
 
 				double cursImParXY =TMath::Abs(GetValImpactParameter(kXY,dca,cov))*sign;
 				double cursImParXYZ =TMath::Abs(GetValImpactParameter(kXY,dca,cov))*sign;
@@ -1240,13 +1239,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 					if(sImpParXYZ.at(2).is_fromB)fh2dJetSignedImpParXYZbThird_McCorr->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
 					if(sImpParXYSig.at(2).is_fromB) fh2dJetSignedImpParXYSignificancebThird_McCorr->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
 					if(sImpParXYZSig.at(2).is_fromB)fh2dJetSignedImpParXYZSignificancebFirst_McCorr->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
-
 					if(!sImpParXY.at(2).is_fromB) fh2dJetSignedImpParXYbThird_McCorrNonBDecay->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
 					if(!sImpParXYZ.at(2).is_fromB) fh2dJetSignedImpParXYZbThird_McCorrNonBDecay->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
 					if(!sImpParXYSig.at(2).is_fromB) fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
 					if(!sImpParXYZSig.at(2).is_fromB) fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
-
-
 					if(sImpParXY.at(2).is_electron) 	fh2dJetSignedImpParXYbThird_electron->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
 					if(sImpParXYZ.at(2).is_electron)	fh2dJetSignedImpParXYZbThird_electron->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
 					if(sImpParXYSig.at(2).is_electron)	fh2dJetSignedImpParXYSignificancebThird_electron->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
@@ -2364,7 +2360,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
 	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
 
-	if(!mcpart) return -1;
+	if(!mcpart) return 1;
 	//******Check the following cases*****
 	// 1. is from primary D Meson
 	// 2. is from primary K0s or Lambda
@@ -2373,7 +2369,6 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 
 	// check if particle is a primary charged pion or proton
 	Int_t pPdgcode = abs(mcpart->GetPdgCode());
-
 	Bool_t found = kFALSE;
 	Double_t pTWeight =0;
 	Int_t foundPdg =-1;
@@ -2393,30 +2388,28 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 		if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
 	}
 
-	if(pPdgcode == bProton && 	mcpart->IsPhysicalPrimary() ){
+	if(pPdgcode == bProton && 	isprim ){
 		//Is Primary proton
 		found = kTRUE;
 		foundPdg =bProton;
 		correctionidx = bIdxProton;
 		pTWeight =mcpart->Pt();
 	}
-	else if(pPdgcode == bPi&& 	mcpart->IsPhysicalPrimary() ){
+	else if(pPdgcode == bPi&& 	isprim){
 		//Is Primary charged pion
 		found = kTRUE;
 		foundPdg =bPi;
 		correctionidx = bIdxPi;
 		pTWeight =mcpart->Pt();
-		return 1;
 	}
-	else if(pPdgcode == bKaon&& 	mcpart->IsPhysicalPrimary() ){
+	else if(pPdgcode == bKaon&& 	isprim ){
 		//Is Primary charged kaon
 		found = kTRUE;
 		pTWeight =mcpart->Pt();
 		foundPdg =bKaon;
 		correctionidx = bIdxKaon;
-		return 1;
 	}
-	else if(ParticleIsPossibleSource(maPdgcode)){
+	else if(!isprim && ParticleIsPossibleSource(maPdgcode)){
 		if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
 			found = kTRUE;
 			foundPdg =maPdgcode;
@@ -2424,9 +2417,9 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 
 	}
 	else {
-
 		while (mcpartMother->GetMother() >0){
 			pMotherLabel = 	mcpartMother->GetMother();
+			mcpartMother = 0x0;
 			mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
 			if (!mcpartMother )isprim =true;
 			if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
@@ -2436,7 +2429,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 				if(maPdgcode>0 && maPdgcode<6) isprim =true;
 				if(maPdgcode==21) isprim =true;
 			}
-			if(ParticleIsPossibleSource(maPdgcode)){
+			if(!isprim && ParticleIsPossibleSource(maPdgcode)){
 				if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
 					found = kTRUE;
 					foundPdg =maPdgcode;
@@ -2458,11 +2451,11 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 	// 0.1 -25.GeV 0.05 per bin 498 bins
 
 	double wpos = ((pTWeight - 0.15)/ 0.05);
+
 	double  fractpart, intpart;
 	fractpart = modf (wpos , &intpart);
 	if (fractpart > 0) intpart = intpart + 1;
 	int  bin = floor(intpart);
-
 	if (bin > 497) bin = 497;			// above weight definition
 	if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
 
@@ -2498,25 +2491,25 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * pa
 
 	if(pcodemoth==bPi0){
 		if(codemoth == bK0s) return kTRUE;
-		else if(codemoth == bK0l) return kTRUE;
-		else if(TMath::Abs(codemoth) == bKaon) return kTRUE;
-		else if(TMath::Abs(codemoth) == bLambda) return kTRUE;
-		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
-	}
+		if(codemoth == bK0l) return kTRUE;
+		if(TMath::Abs(codemoth) == bKaon) return kTRUE;
+		if(TMath::Abs(codemoth) == bLambda) return kTRUE;
+		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113 || codemoth == bRhoPlus) return kTRUE;
+		}
 	else if (pcodemoth==bPhi){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113) return kTRUE;
+		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bOmega){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
+		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bEtaPrime){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113) return kTRUE;
+		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bRho){
-		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331) return kTRUE;
+		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331|| codemoth == bRhoPlus) return kTRUE;
 	}
 	else if (pcodemoth==bEta){
-		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;    }
+		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;    }
 	return kFALSE;
 }
 
@@ -2526,16 +2519,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart
 	pT = mcpart->Pt();
 	switch(pdg){
 	case bPi0:
-
-		if(!IsSecondaryFromWeakDecay(mcpart) && !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart) ){
 			idx = bIdxPi0;
 			return kTRUE;
-
 		}
 
 		break;
 	case bEta:
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart) ){
 			idx = bIdxEta;
 			return kTRUE;
 
@@ -2543,30 +2534,27 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart
 
 		break;
 	case bEtaPrime:
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart) ){
 			idx = bIdxEtaPrime;
 			return kTRUE;
 		}
-
 		break;
 	case bOmega:
 		idx = bIdxOmega;
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart)){
 			return kTRUE;
 		}
-
 		break;
 	case bPhi:
 		idx = bIdxPhi;
-
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart)){
 			return kTRUE;
 		}
 
 		break;
 	case bRho:
 		idx = bIdxRho;
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
+		if(!IsSecondaryFromWeakDecay(mcpart)){
 			return kTRUE;
 		}
 		break;

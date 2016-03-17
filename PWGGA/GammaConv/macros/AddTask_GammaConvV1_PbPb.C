@@ -1544,23 +1544,30 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("50100023", "00216609247602008284404000", "0152501500000000"); // 0-10%
     cuts.AddCut("52400023", "00216609247602008284404000", "0152501500000000"); // 20-40%
     cuts.AddCut("52500023", "00216609247602008284404000", "0152501500000000"); // 20-50%
-    
-//   } else if ( trainConfig == 222){ //
-
-  } else if ( trainConfig == 223){ // standard LHC11h cut selection (full cent range)
-    cuts.AddCut("50800013", "00200009247602008250404000", "0152501500000000"); // 0-80%
-  } else if ( trainConfig == 224){ // 
-    cuts.AddCut("60100013", "00200009248002008250404000", "0152501500000000"); // 0-5%
-    cuts.AddCut("61200013", "00200009248002008750004000", "0152501500000000"); // 5-10%
-    cuts.AddCut("50100013", "00200009248002008750004000", "0152501500000000"); // 0-10%
-    cuts.AddCut("52400013", "00200009248002008750004000", "0152501500000000"); // 20-40%
-    cuts.AddCut("52500013", "00200009248002008750004000", "0152501500000000"); // 20-50%
-  } else if ( trainConfig == 225){ // 
-    cuts.AddCut("60100013", "00216609248002008750004000", "0152501500000000"); // 0-5%
-    cuts.AddCut("61200013", "00216609248002008750004000", "0152501500000000"); // 5-10%
-    cuts.AddCut("50100013", "00216609248002008750004000", "0152501500000000"); // 0-10%
-    cuts.AddCut("52400013", "00216609248002008750004000", "0152501500000000"); // 20-40%
-    cuts.AddCut("52500013", "00216609248002008750004000", "0152501500000000"); // 20-50%   
+  } else if ( trainConfig == 222){ // low pt sigma rejection
+    cuts.AddCut("60100013", "00200009247642008250404000", "0152501500000000"); // 0-5%
+    cuts.AddCut("61200013", "00200009247642008250404000", "0152501500000000"); // 5-10%
+    cuts.AddCut("50100013", "00200009247642008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCut("52400013", "00200009247642008250404000", "0152501500000000"); // 20-40%
+    cuts.AddCut("52500013", "00200009247642008250404000", "0152501500000000"); // 20-50%
+  } else if ( trainConfig == 223){ // low pt sigma rejection - added signal
+    cuts.AddCut("60100023", "00200009247642008250404000", "0152501500000000"); // 0-5%
+    cuts.AddCut("61200023", "00200009247642008250404000", "0152501500000000"); // 5-10%
+    cuts.AddCut("50100023", "00200009247642008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCut("52400023", "00200009247642008250404000", "0152501500000000"); // 20-40%
+    cuts.AddCut("52500023", "00200009247642008250404000", "0152501500000000"); // 20-50%
+  } else if ( trainConfig == 224){ // low pt sigma rejection with phi cut
+    cuts.AddCut("60100013", "00216609247642008250404000", "0152501500000000"); // 0-5%
+    cuts.AddCut("61200013", "00216609247642008250404000", "0152501500000000"); // 5-10%
+    cuts.AddCut("50100013", "00216609247642008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCut("52400013", "00216609247642008250404000", "0152501500000000"); // 20-40%
+    cuts.AddCut("52500013", "00216609247642008250404000", "0152501500000000"); // 20-50%
+  } else if ( trainConfig == 225){ // low pt sigma rejection with phi cut - added signal
+    cuts.AddCut("60100023", "00216609247642008250404000", "0152501500000000"); // 0-5%
+    cuts.AddCut("61200023", "00216609247642008250404000", "0152501500000000"); // 5-10%
+    cuts.AddCut("50100023", "00216609247642008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCut("52400023", "00216609247642008250404000", "0152501500000000"); // 20-40%
+    cuts.AddCut("52500023", "00216609247642008250404000", "0152501500000000"); // 20-50%
   } else if ( trainConfig == 226){ // standard LHC11h cut selection - double rejec
     cuts.AddCut("60100013", "00200009247602008250404000", "0152501500000000"); // 0-5%
     cuts.AddCut("61200013", "00200009247602008250404000", "0152501500000000"); // 5-10%
@@ -1939,7 +1946,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
         trainConfig == 186   || trainConfig == 188   || trainConfig == 194   || trainConfig == 196  || trainConfig == 198  || 
         trainConfig == 200   || trainConfig == 202   || trainConfig == 204   || trainConfig == 206  || trainConfig == 208  ||
         trainConfig == 210   || trainConfig == 212   || trainConfig == 214   || trainConfig == 216  || trainConfig == 218  ||
-        trainConfig == 220   || trainConfig == 224   || trainConfig == 225   || trainConfig == 226  || trainConfig == 228  ||
+        trainConfig == 220   || trainConfig == 222   || trainConfig == 224   || trainConfig == 226  || trainConfig == 228  ||
         trainConfig == 230   || trainConfig == 232	 || trainConfig == 235   || trainConfig == 237  || trainConfig == 239  ||
         trainConfig == 241){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
@@ -1973,8 +1980,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
         trainConfig == 187   || trainConfig == 189   || trainConfig == 195   || trainConfig == 197   || trainConfig == 199   || 
         trainConfig == 201   || trainConfig == 203   || trainConfig == 205   || trainConfig == 207   || trainConfig == 209   ||
         trainConfig == 211   || trainConfig == 213   || trainConfig == 215   || trainConfig == 217   || trainConfig == 219   ||
-        trainConfig == 221   || trainConfig == 227   || trainConfig == 229   || trainConfig == 231   || trainConfig == 233	 || 
-        trainConfig == 236   || trainConfig == 238   || trainConfig == 240   ||  trainConfig == 242){
+        trainConfig == 221   || trainConfig == 223   || trainConfig == 225   || trainConfig == 227   || trainConfig == 229   ||
+        trainConfig == 231   || trainConfig == 233	 || trainConfig == 236   || trainConfig == 238   || trainConfig == 240   ||
+        trainConfig == 242){
       if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
         if ( i == 0 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
         if ( i == 1 && doWeighting)  analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");

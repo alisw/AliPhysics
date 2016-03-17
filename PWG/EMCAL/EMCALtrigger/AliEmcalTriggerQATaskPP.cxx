@@ -37,7 +37,7 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP() :
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
   fADCperBin(20),
-  fMinAmplitude(10),
+  fMinAmplitude(0),
   fDCalPlots(kTRUE),
   fTriggerPatches(0)
 {
@@ -52,7 +52,7 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP(const char *name) :
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
   fADCperBin(20),
-  fMinAmplitude(10),
+  fMinAmplitude(0),
   fDCalPlots(kTRUE),
   fTriggerPatches(0)
 {
