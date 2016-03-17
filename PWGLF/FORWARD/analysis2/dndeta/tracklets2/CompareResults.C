@@ -37,7 +37,10 @@ TH1* GetH1(TDirectory* dir, const char* name)
 TH1* CompareOne(TDirectory* newDir,
 		TDirectory* oldDir,
 		Double_t    c1,
-		Double_t    c2)
+		Double_t    c2,
+		Double_t&   min,
+		Double_t&   max,
+		TLegend*    l)
 {
   TString name;
   name.Form("cent%03dd%02d_%03dd%02d",
@@ -57,6 +60,13 @@ TH1* CompareOne(TDirectory* newDir,
   ratio->SetYTitle("New / Old");
   ratio->Divide(oldRes);
 
+  if (l) {
+    TLegendEntry* e = l->AddEntry("", Form("%3.0f - %3.0f%%", c1, c2), "f");
+    e->SetFillStyle(1001);
+    e->SetFillColor(ratio->GetMarkerColor());
+  }
+  min = TMath::Min(min, ratio->GetMinimum());
+  max = TMath::Max(max, ratio->GetMaximum());
   return ratio;
 }
 
@@ -75,14 +85,26 @@ CompareResults(const char* newName="NewTaskNewPost.root",
   TH1* oldCent = GetH1(oldFile, "realCent");
   if (!newCent || !oldCent) return;
 
-  THStack* stack = new THStack("ratios",
-			       Form("Ratios of %s to %s",
-				    oldTitle, newTitle));
+  TString  t; t.Form("#it{R}=#frac{%s}{%s}", oldTitle, newTitle);
+  TCanvas* c     = new TCanvas("c", t, 1200, 800);
+  c->SetTopMargin(0.01);
+  c->SetRightMargin(0.20);
+  TLegend* l     = new TLegend(1-c->GetRightMargin(),
+			       c->GetBottomMargin(),
+			       1, 1-c->GetTopMargin(),
+			       t);
+  l->SetFillStyle(0);
+  l->SetBorderSize(0);
+  THStack* stack = new THStack("ratios","");
+			       
+  Double_t min = +1e6;
+  Double_t max = -1e6;
   TH1* one = 0;
   for (Int_t i = newCent->GetNbinsX(); i--;) {
-    Double_t c1 = newCent->GetXaxis()->GetBinLowEdge(i);
-    Double_t c2 = newCent->GetXaxis()->GetBinUpEdge(i);
-    TH1*     r  = CompareOne(newFile, oldFile, c1, c2);    
+    Double_t c1 = newCent->GetXaxis()->GetBinLowEdge(i+1);
+    Double_t c2 = newCent->GetXaxis()->GetBinUpEdge(i+1);
+    Info("", "c1=%f c2=%f", c1, c2);
+    TH1*     r  = CompareOne(newFile, oldFile, c1, c2, min, max, l);    
     if (!r) continue;
     if (!one) {
       one = static_cast<TH1*>(r->Clone("one"));
@@ -98,7 +120,15 @@ CompareResults(const char* newName="NewTaskNewPost.root",
     stack->Add(r);
   }
   stack->Draw("nostack");
-
+  stack->SetMinimum(0.95*min);
+  stack->SetMaximum(1.05*max);
+  stack->GetHistogram()->SetXTitle("#eta");
+  stack->GetHistogram()->SetYTitle("#it{R}");
+  l->Draw();
+  c->Modified();
+  c->Update();
+  c->cd();
+  c->SaveAs(Form("%sover%s.png", oldTitle, newTitle));
 }
 
   
