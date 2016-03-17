@@ -129,6 +129,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     std::map<std::string, AliJetInfo>
                        fJets                    ; //!<! list of jets
 
+    const AliJetInfo* GetJet(std::string n) const;
+    AliJetInfo* GetJet(std::string n);
     void Reset();
     Double_t GetZ(std::string n) const;
     Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
@@ -249,6 +251,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     void SetAcceptanceType(EJetAcceptanceType_t a)        { fAcceptance   = a  ;                      }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
+    Bool_t IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const;
 
     friend bool        operator< (const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
     friend inline bool operator> (const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return rhs < lhs    ; }
@@ -321,9 +324,14 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
 
     void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
+
     TTree* BuildTree();
     TTree* GetTree() { return fTree; }
     Bool_t FillTree(Bool_t applyKinCuts);
+
+    void BuildHnSparse(UInt_t enabledAxis, Int_t nBins, Double_t minBinPt, Double_t maxBinPt);
+    Bool_t FillHnSparse(Bool_t applyKinCuts);
+    Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
 
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
@@ -361,7 +369,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     AliClusterContainer               *fClusterContainer      ; //!<! Cluster container
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
-    THistManager                      *fHistManager           ; //!<! Histogram manager
+    THistManager                      *fHistManager           ; //!<! Histograms
 
     friend class AliAnalysisTaskDmesonJets;
 
@@ -413,8 +421,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
  protected:
 
   AliRDHFCuts*         LoadDMesonCutsFromFile(TString cutfname, TString cutsname);
-  void                 AllocateTHnSparse(const AnalysisEngine& param);
-  void                 FillTHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
   
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
