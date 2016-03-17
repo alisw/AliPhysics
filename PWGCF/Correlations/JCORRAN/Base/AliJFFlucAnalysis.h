@@ -46,12 +46,12 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 									cout << "fEffMode set = " << fEffMode << endl;};
 		void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;};
 		void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;};
+		void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;};
 
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
 
+		TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
 
-		double Get_Qn_Real(double eta1, double eta2, int harmonics); 
-		double Get_Qn_Img(double eta1, double eta2, int harmonics);
 		double Get_Qn_Real_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
 		double Get_Qn_Img_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
  
@@ -59,11 +59,6 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		void Fill_QA_plot(double eta1, double eta2 );
 
-		double Complex_product_real( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
-		double Complex_product_img( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
-		double Complex_abs( double real, double img);
-		double Complex_sqr_real( double real, double img);
-		double Complex_sqr_img( double real, double img);
 		double Get_ScaledMoments( int k, int harmonics);
 		AliJEfficiency* GetAliJEfficiency() { return fEfficiency;}
 
@@ -72,7 +67,6 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		TComplex Q(int n, int p);
 		TComplex Two( int n1, int n2);
 		TComplex Four( int n1, int n2, int n3, int n4);
-
 
 
 	private:
@@ -95,6 +89,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		Bool_t IsPhiModule;  
 		Bool_t IsSCwithQC; // flag to check SC with QC method
 		Bool_t IsSCptdep;  // flag to check SC pt dep or not
+		Bool_t IsEbEWeighted; // flag for ebe weight for QC method 
 
 
 // Histograms

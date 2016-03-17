@@ -276,6 +276,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMassNG;
 		TH1D *fMassNG_MS;
 		TH1D *fMassDG;
+		TH1D *fMassDG_MS;
 		TH1D *fTrackCutsInfo;
 		TH1D *fTrackCutsInfo_ITSSA;
 		TH2D *fhClusterVsTracklets_bf;

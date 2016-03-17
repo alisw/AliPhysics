@@ -24,8 +24,10 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
  
-  
-  
+protected:
+  void ProcessMC() ;  
+  Int_t FindAODLabel(Int_t esdLabel)const ;
+ 
   
 private:
   AliAnalysisTaskggMC(const AliAnalysisTaskggMC&); // not implemented
@@ -38,6 +40,8 @@ private:
  
 private:
   TClonesArray * fStack ;
+  TList *       fMCEvents ;   //Containers for events with primary photons
+  TClonesArray* fMCEvent ;    //primaryS photons in current event
 
   
   

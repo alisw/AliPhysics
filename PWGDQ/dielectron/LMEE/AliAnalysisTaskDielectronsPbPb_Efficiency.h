@@ -97,8 +97,8 @@ public:
     
     Bool_t   GetEvent ();
     Bool_t   IsPrimaryElectron           (TParticle *particle);
-    Bool_t   IsLightFlavorParticle       (TParticle *particle);
-    Bool_t   IsHeavyFlavorParticle       (TParticle *particle);
+    Bool_t   IsLightFlavorParticle       (TParticle *parent);
+    Bool_t   IsHeavyFlavorParticle       (TParticle *parent);
     Bool_t   IsCorrelatedPair            (TParticle *particle1,TParticle *particle2);
     TVector3 GetReconstructedMomentum    (Double_t p,Double_t theta,Double_t phi,Short_t q);
     Bool_t   IsTrackFromHijing           (AliESDtrack *track);
@@ -160,9 +160,10 @@ private:
     TH2F *fHisto_Hijing_PhiWeight;//
     
     
-    //Statistics
+    //Statistics & Centrality
     TH1F *fHistoEvents;//!
-    
+    TH1F *fHistoCentralityBins;//!
+
     //Pair Efficiency
     TH2F *fHistoInvMass_Gen;//!
     TH2F *fHistoInvMass_Rec;//!

@@ -725,7 +725,7 @@ void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename,
     //Printf("iCent %d:",iCent);    
     TString histoName = "fHistCorrectionPlus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionPlus[iCent]= dynamic_cast<TH3F *>(f->Get(histoName.Data()));
+    fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
       AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return;
@@ -733,7 +733,7 @@ void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename,
     
     histoName = "fHistCorrectionMinus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionMinus[iCent] = dynamic_cast<TH3F *>(f->Get(histoName.Data())); 
+    fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
       AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return; 

@@ -3,7 +3,7 @@
 
 
 /**************************************************************************
- *                                                                        *                                                                         
+ *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -23,7 +23,7 @@
 // which decays in 3 prongs: d+p+pi^-
 // This task is optimized for ESDs.root
 //
-// Author: 
+// Author:
 // S. Trogolo, trogolo@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +46,7 @@ class AliESDtrack;
 class AliESDVertex;
 class AliPID;
 class AliPIDResponse;
-class AliVertexerTracks; 
+class AliVertexerTracks;
 
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
@@ -71,7 +71,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
   void SetDCAzProtonPrimaryVtx(double dcaprotonpv) {fDCAzPPVmax = dcaprotonpv;}
   void SetDCAzDeuteronPrimaryVtx(double dcadeuteronpv) {fDCAzDPVmax = dcadeuteronpv;}
-  
+
   void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
   void SetMaxDecayLength(double maxdl) {fMaxDecayLength = maxdl;}
   void SetMinDecayLength(double mindl) {fMinDecayLength = mindl;}
@@ -80,11 +80,11 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetMinLifeTime(double min_ctau) {fMinLifeTime = min_ctau;}
 
   void SetRapidity(double rapid) {fRapidity = rapid;}
-  
+
   void SetMaxPtMother(double maxpt) {fMaxPtMother = maxpt;}
   void SetMinPtMother(double minpt) {fMinPtMother = minpt;}
   void SetMaxPMotherCM(double maxp_cm){fMaxPMotherCM = maxp_cm;}
-  
+
   void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
   void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
   void SetDCAProDecayVtx(double maxpro) {fDCAProSVmax = maxpro;}
@@ -96,9 +96,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   void SetAngleDeuteronProton(double ang_dp) {fAngledp = ang_dp;}
   void SetAngleDeuteronPion(double ang_dpi) {fAngledpi = ang_dpi;}
-  
+
   void SetCentrPercentileLimits(double lowc, double highc) {fLowCentrality = lowc; fHighCentrality = highc;}
-  
+
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
 
   void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const; //!<! method to set the value for the converted AOD vertices
@@ -116,9 +116,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   AliAODVertex       *fVtx1;                       //!<! Primary vertex converted from ESD to AOD
   AliAODVertex       *fVtx2;                       //!<! Secondary vertex converted from ESD to AOD
-  
+
   TObjArray          *fTrkArray;                   //!<! Array containing the three tracks candidated to the secondary vertex reconstruction
-  
+
   //Variables
   Bool_t             fMC;                          ///< variables for MC selection
   Bool_t             fFillTree;                    ///< variables to fill the Tree
@@ -158,7 +158,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fMaxPMotherCM;                ///< Cut on max mother momentum in the CM
   Double_t           fLowCentrality;               ///< Cut on lower value of centrality class
   Double_t           fHighCentrality;              ///< Cut on high value of centrality class
-  
+
   //Output list
   TList              *fOutput;                     ///< Output list
 
@@ -172,6 +172,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistXPrimaryVtx;                     //!<! Primary vertex X coordinate
   TH1F               *fHistYPrimaryVtx;                     //!<! Primary vertex Y coordinate
   TH1F               *fHistChi2perTPCcluster;               //!<! TPC \f$\chi^{2}/NDF\f$ tracks distribution
+  TH1F               *fHistTrackFlagReco;                   //!<! Check of track flags: kTPCrefit, kITSout, kITSrefit
 
 
   //PID
@@ -191,7 +192,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   //Candidate combination
   // Data and MC histograms
   TH1F               *fHistpionTPCcls;                      //!<! TPC clusters distribution of candidate \f$\pi\f$
-  //TH2F               *fHistCorrDCAdprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
+  //TH2F               *fHistCorrDCAdprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex
   //TH2F               *fHistCorrDCApprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
   //TH2F               *fHistCorrDCApiprimary;                //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
   TH1F               *fHistDCApiprimary;                    //!<! DCA pion-primary vertex distribution
@@ -233,7 +234,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistMassAntiHypertriton_Cent;        //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassHypertriton_SemiCent;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
   TH1F               *fHistMassAntiHypertriton_SemiCent;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 10-50%
-  
+
   TH1F               *fHistMassHypertriton_LS_Cent;         //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassAntiHypertriton_LS_Cent;     //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassHypertriton_LS_SemiCent;     //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
@@ -248,7 +249,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistMompionMCt;             //!<! *(MC only)* \f$\p\f$ distribution of \f$\pi\f$ identified with PDGCode
   TH1F               *fHistMomproMCt;              //!<! *(MC only)* \f$\p\f$ distribution of proton identified with PDGCode
   TH1F               *fHistMomdeuMCt;              //!<! *(MC only)* \f$\p\f$ distribution of deuteron identified with PDGCode
-  TH2F               *fHistCorrDCAdprimaryMCt;     //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron(PDGCode identified)-primary vertex 
+  TH2F               *fHistCorrDCAdprimaryMCt;     //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron(PDGCode identified)-primary vertex
   TH2F               *fHistCorrDCApprimaryMCt;     //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton(PDGCode identified)-primary vertex
   TH2F               *fHistCorrDCApiprimaryMCt;    //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion(PDGCode identified)-primary vertex
   TH1F               *fHistDCApiprimaryMCt;        //!<! *(MC only)* DCA pion(PDGCode identified)-primary vertex distribution
@@ -271,7 +272,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistAngle_deu_pro_MCt;      //!<! *(MC only)* Angle between deuteron and proton vectors
   TH1F               *fHistAngle_deu_pion_MCt;     //!<! *(MC only)* Angle between deuteron and pion vectors
   TH1F               *fHistAngle_pro_pion_MCt;     //!<! *(MC only)* Angle between proton and pion vectors
-  
+
   TH2F               *fHistAngleCorr_dp_dpi_MCt;   //!<! *(MC only)* Correlation between angle_dp vs angle_dpi
   TH2F               *fHistAngleCorr_dp_ppi_MCt;   //!<! *(MC only)* Correlation between angle_dp vs angle_ppi
   TH2F               *fHistAngleCorr_ppi_dpi_MCt;  //!<! *(MC only)* Correlation between angle_ppi vs angle_dpi
@@ -323,7 +324,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTDCAdp;
   Float_t            fTDCAdpi;
   Float_t            fTDCAppi;
-   
+
   Float_t            fTDCAXYdvtx;
   Float_t            fTDCAZdvtx;
   Float_t            fTDCAXYpvtx;
@@ -344,7 +345,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTppio_gen_X;
   Float_t            fTppio_gen_Y;
   Float_t            fTppio_gen_Z;
-    
+
   Int_t              fTpdgDeu;
   Int_t              fTpdgPro;
   Int_t              fTpdgPion;
@@ -358,19 +359,19 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Int_t              fTuniqID_pro;
   Int_t              fTuniqID_pion;
 
-    
-  Float_t            fTRapidity; 
+
+  Float_t            fTRapidity;
   Float_t            fTDecayLength;
   Float_t            fTDecayLengthError;
   Float_t            fTCosPA;
   Float_t            fTInvariantMass;
- 
-  
+
+
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3&); // not implemented
   AliAnalysisTaskHypertriton3& operator=(const AliAnalysisTaskHypertriton3&); // not implemented
-  
+
   ClassDef(AliAnalysisTaskHypertriton3, 2); // analysisclass
-  
+
 };
 
 #endif

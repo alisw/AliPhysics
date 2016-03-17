@@ -96,9 +96,9 @@ class AliBasicJetConstituent : public TObject
 class AliBasicJet : public TObject
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fCharge(0), fRadius(0), fArea(0), fBackgroundDensity(0), fEventID(0), fConstituents() {}
-    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t bgrd, Long64_t id)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fBackgroundDensity(bgrd), fEventID(id), fConstituents()
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fCharge(0), fRadius(0), fArea(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t bgrd, Long64_t id, Short_t cent)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
     {
     }
     ~AliBasicJet() {}
@@ -113,6 +113,7 @@ class AliBasicJet : public TObject
     Double_t                  Area() { return fArea; }
     Double_t                  BackgroundDensity() { return fBackgroundDensity; }
     Long64_t                  EventID() { return fEventID; }
+    Short_t                   Centrality() { return fCentrality; }
     Int_t                     GetNumbersOfConstituents() { return fConstituents.size(); }
 
     // Basic constituent functions
@@ -134,9 +135,11 @@ class AliBasicJet : public TObject
     Float_t   fArea;     // jet area
     Float_t   fBackgroundDensity; // background
     Long64_t  fEventID;  // Unique event id
+    Short_t   fCentrality; // centrality
+
     std::vector<AliBasicJetConstituent> fConstituents; // vector of constituents
 
-    ClassDef( AliBasicJet, 1); // very basic jet object
+    ClassDef( AliBasicJet, 2); // very basic jet object
 };
 
 #endif

@@ -22,6 +22,7 @@
 #pragma link C++ class AliAnalysisTaskExtractPerformanceV0pPb+;
 #pragma link C++ class AliAnalysisTaskLK0Spectra+;
 #pragma link C++ class AliAnalysisTaskExtractCascade+;
+#pragma link C++ class AliAnalysisTaskExtractCascadePbPbRun2+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceCascade+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMC+;

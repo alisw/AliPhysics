@@ -85,13 +85,13 @@ c->ls();
   TH1D *h = (TH1D*)c->FindObject("fHist");
   h->GetYaxis()->SetTitleOffset(h->GetYaxis()->GetTitleOffset()+0.3);
   h->GetYaxis()->CenterTitle(kTRUE);
-  h->GetYaxis()->SetTitleSize(0.042);
+  h->GetYaxis()->SetTitleSize(0.046);
   h->GetYaxis()->SetLabelSize(0.04);
   h->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
   h->GetYaxis()->SetTitleOffset(1.5);
   h->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   h->GetXaxis()->CenterTitle(kTRUE);
-  h->GetXaxis()->SetTitleSize(0.042);
+  h->GetXaxis()->SetTitleSize(0.046);
   h->GetXaxis()->SetLabelSize(0.04);
   h->GetXaxis()->SetTitleOffset(1.12);
   if(system==1) {
@@ -117,13 +117,14 @@ c->ls();
   Int_t syst=1;
   Int_t nextMeson=0;
 
-  TLegend * legend = new TLegend(0.50,0.43,0.85,0.65);
+  TLegend * legend = new TLegend(0.42,0.43,0.85,0.65);
   legend->SetFillColor(0);
   legend->SetMargin(0.33);
   legend->SetTextSize(0.04);
   legend->SetBorderSize(0);
-  legend->AddEntry(h,"Data","lep");
-  legend->AddEntry(funfit,"Full fit","l");
+  if(system==0) legend->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
+  else legend->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
+  legend->AddEntry(funfit,"Total fit","l");
   legend->AddEntry(fun,"Near-side","l");
   legend->AddEntry(fun2,"Away-side","l");
   legend->AddEntry(fun3,"Baseline","l");
@@ -172,22 +173,19 @@ c->ls();
 
   pad->cd();
 
-  TLatex *tl1=new TLatex(0.215,0.81,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+  TLatex *tl1=new TLatex(0.215,0.87,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
   tl1->SetNDC();
   tl1->SetTextSize(0.042);
   tl1->Draw("same");
 
-  if(system==0) {
-    TLatex *tl2=new TLatex(0.215,0.87,Form("#bf{pp, #sqrt{#it{s}} = 7 TeV}"));
-    tl2->SetNDC();
-    tl2->SetTextSize(0.042);
-    tl2->Draw("same");
-  } else {
-    TLatex *tl2=new TLatex(0.215,0.87,Form("#bf{p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV}"));
-    tl2->SetNDC();
-    tl2->SetTextSize(0.042);
-    tl2->Draw("same");
-  }
+  TLegend * legend2 = new TLegend(0.20,0.795,0.7,0.85);
+  legend2->SetFillColor(0);
+  legend2->SetMargin(0.3);
+  legend2->SetTextSize(0.042);
+  legend2->SetBorderSize(0);
+  if(system==0) legend2->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
+  else legend2->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
+  legend2->Draw("same");
 
   TLatex *tl2b=new TLatex(0.79,0.87,Form("#bf{ALICE}"));
   tl2b->SetNDC();

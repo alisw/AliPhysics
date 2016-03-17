@@ -697,11 +697,15 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   fOutputListMC->SetOwner();
 
   // event categories
-  const Int_t iNCategEvent = 6;
+  const Int_t iNCategEvent = 10;
   TString categEvent[iNCategEvent] = {
     "coll. candid.",
     "AOD OK",
-    "vtx & cent",
+    "pileup OK",
+    "PV-z",
+    "not TPC only",
+    "vtx",
+    "cent", //2
     "with V0",
     "with jets",
     "jet selection"
@@ -1515,8 +1519,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     AliError(Form("Event is out of histogram range: cent: %g!", fdCentrality));
     return kFALSE;
   }
-  fh1EventCounterCut->Fill(2); // selected events (vertex, centrality)
-  fh1EventCounterCutCent[iCentIndex]->Fill(2);
+  fh1EventCounterCut->Fill(6); // selected events (centrality OK)
+  fh1EventCounterCutCent[iCentIndex]->Fill(6);
 
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
@@ -1559,8 +1563,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   if(iNV0s)
   {
-    fh1EventCounterCut->Fill(3); // events with V0s
-    fh1EventCounterCutCent[iCentIndex]->Fill(3);
+    fh1EventCounterCut->Fill(7); // events with V0s
+    fh1EventCounterCutCent[iCentIndex]->Fill(7);
   }
 
   AliAODv0* v0 = 0; // pointer to V0 candidates
@@ -1740,12 +1744,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   if(bJetEventGood) // there should be some reconstructed jets
   {
-    fh1EventCounterCut->Fill(4); // events with jet(s)
-    fh1EventCounterCutCent[iCentIndex]->Fill(4); // events with jet(s)
+    fh1EventCounterCut->Fill(8); // events with jet(s)
+    fh1EventCounterCutCent[iCentIndex]->Fill(8); // events with jet(s)
     if(iNJetSel)
     {
-      fh1EventCounterCut->Fill(5); // events with selected jets
-      fh1EventCounterCutCent[iCentIndex]->Fill(5);
+      fh1EventCounterCut->Fill(9); // events with selected jets
+      fh1EventCounterCutCent[iCentIndex]->Fill(9);
     }
   }
   if(iNJetSel)
@@ -3372,7 +3376,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "SPD pile up");
     return kFALSE;
   }
-
+  fh1EventCounterCut->Fill(2); // not Pile-up from SPD
   AliAODVertex* vertex = fAOD->GetPrimaryVertex();
   if(!vertex)
   {
@@ -3387,18 +3391,20 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
     return kFALSE;
   }
-  TString vtxTitle(vertex->GetTitle());
-  if(vtxTitle.Contains("TPCVertex"))
-  {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "TPC vertex");
-    return kFALSE;
-  }
   Double_t zVertex = vertex->GetZ();
   if(TMath::Abs(zVertex) > dVtxZCut)
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
     return kFALSE;
   }
+  fh1EventCounterCut->Fill(3); // PV z coordinate within range
+  TString vtxTitle(vertex->GetTitle());
+  if(vtxTitle.Contains("TPCVertex"))
+  {
+    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "TPC vertex");
+    return kFALSE;
+  }
+  fh1EventCounterCut->Fill(4); // not TPC vertex only
   if(dDeltaZMax > 0.) // cut on |delta z| in 2011 data between SPD vertex and nominal primary vertex
   {
     AliAODVertex* vertexSPD = fAOD->GetPrimaryVertexSPD();
@@ -3422,6 +3428,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
     return kFALSE;
   }
+  fh1EventCounterCut->Fill(5); // vertexing (vertex selection) OK
   if(fbIsPbPb)
   {
     fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");

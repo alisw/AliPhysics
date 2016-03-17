@@ -209,7 +209,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
-        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { return AcceptTrack(track, 0); }
+        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { return GetParticleContainer(0)->AcceptParticle(track); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { 
             if(jet->MaxTrackPt() > fExcludeJetsWithTrackPt) return kFALSE;
             return AcceptJet(jet, 0); 

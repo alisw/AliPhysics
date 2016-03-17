@@ -865,7 +865,11 @@ public:
  TH2F* GetZNResvsCen(Int_t const eg, Int_t const h) const {return this->fhZNResvsCen[eg][h];};
  void SetZNQVecCov(TProfile* const n, Int_t const h) {this->fhZNQVecCov[h] = n;};
  TProfile* GetZNQVecCov(Int_t const h) const {return this->fhZNQVecCov[h];};
- 
+  void SetZDCESEHistEP(TH2D* const n, Int_t const h) {this->fZDCESEHistEP[h] = n;};
+  TH2D* GetZDCESEHistEP(Int_t const h) const {return this->fZDCESEHistEP[h];};
+  void SetZDCESEHistQV(TH2D* const n, Int_t const h) {this->fZDCESEHistQV[h] = n;};
+  TH2D* GetZDCESEHistQV(Int_t const h) const {return this->fZDCESEHistQV[h];};
+  
  void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
  void SetPtDiffRangePt(Double_t min, Double_t max) {this->fPtDiffMinPt=min; this->fPtDiffMaxPt=max;}
  
@@ -1548,6 +1552,8 @@ private:
  TH2F* fhZNResvsMul[fCRCMaxnCen][2]; //! res vs mul
  TH2F* fhZNResvsCen[fCRCMaxnCen][2]; //! res vs rad
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
+ TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
+ TH2D *fZDCESEHistQV[fCRCMaxnCen]; //! Test ZDC ESE
  Bool_t fQAZDCCuts;
  Bool_t fQAZDCCutsFlag;
  Int_t fMinMulZN;

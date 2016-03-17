@@ -128,6 +128,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMassNG(0x0)
 	, fMassNG_MS(0x0)
 	, fMassDG(0x0)
+	, fMassDG_MS(0x0)
 	, fTrackCutsInfo(0x0)
 	, fTrackCutsInfo_ITSSA(0x0)
 	, fhClusterVsTracklets_bf(0x0)
@@ -297,6 +298,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMassNG(0x0)
 	, fMassNG_MS(0x0)
 	, fMassDG(0x0)
+	, fMassDG_MS(0x0)
 	, fTrackCutsInfo(0x0)
 	, fTrackCutsInfo_ITSSA(0x0)
 	, fhClusterVsTracklets_bf(0x0)
@@ -455,6 +457,7 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMassNG) delete fMassNG;
 	if (fMassNG_MS) delete fMassNG_MS;
 	if (fMassDG) delete fMassDG;
+	if (fMassDG_MS) delete fMassDG_MS;
 	if (fTrackCutsInfo) delete fTrackCutsInfo;
 	if (fTrackCutsInfo_ITSSA) delete fTrackCutsInfo_ITSSA;
 	if (fhClusterVsTracklets_bf) delete fhClusterVsTracklets_bf;
@@ -780,6 +783,10 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 	if (!fMassDG) {
 		fMassDG = new TH1D("fMassDG","",50,0,2);
 		fList->Add(fMassDG);
+	}
+	if (!fMassDG_MS) {
+		fMassDG_MS = new TH1D("fMassDG_MS","",50,0,2);
+		fList->Add(fMassDG_MS);
 	}
 	if (!fTrackCutsInfo) {
 		fTrackCutsInfo = new TH1D("fTrackCutsInfo","",20,-10,10);
@@ -1314,6 +1321,20 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		if (Nsel == 2) {
 			fHistEvent->Fill(k2Tracks);
 			fRunVs2t->Fill(fESDEvent->GetRunNumber());
+			for (Int_t iTrack = 0; iTrack < 2; iTrack++) {
+				AliESDtrack *track1 = fESDEvent->GetTrack(indices.At(iTrack));
+				for (Int_t jTrack = iTrack+1; jTrack < 2; jTrack++) {
+					AliESDtrack *track2 = fESDEvent->GetTrack(indices.At(1));
+					if(!track1 || !track2) continue;
+					if (track1->GetSign()>0 && track2->GetSign()>0) continue;
+					if (track1->GetSign()<0 && track2->GetSign()<0) continue;
+
+					lv_track1.SetXYZM(track1->Px(),track1->Py(),track1->Pz(),pionmass);
+					lv_track2.SetXYZM(track2->Px(),track2->Py(),track2->Pz(),pionmass);
+					lv_sum = lv_track1 + lv_track2;
+					fMassDG_MS->Fill(lv_sum.M());
+				}
+			}
 		}
 		else if (Nsel == 4) {
 			fHistEvent->Fill(k4Tracks);
@@ -1581,7 +1602,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	indices = 0x0;
 	indices_ITSSA = 0x0;
 
-	if(!fIsMC) fTree->Fill();
+	if(!fIsMC) {//Reduce size of output file (only for 2, 4tracks)
+		if (fCheck2tracks || fCheck4tracks || fCheck2tracks_ITSSA || fCheck4tracks_ITSSA) fTree->Fill();
+	}
 
 	PostOutputs();
 	return;
