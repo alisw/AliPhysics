@@ -103,6 +103,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -205,6 +209,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -1206,6 +1214,88 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if (fGeneralHistograms) fHistEventRejection->Fill("SelPtHardBin",1);
     return kFALSE;
   }
+
+  // Reject filter for MC data
+  if ( fMCRejectFilter ) {
+    // Filter the mc tails in pt-hard distributions
+    // https://twiki.cern.ch/twiki/bin/view/ALICE/JetMCProductionsCrossSections#How_to_reject_tails_in_the_pT_ha
+    AliMCParticleContainer* mcpartcont = GetMCParticleContainer(0);
+    AliClusterContainer*    mccluscont = GetClusterContainer(0);
+
+    if ( !mcpartcont || !mccluscont ) {
+      AliInfo(Form("AliAnalysisTaskEmcal::IsEventSelected - Could not get MCParticle nor Cluster Container\n"));
+      return kTRUE; // skip the filtering if anything goes wrong
+      }
+
+    TString mc_cont_name = mcpartcont->GetTitle();
+
+    AliGenEventHeader* eventHeader = NULL;
+    if (fMCEvent) { eventHeader = fMCEvent->GenEventHeader(); }
+
+    AliGenPythiaEventHeader* pygeh = (AliGenPythiaEventHeader*)eventHeader;
+    if ( !pygeh ) {
+      AliInfo(Form("AliAnalysisTaskEmcal::IsEventSelected - Could not get AliGenPythiaEventHeader\n"));
+      return kTRUE; // skip the filtering if anything goes wrong
+      }
+    Float_t ptHard = pygeh->GetPtHard();
+
+    if ( mc_cont_name.Contains("mcparticles") ) {
+      // Condition 1 : Pythia jet / pT-hard > factor
+      if ( (Bool_t)pygeh && (fPtHardAndJetPtFactor > 0.)) {
+        Int_t nTriggerJets =  pygeh->NTriggerJets();
+        AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, ptHard));
+
+        Float_t tmpjet[]={0,0,0,0};
+        TParticle* jet = NULL;
+
+        for(Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
+          pygeh->TriggerJet(ijet, tmpjet); // float array filled
+          TParticle* jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0); // jet with Px,Py,Pz,E from pygeh
+          Double_t jetpt = jet->Pt();
+
+          AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jetpt));
+
+          //Compare jet pT and pt Hard
+          if( jetpt > (fPtHardAndJetPtFactor * ptHard) ) {
+            AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", ptHard, jetpt, fPtHardAndJetPtFactor));
+            if(jet) delete jet;
+            return kFALSE;
+            }
+          }
+        if(jet) delete jet;
+        }
+      // end condition 1
+
+      // condition 2 : Reconstructed EMCal cluster pT / pT-hard > factor
+      if ( (Bool_t)mccluscont && (fPtHardAndClusterPtFactor > 0.) ) {
+        AliVCluster* cluster = NULL;
+        mccluscont->ResetCurrentID();
+        while ((cluster = mccluscont->GetNextCluster())) { // No cuts applied ; use GetNextAcceptCluster for cuts
+          Float_t ecluster = cluster->E();
+          if ( ecluster > (fPtHardAndClusterPtFactor * ptHard) ) {
+            AliInfo(Form("Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f", ecluster, cluster->GetType(), fPtHardAndClusterPtFactor, ptHard));
+            return kFALSE;
+            }
+          }
+        }
+      // end condition 2
+
+      // condition 3 : Reconstructed EMCal track pT / pT-hard >factor
+      if ( (Bool_t)mcpartcont && (fPtHardAndTrackPtFactor > 0.) ) {
+        AliAODMCParticle* mctrack = NULL;
+        mcpartcont->ResetCurrentID();
+        while ((mctrack = mcpartcont->GetNextMCParticle())) { // No cuts applied ; use GetNextAcceptMCParticle() for cuts
+          Float_t trackpt = mctrack->Pt();
+          if ( trackpt > (fPtHardAndTrackPtFactor * ptHard) ) {
+            AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, ptHard));
+            return kFALSE;
+            }
+          }
+        }
+        // end condition 3
+      }
+    }
+    // end MCRejectFilter
 
   return kTRUE;
 }
