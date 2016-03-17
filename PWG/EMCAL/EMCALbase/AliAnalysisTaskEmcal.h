@@ -170,8 +170,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+  void                        SetMCFilter()                                         { fMCRejectFilter = kTRUE                             ; }
+  void                        ResetMCFilter()                                       { fMCRejectFilter = kFALSE                            ; }
+  void                        SetJetPtFactor(Float_t f)                             { fPtHardAndJetPtFactor = f                           ; }
+  Float_t                     JetPtFactor()                                         { return fPtHardAndJetPtFactor                        ; }
+  void                        SetClusterPtFactor(Float_t f)                         { fPtHardAndClusterPtFactor = f                       ; }
+  Float_t                     ClusterPtFactor()                                     { return fPtHardAndClusterPtFactor                    ; }
+  void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
+  Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
- protected:  
+ protected:
   void                        LoadPythiaInfo(AliVEvent *event);
   void                        SetRejectionReasonLabels(TAxis* axis);
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
@@ -273,6 +281,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   EMCalTriggerMode_t          fEMCalTriggerMode;           ///< EMCal trigger selection mode
   Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
   Bool_t                      fGeneratePythiaInfoObject;   ///< Generate Pythia info object
+  Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
+  Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
+  Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
+  Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!<!vertex selection (optional)
@@ -321,7 +333,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 14) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 15) // EMCAL base analysis task
   /// \endcond
 };
 
