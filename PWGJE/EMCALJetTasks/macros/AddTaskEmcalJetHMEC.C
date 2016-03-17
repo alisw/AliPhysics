@@ -24,8 +24,10 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Int_t doEffcorrSW    = 0,
    const char *branch         = "biased",
    const char *CentEst         = "V0M",
-   const Short_t runtype       = 2 //0 - pp, 1 - pA, 2 - AA
-                                                 
+   const Short_t runtype       = 2, //0 - pp, 1 - pA, 2 - AA
+   Bool_t embeddingCorrection = kTRUE,
+   const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
+   const char * embeddingCorrectionHistName = "embeddingCorrection"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -76,6 +78,27 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetDoEffCorr(doEffcorrSW);
   correlationtask->SetCentralityEstimator(CentEst);
   correlationtask->SetRunType(runtype);
+  if (embeddingCorrection == kTRUE)
+  {
+    // Open file containing the correction
+    TFile * embeddingCorrectionFile = TFile::Open(embeddingCorrectionFilename);
+    if (!embeddingCorrectionFile || embeddingCorrectionFile->IsZombie()) {
+        ::Error("AddTaskEmcalJetHMEC", Form("Could not open embedding correction file %s", embeddingCorrectionFilename));
+        return NULL;
+    }
+
+    // Retrieve the histogram containing the correction and save add it to the task.
+    TH2F * embeddingCorrectionHist = dynamic_cast<TH2F*>(file->Get(embeddingCorrectionHistName));
+    if (embeddingCorrectionHist) {
+      ::Info("AddTaskEmcalJetHMEC", Form("Embedding correction %s loaded from file %s.", embeddingCorrectionHistName, embeddingCorrectionFilename));
+    }
+    else {
+      ::Error("AddTaskEmcalJetHMEC", Form("Embedding correction %s not found in file %s.", embeddingCorrectionHistName, embeddingCorrectionFilename));
+      return NULL;
+    }
+
+    correlationtask->SetEmbeddingCorrectionHist(embeddingCorrectionHist);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
