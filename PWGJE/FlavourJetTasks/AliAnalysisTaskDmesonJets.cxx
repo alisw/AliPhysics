@@ -150,6 +150,16 @@ AliAnalysisTaskDmesonJets::AliJetInfoSummary::AliJetInfoSummary(const AliDmesonJ
   Set(source, n);
 }
 
+/// Reset the current object
+void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Reset()
+{
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+  fR = 0;
+  fZ = 0;
+}
+
 /// Set the current object using an instance of AliDmesonJetInfo as its source
 ///
 /// \param source A const reference to a valid AliDmesonJetInfo object
@@ -1337,13 +1347,20 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
 /// Post the output with D meson jets found in the current event
 ///
 /// \return kTRUE on success
-Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree()
+Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
 {
   for (Int_t id = 0; id < fDmesonJets.size(); id++) {
-    if (!IsAnyJetInAcceptance(fDmesonJets[id])) continue;
+    if (applyKinCuts && !IsAnyJetInAcceptance(fDmesonJets[id])) continue;
     fCurrentDmesonJetInfo->Set(fDmesonJets[id]);
     Int_t ij = 0;
-    for (std::map<std::string, AliJetInfo>::const_iterator it = fDmesonJets[id].fJets.begin(); it != fDmesonJets[id].fJets.end(); it++) {
+    for (UInt_t ij = 0; ij < fJetDefinitions.size(); ij++) {
+      fCurrentJetInfo[ij]->Reset();
+      std::map<std::string, AliJetInfo>::const_iterator it = fDmesonJets[id].fJets.find(fJetDefinitions[ij].GetName());
+      if (it == fDmesonJets[id].fJets.end()) {
+        AliError(Form("Could not find jet for definition '%s'", fJetDefinitions[ij].GetName()));
+        continue;
+      }
+      if (applyKinCuts && !fJetDefinitions[ij].IsJetInAcceptance((*it).second)) continue;
       fCurrentJetInfo[ij]->Set(fDmesonJets[id], (*it).first);
       ij++;
     }
@@ -1365,6 +1382,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fEnabledAxis(0),
   fTreeOutput(kFALSE),
   fHistManager(),
+  fApplyKinematicCuts(),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
@@ -1380,6 +1398,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name) :
   fEnabledAxis(k2ProngInvMass),
   fTreeOutput(kFALSE),
   fHistManager(name),
+  fApplyKinematicCuts(),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
@@ -1566,7 +1585,8 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     }
   }
 
-  fOutput->Add(fHistManager.GetListOfHistograms());
+  TIter next(fHistManager.GetListOfHistograms());
+  while ((next())) fOutput->Add(next());
 
   PostData(1, fOutput);
 }
@@ -1852,7 +1872,7 @@ Bool_t AliAnalysisTaskDmesonJets::FillHistograms()
     if (param->fInhibit) continue;
 
     if (fTreeOutput) {
-      param->FillTree();
+      param->FillTree(fApplyKinematicCuts);
     }
     else {
       for (std::vector<AliHFJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
