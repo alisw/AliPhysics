@@ -192,8 +192,10 @@ std::string calculateMD5(const std::string &filename) {
   FILE *of = popen(command.c_str(), "r");
   size_t t = fread((void *)out.c_str(), PATH_MAX*2, 1, of);
 
-  if (!t)
+  int ret = pclose(of);
+  if(WIFEXITED(ret))
     return "";
+
   return out.substr(0, std::min(out.find("\t", 0), out.find(" ", 0)));
 }
 
@@ -537,7 +539,12 @@ int main( int argc, char **argv )
     std::ifstream infile(cf+1);
     std::string line;
     while (std::getline(infile, line))
+    {
+      line = trim(line);
+      if (line.empty())
+        continue;
       gFilenames.push_back(trim(line));
+    }
   }
 
   log(2, "Verbosity level: %i\n", gVerbosity);
