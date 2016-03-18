@@ -104,6 +104,7 @@ ClassImp(AliAnalysisTaskExtractCascadePbPbRun2)
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2()
 : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
+fkSaveRawdEdxSignals ( kFALSE ), 
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
@@ -146,6 +147,15 @@ fTreeCascVarPosNSigmaProton(0),
 fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
 fTreeCascVarRunNumber(0),
+fTreeCascVarNegInDistortedRegion(0),
+fTreeCascVarPosInDistortedRegion(0),
+fTreeCascVarBachInDistortedRegion(0),
+fTreeCascVarNegInnerP(0),
+fTreeCascVarPosInnerP(0),
+fTreeCascVarBachInnerP(0),
+fTreeCascVarNegdEdx(0),
+fTreeCascVarPosdEdx(0),
+fTreeCascVarBachdEdx(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -157,9 +167,10 @@ fHistCentrality(0)
     // Dummy Constructor
 }
 
-AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2(const char *name)
+AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2(const char *name, TString lExtraOptions)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
+fkSaveRawdEdxSignals ( kFALSE ), 
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
@@ -202,6 +213,15 @@ fTreeCascVarPosNSigmaProton(0),
 fTreeCascVarBachNSigmaPion(0),
 fTreeCascVarBachNSigmaKaon(0),
 fTreeCascVarRunNumber(0),
+fTreeCascVarNegInDistortedRegion(0),
+fTreeCascVarPosInDistortedRegion(0),
+fTreeCascVarBachInDistortedRegion(0),
+fTreeCascVarNegInnerP(0),
+fTreeCascVarPosInnerP(0),
+fTreeCascVarBachInnerP(0),
+fTreeCascVarNegdEdx(0),
+fTreeCascVarPosdEdx(0),
+fTreeCascVarBachdEdx(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -214,7 +234,8 @@ fHistCentrality(0)
     // Constructor
     
     //Set Variables for re-running the cascade vertexers (as done for MS paper)
-    
+    if ( lExtraOptions.Contains("dEdx") ) fkSaveRawdEdxSignals = kTRUE;  
+  
     // New Loose : 1st step for the 7 TeV pp analysis
     
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
@@ -321,6 +342,20 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
     //-----------RUN-NUMBER---------------------------
     fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");   
+    //-----------DISTORTED-TPC-REGIONS----------------
+    fTreeCascade->Branch("fTreeCascVarNegInDistortedRegion",&fTreeCascVarNegInDistortedRegion,"fTreeCascVarNegInDistortedRegion/O");   
+    fTreeCascade->Branch("fTreeCascVarPosInDistortedRegion",&fTreeCascVarPosInDistortedRegion,"fTreeCascVarPosInDistortedRegion/O");   
+    fTreeCascade->Branch("fTreeCascVarBachInDistortedRegion",&fTreeCascVarBachInDistortedRegion,"fTreeCascVarBachInDistortedRegion/O");   
+    
+    //-----------TPC-DEDX-INFO------------------------
+    if ( fkSaveRawdEdxSignals ){ 
+      fTreeCascade->Branch("fTreeCascVarPosInnerP",&fTreeCascVarPosInnerP,"fTreeCascVarPosInnerP/F");  
+      fTreeCascade->Branch("fTreeCascVarNegInnerP",&fTreeCascVarNegInnerP,"fTreeCascVarNegInnerP/F");  
+      fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");  
+      fTreeCascade->Branch("fTreeCascVarPosdEdx",&fTreeCascVarPosdEdx,"fTreeCascVarPosdEdx/F");  
+      fTreeCascade->Branch("fTreeCascVarNegdEdx",&fTreeCascVarNegdEdx,"fTreeCascVarNegdEdx/F");  
+      fTreeCascade->Branch("fTreeCascVarBachdEdx",&fTreeCascVarBachdEdx,"fTreeCascVarBachdEdx/F");  
+    }
     
     //------------------------------------------------
     // Particle Identification Setup
@@ -639,6 +674,30 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         fTreeCascVarNegEta = nTrackXi->Eta();
         fTreeCascVarBachEta = bachTrackXi->Eta();
         
+        fTreeCascVarPosInDistortedRegion = AliESDtrackCuts::IsTrackInDistortedTpcRegion( pTrackXi );
+        fTreeCascVarNegInDistortedRegion = AliESDtrackCuts::IsTrackInDistortedTpcRegion( nTrackXi );
+        fTreeCascVarBachInDistortedRegion = AliESDtrackCuts::IsTrackInDistortedTpcRegion( bachTrackXi );
+
+	//Acquisition of TPC raw signal information 
+	if ( fkSaveRawdEdxSignals ) {
+	  //Step 1: Acquire TPC inner wall total momentum 
+	  const AliExternalTrackParam *innerneg=nTrackXi->GetInnerParam();
+	  const AliExternalTrackParam *innerpos=pTrackXi->GetInnerParam();
+	  const AliExternalTrackParam *innerbach=bachTrackXi->GetInnerParam();
+	  fTreeCascVarPosInnerP = -1; 
+	  fTreeCascVarNegInnerP = -1; 
+	  fTreeCascVarBachInnerP = -1; 
+	  if(innerpos)  { fTreeCascVarPosInnerP  = innerpos ->GetP(); }
+	  if(innerneg)  { fTreeCascVarNegInnerP  = innerneg ->GetP(); }
+	  if(innerbach) { fTreeCascVarBachInnerP = innerbach->GetP(); }
+	  
+	  //Step 2: Acquire TPC Signals
+	  fTreeCascVarPosdEdx = pTrackXi->GetTPCsignal();
+	  fTreeCascVarNegdEdx = nTrackXi->GetTPCsignal();
+	  fTreeCascVarBachdEdx = bachTrackXi->GetTPCsignal();
+	}
+	
+	
         Double_t lBMom[3], lNMom[3], lPMom[3];
         xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
         xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
