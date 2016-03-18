@@ -1252,7 +1252,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (fUseNewCentralityEstimation) {
       AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
       if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile("V0M");
+        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
       }
       else {
         AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
