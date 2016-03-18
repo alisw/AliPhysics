@@ -92,6 +92,9 @@ public:
         fHisto_Hijing_PhiWeight =      HistoPhi;
     }
     
+    void GetCentralityBins (TH1F *HistoCentralityBins)  { fHistoCentralityBins = HistoCentralityBins; }
+
+    
     virtual void   UserCreateOutputObjects ();
     virtual void   UserExec (Option_t *option);
     
@@ -159,10 +162,12 @@ private:
     TH2F *fHisto_Hijing_OmegaWeight;//
     TH2F *fHisto_Hijing_PhiWeight;//
     
+    //Centrality Bins
+    TH1F *fHistoCentralityBins;//
+    
     
     //Statistics & Centrality
     TH1F *fHistoEvents;//!
-    TH1F *fHistoCentralityBins;//!
 
     //Pair Efficiency
     TH2F *fHistoInvMass_Gen;//!
