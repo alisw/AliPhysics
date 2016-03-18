@@ -60,7 +60,8 @@ fHisto_Hijing_EtaWeight(0x0),
 fHisto_Hijing_EtaPrimeWeight(0x0),
 fHisto_Hijing_RhoWeight(0x0),
 fHisto_Hijing_OmegaWeight(0x0),
-fHisto_Hijing_PhiWeight(0x0)
+fHisto_Hijing_PhiWeight(0x0),
+fHistoCentralityBins(0x0)
 {}
 //_________________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDielectronsPbPb_Efficiency::AliAnalysisTaskDielectronsPbPb_Efficiency(const char *name):
@@ -101,7 +102,8 @@ fHisto_Hijing_EtaWeight(0x0),
 fHisto_Hijing_EtaPrimeWeight(0x0),
 fHisto_Hijing_RhoWeight(0x0),
 fHisto_Hijing_OmegaWeight(0x0),
-fHisto_Hijing_PhiWeight(0x0)
+fHisto_Hijing_PhiWeight(0x0),
+fHistoCentralityBins(0x0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -126,6 +128,7 @@ AliAnalysisTaskDielectronsPbPb_Efficiency::~AliAnalysisTaskDielectronsPbPb_Effic
     delete fHisto_Hijing_RhoWeight;
     delete fHisto_Hijing_OmegaWeight;
     delete fHisto_Hijing_PhiWeight;
+    delete fHistoCentralityBins;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDielectronsPbPb_Efficiency::UserCreateOutputObjects()  {
@@ -144,12 +147,7 @@ void AliAnalysisTaskDielectronsPbPb_Efficiency::UserCreateOutputObjects()  {
     fHistoEvents = new TH1F ("fHistoEvents","",2,0,2);
     fOutputList -> Add(fHistoEvents);
     
-    //Centrality Bins
-    Double_t centralityBins[] = {0.0,5.0,10.0,20.0,40.0,50.0};
-    const Int_t nCentralityBins = sizeof(centralityBins)/sizeof(Double_t)-1;
-    fHistoCentralityBins = new TH1F ("fHistoCentralityBins","",nCentralityBins,centralityBins);
-    
-
+   
     //Pair Efficiency
     fHistoInvMass_Gen =                new TH2F ("fHistoInvMass_Gen","",500,0,5,20,0,10);
     fHistoInvMass_Rec =                new TH2F ("fHistoInvMass_Rec","",500,0,5,20,0,10);
