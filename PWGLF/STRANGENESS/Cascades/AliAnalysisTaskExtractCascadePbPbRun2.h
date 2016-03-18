@@ -46,7 +46,7 @@ class AliAnalysisUtils;
 class AliAnalysisTaskExtractCascadePbPbRun2 : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskExtractCascadePbPbRun2();
-    AliAnalysisTaskExtractCascadePbPbRun2(const char *name);
+    AliAnalysisTaskExtractCascadePbPbRun2(const char *name, TString lExtraOptions="dEdx");
     virtual ~AliAnalysisTaskExtractCascadePbPbRun2();
     
     virtual void   UserCreateOutputObjects();
@@ -113,6 +113,8 @@ private:
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
     
+    Bool_t fkSaveRawdEdxSignals; // if true, will save raw dEdx signals for later use
+    
     Bool_t fkSelectCentrality; // if true, perform cut on centrality 
     Double_t fCentSel_Low;
     Double_t fCentSel_High;
@@ -157,7 +159,19 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
-        
+
+	Bool_t fTreeCascVarNegInDistortedRegion; //!
+	Bool_t fTreeCascVarPosInDistortedRegion; //!
+	Bool_t fTreeCascVarBachInDistortedRegion; //!
+	
+	Float_t fTreeCascVarNegInnerP; //!
+	Float_t fTreeCascVarPosInnerP; //!
+    Float_t fTreeCascVarBachInnerP; //!
+
+	Float_t fTreeCascVarNegdEdx; //!
+	Float_t fTreeCascVarPosdEdx; //!
+    Float_t fTreeCascVarBachdEdx; //!
+    
     //Debugging information, if requested
     //Part A: EbyE info, Run number
     Int_t     fTreeCascVarRunNumber; //!
@@ -180,3 +194,4 @@ private:
 };
 
 #endif
+
