@@ -45,7 +45,7 @@ public:
 		   kNEventsBBFlag,kNEventsBGFlag,
 		   kFlagNoTime,kTimeNoFlag,
 		   kWidthBB,kWidthBG,
-		   kTimeSlewingOff,kTimeSlewingOn,kWidthSlewing,
+		   kTimeSlewingADA,kTimeSlewingADC,kWidthSlewing,
 		   kMultiADA,kMultiADC,kChargeAD, 
 		   
 		   kChargeADA_PC,kChargeADC_PC,
