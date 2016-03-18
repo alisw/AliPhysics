@@ -129,10 +129,14 @@ fNgenPairs_diffMothers(0x0),
 fvRecoPairs_diffMothers(),
 fvRecoPairs_poslabel_diffMothers(),
 fCalcResolution(kFALSE),
-fPtGen_PtRec(0x0),
-fPtGen_PtRec_poslabel(0x0),
-fPgen_Prec(0x0),
-fPgen_Prec_poslabel(0x0),
+fPrecOverPgen_PGen(0x0),
+fPtRecOverPtGen_PtGen(0x0),
+f1PGenOver1PRec_1PGen(0x0),
+f1PtGenOver1PtRec_1PtGen(0x0),
+fPrecOverPgen_PGen_poslabel(0x0),
+fPtRecOverPtGen_PtGen_poslabel(0x0),
+f1PGenOver1PRec_1PGen_poslabel(0x0),
+f1PtGenOver1PtRec_1PtGen_poslabel(0x0),
 fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
@@ -257,10 +261,14 @@ fNgenPairs_diffMothers(0x0),
 fvRecoPairs_diffMothers(),
 fvRecoPairs_poslabel_diffMothers(),
 fCalcResolution(kFALSE),
-fPtGen_PtRec(0x0),
-fPtGen_PtRec_poslabel(0x0),
-fPgen_Prec(0x0),
-fPgen_Prec_poslabel(0x0),
+fPrecOverPgen_PGen(0x0),
+fPtRecOverPtGen_PtGen(0x0),
+f1PGenOver1PRec_1PGen(0x0),
+f1PtGenOver1PtRec_1PtGen(0x0),
+fPrecOverPgen_PGen_poslabel(0x0),
+fPtRecOverPtGen_PtGen_poslabel(0x0),
+f1PGenOver1PRec_1PGen_poslabel(0x0),
+f1PtGenOver1PtRec_1PtGen_poslabel(0x0),
 fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
@@ -411,10 +419,16 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList = new TList();
     resolutionList->SetName("resolution");
     resolutionList->SetOwner();
-    fPtGen_PtRec          = new TH2F("ptGen_ptRec",         "",500,0.,10.,500,0.,10.);
-    fPtGen_PtRec_poslabel = new TH2F("ptGen_ptRec_poslabel","",500,0.,10.,500,0.,10.);
-    fPgen_Prec            = new TH2F("pGen_pRec",           "",500,0.,10.,500,0.,10.);
-    fPgen_Prec_poslabel   = new TH2F("pGen_pRec_poslabel",  "",500,0.,10.,500,0.,10.); 
+    fPrecOverPgen_PGen                = new TH2D("PrecOverPgen_Pgen",               "",500,0.,10.,301,0.,2.);
+    fPtRecOverPtGen_PtGen             = new TH2D("PtRecOverPtGen_PtGen",            "",500,0.,10.,301,0.,2.);
+    f1PGenOver1PRec_1PGen             = new TH2D("1PgenOver1Prec_1Pgen",            "",500,0.,10.,601,0.,4.);
+    f1PtGenOver1PtRec_1PtGen          = new TH2D("1PtGenOver1PtRec_1PtGen",         "",500,0.,10.,601,0.,4.);
+    
+    fPrecOverPgen_PGen_poslabel       = new TH2D("PrecOverPgen_Pgen_poslabel",      "",500,0.,10.,301,0.,2.);
+    fPtRecOverPtGen_PtGen_poslabel    = new TH2D("PtRecOverPtGen_PtGen_poslabel",   "",500,0.,10.,301,0.,2.);
+    f1PGenOver1PRec_1PGen_poslabel    = new TH2D("1PgenOver1Prec_1Pgen_poslabel",   "",500,0.,10.,601,0.,4.);
+    f1PtGenOver1PtRec_1PtGen_poslabel = new TH2D("1PtGenOver1PtRec_1PtGen_poslabel","",500,0.,10.,601,0.,4.);
+    
     fEtaGen_EtaRec        = new TH2F("etaGen_etaRec",       "", 30,-1.,1., 30,-1.,1.);
     fPhiGen_PhiRec        = new TH2F("phiGen_phiRec",       "", 80,-0.2*TMath::Pi(),2.2*TMath::Pi(), 80,-0.2*TMath::Pi(),2.2*TMath::Pi());
     
@@ -424,32 +438,54 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fEtaGen_EtaRec_PhiGen_PhiRec          = new THnF("etaGen_etaRec_phiGen_phiRec",         "",4,bins,min,max);
     fEtaGen_EtaRec_PhiGen_PhiRec_poslabel = new THnF("etaGen_etaRec_phiGen_phiRec_poslabel","",4,bins,min,max);
     
-    resolutionList->Add(fPtGen_PtRec);
-    resolutionList->Add(fPgen_Prec);
+    resolutionList->Add(fPrecOverPgen_PGen             );
+    resolutionList->Add(fPtRecOverPtGen_PtGen          );
+    resolutionList->Add(f1PGenOver1PRec_1PGen          );
+    resolutionList->Add(f1PtGenOver1PtRec_1PtGen);
     resolutionList->Add(fEtaGen_EtaRec);
     resolutionList->Add(fPhiGen_PhiRec);
     resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec);
-    resolutionList->Add(fPtGen_PtRec_poslabel);
-    resolutionList->Add(fPgen_Prec_poslabel);
+
     resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec_poslabel);
+    resolutionList->Add(fPrecOverPgen_PGen_poslabel    );
+    resolutionList->Add(fPtRecOverPtGen_PtGen_poslabel );
+    resolutionList->Add(f1PGenOver1PRec_1PGen_poslabel );
+    resolutionList->Add(f1PtGenOver1PtRec_1PtGen_poslabel);
     
-    fPtGen_PtRec                          ->Sumw2();
-    fPtGen_PtRec_poslabel                 ->Sumw2();
-    fPgen_Prec                            ->Sumw2();
-    fPgen_Prec_poslabel                   ->Sumw2();
+
     fEtaGen_EtaRec                        ->Sumw2();
     fPhiGen_PhiRec                        ->Sumw2();
     fEtaGen_EtaRec_PhiGen_PhiRec          ->Sumw2();
     fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Sumw2();
     
-    fPtGen_PtRec->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
-    fPtGen_PtRec->GetYaxis()->SetTitle("p^{rec}_{T} (GeV/c)");
-    fPtGen_PtRec_poslabel->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
-    fPtGen_PtRec_poslabel->GetYaxis()->SetTitle("p^{rec}_{T} (GeV/c)");
-    fPgen_Prec->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
-    fPgen_Prec->GetYaxis()->SetTitle("p^{rec} (GeV/c)");
-    fPgen_Prec_poslabel->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
-    fPgen_Prec_poslabel->GetYaxis()->SetTitle("p^{rec} (GeV/c)");
+    fPrecOverPgen_PGen                    ->Sumw2();
+    fPtRecOverPtGen_PtGen                 ->Sumw2();
+    f1PGenOver1PRec_1PGen                 ->Sumw2();
+    f1PtGenOver1PtRec_1PtGen              ->Sumw2();
+    
+    fPrecOverPgen_PGen_poslabel           ->Sumw2();
+    fPtRecOverPtGen_PtGen_poslabel        ->Sumw2();
+    f1PGenOver1PRec_1PGen_poslabel        ->Sumw2();
+    f1PtGenOver1PtRec_1PtGen_poslabel     ->Sumw2();
+    
+    fPrecOverPgen_PGen->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPrecOverPgen_PGen->GetYaxis()->SetTitle("p^{rec} / p^{gen} (GeV/c)");
+    fPtRecOverPtGen_PtGen->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+    fPtRecOverPtGen_PtGen->GetYaxis()->SetTitle("p^{rec}_{T} / p^{gen}_{T} (GeV/c)");
+    f1PGenOver1PRec_1PGen->GetXaxis()->SetTitle("1/p^{gen} (GeV/c)");
+    f1PGenOver1PRec_1PGen->GetYaxis()->SetTitle("1/p^{rec} / 1/p^{gen} (GeV/c)");
+    f1PtGenOver1PtRec_1PtGen->GetXaxis()->SetTitle("1/p^{gen}_{T} (GeV/c)");
+    f1PtGenOver1PtRec_1PtGen->GetYaxis()->SetTitle("1/p^{rec}_{T} / 1/p^{gen}_{T} (GeV/c)");
+    
+    fPrecOverPgen_PGen_poslabel->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPrecOverPgen_PGen_poslabel->GetYaxis()->SetTitle("p^{rec} / p^{gen} (GeV/c)");
+    fPtRecOverPtGen_PtGen_poslabel->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+    fPtRecOverPtGen_PtGen_poslabel->GetYaxis()->SetTitle("p^{rec}_{T} / p^{gen}_{T} (GeV/c)");
+    f1PGenOver1PRec_1PGen_poslabel->GetXaxis()->SetTitle("1/p^{gen} (GeV/c)");
+    f1PGenOver1PRec_1PGen_poslabel->GetYaxis()->SetTitle("1/p^{rec} / 1/p^{gen} (GeV/c)");
+    f1PtGenOver1PtRec_1PtGen_poslabel->GetXaxis()->SetTitle("1/p^{gen}_{T} (GeV/c)");
+    f1PtGenOver1PtRec_1PtGen_poslabel->GetYaxis()->SetTitle("1/p^{rec}_{T} / 1/p^{gen}_{T} (GeV/c)");
+    
     fEtaGen_EtaRec->GetXaxis()->SetTitle("#eta^{gen}"); 
     fEtaGen_EtaRec->GetYaxis()->SetTitle("#eta^{rec}");                   
     fPhiGen_PhiRec->GetXaxis()->SetTitle("#varphi^{gen} (rad)");
@@ -995,16 +1031,24 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t recP   = track->P();
 
         Double_t vals[4] = {part->Eta(),track->Eta(),part->Phi(),track->Phi()};
-        fPtGen_PtRec                 ->Fill(mcPt,recPt);
-        fPgen_Prec                   ->Fill(mcP,recP);
+        
+        if(mcP > 0. && mcPt > 0. && TMath::Abs(part->Eta()) < 0.8){
+          fPrecOverPgen_PGen   ->Fill(mcP,recP/mcP);
+          fPtRecOverPtGen_PtGen->Fill(mcPt,recPt/mcPt);
+          f1PGenOver1PRec_1PGen->Fill(1./mcP,mcP/recP);
+          f1PtGenOver1PtRec_1PtGen->Fill(1./mcPt,mcPt/recPt);
+          if(label > 0){
+            fPrecOverPgen_PGen_poslabel   ->Fill(mcP,recP/mcP);
+            fPtRecOverPtGen_PtGen_poslabel->Fill(mcPt,recPt/mcPt);
+            f1PGenOver1PRec_1PGen_poslabel->Fill(1./mcP,mcP/recP);
+            f1PtGenOver1PtRec_1PtGen_poslabel->Fill(1./mcPt,mcPt/recPt);
+          }
+        }
         fEtaGen_EtaRec               ->Fill(vals[0],vals[1]);
         fPhiGen_PhiRec               ->Fill(vals[2],vals[3]);
         fEtaGen_EtaRec_PhiGen_PhiRec ->Fill(vals);
-        if(label > 0){
-          fPtGen_PtRec_poslabel                 ->Fill(mcPt,recPt);
-          fPgen_Prec_poslabel                   ->Fill(mcP,recP);
-          fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Fill(vals);
-        }  
+        if(label > 0) fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Fill(vals);
+         
       }
     }
   } //MC loop
