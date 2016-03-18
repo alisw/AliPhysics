@@ -61,22 +61,20 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 
 
 	if(isMC && filecorrectionfactors){
-		TH1F * h[15] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+		TH1F * h[20] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 
-	    const char * nampart[15] = {"pi0","etap","eta","rho","phi","omega","k0s","lambda","pi","kaon","proton","D0","Dp","Dsp","Ds"};
-
-	    for(int i = 0;i<15;++i){
+	    const char * nampart[20] = {"pi0","eta","etap","rho","phi","omega","k0s","lambda","pi","kaon","proton","D0","Dp","Dsp","Ds","lambdac","bplus","b0","lambdab","bsp"};
+	    for(int i = 0;i<20;++i){
 			h[i]=(TH1F*)filecorrectionfactors->Get(nampart[i]);
 	    }
 	    Printf("Done Reading");
-		for (int i = 0 ; i<15;++i) if(h[i]==0) return 0x0;
-		jetTask->SetUseMonteCarloWeighingLinus(h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10],h[11],h[12],h[13],h[14]);
+		for (int i = 0 ; i<20;++i) if(h[i]==0) return 0x0;
+		jetTask->SetUseMonteCarloWeighingLinus(h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10],h[11],h[12],h[13],h[14],h[15],h[16],h[17],h[18],h[19]);
 	    Printf("Weights written");
 
 	}
 
 	AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
-
 	AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
 	TString strType(type);
@@ -156,3 +154,4 @@ Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t ma
 }
 
 
+ //

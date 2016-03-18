@@ -11,6 +11,8 @@ class TH1D;
 class TH2D;
 class AliHFJetsTagging;
 class TParticle;
+class TClonesArray;
+class AliAODMCParticle;
 
 class AliAnalysisTaskHFJetIPQA: public AliAnalysisTaskEmcalJet
 {
@@ -82,7 +84,12 @@ public:
 	bDSPlus=431,
 	bK0l=431,
 	bSigmaPlus = 3222,
-	bRhoPlus=213
+	bRhoPlus=213,
+	bBPlus = 521,
+	bB0 = 511,
+	bLambdaB =5122,
+	bLambdaC=4122,
+	bBStarPlus=523
 	};
 
 	enum particlearraxidx
@@ -101,7 +108,12 @@ public:
 	bIdxD0=11,
 	bIdxDPlus=12,
 	bIdxDStarPlus=13,
-	bIdxDSPlus=14
+	bIdxDSPlus=14,
+	bIdxLambdaC=15,
+	bIdxBPlus = 16,
+	bIdxB0 = 17,
+	bIdxLambdaB = 18,
+	bIdxBStarPlus=19
 	};
 
 
@@ -138,9 +150,6 @@ public:
 	virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;};
 	Bool_t IsEventSelected();
 
-
-
-
 	void SetUseMonteCarloWeighingLinus(
 			TH1F *Pi0 ,
 			TH1F *Eta,
@@ -156,10 +165,16 @@ public:
 			TH1F *D0,
 			TH1F *DPlus,
 			TH1F *DStarPlus,
-			TH1F *DSPlus
+			TH1F *DSPlus,
+			TH1F *LambdaC,
+			TH1F *BPlus,
+			TH1F *B0,
+			TH1F *LambdaB,
+			TH1F *BStarPlus
+ //
 	)
 	{
-		for(int i =1 ; i< 497+1;++i){
+		for(int i =1 ; i< Pi0->GetNbinsX()+1;++i){
 			fBackgroundFactorLinus[bIdxPi0][i-1] =Pi0->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxEta][i-1] =Eta->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxEtaPrime][i-1] =EtaP->GetBinContent(i);
@@ -175,6 +190,12 @@ public:
 			fBackgroundFactorLinus[bIdxDPlus][i-1] =DPlus->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxDStarPlus][i-1] =DStarPlus->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxDSPlus][i-1] =DSPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambdaC][i-1] =LambdaC->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxBPlus][i-1] =BPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxB0][i-1] =B0->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambdaB][i-1] =LambdaB->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxBStarPlus][i-1] =BStarPlus->GetBinContent(i);
+ //
 		}
 		return;
 	};
@@ -240,7 +261,8 @@ private:
 	Bool_t IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) ;
 	bool   IsPromptDMeson(AliAODMCParticle * part );
 	bool   IsPromptBMeson(AliAODMCParticle * part );
-
+	Bool_t GetBMesonWeight( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
 
 	Float_t  GetRapidity(const TParticle *part);
 
@@ -632,20 +654,19 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird_electron; //!
-
+	TClonesArray * fMCArray;//!
 	//Monte Carlo correction factor containers
 
 	Double_t fBackgroundFactor[9][44];//[9][44]
 	Double_t fBackgroundFactorBins[45];//[45]
-	Double_t fBackgroundFactorLinus[16][498]; //[16][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
-
-
+	Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
 	static bool mysort(const myvaluetuple& i, const myvaluetuple& j);
 
-	ClassDef(AliAnalysisTaskHFJetIPQA, 2)
+	ClassDef(AliAnalysisTaskHFJetIPQA, 3)
 };
 #endif
 
 
 
 
+ //
