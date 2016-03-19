@@ -1433,13 +1433,18 @@ void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t
   }
 }
 
+///
+/// For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
+///
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to position recalculation
+///
 //______________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom, 
                                                    AliVCaloCells* cells, 
                                                    AliVCluster* clu)
-{
-  //For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
-  
+{  
   if (!clu)
   {
     AliInfo("Cluster pointer null!");
@@ -1454,6 +1459,10 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom,
 ///
 /// For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
 /// The algorithm is a copy of what is done in AliEMCALRecPoint.
+///
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to position recalculation
 ///
 //_____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, 
@@ -1473,8 +1482,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
   Bool_t shared = kFALSE;
 
   Float_t  clEnergy = clu->E(); //Energy already recalibrated previously
-  if (clEnergy <= 0)
-    return;
+  if (clEnergy <= 0) return;
+  
   GetMaxEnergyCell(geom, cells, clu, absId,  iSupModMax, ieta, iphi,shared);
   Double_t depth = GetDepth(clEnergy,fParticleType,iSupModMax) ;
   
@@ -1508,7 +1517,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
     for (int i=0; i<3; i++ ) newPos[i] += (weight*pGlobal[i]);
   }// cell loop
   
-  if (totalWeight>0) {
+  if (totalWeight>0) 
+  {
     for (int i=0; i<3; i++ )    newPos[i] /= totalWeight;
   }
     
@@ -1537,12 +1547,15 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
 /// For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
 /// The algorithm works with the tower indeces, averages the indeces and from them it calculates the global position.
 ///
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to position recalculation
+///
 //____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALGeometry *geom, 
                                                                  AliVCaloCells* cells, 
                                                                  AliVCluster* clu)
 {
-  
   Double_t eCell       = 1.;
   Float_t  fraction    = 1.;
   Float_t  recalFactor = 1.;
@@ -1598,7 +1611,8 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
   }// cell loop
     
   Float_t xyzNew[]={-1.,-1.,-1.};
-  if (areInSameSM == kTRUE) {
+  if (areInSameSM == kTRUE) 
+  {
     //printf("In Same SM\n");
     weightedCol = weightedCol/totalWeight;
     weightedRow = weightedRow/totalWeight;
@@ -1613,13 +1627,18 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
   clu->SetPosition(xyzNew);
 }
 
+///
+/// Re-evaluate distance to bad channel with updated bad map
+///
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to distance to bad channel recalculation
+///
 //___________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeometry * geom, 
                                                                AliVCaloCells* cells, 
                                                                AliVCluster * cluster)
-{           
-  //re-evaluate distance to bad channel with updated bad map
-  
+{             
   if (!fRecalDistToBadChannels) return;
   
   if (!cluster)
@@ -1628,7 +1647,7 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
     return;
   }  
   
-  //Get channels map of the supermodule where the cluster is.
+  // Get channels map of the supermodule where the cluster is.
   Int_t absIdMax  = -1, iSupMod =-1, icolM = -1, irowM = -1;
   Bool_t shared = kFALSE;
   GetMaxEnergyCell(geom, cells, cluster, absIdMax,  iSupMod, icolM, irowM, shared);
@@ -1638,12 +1657,12 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   Float_t  minDist = 10000.;
   Float_t  dist    = 0.;
   
-  //Loop on tower status map 
+  // Loop on tower status map 
   for (Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++)
   {
     for (Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++)
     {
-      //Check if tower is bad.
+      // Check if tower is bad.
       if (hMap->GetBinContent(icol,irow)==0) continue;
       //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels() - \n \t Bad channel in SM %d, col %d, row %d, \n \t Cluster max in col %d, row %d\n",
       //       iSupMod,icol, irow, icolM,irowM);
@@ -1659,34 +1678,33 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
     }
   }
   
-  //In case the cluster is shared by 2 SuperModules, need to check the map of the second Super Module
+  // In case the cluster is shared by 2 SuperModules, need to check the map of the second Super Module
   if (shared) 
   {
     TH2D* hMap2 = 0;
     Int_t iSupMod2 = -1;
     
-    //The only possible combinations are (0,1), (2,3) ... (8,9)
+    // The only possible combinations are (0,1), (2,3) ... (8,9)
     if (iSupMod%2) iSupMod2 = iSupMod-1;
     else           iSupMod2 = iSupMod+1;
     hMap2  = (TH2D*)fEMCALBadChannelMap->At(iSupMod2);
     
-    //Loop on tower status map of second super module
+    // Loop on tower status map of second super module
     for (Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++)
     {
       for (Int_t icol = 0; icol < AliEMCALGeoParams::fgkEMCALCols; icol++)
       {
-        //Check if tower is bad.
-        if (hMap2->GetBinContent(icol,irow)==0) 
-	  continue;
+        // Check if tower is bad.
+        if (hMap2->GetBinContent(icol,irow)==0)  continue;
+        
         //printf("AliEMCALRecoUtils::RecalculateDistanceToBadChannels(shared) - \n \t Bad channel in SM %d, col %d, row %d \n \t Cluster max in SM %d, col %d, row %d\n",
         //     iSupMod2,icol, irow,iSupMod,icolM,irowM);
         dRrow=TMath::Abs(irow-irowM);
         
-        if (iSupMod%2) {
+        if (iSupMod%2) 
           dRcol=TMath::Abs(icol-(AliEMCALGeoParams::fgkEMCALCols+icolM));
-        } else {
+        else 
           dRcol=TMath::Abs(AliEMCALGeoParams::fgkEMCALCols+icol-icolM);
-        }                    
         
         dist=TMath::Sqrt(dRrow*dRrow+dRcol*dRcol);
         if (dist < minDist) minDist = dist;        
@@ -1698,12 +1716,17 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(const AliEMCALGeo
   cluster->SetDistanceToBadChannel(minDist);
 }
 
+///
+/// Re-evaluate identification parameters with bayesian
+///
+/// \param cluster: EMCal cluster subject to PID recalculation
+///
+///
 //__________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster)
-{           
-  //re-evaluate identification parameters with bayesian
-  
-  if (!cluster) {
+{             
+  if (!cluster)
+  {
     AliInfo("Cluster pointer null!");
     return;
   }
@@ -1717,24 +1740,42 @@ void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster)
   cluster->SetPID(pidlist);
 }
 
+///
+/// Calculates different types of shower shape parameters, dispersion, shower shape eigenvalues and other.
+/// 
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to shower shape recalculation
+/// \param cellEcut: minimum cell energy to be considered in the shower shape recalculation
+/// \param cellTimeCut: time window of cells to be considered in shower recalculation
+/// \param bc: event bunch crossing number
+/// \param enAfterCuts: cluster energy when applying the cell cuts cellEcut and cellTime cut
+/// \param l0: main shower shape eigen value
+/// \param l1: second eigenvalue of shower shape
+/// \param disp: dispersion
+/// \param dEta: dispersion in eta (cols) direction
+/// \param dPhi: disperion in phi (rows) direction
+/// \param sEta: shower shape in eta  (cols) direction
+/// \param sPhi: shower shape in phi (rows) direction
+/// \param sEtaPhi: shower shape on phi / eta directions term
+///
+///
 //___________________________________________________________________________________________________________________
-void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, 
-                                                                AliVCaloCells* cells, 
-                                                                AliVCluster * cluster,
-                                                                Float_t & l0,   Float_t & l1,   
-                                                                Float_t & disp, Float_t & dEta, Float_t & dPhi,
-                                                                Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi)
-{
-  // Calculates new center of gravity in the local EMCAL-module coordinates 
-  // and tranfers into global ALICE coordinates
-  // Calculates Dispersion and main axis
-  
-  if (!cluster) {
+void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(const AliEMCALGeometry * geom, 
+                                                                            AliVCaloCells* cells, AliVCluster * cluster,
+                                                                            Float_t cellEcut, Float_t cellTimeCut, Int_t bc, 
+                                                                            Float_t & enAfterCuts, Float_t & l0,   Float_t & l1,   
+                                                                            Float_t & disp, Float_t & dEta, Float_t & dPhi,
+                                                                            Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi)
+{  
+  if (!cluster) 
+  {
     AliInfo("Cluster pointer null!");
     return;
   }
     
   Double_t eCell       = 0.;
+  Double_t tCell       = 0.;
   Float_t  fraction    = 1.;
   Float_t  recalFactor = 1.;
 
@@ -1753,121 +1794,155 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   Double_t etaMean = 0.;
   Double_t phiMean = 0.;
   
-  //Loop on cells, calculate the cluster energy, in case a cut on cell energy is added
+  // Loop on cells, calculate the cluster energy, in case a cut on cell energy is added,
+  // or the non linearity correction was applied
   // and to check if the cluster is between 2 SM in eta
   Int_t   iSM0   = -1;
   Bool_t  shared = kFALSE;
   Float_t energy = 0;
+  enAfterCuts = 0;
   
   for (Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
   {
-    //Get from the absid the supermodule, tower and eta/phi numbers
-    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
+    // Get from the absid the supermodule, tower and eta/phi numbers
+    
+    Int_t absId = cluster->GetCellAbsId(iDigit);
+
+    geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta);
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
     
-    //Check if there are cells of different SM
+    // Check if there are cells of different SM
     if      (iDigit == 0   ) iSM0 = iSupMod;
     else if (iSupMod!= iSM0) shared = kTRUE;
     
-    //Get the cell energy, if recalibration is on, apply factors
+    // Get the cell energy, if recalibration is on, apply factors
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (IsRecalibrationOn()) {
+    if (IsRecalibrationOn()) 
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-    }
     
-    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
     
-    energy += eCell;
+    eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
+    tCell  = cells->GetCellTime     (absId);
     
-  }//cell loop
+    RecalibrateCellTime(absId, bc, tCell);
+    tCell*=1e9;
+    tCell-=fConstantTimeShift;
+
+    if(eCell > 0.05) // at least a minimum 50 MeV cut
+      energy += eCell;
+
+    if(eCell > cellEcut && TMath::Abs(tCell) < cellTimeCut)
+      enAfterCuts += eCell;
+  } // cell loop
   
-  //Loop on cells
+  // Loop on cells to calculate weights and shower shape terms parameters
   for (Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
   {
-    //Get from the absid the supermodule, tower and eta/phi numbers
-    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta); 
+    // Get from the absid the supermodule, tower and eta/phi numbers
+    Int_t absId = cluster->GetCellAbsId(iDigit);
+
+    geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);        
     
     //Get the cell energy, if recalibration is on, apply factors
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    if (!fCellsRecalibrated) {
-      if (IsRecalibrationOn()) {
+    if (!fCellsRecalibrated && IsRecalibrationOn()) 
         recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-      }
-    }
     
-    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
+    eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
+    tCell  = cells->GetCellTime     (absId);
+    
+    RecalibrateCellTime(absId, bc, tCell);
+    tCell*=1e9;
+    tCell-=fConstantTimeShift;
     
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if (shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
-    if (cluster->E() > 0 && eCell > 0) {
-      w  = GetCellWeight(eCell,cluster->E());
+    if ( energy > 0 && eCell > cellEcut && TMath::Abs(tCell) < cellTimeCut ) 
+    {
+      w  = GetCellWeight(eCell, energy);
       
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;  
       
-      if (w > 0.0) {
+      if (w > 0.0) 
+      {
         wtot += w ;
-        nstat++;            
-        //Shower shape
+        nstat++;   
+        
+        // Shower shape
         sEta     += w * etai * etai ;
         etaMean  += w * etai ;
         sPhi     += w * phii * phii ;
         phiMean  += w * phii ; 
         sEtaPhi  += w * etai * phii ; 
       }
-    } else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, cluster->E()));
-  }//cell loop
+    } 
+    else if(eCell > 0.05)
+      AliDebug(2,Form("Wrong energy in cell %f and/or cluster %f\n", eCell, cluster->E()));
+  } // cell loop
   
-  //Normalize to the weight  
-  if (wtot > 0) {
+  // Normalize to the weight  
+  if (wtot > 0) 
+  {
     etaMean /= wtot ;
     phiMean /= wtot ;
-  } else
-    AliError(Form("Wrong weight %f\n", wtot));
+  } 
+  else
+    AliDebug(2,Form("Wrong weight %f\n", wtot));
   
-  //Calculate dispersion  
+  // Loop on cells to calculate dispersion  
   for (Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++) 
   {
-    //Get from the absid the supermodule, tower and eta/phi numbers
-    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta); 
+    // Get from the absid the supermodule, tower and eta/phi numbers
+    Int_t absId = cluster->GetCellAbsId(iDigit);
+
+    geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta); 
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
     
     //Get the cell energy, if recalibration is on, apply factors
     fraction  = cluster->GetCellAmplitudeFraction(iDigit);
     if (fraction < 1e-4) fraction = 1.; // in case unfolding is off
-    if (IsRecalibrationOn()) {
+    if (IsRecalibrationOn()) 
       recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-    }
-    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
     
+    eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
+    tCell  = cells->GetCellTime     (absId);
+    
+    RecalibrateCellTime(absId, bc, tCell);
+    tCell*=1e9;
+    tCell-=fConstantTimeShift;
+
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if (shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
     
-    if (cluster->E() > 0 && eCell > 0) {
+    if ( energy > 0 && eCell > cellEcut && TMath::Abs(tCell) < cellTimeCut ) 
+    {
       w  = GetCellWeight(eCell,cluster->E());
       
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;    
-      if (w > 0.0) { 
+      if (w > 0.0) 
+      { 
         disp +=  w *((etai-etaMean)*(etai-etaMean)+(phii-phiMean)*(phii-phiMean)); 
         dEta +=  w * (etai-etaMean)*(etai-etaMean) ; 
         dPhi +=  w * (phii-phiMean)*(phii-phiMean) ; 
       }
-    } else
-      AliError(Form("Wrong energy %f and/or amplitude %f\n", eCell, cluster->E()));
+    } 
+    else
+      AliDebug(2,Form("Wrong energy in cell %f and/or cluster %f\n", eCell, cluster->E()));
   }// cell loop
   
-  //Normalize to the weigth and set shower shape parameters
-  if (wtot > 0 && nstat > 1) {
+  // Normalize to the weigth and set shower shape parameters
+  if (wtot > 0 && nstat > 1)
+  {
     disp    /= wtot ;
     dEta    /= wtot ;
     dPhi    /= wtot ;
@@ -1881,7 +1956,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
     
     l0 = (0.5 * (sEta + sPhi) + TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
     l1 = (0.5 * (sEta + sPhi) - TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
-  } else {
+  } 
+  else 
+  {
     l0   = 0. ;
     l1   = 0. ;
     dEta = 0. ; dPhi = 0. ; disp    = 0. ;
@@ -1889,15 +1966,54 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   }  
 }
 
+///
+/// Calculates different types of shower shape parameters, dispersion, shower shape eigenvalues and other.
+/// Call to AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts 
+/// with default cell cuts (50 MeV minimum cell energy and not cut on time)
+/// 
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to shower shape recalculation
+/// \param l0: main shower shape eigen value
+/// \param l1: second eigenvalue of shower shape
+/// \param disp: dispersion
+/// \param dEta: dispersion in eta (cols) direction
+/// \param dPhi: disperion in phi (rows) direction
+/// \param sEta: shower shape in eta  (cols) direction
+/// \param sPhi: shower shape in phi (rows) direction
+/// \param sEtaPhi: shower shape on phi / eta directions term
+///
+///
+//___________________________________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, 
+                                                                AliVCaloCells* cells, AliVCluster * cluster,
+                                                                Float_t & l0,   Float_t & l1,   
+                                                                Float_t & disp, Float_t & dEta, Float_t & dPhi,
+                                                                Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi)
+{
+  Float_t newEnergy      = 0;
+  Float_t cellEmin       = 0.05; // 50 MeV
+  Float_t cellTimeWindow = 1000; // open cut
+  Int_t   bc             = 0; 
+  AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(geom, cells, cluster,
+                                                                         cellEmin, cellTimeWindow, bc,
+                                                                         newEnergy, l0, l1, disp,
+                                                                         dEta, dPhi, sEta, sPhi, sEtaPhi);
+}
+
+///
+/// Calculates Dispersion and main axis and puts them into the cluster
+/// Call to method RecalculateClusterShowerShapeParameters
+///
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to shower shape recalculation
+///
 //____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, 
                                                                 AliVCaloCells* cells, 
                                                                 AliVCluster * cluster)
-{
-  // Calculates new center of gravity in the local EMCAL-module coordinates 
-  // and tranfers into global ALICE coordinates
-  // Calculates Dispersion and main axis and puts them into the cluster
-  
+{  
   Float_t l0   = 0., l1   = 0.;
   Float_t disp = 0., dEta = 0., dPhi    = 0.; 
   Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
@@ -1910,6 +2026,40 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(const AliEMCALGe
   if (disp > 0. ) cluster->SetDispersion(TMath::Sqrt(disp)) ;
   
 } 
+
+///
+/// Calculates Dispersion and main axis and puts them into the cluster.
+/// Possibility to restrict the cell Energy and time window in the calculations
+/// 
+/// \param geom: EMCal geometry pointer
+/// \param cells: list of EMCal cells with signal
+/// \param cluster: EMCal cluster subject to shower shape recalculation
+/// \param cellEcut: minimum cell energy to be considered in the shower shape recalculation
+/// \param cellTimeCut: time window of cells to be considered in shower recalculation
+/// \param bc: event bunch crossing number
+/// \param enAfterCuts: cluster energy when applying the cell cuts cellEcut and cellTime cut
+///
+//____________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(const AliEMCALGeometry * geom, 
+                                                                            AliVCaloCells* cells, AliVCluster * cluster,
+                                                                            Float_t cellEcut, Float_t cellTimeCut, Int_t bc,
+                                                                            Float_t & enAfterCuts)
+{  
+  Float_t l0   = 0., l1   = 0.;
+  Float_t disp = 0., dEta = 0., dPhi    = 0.; 
+  Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
+  
+  AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(geom, cells, cluster,
+                                                                         cellEcut, cellTimeCut, bc,
+                                                                         enAfterCuts, l0, l1, disp,
+                                                                         dEta, dPhi, sEta, sPhi, sEtaPhi);
+  
+  cluster->SetM02(l0);
+  cluster->SetM20(l1);
+  if (disp > 0. ) cluster->SetDispersion(TMath::Sqrt(disp)) ;
+  
+} 
+
 
 //____________________________________________________________________________
 void AliEMCALRecoUtils::FindMatches(AliVEvent *event,

@@ -17,35 +17,24 @@ class TGeoVolume;
 class TGeoVolumeAssembly;
 
 class AliMFTFlex : public TNamed {
-  
+
 public:
   AliMFTFlex();
   AliMFTFlex(AliMFTLadderSegmentation *ladder);
   virtual ~AliMFTFlex();
-  TGeoVolumeAssembly*   MakeFlex(Int_t nsensors);
+  TGeoVolumeAssembly*  MakeFlex(Int_t nbsensors, Double_t length);
+  void Make_ElectricComponents(TGeoVolumeAssembly*  flex, Int_t nbsensors, Double_t length, Double_t zvarnish);
 
 private:
-  TGeoVolumeAssembly* MakeAluTrack(Int_t nsensors);
-  TGeoVolume*         MakeGlueLayer(Int_t nlayer, Double_t thickness, Double_t widthflex, Double_t lenghtflex);
-  TGeoVolume*         MakeKaptonLayer(Int_t nlayer, Double_t thickness, Double_t widthflex, Double_t lenghtflex);
-  TGeoVolume*         MakeVarnishLayer(Double_t thickness, Double_t widthflex, Double_t lenghtflex);
-  
-  Double_t  fTrackWidth;
-  Double_t  fTrackThickness;
-  Double_t  fTrackNb;
-  Double_t  fGlueThickness;
-  Double_t  fKaptonThickness;
-  Double_t  fVarnishThickness;
-  Int_t     fNLayer;
-  Int_t     fNSensors;
-  Double_t  fChipWidth;
-  Double_t  fChipInterspace;
-  Double_t  fChipSideOffset;
-  Double_t *fFlexDimensions;
+  TGeoVolume*  Make_Lines(Int_t nbsensors, Double_t length, Double_t width, Double_t thickness);
+  TGeoVolume*  Make_AGND_DGND(Double_t length, Double_t width, Double_t thickness);
+  TGeoVolume*  Make_Kapton(Double_t length, Double_t width, Double_t thickness);
+  TGeoVolume*  Make_Varnish(Double_t length, Double_t width, Double_t thickness, Int_t iflag);
+  TGeoVolume*  Make_ElectricComponent(Double_t dx, Double_t dy, Double_t dz, Int_t iflag);
+
   Double_t *fFlexOrigin;
-  Bool_t fIsLeftType;
   AliMFTLadderSegmentation * fLadderSeg;
-  
+
   ClassDef(AliMFTFlex,1)
 };
 

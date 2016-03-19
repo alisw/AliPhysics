@@ -20,18 +20,21 @@ class AliCheb2DStack : public TObject
 {
  public:
   enum {kMaxPoints=255};        // max number of points in input dimension
+  enum {ktgp,kz};
   //
  public:
   AliCheb2DStack();
   virtual ~AliCheb2DStack();
   //
-  AliCheb2DStack(int nSlices, int dimOut, const float bmin[2], const float bmax[2]);
+  AliCheb2DStack(int nSlices, int dimOut, const float bmin[2], const float bmax[2],const float* dead=0, const float *rowXI=0);
   //
   Int_t           GetNSlices()        const {return fNSlices;}
   Int_t           GetDimOut()         const {return fDimOut;}
   const Float_t*  GetBoundMin()       const {return fBMin;}
   const Float_t*  GetBoundMax()       const {return fBMax;}
   //
+  void            SetXRowInv(const float* xi) {fRowXI = xi;}
+  const float*    GetXRowInv() const {return fRowXI;}
   virtual void     Eval(int sliceID, const float *par, float *res) const = 0;
   virtual Float_t  Eval(int sliceID, int dimOut, const float *par) const = 0;
   Bool_t        IsInside(const float *par) const;
@@ -45,11 +48,10 @@ class AliCheb2DStack : public TObject
   static float  GetDefPrecision() {return fgkDefPrec;}
   //
  protected:
-  void          SetSliceDim(Int_t slice, Int_t dim);
-  void          MapToInternal(const float* xy, float *xyint) const;
-  void          MapToInternal(const float* xy, float &x1, float &x2) const;
-  float         MapToExternal(float x,int dim) const;
-  float*        DefineGrid(int dim, const int np[2]) const;
+  void          MapToInternal(int slice, const float* xy, float *xyint) const;
+  void          MapToInternal(int slice, const float* xy, float &x1, float &x2) const;
+  float         MapToExternal(int slice, float x,int dim) const;
+  float*        DefineGrid(int slice, int dim, const int np[2]) const;
   void          CheckDimensions(const int *np) const;
   Int_t         CalcChebCoefs(const float *funval,int np, float *outCoefs, float prec);
   //
@@ -62,8 +64,10 @@ class AliCheb2DStack : public TObject
   Int_t         fNRowsTot;          // total number of 1D Cheb. param rows
   Float_t       fBMin[2];           // min boundaries in each dimension
   Float_t       fBMax[2];           // max boundaries in each dimension  
-  Float_t       fBScale[2];         // scale for boundary mapping to [-1:1] interval
-  Float_t       fBOffset[2];        // offset for boundary mapping to [-1:1] interval
+  Float_t       fBScaleZ;           // scale for Z boundary mapping to [-1:1] interval
+  Float_t       fBOffsetZ;          // offset for Z boundary mapping to [-1:1] interval
+  Float_t       fDead[2];           // dead zone in cm to account if X for each row is provided
+  const Float_t* fRowXI;            //! optional external!!! set 1/X for each row if dead zones to be accounted
   //
   UChar_t*      fNRows;             //[fNParams] N of used rows in the 2D coeffs matrix of each param
   UChar_t*      fNCols;             //[fNRowsTot] N of used columns in each row
@@ -78,40 +82,60 @@ class AliCheb2DStack : public TObject
   AliCheb2DStack(const AliCheb2DStack& src);            // dummy
   AliCheb2DStack& operator=(const AliCheb2DStack& rhs); // dummy
   //
-  ClassDef(AliCheb2DStack,1)        // stack of 2D->fDimOut Chebyshev parameterization slices
+  ClassDef(AliCheb2DStack,2)        // stack of 2D->fDimOut Chebyshev parameterization slices
 };
 
 
 //_________________________________________________________
-inline void AliCheb2DStack::MapToInternal(const float* xy, float args[2]) const
+inline void AliCheb2DStack::MapToInternal(int slice, const float* xy, float args[2]) const
 {
   // map xy to [-1:1]
-  for (int i=2;i--;) {
-    args[i] = (xy[i]-fBOffset[i])*fBScale[i];
-#ifdef _BRING_TO_BOUNDARY2D_
-    if      (args[i]<-1) args[i]=-1;
-    else if (args[i]> 1) args[i]=1;
-#endif
+  // for Z we don't have dead zones
+  args[kz] = (xy[kz]-fBOffsetZ)*fBScaleZ;
+  float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
+  if (fRowXI) {
+    tmn += fDead[0]*fRowXI[slice];
+    tmx -= fDead[1]*fRowXI[slice];
   }
+  args[ktgp] = 2.f*(xy[ktgp]-tmn)/(tmx-tmn) - 1.f;
+#ifdef _BRING_TO_BOUNDARY2D_
+  if      (args[kz]<-1.0f) args[kz]=-1.0f;
+  else if (args[kz]> 1.0f) args[kz]=1.0f;
+  if      (args[ktgp]<-1.0f) args[ktgp]=-1.0f;
+  else if (args[ktgp]> 1.0f) args[ktgp]=1.0f;
+#endif
 }
 
 //_________________________________________________________
-inline void AliCheb2DStack::MapToInternal(const float* xy, float &x0, float &x1) const
+inline void AliCheb2DStack::MapToInternal(int slice, const float* xy, float &x0, float &x1) const
 {
   // map xy to [-1:1]
-  x0 = (xy[0]-fBOffset[0])*fBScale[0];
-  x1 = (xy[1]-fBOffset[1])*fBScale[1];
+  x1 = (xy[kz]-fBOffsetZ)*fBScaleZ;
+  float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
+  if (fRowXI) {
+    tmn += fDead[0]*fRowXI[slice];
+    tmx -= fDead[1]*fRowXI[slice];
+  }
+  x0 = 2.f*(xy[ktgp]-tmn)/(tmx-tmn) - 1.f;
+  //
 #ifdef _BRING_TO_BOUNDARY2D_
-  if (x0 < -1) x0 =-1; else if (x0 > 1) x0 = 1;
-  if (x1 < -1) x1 =-1; else if (x1 > 1) x1 = 1;
+  if (x0 < -1.0f) x0 =-1.0f; else if (x0 > 1.0f) x0 = 1.0f;
+  if (x1 < -1.0f) x1 =-1.0f; else if (x1 > 1.0f) x1 = 1.0f;
 #endif
 }
 
 //__________________________________________________________________________________________
-inline float AliCheb2DStack::MapToExternal(float x,int dim)  const 
+inline float AliCheb2DStack::MapToExternal(int slice, float x,int dim)  const 
 {
   // map from [-1:1] to x for dim-th input dimension
-  return x/fBScale[dim]+fBOffset[dim];
+  if (dim==kz) return x/fBScaleZ+fBOffsetZ;
+  // for y/x need to account for dead zone
+  float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
+  if (fRowXI) {
+    tmn += fDead[0]*fRowXI[slice];
+    tmx -= fDead[1]*fRowXI[slice];
+  }
+  return 0.5*(x+1.0f)*(tmx-tmn)+tmn;
 }
 
 //__________________________________________________________________________________________

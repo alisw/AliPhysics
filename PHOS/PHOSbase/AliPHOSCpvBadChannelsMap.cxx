@@ -131,8 +131,8 @@ void AliPHOSCpvBadChannelsMap::BadChannelIds(Int_t *badIds)
       for(Int_t row=1; row<=AliPHOSCpvParam::kPadPcY; row++) {
 	if(IsBadChannel(mod,col,row)) {
 	  relId[0] = mod;
-	  relId[3] = col;
-	  relId[2] = row;
+	  relId[2] = col;
+	  relId[3] = row;
 	  geom->RelToAbsNumbering(relId,absId);
 	  badIds[iBad]=absId;
 	  iBad++;

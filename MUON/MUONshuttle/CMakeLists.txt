@@ -34,7 +34,6 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources in alphabetical order
 set(SRCS
-    AliMUONGainSubprocessor.cxx
     AliMUONGMSSubprocessor.cxx
     AliMUONHVSubprocessor.cxx
     AliMUONOccupancySubprocessor.cxx

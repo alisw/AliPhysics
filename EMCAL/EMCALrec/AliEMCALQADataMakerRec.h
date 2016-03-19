@@ -1,7 +1,9 @@
 #ifndef ALIEMCALQADATAMAKERREC_H
 #define ALIEMCALQADATAMAKERREC_H
+
+///
 /// \class AliEMCALQADataMakerRec
-/// \brief 
+/// \brief EMCal reconstruction QA
 ///
 /// Produces the data needed to calculate the quality assurance. 
 /// All data must be mergeable objects
@@ -14,7 +16,7 @@
 ///  Change all existing histograms as experts
 ///
 /// Change histograms for DQM shifter: --  Yaxian Mao 04/2010
-/// Calcuate the amplitude ratio from current run and the LED reference, for QAChecker use
+/// Calculate the amplitude ratio from current run and the LED reference, for QAChecker use
 /// Also calculate the ratio of amplitude from LED Monitor system (current/Reference), to check LED system  
 ///
 /// \author J.Klay (Cal Poly) 
@@ -43,7 +45,7 @@ class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
 public:
   
-  //Histograms for Raw data control
+  // Histograms for Raw data control
   enum HRawType_t { 
     // first normal Low Gain and High Gain info
     kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
@@ -54,20 +56,20 @@ public:
     kNsmodTRU,
     kSigTRU,kNtotTRU,
     kNL0TRU, kTimeL0TRU,
-		kNL0FirstTRU, kTimeL0FirstTRU,kNL0TRUSamples,kNL0TRURMS,
+    kNL0FirstTRU, kTimeL0FirstTRU,kNL0TRUSamples,kNL0TRURMS,
     // and also LED Mon info
     kNsmodLGLEDMon,kNsmodHGLEDMon,kTimeLGLEDMon,kTimeHGLEDMon,
     kSigLGLEDMon,kSigHGLEDMon,kNtotLGLEDMon,kNtotHGLEDMon,
     kPedLGLEDMon,kPedHGLEDMon,
-		//and STU info
-		kAmpL1, kGL1, kJL1,
-		kGL1V0, kJL1V0, kSTUTRU  
+    //and STU info
+    kAmpL1, kGL1, kJL1,
+    kGL1V0, kJL1V0, kSTUTRU  
   } ;
 
-  //Histograms for RecPoints  control
+  // Histograms for RecPoints  control
   enum HRPType_t {kRecPE,kRecPM,kRecPDigM};
 
-  //Histograms for ESDs  control
+  // Histograms for ESDs  control
   enum HESDType_t {kESDCaloClusE,kESDCaloClusM,kESDCaloCellA,kESDCaloCellM} ;
   
 public:
@@ -75,7 +77,7 @@ public:
   AliEMCALQADataMakerRec(Int_t fitAlgo = Algo::kStandard) ;  
   // Default fitter is kStandard=0 (see AliCaloConstants)
   
-  AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
+  AliEMCALQADataMakerRec             (const AliEMCALQADataMakerRec& qadm) ;   
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
   virtual ~AliEMCALQADataMakerRec() {;} // dtor
 
@@ -84,12 +86,12 @@ public:
   
   AliCaloRawAnalyzer *GetRawAnalyzer()    const {return fRawAnalyzer   ;}
   AliCaloRawAnalyzer *GetRawAnalyzerTRU() const {return fRawAnalyzerTRU;}
+  
   // The number of SuperModules
   void SetSuperModules(int i) {fSuperModules = i;}; 
-  // The number of SuperModules
   int GetSuperModules() const {return fSuperModules;}; 
 
-  // for pedestal calculation with raw data
+  // For pedestal calculation with raw data
   void SetFirstPedestalSample(int i)  {fFirstPedestalSample = i;}          //  first sample
   int  GetFirstPedestalSample() const {return fFirstPedestalSample;}       //  first sample
   void SetLastPedestalSample(int i)   {fLastPedestalSample = i;}           //  last sample
@@ -100,7 +102,7 @@ public:
   void SetLastPedestalSampleTRU(int i)   {fLastPedestalSampleTRU = i;}     //  last sample, TRU
   int  GetLastPedestalSampleTRU() const  {return fLastPedestalSampleTRU;}  //  last sample, TRU
   
-  // for selection of interesting signal (max-min) range 
+  // For selection of interesting signal (max-min) range 
   // Low Gain channels
   void SetMinSignalLG(int i)  {fMinSignalLG = i;}
   int  GetMinSignalLG() const {return fMinSignalLG;}
@@ -146,46 +148,49 @@ public:
 
 private:
   
-  void ConvertProfile2H(TProfile * p, TH2 * histo) ; //<change the profile plot to a 2D histogram
+  void ConvertProfile2H(TProfile * p, TH2 * histo) ; 
   
-  Int_t fFittingAlgorithm;              ///< select the fitting algorithm, only used in copy ctor ...
+  Int_t fFittingAlgorithm;              ///< Select the fitting algorithm, only used in copy ctor ...
 
-  AliCaloRawAnalyzer *fRawAnalyzer;     ///< for signal fitting
-  AliCaloRawAnalyzer *fRawAnalyzerTRU;  ///< for TRU signal fitting
+  AliCaloRawAnalyzer *fRawAnalyzer;     ///< For signal fitting
+  AliCaloRawAnalyzer *fRawAnalyzerTRU;  ///< For TRU signal fitting
   AliEMCALGeometry   *fGeom;            ///< EMCAL geometry, needed for STU decoding
 
-  int fSuperModules;           ///< The number of SuperModules activated
-  int fFirstPedestalSample;    ///< first sample for pedestal calculation, in bunch
-  int fLastPedestalSample;     ///< last sample for pedestal calculation, in bunch
-  int fFirstPedestalSampleTRU; ///< first sample for pedestal calculation, in bunch
-  int fLastPedestalSampleTRU;  ///< last sample for pedestal calculation, in bunch
+  int fSuperModules;                    ///< The number of SuperModules activated
+  int fFirstPedestalSample;             ///< First sample for pedestal calculation, in bunch
+  int fLastPedestalSample;              ///< Last sample for pedestal calculation, in bunch
+  int fFirstPedestalSampleTRU;          ///< First sample for pedestal calculation, in bunch
+  int fLastPedestalSampleTRU;           ///< Last sample for pedestal calculation, in bunch
   
-  int fMinSignalLG;       ///< minimum signal, for Low Gain channels
-  int fMaxSignalLG;       ///< maximum signal, for Low Gain channels
-  int fMinSignalHG;       ///< minimum signal, for High Gain channels
-  int fMaxSignalHG;       ///< maximum signal, for High Gain channels
-  int fMinSignalTRU;      ///< minimum signal, for TRU channels
-  int fMaxSignalTRU;      ///< maximum signal, for TRU channels
-  int fMinSignalLGLEDMon; ///< minimum signal, for LEDMon channels, low gain
-  int fMaxSignalLGLEDMon; ///< maximum signal, for LEDMon channels, low gain
-  int fMinSignalHGLEDMon; ///< minimum signal, for LEDMon channels, high gain
-  int fMaxSignalHGLEDMon; ///< maximum signal, for LEDMon channels, high gain
+  int fMinSignalLG;                     ///< Minimum signal, for Low Gain channels
+  int fMaxSignalLG;                     ///< Maximum signal, for Low Gain channels
+  int fMinSignalHG;                     ///< Minimum signal, for High Gain channels
+  int fMaxSignalHG;                     ///< Maximum signal, for High Gain channels
+  int fMinSignalTRU;                    ///< Minimum signal, for TRU channels
+  int fMaxSignalTRU;                    ///< Maximum signal, for TRU channels
+  int fMinSignalLGLEDMon;               ///< Minimum signal, for LEDMon channels, low gain
+  int fMaxSignalLGLEDMon;               ///< Maximum signal, for LEDMon channels, low gain
+  int fMinSignalHGLEDMon;               ///< Minimum signal, for LEDMon channels, high gain
+  int fMaxSignalHGLEDMon;               ///< Maximum signal, for LEDMon channels, high gain
   
-  //Profile reference histogram from LED run
+  /// TProfile reference histogram from LED run
   TProfile * fCalibRefHistoPro ; // ->
-  //H2F reference histogram from LED run
+  
+  /// TH2F reference histogram from LED run
   TH2F     * fCalibRefHistoH2F ; //-> 
-  //Profile reference histogram from LED monitor
+  
+  /// TProfile reference histogram from LED monitor
   TProfile * fLEDMonRefHistoPro; //-> 
-  //H2F reference histogram from LED run
+  
+  /// TH2F reference histogram from LED run
   TH2F     * fHighEmcHistoH2F  ; //-> 
   
-//   TText **    fTextSM        ; //! Text info for each SM  
-//   TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
+//  TText **    fTextSM        ; //! Text info for each SM  
+//  TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
 //  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALQADataMakerRec,6);  /// description
+  ClassDef(AliEMCALQADataMakerRec,6)
   /// \endcond
 };
 

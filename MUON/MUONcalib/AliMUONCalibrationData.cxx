@@ -41,7 +41,7 @@
 //-----------------------------------------------------------------------------
 /// \class AliMUONCalibrationData
 ///
-/// For the moment, this class stores pedestals, gains, hv (for tracker)
+/// For the moment, this class stores pedestals, hv (for tracker)
 /// and lut, masks and efficiencies (for trigger) that are fetched from the CDB.
 ///
 /// This class is to be considered as a convenience class.
@@ -61,7 +61,6 @@ ClassImp(AliMUONCalibrationData)
 /// \endcond
 
 AliMUONVStore* AliMUONCalibrationData::fgBypassPedestals(0x0);
-AliMUONVStore* AliMUONCalibrationData::fgBypassGains(0x0);
 
 UInt_t AliMUONCalibrationData::fgkPatchHVDCSAliasesSt1WasAppliedMask = static_cast<UInt_t>( 1 << 4 );
 UInt_t AliMUONCalibrationData::fgkPatchHVAllWasAppliedMask = static_cast<UInt_t>( 1 << 8 );
@@ -83,7 +82,6 @@ AliMUONCalibrationData::AliMUONCalibrationData(Int_t runNumber,
 : TObject(), 
 fIsValid(kTRUE),
 fRunNumber(runNumber), 
-fGains(0x0), 
 fPedestals(0x0),
 fHV(0x0),
 fTriggerDCS(0x0),
@@ -92,7 +90,6 @@ fRegionalTriggerConfig(0x0),
 fGlobalTriggerCrateConfig(0x0),
 fTriggerLut(0x0),
 fTriggerEfficiency(0x0),
-fCapacitances(0x0),
 fNeighbours(0x0),
 fOccupancyMap(0x0),
 fRejectList(0x0),
@@ -110,7 +107,6 @@ fConfig(0x0)
   
   if ( deferredInitialization == kFALSE )
   {
-    Gains();
     Pedestals();
     OccupancyMap();
     RejectList();
@@ -121,7 +117,6 @@ fConfig(0x0)
     GlobalTriggerCrateConfig();
     TriggerLut();
     TriggerEfficiency();
-    Capacitances();
     Neighbours();
     Config();
   }
@@ -133,36 +128,6 @@ AliMUONCalibrationData::~AliMUONCalibrationData()
   /// Destructor. Note that we're the owner of our pointers if the OCDB cache
   /// is not set. Otherwise the cache is supposed to take care of them...
   if (!(AliCDBManager::Instance()->GetCacheFlag())) Reset();
-}
-
-//_____________________________________________________________________________
-AliMUONVStore*
-AliMUONCalibrationData::Capacitances() const
-{
-  /// Create (if needed) and return the internal store for capacitances.
-  
-  if (!fCapacitances)
-  {
-    fCapacitances = CreateCapacitances(fRunNumber);
-  }
-  return fCapacitances;
-}
-
-//_____________________________________________________________________________
-AliMUONVStore*
-AliMUONCalibrationData::CreateCapacitances(Int_t runNumber, Int_t* startOfValidity)
-{
-  /// Create capa store from OCDB for a given run
-  
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Capacitances",startOfValidity));
-}
-
-//_____________________________________________________________________________
-AliMUONVStore*
-AliMUONCalibrationData::CreateGains(Int_t runNumber, Int_t* startOfValidity)
-{
-  /// Create a new gain store from the OCDB for a given run
-  return dynamic_cast<AliMUONVStore*>(CreateObject(runNumber,"MUON/Calib/Gains",startOfValidity));
 }
 
 //_____________________________________________________________________________
@@ -952,38 +917,6 @@ AliMUONCalibrationData::CreateTriggerLut(Int_t runNumber, Int_t* startOfValidity
   
   return dynamic_cast<AliMUONTriggerLut*>(CreateObject(runNumber,"MUON/Calib/TriggerLut",startOfValidity));
 }
-
-//_____________________________________________________________________________
-AliMUONVStore*
-AliMUONCalibrationData::Gains() const
-{
-  /// Create (if needed) and return the internal store for gains.
-  if (fgBypassGains) return fgBypassGains;
-  
-  if (!fGains)
-  {
-    fGains = CreateGains(fRunNumber);
-  }
-  return fGains;
-}
- 
-//_____________________________________________________________________________
-AliMUONVCalibParam*
-AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
-{
-/// Return the gains for a given (detElemId, manuId) pair
-/// Note that, unlike the DeadChannel case, if the result is 0x0, that's an
-/// error (meaning that we should get gains for all channels).
-
-  AliMUONVStore* gains = Gains();
-  if (!gains)
-  {
-    return 0x0;
-  }
-  
-  return static_cast<AliMUONVCalibParam*>(gains->FindObject(detElemId,manuId));
-}
-
 //_____________________________________________________________________________
 AliMUONGlobalCrateConfig* 
 AliMUONCalibrationData::GlobalTriggerCrateConfig() const
@@ -1086,11 +1019,10 @@ AliMUONCalibrationData::RejectList() const
 
 //_____________________________________________________________________________
 void
-AliMUONCalibrationData::BypassStores(AliMUONVStore* ped, AliMUONVStore* gain)
+AliMUONCalibrationData::BypassStores(AliMUONVStore* ped)
 {
-  /// Force the use of those pedestals and gains
+  /// Force the use of those pedestals
   fgBypassPedestals = ped;
-  fgBypassGains = gain;
   
 }
 
@@ -1146,7 +1078,6 @@ AliMUONCalibrationData::Print(Option_t*) const
   /// A very basic dump of our guts.
 
   cout << "RunNumber " << RunNumber()
-  << " fGains=" << fGains
   << " fPedestals=" << fPedestals
   << " fConfig=" << fConfig
   << " fHV=" << fHV
@@ -1212,8 +1143,6 @@ AliMUONCalibrationData::Reset()
   fConfig = 0x0;
   delete fPedestals;
   fPedestals = 0x0;
-  delete fGains;
-  fGains = 0x0;
   delete fHV;
   fHV = 0x0;
   delete fTriggerDCS;
@@ -1229,8 +1158,6 @@ AliMUONCalibrationData::Reset()
   fTriggerLut = 0x0;
   delete fTriggerEfficiency;
   fTriggerEfficiency = 0x0;
-  delete fCapacitances;
-  fCapacitances = 0x0;
   delete fNeighbours;
   fNeighbours = 0x0;
 }
@@ -1242,24 +1169,6 @@ AliMUONCalibrationData::Check(Int_t runNumber)
   /// Self-check to see if we can read all data for a given run 
   /// from the current OCDB...
   
-  if ( ! CreateCapacitances(runNumber) )
-  {
-    AliErrorClass("Could not read capacitances");
-  }
-  else
-  {
-    AliInfoClass("Capacitances read OK");
-  }
-
-  if ( ! CreateGains(runNumber) ) 
-  {
-    AliErrorClass("Could not read gains");
-  }
-  else
-  {
-    AliInfoClass("Gains read OK");
-  }
-
   if ( ! CreateGlobalTriggerCrateConfig(runNumber) ) 
   {
     AliErrorClass("Could not read Trigger Crate Config");

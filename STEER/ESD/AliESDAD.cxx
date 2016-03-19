@@ -50,6 +50,7 @@ AliESDAD::AliESDAD()
       fBGFlag[j]= kFALSE;
       for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE; 
       fAdcTail[j]   = 0.0; 
+      fAdcTrigger[j]   = 0.0; 
    }
 }
 
@@ -83,6 +84,7 @@ AliESDAD::AliESDAD(const AliESDAD &o)
 	 fIsBG[j][k] = o.fIsBG[j][k];
        }
        fAdcTail[j]    = o.fAdcTail[j];
+       fAdcTrigger[j]   = o.fAdcTrigger[j];
    }
 }
 
@@ -116,6 +118,7 @@ AliESDAD::AliESDAD(UInt_t BBtriggerADA, UInt_t BGtriggerADA,
        fBGFlag[j] = BGFlag[j];
        for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE;
        fAdcTail[j]    = 0.0;
+       fAdcTrigger[j]   = 0.0; 
    }
 }
 
@@ -153,6 +156,7 @@ AliESDAD& AliESDAD::operator=(const AliESDAD& o)
 	 fIsBG[j][k] = o.fIsBG[j][k];
        }
        fAdcTail[j]    = o.fAdcTail[j];
+       fAdcTrigger[j]   = o.fAdcTrigger[j];
    }
   return *this;
 }
@@ -305,6 +309,38 @@ Float_t AliESDAD::GetAdcTailADC(Int_t i) const
   if (OutOfRange(i, "AliESDAD::GetAdcTailADC:",8)) return -1;
   return fAdcTail[i];
 }
+
+//__________________________________________________________________________
+Float_t AliESDAD::GetAdcTrigger(Int_t i) const
+
+{
+  // returns ADC charge in a
+  // given cell of AD
+  if (OutOfRange(i, "AliESDAD::GetAdcTrigger:",16)) return -1;
+  return fAdcTrigger[i];
+}
+
+//__________________________________________________________________________
+Float_t AliESDAD::GetAdcTriggerADA(Int_t i) const
+
+{
+  // returns ADC charge in a
+  // given cell of ADA
+  if (OutOfRange(i, "AliESDAD::GetAdcTriggerADA:",8)) return -1;
+  return fAdcTrigger[8+i];
+}
+
+//__________________________________________________________________________
+Float_t AliESDAD::GetAdcTriggerADC(Int_t i) const
+
+{
+  // returns ADC charge in a
+  // given cell of ADC
+  if (OutOfRange(i, "AliESDAD::GetAdcTriggerADC:",8)) return -1;
+  return fAdcTrigger[i];
+}
+
+
 
 //__________________________________________________________________________
 Float_t AliESDAD::GetTime(Int_t i) const

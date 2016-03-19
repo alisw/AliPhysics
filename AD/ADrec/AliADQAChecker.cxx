@@ -34,6 +34,7 @@
 #include <TString.h>
 #include <TLegend.h>
 #include <TStyle.h>
+#include <TSpline.h>
 
 // --- Standard library ---
 
@@ -933,6 +934,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	TH1* histoNumerator = 0;
 	TH1* histoDenominator = 0;
 	TH1* histoRatio = 0;
+	TH2* histo2D = 0;
+	TH2* histo2DCopy = 0;
       	TVirtualPad* pad = 0;
        		
 	//Charge pad
@@ -1132,25 +1135,65 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeDiff+iHist);
 		histo->DrawCopy("COLZ");
 		}
-	//Decisions pad	
+	//Decisions pad
+	TH1D *hTimeSlice = 0x0;
+	TH1F *hMeanTimeVsChargeADA = new TH1F("hMeanTimeVsChargeADA","hMeanTimeVsChargeADA",200,-4,0);
+	
 	pad = pDecision->cd(1);
-	gPad->SetLogy();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
-	histoBlue = (TH1*)histo->Clone("histoBlue");
-	histoBlue->GetXaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
-	histoBlue->SetTitle("Mean time ADA");
-	histoBlue->DrawCopy();
+	gPad->SetLogz();
+	histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADA);
+	histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
+	histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
+	histo2DCopy->SetTitle("Time slewing ADA");
+		
+	for(Int_t j=0; j<200;j++){
+  		hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
+		if(hTimeSlice->GetEntries()<100 && j>100){
+			hMeanTimeVsChargeADA->SetBinContent(j+1,hMeanTimeVsChargeADA->GetBinContent(j));
+			hMeanTimeVsChargeADA->SetBinError(j+1,hMeanTimeVsChargeADA->GetBinError(j));
+			}
+		else{
+			hMeanTimeVsChargeADA->SetBinContent(j+1,hTimeSlice->GetMean());
+        		if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADA->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
+			}
+  		}
+  	TSpline3 *fTimeSlewingSplineADA = new TSpline3(hMeanTimeVsChargeADA);
+	fTimeSlewingSplineADA->SetLineWidth(3);
+	fTimeSlewingSplineADA->SetLineColor(kPink);
+		
+	histo2DCopy->DrawCopy("COLZ");
+	fTimeSlewingSplineADA->Draw("Psame");
+	delete hMeanTimeVsChargeADA;
+	
+	TH1F *hMeanTimeVsChargeADC = new TH1F("hMeanTimeVsChargeADC","hMeanTimeVsChargeADC",200,-4,0);
 	pad = pDecision->cd(3);
-	gPad->SetLogy();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
-	histoRed = (TH1*)histo->Clone("histoRed");
-	histoRed->GetXaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
-	histoRed->SetTitle("Mean time ADC");
-	histoRed->DrawCopy();
+	gPad->SetLogz();
+	histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingADC);
+	histo2DCopy = (TH2*)histo2D->Clone("histo2DCopy");
+	histo2DCopy->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
+	histo2DCopy->SetTitle("Time slewing ADC");
+		
+	for(Int_t j=0; j<200;j++){
+  		hTimeSlice = histo2DCopy->ProjectionY("hTimeSlice",j+1,j+1);
+		if(hTimeSlice->GetEntries()<100 && j>100){
+			hMeanTimeVsChargeADC->SetBinContent(j+1,hMeanTimeVsChargeADC->GetBinContent(j));
+			hMeanTimeVsChargeADC->SetBinError(j+1,hMeanTimeVsChargeADC->GetBinError(j));
+			}
+		else{
+			hMeanTimeVsChargeADC->SetBinContent(j+1,hTimeSlice->GetMean());
+        		if(hTimeSlice->GetEntries()>0)hMeanTimeVsChargeADC->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
+			}
+  		}
+  	TSpline3 *fTimeSlewingSplineADC = new TSpline3(hMeanTimeVsChargeADC);
+	fTimeSlewingSplineADC->SetLineWidth(3);
+	fTimeSlewingSplineADC->SetLineColor(kPink);
+		
+	histo2DCopy->DrawCopy("COLZ");
+	fTimeSlewingSplineADC->Draw("Psame");
+	delete hMeanTimeVsChargeADC;
+	
+
 	pad = pDecision->cd(2);
-	//histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kTimeSlewingOn);
-	//histo->Draw("COLZ");
-	//pad = pDecision->cd(4);
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kDecisions);
 	histo->Draw("COLZTEXT");
 	
@@ -1166,7 +1209,6 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	histoBlue->DrawCopy();
 	histoRed->DrawCopy("same");
 	myLegend1->Draw();
-	//fTrend_Test->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 
     }

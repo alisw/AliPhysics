@@ -252,7 +252,6 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	    
 	    // calibration parameters
 	    AliMUONVCalibParam* ped = calibData->Pedestals(digit->DetElemId(), digit->ManuId());
-	    AliMUONVCalibParam* gain = calibData->Gains(digit->DetElemId(), digit->ManuId());
 	    Int_t manuChannel = digit->ManuChannel();
 	    Int_t planeType = 0;
 	    if ( digit->ManuId() & AliMpConstants::ManuMask(AliMp::kNonBendingPlane)) {
@@ -269,8 +268,6 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	    padInfo.SetSaturated(digit->IsSaturated());
 	    padInfo.SetCalibrated(digit->IsCalibrated());
 	    padInfo.SetPedestal(ped->ValueAsFloatFast(manuChannel,0), ped->ValueAsFloatFast(manuChannel,1));
-	    padInfo.SetGain(gain->ValueAsFloatFast(manuChannel,0), gain->ValueAsFloatFast(manuChannel,1),
-			    gain->ValueAsFloatFast(manuChannel,2), gain->ValueAsFloatFast(manuChannel,3));
 	    
 	    clusterInfo->AddPad(padInfo);
 	  }
@@ -333,7 +330,6 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	  
 	  // calibration parameters
 	  AliMUONVCalibParam* ped = calibData->Pedestals(digit->DetElemId(), digit->ManuId());
-	  AliMUONVCalibParam* gain = calibData->Gains(digit->DetElemId(), digit->ManuId());
 	  Int_t manuChannel = digit->ManuChannel();
 	  Int_t planeType = 0;
 	  if ( digit->ManuId() & AliMpConstants::ManuMask(AliMp::kNonBendingPlane)) {
@@ -350,8 +346,6 @@ void MUONClusterInfo(Int_t nevents = -1, const char* esdFileName = "AliESDs.root
 	  padInfo.SetSaturated(digit->IsSaturated());
 	  padInfo.SetCalibrated(digit->IsCalibrated());
 	  padInfo.SetPedestal(ped->ValueAsFloatFast(manuChannel,0), ped->ValueAsFloatFast(manuChannel,1));
-	  padInfo.SetGain(gain->ValueAsFloatFast(manuChannel,0), gain->ValueAsFloatFast(manuChannel,1),
-			  gain->ValueAsFloatFast(manuChannel,2), gain->ValueAsFloatFast(manuChannel,3));
 	  
 	  clusterInfo->AddPad(padInfo);
 	}

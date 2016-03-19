@@ -15,7 +15,7 @@
 
 //=============================================================================================
 //
-//      Class describing geometry of one MFT half-disk support
+//      Class describing geometry of one MFT half-disk support + PCBs
 //
 //      Contact author: raphael.tieulent@cern.ch
 //
@@ -30,16 +30,12 @@ ClassImp(AliMFTSupport)
 //=============================================================================================
 
 AliMFTSupport::AliMFTSupport():
-TNamed(),fZin(0.), fZout(0.), fRmin(0.), fRmax(0.),fIsBottom(kFALSE){
+TNamed(),
+fSupportVolume(NULL),
+fSupportThickness(1.4), // cm
+fPCBThickness(0.1) // cm
+{
   
-  // default constructor
-  
-}
-//=============================================================================================
-
-AliMFTSupport::AliMFTSupport(Double_t zIn, Double_t zOut, Double_t rMin, Double_t rMax, Bool_t isBottom):
-TNamed(),fZin(zIn), fZout(zOut), fRmin(rMin), fRmax(rMax),fIsBottom(isBottom){
-
   // default constructor
   
 }
@@ -53,25 +49,96 @@ AliMFTSupport::~AliMFTSupport() {
 
 
 //=============================================================================================
-TGeoVolume *  AliMFTSupport::CreateVolume(){
-  // Create Shapes
-  Double_t phiMin =0., phiMax=0.;
+TGeoVolumeAssembly* AliMFTSupport::CreateVolume(Int_t half, Int_t disk){
+
+  AliInfo(Form("Creating Support and PCB for half %d and disk %d ",half, disk));
+
+
+  /*
+  fSupportVolume = new TGeoVolumeAssembly(Form("SupportPCB_%d_%d", half, disk));
   
-  phiMin = 180.*fIsBottom;
-  phiMax = 180.*(fIsBottom+1.);
+  TGeoVolume * supportVolume =  CreateSupport(half, disk);
+  TGeoVolumeAssembly * pcbVolume =  CreatePCBs(half, disk);
+
+  
+  // Place the core of the support
+  fSupportVolume->AddNode(supportVolume, 1);
+  
+  
+  // Place the front PCB
+  fSupportVolume->AddNode(pcbVolume, 1,new TGeoTranslation(0.,0.,(fSupportThickness+ fPCBThickness)/2.));
+  // Place the back PCB (supposing both fron and back are the same shapes)
+  fSupportVolume->AddNode(pcbVolume, 2,new TGeoCombiTrans (0.,0.,-(fSupportThickness+ fPCBThickness)/2., new TGeoRotation("rot",0.,180.,0.)));
+  */
+
+
+  return fSupportVolume;
+}
+
+//=============================================================================================
+TGeoVolumeAssembly* AliMFTSupport::CreatePCBs(Int_t half, Int_t disk){
+  
+  AliInfo(Form("Creating PCB for half %d and disk %d ",half, disk));
+
+  
+  TGeoVolumeAssembly * pcbVolume = new TGeoVolumeAssembly(Form("PCB_%d_%d", half, disk));
+
   
   // Create Shapes
-  TGeoTubeSeg *support = new TGeoTubeSeg(fRmin, fRmax, (fZin - fZout)/2., phiMin, phiMax);
+  Double_t phiMin =0., phiMax=180.;
+  Double_t rMin =20., rMax=40.; // units are cm
+  Double_t copperThickness = 0.05; //units are cm
+  Double_t fr4Thickness = fPCBThickness - copperThickness;
+
+  TGeoTubeSeg *varnishShape = new TGeoTubeSeg(rMin, rMax, fr4Thickness/2., phiMin, phiMax);
+  TGeoTubeSeg *copperShape = new TGeoTubeSeg(rMin, rMax, copperThickness/2., phiMin, phiMax);
   
   // Get Mediums
-  TGeoMedium *medBe  = gGeoManager->GetMedium("MFT_Be");
+  TGeoMedium *medFR4  = gGeoManager->GetMedium("MFT_FR4$");
+  TGeoMedium *medCu  = gGeoManager->GetMedium("MFT_Cu$");
   
   // Create Volumes
-  // Chip Volume
-  TGeoVolume *supportVol = new TGeoVolume(Form("%s_Support",GetName()), support, medBe);
-  supportVol->SetVisibility(kTRUE);
-  supportVol->SetLineColor(kGray);
+  TGeoVolume *varnishVol = new TGeoVolume(Form("Varnish_%d_%d", half, disk), varnishShape, medFR4);
+  varnishVol->SetVisibility(kTRUE);
+  varnishVol->SetLineColor(kGreen);
+  varnishVol->SetLineWidth(1);
+  varnishVol->SetFillColor(varnishVol->GetLineColor());
+  varnishVol->SetFillStyle(4000); // 0% transparent
   
+  TGeoVolume *copperVol = new TGeoVolume(Form("Copper_%d_%d", half, disk), copperShape, medCu);
+  copperVol->SetVisibility(kTRUE);
+  copperVol->SetLineColor(kOrange);
+  copperVol->SetLineWidth(1);
+  copperVol->SetFillColor(copperVol->GetLineColor());
+  copperVol->SetFillStyle(4000); // 0% transparent
+  
+  // Position Volumes in the mother PCB Volume
+  pcbVolume->AddNode(varnishVol, 1,new TGeoTranslation(0.,0.,fr4Thickness/2.));
+  pcbVolume->AddNode(copperVol, 1,new TGeoTranslation(0.,0.,-copperThickness/2.));
+  return pcbVolume;
+}
+
+//=============================================================================================
+TGeoVolume* AliMFTSupport::CreateSupport(Int_t half, Int_t disk){
+  
+  AliInfo(Form("Creating PCB for half %d and disk %d ",half, disk));
+  
+  // Create Shapes
+  Double_t phiMin =0., phiMax=180.;
+  Double_t rMin =20., rMax=40.; // units are cm
+  
+  TGeoTubeSeg *supportShape = new TGeoTubeSeg(rMin, rMax, fSupportThickness/2., phiMin, phiMax);
+  
+  // Get Mediums
+  TGeoMedium *medPeek  = gGeoManager->GetMedium("MFT_PEEK$");
+  
+  // Create Volumes
+  TGeoVolume *supportVol = new TGeoVolume(Form("Support_%d_%d", half, disk), supportShape, medPeek);
+  supportVol->SetVisibility(kTRUE);
+  supportVol->SetLineColor(kYellow-6);
+  supportVol->SetLineWidth(1);
+  supportVol->SetFillColor(supportVol->GetLineColor());
+  supportVol->SetFillStyle(4000); // 0% transparent
   
   return supportVol;
 }

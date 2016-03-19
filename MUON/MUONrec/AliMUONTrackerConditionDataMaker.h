@@ -78,7 +78,6 @@ private:
   static AliMUONVStore* CreateHVStore(TMap& m);
   static AliMUONVStore* CreateStatusMapStore(Int_t runNumber);
   static AliMUONVStore* CreateStatusStore(Int_t runNumber);
-  static AliMUONVStore* PatchGainStore(const AliMUONVStore& gains);
   static AliMUONVStore* ExpandConfig(const AliMUONVStore& config);
   
 private:

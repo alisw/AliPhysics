@@ -126,8 +126,8 @@ class AliESDCaloCluster : public AliVCluster
   UInt_t GetNLabels() const       { if (fLabels) return  fLabels->GetSize(); 
     else return (0);}
   
-  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition ) const;
-  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
+  void GetMomentum(TLorentzVector& p, const Double_t * vertexPosition ) const;
+  void GetMomentum(TLorentzVector& p, const Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
   
   void  SetNCells(Int_t n)  { fNCells = n;}
   Int_t GetNCells() const   { return fNCells;}

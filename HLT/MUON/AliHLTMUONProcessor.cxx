@@ -298,13 +298,6 @@ int AliHLTMUONProcessor::FetchMappingStores() const
 		);
 		return -ENOENT;
 	}
-	if (AliHLTMisc::Instance().LoadOCDBEntry("MUON/Calib/Gains", runUsed) == NULL)
-	{
-		HLTError("Could not find entry in CDB path '%s/MUON/Calib/Gains' and run no. %d.",
-			cdbPathUsed, runUsed
-		);
-		return -ENOENT;
-	}
 	if (AliHLTMisc::Instance().LoadOCDBEntry("MUON/Calib/Pedestals", runUsed) == NULL)
 	{
 		HLTError("Could not find entry in CDB path '%s/MUON/Calib/Pedestals' and run no. %d.",

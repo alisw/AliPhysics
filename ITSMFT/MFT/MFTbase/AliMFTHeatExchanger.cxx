@@ -29,7 +29,7 @@
 #include "TGeoManager.h"
 #include "TGeoCompositeShape.h"
 #include "TGeoTube.h"
-
+#include "TGeoBoolNode.h"
 #include "AliLog.h"
 #include "AliMFTHeatExchanger.h"
 
@@ -254,12 +254,16 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   TGeoTranslation *t02= new TGeoTranslation ("t02",0., - fHalfDiskGap , 0.);
   t02-> RegisterYourself();
   
-  TGeoCompositeShape *cs0 = new TGeoCompositeShape(Form("cs0_D0_H%d",half), Form("(carbonBase0_D0_H%d:t01)-(holeCarbon0_D0_H%d:t02)",half,half));
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume("carbonBaseWithHole", cs0, carbon);
-  carbonBaseWithHole->SetLineColor(kGray+3);
+  ///TGeoCompositeShape *cs0 = new TGeoCompositeShape(Form("cs0_D0_H%d",half), Form("(carbonBase0_D0_H%d:t01)-(holeCarbon0_D0_H%d:t02)",half,half));
+  TGeoSubtraction    *carbonhole0 = new TGeoSubtraction(carbonBase0, holeCarbon0, t01, t02);
+  TGeoCompositeShape *ch0 = new TGeoCompositeShape(Form("Carbon0_D0_H%d",half), carbonhole0);
+  TGeoVolume *carbonBaseWithHole0 = new TGeoVolume(Form("carbonBaseWithHole_D0_H%d", half), ch0, carbon);
+
+
+  carbonBaseWithHole0->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-  carbonPlate->AddNode(carbonBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
+  carbonPlate->AddNode(carbonBaseWithHole0, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   Double_t ty = fSupportYDimensions[disk][0];
   
@@ -299,8 +303,12 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs0 = new TGeoCompositeShape("cs0", Form("(rohacellBase0_D0_H%d:t01)-(holeRohacell0_D0_H%d:t02)",half,half));
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D0_H%d",half), cs0, rohacell);
+  ///cs0 = new TGeoCompositeShape("cs0", Form("(rohacellBase0_D0_H%d:t01)-(holeRohacell0_D0_H%d:t02)",half,half));
+  TGeoSubtraction    *rohacellhole0 = new TGeoSubtraction(rohacellBase0, holeRohacell0, t01, t02);
+  TGeoCompositeShape *rh0 = new TGeoCompositeShape(Form("rohacellBase0_D0_H%d",half), rohacellhole0);
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D0_H%d",half), rh0, rohacell);
+
+
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -428,7 +436,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
     translation = new TGeoTranslation(fXPosition0[itube], 0., -fLWater/2. - lMiddle/2.);
     cooling->AddNode (pipeTube1, itube+3, translation);
   }
-  
+
   TGeoVolume *pipeTube2 = gGeoManager->MakeTube(Form("pipeTube2_D1_H%d",half), pipe, fRWater, fRWater + fDRPipe, fLpartial0/2.);
   waterTube2->SetLineColor(10);
   
@@ -491,6 +499,8 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   
   // **************************************** Carbon Plates ****************************************
   
+ 
+
   TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D1_H%d",half));
   
   TGeoBBox *carbonBase1 = new TGeoBBox (Form("carbonBase1_D1_H%d",half),  (fSupportXDimensions[disk][0])/2., (fSupportYDimensions[disk][0])/2., fCarbonThickness);
@@ -501,12 +511,17 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   TGeoTranslation *t12= new TGeoTranslation ("t12",0., - fHalfDiskGap , 0.);
   t12-> RegisterYourself();
   
-  TGeoCompositeShape *cs1 = new TGeoCompositeShape(Form("Carbon1_D1_H%d",half), Form("(carbonBase1_D1_H%d:t11)-(holeCarbon1_D1_H%d:t12)",half,half));
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D1_H%d",half), cs1, carbon);
-  carbonBaseWithHole->SetLineColor(kGray+3);
+
+  ////TGeoCompositeShape *cs1 = new TGeoCompositeShape(Form("Carbon1_D1_H%d",half), Form("(carbonBase1_D1_H%d:t11)-(holeCarbon1_D1_H%d:t12)",half,half));
+  TGeoSubtraction    *carbonhole1 = new TGeoSubtraction(carbonBase1, holeCarbon1, t11, t12);
+  TGeoCompositeShape *ch1 = new TGeoCompositeShape(Form("Carbon1_D1_H%d",half), carbonhole1);
+  TGeoVolume *carbonBaseWithHole1 = new TGeoVolume(Form("carbonBaseWithHole_D1_H%d",half), ch1, carbon);
+
+
+  carbonBaseWithHole1->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-  carbonPlate->AddNode(carbonBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
+  carbonPlate->AddNode(carbonBaseWithHole1, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   Double_t ty = fSupportYDimensions[disk][0];
   
@@ -534,6 +549,7 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
     transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 1, transformation);
 //  }
+
   
   // **************************************** Rohacell Plate ****************************************
   
@@ -547,8 +563,12 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs1 = new TGeoCompositeShape(Form("rohacell_D1_H%d",half), "(rohacellBase1:t11)-(holeRohacell1:t12)");
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D1_H%d",half), cs1, rohacell);
+  //////cs1 = new TGeoCompositeShape(Form("rohacell_D1_H%d",half), "(rohacellBase1:t11)-(holeRohacell1:t12)");
+  TGeoSubtraction    *rohacellhole1 = new TGeoSubtraction(rohacellBase1, holeRohacell1, t11, t12);
+  TGeoCompositeShape *rh1 = new TGeoCompositeShape(Form("rohacellBase1_D1_H%d",half), rohacellhole1);
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D1_H%d",half), rh1, rohacell);
+
+
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -577,6 +597,8 @@ void AliMFTHeatExchanger::CreateHalfDisk1(Int_t half) {
     fHalfDisk->AddNode(rohacellPlate, 2, transformation);
 //  }
   
+
+
 }
 
 //====================================================================================================================================================
@@ -751,12 +773,15 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   TGeoTranslation *t22= new TGeoTranslation ("t22",0., - fHalfDiskGap , 0.);
   t22-> RegisterYourself();
   
-  TGeoCompositeShape *cs2 = new TGeoCompositeShape(Form("carbon2_D2_H%d",half),Form("(carbonBase2_D2_H%d:t21)-(holeCarbon2_D2_H%d:t22)",half,half));
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D2_H%d", half), cs2, carbon);
-  carbonBaseWithHole->SetLineColor(kGray+3);
+  ////TGeoCompositeShape *cs2 = new TGeoCompositeShape(Form("carbon2_D2_H%d",half),Form("(carbonBase2_D2_H%d:t21)-(holeCarbon2_D2_H%d:t22)",half,half));
+  TGeoSubtraction    *carbonhole2 = new TGeoSubtraction(carbonBase2, holeCarbon2, t21, t22);
+  TGeoCompositeShape *cs2 = new TGeoCompositeShape(Form("Carbon2_D2_H%d",half), carbonhole2);
+  TGeoVolume *carbonBaseWithHole2 = new TGeoVolume(Form("carbonBaseWithHole_D2_H%d", half), cs2, carbon);
+
+  carbonBaseWithHole2->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-  carbonPlate->AddNode(carbonBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
+  carbonPlate->AddNode(carbonBaseWithHole2, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   Double_t ty = fSupportYDimensions[disk][0];
   
@@ -797,8 +822,13 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   // t4-> RegisterYourself()
   ;
   
-  cs2 = new TGeoCompositeShape(Form("rohacell_D2_H%d",half), Form("(rohacellBase2_D2_H%d:t21)-(holeRohacell2_D2_H%d:t22)",half,half));
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D2_H%d",half), cs2, rohacell);
+  ///cs2 = new TGeoCompositeShape(Form("rohacell_D2_H%d",half), Form("(rohacellBase2_D2_H%d:t21)-(holeRohacell2_D2_H%d:t22)",half,half));
+  TGeoSubtraction    *rohacellhole2 = new TGeoSubtraction(rohacellBase2, holeRohacell2, t21, t22);
+  TGeoCompositeShape *rh2 = new TGeoCompositeShape(Form("rohacellBase2_D2_H%d",half), rohacellhole2);
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D2_H%d",half), rh2, rohacell);
+
+
+
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1165,13 +1195,16 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   TGeoTranslation *t32= new TGeoTranslation ("t32",0., - fHalfDiskGap , 0.);
   t32-> RegisterYourself();
   
-  TGeoCompositeShape *cs3 = new TGeoCompositeShape(Form("Carbon3_D3_H%d",half),
-																									 Form("(carbonBase3_D3_H%d:t31)-(holeCarbon3_D3_H%d:t32)",half,half) );
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D3_H%d",half), cs3, carbon);
-  carbonBaseWithHole->SetLineColor(kGray+3);
+  ///TGeoCompositeShape *cs3 = new TGeoCompositeShape(Form("Carbon3_D3_H%d",half),Form("(carbonBase3_D3_H%d:t31)-(holeCarbon3_D3_H%d:t32)",half,half) );
+  TGeoSubtraction    *carbonhole3 = new TGeoSubtraction(carbonBase3, holeCarbon3, t31, t32);
+  TGeoCompositeShape *cs3 = new TGeoCompositeShape(Form("Carbon3_D3_H%d",half), carbonhole3);
+  TGeoVolume *carbonBaseWithHole3 = new TGeoVolume(Form("carbonBaseWithHole_D3_H%d",half), cs3, carbon);
+
+
+  carbonBaseWithHole3->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-  carbonPlate->AddNode(carbonBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
+  carbonPlate->AddNode(carbonBaseWithHole3, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   Double_t ty = fSupportYDimensions[disk][0];
   
@@ -1212,8 +1245,12 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs3 = new TGeoCompositeShape(Form("rohacell_D3_H%d",half), Form("(rohacellBase3_D3_H%d:t31)-(holeRohacell3_D3_H%d:t32)",half,half));
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D3_H%d",half), cs3, rohacell);
+  ///cs3 = new TGeoCompositeShape(Form("rohacell_D3_H%d",half), Form("(rohacellBase3_D3_H%d:t31)-(holeRohacell3_D3_H%d:t32)",half,half));
+  TGeoSubtraction    *rohacellhole3 = new TGeoSubtraction(rohacellBase3, holeRohacell3, t31, t32);
+  TGeoCompositeShape *rh3 = new TGeoCompositeShape(Form("rohacellBase3_D3_H%d",half), rohacellhole3);
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D3_H%d",half), rh3, rohacell);
+
+
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1626,13 +1663,15 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   TGeoTranslation *t42= new TGeoTranslation ("t42",0., - fHalfDiskGap , 0.);
   t42-> RegisterYourself();
   
-	TGeoCompositeShape *cs4 = new TGeoCompositeShape(Form("Carbon4_D4_H%d",half),
-																									 Form("(carbonBase4_D4_H%d:t41)-(holeCarbon4_D4_H%d:t42)",half,half));
-  TGeoVolume *carbonBaseWithHole = new TGeoVolume(Form("carbonBaseWithHole_D4_H%d",half), cs4, carbon);
-  carbonBaseWithHole->SetLineColor(kGray+3);
+  ///TGeoCompositeShape *cs4 = new TGeoCompositeShape(Form("Carbon4_D4_H%d",half),Form("(carbonBase4_D4_H%d:t41)-(holeCarbon4_D4_H%d:t42)",half,half));
+  TGeoSubtraction    *carbonhole4 = new TGeoSubtraction(carbonBase4, holeCarbon4, t41, t42);
+  TGeoCompositeShape *cs4 = new TGeoCompositeShape(Form("Carbon4_D4_H%d",half), carbonhole4);
+  TGeoVolume *carbonBaseWithHole4 = new TGeoVolume(Form("carbonBaseWithHole_D4_H%d",half), cs4, carbon);
+
+  carbonBaseWithHole4->SetLineColor(kGray+3);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation = new TGeoCombiTrans(0., 0., 0., rotation);
-  carbonPlate->AddNode(carbonBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
+  carbonPlate->AddNode(carbonBaseWithHole4, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   Double_t ty = fSupportYDimensions[disk][0];
   
@@ -1673,8 +1712,11 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   // TGeoTranslation *t4= new TGeoTranslation ("t4", 0., - fHalfDiskGap , 0.);
   // t4-> RegisterYourself();
   
-  cs4 = new TGeoCompositeShape(Form("rohacell_D4_H%d",half), Form("(rohacellBase4_D4_H%d:t41)-(holeRohacell4_D4_H%d:t42)",half,half));
-  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D4_H%d",half), cs4, rohacell);
+  ///cs4 = new TGeoCompositeShape(Form("rohacell_D4_H%d",half), Form("(rohacellBase4_D4_H%d:t41)-(holeRohacell4_D4_H%d:t42)",half,half));
+  TGeoSubtraction    *rohacellhole4 = new TGeoSubtraction(rohacellBase4, holeRohacell4, t41, t42);
+  TGeoCompositeShape *rh4 = new TGeoCompositeShape(Form("rohacellBase4_D4_H%d",half), rohacellhole4);
+  TGeoVolume *rohacellBaseWithHole = new TGeoVolume(Form("rohacellBaseWithHole_D4_H%d",half), rh4, rohacell);
+
   rohacellBaseWithHole->SetLineColor(kGray);
   rotation = new TGeoRotation ("rotation", 0., 0., 0.);
   transformation =  new TGeoCombiTrans(0., 0., 0., rotation);

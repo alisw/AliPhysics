@@ -1243,6 +1243,7 @@ void AliAnalysisManager::Terminate()
       TString cut;
       if (!f.IsZombie()) {
          TTree *tree = AliSysInfo::MakeTree("syswatch.log");
+         tree->SetDirectory(&f);
          tree->SetName("syswatch");
          tree->SetMarkerStyle(kCircle);
          tree->SetMarkerColor(kBlue);
@@ -1323,7 +1324,6 @@ void AliAnalysisManager::Terminate()
          tree->SetMarkerSize(0.5);
          tree->Write();
          f.Close();
-         delete tree;
       }
       if (crtdir) crtdir->cd();
    }

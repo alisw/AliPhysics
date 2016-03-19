@@ -24,21 +24,19 @@ class AliMFTSupport : public TNamed {
 public:
   
   AliMFTSupport();
-  AliMFTSupport(Double_t zIn, Double_t zOut, Double_t rMin, Double_t rMax, Bool_t isBottom); 
   
   virtual ~AliMFTSupport();
   
-  TGeoVolume * CreateVolume();
-  
+  TGeoVolumeAssembly* CreateVolume(Int_t half, Int_t disk);
+  TGeoVolumeAssembly* CreatePCBs(Int_t half, Int_t disk);
+  TGeoVolume* CreateSupport(Int_t half, Int_t disk);
+
   
 protected:
   
-  Double_t fZin;
-  Double_t fZout;
-  Double_t fRmin;
-  Double_t fRmax;
-  Bool_t   fIsBottom;
-
+  TGeoVolumeAssembly * fSupportVolume;
+  Double_t fSupportThickness;
+  Double_t fPCBThickness;
 
 private:
   

@@ -49,11 +49,7 @@ AliMUONPadInfo::AliMUONPadInfo()
   fPadSaturated(0),
   fPadCalibrated(0),
   fPedMean(0.),
-  fPedSigma(0.),
-  fGainA0(0.),
-  fGainA1(0.),
-  fGainThres(0),
-  fGainQual(0)
+  fPedSigma(0.)
 {
   /// default constructor
 }
@@ -72,11 +68,7 @@ AliMUONPadInfo::AliMUONPadInfo (const AliMUONPadInfo& padInfo)
   fPadSaturated(padInfo.fPadSaturated),
   fPadCalibrated(padInfo.fPadCalibrated),
   fPedMean(padInfo.fPedMean),
-  fPedSigma(padInfo.fPedSigma),
-  fGainA0(padInfo.fGainA0),
-  fGainA1(padInfo.fGainA1),
-  fGainThres(padInfo.fGainThres),
-  fGainQual(padInfo.fGainQual)
+  fPedSigma(padInfo.fPedSigma)
 {
   /// Copy constructor
 }
@@ -101,11 +93,7 @@ AliMUONPadInfo& AliMUONPadInfo::operator=(const AliMUONPadInfo& padInfo)
   fPadCalibrated = padInfo.fPadCalibrated;
   fPedMean = padInfo.fPedMean;
   fPedSigma = padInfo.fPedSigma;
-  fGainA0 = padInfo.fGainA0;
-  fGainA1 = padInfo.fGainA1;
-  fGainThres = padInfo.fGainThres;
-  fGainQual = padInfo.fGainQual;
-    
+  
   return *this;
 }
 
@@ -131,8 +119,6 @@ void AliMUONPadInfo::Print(Option_t* option) const
     
   if (strstr(option,"FULL")) {
     cout<<Form("    pedestal (mean=%5.2f, sigma=%5.2f)", GetPedMean(), GetPedSigma())<<endl;
-    cout<<Form("    gain (a0=%5.2f, a1=%5.2f, thres=%d, qual=%d)",
-	       GetGainA0(), GetGainA1(), GetGainThres(), GetGainQual())<<endl;
   }
   
 }

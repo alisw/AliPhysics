@@ -68,11 +68,6 @@
 ///    LDC1.config
 ///    LDC2.config
 ///    LDC3.config
-/// GAINS/
-///    LDC0.gain
-///    LDC1.gain
-///    LDC2.gain
-///    LDC3.gain
 /// GMS/
 ///    GMS.root
 /// OCCUPANCY/
@@ -84,13 +79,6 @@
 ///    LDC1.ped
 ///    LDC2.ped
 ///    LDC3.ped
-///    LDC4.conf
-/// CONFIG/
-///    LDC0.conf
-///    LDC1.conf
-///    LDC2.conf
-///    LDC3.conf
-///    LDC4.conf
 /// TRIGGER/
 ///    ExportedFiles.dat (mandatory)
 ///    MtgGlobalCrate-1.dat
@@ -151,13 +139,12 @@
 
 //______________________________________________________________________________
 void TestMUONPreprocessor(Int_t runNumber=80, 
-                          const char* runType="CALIBRATION",
+                          const char* runType="PHYSICS",
                           const char* sourceDirectory="$HOME/Downloads/muontestshuttle")
 {
   // runType can be :
   //
   // PEDESTAL -> pedestals
-  // CALIBRATION -> gains
   // PHYSICS -> HV
   // GMS
 
@@ -226,11 +213,6 @@ void TestMUONPreprocessor(Int_t runNumber=80,
     shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC4",Form("%s/CONFIG/LDC4.conf",sourceDirectory));
   }
   
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0",Form("%s/GAINS/LDC0.gain",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1",Form("%s/GAINS/LDC1.gain",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2",Form("%s/GAINS/LDC2.gain",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3",Form("%s/GAINS/LDC3.gain",sourceDirectory));
-
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","OCCUPANCY","MON",Form("%s/OCCUPANCY/mch.occupancy",sourceDirectory));
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","BPEVO","MON",Form("%s/BPEVO/mchbpevo.root",sourceDirectory));

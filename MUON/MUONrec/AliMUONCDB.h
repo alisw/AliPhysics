@@ -51,9 +51,6 @@ namespace AliMUONCDB
   Int_t MakeHVStore(TMap& aliasMap, Bool_t defaultValues);
   Int_t MakeTriggerDCSStore(TMap& aliasMap);
   Int_t MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues);
-  Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues);
-  Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
-  Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
   Int_t MakeOccupancyMapStore(AliMUONVStore& occupancyMap, Bool_t defaultValues);
   Int_t MakeBusPatchEvolution(AliMergeableCollection& bpevo, int timeResolution=60);
 
@@ -73,8 +70,6 @@ namespace AliMUONCDB
   void ReadIntegers(const char* filename, std::vector<int>& integers);
 
   void ShowConfig(Bool_t withStatusMap=kFALSE);
-  
-  void ShowCapacitances();
   
   void ShowFaultyBusPatches(const char* runlist, 
                             double occLimit=0.1,
@@ -97,9 +92,6 @@ namespace AliMUONCDB
   void WriteHV(const char* inputFile, Int_t runNumber);
 
   void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
-  void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
-  void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
-  void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteOccupancyMap(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteRejectList(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteConfig(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());

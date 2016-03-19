@@ -20,7 +20,6 @@
 #include "AliMUONPedestalSubprocessor.h"
 #include "AliMUONHVSubprocessor.h"
 #include "AliMUONGMSSubprocessor.h"
-#include "AliMUONGainSubprocessor.h"
 #include "AliMUONOccupancySubprocessor.h"
 #include "AliLog.h"
 #include "AliMUONBusPatchEvolutionSubprocessor.h"
@@ -50,7 +49,6 @@ AliMUONTrackerPreprocessor::AliMUONTrackerPreprocessor(AliShuttleInterface* shut
 fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
 fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
 fHVSubprocessor(new AliMUONHVSubprocessor(this,kTRUE)),
-fGainSubprocessor(new AliMUONGainSubprocessor(this)),
 fOccupancySubprocessor(new AliMUONOccupancySubprocessor(this)),
 fBusPatchEvolutionSubprocessor(new AliMUONBusPatchEvolutionSubprocessor(this)),
 fConfigSubprocessor(new AliMUONConfigSubprocessor(this))
@@ -71,7 +69,6 @@ AliMUONTrackerPreprocessor::~AliMUONTrackerPreprocessor()
   delete fPedestalSubprocessor;
   delete fGMSSubprocessor;
   delete fHVSubprocessor;
-  delete fGainSubprocessor;
   delete fOccupancySubprocessor;
   delete fBusPatchEvolutionSubprocessor;
   delete fConfigSubprocessor;
@@ -94,11 +91,6 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   {
     Add(fPedestalSubprocessor); // to be called only for pedestal runs
     Log("INFO-Will run Pedestal subprocessor");
-  }
-  else if ( runType == "CALIBRATION" )
-  {
-    Add(fGainSubprocessor); // to be called only for gain runs
-    Log("INFO-Will run Gain subprocessor");
   }
   else if ( runType == "GMS" )
   {

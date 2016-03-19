@@ -47,7 +47,7 @@ AliTPCChebDist::AliTPCChebDist(const char* name, const char* title,
   fNRows = fgNSlices;
   if (fNRows<2) AliFatalF("Number of rows=%d cannot be<2",fNRows);
   fDX = (fXMax-fXMin)/(fNRows-1);
-  if (fDX<=0)  AliFatalF("X boundaries are not invreasing: %f %f",fXMin,fXMax);
+  if (fDX<=0)  AliFatalF("X boundaries are not increasing: %f %f",fXMin,fXMax);
   fDXInv = 1./fDX;
   //
 }

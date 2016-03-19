@@ -74,9 +74,6 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRawSelector24(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector23(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fCalibrateNoGain(new TGCheckButton(fRawSelector22,"Ped sub")),
-  fCalibrateGainConstantCapa(new TGCheckButton(fRawSelector22,"Ped sub+gain (capa cste)")),
-  fCalibrateGain(new TGCheckButton(fRawSelector22,"Full calib (Ped sub+gain w/ capa)")),
-  fCalibrateEmelecGain(new TGCheckButton(fRawSelector22,"Full calib (Ped sub+inj gain w/ capa)")),
   fHistogramButton(new TGCheckButton(fRawSelector23,"Histogram")),
   fHistoMin(new TGNumberEntry(fRawSelector23,0)),
   fHistoMax(new TGNumberEntry(fRawSelector23,4096)),
@@ -154,9 +151,6 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRawSelector21->AddFrame(fFilePath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
   
   fRawSelector22->AddFrame(fCalibrateNoGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
-  fRawSelector22->AddFrame(fCalibrateGainConstantCapa, new TGLayoutHints(kLHintsTop,5,5,5,5));
-  fRawSelector22->AddFrame(fCalibrateGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
-  fRawSelector22->AddFrame(fCalibrateEmelecGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
   
   fRawSelector24->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
   fRawOCDBPath->SetEnabled(kFALSE);
@@ -186,9 +180,6 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRawSelector->AddFrame(createRawButton, new TGLayoutHints(kLHintsCenterY,5,5,5,5));
   
   fCalibrateNoGain->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
-  fCalibrateGainConstantCapa->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
-  fCalibrateGain->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
-  fCalibrateEmelecGain->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"CalibrateButtonClicked()");
   
   openButton->Connect("Clicked()",
                       "AliMUONPainterDataSourceFrame",
@@ -206,10 +197,8 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForOccupancy(),4);
   fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForHV(),3);
   fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForPedestals(),0);
-  fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForGains(),1);
   fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForStatus(),5);
   fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForStatusMap(),6);
-  fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForCapacitances(),2);
   fOCDBTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForRejectList(),8);
   fOCDBTypes->Select(0);
   fOCDBTypes->Resize(80,20);
@@ -242,8 +231,6 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fACFTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForConfig(),7);
   fACFTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForOccupancy(),4);
   fACFTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForPedestals(),0);
-  fACFTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForGains(),1);
-  fACFTypes->AddEntry(AliMUONTrackerDataSourceTypes::ShortNameForCapacitances(),2);
   fACFTypes->Select(0);
   fACFTypes->Resize(100,20);
   
@@ -316,10 +303,7 @@ AliMUONPainterDataSourceFrame::CalibrateButtonClicked()
 {
   /// Calibrate button was clicked.
   
-  if ( fCalibrateNoGain->IsOn() ||
-       fCalibrateGainConstantCapa->IsOn() ||
-       fCalibrateGain->IsOn() || 
-       fCalibrateEmelecGain->IsOn() ) 
+  if ( fCalibrateNoGain->IsOn() )
   {
     fRawOCDBPath->SetEnabled(kTRUE);
     fRawOCDBPath->SetFocus();
@@ -546,24 +530,6 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
   }
   
   TString calibMode("");
-  
-  if ( fCalibrateGain->IsOn() )
-  {
-    calibMode = "GAIN";
-    name = "CALC";
-  }
-  
-  if ( fCalibrateGainConstantCapa->IsOn() )
-  {
-    calibMode = "GAINCONSTANTCAPA";
-    name = "CALG";
-  }
-  
-  if ( fCalibrateEmelecGain->IsOn() )
-  {
-    calibMode = "INJECTIONGAIN";
-    name = "CALE";
-  }
   
   if ( fCalibrateNoGain->IsOn() )
   {

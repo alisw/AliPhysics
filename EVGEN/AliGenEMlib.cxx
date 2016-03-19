@@ -32,6 +32,8 @@
 #include "TString.h"
 #include "AliGenEMlib.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliGenEMlib)
 
@@ -278,11 +280,11 @@ Double_t AliGenEMlib::PtModifiedHagedornThermal(Double_t pt,
 
 
 Double_t AliGenEMlib::PtModifiedHagedornExp(Double_t pt,
-					    Double_t c,
-					    Double_t p1,
-					    Double_t p2,
-					    Double_t p0,
-					    Double_t n)
+                                            Double_t c,
+                                            Double_t p1,
+                                            Double_t p2,
+                                            Double_t p0,
+                                            Double_t n)
 {
   // Modified Hagedorn exponentiel fit to Pizero for PbPb:
   Double_t invYield;
@@ -326,12 +328,12 @@ Double_t AliGenEMlib::PtTsallis(Double_t pt,
 
 
 Double_t AliGenEMlib::PtXQCD( Double_t pt,
-			      Double_t a,
-			      Double_t b,
-			      Double_t c,
-			      Double_t d,
-			      Double_t e,
-			      Double_t f)
+                              Double_t a,
+                              Double_t b,
+                              Double_t c,
+                              Double_t d,
+                              Double_t e,
+                              Double_t f)
 {
   // QCD inspired function by Martin Wilde
   // DISCLAIMER: Please be careful outside of the measured pT range
@@ -342,12 +344,12 @@ Double_t AliGenEMlib::PtXQCD( Double_t pt,
   return invYield*(2*TMath::Pi()*pt);
 }
 
-Double_t AliGenEMlib::PtQCD( Double_t pt,
-			     Double_t a,
-			     Double_t b,
-			     Double_t c,
-			     Double_t d,
-			     Double_t e)
+Double_t AliGenEMlib::PtQCD(  Double_t pt,
+                              Double_t a,
+                              Double_t b,
+                              Double_t c,
+                              Double_t d,
+                              Double_t e)
 {
   // QCD inspired function by Martin Wilde
   // DISCLAIMER: Please be careful outside of the measured pT range
@@ -359,14 +361,14 @@ Double_t AliGenEMlib::PtQCD( Double_t pt,
 }
 
 Double_t AliGenEMlib::PtModTsallis( Double_t pt,
-				    Double_t a,
-				    Double_t b,
-				    Double_t c,
-				    Double_t d,
-				    Double_t e,
-				    Double_t f,
-				    Double_t g,
-				    Double_t mass)
+                                    Double_t a,
+                                    Double_t b,
+                                    Double_t c,
+                                    Double_t d,
+                                    Double_t e,
+                                    Double_t f,
+                                    Double_t g,
+                                    Double_t mass)
 {
 
   Double_t invYield = 0;
@@ -379,13 +381,13 @@ Double_t AliGenEMlib::PtModTsallis( Double_t pt,
 }
 
 Double_t AliGenEMlib::PtParticleRatiopp(Double_t pt,
-					Double_t m1,
-					Double_t m2,
-					Double_t c1,
-					Double_t c2,
-					Double_t T1,
-					Double_t T2,
-					Double_t n)
+                                        Double_t m1,
+                                        Double_t m2,
+                                        Double_t c1,
+                                        Double_t c2,
+                                        Double_t T1,
+                                        Double_t T2,
+                                        Double_t n)
 {
  
   Double_t ratio = 0;
@@ -467,13 +469,13 @@ Double_t AliGenEMlib::V2DirectRealGamma( const Double_t *px, const Double_t */*d
     ,{ 1.335000e-01, 1.076916e+00, 1.462605e-08, 2.785732e+00, 5.571464e+00, -2.356156e-02, 2.745437e+00, 2.785732e+00, 1.335000e-01, 1.571589e-02, 1.001131e+00, 0, 1, 5.179715e-03, 1.329344e+00, 4.5 } // 00-40
   };
   switch(fgSelectedCentrality){
-  case k0020: return V2Param(px,v2Param[0]); break;
-  case k2040: return V2Param(px,v2Param[1]); break;
-  case k0040: return V2Param(px,v2Param[2]); break;
-    // case k0010: return 0.43*V2Param(px,v2Param[1]); break;  //V2Pizero(0010)/V2Pizero(2040)=0.43 +-0.025
-    // case k1020: return 0.75*V2Param(px,v2Param[1]); break;  //V2Pizero(1020)/V2Pizero(2040)=0.75 +-0.04
-  case k0010: return 0.53*V2Param(px,v2Param[2]); break;  //V2Pizero(0010)/V2Pizero(0040)=0.53 +-0.03
-  case k1020: return 0.91*V2Param(px,v2Param[2]); break;  //V2Pizero(1020)/V2Pizero(0040)=0.91 +-0.04
+    case k0020: return V2Param(px,v2Param[0]); break;
+    case k2040: return V2Param(px,v2Param[1]); break;
+    case k0040: return V2Param(px,v2Param[2]); break;
+      // case k0010: return 0.43*V2Param(px,v2Param[1]); break;  //V2Pizero(0010)/V2Pizero(2040)=0.43 +-0.025
+      // case k1020: return 0.75*V2Param(px,v2Param[1]); break;  //V2Pizero(1020)/V2Pizero(2040)=0.75 +-0.04
+    case k0010: return 0.53*V2Param(px,v2Param[2]); break;  //V2Pizero(0010)/V2Pizero(0040)=0.53 +-0.03
+    case k1020: return 0.91*V2Param(px,v2Param[2]); break;  //V2Pizero(1020)/V2Pizero(0040)=0.91 +-0.04
   }
   return 0;
 }
@@ -535,7 +537,14 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
   // return pigammacorr*PtPromptRealGamma(px,px); //now the gammas from the pi->gg decay have the pt spectrum of prompt real gammas
  
   // fit functions and corresponding parameter of Pizero pT for pp @ 2.76 TeV and @ 7 TeV and for PbPb @ 2.76 TeV 
+//   std::cout << "intitializing collision system: " << fgSelectedCollisionsSystem <<"\t" << kpp900GeV <<"\t" << kpp2760GeV <<"\t" << kpp7TeV <<"\t" << kpPb <<"\t" << kPbPb << std::endl;
+//   std::cout << "centrality: " << fgSelectedCentrality <<"\t"<< kpp <<"\t"<<  k0005<<"\t"<< k0510<<"\t"<< k1020<<"\t"<< k2030<<"\t"<< std::endl
+//                                                           << k3040<<"\t"<< k4050<<"\t"<< k5060<<"\t"<< k0010<<"\t"<< k2040<<"\t"<< std::endl
+//                                                           << k4060<<"\t"<< k6080<<"\t"<< k0020<<"\t"<< k0040<<"\t"<< k2080<<"\t"<< std::endl
+//                                                           << k4080<< std::endl;
+//   std::cout << "parametrisation: " << fgSelectedPtParamPi0 << std::endl;
 
+  
   Double_t kc=0.;
   Double_t kn=0.;
   Double_t kcT=0.;
@@ -550,325 +559,325 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
   int oldCent;
   
   switch(fgSelectedCollisionsSystem) {
-  case kPbPb:
-    switch (fgSelectedPtParamPi0){
-    case kPichargedParamNew:
-      // fit to pi charged, same data like in kPiOldChargedPbPb,
-      // but tested and compared against newest (2014) neutral pi measurement
-      switch (fgSelectedCentrality){
-      case k0005:
-      case k0510:
-      case k1020:
-      case k2030:
-      case k3040:
-      case k4050:
-      case k5060:
-      case k2040:
-      case k4060:	
-	return PtModifiedHagedornPowerlaw(px,fgkPtParam[fgSelectedCentrality]);
-	break;
-      case k0010:
-	n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0005]);
-	n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0510]);
-	return (n1+n2)/2;
-	break;
-      case k0020:
-	n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0005]);
-	n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0510]);
-	n3=PtModifiedHagedornPowerlaw(px,fgkPtParam[k1020]);
-	return (n1+n2+2*n3)/4;
-	break;
-      case k0040:
-	n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0005]);
-	n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0510]);
-	n3=PtModifiedHagedornPowerlaw(px,fgkPtParam[k1020]);
-	n4=PtModifiedHagedornPowerlaw(px,fgkPtParam[k2040]);
-	return (n1+n2+2*n3+4*n4)/8;
-	break;
-      default:
-	return 0; 
+    case kPbPb:
+      switch (fgSelectedPtParamPi0){
+        case kPichargedParamNew:
+          // fit to pi charged, same data like in kPiOldChargedPbPb,
+          // but tested and compared against newest (2014) neutral pi measurement
+          switch (fgSelectedCentrality){
+            case k0005:
+            case k0510:
+            case k1020:
+            case k2030:
+            case k3040:
+            case k4050:
+            case k5060:
+            case k2040:
+            case k4060:
+              return PtModifiedHagedornPowerlaw(px,fgkPtParam[fgSelectedCentrality]);
+              break;
+            case k0010:
+              n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0005]);
+              n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0510]);
+              return (n1+n2)/2;
+              break;
+            case k0020:
+              n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0005]);
+              n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0510]);
+              n3=PtModifiedHagedornPowerlaw(px,fgkPtParam[k1020]);
+              return (n1+n2+2*n3)/4;
+              break;
+            case k0040:
+              n1=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0005]);
+              n2=PtModifiedHagedornPowerlaw(px,fgkPtParam[k0510]);
+              n3=PtModifiedHagedornPowerlaw(px,fgkPtParam[k1020]);
+              n4=PtModifiedHagedornPowerlaw(px,fgkPtParam[k2040]);
+              return (n1+n2+2*n3+4*n4)/8;
+              break;
+            default:
+              return 0; 
+          }
+
+        case kPichargedParamOld:
+          switch (fgSelectedCentrality){
+      // fit to pi charged v1
+      // charged pion from ToF, unidentified hadrons scaled with pion from TPC
+      // for Pb-Pb @ 2.76 TeV
+            case k0005:
+              kc=1347.5; kp0=0.9393; kp1=2.254; kn=11.294; kcT=0.002537; kT=2.414;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT); 
+              break;
+            case k0510:
+              kc=1256.1; kp0=0.9545; kp1=2.248; kn=11.291; kcT=0.002662; kT=2.326;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k2030:
+              kc=7421.6; kp0=1.2059; kp1=1.520; kn=10.220; kcT=0.002150; kT=2.196;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k3040:
+              kc=1183.2; kp0=1.0478; kp1=1.623; kn=9.8073; kcT=0.00198333; kT=2.073;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            // the following is what went into the Pb-Pb preliminary approval (0-10%)
+            case k0010:
+              kc=1296.0; kp0=0.968; kp1=2.567; kn=12.27; kcT=0.004219; kT=2.207;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k1020:
+              kc=986.0; kp0=0.9752; kp1=2.376; kn=11.62; kcT=0.003116; kT=2.213;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k2040:
+              kc=17337.0; kp0=1.337; kp1=1.507; kn=10.629; kcT=0.00184; kT=2.234;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k4050:
+              kc=6220.0; kp0=1.322; kp1=1.224; kn=9.378; kcT=0.000595; kT=2.383;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k5060:
+              kc=2319.0; kp0=1.267; kp1=1.188; kn=9.044; kcT=0.000437; kT=2.276;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k4060:
+              kc=4724.0; kp0=1.319; kp1=1.195; kn=9.255; kcT=0.000511; kT=2.344;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k6080:
+              kc=2842.0; kp0=1.465; kp1=0.8324; kn=8.167; kcT=0.0001049; kT=2.29;
+              return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
+              break;
+            case k0020:
+              oldCent=fgSelectedCentrality;
+              fgSelectedCentrality=k0010;
+              n1=PtPizero(px,px);
+              fgSelectedCentrality=k1020;
+              n2=PtPizero(px,px);
+              fgSelectedCentrality=oldCent;
+              return (n1+n2)/2;
+              break;
+            case k0040:
+              oldCent=fgSelectedCentrality;
+              fgSelectedCentrality=k0010;
+              n1=PtPizero(px,px);
+              fgSelectedCentrality=k1020;
+              n2=PtPizero(px,px);
+              fgSelectedCentrality=k2040;
+              n3=PtPizero(px,px);
+              fgSelectedCentrality=oldCent;
+              return (n1+n2+2*n3)/4;
+            default:
+              return 0; 
+          }
+          
+        case kPichargedParam:
+          switch (fgSelectedCentrality){
+            case k0010:
+            case k1020:
+            case k2040:
+            case k0020:
+            case k0040:
+            case k4080:
+              return PtModTsallis( *px,
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][0],
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][1],
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][2],
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][3],
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][4],
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][5],
+                                  fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][6],
+                                  0.135);
+              break;
+            default:
+              return 0;       
+          }
+          
+        case kPizeroParam:
+          switch (fgSelectedCentrality){
+            case k0010:
+            case k1020:
+            case k2040:
+            case k0020:
+            case k0040:
+            case k4080:
+              return PtModTsallis( *px,
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][0],
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][1],
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][2],
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][3],
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][4],
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][5],
+                                    fgkModTsallisParamPi0PbPb[fgSelectedCentrality][6],
+                                    0.135);
+                break;
+            default:
+              return 0;       
+          }
+        
+        default:
+          return 0;
+      }
+      
+    case kpPb:
+      // fit to charged pions for p-Pb @ 5.02TeV     
+      switch (fgSelectedPtParamPi0){
+        case kPichargedParam:
+          //kc=235.5; ka=0.6903; kb=0.06864; kp0=2.289; kp1=0.5872; kd=0.6474; kn=7.842; 
+          kc = 80.718314; ka = 0.510550; kb = 0.081444; kp0 = 3.415777; kp1 = 0.722887; kd = 0.820271; kn = 7.140332;
+          return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
+          break;
+        case kPichargedParamlow:
+          kc = 62.548591; ka = 0.410163; kb = 0.111024; kp0 = 3.643849; kp1 = 0.734388; kd = 0.889554; kn = 6.741050;
+          return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
+          break;
+        case kPichargedParamhigh:
+          kc = 105.785183; ka = 0.598377; kb = 0.055882; kp0 = 3.751795; kp1 = 0.679347; kd = 0.767044; kn = 7.516741;
+          return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
+          break;  
+        default:
+          return 0;
+  
+      }
+    case kpp7TeV:
+      switch (fgSelectedPtParamPi0){
+          // Tsallis fit to final pizero (PHOS+PCM) -> used for publication
+          // for pp @ 7 TeV    
+        case kPizeroParam: // fit to combined spectrum with stat errors only
+          return PtTsallis(*px,fgkParamSetPi07TeV[kPizeroParam][0],fgkParamSetPi07TeV[kPizeroParam][1],fgkParamSetPi07TeV[kPizeroParam][2],fgkParamSetPi07TeV[kPizeroParam][3]);
+          break;   
+        case kPizeroParamlow:
+          return PtModTsallis(    *px, 
+                fgkParamSetPi07TeV[kPizeroParamlow][0],
+                fgkParamSetPi07TeV[kPizeroParamlow][1],
+                fgkParamSetPi07TeV[kPizeroParamlow][2],
+                fgkParamSetPi07TeV[kPizeroParamlow][3],
+                fgkParamSetPi07TeV[kPizeroParamlow][4],
+                fgkParamSetPi07TeV[kPizeroParamlow][5],
+                fgkParamSetPi07TeV[kPizeroParamlow][6],
+                0.135);
+          break;
+        case kPizeroParamhigh:
+          return PtModTsallis(    *px, 
+                fgkParamSetPi07TeV[kPizeroParamhigh][0],
+                fgkParamSetPi07TeV[kPizeroParamhigh][1],
+                fgkParamSetPi07TeV[kPizeroParamhigh][2],
+                fgkParamSetPi07TeV[kPizeroParamhigh][3],
+                fgkParamSetPi07TeV[kPizeroParamhigh][4],
+                fgkParamSetPi07TeV[kPizeroParamhigh][5],
+                fgkParamSetPi07TeV[kPizeroParamhigh][6],
+                0.135);
+          break;
+        case kPichargedParamhigh: 
+          return PtModTsallis(    *px, 
+                fgkParamSetPi07TeV[kPichargedParamhigh][0],
+                fgkParamSetPi07TeV[kPichargedParamhigh][1],
+                fgkParamSetPi07TeV[kPichargedParamhigh][2],
+                fgkParamSetPi07TeV[kPichargedParamhigh][3],
+                fgkParamSetPi07TeV[kPichargedParamhigh][4],
+                fgkParamSetPi07TeV[kPichargedParamhigh][5],
+                fgkParamSetPi07TeV[kPichargedParamhigh][6],
+                0.135);
+          break;
+        
+        default:
+          return 0;
       }
 
-    case kPichargedParamOld:
-      switch (fgSelectedCentrality){
-	// fit to pi charged v1
-	// charged pion from ToF, unidentified hadrons scaled with pion from TPC
-	// for Pb-Pb @ 2.76 TeV
-      case k0005:
-	kc=1347.5; kp0=0.9393; kp1=2.254; kn=11.294; kcT=0.002537; kT=2.414;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT); 
-	break;
-      case k0510:
-	break;
-	kc=1256.1; kp0=0.9545; kp1=2.248; kn=11.291; kcT=0.002662; kT=2.326;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k2030:
-	kc=7421.6; kp0=1.2059; kp1=1.520; kn=10.220; kcT=0.002150; kT=2.196;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k3040:
-	kc=1183.2; kp0=1.0478; kp1=1.623; kn=9.8073; kcT=0.00198333; kT=2.073;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-	// the following is what went into the Pb-Pb preliminary approval (0-10%)
-      case k0010:
-	kc=1296.0; kp0=0.968; kp1=2.567; kn=12.27; kcT=0.004219; kT=2.207;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k1020:
-	kc=986.0; kp0=0.9752; kp1=2.376; kn=11.62; kcT=0.003116; kT=2.213;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k2040:
-	kc=17337.0; kp0=1.337; kp1=1.507; kn=10.629; kcT=0.00184; kT=2.234;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k4050:
-	kc=6220.0; kp0=1.322; kp1=1.224; kn=9.378; kcT=0.000595; kT=2.383;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k5060:
-	kc=2319.0; kp0=1.267; kp1=1.188; kn=9.044; kcT=0.000437; kT=2.276;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k4060:
-	kc=4724.0; kp0=1.319; kp1=1.195; kn=9.255; kcT=0.000511; kT=2.344;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k6080:
-	kc=2842.0; kp0=1.465; kp1=0.8324; kn=8.167; kcT=0.0001049; kT=2.29;
-	return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
-	break;
-      case k0020:
-	oldCent=fgSelectedCentrality;
-	fgSelectedCentrality=k0010;
-	n1=PtPizero(px,px);
-	fgSelectedCentrality=k1020;
-	n2=PtPizero(px,px);
-	fgSelectedCentrality=oldCent;
-	return (n1+n2)/2;
-	break;
-      case k0040:
-	oldCent=fgSelectedCentrality;
-	fgSelectedCentrality=k0010;
-	n1=PtPizero(px,px);
-	fgSelectedCentrality=k1020;
-	n2=PtPizero(px,px);
-	fgSelectedCentrality=k2040;
-	n3=PtPizero(px,px);
-	fgSelectedCentrality=oldCent;
-	return (n1+n2+2*n3)/4;
-      default:
-	return 0; 
-      }
       
-    case kPichargedParam:
-      switch (fgSelectedCentrality){
-      case k0010:
-      case k1020:
-      case k2040:
-      case k0020:
-      case k0040:
-      case k4080:
-	return PtModTsallis( *px,
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][0],
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][1],
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][2],
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][3],
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][4],
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][5],
-			     fgkModTsallisParamPiChargedPbPb[fgSelectedCentrality][6],
-			     0.135);
-	break;
-      default:
-	return 0;       
-      }
-      
-    case kPizeroParam:
-      switch (fgSelectedCentrality){
-      case k0010:
-      case k1020:
-      case k2040:
-      case k0020:
-      case k0040:
-      case k4080:
-	return PtModTsallis( *px,
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][0],
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][1],
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][2],
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][3],
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][4],
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][5],
-			     fgkModTsallisParamPi0PbPb[fgSelectedCentrality][6],
-			     0.135);
-	break;
-      default:
-	return 0;       
-      }
-      
-    default:
-      return 0;
-    }
+    case kpp2760GeV:
+      switch (fgSelectedPtParamPi0){
+          // Tsallis fit to pizero: published pi0
+          // for pp @ 2.76 TeV
+        case kPizeroParam: //published fit parameters
+          return PtTsallis(*px,fgkParamSetPi02760GeV[kPizeroParam][0],fgkParamSetPi02760GeV[kPizeroParam][1],fgkParamSetPi02760GeV[kPizeroParam][2],fgkParamSetPi02760GeV[kPizeroParam][3]);
+          break;
+        case kPizeroParamlow:
+          return PtModTsallis(  *px, 
+              fgkParamSetPi02760GeV[kPizeroParamlow][0], 
+              fgkParamSetPi02760GeV[kPizeroParamlow][1], 
+              fgkParamSetPi02760GeV[kPizeroParamlow][2], 
+              fgkParamSetPi02760GeV[kPizeroParamlow][3], 
+              fgkParamSetPi02760GeV[kPizeroParamlow][4], 
+              fgkParamSetPi02760GeV[kPizeroParamlow][5], 
+              fgkParamSetPi02760GeV[kPizeroParamlow][6], 
+              0.135);
+          break;
+        case kPizeroParamhigh:
+          return PtModTsallis(  *px, 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][0], 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][1], 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][2], 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][3], 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][4], 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][5], 
+              fgkParamSetPi02760GeV[kPizeroParamhigh][6], 
+              0.135);
+          break;
+        case kPichargedParam: 
+          return PtModTsallis(    *px, 
+                fgkParamSetPi02760GeV[kPichargedParam][0],
+                fgkParamSetPi02760GeV[kPichargedParam][1],
+                fgkParamSetPi02760GeV[kPichargedParam][2],
+                fgkParamSetPi02760GeV[kPichargedParam][3],
+                fgkParamSetPi02760GeV[kPichargedParam][4],
+                fgkParamSetPi02760GeV[kPichargedParam][5],
+                fgkParamSetPi02760GeV[kPichargedParam][6],
+                0.135);
+          break;
+        case kPizeroParamAlter: 
+          return PtQCD(  *px, 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][0], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][1], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][2], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][3], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][4]);
+          break;
+        case kPizeroParamAlterlow:
+          return PtQCD(  *px, 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][0], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][1], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][2], 
+            fgkParamSetPi02760GeV[kPizeroParamAlter][3],
+            fgkParamSetPi02760GeV[kPizeroParamAlter][4]);
+          break;
+        default:
+          return 0;   
+      }  
+    case kpp900GeV:
+      switch (fgSelectedPtParamPi0){
+          // Tsallis fit to pizero: published pi0
+          // for pp @ 0.9 TeV
+        case kPizeroParam: //published fit parameters
+          return PtTsallis( *px,
+          fgkParamSetPi0900GeV[kPizeroParam][0],
+          fgkParamSetPi0900GeV[kPizeroParam][1],
+          fgkParamSetPi0900GeV[kPizeroParam][2],
+          fgkParamSetPi0900GeV[kPizeroParam][3]);
+          break;
+        case kPizeroParamAlter:
+          return PtQCD(  *px, 
+            fgkParamSetPi0900GeV[kPizeroParamAlter][0], 
+            fgkParamSetPi0900GeV[kPizeroParamAlter][1], 
+            fgkParamSetPi0900GeV[kPizeroParamAlter][2], 
+            fgkParamSetPi0900GeV[kPizeroParamAlter][3], 
+            fgkParamSetPi0900GeV[kPizeroParamAlter][4]);
+          break;
+        case kPizeroParamhigh:
+          return PtQCD(  *px, 
+            fgkParamSetPi0900GeV[kPizeroParamAlterlow][0], 
+            fgkParamSetPi0900GeV[kPizeroParamAlterlow][1], 
+            fgkParamSetPi0900GeV[kPizeroParamAlterlow][2], 
+            fgkParamSetPi0900GeV[kPizeroParamAlterlow][3], 
+            fgkParamSetPi0900GeV[kPizeroParamAlterlow][4]);
+          break;
+        default:
+          return 0;   
+      }  
     
-  case kpPb:
-    // fit to charged pions for p-Pb @ 5.02TeV     
-    switch (fgSelectedPtParamPi0){
-    case kPichargedParam:
-      //kc=235.5; ka=0.6903; kb=0.06864; kp0=2.289; kp1=0.5872; kd=0.6474; kn=7.842; 
-      kc = 80.718314; ka = 0.510550; kb = 0.081444; kp0 = 3.415777; kp1 = 0.722887; kd = 0.820271; kn = 7.140332;
-      return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
-      break;
-    case kPichargedParamlow:
-      kc = 62.548591; ka = 0.410163; kb = 0.111024; kp0 = 3.643849; kp1 = 0.734388; kd = 0.889554; kn = 6.741050;
-      return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
-      break;
-    case kPichargedParamhigh:
-      kc = 105.785183; ka = 0.598377; kb = 0.055882; kp0 = 3.751795; kp1 = 0.679347; kd = 0.767044; kn = 7.516741;
-      return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
-      break;  
     default:
+      cout << "ERROR:: No valid collision system defined: "<< fgSelectedCollisionsSystem << endl;;
       return 0;
- 
-    }
-  case kpp7TeV:
-    switch (fgSelectedPtParamPi0){
-      // Tsallis fit to final pizero (PHOS+PCM) -> used for publication
-      // for pp @ 7 TeV    
-    case kPizeroParam: // fit to combined spectrum with stat errors only
-      return PtTsallis(*px,fgkParamSetPi07TeV[kPizeroParam][0],fgkParamSetPi07TeV[kPizeroParam][1],fgkParamSetPi07TeV[kPizeroParam][2],fgkParamSetPi07TeV[kPizeroParam][3]);
-      break;   
-    case kPizeroParamlow:
-      return PtModTsallis(    *px, 
-			      fgkParamSetPi07TeV[kPizeroParamlow][0],
-			      fgkParamSetPi07TeV[kPizeroParamlow][1],
-			      fgkParamSetPi07TeV[kPizeroParamlow][2],
-			      fgkParamSetPi07TeV[kPizeroParamlow][3],
-			      fgkParamSetPi07TeV[kPizeroParamlow][4],
-			      fgkParamSetPi07TeV[kPizeroParamlow][5],
-			      fgkParamSetPi07TeV[kPizeroParamlow][6],
-			      0.135);
-      break;
-    case kPizeroParamhigh:
-      return PtModTsallis(    *px, 
-			      fgkParamSetPi07TeV[kPizeroParamhigh][0],
-			      fgkParamSetPi07TeV[kPizeroParamhigh][1],
-			      fgkParamSetPi07TeV[kPizeroParamhigh][2],
-			      fgkParamSetPi07TeV[kPizeroParamhigh][3],
-			      fgkParamSetPi07TeV[kPizeroParamhigh][4],
-			      fgkParamSetPi07TeV[kPizeroParamhigh][5],
-			      fgkParamSetPi07TeV[kPizeroParamhigh][6],
-			      0.135);
-      break;
-    case kPichargedParamhigh: 
-      return PtModTsallis(    *px, 
-			      fgkParamSetPi07TeV[kPichargedParamhigh][0],
-			      fgkParamSetPi07TeV[kPichargedParamhigh][1],
-			      fgkParamSetPi07TeV[kPichargedParamhigh][2],
-			      fgkParamSetPi07TeV[kPichargedParamhigh][3],
-			      fgkParamSetPi07TeV[kPichargedParamhigh][4],
-			      fgkParamSetPi07TeV[kPichargedParamhigh][5],
-			      fgkParamSetPi07TeV[kPichargedParamhigh][6],
-			      0.135);
-      break;
-     
-    default:
-      return 0;
-    }
-
-    
-  case kpp2760GeV:
-    switch (fgSelectedPtParamPi0){
-      // Tsallis fit to pizero: published pi0
-      // for pp @ 2.76 TeV
-    case kPizeroParam: //published fit parameters
-      return PtTsallis(*px,fgkParamSetPi02760GeV[kPizeroParam][0],fgkParamSetPi02760GeV[kPizeroParam][1],fgkParamSetPi02760GeV[kPizeroParam][2],fgkParamSetPi02760GeV[kPizeroParam][3]);
-      break;
-    case kPizeroParamlow:
-      return PtModTsallis(  *px, 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][0], 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][1], 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][2], 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][3], 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][4], 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][5], 
-			    fgkParamSetPi02760GeV[kPizeroParamlow][6], 
-			    0.135);
-      break;
-    case kPizeroParamhigh:
-      return PtModTsallis(  *px, 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][0], 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][1], 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][2], 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][3], 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][4], 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][5], 
-			    fgkParamSetPi02760GeV[kPizeroParamhigh][6], 
-			    0.135);
-      break;
-    case kPichargedParam: 
-      return PtModTsallis(    *px, 
-			      fgkParamSetPi02760GeV[kPichargedParam][0],
-			      fgkParamSetPi02760GeV[kPichargedParam][1],
-			      fgkParamSetPi02760GeV[kPichargedParam][2],
-			      fgkParamSetPi02760GeV[kPichargedParam][3],
-			      fgkParamSetPi02760GeV[kPichargedParam][4],
-			      fgkParamSetPi02760GeV[kPichargedParam][5],
-			      fgkParamSetPi02760GeV[kPichargedParam][6],
-			      0.135);
-      break;
-    case kPizeroParamAlter: 
-      return PtQCD(  *px, 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][0], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][1], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][2], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][3], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][4]);
-      break;
-    case kPizeroParamAlterlow:
-      return PtQCD(  *px, 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][0], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][1], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][2], 
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][3],
-		     fgkParamSetPi02760GeV[kPizeroParamAlter][4]);
-      break;
-    default:
-      return 0;   
-    }  
-  case kpp900GeV:
-    switch (fgSelectedPtParamPi0){
-      // Tsallis fit to pizero: published pi0
-      // for pp @ 0.9 TeV
-    case kPizeroParam: //published fit parameters
-      return PtTsallis( *px,
-			fgkParamSetPi0900GeV[kPizeroParam][0],
-			fgkParamSetPi0900GeV[kPizeroParam][1],
-			fgkParamSetPi0900GeV[kPizeroParam][2],
-			fgkParamSetPi0900GeV[kPizeroParam][3]);
-      break;
-    case kPizeroParamAlter:
-      return PtQCD(  *px, 
-		     fgkParamSetPi0900GeV[kPizeroParamAlter][0], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlter][1], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlter][2], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlter][3], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlter][4]);
-      break;
-    case kPizeroParamhigh:
-      return PtQCD(  *px, 
-		     fgkParamSetPi0900GeV[kPizeroParamAlterlow][0], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlterlow][1], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlterlow][2], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlterlow][3], 
-		     fgkParamSetPi0900GeV[kPizeroParamAlterlow][4]);
-      break;
-    default:
-      return 0;   
-    }  
-   
-  default:
-    return 0;
   }
 
 }
@@ -884,47 +893,47 @@ Double_t AliGenEMlib::V2Pizero( const Double_t *px, const Double_t */*dummy*/ )
   double n1,n2,n3,n4,n5;
   double v1,v2,v3,v4,v5;
   switch(fgSelectedCollisionsSystem|fgSelectedCentrality) {
-  case kPbPb|k0010:
-    n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
-    v1=V2Param(px,fgkV2param[k0005]);
-    n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
-    v2=V2Param(px,fgkV2param[k0510]);
-    return (n1*v1+n2*v2)/(n1+n2);
-    break;
-  case kPbPb|k0020:
-    n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
-    v1=V2Param(px,fgkV2param[k0005]);
-    n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
-    v2=V2Param(px,fgkV2param[k0510]);
-    n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
-    v3=V2Param(px,fgkV2param[k1020]);
-    // raw yeilds are not normalized per event
-    return (n1*v1+n2*v2+n3*v3)/(n1+n2+n3);
-    break;
-  case kPbPb|k2040:
-    n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
-    v1=V2Param(px,fgkV2param[k2030]);
-    n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
-    v2=V2Param(px,fgkV2param[k3040]);
-    return (n1*v1+n2*v2)/(n1+n2);
-    break;
-  case kPbPb|k0040:
-    n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
-    v1=V2Param(px,fgkV2param[k0005]);
-    n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
-    v2=V2Param(px,fgkV2param[k0510]);
-    n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
-    v3=V2Param(px,fgkV2param[k1020]);
-    n4=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
-    v4=V2Param(px,fgkV2param[k2030]);
-    n5=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
-    v5=V2Param(px,fgkV2param[k3040]);
-    // raw yeilds are not normalized per event
-    return (n1*v1+n2*v2+n3*v3+n4*v4+n5*v5)/(n1+n2+n3+n4+n5);
-    break;
+    case kPbPb|k0010:
+      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
+      v1=V2Param(px,fgkV2param[k0005]);
+      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
+      v2=V2Param(px,fgkV2param[k0510]);
+      return (n1*v1+n2*v2)/(n1+n2);
+      break;
+    case kPbPb|k0020:
+      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
+      v1=V2Param(px,fgkV2param[k0005]);
+      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
+      v2=V2Param(px,fgkV2param[k0510]);
+      n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
+      v3=V2Param(px,fgkV2param[k1020]);
+      // raw yeilds are not normalized per event
+      return (n1*v1+n2*v2+n3*v3)/(n1+n2+n3);
+      break;
+    case kPbPb|k2040:
+      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
+      v1=V2Param(px,fgkV2param[k2030]);
+      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
+      v2=V2Param(px,fgkV2param[k3040]);
+      return (n1*v1+n2*v2)/(n1+n2);
+      break;
+    case kPbPb|k0040:
+      n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
+      v1=V2Param(px,fgkV2param[k0005]);
+      n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
+      v2=V2Param(px,fgkV2param[k0510]);
+      n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
+      v3=V2Param(px,fgkV2param[k1020]);
+      n4=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
+      v4=V2Param(px,fgkV2param[k2030]);
+      n5=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
+      v5=V2Param(px,fgkV2param[k3040]);
+      // raw yeilds are not normalized per event
+      return (n1*v1+n2*v2+n3*v3+n4*v4+n5*v5)/(n1+n2+n3+n4+n5);
+      break;
 
-  default:
-    return V2Param(px,fgkV2param[fgSelectedCentrality]);
+    default:
+      return V2Param(px,fgkV2param[fgSelectedCentrality]);
   }
 }
 
@@ -967,56 +976,56 @@ Double_t AliGenEMlib::PtEta( const Double_t *px, const Double_t */*dummy*/ )
   Double_t krn = 0.;
  
   switch(fgSelectedCollisionsSystem){
-  case kpp7TeV:
-    switch(fgSelectedPtParamEta){ 
-      // Tsallis fit to final eta (PHOS+PCM) -> used stat errors only for final publication
-      // for pp @ 7 TeV
-    case kEtaParamRatiopp:
-      krm1 = 0.547853; krm2 = 0.134977; krc1 = 1.44198e+11; krc2 = 2.06751e+12 ; krT1 = 0.154567 ; krT2 = 0.139634 ; krn=32.0715; 
-      kmPi0=0.134977; kcPi0=2.31335/(2*TMath::Pi()); kTPi0=0.1433; knPi0=7.003;
-      return PtParticleRatiopp(*px, krm1, krm2, krc1, krc2, krT1, krT2, krn) * PtTsallis(*px,kmPi0,kcPi0,kTPi0,knPi0);
-      break;
-    case kEtaParampp:
-      km = 0.547853; kc = 0.290164/(2*TMath::Pi()); kT = 0.212; kn = 7.352;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-      // NOTE: None of these parametrisations look right - no idea where they come from 
-    case kEtaParampplow:
-      km = 0.547853; kc = 1.970; kT = 0.253; kn = 7.591;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kEtaParampphigh:
-      km = 0.547853; kc = 3.060; kT = 0.212; kn = 6.578;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kEtaMtScal:
+    case kpp7TeV:
+      switch(fgSelectedPtParamEta){ 
+        // Tsallis fit to final eta (PHOS+PCM) -> used stat errors only for final publication
+        // for pp @ 7 TeV
+        case kEtaParamRatiopp:
+          krm1 = 0.547853; krm2 = 0.134977; krc1 = 1.44198e+11; krc2 = 2.06751e+12 ; krT1 = 0.154567 ; krT2 = 0.139634 ; krn=32.0715; 
+          kmPi0=0.134977; kcPi0=2.31335/(2*TMath::Pi()); kTPi0=0.1433; knPi0=7.003;
+          return PtParticleRatiopp(*px, krm1, krm2, krc1, krc2, krT1, krT2, krn) * PtTsallis(*px,kmPi0,kcPi0,kTPi0,knPi0);
+          break;
+        case kEtaParampp:
+          km = 0.547853; kc = 0.290164/(2*TMath::Pi()); kT = 0.212; kn = 7.352;
+          return PtTsallis(*px,km,kc,kT,kn);
+          break;
+          // NOTE: None of these parametrisations look right - no idea where they come from 
+        case kEtaParampplow:
+          km = 0.547853; kc = 1.970; kT = 0.253; kn = 7.591;
+          return PtTsallis(*px,km,kc,kT,kn);
+          break;
+        case kEtaParampphigh:
+          km = 0.547853; kc = 3.060; kT = 0.212; kn = 6.578;
+          return PtTsallis(*px,km,kc,kT,kn);
+          break;
+        case kEtaMtScal:
+        default:
+          return MtScal(*px,kEta);
+      }
+    case kpp2760GeV: 
+      switch(fgSelectedPtParamEta){ 
+        // Tsallis fit to preliminary eta (QM'11)
+        // for pp @ 2.76 TeV
+        // NOTE: None of these parametrisations look right - no idea where they come from
+        case kEtaParampp:
+          km = 0.547853; kc = 1.971; kT = 0.188; kn = 6.308;
+          return PtTsallis(*px,km,kc,kT,kn);
+        case kEtaParampplow:
+          km = 0.547853; kc = 1.228; kT = 0.220; kn = 7.030;
+          return PtTsallis(*px,km,kc,kT,kn);
+          break;
+        case kEtaParampphigh:
+          km = 0.547853; kc = 2.802; kT = 0.164; kn = 5.815;
+          return PtTsallis(*px,km,kc,kT,kn);
+          break;
+        case kEtaMtScal:
+        default:
+          return MtScal(*px,kEta);
+          break;
+      }
     default:
       return MtScal(*px,kEta);
-    }
-  case kpp2760GeV: 
-    switch(fgSelectedPtParamEta){ 
-      // Tsallis fit to preliminary eta (QM'11)
-      // for pp @ 2.76 TeV
-      // NOTE: None of these parametrisations look right - no idea where they come from
-    case kEtaParampp:
-      km = 0.547853; kc = 1.971; kT = 0.188; kn = 6.308;
-      return PtTsallis(*px,km,kc,kT,kn);
-    case kEtaParampplow:
-      km = 0.547853; kc = 1.228; kT = 0.220; kn = 7.030;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kEtaParampphigh:
-      km = 0.547853; kc = 2.802; kT = 0.164; kn = 5.815;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kEtaMtScal:
-    default:
-      return MtScal(*px,kEta);
-      break;
-    }
-  default:
-    return MtScal(*px,kEta);
-    break; 
+      break; 
   }
 }
 
@@ -1097,26 +1106,26 @@ Double_t AliGenEMlib::PtOmega( const Double_t *px, const Double_t */*dummy*/ )
   Double_t krn = 0.;
  
   switch(fgSelectedCollisionsSystem){
-  case kpp7TeV:
-    switch(fgSelectedPtParamOmega){ 
-      // Tsallis fit to final omega (PHOS) -> stat errors only, preliminary QM12
-      // for pp @ 7 TeV
-    case kOmegaParamRatiopp:
-      krm1 = 0.78265; krm2 = 0.134977; krc1 = 21240028553.4600143433; krc2 = 168266377865.0805969238 ; krT1 = 0.21175 ; krT2 = 0.14328 ; krn=12.8831831756; 
-      kmPi0=0.134977; kcPi0=2.31335/(2*TMath::Pi()); kTPi0=0.1433; knPi0=7.003;
-      return PtParticleRatiopp(*px, krm1, krm2, krc1, krc2, krT1, krT2, krn) * PtTsallis(*px,kmPi0,kcPi0,kTPi0,knPi0);
-      break;
-    case kOmegaParampp:
-      km = 0.78265; kc = 0.340051/(2*TMath::Pi()); kT = 0.206; kn = 6.31422;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kOmegaMtScal:
+    case kpp7TeV:
+      switch(fgSelectedPtParamOmega){ 
+        // Tsallis fit to final omega (PHOS) -> stat errors only, preliminary QM12
+        // for pp @ 7 TeV
+      case kOmegaParamRatiopp:
+        krm1 = 0.78265; krm2 = 0.134977; krc1 = 21240028553.4600143433; krc2 = 168266377865.0805969238 ; krT1 = 0.21175 ; krT2 = 0.14328 ; krn=12.8831831756; 
+        kmPi0=0.134977; kcPi0=2.31335/(2*TMath::Pi()); kTPi0=0.1433; knPi0=7.003;
+        return PtParticleRatiopp(*px, krm1, krm2, krc1, krc2, krT1, krT2, krn) * PtTsallis(*px,kmPi0,kcPi0,kTPi0,knPi0);
+        break;
+      case kOmegaParampp:
+        km = 0.78265; kc = 0.340051/(2*TMath::Pi()); kT = 0.206; kn = 6.31422;
+        return PtTsallis(*px,km,kc,kT,kn);
+        break;
+      case kOmegaMtScal:
+      default:
+        return MtScal(*px,kOmega);
+      }
     default:
       return MtScal(*px,kOmega);
-    }
-  default:
-    return MtScal(*px,kOmega);
-    break; 
+      break; 
   }
  
   return MtScal(*px,kOmega);
@@ -1205,40 +1214,40 @@ Double_t AliGenEMlib::PtPhi( const Double_t *px, const Double_t */*dummy*/ )
     //     default:
     //      return MtScal(*px,kPhi);
     //    }
-  case kpp7TeV:
-    switch(fgSelectedPtParamPhi){ 
-      // Tsallis fit to final phi->K+K- (TPC, ITS) -> stat+syst
-      // for pp @ 7 TeV
-    case kPhiParampp:
-      km = 1.01946; kc = 0.0269578/(2*TMath::Pi()); kT = 0.2718119311; kn = 6.6755739295;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kPhiMtScal:
+    case kpp7TeV:
+      switch(fgSelectedPtParamPhi){ 
+        // Tsallis fit to final phi->K+K- (TPC, ITS) -> stat+syst
+        // for pp @ 7 TeV
+      case kPhiParampp:
+        km = 1.01946; kc = 0.0269578/(2*TMath::Pi()); kT = 0.2718119311; kn = 6.6755739295;
+        return PtTsallis(*px,km,kc,kT,kn);
+        break;
+      case kPhiMtScal:
+      default:
+        return MtScal(*px,kPhi);
+      }
+    case kpPb: 
+      switch(fgSelectedPtParamPhi){ 
+        // for pPb @ 5.02 TeV
+      case kPhiParamPPb:
+        km = 1.01946; kc = 0.13484191317 / (2*TMath::Pi()); kT = 0.44560169252; kn = 12.78215005772;
+        return PtTsallis(*px,km,kc,kT,kn);
+        break;
+      case kPhiParamPPblow:
+        km = 1.01946; kc = 0.12420303835 / (2*TMath::Pi()); kT = 0.45097611367; kn = 13.18917228630;
+        return PtTsallis(*px,km,kc,kT,kn);
+        break;
+      case kPhiParamPPbhigh:
+        km = 1.01946; kc = 0.14548654894 / (2*TMath::Pi()); kT = 0.44101775738; kn = 12.45359262330; 
+        return PtTsallis(*px,km,kc,kT,kn);
+        break;    
+      case kPhiMtScal:
+      default:
+        return MtScal(*px,kPhi);
+      } 
     default:
       return MtScal(*px,kPhi);
-    }
-  case kpPb: 
-    switch(fgSelectedPtParamPhi){ 
-      // for pPb @ 5.02 TeV
-    case kPhiParamPPb:
-      km = 1.01946; kc = 0.13484191317 / (2*TMath::Pi()); kT = 0.44560169252; kn = 12.78215005772;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kPhiParamPPblow:
-      km = 1.01946; kc = 0.12420303835 / (2*TMath::Pi()); kT = 0.45097611367; kn = 13.18917228630;
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;
-    case kPhiParamPPbhigh:
-      km = 1.01946; kc = 0.14548654894 / (2*TMath::Pi()); kT = 0.44101775738; kn = 12.45359262330; 
-      return PtTsallis(*px,km,kc,kT,kn);
-      break;    
-    case kPhiMtScal:
-    default:
-      return MtScal(*px,kPhi);
-    } 
-  default:
-    return MtScal(*px,kPhi);
-    break; 
+      break; 
   }
   return MtScal(*px,kPhi);
 
@@ -1275,11 +1284,11 @@ Double_t AliGenEMlib::PtJpsi( const Double_t *px, const Double_t */*dummy*/ )
   };
   const double pt=px[0]*2.28/2.613;
   switch(fgSelectedCollisionsSystem|fgSelectedCentrality) {
-  case kPbPb|k0020: return 2.405*PtDoublePowerlaw(&pt,jpsiPtParam[0]); break;
-  case kPbPb|k2040: return 2.405*PtDoublePowerlaw(&pt,jpsiPtParam[1]); break;
-  case kPbPb|k0040: return 0.5*2.405*(PtDoublePowerlaw(&pt,jpsiPtParam[0])+PtDoublePowerlaw(&pt,jpsiPtParam[1])); break;
-  default:
-    return MtScal(*px,kJpsi);
+    case kPbPb|k0020: return 2.405*PtDoublePowerlaw(&pt,jpsiPtParam[0]); break;
+    case kPbPb|k2040: return 2.405*PtDoublePowerlaw(&pt,jpsiPtParam[1]); break;
+    case kPbPb|k0040: return 0.5*2.405*(PtDoublePowerlaw(&pt,jpsiPtParam[0])+PtDoublePowerlaw(&pt,jpsiPtParam[1])); break;
+    default:
+      return MtScal(*px,kJpsi);
   }
   return 0;
 }
@@ -1293,13 +1302,13 @@ Double_t AliGenEMlib::V2Jpsi( const Double_t *px, const Double_t */*dummy*/ )
 {
   const static Double_t v2Param[16] = { 1.156000e-01, 8.936854e-01, 0.000000e+00, 4.000000e+00, 6.222375e+00, -1.600314e-01, 8.766676e-01, 7.824143e+00, 1.156000e-01, 3.484503e-02, 4.413685e-01, 0, 1, 3.484503e-02, 4.413685e-01, 7.2 };
   switch(fgSelectedCollisionsSystem|fgSelectedCentrality){
-  case kPbPb|k2040: return V2Param(px,v2Param); break;
-  case kPbPb|k0010: return 0.43*V2Param(px,v2Param); break;  //V2Pizero(0010)/V2Pizero(2040)=0.43 +-0.025
-  case kPbPb|k1020: return 0.75*V2Param(px,v2Param); break;  //V2Pizero(1020)/V2Pizero(2040)=0.75 +-0.04
-  case kPbPb|k0020: return 0.66*V2Param(px,v2Param); break;  //V2Pizero(0020)/V2Pizero(2040)=0.66 +-0.035
-  case kPbPb|k0040: return 0.82*V2Param(px,v2Param); break;  //V2Pizero(0040)/V2Pizero(2040)=0.82 +-0.05
-  default:
-    return KEtScal(*px,kJpsi);
+    case kPbPb|k2040: return V2Param(px,v2Param); break;
+    case kPbPb|k0010: return 0.43*V2Param(px,v2Param); break;  //V2Pizero(0010)/V2Pizero(2040)=0.43 +-0.025
+    case kPbPb|k1020: return 0.75*V2Param(px,v2Param); break;  //V2Pizero(1020)/V2Pizero(2040)=0.75 +-0.04
+    case kPbPb|k0020: return 0.66*V2Param(px,v2Param); break;  //V2Pizero(0020)/V2Pizero(2040)=0.66 +-0.035
+    case kPbPb|k0040: return 0.82*V2Param(px,v2Param); break;  //V2Pizero(0040)/V2Pizero(2040)=0.82 +-0.05
+    default:
+      return KEtScal(*px,kJpsi);
   }
   return 0;
 }
@@ -1357,34 +1366,33 @@ Double_t AliGenEMlib::PtK0short( const Double_t *px, const Double_t */*dummy*/ )
   Double_t kf = 0;
   
   switch (fgSelectedCentrality){
-  case k0010:
-    ka =9.21859; kb=5.71299; kc=-3.34251; kd=0.48796; ke=0.0192272; kf=3.82224;
-    return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
-    break;
-  case k1020:
-    ka=6.2377; kb=5.6133; kc=-117.295; kd=3.51154; ke=36.3047; kf=0.456243;
-    return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
-    break;
-  case k0020:
-    ka=7.7278; kb=5.6686; kc=-3.29259; kd=0.475403; ke=0.0223951; kf=3.69326;
-    return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
-    break;
-  case k2040:
-    ka=3.38301; kb= 5.5323; kc=-96.078; kd=3.30782; ke=31.085; kf=0.466908;
-    return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
-    break;
-  case k0040:
-    ka=5.55478; kb=5.61919; kc=-125.635; kd=3.5637; ke=38.9668; kf=0.47068;
-    return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
-    break;
-  case k4080:
-    ka=0.731606; kb=5.49931; kc=-25.3106; kd=2.2439; ke=8.25063; kf= 0.289288;
-    return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
-    break;
-  default:
-    return MtScal(*px,kK0s);
-    break;
-     
+    case k0010:
+      ka =9.21859; kb=5.71299; kc=-3.34251; kd=0.48796; ke=0.0192272; kf=3.82224;
+      return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
+      break;
+    case k1020:
+      ka=6.2377; kb=5.6133; kc=-117.295; kd=3.51154; ke=36.3047; kf=0.456243;
+      return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
+      break;
+    case k0020:
+      ka=7.7278; kb=5.6686; kc=-3.29259; kd=0.475403; ke=0.0223951; kf=3.69326;
+      return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
+      break;
+    case k2040:
+      ka=3.38301; kb= 5.5323; kc=-96.078; kd=3.30782; ke=31.085; kf=0.466908;
+      return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
+      break;
+    case k0040:
+      ka=5.55478; kb=5.61919; kc=-125.635; kd=3.5637; ke=38.9668; kf=0.47068;
+      return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
+      break;
+    case k4080:
+      ka=0.731606; kb=5.49931; kc=-25.3106; kd=2.2439; ke=8.25063; kf= 0.289288;
+      return PtXQCD( *px, ka, kb, kc, kd, ke, kf);
+      break;
+    default:
+      return MtScal(*px,kK0s);
+      break;     
   }
 }
 Double_t AliGenEMlib::YK0short( const Double_t *py, const Double_t */*dummy*/ )
@@ -1640,24 +1648,24 @@ Double_t AliGenEMlib::MtScal(Double_t pt, Int_t np)
 
   Int_t selectedCol;
   switch (fgSelectedCollisionsSystem){
-  case kpp900GeV:
-    selectedCol=0;
-    break;
-  case kpp2760GeV:
-    selectedCol=0;
-    break;
-  case kpp7TeV:
-    selectedCol=0;
-    break;
-  case kpPb:
-    selectedCol=1;
-    break;
-  case kPbPb:
-    selectedCol=2;
-    break;
-  default:
-    selectedCol=0;
-    printf("<AliGenEMlib::MtScal> no collision system has been given\n");
+    case kpp900GeV:
+      selectedCol=0;
+      break;
+    case kpp2760GeV:
+      selectedCol=0;
+      break;
+    case kpp7TeV:
+      selectedCol=0;
+      break;
+    case kpPb:
+      selectedCol=1;
+      break;
+    case kPbPb:
+      selectedCol=2;
+      break;
+    default:
+      selectedCol=0;
+      printf("<AliGenEMlib::MtScal> no collision system has been given\n");
   }
  
   Double_t norm = fgkMtFactor[selectedCol][np] * (PtPizero(&NormPt, (Double_t*) 0) / PtPizero(&scaledNormPt, (Double_t*) 0));
@@ -1694,21 +1702,21 @@ Double_t AliGenEMlib::V2Flat(const Double_t */*px*/, const Double_t */*param*/)
 
 Double_t AliGenEMlib::GetTAA(Int_t cent){
   const static Double_t taa[16] = { 1.0,    // pp
-				    26.32,  // 0-5
-				    20.56,  // 5-10
-				    14.39,  // 10-20
-				    8.70,   // 20-30
-				    5.001,  // 30-40
-				    2.675,  // 40-50
-				    1.317,  // 50-60
-				    23.44,  // 0-10
-				    6.85,   // 20-40
-				    1.996,  // 40-60
-				    0.4174, // 60-80
-				    18.91,  // 0-20
-				    12.88,  // 0-40
-				    3.088,  // 20-80
-				    1.207}; // 40-80
+                                    26.32,  // 0-5
+                                    20.56,  // 5-10
+                                    14.39,  // 10-20
+                                    8.70,   // 20-30
+                                    5.001,  // 30-40
+                                    2.675,  // 40-50
+                                    1.317,  // 50-60
+                                    23.44,  // 0-10
+                                    6.85,   // 20-40
+                                    1.996,  // 40-60
+                                    0.4174, // 60-80
+                                    18.91,  // 0-20
+                                    12.88,  // 0-40
+                                    3.088,  // 20-80
+                                    1.207}; // 40-80
   return taa[cent];  
 }
 
@@ -1729,63 +1737,63 @@ GenFunc AliGenEMlib::GetPt(Int_t param, const char * tname) const
   TString sname(tname);
 
   switch (param) {
-  case kDirectRealGamma:
-    func=PtDirectRealGamma;
-    break;
-  case kDirectVirtGamma:
-    func=PtDirectVirtGamma;
-    break;
-  case kPizero:
-    func=PtPizero;
-    break;
-  case kEta:
-    func=PtEta;
-    break;
-  case kRho0:
-    func=PtRho0;
-    break;
-  case kOmega:
-    func=PtOmega;
-    break;
-  case kEtaprime:
-    func=PtEtaprime;
-    break;
-  case kPhi:
-    func=PtPhi;
-    break;
-  case kJpsi:
-    func=PtJpsi;
-    break;
-  case kSigma0:
-    func= PtSigma;
-    break;
-  case kK0s:
-    func= PtK0short;
-    break;
-  case kDeltaPlPl:
-    func= PtDeltaPlPl;
-    break;
-  case kDeltaPl:
-    func= PtDeltaPlPl;
-    break;
-  case kDeltaMi:
-    func= PtDeltaMi;
-    break;
-  case kDeltaZero:
-    func= PtDeltaZero;
-    break;
-  case kRhoPl:
-    func= PtRhoPl;
-    break;
-  case kRhoMi:
-    func= PtRhoMi;
-    break;
-  case kK0star:
-    func= PtK0star;
-    break;
-  default:
-    func=0;
-    printf("<AliGenEMlib::GetPt> unknown parametrisation\n");
+    case kDirectRealGamma:
+      func=PtDirectRealGamma;
+      break;
+    case kDirectVirtGamma:
+      func=PtDirectVirtGamma;
+      break;
+    case kPizero:
+      func=PtPizero;
+      break;
+    case kEta:
+      func=PtEta;
+      break;
+    case kRho0:
+      func=PtRho0;
+      break;
+    case kOmega:
+      func=PtOmega;
+      break;
+    case kEtaprime:
+      func=PtEtaprime;
+      break;
+    case kPhi:
+      func=PtPhi;
+      break;
+    case kJpsi:
+      func=PtJpsi;
+      break;
+    case kSigma0:
+      func= PtSigma;
+      break;
+    case kK0s:
+      func= PtK0short;
+      break;
+    case kDeltaPlPl:
+      func= PtDeltaPlPl;
+      break;
+    case kDeltaPl:
+      func= PtDeltaPlPl;
+      break;
+    case kDeltaMi:
+      func= PtDeltaMi;
+      break;
+    case kDeltaZero:
+      func= PtDeltaZero;
+      break;
+    case kRhoPl:
+      func= PtRhoPl;
+      break;
+    case kRhoMi:
+      func= PtRhoMi;
+      break;
+    case kK0star:
+      func= PtK0star;
+      break;
+    default:
+      func=0;
+      printf("<AliGenEMlib::GetPt> unknown parametrisation\n");
   }
   return func;
 }
@@ -1797,63 +1805,63 @@ GenFunc AliGenEMlib::GetY(Int_t param, const char * tname) const
   TString sname(tname);
 
   switch (param) {
-  case kDirectRealGamma:
-    func=YDirectRealGamma;
-    break;
-  case kDirectVirtGamma:
-    func=YDirectVirtGamma;
-    break;
-  case kPizero:
-    func=YPizero;
-    break;
-  case kEta:
-    func=YEta;
-    break;
-  case kRho0:
-    func=YRho0;
-    break;
-  case kOmega:
-    func=YOmega;
-    break;
-  case kEtaprime:
-    func=YEtaprime;
-    break;
-  case kPhi:
-    func=YPhi;
-    break;
-  case kJpsi:
-    func=YJpsi;
-    break;
-  case kSigma0:
-    func=YSigma;
-    break;   
-  case kK0s:
-    func=YK0short;
-    break;
-  case kDeltaPlPl:
-    func=YDeltaPlPl;
-    break;
-  case kDeltaPl:
-    func=YDeltaPl;
-    break;
-  case kDeltaMi:
-    func=YDeltaMi;
-    break;
-  case kDeltaZero:
-    func=YDeltaZero;
-    break;
-  case kRhoPl:
-    func=YRhoPl;
-    break;
-  case kRhoMi:
-    func=YRhoMi;
-    break;
-  case kK0star:
-    func=YK0star;
-    break;
-  default:
-    func=0;
-    printf("<AliGenEMlib::GetY> unknown parametrisation\n");
+    case kDirectRealGamma:
+      func=YDirectRealGamma;
+      break;
+    case kDirectVirtGamma:
+      func=YDirectVirtGamma;
+      break;
+    case kPizero:
+      func=YPizero;
+      break;
+    case kEta:
+      func=YEta;
+      break;
+    case kRho0:
+      func=YRho0;
+      break;
+    case kOmega:
+      func=YOmega;
+      break;
+    case kEtaprime:
+      func=YEtaprime;
+      break;
+    case kPhi:
+      func=YPhi;
+      break;
+    case kJpsi:
+      func=YJpsi;
+      break;
+    case kSigma0:
+      func=YSigma;
+      break;   
+    case kK0s:
+      func=YK0short;
+      break;
+    case kDeltaPlPl:
+      func=YDeltaPlPl;
+      break;
+    case kDeltaPl:
+      func=YDeltaPl;
+      break;
+    case kDeltaMi:
+      func=YDeltaMi;
+      break;
+    case kDeltaZero:
+      func=YDeltaZero;
+      break;
+    case kRhoPl:
+      func=YRhoPl;
+      break;
+    case kRhoMi:
+      func=YRhoMi;
+      break;
+    case kK0star:
+      func=YK0star;
+      break;
+    default:
+      func=0;
+      printf("<AliGenEMlib::GetY> unknown parametrisation\n");
   }
   return func;
 }
@@ -1865,63 +1873,63 @@ GenFuncIp AliGenEMlib::GetIp(Int_t param, const char * tname) const
   TString sname(tname);
 
   switch (param) {
-  case kDirectRealGamma:
-    func=IpDirectRealGamma;
-    break;
-  case kDirectVirtGamma:
-    func=IpDirectVirtGamma;
-    break;
-  case kPizero:
-    func=IpPizero;
-    break;
-  case kEta:
-    func=IpEta;
-    break;
-  case kRho0:
-    func=IpRho0;
-    break;
-  case kOmega:
-    func=IpOmega;
-    break;
-  case kEtaprime:
-    func=IpEtaprime;
-    break;
-  case kPhi:
-    func=IpPhi;
-    break;
-  case kJpsi:
-    func=IpJpsi;
-    break;
-  case kSigma0:
-    func=IpSigma;
-    break; 
-  case kK0s:
-    func=IpK0short;
-    break;
-  case kDeltaPlPl:
-    func=IpDeltaPlPl;
-    break;
-  case kDeltaPl:
-    func=IpDeltaPl;
-    break;
-  case kDeltaMi:
-    func=IpDeltaMi;
-    break;
-  case kDeltaZero:
-    func=IpDeltaZero;
-    break;
-  case kRhoPl:
-    func=IpRhoPl;
-    break;
-  case kRhoMi:
-    func=IpRhoMi;
-    break;
-  case kK0star:
-    func=IpK0star;
-    break;
-  default:
-    func=0;
-    printf("<AliGenEMlib::GetIp> unknown parametrisation\n");
+    case kDirectRealGamma:
+      func=IpDirectRealGamma;
+      break;
+    case kDirectVirtGamma:
+      func=IpDirectVirtGamma;
+      break;
+    case kPizero:
+      func=IpPizero;
+      break;
+    case kEta:
+      func=IpEta;
+      break;
+    case kRho0:
+      func=IpRho0;
+      break;
+    case kOmega:
+      func=IpOmega;
+      break;
+    case kEtaprime:
+      func=IpEtaprime;
+      break;
+    case kPhi:
+      func=IpPhi;
+      break;
+    case kJpsi:
+      func=IpJpsi;
+      break;
+    case kSigma0:
+      func=IpSigma;
+      break; 
+    case kK0s:
+      func=IpK0short;
+      break;
+    case kDeltaPlPl:
+      func=IpDeltaPlPl;
+      break;
+    case kDeltaPl:
+      func=IpDeltaPl;
+      break;
+    case kDeltaMi:
+      func=IpDeltaMi;
+      break;
+    case kDeltaZero:
+      func=IpDeltaZero;
+      break;
+    case kRhoPl:
+      func=IpRhoPl;
+      break;
+    case kRhoMi:
+      func=IpRhoMi;
+      break;
+    case kK0star:
+      func=IpK0star;
+      break;
+    default:
+      func=0;
+      printf("<AliGenEMlib::GetIp> unknown parametrisation\n");
   }
   return func;
 }
@@ -1933,64 +1941,64 @@ GenFunc AliGenEMlib::GetV2(Int_t param, const char * tname) const
   TString sname(tname);
 
   switch (param) {
-  case kDirectRealGamma:
-    func=V2DirectRealGamma;
-    break;
-  case kDirectVirtGamma:
-    func=V2DirectVirtGamma;
-    break;
-  case kPizero:
-    func=V2Pizero;
-    break;
-  case kEta:
-    func=V2Eta;
-    break;
-  case kRho0:
-    func=V2Rho0;
-    break;
-  case kOmega:
-    func=V2Omega;
-    break;
-  case kEtaprime:
-    func=V2Etaprime;
-    break;
-  case kPhi:
-    func=V2Phi;
-    break;
-  case kJpsi:
-    func=V2Jpsi;
-    break;
-  case kSigma0:
-    func=V2Sigma0;
-    break;   
-  case kK0s:
-    func=V2K0sshort;
-    break;
-  case kDeltaPlPl:
-    func=V2DeltaPlPl;
-    break;
-  case kDeltaPl:
-    func=V2DeltaPl;
-    break;
-  case kDeltaMi:
-    func=V2DeltaMi;
-    break;
-  case kDeltaZero:
-    func=V2DeltaZero;
-    break;
-  case kRhoPl:
-    func=V2RhoPl;
-    break;
-  case kRhoMi:
-    func=V2RhoMi;
-    break;
-  case kK0star:
-    func=V2K0star;
-    break;
+    case kDirectRealGamma:
+      func=V2DirectRealGamma;
+      break;
+    case kDirectVirtGamma:
+      func=V2DirectVirtGamma;
+      break;
+    case kPizero:
+      func=V2Pizero;
+      break;
+    case kEta:
+      func=V2Eta;
+      break;
+    case kRho0:
+      func=V2Rho0;
+      break;
+    case kOmega:
+      func=V2Omega;
+      break;
+    case kEtaprime:
+      func=V2Etaprime;
+      break;
+    case kPhi:
+      func=V2Phi;
+      break;
+    case kJpsi:
+      func=V2Jpsi;
+      break;
+    case kSigma0:
+      func=V2Sigma0;
+      break;   
+    case kK0s:
+      func=V2K0sshort;
+      break;
+    case kDeltaPlPl:
+      func=V2DeltaPlPl;
+      break;
+    case kDeltaPl:
+      func=V2DeltaPl;
+      break;
+    case kDeltaMi:
+      func=V2DeltaMi;
+      break;
+    case kDeltaZero:
+      func=V2DeltaZero;
+      break;
+    case kRhoPl:
+      func=V2RhoPl;
+      break;
+    case kRhoMi:
+      func=V2RhoMi;
+      break;
+    case kK0star:
+      func=V2K0star;
+      break;
 
-  default:
-    func=0;
-    printf("<AliGenEMlib::GetV2> unknown parametrisation\n");
+    default:
+      func=0;
+      printf("<AliGenEMlib::GetV2> unknown parametrisation\n");
   }
   return func;
 }

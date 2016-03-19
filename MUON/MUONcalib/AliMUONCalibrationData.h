@@ -38,14 +38,6 @@ public:
   AliMUONCalibrationData(Int_t runNumber=-1, Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONCalibrationData();
 
-  AliMUONVStore* Capacitances() const;
-
-  /// Create a capa store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreateCapacitances(Int_t runNumber, Int_t* startOfValidity=0);
-
-  /// Create a gain store (which must be deleted) from OCDB for the given run
-  static AliMUONVStore* CreateGains(Int_t runNumber, Int_t* startOfValidity=0);
-
   /// Create a global trigger mask (which must be deleted) from OCDB for the given run
   static AliMUONGlobalCrateConfig* CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* startOfValidity=0);
   
@@ -81,14 +73,8 @@ public:
   /// Create a trigger efficiency map (which must be deleted) for a given run
   static AliMUONTriggerEfficiencyCells* CreateTriggerEfficiency(Int_t runNumber, Int_t* startOfValidity=0);
   
-  /// Get all the gains
-  AliMUONVStore* Gains() const;
-
   /// Get the configuration for the global trigger board.
   AliMUONGlobalCrateConfig* GlobalTriggerCrateConfig() const;
-    
-  /// Get the Gain calibration object for channels within (detElemId,manuId).
-  AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
     
   /// Get the HV values. Use patched=kFALSE to get unprocessed (i.e. "raw") values as they are in the OCDB
   TMap* HV(Bool_t patched=kTRUE) const;
@@ -142,7 +128,7 @@ public:
   
   static void Check(Int_t runNumber);
 
-  static void BypassStores(AliMUONVStore* ped, AliMUONVStore* gain);
+  static void BypassStores(AliMUONVStore* ped);
 
   static void PatchSt1DCSAliases(TMap& hvMap);
   
@@ -170,7 +156,6 @@ protected:
 private:
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
   Int_t fRunNumber; ///<  The run number for which we hold calibrations
-  mutable AliMUONVStore* fGains; //!<! Gains
   mutable AliMUONVStore* fPedestals; //!<! Pedestals
   mutable TMap* fHV; //!<! HV
   mutable TMap* fTriggerDCS; //!<! Trigger HV and Currents
@@ -180,7 +165,6 @@ private:
   
   mutable AliMUONTriggerLut* fTriggerLut; //!<! TRigger LUTs
   mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!<! Trigger efficiency cells
-  mutable AliMUONVStore* fCapacitances; //!<! Manu capacitances
   mutable AliMUONVStore* fNeighbours; //!<! list of neighbours for all channels
   
   mutable AliMUONVStore* fOccupancyMap; //!<! occupancy map
@@ -188,14 +172,13 @@ private:
   mutable AliMUONRejectList* fRejectList; //!<! reject list
 
   static AliMUONVStore* fgBypassPedestals;
-  static AliMUONVStore* fgBypassGains;
   
   mutable AliMUONVStore* fConfig; //!<! configuration of the tracker
   
   static UInt_t fgkPatchHVDCSAliasesSt1WasAppliedMask; //!<! mask to indicate that the DCS alias naming is not messed up in St1
   static UInt_t fgkPatchHVAllWasAppliedMask; //!<! mask to indicate that HV values were massaged already
   
-  ClassDef(AliMUONCalibrationData,14) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,16) // Storage for all MUON calibration data.
 };
 
 #endif

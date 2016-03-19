@@ -12,6 +12,9 @@ PAR_LIBDEPS := @PARLIBDEPS@
 # Current OS
 OS := $(shell uname)
 
+# ROOT major version
+ROOT_MAJOR_VERSION := $(shell root-config --version | cut -f1 -d.)
+
 # Include paths: take into consideration "extra includes" (manually entered by users) and includes
 # from other previously enabled PARfiles
 PAR_EXTRAINCLUDES = @PAREXTRAINCLUDES@
@@ -26,7 +29,7 @@ PAR_CXXFLAGS = $(CXXFLAGS) $(PAR_INCLUDES)
 # Get linker flags from ROOT
 PAR_SOFLAGS = $(SOFLAGS) $(LDFLAGS)
 ifeq ($(OS),Darwin)
-	# Only on OS X
+# Only on OS X
 	PAR_SOFLAGS += -undefined dynamic_lookup
 endif
 
@@ -72,12 +75,19 @@ G__$(PAR_MODULE).h: G__$(PAR_MODULE).cxx
 
 G__$(PAR_MODULE).cxx: $(HDRS) $(DHDR)
 	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] generating dictionary")
+ifeq ($(ROOT_MAJOR_VERSION),5)
 	@rootcint -f $@ -c -p $(ROOT_DEFINES) $(PAR_INCLUDES) $^
+endif
+ifeq ($(ROOT_MAJOR_VERSION),6)
+	@rootcint -f $@ -rmf lib${PAR_MODULE}.rootmap -rml lib${PAR_MODULE} $(ROOT_DEFINES) $(PAR_INCLUDES) $^
+endif
 
 # Generate rootmap (for automatic loading of libraries)
 lib$(PAR_MODULE).rootmap: lib$(PAR_MODULE).so
 	@$(call ECHO,"[$(COLM)$(PAR_MODULE)$(COLZ)] generating rootmap")
+ifeq ($(ROOT_MAJOR_VERSION),5)
 	@rlibmap -o $@ -l lib$(PAR_MODULE) -d $(PAR_LIBDEPS) -c $(DHDR)
+endif
 
 # Delete all
 clean:

@@ -144,6 +144,13 @@ int main(int argc, char **argv)
   const Int_t caloFlagMax=3,modMax=5,cellXMax=64,cellZMax=56;
   TH1F *hPed[5][3][64][56] = {};
 
+  TH1F *hPedHiMean1m1 = new TH1F("hPedHiMean1m1","Mean pedestals in module 1, high gain" ,100,0.,100.);
+  TH1F *hPedHiRMS1m1  = new TH1F("hPedHiRMS1m1" ,"RMS pedestals in module 1, high gain"  ,100,0.,50.);
+  TH1F *hPedLoMean1m1 = new TH1F("hPedLoMean1m1","Mean pedestals in module 1, low gain"  ,100,0.,100.);
+  TH1F *hPedLoRMS1m1  = new TH1F("hPedLoRMS1m1" ,"RMS pedestals in module 1, low gain"   ,100,0.,50.);
+  TH1F *hPedTRUMean1m1 = new TH1F("hPedTRUMean1m1","Mean pedestals in module 1, TRU"     ,1000,0.,1000.);
+  TH1F *hPedTRURMS1m1  = new TH1F("hPedTRURMS1m1" ,"RMS pedestals in module 1, TRU"      ,100,0.,50.);
+
   TH1F *hPedHiMean1m2 = new TH1F("hPedHiMean1m2","Mean pedestals in module 2, high gain" ,100,0.,100.);
   TH1F *hPedHiRMS1m2  = new TH1F("hPedHiRMS1m2" ,"RMS pedestals in module 2, high gain"  ,100,0.,50.);
   TH1F *hPedLoMean1m2 = new TH1F("hPedLoMean1m2","Mean pedestals in module 2, low gain"  ,100,0.,100.);
@@ -165,6 +172,12 @@ int main(int argc, char **argv)
   TH1F *hPedTRUMean1m4 = new TH1F("hPedTRUMean1m4","Mean pedestals in module 4, TRU"     ,1000,0.,1000.);
   TH1F *hPedTRURMS1m4  = new TH1F("hPedTRURMS1m4" ,"RMS pedestals in module 4, TRU"      ,100,0.,50.);
 
+  hPedHiMean1m1->Sumw2();
+  hPedHiRMS1m1 ->Sumw2();
+  hPedLoMean1m1->Sumw2();
+  hPedLoRMS1m1 ->Sumw2();
+  hPedTRUMean1m1->Sumw2();
+  hPedTRURMS1m1 ->Sumw2();
   hPedHiMean1m2->Sumw2();
   hPedHiRMS1m2 ->Sumw2();
   hPedLoMean1m2->Sumw2();
@@ -183,6 +196,19 @@ int main(int argc, char **argv)
   hPedLoRMS1m4 ->Sumw2();
   hPedTRUMean1m4->Sumw2();
   hPedTRURMS1m4 ->Sumw2();
+
+  TH2F *hPedHiMeanm1  = new TH2F("hPedHiMeanm1","Mean pedestals in module 1, high gain",
+			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
+  TH2F *hPedHiRMSm1   = new TH2F("hPedHiRMSm1" ,"R.M.S. of pedestals in module 1, high gain",
+			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
+  TH2F *hPedHiNumm1   = new TH2F("hPedHiNumm1" ,"Number of pedestals in module 1, high gain",
+			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
+  TH2F *hPedLoMeanm1  = new TH2F("hPedLoMeanm1","Mean pedestals in module 1, low gain",
+			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
+  TH2F *hPedLoRMSm1   = new TH2F("hPedLoRMSm1" ,"R.M.S. of pedestals in module 1, low gain",
+			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
+  TH2F *hPedLoNumm1   = new TH2F("hPedLoNumm1" ,"Number of pedestals in module 1, low gain",
+			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
 
   TH2F *hPedHiMeanm2  = new TH2F("hPedHiMeanm2","Mean pedestals in module 2, high gain",
 			       cellXMax,0.,cellXMax, cellZMax,0.,cellZMax);
@@ -328,13 +354,20 @@ int main(int argc, char **argv)
 
   // Fill 2-dim histograms for mean, rms and n pedestals
   
-  for (Int_t mod=2; mod<=4; mod++) {
+  for (Int_t mod=1; mod<=4; mod++) {
     for (Int_t caloFlag=0; caloFlag<2; caloFlag++) {
       for (Int_t cellX=0; cellX<cellXMax; cellX++) {
 	for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
 	  if (hPed[mod][caloFlag][cellX][cellZ] != 0) {
 	    if      (caloFlag == 0) {
-	      if (mod==2) {
+	      if (mod==1) {
+		hPedLoMean1m1->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m1 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoMeanm1 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMSm1  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoNumm1  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	      else if (mod==2) {
 		hPedLoMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
 		hPedLoRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
 		hPedLoMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
@@ -357,6 +390,13 @@ int main(int argc, char **argv)
 	      }
 	    }
 	    else if (caloFlag == 1) {
+	      if (mod==1) {
+		hPedHiMean1m1->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m1 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedHiMeanm1 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMSm1  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedHiNumm1  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
 	      if (mod==2) {
 		hPedHiMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
 		hPedHiRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
@@ -380,6 +420,10 @@ int main(int argc, char **argv)
 	      }
 	    }
 	    else if (caloFlag == 2) {
+	      if (mod==1) {
+		hPedTRUMean1m1->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m1 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      }
 	      if (mod==2) {
 		hPedTRUMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
 		hPedTRURMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
@@ -404,19 +448,30 @@ int main(int argc, char **argv)
   TString fileName = "PHOS_PED.root";
   TFile *file = new TFile(fileName,"RECREATE");
   
-  for (Int_t mod=2; mod<=3; mod++) {
-    for (Int_t caloFlag=0; caloFlag<caloFlagMax; caloFlag++) {
-      for (Int_t mod=0; mod<modMax; mod++) {
-	for (Int_t cellX=0; cellX<cellXMax; cellX++) {
-	  for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
-	    if (hPed[mod][caloFlag][cellX][cellZ] != 0)
-	      hPed[mod][caloFlag][cellX][cellZ]->Write();
-	  }
+  for (Int_t caloFlag=0; caloFlag<caloFlagMax; caloFlag++) {
+    for (Int_t mod=0; mod<modMax; mod++) {
+      for (Int_t cellX=0; cellX<cellXMax; cellX++) {
+	for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
+	  if (hPed[mod][caloFlag][cellX][cellZ] != 0)
+	    hPed[mod][caloFlag][cellX][cellZ]->Write();
 	}
       }
     }
   }
   
+  hPedHiMean1m1->Write();
+  hPedHiRMS1m1 ->Write();
+  hPedLoMean1m1->Write();
+  hPedLoRMS1m1 ->Write();
+  hPedHiMeanm1 ->Write();
+  hPedHiRMSm1  ->Write();
+  hPedHiNumm1  ->Write();
+  hPedLoMeanm1 ->Write();
+  hPedLoRMSm1  ->Write();
+  hPedLoNumm1  ->Write();
+  hPedTRUMean1m1->Write();
+  hPedTRURMS1m1 ->Write();
+
   hPedHiMean1m2->Write();
   hPedHiRMS1m2 ->Write();
   hPedLoMean1m2->Write();

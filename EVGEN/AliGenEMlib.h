@@ -22,48 +22,50 @@ class AliGenEMlib :public AliGenLib {
 public:
 
   enum Particle_t{ kPizero=0, kEta=1, kRho0=2, kOmega=3, kEtaprime=4, kPhi=5, kJpsi=6,
-		   kSigma0=7, kK0s=8, kDeltaPlPl=9, kDeltaPl=10, kDeltaMi=11, kDeltaZero=12,
-		   kRhoPl=13, kRhoMi=14, kK0star=15, kDirectRealGamma=16, kDirectVirtGamma=17 };
+       kSigma0=7, kK0s=8, kDeltaPlPl=9, kDeltaPl=10, kDeltaMi=11, kDeltaZero=12,
+       kRhoPl=13, kRhoMi=14, kK0star=15, kDirectRealGamma=16, kDirectVirtGamma=17 };
   
-  enum CollisionSystem_t {kpp900GeV=0x000, kpp2760GeV=0x100, kpp7TeV=0x200, kpPb=0x300, kPbPb=0x400};
+  enum CollisionSystem_t {kpp900GeV=0x000, kpp2760GeV=0x64, kpp7TeV=0xC8, kpPb=0x12C, kPbPb=0x190};
 
+
+  
   enum Centrality_t{ kpp = 0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7,
-		     k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
+         k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
   
   enum PtParamSetPi0_t{ kPizeroParam, kPizeroParamlow, kPizeroParamhigh, kPichargedParam,
-			kPichargedParamlow, kPichargedParamhigh, kPizeroParamAlter,
-			kPizeroParamAlterlow, kPizeroParamAlterhigh, kNPi0Param,
-			kPichargedParamNew, kPichargedParamOld };
+      kPichargedParamlow, kPichargedParamhigh, kPizeroParamAlter,
+      kPizeroParamAlterlow, kPizeroParamAlterhigh, kNPi0Param,
+      kPichargedParamNew, kPichargedParamOld };
   
   enum PtParamSetEta_t{ kEtaMtScal=0, kEtaParampp, kEtaParampplow, kEtaParampphigh,
-		        kEtaParamRatiopp, kEtaParamRatiopplow, kEtaParamRatiopphigh,
-		        kEtaParamPbPb, kEtaParamPPb };
+            kEtaParamRatiopp, kEtaParamRatiopplow, kEtaParamRatiopphigh,
+            kEtaParamPbPb, kEtaParamPPb };
   
   enum PtParamSetOmega_t{ kOmegaMtScal=0, kOmegaParampp, kOmegaParampplow, kOmegaParampphigh,
-			  kOmegaParamRatiopp, kOmegaParamRatiopplow, kOmegaParamRatiopphigh,
-			  kOmegaParamPbPb, kOmegaParamPPb };
+        kOmegaParamRatiopp, kOmegaParamRatiopplow, kOmegaParamRatiopphigh,
+        kOmegaParamPbPb, kOmegaParamPPb };
   
   enum PtParamSetPhi_t{ kPhiMtScal=0, kPhiParampp, kPhiParampplow, kPhiParampphigh,
-		        kPhiParamPbPb, kPhiParamPPb, kPhiParamPPblow, kPhiParamPPbhigh };
+            kPhiParamPbPb, kPhiParamPPb, kPhiParamPPblow, kPhiParamPPbhigh };
   
   enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
  
   AliGenEMlib() { } ;
 
   static void SelectParams( Int_t collisionSystem,
-			    Int_t ptSelectPi0, 
-			    Int_t ptSelectEta=kEtaMtScal, 
-			    Int_t ptSelectOmega=kOmegaMtScal,
-			    Int_t ptSelectPhi=kPhiMtScal, 
-			    Int_t centSelect=kpp, 
-			    Int_t v2sys=kNoV2Sys) {  
-    fgSelectedCollisionsSystem = collisionSystem;
-    fgSelectedPtParamPi0=ptSelectPi0; 
-    fgSelectedPtParamEta=ptSelectEta; 
-    fgSelectedPtParamOmega=ptSelectOmega; 
-    fgSelectedPtParamPhi=ptSelectPhi; 
-    fgSelectedCentrality=centSelect; 
-    fgSelectedV2Systematic=v2sys; 
+                            Int_t ptSelectPi0, 
+                            Int_t ptSelectEta     = kEtaMtScal, 
+                            Int_t ptSelectOmega   = kOmegaMtScal,
+                            Int_t ptSelectPhi     = kPhiMtScal, 
+                            Int_t centSelect      = kpp, 
+                            Int_t v2sys           = kNoV2Sys) {  
+    fgSelectedCollisionsSystem  = collisionSystem;
+    fgSelectedPtParamPi0        = ptSelectPi0; 
+    fgSelectedPtParamEta        = ptSelectEta; 
+    fgSelectedPtParamOmega      = ptSelectOmega; 
+    fgSelectedPtParamPhi        = ptSelectPhi; 
+    fgSelectedCentrality        = centSelect; 
+    fgSelectedV2Systematic      = v2sys; 
   }
 
   GenFunc   GetPt(Int_t param, const char * tname=0) const;
@@ -86,72 +88,72 @@ public:
 
 
   static Double_t PtModifiedHagedornThermal(Double_t pt, 
-					    Double_t c, 
-					    Double_t p0, 
-					    Double_t p1, 
-					    Double_t n,
-					    Double_t cT,
-					    Double_t T);
+                                            Double_t c, 
+                                            Double_t p0, 
+                                            Double_t p1, 
+                                            Double_t n,
+                                            Double_t cT,
+                                            Double_t T);
 
 
   
   static Double_t PtModifiedHagedornExp(Double_t pt,
-					Double_t c,
-					Double_t p0,
-					Double_t p1,
-					Double_t p2,
-					Double_t n); 
+                                        Double_t c,
+                                        Double_t p0,
+                                        Double_t p1,
+                                        Double_t p2,
+                                        Double_t n); 
 
 
-  static Double_t PtModifiedHagedornExp2(Double_t pt,
-					 Double_t c,
-					 Double_t a,
-					 Double_t b,
-					 Double_t p0,
-					 Double_t p1,
-					 Double_t d,
-					 Double_t n);
+  static Double_t PtModifiedHagedornExp2( Double_t pt,
+                                          Double_t c,
+                                          Double_t a,
+                                          Double_t b,
+                                          Double_t p0,
+                                          Double_t p1,
+                                          Double_t d,
+                                          Double_t n);
 
 
   static Double_t PtTsallis(Double_t pt,
-			    Double_t m,
-			    Double_t c,
-			    Double_t T,
-			    Double_t n);
+                            Double_t m,
+                            Double_t c,
+                            Double_t T,
+                            Double_t n);
 
   static Double_t PtParticleRatiopp(Double_t pt,
-				    Double_t m1,
-				    Double_t m2,
-				    Double_t c1,
-				    Double_t c2,
-				    Double_t T1,
-				    Double_t T2,
-				    Double_t n);
+                                    Double_t m1,
+                                    Double_t m2,
+                                    Double_t c1,
+                                    Double_t c2,
+                                    Double_t T1,
+                                    Double_t T2,
+                                    Double_t n);
   
   static Double_t PtXQCD( Double_t pt,
-			  Double_t a,
-			  Double_t b,
-			  Double_t c,
-			  Double_t d,
-			  Double_t e,
-			  Double_t f);
+                          Double_t a,
+                          Double_t b,
+                          Double_t c,
+                          Double_t d,
+                          Double_t e,
+                          Double_t f);
   
   static Double_t PtModTsallis( Double_t pt,
                                 Double_t a,
                                 Double_t b,
                                 Double_t c,
                                 Double_t d,
-				Double_t e,
-				Double_t f,
-				Double_t g,
-				Double_t mass);
+                                Double_t e,
+                                Double_t f,
+                                Double_t g,
+                                Double_t mass);
   
-  static Double_t PtQCD( Double_t pt,
-			 Double_t a,
-			 Double_t b,
-			 Double_t c,
-			 Double_t d,
-			 Double_t e);
+  static Double_t PtQCD(  Double_t pt,
+                          Double_t a,
+                          Double_t b,
+                          Double_t c,
+                          Double_t d,
+                          Double_t e);
 
   static Double_t PtExponential(const Double_t *pt, const Double_t *param);
   static Double_t PtModifiedHagedornPowerlaw(const Double_t *pt, const Double_t *param);
@@ -296,7 +298,7 @@ public:
   static const Double_t fgkParamSetPi02760GeV[kNPi0Param][7];              // parameters for pi0 in 2.76 TeV
   static const Double_t fgkParamSetPi0900GeV[kNPi0Param][7];               // parameters for pi0 in 0.9 TeV
 
-  ClassDef(AliGenEMlib,1)
+  ClassDef(AliGenEMlib,2)
 
 };
 

@@ -771,26 +771,31 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   }
    
   out << globalConfig->GetName() << endl;
-  out << Form("0x%x",globalConfig->GetGlobalCrateEnable()) << endl;
-  
-  // Jtag
-  out << globalConfig->GetJtagName() << endl;
-  out << Form("0x%08lx", globalConfig->GetJtagVmeAddr()) << endl;
-  out << Form("%d %d %d", globalConfig->GetJtagClockDiv(), 
-              globalConfig->GetJtagRxPhase(), globalConfig->GetJtagRdDelay()) << endl;
- 
-  for (Int_t i = 0; i < globalConfig->GetJtagNofLines(); ++i)
-    out << Form("%d ", globalConfig->GetEnableJtag(i));
-  out << endl;
+  out << Form("0x%02x",globalConfig->GetGlobalCrateEnable()) << endl;
 
+  Bool_t oldFormat = kTRUE;
+  if (globalConfig->GetEnableJtag() == 0) oldFormat = kFALSE;
+
+  if (oldFormat) {
+    // Jtag
+    out << globalConfig->GetJtagName() << endl;
+    out << Form("0x%08lx", globalConfig->GetJtagVmeAddr()) << endl;
+    out << Form("%d %d %d", globalConfig->GetJtagClockDiv(), 
+		globalConfig->GetJtagRxPhase(), globalConfig->GetJtagRdDelay()) << endl;
+    
+    for (Int_t i = 0; i < globalConfig->GetJtagNofLines(); ++i)
+      out << Form("%d ", globalConfig->GetEnableJtag(i));
+    out << endl;
+
+    for (Int_t i = 0; i < globalConfig->GetJtagNofLines(); ++i)
+      {
+	out << i << endl;
+	for (Int_t j = 0; j < globalConfig->GetJtagNofLines(); ++j)
+	  out << Form("%s ", globalConfig->GetJtagCrateName(i,j).Data()) << endl;
+      }
   
-  for (Int_t i = 0; i < globalConfig->GetJtagNofLines(); ++i)
-  {
-    out << i << endl;
-    for (Int_t j = 0; j < globalConfig->GetJtagNofLines(); ++j)
-      out << Form(" %s", globalConfig->GetJtagCrateName(i,j).Data()) << endl;
-  }
-  
+  } // end old format
+
   // first darc board
   out << globalConfig->GetFirstDarcName() << endl;
   out << Form("0x%08lx", globalConfig->GetFirstDarcVmeAddr()) << endl;
@@ -802,6 +807,19 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   out << Form("0x%x", globalConfig->GetFirstDarcGlobalL0()) << endl;
   out << Form("0x%x", globalConfig->GetFirstDarcConfig()) << endl;
   
+  if (!oldFormat) {
+
+    for (Int_t i = 0; i < globalConfig->GetDarcNofLines(); ++i)
+      out << Form("%d ", globalConfig->GetEnableFirstDarc(i));
+    out << endl;
+
+    for (Int_t i = 0; i < globalConfig->GetDarcNofLines(); ++i)
+      {
+	out << Form("%s ", globalConfig->GetFirstDarcCrateName(i).Data()) << endl;
+      }
+    
+  } // end new format
+
   // second darc board
   out << globalConfig->GetSecondDarcName() << endl;
   out << Form("0x%08lx", globalConfig->GetSecondDarcVmeAddr()) << endl;
@@ -813,6 +831,19 @@ AliMUONTriggerIO::WriteGlobalConfig(const char* globalFile, AliMUONGlobalCrateCo
   out << Form("0x%x", globalConfig->GetSecondDarcGlobalL0()) << endl; 
   out << Form("0x%x", globalConfig->GetSecondDarcConfig()) << endl; 
   
+  if (!oldFormat) {
+
+    for (Int_t i = 0; i < globalConfig->GetDarcNofLines(); ++i)
+      out << Form("%d ", globalConfig->GetEnableSecondDarc(i));
+    out << endl;
+
+    for (Int_t i = 0; i < globalConfig->GetDarcNofLines(); ++i)
+      {
+	out << Form("%s ", globalConfig->GetSecondDarcCrateName(i).Data()) << endl;
+      }
+    
+  } // end new format
+
   // global board
   out << globalConfig->GetGlobalName() << endl;
   out << Form("0x%08lx", globalConfig->GetGlobalVmeAddr()) << endl;

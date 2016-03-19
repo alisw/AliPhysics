@@ -112,8 +112,8 @@ class AliAODCaloCluster : public AliAODCluster {
     fTOF = tof ;
   }
   
-  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition ) const;
-  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
+  void GetMomentum(TLorentzVector& p, const Double_t * vertexPosition ) const;
+  void GetMomentum(TLorentzVector& p, const Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
 
   /// Add reference to associated track to cluster.
   /// Make sure we attach the object to correct process number.

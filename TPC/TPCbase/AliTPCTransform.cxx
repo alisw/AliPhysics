@@ -87,6 +87,7 @@ const Double_t AliTPCTransform::fgkMaxY2X = TMath::Tan(TMath::Pi()/18);      // 
 AliTPCTransform::AliTPCTransform():
   AliTransform(),
   fCurrentRecoParam(0),       //! current reconstruction parameters
+  fCorrMapCacheRef(0),
   fCorrMapCache0(0),
   fCorrMapCache1(0),
   fCurrentRun(0),             //! current run
@@ -105,10 +106,13 @@ AliTPCTransform::AliTPCTransform():
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
   fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
+  fLastCorrRef[0]=fLastCorrRef[1]=fLastCorrRef[2] = 0;
 }
+
 AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   AliTransform(transform),
   fCurrentRecoParam(transform.fCurrentRecoParam),       //! current reconstruction parameters
+  fCorrMapCacheRef(transform.fCorrMapCacheRef),
   fCorrMapCache0(transform.fCorrMapCache0),
   fCorrMapCache1(transform.fCorrMapCache1),
   fCurrentRun(transform.fCurrentRun),             //! current run
@@ -126,6 +130,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
   fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
+  fLastCorrRef[0]=fLastCorrRef[1]=fLastCorrRef[2] = 0;
+
 }
 
 AliTPCTransform::~AliTPCTransform() {
@@ -474,6 +480,10 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
   }
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
     //
+    if (!fCorrMapCacheRef) { // need to load the reference correction map
+      LoadReferenceCorrectionMap();      
+    }
+    //
     if (fCorrMapCache0) {
       // 1: easiest case: map is already cached, it is either time-static or there is 
       // no other map to follow
@@ -484,7 +494,7 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 	  && fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampStart()) break;
     }
     else  { // no map yet: 1st query
-      mapsArr = LoadCorrectionMaps();
+      mapsArr = LoadCorrectionMaps(kFALSE);
       fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(0);
       //
       // 3: easy case: time-static map, fCorrMapCache1 is not neaded
@@ -501,7 +511,7 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
       } 
     }
     // need to scan whole array to find matching maps
-    if (!mapsArr) mapsArr = LoadCorrectionMaps();
+    if (!mapsArr) mapsArr = LoadCorrectionMaps(kFALSE);
     int nmaps = mapsArr->GetEntriesFast();
     const AliTPCChebCorr* prv=0,*nxt=0;
     for (int i=0;i<nmaps;i++) { // maps are ordered in time
@@ -552,6 +562,11 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
       fCorrMapCache1->Print();
     }
   }
+  if (fCorrMapCache0 && !fCorrMapCache0->IsCorrection()) 
+    AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
+  if (fCorrMapCache1 && !fCorrMapCache1->IsCorrection()) 
+    AliFatalF("Uploaded map is not correction: %s",fCorrMapCache1->IsA()->GetName());
+
   if (fCorrMapCache0 && fCorrMapCache0->GetTimeStampStart()>fCurrentTimeStamp) {
     AliWarningF("Event timestamp %ld < map0 beginning %ld",fCurrentTimeStamp,fCorrMapCache0->GetTimeStampStart());
     fCorrMapCache0->Print();
@@ -568,27 +583,86 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 }
 
 //______________________________________________________
-TObjArray* AliTPCTransform::LoadCorrectionMaps() const
+void AliTPCTransform::LoadReferenceCorrectionMap()
+{
+  // loads IR-independent reference correction map for relevan field polarity
+  // 
+  const float kZeroField = 0.1;
+  TObjArray* mapsArr = LoadCorrectionMaps(kTRUE);
+  int entries = mapsArr->GetEntriesFast();
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField(); // think on extracting field once only
+  Double_t bzField = magF->SolenoidField(); //field in kGaus
+  Char_t expectType = AliTPCChebCorr::kFieldZero;
+  if      (bzField<-kZeroField) expectType = AliTPCChebCorr::kFieldNeg;
+  else if (bzField> kZeroField) expectType = AliTPCChebCorr::kFieldPos;
+  //
+  fCorrMapCacheRef = 0;
+  for (int i=0;i<entries;i++) {
+    AliTPCChebCorr* map = (AliTPCChebCorr*)mapsArr->At(i); if (!map) continue;
+    if (!map->IsCorrection()) continue;
+    Char_t mtp = map->GetFieldType();
+    if (mtp==expectType || mtp==AliTPCChebCorr::kFieldAny) fCorrMapCacheRef = map;
+    if (mtp==expectType) break;
+  }
+  if (!fCorrMapCacheRef) AliFatal("Did not find reference correction map");
+
+  AliInfo("Loaded reference correction map");
+  fCorrMapCacheRef->Print();
+  if (fCorrMapCacheRef->GetFieldType() == AliTPCChebCorr::kFieldAny) {
+    AliWarningF("ATTENTION: no map for field %+.1f was found, placeholder map is used",bzField);
+  }
+  //  fCorrMapCacheRef->SetTimeDependent(kFALSE);
+
+  // clean unnecessary stuff
+  mapsArr->Remove((TObject*)fCorrMapCacheRef);
+  mapsArr->SetOwner(kTRUE);
+  delete mapsArr;
+
+}
+
+//______________________________________________________
+TObjArray* AliTPCTransform::LoadCorrectionMaps(Bool_t refMap) const
 {
   // TPC fast Chebyshev correction map, loaded on demand, not handler by calibDB
+  const char* kNameRef = "TPC/Calib/CorrectionMapsRef";
+  const char* kNameRun = "TPC/Calib/CorrectionMaps";
+  const char* mapTypeName = refMap ? kNameRef : kNameRun;
+  //
   AliCDBManager* man = AliCDBManager::Instance();
-  AliCDBEntry* entry = man->Get("TPC/Calib/CorrectionMaps");
+  AliCDBEntry* entry = man->Get(mapTypeName);
   TObjArray* correctionMaps = (TObjArray*)entry->GetObject();
+  for (int i=correctionMaps->GetEntriesFast();i--;) {
+    AliTPCChebCorr* map = (AliTPCChebCorr*)correctionMaps->At(i);
+    map->Init();
+  }
   entry->SetOwner(0);
   entry->SetObject(0);
-  man->UnloadFromCache("TPC/Calib/CorrectionMaps");
+  man->UnloadFromCache(mapTypeName);
   return correctionMaps;
   //
 }
 
 //______________________________________________________
-void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3])
+void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
+{
+  // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
+  EvalCorrectionMap(roc, row, xyzSect, fLastCorrRef, kTRUE);
+  EvalCorrectionMap(roc, row, xyzSect, fLastCorr, kFALSE);
+  for (int i=3;i--;) xyzSect[i] += fLastCorr[i];
+  //
+}
+
+//______________________________________________________
+void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3], Bool_t ref)
 {
   // get correction from the map for a point at given ROC and row (IROC/OROC convention)
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
-  if (!fCorrMapCache0->IsCorrection()) AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
-  float y2x=xyz[1]/xyz[0], z2x = fCorrMapCache0->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
-  fCorrMapCache0->Eval(roc,row,y2x,z2x,res);
+
+  const AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
+  float y2x=xyz[1]/xyz[0], z2x = map->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
+  map->Eval(roc,row,y2x,z2x,res);
+
+  if (ref) return; // this was time-independent query request
   // 
   // for time dependent correction need to evaluate 2 maps, assuming linear dependence
   if (fCorrMapCache1) {
@@ -604,14 +678,17 @@ void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], f
 }
 
 //______________________________________________________
-Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut)
+Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut, Bool_t ref)
 {
   // get correction for dimOut-th dimension from the map for a point at given ROC and row (IROC/OROC convention)
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
-  if (!fCorrMapCache0->IsCorrection()) AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
-  float y2x=xyz[1]/xyz[0], z2x = fCorrMapCache0->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
-  float corr = fCorrMapCache0->Eval(roc,row,y2x,z2x,dimOut);
+
+  const AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
+  float y2x=xyz[1]/xyz[0], z2x = map->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
+  float corr = map->Eval(roc,row,y2x,z2x,dimOut);
   // 
+  if (ref) return corr; // this was time-independent query request
+  //
   // for time dependent correction need to evaluate 2 maps, assuming linear dependence
   if (fCorrMapCache1) {
     float corr1 = fCorrMapCache1->Eval(roc,row,y2x,z2x,dimOut);   

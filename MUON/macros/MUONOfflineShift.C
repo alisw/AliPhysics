@@ -70,16 +70,11 @@
 Int_t DataMakerReading(const char* input,
                        TStopwatch& timer,
                        const char* cdbPath="",
-                       const char* calibMode="",
                        Bool_t histogram=kFALSE,
                        Double_t xmin = 0.0,
                        Double_t xmax = 4096.0)
 {
   /// Run over the data and calibrate it if so required (if cdbPath != "")
-  /// calibMode can be :
-  /// - NOGAIN           : only zero-suppression will be done
-  /// - GAINCONSTANTCAPA : zero-suppression + gain, but with a single capa value for all channels
-  /// - GAIN             : zero-suppression + gain w/ individual capacitance per channel.
   
   TString fileName(gSystem->ExpandPathName(input));
   
@@ -94,7 +89,7 @@ Int_t DataMakerReading(const char* input,
   
   if ( strlen(cdbPath) > 0 ) 
   {
-    dm = new AliMUONTrackerDataMaker(recoParam,rawReader,cdbPath,calibMode,histogram,xmin,xmax);
+    dm = new AliMUONTrackerDataMaker(recoParam,rawReader,cdbPath,histogram,xmin,xmax);
   }
   else  
   {

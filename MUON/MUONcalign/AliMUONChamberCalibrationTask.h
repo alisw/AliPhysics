@@ -33,14 +33,6 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
 
  public:
 
-  /// enumerate the list of the available modes for the calibration
-  enum Calibration_t { 
-    kNOGAIN, 
-    kGAINCONSTANTCAPA, 
-    kGAIN, 
-    kINJECTIONGAIN 
-  }; 
-
   // Constructors
   AliMUONChamberCalibrationTask();
   AliMUONChamberCalibrationTask( const char* name, 
@@ -70,7 +62,6 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
   AliMUONChamberCalibrationTask&  operator = (const AliMUONChamberCalibrationTask& right);
 
   TString fOCDBPath;                    //!<! default path to the condition database
-  Calibration_t fCalibChoice;           //!<! calibration option
   TTree* fClusterInfoTree;              //!<! TTree filled with the cluster information
   AliMUONRecoParam* fMuonRecoParam;     //!<! reconstruction parameters for track refitting
   AliMUONClusterInfo* fClusterInfo;     //!<! cluster info used to fill the output TTree
@@ -80,7 +71,7 @@ class AliMUONChamberCalibrationTask : public AliAnalysisTaskSE
   AliESDInputHandler* fESDInputHandler; //!<! ESD input handler
   AliESDEvent* fESDInputEvent;          //!<! pointer to the current input ESD event
 
-  ClassDef( AliMUONChamberCalibrationTask, 1 ) // Task to extract cluster information after applying calibration
+  ClassDef( AliMUONChamberCalibrationTask, 2 ) // Task to extract cluster information after applying calibration
 
 };
 

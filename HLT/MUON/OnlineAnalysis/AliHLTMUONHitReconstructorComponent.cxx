@@ -79,7 +79,6 @@ AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
 	fIdToEntry(),
 	fMaxEntryPerBusPatch(),
 	fWarnForUnexpecedBlock(false),
-	fUseIdealGain(false),
 	fWarnIfPadSkipped(false)
 {
 	///
@@ -190,7 +189,6 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	fIdToEntry.clear();
 	fMaxEntryPerBusPatch.clear();
 	fWarnForUnexpecedBlock = false;
-	fUseIdealGain = false;
 	fWarnIfPadSkipped = false;
 	const char* lutFileName = NULL;
 	bool useCDB = false;
@@ -386,8 +384,8 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 		}
 		
 		if (strcmp( argv[i], "-useidealgain" ) == 0)
-		{
-			fUseIdealGain = true;
+    {
+      HLTWarning("DEPRECATED option -useidealgain");
 			continue;
 		}
 		
@@ -1124,7 +1122,6 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					manuId = pad.GetLocation().GetFirst();
 #endif
 					manuId &= 0x7FF; // 11 bits 
-					if (calibData.Gains(detElemId, manuId) == NULL) continue;
 					if (calibData.Pedestals(detElemId, manuId) == NULL) continue;
 			
 					buspatchId = ddlStore->GetBusPatchId(detElemId,manuId);
@@ -1163,20 +1160,10 @@ int AliHLTMUONHitReconstructorComponent::ReadLutFromCDB()
 					padSizeY = AliHLTFloat32_t( pad.Dimensions().Y() );
 #endif //HAVE_NOT_MUON_ALIMPPAD_GETPOSITION
 					
-					if (fUseIdealGain)
-					{
-						calibA0Coeff = 1.0;
-						calibA1Coeff = 0.0;
-						thresold = 0;
-						saturation = 0;
-					}
-					else
-					{
-						calibA0Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 0);
-						calibA1Coeff = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 1);
-						thresold = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 2);
-						saturation = (calibData.Gains(detElemId, manuId))->ValueAsFloat(channelId, 4);
-					}
+          calibA0Coeff = 1.0;
+          calibA1Coeff = 0.0;
+          thresold = 0;
+          saturation = 0;
 					
 					pedestal = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 0);
 					sigma = (calibData.Pedestals(detElemId, manuId))->ValueAsFloat(channelId, 1);

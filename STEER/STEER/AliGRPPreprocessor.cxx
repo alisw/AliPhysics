@@ -81,7 +81,7 @@ const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fit
 
 //_______________________________________________________________
 
-  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 6; // num parameters in the logbook used to fill the GRP object
+  const Int_t AliGRPPreprocessor::fgknDAQLbPar = 7; // num parameters in the logbook used to fill the GRP object
   const Int_t AliGRPPreprocessor::fgknDCSDP = 56;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDP_Redu = 8;   // number of redundant dcs dps
@@ -1511,7 +1511,8 @@ Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 	UInt_t  detectorMask = (UInt_t)(((TString)GetRunParameter("detectorMask")).Atoi());
 	TString lhcPeriod = (TString)GetRunParameter("LHCperiod");
 	TString runType = (TString)GetRunType();
-
+	Int_t hltMode = AliGRPObject::kUnknown;
+	
 	if (timeEnd >= 2.E9) AliFatal("ALICE run finshed later than Wed May 18 2033, 03:33:20 GMT, maximum time allowed for LHC data --> fix the GRP preprocessor!!!");
 
 	UInt_t nparameter = 0;
@@ -1583,6 +1584,26 @@ Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 		Log(Form("Run Type not put in logbook, setting to invalid in GRP entry, and causing an error!"));
 	}
 
+	TString hltModeStr = GetRunParameter("HLTmode");
+	if (hltModeStr.Length() != 0) {
+	  Log(Form("HLTmode found in logbook is %s", hltModeStr.Data()));
+	  nparameter++;
+	  TSubString firstChar = hltModeStr(0,1);
+	  if (firstChar == "A") {
+	    hltMode = AliGRPObject::kModeA;
+	  }
+	  else if (firstChar == "B") {
+	    hltMode = AliGRPObject::kModeB;
+	  }
+	  else if (firstChar == "C"){
+	    hltMode = AliGRPObject::kModeC;
+	  }
+	  grpObj->SetHLTMode(hltMode);
+	}
+	else {
+	  Log(Form("HLT mode not found in logbook, setting to unknown in GRP entry, and causing an error!"));
+	}
+	
 	return nparameter;
 }
 //_______________________________________________________________

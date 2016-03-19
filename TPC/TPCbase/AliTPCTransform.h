@@ -34,10 +34,12 @@ public:
   const AliTPCRecoParam * GetCurrentRecoParam() const {return fCurrentRecoParam;}
   AliTPCRecoParam * GetCurrentRecoParamNonConst() const {return fCurrentRecoParam;}
   UInt_t GetCurrentRunNumber() const { return fCurrentRun;}
+  const AliTPCChebCorr* GetCorrMapCacheRef() const {return fCorrMapCacheRef;}
   const AliTPCChebCorr* GetCorrMapCache0() const {return fCorrMapCache0;}
   const AliTPCChebCorr* GetCorrMapCache1() const {return fCorrMapCache1;}
   //
-  TObjArray* LoadCorrectionMaps() const;
+  TObjArray* LoadCorrectionMaps(Bool_t refMap=kFALSE) const;
+  void LoadReferenceCorrectionMap();
   // set current values
   //
   void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}
@@ -49,10 +51,11 @@ public:
   Bool_t  UpdateTimeDependentCache();
   void    ApplyCorrectionMap(int roc, int row, double xyzSect[3]);
   void    ApplyDistortionMap(int roc, double xyzLab[3]);
-  void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3]);
-  Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut);
+  void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3], Bool_t ref=kFALSE);
+  Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut, Bool_t ref=kFALSE);
   void    EvalDistortionMap(int roc, const double xyzSector[3], float res[3]);
   const   Float_t* GetLastMapCorrection() const {return fLastCorr;}
+  const   Float_t* GetLastMapCorrectionRef() const {return fLastCorrRef;}
   //
   static void RotateToSectorUp(float *x, int& idROC);
   static void RotateToSectorDown(float *x, int& idROC);
@@ -65,10 +68,12 @@ public:
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Float_t  fLastCorr[3]; ///!<! last correction from the map
+  Float_t  fLastCorrRef[3];  ///!<! last reference correction from the map
   Double_t fCoss[18];  ///< cache the transformation
   Double_t fSins[18];  ///< cache the transformation
   Double_t fPrimVtx[3];///< position of the primary vertex - needed for TOF correction
   AliTPCRecoParam * fCurrentRecoParam; //!<! current reconstruction parameters
+  const AliTPCChebCorr* fCorrMapCacheRef;    //!<! reference (low-IR) correction map
   const AliTPCChebCorr* fCorrMapCache0;      //!<! current correction map0 (for 1st time bin if time-dependent)
   const AliTPCChebCorr* fCorrMapCache1;      //!<! current correction map1 (for 2nd time bin if time-dependent)
   Int_t    fCurrentRun;                //!<! current run
@@ -82,15 +87,6 @@ private:
   ClassDef(AliTPCTransform,3)
   /// \endcond
 };
-
-//______________________________________________________
-inline void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
-{
-  // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
-  EvalCorrectionMap(roc, row, xyzSect, fLastCorr);
-  for (int i=3;i--;) xyzSect[i] += fLastCorr[i];
-  //
-}
 
 //_________________________________________________
 inline void AliTPCTransform::RotateToSectorUp(float *x, int& idROC)

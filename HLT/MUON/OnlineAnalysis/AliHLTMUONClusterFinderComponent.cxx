@@ -575,7 +575,6 @@ int AliHLTMUONClusterFinderComponent::ReadConfigFromCDB(
 
 		// Check that we get all the calibrations we'll need.
 		if (not calibData->Pedestals() or
-		    not calibData->Gains() or
 		    not calibData->HV() )
 		{
 			HLTError("Could not access all required calibration data.");

@@ -57,6 +57,18 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     void   SetEnableJtag(UChar_t en) {fEnableJtag = en;} 
            /// Get Jtag enable word
     UChar_t GetEnableJtag() const {return fEnableJtag;}  
+           /// Set First Darc enable word
+    void   SetEnableFirstDarc(UChar_t en) {fEnableFirstDarc = en;} 
+           /// Get First Darc enable word
+    UChar_t GetEnableFirstDarc() const {return fEnableFirstDarc;}  
+           /// Get First Darc enable lines
+    Bool_t GetEnableFirstDarc(Int_t index) const;  
+           /// Set Second Darc enable word
+    void   SetEnableSecondDarc(UChar_t en) {fEnableSecondDarc = en;} 
+           /// Get Second Darc enable word
+    UChar_t GetEnableSecondDarc() const {return fEnableSecondDarc;}  
+           /// Get Second Darc enable lines
+    Bool_t GetEnableSecondDarc(Int_t index) const;  
     
            /// Get Jtag Crate names
     TString GetJtagCrateName(Int_t jtagLine, Int_t index) const;
@@ -101,6 +113,11 @@ class AliMUONGlobalCrateConfig : public  TNamed {
            /// set configuration for First Darc board   
     void    SetFirstDarcConfig(UInt_t conf) {fFirstDarcConfig = conf;}   
     
+           /// Get First Darc Crate names
+    TString GetFirstDarcCrateName(Int_t index) const;
+           /// Set First Darc Crate names
+    void    SetFirstDarcCrateName(Int_t index, TString name);
+    
     // second Darc Board
             /// Get Second Darc board VME address
     ULong_t GetSecondDarcVmeAddr() const        {return fSecondDarcVmeAddr;}
@@ -138,7 +155,11 @@ class AliMUONGlobalCrateConfig : public  TNamed {
            /// set configuration for Second Darc board   
     void    SetSecondDarcConfig(UInt_t conf) {fSecondDarcConfig = conf;}
     
-    
+           /// Get Second Darc Crate names
+    TString GetSecondDarcCrateName(Int_t index) const;
+           /// Set Second Darc Crate names
+    void    SetSecondDarcCrateName(Int_t index, TString name);
+        
     // global board
             /// Get Global board VME address
     ULong_t GetGlobalVmeAddr() const        {return fGlobalVmeAddr;}
@@ -189,6 +210,8 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     Int_t   GetFetNofRegisters()    const {return fgkFetNofRegisters;}
             /// Get number of JTag lines
     Int_t   GetJtagNofLines()       const {return fgkJtagNofLines;}
+            /// Get number of Darc Crate lines
+    Int_t   GetDarcNofLines()       const {return fgkDarcNofLines;}
     
   private:
     /// Not implemented
@@ -204,6 +227,8 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     UInt_t       fJtagRdDelay;         ///< Read delay  for JTag 
     UChar_t      fEnableJtag;          ///< Enable mask for JTag lines
     TString      fJtagCrateName[16];   ///< Crate name for the Jtag lines
+    TString      fFirstDarcCrateName[8];   ///< Crate name for the First Darc lines
+    TString      fSecondDarcCrateName[8];   ///< Crate name for the Second Darc lines
                                        
     ULong_t      fFirstDarcVmeAddr;    ///< First Darc Board VME Address
     Int_t        fFirstDarcType;       ///< Type of the first Darc Board                             
@@ -227,6 +252,9 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     ULong_t      fFetVmeAddr;          ///< Fet Board VME Address 
     UInt_t       fFetRegisters[7];     ///< Fet registers                                  
                                        
+    UChar_t      fEnableFirstDarc;     ///< Enable mask for First Darc lines
+    UChar_t      fEnableSecondDarc;    ///< Enable mask for Second Darc lines
+
     static const Char_t* fgkJtagName;       ///< JTag Board name                         
     static const Char_t* fgkFirstDarcName;  ///< First DARC board name                         
     static const Char_t* fgkSecondDarcName; ///< Second DARC board name
@@ -236,8 +264,9 @@ class AliMUONGlobalCrateConfig : public  TNamed {
     static const Int_t fgkGlobalNofRegisters;  ///< Number of registers for Global Board                      
     static const Int_t fgkFetNofRegisters;     ///< Number of registers for Fet
     static const Int_t fgkJtagNofLines;        ///< Number of lines for Jtag
+    static const Int_t fgkDarcNofLines;        ///< Number of lines for Darc Crate
 
-  ClassDef(AliMUONGlobalCrateConfig,3)  
+  ClassDef(AliMUONGlobalCrateConfig,4)  
 };
 
 #endif 

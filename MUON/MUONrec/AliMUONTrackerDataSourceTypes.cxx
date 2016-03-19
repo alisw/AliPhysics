@@ -30,24 +30,10 @@ Bool_t AliMUONTrackerDataSourceTypes::IsInAliasList(const char* type, const char
 }
 
 //_____________________________________________________________________________
-/// Whether type is of Capacitance flavour
-Bool_t AliMUONTrackerDataSourceTypes::IsCapacitances(const char* type)
-{
-  return IsInAliasList(type,AliasesForCapacitances());
-}
-
-//_____________________________________________________________________________
 /// Whether type is of Configuration flavour
 Bool_t AliMUONTrackerDataSourceTypes::IsConfig(const char* type)
 {
   return IsInAliasList(type,AliasesForConfig());
-}
-
-//_____________________________________________________________________________
-/// Whether type is of Gains flavour
-Bool_t AliMUONTrackerDataSourceTypes::IsGains(const char* type)
-{
-  return IsInAliasList(type,AliasesForGains());
 }
 
 //_____________________________________________________________________________

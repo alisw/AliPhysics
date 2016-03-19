@@ -1,5 +1,3 @@
-// $Id$
-// 
 // @file run-compression.C
 // @brief Define and run custom chains for the TPC data compression
 // @author Matthias.Richter@ift.uib.no
@@ -37,12 +35,14 @@
 //
 // 'writer'     cluster monitor component, requires to define input, e.g
 //              "compressor compressor-publisher"
+//              "compressor cluster-unpacker"
 //              "compressed-cluster-publisher"
 //              "monitor-publisher"
 //              "hltout-publisher"
 //              "TPC-hwcfdata TPC-compression" (note: defined by AliHLTTPCAgent)
 const int defaultMode=0;
 const int defaultDeflaterMode=2;
+const int clusterVerificationMode=0; // set to 1 to publish extra id blocks for cluster verification
 const char* defaultMonitorInput="compressor compressor-publisher";
 const char* defaultCDBUri="local://OCDB";
 void run_compression(int mode=defaultMode, int deflaterMode=defaultDeflaterMode, int events=1,
@@ -95,7 +95,7 @@ void run_compression(int mode=defaultMode, int deflaterMode=defaultDeflaterMode,
   TString compressorArgument;
   if (mode>0) compressorArgument+=Form(" -mode %d", mode); // take default from configuration object if mode==0
   if (deflaterMode>0)   compressorArgument+=Form(" -deflater-mode %d", deflaterMode);  // take default from configuration object if deflaterMode==0
-  compressorArgument+=Form(" -histogram-file HLT.TPCDataCompression-histograms-mode%d-%s.root -cluster-verification 0", mode, (deflaterMode==2?"huffman":"simple"));
+  compressorArgument+=Form(" -histogram-file HLT.TPCDataCompression-histograms-mode%d-%s.root -cluster-verification %d", mode, (deflaterMode==2?"huffman":"simple"), clusterVerificationMode);
   AliHLTConfiguration compressor("compressor", "TPCDataCompressor", "compressor-publisher",  compressorArgument.Data());
 
   // huffman trainer configuration
@@ -116,6 +116,10 @@ void run_compression(int mode=defaultMode, int deflaterMode=defaultDeflaterMode,
   TString writerArguments(Form("-concatenate-events -overwrite -datafile HLT.TPCcluster-compression-mode%d-histograms.root",mode));
   AliHLTConfiguration monitor("monitor", "TPCDataCompressorMonitor", monitorInput, "");
   AliHLTConfiguration writer("writer", "ROOTFileWriter", "monitor", writerArguments);
+
+  // unpacker component setup
+  AliHLTConfiguration clusterunpacker("cluster-unpacker", "TPCDataCompressorUnpacker", "compressor", "");
+  AliHLTConfiguration unpackedclusterwriter("unpacked-cluster-writer", "FileWriter", "cluster-unpacker", "-directory unpacked-clusters -subdir -specfmt=_0x%08x -blocknofmt= -publisher-conf unpacked-clusters.txt");
 
   if (chain) {
     pHLT->ScanOptions("loglevel=0x7c");

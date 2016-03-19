@@ -63,7 +63,7 @@ location of the OCDB to be used. If that field is not empty (and the correspondi
 the raw data will be calibrated.
 The last line in that group is a single check button, to instruct the program to produce histograms of the data (see \ref mchview_histogramming)
 
-- select an OCDB data source (pedestals, gains, capacitances)
+- select an OCDB data source (pedestals)
 
 In all the frames, once you've selected or entered the needed information, you'll click on the "Create data source" button,
 and a new data source line will appear in the bottom of that tab (and in also in the first tab, that data source will now 
@@ -75,8 +75,6 @@ The short name of the data source is as follow :
 - RAW(#) : raw data for simulated run (where run number is always 0, so # here is the number of such data sources opened at the same time)
 - HRAW# (or HRAW(#)) : as above, but with histogramming turned on
 - (H)CALZ# (or (H)CALZ(#)): as above, but for data where pedestal subtraction has been done (and no gain correction whatsoever)
-- (H)CALG# : for data where pedestal subtraction and gain correction has been applied (but no channel-per-channel capacitance correction done)
-- (H)CALC# : for data where pedestal subtraction and full gain correction (including channel-dependent capacitance correction) applied
 
 Note that all the file paths can be local ones or alien ones, if you have a correctly installed alien, and you use a short wrapped to call the \em mchview program.
 For instance :

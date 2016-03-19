@@ -21,9 +21,6 @@ Please have a closer look before using (especially the ones writing to the CDB..
 <tr><td>MUON/Calib/RecoParam</td><td>both</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Few per year ?</td><td>5 KB</td></tr>
 <tr><td>MUON/Calib/MappingData</td><td>both</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Once for all once debugged</td><td>1 MB</td></tr>
 <tr><td>MUON/Calib/MappingRunData</td><td>both</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Between zero and few per year</td><td>100 KB</td></tr>
-
-<tr><td>MUON/Calib/Capacitances</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Once for all once debugged</td><td>7 MB</td></tr>
-<tr><td>MUON/Calib/Gains</td><td>MCH</td><td>CALIBRATION</td><td>GAINS</td><td>LDC</td><td>Once per calibration run</td><td>10 MB</td></tr>
 <tr><td>MUON/Calib/HV</td><td>MCH</td><td>PHYSICS</td><td>N/A</td><td>N/A</td><td>Once per physics run</td><td>Depends on the number of trips, 10-20 KB normally</td></tr>
 <tr><td>MUON/Calib/Neighbours</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>As MappingData</td><td>10 MB</td></tr>
 <tr><td>MUON/Calib/OccupancyMap</td><td>MCH</td><td>PHYSICS</td><td>OCCUPANCY</td><td>MON</td><td>Once per physics run</td><td>Depends on the number of bad manus, normally 100-200 KB</td></tr>

@@ -107,6 +107,7 @@ set(SRCS
     comp/AliHLTTPCDataCompressionFilterComponent.cxx
     comp/AliHLTTPCDataCompressionIDMap.cxx
     comp/AliHLTTPCDataCompressionMonitorComponent.cxx
+    comp/AliHLTTPCDataCompressionUnpackerComponent.cxx
     HWCFemulator/AliHLTTPCHWCFConsistencyControlComponent.cxx
     HWCFemulator/AliHLTTPCHWCFDivisionUnit.cxx
     HWCFemulator/AliHLTTPCHWCFEmulatorComponent.cxx

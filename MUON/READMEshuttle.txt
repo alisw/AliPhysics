@@ -8,7 +8,7 @@ How to test the Shuttle preprocessor(s) for MUON.
 
 We will get two "logical" MUON preprocessors : one for the tracker and one for the trigger.
 Both will manage several subtasks (e.g. the tracker one will handle pedestals,
- gains and deadchannels, while the trigger one will handle masks and trigger lut)
+  and occupancy for instance, while the trigger one will handle masks and trigger lut)
 "Physically", only one class will manage both the tracker and the trigger : AliMUONPreprocessor.
 Depending on the subsystem and on the task to be performed (based on the run type), this class
  will instanciate the correct set of AliMUONVSubProcessor(s) which does the actual job.
@@ -41,9 +41,6 @@ MCH       GMS                         read GMS alignment files  AliMUONGMSSubpro
 
 MCH       PHYSICS                     read DCS HV values and    AliMUONHVSubprocessor
                                       put them into OCDB
-                                      
-MCH       CALIBRATION                 read ASCII gain files     AliMUONGainSubprocessor
-                                      and put them into OCDB
 
 MTR       CALIBRATION		      read date files (masks,   AliMUONTriggerSubprocessor
 	  			      crates, and LUT)
@@ -147,67 +144,6 @@ which is tested using the TestMUONPreprocessor.C macro.
 The output of the pedestal subprocessor (upon success only) is written into the OCDB. 
 Difference between the input and the output can be inferred using the diff() function
 of MUONCDB.C macro.
-
-
-\section shuttle_s4 Gains
-
-Like pedestals, you have two options here. You can either use a pre-done set of 
-ASCII gain files (generated as explained below for the 2nd option), 
-located at /afs/cern.ch/user/l/laphecet/public/LDC*.gains,  or build you own set.
- 
-We've written an AliMUONGainEventGenerator which creates fake gain events. 
-The pedestal and gain values are taken from the Offline Condition DataBase (OCDB)
- (which is itself fakely filled using the WritePedestals() and WriteGains() 
- methods of AliMUONCDB class).
-
-So first you need to generate a valid pedestal CDB entry and a valid gain CDB 
-entry by using the AliMUONCDB class, from the Root prompt:
-
-<pre>
-const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
-root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath);
-Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
-Int_t gainRun = 80;
-Int_t pedRun = 81;
-AliMUONCDB::WritePedestals(defaultValues, pedRun, pedRun);
-AliMUONCDB::WriteGains(defaultValues, gainRun, gainRun);
-</pre>
-
-Expected output is (don't worry about the warnings, they are harmless) :
-
-Then use the AliMUONGainEventGenerator to produce simulated gain events : the output 
-will be n x 4 date files (n is the number of fake injections, currently 9, and 4
- is the number of LDCs)
-
-Usage (again, from the Root prompt) :
-
-<pre>
-const char* cdbpath="local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestCDB"; // where to get the CDB
-AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
-// back pedestals and gain values generated in the previous step
-const char* dateFileName = "raw.date"; // base filename for the output
-Int_t gainRunNumber = 80; // run number used to fetch gains from OCDB
-Int_t pedRunNumber = 81; // run number used to fetch the pedestals from the OCDB 
-// generated ped files will be for r = 81, 83, etc...
-Int_t nevents = 100; // # of events to generate. 100 should be enough for testing, but 1000 would be better for prod
-gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
-AliMUONGainEventGenerator g(gainRunNumber,pedRunNumber,nevents,dateFileName);
-g.Exec("");
-</pre>
-
-It *will* take a lot of time (mainly due to the fact that we're writing a 
-bunch of ASCII files = DDL files), so please be patient.
-
-The output should be a sequence of directories, RUN81, RUN82, etc..., each 
-containing the normal simulated sequence of MUON.Hits.root, MUON.SDigits.root,
- MUON.Digits.root, raw/*.ddl files and raw.date.LDCi where i=0-3 (i.e. one DATE file
-per LDC, as will be used in real life), the latter ones being roughly 100 MB each.
-
-<pre>
-// FIXME
-// Below should follow instructions on how to feed the MUONTRKda with the
-// generated files.
-</pre>
 
 
 \section shuttle_s5 HV

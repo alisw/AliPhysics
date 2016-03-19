@@ -767,8 +767,8 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
-  Double_t angle = seed->GetSnp()*seed->GetSnp();
-  angle = TMath::Sqrt(TMath::Abs(angle/(1.-angle)));
+  double   angle2 = seed->GetSnp()*seed->GetSnp();
+  double   angle = TMath::Sqrt(TMath::Abs(angle2/(1.f-angle2)));
   Double_t erry2 = clparam->GetError0Par(0,type, z,angle);
   if (ctype<0) {
     erry2+=0.5;  // edge cluster
@@ -778,16 +778,19 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
   const Double_t *errInnerDeep = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepY();
   double dr = TMath::Abs(cl->GetX()-85.);
-  addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
+  if (errInner[0]>0) addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
   if (errInnerDeep[0]>0) addErr += errInnerDeep[0]*TMath::Exp(-dr/errInnerDeep[1]);
   erry2+=addErr*addErr;
+
   const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
   erry2+=errCluster[0]*errCluster[0];
   //
   double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorY();
   if (useDist>0) {
-    useDist *= cl->GetDistortionY();
-    erry2 += useDist*useDist;
+    float dstY = cl->GetDistortionY()*useDist;
+    float dstX = cl->GetDistortionX()*useDist;
+    float errDist2 = dstY*dstY +angle2*dstX*dstX;
+    erry2 += dstY*dstY +angle2*dstX*dstX;
   }
   seed->SetErrorY2(erry2);
   //
@@ -933,7 +936,7 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   Int_t ctype = cl->GetType();  
   Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
   //
-  Double_t angle2 = seed->GetSnp()*seed->GetSnp();
+  double angle2 = seed->GetSnp()*seed->GetSnp();
   angle2 = seed->GetTgl()*seed->GetTgl()*(1+angle2/(1-angle2)); 
   Double_t angle = TMath::Sqrt(TMath::Abs(angle2));
   Double_t errz2 = clparam->GetError0Par(1,type, z,angle);
@@ -945,7 +948,7 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
   const Double_t *errInnerDeepZ = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepZ();
   double dr = TMath::Abs(cl->GetX()-85.);
-  addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
+  if (errInner[0]>0)      addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
   if (errInnerDeepZ[0]>0) addErr += errInnerDeepZ[0]*TMath::Exp(-dr/errInnerDeepZ[1]);
   errz2+=addErr*addErr;
   const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ? AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
@@ -953,8 +956,9 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorZ();
   if (useDist>0) {
-    useDist *= cl->GetDistortionZ();
-    errz2 += useDist*useDist;
+    float dstZ = cl->GetDistortionZ()*useDist;
+    float dstX = cl->GetDistortionX()*useDist*seed->GetTgl();
+    errz2 += dstZ*dstZ+dstX*dstX;
   }
   seed->SetErrorZ2(errz2);
   //
@@ -1987,7 +1991,10 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   Int_t idROC = cluster->GetDetector();
   transform->Transform(x,&idROC,0,1);
   const float* clCorr = transform->GetLastMapCorrection();
-  cluster->SetDistortions(clCorr[0],clCorr[1],clCorr[2]); // memorize distortions
+  const float* clCorrRef = transform->GetLastMapCorrectionRef();
+  cluster->SetDistortions(clCorr[0]-clCorrRef[0],
+			  clCorr[1]-clCorrRef[1],
+			  clCorr[2]-clCorrRef[2]); // memorize distortions (difference to reference one)
   //
   // in debug mode  check the transformation
   //
@@ -2126,7 +2133,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
     for (Int_t secType=0; secType<2; secType++){  //loop over inner or outer sector
       // cache experimantal tuning factor for the different chamber type 
       const Float_t ampfactor = (secType==0)?factorIROC:factorOROC;
-      std::cout << " ampfactor = " << ampfactor << std::endl;
+//       std::cout << " ampfactor = " << ampfactor << std::endl;
       //
       for (Int_t sec = 0;sec<fkNOS;sec++){        //loop overs sectors
         //
@@ -2146,7 +2153,11 @@ void  AliTPCtracker::ApplyTailCancellation(){
         {
           continue;
         }
-        
+
+        // set time range from graph
+        const Int_t timeRangeMax=graphRes[0]?graphRes[0]->GetN():600;
+//         std::cout << " timeRangeMax = " << timeRangeMax << std::endl;
+
         AliTPCtrackerSector &sector= (secType==0)?fInnerSec[sec]:fOuterSec[sec];  
         Int_t nrows     = sector.GetNRows();                                       // number of rows
         Int_t nclSector = sector.GetNClInSector(iside);                            // ncl per sector to be used for debugging
@@ -2207,7 +2218,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
 	      if (dpad>4) continue;           // no contribution if far away in pad direction
 
 	      // RS no point in iterating further with sorted clusters once large distance reached
-              if (cl0->GetTimeBin()-cl1->GetTimeBin()>600) continue; // out of the range of response function
+              if (cl0->GetTimeBin()-cl1->GetTimeBin()>=timeRangeMax) continue; // out of the range of response function
 
 	      // RS: what about dpad=4?
               if (dpad<4) nclPad++;           // count ncl for every pad for debugging
@@ -5033,6 +5044,12 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       x3 = kcl->GetX();
       //
       double dx13 = x1-x3;
+      if (TMath::Abs(dx13)<0.1) {
+	AliErrorF("Wrong X correction? Sec%d : row%d@X=%.2f->%.2f (z=%.2f) row%d@X=%.2f->%.2f (z=%.2f)\n",sec,
+		  i1-1,x1Def,x1,z1, i1-7,x3Def,x3,z3);
+	continue; // distortions should not make distance so small
+      }
+
       Double_t angley = (y1-y3)/dx13;
       Double_t anglez = (z1-z3)/dx13;
       //

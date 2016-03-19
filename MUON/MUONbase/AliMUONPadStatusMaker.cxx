@@ -19,7 +19,7 @@
 /// \class AliMUONPadStatusMaker
 ///
 /// Make a 2DStore of pad statuses, using different sources of information,
-/// like pedestal values, gain values, and HV values.
+/// like pedestal values, LV values, and HV values.
 ///
 /// \author Laurent Aphecetche
 //-----------------------------------------------------------------------------
@@ -73,9 +73,6 @@ ClassImp(AliMUONPadStatusMaker)
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData)
 : fkCalibrationData(calibData),
-fGainA1Limits(0,1E30),
-fGainA2Limits(-1E-30,1E30),
-fGainThresLimits(0,4095),
 fPedMeanLimits(0,4095),
 fPedSigmaLimits(0,4095),
 fManuOccupancyLimits(0,1.0),
@@ -84,7 +81,6 @@ fDEOccupancyLimits(0,1.0),
 fStatus(new AliMUON2DMap(true)),
 fHV(0x0),
 fPedestals(calibData.Pedestals()),
-fGains(calibData.Gains()),
 fTrackerData(0x0),
 fConfig(calibData.Config())
 {
@@ -125,11 +121,11 @@ AliMUONPadStatusMaker::AsString(Int_t status)
   }
   
   Int_t pedStatus;
-  Int_t gainStatus;
+  Int_t lvStatus;
   Int_t hvStatus;
   Int_t occStatus;
   
-  DecodeStatus(status,pedStatus,hvStatus,gainStatus,occStatus);
+  DecodeStatus(status,pedStatus,hvStatus,lvStatus,occStatus);
   
   TString s;
   
@@ -140,13 +136,8 @@ AliMUONPadStatusMaker::AsString(Int_t status)
   if ( pedStatus & kPedSigmaTooHigh ) s += "& Ped Sigma Too High ";
   if ( pedStatus & kPedMissing ) s += "& Ped is missing ";
   
-	if ( gainStatus & kGainA1TooLow ) s+="& Gain A1 is Too Low ";
-	if ( gainStatus & kGainA1TooHigh ) s+="& Gain A1 is Too High ";
-	if ( gainStatus & kGainA2TooLow ) s+="& Gain A2 is Too Low ";
-	if ( gainStatus & kGainA2TooHigh ) s+="& Gain A2 is Too High ";
-	if ( gainStatus & kGainThresTooLow ) s+="& Gain Thres is Too Low ";
-	if ( gainStatus & kGainThresTooHigh ) s+="& Gain Thres is Too High ";
-	if ( gainStatus & kGainMissing ) s+="& Gain is missing ";
+	if ( lvStatus & kLVTooLow ) s+="& LV is Too Low ";
+	if ( lvStatus & kLVMissing ) s+="& LV is missing ";
 	
 	if ( hvStatus & kHVError ) s+="& HV is on error ";
 	if ( hvStatus & kHVTooLow ) s+="& HV is Too Low ";
@@ -186,13 +177,13 @@ AliMUONPadStatusMaker::AsCondition(Int_t mask)
 Int_t
 AliMUONPadStatusMaker::BuildStatus(Int_t pedStatus, 
                                    Int_t hvStatus, 
-                                   Int_t gainStatus,
+                                   Int_t lvStatus,
                                    Int_t occStatus)
 {
-  /// Build a complete status from specific parts (ped,hv,gain)
+  /// Build a complete status from specific parts (ped,hv,lv)
   
   return ( hvStatus & 0xFF ) | ( ( pedStatus & 0xFF ) << 8 ) | 
-  ( ( gainStatus & 0xFF ) << 16 ) |
+  ( ( lvStatus & 0xFF ) << 16 ) |
   ( ( occStatus & 0xFF ) << 24 ) ;
 }
 
@@ -251,13 +242,13 @@ void
 AliMUONPadStatusMaker::DecodeStatus(Int_t status, 
                                     Int_t& pedStatus, 
                                     Int_t& hvStatus, 
-                                    Int_t& gainStatus,
+                                    Int_t& lvStatus,
                                     Int_t& occStatus)
 {
-  /// Decode complete status into specific parts (ped,hv,gain)
+  /// Decode complete status into specific parts (ped,hv,lv)
   
   occStatus = ( status & 0xFF000000 ) >> 24;
-  gainStatus = ( status & 0xFF0000 ) >> 16;
+  lvStatus = ( status & 0xFF0000 ) >> 16;
   pedStatus = ( status & 0xFF00 ) >> 8;
   hvStatus = (status & 0xFF);
 }
@@ -532,6 +523,13 @@ AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
 }
 
 //_____________________________________________________________________________
+Int_t AliMUONPadStatusMaker::LVStatus(Int_t detElemId) const
+{
+  /// Get LV status of one detection element
+  return kLVMissing;
+}
+
+//_____________________________________________________________________________
 AliMUONVCalibParam* 
 AliMUONPadStatusMaker::Neighbours(Int_t detElemId, Int_t manuId) const
 {
@@ -553,17 +551,16 @@ AliMUONVCalibParam*
 AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
 {
   /// Compute the status of a given manu, using all available information,
-  /// i.e. pedestals, gains, and HV
+  /// i.e. pedestals, LV, and HV
   
   AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,-1);
   fStatus->Add(param);
 
   AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemId,manuId));
 
-  AliMUONVCalibParam* gains = static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemId,manuId));
-  
   Int_t hvStatus = HVStatus(detElemId,manuId);
-
+  Int_t lvStatus = LVStatus(detElemId);
+  
   Int_t occStatus = OccupancyStatus(detElemId,manuId);
   
   for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
@@ -585,27 +582,7 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
       pedStatus = kPedMissing;
     }
     
-    Int_t gainStatus(0);
-  
-    if ( gains ) 
-    {
-      Float_t a0 = gains->ValueAsFloatFast(manuChannel,0);
-      Float_t a1 = gains->ValueAsFloatFast(manuChannel,1);
-      Float_t thres = gains->ValueAsFloatFast(manuChannel,2);
-  
-      if ( a0 < fGainA1Limits.X() ) gainStatus |= kGainA1TooLow;
-      else if ( a0 > fGainA1Limits.Y() ) gainStatus |= kGainA1TooHigh;
-      if ( a1 < fGainA2Limits.X() ) gainStatus |= kGainA2TooLow;
-      else if ( a1 > fGainA2Limits.Y() ) gainStatus |= kGainA2TooHigh;
-      if ( thres < fGainThresLimits.X() ) gainStatus |= kGainThresTooLow;
-      else if ( thres > fGainThresLimits.Y() ) gainStatus |= kGainThresTooHigh;
-    }
-    else
-    {
-      gainStatus = kGainMissing;
-    }
-    
-    Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus,occStatus);
+    Int_t status = BuildStatus(pedStatus,hvStatus,lvStatus,occStatus);
       
     param->SetValueAsIntFast(manuChannel,0,status);
   }
@@ -773,10 +750,6 @@ AliMUONPadStatusMaker::SetLimits(const AliMUONRecoParam& recoParams)
   
   SetPedMeanLimits(recoParams.PedMeanLowLimit(),recoParams.PedMeanHighLimit());
   SetPedSigmaLimits(recoParams.PedSigmaLowLimit(),recoParams.PedSigmaHighLimit());
-  
-  SetGainA1Limits(recoParams.GainA1LowLimit(),recoParams.GainA1HighLimit());
-  SetGainA2Limits(recoParams.GainA2LowLimit(),recoParams.GainA2HighLimit());
-  SetGainThresLimits(recoParams.GainThresLowLimit(),recoParams.GainThresHighLimit());
   
   SetManuOccupancyLimits(recoParams.ManuOccupancyLowLimit(),recoParams.ManuOccupancyHighLimit());
   SetBuspatchOccupancyLimits(recoParams.BuspatchOccupancyLowLimit(),recoParams.BuspatchOccupancyHighLimit());

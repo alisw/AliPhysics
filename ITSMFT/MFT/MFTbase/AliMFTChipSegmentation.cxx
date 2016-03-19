@@ -58,10 +58,10 @@ AliMFTChipSegmentation::AliMFTChipSegmentation(UInt_t uniqueID):
                mftGeom->GetSensorID(GetUniqueID()) ));
 
   Double_t pos[3];
-  pos[0] = mftGeom->GetSensorID(GetUniqueID())*(AliMFTConstants::kSensorLength + AliMFTConstants::kSensorInterspace)
-                 + AliMFTConstants::kSensorSideOffset;
-  pos[1] = AliMFTConstants::kSensorTopOffset ;
-  pos[2] = AliMFTConstants::kFlexThickness ;
+  pos[0] = mftGeom->GetSensorID(GetUniqueID())*(AliMFTGeometry::kSensorLength + AliMFTGeometry::kSensorInterspace)
+                  + AliMFTGeometry::kSensorSideOffset;
+  pos[1] = AliMFTGeometry::kSensorTopOffset ;
+  pos[2] = AliMFTGeometry::kFlexThickness ;
   SetPosition(pos);
   
   AliDebug(2,Form("Creating %s, UniqueID = %d, Position = (%.2f, %.2f, %.2f)",GetName(), GetUniqueID(), pos[0], pos[1], pos[2]));

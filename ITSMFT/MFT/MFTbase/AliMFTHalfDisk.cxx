@@ -52,7 +52,7 @@ AliMFTHalfDisk::AliMFTHalfDisk(AliMFTHalfDiskSegmentation *segmentation):TNamed(
   fMFTHeatExchanger(NULL),
   fSegmentation(segmentation)
 {
-//  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
   SetUniqueID(fSegmentation->GetUniqueID());
 //  Int_t halfDiskID = mftGeom->GetHalfDiskID(GetUniqueID());
 //  SetName(Form("D%d",halfDiskID));
@@ -61,6 +61,10 @@ AliMFTHalfDisk::AliMFTHalfDisk(AliMFTHalfDiskSegmentation *segmentation):TNamed(
 
   fHalfDiskVolume = new TGeoVolumeAssembly(GetName());
   
+  // Building MFT Support and PCBs
+  fMFTSupport = new AliMFTSupport();
+  TGeoVolumeAssembly * mftSupport = fMFTSupport->CreateVolume(mftGeom->GetHalfMFTID(GetUniqueID()),mftGeom->GetHalfDiskID(GetUniqueID()));
+  fHalfDiskVolume->AddNode(mftSupport,1);
 
   // Building Heat Exchanger Between faces
 	TGeoVolumeAssembly * heatExchangerVol = CreateHeatExchanger();

@@ -1,5 +1,3 @@
-// $Id$
-
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -33,11 +31,7 @@ AliHLTDataInflaterSimple::AliHLTDataInflaterSimple()
   , fCurrentParameter(-1)
   , fLegacyMode(-1)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // constructur, see header file for class documentation
 }
 
 AliHLTDataInflaterSimple::~AliHLTDataInflaterSimple()
@@ -71,7 +65,7 @@ bool AliHLTDataInflaterSimple::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t& 
   if (!InputBit(switchBit))
     return false;
   int readlength=switchBit?parameter.GetBitLength():parameter.GetReducedBitLength();
-  if (!InputBits(value, readlength))
+  if (!GetBits(value, readlength))
     return false;
   length=parameter.GetBitLength();
 

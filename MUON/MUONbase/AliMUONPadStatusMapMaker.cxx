@@ -20,7 +20,7 @@
 /// 
 /// Convert a pad statuses into pad status maps.
 /// 
-/// A pad status is one 32-bits word describing whether this pad pedestal, gains
+/// A pad status is one 32-bits word describing whether this pad pedestal, lv, 
 /// hv is correct or not.
 ///
 /// A pad status *map* is one 32-bits (of which 24 only are used)

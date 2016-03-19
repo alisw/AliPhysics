@@ -502,8 +502,9 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
 // if(fNumberOfSuperModules == 4) {fEMCALPhiMax = fArm1PhiMax ;}
  if(fNumberOfSuperModules == 12) {fEMCALPhiMax = fArm1PhiMax ;}  
   
-  //called after setting of scintillator and lead layer parameters
-  DefineSamplingFraction(mcname,mctitle);
+  // called after setting of scintillator and lead layer parameters
+  // called now in AliEMCALv0::CreateGeometry() - 15/03/16
+  //DefineSamplingFraction(mcname,mctitle);
 
   fgInit = kTRUE; 
 }
@@ -652,18 +653,19 @@ void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Tex
   // Default sampling factor for G3, modify it for other transport model
   TString mcName  = mcname;
   TString mcTitle = mctitle;
-
+    
   Float_t samplingFactorTranportModel = 1. ;
   if     (mcName.Contains("Geant3")) samplingFactorTranportModel = 1.;//0.988 // Do nothing
   else if(mcName.Contains("Fluka") ) samplingFactorTranportModel = 1.; // To be set
-  else if(mcName.Contains("Geant4")){
-    if(mcTitle.Contains("EMV"))      samplingFactorTranportModel = 1.096; // 0.906, 0.896 (OPT)
-    else                             samplingFactorTranportModel = 0.86; // 1.15 (CHIPS), 1.149 (BERT), 1.147 (BERT_CHIPS) 
+  else if(mcName.Contains("Geant4"))
+  {
+    if     ( mcTitle.Contains("EMV-EMCAL") ) samplingFactorTranportModel = 0.86 ; // EMC list but for EMCal 
+    else if( mcTitle.Contains("EMV") )       samplingFactorTranportModel = 1.096; // 0.906, 0.896 (OPT)
+    else                                     samplingFactorTranportModel = 0.86 ; // 1.15 (CHIPS), 1.149 (BERT), 1.147 (BERT_CHIPS) 
   }      
   
-  AliDebug(2,Form("MC modeler <%s>, Title <%s>: Sampling %f, model fraction with respect to G3 %f, final sampling %f \n",
+  AliInfo(Form("MC modeler <%s>, Title <%s>: Sampling %2.3f, model fraction with respect to G3 %2.3f, final sampling %2.3f",
                mcName.Data(),mcTitle.Data(),fSampling,samplingFactorTranportModel,fSampling*samplingFactorTranportModel));
-
   
   fSampling*=samplingFactorTranportModel;
   

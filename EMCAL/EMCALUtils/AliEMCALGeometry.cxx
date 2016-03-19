@@ -39,7 +39,7 @@ const Char_t*      AliEMCALGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12S
 
 //____________________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry():
-  fEMCGeometry(0x0),fTriggerMapping(0x0),fGeoName(0),fEMCSMSystem(0x0),
+  fEMCGeometry(0x0),fTriggerMapping(0x0),fGeoName(0),
   fKey110DEG(0),fnSupModInDCAL(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
   fNCellsInModule(0),fPhiBoundariesOfSM(0x0),fPhiCentersOfSM(0x0),
   fPhiCentersOfSMSec(0x0),fPhiCentersOfCells(0x0),fCentersOfCellsEtaDir(0x0),
@@ -67,7 +67,7 @@ AliEMCALGeometry::AliEMCALGeometry():
 //____________________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
   : TNamed(geo),
-    fEMCGeometry(geo.fEMCGeometry),fTriggerMapping(geo.fTriggerMapping),fGeoName(geo.fGeoName),fEMCSMSystem(geo.fEMCSMSystem),
+    fEMCGeometry(geo.fEMCGeometry),fTriggerMapping(geo.fTriggerMapping),fGeoName(geo.fGeoName),
     fKey110DEG(geo.fKey110DEG),fnSupModInDCAL(geo.fnSupModInDCAL),fNCellsInSupMod(geo.fNCellsInSupMod),fNETAdiv(geo.fNETAdiv),fNPHIdiv(geo.fNPHIdiv),
     fNCellsInModule(geo.fNCellsInModule),fPhiBoundariesOfSM(geo.fPhiBoundariesOfSM),fPhiCentersOfSM(geo.fPhiCentersOfSM),
     fPhiCentersOfSMSec(geo.fPhiCentersOfSMSec),fPhiCentersOfCells(geo.fPhiCentersOfCells),fCentersOfCellsEtaDir(geo.fCentersOfCellsEtaDir),
@@ -95,7 +95,7 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
 AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
                                    const Text_t* mcname, const Text_t* mctitle) 
   : TNamed(name, title),
-    fEMCGeometry(0x0),fTriggerMapping(0x0),fGeoName(0),fEMCSMSystem(0x0),
+    fEMCGeometry(0x0),fTriggerMapping(0x0),fGeoName(0),
     fKey110DEG(0),fnSupModInDCAL(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
     fNCellsInModule(0),fPhiBoundariesOfSM(0x0),fPhiCentersOfSM(0x0),
     fPhiCentersOfSMSec(0x0),fPhiCentersOfCells(0x0),fCentersOfCellsEtaDir(0x0),
@@ -112,7 +112,6 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
   
   fEMCGeometry = new AliEMCALEMCGeometry(name,title,mcname,mctitle);
   fGeoName = fEMCGeometry->GetGeoName();
-  fEMCSMSystem = fEMCGeometry->GetEMCSystem();
   fKey110DEG = fEMCGeometry->GetKey110DEG();
   fnSupModInDCAL = fEMCGeometry->GetnSupModInDCAL();
   fNCellsInSupMod = fEMCGeometry->GetNCellsInSupMod();
@@ -1536,13 +1535,13 @@ void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod)
 //__________________________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::IsDCALSM(Int_t iSupMod) const
 {
-  if( fEMCSMSystem[iSupMod] == kDCAL_Standard || fEMCSMSystem[iSupMod] == kDCAL_Ext ) return kTRUE;
+  if( fEMCGeometry->GetEMCSystem()[iSupMod] == kDCAL_Standard || fEMCGeometry->GetEMCSystem()[iSupMod] == kDCAL_Ext ) return kTRUE;
   return kFALSE;
 }
 
 //__________________________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::IsDCALExtSM(Int_t iSupMod) const
 {
-  if( fEMCSMSystem[iSupMod] == kDCAL_Ext ) return kTRUE;
+  if( fEMCGeometry->GetEMCSystem()[iSupMod] == kDCAL_Ext ) return kTRUE;
   return kFALSE;
 }

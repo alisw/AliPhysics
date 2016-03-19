@@ -365,6 +365,51 @@ Bool_t AliSymMatrix::SolveChol(Double_t *b, Bool_t invert)
 }
 
 //___________________________________________________________
+Bool_t AliSymMatrix::SolveCholN(Double_t *bn, int nRHS, Bool_t invert) 
+{
+  // Adopted from Numerical Recipes in C, ch.2-9, http://www.nr.com
+  // Solves the set of n linear equations A x = b, 
+  // where a is a positive-definite symmetric matrix. 
+  // a[1..n][1..n] is the output of the routine CholDecomposw. 
+  // Only the lower triangle of a is accessed. b[1..n] is input as the 
+  // right-hand side vector. The solution vector is returned in b[1..n].
+  //
+  // This version solve multiple RHSs at once
+  int sz = GetSizeUsed();
+  Int_t i,k;
+  Double_t sum;
+  //  
+  AliSymMatrix *pmchol = DecomposeChol();
+  if (!pmchol) {
+    AliInfo("SolveChol failed");
+    //    Print("l");
+    return kFALSE;
+  }
+  AliSymMatrix& mchol = *pmchol;
+  //
+  for (int ir=0;ir<nRHS;ir++) {
+    double *b = bn+ir*sz;
+    //
+    for (i=0;i<sz;i++) {
+      Double_t *rowi = mchol.GetRow(i);
+      for (sum=b[i],k=i-1;k>=0;k--) if (rowi[k]&&b[k]) sum -= rowi[k]*b[k];
+      b[i]=sum/rowi[i];
+    }
+    //
+    for (i=sz-1;i>=0;i--) {
+      for (sum=b[i],k=i+1;k<sz;k++) if (b[k]) {
+	  double &mki=mchol(k,i); if (mki) sum -= mki*b[k];
+	}
+      b[i]=sum/mchol(i,i);
+    }
+  }
+  //
+  if (invert) InvertChol(pmchol);
+  return kTRUE;
+  //
+}
+
+//___________________________________________________________
 Bool_t AliSymMatrix::SolveChol(TVectorD &b, Bool_t invert) 
 {
   return SolveChol((Double_t*)b.GetMatrixArray(),invert);

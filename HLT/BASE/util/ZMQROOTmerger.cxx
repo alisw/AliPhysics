@@ -28,7 +28,6 @@
 TObject* UnpackMessage(zmq_msg_t* message);
 Int_t ProcessOptionString(TString arguments);
 Int_t InitZMQ();
-void* InitZMQsocket(void* context, Int_t socketMode, const char* configs);
 void* work(void* param);
 Int_t Run();
 
@@ -39,6 +38,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoSend(void* socket);
 Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 Int_t DoRequest(void* /*socket*/);
+Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
@@ -53,7 +53,7 @@ TString fZMQsubscriptionIN = "";
 TString fZMQconfigOUT  = "PUSH";
 TString fZMQconfigMON  = "REP";
 Int_t   fZMQmaxQueueSize = 10;
-Int_t   fZMQtimeout = 0;
+Int_t   fZMQtimeout = -1;
 
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
@@ -107,6 +107,7 @@ const char* fUSAGE =
     " -unselect : as above, only inverted\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
+    " -ZMQtimeout: when to timeout the sockets\n"
     ;
 
 void* work(void* /*param*/)
@@ -117,16 +118,17 @@ void* work(void* /*param*/)
 //_______________________________________________________________________________________
 Int_t Run()
 {
-  Int_t rc = 0;
-  Int_t nSockets=3;
-  zmq_pollitem_t sockets[] = { 
-    { fZMQin, 0, ZMQ_POLLIN, 0 },
-    { fZMQout, 0, ZMQ_POLLIN, 0 },
-    { fZMQmon, 0, ZMQ_POLLIN, 0 },
-  };
   //main loop
   while(1)
   {
+    Int_t nSockets=3;
+    zmq_pollitem_t sockets[] = { 
+      { fZMQin, 0, ZMQ_POLLIN, 0 },
+      { fZMQout, 0, ZMQ_POLLIN, 0 },
+      { fZMQmon, 0, ZMQ_POLLIN, 0 },
+    };
+
+    Int_t rc = 0;
     errno=0;
 
     Int_t inType=alizmq_socket_type(fZMQin);
@@ -142,13 +144,30 @@ Int_t Run()
     //poll sockets - we want to take action on one of two conditions:
     //  1 - request comes in - then we merge whatever is not yet merged and send
     //  2 - data comes in - then we add it to the merging list
-    rc = zmq_poll(sockets, nSockets, -1); //poll sockets
+    rc = zmq_poll(sockets, nSockets, fZMQtimeout); //poll sockets
     if (rc==-1 && errno==ETERM)
     {
       //this can only happen it the context was terminated, one of the sockets are
       //not valid or operation was interrupted
       Printf("zmq_poll was interrupted! rc = %i, %s", rc, zmq_strerror(errno));
       break;
+    }
+
+    //if we time out (waiting for a response) reinit the REQ socket(s)
+    if (rc==0)
+    {
+      if (inType==ZMQ_REQ) {
+        if (fVerbose) printf("no reply from %s in %i ms, server died?\n", fZMQconfigIN.Data(), fZMQtimeout);
+        rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), fZMQtimeout, fZMQmaxQueueSize);
+      }
+      if (outType==ZMQ_REQ) {
+        if (fVerbose) printf("no reply from %s in %i ms, server died?\n", fZMQconfigOUT.Data(), fZMQtimeout);
+        alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), fZMQtimeout, fZMQmaxQueueSize);
+      }
+      if (monType==ZMQ_REQ) {
+        if (fVerbose) printf("no reply from %s in %i ms, server died?\n", fZMQconfigMON.Data(), fZMQtimeout);
+        alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
+      }
     }
 
     //data present socket 0 - in
@@ -202,7 +221,7 @@ Int_t Run()
 }
 
 //_____________________________________________________________________
-Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
   string tmp;
   tmp.assign((char*)zmq_msg_data(topicMsg),zmq_msg_size(topicMsg));
@@ -248,14 +267,14 @@ Int_t HandleControlMessage(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket
 //_____________________________________________________________________
 Int_t HandleRequest(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  if (HandleControlMessage(topicMsg, dataMsg, socket)>0) return 0;
+  if (DoControl(topicMsg, dataMsg, socket)>0) return 0;
   return DoReply(topicMsg, dataMsg, socket);
 }
 
 //_____________________________________________________________________
 Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 {
-  if (HandleControlMessage(topicMsg, dataMsg, socket)>0) return 0;
+  if (DoControl(topicMsg, dataMsg, socket)>0) return 0;
   return DoReceive(topicMsg, dataMsg, socket);
 }
 
@@ -382,8 +401,11 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 }
 
 //______________________________________________________________________________
-Int_t DoRequest(void*)
+Int_t DoRequest(void* socket)
 {
+  //just send an empty request
+  if (fVerbose) Printf("sending an empty request");
+  alizmq_msg_send("", "", socket, 0);
   return 0;
 }
 
@@ -510,7 +532,7 @@ Int_t Merge(TObject* object, TCollection* mergeList)
   }
   else if (!object->IsA()->GetMethodWithPrototype("Merge", "TCollection*"))
   {
-    Printf("Object does not implement a merge function!");
+    if (fVerbose) Printf("Object does not implement a merge function!");
     return(-1);
   }
   return 0;

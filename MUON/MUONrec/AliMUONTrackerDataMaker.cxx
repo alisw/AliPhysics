@@ -260,10 +260,8 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
     }
     
     fCalibrationData->Pedestals();
-    fCalibrationData->Gains();
     fCalibrationData->Neighbours();
     fCalibrationData->HV();
-    fCalibrationData->Capacitances();
     
     if ( storage && ( storage->GetURI() != fOCDBPath.Data() ) )
     {

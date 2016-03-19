@@ -43,7 +43,7 @@
 /// Class used to calibrate digits (either real or simulated ones).
 ///
 /// The calibration consists of subtracting the pedestal
-/// and multiplying by a gain, so that
+/// and multiplying by a constant gain, so that
 /// Signal = (ADC-pedestal)*gain
 ///
 /// Please note also that for the moment, if a digit lies on a dead channel
@@ -62,11 +62,6 @@
 ClassImp(AliMUONDigitCalibrator)
 /// \endcond
 
-const Int_t AliMUONDigitCalibrator::fgkNoGain(0);
-const Int_t AliMUONDigitCalibrator::fgkGainConstantCapa(1);
-const Int_t AliMUONDigitCalibrator::fgkGain(2);
-const Int_t AliMUONDigitCalibrator::fgkInjectionGain(3);
-
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(Int_t runNumber)
 : TObject(),
@@ -74,9 +69,6 @@ fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
 fStatusMapMaker(0x0),
 fPedestals(0x0),
-fGains(0x0),
-fApplyGains(0),
-fCapacitances(0x0),
 fNumberOfBadPads(0),
 fNumberOfPads(0),
 fChargeSigmaCut(0),
@@ -127,9 +119,6 @@ fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
 fStatusMapMaker(0x0),
 fPedestals(0x0),
-fGains(0x0),
-fApplyGains(0),
-fCapacitances(0x0),
 fNumberOfBadPads(0),
 fNumberOfPads(0),
 fChargeSigmaCut(0),
@@ -147,9 +136,6 @@ fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
 fStatusMapMaker(0x0),
 fPedestals(0x0),
-fGains(0x0),
-fApplyGains(0),
-fCapacitances(0x0),
 fNumberOfBadPads(0),
 fNumberOfPads(0),
 fChargeSigmaCut(0),
@@ -167,36 +153,6 @@ AliMUONDigitCalibrator::Ctor(const AliMUONCalibrationData& calib,
                              Bool_t deferredInitialization)
 {
   /// designated ctor
-  
-  TString cMode("NOGAIN");
-  if (recoParams) cMode=recoParams->GetCalibrationMode();
-  cMode.ToUpper();
-  
-  if ( cMode == "NOGAIN" ) 
-  {
-    fApplyGains = fgkNoGain;
-    AliInfo("Will NOT apply gain correction");
-  }
-  else if ( cMode == "GAINCONSTANTCAPA" ) 
-  {
-    fApplyGains = fgkGainConstantCapa;
-    AliInfo("Will apply gain correction, but with constant capacitance");
-  }
-  else if ( cMode == "GAIN" ) 
-  {
-    fApplyGains = fgkGain;
-    AliInfo("Will apply gain correction, with measured capacitances");
-  }
-  else if ( cMode == "INJECTIONGAIN")
-	{
-		fApplyGains = fgkInjectionGain;
-    AliInfo("Will apply injection gain correction, with EMELEC factory gains");
-	}  
-  else
-  {
-    AliError(Form("Invalid calib mode = %s. Will use NOGAIN instead",cMode.Data()));
-    fApplyGains = fgkNoGain;
-  }
   
   // Load mapping manu store
   if ( ! AliMpCDB::LoadManuStore() ) {
@@ -232,14 +188,6 @@ AliMUONDigitCalibrator::Ctor(const AliMUONCalibrationData& calib,
   fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,fMask,deferredInitialization);
   
   fPedestals = calib.Pedestals();
-  
-  fGains = calib.Gains(); // we get gains whatever the calibMode is, in order
-  // to get the saturation value...
-  
-  if ( fApplyGains == fgkGain || fApplyGains == fgkInjectionGain ) 
-  {
-    fCapacitances = calib.Capacitances();
-  }
 }
 
 //_____________________________________________________________________________
@@ -346,94 +294,24 @@ AliMUONDigitCalibrator::CalibrateDigit(Int_t detElemId, Int_t manuId, Int_t manu
     return 0.0;
   }
   
-  
-  AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
-  (fGains->FindObject(detElemId,manuId));
-  
-  if (!gain)
-  {
-    if ( fApplyGains != fgkNoGain )
-    {
-      // no gain -> no charge
-      fLogger->Log(Form("Got a null gain object for DE,manu=%d,%d",
-                        detElemId,manuId)); 
-      return 0.0;
-    }
-  }
-  
   Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
   
 	// Gain (mV/fC) = 1/(a0*capa) with a0~1.25 and capa~0.2 
   Float_t charge(0);
   Float_t capa(AliMUONConstants::DefaultCapa()); // capa = 0.2 and a0 = 1.25
   Float_t a0(AliMUONConstants::DefaultA0());  // is equivalent to gain = 4 mV/fC
-  Float_t a1(0);
   Float_t adc2mv(AliMUONConstants::DefaultADC2MV()); // 1 ADC channel = 0.61 mV
-  Float_t injGain(4); // By default the gain is set to 4 mV/fC
   //
   // Note that the ChargeMax (for one pad) is roughly 4096 * 0.61 mV/channel / 4 mV/fC = 625 fC
-
-  if ( fApplyGains == fgkGain || fApplyGains == fgkInjectionGain ) 
-  {
-    Int_t serialNumber 
-    = AliMpManuStore::Instance()->GetManuSerial(detElemId, manuId);
-    
-    AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fCapacitances->FindObject(serialNumber));
-    
-    if ( param )
-    {
-      capa = param->ValueAsFloat(manuChannel,0);
-			injGain = param->ValueAsFloat(manuChannel,1);
-      if ( injGain < 0 ) 
-      {
-        fLogger->Log(Form("injGain is %e < 0 for serialNumber=%d",injGain,serialNumber));
-        return 0.0;
-      }
-    }
-    else
-    {
-      // If capa not found in the OCDB we exit
-	    fLogger->Log(Form("No capa (injGain) found for serialNumber=%d",serialNumber));
-			return 0.0;
-    }
-  }
   
   if ( padc > nsigmas*pedestal->ValueAsFloat(manuChannel,1) ) 
   {
-    if ( fApplyGains == fgkGain || fApplyGains == fgkGainConstantCapa ) 
-    {
-      a0 = gain->ValueAsFloat(manuChannel,0);
-      a1 = gain->ValueAsFloat(manuChannel,1);
-      Int_t thres = gain->ValueAsInt(manuChannel,2);
-      if ( padc < thres ) 
-      {
-        charge = a0*padc;
-      }
-      else
-      {
-        charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
-      }
-			charge *= capa*adc2mv;
-    }
-    else if ( fApplyGains == fgkInjectionGain ) 
-    {
-			
-      charge = padc*adc2mv/injGain;
-    }
-		else
-		{
-			charge = a0*padc*capa*adc2mv;
-		}
+    charge = a0*padc*capa*adc2mv;
   }
   
   if ( isSaturated ) 
   {
-    Int_t saturation(3000);
-    
-    if ( gain && ( fApplyGains != fgkNoGain ) )
-    {
-      saturation = gain->ValueAsInt(manuChannel,4);
-    }
+    const Int_t saturation(3000);
     
     if ( padc >= saturation )
     {

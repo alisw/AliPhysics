@@ -654,7 +654,7 @@ void AliPIDResponse::ExecNewRun()
   // by the new method for backward compatibility
   Bool_t doOldTPCPID=kTRUE;
   if (fUseTPCNewResponse) {
-    doOldTPCPID =! InitializeTPCResponse();
+    doOldTPCPID = !InitializeTPCResponse();
     if (doOldTPCPID) {
       AliWarning("No TPC response parametrisations found using the new method. Falling back to the old method.");
     }
@@ -1272,7 +1272,7 @@ Bool_t AliPIDResponse::InitializeTPCResponse()
   Int_t recopass = fRecoPass;
   if(fIsMC && fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) recopass = fRecoPassUser;
 
-  const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, TString::Format("%d", recopass), fileNamePIDresponse);
+  const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, TString::Format("%d", recopass), fileNamePIDresponse, fUseTPCMultiplicityCorrection);
   AliInfo("------------------------------------------------------------------------------------------");
 
   return returnValue;

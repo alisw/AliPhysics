@@ -168,8 +168,8 @@ class AliVCluster : public TObject
   Double_t            GetHadCorrEnergy() const      { return GetUserDefEnergy(kHadCorr)     ; }
   void                SetHadCorrEnergy(Double_t e)  { SetUserDefEnergy(kHadCorr, e)         ; }
   
-  virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/) const { ; }
-  virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/, VCluUserDefEnergy_t /*t*/) const { ; }
+  virtual void GetMomentum(TLorentzVector &/*tl*/, const Double_t * /*v*/) const { ; }
+  virtual void GetMomentum(TLorentzVector &/*tl*/, const Double_t * /*v*/, VCluUserDefEnergy_t /*t*/) const { ; }
   
   /// \cond CLASSIMP
   ClassDef(AliVCluster,0) ; //VCluster 

@@ -6,7 +6,7 @@
   DA Type: LDC
   Number of events needed: 400 events for pedestal run
   Input Files: mutrkpedvalues and config_ldc-MTRK-S3-0 in path : /afs/cern.ch/user/j/jcharvet/public/DA_validation 
-  Output Files: local dir (not persistent) -> MUONTRKPEDda.ped  FXS -> run<#>_MCH_<ldc>_PEDESTALS
+  Output Files: local dir (not persistent) -> MCHPEDda.ped  FXS -> run<#>_MCH_<ldc>_PEDESTALS
   Trigger types used:
 */
 
@@ -29,10 +29,10 @@
 
 /*
 	-------------------------------------------------------------------------
-        2012-11-23 New version: MUONTRKPEDda.cxx,v 1.9
+        2016-03-15 New version: MCHPEDda.cxx,v 1.10
 	-------------------------------------------------------------------------
 
-	Version for MUONTRKPEDda MUON tracking
+	Version for MCHPEDda MUON tracking
 	(A. Baldisseri, J.-L. Charvet)
 
 
@@ -230,8 +230,9 @@ int main(Int_t argc, const char **argv)
   UChar_t channelId;
   UShort_t charge;
 
-  //2015-02-08  const char* prefixDA = "MUONTRKPEDda"; // program prefix
-  const char* prefixDA = "MCHPEDda"; // program prefix
+  Char_t dum[256] ="";
+  sprintf(dum,"%sPEDda",getenv("DATE_DETECTOR_CODE")); //  DATE_DETECTOR_CODE = MCH 
+  const char* prefixDA = dum ; // program prefix
   const char* prefixLDC = getenv("DATE_ROLE_NAME"); // LDC name
   if(prefixLDC == NULL)  prefixLDC ="MCH" ;
   printf("%s : -------- Begin execution : %s --------  \n",prefixLDC,prefixDA); 

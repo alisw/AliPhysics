@@ -1816,7 +1816,7 @@ AliMUONTrackerQADataMakerRec::TrackerCalData(Int_t specieIndex, Bool_t create)
     o = array->At(specieIndex);
     if (!o && create)
     {
-      AliMUONTrackerData* data = new AliMUONTrackerData("CalCharges",Form("Calibrated charges (fC) %s",GetRecoParam()->GetCalibrationMode()),1);
+      AliMUONTrackerData* data = new AliMUONTrackerData("CalCharges","Calibrated charges (fC)",1);
       data->SetDimensionName(0,"charge");
       data->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
       o=data;
@@ -1838,7 +1838,7 @@ AliMUONTrackerQADataMakerRec::TrackerRecData(Int_t specieIndex, Bool_t create)
     o = array->At(specieIndex);
     if (!o && create)
     {
-      AliMUONTrackerData* data = new AliMUONTrackerData("RecCharges",Form("Calibrated charges (fC) %s for digits belonging to a reconstructed cluster",GetRecoParam()->GetCalibrationMode()),1);
+      AliMUONTrackerData* data = new AliMUONTrackerData("RecCharges","Calibrated charges (fC) for digits belonging to a reconstructed cluster",1);
       data->SetDimensionName(0,"one");
       data->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
       o=data;

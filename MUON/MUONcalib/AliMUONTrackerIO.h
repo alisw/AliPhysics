@@ -8,7 +8,7 @@
 
 /// \ingroup calib
 /// \class AliMUONTrackerIO
-/// \brief Converts ASCII calibration files (ped, gains, capa) into AliMUONVStore object
+/// \brief Converts ASCII calibration files (ped, config, occupancy) into AliMUONVStore object
 /// 
 // Author Laurent Aphecetche, Subatech
 
@@ -34,14 +34,8 @@ public:
   static Int_t ReadPedestals(const char* filename, AliMUONVStore& pedStore);
   static Int_t DecodePedestals(const char* data, AliMUONVStore& pedStore);
   
-  static Int_t ReadGains(const char* filename, AliMUONVStore& gainStore, TString& comment);
-  static Int_t DecodeGains(const char* data, AliMUONVStore& gainStore, TString& comment);
-  
   static Int_t ReadOccupancy(const char* filename, AliMUONVStore& occupancyMap);
   static Int_t DecodeOccupancy(const char* data, AliMUONVStore& occupancyMap);
-  
-  static Int_t ReadCapacitances(const char* filename, AliMUONVStore& capaStore);
-  static Int_t DecodeCapacitances(const char* data, AliMUONVStore& capaStore);
   
   /// Error code constants
   enum ErrorCode

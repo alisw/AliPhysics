@@ -323,6 +323,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   Float_t  width[16];
   Bool_t aBBflag[16];
   Bool_t aBGflag[16];
+  Float_t   adcTrigger[16];
   
   for (Int_t i=0; i<16; i++){
     adc[i]            = 0.0f;
@@ -333,6 +334,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     width[i]          = 0.0f;
     aBBflag[i]        = kFALSE;
     aBGflag[i]        = kFALSE;
+    adcTrigger[i]     = 0.0f;
   }
   
   TClonesArray *f_Int0 = new TClonesArray;
@@ -395,6 +397,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     
 	for (Int_t iClock=14; iClock<=20; ++iClock)
 	  tail[pmNumber] += adcPedSub[iClock];
+	
+	adcTrigger[pmNumber] = adcPedSub[10];
 
 	const Int_t start = TMath::Max( 0, imax - GetRecoParam()->GetNPreClocks());
 	const Int_t end   = TMath::Min(20, imax + GetRecoParam()->GetNPostClocks());
@@ -492,6 +496,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetBBFlag(aBBflag);
   fESDAD->SetBGFlag(aBGflag);
   fESDAD->SetADCTail(tail);
+  fESDAD->SetADCTrigger(adcTrigger);
   
   // Fill BB and BG flags for all channel in 21 clocks (called past-future flags)
   for (Int_t i=0; i<16; ++i) {

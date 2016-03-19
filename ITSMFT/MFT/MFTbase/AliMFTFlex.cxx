@@ -19,186 +19,361 @@
 //  This version uses TGeo
 //  Authors:
 //  F. Manso
+// march 2016: main implementaion of the class
 //-------------------------------------------------------------------------
-
 
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
+#include "TGeoTrd2.h"
 #include "TGeoMatrix.h"
 #include "TGeoBBox.h"
-
+#include "TGeoTube.h"
 #include "AliLog.h"
-
-#include "AliMFTConstants.h"
 #include "AliMFTLadderSegmentation.h"
+#include "AliMFTChipSegmentation.h"
 #include "AliMFTFlex.h"
+#include "AliMFTChip.h"
+#include "AliMFTLadder.h"
+#include "AliMFTGeometry.h"
+#include "AliMFTPlane.h"
+#include "TGeoCompositeShape.h"
+#include "TGeoBoolNode.h"
 
 ClassImp(AliMFTFlex)
 
-//_____________________________________________________________________________
 AliMFTFlex::AliMFTFlex():
 TNamed(),
-fTrackWidth(200e-4),      // 200 microns
-fTrackThickness(25e-4),   // thickness of a sensor track
-fTrackNb(2),              // 2 tracks per sensor
-fGlueThickness(25e-4),    // 25 microns
-fKaptonThickness(25e-4),  // 25 microns
-fVarnishThickness(30e-4), // 30 microns
-fNLayer(0),               // number of layers
-fNSensors(0),
-fChipWidth(0),
-fChipInterspace(0),
-fChipSideOffset(0),
-fIsLeftType(kFALSE),
 fLadderSeg(NULL)
 {
   // Constructor
-  fFlexDimensions = new Double_t[3];
-  fFlexOrigin = new Double_t[3];
-  for(int i =0;i<3;i++) {
-    fFlexDimensions[i]=0.;
-    fFlexOrigin[i]=0.;
-  }
 }
-//=============================================================================================
 
 AliMFTFlex::~AliMFTFlex() {
-  delete fFlexDimensions;
-  delete fFlexOrigin;
-  
 }
-//=============================================================================================
-
 
 AliMFTFlex::AliMFTFlex(AliMFTLadderSegmentation *ladder):
 TNamed(),
-fTrackWidth(2000e-4),      // 200 microns
-fTrackThickness(250e-4),   // thickness of a sensor track
-fTrackNb(10),             // track number per sensor
-fGlueThickness(250e-4),    // 25 microns
-fKaptonThickness(250e-4),  // 25 microns
-fVarnishThickness(300e-4), // 30 microns
-fNLayer(2),               // number of layers
-fNSensors(ladder->GetNSensors()),
-fChipWidth(AliMFTConstants::fChipWidth),
-fChipInterspace(AliMFTConstants::fChipInterspace),
-fChipSideOffset(AliMFTConstants::fChipSideOffset),
 fLadderSeg(ladder)
 {
   // Constructor
-  fFlexDimensions = new Double_t[3];
-  fFlexOrigin = new Double_t[3];
 }
 
-//=============================================================================================
 
-TGeoVolumeAssembly* AliMFTFlex::MakeFlex(Int_t nsensors)
+TGeoVolumeAssembly* AliMFTFlex::MakeFlex(Int_t nbsensors, Double_t length)
 {
-  
-  AliInfo(Form("Start Creating the flex for  %d Sensors",nsensors));
-  // Flex Container
-  TGeoVolumeAssembly* Flex = new TGeoVolumeAssembly("Flex");
-  
-  // Building of each flex layer
-  TGeoVolumeAssembly*  alutrack = MakeAluTrack(nsensors);
-  TGeoVolume*         gluelayer = MakeGlueLayer(fNLayer, fGlueThickness, fFlexDimensions[1], fFlexDimensions[0]);
-  TGeoVolume*       kaptonlayer = MakeKaptonLayer(fNLayer, fKaptonThickness, fFlexDimensions[1], fFlexDimensions[0]);
-  TGeoVolume*      varnishlayer = MakeVarnishLayer(fVarnishThickness, fFlexDimensions[1], fFlexDimensions[0]);
-  
-  // Local frame: x=lenght, y=width, z=thickness, left flex
-  Double_t zkapton, zglue, ztrack, zvarnish;
-  // Don't change the order of the next 4 lines..
-  zkapton  = fKaptonThickness*fNLayer/2;
-  zglue    = 2*zkapton + fGlueThickness*fNLayer/2;
-  ztrack   = zglue + fGlueThickness*fNLayer/2;
-  zvarnish = ztrack + fTrackWidth*fTrackThickness*fTrackNb/fFlexDimensions[1] + fVarnishThickness/2;
-  
-  fFlexDimensions[2] = zvarnish + fVarnishThickness/2;
-//  fLadderSeg->SetFlexLength(fFlexDimensions);
-  
-  // Final flex building
-  Flex->AddNode(kaptonlayer,  1,  new TGeoTranslation((1.-2.*!fIsLeftType)*fFlexDimensions[0]/2, -fFlexDimensions[1]/2, zkapton));
-  Flex->AddNode(gluelayer,    1,  new TGeoTranslation((1.-2.*!fIsLeftType)*fFlexDimensions[0]/2, -fFlexDimensions[1]/2, zglue));
-  Flex->AddNode(alutrack,     1,  new TGeoTranslation( 0. , 0., ztrack));
-  Flex->AddNode(varnishlayer, 1,  new TGeoTranslation((1.-2.*!fIsLeftType)*fFlexDimensions[0]/2, -fFlexDimensions[1]/2, zvarnish));
-  return Flex;
-}
+  // Informations from the technical report mft_flex_proto_5chip_v08_laz50p.docx on MFT twiki and private communications
 
-//=============================================================================================
+  // For the naming
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
+  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
+  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
 
-TGeoVolumeAssembly* AliMFTFlex::MakeAluTrack(Int_t nsensors)
-{
-  // For the al tracks --> nsensors+1 volumes (sensors + flex end) with an al thickness according to the number of tracks
-  // Local frame: x=lenght, y=width, z=thickness, building of a LEFT flex
-  char name[10];
-  Double_t xpos,ypos,zpos,section,lenghtfe,widthalu;
-  //Int_t ntracktotal;
-  //ntracktotal = nsensors*fTrackNb;
+  // First a global pointer for the flex
+  TGeoMedium *kMedAir = gGeoManager->GetMedium("MFT_Air$");
+  TGeoVolumeAssembly*  flex  = new TGeoVolumeAssembly(Form("flex_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder));
 
-  section=fTrackWidth*fTrackThickness;  // straight-edged of a track
-  widthalu = section*fTrackNb/fFlexDimensions[1]; // width of alu for the first sensor
- 
-  TGeoMedium* kMedAlu[5];
-  for (Int_t i=1; i <= nsensors; i++) {
-    sprintf(name, "MFT_Alu%d", i);
-    kMedAlu[i-1] = gGeoManager->GetMedium(name);
-  }
-  
-  // Overall container for the flex tracks
-  TGeoVolumeAssembly* alutrack = new TGeoVolumeAssembly("AluTrack");
+  // Defining one single layer for the strips and the AVDD and DVDD
+  TGeoVolume* lines = Make_Lines(nbsensors,length-AliMFTGeometry::kClearance, AliMFTGeometry::kFlexHeight - AliMFTGeometry::kClearance, AliMFTGeometry::kAluThickness);
 
-  // tracks from each sensor
-  for (Int_t i=1; i <= nsensors; i++) {
-    AliInfo(Form("Sensor %d",i));
-    xpos = fChipSideOffset + (fChipWidth+fChipInterspace)/2 + (i-1)*(fChipWidth + fChipInterspace);
-    ypos = - fFlexDimensions[1]/2;
-    zpos = widthalu/2;
-    AliInfo(Form("X,Y,Z =  %f %f %f",xpos,ypos,zpos));
-    AliInfo(Form("dX,dY,dZ =  %f %f %f",(fChipWidth+fChipInterspace)/2, fFlexDimensions[1]/2, widthalu/2));
+  // AGND and DGND layers
+  TGeoVolume* agnd_dgnd = Make_AGND_DGND(length-AliMFTGeometry::kClearance, AliMFTGeometry::kFlexHeight-AliMFTGeometry::kClearance, AliMFTGeometry::kAluThickness);
+
+  // The others layers
+  TGeoVolume* kaptonlayer     = Make_Kapton(length, AliMFTGeometry::kFlexHeight, AliMFTGeometry::kKaptonThickness);
+  TGeoVolume* varnishlayerIn  = Make_Varnish(length, AliMFTGeometry::kFlexHeight, AliMFTGeometry::kVarnishThickness,0);
+  TGeoVolume* varnishlayerOut = Make_Varnish(length, AliMFTGeometry::kFlexHeight, AliMFTGeometry::kVarnishThickness,1);
     
-    sprintf(name, "AluTrack%d", i);
-    alutrack->AddNode(new TGeoVolume(name, new TGeoBBox("BOX", (fChipWidth+fChipInterspace)/2, fFlexDimensions[1]/2, widthalu/2), kMedAlu[i-1]),
-                      i, new TGeoTranslation((1.-2.*!fIsLeftType)*xpos, ypos, zpos));
+  // Final flex building
+  Double_t zvarnishIn = AliMFTGeometry::kKaptonThickness/2+AliMFTGeometry::kAluThickness+AliMFTGeometry::kVarnishThickness/2-AliMFTGeometry::kGlueThickness;
+  Double_t zgnd = AliMFTGeometry::kKaptonThickness/2+AliMFTGeometry::kAluThickness/2-AliMFTGeometry::kGlueThickness;
+  Double_t zkaptonlayer = -AliMFTGeometry::kGlueThickness;
+  Double_t zlines = -AliMFTGeometry::kKaptonThickness/2-AliMFTGeometry::kAluThickness/2-AliMFTGeometry::kGlueThickness;
+  Double_t zvarnishOut = -AliMFTGeometry::kKaptonThickness/2-AliMFTGeometry::kAluThickness-AliMFTGeometry::kVarnishThickness/2-AliMFTGeometry::kGlueThickness;
+
+  //-----------------------------------------------------------------------------------------
+ //-------------------------- Adding all layers of the FPC ----------------------------------
+  //-----------------------------------------------------------------------------------------
+  flex->AddNode(varnishlayerIn,  1,  new TGeoTranslation(0., 0., zvarnishIn));    // inside, in front of the cold plate
+  flex->AddNode(agnd_dgnd,       1,  new TGeoTranslation(0., 0., zgnd));
+  flex->AddNode(kaptonlayer,     1,  new TGeoTranslation(0., 0., zkaptonlayer));
+  flex->AddNode(lines,           1,  new TGeoTranslation(0., 0., zlines));
+  flex->AddNode(varnishlayerOut, 1,  new TGeoTranslation(0., 0., zvarnishOut));   // outside
+
+  Make_ElectricComponents(flex, nbsensors, length, zvarnishOut);
+  //-----------------------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------------------
+
+  return flex;
+}
+
+
+void AliMFTFlex::Make_ElectricComponents(TGeoVolumeAssembly*  flex, Int_t nbsensors, Double_t length, Double_t zvarnish) 
+{
+  // Making and adding all the electric components
+  TGeoVolume *electric[200];
+
+  // 2 components on the connector side
+  Int_t total;
+  for(Int_t id=0; id < 2; id++)electric[id] = Make_ElectricComponent(AliMFTGeometry::kCapacitorDx, AliMFTGeometry::kCapacitorDy, AliMFTGeometry::kCapacitorDz, id);
+  flex->AddNode(electric[0], 1,  new TGeoTranslation(length/2 - 0.1, AliMFTGeometry::kFlexHeight/2-0.2, 
+						     zvarnish-AliMFTGeometry::kVarnishThickness/2-AliMFTGeometry::kCapacitorDz/2));
+  flex->AddNode(electric[1], 2,  new TGeoTranslation(length/2 - 0.1, AliMFTGeometry::kFlexHeight/2-0.6, 
+						     zvarnish-AliMFTGeometry::kVarnishThickness/2-AliMFTGeometry::kCapacitorDz/2));
+  total=2;
+
+  // The connector of the FPC
+  for(Int_t id=0; id < 74; id++)electric[id+total] = Make_ElectricComponent(AliMFTGeometry::kConnectorLength, AliMFTGeometry::kConnectorWidth, 
+									    AliMFTGeometry::kConnectorThickness, id+total);
+  for(Int_t id=0; id < 37; id++){
+    flex->AddNode(electric[id+total], id+100, new TGeoTranslation(length/2+0.15-AliMFTGeometry::kConnectorOffset, id*0.04-AliMFTGeometry::kFlexHeight/2 + 0.1, 
+								  zvarnish-AliMFTGeometry::kVarnishThickness/2-AliMFTGeometry::kCapacitorDz/2));
+    flex->AddNode(electric[id+total+37], id+200, new TGeoTranslation(length/2-0.15-AliMFTGeometry::kConnectorOffset, id*0.04-AliMFTGeometry::kFlexHeight/2 + 0.1, 
+								     zvarnish - AliMFTGeometry::kVarnishThickness/2 - AliMFTGeometry::kCapacitorDz/2));
   }
-  // tracks at the flex end = total tracks from sensors
-  lenghtfe = fFlexDimensions[0] - fChipSideOffset - nsensors*(fChipWidth + fChipInterspace);
-  alutrack->AddNode(new TGeoVolume("AluTrackFE", new TGeoBBox("BOX", lenghtfe/2, fFlexDimensions[1]/2, widthalu/2), kMedAlu[nsensors-1]),
-                    nsensors+1, new TGeoTranslation((1.-2.*!fIsLeftType)*(xpos + (fChipWidth+fChipInterspace)/2 + lenghtfe/2), ypos, zpos));
-  alutrack->SetVisibility(1);
-  alutrack->SetLineColor(kBlack);
-  return alutrack;
-}
-//=============================================================================================
+  total=total+74;
 
-TGeoVolume* AliMFTFlex::MakeGlueLayer(Int_t nlayer, Double_t thickness, Double_t widthflex, Double_t lenghtflex)
-{
-  TGeoMedium *kMedEpoxy = gGeoManager->GetMedium("MFT_Epoxy");
-  TGeoVolume* gluelayer = new TGeoVolume("gluelayer", new TGeoBBox("BOX", lenghtflex/2, widthflex/2, thickness*nlayer/2), kMedEpoxy);
-  gluelayer->SetVisibility(1);
-  gluelayer->SetLineColor(kBlue+1);
-  return gluelayer;
-}
-//=============================================================================================
+   // 2 lines of electric components along the FPC in the middle (4 per sensor)
+  for(Int_t id=0; id < 4*nbsensors; id++)electric[id+total] = Make_ElectricComponent(AliMFTGeometry::kCapacitorDy, AliMFTGeometry::kCapacitorDx, 
+										     AliMFTGeometry::kCapacitorDz, id+total);
+  for(Int_t id=0; id < 2*nbsensors; id++){
+    flex->AddNode(electric[id+total], id+1000, new TGeoTranslation(-length/2 + (id+0.5)*AliMFTGeometry::kSensorLength/2, AliMFTGeometry::kFlexHeight/2 - 0.35, 
+								   zvarnish - AliMFTGeometry::kVarnishThickness/2 - AliMFTGeometry::kCapacitorDz/2));
+    flex->AddNode(electric[id+total+2*nbsensors], id+2000, new TGeoTranslation(-length/2 + (id+0.5)*AliMFTGeometry::kSensorLength/2, 0., 
+									       zvarnish - AliMFTGeometry::kVarnishThickness/2 - AliMFTGeometry::kCapacitorDz/2));
+  }
+  total=total+4*nbsensors;
 
-TGeoVolume* AliMFTFlex::MakeKaptonLayer(Int_t nlayer, Double_t thickness, Double_t widthflex, Double_t lenghtflex)
+  // ------- 3 components on the FPC side -------- 
+  for(Int_t id=0; id < 3; id++)electric[id+total] = Make_ElectricComponent(AliMFTGeometry::kCapacitorDy, AliMFTGeometry::kCapacitorDx, 
+									   AliMFTGeometry::kCapacitorDz, id+total);
+  for(Int_t id=0 ; id < 3; id++){
+    flex->AddNode(electric[id+total], id+3000, new TGeoTranslation(-length/2+AliMFTGeometry::kSensorLength+(id+1)*0.3-0.6, -AliMFTGeometry::kFlexHeight/2 + 0.2, 
+								   zvarnish-AliMFTGeometry::kVarnishThickness/2 - AliMFTGeometry::kCapacitorDz/2));
+  }
+}
+
+
+TGeoVolume* AliMFTFlex::Make_ElectricComponent(Double_t dx, Double_t dy,  Double_t dz, Int_t id)
 {
-  TGeoMedium *kMedKapton = gGeoManager->GetMedium("MFT_Kapton");
-  AliInfo(Form("dX,dY,dZ =  %f %f %f",lenghtflex/2, widthflex/2,  thickness*nlayer/2));
-  TGeoVolume* kaptonlayer = new TGeoVolume("kaptonlayer", new TGeoBBox("BOX", lenghtflex/2, widthflex/2,  thickness*nlayer/2), kMedKapton);
+  // the medium has to be changed, see ITS capacitors...
+  TGeoMedium *kMedCopper = gGeoManager->GetMedium("MFT_Cu$");
+
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
+  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
+  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
+
+  TGeoVolume* electriccomponent = new TGeoVolume(Form("electric_%d_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder,id), new TGeoBBox("BOX", dy/2, dx/2, dz/2), kMedCopper);
+  electriccomponent->SetVisibility(1);
+  electriccomponent->SetLineColor(kRed);
+  return electriccomponent;
+}
+
+
+TGeoVolume* AliMFTFlex::Make_Lines(Int_t nbsensors, Double_t length, Double_t widthflex,  Double_t thickness)
+{
+  // One line is built by removing 3 lines of aluminium in the TGeoBBox *layer_def layer. Then one line is made by the 2 remaining aluminium strips. 
+
+  // the initial layer of aluminium
+  TGeoBBox *layer_def = new TGeoBBox("layer_def", length/2, widthflex/2, thickness/2);
+
+  // Two holes for fixing and positionning of the FPC on the cold plate
+  TGeoTube *hole1 = new TGeoTube("hole1", 0., AliMFTGeometry::kRadiusHole1, thickness/2 + AliMFTGeometry::kEpsilon);
+  TGeoTube *hole2 = new TGeoTube("hole2", 0., AliMFTGeometry::kRadiusHole2, thickness/2 + AliMFTGeometry::kEpsilon);
+
+  TGeoTranslation    *t1= new TGeoTranslation ("t1", length/2 - AliMFTGeometry::kHoleShift1, 0., 0.);
+  TGeoSubtraction    *layerholesub1 = new TGeoSubtraction(layer_def, hole1, NULL, t1);
+  TGeoCompositeShape *layerhole1 = new TGeoCompositeShape("layerhole1", layerholesub1);
+
+  TGeoTranslation    *t2= new TGeoTranslation ("t2", length/2 - AliMFTGeometry::kHoleShift2, 0., 0.);
+  TGeoSubtraction    *layerholesub2 = new TGeoSubtraction(layerhole1, hole2, NULL, t2);
+  TGeoCompositeShape *layer = new TGeoCompositeShape("layerhole2", layerholesub2);
+
+  TGeoBBox *line[25];
+  TGeoTranslation *t[6],*ts[15],*tvdd, *tl[2];
+  TGeoSubtraction *layerl[25];
+  TGeoCompositeShape *layern[25];
+  Int_t istart, istop;
+  Int_t kTotalLinesNb=0;
+  Int_t kTotalLinesNb1, kTotalLinesNb2;
+  Double_t length_line;
+
+
+  // ----------- two lines along the FPC digital side --------------
+  t[0] = new TGeoTranslation ("t0", AliMFTGeometry::kSensorLength/2-AliMFTGeometry::kConnectorOffset/2, -widthflex/2 + 2*AliMFTGeometry::kLineWidth, 0.);    
+  line[0]  = new TGeoBBox("line0",  length/2 - AliMFTGeometry::kConnectorOffset/2 - AliMFTGeometry::kSensorLength/2, AliMFTGeometry::kLineWidth/2, 
+			  thickness/2 + AliMFTGeometry::kEpsilon);
+  layerl[0] = new TGeoSubtraction(layer, line[0], NULL, t[0]);
+  layern[0] = new TGeoCompositeShape(Form("layer%d",0), layerl[0]);
+
+  istart = 1; istop = 6;
+  for (int iline = istart; iline < istop; iline++){
+    t[iline] = new TGeoTranslation (Form("t%d",iline), AliMFTGeometry::kSensorLength/2 - AliMFTGeometry::kConnectorOffset/2, 
+				    -widthflex/2 + 2*(iline+1)*AliMFTGeometry::kLineWidth, 0.);
+    line[iline]  = new TGeoBBox(Form("line%d",iline),  length/2 - AliMFTGeometry::kConnectorOffset/2 - AliMFTGeometry::kSensorLength/2, AliMFTGeometry::kLineWidth/2, 
+				  thickness/2 + AliMFTGeometry::kEpsilon);
+    layerl[iline] = new TGeoSubtraction(layern[iline-1], line[iline], NULL, t[iline]);
+    layern[iline] = new TGeoCompositeShape(Form("layer%d",iline), layerl[iline]);
+    kTotalLinesNb++;
+  }
+
+  // ---------  lines for the sensors, one line/sensor -------------
+  istart = kTotalLinesNb+1; istop = 6+3*nbsensors;
+  for (int iline = istart; iline < istop; iline++){
+    length_line=length - AliMFTGeometry::kConnectorOffset - TMath::Nint((iline-6)/3)*AliMFTGeometry::kSensorLength - AliMFTGeometry::kSensorLength/2;
+    ts[iline] = new TGeoTranslation (Form("t%d",iline), length/2-length_line/2-AliMFTGeometry::kConnectorOffset, -2*(iline-6)*AliMFTGeometry::kLineWidth+0.5-widthflex/2, 0.);
+    line[iline]  = new TGeoBBox(Form("line%d",iline), length_line/2, AliMFTGeometry::kLineWidth/2, thickness/2 + AliMFTGeometry::kEpsilon);
+    layerl[iline] = new TGeoSubtraction(layern[iline-1], line[iline], NULL, ts[iline]);
+    layern[iline] = new TGeoCompositeShape(Form("layer%d",iline), layerl[iline]);
+    kTotalLinesNb++;
+  }
+
+  // ---------  an interspace to separate AVDD and DVDD -------------
+  kTotalLinesNb++;
+  tvdd = new TGeoTranslation ("tvdd", 0., widthflex/2-AliMFTGeometry::kShiftDDGNDline, 0.);    
+  line[kTotalLinesNb]  = new TGeoBBox(Form("line%d",kTotalLinesNb),  length/2, 2*AliMFTGeometry::kLineWidth/2, thickness/2 + AliMFTGeometry::kEpsilon);
+  layerl[kTotalLinesNb] = new TGeoSubtraction(layern[kTotalLinesNb-1], line[kTotalLinesNb], NULL, tvdd);
+  layern[kTotalLinesNb] = new TGeoCompositeShape(Form("layer%d",kTotalLinesNb), layerl[kTotalLinesNb]);
+  kTotalLinesNb++;
+
+  // ---------  one line along the FPC analog side -------------  
+  istart = kTotalLinesNb; istop = kTotalLinesNb + 2;
+  for (int iline = istart; iline < istop; iline++){
+    length_line=length - AliMFTGeometry::kConnectorOffset;
+    tl[iline-istart] = new TGeoTranslation (Form("tl%d",iline), length/2-length_line/2-AliMFTGeometry::kConnectorOffset, 
+					    widthflex/2-AliMFTGeometry::kShiftline-2.*(iline-istart)*AliMFTGeometry::kLineWidth, 0.);
+    line[iline]  = new TGeoBBox(Form("line%d",iline), length_line/2, AliMFTGeometry::kLineWidth/2, thickness/2 + AliMFTGeometry::kEpsilon);
+    layerl[iline] = new TGeoSubtraction(layern[iline-1], line[iline], NULL, tl[iline-istart]);
+    layern[iline] = new TGeoCompositeShape(Form("layer%d",iline), layerl[iline]);
+    kTotalLinesNb++;
+  }
+
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
+  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
+  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
+
+  TGeoMedium *kMedAlu = gGeoManager->GetMedium("MFT_Alu$");
+
+  TGeoVolume *lineslayer = new TGeoVolume(Form("lineslayer_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder), layern[kTotalLinesNb-1], kMedAlu);
+  lineslayer->SetVisibility(1);
+  lineslayer->SetLineColor(kBlue);
+  return lineslayer;
+}
+
+
+TGeoVolume* AliMFTFlex::Make_AGND_DGND(Double_t length, Double_t widthflex,  Double_t thickness)
+{  
+  // AGND and DGND layers
+  TGeoBBox *layer = new TGeoBBox("layer", length/2, widthflex/2, thickness/2);
+  TGeoTube *hole1 = new TGeoTube("hole1", 0., AliMFTGeometry::kRadiusHole1, thickness/2 + AliMFTGeometry::kEpsilon);
+  TGeoTube *hole2 = new TGeoTube("hole2", 0., AliMFTGeometry::kRadiusHole2, thickness/2 + AliMFTGeometry::kEpsilon);
+  
+  TGeoTranslation    *t1= new TGeoTranslation ("t1", length/2-AliMFTGeometry::kHoleShift1, 0., 0.);
+  TGeoSubtraction    *layerholesub1 = new TGeoSubtraction(layer, hole1, NULL, t1);
+  TGeoCompositeShape *layerhole1 = new TGeoCompositeShape("layerhole1", layerholesub1);
+
+  TGeoTranslation    *t2= new TGeoTranslation ("t2", length/2-AliMFTGeometry::kHoleShift2, 0., 0.);
+  TGeoSubtraction    *layerholesub2 = new TGeoSubtraction(layerhole1, hole2, NULL, t2);
+  TGeoCompositeShape *layerhole2 = new TGeoCompositeShape("layerhole2", layerholesub2);
+
+  //--------------
+  TGeoBBox *line[3];
+  TGeoTranslation *t[3];
+  TGeoCompositeShape *layern[3];
+  TGeoSubtraction *layerl[3];
+  Double_t length_line;
+  length_line=length - AliMFTGeometry::kConnectorOffset;
+
+  // First, the two lines along the FPC side
+  t[0] = new TGeoTranslation("t0", length/2-length_line/2-AliMFTGeometry::kConnectorOffset, widthflex/2 - AliMFTGeometry::kShiftline, 0.);
+  line[0]  = new TGeoBBox("line0",  length/2 - AliMFTGeometry::kConnectorOffset/2, AliMFTGeometry::kLineWidth/2, thickness/2 + AliMFTGeometry::kEpsilon);
+  layerl[0] = new TGeoSubtraction(layerhole2, line[0], NULL, t[0]);
+  layern[0] = new TGeoCompositeShape(Form("layer%d",0), layerl[0]);
+
+  t[1] = new TGeoTranslation("t1", length/2-length_line/2-AliMFTGeometry::kConnectorOffset, 
+			     widthflex/2 - AliMFTGeometry::kShiftline - 2*AliMFTGeometry::kLineWidth, 0.);
+  line[1]  = new TGeoBBox("line1",  length/2 - AliMFTGeometry::kConnectorOffset/2, AliMFTGeometry::kLineWidth/2, 
+			  thickness/2 + AliMFTGeometry::kEpsilon);
+  layerl[1] = new TGeoSubtraction(layern[0], line[1], NULL, t[1]);
+  layern[1] = new TGeoCompositeShape(Form("layer%d",1), layerl[1]);
+
+  // Now the interspace to separate the AGND et DGND --> same interspace compare the AVDD et DVDD
+  t[2] = new TGeoTranslation("t2", length/2-length_line/2, widthflex/2 - AliMFTGeometry::kShiftDDGNDline, 0.);
+  line[2]  = new TGeoBBox("line2",  length/2 - AliMFTGeometry::kConnectorOffset/2, AliMFTGeometry::kLineWidth, 
+			  thickness/2 + AliMFTGeometry::kEpsilon);
+  layerl[2] = new TGeoSubtraction(layern[1], line[2], NULL, t[2]);
+  layern[2] = new TGeoCompositeShape(Form("layer%d",2), layerl[2]);
+
+  //--------------
+
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
+  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
+  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
+
+  TGeoMedium *kMedAlu = gGeoManager->GetMedium("MFT_Alu$");
+  TGeoVolume *alulayer = new TGeoVolume(Form("alulayer_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder), layern[2], kMedAlu);
+  alulayer->SetVisibility(1);
+  alulayer->SetLineColor(kBlue);
+  return alulayer;
+}
+
+
+TGeoVolume* AliMFTFlex::Make_Kapton(Double_t length, Double_t widthflex, Double_t thickness)
+{
+  TGeoBBox *layer = new TGeoBBox("layer", length/2, widthflex/2, thickness/2);
+  // Two holes for fixing and positionning of the FPC on the cold plate
+  TGeoTube *hole1 = new TGeoTube("hole1", 0., AliMFTGeometry::kRadiusHole1, thickness/2+AliMFTGeometry::kEpsilon);
+  TGeoTube *hole2 = new TGeoTube("hole2", 0., AliMFTGeometry::kRadiusHole2, thickness/2+AliMFTGeometry::kEpsilon);
+  
+  TGeoTranslation    *t1= new TGeoTranslation ("t1", length/2-AliMFTGeometry::kHoleShift1, 0., 0.);
+  TGeoSubtraction    *layerholesub1 = new TGeoSubtraction(layer, hole1, NULL, t1);
+  TGeoCompositeShape *layerhole1 = new TGeoCompositeShape("layerhole1", layerholesub1);
+
+  TGeoTranslation    *t2= new TGeoTranslation ("t2", length/2-AliMFTGeometry::kHoleShift2, 0., 0.);
+  TGeoSubtraction    *layerholesub2 = new TGeoSubtraction(layerhole1, hole2, NULL, t2);
+  TGeoCompositeShape *layerhole2 = new TGeoCompositeShape("layerhole2", layerholesub2);
+
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
+  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
+  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
+
+  TGeoMedium *kMedKapton = gGeoManager->GetMedium("MFT_Kapton$");
+  TGeoVolume *kaptonlayer = new TGeoVolume(Form("kaptonlayer_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder), layerhole2, kMedKapton);
   kaptonlayer->SetVisibility(1);
-  kaptonlayer->SetLineColor(kOrange);
+  kaptonlayer->SetLineColor(kYellow);
   return kaptonlayer;
 }
-//=============================================================================================
 
-TGeoVolume* AliMFTFlex::MakeVarnishLayer(Double_t thickness, Double_t widthflex,  Double_t lenghtflex)
+
+TGeoVolume* AliMFTFlex::Make_Varnish(Double_t length, Double_t widthflex,  Double_t thickness, Int_t iflag)
 {
-  // one varnish layer only
-  TGeoMedium *kMedVarnish = gGeoManager->GetMedium("MFT_Epoxy");  // varnish = epoxy ???
-  TGeoVolume* varnishlayer = new TGeoVolume("varnish", new TGeoBBox("BOX", lenghtflex/2, widthflex/2, thickness/2), kMedVarnish);
+  TGeoBBox *layer = new TGeoBBox("layer", length/2, widthflex/2, thickness/2);
+  // Two holes for fixing and positionning of the FPC on the cold plate
+  TGeoTube *hole1 = new TGeoTube("hole1", 0., AliMFTGeometry::kRadiusHole1, thickness/2+AliMFTGeometry::kEpsilon);
+  TGeoTube *hole2 = new TGeoTube("hole2", 0., AliMFTGeometry::kRadiusHole2, thickness/2+AliMFTGeometry::kEpsilon);
+  
+  TGeoTranslation    *t1= new TGeoTranslation ("t1", length/2-AliMFTGeometry::kHoleShift1, 0., 0.);
+  TGeoSubtraction    *layerholesub1 = new TGeoSubtraction(layer, hole1, NULL, t1);
+  TGeoCompositeShape *layerhole1 = new TGeoCompositeShape("layerhole1", layerholesub1);
+
+  TGeoTranslation    *t2= new TGeoTranslation ("t2", length/2-AliMFTGeometry::kHoleShift2, 0., 0.);
+  TGeoSubtraction    *layerholesub2 = new TGeoSubtraction(layerhole1, hole2, NULL, t2);
+  TGeoCompositeShape *layerhole2 = new TGeoCompositeShape("layerhole2", layerholesub2);
+
+  AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
+  Int_t idHalfMFT = mftGeom->GetHalfMFTID(fLadderSeg->GetUniqueID());
+  Int_t idHalfDisk = mftGeom->GetHalfDiskID(fLadderSeg->GetUniqueID());
+  Int_t idLadder = mftGeom->GetLadderID(fLadderSeg->GetUniqueID());
+
+  TGeoMedium *kMedVarnish = gGeoManager->GetMedium("MFT_Epoxy$");  // we assume that varnish = epoxy ...
+  TGeoVolume *varnishlayer = new TGeoVolume(Form("varnishlayer_%d_%d_%d_%d",idHalfMFT,idHalfDisk,idLadder,iflag), layerhole2, kMedVarnish);
   varnishlayer->SetVisibility(1);
-  varnishlayer->SetLineColor(kYellow);
+  varnishlayer->SetLineColor(kGreen-1);
   return varnishlayer;
 }
-
 

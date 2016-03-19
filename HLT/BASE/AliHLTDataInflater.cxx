@@ -1,5 +1,3 @@
-// $Id$
-
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -39,11 +37,7 @@ AliHLTDataInflater::AliHLTDataInflater()
   , fBitDataCurrentInputStart(NULL)
   , fBitDataCurrentInputEnd(NULL)
 {
-  // see header file for class documentation
-  // or
-  // refer to README to build package
-  // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  // constructor, see header file for class documentation
 }
 
 AliHLTDataInflater::~AliHLTDataInflater()
@@ -88,6 +82,7 @@ bool AliHLTDataInflater::InputBit( AliHLTUInt8_t & value )
       fBitDataCurrentPosInWord = 7;
     }
   }
+  HLTDebug("   code 0x%08x  length 1", value);
   return true;
 }
 
@@ -102,8 +97,8 @@ bool AliHLTDataInflater::RewindBitPosition(UInt_t const & bitCount)
     }
     fBitDataCurrentInput-=byteShift;
     fBitDataCurrentWord = *fBitDataCurrentInput;
-    fBitDataCurrentPosInWord = bitDataCurrentPosInWord%8;
   }
+  fBitDataCurrentPosInWord = bitDataCurrentPosInWord%8;
   return true;
 }
 

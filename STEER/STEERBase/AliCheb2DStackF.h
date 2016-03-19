@@ -26,9 +26,9 @@ class AliCheb2DStackF : public AliCheb2DStack
   virtual ~AliCheb2DStackF();
   //
   AliCheb2DStackF(stFun_t fun, int nSlices, int dimOut, const float bmin[2], const float bmax[2], 
-		 const int np[2], const float* precD=0);
+		 const int np[2], const float* dead=0, const float *rowXI=0, const float* precD=0);
   AliCheb2DStackF(stFun_t fun, int nSlices, int dimOut, const float bmin[2], const float bmax[2], 
-		 const int np[][2], const float* precD=0);
+		 const int np[][2],  const float* dead=0, const float *rowXI=0, const float* precD=0);
   //
   void          Eval(int sliceID, const float *par, float *res) const;
   Float_t       Eval(int sliceID, int dimOut, const float *par) const;
@@ -49,7 +49,7 @@ class AliCheb2DStackF : public AliCheb2DStack
   AliCheb2DStackF(const AliCheb2DStackF& src);            // dummy
   AliCheb2DStackF& operator=(const AliCheb2DStackF& rhs); // dummy
   //
-  ClassDef(AliCheb2DStackF,1)        // stack of 2D->fDimOut Chebyshev parameterization slices
+  ClassDef(AliCheb2DStackF,2)        // stack of 2D->fDimOut Chebyshev parameterization slices
 };
 
 #endif

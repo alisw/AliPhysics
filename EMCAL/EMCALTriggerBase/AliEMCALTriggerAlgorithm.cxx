@@ -61,8 +61,12 @@ std::vector<AliEMCALTriggerRawPatch> AliEMCALTriggerAlgorithm<T>::FindPatches(co
   std::vector<AliEMCALTriggerRawPatch> result;
   T sumadc(0);
   T sumofflineAdc(0);
-  for(int irow = fRowMin; irow <= fRowMax - fPatchSize; irow += fSubregionSize){
-    for(int icol = 0; icol <= adc.GetNumberOfCols() - fPatchSize; icol += fSubregionSize){
+
+  int rowStartMax = fRowMax - (fPatchSize-1);
+  int colStartMax = adc.GetNumberOfCols() - fPatchSize;
+
+  for(int irow = fRowMin; irow <= rowStartMax; irow += fSubregionSize){
+    for(int icol = 0; icol <= colStartMax; icol += fSubregionSize){
       sumadc = 0;
       sumofflineAdc = 0;
       for(int jrow = irow; jrow < irow + fPatchSize; jrow++){

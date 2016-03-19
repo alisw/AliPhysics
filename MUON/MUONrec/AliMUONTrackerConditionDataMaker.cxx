@@ -221,28 +221,11 @@ AliMUONTrackerConditionDataMaker::CreateData(const char* type, AliMUONVStore& st
   /// Create the data source 
   AliMUONVTrackerData* data(0x0);
   
-  if ( AliMUONTrackerDataSourceTypes::IsCapacitances(type))
-  {
-    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForCapacitances(),startOfValidity),"Capacitances",2,kTRUE);
-    data->SetDimensionName(0,"Capa");
-    data->SetDimensionName(1,"Injection gain");    
-  }
-  else if ( AliMUONTrackerDataSourceTypes::IsConfig(type ) )
+  if ( AliMUONTrackerDataSourceTypes::IsConfig(type ) )
   {
     data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForConfig(),startOfValidity),"Configuration",1);
     data->SetDimensionName(0,"there");
     data->DisableChannelLevel();
-  }
-  else if ( AliMUONTrackerDataSourceTypes::IsGains(type) )
-  {
-    data = new AliMUONTrackerData(Form("%s%d",AliMUONTrackerDataSourceTypes::ShortNameForGains(),startOfValidity),"Gains",7,kTRUE);
-    data->SetDimensionName(0,"gain");
-    data->SetDimensionName(1,"a1");
-    data->SetDimensionName(2,"a2");
-    data->SetDimensionName(3,"thres");
-    data->SetDimensionName(4,"qual1");
-    data->SetDimensionName(5,"qual2");
-    data->SetDimensionName(6,"sat");    
   }
   else if ( AliMUONTrackerDataSourceTypes::IsHV(type) )
   {
@@ -459,19 +442,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
   
   Bool_t ocdb = (runNumber>=0);
   
-  if ( AliMUONTrackerDataSourceTypes::IsCapacitances(type) )
-  {    
-    if ( ocdb ) 
-    {
-      store = AliMUONCalibrationData::CreateCapacitances(runNumber,&startOfValidity);    
-    }
-    else
-    {
-      store = new AliMUON2DMap(20000);
-      AliMUONTrackerIO::DecodeCapacitances(source,*store);
-    }
-  }
-  else if ( AliMUONTrackerDataSourceTypes::IsConfig(type) )
+  if ( AliMUONTrackerDataSourceTypes::IsConfig(type) )
   {
     AliMUONVStore* tmp(0x0);
     if ( ocdb ) 
@@ -488,22 +459,6 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
       store = ExpandConfig(*tmp);      
     }
     delete tmp;
-  }
-  else if ( AliMUONTrackerDataSourceTypes::IsGains(type) )
-  {
-    AliMUONVStore* gains(0x0);
-    if ( ocdb ) 
-    {
-      gains = AliMUONCalibrationData::CreateGains(runNumber,&startOfValidity);
-    }
-    else
-    {
-      gains = new AliMUON2DMap(kTRUE);
-      TString comment;
-      AliMUONTrackerIO::DecodeGains(source,*gains,comment);
-    }
-    store = PatchGainStore(*gains);
-    delete gains;
   }
   else if ( AliMUONTrackerDataSourceTypes::IsOccupancy(type) )
   {
@@ -594,48 +549,3 @@ AliMUONTrackerConditionDataMaker::Merge(TCollection*)
   AliError("Not implemented. Does it have sense ?");
   return 0;
 }
-
-//_____________________________________________________________________________
-AliMUONVStore*
-AliMUONTrackerConditionDataMaker::PatchGainStore(const AliMUONVStore& gains)
-{
-  /// Polish the gain store : 
-  /// a) adding a dimension, computed from a1, and called gain = 1/a1/0.2 
-  ///     where 0.2 is internal capa in pF, and gain is then in mV/fC
-  /// b) splitting the quality in two
-  
-  AliMUONVStore* store = gains.Create();
-  
-  TIter next(gains.CreateIterator());
-  AliMUONVCalibParam* param;
-  
-  while ( ( param = static_cast<AliMUONVCalibParam*>(next()) ) ) 
-  {
-    AliMUONVCalibParam* nd = new AliMUONCalibParamND(param->Dimension()+2,
-                                                     param->Size(),
-                                                     param->ID0(),
-                                                     param->ID1());
-    for ( Int_t i = 0; i < param->Size(); ++i ) 
-    {
-      
-      Int_t qual = param->ValueAsInt(i,3);
-			Int_t q1 = (qual & 0xF0) >> 4;  // linear fit quality
-			Int_t q2 = qual & 0xF;		// parabolic fit quality
-			Double_t gain = 0.0;
-      
-      if ( param->ValueAsFloat(i,0) > 1E-9 ) gain = 1.0/param->ValueAsFloat(i,0)/0.2;
-			
-      nd->SetValueAsDouble(i,0,gain); // gain
-      nd->SetValueAsDouble(i,1,param->ValueAsFloat(i,0)); // a1
-      nd->SetValueAsDouble(i,2,param->ValueAsFloat(i,1)); // a2
-      nd->SetValueAsInt(i,3,param->ValueAsInt(i,2)); // thres
-      nd->SetValueAsInt(i,4,q1); // qual1
-      nd->SetValueAsInt(i,5,q2); // qual2
-      nd->SetValueAsInt(i,6,param->ValueAsInt(i,4)); // sat
-    }
-    store->Add(nd);
-  }
-  
-  return store;
-}
-
