@@ -403,7 +403,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     }
     else{ //Story empty list
       TArrayI arrayTrackMatched(0);
-      ec->AddTracksMatched(arrayTrackMatched);       
+      ec->AddTracksMatched(arrayTrackMatched);      
+      esd->AddCaloCluster(ec);
     }
  
     delete ec;   
