@@ -209,10 +209,14 @@ void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
 	else 
 	  charge  = 0;
       }
-      if(charge < fCpvMinE) charge = 0;
-      if(fCalibData)
+      if(fCalibData) {
 	if(fCalibData->IsBadChannelCpv(relId[0],relId[2],relId[3]))
 	  charge=0;
+	Float_t pedestal = fCalibData->GetADCpedestalCpv(relId[0],relId[2],relId[3]);
+	AliInfo(Form("CPV channel (%d,%d,%d): pedestal=%f",relId[0],relId[2],relId[3],pedestal));
+	charge -= pedestal;
+      }
+      if (charge < fCpvMinE) charge = 0;
       if (charge>0) new((*digits)[iDigit++]) AliPHOSDigit(-1,absId,charge,0.);
       
     }

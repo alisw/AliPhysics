@@ -633,6 +633,7 @@ void  AliPHOSReconstructor::ConvertDigitsCPV(AliRawReader* rawReader, TClonesArr
   // Converts CPV raw data to PHOS CPV digits
   // Works on a single-event basis
   AliPHOSCpvRawDigiProducer rdp(rawReader);
+  rdp.SetCalibData(fgCalibData);
   rdp.SetCpvMinAmp(GetRecoParam()->GetCPVMinE());
   rdp.SetTurbo(kTRUE);
   rdp.MakeDigits(digits);
