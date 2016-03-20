@@ -345,31 +345,37 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
     if( (fJetOutputMode==1) || (fJetOutputMode==3) ) // output the leading jet
     {
-      // Fake jet rejection (0810.1219)
-      if(fUseFakejetRejection)
+      if(leadingJet)
       {
-        Double_t fakeFactor = CalculateFakeFactor(leadingJet);
-        FillHistogram("hFakeFactor", fakeFactor, fCent);
-        if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
-          new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+        // Fake jet rejection (0810.1219)
+        if(fUseFakejetRejection)
+        {
+          Double_t fakeFactor = CalculateFakeFactor(leadingJet);
+          FillHistogram("hFakeFactor", fakeFactor, fCent);
+          if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
+            new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+        }
+        else
+          new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0);
+        count++;
       }
-      else
-        new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0);
-      count++;
     }
     if( (fJetOutputMode==2) || (fJetOutputMode==3) ) // output the subleading jet
     {
-      // Fake jet rejection (0810.1219)
-      if(fUseFakejetRejection)
+      if(subleadingJet)
       {
-        Double_t fakeFactor = CalculateFakeFactor(subleadingJet);
-        FillHistogram("hFakeFactor", fakeFactor, fCent);
-        if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
-          new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+        // Fake jet rejection (0810.1219)
+        if(fUseFakejetRejection)
+        {
+          Double_t fakeFactor = CalculateFakeFactor(subleadingJet);
+          FillHistogram("hFakeFactor", fakeFactor, fCent);
+          if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
+            new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+        }
+        else
+          new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0);
+        count++;
       }
-      else
-        new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0);
-      count++;
     }
 
     if(fJetOutputMode==0) // output all jets
