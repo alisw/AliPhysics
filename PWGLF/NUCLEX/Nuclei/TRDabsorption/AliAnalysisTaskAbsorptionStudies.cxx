@@ -18,10 +18,6 @@
 
 #include <climits>
 
-#include <Riostream.h>
-using std::cerr;
-using std::endl;
-
 enum {
   kPi = 211,
   kKa = 321,
@@ -94,7 +90,7 @@ void AliAnalysisTaskAbsorptionStudies::UserCreateOutputObjects() {
   mPhiPtDCAxy = new THnSparseF("mPhiPtDCAxy","",6,nBinsDCAxy,minBinsDCAxy,maxBinsDCAxy);
   mOutput->Add(mPhiPtDCAxy);
 
-  TH1F* mEventCounter = new TH1F("mEventCounter",";Centrality;Events",mCentrality.GetNbins(),mCentrality.GetXmin(),mCentrality.GetXmax());
+  mEventCounter = new TH1F("mEventCounter",";Centrality;Events",mCentrality.GetNbins(),mCentrality.GetXmin(),mCentrality.GetXmax());
   mOutput->Add(mEventCounter);
   if (mMCtrue) {
     mPhiPtDCAxyWeak = new THnSparseF("mPhiPtDCAxyWeak","",6,nBinsDCAxy,minBinsDCAxy,maxBinsDCAxy);
@@ -238,7 +234,6 @@ void AliAnalysisTaskAbsorptionStudies::UserExec(Option_t *){
       }
       mPhiPtMass->Fill(fill);
 
-      cerr << time << "\t" << beta << "\t" << mass << endl;
       AliTOFPIDResponse* tofPID = &(mPIDresponse->GetTOFResponse());
       fill[1] = 0.;
       fill[5] = time;
