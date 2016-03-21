@@ -58,6 +58,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
+  fSelectedShapes(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -98,6 +99,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
+  fSelectedShapes(0), 
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -149,7 +151,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   TH1::AddDirectory(kFALSE);
 
   fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
-  const Int_t nVar = 14;
+ const Int_t nVar = 14;
+ const Int_t nVarless = 10;
+ 
+ if(fSelectedShapes==0){
+
   fShapesVar = new Float_t [nVar]; 
   TString *fShapesVarNames = new TString [nVar];
 
@@ -173,13 +179,48 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   //fShapesVarNames[12] = "sigma2Match";
   fShapesVarNames[13]="weightPythia";
 
-  for(Int_t ivar=0; ivar < nVar; ivar++){
+   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
-    fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));
+    fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));}
 
-    //if( ivar == 4 )  fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/I", fShapesVarNames[ivar].Data()));
 
-  }
+}
+
+ 
+ if(fSelectedShapes==1){
+  fShapesVar = new Float_t [nVarless]; 
+ 
+  TString *fShapesVarNames = new TString [nVarless];
+  fShapesVarNames[0] = "partonCode"; 
+  fShapesVarNames[1] = "ptJet"; 
+  fShapesVarNames[2] = "ptDJet"; 
+  fShapesVarNames[3] = "angularity";
+  fShapesVarNames[4] = "lesub";
+  fShapesVarNames[5] = "ptJetMatch"; 
+  fShapesVarNames[6] = "ptDJetMatch"; 
+  fShapesVarNames[7] = "angularityMatch";
+  fShapesVarNames[8] = "lesubMatch";
+  fShapesVarNames[9]="weightPythia";
+
+ for(Int_t ivar=0; ivar < nVarless; ivar++){
+    cout<<"looping over variables"<<endl;
+    fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));}
+
+}
+
+
+
+
+
+
+
+
+
+
+ 
+   
+
+  
 
   fh2ResponseUW= new TH2F("fh2ResponseUW", "fh2ResponseUW", 100, 0, 200,  100, 0, 200); 
   fOutput->Add(fh2ResponseUW);
@@ -448,15 +489,20 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 
 
 
-    
+      if(fSelectedShapes==0){    
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
       fShapesVar[3] = GetJetMass(jet1,0);
-      // fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[4] = GetJetAngularity(jet1,0);
       fShapesVar[5] = GetJetCircularity(jet1,0);
-      fShapesVar[6] = GetJetLeSub(jet1,0);
-      //fShapesVar[6] = GetSigma2(jet1,0);
+      fShapesVar[6] = GetJetLeSub(jet1,0);}
+    
+     if(fSelectedShapes==1){    
+      fShapesVar[1] = ptSubtracted;
+      fShapesVar[2] = GetJetpTD(jet1,0);
+      fShapesVar[3] = GetJetAngularity(jet1,0);
+      fShapesVar[4] = GetJetLeSub(jet1,0);}
+
 
       Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0.;
       Int_t kMatched = 0;
@@ -467,10 +513,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
          ptMatch=jet3->Pt();
          ptDMatch=GetJetpTD(jet3, kMatched);
-         massMatch=GetJetMass(jet3,kMatched);
+         if(fSelectedShapes==0) massMatch=GetJetMass(jet3,kMatched);
          //constMatch=1.*GetJetNumberOfConstituents(jet2,kMatched);
          angulMatch=GetJetAngularity(jet3, kMatched);
-         circMatch=GetJetCircularity(jet3, kMatched);
+         if(fSelectedShapes==0) circMatch=GetJetCircularity(jet3, kMatched);
          lesubMatch=GetJetLeSub(jet3, kMatched);
          //sigma2Match = GetSigma2(jet2, kMatched);
        }
@@ -480,10 +526,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=GetJetMass(jet3,kMatched);
+        if(fSelectedShapes==0) massMatch=GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
-        circMatch=GetJetCircularity(jet3, kMatched);
+        if(fSelectedShapes==0) circMatch=GetJetCircularity(jet3, kMatched);
         lesubMatch=GetJetLeSub(jet3, kMatched);
         //sigma2Match = GetSigma2(jet3, kMatched)
         
@@ -506,10 +552,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       
       fShapesVar[7] = ptMatch;
       fShapesVar[8] = ptDMatch;
-      fShapesVar[9] = massMatch;
+      if(fSelectedShapes==0) fShapesVar[9] = massMatch;
       //fShapesVar[12] = constMatch;
       fShapesVar[10] = angulMatch;
-      fShapesVar[11] = circMatch;
+      if(fSelectedShapes==0) fShapesVar[11] = circMatch;
       fShapesVar[12] = lesubMatch;
       //fShapesVar[12] = sigma2Match;
       fShapesVar[13] = kWeight;
