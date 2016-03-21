@@ -878,7 +878,7 @@ int AliZMQManager::zmqRecv(zmq_msg_t *msg,void *socket,int flags)
 {
     if(zmq_msg_recv(msg,socket,flags) == -1)
     {
-        if(zmq_errno() != EAGAIN) // ignore timeout problems
+        if((zmq_errno() != EAGAIN) && (zmq_errno() != EINTR)) // ignore timeout problems and interrupted system calls
         {
             cout<<"MANAGER -- zmqRecv -- "<<zmq_strerror(zmq_errno())<<endl;
             zmq_close(socket);
