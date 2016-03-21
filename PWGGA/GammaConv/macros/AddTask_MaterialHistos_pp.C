@@ -226,6 +226,8 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     cuts.AddCut("00000103", "10000009286342004254400000");
     cuts.AddCut("00000103", "10000009286372004254400000");
     cuts.AddCut("00000103", "10000009286372004204400000");
+    } else  if(trainConfig == 111){
+    cuts.AddCut("00000003", "10000070000000000500004000");
 
     // ConstructGamma is used
 
