@@ -1441,8 +1441,8 @@ goMakeLocalOCDBaccessConfig()
   echo "localOCDBaccessConfig()"                               >  localOCDBaccessConfig.C
   echo "{"                                                     >> localOCDBaccessConfig.C
   echo "  AliCDBManager* man = AliCDBManager::Instance();"     >> localOCDBaccessConfig.C
-  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   [[ -f "${tempLocalOCDB}" ]] && cat ${tempLocalOCDB}              >> localOCDBaccessConfig.C
+  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   echo "}"                                                     >> localOCDBaccessConfig.C
 
   [[ -f "${tempLocalOCDB}" ]] && rm -f ${tempLocalOCDB}
