@@ -30,6 +30,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetMinFakeFactor(Double_t value)  { fMinFakeFactor = value; }
   void                        SetMaxFakeFactor(Double_t value)  { fMaxFakeFactor = value; }
   void                        SetUseFakejetRejection(Bool_t value)  { fUseFakejetRejection = value; }
+  void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
   void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading;}
@@ -50,6 +51,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TString                     fTrackParticleArrayName;                  // Name of fTracksOutput array
 
   // Criteria for the selection of jets that are passed to the correlation task
+  Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Bool_t                      fUseFakejetRejection;                     // Use fakejet rejection (a la ATLAS)
   Double_t                    fMinFakeFactor;                           // min fake factor (cut below)
   Double_t                    fMaxFakeFactor;                           // max fake factor (cut above)

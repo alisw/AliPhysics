@@ -89,9 +89,9 @@ fTTLowToSkip(-1.0), fTTHighToSkip(-1.0), fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhDphiTriggerJetAccept(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
- fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
-fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
- fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
+ //fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
+//fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
+// fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 fRhoRec(kRho),fRhoMC(kRho), fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -112,14 +112,14 @@ fpyVtx(3)
       fhTrackPt[ic]=NULL;
       fhTrackPtGen[ic]=NULL;
       fhCentrality[ic]=NULL;
-      fhVzeroATotMult[ic]=NULL;
+      /*fhVzeroATotMult[ic]=NULL;
       fhVzeroATotMultTT[ic]=NULL;
       fhZNAEnergy[ic]=NULL;
       fhZNAEnergyTT[ic]=NULL;
       fhTrackMultiplicity[ic]=NULL;
       fhTrackMultiplicityTT[ic]=NULL;
       fhZNAVzeroATrack[ic]=NULL;
-      fhZNAVzeroATrackTT[ic]=NULL;
+      fhZNAVzeroATrackTT[ic]=NULL;*/
       fhImpactParameter[ic]=NULL;
       fhImpactParameterTT[ic]=NULL;
 
@@ -160,9 +160,9 @@ fpyVtx(3)
    ficb[1]=-1;
    ftmpArray[0]=0.;              
    ftmpArray[1]=0.;              
-   ftmpArrayX[0]=0.;              
-   ftmpArrayX[1]=0.;              
-   ftmpArrayX[2]=0.;              
+   //ftmpArrayX[0]=0.;              
+   //ftmpArrayX[1]=0.;              
+   //ftmpArrayX[2]=0.;              
 
    for(Int_t i=0; i<999; i++){
      frhovec[i] = 0.;
@@ -188,9 +188,9 @@ fHistEvtSelection(0x0), fhKTAreaPt(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
- fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
- fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
- fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
+// fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
+// fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
+// fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
 fRhoRec(kRho), fRhoMC(kRho), fCentralityBins(kCAll),
 fNofRandomCones(1),
@@ -213,14 +213,14 @@ fpyVtx(3)
       fhTrackPt[ic]=NULL;
       fhTrackPtGen[ic]=NULL;
       fhCentrality[ic]=NULL;
-      fhVzeroATotMult[ic]=NULL;
+  /*    fhVzeroATotMult[ic]=NULL;
       fhVzeroATotMultTT[ic]=NULL;
       fhZNAEnergy[ic]=NULL;
       fhZNAEnergyTT[ic]=NULL;
       fhTrackMultiplicity[ic]=NULL;
       fhTrackMultiplicityTT[ic]=NULL;
       fhZNAVzeroATrack[ic]=NULL;
-      fhZNAVzeroATrackTT[ic]=NULL; 
+      fhZNAVzeroATrackTT[ic]=NULL;*/ 
       fhImpactParameter[ic]=NULL;
       fhImpactParameterTT[ic]=NULL;
 
@@ -262,9 +262,9 @@ fpyVtx(3)
    ficb[1]=-1;
    ftmpArray[0]=0.;              
    ftmpArray[1]=0.;              
-   ftmpArrayX[0]=0.;              
-   ftmpArrayX[1]=0.;              
-   ftmpArrayX[2]=0.;              
+   //ftmpArrayX[0]=0.;              
+   //ftmpArrayX[1]=0.;              
+   //ftmpArrayX[2]=0.;              
 
    for(Int_t i=0; i<999; i++){
       frhovec[i] = 0.;
@@ -607,21 +607,21 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Double_t centralityPercentileV0C = -1.0;
    Double_t centralityPercentileV0M = -1.0;
    Double_t centralityPercentileZNA = -1.0;
-   Double_t multVzero   = -1.0;
-   Double_t energyZdcNA = -1.0;
+   //Double_t multVzero   = -1.0;
+   //Double_t energyZdcNA = -1.0;
    ficb[0] = 0;  //0=min bias 
    ficb[1] = -1; //-1 assigned centrality bin
 
-   if(InputEvent()->GetVZEROData()){
-      multVzero = InputEvent()->GetVZEROData()->GetMTotV0A();
-   }
+   //if(InputEvent()->GetVZEROData()){
+   //   multVzero = InputEvent()->GetVZEROData()->GetMTotV0A();
+   //}
 
    //if(InputEvent()->GetZDCData()){
       // AliESDZDC.h :   C --> 1     A--->2
       //Double_t GetZNAEnergy() const {return (Double_t) fZDCN2Energy;}
       //Double_t GetZNCEnergy() const {return (Double_t) fZDCN1Energy;}
    //   energyZdcNA =  InputEvent()->GetZDCData()->GetZNAEnergy();
-   energyZdcNA =  InputEvent()->GetZDCN2Energy(); //should be ZNA
+   //energyZdcNA =  InputEvent()->GetZDCN2Energy(); //should be ZNA
    //}
 
    if(fCollisionSystem != kpp){   //KINE Check MC event vertex
@@ -643,10 +643,12 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          return kFALSE;
       }
      
-      for(Int_t ic=0; ic<fCentralityBins.GetSize()-1;ic++){ 
-         if(fCentralityBins[ic] <= centralityPercentile &&
-            centralityPercentile < fCentralityBins[ic+1]){
-            ficb[1] = ic+1; //MB is ficb[0]=0;  other centralities ficb[1]>0
+      if(!(fTypeOfData == kPythia || fTypeOfAnal == kKine)){ 
+         for(Int_t ic=0; ic<fCentralityBins.GetSize()-1;ic++){ 
+            if(fCentralityBins[ic] <= centralityPercentile &&
+               centralityPercentile < fCentralityBins[ic+1]){
+               ficb[1] = ic+1; //MB is ficb[0]=0;  other centralities ficb[1]>0
+            }
          }
       }
  
@@ -655,8 +657,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          fhCentrality[ficb[ic]]->Fill(centralityPercentile);
       } 
 
-      fh2VzeroATotMultVsCent->Fill(centralityPercentile, multVzero); 
-      fh2ZNAEnergyVsCent->Fill(centralityPercentile, energyZdcNA); 
+      //fh2VzeroATotMultVsCent->Fill(centralityPercentile, multVzero); 
+      //fh2ZNAEnergyVsCent->Fill(centralityPercentile, energyZdcNA); 
       //MB 
       fhCentralityV0M->Fill(centralityPercentileV0M); 
       fhCentralityV0A->Fill(centralityPercentileV0A);
@@ -666,8 +668,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
    for(Int_t ic=0; ic<2; ic++){
       if(ficb[ic]==-1) continue;   //MB +CENT bias 
-      fhVzeroATotMult[ficb[ic]]->Fill(multVzero);
-      fhZNAEnergy[ficb[ic]]->Fill(energyZdcNA);
+      //fhVzeroATotMult[ficb[ic]]->Fill(multVzero);
+      //fhZNAEnergy[ficb[ic]]->Fill(energyZdcNA);
 
       if(fTypeOfData == kHijing){
          fImpParam = GetImpactParameter(); 
@@ -1101,7 +1103,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                      ftmpArray[1] =  pTJet - areaJet*fRhoMC[ir];
                      for(Int_t ic=0; ic<2; ic++){
                         if(ficb[ic]==-1) continue;
-                        fHJetSpecGen[ficb[ic]][ir]->Fill(ftmpArray);
+                        fHJetSpecGen[ficb[ic]][ir]->Fill(ftmpArray[0],ftmpArray[1]);
                      }
                   }
                }//JET LOOP
@@ -1286,7 +1288,9 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    }
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    // Track Multiplicity
+   
    if(trkContRec){
+      /*
       Int_t mult   = 0;
       trkContRec->ResetCurrentID();
       while((constTrackRec = (AliVParticle*) (trkContRec->GetNextAcceptParticle()))){
@@ -1321,7 +1325,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             fh2ZNAEnergyVsCentTT->Fill(centralityPercentile, energyZdcNA);
          }
       }
- 
+       */ 
 
       if(trackTT){ //TT biased distributions
          fhCentralityV0MTT->Fill((Float_t) centralityPercentileV0M);
@@ -1400,7 +1404,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                      for(Int_t ic=0; ic<2; ic++){
                         if(ficb[ic]==-1) continue;
  
-                        fHJetSpec[ficb[ic]][ir]->Fill(ftmpArray);
+                        fHJetSpec[ficb[ic]][ir]->Fill(ftmpArray[0],ftmpArray[1]);
                  
                         if(ir<kRho-1){
                            fARhoTT[ficb[ic]][ir]->Fill((Float_t) (areaJet*fRhoRec[ir]));
@@ -1456,9 +1460,9 @@ void AliAnalysisTaskHJetSpectra::Terminate(Option_t *){
 AliAnalysisTaskHJetSpectra::~AliAnalysisTaskHJetSpectra(){
    // Destructor. Clean-up the output list, but not the histograms that are put inside
    // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-   //if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-   //   delete fOutput;
-   //}
+   if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+      delete fOutput;
+   }
    delete fRandom;
    delete fHelperClass;
  
@@ -1484,6 +1488,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    Bool_t bHistRec =  (fTypeOfAnal != kEmb  && fTypeOfAnal != kEmbSingl && fTypeOfAnal != kKine);
    Bool_t bNotKine =  (fTypeOfAnal != kKine);
 
+   Int_t icmax = (fTypeOfData == kPythia ||fTypeOfAnal == kKine) ? 1 : kCAll;
    //__________________________________________________________
    // Event statistics
    fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 7, -0.5, 6.5);
@@ -1498,7 +1503,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fOutput->Add(fHistEvtSelection);
    //___________________________________________________________
    // Hard trigger counter
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fh1NtriggersMB") : 
        Form("fh1Ntriggers%d%d",TMath::Nint(fCentralityBins[ic-1]),TMath::Nint(fCentralityBins[ic])); 
       fh1Ntriggers[ic] = new TH1D(name.Data(),"# of triggers",50,0.0,50.0);
@@ -1520,24 +1525,30 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    const Double_t lowBinSpec[dimSpec] = { 0.0,  -20.0};
    const Double_t hiBinSpec[dimSpec]  = { 2.0,  300.0};
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir< kRho; ir++){
          name = (ic==0) ? Form("fHJetSpecMB%s",bgtype[ir].Data()) : 
                           Form("fHJetSpec%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
                                   TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
 
-
+         /*  
          fHJetSpec[ic][ir] = new THnSparseF(
                       name.Data(),
                       Form("Recoil jet spectrum [A,pTjet-A*rho%s]",bgtype[ir].Data()),
                       dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
          if(bHistRec)  fOutput->Add((THnSparseF*) fHJetSpec[ic][ir]);
+         */
+         fHJetSpec[ic][ir] = new TH2D(
+                      name.Data(),
+                      Form("Recoil jet spectrum [A,pTjet-A*rho%s]",bgtype[ir].Data()),
+                      nBinsSpec[0], lowBinSpec[0], hiBinSpec[0], nBinsSpec[1], lowBinSpec[1],hiBinSpec[1]);
+         if(bHistRec)  fOutput->Add((TH2D*) fHJetSpec[ic][ir]);
       }
    } 
    //____________________________________________________________________
    //UE from cell median  [Centrality, rho, pTUe ]
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir< kRho-1; ir++){ //Skip Zero bg
          name = (ic==0) ? Form("fhRhoMB%s",bgtype[ir].Data()) : 
                           Form("fhRho%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1569,7 +1580,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    //_______________________________________________________________________
    // Delta pt distributions   
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir< kRho-1; ir++){
          //events with TT tracks
          name = (ic==0) ? Form("fhDeltaPtMB%s",bgtype[ir].Data()) : 
@@ -1639,7 +1650,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    //_______________________________________________________________________
    //inclusive azimuthal and pseudorapidity histograms
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
        name = (ic==0) ? Form("fhJetPhiMB") : 
                         Form("fhJetPhi%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                   TMath::Nint(fCentralityBins[ic])); 
@@ -1692,7 +1703,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       fOutput->Add(fhVertexZAcceptMC);
    }
    //-------------------------
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir < kRho; ir++){ //Rongrong's analysis
          name = (ic==0) ? Form("fhDphiTriggerJetMB%s",bgtype[ir].Data()) : 
                           Form("fhDphiTriggerJet%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1707,7 +1718,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhDphiTriggerJetAccept = new TH1F("fhDphiTriggerJetAccept","Deltaphi trig-jet after cut",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
    if(bHistRec)  fOutput->Add(fhDphiTriggerJetAccept);
    //-------------------------
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhCentralityMB") : 
                        Form("fhCentrality%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1740,7 +1751,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhCentralityZNATT = (TH1F*) fhCentralityZNA->Clone("fhCentralityZNATT");
    if(bHistRec) fOutput->Add(fhCentralityZNATT);
    //-----------------------------------------------------
-   for(Int_t ic =0; ic<kCAll; ic++){
+  /* for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhVzeroATotMultMB") : 
                        Form("fhVzeroATotMult%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1761,10 +1772,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2VzeroATotMultVsCentTT = (TH2F*) fh2VzeroATotMultVsCent->Clone("fh2VzeroATotMultVsCentTT");
    if(bHistRec) fOutput->Add(fh2VzeroATotMultVsCentTT);
-
+   */
    //-----------------------------------------------------
-   //  ZDC ZNA energy 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   //  ZDC ZNA energy
+   /* 
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhZNAEnergyMB") : 
                        Form("fhZNAEnergy%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1785,10 +1797,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2ZNAEnergyVsCentTT = (TH2F*) fh2ZNAEnergyVsCent->Clone("fh2ZNAEnergyVsCentTT");
    if(bHistRec) fOutput->Add(fh2ZNAEnergyVsCentTT);
-
+   */
    //-----------------------------------------------------
    //   track multiplicity
-   for(Int_t ic =0; ic<kCAll; ic++){
+   /*
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhTrackMultiplicityMB") : 
                        Form("fhTrackMultiplicity%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1808,16 +1821,17 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2TrackMultVsCentTT = (TH2D*) fh2TrackMultVsCent->Clone("fh2TrackMultVsCentTT");
    if(bNotKine) fOutput->Add(fh2TrackMultVsCentTT);
-
+   */
 
    //-----------------------------------------------------
    // ZNA energy versus Vzero mult. versus track mult. in all events 
+   /*
    const Int_t    dimZ   = 3;
    const Int_t    nBinsZ[dimZ]  = { 100,     100,   25 };
    const Double_t lowBinZ[dimZ] = { 0.0,     0.0,   0.0};
    const Double_t hiBinZ[dimZ]  = { 3000.0, 1000.0, 250};
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhZNAVzeroATrackMB") : 
                        Form("fhZNAVzeroATrack%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                                    TMath::Nint(fCentralityBins[ic])); 
@@ -1837,7 +1851,8 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
       fhZNAVzeroATrackTT[ic] = (THnSparseF*) fhZNAVzeroATrack[ic]->Clone(name.Data()); 
       if(fTypeOfAnal ==  kRec)  fOutput->Add((THnSparseF*) fhZNAVzeroATrackTT[ic]);
-   } 
+   }
+   */ 
    //-----------------------------------------------------
 
   /*
@@ -1874,7 +1889,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    }
 
    if(fTypeOfAnal== kEff ){
-      for(Int_t ic =0; ic<kCAll; ic++){
+      for(Int_t ic =0; ic<icmax; ic++){
          for(Int_t ir=0; ir < kRho; ir++){
             name = (ic==0) ? Form("fhJetPtGenMB%s",bgtype[ir].Data()) : 
                              Form("fhJetPtGen%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1907,7 +1922,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       Double_t bins [] = {0, 0.2,0.4,0.6, 0.8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 8., 10., 20., 50.};
       Int_t nbins = sizeof(bins)/sizeof(Double_t)-1;
       
-      for(Int_t ic =0; ic<kCAll; ic++){
+      for(Int_t ic =0; ic<icmax; ic++){
          name = (ic==0) ? Form("fhPtTrkTruePrimRecMB") : 
                           Form("fhPtTrkTruePrimRec%d%d",TMath::Nint(fCentralityBins[ic-1]),
                             TMath::Nint(fCentralityBins[ic])); 
@@ -1933,7 +1948,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    }
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
-      for(Int_t ic =0; ic<kCAll; ic++){
+      for(Int_t ic =0; ic<icmax; ic++){
          name = (ic==0) ? Form("fh1NtriggersGenMB") : 
                           Form("fh1NtriggersGen%d%d",TMath::Nint(fCentralityBins[ic-1]),
                             TMath::Nint(fCentralityBins[ic])); 
@@ -1956,8 +1971,10 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
                                 TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
  
 
-            fHJetSpecGen[ic][ir] = (THnSparseF*)fHJetSpec[ic][ir]->Clone(name.Data());
-            fOutput->Add((THnSparseF*) fHJetSpecGen[ic][ir]);
+            fHJetSpecGen[ic][ir] = (TH2D*)fHJetSpec[ic][ir]->Clone(name.Data());
+            fOutput->Add((TH2D*) fHJetSpecGen[ic][ir]);
+            //fHJetSpecGen[ic][ir] = (THnSparseF*)fHJetSpec[ic][ir]->Clone(name.Data());
+            //fOutput->Add((THnSparseF*) fHJetSpecGen[ic][ir]);
          }
         
          //-------------------------
