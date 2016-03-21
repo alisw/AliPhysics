@@ -339,8 +339,13 @@ fh2dJetSignedImpParXYZSignificanceThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificancebThird_electron(0x0),
-fh2dJetSignedImpParXYZSignificancecThird_electron(0x0)
+fh2dJetSignedImpParXYZSignificancecThird_electron(0x0),
+fMCArray(0x0)
 {
+	for(int i =0 ; i<498;++i){
+		for(int j =0 ; j<16;++j){
+			fBackgroundFactorLinus[j][i]=1; //set default to 1
+		}}
 }
 // ######################################################################################## CONSTRUCTORS
 AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysisTaskEmcalJet(name, kTRUE),fJetCutsHF(new AliRDHFJetsCuts()),
@@ -656,14 +661,23 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysi
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_electron(0x0),
 		fh2dJetSignedImpParXYZSignificanceudsgThird_electron(0x0),
 		fh2dJetSignedImpParXYZSignificancebThird_electron(0x0),
-		fh2dJetSignedImpParXYZSignificancecThird_electron(0x0)
+		fh2dJetSignedImpParXYZSignificancecThird_electron(0x0),
+		fMCArray(0x0)
 {
+
+	for(int i =0 ; i<498;++i){
+		for(int j =0 ; j<16;++j){
+			fBackgroundFactorLinus[j][i]=1; //set default to 1
+		}}
+
 }
 // ########################################################################################  Main Loop
 Bool_t AliAnalysisTaskHFJetIPQA::Run()
 {
 
 	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+	if(fIsPythia)	fMCArray= dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+
 	//Main loop over AOD tracks with filterbit 4
 	double weight =1;
 	for(long itrack = 0; itrack<aev->GetNumberOfTracks();++itrack)
@@ -739,9 +753,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 		{
 			Int_t jetflavour =0;
 			Int_t partonpdg=0;
-			TClonesArray * mcparticles = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
 			AliAODMCParticle* parton = NULL;
-			parton = fHFJetUtils->IsMCJetParton(mcparticles, jetgen, 0.4);
+			parton = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
 			if(!parton) jetflavour =0;
 			else
 			{
@@ -809,10 +822,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 		{
 			jetmatched = 0x0;
 			jetmatched =jetrec->MatchedJet();
-			TClonesArray * mcparticles = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
 			AliAODMCParticle* parton = NULL;
 			if(jetmatched)
-				parton = fHFJetUtils->IsMCJetParton(mcparticles,jetmatched, 0.4);
+				parton = fHFJetUtils->IsMCJetParton(fMCArray,jetmatched, 0.4);
 			if(!parton) jetflavour =0;
 			else{
 				partonpdg = abs(parton->PdgCode());
@@ -2357,9 +2369,6 @@ void AliAnalysisTaskHFJetIPQA::DoJetLoop()
 // ######################################################################################## Jet matching 3/4
 Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpart,bool &isTrackFromPrompt){
 
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
 	if(!mcpart) return 1;
 	//******Check the following cases*****
 	// 1. is from primary D Meson
@@ -2373,360 +2382,407 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 	Double_t pTWeight =0;
 	Int_t foundPdg =-1;
 	Int_t correctionidx =-1;
-
 	Int_t maPdgcode = 0;
+	Int_t maPdgcodeOld = 0;
+	AliAODMCParticle * motherOld =0x0;
 	Int_t pMotherLabel = 	mcpart->GetMother();
 	bool isprim = false;
 	AliAODMCParticle * mcpartMother = 0x0;
-	mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
+	if(pMotherLabel<0) isprim =true;
+	else mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(pMotherLabel));
 	if (!mcpartMother )isprim =true;
 
 	if(!isprim){
 		maPdgcode = abs(mcpartMother->GetPdgCode());
 		if(maPdgcode>0 && maPdgcode<6) isprim =true;
+		if(mcpartMother->GetStatus()>11) isprim =true;
 		if(maPdgcode==21) isprim =true;
-		if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
-	}
+		if(IsPromptBMeson(mcpartMother)) {
 
-	if(pPdgcode == bProton && 	isprim ){
-		//Is Primary proton
-		found = kTRUE;
-		foundPdg =bProton;
-		correctionidx = bIdxProton;
-		pTWeight =mcpart->Pt();
-	}
-	else if(pPdgcode == bPi&& 	isprim){
-		//Is Primary charged pion
-		found = kTRUE;
-		foundPdg =bPi;
-		correctionidx = bIdxPi;
-		pTWeight =mcpart->Pt();
-	}
-	else if(pPdgcode == bKaon&& 	isprim ){
-		//Is Primary charged kaon
-		found = kTRUE;
-		pTWeight =mcpart->Pt();
-		foundPdg =bKaon;
-		correctionidx = bIdxKaon;
-	}
-	else if(!isprim && ParticleIsPossibleSource(maPdgcode)){
-		if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
-			found = kTRUE;
-			foundPdg =maPdgcode;
-		}
+			isTrackFromPrompt = kTRUE;
+			if(GetBMesonWeight(mcpartMother,maPdgcode,pTWeight,correctionidx)){
+				found = kTRUE;
+				foundPdg =maPdgcode;
 
-	}
-	else {
-		while (mcpartMother->GetMother() >0){
-			pMotherLabel = 	mcpartMother->GetMother();
-			mcpartMother = 0x0;
-			mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
-			if (!mcpartMother )isprim =true;
-			if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
-
-			if(!isprim){
-				maPdgcode = abs(mcpartMother->GetPdgCode());
-				if(maPdgcode>0 && maPdgcode<6) isprim =true;
-				if(maPdgcode==21) isprim =true;
 			}
-			if(!isprim && ParticleIsPossibleSource(maPdgcode)){
-				if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
-					found = kTRUE;
-					foundPdg =maPdgcode;
-					break;
+		}
+	}
+	if(!isTrackFromPrompt){
+		if(pPdgcode == bProton && 	isprim ){
+			//Is Primary proton
+			found = kTRUE;
+			foundPdg =bProton;
+			correctionidx = bIdxProton;
+			pTWeight =mcpart->Pt();
+		}
+		else if(pPdgcode == bPi&& 	isprim){
+			//Is Primary charged pion
+			found = kTRUE;
+			foundPdg =bPi;
+			correctionidx = bIdxPi;
+			pTWeight =mcpart->Pt();
+		}
+		else if(pPdgcode == bKaon&& 	isprim ){
+			//Is Primary charged kaon
+			found = kTRUE;
+			pTWeight =mcpart->Pt();
+			foundPdg =bKaon;
+			correctionidx = bIdxKaon;
+		}
+		else if(!isprim && ParticleIsPossibleSource(maPdgcode)){
+			if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
+				found = kTRUE;
+				foundPdg =maPdgcode;
+
+			}
+		}
+		else {
+			while (mcpartMother->GetMother() >0 && !isTrackFromPrompt){
+				maPdgcodeOld = maPdgcode;
+				motherOld =mcpartMother;
+				isprim=false;
+
+
+				pMotherLabel = 	mcpartMother->GetMother();
+				mcpartMother = 0x0;
+				mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
+				if (!mcpartMother )isprim =true;
+				maPdgcode = abs(mcpartMother->GetPdgCode());
+
+				if(IsPromptBMeson(mcpartMother)) {
+					isTrackFromPrompt = kTRUE;
+					if(GetBMesonWeight(mcpartMother,maPdgcode,pTWeight,correctionidx)){
+						found = kTRUE;
+						foundPdg =maPdgcode;
+						break;
+					}}
+					if(!isprim){
+						maPdgcode = abs(mcpartMother->GetPdgCode());
+						if(maPdgcode>0 && maPdgcode<6) isprim =true;
+						if(mcpartMother->GetStatus()>11) isprim =true;
+						if(maPdgcode==21) isprim =true;
+					}
+					if(!isprim && ParticleIsPossibleSource(maPdgcode)){
+						if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
+							found = kTRUE;
+							foundPdg =maPdgcode;
+							break;
+						}
+					}
+					else if (!isprim) continue;
+					else break;
 				}
 			}
-			else if (!isprim) continue;
-			else break;
+
 		}
+		if (!found) {
+
+
+			return 1;
+		}
+		// Do the weighting
+
+		Double_t factor = 1;
+		//calculate pt of array entry
+		// 0.1 -25.GeV 0.05 per bin 498 bins
+		double wpos = ((pTWeight - 0.15)/ 0.05);
+		double  fractpart, intpart;
+		fractpart = modf (wpos , &intpart);
+		if (fractpart > 0) intpart = intpart + 1;
+		int  bin = floor(intpart);
+		if (bin > 497) bin = 497;			// above weight definition
+		if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
+		factor = fBackgroundFactorLinus[correctionidx][bin];
+		if (factor <= 0) return 1;
+		else
+			return factor;
 	}
 
-	//
-	if (!found) return 1;
-	// Do the weighting
 
-	Double_t factor = 1;
+	// ########################################################################################
 
-	//calculate pt of array entry
-	// 0.1 -25.GeV 0.05 per bin 498 bins
+	Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) {
 
-	double wpos = ((pTWeight - 0.15)/ 0.05);
+		// If a particle is not a physical primary, check if it comes from weak decay
 
-	double  fractpart, intpart;
-	fractpart = modf (wpos , &intpart);
-	if (fractpart > 0) intpart = intpart + 1;
-	int  bin = floor(intpart);
-	if (bin > 497) bin = 497;			// above weight definition
-	if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
-
-	factor = fBackgroundFactorLinus[correctionidx][bin];
-
-
-	if (factor <= 0) return 1;
-	else
-		return factor;
-}
-
-
-// ########################################################################################
-
-Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) {
-
-	// If a particle is not a physical primary, check if it comes from weak decay
-
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-
-	Int_t mfl = 0;
-	Int_t indexMoth = particle->GetMother();
-	if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
-	AliAODMCParticle* moth = dynamic_cast<AliAODMCParticle *>(fMCArray->At(indexMoth));
-	Int_t pcodemoth = TMath::Abs(particle->GetPdgCode());
-	Int_t codemoth = TMath::Abs(moth->GetPdgCode());
-
-	// mass of the flavour
-	mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-	if(mfl == 4|| mfl ==5) return kTRUE;
-
-	if(pcodemoth==bPi0){
-		if(codemoth == bK0s) return kTRUE;
-		if(codemoth == bK0l) return kTRUE;
-		if(TMath::Abs(codemoth) == bKaon) return kTRUE;
-		if(TMath::Abs(codemoth) == bLambda) return kTRUE;
-		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113 || codemoth == bRhoPlus) return kTRUE;
+		Int_t mfl = 0;
+		Int_t indexMoth = particle->GetMother();
+		if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
+		AliAODMCParticle* moth = dynamic_cast<AliAODMCParticle *>(fMCArray->At(indexMoth));
+		Int_t pcodemoth = TMath::Abs(particle->GetPdgCode());
+		Int_t codemoth = TMath::Abs(moth->GetPdgCode());
+		// mass of the flavour
+		mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+		if(mfl == 4|| mfl ==5) return kTRUE;
+		if(pcodemoth==bPi0){
+			if(codemoth == bK0s) return kTRUE;
+			if(codemoth == bK0l) return kTRUE;
+			if(TMath::Abs(codemoth) == bKaon) return kTRUE;
+			if(TMath::Abs(codemoth) == bLambda) return kTRUE;
+			if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113 || codemoth == bRhoPlus) return kTRUE;
 		}
-	else if (pcodemoth==bPhi){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		else if (pcodemoth==bPhi){
+			if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bOmega){
+			if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bEtaPrime){
+			if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bRho){
+			if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bEta){
+			if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;    }
+		return kFALSE;
 	}
-	else if (pcodemoth==bOmega){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
-	}
-	else if (pcodemoth==bEtaPrime){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
-	}
-	else if (pcodemoth==bRho){
-		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331|| codemoth == bRhoPlus) return kTRUE;
-	}
-	else if (pcodemoth==bEta){
-		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;    }
-	return kFALSE;
-}
 
-// ########################################################################################
-Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart ,int &pdg,double &pT,int &idx ){
+	// ########################################################################################
 
-	pT = mcpart->Pt();
-	switch(pdg){
-	case bPi0:
-		if(!IsSecondaryFromWeakDecay(mcpart) ){
-			idx = bIdxPi0;
-			return kTRUE;
-		}
-
-		break;
-	case bEta:
-		if(!IsSecondaryFromWeakDecay(mcpart) ){
-			idx = bIdxEta;
-			return kTRUE;
-
-		}
-
-		break;
-	case bEtaPrime:
-		if(!IsSecondaryFromWeakDecay(mcpart) ){
-			idx = bIdxEtaPrime;
-			return kTRUE;
-		}
-		break;
-	case bOmega:
-		idx = bIdxOmega;
-		if(!IsSecondaryFromWeakDecay(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bPhi:
-		idx = bIdxPhi;
-		if(!IsSecondaryFromWeakDecay(mcpart)){
-			return kTRUE;
-		}
-
-		break;
-	case bRho:
-		idx = bIdxRho;
-		if(!IsSecondaryFromWeakDecay(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bD0:
-		idx = bIdxD0;
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bDPlus:
-		idx = bIdxDPlus;
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bIdxDSPlus:
-		idx = bDSPlus;
-
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bDStarPlus:
-		idx = bIdxDStarPlus;
-
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-
-	case bLambda:
-		idx = bIdxLambda;
-
-		if(mcpart->IsPhysicalPrimary())
-		{
-			return kTRUE;
-		}
-		break;
-	case bK0s:
-		idx = bIdxK0s;
-
-		if(mcpart->IsPhysicalPrimary())
-		{
-			return kTRUE;
-		}
-		break;
-	default:
-		break;
-	}
-	return kFALSE;
-}
-
-// ########################################################################################
-bool AliAnalysisTaskHFJetIPQA::IsPromptBMeson(AliAODMCParticle * part )
-{
-
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-	if(!part) return false;
-	int pdg = TMath::Abs(part->GetPdgCode());
-
-	if ((pdg >= 500 && pdg < 600 )||(pdg >= 5000 && pdg < 6000 ))
+	Bool_t AliAnalysisTaskHFJetIPQA::GetBMesonWeight( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  )
 	{
-		Int_t imo =  part->GetMother();
-		AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
-		Int_t mpdg = TMath::Abs(pm->GetPdgCode());
-		if (!(mpdg >5000 && mpdg <6000) && !(mpdg >500 && mpdg <600))
-			return true;
+		//Run after is primary check
+		//==> only switch required
+		pT = mcpart->Pt();
+		switch(pdg){
+		case bBPlus:
+			idx = bIdxBPlus;
+			return kTRUE;
+		case bB0:
+			idx = bIdxB0;
+			return kTRUE;
+		case bLambdaB:
+			idx = bIdxLambdaB;
+			return kTRUE;
+			break;
+		case bBStarPlus:
+			idx = bIdxBStarPlus;
+			return kTRUE;
+			break;
+		default:
+			break;
+		}
+		return kFALSE;
 	}
 
-	return false;
-}
+	// ########################################################################################
+	Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart ,int &pdg,double &pT,int &idx ){
 
-// ########################################################################################
-bool AliAnalysisTaskHFJetIPQA::IsPromptDMeson(AliAODMCParticle * part )
-{
+		pT = mcpart->Pt();
 
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+		bool isprim =false;
+		int mpdg = 0;
+		if(mcpart->GetMother()>-1)mpdg = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(mcpart->GetMother())))->GetPdgCode();
+		if(mpdg>0 && mpdg<6) isprim =true;
+		if(mpdg==21) isprim =true;
+		if(dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(mcpart->GetMother())))->GetStatus()>11) isprim =true;
 
-	if(!part) return false;
-	int pdg = TMath::Abs(part->GetPdgCode());
+		switch(pdg){
+		case bPi0:
+			if(!IsSecondaryFromWeakDecay(mcpart) ){
+				idx = bIdxPi0;
+				return kTRUE;
+			}
 
-	if ((pdg >= 400 && pdg < 500 )||(pdg >= 4000 && pdg < 5000 ))
+			break;
+		case bEta:
+			if(!IsSecondaryFromWeakDecay(mcpart) ){
+				idx = bIdxEta;
+				return kTRUE;
+			}
+
+			break;
+		case bEtaPrime:
+			if(!IsSecondaryFromWeakDecay(mcpart) ){
+				idx = bIdxEtaPrime;
+				return kTRUE;
+			}
+			break;
+		case bOmega:
+			idx = bIdxOmega;
+			if(!IsSecondaryFromWeakDecay(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bPhi:
+			idx = bIdxPhi;
+			if(!IsSecondaryFromWeakDecay(mcpart)){
+				return kTRUE;
+			}
+
+			break;
+		case bRho:
+			idx = bIdxRho;
+			if(!IsSecondaryFromWeakDecay(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bD0:
+			idx = bIdxD0;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bDPlus:
+			idx = bIdxDPlus;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bIdxDSPlus:
+			idx = bDSPlus;
+
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bDStarPlus:
+			idx = bIdxDStarPlus;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bLambdaC:
+			idx = bIdxLambdaC;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bLambda:
+			idx = bIdxLambda;
+			if(mcpart->IsPhysicalPrimary())
+			{
+				return kTRUE;
+			}
+			break;
+		case bK0s:
+			idx = bIdxK0s;
+
+			if(mcpart->IsPhysicalPrimary())
+			{
+				return kTRUE;
+			}
+			break;
+		case bPi:
+			if(isprim){
+				idx =bIdxPi;
+				return kTRUE;
+			}
+			break;
+		case bKaon:
+			if(isprim){
+				idx =bIdxKaon;
+				return kTRUE;
+			}
+			break;
+		default:
+			break;
+		}
+		return kFALSE;
+	}
+
+	// ########################################################################################
+	bool AliAnalysisTaskHFJetIPQA::IsPromptBMeson(AliAODMCParticle * part )
 	{
-		Int_t imo =  part->GetMother();
-		AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
-		Int_t mpdg = TMath::Abs(pm->GetPdgCode());
-		if (!(mpdg >4000 && mpdg <6000) && !(mpdg >400 && mpdg <600))
-			return true;
 
-	}
-
-	return false;
-}
-// ########################################################################################
-Bool_t AliAnalysisTaskHFJetIPQA::ParticleIsPossibleSource(int pdg){
-
-	int pos[14] = {bPi0,bEta,bEtaPrime,bPhi,bRho,bOmega,bK0s,bLambda,bOmegaBaryon,bXiBaryon,bD0,bDPlus,bDStarPlus,bDSPlus};
-
-	for (int i =0 ;i<14 ;++i){
-		if (abs(pdg)==pos[i] ) return kTRUE;
-	}
-	return kFALSE;
-}
-// ######################################################################################## Jet matching 3/4
-void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
-{
-	Double_t d1 = -1;
-	Double_t d2 = -1;
-
-	switch (matching) {
-	case 1:
-		GetGeometricalMatchingLevel(jet1,jet2,d1);
-		d2 = d1;
-		break;
-	default:
-		break;
-	}
-
-	if (d1 >= 0) {
-
-		if (d1 < jet1->ClosestJetDistance()) {
-			jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
-			jet1->SetClosestJet(jet2, d1);
+		if(!part) return false;
+		int pdg = TMath::Abs(part->GetPdgCode());
+		if ((pdg >= 500 && pdg < 600 )||(pdg >= 5000 && pdg < 6000 ))
+		{
+			Int_t imo =  part->GetMother();
+			AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
+			Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+			if (!(mpdg >5000 && mpdg <6000) && !(mpdg >500 && mpdg <600))
+				return true;
 		}
-		else if (d1 < jet1->SecondClosestJetDistance()) {
-			jet1->SetSecondClosestJet(jet2, d1);
+		return false;
+	}
+
+	// ########################################################################################
+	bool AliAnalysisTaskHFJetIPQA::IsPromptDMeson(AliAODMCParticle * part )
+	{
+		if(!part) return false;
+		int pdg = TMath::Abs(part->GetPdgCode());
+		if ((pdg >= 400 && pdg < 500 )||(pdg >= 4000 && pdg < 5000 ))
+		{
+			Int_t imo =  part->GetMother();
+			AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
+			Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+			if (!(mpdg >4000 && mpdg <6000) && !(mpdg >400 && mpdg <600))
+				return true;
+
+		}
+		return false;
+	}
+	// ########################################################################################
+	Bool_t AliAnalysisTaskHFJetIPQA::ParticleIsPossibleSource(int pdg){
+		int pos[19] = {bPi0,bEta,bEtaPrime,bPhi,bRho,bOmega,bK0s,bLambda,bOmegaBaryon,bXiBaryon,bD0,bDPlus,bDStarPlus,bDSPlus,bLambdaB,bLambdaC,bBPlus,bB0,bBStarPlus};
+		for (int i =0 ;i<19 ;++i){
+			if (abs(pdg)==pos[i] ) return kTRUE;
+		}
+		return kFALSE;
+	}
+	// ######################################################################################## Jet matching 3/4
+	void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
+	{
+		Double_t d1 = -1;
+		Double_t d2 = -1;
+
+		switch (matching) {
+		case 1:
+			GetGeometricalMatchingLevel(jet1,jet2,d1);
+			d2 = d1;
+			break;
+		default:
+			break;
+		}
+		if (d1 >= 0) {
+
+			if (d1 < jet1->ClosestJetDistance()) {
+				jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
+				jet1->SetClosestJet(jet2, d1);
+			}
+			else if (d1 < jet1->SecondClosestJetDistance()) {
+				jet1->SetSecondClosestJet(jet2, d1);
+			}
+		}
+		if (d2 >= 0) {
+			if (d2 < jet2->ClosestJetDistance()) {
+				jet2->SetSecondClosestJet(jet2->ClosestJet(), jet2->ClosestJetDistance());
+				jet2->SetClosestJet(jet1, d2);
+			}
+			else if (d2 < jet2->SecondClosestJetDistance()) {
+				jet2->SetSecondClosestJet(jet1, d2);
+			}
 		}
 	}
-	if (d2 >= 0) {
-		if (d2 < jet2->ClosestJetDistance()) {
-			jet2->SetSecondClosestJet(jet2->ClosestJet(), jet2->ClosestJetDistance());
-			jet2->SetClosestJet(jet1, d2);
-		}
-		else if (d2 < jet2->SecondClosestJetDistance()) {
-			jet2->SetSecondClosestJet(jet1, d2);
-		}
+
+	// ######################################################################################## Jet matching 4/4
+	void AliAnalysisTaskHFJetIPQA::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const
+	{
+		Double_t deta = jet2->Eta() - jet1->Eta();
+		Double_t dphi = jet2->Phi() - jet1->Phi();
+		dphi = TVector2::Phi_mpi_pi(dphi);
+		d = TMath::Sqrt(deta * deta + dphi * dphi);
+	}// ######################################################################################## Monte Carlo correction factors
+	Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB){
+
+		AliAODMCParticle *pMC = 0x0;
+		AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+
+		pMC = GetMCTrack(track);
+		if(pMC) 	if(TMath::Abs(pMC->PdgCode())==11)ise = true;
+
+		//double val =GetWeightFactor(pMC,0);
+		double val = GetWeightFactorLinus(pMC,fromB);
+		if(val != 0 )return val;
+		return 1.;
 	}
-}
 
-// ######################################################################################## Jet matching 4/4
-void AliAnalysisTaskHFJetIPQA::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const
-{
-	Double_t deta = jet2->Eta() - jet1->Eta();
-	Double_t dphi = jet2->Phi() - jet1->Phi();
-	dphi = TVector2::Phi_mpi_pi(dphi);
-	d = TMath::Sqrt(deta * deta + dphi * dphi);
-}// ######################################################################################## Monte Carlo correction factors
-Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB){
+	// ######################################################################################## Monte Carlo correction factors
 
-	AliAODMCParticle *pMC = 0x0;
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	AliAODMCHeader* mcheader = dynamic_cast<AliAODMCHeader*>(aev->FindListObject(AliAODMCHeader::StdBranchName()));
-	if (!mcheader) return 1;
-	TClonesArray * fMCparticles = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (!fMCparticles) return 1;
-	if(track->GetLabel()>-1)
-		pMC = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(track->GetLabel()));
-
-	if(pMC) 	if(TMath::Abs(pMC->PdgCode())==11)ise = true;
-	//double val =GetWeightFactor(pMC,0);
-
-	double val = GetWeightFactorLinus(pMC,fromB);
-	if(val != 0 )return val;
-	return 1.;
-}
-
-// ######################################################################################## Monte Carlo correction factors
-
-/*
+	/*
 // ######################################################################################## Monte Carlo correction factors
 Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track){
 	// Todo: Best handle on missing mc information ... currently scale with 1
@@ -2780,269 +2836,296 @@ Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* tr
 
 	return 1.;
 }*/
-// ######################################################################################## Monte Carlo correction factors
-Int_t AliAnalysisTaskHFJetIPQA::GetElecSource(const AliAODMCParticle *  const mcpart,Double_t &mpt) const
-{
-	//
-	// Function for AliAODMCParticle
-	//
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-	if (!fMCArray) return -1;
-	////////////////
-	Int_t origin = -1;
-	Bool_t isFinalOpenCharm = kFALSE;
-
-	Int_t iLabel = mcpart->GetMother();
-	if ((iLabel<0) || (iLabel>=fMCArray->GetEntriesFast())){
-		AliDebug(1, "label is out of range, return\n");
-		return -1;
-	}
-
-	AliAODMCParticle *mctrack = NULL; // will change all the time
-	Int_t tmpMomLabel=0;
-	if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return -1;
-	AliAODMCParticle *partMother = mctrack;
-	AliAODMCParticle *partMotherCopy = mctrack;
-	Int_t maPdgcode = mctrack->GetPdgCode();
-	mpt = partMother->Pt();
-
-	Int_t grmaPdgcode;
-	Int_t ggrmaPdgcode;
-
-	// if the mother is charmed hadron
-
-	if(TMath::Abs(maPdgcode)==443){
+	// ######################################################################################## Monte Carlo correction factors
+	Int_t AliAnalysisTaskHFJetIPQA::GetElecSource(const AliAODMCParticle *  const mcpart,Double_t &mpt) const
+	{
 		//
-		// J/spi
+		// Function for AliAODMCParticle
 		//
-		Int_t jLabel = partMother->GetMother();
-		if ((jLabel>=0) && (jLabel<fMCArray->GetEntriesFast())){
-			if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
-				Int_t grandMaPDG = mctrack->GetPdgCode();
-				mpt = mctrack->Pt();
-				if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) {
-					return kB2Jpsi;
-				}
-			}
-		}
-		return kJpsi;
-	}
-	else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(maPdgcode)/1000.)%10) == kCharm ) {
-		//
-		// charm
-		//
-		for (Int_t i=0; i<fNparents; i++){
-			if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
-				isFinalOpenCharm = kTRUE;
-			}
-		}
-		if (!isFinalOpenCharm) {
+
+		if (!fMCArray) return -1;
+		////////////////
+		Int_t origin = -1;
+		Bool_t isFinalOpenCharm = kFALSE;
+
+		Int_t iLabel = mcpart->GetMother();
+		if ((iLabel<0) || (iLabel>=fMCArray->GetEntriesFast())){
+			AliDebug(1, "label is out of range, return\n");
 			return -1;
 		}
 
-		// iterate until you find B hadron as a mother or become top ancester
-		for (Int_t i=1; i<fgkMaxIter; i++){
+		AliAODMCParticle *mctrack = NULL; // will change all the time
+		Int_t tmpMomLabel=0;
+		if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return -1;
+		AliAODMCParticle *partMother = mctrack;
+		AliAODMCParticle *partMotherCopy = mctrack;
+		Int_t maPdgcode = mctrack->GetPdgCode();
+		mpt = partMother->Pt();
 
+		Int_t grmaPdgcode;
+		Int_t ggrmaPdgcode;
+
+		// if the mother is charmed hadron
+
+		if(TMath::Abs(maPdgcode)==443){
+			//
+			// J/spi
+			//
 			Int_t jLabel = partMother->GetMother();
-			if (jLabel == -1){
-				return kDirectCharm;
+			if ((jLabel>=0) && (jLabel<fMCArray->GetEntriesFast())){
+				if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
+					Int_t grandMaPDG = mctrack->GetPdgCode();
+					mpt = mctrack->Pt();
+					if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) {
+						return kB2Jpsi;
+					}
+				}
 			}
-			if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
-				AliDebug(1, "Stack label is negative, return\n");
+			return kJpsi;
+		}
+		else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(maPdgcode)/1000.)%10) == kCharm ) {
+			//
+			// charm
+			//
+			for (Int_t i=0; i<fNparents; i++){
+				if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
+					isFinalOpenCharm = kTRUE;
+				}
+			}
+			if (!isFinalOpenCharm) {
 				return -1;
 			}
 
-			// if there is an ancester
-			if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))) {
+			// iterate until you find B hadron as a mother or become top ancester
+			for (Int_t i=1; i<fgkMaxIter; i++){
+
+				Int_t jLabel = partMother->GetMother();
+				if (jLabel == -1){
+					return kDirectCharm;
+				}
+				if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
+					AliDebug(1, "Stack label is negative, return\n");
+					return -1;
+				}
+
+				// if there is an ancester
+				if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))) {
+					return -1;
+				}
+				Int_t grandMaPDG = mctrack->GetPdgCode();
+				for (Int_t j=0; j<fNparents; j++){
+					if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
+						mpt = mctrack->Pt();
+						return kBeautyCharm;
+					}
+				}
+				partMother = mctrack;
+			} // end of iteration
+
+		} // end of if
+		else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
+			//
+			// beauty
+			//
+			for (Int_t i=0; i<fNparents; i++){
+				if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
+					mpt = partMotherCopy->Pt();
+					return kDirectBeauty;
+				}
+			}
+		} // end of if
+		else if ( TMath::Abs(maPdgcode) == 22 ) {
+			//
+			//conversion
+			//
+			tmpMomLabel = partMotherCopy->GetMother();
+			if(tmpMomLabel==-1) return kGamma;
+			if((tmpMomLabel<0) || (tmpMomLabel>=fMCArray->GetEntriesFast())) {
 				return -1;
 			}
-			Int_t grandMaPDG = mctrack->GetPdgCode();
-			for (Int_t j=0; j<fNparents; j++){
-				if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
-					mpt = mctrack->Pt();
-					return kBeautyCharm;
-				}
+			if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+				return -1;
 			}
 			partMother = mctrack;
-		} // end of iteration
+			maPdgcode = partMother->GetPdgCode();
 
-	} // end of if
-	else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
-		//
-		// beauty
-		//
-		for (Int_t i=0; i<fNparents; i++){
-			if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
-				mpt = partMotherCopy->Pt();
-				return kDirectBeauty;
-			}
-		}
-	} // end of if
-	else if ( TMath::Abs(maPdgcode) == 22 ) {
-		//
-		//conversion
-		//
-		tmpMomLabel = partMotherCopy->GetMother();
-		if(tmpMomLabel==-1) return kGamma;
-		if((tmpMomLabel<0) || (tmpMomLabel>=fMCArray->GetEntriesFast())) {
-			return -1;
-		}
-		if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-			return -1;
-		}
-		partMother = mctrack;
-		maPdgcode = partMother->GetPdgCode();
+			// check if the ligth meson is the decay product of heavy mesons
+			tmpMomLabel = partMother->GetMother();
+			if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
+				if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+					partMother = mctrack;
+					grmaPdgcode = partMother->GetPdgCode();
+					mpt = partMother->Pt();
 
-		// check if the ligth meson is the decay product of heavy mesons
-		tmpMomLabel = partMother->GetMother();
-		if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
-			if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-				partMother = mctrack;
-				grmaPdgcode = partMother->GetPdgCode();
-				mpt = partMother->Pt();
-
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
-					return kGammaB2M;
-				}
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
-					return kGammaD2M;
-				}
-
-				tmpMomLabel = partMother->GetMother();
-				if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandgrandmother
-					if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-						partMother = mctrack;
-						ggrmaPdgcode = partMother->GetPdgCode();
-						mpt = partMother->Pt();
-
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
-							return kGammaB2M;
-						}
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
-							return kGammaD2M;
-						}
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+						return kGammaB2M;
 					}
-				}//grandgrandgrandmother
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+						return kGammaD2M;
+					}
 
+					tmpMomLabel = partMother->GetMother();
+					if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandgrandmother
+						if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+							partMother = mctrack;
+							ggrmaPdgcode = partMother->GetPdgCode();
+							mpt = partMother->Pt();
+
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+								return kGammaB2M;
+							}
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+								return kGammaD2M;
+							}
+						}
+					}//grandgrandgrandmother
+
+					if ( TMath::Abs(maPdgcode) == 111 ) {
+						if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						else if(grmaPdgcode == 310) return kGammaK0s2P;
+						else if(grmaPdgcode == 130) return kGammaK0l2P;
+						else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
+						else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
+						else if(grmaPdgcode == 3222) return kGammaSigma2P;
+						return kGammaPi0;
+					}
+					else if ( TMath::Abs(maPdgcode) == 221 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaEta;
+					}
+					else if ( TMath::Abs(maPdgcode) == 223 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaOmega;
+					}
+					else if ( TMath::Abs(maPdgcode) == 333 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaPhi;
+					}
+					else if ( TMath::Abs(maPdgcode) == 331 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaEtaPrime;
+					}
+					else if ( TMath::Abs(maPdgcode) == 113 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
+						return kGammaRho0;
+					}
+					else origin = kElse;//grandgrandmother but nothing we identify
+				}//mctrack grandgrandmother
+			}
+			else {
+				// grandmother is primary
 				if ( TMath::Abs(maPdgcode) == 111 ) {
-					if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-					else if(grmaPdgcode == 310) return kGammaK0s2P;
-					else if(grmaPdgcode == 130) return kGammaK0l2P;
-					else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
-					else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
-					else if(grmaPdgcode == 3222) return kGammaSigma2P;
 					return kGammaPi0;
 				}
 				else if ( TMath::Abs(maPdgcode) == 221 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaEta;
 				}
 				else if ( TMath::Abs(maPdgcode) == 223 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaOmega;
 				}
 				else if ( TMath::Abs(maPdgcode) == 333 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaPhi;
 				}
 				else if ( TMath::Abs(maPdgcode) == 331 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaEtaPrime;
 				}
 				else if ( TMath::Abs(maPdgcode) == 113 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
 					return kGammaRho0;
 				}
-				else origin = kElse;//grandgrandmother but nothing we identify
-			}//mctrack grandgrandmother
+				else origin = kElse;//grandmother is primary but nothing we identify
+			}
+
+			return origin;
+
 		}
 		else {
-			// grandmother is primary
-			if ( TMath::Abs(maPdgcode) == 111 ) {
-				return kGammaPi0;
-			}
-			else if ( TMath::Abs(maPdgcode) == 221 ) {
-				return kGammaEta;
-			}
-			else if ( TMath::Abs(maPdgcode) == 223 ) {
-				return kGammaOmega;
-			}
-			else if ( TMath::Abs(maPdgcode) == 333 ) {
-				return kGammaPhi;
-			}
-			else if ( TMath::Abs(maPdgcode) == 331 ) {
-				return kGammaEtaPrime;
-			}
-			else if ( TMath::Abs(maPdgcode) == 113 ) {
-				return kGammaRho0;
-			}
-			else origin = kElse;//grandmother is primary but nothing we identify
-		}
+			//
+			// check if the ligth meson is the decay product of heavy mesons
+			//
+			tmpMomLabel = partMotherCopy->GetMother();
+			if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandmother
+				if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+					partMother = mctrack;
+					grmaPdgcode = partMother->GetPdgCode();
 
-		return origin;
-
-	}
-	else {
-		//
-		// check if the ligth meson is the decay product of heavy mesons
-		//
-		tmpMomLabel = partMotherCopy->GetMother();
-		if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandmother
-			if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-				partMother = mctrack;
-				grmaPdgcode = partMother->GetPdgCode();
-
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
-					return kB2M;
-				}
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
-					return kD2M;
-				}
-
-				tmpMomLabel = partMother->GetMother();
-				if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
-					if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-						partMother = mctrack;
-						ggrmaPdgcode = partMother->GetPdgCode();
-
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
-							return kB2M;
-						}
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
-							return kD2M;
-						}
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+						return kB2M;
 					}
-				}//grandgrandmother
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+						return kD2M;
+					}
 
+					tmpMomLabel = partMother->GetMother();
+					if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
+						if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+							partMother = mctrack;
+							ggrmaPdgcode = partMother->GetPdgCode();
+
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+								return kB2M;
+							}
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+								return kD2M;
+							}
+						}
+					}//grandgrandmother
+
+					if ( TMath::Abs(maPdgcode) == 111 ) {
+						if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						else if(grmaPdgcode == 310) return kK0s2P;
+						else if(grmaPdgcode == 130) return kK0l2P;
+						else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
+						else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
+						else if(grmaPdgcode == 3222) return kSigma2P;
+						return kPi0;
+					}
+					else if ( TMath::Abs(maPdgcode) == 221 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						return kEta;
+					}
+					else if ( TMath::Abs(maPdgcode) == 223 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						return kOmega;
+					}
+					else if ( TMath::Abs(maPdgcode) == 333 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						return kPhi;
+					}
+					else if ( TMath::Abs(maPdgcode) == 331 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
+						return kEtaPrime;
+					}
+					else if ( TMath::Abs(maPdgcode) == 113 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
+						return kRho0;
+					}
+					else if ( TMath::Abs(maPdgcode) == 321 ) {
+						return kKe3;
+					}
+					else if ( TMath::Abs(maPdgcode) == 130 ) {
+						return kK0L;
+					}
+					else origin = kElse;//grandmother but nothing we identidy
+				}//mctrack grandmother
+			}
+			else {
+				// no grandmother
 				if ( TMath::Abs(maPdgcode) == 111 ) {
-					if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-					else if(grmaPdgcode == 310) return kK0s2P;
-					else if(grmaPdgcode == 130) return kK0l2P;
-					else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
-					else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
-					else if(grmaPdgcode == 3222) return kSigma2P;
 					return kPi0;
 				}
 				else if ( TMath::Abs(maPdgcode) == 221 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
 					return kEta;
 				}
 				else if ( TMath::Abs(maPdgcode) == 223 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
 					return kOmega;
 				}
 				else if ( TMath::Abs(maPdgcode) == 333 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
 					return kPhi;
 				}
 				else if ( TMath::Abs(maPdgcode) == 331 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
 					return kEtaPrime;
 				}
 				else if ( TMath::Abs(maPdgcode) == 113 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
 					return kRho0;
 				}
 				else if ( TMath::Abs(maPdgcode) == 321 ) {
@@ -3051,226 +3134,208 @@ Int_t AliAnalysisTaskHFJetIPQA::GetElecSource(const AliAODMCParticle *  const mc
 				else if ( TMath::Abs(maPdgcode) == 130 ) {
 					return kK0L;
 				}
-				else origin = kElse;//grandmother but nothing we identidy
-			}//mctrack grandmother
-		}
-		else {
-			// no grandmother
-			if ( TMath::Abs(maPdgcode) == 111 ) {
-				return kPi0;
+				else origin = kElse;//mother but nothing we identify
 			}
-			else if ( TMath::Abs(maPdgcode) == 221 ) {
-				return kEta;
-			}
-			else if ( TMath::Abs(maPdgcode) == 223 ) {
-				return kOmega;
-			}
-			else if ( TMath::Abs(maPdgcode) == 333 ) {
-				return kPhi;
-			}
-			else if ( TMath::Abs(maPdgcode) == 331 ) {
-				return kEtaPrime;
-			}
-			else if ( TMath::Abs(maPdgcode) == 113 ) {
-				return kRho0;
-			}
-			else if ( TMath::Abs(maPdgcode) == 321 ) {
-				return kKe3;
-			}
-			else if ( TMath::Abs(maPdgcode) == 130 ) {
-				return kK0L;
-			}
-			else origin = kElse;//mother but nothing we identify
-		}
-	}//mother is something different from J/psi,charm,beauty or gamma
-	return origin;
-}
-
-//#########
-//__________________________________________
-Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel)
-{
-	//
-	// Get weighting factor for the realistic background estimation, for three possible background yield levels, indicated by the argument "iLevel": the best estimate (0), the lower uncertainty level (1), and the upper uncertainty level (2)
-	//
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-
-	Double_t weightElecBg = 0.; // make 0 again
-	Double_t mesonPt = 0.;
-	Double_t mesonMotherPt = 0.;
-	Double_t bgcategory = 0.;
-	Bool_t condition = kTRUE;
-	Int_t mArr = -1;
-	Double_t mpt=0;
-	if (!mcpart) return 0;
-	Int_t mesonID = GetElecSource(mcpart,mpt);
-	//Printf("mesonID = %i pt = %f",mesonID,mpt);
-	//return 0.;
-	if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
-	else if(mesonID==kGammaEta || mesonID==kEta) mArr=1;           //eta
-	else if(mesonID==kGammaOmega || mesonID==kOmega) mArr=2;       //omega
-	else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
-	else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
-	else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
-	else if(mesonID==kKe3 || mesonID==kGammaK2P|| mesonID==kK2P) mArr=6; //ke3 or K->pi->e
-	else if(mesonID==kK0L || mesonID==kGammaK0s2P|| mesonID==kK0s2P) mArr=7; //K0L->e+X or k0s->pi->e
-	else if(mesonID==kGammaLamda2P|| mesonID==kLamda2P) mArr=8;    //lambda->pi->e
-
-
-
-	Double_t datamc[30]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999,-999};
-	Double_t xr[3]={-999,-999,-999};
-	datamc[0] = mesonID;
-	datamc[17] = mcpart->Pt(); //electron pt
-	datamc[18] = mcpart->Eta(); //electron eta
-
-	mcpart->XvYvZv(xr);
-	datamc[9] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-	datamc[10] = xr[2];
-
-	datamc[19] = (mcpart->IsPrimary()) ? 1 : 0;
-	datamc[20] = (mcpart->IsPhysicalPrimary()) ? 1 : 0;
-
-	datamc[24] = mcpart->Label();
-
-	if(!(mArr<0)){
-
-		AliAODMCParticle *mctrackmother = NULL; // will change all the time
-
-		if((mesonID>=kGammaPi0 && mesonID<=kGammaRho0) || mesonID==kGammaK2P || mesonID==kGammaK0s2P || mesonID==kGammaLamda2P) { // conversion electron
-			Int_t iLabel = mcpart->GetMother(); //gamma label
-			if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
-			iLabel = mctrackmother->GetMother(); //gamma's mother's label
-			if(!(mctrackmother= dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
-			mesonPt = mctrackmother->Pt(); //meson pt
-			datamc[28] = mctrackmother->Eta(); //meson eta
-			bgcategory = 1.;
-			if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
-			if(!mctrackmother->IsPrimary()) condition = kFALSE;
-			datamc[1] = bgcategory;
-			datamc[2] = mesonPt;
-			mctrackmother->XvYvZv(xr);
-			datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-			datamc[12] = xr[2];
-
-			datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-			datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-
-			//bgcategory 2, 3 is not defined for AOD
-
-			iLabel=mctrackmother->GetMother(); // gamma's mother's mother
-			datamc[26] = iLabel;
-			if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-				datamc[3]=mctrackmother->PdgCode();
-				mesonMotherPt=mctrackmother->Pt();
-				datamc[4]=mesonMotherPt;
-				datamc[29] = mctrackmother->Eta(); //meson mother's eta
-				if(TMath::Abs(mctrackmother->PdgCode())==310){
-					datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-					datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-					iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
-					if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-						datamc[5]=mctrackmother->PdgCode();
-						iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
-						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-							datamc[6]=mctrackmother->PdgCode();
-						}
-					}
-				}
-			}
-		}
-		else{ // nonHFE except for the conversion electron
-			Int_t iLabel = mcpart->GetMother(); //meson label
-			if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
-			mesonPt = mctrackmother->Pt(); //meson pt
-			datamc[28] = mctrackmother->Eta(); //meson eta
-			if(mesonID==kEta) bgcategory = -1.41; // to consider new branching ratio for the eta Dalitz decay
-			else 	bgcategory = -1.;
-			if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
-			if(!mctrackmother->IsPrimary()) condition = kFALSE;
-			datamc[1] = bgcategory;
-			datamc[2] = mesonPt;
-			datamc[23] = mctrackmother->PdgCode();
-			mctrackmother->XvYvZv(xr);
-			datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-			datamc[12] = xr[2];
-
-			datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-			datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-
-			//bgcategory 2, 3 is not defined for AOD
-
-			iLabel=mctrackmother->GetMother(); // mesons' mother
-			datamc[26] = iLabel;
-			if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-				datamc[3]=mctrackmother->PdgCode();
-				mesonMotherPt=mctrackmother->Pt();
-				datamc[4]=mesonMotherPt;
-				datamc[29] = mctrackmother->Eta(); //meson mother's eta
-				if(TMath::Abs(mctrackmother->PdgCode())==310){
-					datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-					datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-					iLabel=mctrackmother->GetMother(); // mesons' mother's mother
-					if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-						datamc[5]=mctrackmother->PdgCode();
-						iLabel=mctrackmother->GetMother(); // meson's mother's mother's mother
-						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-							datamc[6]=mctrackmother->PdgCode();
-						}
-					}
-				}
-			}
-		}
-
-		int kBgPtBins = 45;
-		weightElecBg=fBackgroundFactor[mArr][kBgPtBins-1];
-
-		if(mArr<=5 || mesonID==kKe3 || mesonID==kK0L){
-			for(int ii=0; ii<kBgPtBins; ii++){
-				if((mesonPt > fBackgroundFactorBins[ii]) && (mesonPt < fBackgroundFactorBins[ii+1])){
-					weightElecBg = fBackgroundFactor[mArr][ii];
-
-					break;
-				}
-			}
-		}
-		else{
-			for(int ii=0; ii<kBgPtBins; ii++){
-				if((mesonMotherPt > fBackgroundFactorBins[ii]) && (mesonMotherPt < fBackgroundFactorBins[ii+1])){
-					weightElecBg = fBackgroundFactor[mArr][ii];
-					break;
-				}
-			}
-		}
+		}//mother is something different from J/psi,charm,beauty or gamma
+		return origin;
 	}
 
-	if(!condition) weightElecBg=0.;
+	//#########
+	//__________________________________________
+	Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel)
+	{
+		//
+		// Get weighting factor for the realistic background estimation, for three possible background yield levels, indicated by the argument "iLevel": the best estimate (0), the lower uncertainty level (1), and the upper uncertainty level (2)
+		//
 
 
-	Double_t returnval = bgcategory*weightElecBg;
+		Double_t weightElecBg = 0.; // make 0 again
+		Double_t mesonPt = 0.;
+		Double_t mesonMotherPt = 0.;
+		Double_t bgcategory = 0.;
+		Bool_t condition = kTRUE;
+		Int_t mArr = -1;
+		Double_t mpt=0;
+		if (!mcpart) return 0;
+		Int_t mesonID = GetElecSource(mcpart,mpt);
+		//Printf("mesonID = %i pt = %f",mesonID,mpt);
+		//return 0.;
+		if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
+		else if(mesonID==kGammaEta || mesonID==kEta) mArr=1;           //eta
+		else if(mesonID==kGammaOmega || mesonID==kOmega) mArr=2;       //omega
+		else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
+		else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
+		else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
+		else if(mesonID==kKe3 || mesonID==kGammaK2P|| mesonID==kK2P) mArr=6; //ke3 or K->pi->e
+		else if(mesonID==kK0L || mesonID==kGammaK0s2P|| mesonID==kK0s2P) mArr=7; //K0L->e+X or k0s->pi->e
+		else if(mesonID==kGammaLamda2P|| mesonID==kLamda2P) mArr=8;    //lambda->pi->e
 
-	return returnval;
-}
-
-Float_t AliAnalysisTaskHFJetIPQA::GetRapidity(const TParticle *part){
-	//
-	// return rapidity
-	//
-	Float_t rapidity;
-	if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
-	else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
-	return rapidity;
-}
 
 
-bool AliAnalysisTaskHFJetIPQA::mysort(const myvaluetuple& i, const myvaluetuple& j)
-{
-	if(i.first <= j.first)
-		return false;
-	else
-		return true;
-}
+		Double_t datamc[30]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999,-999};
+		Double_t xr[3]={-999,-999,-999};
+		datamc[0] = mesonID;
+		datamc[17] = mcpart->Pt(); //electron pt
+		datamc[18] = mcpart->Eta(); //electron eta
 
+		mcpart->XvYvZv(xr);
+		datamc[9] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+		datamc[10] = xr[2];
+
+		datamc[19] = (mcpart->IsPrimary()) ? 1 : 0;
+		datamc[20] = (mcpart->IsPhysicalPrimary()) ? 1 : 0;
+
+		datamc[24] = mcpart->Label();
+
+		if(!(mArr<0)){
+
+			AliAODMCParticle *mctrackmother = NULL; // will change all the time
+
+			if((mesonID>=kGammaPi0 && mesonID<=kGammaRho0) || mesonID==kGammaK2P || mesonID==kGammaK0s2P || mesonID==kGammaLamda2P) { // conversion electron
+				Int_t iLabel = mcpart->GetMother(); //gamma label
+				if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
+				iLabel = mctrackmother->GetMother(); //gamma's mother's label
+				if(!(mctrackmother= dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
+				mesonPt = mctrackmother->Pt(); //meson pt
+				datamc[28] = mctrackmother->Eta(); //meson eta
+				bgcategory = 1.;
+				if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
+				if(!mctrackmother->IsPrimary()) condition = kFALSE;
+				datamc[1] = bgcategory;
+				datamc[2] = mesonPt;
+				mctrackmother->XvYvZv(xr);
+				datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+				datamc[12] = xr[2];
+
+				datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+				datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+
+				//bgcategory 2, 3 is not defined for AOD
+
+				iLabel=mctrackmother->GetMother(); // gamma's mother's mother
+				datamc[26] = iLabel;
+				if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+					datamc[3]=mctrackmother->PdgCode();
+					mesonMotherPt=mctrackmother->Pt();
+					datamc[4]=mesonMotherPt;
+					datamc[29] = mctrackmother->Eta(); //meson mother's eta
+					if(TMath::Abs(mctrackmother->PdgCode())==310){
+						datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+						datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+						iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
+						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+							datamc[5]=mctrackmother->PdgCode();
+							iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
+							if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+								datamc[6]=mctrackmother->PdgCode();
+							}
+						}
+					}
+				}
+			}
+			else{ // nonHFE except for the conversion electron
+				Int_t iLabel = mcpart->GetMother(); //meson label
+				if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
+				mesonPt = mctrackmother->Pt(); //meson pt
+				datamc[28] = mctrackmother->Eta(); //meson eta
+				if(mesonID==kEta) bgcategory = -1.41; // to consider new branching ratio for the eta Dalitz decay
+				else 	bgcategory = -1.;
+				if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
+				if(!mctrackmother->IsPrimary()) condition = kFALSE;
+				datamc[1] = bgcategory;
+				datamc[2] = mesonPt;
+				datamc[23] = mctrackmother->PdgCode();
+				mctrackmother->XvYvZv(xr);
+				datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+				datamc[12] = xr[2];
+
+				datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+				datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+
+				//bgcategory 2, 3 is not defined for AOD
+
+				iLabel=mctrackmother->GetMother(); // mesons' mother
+				datamc[26] = iLabel;
+				if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+					datamc[3]=mctrackmother->PdgCode();
+					mesonMotherPt=mctrackmother->Pt();
+					datamc[4]=mesonMotherPt;
+					datamc[29] = mctrackmother->Eta(); //meson mother's eta
+					if(TMath::Abs(mctrackmother->PdgCode())==310){
+						datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+						datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+						iLabel=mctrackmother->GetMother(); // mesons' mother's mother
+						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+							datamc[5]=mctrackmother->PdgCode();
+							iLabel=mctrackmother->GetMother(); // meson's mother's mother's mother
+							if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+								datamc[6]=mctrackmother->PdgCode();
+							}
+						}
+					}
+				}
+			}
+
+			int kBgPtBins = 45;
+			weightElecBg=fBackgroundFactor[mArr][kBgPtBins-1];
+
+			if(mArr<=5 || mesonID==kKe3 || mesonID==kK0L){
+				for(int ii=0; ii<kBgPtBins; ii++){
+					if((mesonPt > fBackgroundFactorBins[ii]) && (mesonPt < fBackgroundFactorBins[ii+1])){
+						weightElecBg = fBackgroundFactor[mArr][ii];
+
+						break;
+					}
+				}
+			}
+			else{
+				for(int ii=0; ii<kBgPtBins; ii++){
+					if((mesonMotherPt > fBackgroundFactorBins[ii]) && (mesonMotherPt < fBackgroundFactorBins[ii+1])){
+						weightElecBg = fBackgroundFactor[mArr][ii];
+						break;
+					}
+				}
+			}
+		}
+
+		if(!condition) weightElecBg=0.;
+
+
+		Double_t returnval = bgcategory*weightElecBg;
+
+		return returnval;
+	}
+
+	Float_t AliAnalysisTaskHFJetIPQA::GetRapidity(const TParticle *part){
+		//
+		// return rapidity
+		//
+		Float_t rapidity;
+		if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
+		else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
+		return rapidity;
+	}
+
+
+	bool AliAnalysisTaskHFJetIPQA::mysort(const myvaluetuple& i, const myvaluetuple& j)
+	{
+		if(i.first <= j.first)
+			return false;
+		else
+			return true;
+	}
+ //
+
+	AliAODMCParticle* AliAnalysisTaskHFJetIPQA::GetMCTrack( const AliAODTrack* _track)
+	{
+		//
+		// return MC track
+		//
+		if(!fMCArray) { AliError("No fMCArray"); return NULL;}
+		Int_t nStack = fMCArray->GetEntriesFast();
+		Int_t label  = TMath::Abs(_track->GetLabel()); // negative label indicate poor matching quality
+		if(label > nStack) return NULL;
+		AliAODMCParticle *mctrack = (AliAODMCParticle*)fMCArray->At(label);
+		return mctrack;
+	}
 
