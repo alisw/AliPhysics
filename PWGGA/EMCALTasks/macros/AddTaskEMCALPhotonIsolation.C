@@ -15,9 +15,9 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const char*            nclusters                 = "EmcalClusters",
                                                                  const UInt_t           pSel                      = AliVEvent::kEMC7,
                                                                  const TString          dType                     = "ESD",
-                                                                 const Bool_t		    bHisto		              = kTRUE,
-                                                                 const Int_t	      	iOutput		              = 0,
-                                                                 const Bool_t	        bIsMC	                  = kFALSE,
+                                                                 const Bool_t		        bHisto  		              = kTRUE,
+                                                                 const Int_t	      	  iOutput	  	              = 0,
+                                                                 const Bool_t	          bIsMC  	                  = kFALSE,
                                                                  const Bool_t           bMCNormalization          = kFALSE,
                                                                  const Bool_t           bNLMCut                   = kFALSE,
                                                                  const Int_t            NLMCut                    = 0,
@@ -30,7 +30,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Double_t         TMdeta                    = 0.02,
                                                                  const Double_t         TMdphi                    = 0.03,
                                                                  const Bool_t           bTMClusterRejection       = kTRUE,
-                                                                 const Bool_t           bTMClusterRejectionInCone = kTRUE
+                                                                 const Bool_t           bTMClusterRejectionInCone = kTRUE,
+                                                                 const Float_t          iIsoConeRadius            = 0.4
                                                                  )
 {
 
@@ -186,10 +187,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     // #### Task preferences
   task->SetOutputFormat(iOutput);
   task->SetLCAnalysis(kFALSE);
-  task->SetIsoConeRadius(0.4);
-  task->SetEtIsoThreshold(2.); // after should be replace by EtIso
-  task->SetCTMdeltaEta(0.02); // after should be replaced by TMdeta
-  task->SetCTMdeltaPhi(0.03); // after should be replaced by TMdphi
+  task->SetIsoConeRadius(iIsoConeRadius);
+  task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
+  task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
+  task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
   task->SetQA(kTRUE);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
@@ -215,7 +216,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   manager->AddTask(task);
 
 
-  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d",AliAnalysisManager::GetCommonFileName(),bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
