@@ -29,6 +29,10 @@
 #pragma link C++ class AliJetTriggerSelectionTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
