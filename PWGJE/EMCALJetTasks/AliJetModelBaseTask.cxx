@@ -199,7 +199,7 @@ void AliJetModelBaseTask::UserCreateOutputObjects()
   fhpTEmb->Sumw2();
   fOutput->Add(fhpTEmb);
   
-  fhMEmb   = new TH1F("fhMEmb","Mass distribution; #it{M} (GeV)", 100, 0, 20.);
+  fhMEmb   = new TH1F("fhMEmb","Mass distribution; #it{M} (GeV)", 80, 0, 80.);
   fhMEmb->Sumw2();
   fOutput->Add(fhMEmb);
   
