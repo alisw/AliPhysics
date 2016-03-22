@@ -104,6 +104,7 @@ ClassImp(AliAnalysisTaskExtractCascadePbPbRun2)
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2()
 : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
+fkSaveTree ( kTRUE ), 
 fkSaveRawdEdxSignals ( kFALSE ), 
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
@@ -162,7 +163,11 @@ fTreeCascVarBachdEdx(0),
 // --- Filled on an Event-by-event basis
 //------------------------------------------------
 fHistEventCounter(0), 
-fHistCentrality(0)
+fHistCentrality(0),
+fHistdEdx(0), 
+fHistdEdxPionsFromLambda(0), 
+fHistdEdxProtonsFromLambda(0), 
+fHistdEdxPionsFromK0s(0)
 {
     // Dummy Constructor
 }
@@ -170,6 +175,7 @@ fHistCentrality(0)
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2(const char *name, TString lExtraOptions)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
+fkSaveTree ( kTRUE ), 
 fkSaveRawdEdxSignals ( kFALSE ), 
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
@@ -228,13 +234,18 @@ fTreeCascVarBachdEdx(0),
 // --- Filled on an Event-by-event basis
 //------------------------------------------------
 fHistEventCounter(0), 
-fHistCentrality(0)
+fHistCentrality(0),
+fHistdEdx(0), 
+fHistdEdxPionsFromLambda(0), 
+fHistdEdxProtonsFromLambda(0), 
+fHistdEdxPionsFromK0s(0)
 
 {
     // Constructor
     
     //Set Variables for re-running the cascade vertexers (as done for MS paper)
-    if ( lExtraOptions.Contains("dEdx") ) fkSaveRawdEdxSignals = kTRUE;  
+    if ( lExtraOptions.Contains("dEdx") )   fkSaveRawdEdxSignals = kTRUE;  
+    if ( lExtraOptions.Contains("NoTree") ) fkSaveTree = kFALSE;  
   
     // New Loose : 1st step for the 7 TeV pp analysis
     
@@ -295,6 +306,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
     
     //------------------------------------------------
     
+    if ( fkSaveTree ){ 
     fTreeCascade = new TTree("fTreeCascade","CascadeCandidates");
     
     //------------------------------------------------
@@ -356,6 +368,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
       fTreeCascade->Branch("fTreeCascVarNegdEdx",&fTreeCascVarNegdEdx,"fTreeCascVarNegdEdx/F");  
       fTreeCascade->Branch("fTreeCascVarBachdEdx",&fTreeCascVarBachdEdx,"fTreeCascVarBachdEdx/F");  
     }
+    }
     
     //------------------------------------------------
     // Particle Identification Setup
@@ -369,6 +382,14 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
     
     if(! fESDtrackCuts ){
         fESDtrackCuts = new AliESDtrackCuts();
+	
+	//Set of silly track selections 
+	fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
+	fESDtrackCuts->SetMinNClustersTPC(80);
+	fESDtrackCuts->SetMaxChi2PerClusterTPC(4);
+	fESDtrackCuts->SetMaxDCAToVertexXY(.5);
+	fESDtrackCuts->SetMaxDCAToVertexZ(.5);
+	fESDtrackCuts->SetRequireTPCRefit(kTRUE);
     }
     if(! fUtils ){
         fUtils = new AliAnalysisUtils();
@@ -395,6 +416,25 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
         fListHist->Add(fHistEventCounter);
     }
 
+    if (fkSaveRawdEdxSignals) { 
+      if(! fHistdEdx) {
+	  fHistdEdx = new TH2F("fHistdEdx", ";Momentum at Inner Wall;TPC Signal", 400,0,4,500,0,500);
+	  fListHist->Add(fHistdEdx);
+      }      
+       if(! fHistdEdxPionsFromLambda) {
+	  fHistdEdxPionsFromLambda = new TH2F("fHistdEdxPionsFromLambda", ";Momentum at Inner Wall;TPC Signal", 400,0,4,500,0,500);
+	  fListHist->Add(fHistdEdxPionsFromLambda);
+      }           
+       if(! fHistdEdxProtonsFromLambda) {
+	  fHistdEdxProtonsFromLambda = new TH2F("fHistdEdxProtonsFromLambda", ";Momentum at Inner Wall;TPC Signal", 400,0,4,500,0,500);
+	  fListHist->Add(fHistdEdxProtonsFromLambda);
+      }           
+      if(! fHistdEdxPionsFromK0s) {
+	  fHistdEdxPionsFromK0s = new TH2F("fHistdEdxPionsFromK0s", ";Momentum at Inner Wall;TPC Signal", 400,0,4,500,0,500);
+	  fListHist->Add(fHistdEdxPionsFromK0s);
+      } 
+    }
+    
     
     //List of Histograms: Normal
     PostData(1, fListHist);
@@ -537,6 +577,107 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
     lPrimaryVtxPosition[0] = primaryVtx->GetX();
     lPrimaryVtxPosition[1] = primaryVtx->GetY();
     lPrimaryVtxPosition[2] = primaryVtx->GetZ();
+
+    //------------------------------------------------
+    // Getting information for playing around: 
+    //  Loop over all tracks 
+    //------------------------------------------------
+    
+    if (fkSaveRawdEdxSignals) { 
+      //All-Track Inclusive (just in case) 
+      for (Int_t i=0;i<lESDevent->GetNumberOfTracks();++i) {
+	AliESDtrack *trackOne = 0x0;
+	trackOne = lESDevent->GetTrack(i);
+	if ( !fESDtrackCuts->AcceptTrack(trackOne) ) continue; 
+	const AliExternalTrackParam *trackOneParams=trackOne->GetInnerParam();
+	Float_t lThisInnerP = -1; 
+	if(trackOneParams)  { lThisInnerP  = trackOneParams ->GetP(); }
+	Float_t lThisTPCSignal = trackOne->GetTPCsignal();
+	fHistdEdx -> Fill( lThisInnerP , lThisTPCSignal ); 	
+      }
+      
+      //Clean Sample of V0s 
+      Int_t nv0s = lESDevent->GetNumberOfV0s();
+      for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+      {   // This is the begining of the V0 loop
+        AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0);
+        if (!v0) continue;
+	
+	//Get Daughters
+	
+        UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
+        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+
+        AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
+        AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
+        if (!pTrack || !nTrack) {
+            Printf("ERROR: Could not retreive one of the daughter track");
+            continue;
+        }
+	//Daughter Eta for Eta selection, afterwards
+        if ( TMath::Abs( nTrack->Eta() ) > 0.9 || TMath::Abs( pTrack->Eta() ) > 0.9 ) continue;
+
+        // Filter like-sign V0 (next: add counter and distribution)
+        if ( pTrack->GetSign() == nTrack->GetSign()) {
+            continue;
+        }
+	//________________________________________________________________________
+        // Track quality cuts
+        Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
+        Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
+	if ( lPosTrackCrossedRows < 70 || lNegTrackCrossedRows < 70 ) continue; 
+
+        // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+        if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+        if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+	
+	//GetKinkIndex condition
+        if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
+
+        //Findable clusters > 0 condition
+        if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
+	
+	Float_t lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
+	
+	if ( lV0CosineOfPointingAngle < 0.9995 ) continue; //who cares? not me!
+		
+	Int_t lOnFlyStatus = v0->GetOnFlyStatus();
+	if ( lOnFlyStatus != 0 ) continue; 
+	
+        Float_t lDcaV0Daughters = v0->GetDcaV0Daughters();
+	if ( lDcaV0Daughters > 0.2 ) continue; //still not me!
+		
+        // Getting invariant mass infos directly from ESD
+        v0->ChangeMassHypothesis(310);
+        Float_t lInvMassK0s = v0->GetEffMass();
+        v0->ChangeMassHypothesis(3122);
+        Float_t lInvMassLambda = v0->GetEffMass();
+        v0->ChangeMassHypothesis(-3122);
+        Float_t lInvMassAntiLambda = v0->GetEffMass();
+	
+	const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
+	const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
+	Float_t lThisPosInnerP = -1; 
+	Float_t lThisNegInnerP = -1; 
+	if(innerposv0)  { lThisPosInnerP  = innerposv0 ->GetP(); }
+	if(innernegv0)  { lThisNegInnerP  = innernegv0 ->GetP(); }
+	Float_t lThisPosdEdx = pTrack -> GetTPCsignal(); 
+	Float_t lThisNegdEdx = nTrack -> GetTPCsignal(); 
+	
+	if ( TMath::Abs( lInvMassLambda - 1.1157 ) < 0.0025 ){ 
+	  fHistdEdxPionsFromLambda -> Fill ( lThisNegInnerP, lThisNegdEdx );
+	  fHistdEdxProtonsFromLambda -> Fill ( lThisPosInnerP, lThisPosdEdx );
+	}
+	if ( TMath::Abs( lInvMassAntiLambda - 1.1157 ) < 0.0025 ){ 
+	  fHistdEdxPionsFromLambda -> Fill ( lThisPosInnerP, lThisPosdEdx );
+	  fHistdEdxProtonsFromLambda -> Fill ( lThisNegInnerP, lThisNegdEdx );
+	}	
+	if ( TMath::Abs( lInvMassK0s - 0.497 ) < 0.0025 ){ 
+	  fHistdEdxPionsFromK0s -> Fill( lThisPosInnerP , lThisPosdEdx ); 
+	  fHistdEdxPionsFromK0s -> Fill( lThisNegInnerP , lThisNegdEdx ); 
+	}
+      }
+    } 
     
     //------------------------------------------------
     // MAIN CASCADE LOOP STARTS HERE
