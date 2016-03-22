@@ -46,7 +46,7 @@ message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 
 # CMake supports different build types by default. We want the DEBUG build type
 # to have "-g -O0" flags: by default it only has "-g"
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG -D__DEBUG")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
 # Build type for coverage builds
