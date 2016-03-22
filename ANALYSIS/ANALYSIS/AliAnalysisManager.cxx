@@ -2128,7 +2128,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    strncpy(&dispDataset[97], "...", 3);
    dispDataset[100] = '\0';
    cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dispDataset << endl;
-   delete dispDataset;
+   delete [] dispDataset;
    retv = (Long_t)gROOT->ProcessLine(line);
    return retv;
 }   
@@ -2183,7 +2183,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TFileCollection* da
   strncpy(&dispDataset[97], "...", 3);
   dispDataset[100] = '\0';
   cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dispDataset << endl;
-  delete dispDataset;
+  delete [] dispDataset;
   retv = (Long_t)gROOT->ProcessLine(line);
   return retv;
 }
