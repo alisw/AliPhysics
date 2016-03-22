@@ -1,5 +1,7 @@
 #ifndef ALITRACKCONTAINER_H
 #define ALITRACKCONTAINER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class AliVEvent;
 class AliVParticle;
@@ -12,17 +14,28 @@ class AliTLorentzVector;
 #include "AliEmcalTrackSelection.h"
 #include "AliParticleContainer.h"
 
+/**
+ * @class AliTrackContainer
+ * @brief Container with name, TClonesArray and cuts for particles
+ * @ingroup EMCALCOREFW
+ * @author M. Verweij
+ * @author S. Aiola
+ */
 class AliTrackContainer : public AliParticleContainer {
  public:
 
   typedef AliEmcalTrackSelection::ETrackFilterType_t ETrackFilterType_t;
 
+  /**
+   * @enum ETrackType_t
+   * @brief Status of a track after track selection
+   */
   enum ETrackType_t {
-    kRejected = -1,
-    kUndefined = 0,
-    kHybridGlobal = 0,
-    kHybridConstrained = 1,
-    kHybridConstrainedNoITSrefit = 2,
+    kRejected = -1,                  ///< Track rejected
+    kUndefined = 0,                  ///< Track status undefined
+    kHybridGlobal = 0,               ///< Track selected under the global hybrid track cuts
+    kHybridConstrained = 1,          ///< Track selected under the constrained hybrid track cuts
+    kHybridConstrainedNoITSrefit = 2,///< Track selected under the constrained hybrid track cuts without ITS refit
   };
 
   AliTrackContainer();
@@ -82,22 +95,24 @@ class AliTrackContainer : public AliParticleContainer {
   const char*                 GetTitle() const;
 
  protected:
-  static TString              fgDefTrackCutsPeriod;           //!default period string used to generate track cuts
+  static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts
 
-  ETrackFilterType_t          fTrackFilterType;               // track filter type
-  TObjArray                  *fListOfCuts;                    // list of track cut objects
-  Bool_t                      fSelectionModeAny;              // accept track if any of the cuts is fulfilled
-  UInt_t                      fAODFilterBits;                 // track filter bits
-  TString                     fTrackCutsPeriod;               // period string used to generate track cuts
-  AliEmcalTrackSelection     *fEmcalTrackSelection;           //!track selection object
-  TObjArray                  *fFilteredTracks;                //!tracks filtered using fEmcalTrackSelection
-  TArrayC                     fTrackTypes;                    //!track types
+  ETrackFilterType_t          fTrackFilterType;               ///< track filter type
+  TObjArray                  *fListOfCuts;                    ///< list of track cut objects
+  Bool_t                      fSelectionModeAny;              ///< accept track if any of the cuts is fulfilled
+  UInt_t                      fAODFilterBits;                 ///< track filter bits
+  TString                     fTrackCutsPeriod;               ///< period string used to generate track cuts
+  AliEmcalTrackSelection     *fEmcalTrackSelection;           //!<! track selection object
+  TObjArray                  *fFilteredTracks;                //!<! tracks filtered using fEmcalTrackSelection
+  TArrayC                     fTrackTypes;                    //!<! track types
 
  private:
   AliTrackContainer(const AliTrackContainer& obj); // copy constructor
   AliParticleContainer& operator=(const AliTrackContainer& other); // assignment
 
+  /// \cond CLASSIMP
   ClassDef(AliTrackContainer,1);
+  /// \endcond
 };
 
 #endif
