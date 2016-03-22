@@ -365,7 +365,7 @@ goCPass()
 
   # -c: check if local source exists; -C: do not copy if local dest exists already
   # -f: copy all in the same dest dir (flat copy)
-  xCopy -f -c -C -d . "${filesCPass[@]}"
+  xCopy -w 1 -f -c -C -d . "${filesCPass[@]}"
   for file in ${filesCPass[*]}; do
     [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
   done
