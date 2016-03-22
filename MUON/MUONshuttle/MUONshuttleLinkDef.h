@@ -4,7 +4,7 @@
 // $Id$
 
 /// \file MUONshuttleLinkDef.h
-/// \brief The CINT link definitions for \ref shuttle 
+/// \brief The CINT link definitions for \ref shuttle
 
 #ifdef __CINT__
 
@@ -16,6 +16,7 @@
 #pragma link C++ class AliMUONTrackerPreprocessor+;
 #pragma link C++ class AliMUONVSubprocessor+;
 #pragma link C++ class AliMUONHVSubprocessor+;
+#pragma link C++ class AliMUONLVSubprocessor+;
 #pragma link C++ class AliMUONPedestalSubprocessor+;
 #pragma link C++ class AliMUONGMSSubprocessor+;
 #pragma link C++ class AliMUONTriggerSubprocessor+;

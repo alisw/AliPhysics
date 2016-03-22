@@ -49,6 +49,8 @@
 #pragma link C++ class AliMUONContourHandler+;
 #pragma link C++ class AliMUONAlignmentCompareDialog+;
 #pragma link C++ class AliMUONTrackerHV+;
+#pragma link C++ class AliMUONTrackerLV+;
+#pragma link C++ class AliMUONTrackerVoltages+;
 
 
 #endif

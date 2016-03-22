@@ -15,12 +15,15 @@
 class AliMUONTrackerDataSourceTypes : public TObject
 {
 public:
-  
+
   static const char* ShortNameForConfig() { return "CONF"; }
   static const char* AliasesForConfig() { return "CONF CONFIG Configuration"; }
 
   static const char* ShortNameForHV() { return "HV"; }
   static const char* AliasesForHV() { return "HV"; }
+
+  static const char* ShortNameForLV() { return "LV"; }
+  static const char* AliasesForLV() { return "LV"; }
 
   static const char* ShortNameForOccupancy() { return "OCC"; }
   static const char* AliasesForOccupancy() { return "OCC Occupancy"; }
@@ -39,14 +42,15 @@ public:
 
   static Bool_t IsConfig(const char* type);
   static Bool_t IsHV(const char* type);
+  static Bool_t IsLV(const char* type);
   static Bool_t IsOccupancy(const char* type);
   static Bool_t IsPedestals(const char* type);
   static Bool_t IsRejectList(const char* type);
   static Bool_t IsStatus(const char* type);
   static Bool_t IsStatusMap(const char* type);
-  
+
 private:
-  
+
   static Bool_t IsInAliasList(const char* type, const char* aliases);
 
   /// \cond CLASSIMP

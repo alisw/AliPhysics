@@ -19,7 +19,7 @@
 
 /// \ingroup macros
 /// \file TestMUONPreprocessor.C
-/// \brief The macro for testing the shuttle preprocessors 
+/// \brief The macro for testing the shuttle preprocessors
 ///
 /// This macro runs the test preprocessor for MUON.
 /// It uses AliTestShuttle to simulate a full Shuttle process
@@ -28,11 +28,11 @@
 /// correctly :
 ///
 /// <pre>
-/// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
+/// cd $ALICE_ROOT/../src/SHUTTLE/TestShuttle/TestCDB
 /// mkdir -p MUON/Calib/MappingData
 /// cd MUON/Calib/MappingData/
 /// ln -si $ALICE_ROOT/OCDB/MUON/Calib/MappingData/* .
-/// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
+/// cd $ALICE_ROOT/../src/SHUTTLE/TestShuttle/TestCDB
 /// mkdir -p MUON/Calib/Config
 /// cd MUON/Calib/Config
 /// ln -si $ALICE_ROOT/OCDB/MUON/Calib/Config/* .
@@ -41,7 +41,7 @@
 /// and Align/Baseline if you'd like to test GMS subprocessor :
 ///
 /// <pre>
-/// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
+/// cd $ALICE_ROOT/../src/SHUTTLE/TestShuttle/TestCDB
 /// mkdir -p MUON/Align
 /// cd MUON/Align
 /// ln -si $ALICE_ROOT/OCDB/MUON/Align/Baseline .
@@ -135,10 +135,11 @@
 #include "TObjString.h"
 #include "TString.h"
 #include "TRandom.h"
+
 #endif
 
 //______________________________________________________________________________
-void TestMUONPreprocessor(Int_t runNumber=80, 
+void TestMUONPreprocessor(Int_t runNumber=80,
                           const char* runType="PHYSICS",
                           const char* sourceDirectory="$HOME/Downloads/muontestshuttle")
 {
@@ -150,34 +151,34 @@ void TestMUONPreprocessor(Int_t runNumber=80,
 
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  
+
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
-  
-  const char* inputCDB = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
-  
+
+  const char* inputCDB = "local://$ALICE_ROOT/../src/SHUTTLE/TestShuttle/TestCDB";
+
   AliTestShuttle::SetMainCDB(inputCDB);
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/OCDB/SHUTTLE/TestShuttle/TestReference");
 
   TString rt(runType);
   rt.ToUpper();
-  
+
   if ( rt.Contains("PHYSICS") || rt.Contains("CALIBRATION") )
   {
     // Create DCS aliases
     TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB, runNumber);
 
-    if ( dcsAliasMap ) 
+    if ( dcsAliasMap )
     {
       // now give the alias map to the shuttle
       shuttle->SetDCSInput(dcsAliasMap);
     }
   }
-  
+
   printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
   printf("Test Shuttle log dir: %s\n", AliShuttleInterface::GetShuttleLogDir());
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
-  
+
   // The shuttle can process files that originate from DCS, DAQ and HLT.
   // To test it, we provide some local files and locations where these would be found when
   // the online machinery would be there.
@@ -212,7 +213,7 @@ void TestMUONPreprocessor(Int_t runNumber=80,
     shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC3",Form("%s/CONFIG/LDC3.conf",sourceDirectory));
     shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC4",Form("%s/CONFIG/LDC4.conf",sourceDirectory));
   }
-  
+
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","OCCUPANCY","MON",Form("%s/OCCUPANCY/mch.occupancy",sourceDirectory));
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","BPEVO","MON",Form("%s/BPEVO/mchbpevo.root",sourceDirectory));
@@ -233,15 +234,15 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
   shuttle->SetInputRunType(runType);
-  
+
   shuttle->AddInputRunParameter("totalEvents","20");
-                                
+
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   new AliMUONTrackerPreprocessor(shuttle);
   new AliMUONTriggerPreprocessor(shuttle);
-  
+
   shuttle->Print();
-  
+
   // Test the preprocessor
   shuttle->Process();
 }
@@ -250,9 +251,9 @@ void TestMUONPreprocessor(Int_t runNumber=80,
 void GenerateConfig()
 {
   /// Generate "fake" configuration files for the tracker. One per LDC.
-  
+
   Bool_t undefStorage(kFALSE);
-  
+
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet())
   {
@@ -260,49 +261,49 @@ void GenerateConfig()
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     man->SetRun(0);
   }
-  
+
   // Load mapping
   Bool_t ok = AliMpCDB::LoadDDLStore();
-  
+
   if (undefStorage)
   {
     man->UnsetDefaultStorage();
   }
-  
+
   if (!ok)
   {
     AliErrorGeneral("GenerateConfig","Could not load DDLStore from OCDB");
     return;
   }
-  
+
   ofstream* files[5];
-  for ( Int_t i = 0; i < 5; ++i ) 
+  for ( Int_t i = 0; i < 5; ++i )
   {
     files[i]=0;
   }
-  
+
   TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
   AliMpBusPatch* bp;
-  
+
   while ( ( bp = static_cast<AliMpBusPatch*>(next()) ) )
   {
     Int_t ddl = bp->GetDdlId();
-    
+
     Int_t ldc = ddl/4;
-    
+
     if (!files[ldc])
     {
       files[ldc] = new ofstream(Form("LDC%d.conf",ldc));
       *(files[ldc]) << "# changed" << endl;
     }
 
-    for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu ) 
+    for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu )
     {
       *(files[ldc]) << bp->GetId() << " " << bp->GetManuId(imanu) << endl;
-    }        
+    }
   }
-  
-  for ( Int_t i = 0; i < 5; ++i ) 
+
+  for ( Int_t i = 0; i < 5; ++i )
   {
     if ( files[i] ) files[i]->close();
     delete files[i];
@@ -312,7 +313,7 @@ void GenerateConfig()
 //______________________________________________________________________________
 TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 {
-  /// Creates a DCS structure for MUON Tracker HV and Trigger DCS and Currents
+  /// Creates a DCS structure for MUON Tracker HV + LV and Trigger DCS and Currents
   ///
   /// The structure is the following:
   ///   TMap (key --> value)
@@ -320,9 +321,9 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
   ///     <DCSAlias> is a string
   ///     <valueList> is a TObjArray of AliDCSValue
   ///     An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
-  
+
   Bool_t undefStorage(kFALSE);
-  
+
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet())
   {
@@ -330,15 +331,15 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
     man->SetDefaultStorage(inputCDB);
     man->SetRun(runNumber);
   }
-  
+
   // Load mapping
   Bool_t ok = AliMpCDB::LoadDDLStore();
-  
+
   if (undefStorage)
   {
     man->UnsetDefaultStorage();
   }
-  
+
   if (!ok)
   {
     AliErrorGeneral("CreateDCSAliasMap","Could not load DDLStore from OCDB");
@@ -347,7 +348,7 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(kTRUE);
-  
+
   TRandom random(0);
 
   const Char_t* detName[2] = { "TRACKER", "TRIGGER" };
@@ -356,25 +357,25 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 
     TString sDetName(detName[idet]);
     sDetName.ToUpper();
-  
+
     AliMpDCSNamer dcsNamer(detName[idet]);
-  
+
     TObjArray* aliases = dcsNamer.GenerateAliases();
-  
-    for ( Int_t i = 0; i < aliases->GetEntries(); ++i ) 
+
+    for ( Int_t i = 0; i < aliases->GetEntries(); ++i )
     {
       TObjString* alias = static_cast<TObjString*>(aliases->At(i));
       TString& aliasName = alias->String();
-      if ( aliasName.Contains("sw") && sDetName.Contains("TRACKER")) 
+      if ( aliasName.Contains("sw") && sDetName.Contains("TRACKER"))
       {
         // HV Switch (St345 only)
         TObjArray* valueSet = new TObjArray;
         valueSet->SetOwner(kTRUE);
         Bool_t bvalue = kTRUE;
         //      Float_t r = random.Uniform();
-        //      if ( r < 0.007 ) value = kFALSE;      
+        //      if ( r < 0.007 ) value = kFALSE;
         //      if ( aliasName.Contains("DE513sw2") ) value = kFALSE;
-        
+
         for ( UInt_t timeStamp = 0; timeStamp < 60*3; timeStamp += 60 )
         {
           AliDCSValue* dcsValue = new AliDCSValue(bvalue,timeStamp);
@@ -395,10 +396,26 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
               value = random.Gaus(1750,62.5);
               if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
             }
-            else
+            else if ( aliasName.Contains("iMon") )
             {
               value = random.Gaus(10,2);
               if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.iMon") value = 50;
+            }
+            else if ( aliasName.Contains("ann"))
+            {
+              value = random.Gaus(2.62,0.05);
+            }
+            else if ( aliasName.Contains("anp"))
+            {
+              value = random.Gaus(2.72,0.05);
+            }
+            else if ( aliasName.Contains("dig"))
+            {
+              value = random.Gaus(3.4,0.05);
+            }
+            else if ( aliasName.Contains("Crocu"))
+            {
+              value = random.Gaus(3.35,0.05);
             }
           }
           else if(aliasName.Contains("iMon")){
@@ -407,7 +424,7 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
           else {
             value = random.Gaus(8000.,16.);
           }
-          
+
           AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
           valueSet->Add(dcsValue);
         }
@@ -417,12 +434,11 @@ TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
         aliasMap->Add(new TObjString(*alias),valueSet);
       }
     } // loop on aliases
-    
+
     delete aliases;
   } // loop on detectors (tracker and trigger)
-  
+
   AliMpCDB::UnloadAll();
-  
+
   return aliasMap;
 }
-
