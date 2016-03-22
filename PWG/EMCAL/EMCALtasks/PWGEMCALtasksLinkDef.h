@@ -32,4 +32,14 @@
 #pragma link C++ class  AliEMCALConfigurationMatcher+;
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
+#pragma link C++ class  AliEmcalCorrectionTask+;
+#pragma link C++ class  AliEmcalCorrectionComponent+;
+#pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
+#pragma link C++ class  AliEmcalCorrectionCellEnergy+;
+#pragma link C++ class  AliEmcalCorrectionCellTimeCalib+;
+#pragma link C++ class  AliEmcalCorrectionClusterizer+;
+#pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
+#pragma link C++ class  AliEmcalCorrectionClusterExotics+;
+#pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
+#pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
 #endif

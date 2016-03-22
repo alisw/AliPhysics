@@ -1,0 +1,72 @@
+period: "LHC11h"
+pass: ""
+sharedParameters:
+    # Need to determine what we actually want to share
+CellEnergy:
+    enabled: true
+    createHistos: true
+CellBadChannel:
+    enabled: true
+    createHistos: true
+CellTimeCalib:
+    enabled: true
+    createHistos: true
+Clusterizer:
+    enabled: true
+    createHistos: true
+    clusterBranchName: "usedefault"
+    # Temporary way to handle enums
+    clusterizer: 2 # 2 = AliEMCALRecParam::kClusterizerv2
+    cellE: 0.05
+    seedE: 0.1
+    timeMin: -1
+    timeMax: +1
+    timeCut: 1
+    w0: 4.5
+ClusterExotics:
+    enabled: true
+    createHistos: true
+    clusterBranchName: "usedefault"
+    emin: 0.0
+    pTmin: 0.0
+ClusterNonLinearity:
+    enabled: true
+    createHistos: true
+    clusterBranchName: "usedefault"
+    emin: 0.0
+    pTmin: 0.0
+    # Temporary way to handle enums
+    nonLinFunct: 5 # 13 = AliEMCALRecoUtils::kBeamTestCorrectedv3
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true
+    maxDist: 0.1
+    updateClusters: true
+    updateTracks: true
+    clusterBranchName: "usedefault"
+    clusterNonLinCorrEnergyCut: 0.15
+    clusterECut: 0.0
+    clusterPtCut: 0.0
+    trackBranchName: "usedefault"
+ClusterHadronicCorrection:
+    enabled: true
+    createHistos: true
+    phiMatch: 0.030
+    etaMatch: 0.015
+    hadCorr: 2.
+    Eexcl: 0
+    trackClus: true
+    trackBranchName: "usedefault"
+    minPt: 0.15
+    clusterBranchName: "usedefault"
+    clusterECut: 0.0
+    clusterPtCut: 0.0
+executionOrder:
+    - CellEnergy
+    - CellBadChannel
+    - CellTimeCalib
+    - Clusterizer
+    - ClusterExotics
+    - ClusterNonLinearity
+    - ClusterTrackMatcher
+    - ClusterHadronicCorrection
