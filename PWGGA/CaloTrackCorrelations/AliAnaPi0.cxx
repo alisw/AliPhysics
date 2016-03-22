@@ -1482,7 +1482,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
       nDaught   = primStack->GetNDaughters();
       iphot1    = primStack->GetDaughter(0) ;
       iphot2    = primStack->GetDaughter(1) ;
-      if(primStack->Energy() == TMath::Abs(primStack->Pz()))  continue ; //Protection against floating point exception
+
+      // Protection against floating point exception
+      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
+          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
       //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
@@ -1509,7 +1513,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
       iphot1  = primAOD->GetFirstDaughter() ;
       iphot2  = primAOD->GetLastDaughter() ;
       
-      if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
       
       //Photon kinematics
       fPi0Mom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
