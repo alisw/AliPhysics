@@ -64,6 +64,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		virtual void UserCreateOutputObjects();
 		virtual void UserExec(Option_t *);
 		virtual void Terminate(Option_t *);
+		void SetSaveMode(Bool_t isTree) {fSavemode = isTree;}//kTRUE = Save gap, kFALSE = Save 2,4-track
 
 	private:
 		enum {
@@ -170,6 +171,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		// information about the trackpair which is currently processed
 		Int_t fRun; // number of the run which is about to be processed
 		Int_t fPIDmode; // selects set of PID cuts, 0 for 3sigma standard cuts,
+		Int_t fSavemode;
 		// on central activity
 
 		// Output objects-----------------------------------------------------
