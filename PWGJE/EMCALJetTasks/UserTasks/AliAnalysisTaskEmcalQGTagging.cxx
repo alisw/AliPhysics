@@ -550,17 +550,35 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
+      if(fSelectedShapes==0){
+
       fShapesVar[7] = ptMatch;
       fShapesVar[8] = ptDMatch;
-      if(fSelectedShapes==0) fShapesVar[9] = massMatch;
-      //fShapesVar[12] = constMatch;
+      fShapesVar[9] = massMatch;
       fShapesVar[10] = angulMatch;
-      if(fSelectedShapes==0) fShapesVar[11] = circMatch;
+      fShapesVar[11] = circMatch;
       fShapesVar[12] = lesubMatch;
-      //fShapesVar[12] = sigma2Match;
       fShapesVar[13] = kWeight;
+  
+      }
+
+
+   if(fSelectedShapes==1){
+
+      fShapesVar[5] = ptMatch;
+      fShapesVar[6] = ptDMatch;
+      fShapesVar[7] = angulMatch;
+      fShapesVar[8] = lesubMatch;
+      fShapesVar[9] = kWeight;}
+
+
       fTreeObservableTagging->Fill();
       
+
+
+
+
+
     }
     
   }
