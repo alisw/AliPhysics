@@ -1,4 +1,4 @@
-AliAnalysisTaskExtractCascadePbPbRun2 *AddTaskExtractCascadePbPbRun2( const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskExtractCascadePbPbRun2 *AddTaskExtractCascadePbPbRun2( TString lExtraOptions = "", const TString lMasterJobSessionFlag = "")
 {
 // Creates, configures and attaches to the train a cascades check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -18,7 +18,7 @@ AliAnalysisTaskExtractCascadePbPbRun2 *AddTaskExtractCascadePbPbRun2( const TStr
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
    // Create and configure the task
-	 AliAnalysisTaskExtractCascadePbPbRun2 *taskextract = new AliAnalysisTaskExtractCascadePbPbRun2("taskextract");
+	 AliAnalysisTaskExtractCascadePbPbRun2 *taskextract = new AliAnalysisTaskExtractCascadePbPbRun2("taskextract", lExtraOptions.Data());
 
    mgr->AddTask(taskextract);
 

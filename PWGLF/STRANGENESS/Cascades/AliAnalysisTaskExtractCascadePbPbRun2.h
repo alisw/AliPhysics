@@ -113,6 +113,7 @@ private:
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
     
+    Bool_t fkSaveTree; // if true, saves TTree object
     Bool_t fkSaveRawdEdxSignals; // if true, will save raw dEdx signals for later use
     
     Bool_t fkSelectCentrality; // if true, perform cut on centrality 
@@ -183,6 +184,13 @@ private:
     TH1F      *fHistEventCounter; //! Histogram with basic event counting 
     TH1F      *fHistCentrality;   //! Histogram with Centrality Distribution 
     
+    //For TPC dEdx reparametrization, if desired 
+    TH2F *fHistdEdx;                   //! inclusive dEdx plot (all tracks passing some set of standard selections) 
+    TH2F *fHistdEdxPionsFromLambda;    //! Histogram filled only with what looks like pions from Lambda decays
+    TH2F *fHistdEdxProtonsFromLambda;  //! Histogram filled only with what looks like protons from Lambda decays
+    TH2F *fHistdEdxPionsFromK0s;       //! Histogram filled only with what looks like pions from K0s decays
+    
+        
     //=======================================================
     //     --- Superlight Output Mode - Experimental ---
     //=======================================================
