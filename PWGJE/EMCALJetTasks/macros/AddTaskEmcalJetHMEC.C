@@ -25,7 +25,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *branch         = "biased",
    const char *CentEst         = "V0M",
    const Short_t runtype       = 2, //0 - pp, 1 - pA, 2 - AA
-   Bool_t embeddingCorrection = kTRUE,
+   Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection"
 )
@@ -50,12 +50,41 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
+  
+  // Determine cluster and track names
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
 
   TString name(Form("Correlations_%s_%s", nJets, branch));
+  Double_t jetRadius = 0.2;
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
-  correlationtask->SetJetsName(nJets);
-  correlationtask->SetTracksName(nTracks);
-  correlationtask->SetCaloClustersName(nCaloClusters);
+  //correlationtask->SetJetsName(nJets);
+  //correlationtask->SetTracksName(nTracks);
+  //correlationtask->SetCaloClustersName(nCaloClusters);
   correlationtask->SetJetPhi(minPhi,maxPhi);
   correlationtask->SetJetEta(minEta,maxEta);
   correlationtask->SetAreaCut(minArea);
@@ -78,6 +107,25 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetDoEffCorr(doEffcorrSW);
   correlationtask->SetCentralityEstimator(CentEst);
   correlationtask->SetRunType(runtype);
+
+  // Add Containers
+  // Clusters
+  AliClusterContainer * clusterContainer = correlationtask->AddClusterContainer(nCaloClusters);
+  clusterContainer->SetMinE(3);
+  // Tracks
+  AliTrackContainer * trackContainer = correlationtask->AddTrackContainer(nTracks);
+  trackContainer->SetMinPt(3);
+  trackContainer->SetEtaLimits(-1.0*TrkEta, TrkEta)
+  // Jets
+  cout <<"Jet name: " << nJets;
+  AliJetContainer * jetContainer = correlationtask->AddJetContainer(AliJetContainer::kFullJet,
+                                                                    AliJetContainer::antikt_algorithm,
+                                                                    AliJetContainer::pt_scheme,
+                                                                    jetRadius,
+                                                                    AliJetContainer::kEMCALfid,
+                                                                    trackContainer,
+                                                                    clusterContainer);
+
   if (embeddingCorrection == kTRUE)
   {
     // Open file containing the correction
