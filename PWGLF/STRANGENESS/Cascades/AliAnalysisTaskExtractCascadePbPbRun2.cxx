@@ -1062,7 +1062,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
                     lSaveThisCascade = kTRUE;
                 }
             }
-            if (lSaveThisCascade) fTreeCascade -> Fill() ;
+            if (lSaveThisCascade && fkSaveTree ) fTreeCascade -> Fill() ;
         }
 
         //------------------------------------------------
