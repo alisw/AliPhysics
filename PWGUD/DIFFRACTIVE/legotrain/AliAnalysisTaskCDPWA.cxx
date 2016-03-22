@@ -74,6 +74,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMCprocess(-1)
 	, fRun(-999)
 	, fPIDmode(0)
+	, fSavemode(0)
 	, fTree(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
@@ -244,6 +245,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMCprocess(-1)
 	, fRun(-999)
 	, fPIDmode(0)
+	, fSavemode(0)
 	, fTree(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
@@ -1603,7 +1605,10 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	indices_ITSSA = 0x0;
 
 	if(!fIsMC) {//Reduce size of output file (only for 2, 4tracks)
-		if (fCheck2tracks || fCheck4tracks || fCheck2tracks_ITSSA || fCheck4tracks_ITSSA) fTree->Fill();
+		if (fSavemode) fTree->Fill();
+		else {
+			if (fCheck2tracks || fCheck4tracks || fCheck2tracks_ITSSA || fCheck4tracks_ITSSA) fTree->Fill();
+		}
 	}
 
 	PostOutputs();
