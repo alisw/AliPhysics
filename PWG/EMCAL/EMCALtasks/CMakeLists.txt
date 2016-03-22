@@ -61,6 +61,16 @@ set(SRCS
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
   AliAnalysisTaskEmcalIteratorTest.cxx
+  AliEmcalCorrectionTask.cxx
+  AliEmcalCorrectionComponent.cxx
+  AliEmcalCorrectionCellBadChannel.cxx
+  AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellTimeCalib.cxx
+  AliEmcalCorrectionClusterizer.cxx
+  AliEmcalCorrectionClusterNonLinearity.cxx
+  AliEmcalCorrectionClusterExotics.cxx
+  AliEmcalCorrectionClusterTrackMatcher.cxx
+  AliEmcalCorrectionClusterHadronicCorrection.cxx
   )
 
 # Headers from sources
