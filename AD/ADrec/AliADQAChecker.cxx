@@ -1206,6 +1206,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
 	histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.2*TMath::MaxElement(2,max));
 	histoBlue->GetYaxis()->SetTitle("Quantile 0.9");
+	histoBlue->GetXaxis()->SetRange(1,histoBlue->GetNbinsX()-1);
 	histoBlue->DrawCopy();
 	histoRed->DrawCopy("same");
 	myLegend1->Draw();
