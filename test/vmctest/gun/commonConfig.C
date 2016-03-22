@@ -237,7 +237,7 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   if (iPHOS)
   {
      if ( configVersion == kConfigV0 ) 
-       AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+       AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
      else if ( configVersion == kConfigV1 )  
        AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123"); 
   }
