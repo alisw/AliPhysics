@@ -107,7 +107,7 @@ void EvtMelikhovFF::getvectorff(EvtId parent,EvtId,
 void EvtMelikhovFF::getscalarff(EvtId, EvtId, double, double, double*, 
 			       double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getvectorff in EvtMelikhovFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getvectorff in EvtMelikhovFF.\n";  
   ::abort();
 
 }
@@ -117,7 +117,7 @@ void EvtMelikhovFF::getscalarff(EvtId, EvtId, double, double, double*,
 void EvtMelikhovFF::gettensorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :gettensorff in EvtMelikhovFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :gettensorff in EvtMelikhovFF.\n";  
   ::abort();
 
 }
@@ -127,7 +127,7 @@ void EvtMelikhovFF::gettensorff(EvtId, EvtId, double, double, double*,
 void EvtMelikhovFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtMelikhovFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtMelikhovFF.\n";  
   ::abort();
 
 }
@@ -135,7 +135,7 @@ void EvtMelikhovFF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtMelikhovFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 			       double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtMelikhovFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtMelikhovFF.\n";
   ::abort();
 
 }
@@ -143,7 +143,7 @@ void EvtMelikhovFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtMelikhovFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 				double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtMelikhovFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtMelikhovFF.\n";
   ::abort();
 
 }

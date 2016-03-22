@@ -397,7 +397,7 @@ const EvtGammaMatrix& EvtGammaMatrix::g(int index) {
   case 5:
     return g5();
   default:
-    report(ERROR, "EvtGen") << "Invalid index for four vector: " << index << endl;
+    report(Severity::Error, "EvtGen") << "Invalid index for four vector: " << index << endl;
     exit(-2);
   }
 }
@@ -651,7 +651,7 @@ const EvtGammaMatrix& EvtGammaMatrix::sigmaUpper(unsigned int mu, unsigned int n
         
     if (mu > 3 || nu > 3)
     {
-        report(ERROR, "EvtSigmaTensor") << "Expected index between 0 and 3, but found " << nu << "!" << endl;
+        report(Severity::Error, "EvtSigmaTensor") << "Expected index between 0 and 3, but found " << nu << "!" << endl;
         assert(0);
     }
     return sigma[mu][nu];

@@ -41,13 +41,13 @@ EvtMHelAmp::EvtMHelAmp( const EvtId& id, EvtMLineShape * lineshape,
         }
     } while( _amp.iterate( index ) );
     if(elem.size() != i) {
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
             <<"Wrong number of elements input in helicity amplitude."<<endl;
         ::abort();
     }
 
     if( children.size() > 2 ) {
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
             <<"Helicity amplitude formalism can only handle two body resonances"
             <<endl;
         ::abort();

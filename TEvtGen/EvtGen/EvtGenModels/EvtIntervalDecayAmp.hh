@@ -70,7 +70,7 @@ public:
     
     // Create factory and interval
     
-    if(VERBOSE) report(INFO,"EvtGen") << "Create factory and interval" << std::endl;
+    if(VERBOSE) report(Severity::Info,"EvtGen") << "Create factory and interval" << std::endl;
     _fact = createFactory(parser);
     
     // Maximum PDF value over the Dalitz plot can be specified, or a scan 
@@ -78,8 +78,8 @@ public:
     
     _probMax = parser.pdfMax();
     _nScan = parser.nScan();
-    if(VERBOSE) report(INFO,"EvtGen") << "Pdf maximum " << _probMax << std::endl;
-    if(VERBOSE) report(INFO,"EvtGen") << "Scan number " << _nScan << std::endl;    
+    if(VERBOSE) report(Severity::Info,"EvtGen") << "Pdf maximum " << _probMax << std::endl;
+    if(VERBOSE) report(Severity::Info,"EvtGen") << "Scan number " << _nScan << std::endl;    
   }
   
     
@@ -163,8 +163,8 @@ public:
     size_t N = p->getNDaug();  
     if(v.size() != N) {
       
-      report(INFO,"EvtGen") << "Number of daughters " << N << std::endl;
-      report(INFO,"EvtGen") << "Momentum vector size " << v.size() << std::endl;
+      report(Severity::Info,"EvtGen") << "Number of daughters " << N << std::endl;
+      report(Severity::Info,"EvtGen") << "Momentum vector size " << v.size() << std::endl;
       assert(0);
     }
     

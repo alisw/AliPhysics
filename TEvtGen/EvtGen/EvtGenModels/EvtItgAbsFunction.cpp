@@ -44,7 +44,7 @@ EvtItgAbsFunction::~EvtItgAbsFunction( )
 double
 EvtItgAbsFunction::value( double x) const{
   if (x >= _lowerRange && x <= _upperRange) return myFunction(x);
-   report(ERROR,"EvtGen") << "Error in EvtItgAbsFunction::value.  Given co-ordinate " << x
+   report(Severity::Error,"EvtGen") << "Error in EvtItgAbsFunction::value.  Given co-ordinate " << x
                 << " is outside of allowed range [" << _lowerRange << ", "
                 << _upperRange << "].  Returning 0.0" << endl;
   return 0.0;  // Never get here

@@ -96,7 +96,7 @@ void EvtSemiLeptonicScalarAmp::CalcAmp( EvtParticle *parent,
 			    parent->getDaug(1)->spParent(1));
     }
     else{
-      report(ERROR,"EvtGen") << "dfnb89agngri wrong lepton number\n";
+      report(Severity::Error,"EvtGen") << "dfnb89agngri wrong lepton number\n";
     }
   }
 

@@ -74,18 +74,18 @@ void EvtVubHybrid::init(){
 
   // check that there are at least 3 arguments
   if (getNArg() < EvtVubHybrid::nParameters) {
-    report(ERROR,"EvtVubHybrid") << "EvtVub generator expected "
+    report(Severity::Error,"EvtVubHybrid") << "EvtVub generator expected "
 				 << "at least " << EvtVubHybrid::nParameters
 				 << " arguments but found: " << getNArg()
 				 << "\nWill terminate execution!"<<endl;
     ::abort(); 
   } else if (getNArg() == EvtVubHybrid::nParameters) {
-    report(WARNING,"EvtVubHybrid") << "EvtVub: generate B -> Xu l nu events " 
+    report(Severity::Warning,"EvtVubHybrid") << "EvtVub: generate B -> Xu l nu events " 
 				   << "without using the hybrid reweighting." 
 				   << endl;
     _noHybrid = true;
   } else if (getNArg() < EvtVubHybrid::nParameters+EvtVubHybrid::nVariables) {
-     report(ERROR,"EvtVubHybrid") << "EvtVub could not read number of bins for "
+     report(Severity::Error,"EvtVubHybrid") << "EvtVub could not read number of bins for "
 				  << "all variables used in the reweighting\n"
 				  << "Will terminate execution!" << endl;
      ::abort();    
@@ -145,7 +145,7 @@ void EvtVubHybrid::init(){
   int expectArgs = nextArg + _nbins_mX +_nbins_q2 + _nbins_El + _nbins;
 
   if (getNArg() < expectArgs) {
-    report(ERROR,"EvtVubHybrid")
+    report(Severity::Error,"EvtVubHybrid")
       << " finds " << getNArg() << " arguments, expected " << expectArgs
       << ".  Something is wrong with the tables of weights or thresholds."
       << "\nWill terminate execution!" << endl;
@@ -252,7 +252,7 @@ void EvtVubHybrid::decay( EvtParticle *p ){
 	    
 	    double y = _dGamma->getdGdxdzdp(x,z,p2)/_dGMax*p2;
 	    
-	    if ( y > 1 ) report(WARNING,"EvtVubHybrid") <<"EvtVubHybrid decay probability > 1 found: " << y << endl;
+	    if ( y > 1 ) report(Severity::Warning,"EvtVubHybrid") <<"EvtVubHybrid decay probability > 1 found: " << y << endl;
  	    if ( y >= xran ) tryit = 0;
 	  }
 	}
@@ -444,7 +444,7 @@ double EvtVubHybrid::getWeight(double mX, double q2, double El) {
   int ibin = ibin_mX + ibin_q2*_nbins_mX + ibin_El*_nbins_mX*_nbins_q2;
 
   if ( (ibin_mX < 0) || (ibin_q2 < 0) || (ibin_El < 0) ) {
-    report(ERROR,"EvtVubHybrid") << "Cannot determine hybrid weight "
+    report(Severity::Error,"EvtVubHybrid") << "Cannot determine hybrid weight "
                                  << "for this event " 
 				 << "-> assign weight = 0" << endl;
     return 0.0;
@@ -464,7 +464,7 @@ void EvtVubHybrid::readWeights(int startArg) {
   }
 
   if (maxw == 0) {
-    report(ERROR,"EvtVubHybrid") << "EvtVub generator expected at least one " 
+    report(Severity::Error,"EvtVubHybrid") << "EvtVub generator expected at least one " 
 				 << " weight > 0, but found none! " 
 				 << "Will terminate execution!"<<endl;
     ::abort();

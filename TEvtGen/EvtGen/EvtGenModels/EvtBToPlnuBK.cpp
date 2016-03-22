@@ -94,7 +94,7 @@ void EvtBToPlnuBK::init(){
     calcamp = new EvtSemiLeptonicScalarAmp; 
   }
   else{
-    report(ERROR,"EvtGen") << "BK model handles only scalar meson daughters. Sorry."<<endl;
+    report(Severity::Error,"EvtGen") << "BK model handles only scalar meson daughters. Sorry."<<endl;
     ::abort();
   }
 

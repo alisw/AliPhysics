@@ -127,7 +127,7 @@ double EvtSpinDensity::normalizedProb(const EvtSpinDensity& d){
   double norm=0.0;
 
   if (dim!=d.dim) {
-    report(ERROR,"EvtGen")<<"Not matching dimensions in NormalizedProb"<<endl;
+    report(Severity::Error,"EvtGen")<<"Not matching dimensions in NormalizedProb"<<endl;
     ::abort();
   }
 
@@ -139,10 +139,10 @@ double EvtSpinDensity::normalizedProb(const EvtSpinDensity& d){
   }
 
   if (imag(prob)>0.00000001*real(prob)) {
-    report(ERROR,"EvtGen")<<"Imaginary probability:"<<prob<<" "<<norm<<endl;
+    report(Severity::Error,"EvtGen")<<"Imaginary probability:"<<prob<<" "<<norm<<endl;
   }
   if (real(prob)<0.0) {
-    report(ERROR,"EvtGen")<<"Negative probability:"<<prob<<" "<<norm<<endl;
+    report(Severity::Error,"EvtGen")<<"Negative probability:"<<prob<<" "<<norm<<endl;
   }
 
   return real(prob)/norm;
@@ -152,7 +152,7 @@ double EvtSpinDensity::normalizedProb(const EvtSpinDensity& d){
 int EvtSpinDensity::check(){
 
   if (dim<1) {
-    report(ERROR,"EvtGen")<<"dim="<<dim<<"in SpinDensity::Check"<<endl;
+    report(Severity::Error,"EvtGen")<<"dim="<<dim<<"in SpinDensity::Check"<<endl;
   }
 
   int i,j;
@@ -167,9 +167,9 @@ int EvtSpinDensity::check(){
 
     if (real(rho[i][i])<0.0) return 0;
     if (imag(rho[i][i])*1000000.0>trace) {
-      report(INFO,"EvtGen") << *this << endl;
-      report(INFO,"EvtGen") << trace << endl;
-      report(INFO,"EvtGen") << "Failing 1"<<endl;
+      report(Severity::Info,"EvtGen") << *this << endl;
+      report(Severity::Info,"EvtGen") << trace << endl;
+      report(Severity::Info,"EvtGen") << "Failing 1"<<endl;
       return 0;
     }
   }
@@ -178,12 +178,12 @@ int EvtSpinDensity::check(){
     for(j=i+1;j<dim;j++){
       if (fabs(real(rho[i][j]-rho[j][i]))>
 	  0.00000001*(abs(rho[i][i])+abs(rho[j][j]))) {
-	report(INFO,"EvtGen") << "Failing 2"<<endl;
+	report(Severity::Info,"EvtGen") << "Failing 2"<<endl;
 	return 0;
       }
       if (fabs(imag(rho[i][j]+rho[j][i]))>
 	  0.00000001*(abs(rho[i][i])+abs(rho[j][j]))) {
-	report(INFO,"EvtGen") << "Failing 3"<<endl;
+	report(Severity::Info,"EvtGen") << "Failing 3"<<endl;
 	return 0;
       }
     }

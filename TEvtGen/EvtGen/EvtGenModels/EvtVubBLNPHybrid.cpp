@@ -62,18 +62,18 @@ void EvtVubBLNPHybrid::init() {
   
   // check that there are at least 3 arguments
   if (getNArg() < EvtVubBLNPHybrid::nParameters) {
-    report(ERROR,"EvtVubBLNPHybrid") << "EvtVubBLNPHybrid generator expected "
+    report(Severity::Error,"EvtVubBLNPHybrid") << "EvtVubBLNPHybrid generator expected "
 				     << "at least " << EvtVubBLNPHybrid::nParameters
 				     << " arguments but found: " << getNArg()
 				     << "\nWill terminate execution!"<<endl;
     ::abort(); 
   } else if (getNArg() == EvtVubBLNPHybrid::nParameters) {
-    report(WARNING,"EvtVubBLNPHybrid") << "EvtVubBLNPHybrid: generate B -> Xu l nu events " 
+    report(Severity::Warning,"EvtVubBLNPHybrid") << "EvtVubBLNPHybrid: generate B -> Xu l nu events " 
 				   << "without using the hybrid reweighting." 
 				   << endl;
     _noHybrid = true;
   } else if (getNArg() < EvtVubBLNPHybrid::nParameters+EvtVubBLNPHybrid::nVariables) {
-    report(ERROR,"EvtVubBLNPHybrid") << "EvtVubBLNPHybrid could not read number of bins for "
+    report(Severity::Error,"EvtVubBLNPHybrid") << "EvtVubBLNPHybrid could not read number of bins for "
 				     << "all variables used in the reweighting\n"
 				     << "Will terminate execution!" << endl;
     ::abort();    
@@ -201,7 +201,7 @@ void EvtVubBLNPHybrid::init() {
   int expectArgs = nextArg + _nbins_mX +_nbins_q2 + _nbins_El + _nbins;
   
   if (getNArg() < expectArgs) {
-    report(ERROR,"EvtVubBLNPHybrid")
+    report(Severity::Error,"EvtVubBLNPHybrid")
       << " finds " << getNArg() << " arguments, expected " << expectArgs
       << ".  Something is wrong with the tables of weights or thresholds."
       << "\nWill terminate execution!" << endl;
@@ -1035,7 +1035,7 @@ double EvtVubBLNPHybrid::getWeight(double mX, double q2, double El) {
   int ibin = ibin_mX + ibin_q2*_nbins_mX + ibin_El*_nbins_mX*_nbins_q2;
 
   if ( (ibin_mX < 0) || (ibin_q2 < 0) || (ibin_El < 0) ) {
-    report(ERROR,"EvtVubHybrid") << "Cannot determine hybrid weight "
+    report(Severity::Error,"EvtVubHybrid") << "Cannot determine hybrid weight "
                                  << "for this event " 
 				 << "-> assign weight = 0" << endl;
     return 0.0;
@@ -1055,7 +1055,7 @@ void EvtVubBLNPHybrid::readWeights(int startArg) {
   }
 
   if (maxw == 0) {
-    report(ERROR,"EvtVubBLNPHybrid") << "EvtVub generator expected at least one " 
+    report(Severity::Error,"EvtVubBLNPHybrid") << "EvtVub generator expected at least one " 
 				     << " weight > 0, but found none! " 
 				     << "Will terminate execution!"<<endl;
     ::abort();

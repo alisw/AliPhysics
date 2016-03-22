@@ -145,7 +145,7 @@ void EvtVectorIsr::decay( EvtParticle *p ){
 	n++;
 	ckhrad(eb,q2m,e01,e02,f_col);
 	if (n > 10000){
-	  report(INFO,"EvtGen") << "EvtVectorIsr is having problems. Called ckhrad 10000 times.\n";
+	  report(Severity::Info,"EvtGen") << "EvtVectorIsr is having problems. Called ckhrad 10000 times.\n";
 	  assert(0);
 	}
       }
@@ -157,7 +157,7 @@ void EvtVectorIsr::decay( EvtParticle *p ){
     
       //The Vector mass should never be greater than wcm_new
       if (phi->mass() > wcm_new){
-	report(INFO,"EvtGen") << "EvtVectorIsr finds Vector mass="<<phi->mass()<<" > Weff=" << wcm_new<<".  Should not happen\n";
+	report(Severity::Info,"EvtGen") << "EvtVectorIsr finds Vector mass="<<phi->mass()<<" > Weff=" << wcm_new<<".  Should not happen\n";
 	assert(0);
       }
  
@@ -182,7 +182,7 @@ void EvtVectorIsr::decay( EvtParticle *p ){
 
       //if fmax was set properly, f should NEVER be larger than fmax
       if (f > fmax && fmax > 0.){
-	  report(INFO,"EvtGen") << "EvtVectorIsr finds a problem with fmax, the maximum weight setting\n"
+	  report(Severity::Info,"EvtGen") << "EvtVectorIsr finds a problem with fmax, the maximum weight setting\n"
 	     << "fmax is the third decay argument in the .dec file. VectorIsr attempts to set it reasonably if it wasn't provided\n"
 	     << "To determine a more appropriate value, build GeneratorQAApp, and set the third argument for this decay <0.\n"
 	     << "If you haven't been providing the first 2 arguments, set them to be 1. 1.). The program will report\n"
@@ -203,14 +203,14 @@ void EvtVectorIsr::decay( EvtParticle *p ){
 	//determine max weight for this vector particle mass
 	if (f>largest_f) {
 	  largest_f = f;
-	  report(INFO,"EvtGen")  << m << " " <<  EvtPDL::name(phi->getId()) << " "
+	  report(Severity::Info,"EvtGen")  << m << " " <<  EvtPDL::name(phi->getId()) << " "
 	       << "vector_mass " 
 	       << " " << EvtPDL::getMeanMass(phi->getId()) << "  fmax should be at least " << largest_f 
 	       << ".        f_col cs_B = " << f_col << " " << cs_Born 
 	       << std::endl;
 	}
 	if (m%10000 == 0) {  
-	  report(INFO,"EvtGen") << m << " " <<  EvtPDL::name(phi->getId()) << " "
+	  report(Severity::Info,"EvtGen") << m << " " <<  EvtPDL::name(phi->getId()) << " "
 	       << "vector_mass " 
 	       << " " << EvtPDL::getMeanMass(phi->getId()) << "  fmax should be at least " << largest_f 
 	       << ".        f_col cs_B = " << f_col << " " << cs_Born 
@@ -224,7 +224,7 @@ void EvtVectorIsr::decay( EvtParticle *p ){
     
       if (m > 100000){
       
-	if (fmax > 0.) report(INFO,"EvtGen") << "EvtVectorIsr is having problems. Check the fmax value - the 3rd argument in the .dec file\n"
+	if (fmax > 0.) report(Severity::Info,"EvtGen") << "EvtVectorIsr is having problems. Check the fmax value - the 3rd argument in the .dec file\n"
 					     << "Recommended values for various vector particles: "
 					     << "phi->1.15   J/psi-psi(4415)->0.105   "
 					     << "Upsilon(1S,2S,3S)->0.14\n";

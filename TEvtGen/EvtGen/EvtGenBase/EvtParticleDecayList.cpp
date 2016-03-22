@@ -146,7 +146,7 @@ EvtDecayBase* EvtParticleDecayList::getDecayModel(EvtParticle *p){
   }
   
   if (p->getChannel() >(-1)) {
-    report(ERROR,"EvtGen") << "Internal error!!!"<<endl;
+    report(Severity::Error,"EvtGen") << "Internal error!!!"<<endl;
     ::abort();
   }
 
@@ -190,9 +190,9 @@ EvtDecayBase* EvtParticleDecayList::getDecayModel(EvtParticle *p){
   //kinematically allowed! Now we give up and search all channels!
   //if that fails, the particle will not be decayed!
   
-  report(ERROR,"EvtGen") << "Tried 10000000 times to generate decay of "
+  report(Severity::Error,"EvtGen") << "Tried 10000000 times to generate decay of "
                          << EvtPDL::name(p->getId())<< " with mass="<<p->mass()<<endl;
-  report(ERROR,"EvtGen") << "Will take first kinematically allowed decay in the decay table" 
+  report(Severity::Error,"EvtGen") << "Will take first kinematically allowed decay in the decay table" 
 			 <<endl;
 
   int i;
@@ -209,7 +209,7 @@ EvtDecayBase* EvtParticleDecayList::getDecayModel(EvtParticle *p){
       previousBrSum=getDecay(i).getBrfrSum();
   }
 
-  report(ERROR,"EvtGen") << "Could not decay:"
+  report(Severity::Error,"EvtGen") << "Could not decay:"
 			 <<EvtPDL::name(p->getId()).c_str()
 			 <<" with mass:"<<p->mass()
 			 <<" will throw event away! "<<endl;
@@ -225,7 +225,7 @@ void EvtParticleDecayList::setNMode(int nmode){
   EvtParticleDecayPtr* _decaylist_new= new EvtParticleDecayPtr[nmode];
 
   if (_nmode!=0){
-    report(ERROR,"EvtGen") << "Error _nmode not equal to zero!!!"<<endl;
+    report(Severity::Error,"EvtGen") << "Error _nmode not equal to zero!!!"<<endl;
     ::abort();
   }
   if (_decaylist!=0) {
@@ -239,7 +239,7 @@ void EvtParticleDecayList::setNMode(int nmode){
 
 EvtParticleDecay& EvtParticleDecayList::getDecay(int nchannel) const {
   if (nchannel>=_nmode) {
-    report(ERROR,"EvtGen") <<"Error getting channel:"
+    report(Severity::Error,"EvtGen") <<"Error getting channel:"
 			   <<nchannel<<" with only "<<_nmode
 			   <<" stored!"<<endl;
     ::abort();
@@ -290,11 +290,11 @@ void EvtParticleDecayList::addMode(EvtDecayBase* decay, double brfrsum,
       if ( newDec->getModelName() == "PYGAGA"  ) continue;
       if ( newDec->getModelName() == "LUNDAREALAW" ) continue;
       if ( newDec->getModelName() == "TAUOLA") continue;
-      report(ERROR,"EvtGen") << "Two matching decays with same parent in decay table\n";
-      report(ERROR,"EvtGen") << "Please fix that\n";
-      report(ERROR,"EvtGen") << "Parent " << EvtPDL::name(newDec->getParentId()).c_str() << endl;
+      report(Severity::Error,"EvtGen") << "Two matching decays with same parent in decay table\n";
+      report(Severity::Error,"EvtGen") << "Please fix that\n";
+      report(Severity::Error,"EvtGen") << "Parent " << EvtPDL::name(newDec->getParentId()).c_str() << endl;
       for (int j=0; j<newDec->getNDaug(); j++)
-	report(ERROR,"EvtGen") << "Daughter " << EvtPDL::name(newDec->getDaug(j)).c_str() << endl;
+	report(Severity::Error,"EvtGen") << "Daughter " << EvtPDL::name(newDec->getDaug(j)).c_str() << endl;
       assert(0);
     }
   }
@@ -316,15 +316,15 @@ void EvtParticleDecayList::finalize(){
 
   if (_nmode>0) {
     if ( _rawbrfrsum< 0.000001 ) {
-      report(ERROR,"EvtGen") << "Please give me a "
+      report(Severity::Error,"EvtGen") << "Please give me a "
 			     <<    "branching fraction sum greater than 0\n";
       assert(0);
     }
     if (fabs(_rawbrfrsum-1.0)>0.0001) {
-      report(INFO,"EvtGen") <<"Warning, sum of branching fractions for "
+      report(Severity::Info,"EvtGen") <<"Warning, sum of branching fractions for "
       			    <<EvtPDL::name(_decaylist[0]->getDecayModel()->getParentId()).c_str()
       			    <<" is "<<_rawbrfrsum<<endl;
-      report(INFO,"EvtGen") << "rescaled to one! "<<endl;
+      report(Severity::Info,"EvtGen") << "rescaled to one! "<<endl;
       
     }
 
@@ -401,12 +401,12 @@ void EvtParticleDecayList::removeMode(EvtDecayBase* decay) {
    }
 
    if (match < 0) {
-      report(ERROR,"EvtGen") << " Attempt to remove undefined mode for" << endl
+      report(Severity::Error,"EvtGen") << " Attempt to remove undefined mode for" << endl
                            << "Parent " << EvtPDL::name(decay->getParentId()).c_str() << endl
                            << "Daughters: ";
       for (int j=0; j<decay->getNDaug(); j++)
-      report(ERROR,"") << EvtPDL::name(decay->getDaug(j)).c_str() << " ";
-      report(ERROR,"") << endl;
+      report(Severity::Error,"") << EvtPDL::name(decay->getDaug(j)).c_str() << " ";
+      report(Severity::Error,"") << endl;
       ::abort();
    }
 
@@ -419,7 +419,7 @@ void EvtParticleDecayList::removeMode(EvtDecayBase* decay) {
 
    double divisor = 1-match_bf;
    if (divisor < 0.000001 && _nmode > 1) {
-      report(ERROR,"EvtGen") << "Removing requested mode leaves "
+      report(Severity::Error,"EvtGen") << "Removing requested mode leaves "
                            <<  EvtPDL::name(decay->getParentId()).c_str()
                            << " with zero sum branching fraction," << endl
                            << "but more than one decay mode remains. Aborting."

@@ -97,8 +97,8 @@ EvtVector4R EvtStringParticle::getP4Parton(int i){
   
 EvtSpinDensity EvtStringParticle::rotateToHelicityBasis() const{
 
-  report(ERROR,"EvtGen") << "rotateToHelicityBasis not implemented for strin particle."; 
-  report(ERROR,"EvtGen") << "Will terminate execution."; 
+  report(Severity::Error,"EvtGen") << "rotateToHelicityBasis not implemented for strin particle."; 
+  report(Severity::Error,"EvtGen") << "Will terminate execution."; 
 
   ::abort();
 
@@ -111,8 +111,8 @@ EvtSpinDensity EvtStringParticle::rotateToHelicityBasis(double,
 							double,
 							double) const{
 
-  report(ERROR,"EvtGen") << "rotateToHelicityBasis(alpha,beta,gamma) not implemented for string particle."; 
-  report(ERROR,"EvtGen") << "Will terminate execution."; 
+  report(Severity::Error,"EvtGen") << "rotateToHelicityBasis(alpha,beta,gamma) not implemented for string particle."; 
+  report(Severity::Error,"EvtGen") << "Will terminate execution."; 
 
   ::abort();
 

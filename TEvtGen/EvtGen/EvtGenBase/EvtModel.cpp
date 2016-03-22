@@ -50,7 +50,7 @@ EvtDecayBase* EvtModel::getFcn(std::string model_name){
   }
 
   if (model==0){
-    report(ERROR,"EvtGen") << "Did not find the right model:"
+    report(Severity::Error,"EvtGen") << "Did not find the right model:"
 			   <<model_name.c_str()<<"\n";
     return 0;
   }

@@ -257,7 +257,7 @@ void EvtVPHOtoVISRHi::decay( EvtParticle *p){
   }
 
   if (! sigmacomputed) {
-    report(ERROR,"EvtGen") << "VPHOTOVISRHI: This model requires daughters to be listed in a particular order." << endl
+    report(Severity::Error,"EvtGen") << "VPHOTOVISRHI: This model requires daughters to be listed in a particular order." << endl
                            << "The following are acceptable:" << endl
                            << "D0 anti-D0" << endl
                            << "D+ D-" << endl

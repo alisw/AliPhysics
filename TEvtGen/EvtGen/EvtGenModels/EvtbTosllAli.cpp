@@ -90,10 +90,10 @@ void EvtbTosllAli::init(){
 
   if ( !(mesontype == EvtSpinType::VECTOR||
 	mesontype == EvtSpinType::SCALAR)) {
-    report(ERROR,"EvtGen") << "EvtbTosllAli generator expected "
+    report(Severity::Error,"EvtGen") << "EvtbTosllAli generator expected "
                            << " a SCALAR or VECTOR 1st daughter, found:"<<
                            EvtPDL::name(getDaug(0)).c_str()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
 

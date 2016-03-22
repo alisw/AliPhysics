@@ -133,19 +133,19 @@ void EvtBaryonPCR::init(){
   //if (getNArg()!=0) {
   if (getNArg()!=4) {
 
-    report(ERROR,"EvtGen") << "EvtBaryonPCR generator expected "
+    report(Severity::Error,"EvtGen") << "EvtBaryonPCR generator expected "
 			   << " 4 arguments but found:"<<getNArg()<<endl;
       //<< " 0 arguments but found:"<<getNArg()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
 
   }
 
   if ( getNDaug()!=3 ) {
-     report(ERROR,"EvtGen") 
+     report(Severity::Error,"EvtGen") 
        << "Wrong number of daughters in EvtBaryonPCR.cc " 
        << " 3 daughters expected but found: "<<getNDaug()<<endl;
-     report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+     report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
      ::abort();
   }
 
@@ -159,24 +159,24 @@ void EvtBaryonPCR::init(){
   EvtSpinType::spintype neutrinotype=EvtPDL::getSpinType(getDaug(2));
 
   if ( parenttype != EvtSpinType::DIRAC ) {
-    report(ERROR,"EvtGen") << "EvtBaryonPCR generator expected "
+    report(Severity::Error,"EvtGen") << "EvtBaryonPCR generator expected "
                            << " a DIRAC parent, found:"<<
                            EvtPDL::name(getParentId())<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   if ( leptontype != EvtSpinType::DIRAC ) {
-    report(ERROR,"EvtGen") << "EvtBaryonPCR generator expected "
+    report(Severity::Error,"EvtGen") << "EvtBaryonPCR generator expected "
                            << " a DIRAC 2nd daughter, found:"<<
                            EvtPDL::name(getDaug(1))<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   if ( neutrinotype != EvtSpinType::NEUTRINO ) {
-    report(ERROR,"EvtGen") << "EvtBaryonPCR generator expected "
+    report(Severity::Error,"EvtGen") << "EvtBaryonPCR generator expected "
                            << " a NEUTRINO 3rd daughter, found:"<<
                            EvtPDL::name(getDaug(2))<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
 
@@ -187,11 +187,11 @@ void EvtBaryonPCR::init(){
     calcamp = new EvtSemiLeptonicBaryonAmp; 
   }
   else {
-    report(ERROR,"EvtGen") 
+    report(Severity::Error,"EvtGen") 
       << "Wrong baryon spin type in EvtBaryonPCR.cc " 
       << "Expected spin type " << EvtSpinType::DIRAC 
       << ", found spin type " << baryontype <<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!" <<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!" <<endl;
      ::abort();
   }
   

@@ -41,29 +41,29 @@ std::string EvtHypNonLepton::getName(){
 void EvtHypNonLepton::init(){
 
   if(getNArg()<2 || getNArg()>3){ // alpha phi gamma delta
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton generator expected 2 or 3 arguments but found: " << getNArg() << std::endl;
-    report(INFO ,"EvtGen") << "  1. Decay asymmetry parameter - alpha" << std::endl;
-    report(INFO ,"EvtGen") << "  2. Parameter phi - in degrees (not radians)" << std::endl;
-    report(INFO ,"EvtGen") << "  3. Note on every x-th decay" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton generator expected 2 or 3 arguments but found: " << getNArg() << std::endl;
+    report(Severity::Info ,"EvtGen") << "  1. Decay asymmetry parameter - alpha" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  2. Parameter phi - in degrees (not radians)" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  3. Note on every x-th decay" << std::endl;
     ::abort();
   }
 
   if(getNDaug()!=2){ // Check that there are 2 daughters only
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton generator expected 2 daughters but found: " << getNDaug() << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton generator expected 2 daughters but found: " << getNDaug() << std::endl;
     ::abort();
   }
 
   // Check particles spins
   if(EvtSpinType::getSpin2(EvtPDL::getSpinType(getParentId()))!=1){
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton generator expected dirac parent particle, but found " << EvtSpinType::getSpin2(EvtPDL::getSpinType(getParentId())) << " spin degrees of freedom" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton generator expected dirac parent particle, but found " << EvtSpinType::getSpin2(EvtPDL::getSpinType(getParentId())) << " spin degrees of freedom" << std::endl;
     ::abort();
   }
   if(EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(0)))!=1){
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton generator expected the first child to be dirac particle, but found " << EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(0))) << " spin degrees of freedom" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton generator expected the first child to be dirac particle, but found " << EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(0))) << " spin degrees of freedom" << std::endl;
     ::abort();
   }
   if(EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(1)))!=0){
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton generator expected the second child to be scalar particle, but found " << EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(1))) << " spin degrees of freedom" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton generator expected the second child to be scalar particle, but found " << EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(1))) << " spin degrees of freedom" << std::endl;
     ::abort();
   }
 
@@ -82,7 +82,7 @@ void EvtHypNonLepton::init(){
   m2 = EvtPDL::getMass(getDaug(1));
 
   if(m1+m2>=M){
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton found impossible decay: " << M << " --> " << m1 << " + " << m2 << " GeV\n" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton found impossible decay: " << M << " --> " << m1 << " + " << m2 << " GeV\n" << std::endl;
     ::abort();
   }
 
@@ -106,7 +106,7 @@ void EvtHypNonLepton::initProbMax(){
   m2=EvtPDL::getMass(getDaug(1));
 
   if(m1+m2>=M){
-    report(ERROR,"EvtGen") << " ERROR: EvtHypNonLepton found impossible decay: " << M << " --> " << m1 << " + " << m2 << " GeV\n" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtHypNonLepton found impossible decay: " << M << " --> " << m1 << " + " << m2 << " GeV\n" << std::endl;
     ::abort();
   }
 
@@ -115,7 +115,7 @@ void EvtHypNonLepton::initProbMax(){
   //maxProb *= G_F*M_pi*M_pi;
 
   setProbMax(maxProb);
-  report(INFO,"EvtGen") << " EvtHypNonLepton set up maximum probability to " << maxProb << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtHypNonLepton set up maximum probability to " << maxProb << std::endl;
 
 }
 
@@ -147,5 +147,5 @@ void EvtHypNonLepton::calcAmp(EvtAmp *amp,EvtParticle *parent){
     amp->vertex(i/2,i%2,Matrix[i/2][i%2]);
   }
 
-  if(m_noTries>0) if(!((++noTries)%m_noTries)) report(DEBUG,"EvtGen") << " EvtHypNonLepton already finished " << noTries << " matrix element calculations" << std::endl;
+  if(m_noTries>0) if(!((++noTries)%m_noTries)) report(Severity::Debug,"EvtGen") << " EvtHypNonLepton already finished " << noTries << " matrix element calculations" << std::endl;
 }

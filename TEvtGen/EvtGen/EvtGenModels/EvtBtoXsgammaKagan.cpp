@@ -65,13 +65,13 @@ void EvtBtoXsgammaKagan::init(int nArg, double* args){
 
   if ((nArg) > 12 || (nArg > 1 && nArg <10) || nArg == 11){
   
-  report(ERROR,"EvtGen") << "EvtBtoXsgamma generator model "
+  report(Severity::Error,"EvtGen") << "EvtBtoXsgamma generator model "
 			 << "EvtBtoXsgammaKagan expected " 
 			 << "either 1(default config) or " 
 			 << "10 (default mass range) or " 
 			 << "12 (user range) arguments but found: "
 			 <<nArg<<endl;
-  report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+  report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();  
   }
   
@@ -90,21 +90,21 @@ void EvtBtoXsgammaKagan::init(int nArg, double* args){
     _mHmin = args[10];
     _mHmax = args[11]; 
     if (_mHmin > _mHmax){
-      report(ERROR,"EvtGen") << "Minimum hadronic mass exceeds maximum " 
+      report(Severity::Error,"EvtGen") << "Minimum hadronic mass exceeds maximum " 
 			     << endl;
-      report(ERROR,"EvtGen") << "Will terminate execution!" << endl;
+      report(Severity::Error,"EvtGen") << "Will terminate execution!" << endl;
       ::abort();
     }
     if (_mHmin < mHminLimit){
-      report(ERROR,"EvtGen") << "Minimum hadronic mass below K pi threshold" 
+      report(Severity::Error,"EvtGen") << "Minimum hadronic mass below K pi threshold" 
 			     << endl;
-      report(ERROR,"EvtGen") << "Resetting to K pi threshold" << endl;
+      report(Severity::Error,"EvtGen") << "Resetting to K pi threshold" << endl;
       _mHmin = mHminLimit;
     }     
     if (_mHmax > mHmaxLimit){
-      report(ERROR,"EvtGen") << "Maximum hadronic mass above 4.5 GeV/c^2" 
+      report(Severity::Error,"EvtGen") << "Maximum hadronic mass above 4.5 GeV/c^2" 
 			     << endl;
-      report(ERROR,"EvtGen") << "Resetting to 4.5 GeV/c^2" << endl;
+      report(Severity::Error,"EvtGen") << "Resetting to 4.5 GeV/c^2" << endl;
       _mHmax = mHmaxLimit;
     }     
   }else{
@@ -148,7 +148,7 @@ void EvtBtoXsgammaKagan::computeHadronicMass(int /*nArg*/, double* args){
   intervalMH=_nIntervalmH;
 
   //Going to have to add a new entry into the data file - takes ages...
-  report(WARNING,"EvtGen") << "EvtBtoXsgammaKagan: calculating new hadronic mass spectra. This takes a while..." << endl;
+  report(Severity::Warning,"EvtGen") << "EvtBtoXsgammaKagan: calculating new hadronic mass spectra. This takes a while..." << endl;
   
   //Now need to compute the mHVect vector for
   //the current parameters

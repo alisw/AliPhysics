@@ -158,18 +158,18 @@ void EvtBsquark::decay(EvtParticle *p){
   EvtComplex f1=-(g*g*V11*vcsb)/((p4b-p4c).mass2()-mchi1*mchi1);
   EvtComplex f2=-(g*g*V21*vcsb)/((p4b-p4c).mass2()-mchi1*mchi2);
 
-  //report(INFO,"EvtGen") <<g<<" "<<V11<<" "<<FL<<" "<<vcsb<<" "<<mchi1<<endl;
-  //report(INFO,"EvtGen") << "f1:"<<f1<<" "<<(p4b-p4c).mass2()<<endl;
-  //report(INFO,"EvtGen") << "f2:"<<f2<<" "<<(p4b-p4c).mass2()<<endl;
+  //report(Severity::Info,"EvtGen") <<g<<" "<<V11<<" "<<FL<<" "<<vcsb<<" "<<mchi1<<endl;
+  //report(Severity::Info,"EvtGen") << "f1:"<<f1<<" "<<(p4b-p4c).mass2()<<endl;
+  //report(Severity::Info,"EvtGen") << "f2:"<<f2<<" "<<(p4b-p4c).mass2()<<endl;
 
-  //report(INFO,"EvtGen") << "p4sn:"<<p4sn<<endl;
+  //report(Severity::Info,"EvtGen") << "p4sn:"<<p4sn<<endl;
 
   EvtGammaMatrix pslash=p4sn.get(0)*EvtGammaMatrix::g0()
                        -p4sn.get(1)*EvtGammaMatrix::g1()
                        -p4sn.get(2)*EvtGammaMatrix::g2()
                        -p4sn.get(3)*EvtGammaMatrix::g3();
 
-  //report(INFO,"EvtGen") << "pslash:"<<pslash<<endl;
+  //report(Severity::Info,"EvtGen") << "pslash:"<<pslash<<endl;
 
 
 
@@ -188,17 +188,17 @@ void EvtBsquark::decay(EvtParticle *p){
 	b=lepton->spParent(il)*((pslash*PR)*charmquark.spParent(ic));
       }
 
-      //report(INFO,"EvtGen") <<"pslash*PR:"<<pslash*PR<<endl;
-      //report(INFO,"EvtGen") <<"sp charm:"<<charmquark.spParent(ic)<<endl;
-      //report(INFO,"EvtGen") <<"sp lepton:"<<lepton->spParent(il)<<endl;
+      //report(Severity::Info,"EvtGen") <<"pslash*PR:"<<pslash*PR<<endl;
+      //report(Severity::Info,"EvtGen") <<"sp charm:"<<charmquark.spParent(ic)<<endl;
+      //report(Severity::Info,"EvtGen") <<"sp lepton:"<<lepton->spParent(il)<<endl;
 
       M[ic][il]=f1*(a1*a+b1*b)+f2*(a2*a+b2*b);
 
-      //report(INFO,"EvtGen") << "Contr1:"<<a1<<" "<<a<<" "<<b1<<" "<<b<<endl;
-      //report(INFO,"EvtGen") << "Contr2:"<<a2<<" "<<a<<" "<<b2<<" "<<b<<endl;
+      //report(Severity::Info,"EvtGen") << "Contr1:"<<a1<<" "<<a<<" "<<b1<<" "<<b<<endl;
+      //report(Severity::Info,"EvtGen") << "Contr2:"<<a2<<" "<<a<<" "<<b2<<" "<<b<<endl;
 
-      //report(INFO,"EvtGen") <<"case1:"<<f1<<" "<<a1<<" "<<b1<<" "<<a<<" "<<b<<endl;
-      //report(INFO,"EvtGen") <<"case2:"<<f2<<" "<<a2<<" "<<b2<<" "<<a<<" "<<b<<endl;
+      //report(Severity::Info,"EvtGen") <<"case1:"<<f1<<" "<<a1<<" "<<b1<<" "<<a<<" "<<b<<endl;
+      //report(Severity::Info,"EvtGen") <<"case2:"<<f2<<" "<<a2<<" "<<b2<<" "<<a<<" "<<b<<endl;
 
     }
   }
@@ -208,7 +208,7 @@ void EvtBsquark::decay(EvtParticle *p){
 		   M[0][1]*conj(M[0][1])+
 		   M[1][1]*conj(M[1][1]));
 
-  //report(INFO,"EvtGen") <<"prob:"<<prob<<endl;
+  //report(Severity::Info,"EvtGen") <<"prob:"<<prob<<endl;
 
   setProb(prob);
 

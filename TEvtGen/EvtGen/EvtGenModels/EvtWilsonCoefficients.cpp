@@ -70,7 +70,7 @@ void EvtWilsonCoefficients::SetRenormalizationScheme(std::string scheme){
   if(scheme=="NDR") m_ksi=0;
   else if(scheme=="HV") m_ksi=1;
   else{
-    report(ERROR,"EvtGen") << "ERROR: EvtWilsonCoefficients knows only NDR and HV schemes !" << std::endl;
+    report(Severity::Error,"EvtGen") << "ERROR: EvtWilsonCoefficients knows only NDR and HV schemes !" << std::endl;
     ::abort();
   }
 }
@@ -93,7 +93,7 @@ double EvtWilsonCoefficients::Lambda(double alpha=0.1187,int n_f=5,double mu=91.
   double Lambda=mu*0.9999999999;
   double step=-mu/20;
   for(i=0;i<maxstep && (difference=fabs(alphaS(mu,n_f,Lambda)-alpha))>=epsilon;i++){
-    report(DEBUG,"EvtGen") << " Difference of alpha_S from " << alpha << " is " << difference << " at Lambda = " << Lambda << std::endl;
+    report(Severity::Debug,"EvtGen") << " Difference of alpha_S from " << alpha << " is " << difference << " at Lambda = " << Lambda << std::endl;
     if(alphaS(mu,n_f,Lambda)>alpha){
       if(step>0) step*=-0.4;
       if(alphaS(mu,n_f,Lambda+step-epsilon)<alphaS(mu,n_f,Lambda+step)) Lambda+=step;
@@ -104,13 +104,13 @@ double EvtWilsonCoefficients::Lambda(double alpha=0.1187,int n_f=5,double mu=91.
       else step*=0.4;
     }
   }
-  report(DEBUG,"EvtGen") << " Difference of alpha_S from " << alpha << " is " << difference << " at Lambda = " << Lambda << std::endl;
+  report(Severity::Debug,"EvtGen") << " Difference of alpha_S from " << alpha << " is " << difference << " at Lambda = " << Lambda << std::endl;
   if(difference>=epsilon){
-    report(ERROR,"EvtGen") << " ERROR: Did not converge Lambda for alpha_s = " << alpha << " , difference " << difference << " >= " << epsilon << " after " << i << " steps !" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: Did not converge Lambda for alpha_s = " << alpha << " , difference " << difference << " >= " << epsilon << " after " << i << " steps !" << std::endl;
     ::abort();
     return -1;
   }else{
-    report(INFO,"EvtGen") << " For alpha_s = " << alphaS(mu,n_f,Lambda) << " was found Lambda = " << Lambda << std::endl;
+    report(Severity::Info,"EvtGen") << " For alpha_s = " << alphaS(mu,n_f,Lambda) << " was found Lambda = " << Lambda << std::endl;
     return Lambda;
   }
 }
@@ -286,50 +286,50 @@ void EvtWilsonCoefficients::CalculateAllCoefficients(){
   m_PE=PE(m_mu,m_n_f,m_Lambda,m_M_W);
   m_alphaS=alphaS(m_mu,m_n_f,m_Lambda);
   m_eta=eta(m_mu,m_n_f,m_Lambda,m_M_W);
-  report(INFO,"EvtGen") << " +---------------------------------------" << std::endl;
-  report(INFO,"EvtGen") << " | Table of Wilson coeficients:" << std::endl;
-  report(INFO,"EvtGen") << " +---------------------------------------" << std::endl;
-  report(INFO,"EvtGen") << " | C1     =  " << m_C1 << std::endl;
-  report(INFO,"EvtGen") << " | C2     =  " << m_C2 << std::endl;
-  report(INFO,"EvtGen") << " | C3     =  " << m_C3 << std::endl;
-  report(INFO,"EvtGen") << " | C4     =  " << m_C4 << std::endl;
-  report(INFO,"EvtGen") << " | C5     =  " << m_C5 << std::endl;
-  report(INFO,"EvtGen") << " | C6     =  " << m_C6 << std::endl;
-  report(INFO,"EvtGen") << " | C7     =  " << m_C7 << std::endl;
-  report(INFO,"EvtGen") << " | C7eff0 =  " << m_C7eff0 << std::endl;
-  report(INFO,"EvtGen") << " | C8     =  " << m_C8 << std::endl;
-  report(INFO,"EvtGen") << " | C8eff0 =  " << m_C8eff0 << std::endl;
-  report(INFO,"EvtGen") << " | C9     =  " << m_C9 << std::endl;
-  report(INFO,"EvtGen") << " | C10    =  " << m_C10 << std::endl;
-  report(INFO,"EvtGen") << " +---------------------------------------" << std::endl;
-  report(INFO,"EvtGen") << " | Other constants:" << std::endl;
-  report(INFO,"EvtGen") << " +---------------------------------------" << std::endl;
-  report(INFO,"EvtGen") << " | Scale = " << m_mu << " GeV" << std::endl;
-  report(INFO,"EvtGen") << " | Number of effective flavors = " << m_n_f << std::endl;
-  report(INFO,"EvtGen") << " | Corresponding to aS(M_Z)" << "=" << m_alphaMZ << " Lambda = " << m_Lambda << " GeV" << std::endl;
-  report(INFO,"EvtGen") << " | Strong coupling constant = " << m_alphaS << std::endl;
-  report(INFO,"EvtGen") << " | Electromagnetic constant = 1/" << m_ialpha << std::endl;
-  report(INFO,"EvtGen") << " | Top mass = " << m_M_t << " GeV" << std::endl;
-  report(INFO,"EvtGen") << " | W-boson mass = " << m_M_W << " GeV" << std::endl;
-  report(INFO,"EvtGen") << " | Z-boson mass = " << m_M_Z << " GeV" << std::endl;
-  report(INFO,"EvtGen") << " | Sinus squared of Weinberg angle = " << m_sin2W << std::endl;
-  report(INFO,"EvtGen") << " +---------------------------------------" << std::endl;
-  report(DEBUG,"EvtGen") << " | Intermediate functions:" << std::endl;
-  report(DEBUG,"EvtGen") << " +---------------------------------------" << std::endl;
-  report(DEBUG,"EvtGen") << " | A    = " << m_A << std::endl;
-  report(DEBUG,"EvtGen") << " | B    = " << m_B << std::endl;
-  report(DEBUG,"EvtGen") << " | C    = " << m_C << std::endl;
-  report(DEBUG,"EvtGen") << " | D    = " << m_D << std::endl;
-  report(DEBUG,"EvtGen") << " | E    = " << m_E << std::endl;
-  report(DEBUG,"EvtGen") << " | F    = " << m_F << std::endl;
-  report(DEBUG,"EvtGen") << " | Y    = " << m_Y << std::endl;
-  report(DEBUG,"EvtGen") << " | Z    = " << m_Z << std::endl;
-  report(DEBUG,"EvtGen") << " | eta  = " << m_eta << std::endl;
-  report(DEBUG,"EvtGen") << " | C9~  = " << m_C9tilda << std::endl;
-  report(DEBUG,"EvtGen") << " | C10~ = " << m_C10tilda << std::endl;
-  report(DEBUG,"EvtGen") << " | P0   = " << m_P0 << std::endl;
-  report(DEBUG,"EvtGen") << " | PE   = " << m_PE << std::endl;
-  report(DEBUG,"EvtGen") << " +--------------------------------------" << std::endl;
+  report(Severity::Info,"EvtGen") << " +---------------------------------------" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Table of Wilson coeficients:" << std::endl;
+  report(Severity::Info,"EvtGen") << " +---------------------------------------" << std::endl;
+  report(Severity::Info,"EvtGen") << " | C1     =  " << m_C1 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C2     =  " << m_C2 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C3     =  " << m_C3 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C4     =  " << m_C4 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C5     =  " << m_C5 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C6     =  " << m_C6 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C7     =  " << m_C7 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C7eff0 =  " << m_C7eff0 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C8     =  " << m_C8 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C8eff0 =  " << m_C8eff0 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C9     =  " << m_C9 << std::endl;
+  report(Severity::Info,"EvtGen") << " | C10    =  " << m_C10 << std::endl;
+  report(Severity::Info,"EvtGen") << " +---------------------------------------" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Other constants:" << std::endl;
+  report(Severity::Info,"EvtGen") << " +---------------------------------------" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Scale = " << m_mu << " GeV" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Number of effective flavors = " << m_n_f << std::endl;
+  report(Severity::Info,"EvtGen") << " | Corresponding to aS(M_Z)" << "=" << m_alphaMZ << " Lambda = " << m_Lambda << " GeV" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Strong coupling constant = " << m_alphaS << std::endl;
+  report(Severity::Info,"EvtGen") << " | Electromagnetic constant = 1/" << m_ialpha << std::endl;
+  report(Severity::Info,"EvtGen") << " | Top mass = " << m_M_t << " GeV" << std::endl;
+  report(Severity::Info,"EvtGen") << " | W-boson mass = " << m_M_W << " GeV" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Z-boson mass = " << m_M_Z << " GeV" << std::endl;
+  report(Severity::Info,"EvtGen") << " | Sinus squared of Weinberg angle = " << m_sin2W << std::endl;
+  report(Severity::Info,"EvtGen") << " +---------------------------------------" << std::endl;
+  report(Severity::Debug,"EvtGen") << " | Intermediate functions:" << std::endl;
+  report(Severity::Debug,"EvtGen") << " +---------------------------------------" << std::endl;
+  report(Severity::Debug,"EvtGen") << " | A    = " << m_A << std::endl;
+  report(Severity::Debug,"EvtGen") << " | B    = " << m_B << std::endl;
+  report(Severity::Debug,"EvtGen") << " | C    = " << m_C << std::endl;
+  report(Severity::Debug,"EvtGen") << " | D    = " << m_D << std::endl;
+  report(Severity::Debug,"EvtGen") << " | E    = " << m_E << std::endl;
+  report(Severity::Debug,"EvtGen") << " | F    = " << m_F << std::endl;
+  report(Severity::Debug,"EvtGen") << " | Y    = " << m_Y << std::endl;
+  report(Severity::Debug,"EvtGen") << " | Z    = " << m_Z << std::endl;
+  report(Severity::Debug,"EvtGen") << " | eta  = " << m_eta << std::endl;
+  report(Severity::Debug,"EvtGen") << " | C9~  = " << m_C9tilda << std::endl;
+  report(Severity::Debug,"EvtGen") << " | C10~ = " << m_C10tilda << std::endl;
+  report(Severity::Debug,"EvtGen") << " | P0   = " << m_P0 << std::endl;
+  report(Severity::Debug,"EvtGen") << " | PE   = " << m_PE << std::endl;
+  report(Severity::Debug,"EvtGen") << " +--------------------------------------" << std::endl;
 }
 
 EvtComplex EvtWilsonCoefficients::hzs(double z,double shat,double mu=4.8,double M_b=4.8){

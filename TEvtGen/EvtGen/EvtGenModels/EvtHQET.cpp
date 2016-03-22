@@ -112,7 +112,7 @@ void EvtHQET::init(){
     calcamp = new EvtSemiLeptonicVectorAmp; 
   }
   else{
-    report(ERROR,"EvtGen") << "HQET model handles only scalar and vector meson daughters. Sorry."<<endl;
+    report(Severity::Error,"EvtGen") << "HQET model handles only scalar and vector meson daughters. Sorry."<<endl;
     ::abort();
   }
 

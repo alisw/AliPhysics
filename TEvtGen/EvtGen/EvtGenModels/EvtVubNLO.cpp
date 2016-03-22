@@ -73,10 +73,10 @@ void EvtVubNLO::init(){
   int npar = 8;
   if (getNArg()<npar) {
 
-    report(ERROR,"EvtGen") << "EvtVubNLO generator expected "
+    report(Severity::Error,"EvtGen") << "EvtVubNLO generator expected "
                            << " at least npar arguments  but found: "
 			   <<getNArg()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
 
   }
@@ -114,10 +114,10 @@ void EvtVubNLO::init(){
 
   
   if (getNArg()-npar+2 != 2*_nbins) {
-    report(ERROR,"EvtGen") << "EvtVubNLO generator expected " 
+    report(Severity::Error,"EvtGen") << "EvtVubNLO generator expected " 
                            << _nbins << " masses and weights but found: "
 			   <<(getNArg()-npar)/2 <<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   int i,j = npar-2;
@@ -125,23 +125,23 @@ void EvtVubNLO::init(){
   for (i=0;i<_nbins;i++) {
     _masses[i] = getArg(j++);
     if (i>0 && _masses[i] <= _masses[i-1]) {
-      report(ERROR,"EvtGen") << "EvtVubNLO generator expected " 
+      report(Severity::Error,"EvtGen") << "EvtVubNLO generator expected " 
 			     << " mass bins in ascending order!"
 			     << "Will terminate execution!"<<endl;
       ::abort();
     }
     _weights[i] = getArg(j++);
     if (_weights[i] < 0) {
-      report(ERROR,"EvtGen") << "EvtVubNLO generator expected " 
+      report(Severity::Error,"EvtGen") << "EvtVubNLO generator expected " 
 			     << " weights >= 0, but found: " 
 			     <<_weights[i] <<endl;
-      report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+      report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
       ::abort();
     }
     if ( _weights[i] > maxw ) maxw = _weights[i];
   }
   if (maxw == 0) {
-    report(ERROR,"EvtGen") << "EvtVubNLO generator expected at least one " 
+    report(Severity::Error,"EvtGen") << "EvtVubNLO generator expected at least one " 
 			   << " weight > 0, but found none! " 
 			   << "Will terminate execution!"<<endl;
     ::abort();
@@ -214,7 +214,7 @@ void EvtVubNLO::decay( EvtParticle *p ){
       pdf = tripleDiff(pp,pl,pm); // triple differential distribution
       //      cout <<" P+,P-,Pl,Pdf= "<<pp <<" "<<pm<<" "<<pl<<" "<<pdf<<endl;
       if(pdf>_dGMax){
-	report(ERROR,"EvtGen") << "EvtVubNLO pdf above maximum: " <<pdf
+	report(Severity::Error,"EvtGen") << "EvtVubNLO pdf above maximum: " <<pdf
 			       <<" P+,P-,Pl,Pdf= "<<pp <<" "<<pm<<" "<<pl<<" "<<pdf<<endl;
 	//::abort();
 	
@@ -518,7 +518,7 @@ double EvtVubNLO::SFNorm(  const std::vector<double> &/*coeffs*/){
     return M0(mu_i(),omega0)*2/lambda_SF()/pow(c,-(1+_b)/2.)/
       (Gamma((1+_b)/2)-Gamma((1+_b)/2,pow(omega0/lambda_SF(),2)*c));
   } else {
-    report(ERROR,"EvtGen")  << "unknown SF "<<_idSF<<endl;
+    report(Severity::Error,"EvtGen")  << "unknown SF "<<_idSF<<endl;
     return -1;
   }
 }
@@ -530,7 +530,7 @@ EvtVubNLO::shapeFunction ( double omega, const std::vector<double> &sCoeffs){
   } else if( sCoeffs[6]==2) {
     return sCoeffs[10]*gausShapeFunction(omega, sCoeffs);
   } else {
- report(ERROR,"EvtGen") << "EvtVubNLO : unknown shape function # "
+ report(Severity::Error,"EvtGen") << "EvtVubNLO : unknown shape function # "
 			   <<sCoeffs[6]<<endl;
   }
   return -1.;

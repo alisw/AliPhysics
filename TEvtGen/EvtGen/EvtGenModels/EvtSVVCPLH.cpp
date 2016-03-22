@@ -114,7 +114,7 @@ void EvtSVVCPLH::decay( EvtParticle *p){
     cG1M=-mt*G1M*(cdmt-(1.0/lambda_km)*EvtComplex(0.0,getArg(2)*sdmt));
   }
   else{
-    report(ERROR,"EvtGen") << "other_b was not BSB or BS0!"<<endl;
+    report(Severity::Error,"EvtGen") << "other_b was not BSB or BS0!"<<endl;
     ::abort();
   }
 

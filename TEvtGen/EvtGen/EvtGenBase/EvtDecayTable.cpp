@@ -100,13 +100,13 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
 
   int i;
 
-  report(INFO,"EvtGen") << "In readDecayFile, reading:"<<dec_name.c_str()<<endl;
+  report(Severity::Info,"EvtGen") << "In readDecayFile, reading:"<<dec_name.c_str()<<endl;
   
   ifstream fin;
   
   fin.open(dec_name.c_str());
   if (!fin) {
-    report(ERROR,"EvtGen") << "Could not open "<<dec_name.c_str()<<endl;
+    report(Severity::Error,"EvtGen") << "Could not open "<<dec_name.c_str()<<endl;
   }
   fin.close();
 
@@ -128,8 +128,8 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
   }
 
   if (!hasend){
-    report(ERROR,"EvtGen") << "Could not find an 'End' in "<<dec_name.c_str()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution."<<endl;
+    report(Severity::Error,"EvtGen") << "Could not find an 'End' in "<<dec_name.c_str()<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution."<<endl;
     ::abort();
   }
 
@@ -156,19 +156,19 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
     if (token=="noPhotos"){ 
       EvtRadCorr::setNeverRadCorr();
       if ( verbose )
-	report(INFO,"EvtGen") 
+	report(Severity::Info,"EvtGen") 
 	  << "As requested, PHOTOS will be turned off."<<endl; 
     }
     else if (token=="yesPhotos"){ 
       EvtRadCorr::setAlwaysRadCorr();
       if ( verbose) 
-	report(INFO,"EvtGen") 
+	report(Severity::Info,"EvtGen") 
 	  << "As requested, PHOTOS will be turned on for all decays."<<endl; 
     }
     else if (token=="normalPhotos"){ 
       EvtRadCorr::setNormalRadCorr();
       if ( verbose) 
-	report(INFO,"EvtGen") 
+	report(Severity::Info,"EvtGen") 
 	  << "As requested, PHOTOS will be turned on only when requested."<<endl; 
     }
     else if (token=="Alias"){
@@ -182,9 +182,9 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId id=EvtPDL::getId(oldname);
 
       if (id==EvtId(-1,-1)) {
-	report(ERROR,"EvtGen") <<"Unknown particle name:"<<oldname.c_str()
+	report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<oldname.c_str()
 			       <<" on line "<<parser.getLineofToken(itoken)<<endl;
-	report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	::abort();
       }
 
@@ -218,16 +218,16 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId abar=EvtPDL::getId(abarname);
 
       if (a==EvtId(-1,-1)) {
-	report(ERROR,"EvtGen") <<"Unknown particle name:"<<aname.c_str()
+	report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<aname.c_str()
 			       <<" on line "<<parser.getLineofToken(itoken)<<endl;
-	report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	::abort();
       }
 
       if (abar==EvtId(-1,-1)) {
-	report(ERROR,"EvtGen") <<"Unknown particle name:"<<abarname.c_str()
+	report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<abarname.c_str()
 			       <<" on line "<<parser.getLineofToken(itoken)<<endl;
-	report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	::abort();
       }
 
@@ -329,10 +329,10 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       ipar=EvtPDL::getId(name);
 
       if (ipar==EvtId(-1,-1)) {
-	report(ERROR,"EvtGen") <<"Unknown particle name:"<<name.c_str()
+	report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<name.c_str()
 			       <<" on line "
 			       <<parser.getLineofToken(itoken-1)<<endl;
-	report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	::abort();
       }
 
@@ -340,7 +340,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
 
       if (_decaytable[ipar.getAlias()].getNMode()!=0) {
 	if ( verbose )
-	  report(DEBUG,"EvtGen") << 
+	  report(Severity::Debug,"EvtGen") << 
 	    "Redefined decay of "<<name.c_str()<<" in CDecay"<<endl;
 
 	_decaytable[ipar.getAlias()].removeDecay();
@@ -366,7 +366,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       std::string pname;
       pname=parser.getToken(itoken++);
       if ( verbose )
-	report(INFO,"EvtGen") << pname.c_str() << endl;
+	report(Severity::Info,"EvtGen") << pname.c_str() << endl;
       //There should be at least the mass 
       double newMass=atof(parser.getToken(itoken++).c_str());
       EvtId thisPart = EvtPDL::getId(pname);
@@ -378,7 +378,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtPDL::reSetWidth(thisPart, newWidth);
 
       if (verbose )
-	report(INFO,"EvtGen") << "Changing particle properties of " <<
+	report(Severity::Info,"EvtGen") << "Changing particle properties of " <<
 	  pname.c_str() << " Mass=" << newMass << " Width="<<newWidth<<endl;
 
     } else if ( token=="ChangeMassMin") {
@@ -389,7 +389,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisPart = EvtPDL::getId(pname);
       EvtPDL::reSetMassMin(thisPart,tmass);
       if ( verbose )
-	report(DEBUG,"EvtGen") <<"Refined minimum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << tmass << endl;
+	report(Severity::Debug,"EvtGen") <<"Refined minimum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << tmass << endl;
 
     } else if ( token=="ChangeMassMax") {
       std::string pname;
@@ -398,7 +398,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisPart = EvtPDL::getId(pname);
       EvtPDL::reSetMassMax(thisPart,tmass);
       if ( verbose )
-	report(DEBUG,"EvtGen") <<"Refined maximum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << tmass << endl;
+	report(Severity::Debug,"EvtGen") <<"Refined maximum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << tmass << endl;
 
     } else if ( token=="IncludeBirthFactor") {
       std::string pname;
@@ -408,8 +408,8 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisPart = EvtPDL::getId(pname);
       EvtPDL::includeBirthFactor(thisPart,yesno);
       if ( verbose ) {
-	if ( yesno ) report(DEBUG,"EvtGen") <<"Include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
-	if ( !yesno ) report(DEBUG,"EvtGen") <<"No longer include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+	if ( yesno ) report(Severity::Debug,"EvtGen") <<"Include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+	if ( !yesno ) report(Severity::Debug,"EvtGen") <<"No longer include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
       }
 
     } else if ( token=="IncludeDecayFactor") {
@@ -420,8 +420,8 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisPart = EvtPDL::getId(pname);
       EvtPDL::includeDecayFactor(thisPart,yesno);
       if ( verbose ) {
-	if ( yesno ) report(DEBUG,"EvtGen") <<"Include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
-	if ( !yesno ) report(DEBUG,"EvtGen") <<"No longer include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+	if ( yesno ) report(Severity::Debug,"EvtGen") <<"Include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+	if ( !yesno ) report(Severity::Debug,"EvtGen") <<"No longer include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
       }
     } else if ( token=="LSNONRELBW") {
       std::string pname;
@@ -430,7 +430,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       std::string tstr="NONRELBW";
       EvtPDL::changeLS(thisPart,tstr);
       if ( verbose )
-	report(DEBUG,"EvtGen") <<"Change lineshape to non-rel BW for " << EvtPDL::name(thisPart).c_str() <<endl;
+	report(Severity::Debug,"EvtGen") <<"Change lineshape to non-rel BW for " << EvtPDL::name(thisPart).c_str() <<endl;
     } else if ( token=="LSFLAT") {
       std::string pname;
       pname=parser.getToken(itoken++);
@@ -438,7 +438,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       std::string tstr="FLAT";
       EvtPDL::changeLS(thisPart,tstr);
       if (verbose) 
-	report(DEBUG,"EvtGen") <<"Change lineshape to flat for " << EvtPDL::name(thisPart).c_str() <<endl;
+	report(Severity::Debug,"EvtGen") <<"Change lineshape to flat for " << EvtPDL::name(thisPart).c_str() <<endl;
     } else if ( token=="LSMANYDELTAFUNC") {
       std::string pname;
       pname=parser.getToken(itoken++);
@@ -446,7 +446,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       std::string tstr="MANYDELTAFUNC";
       EvtPDL::changeLS(thisPart,tstr);
       if ( verbose )
-	report(DEBUG,"EvtGen") <<"Change lineshape to spikes for " << EvtPDL::name(thisPart).c_str() <<endl;
+	report(Severity::Debug,"EvtGen") <<"Change lineshape to spikes for " << EvtPDL::name(thisPart).c_str() <<endl;
 
     } else if ( token=="BlattWeisskopf") {
       std::string pname;
@@ -455,7 +455,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisPart = EvtPDL::getId(pname);
       EvtPDL::reSetBlatt(thisPart,tnum);
       if ( verbose )
-	report(DEBUG,"EvtGen") <<"Redefined Blatt-Weisskopf factor " << EvtPDL::name(thisPart).c_str() << " to be " << tnum << endl;
+	report(Severity::Debug,"EvtGen") <<"Redefined Blatt-Weisskopf factor " << EvtPDL::name(thisPart).c_str() << " to be " << tnum << endl;
     } else if ( token=="BlattWeisskopfBirth") {
       std::string pname;
       pname=parser.getToken(itoken++);
@@ -463,7 +463,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisPart = EvtPDL::getId(pname);
       EvtPDL::reSetBlattBirth(thisPart,tnum);
       if ( verbose )
-	report(DEBUG,"EvtGen") <<"Redefined Blatt-Weisskopf birth factor " << EvtPDL::name(thisPart).c_str() << " to be " << tnum << endl;
+	report(Severity::Debug,"EvtGen") <<"Redefined Blatt-Weisskopf birth factor " << EvtPDL::name(thisPart).c_str() << " to be " << tnum << endl;
     } else if ( token=="SetLineshapePW") {
       std::string pname;
       pname=parser.getToken(itoken++);
@@ -474,7 +474,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId thisD2 = EvtPDL::getId(pnameD2);
       int pw=atoi(parser.getToken(itoken++).c_str());
       if ( verbose ) 
-	report(DEBUG,"EvtGen") <<"Redefined Partial wave for " << pname.c_str() << " to " << pnameD1.c_str() << " " << pnameD2.c_str() << " ("<<pw<<")"<<endl;
+	report(Severity::Debug,"EvtGen") <<"Redefined Partial wave for " << pname.c_str() << " to " << pnameD1.c_str() << " " << pnameD2.c_str() << " ("<<pw<<")"<<endl;
       EvtPDL::setPWForDecay(thisPart,pw,thisD1,thisD2);
       EvtPDL::setPWForBirthL(thisD1,pw,thisPart,thisD2);
       EvtPDL::setPWForBirthL(thisD2,pw,thisPart,thisD1);
@@ -494,15 +494,15 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       ipar=EvtPDL::getId(parent);
 
       if (ipar==EvtId(-1,-1)) {
-        report(ERROR,"EvtGen") <<"Unknown particle name:"<<parent.c_str()
+        report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<parent.c_str()
                                <<" on line "
                                <<parser.getLineofToken(itoken-1)<<endl;
-        report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+        report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
         ::abort();
       }
 
       if (_decaytable[ipar.getAlias()].getNMode()!=0) {
-        report(DEBUG,"EvtGen") <<"Redefined decay of "
+        report(Severity::Debug,"EvtGen") <<"Redefined decay of "
                                <<parent.c_str()<<endl;
         _decaytable[ipar.getAlias()].removeDecay();
       }
@@ -517,13 +517,13 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
           i=0;
           while (token.c_str()[i++]!=0){
             if (isalpha(token.c_str()[i])){
-              report(ERROR,"EvtGen") << 
+              report(Severity::Error,"EvtGen") << 
                 "Expected to find a branching fraction or Enddecay "<<
                 "but found:"<<token.c_str()<<" on line "<<
                 parser.getLineofToken(itoken-1)<<endl;
-              report(ERROR,"EvtGen") << "Possibly to few arguments to model "<<
+              report(Severity::Error,"EvtGen") << "Possibly to few arguments to model "<<
                 "on previous line!"<<endl;
-              report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+              report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
               ::abort();
             }
           }
@@ -545,15 +545,15 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
           
           if (!(isname||ismodel)){
             
-            report(INFO,"EvtGen") << parser.getToken(itoken).c_str()
+            report(Severity::Info,"EvtGen") << parser.getToken(itoken).c_str()
                                   << " is neither a particle name nor "
                                   << "the name of a model. "<<endl;
-            report(INFO,"EvtGen") << "It was encountered on line "<<
+            report(Severity::Info,"EvtGen") << "It was encountered on line "<<
               parser.getLineofToken(itoken)<<" of the decay file."<<endl;
-            report(INFO,"EvtGen") << "Please fix it. Thank you."<<endl;
-            report(INFO,"EvtGen") << "Be sure to check that the "
+            report(Severity::Info,"EvtGen") << "Please fix it. Thank you."<<endl;
+            report(Severity::Info,"EvtGen") << "Be sure to check that the "
                                   << "correct case has been used. \n";
-            report(INFO,"EvtGen") << "Terminating execution. \n";
+            report(Severity::Info,"EvtGen") << "Terminating execution. \n";
             ::abort();
             
             itoken++;
@@ -565,9 +565,9 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
             sdaug=parser.getToken(itoken++);
             daught[n_daugh++]=EvtPDL::getId(sdaug);
             if (daught[n_daugh-1]==EvtId(-1,-1)) {
-              report(ERROR,"EvtGen") <<"Unknown particle name:"<<sdaug.c_str()
+              report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<sdaug.c_str()
                                      <<" on line "<<parser.getLineofToken(itoken)<<endl;
-              report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+              report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
               ::abort();
             }
           }
@@ -608,11 +608,11 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
           
           if ( foundAnAlias==-1 ) {
             if(!modelist.isModel(model)){
-              report(ERROR,"EvtGen") << 
+              report(Severity::Error,"EvtGen") << 
                 "Expected to find a model name,"<<
                 "found:"<<model.c_str()<<" on line "<<
                 parser.getLineofToken(itoken)<<endl;
-              report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+              report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
               ::abort();
             }
           }
@@ -646,11 +646,11 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
 	      if (name!=";") {
 		temp_fcn_new_args.push_back(EvtSymTable::get(name,ierr));
 		if (ierr) {
-		  report(ERROR,"EvtGen")
+		  report(Severity::Error,"EvtGen")
 		    <<"Reading arguments and found:"<<
 		    name.c_str()<<" on line:"<<
 		    parser.getLineofToken(itoken-1)<<endl;
-		  report(ERROR,"EvtGen") 
+		  report(Severity::Error,"EvtGen") 
 		    << "Will terminate execution!"<<endl;
 		  ::abort();
 		}
@@ -658,13 +658,13 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
 	      //int isname=EvtPDL::getId(name).getId()>=0;
 	      int ismodel=modelist.isModel(name);
 	      if (ismodel) {
-		report(ERROR,"EvtGen")
+		report(Severity::Error,"EvtGen")
 		  <<"Expected ';' but found:"<<
 		  name.c_str()<<" on line:"<<
 		  parser.getLineofToken(itoken-1)<<endl;
-		report(ERROR,"EvtGen") 
+		report(Severity::Error,"EvtGen") 
 		  << "Most probable error is omitted ';'."<<endl;
-		report(ERROR,"EvtGen") 
+		report(Severity::Error,"EvtGen") 
 		  << "Will terminate execution!"<<endl;
 		::abort();
 	      }
@@ -719,19 +719,19 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       EvtId oldipar=EvtPDL::getId(oldname);
       
       if (oldipar==EvtId(-1,-1)) {
-	report(ERROR,"EvtGen") <<"Unknown particle name:"<<oldname.c_str()
+	report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<oldname.c_str()
 			       <<" on line "<<parser.getLineofToken(itoken)<<endl;
-	report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	::abort();
       }
       if (newipar==EvtId(-1,-1)) {
-	report(ERROR,"EvtGen") <<"Unknown particle name:"<<newname.c_str()
+	report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<newname.c_str()
 			       <<" on line "<<parser.getLineofToken(itoken)<<endl;
-	report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	::abort();
       }
       if (_decaytable[newipar.getAlias()].getNMode()!=0) {
-	report(DEBUG,"EvtGen") <<"Redefining decay of "
+	report(Severity::Debug,"EvtGen") <<"Redefining decay of "
 			       <<newname<<endl;
 	_decaytable[newipar.getAlias()].removeDecay();
       }
@@ -744,18 +744,18 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
       ipar = EvtPDL::getId(parent);
       
       if (ipar==EvtId(-1,-1)) {
-        report(ERROR,"EvtGen") <<"Unknown particle name:"<<parent.c_str()
+        report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<parent.c_str()
                                <<" on line "
                                <<parser.getLineofToken(itoken-1)<<endl;
-        report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+        report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
         ::abort();
       }
        
       if (_decaytable[ipar.getAlias()].getNMode()==0) {
-        report(DEBUG,"EvtGen") << "No decays to delete for "
+        report(Severity::Debug,"EvtGen") << "No decays to delete for "
                                << parent.c_str() << endl;
       } else {
-        report(DEBUG,"EvtGen") <<"Deleting selected decays of "
+        report(Severity::Debug,"EvtGen") <<"Deleting selected decays of "
                                <<parent.c_str()<<endl;
       }
       
@@ -768,21 +768,21 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
 	    sdaug = parser.getToken(itoken++);
 	    daught[n_daugh++] = EvtPDL::getId(sdaug);
 	    if (daught[n_daugh-1]==EvtId(-1,-1)) {
-	      report(ERROR,"EvtGen") <<"Unknown particle name:"<<sdaug.c_str()
+	      report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<sdaug.c_str()
 				     <<" on line "<<parser.getLineofToken(itoken)<<endl;
-	      report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+	      report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
 	      ::abort();
 	    }
 	  }
 	  token = parser.getToken(itoken);
 	  if (token != ";") {
-	    report(ERROR,"EvtGen")
+	    report(Severity::Error,"EvtGen")
 	      <<"Expected ';' but found:"<<
 	      token <<" on line:"<<
 	      parser.getLineofToken(itoken-1)<<endl;
-	    report(ERROR,"EvtGen") 
+	    report(Severity::Error,"EvtGen") 
 	      << "Most probable error is omitted ';'."<<endl;
-	    report(ERROR,"EvtGen") 
+	    report(Severity::Error,"EvtGen") 
 	      << "Will terminate execution!"<<endl;
 	    ::abort();
 	  }
@@ -803,9 +803,9 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
     }
     else if (token!="End"){
 
-      report(ERROR,"EvtGen") << "Found unknown command:'"<<token.c_str()<<"' on line "
+      report(Severity::Error,"EvtGen") << "Found unknown command:'"<<token.c_str()<<"' on line "
 			     <<parser.getLineofToken(itoken)<<endl;
-      report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+      report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
       ::abort();
 
     }
@@ -829,7 +829,7 @@ void EvtDecayTable::readDecayFile(const std::string dec_name, bool verbose){
     }
     if ( minMass > EvtPDL::getMinMass(temp) ) {
       if ( verbose )
-	report(INFO,"EvtGen") << "Given allowed decays, resetting minMass " << EvtPDL::name(temp).c_str() << " " 
+	report(Severity::Info,"EvtGen") << "Given allowed decays, resetting minMass " << EvtPDL::name(temp).c_str() << " " 
 			      << EvtPDL::getMinMass(temp) << " to " << minMass << endl;
       EvtPDL::reSetMassMin(temp,minMass);
     }
@@ -858,17 +858,17 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           if(usage == "always") {
             EvtRadCorr::setAlwaysRadCorr();
             if ( verbose )
-              report(INFO,"EvtGen")
+              report(Severity::Info,"EvtGen")
                 << "As requested, PHOTOS will be turned on for all decays."<<endl;
           } else if(usage == "never") {
             EvtRadCorr::setNeverRadCorr();
             if ( verbose )
-              report(INFO,"EvtGen")
+              report(Severity::Info,"EvtGen")
                 << "As requested, PHOTOS will be turned off."<<endl;
           } else {
             EvtRadCorr::setNormalRadCorr();
             if ( verbose )
-              report(INFO,"EvtGen")
+              report(Severity::Info,"EvtGen")
                 << "As requested, PHOTOS will be turned on only when requested."<<endl;
           }
 
@@ -933,7 +933,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
 
           if (_decaytable[a.getAlias()].getNMode()!=0) {
             if ( verbose )
-              report(DEBUG,"EvtGen") <<
+              report(Severity::Debug,"EvtGen") <<
                 "Redefined decay of "<<particle.c_str()<<" in ConjDecay"<<endl;
 
             _decaytable[a.getAlias()].removeDecay();
@@ -964,27 +964,27 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
 
           if(mass != -1) {
             EvtPDL::reSetMass(thisPart, mass);
-            report(DEBUG,"EvtGen") <<"Refined mass for " << EvtPDL::name(thisPart).c_str() << " to be " << mass << endl;
+            report(Severity::Debug,"EvtGen") <<"Refined mass for " << EvtPDL::name(thisPart).c_str() << " to be " << mass << endl;
           }
           if(width != -1) {
             EvtPDL::reSetWidth(thisPart, width);
-            report(DEBUG,"EvtGen") <<"Refined width for " << EvtPDL::name(thisPart).c_str() << " to be " << width << endl;
+            report(Severity::Debug,"EvtGen") <<"Refined width for " << EvtPDL::name(thisPart).c_str() << " to be " << width << endl;
           }
           if(minMass != -1) {
             EvtPDL::reSetMassMin(thisPart,minMass);
-            report(DEBUG,"EvtGen") <<"Refined minimum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << minMass << endl;
+            report(Severity::Debug,"EvtGen") <<"Refined minimum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << minMass << endl;
           }
           if(maxMass != -1) {
             EvtPDL::reSetMassMax(thisPart,maxMass);
-            report(DEBUG,"EvtGen") <<"Refined maximum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << maxMass << endl;
+            report(Severity::Debug,"EvtGen") <<"Refined maximum mass for " << EvtPDL::name(thisPart).c_str() << " to be " << maxMass << endl;
           }
           if(!birthFactor.empty()) {
             EvtPDL::includeBirthFactor(thisPart,stringToBoolean(birthFactor));
             if(verbose) {
               if(stringToBoolean(birthFactor)) {
-                report(DEBUG,"EvtGen") <<"Include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+                report(Severity::Debug,"EvtGen") <<"Include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
               } else {
-                report(DEBUG,"EvtGen") <<"No longer include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+                report(Severity::Debug,"EvtGen") <<"No longer include birth factor for " << EvtPDL::name(thisPart).c_str() <<endl;
               }
             }
           }
@@ -992,27 +992,27 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
             EvtPDL::includeDecayFactor(thisPart,stringToBoolean(decayFactor));
             if(verbose) {
               if(stringToBoolean(decayFactor)) {
-                report(DEBUG,"EvtGen") <<"Include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+                report(Severity::Debug,"EvtGen") <<"Include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
               } else {
-                report(DEBUG,"EvtGen") <<"No longer include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
+                report(Severity::Debug,"EvtGen") <<"No longer include decay factor for " << EvtPDL::name(thisPart).c_str() <<endl;
               }
             }
           }
           if(!lineShape.empty()) {
             EvtPDL::changeLS(thisPart,lineShape);
             if ( verbose )
-              report(DEBUG,"EvtGen") <<"Change lineshape to " << lineShape << " for " << EvtPDL::name(thisPart).c_str() <<endl;
+              report(Severity::Debug,"EvtGen") <<"Change lineshape to " << lineShape << " for " << EvtPDL::name(thisPart).c_str() <<endl;
           }
           if(blattWeisskopfD != -1) {
             EvtPDL::reSetBlatt(thisPart,blattWeisskopfD);
             if ( verbose )
-              report(DEBUG,"EvtGen") <<"Redefined Blatt-Weisskopf factor "
+              report(Severity::Debug,"EvtGen") <<"Redefined Blatt-Weisskopf factor "
                                      << EvtPDL::name(thisPart).c_str() << " to be " << blattWeisskopfD << endl;
           }
           if(blattWeisskopfB != -1) {
             EvtPDL::reSetBlattBirth(thisPart,blattWeisskopfB);
             if ( verbose )
-              report(DEBUG,"EvtGen") <<"Redefined Blatt-Weisskopf birth factor "
+              report(Severity::Debug,"EvtGen") <<"Redefined Blatt-Weisskopf birth factor "
                                      << EvtPDL::name(thisPart).c_str() << " to be " << blattWeisskopfB << endl;
           }
         } else if(parser.getTagTitle() == "lineShapePW") {
@@ -1033,7 +1033,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           EvtPDL::setPWForBirthL(thisD1,pw,thisPart,thisD2);
           EvtPDL::setPWForBirthL(thisD2,pw,thisPart,thisD1);
           if ( verbose )
-            report(DEBUG,"EvtGen") <<"Redefined Partial wave for " << parent.c_str() << " to "
+            report(Severity::Debug,"EvtGen") <<"Redefined Partial wave for " << parent.c_str() << " to "
                                    << daug1.c_str() << " " << daug2.c_str() << " ("<<pw<<")"<<endl;
 
         } else if(parser.getTagTitle() == "decay") { //start of a particle
@@ -1043,7 +1043,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           ipar=EvtPDL::getId(decayParent);
 
           if (_decaytable[ipar.getAlias()].getNMode()!=0) {
-            report(DEBUG,"EvtGen") <<"Redefined decay of "
+            report(Severity::Debug,"EvtGen") <<"Redefined decay of "
                                    <<decayParent.c_str()<<endl;
             _decaytable[ipar.getAlias()].removeDecay();
           }
@@ -1059,7 +1059,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           checkParticle(copy);
 
           if (_decaytable[newipar.getAlias()].getNMode()!=0) {
-            report(DEBUG,"EvtGen") <<"Redefining decay of "
+            report(Severity::Debug,"EvtGen") <<"Redefining decay of "
                                    <<particle<<endl;
             _decaytable[newipar.getAlias()].removeDecay();
           }
@@ -1071,10 +1071,10 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           ipar=EvtPDL::getId(decayParent);
 
           if (_decaytable[ipar.getAlias()].getNMode()==0) {
-            report(DEBUG,"EvtGen") << "No decays to delete for "
+            report(Severity::Debug,"EvtGen") << "No decays to delete for "
                                    << decayParent.c_str() << endl;
           } else {
-            report(DEBUG,"EvtGen") <<"Deleting selected decays of "
+            report(Severity::Debug,"EvtGen") <<"Deleting selected decays of "
                                    <<decayParent.c_str()<<endl;
           }
 
@@ -1105,7 +1105,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           //the above tags are expected to be in the XML decay file but are not used by EvtGen
                || parser.getTagTitle() == "dalitzDecay" || parser.getTagTitle() == "copyDalitz") {
           //the above tags are only used by EvtGenModels/EvtDalitzTable
-        } else {  report(INFO,"EvtGen") << "Unknown tag "<<parser.getTagTitle()
+        } else {  report(Severity::Info,"EvtGen") << "Unknown tag "<<parser.getTagTitle()
                   <<" found in XML decay file near line "<<parser.getLineNumber()<<". Tag will be ignored."<<endl;
         }
       //TAGS FOUND UNDER DECAY
@@ -1144,10 +1144,10 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
 
           if ( modelAlias==-1 ) {
             if(!modelist.isModel(model)){
-              report(ERROR,"EvtGen") <<
+              report(Severity::Error,"EvtGen") <<
                 "Expected to find a model name near line "<<parser.getLineNumber()<<","<<
                 "found:"<<model.c_str()<<endl;
-              report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+              report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
               ::abort();
             }
           } else {
@@ -1172,10 +1172,10 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
                 if(param == "") break; //params must be added in order so we can't just skip the missing ones
                 temp_fcn_new_args.push_back(EvtSymTable::get(param,ierr));
                 if (ierr) {
-                  report(ERROR,"EvtGen")
+                  report(Severity::Error,"EvtGen")
                     <<"Reading arguments near line "<<parser.getLineNumber()<<" and found:"<<
                     param.c_str()<<endl;
-                  report(ERROR,"EvtGen")
+                  report(Severity::Error,"EvtGen")
                     << "Will terminate execution!"<<endl;
                   ::abort();
                 }
@@ -1187,10 +1187,10 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
               while(std::getline(paramStream, param, ' ')) {
                 temp_fcn_new_args.push_back(EvtSymTable::get(param,ierr));
                 if (ierr) {
-                  report(ERROR,"EvtGen")
+                  report(Severity::Error,"EvtGen")
                     <<"Reading arguments near line "<<parser.getLineNumber()<<" and found:"<<
                     param.c_str()<<endl;
-                  report(ERROR,"EvtGen")
+                  report(Severity::Error,"EvtGen")
                     << "Will terminate execution!"<<endl;
                   ::abort();
                 }
@@ -1224,7 +1224,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
 
         } else if(parser.getTagTitle() == "/decay") { //end of a particle
           _decaytable[ipar.getAlias()].finalize();
-        } else report(INFO,"EvtGen") << "Unexpected tag "<<parser.getTagTitle()
+        } else report(Severity::Info,"EvtGen") << "Unexpected tag "<<parser.getTagTitle()
                                      <<" found in XML decay file near line "<<parser.getLineNumber()<<". Tag will be ignored."<<endl;
       //TAGS FOUND UNDER REMOVEDECAY
       } else if(parser.getParentTagTitle() == "removeDecay") {
@@ -1252,14 +1252,14 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
                                       0.);
           _decaytable[ipar.getAlias()].removeMode(temp_fcn_new);
         } else if(parser.getTagTitle() != "/removeDecay") {
-          report(INFO,"EvtGen") << "Unexpected tag "<<parser.getTagTitle()
+          report(Severity::Info,"EvtGen") << "Unexpected tag "<<parser.getTagTitle()
                                 <<" found in XML decay file near line "<<parser.getLineNumber()<<". Tag will be ignored."<<endl;
         }
       }
   }//while lines in file
 
   if(!endReached) {
-    report(INFO,"EvtGen") << "Either the decay file ended prematurely or the file is badly formed.\n"
+    report(Severity::Info,"EvtGen") << "Either the decay file ended prematurely or the file is badly formed.\n"
                           <<"Error occured near line"<<parser.getLineNumber()<<endl;
     ::abort();
   }
@@ -1280,7 +1280,7 @@ void EvtDecayTable::readXMLDecayFile(const std::string dec_name, bool verbose){
     }
     if ( minMass > EvtPDL::getMinMass(temp) ) {
       if ( verbose )
-        report(INFO,"EvtGen") << "Given allowed decays, resetting minMass " << EvtPDL::name(temp).c_str() << " "
+        report(Severity::Info,"EvtGen") << "Given allowed decays, resetting minMass " << EvtPDL::name(temp).c_str() << " "
                               << EvtPDL::getMinMass(temp) << " to " << minMass << endl;
       EvtPDL::reSetMassMin(temp,minMass);
     }
@@ -1293,8 +1293,8 @@ bool EvtDecayTable::stringToBoolean(std::string valStr) {
 
 void EvtDecayTable::checkParticle(std::string particle) {
   if (EvtPDL::getId(particle)==EvtId(-1,-1)) {
-    report(ERROR,"EvtGen") <<"Unknown particle name:"<<particle.c_str()<<endl;
-    report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<particle.c_str()<<endl;
+    report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
     ::abort();
   }
 }

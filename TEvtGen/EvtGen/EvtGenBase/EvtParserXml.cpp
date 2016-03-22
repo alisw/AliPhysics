@@ -45,13 +45,13 @@ EvtParserXml::~EvtParserXml(){
 bool EvtParserXml::open(std::string filename){
   
   if(!expandEnvVars(filename)) {
-    report(ERROR,"EvtGen") << "Error while expanding environment variables in file name '"<<filename.c_str()<<"'"<<endl;
+    report(Severity::Error,"EvtGen") << "Error while expanding environment variables in file name '"<<filename.c_str()<<"'"<<endl;
     return false;
   }
 
   _fin.open(filename.c_str());
   if (!_fin) {
-    report(ERROR,"EvtGen") << "Could not open file '"<<filename.c_str()<<"'"<<endl;
+    report(Severity::Error,"EvtGen") << "Could not open file '"<<filename.c_str()<<"'"<<endl;
     return false;
   }
 
@@ -66,9 +66,9 @@ bool EvtParserXml::close() {
 
 bool EvtParserXml::readNextTag() {
     if(!processTagTree()) {
-      report(ERROR,"EvtGen")
+      report(Severity::Error,"EvtGen")
                   << "Unexpected end tag "<<_tagTitle<<" found near line "<<_lineNo<<endl;
-      report(ERROR,"EvtGen")
+      report(Severity::Error,"EvtGen")
                   << "Will terminate execution!"<<endl;
       return false;
     }//first process the previous tag to find out where we are in the tag tree
@@ -222,9 +222,9 @@ bool EvtParserXml::expandEnvVars(std::string& str) {
       size_t braceEnd = str.find('}',braceStart);
       
       if(braceEnd == std::string::npos) {
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
           << "Incomplete environment variable found in text: "<<str<<endl;
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
           << "Will terminate execution!"<<endl;
           return false;
       }
@@ -247,7 +247,7 @@ bool EvtParserXml::expandEnvVars(std::string& str) {
 
     if(envVar) str.replace(varStart,varNameLength+1,envVar);
     else {
-      report(WARNING,"EvtGen")
+      report(Severity::Warning,"EvtGen")
         << "Undefined environment variable found in text: "<<varName<<endl;
       str.replace(varStart,varNameLength+1,"");
     }

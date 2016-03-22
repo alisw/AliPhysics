@@ -88,8 +88,8 @@ double EvtPFermi::getSFBLNP(const double &what)
   if ( what < 0 ) return 0; 
 
 #if defined(__SUNPRO_CC)
-  report(ERROR,"EvtGen") << "The tgamma function is not available on this platform\n";
-  report(ERROR,"EvtGen") <<"Presumably, you are getting the wrong answer, so I abort..";
+  report(Severity::Error,"EvtGen") << "The tgamma function is not available on this platform\n";
+  report(Severity::Error,"EvtGen") <<"Presumably, you are getting the wrong answer, so I abort..";
   ::abort();
 #else
   SF = pow(_b,_b)/(tgamma(_b)*_Lambda)*pow(what/_Lambda,_b-1)*exp(-_b*what/_Lambda); 

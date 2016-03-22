@@ -93,7 +93,7 @@ void EvtHQETFF::getvectorff(EvtId parent,EvtId,
 void EvtHQETFF::gettensorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :gettensorff in EvtHQETFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :gettensorff in EvtHQETFF.\n";  
   ::abort();
 
 }
@@ -103,7 +103,7 @@ void EvtHQETFF::gettensorff(EvtId, EvtId, double, double, double*,
 void EvtHQETFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtHQETFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtHQETFF.\n";  
   ::abort();
 
 }
@@ -112,7 +112,7 @@ void EvtHQETFF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtHQETFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 			   double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtHQETFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtHQETFF.\n";
   ::abort();
 
 }
@@ -120,7 +120,7 @@ void EvtHQETFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtHQETFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 			    double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtHQETFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtHQETFF.\n";
   ::abort();
 
 }

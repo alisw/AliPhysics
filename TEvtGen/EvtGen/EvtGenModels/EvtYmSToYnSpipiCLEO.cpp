@@ -84,10 +84,10 @@ void EvtYmSToYnSpipiCLEO::init(){
 
   if ((!(getDaug(1)==PIP&&getDaug(2)==PIM))&&
       (!(getDaug(1)==PI0&&getDaug(2)==PI0))) {
-    report(ERROR,"EvtGen") << "EvtYmSToYnSpipiCLEO generator expected "
+    report(Severity::Error,"EvtGen") << "EvtYmSToYnSpipiCLEO generator expected "
                            << " pi+ and pi- (or pi0 and pi0) "
 			   << "as 2nd and 3rd daughter. "<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
 
@@ -124,7 +124,7 @@ void EvtYmSToYnSpipiCLEO::decay( EvtParticle *p){
   double M_mS = p->getP4().mass();
   double M_nS = v->getP4().mass();
 
-// //   report(INFO,"EvtYmSToYnSpipiCLEO")  << "M_nS = " << v->getP4().mass() << endl;
+// //   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "M_nS = " << v->getP4().mass() << endl;
 
   EvtVector4R P_nS;
   EvtVector4R P_pi1;
@@ -142,7 +142,7 @@ void EvtYmSToYnSpipiCLEO::decay( EvtParticle *p){
 
       double mX = EvtRandom::Flat(2.0 * m_pi, M_mS-M_nS);
 
-      //   report(INFO,"EvtYmSToYnSpipiCLEO")  << "m_X = " << mX << endl;
+      //   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "m_X = " << mX << endl;
 
       // Now create a two-body decay from the Y(mS) in its rest frame
       // of Y(mS) -> Y(nS) + X
@@ -181,7 +181,7 @@ void EvtYmSToYnSpipiCLEO::decay( EvtParticle *p){
 	costheta = - p4[1].dot(P_YmS_X)/(p4[1].d3mag()*P_YmS_X.d3mag());
       }
   
-      // //   report(INFO,"EvtYmSToYnSpipiCLEO")  << "cos(theta) = " << costheta << endl;
+      // //   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "cos(theta) = " << costheta << endl;
     
     
 
@@ -248,10 +248,10 @@ void EvtYmSToYnSpipiCLEO::decay( EvtParticle *p){
   s1->init( getDaugs()[1], P_pi1);
   s2->init( getDaugs()[2], P_pi2); 
 
-//   report(INFO,"EvtYmSToYnSpipiCLEO")  << "M_nS = " << v->getP4().mass() << endl;
-//   report(INFO,"EvtYmSToYnSpipiCLEO")  << "m_pi = " << s1->getP4().mass() << endl;
-//   report(INFO,"EvtYmSToYnSpipiCLEO")  << "m_pi = " << s2->getP4().mass() << endl;
-//   report(INFO,"EvtYmSToYnSpipiCLEO")  << "M2 = "   << M2 << endl;
+//   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "M_nS = " << v->getP4().mass() << endl;
+//   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "m_pi = " << s1->getP4().mass() << endl;
+//   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "m_pi = " << s2->getP4().mass() << endl;
+//   report(Severity::Info,"EvtYmSToYnSpipiCLEO")  << "M2 = "   << M2 << endl;
   
   // Pass the polarization of the parent Upsilon
   EvtVector4C ep0,ep1,ep2;  

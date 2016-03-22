@@ -72,9 +72,9 @@ void EvtBtoXsgamma::init(){
   // check that at least one b->sg model has been selected
   if (getNArg() == 0) {
     
-    report(ERROR,"EvtGen") << "EvtBtoXsgamma generator expected "
+    report(Severity::Error,"EvtGen") << "EvtBtoXsgamma generator expected "
                            << " at least 1 argument but found: "<<getNArg()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }    
 }
@@ -96,10 +96,10 @@ void EvtBtoXsgamma::decay( EvtParticle *p ){
     else if (getArg(0) == 3) _model = new EvtBtoXsgammaFixedMass();
     else if (getArg(0) == 4) _model = new EvtBtoXsgammaFlatEnergy();
     else{
-      report(ERROR,"EvtGen") << "No valid EvtBtoXsgamma generator model selected "
+      report(Severity::Error,"EvtGen") << "No valid EvtBtoXsgamma generator model selected "
 			     << "Set arg(0) to 1 for Ali-Greub model or 2 for "
 			     <<" Kagan model or 3 for a fixed mass"<<endl;
-      report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+      report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
       ::abort();
       
     }
@@ -109,7 +109,7 @@ void EvtBtoXsgamma::decay( EvtParticle *p ){
 
   //  if ( p->getNDaug() != 0 ) {
     //Will end up here because maxrate multiplies by 1.2
-  //  report(DEBUG,"EvtGen") << "In EvtBtoXsgamma: X_s daughters should not be here!"<<endl;
+  //  report(Severity::Debug,"EvtGen") << "In EvtBtoXsgamma: X_s daughters should not be here!"<<endl;
   //  return;
   //}
 

@@ -50,10 +50,10 @@ void EvtBtoXsgammaAliGreub::init(int nArg, double* /*args*/){
  
   if ((nArg - 1) != 0) {
     
-    report(ERROR,"EvtGen") << "EvtBtoXsgamma generator model "
+    report(Severity::Error,"EvtGen") << "EvtBtoXsgamma generator model "
 			   << "EvtBtoXsgammaAliGreub expected " 
 			   << "zero arguments but found: "<<nArg-1<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   
   }
@@ -118,7 +118,7 @@ double EvtBtoXsgammaAliGreub::GetMass(int Xscode) {
     par[16]=1522.4024658203;
     par[17]=-82.379623413086;
   } else {
-    report(DEBUG,"EvtGen") << "In EvtBtoXsgammaAliGreub: Particle with id " << Xscode << " is not a Xss particle"<<endl;
+    report(Severity::Debug,"EvtGen") << "In EvtBtoXsgammaAliGreub: Particle with id " << Xscode << " is not a Xss particle"<<endl;
     return 0;
   }
 

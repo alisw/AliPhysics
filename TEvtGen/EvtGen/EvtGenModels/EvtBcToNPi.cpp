@@ -96,19 +96,19 @@ void EvtBcToNPi::init(){
 		Fm_c2=0;
 	}
 	else {
-		report(ERROR,"EvtGen") << "Have not yet implemented this final state in BCPSINPI model" << endl;
-		report(ERROR,"EvtGen") << "Ndaug="<<getNDaug() << endl;
+		report(Severity::Error,"EvtGen") << "Have not yet implemented this final state in BCPSINPI model" << endl;
+		report(Severity::Error,"EvtGen") << "Ndaug="<<getNDaug() << endl;
 		for ( int id=0; id<(getNDaug()-1); id++ ) 
-			report(ERROR,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
+			report(Severity::Error,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
 		return;
 
 	};
 
 	if(getNDaug()<2 || getNDaug()>4) {
-		report(ERROR,"EvtGen") << "Have not yet implemented this final state in BCPSINPI model" << endl;
-		report(ERROR,"EvtGen") << "Ndaug="<<getNDaug() << endl;
+		report(Severity::Error,"EvtGen") << "Have not yet implemented this final state in BCPSINPI model" << endl;
+		report(Severity::Error,"EvtGen") << "Ndaug="<<getNDaug() << endl;
 		for ( int id=0; id<(getNDaug()-1); id++ ) 
-			report(ERROR,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
+			report(Severity::Error,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
 		return;
 	}
 
@@ -248,11 +248,11 @@ void EvtBcToNPi::decay( EvtParticle *root_particle ){
 	}
 
 	if ( !foundHadCurr ) {
-		report(ERROR,"EvtGen") << "Have not yet implemented this final state in BCNPI model" << endl;
-		report(ERROR,"EvtGen") << "Ndaug="<<getNDaug() << endl;
+		report(Severity::Error,"EvtGen") << "Have not yet implemented this final state in BCNPI model" << endl;
+		report(Severity::Error,"EvtGen") << "Ndaug="<<getNDaug() << endl;
 		int id;
 		for ( id=0; id<(getNDaug()-1); id++ ) 
-		report(ERROR,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
+		report(Severity::Error,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
 		::abort();
 	};
 
@@ -331,7 +331,7 @@ double EvtBcToNPi::pi3G(double m2,int dupD) {
 
 void EvtBcToNPi::printAuthorInfo() {
   
-  report(INFO,"EvtGen")<<"Defining EvtBcToNPi model: Bc -> V + npi and Bc -> P + npi decays\n"
+  report(Severity::Info,"EvtGen")<<"Defining EvtBcToNPi model: Bc -> V + npi and Bc -> P + npi decays\n"
 		       <<"from A.V. Berezhnoy, A.K. Likhoded, A.V. Luchinsky: "
 		       <<"Phys.Rev.D 82, 014012 (2010) and arXiV:1104.0808."<<endl;
 

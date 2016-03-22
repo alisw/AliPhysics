@@ -69,7 +69,7 @@ void EvtSecondary::createSecondary(int stdhepindex,EvtParticle* prnt){
     return;
   }
   
-  report(ERROR,"EvtGen") << 
+  report(Severity::Error,"EvtGen") << 
     "More than 3 decay products in a secondary particle!"<<endl;
 
 
@@ -84,7 +84,7 @@ ostream& operator<<(ostream& s, const EvtSecondary& secondary){
   int i;
   for(i=0;i<secondary._npart;i++){
 
-    report(INFO,"EvtGen") <<i<<" "
+    report(Severity::Info,"EvtGen") <<i<<" "
 	 <<secondary._stdhepindex[i]<<" "
 	 <<secondary._id1[i]<<" "
 	 <<secondary._id2[i]<<" "

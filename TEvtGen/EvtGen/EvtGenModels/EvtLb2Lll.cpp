@@ -51,151 +51,151 @@ std::string EvtLb2Lll::getName(){
 void EvtLb2Lll::init(){
 
   if(getNArg()>8){ // Decay parameters
-    report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected max. 8 arguments but found: " << getNArg() << std::endl;
-    report(INFO ,"EvtGen") << "  1. Lambda_b0 polarization - zero is default" << std::endl;
-    report(INFO ,"EvtGen") << "  2. Model type - \"SM\" for Standard Model is default" << std::endl;
-    report(INFO ,"EvtGen") << "  3. Form-Factors - \"HQET\" is used by default" << std::endl;
-    report(INFO ,"EvtGen") << "  4. How to set polarization - \"ModifiedSpinors\" is default" << std::endl;
-    report(INFO ,"EvtGen") << "  5. Include long distance (LD) effects - \"SD\" (no) is default" << std::endl;
-    report(INFO ,"EvtGen") << "  6. NonFactorizable contribution (omega) to b->sg decay at q2=0 " << std::endl;
-    report(INFO ,"EvtGen") << "  7. Note on every x-th decay" << std::endl;
-    report(INFO ,"EvtGen") << "  8. Maximum probability - automatic by default" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected max. 8 arguments but found: " << getNArg() << std::endl;
+    report(Severity::Info ,"EvtGen") << "  1. Lambda_b0 polarization - zero is default" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  2. Model type - \"SM\" for Standard Model is default" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  3. Form-Factors - \"HQET\" is used by default" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  4. How to set polarization - \"ModifiedSpinors\" is default" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  5. Include long distance (LD) effects - \"SD\" (no) is default" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  6. NonFactorizable contribution (omega) to b->sg decay at q2=0 " << std::endl;
+    report(Severity::Info ,"EvtGen") << "  7. Note on every x-th decay" << std::endl;
+    report(Severity::Info ,"EvtGen") << "  8. Maximum probability - automatic by default" << std::endl;
     ::abort();
   }
 
   if(getNDaug()!=3){ // Check that there are 3 daughters only
-    report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected 3 daughters but found: " << getNDaug() << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected 3 daughters but found: " << getNDaug() << std::endl;
     ::abort();
   }
 
   // TODO: better check based on spin and falvour is needed to allow usage of aliases !
   if(EvtPDL::name(getParentId())=="Lambda_b0"){ // Check daughters of Lambda_b0
-    report(INFO,"EvtGen") << " EvtLb2Lll generator found Lambda_b0" << std::endl;
+    report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found Lambda_b0" << std::endl;
     //if(EvtPDL::name(getDaug(0))!="Lambda0"){
-    //  report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected Lambda0 daughter but found: " << EvtPDL::name(getDaug(0)) << std::endl;
+    //  report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected Lambda0 daughter but found: " << EvtPDL::name(getDaug(0)) << std::endl;
     //  ::abort();
     //}
     if(EvtPDL::name(getDaug(1))=="e-" && EvtPDL::name(getDaug(2))=="e+"){
       m_decayName="Lambda_b0 -> Lambda0 e- e+";
-      report(INFO,"EvtGen") << " EvtLb2Lll generator found decay:  Lambda_b0 -> Lambda0 e- e+" << std::endl;
+      report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found decay:  Lambda_b0 -> Lambda0 e- e+" << std::endl;
     }else if(EvtPDL::name(getDaug(1))=="mu-" && EvtPDL::name(getDaug(2))=="mu+"){
       m_decayName="Lambda_b0 -> Lambda0 mu- mu+";
-      report(INFO,"EvtGen") << " EvtLb2Lll generator found decay:  Lambda_b0 -> Lambda0 mu- mu+" << std::endl;
+      report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found decay:  Lambda_b0 -> Lambda0 mu- mu+" << std::endl;
     }else if(EvtPDL::name(getDaug(1))=="tau-" && EvtPDL::name(getDaug(2))=="tau+"){
       m_decayName="Lambda_b0 -> Lambda0 tau- tau+";
-      report(INFO,"EvtGen") << " EvtLb2Lll generator found decay:  Lambda_b0 -> Lambda0 tau- tau+" << std::endl;
+      report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found decay:  Lambda_b0 -> Lambda0 tau- tau+" << std::endl;
     }else{
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected lepton pair daughters but found:  " << EvtPDL::name(getDaug(1)) << " " << EvtPDL::name(getDaug(2)) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected lepton pair daughters but found:  " << EvtPDL::name(getDaug(1)) << " " << EvtPDL::name(getDaug(2)) << std::endl;
       ::abort();
     }
   //TODO: The model is known not to work correctly for anti-Lambda_b0 (A_FB does not change its sign)
   }else if(EvtPDL::name(getParentId())=="anti-Lambda_b0"){ // Check daughters of anti-Lambda_b0
-    report(INFO,"EvtGen") << " EvtLb2Lll generator found anti-Lambda_b0" << std::endl;
+    report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found anti-Lambda_b0" << std::endl;
     //if(EvtPDL::name(getDaug(0))!="anti-Lambda0"){
-    //  report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected anti-Lambda0 daughter but found: " << EvtPDL::name(getDaug(0)) << std::endl;
+    //  report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected anti-Lambda0 daughter but found: " << EvtPDL::name(getDaug(0)) << std::endl;
     //  ::abort();
     //}
     if(EvtPDL::name(getDaug(1))=="e+" && EvtPDL::name(getDaug(2))=="e-"){
       m_decayName="anti-Lambda_b0 -> anti-Lambda0 e+ e-";
-      report(INFO,"EvtGen") << " EvtLb2Lll generator found decay:  anti-Lambda_b0 -> anti-Lambda0 e+ e-" << std::endl;
+      report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found decay:  anti-Lambda_b0 -> anti-Lambda0 e+ e-" << std::endl;
     }else if(EvtPDL::name(getDaug(1))=="mu+" && EvtPDL::name(getDaug(2))=="mu-"){
       m_decayName="anti-Lambda_b0 -> anti-Lambda0 mu+ mu-";
-      report(INFO,"EvtGen") << " EvtLb2Lll generator found decay:  anti-Lambda_b0 -> anti-Lambda0 mu+ mu-" << std::endl;
+      report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found decay:  anti-Lambda_b0 -> anti-Lambda0 mu+ mu-" << std::endl;
     }else if(EvtPDL::name(getDaug(1))=="tau-" && EvtPDL::name(getDaug(2))=="tau+"){
       m_decayName="anti-Lambda_b0 -> anti-Lambda0 tau+ tau-";
-      report(INFO,"EvtGen") << " EvtLb2Lll generator found decay:  anti-Lambda_b0 -> anti-Lambda0 tau+ tau-" << std::endl;
+      report(Severity::Info,"EvtGen") << " EvtLb2Lll generator found decay:  anti-Lambda_b0 -> anti-Lambda0 tau+ tau-" << std::endl;
     }else{
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected lepton pair daughters but found:  " << EvtPDL::name(getDaug(1)) << " " << EvtPDL::name(getDaug(2)) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected lepton pair daughters but found:  " << EvtPDL::name(getDaug(1)) << " " << EvtPDL::name(getDaug(2)) << std::endl;
       ::abort();
     }
   }else{ // This model is not intended for decay of anything else than (anti-)Lambda_b0
-    report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll generator expected (anti-)Lambda_b0 parent but found:  " << EvtPDL::name(getParentId()) << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll generator expected (anti-)Lambda_b0 parent but found:  " << EvtPDL::name(getParentId()) << std::endl;
     ::abort();
   }
 
   // Read and check all parameters
   if(getNArg()>0){
     if(getArg(0)>1. || getArg(0)<-1.){
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll expects polarization to be in interval <-1,1>, not " << getArg(0) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll expects polarization to be in interval <-1,1>, not " << getArg(0) << std::endl;
       ::abort();
     }
     m_polarizationLambdab0 = getArg(0);
   }else{
     m_polarizationLambdab0 = 0;
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll set Lambda_b0 polarization to " << m_polarizationLambdab0 << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll set Lambda_b0 polarization to " << m_polarizationLambdab0 << std::endl;
 
   if(getNArg()>1){
     if(getArgStr(1).substr(1,getArgStr(1).size()-2)!="SM" &&
        getArgStr(1).substr(1,getArgStr(1).size()-2)!="-C7_SM" &&
        getArgStr(1).substr(1,getArgStr(1).size()-2)!="SUSY-ChenGeng"){
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll doesn't know this physics model: " << getArgStr(1) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll doesn't know this physics model: " << getArgStr(1) << std::endl;
       ::abort();
     }
     m_HEPmodel = getArgStr(1).substr(1,getArgStr(1).size()-2);
   }else{
     m_HEPmodel = "SM";
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll will use this physics model: " << m_HEPmodel << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll will use this physics model: " << m_HEPmodel << std::endl;
 
   if(getNArg()>2){
     if(getArgStr(2).substr(1,getArgStr(2).size()-2)!="HQET" &&
        getArgStr(2).substr(1,getArgStr(2).size()-2)!="HQET-noF2" &&
        getArgStr(2).substr(1,11)                   !="HQET-delta="){
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll doesn't know this Form-Factors model: " << getArgStr(2) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll doesn't know this Form-Factors model: " << getArgStr(2) << std::endl;
       ::abort();
     }
     m_FFtype = getArgStr(2).substr(1,getArgStr(2).size()-2);
   }else{
     m_FFtype = "HQET";
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll will use this Form-Factors model: " << m_FFtype << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll will use this Form-Factors model: " << m_FFtype << std::endl;
 
   if(getNArg()>3){
     if(getArgStr(3).substr(1,getArgStr(3).size()-2)!="Unpolarized"){
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll doesn't know kind of introducing polarization: " << getArgStr(3) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll doesn't know kind of introducing polarization: " << getArgStr(3) << std::endl;
       ::abort();
     }
     m_polarizationIntroduction = getArgStr(3).substr(1,getArgStr(3).size()-2);
   }else{
     m_polarizationIntroduction = "Unpolarized";
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll will use this kind of introducing polarization: " << m_polarizationIntroduction << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll will use this kind of introducing polarization: " << m_polarizationIntroduction << std::endl;
 
   if(getNArg()>4){
     if(getArgStr(4).substr(1,getArgStr(4).size()-2)!="SD" && getArgStr(4).substr(1,getArgStr(4).size()-2)!="LD"){
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll didn't find SD or LD parameter: " << getArgStr(4) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll didn't find SD or LD parameter: " << getArgStr(4) << std::endl;
       ::abort();
     }
     m_effectContribution = getArgStr(5).substr(1,getArgStr(4).size()-2);
   }else{
     m_effectContribution = "SD";
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll will include contribution from these effects: " << m_effectContribution << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll will include contribution from these effects: " << m_effectContribution << std::endl;
 
   if(getNArg()>5){
     if(fabs(getArg(5))>0.15){
-      report(WARNING,"EvtGen") << " WARNING: EvtLb2Lll found very high contribution to b->sg decay at q2=0: " << getArg(5) << std::endl;
+      report(Severity::Warning,"EvtGen") << " WARNING: EvtLb2Lll found very high contribution to b->sg decay at q2=0: " << getArg(5) << std::endl;
     }
     m_omega = getArg(5);
   }else{
     m_omega = 0;
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll will use this contribution to b->sg decay at q2=0: " << m_omega << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll will use this contribution to b->sg decay at q2=0: " << m_omega << std::endl;
 
   if(getNArg()>6) m_noTries = (long)(getArg(6));
   else            m_noTries = 0;
 
   if(getNArg()>7){
     if(getArg(7)<0.){
-      report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll expects positive maximum probability not : " << getArg(7) << std::endl;
+      report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll expects positive maximum probability not : " << getArg(7) << std::endl;
       ::abort();
     }
     m_maxProbability = getArg(7);
   }else{
     m_maxProbability = 0.;
   }
-  report(INFO,"EvtGen") << " EvtLb2Lll maximum probability was set to " << m_maxProbability << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll maximum probability was set to " << m_maxProbability << std::endl;
   m_poleSize=0;
 
   // Initialize Wilson coefficients by Buras and Munz
@@ -206,7 +206,7 @@ void EvtLb2Lll::init(){
 
 void EvtLb2Lll::initProbMax(){
 
-  report(INFO,"EvtGen") << " EvtLb2Lll is finding maximum probability ... " << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll is finding maximum probability ... " << std::endl;
 
   if(m_maxProbability==0){
 
@@ -240,7 +240,7 @@ void EvtLb2Lll::initProbMax(){
 
     EvtVector4R p4lambda,p4lep1,p4lep2,boost;
 
-    report(INFO,"EvtGen") << " EvtLb2Lll is probing whole phase space ..." << std::endl;
+    report(Severity::Info,"EvtGen") << " EvtLb2Lll is probing whole phase space ..." << std::endl;
 
     int i,j;
     double prob=0;
@@ -266,7 +266,7 @@ void EvtLb2Lll::initProbMax(){
 	//std::cout << "q2:  " << q2 << " \t theta:  " << theta << " \t prob:  " << prob << std::endl;
 	//std::cout << "p1: " << p4lep1 << " p2: " << p4lep2 << " q2-q2min: " << q2-(m1+m2)*(m1+m2) << std::endl;
 	if(prob>m_maxProbability){
-	  report(INFO,"EvtGen") << "  - probability " << prob << " found at q2 = " << q2 << " (" << 100*(q2-q2min)/(q2max-q2min) << " %) and theta = " << theta*180/EvtConst::pi << std::endl;
+	  report(Severity::Info,"EvtGen") << "  - probability " << prob << " found at q2 = " << q2 << " (" << 100*(q2-q2min)/(q2max-q2min) << " %) and theta = " << theta*180/EvtConst::pi << std::endl;
 	  m_maxProbability=prob;
 	}
       }
@@ -279,7 +279,7 @@ void EvtLb2Lll::initProbMax(){
   }
 
   setProbMax(m_maxProbability);
-  report(INFO,"EvtGen") << " EvtLb2Lll set up maximum probability to " << m_maxProbability << std::endl;
+  report(Severity::Info,"EvtGen") << " EvtLb2Lll set up maximum probability to " << m_maxProbability << std::endl;
 
 }
 
@@ -353,7 +353,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
   q_mu = parent->getP4Restframe()-parent->getDaug(0)->getP4();
   q2   = q_mu.mass2();
 
-  if(m_noTries>0) if(!((++noTries)%m_noTries)) report(DEBUG,"EvtGen") << " EvtLb2Lll already finished " << noTries << " matrix element calculations" << std::endl;
+  if(m_noTries>0) if(!((++noTries)%m_noTries)) report(Severity::Debug,"EvtGen") << " EvtLb2Lll already finished " << noTries << " matrix element calculations" << std::endl;
 
   if(m_FFtype=="HQET"){
     r = M_L*M_L/M_Lb/M_Lb;
@@ -376,7 +376,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
     f_T = f_2T-f_TS*q2;
     g_T = g_2T-g_TS*q2;
   }else if(strstr(m_FFtype.c_str(),"HQET-delta=")==m_FFtype.c_str()){
-    //report(WARNING,"EvtGen") << " WARNING: HQET-delta FF model should be checked for correctness" << std::endl;
+    //report(Severity::Warning,"EvtGen") << " WARNING: HQET-delta FF model should be checked for correctness" << std::endl;
     if(delta==0) sscanf(m_FFtype.c_str(),"%c%c%c%c%c%c%c%c%c%c%c%lf",&ch,&ch,&ch,&ch,&ch,&ch,&ch,&ch,&ch,&ch,&ch,&delta);
     r = M_L*M_L/M_Lb/M_Lb;
     F0_1 = +0.462;
@@ -398,7 +398,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
     f_T = f_2T-f_TS*q2;
     g_T = g_2T-g_TS*q2;
   }else if(m_FFtype=="HQET-noF2"){
-    //report(WARNING,"EvtGen") << " WARNING: HQET-noF2 FF model should be checked for correctness" << std::endl;
+    //report(Severity::Warning,"EvtGen") << " WARNING: HQET-noF2 FF model should be checked for correctness" << std::endl;
     r = M_L*M_L/M_Lb/M_Lb;
     F0_1 = +0.462;
     a_F1 = -0.0182;
@@ -420,7 +420,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
     g_2T = g_T+g_TS*q2;
     g_1T = (g_TV-g_TS*(M_L-M_Lb))*q2;
     g_1T = +q2/(M_Lb+M_L)*g_3T;
-    report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll - unknown Form-Factors model: " << m_FFtype << " - this should never happen !" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll - unknown Form-Factors model: " << m_FFtype << " - this should never happen !" << std::endl;
     ::abort();
   }
 
@@ -445,7 +445,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
     C_LRtot = C_9eff+m_WC.GetC10tilda()+C_LR;
     //std::cout << "Yld: " << Yld << "  C7eff: " << C_7eff << "  C_9eff: " << C_9eff << "  Diff7: " << C_7eff-m_WC.GetC7eff0() << "  Diff9: " << C_9eff-m_WC.GetC9tilda() << std::endl;
   }else if(m_HEPmodel=="SUSY-ChenGeng"){
-    //report(WARNING,"EvtGen") << " WARNING: SUSY-ChenGeng model should be checked for correctness" << std::endl;
+    //report(Severity::Warning,"EvtGen") << " WARNING: SUSY-ChenGeng model should be checked for correctness" << std::endl;
     C_LL=C_LR=C_RL=C_RR=C_LRLR=C_RLLR=C_LRRL=C_RLRL=C_T=C_TE=EvtComplex(0,0);
     EvtComplex d_u23LL = 0.1;
     EvtComplex d_u33RL = 0.65;
@@ -463,7 +463,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
     C_LRtot = C_9eff+m_WC.GetC10tilda()+C_10susy+C_LR;
     //std::cout << "Yld: " << Yld << "  C7eff: " << C_7eff << "  C_9eff: " << C_9eff << "  Diff7: " << C_7eff-m_WC.GetC7eff0() << "  Diff9: " << C_9eff-m_WC.GetC9tilda() << std::endl;
   }else{
-    report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll - unknown physics model: " << m_HEPmodel << " - this should never happen !" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll - unknown physics model: " << m_HEPmodel << " - this should never happen !" << std::endl;
     ::abort();
   }
 
@@ -512,7 +512,7 @@ void EvtLb2Lll::calcAmp(EvtAmp *amp,EvtParticle *parent){
     parent__spParent[0]=parent->sp(0);
     parent__spParent[1]=parent->sp(1);
   }else{
-    report(ERROR,"EvtGen") << " ERROR: EvtLb2Lll - unknown polarization: " << m_polarizationIntroduction << " - this should never happen !" << std::endl;
+    report(Severity::Error,"EvtGen") << " ERROR: EvtLb2Lll - unknown polarization: " << m_polarizationIntroduction << " - this should never happen !" << std::endl;
     ::abort();
   }
 

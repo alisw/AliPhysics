@@ -214,7 +214,7 @@ double EvtPto3PAmp::angDep(const EvtDalitzPoint& x) const
   double cosTh = x.cosTh(_pairAng,_pairRes);  
   if(fabs(cosTh) > 1.) {
     
-    report(INFO,"EvtGen") << "cosTh " << cosTh << endl; 
+    report(Severity::Info,"EvtGen") << "cosTh " << cosTh << endl; 
     assert(0);
   }
   

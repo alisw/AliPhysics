@@ -13,6 +13,9 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+# Special definitions needed for TEvtGen only
+add_definitions(-UDEBUG)
+
 # Include the libraries
 add_subdirectory (EvtGenExternal)
 add_subdirectory (EvtGen)

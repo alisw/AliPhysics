@@ -60,7 +60,7 @@ void EvtPhsp::decay( EvtParticle *p ){
   //unneeded - lange - may13-02
   //if ( p->getNDaug() != 0 ) {
     //Will end up here because maxrate multiplies by 1.2
-  //  report(DEBUG,"EvtGen") << "In EvtPhsp: has "
+  //  report(Severity::Debug,"EvtGen") << "In EvtPhsp: has "
   //			   <<" daugthers should not be here!"<<endl;
   //  return;
   //}

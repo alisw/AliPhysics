@@ -50,7 +50,7 @@ void EvtNeutrinoParticle::init(EvtId part_n,const EvtVector4R& p4){
   pz=p4.get(3);
 
   if (EvtPDL::getStdHep(part_n)==0){
-    report(ERROR,"EvtGen") << "Error in EvtNeutrinoParticle::init, part_n="
+    report(Severity::Error,"EvtGen") << "Error in EvtNeutrinoParticle::init, part_n="
 			   << part_n.getId()<<endl;
   }
 
@@ -113,8 +113,8 @@ EvtDiracSpinor EvtNeutrinoParticle::spParentNeutrino() const {
 
 EvtDiracSpinor EvtNeutrinoParticle::spNeutrino() const {
 
-  report(ERROR,"EvtGen") << "Tried to get neutrino spinor in restframe"; 
-  report(ERROR,"EvtGen") << "Will terminate execution."; 
+  report(Severity::Error,"EvtGen") << "Tried to get neutrino spinor in restframe"; 
+  report(Severity::Error,"EvtGen") << "Will terminate execution."; 
 
   ::abort();
 
@@ -124,8 +124,8 @@ EvtDiracSpinor EvtNeutrinoParticle::spNeutrino() const {
 
 EvtSpinDensity EvtNeutrinoParticle::rotateToHelicityBasis() const{
 
-  report(ERROR,"EvtGen") << "rotateToHelicityBasis not implemented for neutrino."; 
-  report(ERROR,"EvtGen") << "Will terminate execution."; 
+  report(Severity::Error,"EvtGen") << "rotateToHelicityBasis not implemented for neutrino."; 
+  report(Severity::Error,"EvtGen") << "Will terminate execution."; 
 
   ::abort();
 
@@ -138,8 +138,8 @@ EvtSpinDensity EvtNeutrinoParticle::rotateToHelicityBasis(double,
 							  double,
 							  double) const{
 
-  report(ERROR,"EvtGen") << "rotateToHelicityBasis(alpha,beta,gama) not implemented for neutrino."; 
-  report(ERROR,"EvtGen") << "Will terminate execution."; 
+  report(Severity::Error,"EvtGen") << "rotateToHelicityBasis(alpha,beta,gama) not implemented for neutrino."; 
+  report(Severity::Error,"EvtGen") << "Will terminate execution."; 
 
   ::abort();
 

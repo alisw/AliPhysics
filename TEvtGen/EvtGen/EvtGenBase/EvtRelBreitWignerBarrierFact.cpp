@@ -117,9 +117,9 @@ double EvtRelBreitWignerBarrierFact::getMassProb(double mass, double massPar,int
   for (i=0; i<nDaug; i++) {
     dTotMass+=massDau[i];
   }
-  //report(INFO,"EvtGen") << mass << " " << massPar << " " << dTotMass << " "<< endl;
+  //report(Severity::Info,"EvtGen") << mass << " " << massPar << " " << dTotMass << " "<< endl;
   //    if ( (mass-dTotMass)<0.0001 ) return 0.;
-  //report(INFO,"EvtGen") << mass << " " << dTotMass << endl;
+  //report(Severity::Info,"EvtGen") << mass << " " << dTotMass << endl;
   if ( (mass<dTotMass) ) return 0.;
 
   if ( _width< 0.0001) return 1.;

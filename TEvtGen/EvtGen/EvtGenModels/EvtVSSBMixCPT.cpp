@@ -51,9 +51,9 @@ void EvtVSSBMixCPT::init(){
   if ( getNArg()>4) checkNArg(14,12,8);
 
   if (getNArg()<1) {
-    report(ERROR,"EvtGen") << "EvtVSSBMix generator expected "
+    report(Severity::Error,"EvtGen") << "EvtVSSBMix generator expected "
                            << " at least 1 argument (deltam) but found:"<<getNArg()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   // check that we are asked to produced exactly 2 daughters
@@ -62,10 +62,10 @@ void EvtVSSBMixCPT::init(){
 
   if ( getNDaug()==4) {
     if ( getDaug(0)!=getDaug(2)||getDaug(1)!=getDaug(3)){
-      report(ERROR,"EvtGen") << "EvtVSSBMixCPT generator allows "
+      report(Severity::Error,"EvtGen") << "EvtVSSBMixCPT generator allows "
 			     << " 4 daughters only if 1=3 and 2=4"
 			     << " (but 3 and 4 are aliased "<<endl;
-      report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+      report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
       ::abort();
     }
   }
@@ -79,21 +79,21 @@ void EvtVSSBMixCPT::init(){
 
   // check that our daughter particles are charge conjugates of each other
   if(!(EvtPDL::chargeConj(getDaug(0)) == getDaug(1))) {
-    report(ERROR,"EvtGen") << "EvtVSSBMixCPT generator expected daughters "
+    report(Severity::Error,"EvtGen") << "EvtVSSBMixCPT generator expected daughters "
 			   << "to be charge conjugate." << endl
 			   << "  Found " << EvtPDL::name(getDaug(0)).c_str() << " and "
 			   << EvtPDL::name(getDaug(1)).c_str() << endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   // check that both daughter particles have the same lifetime
   if(EvtPDL::getctau(getDaug(0)) != EvtPDL::getctau(getDaug(1))) {
-    report(ERROR,"EvtGen") << "EvtVSSBMixCPT generator expected daughters "
+    report(Severity::Error,"EvtGen") << "EvtVSSBMixCPT generator expected daughters "
 			   << "to have the same lifetime." << endl
 			   << "  Found ctau = "
 			   << EvtPDL::getctau(getDaug(0)) << " mm and "
 			   << EvtPDL::getctau(getDaug(1)) << " mm" << endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   // precompute quantities that will be used to generate events
@@ -156,7 +156,7 @@ void EvtVSSBMixCPT::init(){
   _chib0bar_b0=(1/qop2)*(x*x+y*y)/((1/qop2)*(x*x+y*y)+2+x*x-y*y); // does not include CPT in mixing 
 
   if ( verbose() ) {
-    report(INFO,"EvtGen") << "VSS_BMIXCPT will generate mixing and CPT/CP effects in mixing:"
+    report(Severity::Info,"EvtGen") << "VSS_BMIXCPT will generate mixing and CPT/CP effects in mixing:"
 			  << endl << endl
 			  << "    " << EvtPDL::name(getParentId()).c_str() << " --> "
 			  << EvtPDL::name(getDaug(0)).c_str() << " + "

@@ -32,7 +32,7 @@ using std::ostream;
 //
 
 
-ostream& report( Severity severity ,
+ostream& report( Severity::Enum severity ,
                  const char* facility )
 {
    int printNoFacility=1;
@@ -43,7 +43,7 @@ ostream& report( Severity severity ,
                         << endl ;
       printNoFacility = 0 ;
    }
-   if ( severity < WARNING ) {
+   if ( severity < Severity::Warning ) {
      if (facility[0]!=0){
        cerr<<facility<<":";
      }

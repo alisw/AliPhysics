@@ -67,7 +67,7 @@ int EvtParser::read(const std::string filename){
   
   fin.open(filename.c_str());
   if (!fin) {
-    report(ERROR,"EvtGen") << "Could not open file '"<<filename.c_str()<<"'"<<endl;
+    report(Severity::Error,"EvtGen") << "Could not open file '"<<filename.c_str()<<"'"<<endl;
     return -1;
   }
 
@@ -87,7 +87,7 @@ int EvtParser::read(const std::string filename){
       i++;
     }
     if(i==MAXBUF) {
-      report(ERROR,"EvtGen") << "Error in EvtParser: line:"
+      report(Severity::Error,"EvtGen") << "Error in EvtParser: line:"
 			     <<line<<" to long"<<endl;
     }
     else {
@@ -131,7 +131,7 @@ int EvtParser::read(const std::string filename){
 
 void EvtParser::addToken(int line,const std::string& string){
 
-  //report(INFO,"EvtGen") <<_ntoken<<" "<<line<<" "<<string<<endl;  
+  //report(Severity::Info,"EvtGen") <<_ntoken<<" "<<line<<" "<<string<<endl;  
 
   if (_ntoken==_lengthoftokenlist) {
 
@@ -166,7 +166,7 @@ void EvtParser::addToken(int line,const std::string& string){
  
   _ntoken++;  
 
-  //report(INFO,"EvtGen") << "First:"<<_tokenlist[0]<<" last:"<<_tokenlist[_ntoken-1]<<endl;
+  //report(Severity::Info,"EvtGen") << "First:"<<_tokenlist[0]<<" last:"<<_tokenlist[_ntoken-1]<<endl;
 
 }
    

@@ -46,14 +46,14 @@ void EvtSSD_DirectCP::init(){
        (!((d1type==EvtSpinType::SCALAR)||(d1type==EvtSpinType::VECTOR)||
           (d1type==EvtSpinType::TENSOR)))
        ) {
-    report(ERROR,"EvtGen") << "EvtSSD_DirectCP generator expected "
+    report(Severity::Error,"EvtGen") << "EvtSSD_DirectCP generator expected "
                            << "one of the daugters to be a scalar, "
                            << "the other either scalar, vector, or tensor, "
                            << "found:"
                            << EvtPDL::name(getDaug(0)).c_str()
                            <<" and "
                            <<EvtPDL::name(getDaug(1)).c_str()<<std::endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<std::endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<std::endl;
     ::abort();
   }
   

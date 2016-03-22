@@ -117,8 +117,8 @@ double EvtAbsLineShape::getRandMass(EvtId *parId, int /* nDaug */, EvtId * /*dau
   //its not flat - but generated according to a BW
 
   if (maxMass>0&&maxMass<_massMin) {
-    report(DEBUG,"EvtGen") << "In EvtAbsLineShape::getRandMass:"<<endl;
-    report(DEBUG,"EvtGen") << "Cannot create a particle with a minimal mass of "
+    report(Severity::Debug,"EvtGen") << "In EvtAbsLineShape::getRandMass:"<<endl;
+    report(Severity::Debug,"EvtGen") << "Cannot create a particle with a minimal mass of "
                            << _massMin << " from a "<<EvtPDL::name(*parId)
                            << " decay with available left-over mass-energy " << maxMass
                            << ". Returning 0.0 mass. The rest of this decay chain will probably fail..." << endl;
@@ -143,7 +143,7 @@ double EvtAbsLineShape::getMassProb(double mass, double massPar, int nDaug, doub
     for (i=0; i<nDaug; i++) {
       dTotMass+=massDau[i];
     }
-    //report(INFO,"EvtGen") << mass << " " << massPar << " " << dTotMass << " "<< endl;
+    //report(Severity::Info,"EvtGen") << mass << " " << massPar << " " << dTotMass << " "<< endl;
     //    if ( (mass-dTotMass)<0.0001 ) return 0.;
     if ( (mass<dTotMass) ) return 0.;
   }

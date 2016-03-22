@@ -66,7 +66,7 @@ void EvtBtoXsEtap::decay( EvtParticle *p ){
   // useless
   //  if ( p->getNDaug() != 0 ) {
   //  //Will end up here because maxrate multiplies by 1.2
-  //  report(DEBUG,"EvtGen") << "In EvtBtoXsEtap: X_s daughters should not be here!"<<endl;
+  //  report(Severity::Debug,"EvtGen") << "In EvtBtoXsEtap: X_s daughters should not be here!"<<endl;
   //  return;
   //}
 
@@ -127,7 +127,7 @@ void EvtBtoXsEtap::decay( EvtParticle *p ){
     //    par[16]=1000.8093261719;
     //    par[17]=-53.834449768066;
   } else {
-    report(DEBUG,"EvtGen") << "In EvtBtoXsEtap: Particle with id " << Xscode << " is not a Xsd/u particle"<<endl;
+    report(Severity::Debug,"EvtGen") << "In EvtBtoXsEtap: Particle with id " << Xscode << " is not a Xsd/u particle"<<endl;
     return;
   }
 
@@ -157,7 +157,7 @@ void EvtBtoXsEtap::decay( EvtParticle *p ){
     }
   }
 
-  // debug stuff:  report(INFO,"EvtGen") << "Xscode " << Xscode << " daughter 1 mass " << mass[0] << " daughter 2 mass " << mass[1] << endl;
+  // debug stuff:  report(Severity::Info,"EvtGen") << "Xscode " << Xscode << " daughter 1 mass " << mass[0] << " daughter 2 mass " << mass[1] << endl;
 
   EvtGenKine::PhaseSpace( getNDaug(), mass, p4, m_b );
 

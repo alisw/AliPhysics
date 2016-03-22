@@ -105,7 +105,7 @@ void EvtBBScalar::setKnownBaryonTypes(const EvtId& baryon) {
             or EvtPDL::getStdHep(EvtPDL::getId("anti-Xi+")) == baryonId) {
         _baryonCombination.set(Xi_minus);
     } else {
-        report(ERROR, "EvtGen")
+        report(Severity::Error, "EvtGen")
             << "EvtBBScalar::init: Don't know what to do with this type as the first or second baryon\n";
         exit(2);
     }
@@ -126,7 +126,7 @@ double EvtBBScalar::baryonF1F2(double t) const {
     } else if (_baryonCombination.test(Xi_minus) and _baryonCombination.test(Lambda)) {
         return sqrt(1.5) * (G_p(t) + G_n(t));
     } else {
-        report(ERROR, "EvtGen")
+        report(Severity::Error, "EvtGen")
                 << "EvtBBScalar::baryonF1F2: Don't know what to do with this type as the first or second baryon\n";
         exit(2);
     }
@@ -168,7 +168,7 @@ double EvtBBScalar::baryon_gA(double t) const {
     } else if (_baryonCombination.test(Xi_minus) and _baryonCombination.test(Lambda)) {
         return -1 / sqrt(6.) * (D_A(t) - 3*F_A(t));
     } else {
-        report(ERROR, "EvtGen")
+        report(Severity::Error, "EvtGen")
                 << "EvtBBScalar::baryon_gA: Don't know what to do with this type as the first or second baryon\n";
         exit(2);
     }
@@ -189,7 +189,7 @@ double EvtBBScalar::baryon_gP(double t) const {
     } else if (_baryonCombination.test(Xi_minus) and _baryonCombination.test(Lambda)) {
         return -1 / sqrt(6.) * (D_P(t) - 3*F_P(t));
     } else {
-        report(ERROR, "EvtGen")
+        report(Severity::Error, "EvtGen")
                 << "EvtBBScalar::baryon_gP: Don't know what to do with this type as the first or second baryon\n";
         exit(2);
     }
@@ -210,7 +210,7 @@ double EvtBBScalar::baryon_fS(double t) const {
     } else if (_baryonCombination.test(Xi_minus) and _baryonCombination.test(Lambda)) {
         return -1 / sqrt(6.) * (D_S(t) - 3*F_S(t));
     } else {
-        report(ERROR, "EvtGen")
+        report(Severity::Error, "EvtGen")
                 << "EvtBBScalar::baryon_fS: Don't know what to do with this type as the first or second baryon\n";
         exit(2);
     }
@@ -278,7 +278,7 @@ void EvtBBScalar::init() {
         or scalarId == EvtPDL::getStdHep(EvtPDL::getId("anti-K0"))) {
         _scalarType = "K";
     } else {
-        report(ERROR, "EvtGen")
+        report(Severity::Error, "EvtGen")
             << "EvtBBScalar::init: Can only deal with Kaons or pions as the third particle\n"
                 << "\tFound: " << scalarId << endl;
         exit(2);

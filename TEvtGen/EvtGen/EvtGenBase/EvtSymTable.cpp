@@ -41,7 +41,7 @@ EvtSymTable::EvtSymTable() {
 void EvtSymTable::define(const std::string& symname,std::string d) {
 
   if ( _symMap.find(symname)!=_symMap.end() ) {
-    report(INFO,"EvtGen") << "Symbol:"<<symname.c_str()<<
+    report(Severity::Info,"EvtGen") << "Symbol:"<<symname.c_str()<<
       " redefined, old value:"<<_symMap[symname].c_str()<<" new value:"<<d.c_str()<<endl;
     _symMap[symname]=d;
     return;

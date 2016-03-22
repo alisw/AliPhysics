@@ -47,11 +47,11 @@ EvtPhotosEngine::EvtPhotosEngine(std::string photonType, bool useEvtGenRandom) {
   _gammaId = EvtId(-1,-1);
   _mPhoton = 0.0;
 
-  report(INFO,"EvtGen")<<"Setting up PHOTOS."<<endl;
+  report(Severity::Info,"EvtGen")<<"Setting up PHOTOS."<<endl;
 
   if (useEvtGenRandom == true) {
       
-    report(INFO,"EvtGen")<<"Using EvtGen random number engine also for Photos++"<<endl;
+    report(Severity::Info,"EvtGen")<<"Using EvtGen random number engine also for Photos++"<<endl;
 
     Photospp::Photos::setRandomGenerator(EvtRandom::Flat);
 
@@ -81,7 +81,7 @@ void EvtPhotosEngine::initialise() {
     _gammaId = EvtPDL::getId(_photonType);
 
     if (_gammaId == EvtId(-1,-1)) {
-      report(INFO,"EvtGen")<<"Error in EvtPhotosEngine. Do not recognise the photon type "
+      report(Severity::Info,"EvtGen")<<"Error in EvtPhotosEngine. Do not recognise the photon type "
 			   <<_photonType<<". Setting this to \"gamma\". "<<endl;
       _gammaId = EvtPDL::getId("gamma");
     }

@@ -93,11 +93,11 @@ void EvtTauHadnu::init() {
   }
 
   if ( !validndaug ) {
-    report(ERROR,"EvtGen") << "Have not yet implemented this final state in TAUHADNUKS model" << endl;
-    report(ERROR,"EvtGen") << "Ndaug="<<getNDaug() << endl;
+    report(Severity::Error,"EvtGen") << "Have not yet implemented this final state in TAUHADNUKS model" << endl;
+    report(Severity::Error,"EvtGen") << "Ndaug="<<getNDaug() << endl;
     int id;
     for ( id=0; id<(getNDaug()-1); id++ ) 
-      report(ERROR,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
+      report(Severity::Error,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
 
   }
 
@@ -201,11 +201,11 @@ void EvtTauHadnu::decay(EvtParticle *p){
 
 
   if ( !foundHadCurr ) {
-    report(ERROR,"EvtGen") << "Have not yet implemented this final state in TAUHADNUKS model" << endl;
-    report(ERROR,"EvtGen") << "Ndaug="<<getNDaug() << endl;
+    report(Severity::Error,"EvtGen") << "Have not yet implemented this final state in TAUHADNUKS model" << endl;
+    report(Severity::Error,"EvtGen") << "Ndaug="<<getNDaug() << endl;
     int id;
     for ( id=0; id<(getNDaug()-1); id++ ) 
-      report(ERROR,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
+      report(Severity::Error,"EvtGen") << "Daug " << id << " "<<EvtPDL::name(getDaug(id)).c_str() << endl;
 
   }
 
