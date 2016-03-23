@@ -271,7 +271,7 @@ void AliAnalysisTaskAbsorptionStudies::UserExec(Option_t *){
         continue;
 
       int iCharge = track->GetPdgCode() > 0 ? 0 : 1;
-      double fill[5] = {double(iCharge), GetParticleId(track->GetPdgCode()), centrality, track->Phi(), track->Pt()};
+      double fill[5] = {double(iCharge), (double)GetParticleId(track->GetPdgCode()), centrality, track->Phi(), track->Pt()};
       mPhiPtGen->Fill(fill);
     }
   }
