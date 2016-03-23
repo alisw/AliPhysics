@@ -1,3 +1,5 @@
+#ifndef ALIAODTRACKLET_C
+#define ALIAODTRACKLET_C
 #include <TObject.h>
 #ifndef __CINT__
 # include <TMath.h>
@@ -418,4 +420,9 @@ AliAODMCTracklet::operator=(const AliAODMCTracklet& other)
   fPar2Pdg = other.fPar2Pdg;    
   return *this;
 }
-  
+
+#endif
+//____________________________________________________________________
+//
+// EOF
+// 
