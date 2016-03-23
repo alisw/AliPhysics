@@ -365,11 +365,13 @@ AliTrackletWeights::LookupWeight(Double_t pT, Short_t pdg, Double_t cent) const
   Double_t w = 1;
   if (fPt && !fPt->TestBit(kDisabled) && pT < fPt->GetYaxis()->GetXmax()) {    
     Int_t    bC  =  fPt->GetXaxis()->FindBin(cent);
-    Int_t    bpT =  fPt->GetYaxis()->FindBin(pT);
-    Double_t fac = (pT >= 0.05 ?  1 :
-		    (fPt->TestBit(kUp)   ? 1.3 :
-		     fPt->TestBit(kDown) ? 0.7 : 1));
-    w            *= fac*fPt->GetBinContent(bC, bpT);
+    if (bC >= 1 && bC <= fPt->GetNbinsY()) {
+      Int_t    bpT =  fPt->GetYaxis()->FindBin(pT);
+      Double_t fac = (pT >= 0.05 ?  1 :
+		      (fPt->TestBit(kUp)   ? 1.3 :
+		       fPt->TestBit(kDown) ? 0.7 : 1));
+      w            *= fac*fPt->GetBinContent(bC, bpT);
+    }
   }
   UShort_t apdg = TMath::Abs(pdg);
 
