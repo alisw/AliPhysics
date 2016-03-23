@@ -103,6 +103,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvDeltaEtaPhi;               //!<! Small mass photons, correlation in phi and eta
   TH2F * fhConvAsym;                      //!<! Small mass photons, correlation in energy asymmetry
   TH2F * fhConvPt;                        //!<! Small mass photons, pT of pair
+  TH2F * fhConvPtRcut[6];                 //!<! Small mass photons, pT of pair, for difference conversion distances
   
   // Vertex distance
   TH2F * fhConvDistEta;                   //!<! Approx distance to vertex vs rapidity 
@@ -139,9 +140,10 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvDeltaEtaPhiMCConversion;   //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is conversion
   TH2F * fhConvAsymMCConversion;          //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is conversion
   TH2F * fhConvPtMCConversion;            //!<! Small mass cluster pairs, pt of pair, origin of both clusters is conversion
+  TH2F * fhConvPtMCConversionRcut[6];     //!<! Small mass cluster pairs, pt of pair, origin of both clusters is conversion, for different production vertices
   TH2F * fhConvDispersionMCConversion;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
   TH2F * fhConvM02MCConversion;           //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2 
-
+  
   TH2F * fhConvDeltaEtaMCAntiNeutron;     //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is anti neutron
   TH2F * fhConvDeltaPhiMCAntiNeutron;     //!<! Small mass cluster pairs, correlation in phi, origin of both clusters is anti neutron
   TH2F * fhConvDeltaEtaPhiMCAntiNeutron;  //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti neutron
