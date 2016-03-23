@@ -468,9 +468,9 @@ Bool_t AliTrackletAODTask::InitBranch()
     return false;
   }
   ah->AddBranch("TClonesArray", &obj);
-  AliAODEvent* aod = ah->GetAOD();
-  aod->Print();
-  ah->GetTree()->Print();
+  // AliAODEvent* aod = ah->GetAOD();
+  // aod->Print();
+  // ah->GetTree()->Print();
   return true;
 }
 
