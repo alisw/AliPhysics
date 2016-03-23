@@ -1184,9 +1184,9 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
   AliVTrack * posTrack = GetTrack(event, gamma->GetTrackLabelPositive());
   
   Float_t KappaPlus, KappaMinus, Kappa;
-  KappaMinus = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
-  KappaPlus  = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
-  Kappa = ( KappaMinus + KappaPlus ) / 2 ;
+  KappaMinus = fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kElectron);
+  KappaPlus  = fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kElectron);
+  Kappa = ( TMath::Abs(KappaMinus) + TMath::Abs(KappaPlus) ) / 2.0 + 2.0*(KappaMinus+KappaPlus);
   
   return Kappa;
   

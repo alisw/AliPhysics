@@ -16,6 +16,7 @@
 
 #include <TObjArray.h>
 #include "AliEMCalTriggerBinningComponent.h"
+#include "AliEMCalTriggerBinningFactory.h"
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningDimension)
@@ -36,8 +37,8 @@ AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent() :
 }
 
 /**
- * Copy constructor, creating a deep copy
- * \param ref Reference for the copy
+ * Copy constructor, creating a deep copy.
+ * \param[in] ref Reference for the copy
  */
 AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent(const AliEMCalTriggerBinningComponent& ref) :
   TObject(ref),
@@ -52,9 +53,8 @@ AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent(const AliEMCalT
 }
 
 /**
- * Assignment operator, doing a deep copy
- *
- * \param ref Reference for the assignment
+ * Assignment operator, doing a deep copy.
+ * \param[in] ref Reference for the assignment
  */
 AliEMCalTriggerBinningComponent& AliEMCalTriggerBinningComponent::operator=(const AliEMCalTriggerBinningComponent& ref) {
   TObject::operator=(ref);
@@ -80,8 +80,7 @@ AliEMCalTriggerBinningComponent::~AliEMCalTriggerBinningComponent() {
 
 /**
  * Get binning information for a given axis. Return nullpointer if axis is not yet defined
- *
- * \param name axis name
+ * \param[in] name axis name
  * \return the axis information
  */
 AliEMCalTriggerBinningDimension* AliEMCalTriggerBinningComponent::GetBinning(const char* name) const {
@@ -90,12 +89,11 @@ AliEMCalTriggerBinningDimension* AliEMCalTriggerBinningComponent::GetBinning(con
 
 /**
  * Set binning for dimension. If not yet existing, create it
- *
- * \param dimname: axis name
- * \param nbins: Number of bins
- * \param binning: array of bin limits (size nbins+1)
+ * \param[in] dimname: axis name
+ * \param[in] nbins: Number of bins
+ * \param[in] binning: array of bin limits (size nbins+1)
  */
-void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, int nbins, double* binning) {
+void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, int nbins, const double* binning) {
   AliEMCalTriggerBinningDimension *dim = GetBinning(dimname);
   if(dim) dim->Set(nbins, binning);
   else {
@@ -105,11 +103,9 @@ void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, int nbins,
 }
 
 /**
- * Set binning for dimension. If not yet existing, create it
- *
- * \param dimname axis name
- * \param nbins Number of bins
- * \param binning array of bin limits (size nbins+1)
+ * Set binning for dimension. If not yet existing, create it.
+ * \param[in] dimname axis name
+ * \param[in] binning array of bin limits (size nbins+1)
  */
 void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, const TArrayD& binning) {
   AliEMCalTriggerBinningDimension *dim = GetBinning(dimname);
@@ -121,16 +117,48 @@ void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, const TArr
 }
 
 /**
- * Print the bin limits for a given dimension
+ * Set a linear binning for dimension. If not yet existing, create it.
+ * \param[in] dimname axis name
+ * \param[in] nbins Number of bins
+ * \param[in] min Minimum of the range (= lowest bin limit)
+ * \param[in] max Maximum of the range (= highest bin limit)
+ */
+void AliEMCalTriggerBinningComponent::SetLinearBinning(const char *dimname, int nbins, double min, double max){
+  TArrayD binning;
+  AliEMCalTriggerBinningFactory::CreateLinearBinning(binning, nbins, min, max);
+  SetBinning(dimname, binning);
+}
+
+/**
+ * Print the bin limits for a given dimension. Used in the operator<< of
+ * AliEMCalTriggerBinningDimension.
+ * \param[in] stream Stream to print the information on
+ */
+void AliEMCalTriggerBinningDimension::PrintStream(std::ostream &stream) const{
+  stream << "Binning for variable " << GetName() << ":\n";
+  stream << "================================================\n";
+  for(int ilim = 0; ilim < fBinning.GetSize(); ilim++){
+    stream << fBinning[ilim];
+    if(ilim < fBinning.GetSize() -1) stream << ", ";
+  }
+}
+
+/**
+ * Print the bin limits for a given dimension.
  */
 void AliEMCalTriggerBinningDimension::Print(Option_t * /*option*/) const {
-  std::cout << "Binning for variable " << GetName() << ":" << std::endl;
-  std::cout << "================================================" << std::endl;
-  for(int ilim = 0; ilim < fBinning.GetSize(); ilim++){
-    std::cout << fBinning[ilim];
-    if(ilim < fBinning.GetSize() -1) std::cout << ", ";
-  }
-  std::cout << std::endl;
+  std::cout << *this << std::endl;
+}
+
+/**
+ * Output stream operator for the binning dimension.
+ * \param[in] stream Stream to print the information on
+ * \param[in] dim Object to be put on the stream
+ * \return Stream after pringing
+ */
+std::ostream &operator<<(std::ostream &stream, const AliEMCalTriggerBinningDimension &dim){
+  dim.PrintStream(stream);
+  return stream;
 }
 
 

@@ -725,9 +725,10 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
 
       if (energy <= 0) continue;
 
-      if (!clusters->AcceptCluster(clusters->GetCurrentID())) {
+      UInt_t rejectionReason = 0;
+      if (!clusters->AcceptCluster(clusters->GetCurrentID(), rejectionReason)) {
         histname = TString::Format("%s/fHistRejectionReason_%d", clusters->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(), energy);
+        fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(rejectionReason), energy);
         continue;
       }
 
@@ -809,9 +810,10 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
     while ((track = particles->GetNextParticle())) {
       particles->GetMomentum(mom, particles->GetCurrentID());
 
-      if (!particles->AcceptParticle(particles->GetCurrentID())) {
+      UInt_t rejectionReason = 0;
+      if (!particles->AcceptParticle(particles->GetCurrentID(), rejectionReason)) {
         histname = TString::Format("%s/fHistRejectionReason_%d", particles->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname, particles->GetRejectionReasonBitPosition(), mom.Pt());
+        fHistManager.FillTH2(histname, particles->GetRejectionReasonBitPosition(rejectionReason), mom.Pt());
         continue;
       }
 

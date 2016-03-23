@@ -4225,7 +4225,10 @@ void AliAnaCalorimeterQA::MCHistograms()
       
       if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG, HIJING?
       
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) )  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) ||
+          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
       //printf("Take : i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
       
@@ -4250,7 +4253,10 @@ void AliAnaCalorimeterQA::MCHistograms()
       
       if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG
    
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) )  continue ; //Protection against floating point exception
+      //Protection against floating point exception
+      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
 
       //printf("Take : i %d, %s, pdg %d, status %d \n",i, primAOD->GetName(), pdg, status);
       

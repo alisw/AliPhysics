@@ -1057,7 +1057,7 @@ void AliAnalysisTaskggMC::ProcessMC() {
        continue ;
      if(tmp->Pt()<0.1)
        continue ;
-     if(TMath::Abs(tmp->Eta())>0.5)
+     if(TMath::Abs(tmp->Eta())>0.25)
        continue ;
      Double_t r=TMath::Sqrt(tmp->Xv()*tmp->Xv()+tmp->Yv()*tmp->Yv()) ;
      if(r>1.)
@@ -1094,7 +1094,7 @@ void AliAnalysisTaskggMC::ProcessMC() {
   if(fMCEvent->GetEntriesFast()>0){
     fMCEvents->AddFirst(fMCEvent) ;
     fMCEvent=0;
-    if(fMCEvents->GetSize()>4){//Remove redundant events
+    if(fMCEvents->GetSize()>1){//Remove redundant events
       TClonesArray * tmp = static_cast<TClonesArray*>(fMCEvents->Last()) ;
       fMCEvents->RemoveLast() ;
       delete tmp ;

@@ -58,6 +58,7 @@ set(SRCS
   Nuclei/Nucleipp/AliLnID.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
+  Nuclei/TRDabsorption/AliAnalysisTaskAbsorptionStudies.cxx
   Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
   Utils/NuclexFilter/AliAODNuclExReplicator.cxx
   Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx

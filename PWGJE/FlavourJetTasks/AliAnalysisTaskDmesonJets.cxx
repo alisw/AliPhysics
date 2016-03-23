@@ -1271,8 +1271,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
   AliTLorentzVector part;
   for (Int_t i = 0; i < cont->GetNEntries(); i++) {
     cont->GetMomentum(part, i);
-    if (!cont->AcceptObject(i)) {
-      rejectHist->Fill(cont->GetRejectionReasonBitPosition(), part.Pt());
+    UInt_t rejectionReason = 0;
+    if (!cont->AcceptObject(i, rejectionReason)) {
+      rejectHist->Fill(cont->GetRejectionReasonBitPosition(rejectionReason), part.Pt());
       continue;
     }
     Int_t uid = offset >= 0 ? i : -i;
@@ -1439,7 +1440,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
       CalculateMassLimits(0.20, 413, nbins[dim], min[dim], max[dim]);
 
       // subtract mass of D0
-      Double_t D0mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421))->Mass();
+      Double_t D0mass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
       min[dim] -= D0mass;
       max[dim] -= D0mass;
 
@@ -1556,6 +1557,17 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
       fHistManager->FillTH1(hname, fDmesonJets[id].fD.Phi_0_2pi());
       hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
       fHistManager->FillTH1(hname, fDmesonJets[id].fD.Eta());
+      if (fCandidateType == kD0toKpi) {
+        hname = TString::Format("%s/fHistRejectedDMesonInvMass", GetName());
+        fHistManager->FillTH1(hname, fDmesonJets[id].fD.M());
+      }
+      else if (fCandidateType == kDstartoKpipi) {
+        hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", GetName());
+        fHistManager->FillTH1(hname, fDmesonJets[id].fInvMass2Prong);
+
+        hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", GetName());
+        fHistManager->FillTH1(hname, fDmesonJets[id].fD.M() - fDmesonJets[id].fInvMass2Prong);
+      }
     }
   }
   return kTRUE;
@@ -1841,6 +1853,27 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     hname = TString::Format("%s/fHistRejectedDMesonPhi", param->GetName());
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
+
+    if (param->fCandidateType == kD0toKpi) {
+      hname = TString::Format("%s/fHistRejectedDMesonInvMass", param->GetName());
+      htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
+      fHistManager.CreateTH1(hname, htitle, param->fNMassBins, param->fMinMass, param->fMaxMass);
+    }
+    else if (param->fCandidateType == kDstartoKpipi) {
+      Double_t min = 0;
+      Double_t max = 0;
+
+      hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", param->GetName());
+      htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
+      CalculateMassLimits(param->fMaxMass - param->fMinMass, 421, param->fNMassBins, min, max);
+      fHistManager.CreateTH1(hname, htitle, param->fNMassBins, min, max);
+
+      Double_t D0mass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+      hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", param->GetName());
+      htitle = hname + ";#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2});counts";
+      CalculateMassLimits(0.20, 413, param->fNMassBins*6, min, max);
+      fHistManager.CreateTH1(hname, htitle, param->fNMassBins*6, min-D0mass, max-D0mass);
+    }
 
     for (std::vector<AliHFJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
       AliHFJetDefinition* jetDef = &(*itdef);

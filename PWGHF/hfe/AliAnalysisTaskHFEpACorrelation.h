@@ -116,6 +116,13 @@ public:
     //DCA cut main particle
     void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
     
+    //DCA cut for hadrons
+    void SetDCACutHadron(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutrHadron = DCAcutr; fDCAcutzHadron = DCAcutz;};
+    void SetUseDCACutHadron() {fUseDCACutforHadrons = kTRUE;};
+    
+    void SetUseAlternativeBinning() {fUseAlternativeBinnig = kTRUE;};
+
+    
     void SetUseEMCal() { fUseEMCal=kTRUE;};
     void SetUseTrigger() { fUseTrigger=kTRUE;};
     void SetUseTender() { fUseTender=kTRUE;};
@@ -174,6 +181,8 @@ private:
     Bool_t				fUseTrigger;
     Bool_t				fUseTender;
     Bool_t				fUseShowerShapeCut;
+    //Check different binning
+    Bool_t              fUseAlternativeBinnig;
     
     //TPC calibration
     Bool_t				fCalibrateTPC;
@@ -218,6 +227,19 @@ private:
     TH1F					*fCentralityHistPass;
     Float_t					fZvtx;
     Int_t					fEstimator;
+    
+    //New Hadron DCA cut and Efficiency dependence
+    Bool_t                  fUseDCACutforHadrons;
+    TH2F                    *fpTPhiHadron;
+    TH2F                    *fpTEtaHadron;
+    TH2F                    *fpTPhiSecPartNoLabel;
+    TH2F                    *fpTEtaSecPartNoLabel;
+    TH2F                    *fpTPhiSecPartPhysPri;
+    TH2F                    *fpTEtaSecPartPhysPri;
+    TH2F                    *fpTPhiSecPartNonPhysPri;
+    TH2F                    *fpTEtaSecPartNonPhysPri;
+    
+
     
     //EMCal
     
@@ -485,8 +507,10 @@ private:
     TH1F                *fpTShiftHadronsReco;
     
     //Efficiency of hadrons
-    TH1F                *fpTEffHadronsMC;
-    TH1F                *fpTEffHadronsReco;
+    TH2F                *fpTEtaEffHadronsReco;
+    TH2F                *fpTPhiEffHadronsReco;
+    TH2F                *fpTEtaEffHadronsMC;
+    TH2F                *fpTPhiEffHadronsMC;
     
     //Secundary particles
     TH2F                **fCEtaPhi_DataHFE_with_onlyPhysPriHadron;
@@ -530,6 +554,8 @@ private:
     Double_t			fDCAcut;
     Double_t			fDCAcutr;
     Double_t			fDCAcutz;
+    Double_t            fDCAcutrHadron;
+    Double_t            fDCAcutzHadron;
     
     Bool_t				fMassCutFlag;
     Bool_t				fAngleCutFlag;

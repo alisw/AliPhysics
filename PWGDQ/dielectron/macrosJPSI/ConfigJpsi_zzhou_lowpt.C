@@ -488,6 +488,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kY,"-1,-0.9,-0.8,-0.3,0,0.3,0.9,1.0");
   cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3.0,-2.5,-2.0,-1.5,3.0");
   
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.2, 1.3, 1.4, 1.5, 1.6, 2.0, 5.0",kTRUE);

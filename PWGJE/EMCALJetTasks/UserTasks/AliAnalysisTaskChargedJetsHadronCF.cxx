@@ -34,6 +34,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
   fTrackParticleArrayName(""),
+  fJetOutputMode(0),
   fUseFakejetRejection(kFALSE),
   fMinFakeFactor(0),
   fMaxFakeFactor(0),
@@ -57,6 +58,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
   fTrackParticleArrayName(""),
+  fJetOutputMode(0),
   fUseFakejetRejection(kFALSE),
   fMinFakeFactor(0),
   fMaxFakeFactor(0),
@@ -297,6 +299,9 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     if(fTrackParticleArrayName != "")
       fTracksOutput->Delete();
 
+    AliEmcalJet* leadingJet    = fJetsCont->GetLeadingJet("rho");
+    AliEmcalJet* subleadingJet = GetSubleadingJet("rho");
+
     // ##################
     // In case of special selection criteria, trigger on certain events
     if(fEventCriteriumMode==0) // "minimum bias"
@@ -313,10 +318,9 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     }
     else if(fEventCriteriumMode==2) // Minimum leading jet pT
     {
-      AliEmcalJet* jet = fJetsCont->GetLeadingJet("rho"); // Get the leading jet (w/ bgrd-corrected)
-      if(jet)
+      if(leadingJet)
       {
-        if(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area() <= fEventCriteriumMinLeadingJetPt)
+        if(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area() <= fEventCriteriumMinLeadingJetPt)
         {
           fHistEventRejection->Fill("JetCrit", 1);
           return kFALSE;
@@ -325,9 +329,6 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     }
     else if(fEventCriteriumMode==3) // Simple dijet trigger
     {
-      AliEmcalJet* leadingJet    = fJetsCont->GetLeadingJet("rho");
-      AliEmcalJet* subleadingJet = GetSubleadingJet("rho");
-
       if(leadingJet && subleadingJet)
       {
         if((leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area() <= fEventCriteriumMinLeadingJetPt) || (subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area() <= fEventCriteriumMinSubleadingJetPt))
@@ -340,28 +341,67 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
     // ##################
     // Create correlation-like objects and save them in a TClonesArray (jets)
-    fJetsCont->ResetCurrentID();
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
     Int_t count = 0;
-    while(jet) {
 
-      // Fake jet rejection (0810.1219)
-      if(fUseFakejetRejection)
+    if( (fJetOutputMode==1) || (fJetOutputMode==3) ) // output the leading jet
+    {
+      if(leadingJet)
       {
-        Double_t fakeFactor = CalculateFakeFactor(jet);
-        FillHistogram("hFakeFactor", fakeFactor, fCent);
-        if((fakeFactor < fMinFakeFactor) || (fakeFactor >= fMaxFakeFactor))
+        // Fake jet rejection (0810.1219)
+        if(fUseFakejetRejection)
         {
-          jet = fJetsCont->GetNextAcceptJet(); 
-          continue;
+          Double_t fakeFactor = CalculateFakeFactor(leadingJet);
+          FillHistogram("hFakeFactor", fakeFactor, fCent);
+          if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
+            new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
         }
+        else
+          new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0);
+        count++;
       }
+    }
+    if( (fJetOutputMode==2) || (fJetOutputMode==3) ) // output the subleading jet
+    {
+      if(subleadingJet)
+      {
+        // Fake jet rejection (0810.1219)
+        if(fUseFakejetRejection)
+        {
+          Double_t fakeFactor = CalculateFakeFactor(subleadingJet);
+          FillHistogram("hFakeFactor", fakeFactor, fCent);
+          if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
+            new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+        }
+        else
+          new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0);
+        count++;
+      }
+    }
 
-      // Add the particle object to the clones array
-      new ((*fJetsOutput)[count]) AliPicoTrack(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Eta(), jet->Phi(), jet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+    if(fJetOutputMode==0) // output all jets
+    {
+      fJetsCont->ResetCurrentID();
+      AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
+      while(jet) {
 
-      jet = fJetsCont->GetNextAcceptJet(); 
-      count++;
+        // Fake jet rejection (0810.1219)
+        if(fUseFakejetRejection)
+        {
+          Double_t fakeFactor = CalculateFakeFactor(jet);
+          FillHistogram("hFakeFactor", fakeFactor, fCent);
+          if((fakeFactor < fMinFakeFactor) || (fakeFactor >= fMaxFakeFactor))
+          {
+            jet = fJetsCont->GetNextAcceptJet(); 
+            continue;
+          }
+        }
+
+        // Add the particle object to the clones array
+        new ((*fJetsOutput)[count]) AliPicoTrack(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Eta(), jet->Phi(), jet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
+
+        jet = fJetsCont->GetNextAcceptJet(); 
+        count++;
+      }
     }
 
     // Create correlation-like objects and save them in a TClonesArray (tracks) (optional)
@@ -384,6 +424,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   }
   else
     return kFALSE;
+
 }
 
 //########################################################################
