@@ -469,3 +469,10 @@ TParticle* AliGenReaderEMD::NextParticle()
     fNparticle++;
     return particle;
 }
+
+//___________________________________________________________
+void AliGenReaderEMD::RewindEvent()
+{
+  // Go back to the first particle of the event
+  fNparticle = 0;
+}

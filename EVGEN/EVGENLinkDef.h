@@ -76,5 +76,6 @@
 #pragma link C++ class  AliGenTunedOnPbPb;
 #pragma link C++ class  AliGenReaderHepMC+;
 #pragma link C++ class  AliGenPerformance+;
+#pragma link C++ class  AliGenReadersEMD+;
 
 #endif

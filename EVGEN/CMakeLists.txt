@@ -98,6 +98,7 @@ set(SRCS
     AliSlowNucleonModel.cxx
     AliSlowNucleonModelExp.cxx
     AliGenPerformance.cxx
+    AliGenReadersEMD.cxx
 )
 
 # Headers from sources

@@ -26,7 +26,7 @@ class AliGenReaderEMD : public AliGenReader
     // Reader
     virtual Int_t NextEvent();
     virtual TParticle*  NextParticle();
-    virtual void RewindEvent(){;}
+    virtual void RewindEvent();
     // Setters
     void TrackNotNucleons()  {fPcToTrack = kNotNucleons;}
     void TrackOnlyNucleons() {fPcToTrack = kOnlyNucleons;}
