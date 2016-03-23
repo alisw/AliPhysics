@@ -513,7 +513,8 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   void Run(UInt_t      what     = kDefault, 
 	   UShort_t    maxBins  = 9,
 	   const char* dataName = "data.root",
-	   const char* simName  = "sim.root");
+	   const char* simName  = "sim.root",
+	   const char* output   = 0);
 };
 
 
@@ -1634,7 +1635,8 @@ void AliTrackletdNdeta::ProcessBin(UInt_t     what,     Int_t       bin,
 void AliTrackletdNdeta::Run(UInt_t      what, 
 			    UShort_t    maxBins,
 			    const char* dataName,
-			    const char* simName)
+			    const char* simName,
+			    const char* outName)
 {
   fLandscape = what & kLandscape;
   fPause     = what & kPause;
@@ -1659,8 +1661,12 @@ void AliTrackletdNdeta::Run(UInt_t      what,
   fDeltaCut  = GetD(params, "DeltaCut");
   fTailDelta = GetD(params, "TailDelta");
   fMaxDelta  = GetD(params, "MaxDelta");
+
+  TString outBase(outName);
+  if (outBase.IsNull())          outBase.Form("MiddNdeta_0x%04x", what);
+  if (outBase.EndsWith(".root")) outBase.ReplaceAll(".root", "");
   
-  CreateCanvas(Form("MiddNdeta_0x%04x.pdf", what));
+  CreateCanvas(Form("%s.pdf", outBase.Data()));
   if (what & kGeneral)    DrawGeneral(realRess, simRess);
   if (what & kParameters) DrawParams(realSums, what & kRealComb,
 				     simSums,  what & kSimComb);
@@ -1684,8 +1690,7 @@ void AliTrackletdNdeta::Run(UInt_t      what,
   // Draw "min-bias" bin
   ProcessBin(what, 0, 0, 100, realRess, simRess, stack);
 
-  TFile* out = TFile::Open(Form("MiddNdeta_0x%1x.root", 0x3 & what),
-			   "RECREATE");
+  TFile* out = TFile::Open(Form("%s.root", outBase.Data()), "RECREATE");
   realCent->Write();
   simCent ->Write();
   for (Int_t i = 1; i <= realCent->GetNbinsX() && i <= maxBins ; i++) {
