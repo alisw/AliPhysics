@@ -10,11 +10,12 @@
 #include <AliMultSelection.h>
 #include <AliLog.h>
 #include <TClonesArray.h>
+#include "AliTrackletWeights.C"
 #else
 class AliAODTracklet;
+class AliTrackletWeights;
 class AliVEvent;
 class AliMultSelection;  // Auto-load 
-class TH2;
 class TClonesArray;
 #endif
 
@@ -253,6 +254,26 @@ public:
    * @param x Value 
    */
   void SetTailDelta(Double_t x=5) { fTailDelta = x; }
+  /** 
+   * Set the very least centrality to consider.  This is for cases
+   * where the centrality calibration of simulated data doesn't really
+   * match the real-data one, but we want to keep the original
+   * centrality bins.  E.g., for LHC15k1b1, the calibration of the
+   * DPMJet centrality does not give the same mean number of tracklets
+   * for the very most central bin.  We therefor need to rule out the
+   * event with a very large number of tracklets from the sample by
+   * setting this parameter to for example 0.1.  If this parameter is
+   * set to a negative value (default) it is not considered.
+   * 
+   * @param x Absolute lowest centrality to consider 
+   */
+  void SetAbsMinCent(Double_t x=-1) { fAbsMinCent = x; }
+  /** 
+   * Set weights.  This implementatio does nothing 
+   * 
+   * @param w Weights to use 
+   */
+  virtual void SetWeights(AliTrackletWeights* w) {};
   /* @} */
   //__________________________________________________________________
   /**
@@ -627,7 +648,7 @@ protected:
    * 
    * @return true on success 
    */
-  Bool_t WorkerInit();
+  virtual Bool_t WorkerInit();
   /** 
    * Initialize our centrality bins.  
    * 
@@ -689,11 +710,12 @@ protected:
    * Find the centrality of the event 
    * 
    * @param event Event 
+   * @param nTracklets Number of tracklets for benchmarking centrality 
    * 
    * @return Centrality percentile, or negative number in case of
    * problems
    */
-  Double_t FindCentrality(AliVEvent* event);
+  Double_t FindCentrality(AliVEvent* event, Int_t& nTracklets);
   /** 
    * Check if we got a selected trigger 
    * 
@@ -780,7 +802,9 @@ protected:
   /** Histogram of centrality */
   TH1* fStatus;    //! 
   /** Histogram of all eta phi */
-  TH2* fEtaPhi;    //! 
+  TH2* fEtaPhi;    //!
+  /** Histogram of centrality, nTracklets correlation */
+  TProfile* fCentTracklets; //! 
   /** Centrality method to use */
   TString    fCentMethod;
   /** Centrality axis */
@@ -801,6 +825,8 @@ protected:
   Double_t   fShiftedDPhiCut;
   /** Signal cut on @f$\Delta@f$ */
   Double_t   fDeltaCut;
+  /** The absolute minimum centrality to consider  - for MC with poor match*/
+  Double_t   fAbsMinCent;
   
   ClassDef(AliTrackletAODdNdeta,1); 
 };
@@ -817,12 +843,18 @@ public:
   /** 
    * Default constructor - for ROOT I/O only 
    */
-  AliTrackletAODMCdNdeta() : AliTrackletAODdNdeta() {}
+  AliTrackletAODMCdNdeta()
+    : AliTrackletAODdNdeta(),
+      fWeights(0),
+      fEtaWeight(0)
+  {}
   /** 
    * Named - user - constructor
    */
   AliTrackletAODMCdNdeta(const char* name)
-    : AliTrackletAODdNdeta(name)
+    : AliTrackletAODdNdeta(name),
+      fWeights(0),
+      fEtaWeight(0)
   {}
   /**
    * Copy constructor 
@@ -830,12 +862,15 @@ public:
    * @param o Object to copy from 
    */
   AliTrackletAODMCdNdeta(const AliTrackletAODdNdeta& o)
-    : AliTrackletAODdNdeta(o)
+    : AliTrackletAODdNdeta(o),
+      fWeights(0),
+      fEtaWeight(0)
   {}
   /**
    * Destructor 
    */
   virtual ~AliTrackletAODMCdNdeta() {}
+  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
   /** 
    * Assignment operator 
    * 
@@ -945,6 +980,12 @@ protected:
    * @name Tracklet selection and inspection 
    */
   /** 
+   * Initialize the task on worker 
+   * 
+   * @return true on success 
+   */
+  Bool_t WorkerInit();
+  /** 
    * Find the tracklet weight 
    * 
    * @param tracklet Tracklet 
@@ -955,6 +996,8 @@ protected:
   virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent);
   /* @} */
   // -----------------------------------------------------------------
+  AliTrackletWeights* fWeights;
+  TProfile2D*         fEtaWeight;
   
   ClassDef(AliTrackletAODMCdNdeta,1); 
 };
@@ -964,6 +1007,11 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
   : AliAnalysisTaskSE(),
     fContainer(0),
     fCentBins(0),
+    fIPz(0),
+    fCent(0),
+    fStatus(0),
+    fEtaPhi(0),
+    fCentTracklets(0),
     fCentMethod(""),
     fCentAxis(1,0,0),
     fIPzAxis(1,0,0),
@@ -974,26 +1022,29 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fDPhiShift(0),
     fShiftedDPhiCut(0),
     fDeltaCut(0),
-    fIPz(0),
-    fCent(0)
+    fAbsMinCent(-1)
 {}
 //____________________________________________________________________
 AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
   : AliAnalysisTaskSE(name),
     fContainer(0),
     fCentBins(0),
+    fIPz(0),
+    fCent(0),
+    fStatus(0),
+    fEtaPhi(0),
+    fCentTracklets(0),
     fCentMethod("V0M"),
     fCentAxis(10,0,100),
-    fIPzAxis(30,-15,15),
-    fEtaAxis(16,-2,2),
+    fIPzAxis(30,-15,+15),
+    fEtaAxis(16,-2,+2),
     fPhiAxis(100,0,TMath::TwoPi()),
     fMaxDelta(25),
     fTailDelta(5),
     fDPhiShift(0.0045),
     fShiftedDPhiCut(-1),
     fDeltaCut(1.5),
-    fIPz(0),
-    fCent(0)
+    fAbsMinCent(-1)
 {
   FixAxis(fCentAxis, "Centrality [%]");
   FixAxis(fIPzAxis,  "IP_{#it{z}} [cm]");
@@ -1008,6 +1059,11 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
   : AliAnalysisTaskSE(o),
     fContainer(0),
     fCentBins(0),
+    fIPz(0),
+    fCent(0),
+    fStatus(0),
+    fEtaPhi(0),
+    fCentTracklets(0),
     fCentMethod(o.fCentMethod),
     fCentAxis(o.fCentAxis),
     fIPzAxis(o.fIPzAxis),
@@ -1018,8 +1074,7 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fDPhiShift(o.fDPhiShift),
     fShiftedDPhiCut(o.fShiftedDPhiCut),
     fDeltaCut(o.fDeltaCut),
-    fIPz(0),
-    fCent(0)
+    fAbsMinCent(o.fAbsMinCent)
 {}
 //____________________________________________________________________
 AliTrackletAODdNdeta&
@@ -1046,6 +1101,7 @@ AliTrackletAODdNdeta::operator=(const AliTrackletAODdNdeta& o)
   fDPhiShift      = o.fDPhiShift;
   fShiftedDPhiCut = o.fShiftedDPhiCut;
   fDeltaCut       = o.fDeltaCut;
+  fAbsMinCent     = o.fAbsMinCent;
   return *this;
 }
 //____________________________________________________________________
@@ -1118,6 +1174,7 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   Printf(" %22s: %f",   "Delta cut",	           fDeltaCut);
   Printf(" %22s: %f",   "max Delta",	           fMaxDelta);
   Printf(" %22s: %f",   "tail Delta",	           fTailDelta);
+  Printf(" %22s: %f%%", "Absolute least c",     fAbsMinCent);
   PrintAxis(fEtaAxis);
   PrintAxis(fPhiAxis);
   PrintAxis(fIPzAxis,1,"IPz");
@@ -1196,6 +1253,16 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fIPz    = Make1D(fContainer, "ipz",  "", kMagenta+2, 20, fIPzAxis);
   fCent   = Make1D(fContainer, "cent", "", kMagenta+2, 20, fCentAxis);
   fEtaPhi = Make2D(fContainer, "etaPhi","",kMagenta+2, 20, fEtaAxis,fPhiAxis);
+  fCentTracklets = new TProfile("centTracklets",
+				"Mean number of tracklets per centrality",
+				1050, 0, 105);
+  fCentTracklets->SetXTitle("Centrality [%]");
+  fCentTracklets->SetYTitle("#LTtracklets#GT");
+  fCentTracklets->SetDirectory(0);
+  fCentTracklets->SetMarkerStyle(20);
+  fCentTracklets->SetMarkerColor(kMagenta+2);
+  fCentTracklets->SetLineColor(kMagenta+2);
+  fContainer->Add(fCentTracklets);
 
   fStatus = new TH1F("status", "Status of task",
 		     kCompleted, .5, kCompleted+.5);
@@ -1231,7 +1298,7 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   params->Add(new DP("DeltaCut",       fDeltaCut,       'f'));
   params->Add(new DP("MaxDelta",       fMaxDelta,       'f'));
   params->Add(new DP("TailDelta",      fTailDelta,      'f'));
-
+  params->Add(new DP("AbsMinCent",     fAbsMinCent,     'f'));
   // Create our centrality bins 
   if (!InitCentBins(0)) {
     AliWarning("Failed to initialize centrality bins");
@@ -1240,6 +1307,19 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
 
   // Print information to log
   Print();
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliTrackletAODMCdNdeta::WorkerInit()
+{
+  if (!AliTrackletAODdNdeta::WorkerInit()) return false;
+  fEtaWeight = 0;
+  if (fWeights) {
+    AliWarning("Weights initialized!");
+    fEtaWeight = Make2P(fContainer, "etaWeight", "#LTw#GT", kYellow+2, 24,
+			fEtaAxis, fCentAxis);
+    fWeights->Store(fContainer);
+  }
   return true;
 }
 //____________________________________________________________________
@@ -1420,13 +1500,16 @@ Bool_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
   if (!ip) return false;
   fStatus->Fill(kIP);
 
-  // Check the centrality 
-  cent = FindCentrality(event);
+  // Check the centrality
+  Int_t nTracklets = 0;
+  cent = FindCentrality(event, nTracklets);
   if (cent < 0) return false;
   fStatus->Fill(kCentrality);
 
   fIPz->Fill(ip->GetZ());
   fCent->Fill(cent);
+  fCentTracklets->Fill(cent, nTracklets); 
+  
   return true;
 }
 
@@ -1507,7 +1590,8 @@ Bool_t AliTrackletAODdNdeta::FindTrigger()
   return trgOK;
 }
 //____________________________________________________________________
-Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event)
+Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
+					      Int_t& nTracklets)
 {
   if (fCentMethod.EqualTo("MB", TString::kIgnoreCase)) {
     Printf("MB centrality - not checked");
@@ -1527,11 +1611,21 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event)
   if      (centPer < +safety)    centPer = safety;
   else if (centPer > 100-safety) centPer = 100-safety;
 
+  if (fAbsMinCent >= 0 && centPer < fAbsMinCent) {
+    AliWarningF("Centrality = %f lower than absolute minimum [%f]",
+		centPer, fAbsMinCent);
+    return -3;
+  }
   if (centPer < fCentAxis.GetXmin() || centPer > fCentAxis.GetXmax()) {
     AliWarningF("Centrality = %f out of range [%f,%f]",
 		centPer, fCentAxis.GetXmin(), fCentAxis.GetXmax());
     return -3;
   }
+
+  AliMultEstimator* estTracklets = cent->GetEstimator("SPDTracklets");
+  if (estTracklets)    
+    nTracklets = estTracklets->GetValue();
+  
   return centPer;    
 }
 
@@ -1545,8 +1639,15 @@ Double_t AliTrackletAODdNdeta::LookupWeight(AliAODTracklet* tracklet,
 Double_t AliTrackletAODMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
 					      Double_t        cent)
 {
-  // for now, do nothing. 
-  return 1;
+  if (!fWeights) {
+    AliWarning("No weights defined");
+    return 1;
+  }
+  Double_t w = fWeights->LookupWeight(tracklet, cent);
+  fEtaWeight->Fill(tracklet->GetEta(), cent, w);
+  // printf("Looking up weight of tracklet -> %f ", w);
+  // tracklet->Print();
+  return w;
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::CheckTracklet(AliAODTracklet* tracklet)
@@ -1692,7 +1793,10 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   fIPz    = static_cast<TH1*>(CloneAndAdd(results,GetH1(fContainer,"ipz")));
   fCent   = static_cast<TH1*>(CloneAndAdd(results,GetH1(fContainer,"cent")));  
   fStatus = static_cast<TH1*>(CloneAndAdd(results,GetH1(fContainer,"status")));
-
+  fEtaPhi = static_cast<TH2*>(CloneAndAdd(results,GetH2(fContainer,"etaPhi")));
+  fCentTracklets =
+    static_cast<TProfile*>(CloneAndAdd(results,GetP(fContainer,
+						    "centTracklets")));
   Double_t nEvents = fIPz->GetEntries();
   Printf("Event summary:");
   for (Int_t i = 1; i <= fStatus->GetNbinsX(); i++) 
@@ -1709,6 +1813,7 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   fIPz   ->Scale(1./nEvents);
   fCent  ->Scale(1./fCent->GetEntries());
   fStatus->Scale(1./fStatus->GetBinContent(1));
+  fEtaPhi->Scale(1./nEvents);
 
   TIter    next(fCentBins);
   CentBin* bin = 0;
@@ -1877,6 +1982,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
     deltaScaled->SetLineStyle(7);
     deltaScaled->SetTitle(Form("%s #times%6.3f",
 			       deltaScaled->GetTitle(), scale));
+    Scale(deltaScaled, scale, scaleE);
 
     // Make background scaled by full tail 
     background = CopyH2(bgCont,  "etaIPz", "background");
