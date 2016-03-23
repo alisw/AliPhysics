@@ -414,7 +414,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
       // set the cluster ID so that the cluster dump printout is the same for FCF and SCF
       c.SetID( minSlice, minPartition, outPtr->fSpacePointCnt );
 	 
-      HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fSpacePointCnt, cluster.fX, cluster.fY, cluster.fZ, (UInt_t)cluster.fCharge);
+      HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fSpacePointCnt, c.fX, c.fY, c.fZ, (UInt_t)c.fCharge);
 	 
       outPtr->fSpacePointCnt++; 
     } // end of loop over clusters
