@@ -639,13 +639,13 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
 	
 	Float_t lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lPrimaryVtxPosition[2]);
 	
-	if ( lV0CosineOfPointingAngle < 0.9995 ) continue; //who cares? not me!
+	if ( lV0CosineOfPointingAngle < 0.999 ) continue; //who cares? not me!
 		
 	Int_t lOnFlyStatus = v0->GetOnFlyStatus();
 	if ( lOnFlyStatus != 0 ) continue; 
 	
         Float_t lDcaV0Daughters = v0->GetDcaV0Daughters();
-	if ( lDcaV0Daughters > 0.2 ) continue; //still not me!
+	if ( lDcaV0Daughters > 0.3 ) continue; //still not me!
 		
         // Getting invariant mass infos directly from ESD
         v0->ChangeMassHypothesis(310);
