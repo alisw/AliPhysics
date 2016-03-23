@@ -9,10 +9,14 @@
 # include <TMath.h>
 # include <TDirectory.h>
 # include <THashList.h>
+# include <TProfile.h>
+# include <TProfile2D.h>
 #else
 class TList;
 class TH1;
 class TH2;
+class TProfile;
+class TProfile2D;
 class TAxis;
 class TDirectory;
 #endif
@@ -155,6 +159,15 @@ public:
    */
   static TH1* GetH1(Container* parent, const char* name, Bool_t verb=true);
   /** 
+   * Get a 1D profile from a container 
+   * 
+   * @param parent Container 
+   * @param name   Name of profile 
+   * 
+   * @return Pointer to profile or null 
+   */
+  static TProfile* GetP1(Container* parent, const char* name, Bool_t verb=true);
+  /** 
    * Get a 2D histogram from a container 
    * 
    * @param parent Container 
@@ -163,6 +176,28 @@ public:
    * @return Pointer to histogram or null 
    */
   static TH2* GetH2(Container* parent, const char* name, Bool_t verb=true);
+  /** 
+   * Get a 2D profile from a container 
+   * 
+   * @param parent Container 
+   * @param name   Name of profile 
+   * 
+   * @return Pointer to profile or null 
+   */
+  static TProfile2D* GetP2(Container* parent, const char* name,
+			   Bool_t verb=true);
+  /** 
+   * Get a profile from a container 
+   * 
+   * @param parent Container 
+   * @param name   Name of profile 
+   * 
+   * @return Pointer to profile or null 
+   */
+  static TProfile* GetP(Container* parent, const char* name, Bool_t verb=true)
+  {
+    return GetP1(parent, name, verb);
+  }
   /** 
    * Get a container from a container 
    * 
@@ -263,6 +298,21 @@ public:
 		     Style_t        style,
 		     const TAxis&   xAxis);
   /** 
+   * Service function to make a 1D profile from an axis definition 
+   * 
+   * @param name  Name of profile 
+   * @param title Title of profile 
+   * @param xAxis X axis to use 
+   * 
+   * @return Newly created profile
+   */
+  static TProfile* Make1P(Container*     c,
+			  const TString& name,
+			  const TString& title,
+			  Color_t        color,
+			  Style_t        style,
+			  const TAxis&   xAxis);
+  /** 
    * Service function to make a 2D histogram from axis definitions 
    * 
    * @param name   Name of histogram 
@@ -279,6 +329,23 @@ public:
 		     Style_t        style,
 		     const TAxis&   xAxis,
 		     const TAxis&   yAxis);
+  /** 
+   * Service function to make a 2D profile from axis definitions 
+   * 
+   * @param name   Name of profile 
+   * @param title  Title of profile 
+   * @param xAxis  X axis definition 
+   * @param yAxis  Y axis definition 
+   * 
+   * @return Newly created profile 
+   */
+  static TProfile2D* Make2P(Container*     c,
+			    const TString& name,
+			    const TString& title,
+			    Color_t        color,
+			    Style_t        style,
+			    const TAxis&   xAxis,
+			    const TAxis&   yAxis);
 
   /** 
    * Scale a histogram by factor with error propagation 
@@ -701,6 +768,18 @@ TH2* AliTrackletAODUtils::GetH2(Container* parent, const char* name, Bool_t v)
   return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
 }
 //____________________________________________________________________
+TProfile* AliTrackletAODUtils::GetP1(Container* parent,const char* name,
+				     Bool_t v)
+{
+  return static_cast<TProfile*>(GetO(parent, name, TProfile::Class(), v));
+}
+//____________________________________________________________________
+TProfile2D* AliTrackletAODUtils::GetP2(Container* parent, const char* name,
+				       Bool_t v)
+{
+  return static_cast<TProfile2D*>(GetO(parent, name, TProfile2D::Class(), v));
+}
+//____________________________________________________________________
 AliTrackletAODUtils::Container*
 AliTrackletAODUtils::GetC(Container* parent, const char* name, Bool_t v)
 {
@@ -832,6 +911,49 @@ TH1* AliTrackletAODUtils::Make1D(Container*     c,
   return ret;
 }
 //____________________________________________________________________
+TProfile* AliTrackletAODUtils::Make1P(Container*     c,
+				      const TString& name,
+				      const TString& title,
+				      Color_t        color,
+				      Style_t        style,
+				      const TAxis&   xAxis)
+{
+  TString   n   = name;
+  TString   t   = title;
+  TProfile* ret = 0;
+  Int_t     nx  = xAxis.GetNbins();
+  if (t.IsNull()) t = xAxis.GetTitle();
+  if (xAxis.GetXbins() && xAxis.GetXbins()->GetArray())
+    ret = new TProfile(n,t,nx,xAxis.GetXbins()->GetArray());
+  else
+    ret = new TProfile(n,t,nx,xAxis.GetXmin(),xAxis.GetXmax());
+  ret->Sumw2();
+  ret->SetXTitle(xAxis.GetTitle());
+  static_cast<const TAttAxis&>(xAxis).Copy(*(ret->GetXaxis()));
+  ret->SetDirectory(0);
+  ret->SetLineColor(color);
+  ret->SetMarkerColor(color);
+  ret->SetFillColor(kWhite);// color);
+  ret->SetFillStyle(0);
+  ret->SetMarkerStyle(style);
+  if (const_cast<TAxis&>(xAxis).GetLabels()) {
+    for (Int_t i = 1; i <= xAxis.GetNbins(); i++)
+      ret->GetXaxis()->SetBinLabel(i, xAxis.GetBinLabel(i));
+  }
+  switch (style) {
+  case 27:
+  case 33:
+    ret->SetMarkerSize(1.4);
+    break;
+  case 29:    
+  case 30:
+    ret->SetMarkerSize(1.2);
+    break;
+  }
+  if (c) c->Add(ret);
+  return ret;
+}
+//____________________________________________________________________
 TH2* AliTrackletAODUtils::Make2D(Container*     c,
 				 const TString& name,
 				 const TString& title,
@@ -887,6 +1009,61 @@ TH2* AliTrackletAODUtils::Make2D(Container*     c,
   return ret;
 }
 //____________________________________________________________________
+TProfile2D* AliTrackletAODUtils::Make2P(Container*     c,
+					const TString& name,
+					const TString& title,
+					Color_t        color,
+					Style_t        style,
+					const TAxis&   xAxis,
+					const TAxis&   yAxis)
+{
+  TString         n   = name;
+  TString         t   = title;
+  TProfile2D*     ret = 0;
+  Int_t           nx  = xAxis.GetNbins();
+  Int_t           ny  = yAxis.GetNbins();
+  const Double_t* xb  = (xAxis.GetXbins() && xAxis.GetXbins()->GetArray() ?
+			 xAxis.GetXbins()->GetArray() : 0);
+  const Double_t* yb  = (yAxis.GetXbins() && yAxis.GetXbins()->GetArray() ?
+			 yAxis.GetXbins()->GetArray() : 0);
+  if (t.IsNull())
+    t.Form("%s vs %s", yAxis.GetTitle(), xAxis.GetTitle());
+  if (xb) {	  
+    if   (yb) ret = new TProfile2D(n,t,nx,xb,ny,yb);
+    else      ret = new TProfile2D(n,t,
+				   nx,xb,
+				   ny,yAxis.GetXmin(),yAxis.GetXmax());
+  }
+  else { 
+    if   (yb) ret = new TProfile2D(n,t,
+				   nx,xAxis.GetXmin(),xAxis.GetXmax(),
+				   ny,yb);
+    else      ret = new TProfile2D(n,t,
+				   nx,xAxis.GetXmin(),xAxis.GetXmax(),
+				   ny,yAxis.GetXmin(),yAxis.GetXmax());
+  }
+  ret->Sumw2();
+  ret->SetXTitle(xAxis.GetTitle());
+  ret->SetYTitle(yAxis.GetTitle());
+  ret->SetLineColor(color);
+  ret->SetMarkerColor(color);
+  ret->SetFillColor(color);
+  ret->SetMarkerStyle(style);
+  static_cast<const TAttAxis&>(xAxis).Copy(*(ret->GetXaxis()));
+  static_cast<const TAttAxis&>(yAxis).Copy(*(ret->GetYaxis()));
+  ret->SetDirectory(0);
+  if (const_cast<TAxis&>(xAxis).GetLabels()) {
+    for (Int_t i = 1; i <= xAxis.GetNbins(); i++)
+      ret->GetXaxis()->SetBinLabel(i, xAxis.GetBinLabel(i));
+  }
+  if (const_cast<TAxis&>(yAxis).GetLabels()) {
+    for (Int_t i = 1; i <= yAxis.GetNbins(); i++)
+      ret->GetYaxis()->SetBinLabel(i, yAxis.GetBinLabel(i));
+  }
+  if (c) c->Add(ret);
+  return ret;
+}
+//____________________________________________________________________
 void AliTrackletAODUtils::FixAxis(TAxis& axis, const char* title)
 {
   if (title && title[0] != '\0') axis.SetTitle(title);
@@ -904,7 +1081,7 @@ void AliTrackletAODUtils::FixAxis(TAxis& axis, const char* title)
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::ScaleAxis(TAxis&       ret,
-				      Double_t     fact)
+				    Double_t     fact)
 {
   if (ret.GetXbins()->GetArray()) {
     TArrayD bins(*ret.GetXbins());
