@@ -1131,7 +1131,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
                 //cdeuteron.push_back(track);
                 //cmassd.push_back(mass); // da spostare nel if length > 350.?
             }
-        } else if(pT >= 0.4 && pT <= 4.){
+        }
+        if(pT >= 0.4 && pT <= 4.){
           if (tparticleDaughter->GetPdgCode() == 2212 || tparticleDaughter->GetPdgCode() == -2212) { // p
               fHistTPCprosignal->Fill(track->GetTPCmomentum()*track->GetSign(), track->GetTPCsignal());
               if(useTOF){
@@ -1189,7 +1190,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   // -------------------------------------------------------
   // Loop for Invariant Mass
   // -------------------------------------------------------
-/*
+
   Double_t bz = fESDevent->GetMagneticField();
   fVertexer->SetFieldkG(bz);
   Double_t xthiss(0.0);
@@ -1587,7 +1588,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     } // end of candidate proton loop
   }// end of candidate deuteron loop
 
-*/
+
 
   if(fMC){
     for(Int_t iMC=0; iMC<stack->GetNtrack(); iMC++){ // check MC stack content
