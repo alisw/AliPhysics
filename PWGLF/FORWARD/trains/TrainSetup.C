@@ -1110,8 +1110,7 @@ protected:
 		 const char* what,
 		 UInt_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%u)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%u", val));
   }    
   /** 
    * Set a integer parameter on the task 
@@ -1124,8 +1123,7 @@ protected:
 		 const char* what,
 		 Int_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%d", val));
   }    
   /** 
    * Set a integer parameter on the task 
@@ -1138,8 +1136,7 @@ protected:
 		 const char* what,
 		 Long64_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lld)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%lld", val));
   }    
   /** 
    * Set a real parameter on the task 
@@ -1152,8 +1149,7 @@ protected:
 		 const char* what,
 		 Double_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lg)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%lg", val));
   }    
   /** 
    * Set a boolean parameter on the task 
@@ -1166,8 +1162,7 @@ protected:
 		 const char* what,
 		 Bool_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%d", val));
   }    
   /** 
    * Set a string parameter on the task 
@@ -1180,8 +1175,21 @@ protected:
 		 const char* what,
 		 const char* val)
   {
+    SetOnTaskGeneric(task, what, Form("\"%s\"", val));
+  }
+  /** 
+   * Set a generic parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTaskGeneric(AliAnalysisTaskSE* task,
+			const char* what,
+			const char* val)
+  {
     const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(\"%s\")",cls,task,what,val));
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%s)",cls,task,what,val));
   }
   /* @} */
   //------------------------------------------------------------------
