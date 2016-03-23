@@ -17989,7 +17989,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
  // cut on multiplicity
  if( ZCM<=0. || ZAM<=0. ) PassZDCcuts = kFALSE;
  // exclude ZDC bad runs
- if(fRunNum==137638 || fRunNum==137639 || fRunNum==138469 || fRunNum==139028 || fRunNum==139029) PassZDCcuts = kFALSE;
+ if(fRunNum==138469 || fRunNum==138870 || fRunNum==139028 || fRunNum==139029 || fRunNum==139036) PassZDCcuts = kFALSE;
  
  // cut on #neutrons
  if( ZCM<fMinMulZN || ZAM<fMinMulZN ) {
@@ -19523,31 +19523,42 @@ void AliFlowAnalysisCRC::FillVarious()
     // ZDC QA cuts
     if(fQAZDCCuts && !fQAZDCCutsFlag) {return;}
     
-    // Event Planes
-    Double_t VZAPsi = TMath::ATan2(VAIm,VARe);
-    Double_t VZCPsi = TMath::ATan2(VCIm,VCRe);
-    Double_t ZDCPsi = TMath::ATan2(ZAIm,ZARe)-TMath::ATan2(ZCIm,ZCRe);
+    TVector2 SPA, SPC, PPA, PPC, SPV;
+    SPA.Set(ZARe,ZAIm);
+    SPC.Set(ZCRe,ZCIm);
+    PPA.Set(VARe,VAIm);
+    PPC.Set(VCRe,VCIm);
+    SPV.Set(ZARe-ZCRe,ZAIm-ZCIm);
     
-    Double_t Dif = VZAPsi - ZDCPsi;
-    Dif += (Dif > TMath::Pi()) ? -TMath::TwoPi() : (Dif < -TMath::Pi()) ? TMath::TwoPi() : 0;
-    if(Dif > TMath::Pi() || Dif < -TMath::Pi()) printf("fail!\n");
-    fZDCESEHistEP[0]->Fill(fCentralityEBE,Dif);
+    if(SPV.Phi()>TMath::Pi()) {
+      SPV.SetMagPhi(1,SPV.Phi()-TMath::Pi());
+    }
     
-    Dif = VZCPsi - ZDCPsi;
-    Dif += (Dif > TMath::Pi()) ? -TMath::TwoPi() : (Dif < -TMath::Pi()) ? TMath::TwoPi() : 0;
-    if(Dif > TMath::Pi() || Dif < -TMath::Pi()) printf("fail!\n");
-    fZDCESEHistEP[1]->Fill(fCentralityEBE,Dif);
+    fZDCESEHistEP[0]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(PPC)));
+    fZDCESEHistEP[1]->Fill(fCentralityEBE,fabs(SPA.DeltaPhi(SPC)));
     
-//    Double_t Dif = TMath::ATan2(sin(VZAPsi-ZDCPsi),cos(VZAPsi-ZDCPsi));
-//    Dif = TMath::ATan2(sin(VZCPsi-ZDCPsi),cos(VZCPsi-ZDCPsi));
+    PPA.SetMagPhi(1,PPA.Phi()/2.);
+    PPC.SetMagPhi(1,PPC.Phi()/2.);
+    
+    fZDCESEHistEP[2]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
+    fZDCESEHistEP[3]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
+    
+    if(fabs(SPA.DeltaPhi(SPC))>TMath::Pi()/2. && fabs(PPA.DeltaPhi(PPC))<TMath::Pi()/2.) {
+      fZDCESEHistEP[4]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
+      fZDCESEHistEP[5]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
+    }
+    if(fabs(SPA.DeltaPhi(SPC))>3.*TMath::Pi()/4. && fabs(PPA.DeltaPhi(PPC))<TMath::Pi()/4.) {
+      fZDCESEHistEP[6]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
+      fZDCESEHistEP[7]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
+    }
     
     // Q-vectors
-    Double_t SP = (VARe*(ZCRe*ZARe-ZCIm*ZAIm) + VAIm*(ZCIm*ZARe+ZCIm*ZAIm))/VAM;
+    Double_t SP = VARe*(ZCRe*ZARe-ZCIm*ZAIm) + VAIm*(ZCIm*ZARe+ZCIm*ZAIm);
     fZDCESEHistQV[0]->Fill(fCentralityEBE,SP);
-    fZDCESEHistQV[1]->Fill(fCentralityEBE,SP);
-    SP = (VCRe*(ZCRe*ZARe-ZCIm*ZAIm) + VCIm*(ZCIm*ZARe+ZCIm*ZAIm))/VCM;
+    fZDCESEHistQV[1]->Fill(fCentralityEBE,SP,ZCM*ZAM*VAM);
+    SP = VCRe*(ZCRe*ZARe-ZCIm*ZAIm) + VCIm*(ZCIm*ZARe+ZCIm*ZAIm);
     fZDCESEHistQV[2]->Fill(fCentralityEBE,SP);
-    fZDCESEHistQV[3]->Fill(fCentralityEBE,SP);
+    fZDCESEHistQV[3]->Fill(fCentralityEBE,SP,ZCM*ZAM*VCM);
     
   }
   
@@ -21391,7 +21402,7 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
 {
  cout << "*************************************" << endl;
  cout << endl;
- cout << "calculating v_n{ZDC}"; //if(fNUAforCRC) { cout << " (corrected for NUA)";}
+ cout << "calculating v_n{ZDC}"; if(fNUAforCRC) { cout << " (corrected for NUA)";}
  cout << endl;
  cout << endl;
  
@@ -21479,7 +21490,7 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
    } // end of for(Int_t j=0; j<3; j++)
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
  } // end of for (Int_t h=0; h<fCRCnCen; h++)
- 
+  
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     for(Int_t j=0; j<fFlowNPro; j++) {
       
@@ -21489,7 +21500,6 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
         Double_t stats[6]={0.};
         
         for(Int_t r=0;r<fCRCnRun;r++) {
-          if(!CheckRunFullTPCFlow(fRunList[r])) continue;
           fFlowSPZDCIntPro[r][hr][j]->GetXaxis()->SetRange(c,c);
           fFlowSPZDCIntPro[r][hr][j]->GetStats(stats);
           Double_t sumw   = stats[0];
@@ -21521,14 +21531,19 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           
           Double_t NUAcorRes = cosA*cosC+sinA*sinC;
           
-          Double_t NUAcorV2 = cos2Q*cosAC + sin2Q*sinAC
-          + 2.*(cosQ*cosQAC - sinQ*sinQAC)
-          + cosA*cos2QC + sinA*sin2QC + cosC*cos2QA + sinC*sin2QA
-          + 2.*(cosQA*cosQC - sinQA*sinQC)
-          + cos2Q*(cosA*cosC-sinA*sinC) + sin2Q*(sinA*cosC+cosA*sinC)
-          + cosQA*(cosQ*cosC+sinQ*sinC) - sinQA*(sinQ*cosC-cosQ*sinC) + cosQC*(cosQ*cosA+sinQ*sinA) - sinQC*(sinQ*cosA-cosQ*sinA)
-          + cosAC*(cosQ*cosQ-sinQ*sinQ) + sinAC*2.*sinQ*cosQ
-          + (cosA*cosC-sinA*sinC)*(cosQ*cosQ-sinQ*sinQ) + (sinA*cosC+cosA*sinC)*2.*sinQ*cosQ;
+//          Double_t NUAcorV2 = cos2Q*cosAC + sin2Q*sinAC
+//          + 2.*(cosQ*cosQAC - sinQ*sinQAC)
+//          + cosA*cos2QC + sinA*sin2QC + cosC*cos2QA + sinC*sin2QA
+//          + 2.*(cosQA*cosQC - sinQA*sinQC)
+//          + cos2Q*(cosA*cosC-sinA*sinC) + sin2Q*(sinA*cosC+cosA*sinC)
+//          + cosQA*(cosQ*cosC+sinQ*sinC) - sinQA*(sinQ*cosC-cosQ*sinC) + cosQC*(cosQ*cosA+sinQ*sinA) - sinQC*(sinQ*cosA-cosQ*sinA)
+//          + cosAC*(cosQ*cosQ-sinQ*sinQ) + sinAC*2.*sinQ*cosQ
+//          + (cosA*cosC-sinA*sinC)*(cosQ*cosQ-sinQ*sinQ) + (sinA*cosC+cosA*sinC)*2.*sinQ*cosQ;
+          
+          Double_t NUAcorV2 = cos2QA*cosC + sin2QA*sinC
+          + cos2QC*cosA + sin2QC*sinA
+          + cosAC*cos2Q + sinAC*sin2Q
+          + (cosA*cosC-sinA*sinC)*cos2Q + (sinA*cosC+cosA*sinC)*sin2Q;
           
           if(sumw>0.) {
             SumTwo    += sumwx;
