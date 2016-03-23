@@ -178,7 +178,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 	   fInitialized = true;
     }
     timer.Stop();
-    HLTImportant("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
+    HLTInfo("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
     if( err!=0 ){
       HLTError(Form("Cannot retrieve offline transform from AliTPCcalibDB, AliHLTTPCClusterTransformation returns %d",err));
       return -ENOENT;

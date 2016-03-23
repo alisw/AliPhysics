@@ -131,7 +131,7 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fMessageFilter.Data(), fMessageFilter.Length());
   
   HLTMessage(Form("socket create ptr %p %s",fZMQin,(rc<0)?zmq_strerror(errno):""));
-  HLTImportant(Form("ZMQ connected to: %s rc %i %s",fZMQinConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
+  HLTInfo(Form("ZMQ connected to: %s rc %i %s",fZMQinConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
 
   return retCode;
 }
