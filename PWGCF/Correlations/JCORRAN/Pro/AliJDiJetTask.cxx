@@ -36,33 +36,33 @@
 
 //______________________________________________________________________________
 AliJDiJetTask::AliJDiJetTask() :   
-    AliAnalysisTaskSE("AliJDiJetTaskTask"),
-	fJetTask(NULL),
-	fJetTaskName(""),
-    fJDiJetAnalysis(0x0),
-	fOutput(NULL),
-    fFirstEvent(kTRUE),
-    fAnaUtils(NULL),
-    fRunTable(NULL),
-    fCard(NULL)
+  AliAnalysisTaskSE("AliJDiJetTaskTask"),
+  fJetTask(NULL),
+  fJetTaskName(""),
+  fJDiJetAnalysis(0x0),
+  fOutput(NULL),
+  fFirstEvent(kTRUE),
+  fAnaUtils(NULL),
+  fRunTable(NULL),
+  fCard(NULL)
 {
   DefineOutput (1, TDirectory::Class());
 }
 
 //______________________________________________________________________________
 AliJDiJetTask::AliJDiJetTask(const char *name, TString inputformat):
-    AliAnalysisTaskSE(name), 
-	fJetTask(NULL),
-	fJetTaskName(""),
-    fJDiJetAnalysis(0x0),
-	fOutput(NULL),
-	fFirstEvent(kTRUE),
-    fAnaUtils(NULL),
-    fRunTable(NULL),
-    fCard(NULL)
+  AliAnalysisTaskSE(name), 
+  fJetTask(NULL),
+  fJetTaskName(""),
+  fJDiJetAnalysis(0x0),
+  fOutput(NULL),
+  fFirstEvent(kTRUE),
+  fAnaUtils(NULL),
+  fRunTable(NULL),
+  fCard(NULL)
 {
   // Constructor
-  AliInfo("---- AliJDiJetTask Constructor ----");
+  // AliInfo("---- AliJDiJetTask Constructor ----");
 
   JUNUSED(inputformat);
   DefineOutput (1, TDirectory::Class());
@@ -70,18 +70,18 @@ AliJDiJetTask::AliJDiJetTask(const char *name, TString inputformat):
 
 //____________________________________________________________________________
 AliJDiJetTask::AliJDiJetTask(const AliJDiJetTask& ap) :
-    AliAnalysisTaskSE(ap.GetName()), 
-	fJetTask(ap.fJetTask),
-	fJetTaskName(ap.fJetTaskName),
-    fJDiJetAnalysis( ap.fJDiJetAnalysis ),
-	fOutput( ap.fOutput ),
-	fFirstEvent( ap.fFirstEvent),
-	fAnaUtils(ap.fAnaUtils),
-	fRunTable(ap.fRunTable),
-    fCard( ap.fCard )
+  AliAnalysisTaskSE(ap.GetName()), 
+  fJetTask(ap.fJetTask),
+  fJetTaskName(ap.fJetTaskName),
+  fJDiJetAnalysis( ap.fJDiJetAnalysis ),
+  fOutput( ap.fOutput ),
+  fFirstEvent( ap.fFirstEvent),
+  fAnaUtils(ap.fAnaUtils),
+  fRunTable(ap.fRunTable),
+  fCard( ap.fCard )
 { 
 
-  AliInfo("----DEBUG AliJDiJetTask COPY ----");
+  //AliInfo("----DEBUG AliJDiJetTask COPY ----");
 
 }
 
@@ -90,7 +90,7 @@ AliJDiJetTask& AliJDiJetTask::operator = (const AliJDiJetTask& ap)
 {
   // assignment operator
 
-  AliInfo("----DEBUG AliJDiJetTask operator= ----");
+  //AliInfo("----DEBUG AliJDiJetTask operator= ----");
   this->~AliJDiJetTask();
   new(this) AliJDiJetTask(ap);
   return *this;
@@ -101,8 +101,8 @@ AliJDiJetTask::~AliJDiJetTask()
 {
   // destructor 
 
-   delete fJDiJetAnalysis;
-   delete fAnaUtils;
+  delete fJDiJetAnalysis;
+  delete fAnaUtils;
 
 }
 
@@ -110,120 +110,111 @@ AliJDiJetTask::~AliJDiJetTask()
 
 void AliJDiJetTask::UserCreateOutputObjects()
 {  
-	//=== create the jcorran outputs objects
-	if(fDebug > 1) printf("AliJDiJetTask::UserCreateOutPutData() \n");
+  //=== create the jcorran outputs objects
+  if(fDebug > 1) printf("AliJDiJetTask::UserCreateOutPutData() \n");
 
-	fAnaUtils = new AliAnalysisUtils();
-	fAnaUtils->SetUseOutOfBunchPileUp( kTRUE );
+  fAnaUtils = new AliAnalysisUtils();
+  fAnaUtils->SetUseOutOfBunchPileUp( kTRUE );
 
-	//=== Get AnalysisManager
-	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  //=== Get AnalysisManager
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
-	OpenFile(1);
-	fOutput = gDirectory;//->mkdir("JDiHadronCorr");
-	fOutput->cd();
+  OpenFile(1);
+  fOutput = gDirectory;//->mkdir("JDiHadronCorr");
+  fOutput->cd();
 
-	fJDiJetAnalysis = new AliJDiJetAnalysis(fCard);
-	fJDiJetAnalysis->UserCreateOutputObjects();
-	fCard->WriteCard( gDirectory );
+  fJDiJetAnalysis = new AliJDiJetAnalysis(fCard);
+  fJDiJetAnalysis->UserCreateOutputObjects();
+  fCard->WriteCard( gDirectory );
 
-	PostData( 1, fOutput );
+  PostData( 1, fOutput );
 
-	fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
+  fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 
-	fJDiJetAnalysis->AddJets( NULL );
-	fJDiJetAnalysis->AddJets( NULL );
-	//for( int ij=0;ij< fJetTask->GetNumberOfJetCollections();ij++ ){
-	//   fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( ij ) );
-	//}
-	fJDiJetAnalysis->AddJets( 0 );
-	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 0 ) );
-	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 1 ) );
-	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 2 ) );
-	fJDiJetAnalysis->AddJets( 0 );
-	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 3 ) );
-	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 4 ) );
-	fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( 5 ) );
+  for( int i=0;i<fJetTask->GetNumberOfJetCollections(); i++ ){
+    fJDiJetAnalysis->AddJets( fJetTask->GetAliJJetList( i ), fJetTask->GetTrackOrMCParticle(i) );
+    // TODO: fChargedOrFull;
+    // TODO: Raidus
+  }
 
-	// TODO 
+  //fJDiJetAnalysis->CreateHistos();
 
 
-
-	cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
+  cout << "Add(fAliRunHeader) in UserCreateObject() ======= " << endl;
 }
 
 //______________________________________________________________________________
 void AliJDiJetTask::UserExec(Option_t* /*option*/) 
 {
 
-	// Processing of one event
-	if(fDebug > 5) cout << "------- AliJDiJetTask Exec-------"<<endl;
+  // Processing of one event
+  if(fDebug > 5) cout << "------- AliJDiJetTask Exec-------"<<endl;
 
-	// Check Event
-	if( fJetTask->GetTaskEntry() != fEntry ) return;
-	AliVEvent *event = InputEvent();
-	if(!event) return;
-	AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
-	if(!aodEvent) return;
-	if( fFirstEvent ) {
-		fRunTable = & AliJRunTable::GetSpecialInstance();
-		fRunTable->SetRunNumber( aodEvent->GetRunNumber() );
-		fFirstEvent = kFALSE;
-	}
-	if(!IsGoodEvent( event )) return; // zBin is set there
+  // Check Event
+  if( fJetTask->GetTaskEntry() != fEntry ) return;
+  AliVEvent *event = InputEvent();
+  if(!event) return;
+  AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
+  if(!aodEvent) return;
+  if( fFirstEvent ) {
+    fRunTable = & AliJRunTable::GetSpecialInstance();
+    fRunTable->SetRunNumber( aodEvent->GetRunNumber() );
+    fFirstEvent = kFALSE;
+  }
+  if(!IsGoodEvent( event )) return; // zBin is set there
 
-	// Call DiJetAnalysis
-	fJDiJetAnalysis->ClearBeforeEvent();
-	fJDiJetAnalysis->UserExec();
-	PostData(1, fOutput );
+  // Call DiJetAnalysis
+  fJDiJetAnalysis->ClearBeforeEvent();
+  fJDiJetAnalysis->UserExec();
+  PostData(1, fOutput );
 
-	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
+  if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
 }
 
 //______________________________________________________________________________
 void AliJDiJetTask::Init()
 {
-	// Intialisation of parameters
-	AliInfo("Doing initialization") ; 
-	//fJDiJetAnalysis->Init();
+  // Intialisation of parameters
+  AliInfo("Doing initialization") ; 
+  //fJDiJetAnalysis->Init();
 }
 
 //______________________________________________________________________________
 void AliJDiJetTask::Terminate(Option_t *)
 {
-	cout<<"AliJDiJetTask Analysis DONE !!"<<endl; 
+  cout<<"AliJDiJetTask Analysis DONE !!"<<endl; 
 
 }
 
 //________________________________________________________________________
 bool AliJDiJetTask::IsGoodEvent(AliVEvent *event) {
 
-	// TODO pile up test for PP
-	if(fRunTable->IsPP() && fAnaUtils->IsPileUpEvent(event)) {
-		return kFALSE;
-	} else {
-		Bool_t triggeredEventMB = kFALSE; //init
+  // TODO pile up test for PP
+  if(fRunTable->IsPP() && fAnaUtils->IsPileUpEvent(event)) {
+    return kFALSE;
+  } else {
+    Bool_t triggeredEventMB = kFALSE; //init
 
-		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+    Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
 
-		if( triggerkMB ){
-			triggeredEventMB = kTRUE;  //event triggered as minimum bias
-		}
-		//--------------------------------------------------------------
-		// check reconstructed vertex
-		int ncontributors = 0;
-		Bool_t goodRecVertex = kFALSE;
-		const AliVVertex *vtx = event->GetPrimaryVertex();
-		if(vtx){
-			ncontributors = vtx->GetNContributors();
-			if(ncontributors > 0){
-				double zVert = vtx->GetZ();
-				if(fCard->VertInZRange(zVert)) {
-					goodRecVertex = kTRUE;
-				}
-			}
-		}
-		return goodRecVertex;
-	}
-	//---------------------------------
+    if( triggerkMB ){
+      triggeredEventMB = kTRUE;  //event triggered as minimum bias
+    }
+    //--------------------------------------------------------------
+    // check reconstructed vertex
+    int ncontributors = 0;
+    Bool_t goodRecVertex = kFALSE;
+    const AliVVertex *vtx = event->GetPrimaryVertex();
+    if(vtx){
+      ncontributors = vtx->GetNContributors();
+      if(ncontributors > 0){
+        double zVert = vtx->GetZ();
+        if(fCard->VertInZRange(zVert)) {
+          goodRecVertex = kTRUE;
+        }
+      }
+    }
+    return goodRecVertex;
+  }
+  //---------------------------------
 }
