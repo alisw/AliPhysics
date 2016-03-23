@@ -54,7 +54,8 @@ struct TrackletAODdNdeta : public TrainSetup
     fOptions.Add("shifted-dphi-cut", "RADIANS", "Cut on dPhi-phiBent",  -1.);
     fOptions.Add("mc",                   "For MC data",             false);
     fOptions.Add("multsel",              "Enable MultSelection",    false);
-    fOptions.Add("reweight",   "OPTIONS","','-seperates list",       "");
+    fOptions.Add("abs-min-cent","PERCENT","Absolute least cent.",   -1);
+    fOptions.Add("reweight",   "FILE",    "File with weights",      "");
     fOptions.SetDescription("Analyse AOD for dN/deta from tracklets");
     fOptions.Set("type", "AOD");
   }
@@ -99,6 +100,7 @@ struct TrackletAODdNdeta : public TrainSetup
     Info("CreateTasks", "Loading code");
     fRailway->LoadSource("FixPaths.C");
     fRailway->LoadSource("AliAODTracklet.C");
+    fRailway->LoadSource("AliTrackletWeights.C");
     fRailway->LoadSource("AliTrackletAODUtils.C");
     fRailway->LoadSource("AliTrackletAODdNdeta.C");
 
@@ -131,7 +133,34 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "MaxDelta",	"max-delta",	    25.);
     FromOption(task, "DPhiShift",	"dphi-shift",	    0.0045);
     FromOption(task, "ShiftedDPhiCut",	"shifted-dphi-cut",-1.);
+    FromOption(task, "AbsMinCent",      "abs-min-cent",    -1.);
 
+    if (mc && fOptions.Has("reweight")) {
+      TUrl wurl(fOptions.AsString("reweight"));
+      TFile* wfile = TFile::Open(wurl.GetFile());
+      if (!wfile) {
+	Warning("CreateTasks", "Failed to open weights file: %s",
+		wurl.GetUrl());
+	return;
+      }
+      TString wnam(wurl.GetAnchor());
+      if (wnam.IsNull()) wnam = "weights";
+      TObject* wobj = wfile->Get(wnam);
+      if (!wobj) {
+	Warning("CreateTasks", "Failed to get weights %s from file %s",
+		wnam.Data(), wfile->GetName());
+	return;
+      }
+      if (!wobj->IsA()->InheritsFrom("AliTrackletWeights")) {
+	Warning("CreateTasks", "Object %s from file %s not an "
+		"AliTrackletWeights but a %s",
+		wnam.Data(), wfile->GetName(), wobj->ClassName());
+	return;
+      }
+      SetOnTaskGeneric(task, "Weights",
+		       Form("((AliTrackletWeights*)%p)", wobj));
+    }
+	
     task->Print("");    
   }
   /** 
