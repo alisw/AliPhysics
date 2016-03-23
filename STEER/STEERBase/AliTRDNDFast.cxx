@@ -1,6 +1,7 @@
 // Author: Daniel.Lohner@cern.ch
 
 #include "AliTRDNDFast.h"
+#include "AliLog.h"
 #include "TCanvas.h"
 #include "TMath.h"
 
@@ -288,7 +289,10 @@ void AliTRDNDFast::Build(TH1F **hdEdx,TString path){
 	hdEdx[idim]->DrawCopy();
         fFunc[idim]->DrawCopy("same");
 	// Set Pars
-	for(Int_t ipar=0;ipar<kNpar;ipar++)fPars[ipar].SetAt(fFunc[idim]->GetParameter(ipar),idim);
+	for(Int_t ipar=0;ipar<kNpar;ipar++){
+	    AliDebug(3,Form("parameters: %f %f %f %i %i \n",fFunc[idim]->GetParameter(ipar),fFunc[idim]->GetParError(ipar),fFunc[idim]->GetChisquare(),fFunc[idim]->GetNDF(),idim));
+	    fPars[ipar].SetAt(fFunc[idim]->GetParameter(ipar),idim);
+	}
     }
     if(path!="")CANV->Print(Form("%s/%s_Build.pdf",path.Data(),fTitle.Data()));
     delete CANV;
