@@ -29,25 +29,25 @@ class AliTrackContainer : public AliParticleContainer {
   AliTrackContainer(const char *name, const char *period = "");
   virtual ~AliTrackContainer(){;}
 
-  virtual Bool_t              ApplyTrackCuts(const AliVTrack* vp);
-  virtual Bool_t              AcceptObject(Int_t i)                        { return AcceptTrack(i)        ; }
-  virtual Bool_t              AcceptObject(const TObject* obj)             { return AcceptTrack(dynamic_cast<const AliVTrack*>(obj)) ; }
-  virtual Bool_t              AcceptParticle(Int_t i)                      { return AcceptTrack(i)        ; }
-  virtual Bool_t              AcceptParticle(const AliVParticle* vp)       { return AcceptTrack(dynamic_cast<const AliVTrack*>(vp))  ; }
+  virtual Bool_t              ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const;
+  virtual Bool_t              AcceptObject(Int_t i, UInt_t &rejectionReason) const                        { return AcceptTrack(i, rejectionReason)        ; }
+  virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const             { return AcceptTrack(dynamic_cast<const AliVTrack*>(obj), rejectionReason); }
+  virtual Bool_t              AcceptParticle(Int_t i, UInt_t &rejectionReason) const                      { return AcceptTrack(i, rejectionReason); }
+  virtual Bool_t              AcceptParticle(const AliVParticle* vp, UInt_t &rejectionReason) const       { return AcceptTrack(dynamic_cast<const AliVTrack*>(vp), rejectionReason); }
   virtual AliVParticle       *GetParticle(Int_t i=-1)                const { return GetTrack(i)           ; }
-  virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)                { return GetAcceptTrack(i)     ; }
+  virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)          const { return GetAcceptTrack(i)     ; }
   virtual AliVParticle       *GetNextAcceptParticle()                      { return GetNextAcceptTrack()  ; }
   virtual AliVParticle       *GetNextParticle()                            { return GetNextTrack()        ; }
-  virtual Bool_t              AcceptTrack(const AliVTrack* vp)            ;
-  virtual Bool_t              AcceptTrack(Int_t i)                        ;
+  virtual Bool_t              AcceptTrack(const AliVTrack* vp, UInt_t &rejectionReason)  const;
+  virtual Bool_t              AcceptTrack(Int_t i, UInt_t &rejectionReason) const;
   virtual AliVTrack          *GetLeadingTrack(const char* opt="")          { return static_cast<AliVTrack*>(GetLeadingParticle(opt)); }
   virtual AliVTrack          *GetTrack(Int_t i=-1)                   const;
-  virtual AliVTrack          *GetAcceptTrack(Int_t i=-1)                  ;
+  virtual AliVTrack          *GetAcceptTrack(Int_t i=-1)             const;
   virtual AliVTrack          *GetNextAcceptTrack()                        ;
   virtual AliVTrack          *GetNextTrack()                              ;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass);
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part);
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i);
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass) const;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part) const;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i);
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);

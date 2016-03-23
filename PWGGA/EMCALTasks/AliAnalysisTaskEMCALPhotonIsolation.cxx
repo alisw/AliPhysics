@@ -1110,7 +1110,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
     else {
       mt = static_cast<AliVTrack*>(clust->GetTrackMatched(0));
-      if (!tracks->AcceptParticle(mt)) mt = 0;
+      UInt_t rejectionReason = 0;
+      if (!tracks->AcceptParticle(mt, rejectionReason)) mt = 0;
     }
 
   //  Int_t imt = partC->GetMatchedObjId(i);
@@ -2146,7 +2147,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
           if( lastidx < npart ){//2nd daughter within List of Particles.
 
             AliAODMCParticle *last=static_cast<AliAODMCParticle*>(fAODMCParticles->At(lastidx));
-            if(( last->Phi() - phiTrue ) < 0.03 && ( last->Eta() - etaTrue ) < 0.02 ){ //same Proximity cut as the CPV
+            if(( last->Phi() - phiTrue ) < fdphicut && ( last->Eta() - etaTrue ) < fdetacut ){ //same Proximity cut as the CPV
               enTrue += last->E()*TMath::Sin(last->Theta());
               clusterFromPromptPhoton=3; //contribution from both daughters
             }
@@ -2156,7 +2157,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
         else{ //Cluster associated to 2nd daughter!! look if also the 1st daughter contributes to the cluster Energy
 
           AliAODMCParticle *first=static_cast<AliAODMCParticle*>(fAODMCParticles->At(firstidx));
-          if(( first->Phi() - phiTrue ) < 0.03 && ( first->Eta() - etaTrue ) < 0.02 ){//same Proximity cut as the CPV
+          if(( first->Phi() - phiTrue ) < fdphicut && ( first->Eta() - etaTrue ) < fdetacut ){//same Proximity cut as the CPV
             enTrue += first->E()*TMath::Sin(first->Theta());
             clusterFromPromptPhoton=3;//contribution from both daughters
           }
@@ -2959,7 +2960,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       phi = mcpart->Phi();
 
         //check photons in EMCAL //to be redefined with fIsoConeR
-      if((TMath::Abs(eta)>0.3) || (phi<1.8 || phi>(TMath::Pi()-0.4)))
+      if((TMath::Abs(eta)>0.7-fIsoConeRadius ) || (phi<1.8 || phi>(TMath::Pi()-fIsoConeRadius)))
         continue;
 
         //cout<<"iTr: "<< iTr<<"\t Label: "<<mcpart->GetLabel()<<"\t coordinates eta: "<<eta<<" and phi: "<<phi<<endl;
@@ -2992,7 +2993,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         Double_t etamatching = matchingtrack->Eta();
         Double_t phimatching = matchingtrack->Phi();
 
-        if(TMath::Abs(eta-etamatching)<=0.02 && TMath::Abs(phi-phimatching)<=0.03){
+        if(TMath::Abs(eta-etamatching)<=fdetacut && TMath::Abs(phi-phimatching)<=fdphicut){
           foundmatch=kTRUE;
           fphietaOthers->Fill(matchingtrack->Eta(),matchingtrack->Phi(),eT);
           fphietaOthersBis->Fill(matchingtrack->Eta(),matchingtrack->Phi(),matchingtrack->Pt());
@@ -3051,7 +3052,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           //cout<<"Coordinates of this particle (eta,phi)= ("<<etap<<","<<phip<<")"<<endl;
           //cout<<"distance of this particle from the photon: "<<distance<<endl;
 
-        if(distance <= 0.4){ //to be changed with fIsoConeR
+        if(distance <= fIsoConeRadius){ //to be changed with fIsoConeR
                              //cout<<iTrack<<"\t"<<photonlabel<<endl;
                              //mcpp->Print();
           sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
@@ -3066,13 +3067,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
             else{
               switch(fUEMethod){
                 case 0: //Phi band
-                  if(TMath::Abs(eta-etap)<0.4) //to be changed with fIsoConeRadius
+                  if(TMath::Abs(eta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
                     sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
                   else continue;
 
                   break;
                 case 1: //Eta band
-                  if(TMath::Abs(phi-phip)<0.4)
+                  if(TMath::Abs(phi-phip)<fIsoConeRadius)
                     sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
                   else continue;
 
@@ -3086,13 +3087,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
             else{
               switch(fUEMethod){
                 case 0: //Phi band
-                {if(TMath::Abs(eta-etap)<0.4) //to be changed with fIsoConeRadius
+                {if(TMath::Abs(eta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
                   sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
                 else continue;
                   break;
                 }
                 case 1: //Eta band
-                {  if(TMath::Abs(phi-phip)<0.4)
+                {  if(TMath::Abs(phi-phip)<fIsoConeRadius)
                   sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
                 else continue;
 
@@ -3106,8 +3107,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
                   if (phicone1 < 0.) phicone1 += 2*TMath::Pi();
 
-                  if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2))< 0.4 ||
-                     TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2))< 0.4) //to be changed with fIsoConeRadius
+                  if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
+                     TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius) //to be changed with fIsoConeRadius
                   {sumUE += mcpp->Pt();}
                   else continue;
 
@@ -3190,7 +3191,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
       if(mcsearch->GetStatus()>10) continue;
       if(mcsearch->GetPdgCode()!=22) continue;
-      if(TMath::Abs(mcsearch->Eta())>0.3) continue;
+      if(TMath::Abs(mcsearch->Eta())>0.7-fIsoConeRadius) continue;
       if(mcsearch->Phi()<= 1.8 ||mcsearch->Phi()>= TMath::Pi()) continue;
 
       mcfirstEnergy= mcsearch->E();
@@ -3228,7 +3229,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       distance=0.;
       distance= TMath::Sqrt((mcFirstPhi- phip)*(mcFirstPhi- phip) + (mcFirstEta- etap)*(mcFirstEta- etap));
 
-      if(distance<=0.4){
+      if(distance<=fIsoConeRadius){
         sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
       }
       else{
@@ -3238,13 +3239,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           else{
             switch(fUEMethod){
               case 0: //Phi band
-                if(TMath::Abs(mcFirstEta-etap)<0.4) //to be changed with fIsoConeRadius
+                if(TMath::Abs(mcFirstEta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
                   sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
                 else continue;
 
                 break;
               case 1: //Eta band
-                if(TMath::Abs(mcFirstPhi-phip)<0.4)
+                if(TMath::Abs(mcFirstPhi-phip)<fIsoConeRadius)
                   sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
                 else continue;
 
@@ -3258,13 +3259,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           else{
             switch(fUEMethod){
               case 0: //Phi band
-              {  if(TMath::Abs(mcFirstEta-etap)<0.4) //to be changed with fIsoConeRadius
+              {  if(TMath::Abs(mcFirstEta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
                 sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
               else continue;
                 break;
               }
               case 1: //Eta band
-              {if(TMath::Abs(mcFirstPhi-phip)<0.4)
+              {if(TMath::Abs(mcFirstPhi-phip)<fIsoConeRadius)
                 sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
               else continue;
 
@@ -3276,8 +3277,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
                 if (phicone1 < 0.) phicone1 += 2*TMath::Pi();
 
-                if(TMath::Sqrt(TMath::Power(etap-mcFirstEta,2)+TMath::Power(phip-phicone1,2))< 0.4 ||
-                   TMath::Sqrt(TMath::Power(etap-mcFirstEta,2)+TMath::Power(phip-phicone2,2))< 0.4) //to be changed with fIsoConeRadius
+                if(TMath::Sqrt(TMath::Power(etap-mcFirstEta,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
+                   TMath::Sqrt(TMath::Power(etap-mcFirstEta,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius) //to be changed with fIsoConeRadius
                 {sumUE += mcpp->Pt();}
                 else continue;
                 break;

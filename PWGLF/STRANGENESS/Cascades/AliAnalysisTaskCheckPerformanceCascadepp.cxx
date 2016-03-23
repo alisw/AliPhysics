@@ -2554,22 +2554,21 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    Double_t lDcaXiDaughters = 0., lDcaBachToPrimVertexXi = 0., lXiCosineOfPointingAngle = 0., lXiRadius = 0., lInvMassLambdaAsCascDghter = 0., lDcaV0DaughtersXi = 0., lV0CosineOfPointingAngleXi = 0., 
             lV0CosineOfPointingAngle = 0., lV0RadiusXi = 0., lDcaV0ToPrimVertexXi = 0., lDcaPosToPrimVertexXi = 0., lDcaNegToPrimVertexXi = 0., lChargeXi = 0. , lV0mom = 0., lmcPt = 0., lmcRapCasc = 0., 
             lmcEta = 0., lmcTransvRadius = 0., lrecoPt = 0., lrecoTransvRadius = 0., lDeltaPhiMcReco = 0., lBachTransvMom = 0., lpTrackTransvMom = 0., lnTrackTransvMom = 0., lmcPtPosV0Dghter = 0., 
-            lmcPtNegV0Dghter = 0., lrecoP = 0., lmcPtBach = 0., cascadeMass = 0., ppionBach, pkaonBach, lInvMassXiMinus, lInvMassXiPlus, lInvMassOmegaMinus, lInvMassOmegaPlus, lV0quality, pproton, ppion, r[10];
+            lmcPtNegV0Dghter = 0., lrecoP = 0., lmcPtBach = 0., cascadeMass = 0., ppionBach, pkaonBach, lInvMassXiMinus, lInvMassXiPlus, lInvMassOmegaMinus, lInvMassOmegaPlus, lV0quality, pproton, ppion;
    Bool_t   lIsPosInXiProton, lIsPosInXiPion, lIsPosInOmegaProton, lIsPosInOmegaPion, lIsNegInXiProton, lIsNegInXiPion, lIsNegInOmegaProton, lIsNegInOmegaPion, lIsBachelorKaon, lIsBachelorPion, 
             lIsBachelorKaonForTPC, lIsBachelorPionForTPC, lIsNegPionForTPC, lIsPosPionForTPC, lIsNegProtonForTPC, lIsPosProtonForTPC, lIsBachelorMCPiMinus, lIsBachelorMCPiPlus, lIsBachelorMCKMinus, 
             lIsBachelorMCKPlus, lAssoXiMinus, lAssoXiPlus, lAssoOmegaMinus, lAssoOmegaPlus;
    Float_t  etaBach, etaPos, etaNeg, decayCascX, decayCascY, distV0Xi, lctauV0, distTV0Xi;
    AliESDcascade *xiESD;
    UInt_t lIdxPosXi, lIdxNegXi, lBachIdx;
-   AliESDtrack *pTrackXi, *nTrackXi, *bachTrackXi = 0x0;
+   AliESDtrack *pTrackXi, *nTrackXi, *bachTrackXi;
    ULong_t pStatus, nStatus, bachStatus;
-   TParticle *mcBachForPID, *mcPosV0Dghter, *mcNegV0Dghter, *mcMotherPosV0Dghter, *mcMotherNegV0Dghter, *mcGdMotherPosV0Dghter = 0x0, *mcGdMotherNegV0Dghter = 0x0, *mcMotherBach = 0x0;
+   TParticle *mcBachForPID, *mcPosV0Dghter, *mcNegV0Dghter, *mcMotherPosV0Dghter, *mcMotherNegV0Dghter, *mcGdMotherPosV0Dghter, *mcGdMotherNegV0Dghter, *mcMotherBach;
    const AliAODcascade *xiAOD;
-   AliAODTrack *pTrackXiaod, *nTrackXiaod, *bachTrackXiaod = 0x0;
+   AliAODTrack *pTrackXiaod, *nTrackXiaod, *bachTrackXiaod;
    AliAODMCParticle *mcBachForPIDaod, *mcPosV0Dghteraod, *mcNegV0Dghteraod, *mcMotherPosV0Dghteraod, *mcMotherNegV0Dghteraod, *mcGdMotherPosV0Dghteraod, *mcGdMotherNegV0Dghteraod, *mcMotherBachaod;
    Double_t xiMomX, xiMomY, xiMomZ, lBachMomX, lBachMomY, lV0momX, lV0momY, lV0momZ, lV0NMomX, lV0NMomY, lV0PMomX, lV0PMomY;
    Float_t lambdaMass = 1.115683; // PDG mass 
-   Double_t lContainerCutVars[19], lContainerPIDVars[3];
 
    // - Get the number of cascades
    ncascades = 0;
@@ -2715,7 +2714,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	        AliPID pPidXi;     pPidXi.SetPriors(lPriorsGuessXi);
 	        AliPID pPidOmega;  pPidOmega.SetPriors(lPriorsGuessOmega);		
 	        if( pTrackXi->IsOn(AliESDtrack::kESDpid) ){  
-	             r[10] = {0.}; 
+	             Double_t r[10] = {0.}; 
                      pTrackXi->GetESDpid(r);
 		     pPidXi.SetProbabilities(r);
 		     pPidOmega.SetProbabilities(r);		
@@ -2740,7 +2739,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	        AliPID nPidXi;    nPidXi.SetPriors( lPriorsGuessXi );
 	        AliPID nPidOmega; nPidOmega.SetPriors( lPriorsGuessOmega );		
 	        if( nTrackXi->IsOn(AliESDtrack::kESDpid) ) {  
-     	             r[10] = {0.}; 
+     	             Double_t r[10] = {0.}; 
                      nTrackXi->GetESDpid(r);
 	             nPidXi.SetProbabilities(r);
 		     nPidOmega.SetProbabilities(r);
@@ -2765,7 +2764,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	        AliPID bachPidXi;    bachPidXi.SetPriors( lPriorsGuessXi );
 	        AliPID bachPidOmega; bachPidOmega.SetPriors( lPriorsGuessOmega );
 	        if ( bachTrackXi->IsOn(AliESDtrack::kESDpid) ) {  
-                     r[10] = {0.}; 
+                     Double_t r[10] = {0.}; 
                      bachTrackXi->GetESDpid(r);
                      bachPidXi.SetProbabilities(r);
                      bachPidOmega.SetProbabilities(r);
@@ -3173,7 +3172,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
         fHistV0toXiCosineOfPointingAngle->Fill(lV0CosineOfPointingAngleXi);
         // - Fill containers
         // - Filling the AliCFContainer (optimisation of topological selections + systematics)
-        lContainerCutVars[19] = {0.0};
+        Double_t lContainerCutVars[19] = {0.0};
         lContainerCutVars[0]  = lDcaXiDaughters;
         lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
         lContainerCutVars[2]  = lXiCosineOfPointingAngle;
@@ -3220,7 +3219,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                      if (lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContAsCascadeCuts->Fill(lContainerCutVars,3);
         }
         // - Filling the AliCFContainers related to PID
-        lContainerPIDVars[3] = {0.0};
+        Double_t lContainerPIDVars[3] = {0.0};
         // Xi Minus		
         if (lChargeXi < 0 && lAssoXiMinus) {
               lContainerPIDVars[0] = lmcPt;

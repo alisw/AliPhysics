@@ -188,7 +188,8 @@ Bool_t AliEmcalClusterMaker::Run()
       }
     }
 
-    if (fOutClusters && clusters->AcceptCluster(clus) && !exResult) {
+    UInt_t rejectionReason = 0;
+    if (fOutClusters && clusters->AcceptCluster(clus, rejectionReason) && !exResult) {
 
       AliVCluster *oc = 0;
       if (fEsdMode) {

@@ -365,7 +365,7 @@ goCPass()
 
   # -c: check if local source exists; -C: do not copy if local dest exists already
   # -f: copy all in the same dest dir (flat copy)
-  xCopy -f -c -C -d . "${filesCPass[@]}"
+  xCopy -w 1 -f -c -C -d . "${filesCPass[@]}"
   for file in ${filesCPass[*]}; do
     [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
   done
@@ -731,6 +731,7 @@ goMergeCPass()
     0) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${syslogsRecToMerge}"
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                         "${batchWorkingDirectory}/${mergingScript}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
@@ -743,6 +744,7 @@ goMergeCPass()
                          "${batchWorkingDirectory}/${filteredFilesToMerge}"
                          "${batchWorkingDirectory}/${syslogsRecToMerge}"
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                         "${batchWorkingDirectory}/${mergingScript}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
@@ -1441,8 +1443,8 @@ goMakeLocalOCDBaccessConfig()
   echo "localOCDBaccessConfig()"                               >  localOCDBaccessConfig.C
   echo "{"                                                     >> localOCDBaccessConfig.C
   echo "  AliCDBManager* man = AliCDBManager::Instance();"     >> localOCDBaccessConfig.C
-  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   [[ -f "${tempLocalOCDB}" ]] && cat ${tempLocalOCDB}              >> localOCDBaccessConfig.C
+  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   echo "}"                                                     >> localOCDBaccessConfig.C
 
   [[ -f "${tempLocalOCDB}" ]] && rm -f ${tempLocalOCDB}

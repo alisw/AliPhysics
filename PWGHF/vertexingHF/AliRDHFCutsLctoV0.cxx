@@ -873,24 +873,34 @@ void AliRDHFCutsLctoV0::CheckPID(Int_t candPtBin, AliAODTrack *bachelor,
     break;
 
   case 9:
-
-    // identify bachelor
-    fPidHF->GetPidCombined()->SetDefaultTPCPriors();
-    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-    Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
-    UInt_t detUsed = fPidHF->GetPidCombined()->ComputeProbabilities(bachelor, fPidHF->GetPidResponse(), probTPCTOF);
-    Double_t probProton = -1.;
-    Double_t probPion = -1.;
-    if (detUsed == (UInt_t)fPidHF->GetPidCombined()->GetDetectorMask() ) {
-      probProton = probTPCTOF[AliPID::kProton];
-      probPion = probTPCTOF[AliPID::kPion];
+    {
+      // identify bachelor
+      fPidHF->GetPidCombined()->SetDefaultTPCPriors();
+      fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+      Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
+      UInt_t detUsed = fPidHF->GetPidCombined()->ComputeProbabilities(bachelor, fPidHF->GetPidResponse(), probTPCTOF);
+      Double_t probProton = -1.;
+      Double_t probPion = -1.;
+      if (detUsed == (UInt_t)fPidHF->GetPidCombined()->GetDetectorMask() ) {
+	probProton = probTPCTOF[AliPID::kProton];
+	probPion = probTPCTOF[AliPID::kPion];
+      }
+      else { // if you don't have both TOF and TPC, try only TPC
+	fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+	detUsed = fPidHF->GetPidCombined()->ComputeProbabilities(bachelor, fPidHF->GetPidResponse(), probTPCTOF);
+	if (detUsed == (UInt_t)fPidHF->GetPidCombined()->GetDetectorMask()) {
+	  probProton = probTPCTOF[AliPID::kProton];
+	  probPion = probTPCTOF[AliPID::kPion];
+	}
+	fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+      }
+      
+      isBachelorID1=(probProton>fMinCombinedProbability[candPtBin]); // K0S case
+      
+      isBachelorID2=(probPion>fMinCombinedProbability[candPtBin]); // LambdaBar case
+      
+      isBachelorID4 = isBachelorID2; // Lambda case
     }
-    isBachelorID1=probProton>fMinCombinedProbability[candPtBin]; // K0S case
-
-    isBachelorID2=probPion>fMinCombinedProbability[candPtBin]; // LambdaBar case
-
-    isBachelorID4 = isBachelorID2; // Lambda case
-
     break;
 
   }

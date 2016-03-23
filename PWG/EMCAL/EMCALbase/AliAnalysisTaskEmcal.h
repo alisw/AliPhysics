@@ -30,13 +30,38 @@ class AliEmcalPythiaInfo;
 #include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskSE.h"
-
 /**
  * @class AliAnalysisTaskEmcal
  * @brief Base task in the EMCAL framework
  * @ingroup EMCALCOREFW
  * @author Martha Verweij
  * @author Salvatore Aiola
+ *
+ * This class is hte base class for Analysis Tasks using the
+ * core EMCAL framework, and user tasks should inherit from it.
+ * In contrast to the normal AliAnalysisTaskSE, the main event
+ * loop function to be implemented by the user is called Run.
+ * This function is only called in case the event was selected
+ * previously.
+ *
+ * A key feature is the handling of EMCAL containers (cluster/
+ * particle/track). Users can create containers and attach it
+ * to their analysis task.
+ *
+ * ~~~{.cxx}
+ * AliParticleContainer *cont = task->AddParticleContainer("MCParticlesSelected");
+ * cont->SetEtaLimits(-0.7, 0.7);
+ * ~~~
+ *
+ * Note that the name in the container must match the name of the
+ * TClonesArray in the input event connected to the container.
+ * Containers can be accessed inside the task either by their name
+ * or by their index as they were added to the task. The indices
+ * of cluster-, particle- or track-containers are not mixed. Containers
+ * provide an easy access to content created by other tasks and
+ * attached to the event as a TClonesArray.
+ *
+ * For more information refer to \subpage EMCALAnalysisTask
  */
 class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
@@ -175,7 +200,19 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
+  /**
+   * This function optionally fills histograms created by the users. Can
+   * access data previously handled by the user Run function.
+   * @return
+   */
   virtual Bool_t              FillHistograms()                  { return kTRUE                 ; }
+  /**
+   * Run function. This is the core function of the analysis and
+   * contains the user code. Therefore users have to implement this
+   * function.
+   *
+   * @return True if event is selected, false otherwise
+   */
   virtual Bool_t              Run()                             { return kTRUE                 ; }
     
   // Static utilities
@@ -188,7 +225,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
 
-  static Double_t             fgkEMCalDCalPhiDivide;      ///  phi value used to distinguish between DCal and EMCal
+  static Double_t             fgkEMCalDCalPhiDivide;       ///  phi value used to distinguish between DCal and EMCal
 
   // Task configuration
   TString                     fPythiaInfoName;             /// name of pythia info object

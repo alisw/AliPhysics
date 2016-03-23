@@ -344,7 +344,8 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
 
     while ((jet = JetCont->GetNextJet()))
     {
-        Bool_t OKjet = JetCont->AcceptJet(jet);
+        UInt_t rejectionReason = 0;
+        Bool_t OKjet = JetCont->AcceptJet(jet, rejectionReason);
         if(!OKjet) {
             fhstat->Fill(5);
             continue;
@@ -422,7 +423,8 @@ void AliAnalysisTaskFlavourJetCorrelations::AngularCorrelationMethod(Bool_t IsBk
         AliEmcalJet* jet=0;
         while ((jet = JetCont->GetNextJet()))
         {
-            Bool_t OKjet = JetCont->AcceptJet(jet);
+            UInt_t rejectionReason = 0;
+            Bool_t OKjet = JetCont->AcceptJet(jet, rejectionReason);
             if(!OKjet) continue;
 
             if(DeltaR(jet,charm,rho)<JetCont->GetJetRadius() && CheckDeltaR(jet,charm)<JetCont->GetJetRadius())
@@ -506,7 +508,8 @@ void AliAnalysisTaskFlavourJetCorrelations::GetHFJet(AliEmcalJet*& jet, Bool_t I
     JetCont->ResetCurrentID();
     while ((jet = JetCont->GetNextJet()))
     {
-        Bool_t OKjet = JetCont->AcceptJet(jet);
+        UInt_t rejectionReason = 0;
+        Bool_t OKjet = JetCont->AcceptJet(jet, rejectionReason);
         if(!OKjet) continue;
 
         Int_t JetTag = AliEmcalJet::kD0;

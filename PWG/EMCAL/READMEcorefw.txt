@@ -15,6 +15,38 @@ The EMCAL framework consists of
   
 \section EMCALAnalysisTask Writing an analysis using the AliAnalysisTaskEmcal
 
+The core of the EMCAL core framework is the AliAnalysisTaskEmcal. It should be
+used for EMCAL or jet related analyses. The AliAnalysisTaskEmcal
+
+- Handles cluster-/particle-/track-containers (see below)
+- Performs event selection
+- Fills QA histograms
+- Runs the user code
+
+In order to run the user code, users have to implement either of the
+two functions:
+
+- bool FillHistograms()
+- bool Run()
+
+The Run function is indended to contain the actual user Analysis, while the FillHistograms
+function should fill user histograms (for example on selected particles or jets). Input for
+the analysis comes from the different containers attached to the task, connecting to data
+from the input event. Users must not overwrite the function UserExec as it contains further
+functionality essential for the AliAnalysisTaskEmcal to work.
+
+In case the AliAnalysisTaskEmcal should handle the output as well, which is the normal 
+behaviour, the task should be configured to also fill histograms. In this case several
+general histograms monitoring the event selection are filled as well, among them the 
+vertex distribution before and after selection, but also Monte-Carlo related information
+like the cross section or the number of trials from the event generator. Furthermore
+the list fOutput can handle all the user histograms. For this the function 
+UserCreateOutputObjects needs to be implemented by the user and the corresponding function
+of the base class has to be called at the beginning.
+
+In the Add macro use the named constructor in order to setup the task and attach it to
+the analysis manager.
+
 \section EMCALcontainers Using the EMCAL containers
 
 EMCAL containers are used to handle arrays of objects (particles, clusters, jets) shared
