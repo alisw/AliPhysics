@@ -77,7 +77,7 @@ Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
  * 
  * @return Newly created GraphSysErr
  */
-TObject* MakeGSE(TDirectory* d, Double_t c1, Double_t c2)
+TObject* MakeGSE(TDirectory* d, UShort_t sNN, Double_t c1, Double_t c2)
 {
   if (!gROOT->GetClass("GraphSysErr")) return 0;
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
@@ -91,21 +91,23 @@ TObject* MakeGSE(TDirectory* d, Double_t c1, Double_t c2)
   Color_t  col     = g->GetMarkerColor();
   // Double_t bg      = (1-c1/100)*(2-0.1)+0.1;
   // Double_t c       = TMath::Power(c1/100,2)*(6.2-0.4)+0.4;
+  Double_t cMin    = sNN == 5023 ? 0.005 : 0.004;
+  Double_t cMax    = sNN == 5023 ? 0.075 : 0.062;
   Double_t bg      = CSysEval(c2, 0.02, 0.001);
-  Double_t c       = CSysEval(c2, 0.005, 0.075);
+  Double_t c       = CSysEval(c2, cMin, cMax);
   GraphSysErr* gse = new GraphSysErr(g->GetNbinsX());
   gse->SetName(nme);
   gse->SetTitle(Form("%5.1f - %5.1f%%", c1, c2));
-  gse->SetKey("author", "PREGHENELLA : 20150");
-  gse->SetKey("title", "dNch/deta in PbPb at 5023 GeV");
+  gse->SetKey("author", (sNN == 5023 ? "PREGHENELLA : 2015":"SHAHOYAN : 2013"));
+  gse->SetKey("title", Form("dNch/deta in PbPb at %d GeV", sNN));
   gse->SetKey("obskey", "DN/DETARAP");
   gse->SetKey("reackey", "PB PB --> CHARGED X");
   gse->SetKey("laboratory", "CERN");
   gse->SetKey("accelerator", "LHC");
   gse->SetKey("detector", "TRACKLETS");
-  gse->SetKey("reference", "ALICE-AN-2830");
+  gse->SetKey("reference", sNN==5023 ? "ALICE-AN-2830" : "ALICE-AN-2180");
   gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
-  gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", "5023");
+  gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d", sNN));
   gse->SetXTitle("ETARAP");
   gse->SetYTitle("DN/DETARAP");
   gse->SetMarkerStyle(g->GetMarkerStyle());
@@ -156,7 +158,7 @@ TObject* MakeGSE(TDirectory* d, Double_t c1, Double_t c2)
  * 
  * @return Newly created GraphSysErr
  */
-TObject* MakeTGSE(TDirectory* d, Double_t c1, Double_t c2)
+TObject* MakeTGSE(TDirectory* d, UShort_t sNN, Double_t c1, Double_t c2)
 {
   if (!gROOT->GetClass("GraphSysErr")) return 0;
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
@@ -173,16 +175,16 @@ TObject* MakeTGSE(TDirectory* d, Double_t c1, Double_t c2)
   GraphSysErr* gse = new GraphSysErr(g->GetNbinsX());
   gse->SetName(nme);
   gse->SetTitle(Form("%5.1f - %5.1f%%", c1, c2));
-  gse->SetKey("author", "PREGHENELLA : 20150");
-  gse->SetKey("title", "dNch/deta in PbPb at 5023 GeV");
+  gse->SetKey("author", (sNN == 5023 ? "PREGHENELLA : 2015":"SHAHOYAN : 2013"));
+  gse->SetKey("title", Form("dNch/deta in PbPb at %d GeV", sNN));
   gse->SetKey("obskey", "DN/DETARAP");
   gse->SetKey("reackey", "PB PB --> CHARGED X");
   gse->SetKey("laboratory", "CERN");
   gse->SetKey("accelerator", "LHC");
   gse->SetKey("detector", "TRACKLETS");
-  gse->SetKey("reference", "ALICE-AN-2830");
+  gse->SetKey("reference", sNN==5023 ? "ALICE-AN-2830" : "ALICE-AN-2180");
   gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
-  gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", "5023");
+  gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d", sNN));
   gse->SetXTitle("ETARAP");
   gse->SetYTitle("DN/DETARAP");
   gse->SetMarkerStyle(g->GetMarkerStyle());
@@ -255,7 +257,7 @@ TH1* GetH1(TDirectory* dir, const char* name)
  * 
  */
 void
-ExtractGSE(const char* input)
+ExtractGSE(const char* input, UShort_t sNN=5023)
 {
   if (!gROOT->GetClass("GraphSysErr")) 
     gROOT->LoadMacro("$HOME/GraphSysErr/GraphSysErr.C+g");
@@ -272,8 +274,8 @@ ExtractGSE(const char* input)
   for (Int_t i = 1; i <= cent->GetNbinsX(); i++) {
     Double_t c1 = cent->GetXaxis()->GetBinLowEdge(i);
     Double_t c2 = cent->GetXaxis()->GetBinUpEdge(i);
-    TObject* g  = MakeGSE(file, c1, c2);
-    TObject* t  = MakeTGSE(file, c1, c2);
+    TObject* g  = MakeGSE(file,  sNN, c1, c2);
+    TObject* t  = MakeTGSE(file, sNN, c1, c2);
     if (!g) continue;
     stack->Add(g);    
     truths->Add(t);    
