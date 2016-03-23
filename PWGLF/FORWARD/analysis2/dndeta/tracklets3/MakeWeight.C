@@ -27,7 +27,7 @@ MakeWeight()
       cPt->SetBinError  (i, j, hist->GetBinError  (j));
     }
   }
-  weights->SetCentPtWeight(cPt);
+  weights->SetPtWeight(cPt);
       
   TFile* pidFile = TFile::Open("../tracklets/REWEIGHTpid.root","READ");
   Double_t c2Bins[] = { 0, 2.5, 5, 7.5, 10, 20, 30,
