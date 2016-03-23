@@ -2019,35 +2019,51 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   
   zdcAOD->SetZDCParticipants(esdZDC->GetZDCParticipants(), esdZDC->GetZDCPartSideA(), esdZDC->GetZDCPartSideC());
   zdcAOD->SetZDCImpactParameter(esdZDC->GetImpactParameter(), esdZDC->GetImpactParamSideA(), esdZDC->GetImpactParamSideC());
+  
+  // Setters dealing only with the 1st stored TDC hit
   zdcAOD->SetZDCTDCSum(esdZDC->GetZNTDCSum(0));	
   zdcAOD->SetZDCTDCDiff(esdZDC->GetZNTDCDiff(0));	
-  if(esdZDC->IsZNChit()){
-    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
-      if(esdZDC->GetZNCTDCChannel()>0) zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(), 0));
-      else zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(16, 0));
+
+  //Taking into account all the 4 hits
+  if(esdZDC->IsZNChit()){ 
+    zdcAOD->SetZNCfired();
+    int zncch = esdZDC->GetZNCTDCChannel();
+    if(zncch>0){
+      zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(zncch, 0));
+      for(int i=0; i<4; i++){
+         if(TMath::Abs(esdZDC->GetZDCTDCData(zncch, i))>1e-6) zdcAOD->SetZNCTDCm(i, esdZDC->GetZDCTDCCorrected(zncch, i));
+      }
     }
-    else zdcAOD->SetZNCTDC(esdZDC->GetZDCTDCCorrected(10, 0)); //RUN1
   }
   if(esdZDC->IsZNAhit()){
-    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
-      if(esdZDC->GetZNATDCChannel()>0)  zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(), 0));
-      else zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(18, 0));
+    zdcAOD->SetZNAfired();
+    int znach = esdZDC->GetZNATDCChannel();
+    if(znach>0){ 
+      zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(znach, 0));
+      for(int i=0; i<4; i++){
+         if(TMath::Abs(esdZDC->GetZDCTDCData(znach, i))>1e-6) zdcAOD->SetZNATDCm(i, esdZDC->GetZDCTDCCorrected(znach, i));
+      }
     }
-    else zdcAOD->SetZNATDC(esdZDC->GetZDCTDCCorrected(12, 0));
   }
   if(esdZDC->IsZPChit()){
-    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
-      if(esdZDC->GetZPCTDCChannel()>0)   zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZPCTDCChannel(), 0));
-      else zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(17, 0));
+    zdcAOD->SetZPCfired();
+    int zpcch = esdZDC->GetZPCTDCChannel();
+    if(zpcch>0){
+      zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(zpcch, 0));
+      for(int i=0; i<4; i++){
+         if(TMath::Abs(esdZDC->GetZDCTDCData(zpcch, i))>1e-6) zdcAOD->SetZPCTDCm(i, esdZDC->GetZDCTDCCorrected(zpcch, i));
+      }
     }
-    else zdcAOD->SetZPCTDC(esdZDC->GetZDCTDCCorrected(11, 0));
   }
   if(esdZDC->IsZPAhit()){
-    if(esdZDC->IsZDCTDCcablingSet()){ // RUN2
-      if(esdZDC->GetZPATDCChannel()>0) zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(esdZDC->GetZPATDCChannel(), 0));
-      else zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(19, 0));
+    zdcAOD->SetZPAfired();
+    int zpach = esdZDC->GetZPATDCChannel();
+    if(zpach>0){
+       zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(zpach, 0));
+       for(int i=0; i<4; i++){
+         if(TMath::Abs(esdZDC->GetZDCTDCData(zpach, i))>1e-6) zdcAOD->SetZPATDCm(i, esdZDC->GetZDCTDCCorrected(zpach, i));
+       }
     }
-    else zdcAOD->SetZPATDC(esdZDC->GetZDCTDCCorrected(13, 0));
   }
 }
 //______________________________________________________________________________

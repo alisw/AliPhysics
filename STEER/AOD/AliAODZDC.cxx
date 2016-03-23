@@ -43,7 +43,11 @@ AliAODZDC::AliAODZDC() :
   fZNCTDC(-999.),
   fZNATDC(-999.),
   fZPCTDC(-999.),
-  fZPATDC(-999.)
+  fZPATDC(-999.),
+  fIsZNAfired(kFALSE),
+  fIsZNCfired(kFALSE),
+  fIsZPAfired(kFALSE),
+  fIsZPCfired(kFALSE)
 {
 // Default constructor
   for(Int_t i=0; i<5; i++){
@@ -51,6 +55,9 @@ AliAODZDC::AliAODZDC() :
     fZPCTowerEnergy[i] = fZPATowerEnergy[i] = 0.;
     fZNCTowerEnergyLR[i] = fZNATowerEnergyLR[i] = 0.;
     fZPCTowerEnergyLR[i] = fZPATowerEnergyLR[i] = 0.;
+  }
+  for(Int_t i=0; i<4; i++){
+     fZNCTDCm[i] =  fZNATDCm[i] =  fZPCTDCm[i] = fZPATDCm[i] = -999.;
   }
 }
 
@@ -74,7 +81,12 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
   fZNCTDC(zdcAOD.fZNCTDC),
   fZNATDC(zdcAOD.fZNATDC),
   fZPCTDC(zdcAOD.fZPCTDC),
-  fZPATDC(zdcAOD.fZPATDC)
+  fZPATDC(zdcAOD.fZPATDC),
+  fIsZNAfired(zdcAOD.fIsZNAfired),
+  fIsZNCfired(zdcAOD.fIsZNCfired),
+  fIsZPAfired(zdcAOD.fIsZPAfired),
+  fIsZPCfired(zdcAOD.fIsZPCfired)
+
 {
 // Constructor
   for(Int_t i=0; i<5; i++){
@@ -86,6 +98,12 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
     fZNATowerEnergyLR[i] = zdcAOD.fZNATowerEnergyLR[i];
     fZPCTowerEnergyLR[i] = zdcAOD.fZPCTowerEnergyLR[i];
     fZPATowerEnergyLR[i] = zdcAOD.fZPATowerEnergyLR[i];
+  }
+  for(Int_t i=0; i<4; i++){
+     fZNCTDCm[i] =  zdcAOD.fZNCTDCm[i];
+     fZNATDCm[i] =  zdcAOD.fZNATDCm[i];
+     fZPCTDCm[i] =  zdcAOD.fZPCTDCm[i];
+     fZPATDCm[i] =  zdcAOD.fZPATDCm[i];
   }
 }
 
@@ -126,7 +144,16 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
     fZNATDC = zdcAOD.fZNATDC;
     fZPCTDC = zdcAOD.fZPCTDC;
     fZPATDC = zdcAOD.fZPATDC;
-
+    for(Int_t i=0; i<4; i++){
+       fZNCTDCm[i] =  zdcAOD.fZNCTDCm[i];
+       fZNATDCm[i] =  zdcAOD.fZNATDCm[i];
+       fZPCTDCm[i] =  zdcAOD.fZPCTDCm[i];
+       fZPATDCm[i] =  zdcAOD.fZPATDCm[i];
+    }
+    fIsZNAfired = zdcAOD.fIsZNAfired;
+    fIsZNCfired = zdcAOD.fIsZNCfired;
+    fIsZPAfired = zdcAOD.fIsZPAfired;
+    fIsZPCfired = zdcAOD.fIsZPCfired;
   } 
   return *this;
 }
@@ -271,4 +298,48 @@ Bool_t AliAODZDC::GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2])
   }
   
   return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAODZDC::GetTDCSum(Float_t sum[4]) 
+{
+  // Provides value(s) != -999 if both ZN are fired
+  for(int i=0; i<4; i++) sum[i] = -999.;
+  int ind=0;
+  if(IsZNANDfired()){
+    for(Int_t i=0;i<4;++i){
+      if(fZNCTDCm[i]>-999){
+        for(Int_t j=0;j<4;++j){
+          if(fZNATDCm[j]>-999){
+	    sum[ind] = fZNCTDCm[i]+fZNATDCm[j];
+	    ind++;
+	  } // if ZNA[j] is hit
+        } // Loop over ZNA TDC hits
+      } // if ZNC[i] is hit
+    } // Loop over ZNC TDC hits
+    return kTRUE;
+  } // ZN AND
+  else return kFALSE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAODZDC::GetTDCDiff(Float_t diff[4]) 
+{
+  // Provides value(s) != -999 if both ZN are fired
+  for(int i=0; i<4; i++) diff[i] = -999.;
+  int ind=0;
+  if(IsZNANDfired()){
+    for(Int_t i=0;i<4;++i){
+      if(fZNCTDCm[i]>-999){
+        for(Int_t j=0;j<4;++j){
+          if(fZNATDCm[j]>-999){
+	    diff[ind] = fZNCTDCm[i]-fZNATDCm[j];
+	    ind++;
+	  } // if ZNA[j] is hit
+        } // Loop over ZNA TDC hits
+      } // if ZNC[i] is hit
+    } // Loop over ZNC TDC hits
+    return kTRUE;
+  } // ZN AND
+  else return kFALSE;
 }
