@@ -542,7 +542,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
     // Rerun cascade vertexer in its light version
     //------------------------------------------------
     
-    if( fkRunVertexers ){
+    if( fkRunVertexers && fkSaveTree ){
         lESDevent->ResetCascades();
         lESDevent->ResetV0s();
         
@@ -664,11 +664,11 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
 	Float_t lThisPosdEdx = pTrack -> GetTPCsignal(); 
 	Float_t lThisNegdEdx = nTrack -> GetTPCsignal(); 
 	
-	if ( TMath::Abs( lInvMassLambda - 1.1157 ) < 0.0025 ){ 
+	if ( TMath::Abs( lInvMassLambda - 1.1157 ) < 0.0025 && TMath::Abs( lInvMassK0s - 0.497 ) > 0.005 && TMath::Abs( lInvMassAntiLambda - 1.1157 ) > 0.003 ){ 
 	  fHistdEdxPionsFromLambda -> Fill ( lThisNegInnerP, lThisNegdEdx );
 	  fHistdEdxProtonsFromLambda -> Fill ( lThisPosInnerP, lThisPosdEdx );
 	}
-	if ( TMath::Abs( lInvMassAntiLambda - 1.1157 ) < 0.0025 ){ 
+	if ( TMath::Abs( lInvMassAntiLambda - 1.1157 ) < 0.0025 && TMath::Abs( lInvMassK0s - 0.497 ) > 0.005 && TMath::Abs( lInvMassLambda - 1.1157 ) > 0.003 ){ 
 	  fHistdEdxPionsFromLambda -> Fill ( lThisPosInnerP, lThisPosdEdx );
 	  fHistdEdxProtonsFromLambda -> Fill ( lThisNegInnerP, lThisNegdEdx );
 	}	
