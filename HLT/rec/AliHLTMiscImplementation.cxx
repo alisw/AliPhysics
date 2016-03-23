@@ -84,7 +84,7 @@ int AliHLTMiscImplementation::InitCDB(const char* cdbpath, const char* cdbsnapsh
   if (cdbsnapshot != NULL) {
     gSystem->Load("libGeom");
     gSystem->Load("libGeomBuilder");
-    printf("Running in snapshot mode: %s\n", cdbsnapshot);
+    log.Logging(kHLTLogInfo, "InitCDB", "CDB Snapshot", "Running in snapshot mode: %s", cdbsnapshot);
     pCDB->SetSnapshotMode(cdbsnapshot);
   }
   return iResult;
