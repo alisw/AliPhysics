@@ -439,3 +439,40 @@ void AliTPCROC::GetPositionGlobal(UInt_t sector, UInt_t row, UInt_t pad, Float_t
   pos[0] = gx;
   pos[1] = gy;
 }
+
+
+Float_t AliTPCROC::GetIdealPosition(UInt_t sector, UInt_t row, UInt_t pad,  coordType coord){
+  //
+  // return ideal position accoring hardwired geometry in the class
+  //  
+
+  AliTPCROC *roc = AliTPCROC::Instance();
+  Float_t pos[3];
+  if (coord==kLx){
+    roc->GetPositionLocal(sector, row,pad,pos);
+    return pos[0];
+  }
+  if (coord==kLy){
+    roc->GetPositionLocal(sector, row,pad,pos);
+    return pos[1];
+  }
+  if (coord==kLz){
+    roc->GetPositionLocal(sector, row,pad,pos);
+    return pos[2];
+  }
+  if (coord==kGx){
+    roc->GetPositionGlobal(sector, row,pad,pos);
+    return pos[0];
+  }
+  if (coord==kGy){
+    roc->GetPositionGlobal(sector, row,pad,pos);
+    return pos[1];
+  }
+  if (coord==kGz){
+    roc->GetPositionGlobal(sector, row,pad,pos);
+    return pos[2];
+  }
+
+  return 0;
+  
+}

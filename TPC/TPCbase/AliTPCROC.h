@@ -12,7 +12,8 @@
 
 //_____________________________________________________________________________
 class AliTPCROC : public TObject {
- public:
+ public: 
+  enum coordType{ kLx=0, kLy=1, kLz=2, kGx=3, kGy=4, kGz=5};
   static AliTPCROC* Instance();
   AliTPCROC();
   AliTPCROC(const AliTPCROC &roc);
@@ -56,6 +57,7 @@ class AliTPCROC : public TObject {
     return ( (isec < fNSectors[0]) ?GetPadRowRadiiLow(irow):GetPadRowRadiiUp(irow));}
   //
   static UInt_t GetTPCUniqueID(UInt_t sector, UInt_t row, UInt_t pad){UInt_t uid=pad+row*140+sector*140*159; return uid; }  // unique Id can be used for absolute adressing of the TPC element
+  static Float_t GetIdealPosition(UInt_t sector, UInt_t row, UInt_t pad, coordType coord);
 protected:
   //
   //     number of pads
