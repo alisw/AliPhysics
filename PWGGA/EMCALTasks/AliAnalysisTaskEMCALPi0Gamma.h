@@ -79,7 +79,7 @@ class EmcEvent {
 	Float_t TrigPhi; // phi of highest pT hit on EMCal
   Float_t TrigTheta; // eta of highest pT hit ...
   
-  const static int nMaxHit = 500;
+  const static int nMaxHit = 700;
   
   int nHits;
   int nV0Hits;
@@ -189,6 +189,7 @@ protected:
   void         ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr);
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
   Int_t        GetModuleNumber(AliVCluster * cluster)                                                     const;
+  void         FillCellQAHists(AliVCluster *);
   Double_t     PrivateEnergyRecal(Double_t energy, Int_t iCalib);
   // spectral shape
   Double_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
@@ -281,6 +282,9 @@ protected:
   TProfile              *fHMeanClusterEnergy;    //!profile for cluster energy vs. runnumber
   TProfile              *fHMeanClusterNumber;    //!profile for number of clusters in each event
   
+  // histogram for cells
+  TH2                   *fHCellIndexEnergy;      //!histo for cell energy vs cell number
+  
   // histograms for clusters
   TH1                   *fHClusters;                  //!histo for cuts
   TH1                   *fHClustAllEtaPhi;        //!histo for all clusters eta and phi
@@ -289,6 +293,7 @@ protected:
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity
   TH2                   *fHClustEtaPhi;           //!histo for cluster eta vs. phi
   TH2                   *fHClustEnergyPt;         //!histo for cluster energy vs. pT
+  TH2                   *fHClustEnergyPtDCal;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergySM;         //!histo for cluster energy vs. Supermodule
   TH2                   *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis
   TH2                   *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
@@ -339,6 +344,14 @@ protected:
   TH2                   *fHPionInvMassesMix;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesMix1;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesMix2;     //!histos for invariant mass plots
+  // DCal
+  TH2                   *fHPionInvMassesDCal;     //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesMixDCal;     //!histos for invariant mass plots
+
+  // DCal+EMCal
+  TH2                   *fHPionInvMassesEMCalDCal;     //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesMixEMCalDCal;     //!histos for invariant mass plots
+
   // quick histo for J/Psi
   //TH2                   *fHJPInvMasses;            //!histo for inv mass in JPsi region
   // primary pions
