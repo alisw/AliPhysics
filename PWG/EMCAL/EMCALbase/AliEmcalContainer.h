@@ -11,6 +11,7 @@ class AliVParticle;
 
 #include <TNamed.h>
 #include <TClonesArray.h>
+#include "AliEmcalIterableContainer.h"
 
 /**
  * @class AliEmcalContainer
@@ -28,6 +29,38 @@ class AliVParticle;
  *
  * In addition, kinematical cuts can be applied, accessing only content which is selected
  * using the selection cuts to be applied.
+ *
+ * Iterator functionality is provided by the AliEmcalIterableContainer. Iterators are
+ * available both for all entries and accepted entries in the container
+ * - The function all creates an interable container over all entries in the EMCAL container
+ * - The function accept creates an iterable container over accepted entries in the EMCal container
+ * The following example demonstrates the usage of the iterator
+ *
+ * ~~~{.cxx}
+ * AliEmcalContainer *cont;
+ * AliEmcalIterableContainer alliter = cont->all(),
+ *                           acceptiter = cont->accepted();
+ * for(AliEmcalIterableContainer::iterator it = alliter.begin(); it != alliter.end(); ++it){
+ *   // Iterating over all objects in the EMCAL container
+ *   // Do something with the object
+ * }
+ * for(AliEmcalIterableContainer::iterator it = acceptiter.begin(); it != acceptiter.end(); ++it){
+ *   // Iterating over all objects in the EMCAL container
+ *   // Do something with the object
+ * }
+ * ~~~
+ *
+ * Using c++11 and range-based iteration this code can be simplified to
+ *
+ * ~~~{.cxx}
+ * AliEmcalContainer *cont;
+ * for(auto en : cont->all()) { // Iterating over all objects in the container
+ *   // Do something with the object
+ * }
+ * for(auto en : cont->accepted()) { // Iterating over accepted objects in the container
+ *   // Do something with the object
+ * }
+ * ~~~
  *
  * The usage of EMCAL containers is described under \subpage EMCALcontainers
  */
@@ -80,6 +113,8 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer(const char *name); 
   virtual ~AliEmcalContainer(){;}
 
+  TObject *operator[](int index) const;
+
   virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
   TClonesArray               *GetArray() const                      { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
@@ -102,6 +137,7 @@ class AliEmcalContainer : public TObject {
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom) = 0;
   virtual Bool_t              AcceptObject(Int_t i, UInt_t &rejectionReason) const = 0;
   virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const = 0;
+  Int_t                       GetNAcceptEntries() const;
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
   virtual void                SetArray(AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
@@ -129,28 +165,31 @@ class AliEmcalContainer : public TObject {
 
   static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
 
+  const AliEmcalIterableContainer   all() const;
+  const AliEmcalIterableContainer   accepted() const;
+
  protected:
   TString                     fName;                    ///< object name
   TString                     fClArrayName;             ///< name of branch
   TString                     fClassName;               ///< name of the class in the TClonesArray
   Bool_t                      fIsParticleLevel;         ///< whether or not it is a particle level object collection
   UInt_t                      fBitMap;                  ///< bitmap mask
-  Double_t                    fMinPt;                   ///< cut on particle pt
-  Double_t                    fMaxPt;                   ///< cut on particle pt
-  Double_t                    fMaxE;                    ///< cut on particle energy
-  Double_t                    fMinE;                    ///< cut on particle energy
-  Double_t                    fMinEta;                  ///< cut on particle eta
-  Double_t                    fMaxEta;                  ///< cut on particle eta
-  Double_t                    fMinPhi;                  ///< cut on particle phi
-  Double_t                    fMaxPhi;                  ///< cut on particle phi
+  Double_t                    fMinPt;                   ///< Min. cut on particle \f$ p_{t} \f$
+  Double_t                    fMaxPt;                   ///< Max. cut on particle \f$ p_{t} \f$
+  Double_t                    fMaxE;                    ///< Min. cut on particle energy
+  Double_t                    fMinE;                    ///< Max. cut on particle energy
+  Double_t                    fMinEta;                  ///< Min. cut on particle \f$ \eta \f$
+  Double_t                    fMaxEta;                  ///< Max. cut on particle \f$ \eta \f$
+  Double_t                    fMinPhi;                  ///< Min. cut on particle \f$ \phi \f$
+  Double_t                    fMaxPhi;                  ///< Max. cut on particle \f$ \phi \f$
   Int_t                       fMinMCLabel;              ///< minimum MC label
   Int_t                       fMaxMCLabel;              ///< maximum MC label
   Double_t                    fMassHypothesis;          ///< if < 0 it will use a PID mass when available
-  TClonesArray               *fClArray;                 //!<!TClonesArray
-  Int_t                       fCurrentID;               //!<!current ID for automatic loops
-  AliNamedArrayI             *fLabelMap;                //!<!Label-Index map
-  Double_t                    fVertex[3];               //!<!event vertex array
-  TClass                     *fLoadedClass;             //!<!Class of teh objects contained in the TClonesArray
+  TClonesArray               *fClArray;                 //!<! Pointer to array in input event
+  Int_t                       fCurrentID;               //!<! current ID for automatic loops
+  AliNamedArrayI             *fLabelMap;                //!<! Label-Index map
+  Double_t                    fVertex[3];               //!<! event vertex array
+  TClass                     *fLoadedClass;             //!<! Class of the objects contained in the TClonesArray
 
  private:
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
