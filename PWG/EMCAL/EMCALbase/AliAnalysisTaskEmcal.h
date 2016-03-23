@@ -67,7 +67,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
 
   /**
-   * @enum Beam type
+   * @enum BeamType
    * @brief Switch for the beam type
    */
   enum BeamType {
