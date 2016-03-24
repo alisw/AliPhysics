@@ -250,6 +250,7 @@ private:
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
+    TH2D *fHistEventSelections; //! For keeping track of 
     
     //Simple QA histograms
     TH1D *fHistQA_V0M; 

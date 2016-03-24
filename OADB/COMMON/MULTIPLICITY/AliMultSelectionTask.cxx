@@ -171,6 +171,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       
       //Histos
       fHistEventCounter(0),
+      fHistEventSelections(0), 
       fHistQA_V0M(0),
       fHistQA_CL0(0),
       fHistQA_CL1(0),
@@ -269,6 +270,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       
       //Histos
       fHistEventCounter(0),
+      fHistEventSelections(0), 
       fHistQA_V0M(0),
       fHistQA_CL0(0),
       fHistQA_CL1(0),
@@ -547,7 +549,22 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistEventCounter->GetXaxis()->SetBinLabel(5, "Isn't Pileup (in mult bins)");
         fListHist->Add(fHistEventCounter);
     }
-
+    
+    if(! fHistEventSelections ) {
+        //Histogram Output: Event-by-Event
+        fHistEventSelections = new TH2D( "fHistEventSelections", "",2,-.5,1.5,20,0,20);
+        fHistEventSelections->GetYaxis()->SetBinLabel(1, "Triggered");
+	fHistEventSelections->GetYaxis()->SetBinLabel(2, "Vtx Z Cut");
+	fHistEventSelections->GetYaxis()->SetBinLabel(3, "Is Not Pileup");
+	fHistEventSelections->GetYaxis()->SetBinLabel(4, "Is Not Pileup MV");
+	fHistEventSelections->GetYaxis()->SetBinLabel(5, "Is Not Pileup in Mult Bins");
+	fHistEventSelections->GetYaxis()->SetBinLabel(6, "INELgtZERO");
+	fHistEventSelections->GetYaxis()->SetBinLabel(7, "No Inconsistent Vertices");
+	fHistEventSelections->GetYaxis()->SetBinLabel(8, "Passes Tracklet vs Cluster");
+	fHistEventSelections->GetYaxis()->SetBinLabel(9, "Is Not Asymmetric in VZERO");
+	fHistEventSelections->GetYaxis()->SetBinLabel(10, "Is Not IncompleteDAQ");
+        fListHist->Add(fHistEventSelections);
+    }
     //QA Histograms - User-side output for cross-checking
     if ( !fHistQA_V0M ) {
         fHistQA_V0M = new TH1D("fHistQA_V0M", ";V0M Percentile;Count", 105,0,105);
@@ -1106,7 +1123,18 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if (fZpaFired->GetValueInteger() > 0) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
         if (fZpcFired->GetValueInteger() > 0) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
     }
-
+    
+    fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_VtxZCut       , 1.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_IsNotPileup   , 2.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_IsNotPileupMV         , 3.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_IsNotPileupInMultBins , 4.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_INELgtZERO                , 5.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_HasNoInconsistentVertices , 6.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_PassesTrackletVsCluster   , 7.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_IsNotAsymmetricInVZERO    , 8.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_IsNotIncompleteDAQ        , 9.5 ); 
+    
     //===============================================
     // End part which requires AOD/ESD separation
     //===============================================
