@@ -182,13 +182,13 @@ AliAnalysisTaskSE *AddTaskEmcalPreparationNew(
 
   //----------------------- Add cluster-track-matcher -----------------------------------------------------
 #ifdef __CLING__
-  std::stringstream clusertrackmatcheradd;
+  std::stringstream clustertrackmatcheradd;
   clustertrackmatcheradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C(";
   clustertrackmatcheradd << "\"usedefault\", ";
   clustertrackmatcheradd << "\"usedefault\", ";
   clustertrackmatcheradd << "0.1, ";
   clustertrackmatcheradd << "kFALSE, ";
-  clustertrackmatcheradd << "kTRUE", ";
+  clustertrackmatcheradd << "kTRUE, ";
   clustertrackmatcheradd << "kTRUE, ";
   clustertrackmatcheradd << "kFALSE)";
   std::string clustertrackmatcheraddstring  = clustertrackmatcheradd.str();
