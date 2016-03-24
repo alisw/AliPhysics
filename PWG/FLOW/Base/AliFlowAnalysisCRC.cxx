@@ -19137,37 +19137,38 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
    }
    
    Double_t Qtot=0.;
-   if(QM>0) {
+   if(QM>1) {
      if(hr+2==2) {
-       fFlowSPZDCIntPro[fRunBin][hr][0]->Fill(fCentralityEBE,ZARe*ZCRe+ZAIm*ZCIm);
+       fFlowSPZDCIntPro[fRunBin][hr][0]->Fill(fCentralityEBE,ZARe*ZCRe);
+       fFlowSPZDCIntPro[fRunBin][hr][1]->Fill(fCentralityEBE,ZAIm*ZCIm);
+       fFlowSPZDCIntPro[fRunBin][hr][2]->Fill(fCentralityEBE,ZARe*ZCIm);
+       fFlowSPZDCIntPro[fRunBin][hr][3]->Fill(fCentralityEBE,ZAIm*ZCRe);
        
-       Qtot = (Q2Re*(ZARe*ZCRe-ZAIm*ZCIm)+Q2Im*(ZARe*ZCIm+ZAIm*ZCRe))/QM;
-       fFlowSPZDCIntPro[fRunBin][hr][1]->Fill(fCentralityEBE,Qtot);
+       Q2Re /= QM;
+       Q2Im /= QM;
        
-       fFlowSPZDCIntNUA[fRunBin][0]->Fill(fCentralityEBE,QRe/QM);           // cos(phi)
-       fFlowSPZDCIntNUA[fRunBin][1]->Fill(fCentralityEBE,QIm/QM);           // sin(phi)
-       fFlowSPZDCIntNUA[fRunBin][2]->Fill(fCentralityEBE,Q2Re/QM);          // cos(2*phi)
-       fFlowSPZDCIntNUA[fRunBin][3]->Fill(fCentralityEBE,Q2Im/QM);          // sin(2*phi)
-       fFlowSPZDCIntNUA[fRunBin][4]->Fill(fCentralityEBE,(QRe*ZARe+QIm*ZAIm)/QM);   // cos(phi-PsiA)
-       fFlowSPZDCIntNUA[fRunBin][5]->Fill(fCentralityEBE,(QIm*ZARe-QRe*ZAIm)/QM);   // sin(phi-PsiA)
-       fFlowSPZDCIntNUA[fRunBin][6]->Fill(fCentralityEBE,(QRe*ZCRe+QIm*ZCIm)/QM);   // cos(phi-PsiC)
-       fFlowSPZDCIntNUA[fRunBin][7]->Fill(fCentralityEBE,(QIm*ZCRe-QRe*ZCIm)/QM);   // sin(phi-PsiC)
+       fFlowSPZDCIntPro[fRunBin][hr][4]->Fill(fCentralityEBE,Q2Re*ZARe*ZCRe);
+       fFlowSPZDCIntPro[fRunBin][hr][5]->Fill(fCentralityEBE,Q2Re*ZAIm*ZCIm);
+       fFlowSPZDCIntPro[fRunBin][hr][6]->Fill(fCentralityEBE,Q2Im*ZARe*ZCIm);
+       fFlowSPZDCIntPro[fRunBin][hr][7]->Fill(fCentralityEBE,Q2Im*ZAIm*ZCRe);
        
-       fFlowSPZDCIntNUA[fRunBin][8]->Fill(fCentralityEBE,(Q2Re*ZARe+Q2Im*ZAIm)/QM);   // cos(2*phi-PsiA)
-       fFlowSPZDCIntNUA[fRunBin][9]->Fill(fCentralityEBE,(Q2Im*ZARe-Q2Re*ZAIm)/QM);   // sin(2*phi-PsiA)
-       fFlowSPZDCIntNUA[fRunBin][10]->Fill(fCentralityEBE,(Q2Re*ZCRe+Q2Im*ZCIm)/QM);  // cos(2*phi-PsiC)
-       fFlowSPZDCIntNUA[fRunBin][11]->Fill(fCentralityEBE,(Q2Im*ZCRe-Q2Re*ZCIm)/QM);  // sin(2*phi-PsiC)
+       fFlowSPZDCIntNUA[fRunBin][0]->Fill(fCentralityEBE,Q2Re);          // cos(2*phi)
+       fFlowSPZDCIntNUA[fRunBin][1]->Fill(fCentralityEBE,Q2Im);          // sin(2*phi)
        
-       fFlowSPZDCIntNUA[fRunBin][12]->Fill(fCentralityEBE,(QRe*(ZARe*ZCRe-ZAIm*ZCIm)+QIm*(ZARe*ZCIm+ZAIm*ZCRe))/QM);   // cos(phi-PsiA-PsiC)
-       fFlowSPZDCIntNUA[fRunBin][13]->Fill(fCentralityEBE,(QIm*(ZARe*ZCRe-ZAIm*ZCIm)-QRe*(ZARe*ZCIm+ZAIm*ZCRe))/QM);   // sin(phi-PsiA-PsiC)
+       fFlowSPZDCIntNUA[fRunBin][2]->Fill(fCentralityEBE,Q2Re*ZARe+Q2Im*ZAIm);   // cos(2*phi-PsiA)
+       fFlowSPZDCIntNUA[fRunBin][3]->Fill(fCentralityEBE,Q2Im*ZARe-Q2Re*ZAIm);   // sin(2*phi-PsiA)
+       fFlowSPZDCIntNUA[fRunBin][4]->Fill(fCentralityEBE,Q2Re*ZCRe+Q2Im*ZCIm);  // cos(2*phi-PsiC)
+       fFlowSPZDCIntNUA[fRunBin][5]->Fill(fCentralityEBE,Q2Im*ZCRe-Q2Re*ZCIm);  // sin(2*phi-PsiC)
        
-       fFlowSPZDCIntNUA[fRunBin][14]->Fill(fCentralityEBE,ZARe);               // cos(PsiA)
-       fFlowSPZDCIntNUA[fRunBin][15]->Fill(fCentralityEBE,ZAIm);               // sin(PsiA)
-       fFlowSPZDCIntNUA[fRunBin][16]->Fill(fCentralityEBE,ZCRe);               // cos(PsiC)
-       fFlowSPZDCIntNUA[fRunBin][17]->Fill(fCentralityEBE,ZCIm);               // sin(PsiC)
+       fFlowSPZDCIntNUA[fRunBin][6]->Fill(fCentralityEBE,ZARe);               // cos(PsiA)
+       fFlowSPZDCIntNUA[fRunBin][7]->Fill(fCentralityEBE,ZAIm);               // sin(PsiA)
+       fFlowSPZDCIntNUA[fRunBin][8]->Fill(fCentralityEBE,ZCRe);               // cos(PsiC)
+       fFlowSPZDCIntNUA[fRunBin][9]->Fill(fCentralityEBE,ZCIm);               // sin(PsiC)
        
-       fFlowSPZDCIntNUA[fRunBin][18]->Fill(fCentralityEBE,ZARe*ZCRe-ZAIm*ZCIm);   // cos(PsiA+PsiC)
-       fFlowSPZDCIntNUA[fRunBin][19]->Fill(fCentralityEBE,ZARe*ZCIm+ZAIm*ZCRe);   // sin(PsiA+PsiC)
+       fFlowSPZDCIntNUA[fRunBin][10]->Fill(fCentralityEBE,ZARe*ZCRe);   // cos(PsiA+PsiC)
+       fFlowSPZDCIntNUA[fRunBin][11]->Fill(fCentralityEBE,ZAIm*ZCIm);   // cos(PsiA+PsiC)
+       fFlowSPZDCIntNUA[fRunBin][12]->Fill(fCentralityEBE,ZARe*ZCIm);   // sin(PsiA+PsiC)
+       fFlowSPZDCIntNUA[fRunBin][13]->Fill(fCentralityEBE,ZAIm*ZCRe);   // cos(PsiA+PsiC)
      }
    }
 //   if(hr+2==3) {
