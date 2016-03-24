@@ -84,9 +84,9 @@ void AliAnalysisTaskAbsorptionStudies::UserCreateOutputObjects() {
   mOutput->SetOwner();
 
   /// Positive/Negative, species, centrality, phi, pt, dcaxy
-  int nBinsDCAxy[6]      = {  2  ,  4  , mCentrality.GetNbins(), mPhiAxis.GetNbins(), mPtAxis.GetNbins(), mTimeAxis.GetNbins()};
-  double minBinsDCAxy[6] = { -0.5, -0.5, mCentrality.GetXmin(), mPhiAxis.GetXmin(), mPtAxis.GetXmin(), mTimeAxis.GetXmin()};
-  double maxBinsDCAxy[6] = {  1.5,  3.5, mCentrality.GetXmax(), mPhiAxis.GetXmax(), mPtAxis.GetXmax(), mTimeAxis.GetXmax()};
+  int nBinsDCAxy[6]      = {  2  ,  4  , mCentrality.GetNbins(), mPhiAxis.GetNbins(), mPtAxis.GetNbins(), mDCAxyAxis.GetNbins()};
+  double minBinsDCAxy[6] = { -0.5, -0.5, mCentrality.GetXmin(), mPhiAxis.GetXmin(), mPtAxis.GetXmin(), mDCAxyAxis.GetXmin()};
+  double maxBinsDCAxy[6] = {  1.5,  3.5, mCentrality.GetXmax(), mPhiAxis.GetXmax(), mPtAxis.GetXmax(), mDCAxyAxis.GetXmax()};
   mPhiPtDCAxy = new THnSparseF("mPhiPtDCAxy","",6,nBinsDCAxy,minBinsDCAxy,maxBinsDCAxy);
   mOutput->Add(mPhiPtDCAxy);
 
@@ -234,6 +234,9 @@ void AliAnalysisTaskAbsorptionStudies::UserExec(Option_t *){
       }
       mPhiPtMass->Fill(fill);
 
+      fill[5] = dcaxy;
+      mPhiPtDCAxy->Fill(fill);
+
       AliTOFPIDResponse* tofPID = &(mPIDresponse->GetTOFResponse());
       fill[1] = 0.;
       fill[5] = time;
@@ -271,7 +274,7 @@ void AliAnalysisTaskAbsorptionStudies::UserExec(Option_t *){
         continue;
 
       int iCharge = track->GetPdgCode() > 0 ? 0 : 1;
-      double fill[5] = {double(iCharge), GetParticleId(track->GetPdgCode()), centrality, track->Phi(), track->Pt()};
+      double fill[5] = {double(iCharge), (double)GetParticleId(track->GetPdgCode()), centrality, track->Phi(), track->Pt()};
       mPhiPtGen->Fill(fill);
     }
   }

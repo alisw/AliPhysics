@@ -1361,7 +1361,6 @@ private:
   TH1D *fCRCNUATermsHist[fCRCnNUA][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms final histo
  
  // Q vectors
- // const static Int_t fCRCnRun = 92;
  const static Int_t fCRCQVecnCR = 64;
  Int_t fCRCnRun;
  DataSet fDataSet;

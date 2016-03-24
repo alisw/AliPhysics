@@ -36,7 +36,9 @@ class AliJMCTrack : public AliJBaseTrack {
   //usage : this->SetFlag( kPrimary, kTRUE );
   //usage : this->IsTrue( kFinal );
 
+       
   AliJMCTrack();      //default constructor
+  AliJMCTrack(float px,float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge); // constructor
   AliJMCTrack(const AliJMCTrack& a);  //copy constructor
 
   ~AliJMCTrack(){;}    //destructor

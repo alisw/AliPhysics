@@ -120,10 +120,12 @@ fMultTKL(0),
 fMultPercV0Aeq(-1.),
 fMultPercV0Ceq(-1.),
 fMultPercV0Meq(-1.),
+fMultPercTKL(-1.),
 fMultPercV0S(-1.),
 fMultMeanV0A(-1.),
 fMultMeanV0C(-1.),
 fMultMeanV0M(-1.),
+fMultMeanTKL(-1.),
 fIsEventSel(-1),
 fNchTPC(-1),
 fNchTPCmc(-1),
@@ -180,7 +182,7 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
 #endif
   fListOfHistos->Add(fEventStatistics);
   fListOfHistos->Add(fClassStatistics);
-  
+
   fV0chan = new TH1F("fV0chan","",64,-0.5,63.5);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
   fV0chan->SetBit(TH1::kCanRebin);
@@ -234,10 +236,12 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   fTree->Branch("multpercV0Aeq",&fMultPercV0Aeq);
   fTree->Branch("multpercV0Ceq",&fMultPercV0Ceq);
   fTree->Branch("multpercV0Meq",&fMultPercV0Meq);
+  fTree->Branch("multpercTKL",&fMultPercTKL);
   fTree->Branch("multpercV0S",&fMultPercV0S);
   fTree->Branch("multmeanV0A",&fMultMeanV0A);
   fTree->Branch("multmeanV0C",&fMultMeanV0C);
   fTree->Branch("multmeanV0M",&fMultMeanV0M);
+  fTree->Branch("multmeanTKL",&fMultMeanTKL);
   fTree->Branch("iseventsel",&fIsEventSel);
   fTree->Branch("nchTPC",&fNchTPC);
   fTree->Branch("nchTPCmc",&fNchTPCmc);
@@ -253,7 +257,8 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   if (fMcMuons)     fTree->Branch("mcmuons",&fMcMuons);
 
   fUtils = new AliAnalysisUtils();
-  fUtils->SetMinPlpContribSPD(3);
+  fUtils->SetUseSPDCutInMultBins(kTRUE);
+  //  fUtils->SetMinPlpContribSPD(3);
   fUtils->SetMinPlpContribMV(3);
 
   if(fMcMuons) {
@@ -281,8 +286,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fEventStatistics->Fill("after event check",1);
 
     //filter out incomplete events:
+    if (((AliAODEvent*)fInputEvent)->IsIncompleteDAQ() && !fMCEvent) return;
     fIsIncomplete=0;
-    if (!fMCEvent && ((AliAODEvent*)fInputEvent)->IsIncompleteDAQ()) fIsIncomplete = 1;
+    //additional check on incomplete events (needed on old productions)
+    if(fInputEvent->GetHeader()->GetL0TriggerInputs()==0 && !fMCEvent)fIsIncomplete=1;
     fEventStatistics->Fill("after incomplete event check",1);
 
     TString classes = fInputEvent->GetFiredTriggerClasses();
@@ -358,7 +365,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fCentrality[0] = fInputEvent->GetCentrality()->GetCentralityPercentile("V0M");
     fCentrality[1] = fInputEvent->GetCentrality()->GetCentralityPercentile("V0A");
     fCentrality[2] = fInputEvent->GetCentrality()->GetCentralityPercentile("V0C");
-    fCentrality[3] = fInputEvent->GetCentrality()->GetCentralityPercentile("CL1");
+    fCentrality[3] = fInputEvent->GetCentrality()->GetCentralityPercentile("TKL");
     fCentrality[4] = fInputEvent->GetCentrality()->GetCentralityPercentile("ZNA");
     fCentrality[5] = fInputEvent->GetCentrality()->GetCentralityPercentile("ZNC");
     //pileup
@@ -381,31 +388,35 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fMultPercV0Cpartial = fUtils->GetMultiplicityPercentile(fInputEvent,"V0Cpartial");
     fMultPercV0S = fUtils->GetMultiplicityPercentile(fInputEvent,"V0S");
     fMultPercV0SB = fUtils->GetMultiplicityPercentile(fInputEvent,"V0SB");*/
-    
+
     //new multiplicity calibration class -- AliMultSelection
-    fMultTKL = -1.;
     fMultV0Aeq = -1.;
     fMultV0Ceq = -1.;
     fMultV0Meq = -1.;
+    fMultTKL = -1.;
     fMultPercV0Aeq = -1.;
     fMultPercV0Ceq = -1.;
     fMultPercV0Meq = -1.;
+    fMultPercTKL = -1.;
     fMultMeanV0M = -1.;
     fMultMeanV0A = -1.;
     fMultMeanV0C = -1.;
+    fMultMeanTKL = -1.;
     fIsEventSel = -1;
     AliMultSelection *MultSelection = (AliMultSelection*) fInputEvent-> FindListObject("MultSelection");
     if(MultSelection){
-      fMultTKL = MultSelection->GetEstimator("SPDTracklets")->GetValue();
       fMultV0Aeq =  MultSelection->GetEstimator("V0A")->GetValue();
       fMultV0Ceq =  MultSelection->GetEstimator("V0C")->GetValue();
       fMultV0Meq =  MultSelection->GetEstimator("V0M")->GetValue();
+      fMultTKL = MultSelection->GetEstimator("SPDTracklets")->GetValue();
       fMultPercV0Aeq = MultSelection->GetMultiplicityPercentile("V0A");
       fMultPercV0Ceq = MultSelection->GetMultiplicityPercentile("V0C");
       fMultPercV0Meq = MultSelection->GetMultiplicityPercentile("V0M");
+      fMultPercTKL = MultSelection->GetMultiplicityPercentile("SPDTracklets");
       fMultMeanV0A =  MultSelection->GetEstimator("V0A")->GetMean();
       fMultMeanV0C =  MultSelection->GetEstimator("V0C")->GetMean();
       fMultMeanV0M =  MultSelection->GetEstimator("V0M")->GetMean();
+      fMultMeanTKL =  MultSelection->GetEstimator("SPDTracklets")->GetMean();
       fIsEventSel = MultSelection->GetEvSelCode();
       fEventStatistics->Fill("MultSelection found",1);
     }
@@ -486,7 +497,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fNchV0Amc = -1;
     fNchV0Cmc = -1;
     fNchCL1mc = -1;
-    
+
     if (fTracks) {
       fTracks->Clear();
       Int_t countNch = 0;
@@ -497,8 +508,11 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         if (!track) continue;
         UInt_t mask = GetFilterMap(track);
 
-        if((mask & (1<<0)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<1.) countNch++; // with pt > 0.2 and within |eta|<1.
-	
+
+        if(fTrackFilterBit==2){//we are saving only ITSsa, It's a muon_calo_production!
+          if((mask & (1<<1)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
+        }else if((mask & (1<<0)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
+
         if(!(mask & fTrackFilterBit))continue; //filter bit cut
         if (track->InheritsFrom("AliAODTrack")) AddTrack(track,mask,0);
         else if (track->InheritsFrom("AliESDtrack")) {
