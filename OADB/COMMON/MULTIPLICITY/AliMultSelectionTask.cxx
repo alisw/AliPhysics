@@ -541,12 +541,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
-        fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",5,0,5);
+        fHistEventCounter = new TH1D( "fHistEventCounter", ";;Count",1,0,1);
         fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
-        fHistEventCounter->GetXaxis()->SetBinLabel(2, "Phys-Sel");
-        fHistEventCounter->GetXaxis()->SetBinLabel(3, "Has Vtx");
-        fHistEventCounter->GetXaxis()->SetBinLabel(4, "Vtx |z|<10cm");
-        fHistEventCounter->GetXaxis()->SetBinLabel(5, "Isn't Pileup (in mult bins)");
         fListHist->Add(fHistEventCounter);
     }
     
