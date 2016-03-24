@@ -91,6 +91,8 @@ struct TrackletAODTrain : public TrainSetup
   {
     Info("CreateTasks", "Loading code");
     fRailway->LoadSource("FixPaths.C");
+    fRailway->LoadSource("AliAODSimpleHeader.C");
+    fRailway->LoadSource("AliSimpleHeaderTask.C");    
     fRailway->LoadSource("AliAODTracklet.C");
     fRailway->LoadSource("AliTrackletAODTask.C");
 
@@ -100,6 +102,10 @@ struct TrackletAODTrain : public TrainSetup
     CoupleSECar("AddTaskCopyHeader.C", Form("\"%s\"", cpy.Data()),
 		AliVEvent::kAny);
 
+    // --- Task to create simple header ------------------------------
+    if (!gROOT->ProcessLine("AliSimpleHeaderTask::Create()"))
+      return;
+    
     // --- Create the task using interpreter -------------------------
     Long_t             ret  =
       gROOT->ProcessLine("AliTrackletAODTask::Create()");
