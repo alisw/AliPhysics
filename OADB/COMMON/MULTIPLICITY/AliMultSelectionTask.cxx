@@ -154,6 +154,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fEvSel_INELgtZERO(0),
       fEvSel_HasNoInconsistentVertices(0),
       fEvSel_PassesTrackletVsCluster(0),
+      fEvSel_IsNotAsymmetricInVZERO(0),
+      fEvSel_IsNotIncompleteDAQ(0),
       fEvSel_VtxZ(0),
       fEvSelCode(0),
       fNDebug(1),
@@ -250,6 +252,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fEvSel_INELgtZERO(0),
       fEvSel_HasNoInconsistentVertices(0),
       fEvSel_PassesTrackletVsCluster(0),
+      fEvSel_IsNotAsymmetricInVZERO(0),
+      fEvSel_IsNotIncompleteDAQ(0),
       fEvSel_VtxZ(0),
       fEvSelCode(0),
       fNDebug(1),
@@ -461,6 +465,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
         fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
         fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
+	fTreeEvent->Branch("fEvSel_IsNotAsymmetricInVZERO", &fEvSel_IsNotAsymmetricInVZERO, "fEvSel_IsNotAsymmetricInVZERO/O");
+	fTreeEvent->Branch("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ, "fEvSel_IsNotIncompleteDAQ/O");
 
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
@@ -527,7 +533,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     // Histograms
     //------------------------------------------------
     // Create histograms
-    OpenFile(1);
+    
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
@@ -628,6 +634,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_PassesTrackletVsCluster   = kFALSE;
     fEvSel_HasNoInconsistentVertices = kFALSE;
     fEvSel_INELgtZERO             = kFALSE;
+    fEvSel_IsNotAsymmetricInVZERO = kFALSE;
     //fnSPDClusters = -1;
     fnSPDClusters -> SetValueInteger(-1);
     fnSPDClusters0 -> SetValueInteger( -1) ;
@@ -785,11 +792,17 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_PassesTrackletVsCluster   = PassesTrackletVsCluster             (lVevent);
     fEvSel_HasNoInconsistentVertices = HasNoInconsistentSPDandTrackVertices(lVevent);
     fEvSel_INELgtZERO                = IsINELgtZERO                        (lVevent);
+    fEvSel_IsNotAsymmetricInVZERO    = IsNotAsymmetricInVZERO              (lVevent);
+    fEvSel_IsNotIncompleteDAQ        = IsNotIncompleteDAQ                  (lVevent); 
 
     //classical Proton-proton like selection
     const AliVVertex *lPrimaryBestESDVtx     = lVevent->GetPrimaryVertex();
     const AliVVertex *lPrimarySPDVtx         = lVevent->GetPrimaryVertexSPD();
 
+    if ( !lPrimaryBestESDVtx || !lPrimarySPDVtx ) { 
+      AliFatal("Primary Vertex information missing! Cannot execute AliMultSectionTask!");       
+    }
+    
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
 
@@ -1123,6 +1136,18 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
         //Event Selection Code: No need to do this for all estimators ...
         lSelection->SetEvSelCode(0); //No Problem!
+	
+	//Storing of flags (to be improved in the future) 
+	lSelection -> SetThisEventVtxZCut      ( fEvSel_VtxZCut       );  
+	lSelection -> SetThisEventIsNotPileup  ( fEvSel_IsNotPileup   ); 
+	lSelection -> SetThisEventIsNotPileupMV         ( fEvSel_IsNotPileupMV         ); 
+	lSelection -> SetThisEventIsNotPileupInMultBins ( fEvSel_IsNotPileupInMultBins ); 
+	lSelection -> SetThisEventTriggered  ( fEvSel_Triggered  ); 
+	lSelection -> SetThisEventINELgtZERO ( fEvSel_INELgtZERO ); 
+	lSelection -> SetThisEventHasNoInconsistentVertices ( fEvSel_HasNoInconsistentVertices ); 
+	lSelection -> SetThisEventPassesTrackletVsCluster   ( fEvSel_PassesTrackletVsCluster   ); 
+	lSelection -> SetThisEventIsNotAsymmetricInVZERO    ( fEvSel_IsNotAsymmetricInVZERO    ); 
+	lSelection -> SetThisEventIsNotIncompleteDAQ        ( fEvSel_IsNotIncompleteDAQ        ); 
 
         if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrigger);
@@ -1144,6 +1169,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
         if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejNonZeroNContribs);
+
+	if( lMultCuts->GetIsNotAsymmetricInVZERO()    && ! fEvSel_IsNotAsymmetricInVZERO )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejAsymmetricInVZERO);
+	
+	if( lMultCuts->GetIsNotIncompleteDAQ()    && ! fEvSel_IsNotIncompleteDAQ )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejIncompleteDAQ);
 
         //Just in case you want to store it for debugging
         fEvSelCode = lSelection->GetEvSelCode();
@@ -1628,6 +1659,43 @@ Bool_t AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(AliVEvent *eve
         if( lStoredRefMult == -4 ) lReturnValue = kFALSE;
     }
     return lReturnValue;
+}
+
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsNotAsymmetricInVZERO(AliVEvent* event)
+// This function checks if VZERO signals are not heavily asymmetric.
+// Reference: https://twiki.cern.ch/twiki/bin/view/ALICE/AliceHMTFCodeSnippets#Asymmetry_cut
+{
+    //Be optimistic: life is good until proven otherwise...
+    Bool_t isEventSelected = kTRUE; // or other event cuts
+
+    AliVVZERO* vzero = event->GetVZEROData();
+    Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
+    Double_t v0c3   = vzero->GetMRingV0C(3);
+
+    isEventSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
+    isEventSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
+    return isEventSelected;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::IsNotIncompleteDAQ(AliVEvent* event)
+// This function checks if VZERO signals are not heavily asymmetric.
+// Reference: https://twiki.cern.ch/twiki/bin/view/ALICE/AliceHMTFCodeSnippets#Asymmetry_cut
+{
+    //Be optimistic: life is good until proven otherwise...
+    Bool_t isEventSelected = kTRUE; // or other event cuts
+
+    if (event->InheritsFrom("AliESDEvent")) {
+        AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
+        if ( esdevent -> IsIncompleteDAQ() ) isEventSelected = kFALSE; 
+    }
+    /* get AOD vertex */
+    else if (event->InheritsFrom("AliAODEvent")) {
+	//PROBLEM: This does not exist for AODs 
+    }
+    return isEventSelected;
 }
 
 //______________________________________________________________________
