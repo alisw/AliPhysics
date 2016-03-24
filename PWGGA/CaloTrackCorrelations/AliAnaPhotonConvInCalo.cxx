@@ -77,10 +77,12 @@ fhConvDistMCConversion(0),         fhConvDistMCConversionCuts(0)
 {
   InitParameters();
   
-  for(Int_t iebin = 0; iebin < 6; iebin++)
+  for(Int_t ibin = 0; ibin < 6; ibin++)
   {
-    fhEtaPhiPhotonConv      [iebin]  = 0;
-    fhEtaPhiPhotonConvPaired[iebin]  = 0;
+    fhEtaPhiPhotonConv      [ibin]  = 0;
+    fhEtaPhiPhotonConvPaired[ibin]  = 0;
+    fhConvPtMCConversionRcut[ibin]  = 0;
+    fhConvPtRcut            [ibin]  = 0;
   }
   
 }
@@ -116,6 +118,12 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
   Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Float_t phimax = GetHistogramRanges()->GetHistoPhiMax(); Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
   Int_t netabins = GetHistogramRanges()->GetHistoEtaBins(); Float_t etamax = GetHistogramRanges()->GetHistoEtaMax(); Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
   
+  Int_t ndist = 250;
+  Int_t mindist = 0;
+  Int_t maxdist = 500;
+  
+  TString region[] = {"ITS","TPC","TRD","TOF","Top EMCal","In EMCal"};
+
   fhPtPhotonConv  = new TH1F("hPtPhotonConv","Number of #gamma over calorimeter, conversion",nptbins,ptmin,ptmax);
   fhPtPhotonConv->SetYTitle("N");
   fhPtPhotonConv->SetXTitle("#it{p}_{T #gamma}(GeV/#it{c})");
@@ -143,13 +151,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
   fhConvDeltaEta  = new TH2F
   ("hConvDeltaEta","#Delta #eta of selected conversion pairs",100,0,fMassCut,netabins*2,-0.5,0.5);
   fhConvDeltaEta->SetYTitle("#Delta #eta");
-  fhConvDeltaEta->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+  fhConvDeltaEta->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
   outputContainer->Add(fhConvDeltaEta) ;
   
   fhConvDeltaPhi  = new TH2F
   ("hConvDeltaPhi","#Delta #phi of selected conversion pairs",100,0,fMassCut,nphibins*2,-0.5,0.5);
   fhConvDeltaPhi->SetYTitle("#Delta #phi");
-  fhConvDeltaPhi->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+  fhConvDeltaPhi->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
   outputContainer->Add(fhConvDeltaPhi) ;
   
   fhConvDeltaEtaPhi  = new TH2F
@@ -161,124 +169,135 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
   fhConvAsym  = new TH2F
   ("hConvAsym","Asymmetry of selected conversion pairs",100,0,fMassCut,100,0,1);
   fhConvAsym->SetYTitle("Asymmetry");
-  fhConvAsym->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+  fhConvAsym->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
   outputContainer->Add(fhConvAsym) ;
   
   fhConvPt  = new TH2F
   ("hConvPt","#it{p}_{T} of selected conversion pairs",100,0,fMassCut,100,0.,10.);
   fhConvPt->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
-  fhConvPt->SetXTitle("Pair #it{M} (GeV/#it{c}^2)");
+  fhConvPt->SetXTitle("Pair #it{M} (GeV/#it{c}^{2})");
   outputContainer->Add(fhConvPt) ;
-  
+
+  for(Int_t iR = 0; iR < 6; iR++)
+  {
+    fhConvPtRcut[iR]  = new TH2F
+    (Form("hConvPt_R%d",iR),
+     Form("#it{p}_{T} of selected conversion pairs in %s?",region[iR].Data()),
+     100,0,fMassCut,100,0.,10.);
+    fhConvPtRcut[iR]->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
+    fhConvPtRcut[iR]->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
+    outputContainer->Add(fhConvPtRcut[iR]) ;
+  }    
+
   fhConvDistEta  = new TH2F
-  ("hConvDistEta","distance to conversion vertex",netabins,etamin,etamax,100,0.,5.);
+  ("hConvDistEta","distance to conversion vertex",netabins,etamin,etamax,ndist,mindist,maxdist);
   fhConvDistEta->SetXTitle("#eta");
-  fhConvDistEta->SetYTitle(" distance (m)");
+  fhConvDistEta->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEta) ;
 
   fhConvDistPhi  = new TH2F
-  ("hConvDistPhi","distance to conversion vertex",nphibins,phimin,phimax,100,0.,5.);
+  ("hConvDistPhi","distance to conversion vertex",nphibins,phimin,phimax,ndist,mindist,maxdist);
   fhConvDistPhi->SetXTitle("#phi (rad)");
-  fhConvDistPhi->SetYTitle(" distance (m)");
+  fhConvDistPhi->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistPhi) ;
   
   fhConvDistEn  = new TH2F
-  ("hConvDistEn","distance to conversion vertex",nptbins,ptmin,ptmax,100,0.,5.);
+  ("hConvDistEn","distance to conversion vertex",nptbins,ptmin,ptmax,ndist,mindist,maxdist);
   fhConvDistEn->SetXTitle("#it{E} (GeV)");
-  fhConvDistEn->SetYTitle(" distance (m)");
+  fhConvDistEn->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEn) ;
   
   fhConvDistMass  = new TH2F
-  ("hConvDistMass","distance to conversion vertex",100,0,fMassCut,100,0.,5.);
-  fhConvDistMass->SetXTitle("#it{M} (GeV/#it{c}^2)");
-  fhConvDistMass->SetYTitle(" distance (m)");
+  ("hConvDistMass","distance to conversion vertex",100,0,fMassCut,ndist,mindist,maxdist);
+  fhConvDistMass->SetXTitle("#it{M} (GeV/#it{c}^{2})");
+  fhConvDistMass->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistMass) ;
   
   fhConvDistEtaCutEta  = new TH2F
-  ("hConvDistEtaCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),netabins,etamin,etamax,100,0.,5.);
+  ("hConvDistEtaCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),netabins,etamin,etamax,ndist,mindist,maxdist);
   fhConvDistEtaCutEta->SetXTitle("#eta");
-  fhConvDistEtaCutEta->SetYTitle(" distance (m)");
+  fhConvDistEtaCutEta->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEtaCutEta) ;
   
   fhConvDistPhiCutEta  = new TH2F
-  ("hConvDistPhiCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),nphibins,phimin,phimax,100,0.,5.);
+  ("hConvDistPhiCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),nphibins,phimin,phimax,ndist,mindist,maxdist);
   fhConvDistPhiCutEta->SetXTitle("#phi (rad)");
-  fhConvDistPhiCutEta->SetYTitle(" distance (m)");
+  fhConvDistPhiCutEta->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistPhiCutEta) ;
   
   fhConvDistEnCutEta  = new TH2F
-  ("hConvDistEnCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),nptbins,ptmin,ptmax,100,0.,5.);
+  ("hConvDistEnCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),nptbins,ptmin,ptmax,ndist,mindist,maxdist);
   fhConvDistEnCutEta->SetXTitle("#it{E} (GeV)");
-  fhConvDistEnCutEta->SetYTitle(" distance (m)");
+  fhConvDistEnCutEta->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEnCutEta) ;
   
   fhConvDistMassCutEta  = new TH2F
-  ("hConvDistMassCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),100,0,fMassCut,100,0.,5.);
-  fhConvDistMassCutEta->SetXTitle("#it{M} (GeV/#it{c}^2)");
-  fhConvDistMassCutEta->SetYTitle(" distance (m)");
+  ("hConvDistMassCutEta",Form("distance to conversion vertex, #Delta #eta < %2.2f",fConvDEtaCut),100,0,fMassCut,ndist,mindist,maxdist);
+  fhConvDistMassCutEta->SetXTitle("#it{M} (GeV/#it{c}^{2})");
+  fhConvDistMassCutEta->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistMassCutEta) ;
   
   fhConvDistEtaCutMass  = new TH2F
-  ("hConvDistEtaCutMass",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^2",fMassCutTight),netabins,etamin,etamax,100,0.,5.);
+  ("hConvDistEtaCutMass",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^{2}",fMassCutTight),netabins,etamin,etamax,ndist,mindist,maxdist);
   fhConvDistEtaCutMass->SetXTitle("#eta");
-  fhConvDistEtaCutMass->SetYTitle(" distance (m)");
+  fhConvDistEtaCutMass->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEtaCutMass) ;
   
   fhConvDistPhiCutMass  = new TH2F
-  ("hConvDistPhiCutMass",Form("distance to conversion vertex,  #it{M} < %0.2f MeV/#it{c}^2",fMassCutTight),nphibins,phimin,phimax,100,0.,5.);
+  ("hConvDistPhiCutMass",Form("distance to conversion vertex,  #it{M} < %0.2f MeV/#it{c}^{2}",fMassCutTight),nphibins,phimin,phimax,ndist,mindist,maxdist);
   fhConvDistPhiCutMass->SetXTitle("#phi (rad)");
-  fhConvDistPhiCutMass->SetYTitle(" distance (m)");
+  fhConvDistPhiCutMass->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistPhiCutMass) ;
   
   fhConvDistEnCutMass  = new TH2F
-  ("hConvDistEnCutMass",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^2",fMassCutTight),nptbins,ptmin,ptmax,100,0.,5.);
+  ("hConvDistEnCutMass",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^{2}",fMassCutTight),nptbins,ptmin,ptmax,ndist,mindist,maxdist);
   fhConvDistEnCutMass->SetXTitle("#it{E} (GeV)");
-  fhConvDistEnCutMass->SetYTitle(" distance (m)");
+  fhConvDistEnCutMass->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEnCutMass) ;
   
   fhConvDistEtaCutAsy  = new TH2F
-  ("hConvDistEtaCutAsy",Form("distance to conversion vertex, #it{A} < %2.2f",fConvAsymCut),netabins,etamin,etamax,100,0.,5.);
+  ("hConvDistEtaCutAsy",Form("distance to conversion vertex, #it{A} < %2.2f",fConvAsymCut),netabins,etamin,etamax,ndist,mindist,maxdist);
   fhConvDistEtaCutAsy->SetXTitle("#eta");
-  fhConvDistEtaCutAsy->SetYTitle(" distance (m)");
+  fhConvDistEtaCutAsy->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEtaCutAsy) ;
   
   fhConvDistPhiCutAsy  = new TH2F
-  ("hConvDistPhiCutAsy",Form("distance to conversion vertex,  #it{A} < %2.2f",fConvAsymCut),nphibins,phimin,phimax,100,0.,5.);
+  ("hConvDistPhiCutAsy",Form("distance to conversion vertex,  #it{A} < %2.2f",fConvAsymCut),nphibins,phimin,phimax,ndist,mindist,maxdist);
   fhConvDistPhiCutAsy->SetXTitle("#phi (rad)");
-  fhConvDistPhiCutAsy->SetYTitle(" distance (m)");
+  fhConvDistPhiCutAsy->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistPhiCutAsy) ;
   
   fhConvDistEnCutAsy  = new TH2F
-  ("hConvDistEnCutAsy",Form("distance to conversion vertex, #it{A} < %2.2f",fConvAsymCut),nptbins,ptmin,ptmax,100,0.,5.);
+  ("hConvDistEnCutAsy",Form("distance to conversion vertex, #it{A} < %2.2f",fConvAsymCut),nptbins,ptmin,ptmax,ndist,mindist,maxdist);
   fhConvDistEnCutAsy->SetXTitle("#it{E} (GeV)");
-  fhConvDistEnCutAsy->SetYTitle(" distance (m)");
+  fhConvDistEnCutAsy->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEnCutAsy) ;
   
   fhConvDistMassCutAsy  = new TH2F
-  ("hConvDistMassCutAsy",Form("distance to conversion vertex, #it{A} < %2.2f",fConvDEtaCut),100,0,fMassCut,100,0.,5.);
-  fhConvDistMassCutAsy->SetXTitle("#it{M} (GeV/#it{c}^2)");
-  fhConvDistMassCutEta->SetYTitle(" distance (m)");
+  ("hConvDistMassCutAsy",Form("distance to conversion vertex, #it{A} < %2.2f",fConvDEtaCut),100,0,fMassCut,ndist,mindist,maxdist);
+  fhConvDistMassCutAsy->SetXTitle("#it{M} (GeV/#it{c}^{2})");
+  fhConvDistMassCutEta->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistMassCutAsy) ;
 
   fhConvDistEtaCutAll  = new TH2F
-  ("hConvDistEtaCutAll",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^2, #Delta #eta < %2.2f, #it{A} < %2.2f",
-                             fConvDEtaCut,fMassCutTight,fConvAsymCut),netabins,etamin,etamax,100,0.,5.);
+  ("hConvDistEtaCutAll",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^{2}, #Delta #eta < %2.2f, #it{A} < %2.2f",
+                             fConvDEtaCut,fMassCutTight,fConvAsymCut),netabins,etamin,etamax,ndist,mindist,maxdist);
   fhConvDistEtaCutAll->SetXTitle("#eta");
-  fhConvDistEtaCutAll->SetYTitle(" distance (m)");
+  fhConvDistEtaCutAll->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEtaCutAll) ;
   
   fhConvDistPhiCutAll  = new TH2F
-  ("hConvDistPhiCutAll",Form("distance to conversion vertex,  #it{M} < %0.2f MeV/#it{c}^2, #Delta #eta < %2.2f, #it{A} < %2.2f",
-                             fConvDEtaCut,fMassCutTight,fConvAsymCut),nphibins,phimin,phimax,100,0.,5.);
+  ("hConvDistPhiCutAll",Form("distance to conversion vertex,  #it{M} < %0.2f MeV/#it{c}^{2}, #Delta #eta < %2.2f, #it{A} < %2.2f",
+                             fConvDEtaCut,fMassCutTight,fConvAsymCut),nphibins,phimin,phimax,ndist,mindist,maxdist);
   fhConvDistPhiCutAll->SetXTitle("#phi (rad)");
-  fhConvDistPhiCutAll->SetYTitle(" distance (m)");
+  fhConvDistPhiCutAll->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistPhiCutAll) ;
   
   fhConvDistEnCutAll  = new TH2F
-  ("hConvDistEnCutAll",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^2, #Delta #eta < %2.2f, #it{A} < %2.2f",
-                            fConvDEtaCut,fMassCutTight,fConvAsymCut),nptbins,ptmin,ptmax,100,0.,5.);
+  ("hConvDistEnCutAll",Form("distance to conversion vertex, #it{M} < %0.2f MeV/#it{c}^{2}, #Delta #eta < %2.2f, #it{A} < %2.2f",
+                            fConvDEtaCut,fMassCutTight,fConvAsymCut),nptbins,ptmin,ptmax,ndist,mindist,maxdist);
   fhConvDistEnCutAll->SetXTitle("#it{E} (GeV)");
-  fhConvDistEnCutAll->SetYTitle(" distance (m)");
+  fhConvDistEnCutAll->SetYTitle(" distance (cm)");
   outputContainer->Add(fhConvDistEnCutAll) ;
   
   if(IsDataMC())
@@ -307,13 +326,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvDeltaEtaMCConversion  = new TH2F
     ("hConvDeltaEtaMCConversion","#Delta #eta of selected conversion pairs from real conversions",100,0,fMassCut,netabins,-0.5,0.5);
     fhConvDeltaEtaMCConversion->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaEtaMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaEtaMCConversion) ;
     
     fhConvDeltaPhiMCConversion  = new TH2F
     ("hConvDeltaPhiMCConversion","#Delta #phi of selected conversion pairs from real conversions",100,0,fMassCut,nphibins,-0.5,0.5);
     fhConvDeltaPhiMCConversion->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaPhiMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaPhiMCConversion) ;
     
     fhConvDeltaEtaPhiMCConversion  = new TH2F
@@ -325,14 +344,25 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvAsymMCConversion  = new TH2F
     ("hConvAsymMCConversion","Asymmetry of selected conversion pairs from real conversions",100,0,fMassCut,100,0,1);
     fhConvAsymMCConversion->SetYTitle("Asymmetry");
-    fhConvAsymMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvAsymMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvAsymMCConversion) ;
     
     fhConvPtMCConversion  = new TH2F
-    ("hConvPtMCConversion","#it{p}_{T} of selected conversion pairs from real conversions",100,0,fMassCut,100,0.,10.);
+    ("hConvPtMCConversion","#it{p}_{T} of selected conversion pairs from real conversions",100,0,fMassCut,nptbins,ptmin,ptmax);
     fhConvPtMCConversion->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
-    fhConvPtMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvPtMCConversion->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvPtMCConversion) ;
+    
+    for(Int_t iR = 0; iR < 6; iR++)
+    {
+      fhConvPtMCConversionRcut[iR]  = new TH2F
+      (Form("hConvPtMCConversion_R%d",iR),
+       Form("#it{p}_{T} of selected conversion pairs from real conversions in %s",region[iR].Data()),
+       100,0,fMassCut,nptbins,ptmin,ptmax);
+      fhConvPtMCConversionRcut[iR]->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
+      fhConvPtMCConversionRcut[iR]->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
+      outputContainer->Add(fhConvPtMCConversionRcut[iR]) ;
+    }    
     
     fhConvDispersionMCConversion  = new TH2F
     ("hConvDispersionMCConversion","#it{p}_{T} of selected conversion pairs from real conversions",100,0.,1.,100,0.,1.);
@@ -349,13 +379,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvDeltaEtaMCAntiNeutron  = new TH2F
     ("hConvDeltaEtaMCAntiNeutron","#Delta #eta of selected conversion pairs from anti-neutrons",100,0,fMassCut,netabins,-0.5,0.5);
     fhConvDeltaEtaMCAntiNeutron->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaEtaMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaEtaMCAntiNeutron) ;
     
     fhConvDeltaPhiMCAntiNeutron  = new TH2F
     ("hConvDeltaPhiMCAntiNeutron","#Delta #phi of selected conversion pairs from anti-neutrons",100,0,fMassCut,nphibins,-0.5,0.5);
     fhConvDeltaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaPhiMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaPhiMCAntiNeutron) ;
     
     fhConvDeltaEtaPhiMCAntiNeutron  = new TH2F
@@ -367,13 +397,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvAsymMCAntiNeutron  = new TH2F
     ("hConvAsymMCAntiNeutron","Asymmetry of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0,1);
     fhConvAsymMCAntiNeutron->SetYTitle("Asymmetry");
-    fhConvAsymMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvAsymMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvAsymMCAntiNeutron) ;
     
     fhConvPtMCAntiNeutron  = new TH2F
-    ("hConvPtMCAntiNeutron","#it{p}_{T} of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0.,10.);
+    ("hConvPtMCAntiNeutron","#it{p}_{T} of selected conversion pairs from anti-neutrons",100,0,fMassCut,nptbins,ptmin,ptmax);
     fhConvPtMCAntiNeutron->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
-    fhConvPtMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvPtMCAntiNeutron->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvPtMCAntiNeutron) ;
     
     fhConvDispersionMCAntiNeutron  = new TH2F
@@ -391,13 +421,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvDeltaEtaMCAntiProton  = new TH2F
     ("hConvDeltaEtaMCAntiProton","#Delta #eta of selected conversion pairs from anti-protons",100,0,fMassCut,netabins,-0.5,0.5);
     fhConvDeltaEtaMCAntiProton->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaEtaMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaEtaMCAntiProton) ;
     
     fhConvDeltaPhiMCAntiProton  = new TH2F
     ("hConvDeltaPhiMCAntiProton","#Delta #phi of selected conversion pairs from anti-protons",100,0,fMassCut,nphibins,-0.5,0.5);
     fhConvDeltaPhiMCAntiProton->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaPhiMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaPhiMCAntiProton) ;
     
     fhConvDeltaEtaPhiMCAntiProton  = new TH2F
@@ -409,13 +439,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvAsymMCAntiProton  = new TH2F
     ("hConvAsymMCAntiProton","Asymmetry of selected conversion pairs from anti-protons",100,0,fMassCut,100,0,1);
     fhConvAsymMCAntiProton->SetYTitle("Asymmetry");
-    fhConvAsymMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvAsymMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvAsymMCAntiProton) ;
     
     fhConvPtMCAntiProton  = new TH2F
-    ("hConvPtMCAntiProton","#it{p}_{T} of selected conversion pairs from anti-protons",100,0,fMassCut,100,0.,10.);
+    ("hConvPtMCAntiProton","#it{p}_{T} of selected conversion pairs from anti-protons",100,0,fMassCut,nptbins,ptmin,ptmax);
     fhConvPtMCAntiProton->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
-    fhConvPtMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvPtMCAntiProton->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvPtMCAntiProton) ;
     
     fhConvDispersionMCAntiProton  = new TH2F
@@ -433,13 +463,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvDeltaEtaMCString  = new TH2F
     ("hConvDeltaEtaMCString","#Delta #eta of selected conversion pairs from string",100,0,fMassCut,netabins,-0.5,0.5);
     fhConvDeltaEtaMCString->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCString->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaEtaMCString->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaEtaMCString) ;
     
     fhConvDeltaPhiMCString  = new TH2F
     ("hConvDeltaPhiMCString","#Delta #phi of selected conversion pairs from string",100,0,fMassCut,nphibins,-0.5,0.5);
     fhConvDeltaPhiMCString->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCString->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvDeltaPhiMCString->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvDeltaPhiMCString) ;
     
     fhConvDeltaEtaPhiMCString  = new TH2F
@@ -451,13 +481,13 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     fhConvAsymMCString  = new TH2F
     ("hConvAsymMCString","Asymmetry of selected conversion pairs from string",100,0,fMassCut,100,0,1);
     fhConvAsymMCString->SetYTitle("Asymmetry");
-    fhConvAsymMCString->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvAsymMCString->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvAsymMCString) ;
     
     fhConvPtMCString  = new TH2F
-    ("hConvPtMCString","#it{p}_{T} of selected conversion pairs from string",100,0,fMassCut,100,0.,10.);
+    ("hConvPtMCString","#it{p}_{T} of selected conversion pairs from string",100,0,fMassCut,nptbins,ptmin,ptmax);
     fhConvPtMCString->SetYTitle("Pair #it{p}_{T} (GeV/#it{c})");
-    fhConvPtMCString->SetXTitle("Pair Mass (GeV/#it{c}^2)");
+    fhConvPtMCString->SetXTitle("Pair Mass (GeV/#it{c}^{2})");
     outputContainer->Add(fhConvPtMCString) ;
     
     fhConvDispersionMCString  = new TH2F
@@ -473,7 +503,7 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     outputContainer->Add(fhConvM02MCString) ;
     
     fhConvDistMCConversion  = new TH2F
-    ("hConvDistMCConversion","calculated conversion distance vs real vertes for MC conversion",100,0.,5.,100,0.,5.);
+    ("hConvDistMCConversion","calculated conversion distance vs real vertes for MC conversion",ndist,mindist,maxdist,ndist,mindist,maxdist);
     fhConvDistMCConversion->SetYTitle("distance");
     fhConvDistMCConversion->SetXTitle("vertex R");
     outputContainer->Add(fhConvDistMCConversion) ;
@@ -482,7 +512,7 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
     ("hConvDistMCConversionCuts",
      Form("calculated conversion distance vs real vertes for MC conversion, #Delta #eta < %2.2f, #it{M} < 10 MeV/#it{c}^{2}, #it{A} < %2.2f",
           fConvDEtaCut,fConvAsymCut),
-     100,0.,5.,100,0.,5.);
+     ndist,mindist,maxdist,ndist,mindist,maxdist);
     fhConvDistMCConversionCuts->SetYTitle("distance");
     fhConvDistMCConversionCuts->SetXTitle("vertex R");
     outputContainer->Add(fhConvDistMCConversionCuts) ;
@@ -538,10 +568,19 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
       //printf("Check Conversion indeces %d and %d\n",iaod,jaod);
       calo2 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(jaod));
       
+      //
+      // Add both clusters
+      //
+      fMomentum = *(calo->Momentum())+*(calo2->Momentum());
+      Float_t ptConvPair  = fMomentum.Pt();
+      Float_t phiConvPair = fMomentum.Phi();
+      Float_t etaConvPair = fMomentum.Eta();
+    //Float_t eConvPair   = fMomentum.E();
+      Float_t pairM       = calo->GetPairMass(calo2);
+      //printf("\t both in calo, mass %f, cut %f\n",pairM,fMassCut);
+      
       //................................................
       // Get mass of pair, if small, take this pair.
-      Float_t pairM     = calo->GetPairMass(calo2);
-      //printf("\t both in calo, mass %f, cut %f\n",pairM,fMassCut);
       if(pairM < fMassCut)
       {
         Float_t phi  = calo->Phi();
@@ -552,18 +591,17 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
         calo->SetTagged(kFALSE);
         Float_t asymmetry = TMath::Abs(calo->E()-calo2->E())/(calo->E()+calo2->E());
         Float_t dPhi      = phi-phi2;
-        Float_t dEta      = calo->Eta()-calo2->Eta();
-        Float_t pairPt    = calo->Pt()+calo2->Pt();
+        Float_t dEta      = calo->Eta() - calo2->Eta();
         
         //...............................................
         // Fill few histograms with kinematics of the pair
         // FIXME, move all this to MakeAnalysisFillHistograms ...
         
-        fhConvDeltaEta   ->Fill( pairM, dEta     , GetEventWeight());
-        fhConvDeltaPhi   ->Fill( pairM, dPhi     , GetEventWeight());
-        fhConvAsym       ->Fill( pairM, asymmetry, GetEventWeight());
-        fhConvDeltaEtaPhi->Fill( dEta , dPhi     , GetEventWeight());
-        fhConvPt         ->Fill( pairM, pairPt, GetEventWeight());
+        fhConvDeltaEta   ->Fill( pairM, dEta      , GetEventWeight());
+        fhConvDeltaPhi   ->Fill( pairM, dPhi      , GetEventWeight());
+        fhConvAsym       ->Fill( pairM, asymmetry , GetEventWeight());
+        fhConvDeltaEtaPhi->Fill( dEta , dPhi      , GetEventWeight());
+        fhConvPt         ->Fill( pairM, ptConvPair, GetEventWeight());
         
         // Estimate conversion distance, T. Awes, M. Ivanov
         // Under the assumption that the pair has zero mass, and that each electron
@@ -592,8 +630,8 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
                                         (pos1[1]-pos2[1])*(pos1[1]-pos2[1])+
                                         (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
         
-        Float_t convDist  = TMath::Sqrt(calo ->E()*clustDist*0.01/0.15);
-        Float_t convDist2 = TMath::Sqrt(calo2->E()*clustDist*0.01/0.15);
+        Float_t convDist  = TMath::Sqrt(calo ->E()*clustDist*0.01/0.15) * 100.; // cm
+        Float_t convDist2 = TMath::Sqrt(calo2->E()*clustDist*0.01/0.15) * 100.; // cm
         //printf("l = %f, e1 = %f, d1=%f, e2 = %f, d2=%f\n",clustDist,calo->E(),convDist,calo2->E(),convDist2);
         AliDebug(2,Form("Pair with mass %2.3f < %2.3f, %1.2f < dPhi %2.2f < %2.2f, dEta %f < %2.2f, asymmetry %2.2f< %2.2f; \n"
                         " cluster1 id %d, e %2.3f  SM %d, eta %2.3f, phi %2.3f ; \n"    
@@ -601,6 +639,28 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
                         pairM,fMassCut,fConvDPhiMinCut, dPhi, fConvDPhiMaxCut, dEta, fConvDEtaCut, asymmetry, fConvAsymCut,
                         calo ->GetCaloLabel(0), calo ->E(), GetCaloUtils()->GetModuleNumber(calo ,GetReader()->GetInputEvent()), calo ->Eta(), phi,
                         calo2->GetCaloLabel(0), calo2->E(), GetCaloUtils()->GetModuleNumber(calo2,GetReader()->GetInputEvent()), calo2->Eta(), phi2));
+        
+        
+        Int_t convDistR1 = -1;
+        if      ( convDist  > 430-75.  ) convDistR1 = 0;
+        else if ( convDist  < 430-275. ) convDistR1 = 1;
+        else if ( convDist  < 430-375. ) convDistR1 = 2;
+        else if ( convDist  < 430-400. ) convDistR1 = 3;
+        else if ( convDist  < 0        ) convDistR1 = 4;
+        else                             convDistR1 = 5;
+        
+        Int_t convDistR2 = -1;
+        if      ( convDist2 > 430-75.  ) convDistR2 = 0;
+        else if ( convDist2 < 430-275. ) convDistR2 = 1;
+        else if ( convDist2 < 430-375. ) convDistR2 = 2;
+        else if ( convDist2 < 430-400. ) convDistR2 = 3;
+        else if ( convDist2 < 0        ) convDistR2 = 4;
+        else                             convDistR2 = 5;
+
+        if(convDistR1 >= 0)
+          fhConvPtRcut[convDistR1]->Fill( pairM, ptConvPair, GetEventWeight());
+        if(convDistR2 >= 0)
+          fhConvPtRcut[convDistR2]->Fill( pairM, ptConvPair, GetEventWeight());
         
         fhConvDistEta ->Fill(calo ->Eta(),convDist , GetEventWeight());
         fhConvDistEta ->Fill(calo2->Eta(),convDist2, GetEventWeight());        
@@ -677,24 +737,43 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           
           Int_t tag1 = calo ->GetTag();
           Int_t tag2 = calo2->GetTag();
+          Float_t disp1 = cluster1->GetDispersion();
+          Float_t disp2 = cluster2->GetDispersion();
+          Float_t l0cl1 = cluster1->GetM02();
+          Float_t l0cl2 = cluster2->GetM02();
+         
           if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion))
           {
             if(GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && (ancPDG==22 || TMath::Abs(ancPDG)==11) && ancLabel > -1)
             {
-              fhConvDeltaEtaMCConversion   ->Fill( pairM, dEta     , GetEventWeight());
-              fhConvDeltaPhiMCConversion   ->Fill( pairM, dPhi     , GetEventWeight());
-              fhConvAsymMCConversion       ->Fill( pairM, asymmetry, GetEventWeight());
-              fhConvDeltaEtaPhiMCConversion->Fill( dEta , dPhi     , GetEventWeight());
-              fhConvPtMCConversion         ->Fill( pairM, calo->Pt()+calo2->Pt(), GetEventWeight());
-              fhConvDispersionMCConversion ->Fill( cluster1->GetDispersion(), cluster2->GetDispersion(), GetEventWeight());
-              fhConvM02MCConversion        ->Fill( cluster1->GetM02(), cluster2->GetM02(), GetEventWeight());
-              fhConvDistMCConversion       ->Fill( convDist , fProdVertex.Mag(), GetEventWeight());
-              fhConvDistMCConversion       ->Fill( convDist2, fProdVertex.Mag(), GetEventWeight());
+              fhConvDeltaEtaMCConversion   ->Fill( pairM, dEta      , GetEventWeight());
+              fhConvDeltaPhiMCConversion   ->Fill( pairM, dPhi      , GetEventWeight());
+              fhConvAsymMCConversion       ->Fill( pairM, asymmetry , GetEventWeight());
+              fhConvDeltaEtaPhiMCConversion->Fill( dEta , dPhi      , GetEventWeight());
+              fhConvPtMCConversion         ->Fill( pairM, ptConvPair, GetEventWeight());
+              fhConvDispersionMCConversion ->Fill( disp1, disp2     , GetEventWeight());
+              fhConvM02MCConversion        ->Fill( l0cl1, l0cl2     , GetEventWeight());
               
+              Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
+
+              fhConvDistMCConversion       ->Fill( convDist , prodR, GetEventWeight());
+              fhConvDistMCConversion       ->Fill( convDist2, prodR, GetEventWeight());
+
+              Int_t convR = -1;
+              if      ( prodR < 75.  ) convR = 0;
+              else if ( prodR < 275. ) convR = 1;
+              else if ( prodR < 375. ) convR = 2;
+              else if ( prodR < 400. ) convR = 3;
+              else if ( prodR < 430. ) convR = 4;
+              else                     convR = 5;
+
+              if ( convR >= 0 )
+                fhConvPtMCConversionRcut[convR]->Fill( pairM, ptConvPair, GetEventWeight());
+
               if(dEta < fConvDEtaCut && pairM < fMassCutTight && asymmetry < fConvAsymCut)
               {
-                fhConvDistMCConversionCuts->Fill( convDist , fProdVertex.Mag(), GetEventWeight());
-                fhConvDistMCConversionCuts->Fill( convDist2, fProdVertex.Mag(), GetEventWeight());
+                fhConvDistMCConversionCuts->Fill( convDist , prodR, GetEventWeight());
+                fhConvDistMCConversionCuts->Fill( convDist2, prodR, GetEventWeight());
               }
               
             }
@@ -703,43 +782,42 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           {
             if(GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCAntiNeutron) && ancPDG==-2112 && ancLabel > -1)
             {
-              fhConvDeltaEtaMCAntiNeutron    ->Fill( pairM, dEta     , GetEventWeight());
-              fhConvDeltaPhiMCAntiNeutron    ->Fill( pairM, dPhi     , GetEventWeight());
-              fhConvAsymMCAntiNeutron        ->Fill( pairM, asymmetry, GetEventWeight());
-              fhConvDeltaEtaPhiMCAntiNeutron ->Fill( dEta , dPhi     , GetEventWeight());
-              fhConvPtMCAntiNeutron          ->Fill( pairM, calo->Pt()+calo2->Pt(), GetEventWeight());
-              fhConvDispersionMCAntiNeutron  ->Fill( cluster1->GetDispersion(), cluster2->GetDispersion(), GetEventWeight());
-              fhConvM02MCAntiNeutron         ->Fill( cluster1->GetM02(), cluster2->GetM02(), GetEventWeight());
+              fhConvDeltaEtaMCAntiNeutron    ->Fill( pairM, dEta      , GetEventWeight());
+              fhConvDeltaPhiMCAntiNeutron    ->Fill( pairM, dPhi      , GetEventWeight());
+              fhConvAsymMCAntiNeutron        ->Fill( pairM, asymmetry , GetEventWeight());
+              fhConvDeltaEtaPhiMCAntiNeutron ->Fill( dEta , dPhi      , GetEventWeight());
+              fhConvPtMCAntiNeutron          ->Fill( pairM, ptConvPair, GetEventWeight());
+              fhConvDispersionMCAntiNeutron  ->Fill( disp1, disp2     , GetEventWeight());
+              fhConvM02MCAntiNeutron         ->Fill( l0cl1, l0cl2     , GetEventWeight());
             }
           }
           else if(GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCAntiProton))
           {
             if(GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCAntiProton) && ancPDG==-2212 && ancLabel > -1)
             {
-              fhConvDeltaEtaMCAntiProton    ->Fill( pairM, dEta     , GetEventWeight());
-              fhConvDeltaPhiMCAntiProton    ->Fill( pairM, dPhi     , GetEventWeight());
-              fhConvAsymMCAntiProton        ->Fill( pairM, asymmetry, GetEventWeight());
-              fhConvDeltaEtaPhiMCAntiProton ->Fill( dEta , dPhi     , GetEventWeight());
-              fhConvPtMCAntiProton          ->Fill( pairM, calo->Pt()+calo2->Pt(), GetEventWeight());
-              fhConvDispersionMCAntiProton  ->Fill( cluster1->GetDispersion(), cluster2->GetDispersion(), GetEventWeight());
-              fhConvM02MCAntiProton         ->Fill( cluster1->GetM02(), cluster2->GetM02(), GetEventWeight());
+              fhConvDeltaEtaMCAntiProton    ->Fill( pairM, dEta      , GetEventWeight());
+              fhConvDeltaPhiMCAntiProton    ->Fill( pairM, dPhi      , GetEventWeight());
+              fhConvAsymMCAntiProton        ->Fill( pairM, asymmetry , GetEventWeight());
+              fhConvDeltaEtaPhiMCAntiProton ->Fill( dEta , dPhi      , GetEventWeight());
+              fhConvPtMCAntiProton          ->Fill( pairM, ptConvPair, GetEventWeight());
+              fhConvDispersionMCAntiProton  ->Fill( disp1, disp2     , GetEventWeight());
+              fhConvM02MCAntiProton         ->Fill( l0cl1, l0cl2     , GetEventWeight());
             }
           }
           
           // Pairs coming from fragmenting pairs.
           if( ancPDG < 22 && ancLabel > 7 && (ancStatus == 11 || ancStatus == 12) )
           {
-            fhConvDeltaEtaMCString    ->Fill( pairM, dPhi, GetEventWeight());
-            fhConvDeltaPhiMCString    ->Fill( pairM, dPhi, GetEventWeight());
-            fhConvAsymMCString        ->Fill( pairM, TMath::Abs(calo->E()-calo2->E())/(calo->E()+calo2->E()), GetEventWeight());
-            fhConvDeltaEtaPhiMCString ->Fill( dEta,  dPhi, GetEventWeight());
-            fhConvPtMCString          ->Fill( pairM, calo->Pt()+calo2->Pt(), GetEventWeight());
-            fhConvDispersionMCString  ->Fill( cluster1->GetDispersion(), cluster2->GetDispersion(), GetEventWeight());
-            fhConvM02MCString         ->Fill( cluster1->GetM02(), cluster2->GetM02(), GetEventWeight());
+            fhConvDeltaEtaMCString    ->Fill( pairM, dEta      , GetEventWeight());
+            fhConvDeltaPhiMCString    ->Fill( pairM, dPhi      , GetEventWeight());
+            fhConvAsymMCString        ->Fill( pairM, asymmetry , GetEventWeight());
+            fhConvDeltaEtaPhiMCString ->Fill( dEta,  dPhi      , GetEventWeight());
+            fhConvPtMCString          ->Fill( pairM, ptConvPair, GetEventWeight());
+            fhConvDispersionMCString  ->Fill( disp1, disp2     , GetEventWeight());
+            fhConvM02MCString         ->Fill( l0cl1, l0cl2     , GetEventWeight());
           }
           
         }// Data MC
-        
         
         //...............................................
         //...............................................
@@ -771,14 +849,6 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           
           if(bin > -1) fhEtaPhiPhotonConvPaired[bin] ->Fill(calo2->Eta(), phi2, GetEventWeight());
           
-          //
-          // Add both clusters
-          //
-          fMomentum = *(calo->Momentum())+*(calo2->Momentum());
-          Float_t ptConvPair  = fMomentum.Pt();
-          Float_t phiConvPair = fMomentum.Phi();
-          Float_t etaConvPair = fMomentum.Eta();
-          Float_t eConvPair   = fMomentum.E();
           fhPtPhotonConv->Fill(ptConvPair, GetEventWeight());
           
           bin = -1;
@@ -932,8 +1002,8 @@ void AliAnaPhotonConvInCalo::Print(const Option_t * opt) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
-  printf("Add conversion pair to AOD           = %d\n",fAddConvertedPairsToAOD);
-  printf("Conversion pair mass cut             = %1.2f and %1.2f\n",fMassCut,fMassCutTight);
+  printf("Add conversion pair to AOD = %d\n",fAddConvertedPairsToAOD);
+  printf("Conversion pair mass cut   = %1.2f and %1.2f\n",fMassCut,fMassCutTight);
   printf("Conversion selection cut : A < %1.2f; %1.3f < Dphi < %1.3f; Deta < %1.3f\n",
          fConvAsymCut,fConvDPhiMinCut, fConvDPhiMaxCut, fConvDEtaCut);
   

@@ -100,13 +100,13 @@ void AliJJet::ReSum(){
         double e = trk->E();
         if( e > lE ){lE = e;lidE = i;}
     }
+    fLeadingTrackPt = lpt;
+    fLeadingTrackE = lE;
     if( lv.E() < 1e-4 ) return;
     if( lv.E() > 0 ) TLorentzVector::operator=(lv);
     if( E2 < 0 ) E2 = E();
     else E2+=1;
     fE2=E2;
-    fLeadingTrackPt = lpt;
-    fLeadingTrackE = lE;
 }
 
 ClassImp(AliJJet)
