@@ -63,10 +63,13 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       AreConvertedPairsInAOD()         const { return fAddConvertedPairsToAOD   ; }
   void         SwitchOnAdditionConvertedPairsToAOD()  { fAddConvertedPairsToAOD = kTRUE  ; }
   void         SwitchOffAdditionConvertedPairsToAOD() { fAddConvertedPairsToAOD = kFALSE ; }  
-	
+  
   Bool_t       AreConvertedPairsRemoved()       const { return fRemoveConvertedPair      ; }
   void         SwitchOnConvertedPairsRemoval()        { fRemoveConvertedPair  = kTRUE    ; }
   void         SwitchOffConvertedPairsRemoval()       { fRemoveConvertedPair  = kFALSE   ; }    
+  
+  void         SwitchOnClusterConvDistHistograms()    { fFillClusterConvDistHisto= kTRUE ; }
+  void         SwitchOffClusterConvDistHistograms()   { fFillClusterConvDistHisto= kFALSE; }  
   
   void         SetConvAsymCut(Float_t c)              { fConvAsymCut = c           ; }
   Float_t      GetConvAsymCut()                 const { return fConvAsymCut        ; }
@@ -83,6 +86,8 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
  
   Bool_t   fRemoveConvertedPair;          ///<  Remove conversion pairs
   Bool_t   fAddConvertedPairsToAOD;       ///<  Put Converted pairs in AOD
+  Bool_t   fFillClusterConvDistHisto;     ///<  Fill histograms with calculated conversion distance with data clusters
+  
   Float_t  fMassCut;                      ///<  Mass cut for the conversion pairs selection
   Float_t  fMassCutTight;                 ///<  Mass cut for the conversion pairs selection, tighter
   Float_t  fConvAsymCut;                  ///<  Select conversion pairs when asymmetry is smaller than cut
@@ -103,7 +108,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvDeltaEtaPhi;               //!<! Small mass photons, correlation in phi and eta
   TH2F * fhConvAsym;                      //!<! Small mass photons, correlation in energy asymmetry
   TH2F * fhConvPt;                        //!<! Small mass photons, pT of pair
-  TH2F * fhConvPtRcut[6];                 //!<! Small mass photons, pT of pair, for difference conversion distances
+//  TH2F * fhConvPtRcut[6];                 //!<! Small mass photons, pT of pair, for difference conversion distances
   
   // Vertex distance
   TH2F * fhConvDistEta;                   //!<! Approx distance to vertex vs rapidity 
@@ -141,7 +146,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvAsymMCConversion;          //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is conversion
   TH2F * fhConvPtMCConversion;            //!<! Small mass cluster pairs, pt of pair, origin of both clusters is conversion
   TH2F * fhConvPtMCConversionRcut[6];     //!<! Small mass cluster pairs, pt of pair, origin of both clusters is conversion, for different production vertices
-  TH2F * fhConvDispersionMCConversion;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
+//TH2F * fhConvDispersionMCConversion;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
   TH2F * fhConvM02MCConversion;           //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2 
   
   TH2F * fhConvDeltaEtaMCAntiNeutron;     //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is anti neutron
@@ -149,7 +154,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvDeltaEtaPhiMCAntiNeutron;  //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti neutron
   TH2F * fhConvAsymMCAntiNeutron;         //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti neutron
   TH2F * fhConvPtMCAntiNeutron;           //!<! Small mass cluster pairs, pt of pair, origin of both clusters is anti neutron
-  TH2F * fhConvDispersionMCAntiNeutron;   //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti neutron
+//TH2F * fhConvDispersionMCAntiNeutron;   //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti neutron
   TH2F * fhConvM02MCAntiNeutron;          //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti neutron
 
   TH2F * fhConvDeltaEtaMCAntiProton;      //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is anti proton
@@ -157,7 +162,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvDeltaEtaPhiMCAntiProton;   //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti proton
   TH2F * fhConvAsymMCAntiProton;          //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti proton
   TH2F * fhConvPtMCAntiProton;            //!<! Small mass cluster pairs, pt of pairs, origin of both clusters is anti proton
-  TH2F * fhConvDispersionMCAntiProton;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti proton
+//TH2F * fhConvDispersionMCAntiProton;    //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti proton
   TH2F * fhConvM02MCAntiProton;           //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti proton
 
   TH2F * fhConvDeltaEtaMCString;          //!<! Small mass cluster pairs, correlation in eta, origin of both clusters is string
@@ -165,7 +170,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhConvDeltaEtaPhiMCString;       //!<! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is string
   TH2F * fhConvAsymMCString;              //!<! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is string
   TH2F * fhConvPtMCString;                //!<! Small mass cluster pairs, pt of pairs, origin of both clusters is string
-  TH2F * fhConvDispersionMCString;        //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
+//TH2F * fhConvDispersionMCString;        //!<! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
   TH2F * fhConvM02MCString;               //!<! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
   TH2F * fhConvDistMCConversion;          //!<! Calculated conversion distance vs real distance to vertex       
   TH2F * fhConvDistMCConversionCuts;      //!<! Calculated conversion distance vs real distance to vertex        
@@ -177,7 +182,7 @@ class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhotonConvInCalo & operator = (const AliAnaPhotonConvInCalo & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhotonConvInCalo,2) ;
+  ClassDef(AliAnaPhotonConvInCalo,3) ;
   /// \endcond
 
 } ;
