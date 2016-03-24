@@ -2,12 +2,14 @@
 #include <AliTrackletAODUtils.C>
 #ifndef __CINT__
 #include "AliAODTracklet.C"
+#include "AliAODSimpleHeader.C"
 #include <AliVVertex.h>
 #include <AliVertex.h>
 #include <AliAnalysisManager.h>
 #include <AliVEventHandler.h>
 #include <AliInputEventHandler.h>
 #include <AliMultSelection.h>
+#include <AliCentrality.h>
 #include <AliLog.h>
 #include <TClonesArray.h>
 #include "AliTrackletWeights.C"
@@ -696,6 +698,16 @@ protected:
    * @return List of tracklets or null
    */
   TClonesArray* FindTracklets(AliVEvent* event);
+  const AliVVertex* FindSimpleIP(AliVEvent* event,
+				 Double_t   maxDispersion=0.04,
+				 Double_t   maxZError=0.25);
+  const AliVVertex* FindRealIP(AliVEvent* event,
+			       Double_t   maxDispersion=0.04,
+			       Double_t   maxZError=0.25);
+  const AliVVertex* CheckIP(const AliVVertex* ip,
+			    Double_t   maxDispersion=0.04,
+			    Double_t   maxZError=0.25);
+				 
   /** 
    * Find the interaction point location 
    * 
@@ -706,6 +718,25 @@ protected:
   const AliVVertex* FindIP(AliVEvent* event,
 			   Double_t   maxDispersion=0.04,
 			   Double_t   maxZError=0.25);
+  /** 
+   * Find the centrality of the event 
+   * 
+   * @param event Event 
+   * @param nTracklets Number of tracklets for benchmarking centrality 
+   * 
+   * @return Centrality percentile, or negative number in case of
+   * problems
+   */
+  Double_t FindMultCentrality(AliVEvent* event, Int_t& nTracklets);
+  /** 
+   * Find the centrality of the event 
+   * 
+   * @param event Event 
+   * 
+   * @return Centrality percentile, or negative number in case of
+   * problems
+   */
+  Double_t FindCompatCentrality(AliVEvent* event);  
   /** 
    * Find the centrality of the event 
    * 
@@ -1532,15 +1563,11 @@ TClonesArray* AliTrackletAODdNdeta::FindTracklets(AliVEvent* event)
 }  
 
 //____________________________________________________________________
-const AliVVertex* AliTrackletAODdNdeta::FindIP(AliVEvent* event,
-					       Double_t maxDispersion,
-					       Double_t maxZError)
+const AliVVertex* AliTrackletAODdNdeta::CheckIP(const AliVVertex* ip,
+						Double_t maxDispersion,
+						Double_t maxZError)
 {
-  const AliVVertex* ip   = event->GetPrimaryVertex();
-  if (!ip) {
-    AliWarning("No IP for this event found!");
-    return 0;
-  }
+  if (!ip) return 0;
   if (ip->GetNContributors() <= 0) {
     AliWarning("Not enough contributors for IP");
     return 0;
@@ -1575,6 +1602,58 @@ const AliVVertex* AliTrackletAODdNdeta::FindIP(AliVEvent* event,
 		ip->GetZ(), fIPzAxis.GetXmin(), fIPzAxis.GetXmax());
     return 0;
   }
+  return ip;
+}
+
+//____________________________________________________________________
+const AliVVertex* AliTrackletAODdNdeta::FindRealIP(AliVEvent* event,
+						   Double_t maxDispersion,
+						   Double_t maxZError)
+{
+  const AliVVertex* ip   = event->GetPrimaryVertex();
+  if (!ip) {
+    AliWarning("No real IP for this event found!");
+    return 0;
+  }
+  return CheckIP(ip, maxDispersion, maxZError);
+}
+						   
+//____________________________________________________________________
+  const AliVVertex* AliTrackletAODdNdeta::FindSimpleIP(AliVEvent* event,
+						       Double_t maxDispersion,
+						       Double_t maxZError)   
+{
+  static AliVertex* ip;
+  AliAODSimpleHeader* head =
+    static_cast<AliAODSimpleHeader*>(event
+				     ->FindListObject("AliAODSimpleHeader"));
+  if (!head) {
+    AliWarning("No simple header");
+    return 0;
+  }
+  if (!ip)
+    ip = new AliVertex;
+  ip->SetXv(head->fRecIP.X());
+  ip->SetYv(head->fRecIP.Y());
+  ip->SetZv(head->fRecIP.Z());
+  ip->SetNContributors(10);
+  ip->SetTitle("");
+  return CheckIP(ip, maxDispersion, maxZError);
+}
+  
+//____________________________________________________________________
+const AliVVertex* AliTrackletAODdNdeta::FindIP(AliVEvent* event,
+					       Double_t maxDispersion,
+					       Double_t maxZError)
+{
+  const AliVVertex* ip   = FindRealIP(event,maxDispersion,maxZError);  
+  if (!ip) {
+    ip = FindSimpleIP(event,maxDispersion,maxZError);
+    if (!ip) {
+      AliWarning("No IP for this event found!");
+      return 0;
+    }
+  }
   // Good vertex, return it
   return ip;
 }
@@ -1590,13 +1669,22 @@ Bool_t AliTrackletAODdNdeta::FindTrigger()
   return trgOK;
 }
 //____________________________________________________________________
-Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
-					      Int_t& nTracklets)
+Double_t AliTrackletAODdNdeta::FindCompatCentrality(AliVEvent* event)
 {
-  if (fCentMethod.EqualTo("MB", TString::kIgnoreCase)) {
-    Printf("MB centrality - not checked");
-    return 0;
+  static TString centMeth;
+  if (centMeth.IsNull()) {
+    centMeth = fCentMethod(3,fCentMethod.Length()-3);
   }
+  AliCentrality* cent   = event->GetCentrality();
+  if (!cent) return -1;
+
+  Double_t centPer = cent->GetCentralityPercentileUnchecked(centMeth);
+  return centPer;
+}
+//____________________________________________________________________
+Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
+						  Int_t& nTracklets)
+{
   AliMultSelection* cent =
     static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
   if (!cent) {
@@ -1604,8 +1692,27 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
     event->GetList()->Print();
     return -1;
   }
+  AliMultEstimator* estTracklets = cent->GetEstimator("SPDTracklets");
+  if (estTracklets)    
+    nTracklets = estTracklets->GetValue();
+
+  cent->GetMultiplicityPercentile(fCentMethod);
+}
+  
+//____________________________________________________________________
+Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
+					      Int_t& nTracklets)
+{
+  if (fCentMethod.EqualTo("MB", TString::kIgnoreCase)) {
+    Printf("MB centrality - not checked");
+    return 0;
+  }
+  Double_t centPer = -1;
+  if (fCentMethod.BeginsWith("OLD"))
+    centPer = FindCompatCentrality(event);
+  else
+    centPer = FindMultCentrality(event, nTracklets);
   const Double_t safety = 1e-3;
-  Double_t centPer = cent->GetMultiplicityPercentile(fCentMethod);
   if (DebugLevel() > 1) Printf("Read centrality: %f%%", centPer);
   if      (centPer < -safety)    return -2;
   if      (centPer < +safety)    centPer = safety;
@@ -1621,11 +1728,6 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
 		centPer, fCentAxis.GetXmin(), fCentAxis.GetXmax());
     return -3;
   }
-
-  AliMultEstimator* estTracklets = cent->GetEstimator("SPDTracklets");
-  if (estTracklets)    
-    nTracklets = estTracklets->GetValue();
-  
   return centPer;    
 }
 
