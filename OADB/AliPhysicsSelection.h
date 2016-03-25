@@ -20,6 +20,7 @@
 #include <TList.h>
 #include "TObjString.h"
 #include "AliVEvent.h"
+#include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
 
@@ -52,7 +53,7 @@ public:
   enum {kStatIdxAll=0,kStatIdxBin0=1};
   enum ETriggerLogic { kCINT1 = 0, kCMBS2A, kCMBS2C, kCMBAC, kCMBACS2, kHighMultL1 };
 
-  typedef Bool_t (*Bin0Callback_t)(const AliVEvent *);
+  typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
 
   AliPhysicsSelection();
   virtual ~AliPhysicsSelection();

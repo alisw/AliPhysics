@@ -411,7 +411,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
       if (fBin0CallBack != "") {
         isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
       } else if (fBin0CallBackPointer) {
-        isBin0 = (*fBin0CallBackPointer)(event);
+        isBin0 = (*fBin0CallBackPointer)(dynamic_cast<const AliESDEvent*>(event));
       }
       
       // ---->
