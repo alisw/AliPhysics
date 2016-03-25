@@ -96,31 +96,32 @@
 //
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
 //           Michele Floris, CERN
+//   Current support and development: Evgeny Kryshen, PNPI
 //-------------------------------------------------------------------------
 
-#include <Riostream.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TList.h>
-#include <TIterator.h>
-#include <TDirectory.h>
-#include <TObjArray.h>
-#include <TPRegexp.h>
-#include <TFormula.h>
-#include <TParameter.h>
-#include <TInterpreter.h>
+#include "Riostream.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TList.h"
+#include "TIterator.h"
+#include "TDirectory.h"
+#include "TObjArray.h"
+#include "TPRegexp.h"
+#include "TFormula.h"
+#include "TParameter.h"
+#include "TInterpreter.h"
 
-#include <AliPhysicsSelection.h>
+#include "AliPhysicsSelection.h"
 
-#include <AliTriggerAnalysis.h>
-#include <AliLog.h>
+#include "AliTriggerAnalysis.h"
+#include "AliLog.h"
 
-#include <AliESDEvent.h>
-#include <AliAnalysisTaskSE.h>
+#include "AliESDEvent.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "TPRegexp.h"
 #include "TFile.h"
-#include <AliOADBContainer.h>
+#include "AliOADBContainer.h"
 #include "AliOADBPhysicsSelection.h"
 #include "AliOADBFillingScheme.h"
 #include "AliOADBTriggerAnalysis.h"
@@ -139,7 +140,6 @@ fMC(kFALSE),
 fCollTrigClasses(),
 fBGTrigClasses(),
 fTriggerAnalysis(),
-//  fHistStatisticsTokens(0),
 fHistBunchCrossing(0),
 fHistTriggerPattern(0),
 fSkipTriggerClassSelection(0),
@@ -161,7 +161,6 @@ fFillOADB(0),
 fTriggerOADB(0),
 fRegexp(0),
 fCashedTokens(0)
-
 {
   // constructor
   
@@ -178,72 +177,23 @@ fCashedTokens(0)
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
 
-AliPhysicsSelection::~AliPhysicsSelection()
-{
+AliPhysicsSelection::~AliPhysicsSelection(){
   // destructor
-  
   fCollTrigClasses.Delete();
   fBGTrigClasses.Delete();
   fTriggerAnalysis.Delete();
-  
-  if (fHistStatistics[0])
-  {
-    delete fHistStatistics[0];
-    fHistStatistics[0] = 0;
-  }
-  if (fHistStatistics[1])
-  {
-    delete fHistStatistics[1];
-    fHistStatistics[1] = 0;
-  }
-  // if (fHistStatisticsTokens) {
-  //   delete fHistStatisticsTokens;
-  //   fHistStatisticsTokens = 0;
-  // }
-  if (fHistBunchCrossing)
-  {
-    delete fHistBunchCrossing;
-    fHistBunchCrossing = 0;
-  }
-  if (fHistTriggerPattern)
-  {
-    delete fHistTriggerPattern;
-    fHistTriggerPattern = 0;
-  }
-  
-  if (fPSOADB)
-  { 
-    delete fPSOADB;
-    fPSOADB = 0;    
-  }  
-  if (fFillOADB)
-  { 
-    delete fFillOADB;
-    fFillOADB = 0;
-  }  
-  if (fTriggerOADB)
-  { 
-    delete fTriggerOADB;
-    fTriggerOADB = 0;
-  }  
-  
-  if (fRegexp)
-  {
-    delete fRegexp;
-    fRegexp = 0;
-  }
-  
-  if (fCashedTokens)
-  {
-    delete fCashedTokens;
-    fCashedTokens = 0;
-  }
-  
-  
+  if (fHistStatistics[0])  { delete fHistStatistics[0];    fHistStatistics[0] = 0;  }
+  if (fHistStatistics[1])  { delete fHistStatistics[1];    fHistStatistics[1] = 0;  }
+  if (fHistBunchCrossing)  { delete fHistBunchCrossing;    fHistBunchCrossing = 0;  }
+  if (fHistTriggerPattern) { delete fHistTriggerPattern;   fHistTriggerPattern = 0; }
+  if (fPSOADB)             { delete fPSOADB;               fPSOADB = 0;             }
+  if (fFillOADB)           { delete fFillOADB;             fFillOADB = 0;           }
+  if (fTriggerOADB)        { delete fTriggerOADB;          fTriggerOADB = 0;        }
+  if (fRegexp)             { delete fRegexp;               fRegexp = 0;             }
+  if (fCashedTokens)       { delete fCashedTokens;         fCashedTokens = 0;       }
 }
 
-UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const
-{
+UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const {
   // checks if the given trigger class(es) are found for the current event
   // format of trigger: +TRIGGER1,TRIGGER1b,TRIGGER1c -TRIGGER2 [#XXX] [&YY] [*ZZ]
   //   requires one out of TRIGGER1,TRIGGER1b,TRIGGER1c and rejects TRIGGER2
@@ -523,9 +473,6 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
       // Bool_t fmd  = fmdA || fmdC;
       
-      // SSD
-      //Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
-      
       // ZDC
       // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
       // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCC);
@@ -551,9 +498,6 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       if(v0C)              ntrig += 1; //v0C alone is enough
       if(fmd)              ntrig += 1;
       if(ssdClusters>1)    ntrig += 1;*/
-      
-      // // EMCAL offline trigger validation
-      // Bool_t emcCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kEMCAL));
       
       // <---
       
@@ -648,192 +592,6 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   return accept;
 }
 
-
-// const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
-
-//   if(fMC) return "MC";
-
-//   if      (runNumber >= 104065 && runNumber <= 104160) {
-//     return "4x4a";
-//   } 
-//   else if (runNumber >= 104315 && runNumber <= 104321) {
-//     return "4x4a*";
-//   }
-//   else if (runNumber >= 104792 && runNumber <= 104803) {
-//     return "4x4b";
-//   }
-//   else if (runNumber >= 104824 && runNumber <= 104892) {
-//     return "4x4c";
-//   }
-//   else if (runNumber == 105143 || runNumber == 105160) {
-//     return "16x16a";
-//   }
-//   else if (runNumber >= 105256 && runNumber <= 105268) {
-//     return "4x4c";
-//   } 
-//   else if (runNumber >= 114786 && runNumber <= 116684) {
-//     return "Single_2b_1_1_1";
-//   }
-//   else if (runNumber >= 117048 && runNumber <= 117120) {
-//     return "Single_3b_2_2_2";
-//   }
-//   else if (runNumber >= 117220 && runNumber <= 119163) {
-//     return "Single_2b_1_1_1";
-//   }
-//   else if (runNumber >= 119837 && runNumber <= 119862) {
-//     return "Single_4b_2_2_2";
-//   }
-//   else if (runNumber >= 119902 && runNumber <= 120691) {
-//     return "Single_6b_3_3_3";
-//   }
-//   else if (runNumber >= 120741 && runNumber <= 122375) {
-//     return "Single_13b_8_8_8";
-//   }
-//   else if (runNumber >= 130148 && runNumber <= 130375) {
-//     return "125n_48b_36_16_36";
-//   } 
-//   else if (runNumber >= 130601 && runNumber <= 130640) {
-//     return "1000ns_50b_35_14_35";
-//   }
-//   else {
-//     AliError(Form("Unknown filling scheme (run %d)", runNumber));
-//   }
-
-//   return "Unknown";
-// }
-
-// const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigger)  {
-
-//   if (!fUseBXNumbers || fMC) return "";
-
-//   if      (runNumber >= 104065 && runNumber <= 104160) {
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2128 #3019";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #346 #3465";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #1680";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   } 
-//   else if (runNumber >= 104315 && runNumber <= 104321) {
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2000 #2891";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #218 #3337";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1106 #1552";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   }
-//   else if (runNumber >= 104792 && runNumber <= 104803) {
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2228 #3119";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2554 #446";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1334 #769";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   }
-//   else if (runNumber >= 104824 && runNumber <= 104892) {
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #3119 #769";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2554 #446";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1334 #2228";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   }
-//   else if (runNumber == 105143 || runNumber == 105160) {
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #1337 #1418 #2228 #2309 #3119 #3200 #446 #527";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #1580  #1742  #1904  #2066  #2630  #2792  #2954  #3362";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "  #845  #1007  #1169   #1577 #3359 #3521 #119  #281 ";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   }
-//   else if (runNumber >= 105256 && runNumber <= 105268) {
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #3019 #669";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2454 #346";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #2128";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   } else if (runNumber >= 114786 && runNumber <= 116684) { // 7 TeV 2010, assume always the same filling scheme
-//     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #346";
-//     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2131";
-//     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #3019";
-//     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #1238";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   }
-//   else if (runNumber >= 117048 && runNumber <= 117120) {
-//     //    return "Single_3b_2_2_2";
-//    if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346  #1240 ";
-//    else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
-//    else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
-//    else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238";
-//    //   else AliError(Form("Unknown trigger: %s", trigger));
-
-//   }
-//   else if ((runNumber >= 117220 && runNumber <= 118555) || (runNumber >= 118784 && runNumber <= 119163)) 
-//   {
-//     //    return "Single_2b_1_1_1";
-//     if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346 ";
-//     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131 ";
-//     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019 ";
-//     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238 ";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));						    
-//   }
-//   else if (runNumber >= 118556 && runNumber <= 118783) {
-//     //    return "Single_2b_1_1_1"; 
-//     // same as previous but was misaligned by 1 BX in fill 1069
-//     if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #345 ";
-//     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2130 ";
-//     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3018 ";
-//     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1238 ";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));						    
-//   }
-//   else if (runNumber >= 119837 && runNumber <= 119862) {
-//     //    return "Single_4b_2_2_2";
-//     if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #669  #3019 ";
-//     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #346  #2454 ";
-//     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #1234  #2128 ";
-//     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1681 #3463";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-
-//   }
-//   else if (runNumber >= 119902 && runNumber <= 120691) {
-//     //    return "Single_6b_3_3_3";
-//     if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346  #546  #746 ";
-//     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #2131  #2331  #2531 ";
-//     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3219  #3419 ";
-//     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1296 #1670";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-//   }
-//   else if (runNumber >= 120741 && runNumber <= 122375) {
-//     //    return "Single_13b_8_8_8";
-//     if      (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return "   #346  #446  #546  #646  #1240  #1340  #1440  #1540 ";
-//     else if (!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return "   #946  #2131  #2231  #2331  #2431 ";
-//     else if (!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "   #3019  #3119  #3219  #3319  #3519 ";
-//     else if (!strcmp("CINT1-E-NOPF-ALL",trigger)) return " #1835 #2726";
-//     //    else AliError(Form("Unknown trigger: %s", trigger));
-
-//   } 
-//   else if (runNumber >= 130148 && runNumber <= 130375) {
-//     TString triggerString = trigger;
-//     static TString returnString = " ";
-//     returnString = "";
-//     if (triggerString.Contains("B")) returnString += "   #346  #396  #446  #496  #546  #596  #646  #696  #1240  #1290  #1340  #1390  #1440  #1490  #1540  #1590 ";
-//     if (triggerString.Contains("A")) returnString += "   #755  #805  #855  #905  #955  #1005  #1799  #1849  #1899  #2131  #2181  #2231  #2281  #2331  #2381  #2431  #2481  #2531  #2581  #2631  #2846  #3016  #3066  #3116  #3166  #3216  #3266  #3316  #3366  #3425  #3475  #3525 ";
-//     if (triggerString.Contains("C")) returnString += "   #3019  #3069  #3119  #3169  #3219  #3269  #3319  #3369  #14  #64  #114  #746  #796  #846  #908  #958  #1008  #1640  #1690  #1740  #2055  #2125  #2175  #2225  #2275  #2325  #2375  #2425  #2475  #2534  #2584  #2634 ";
-//     // Printf("0x%x",returnString.Data());
-//     // Printf("%s",returnString.Data());
-//     return returnString.Data();
-//   } 
-//   else if (runNumber >= 130601 && runNumber <= 130640) {
-//     TString triggerString = trigger;
-//     static TString returnString = " ";
-//     returnString = "";
-//     if (triggerString.Contains("B")) returnString += "  #346  #386  #426  #466  #506  #546  #586  #1240  #1280  #1320  #1360  #1400  #1440  #1480 ";
-//     if (triggerString.Contains("A")) returnString += "  #626  #666  #706  #746  #786  #826  #866  #1520  #1560  #1600  #1640  #1680  #1720  #1760  #2076  #2131  #2171  #2211  #2251  #2291  #2331  #2371  #2414  #2454  #2494  #2534  #2574  #2614  #2654  #2694  #2734  #2774  #2814 "; //#2854  #2894  #2934 not present in this run
-//     if (triggerString.Contains("C")) returnString += "  #3019  #3059  #3099  #3139  #3179  #3219  #3259  #3299  #3339  #3379  #3419  #3459  #3499  #3539  #115  #629  #669  #709  #749  #789  #829  #869  #909  #949  #989  #1029  #1069  #1109  #1149  #1523  #1563  #1603  #1643 "; //#1683  #1723  #1763 not present in this run
-//     return returnString.Data();
-//   }
-
-//   else {
-//     AliWarning(Form("Unknown run %d, using all BXs!",runNumber));
-//   }
-
-//   return "";
-// }
 
 Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
 {
@@ -1024,40 +782,13 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     
     
     n = 1;
-    for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
-    {
-      
+    for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++) {
       fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
       n++;
     }
-    for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
-    {
-      
+    for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++) {
       fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
       n++;
-    }
-    
-    
-    
-  }
-  
-  Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
-  for (Int_t i=0; i<count; i++)
-  {
-    
-    AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
-    
-    switch (runNumber)
-    {
-    case 104315:
-    case 104316:
-    case 104320:
-    case 104321:
-    case 104439:
-      triggerAnalysis->SetV0TimeOffset(7.5);
-      break;
-    default:
-      triggerAnalysis->SetV0TimeOffset(0);
     }
   }
   
@@ -1164,10 +895,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
   
   AliTriggerAnalysis* triggerAnalysis = dynamic_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(0));
   
-  if (triggerAnalysis)
-  {
-    if (triggerAnalysis->GetV0TimeOffset() > 0)
-      Printf("V0 time offset active: %.2f ns", triggerAnalysis->GetV0TimeOffset());
+  if (triggerAnalysis) {
     
     Printf("\nTotal available events:");
     
@@ -1215,8 +943,8 @@ void AliPhysicsSelection::Print(const Option_t *option) const
           if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU") && !alreadyFoundTriggers.Contains(singleTrig)) {
             Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
             alreadyFoundTriggers += singleTrig; // Avoid printing warning twice for the same trigger
-          }	      
-        }    
+          }
+        }
         delete tokens;	
       }
       delete iter;
@@ -1306,10 +1034,8 @@ void AliPhysicsSelection::Print(const Option_t *option) const
   }
 }
 
-Long64_t AliPhysicsSelection::Merge(TCollection* list)
-{
-  // Merge a list of AliMultiplicityCorrection objects with this (needed for
-  // PROOF).
+Long64_t AliPhysicsSelection::Merge(TCollection* list) {
+  // Merge a list of AliMultiplicityCorrection objects with this (needed for PROOF).
   // Returns the number of merged objects (including this).
   
   if (!list)
@@ -1437,8 +1163,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   return count+1;
 }
 
-void AliPhysicsSelection::SaveHistograms(const char* folder) 
-{
+void AliPhysicsSelection::SaveHistograms(const char* folder) {
   // write histograms to current directory
   
   if (!fHistStatistics[0] || !fHistStatistics[1])
@@ -1869,53 +1594,6 @@ const char * AliPhysicsSelection::GetTriggerString(TObjString * obj) {
   
   return retString.Data();
 }
-
-void AliPhysicsSelection::AddCollisionTriggerClass(const char* className){
-  AliError("This method is deprecated! Will be removed soon! Please use SetCustomOADBObjects() instead!");
-  if(!fPSOADB) {
-    fPSOADB = new AliOADBPhysicsSelection("CustomPS");   
-    fPSOADB->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
-    fPSOADB->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
-  }
-  
-  // Strip all which is not needed, if BX ids are provided, they are still used here
-  // offline trigger and logics are appended automagically, so we strip-em out if they are provided
-  TString classNameStripped = className;
-  if(classNameStripped.Index("*")>0)
-    classNameStripped.Remove(classNameStripped.Index("*")); // keep only the class name (no bx, offline trigger...)   
-  if(classNameStripped.Index("&")>0)
-    classNameStripped.Remove(classNameStripped.Index("&")); // keep only the class name (no bx, offline trigger...)   
-  
-  fPSOADB->AddCollisionTriggerClass   ( AliVEvent::kUserDefined,classNameStripped.Data(),"B",0);
-  
-  fUsingCustomClasses = kTRUE;
-  
-  
-}
-
-void AliPhysicsSelection::AddBGTriggerClass(const char* className){
-  // Add custom BG trigger class
-  
-  AliError("This method is deprecated! Will be removed soon! Please use SetCustomOADBObjects() instead!");
-  if(!fPSOADB) {
-    fPSOADB = new AliOADBPhysicsSelection("CustomPS");   
-    fPSOADB->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
-    fPSOADB->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
-  }
-  
-  // Strip all which is not needed, if BX ids are provided, they are still used here
-  // offline trigger and logics are appended automagically, so we strip-em out if they are provided
-  TString classNameStripped = className;
-  if(classNameStripped.Index("*")>0)
-    classNameStripped.Remove(classNameStripped.Index("*")); // keep only the class name (no bx, offline trigger...)   
-  if(classNameStripped.Index("&")>0)
-    classNameStripped.Remove(classNameStripped.Index("&")); // keep only the class name (no bx, offline trigger...)   
-  
-  fPSOADB->AddBGTriggerClass   ( AliVEvent::kUserDefined,classNameStripped.Data(),"AC",0);
-  
-  fUsingCustomClasses = kTRUE;
-  
-}       
 
 
 void AliPhysicsSelection::DetectPassName(){

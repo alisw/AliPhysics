@@ -79,8 +79,6 @@ public:
     
   const TList* GetCollisionTriggerClasses() const { return &fCollTrigClasses; }
   const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
-  void AddCollisionTriggerClass(const char* className);
-  void AddBGTriggerClass(const char* className)       ;
   void SetCustomOADBObjects(AliOADBPhysicsSelection * oadbPS, AliOADBFillingScheme * oadbFS, AliOADBTriggerAnalysis * oadbTA = 0) { fPSOADB = oadbPS; fFillOADB = oadbFS; fTriggerOADB = oadbTA; fUsingCustomClasses = kTRUE;}
   const AliOADBPhysicsSelection * GetOADBPhysicsSelection() const {return fPSOADB;  }
   const AliOADBFillingScheme    * GetOADBFillingScheme()    const {return fFillOADB;}
