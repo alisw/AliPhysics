@@ -8,6 +8,7 @@ class TH2F;
 class TH2D;
 class TH1D;
 class TArrayD;
+class TArrayF;
 class THnSparse;
 class TProfile;
 class TList;
@@ -23,10 +24,8 @@ class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
 
-#include <vector>
 #include "AliAnalysisTaskEmcalJet.h"
 
-using std::vector;
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
 // Author Filip Krizek   (5.Nov. 2015)
 
@@ -219,8 +218,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1D               *fh1TriggerMult[kCAll]; //! tirgger multiplicity in event
    TH1D               *fh1NtriggersGen[kCAll];  //! trigger counter
    TH1D               *fh1TriggerMultGen[kCAll];  //! trigger multiplicity in event
-   THnSparse          *fHJetSpec[kCAll][kRho];//!  TT associated spectrum of jets
-   THnSparse          *fHJetSpecGen[kCAll][kRho];//!TT associated spectrum of jets
+   TH2D               *fHJetSpec[kCAll][kRho];//!  TT associated spectrum of jets
+   TH2D               *fHJetSpecGen[kCAll][kRho];//!TT associated spectrum of jets
 
    TH1F    *fhRhoTT[kCAll][kRho-1]; //! gc X=rho from perp cone, Y=centrality
    TH1F    *fhRhoIncl[kCAll][kRho-1]; //! gc X=rho from perp cone, Y=centrality
@@ -262,7 +261,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhCentralityV0ATT;  //! centrality from V0A when TT is present
    TH1F     *fhCentralityV0CTT;  //! centrality from V0C when TT is present
    TH1F     *fhCentralityZNATT;  //! centrality from ZNA when TT is present
-
+   /*
    TH1F     *fhVzeroATotMult[kCAll]; //! V0A multiplicity for given V0A centrality selection
    TH1F     *fhVzeroATotMultTT[kCAll];   //! V0A multiplicity 
    TH2F     *fh2VzeroATotMultVsCent; //! V0A multiplicity versus Centrality 
@@ -280,7 +279,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
    THnSparse  *fhZNAVzeroATrack[kCAll]; //! ZNA energy versus Vzero A mult versus track mult.
    THnSparse  *fhZNAVzeroATrackTT[kCAll]; //! ZNA energy versus Vzero mult. versus track mult. in events with TT
-
+   */
 
    //TProfile*     fh1Xsec;   //! gc pythia cross section and trials
    //TH1F*         fh1Trials; //! gc trials are added
@@ -306,13 +305,19 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    Double_t fZVertexCut; // vertex cut in z 
    Double_t fCutPhi;     // azimuthal cat around TT  to exclude TTjet + recoil jet in perp rho estimate
 
-   std::vector<AliVParticle*> fTrigTracksGen; //list of trigger particle indices true MC
-   std::vector<AliVParticle*> fTrigTracks; //list pf trigger particle indices
+   AliVParticle* fTrigTracksGen[999]; //list of trigger particle indices true MC
+   AliVParticle* fTrigTracks[999]; //list pf trigger particle indices
 
-  AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
-  AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
+   Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
+   Double_t ftmpArray[2]; //tmp array
+   //Double_t ftmpArrayX[3]; //tmp array
+   TArrayF fpyVtx;   //primaru vertex
+   Double_t frhovec[999]; //auxiliary array to store pT/A of kT jets
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 13); // Charged jet analysis for pA
+   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
+   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
+
+   ClassDef(AliAnalysisTaskHJetSpectra, 15); // Charged jet analysis for pA
 
 };
 #endif

@@ -90,6 +90,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   Bool_t T0_qf  = kTRUE;
   Bool_t SDD_qf = kTRUE;
   Bool_t SPD_qf = kTRUE;
+  Bool_t AD_qf  = kTRUE;
 
   /*
     // RS: commenting to sync with working version from alidaq
@@ -100,10 +101,11 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     T0_qf  = ((detectorBitsQualityFlag & AliDAQ::kT0_QF)  == AliDAQ::kT0_QF)?  kTRUE : kFALSE;
     SDD_qf = ((detectorBitsQualityFlag & AliDAQ::kSDD_QF) == AliDAQ::kSDD_QF)? kTRUE : kFALSE;
     SPD_qf = ((detectorBitsQualityFlag & AliDAQ::kSPD_QF) == AliDAQ::kSPD_QF)? kTRUE : kFALSE;
+    AD_qf = ((detectorBitsQualityFlag & AliDAQ::kAD_QF) == AliDAQ::kAD_QF)? kTRUE : kFALSE;
   }    
   */
 
-  Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf);
+  Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d, AD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf, (Int_t)AD_qf);
 
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;
@@ -201,6 +203,16 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("\n******* NOT Calibrating MeanVertex: detStr = %s, SPD_qf = %d *******", detStr.Data(), (Int_t)SPD_qf);
   }
   */
+
+  AliAnalysisTaskADCalib *procesAD = NULL;
+  if (detStr.Contains("AD") && AD_qf) {
+    Printf("\n******* Calibrating AD *******");
+    procesAD = new AliAnalysisTaskADCalib;
+    procesAD->ProcessOutput("CalibObjects.root", targetStorage, runNumber);
+  }
+  else {
+    Printf("\n******* NOT Calibrating AD: detStr = %s, AD_qf = %d*******", detStr.Data(), (Int_t)AD_qf);
+  }
 
   //
   // Print calibration status into the stdout
@@ -407,6 +419,22 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   printf("Monalisa SDDtracks\t%d\n",sddTracks);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"SDDtracks="<<sddTracks;
 
+  //
+  // 6. AD dump
+  //
+  Int_t adEvents=0;
+  TDirectory *adDir = (TDirectory*)fin->Get("ADCalib");
+  if (adDir) {
+    TList  *adList = (TList*) adDir->Get("ADCalibListHist");
+    if (adList) {
+      TH2* adHist = (TH2*) adList->At(0);
+      adEvents = TMath::Nint(adHist->GetEntries());
+      delete adList;
+    }
+  }
+  printf("Monalisa ADevents\t%d\n",adEvents);
+  if (pcstream) (*pcstream)<<"calibStatAll"<<"ADevents="<<adEvents;
+  
   //
   if (pcstream) (*pcstream)<<"calibStatAll"<<"\n";
   delete fin;

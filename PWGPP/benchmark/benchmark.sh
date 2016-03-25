@@ -321,24 +321,24 @@ goCPass()
   # Those files are locally found. They should be copied to the current working
   # directory (which is $runpath).
   case $cpass in
-    0) filesCPass=( "${batchWorkingDirectory}/runCPass0.sh"
-                    "${batchWorkingDirectory}/recCPass0.C"
-                    "${batchWorkingDirectory}/runCalibTrain.C"
-                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${batchWorkingDirectory}/OCDB.root"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
+    0) filesCPassCustom=( "${batchWorkingDirectory}/runCPass0.sh"
+                          "${batchWorkingDirectory}/recCPass0.C"
+                          "${batchWorkingDirectory}/runCalibTrain.C"
+                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                          "${batchWorkingDirectory}/OCDB.root" )
+       filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" ) ;;
 
-    1) filesCPass=( "${batchWorkingDirectory}/runCPass1.sh"
-                    "${batchWorkingDirectory}/recCPass1.C"
-                    "${batchWorkingDirectory}/recCPass1_OuterDet.C"
-                    "${batchWorkingDirectory}/runCalibTrain.C"
-                    "${batchWorkingDirectory}/QAtrain_duo.C"
-                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${batchWorkingDirectory}/${configFile}"
-                    "${batchWorkingDirectory}/OCDB.root"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
+    1) filesCPassCustom=( "${batchWorkingDirectory}/runCPass1.sh"
+                          "${batchWorkingDirectory}/recCPass1.C"
+                          "${batchWorkingDirectory}/recCPass1_OuterDet.C"
+                          "${batchWorkingDirectory}/runCalibTrain.C"
+                          "${batchWorkingDirectory}/QAtrain_duo.C"
+                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                          "${batchWorkingDirectory}/${configFile}"
+                          "${batchWorkingDirectory}/OCDB.root" )
+       filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
@@ -346,13 +346,13 @@ goCPass()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                     "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz" ) ;;
 
-    2) filesCPass=( "${batchWorkingDirectory}/OCDB.root"
-                    "$ALICE_ROOT/test/QA/tag.C"
-                    "${batchWorkingDirectory}/AODtrain.C"
-                    "${batchWorkingDirectory}/rec.C"
-                    "${batchWorkingDirectory}/raw2clust.C"
-                    "${batchWorkingDirectory}/runPPass_pp.sh"
-                    "${batchWorkingDirectory}/runPPass_pbpb.sh"
+    2) filesCPassCustom=( "${batchWorkingDirectory}/OCDB.root"
+                          "${batchWorkingDirectory}/AODtrain.C"
+                          "${batchWorkingDirectory}/rec.C"
+                          "${batchWorkingDirectory}/raw2clust.C"
+                          "${batchWorkingDirectory}/runPPass_pp.sh"
+                          "${batchWorkingDirectory}/runPPass_pbpb.sh" )
+       filesCPass=( "$ALICE_ROOT/test/QA/tag.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/AODtrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/rec.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/raw2clust.C"
@@ -363,6 +363,15 @@ goCPass()
                     "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz" ) ;;
   esac
 
+  #first check if we have any custom scripts
+  # -c: check if local source exists; -C: do not copy if local dest exists already
+  # -f: copy all in the same dest dir (flat copy)
+  xCopy -f -c -C -d . "${filesCPassCustom[@]}"
+  for file in ${filesCPassCustom[*]}; do
+    [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
+  done
+
+  #then download any missing ones from the default location
   # -c: check if local source exists; -C: do not copy if local dest exists already
   # -f: copy all in the same dest dir (flat copy)
   xCopy -f -c -C -d . "${filesCPass[@]}"
@@ -710,7 +719,7 @@ goMergeCPass()
   fi
   echo "$0 $*"
 
-  mergingScript="mergeMakeOCDB.byComponent.sh"
+  mergingScript="mergeMakeOCDB.byComponent.perStage.sh"
 
   if [[ $cpass -ge 1 ]]; then
     qaMergedOutputFileName="QAresults_merged.root"
@@ -731,28 +740,28 @@ goMergeCPass()
     0) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${syslogsRecToMerge}"
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                         "${batchWorkingDirectory}/${mergingScript}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh" ) ;;
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C" ) ;;
 
     1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${qaFilesToMerge}"
                          "${batchWorkingDirectory}/${filteredFilesToMerge}"
                          "${batchWorkingDirectory}/${syslogsRecToMerge}"
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                         "${batchWorkingDirectory}/${mergingScript}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                          "${batchWorkingDirectory}/QAtrain_duo.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                          "${trustedQAtrainMacro}" ) ;;
@@ -1443,8 +1452,8 @@ goMakeLocalOCDBaccessConfig()
   echo "localOCDBaccessConfig()"                               >  localOCDBaccessConfig.C
   echo "{"                                                     >> localOCDBaccessConfig.C
   echo "  AliCDBManager* man = AliCDBManager::Instance();"     >> localOCDBaccessConfig.C
-  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   [[ -f "${tempLocalOCDB}" ]] && cat ${tempLocalOCDB}              >> localOCDBaccessConfig.C
+  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   echo "}"                                                     >> localOCDBaccessConfig.C
 
   [[ -f "${tempLocalOCDB}" ]] && rm -f ${tempLocalOCDB}
@@ -1875,6 +1884,7 @@ goSubmitBatch()
       #copy the scripts
       filesMergeCPass0=(
                         "${configPath}/OCDB.root"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
                         "${configPath}/mergeMakeOCDB.byComponent.sh"
                         "${configPath}/mergeMakeOCDB.sh"
                         "${configPath}/localOCDBaccessConfig.C"
@@ -2001,6 +2011,7 @@ goSubmitBatch()
       filesMergeCPass1=(
                         "${configPath}/OCDB.root"
                         "${configPath}/localOCDBaccessConfig.C"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
                         "${configPath}/mergeMakeOCDB.byComponent.sh"
                         "${configPath}/mergeByComponent.C"
                         "${configPath}/makeOCDB.C"

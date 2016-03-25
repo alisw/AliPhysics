@@ -56,7 +56,8 @@ AliHFTrackContainer::AliHFTrackContainer(const char *name) :
 /// \param Pointer to an AliVParticle object.
 Bool_t AliHFTrackContainer::AcceptTrack(AliVTrack* vp)
 {
-  return AliTrackContainer::AcceptTrack(vp);
+  UInt_t rejectionReason = 0;
+  return AliTrackContainer::AcceptTrack(vp, rejectionReason);
 }
 
 /// First check whether the particle is a daughter of the
@@ -69,16 +70,17 @@ Bool_t AliHFTrackContainer::AcceptTrack(AliVTrack* vp)
 Bool_t AliHFTrackContainer::AcceptTrack(Int_t i)
 {
   // Determine whether the MC particle is accepted.
+  UInt_t rejectionReason = 0;
 
   AliAODTrack* part = static_cast<AliAODTrack*>(fClArray->At(i));
 
   if (IsDMesonDaughter(part)) {
-    fRejectionReason = kHFCut;
+    rejectionReason = kHFCut;
     return kFALSE;  // daughter the D meson candidate
   }
 
   // Not a daughter of the D meson. Apply regular cuts.
-  return AliTrackContainer::AcceptTrack(i);
+  return AliTrackContainer::AcceptTrack(i, rejectionReason);
 }
 
 /// Check if particle it's a daughter of the D meson candidate

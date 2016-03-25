@@ -2881,82 +2881,90 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   fCandidateVariables[52] = part->NormalizedV0DecayLength();
   fCandidateVariables[53] = part->NormalizedDecayLengthXY();
   fCandidateVariables[54] = part->NormalizedV0DecayLengthXY();
-  Double_t xVtxLc=0, yVtxLc=0, zVtxLc=0;
-  Double_t xLcMC=0,yLcMC=0,zLcMC=0;
-  Double_t pxVtxBachelor=0, pyVtxBachelor=0, pzVtxBachelor=0;
-  Double_t dcaForLc = PropagateToDCA(v0part,bachelor,fBzkG, xVtxLc, yVtxLc, zVtxLc, pxVtxBachelor, pyVtxBachelor, pzVtxBachelor);
-  if (isLc) {
-    Int_t pdgCand0 = 4122;
-    Int_t pdgDgLctoV0bachelor0[2]={2212,310};
-    Int_t pdgDgV0toDaughters0[2]={211,211};
-    Int_t mcLabel0 = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
-    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel0));
-    if(partLc){
-      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-      if(partLcDaug0){
-	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
-      }
-    }
-  } else if (isLc2LBarpi || isLc2Lpi) {
-    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
-    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
-  } else if (isDp2K0Spi) {
-    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel2));
-    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
-  } else if (isDs2K0SK) {
-    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel3));
-    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
-  } else if (isKstar12K0Spi) {
-    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel4));
-    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
-  } else if (isKstar22K0Spi) {
-    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel5));
-    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
-    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
-  }
-  fCandidateVariables[55]=dcaForLc;
-  fCandidateVariables[56]=part->GetSecVtxX();
-  fCandidateVariables[57]=part->GetSecVtxY();
-  fCandidateVariables[58]=part->GetSecVtxZ();
-  fCandidateVariables[59]=xVtxLc;
-  fCandidateVariables[60]=yVtxLc;
-  fCandidateVariables[61]=zVtxLc;
-  fCandidateVariables[62]=xLcMC;
-  fCandidateVariables[63]=yLcMC;
-  fCandidateVariables[64]=zLcMC;
-  fCandidateVariables[65]=bachelor->Px();
-  fCandidateVariables[66]=bachelor->Py();
-  fCandidateVariables[67]=pxVtxBachelor;
-  fCandidateVariables[68]=pyVtxBachelor;
-  fCandidateVariables[69]=v0part->Px();
-  fCandidateVariables[70]=v0part->Py();
-  fCandidateVariables[71]=fVtx1->GetX();
-  fCandidateVariables[72]=fVtx1->GetY();
-  fCandidateVariables[73]=fVtx1->GetZ();
-  fCandidateVariables[74]=part->CosThetaStar(0,4122,2212,310);
-  fCandidateVariables[75]=part->CosThetaStar(1,4122,2212,310);
-  fCandidateVariables[76]=v0part->Eta();
-  fCandidateVariables[77]=v0part->Y(310);
-  fCandidateVariables[78]=pzVtxBachelor;
-  fCandidateVariables[79]=v0part->Pz();
-  fCandidateVariables[80]=bachelor->Charge();
-  fCandidateVariables[81]=isMCparticleInFiducialAcceptance;
-  fCandidateVariables[82] = part->InvMass2Prongs(0,1,211,310); // Kstar( 892)+ -> pi+K0S
-  fCandidateVariables[83] = part->InvMass2Prongs(0,1,321,310); // Kstar(1430)+ -> pi+K0S
 
-  fCandidateVariables[84]=-1;
-  fCandidateVariables[85]=-1;
-  fCandidateVariables[86]=-1;
-  fCandidateVariables[87]=-1;
-  fCandidateVariables[88]=-1;
+  Double_t dcaForLc=0.;
+  if (fAdditionalChecks) {
+    Double_t xVtxLc=0, yVtxLc=0, zVtxLc=0;
+    Double_t xLcMC=0,yLcMC=0,zLcMC=0;
+    Double_t pxVtxBachelor=0, pyVtxBachelor=0, pzVtxBachelor=0;
+    dcaForLc = PropagateToDCA(v0part,bachelor,fBzkG, xVtxLc, yVtxLc, zVtxLc, pxVtxBachelor, pyVtxBachelor, pzVtxBachelor);
+    if (isLc) {
+      Int_t pdgCand0 = 4122;
+      Int_t pdgDgLctoV0bachelor0[2]={2212,310};
+      Int_t pdgDgV0toDaughters0[2]={211,211};
+      Int_t mcLabel0 = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
+      AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel0));
+      if(partLc){
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	if(partLcDaug0){
+	  xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+	}
+      }
+    } else if (isLc2LBarpi || isLc2Lpi) {
+      AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
+      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+      xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+    } else if (isDp2K0Spi) {
+      AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel2));
+      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+      xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+    } else if (isDs2K0SK) {
+      AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel3));
+      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+      xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+    } else if (isKstar12K0Spi) {
+      AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel4));
+      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+      xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+    } else if (isKstar22K0Spi) {
+      AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel5));
+      AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+      xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+    }
+
+    fCandidateVariables[75]=part->GetSecVtxX();
+    fCandidateVariables[76]=part->GetSecVtxY();
+    fCandidateVariables[77]=part->GetSecVtxZ();
+    fCandidateVariables[78]=xVtxLc;
+    fCandidateVariables[79]=yVtxLc;
+    fCandidateVariables[80]=zVtxLc;
+    fCandidateVariables[81]=xLcMC;
+    fCandidateVariables[82]=yLcMC;
+    fCandidateVariables[83]=zLcMC;
+    fCandidateVariables[84]=bachelor->Px();
+    fCandidateVariables[85]=bachelor->Py();
+    fCandidateVariables[86]=pxVtxBachelor;
+    fCandidateVariables[87]=pyVtxBachelor;
+    fCandidateVariables[88]=pzVtxBachelor;
+    fCandidateVariables[89]=v0part->Px();
+    fCandidateVariables[90]=v0part->Py();
+    fCandidateVariables[91]=v0part->Pz();
+    fCandidateVariables[92]=fVtx1->GetX();
+    fCandidateVariables[93]=fVtx1->GetY();
+    fCandidateVariables[94]=fVtx1->GetZ();
+  }
+
+  fCandidateVariables[55]=dcaForLc;
+
+  fCandidateVariables[56]=part->CosThetaStar(0,4122,2212,310);
+  fCandidateVariables[57]=part->CosThetaStar(1,4122,2212,310);
+  fCandidateVariables[58]=v0part->Eta();
+  fCandidateVariables[59]=v0part->Y(310);
+  fCandidateVariables[60]=bachelor->Charge();
+  fCandidateVariables[61]=isMCparticleInFiducialAcceptance;
+
+  fCandidateVariables[62] = part->InvMass2Prongs(0,1,211,310); // Kstar( 892)+ -> pi+K0S
+  fCandidateVariables[63] = part->InvMass2Prongs(0,1,321,310); // Kstar(1430)+ -> pi+K0S
+
+  fCandidateVariables[64]=-1;
+  fCandidateVariables[65]=-1;
+  fCandidateVariables[66]=-1;
+  fCandidateVariables[67]=-1;
+  fCandidateVariables[68]=-1;
   if (fUseMCInfo) {
     if (bachelor->GetLabel()!=-1) {
       AliAODMCParticle *partBachelor = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(bachelor->GetLabel())));
-      if(partBachelor) fCandidateVariables[84]=partBachelor->GetPdgCode();
+      if(partBachelor) fCandidateVariables[64]=partBachelor->GetPdgCode();
     }
     if (bachelor->GetLabel()!=-1 &&
 	v0pos->GetLabel()!=-1 &&
@@ -2969,16 +2977,16 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
       Int_t *pdgDg=0;
       Int_t absLabelMother=-1;
       Int_t nDauCand=-1;
-      fCandidateVariables[85]=SearchForCommonMother(mcArray,
+      fCandidateVariables[65]=SearchForCommonMother(mcArray,
 						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
     }
     if (v0pos->GetLabel()!=-1) {
       AliAODMCParticle *part1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0pos->GetLabel())));
-      if(part1) fCandidateVariables[86]=part1->GetPdgCode();
+      if(part1) fCandidateVariables[66]=part1->GetPdgCode();
     }
     if (v0neg->GetLabel()!=-1) {
       AliAODMCParticle *part2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0neg->GetLabel())));
-      if(part2) fCandidateVariables[87]=part2->GetPdgCode();
+      if(part2) fCandidateVariables[67]=part2->GetPdgCode();
     }
     if (v0pos->GetLabel()!=-1 &&
 	v0neg->GetLabel()!=-1) {
@@ -2989,7 +2997,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
       Int_t *pdgDg=0;
       Int_t absLabelMother=-1;
       Int_t nDauCand=-1;
-      fCandidateVariables[88]=SearchForCommonMother(mcArray,
+      fCandidateVariables[68]=SearchForCommonMother(mcArray,
 						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother,nDauCand);
     }
   }
@@ -2997,32 +3005,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   AliPIDResponse *pidResponse=inputHandler->GetPIDResponse();
-  fCandidateVariables[89]=pidResponse->GetTOFResponse().GetStartTimeMask(bachelor->P());
-
-  //fCandidateVariables[65] = bachelor->Px();
-  //fCandidateVariables[66] = bachelor->Py();
-  //fCandidateVariables[67] = bachelor->Pz();
-  //fCandidateVariables[68] = v0pos->Px();
-  //fCandidateVariables[69] = v0pos->Py();
-  //fCandidateVariables[70] = v0pos->Pz();
-  //fCandidateVariables[71] = v0neg->Px();
-  //fCandidateVariables[72] = v0neg->Py();
-  //fCandidateVariables[73] = v0neg->Pz();
-  //fCandidateVariables[74] = part->PxProng(0);
-  //fCandidateVariables[75] = part->PyProng(0);
-  //fCandidateVariables[76] = part->PzProng(0);
-  //fCandidateVariables[77] = part->PxProng(1);
-  //fCandidateVariables[78] = part->PyProng(1);
-  //fCandidateVariables[79] = part->PzProng(1);
-  //fCandidateVariables[80] = v0part->PxProng(0);
-  //fCandidateVariables[81] = v0part->PyProng(0);
-  //fCandidateVariables[82] = v0part->PzProng(0);
-  //fCandidateVariables[83] = v0part->PxProng(1);
-  //fCandidateVariables[84] = v0part->PyProng(1);
-  //fCandidateVariables[85] = v0part->PzProng(1);
-  //fCandidateVariables[86] = part->QtProng(0);
-  //fCandidateVariables[87] = part->Alpha();
-
+  fCandidateVariables[69]=pidResponse->GetTOFResponse().GetStartTimeMask(bachelor->P());
 
   AliPIDCombined *objectPIDCombined=new AliPIDCombined;
   objectPIDCombined->SetDefaultTPCPriors();
@@ -3069,11 +3052,13 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   if (respTPC == AliPIDResponse::kDetPidOk) probProtonTPC = pidTPC[AliPID::kProton];
   if (respTOF == AliPIDResponse::kDetPidOk) probProtonTOF = pidTOF[AliPID::kProton];
 
-  fCandidateVariables[90]=probProton;
-  fCandidateVariables[91]=probProtonTPC;
-  fCandidateVariables[92]=probProtonTOF;
+  fCandidateVariables[70]=probProton;
+  fCandidateVariables[71]=probProtonTPC;
+  fCandidateVariables[72]=probProtonTOF;
 
-  fCandidateVariables[93]=checkLcOrigin;
+  fCandidateVariables[73]=checkLcOrigin;
+
+  fCandidateVariables[74]=v0part->QtProng();
 
   delete objectPIDCombined;
 
@@ -3090,7 +3075,8 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 94;
+  Int_t nVar = 75;
+  if (fAdditionalChecks) nVar = 95;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[ 0]="isLcByMC";
@@ -3149,69 +3135,52 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   fCandidateVariableNames[53]="normalizedDecayLengthXYLc"; // normalized decay length XY x Lc
   fCandidateVariableNames[54]="normalizedDecayLengthXYV0"; // normalized decay length XY x V0
   fCandidateVariableNames[55]="newLcDCA";
-  fCandidateVariableNames[56]="xVtxLcBad";
-  fCandidateVariableNames[57]="yVtxLcBad";
-  fCandidateVariableNames[58]="zVtxLcBad";
-  fCandidateVariableNames[59]="xVtxLcGood";
-  fCandidateVariableNames[60]="yVtxLcGood";
-  fCandidateVariableNames[61]="zVtxLcGood";
-  fCandidateVariableNames[62]="xVtxLcMC";
-  fCandidateVariableNames[63]="yVtxLcMC";
-  fCandidateVariableNames[64]="zVtxLcMC";
-  fCandidateVariableNames[65]="pxVtxBachelorBad";
-  fCandidateVariableNames[66]="pyVtxBachelorBad";
-  fCandidateVariableNames[67]="pxVtxBachelorGood";
-  fCandidateVariableNames[68]="pyVtxBachelorGood";
-  fCandidateVariableNames[69]="pxVtxV0";
-  fCandidateVariableNames[70]="pyVtxV0";
-  fCandidateVariableNames[71]="xPvtx";
-  fCandidateVariableNames[72]="yPvtx";
-  fCandidateVariableNames[73]="zPvtx";
-  fCandidateVariableNames[74]="cosThetaStarBachelor";
-  fCandidateVariableNames[75]="cosThetaStarV0";
-  fCandidateVariableNames[76]="etaV0";
-  fCandidateVariableNames[77]="yV0";
-  fCandidateVariableNames[78]="pzVtxBachelorGood";
-  fCandidateVariableNames[79]="pzVtxV0";
-  fCandidateVariableNames[80]="bachelorCharge";
-  fCandidateVariableNames[81]="isMCparticleInFiducialAcceptance";
-  fCandidateVariableNames[82]="massKstar12K0Spi"; // Kstar( 892)+ -> pi+ K0S
-  fCandidateVariableNames[83]="massKstar22K0Spi"; // Kstar(1430)+ -> pi+ K0S
-  fCandidateVariableNames[84]="pdgBachelor"; // pdg MC bachelor
-  fCandidateVariableNames[85]="pdgCandidate"; // pdg MC candidate recovered via new method
-  fCandidateVariableNames[86]="pdgV0pos"; // pdg MC V0 positive
-  fCandidateVariableNames[87]="pdgV0neg"; // pdg MC V0 negative
-  fCandidateVariableNames[88]="pdgV0Candidate"; // pdg MC V0candidate recovered via new method
-  fCandidateVariableNames[89]="startTimeMask"; // start time mask
 
-  fCandidateVariableNames[90]="combinedProtonProb";
-  fCandidateVariableNames[91]="TPCProtonProb";
-  fCandidateVariableNames[92]="TOFProtonProb";
-  fCandidateVariableNames[93]="checkLcOrigin";
+  fCandidateVariableNames[56]="cosThetaStarBachelor";
+  fCandidateVariableNames[57]="cosThetaStarV0";
+  fCandidateVariableNames[58]="etaV0";
+  fCandidateVariableNames[59]="yV0";
+  fCandidateVariableNames[60]="bachelorCharge";
+  fCandidateVariableNames[61]="isMCparticleInFiducialAcceptance";
 
-  //fCandidateVariableNames[65]="bachelorPx";
-  //fCandidateVariableNames[66]="bachelorPy";
-  //fCandidateVariableNames[67]="bachelorPz";
-  //fCandidateVariableNames[68]="V0positivePx";
-  //fCandidateVariableNames[69]="V0positivePy";
-  //fCandidateVariableNames[70]="V0positivePz";
-  //fCandidateVariableNames[71]="V0negativePx";
-  //fCandidateVariableNames[72]="V0negativePy";
-  //fCandidateVariableNames[73]="V0negativePz";
-  //fCandidateVariableNames[74]="bachelorPxDCA";
-  //fCandidateVariableNames[75]="bachelorPyDCA";
-  //fCandidateVariableNames[76]="bachelorPzDCA";
-  //fCandidateVariableNames[77]="v0PxDCA";
-  //fCandidateVariableNames[78]="v0PyDCA";
-  //fCandidateVariableNames[79]="v0PzDCA";
-  //fCandidateVariableNames[80]="V0positivePxDCA";
-  //fCandidateVariableNames[81]="V0positivePyDCA";
-  //fCandidateVariableNames[82]="V0positivePzDCA";
-  //fCandidateVariableNames[83]="V0negativePxDCA";
-  //fCandidateVariableNames[84]="V0negativePyDCA";
-  //fCandidateVariableNames[85]="V0negativePzDCA";
-  //fCandidateVariableNames[86]="qtLc";
-  //fCandidateVariableNames[87]="alphaLc";
+  fCandidateVariableNames[62]="massKstar12K0Spi"; // Kstar( 892)+ -> pi+ K0S
+  fCandidateVariableNames[63]="massKstar22K0Spi"; // Kstar(1430)+ -> pi+ K0S
+  fCandidateVariableNames[64]="pdgBachelor"; // pdg MC bachelor
+  fCandidateVariableNames[65]="pdgCandidate"; // pdg MC candidate recovered via new method
+  fCandidateVariableNames[66]="pdgV0pos"; // pdg MC V0 positive
+  fCandidateVariableNames[67]="pdgV0neg"; // pdg MC V0 negative
+  fCandidateVariableNames[68]="pdgV0Candidate"; // pdg MC V0candidate recovered via new method
+  fCandidateVariableNames[69]="startTimeMask"; // start time mask
+
+  fCandidateVariableNames[70]="combinedProtonProb";
+  fCandidateVariableNames[71]="TPCProtonProb";
+  fCandidateVariableNames[72]="TOFProtonProb";
+  fCandidateVariableNames[73]="checkLcOrigin";
+
+  fCandidateVariableNames[74]="qtProng0V0";
+
+  if (fAdditionalChecks) {
+    fCandidateVariableNames[75]="xVtxLcBad";
+    fCandidateVariableNames[76]="yVtxLcBad";
+    fCandidateVariableNames[77]="zVtxLcBad";
+    fCandidateVariableNames[78]="xVtxLcGood";
+    fCandidateVariableNames[79]="yVtxLcGood";
+    fCandidateVariableNames[80]="zVtxLcGood";
+    fCandidateVariableNames[81]="xVtxLcMC";
+    fCandidateVariableNames[82]="yVtxLcMC";
+    fCandidateVariableNames[83]="zVtxLcMC";
+    fCandidateVariableNames[84]="pxVtxBachelorBad";
+    fCandidateVariableNames[85]="pyVtxBachelorBad";
+    fCandidateVariableNames[86]="pxVtxBachelorGood";
+    fCandidateVariableNames[87]="pyVtxBachelorGood";
+    fCandidateVariableNames[88]="pzVtxBachelorGood";
+    fCandidateVariableNames[89]="pxVtxV0";
+    fCandidateVariableNames[90]="pyVtxV0";
+    fCandidateVariableNames[91]="pzVtxV0";
+    fCandidateVariableNames[92]="xPvtx";
+    fCandidateVariableNames[93]="yPvtx";
+    fCandidateVariableNames[94]="zPvtx";
+  }
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));

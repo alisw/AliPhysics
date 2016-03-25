@@ -98,8 +98,37 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackName);
+  /*
+  AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackName);
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
+  */
+
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+    trackCont->SetFilterHybridTracks(kTRUE);
+  }
+  else if (!trackName.IsNull()) {
+    jetTask->AddParticleContainer(trackName);
+  }
+
+ /*
+  AliParticleContainer *partCont = jetTask->GetParticleContainer(0);
+  if (partCont) {
+    partCont->SetParticlePtCut(trackPtCut);
+  }
+*/ 
+
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
+  if (clusterCont) {
+    clusterCont->SetClusECut(0.);
+    clusterCont->SetClusPtCut(0.);
+    clusterCont->SetClusHadCorrEnergyCut(clusECut);
+    clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
 
   AliJetContainer *jetCont = jetTask->AddJetContainer(njets, cutType, jetradius);
   if (jetCont) {
@@ -110,6 +139,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
     jetCont->ConnectClusterContainer(clusterCont);
     jetCont->SetLeadingHadronType(leadhadtype);
     jetCont->SetMaxTrackPt(1000);
+    jetCont->SetZLeadingCut(0.98,0.98);
   }
 
   //-------------------------------------------------------

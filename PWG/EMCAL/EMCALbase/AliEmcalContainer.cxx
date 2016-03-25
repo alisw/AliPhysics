@@ -51,7 +51,6 @@ AliEmcalContainer::AliEmcalContainer():
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
-  fRejectionReason(0),
   fLoadedClass(0)
 {
   fVertex[0] = 0;
@@ -87,12 +86,22 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
-  fRejectionReason(0),
   fLoadedClass(0)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
+}
+
+/**
+ * Index operator, accessing object in the container at a given index.
+ * Operates on all objects inside the container.
+ * @param index Index of the object to access
+ * @return Object at the given index (NULL if out of range)
+ */
+TObject *AliEmcalContainer::operator[](int index) const {
+  if(index >= 0 && index < GetNEntries()) return fClArray->At(index);
+  return NULL;
 }
 
 /**
@@ -131,6 +140,19 @@ void AliEmcalContainer::SetArray(AliVEvent *event)
 }
 
 /**
+ * Count accepted entries in the container
+ * @return Number of accepted events in the container
+ */
+Int_t AliEmcalContainer::GetNAcceptEntries() const{
+  Int_t result = 0;
+  for(int index = 0; index < GetNEntries(); index++){
+    UInt_t rejectionReason = 0;
+    if(AcceptObject(index, rejectionReason)) result++;
+  }
+  return result;
+}
+
+/**
  * Get the index in the container from a given label
  * @param lab Label to check
  * @return Index (-1 if not found)
@@ -157,9 +179,9 @@ Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
  * was rejected.
  * @return
  */
-UShort_t AliEmcalContainer::GetRejectionReasonBitPosition() const
+UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason) const
 { 
-  UInt_t rs = fRejectionReason;
+  UInt_t rs = rejectionReason;
   UShort_t p = 0;
   while (rs >>= 1) { p++; }
   return p;
@@ -169,7 +191,7 @@ UShort_t AliEmcalContainer::GetRejectionReasonBitPosition() const
  * Helper function to calculate the distance between two jets or a jet and a particle
  * @param part1 First particle in the check
  * @param part2 Second particle to compare to
- * @param dist Maximum distance under which partices are considered as "same" in \f$ p_{t} \f$, \f$ \eta \f$ and \$ \phi \f$
+ * @param dist Maximum distance under which partices are considered as "same" in \f$ p_{t} \f$, \f$ \eta \f$ and \f$ \phi \f$
  * @return True if the particles are considered as the same, false otherwise
  */
 Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist)
@@ -191,18 +213,19 @@ Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle
  * - \f$ p_{t} \f$ (E)
  * - \f$ \eta \f$
  * - \f$ \phi \f$
- * @param mom Momentum vector to select
+ * @param[in] mom Momentum vector to select
+ * @param[out] rejectionReason Bitmap for reason why object is rejected
  * @return True if the momentum vector is selected, false otherwise
  */
-Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
+Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const
 {
   if (mom.Pt() < fMinPt || mom.Pt() > fMaxPt) {
-    fRejectionReason |= kPtCut;
+    rejectionReason |= kPtCut;
     return kFALSE;
   }
 
   if (mom.E() < fMinE || mom.E() > fMaxE) {
-    fRejectionReason |= kPtCut;
+    rejectionReason |= kPtCut;
     return kFALSE;
   }
 
@@ -210,14 +233,32 @@ Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom)
   Double_t phi = mom.Phi_0_2pi();
 
   if (fMinEta < fMaxEta && (eta < fMinEta || eta > fMaxEta)) {
-    fRejectionReason |= kAcceptanceCut;
+    rejectionReason |= kAcceptanceCut;
     return kFALSE;
   }
 
   if (fMinPhi < fMaxPhi && (phi < fMinPhi || phi > fMaxPhi)) {
-    fRejectionReason |= kAcceptanceCut;
+    rejectionReason |= kAcceptanceCut;
     return kFALSE;
   }
 
   return kTRUE;
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliEmcalIterableContainer AliEmcalContainer::all() const {
+  return AliEmcalIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
+  return AliEmcalIterableContainer(this, true);
 }

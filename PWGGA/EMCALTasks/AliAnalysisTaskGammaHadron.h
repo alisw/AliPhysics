@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKGAMMAHADRON_H
 
 // $Id$
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcal.h"
 #include "AliEventPoolManager.h"
 #include <THn.h>
 //#include "AliPool.h"
@@ -14,8 +14,9 @@ class THnSparse;
 class AliVVZERO;
 class AliEvtPoolManager;
 
+using std::vector;
 
-class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
  public:
 	AliAnalysisTaskGammaHadron();
 	AliAnalysisTaskGammaHadron(Bool_t Input_Gamma_Or_Pi0,Bool_t Input_SameEventAnalysis);
@@ -43,12 +44,13 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
   Bool_t                      AccClusterForAna(AliVCluster* cluster)                        ;
   Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
-  void                        Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
-
+  Double_t                    GetEff(TLorentzVector ParticleVec)                            ;
   Bool_t                      fGamma_Or_Pi0;            // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fSameEventAnalysis;       // This tells me whether the analysis is done for same event fSameEventAnalysis==1 or mixed events
+  Bool_t                      Debug;					   // Can be set for debugging
 
   // Input histograms
   THnF                      *fHistEff_Gamma;            // input efficiency for trigger particles
@@ -58,9 +60,9 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   Double_t                    fRtoD;                     // conversion of rad to degree
   static const Int_t          fN_Identifier=3;           // number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
   static const Int_t          fN_DPhistos=31;            // =  nbins[0];
-  static const Int_t          fN_G_Histos=9;             // nine 2D histograms for different trigger energy ranges
-  static const Int_t          fN_ZT_Histos=7;            // seven 2D histograms for different zT ranges
-  static const Int_t          fN_XI_Histos=8;            // eight 2D histograms for different xi ranges
+  vector<Int_t>               fVector_G_Bins;            // vector that contains the bins of the G historgram
+  vector<Double_t>            fVector_ZT_Bins;           // vector that contains the bins of the Zt historgram
+  vector<Double_t>            fVector_XI_Bins;           // vector that contains the bins of the Xi historgram
   Double_t                    fZT_Step;                  // Bin width for the zT histograms
   Double_t                    fXI_Step;                  // Bin width for the Xi histograms
 
@@ -108,6 +110,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 6) // Class to analyse gamma hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 7) // Class to analyse gamma hadron correlations
 };
 #endif

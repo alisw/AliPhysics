@@ -385,11 +385,11 @@ void AliEmcalTriggerQAPP::Init()
 
     for (Int_t idet = 0; idet < ndet; idet++) {
       hname = Form("EMCTRQA_hist%s%sMaxOfflineVsRecalc", det[idet], kEMCalTriggerNames[itrig].Data());
-      htitle = Form("EMCTRQA_hist%s%sMaxOfflineVsRecalc;Offline;Recalc;entries", det[idet], kEMCalTriggerNames[itrig].Data());
+      htitle = Form("EMCTRQA_hist%s%sMaxOfflineVsRecalc;Recalc;Offline;entries", det[idet], kEMCalTriggerNames[itrig].Data());
       fHistManager.CreateTH2(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig], fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
 
       hname = Form("EMCTRQA_hist%s%sOfflineVsRecalc", det[idet], kEMCalTriggerNames[itrig].Data());
-      htitle = Form("EMCTRQA_hist%s%sOfflineVsRecalc;Offline;Recalc;entries", det[idet], kEMCalTriggerNames[itrig].Data());
+      htitle = Form("EMCTRQA_hist%s%sOfflineVsRecalc;Recalc;Offline;entries", det[idet], kEMCalTriggerNames[itrig].Data());
       fHistManager.CreateTH2(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig], fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
     }
 
@@ -412,23 +412,15 @@ void AliEmcalTriggerQAPP::Init()
         }
       }
 
+      hname = Form("EMCTRQA_histMaxEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      htitle = Form("EMCTRQA_histMaxEdgePos%s%s;col;row;entries", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      fHistManager.CreateTH2(hname, htitle, 48, 0, 48, 105, 0, 105);
+
       if (fDCalPlots) {
         hname = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         htitle = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s;EMCal max;DCal max;entries", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         fHistManager.CreateTH2(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig], fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
       }
-
-      hname = Form("EMCTRQA_histEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      htitle = Form("EMCTRQA_histEdgePos%s%s;col;row;entries", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.CreateTH2(hname, htitle, 48, 0, 48, 105, 0, 105);
-
-      hname = Form("EMCTRQA_histGeoPos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      htitle = Form("EMCTRQA_histGeoPos%s%s;#eta;#phi;entries", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.CreateTH2(hname, htitle, 60, -1, 1, 150, 0, TMath::TwoPi());
-
-      hname = Form("EMCTRQA_histLargeAmpEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      htitle = Form("EMCTRQA_histLargeAmpEdgePos%s%s (>700);col;row;entries above 700", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.CreateTH2(hname, htitle, 48, 0, 48, 105, 0, 105);
     }
   }
 
@@ -477,7 +469,6 @@ void AliEmcalTriggerQAPP::ProcessPatch(AliEMCALTriggerPatchInfo* patch)
 
   Int_t offsets[3] = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
   Int_t amplitudes[3] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
-  Double_t bkg[3] = {0};
 
   for (Int_t itrig = 0; itrig < 6; itrig++) {
     if (kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
@@ -490,30 +481,19 @@ void AliEmcalTriggerQAPP::ProcessPatch(AliEMCALTriggerPatchInfo* patch)
 
       if (patch->IsEMCal()) {
         det = "EMCal";
-        if (fMaxPatchEMCal[itrig][itype] < amplitudes[itype]) fMaxPatchEMCal[itrig][itype] = amplitudes[itype];
+        if (GetAmplitude(fMaxPatchEMCal[itrig][itype], itype) < amplitudes[itype]) fMaxPatchEMCal[itrig][itype] = patch;
       }
       else if (patch->IsDCalPHOS()) {
         if (!fDCalPlots) return;
         det = "DCal";
-        if (fMaxPatchDCal[itrig][itype] < amplitudes[itype]) fMaxPatchDCal[itrig][itype] = amplitudes[itype];
+        if (GetAmplitude(fMaxPatchDCal[itrig][itype], itype) < amplitudes[itype]) fMaxPatchDCal[itrig][itype] = patch;
       }
       else {
         AliWarning(Form("Patch is not EMCal nor DCal/PHOS (pos: %d, %d)", patch->GetRowStart(), patch->GetColStart()));
       }
 
       hname = Form("EMCTRQA_hist%s%sOfflineVsRecalc", det.Data(), kEMCalTriggerNames[itrig].Data());
-      fHistManager.FillTH2(hname, amplitudes[2], amplitudes[1]);
-
-      hname = Form("EMCTRQA_histEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.FillTH2(hname, patch->GetColStart(), patch->GetRowStart());
-
-      hname = Form("EMCTRQA_histGeoPos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.FillTH2(hname, patch->GetEtaGeo(), TVector2::Phi_0_2pi(patch->GetPhiGeo()));
-
-      if (amplitudes[itype] > 700) {
-        hname = Form("EMCTRQA_histLargeAmpEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-        fHistManager.FillTH2(hname, patch->GetColStart(), patch->GetRowStart());
-      }
+      fHistManager.FillTH2(hname, amplitudes[1], amplitudes[2]);
 
       hname = Form("EMCTRQA_hist%sPatchAmp%s%s", det.Data(), kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
       fHistManager.FillTH1(hname, amplitudes[itype]);
@@ -694,37 +674,47 @@ void AliEmcalTriggerQAPP::EventCompleted()
     AliDebug(2, Form("Trigger type: %s", kEMCalTriggerNames[itrig].Data()));
 
     hname = Form("EMCTRQA_histEMCal%sMaxOfflineVsRecalc", kEMCalTriggerNames[itrig].Data());
-    fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][2], fMaxPatchEMCal[itrig][1]);
+    fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchEMCal[itrig][1], 1), GetAmplitude(fMaxPatchEMCal[itrig][2], 2));
 
     if (fDCalPlots) {
       hname = Form("EMCTRQA_histDCal%sMaxOfflineVsRecalc", kEMCalTriggerNames[itrig].Data());
-      fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][2], fMaxPatchEMCal[itrig][1]);
+      fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchDCal[itrig][1], 1), GetAmplitude(fMaxPatchDCal[itrig][2], 2));
     }
 
     for (Int_t itype = 0; itype < 3; itype++) {
       if (!fEnabledPatchTypes[itype]) continue;
       AliDebug(2, Form("Patch type %s", fgkPatchTypes[itype].Data()));
 
+      if (fMaxPatchEMCal[itrig][itype]) {
+        hname = Form("EMCTRQA_histMaxEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+        fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][itype]->GetColStart(), fMaxPatchEMCal[itrig][itype]->GetRowStart());
+      }
+
       hname = Form("EMCTRQA_histEMCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.FillTH1(hname, fMaxPatchEMCal[itrig][itype]);
+      fHistManager.FillTH1(hname, GetAmplitude(fMaxPatchEMCal[itrig][itype], itype));
 
       if (fDCalPlots) {
+        if (fMaxPatchDCal[itrig][itype]) {
+          hname = Form("EMCTRQA_histMaxEdgePos%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+          fHistManager.FillTH2(hname, fMaxPatchDCal[itrig][itype]->GetColStart(), fMaxPatchDCal[itrig][itype]->GetRowStart());
+        }
+
         hname = Form("EMCTRQA_histDCalMaxPatchAmp%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-        fHistManager.FillTH1(hname, fMaxPatchDCal[itrig][itype]);
+        fHistManager.FillTH1(hname, GetAmplitude(fMaxPatchDCal[itrig][itype], itype));
 
         hname = Form("EMCTRQA_histEMCalMaxVsDCalMax%s%s", kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-        fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][itype], fMaxPatchDCal[itrig][itype]);
+        fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchEMCal[itrig][itype], itype), GetAmplitude(fMaxPatchDCal[itrig][itype], itype));
       }
 
       for (Int_t itrig2 = itrig+1; itrig2 < 6; itrig2++) {
         if (kEMCalTriggerNames[itrig2].IsNull() || fEnabledTriggerTypes[itrig2] == kFALSE) continue;
 
         hname = Form("EMCTRQA_histEMCal%sMaxVs%sMax%s", kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
-        fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig2][itype], fMaxPatchEMCal[itrig][itype]);
+        fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchEMCal[itrig2][itype], itype), GetAmplitude(fMaxPatchEMCal[itrig][itype], itype));
 
         if (fDCalPlots) {
           hname = Form("EMCTRQA_histDCal%sMaxVs%sMax%s", kEMCalTriggerNames[itrig].Data(), kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
-          fHistManager.FillTH2(hname, fMaxPatchDCal[itrig2][itype], fMaxPatchDCal[itrig][itype]);
+          fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchDCal[itrig2][itype], itype), GetAmplitude(fMaxPatchDCal[itrig][itype], itype));
         }
       }
 
@@ -763,4 +753,24 @@ void AliEmcalTriggerQAPP::EventCompleted()
   fNCellDCal = 0;
   fNL0DCal = 0;
   fNL1DCal = 0;
+}
+
+/**
+ * Return the amplitude of the patch (online, recalc, offline)
+ * \param patch Pointer to a AliEMCALTriggerPatchInfo object
+ * \param itype Amplitude type (online, recalc, offline)
+ * \return amplitude
+ */
+Int_t AliEmcalTriggerQAPP::GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t itype)
+{
+  if (!patch) return 0;
+  if (itype == 0 || itype == 1) {
+    return patch->GetADCAmp();
+  }
+  else if (itype == 2) {
+    return patch->GetADCOfflineAmp();
+  }
+  else {
+    return 0;
+  }
 }

@@ -37,11 +37,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
   fV0(NULL),
-  fUseTriggerBitConfig(kNewConfig),
-  fJetPatchsize(16),
   fUseL0Amplitudes(kFALSE),
-  fL0MinTime(7),
-  fL0MaxTime(10),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -55,11 +51,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
   fV0(NULL),
-  fUseTriggerBitConfig(kNewConfig),
-  fJetPatchsize(16),
   fUseL0Amplitudes(kFALSE),
-  fL0MinTime(7),
-  fL0MaxTime(10),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -113,29 +105,27 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   }
 }
 
+void AliEmcalTriggerMakerTask::SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig)
+{
+  AliEMCALTriggerBitConfig *triggerBitConfig(NULL);
+  switch(bitConfig){
+  case kNewConfig:
+    triggerBitConfig = new AliEMCALTriggerBitConfigNew();
+    break;
+  case kOldConfig:
+    triggerBitConfig = new AliEMCALTriggerBitConfigOld();
+    break;
+  }
+  fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
+}
+
 /**
  * Initializes the trigger maker kernel
  */
 void AliEmcalTriggerMakerTask::ExecOnce(){
   AliAnalysisTaskEmcal::ExecOnce();
 
-  if (!fInitialized)
-    return;
-
-  AliEMCALTriggerBitConfig *triggerBitConfig(NULL);
-  if(!triggerBitConfig){
-    switch(fUseTriggerBitConfig){
-    case kNewConfig:
-      triggerBitConfig = new AliEMCALTriggerBitConfigNew();
-      break;
-    case kOldConfig:
-      triggerBitConfig = new AliEMCALTriggerBitConfigOld();
-      break;
-    }
-  }
-  fTriggerMaker->SetJetPatchsize(fJetPatchsize);
-  fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
-  fTriggerMaker->SetL0TimeRange(fL0MinTime, fL0MaxTime);
+  if (!fInitialized) return;
 
   if (!fCaloTriggersOutName.IsNull()) {
     fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
@@ -151,7 +141,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
     }
   }
 
-  if ( ! fV0InName.IsNull()) {
+  if (!fV0InName.IsNull()) {
     fV0 = (AliVVZERO*)InputEvent()->FindListObject(fV0InName);
   }
 

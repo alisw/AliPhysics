@@ -697,11 +697,17 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
   fOutputListMC->SetOwner();
 
   // event categories
-  const Int_t iNCategEvent = 6;
+  const Int_t iNCategEvent = 12;
   TString categEvent[iNCategEvent] = {
     "coll. candid.",
     "AOD OK",
-    "vtx & cent",
+    "no SPD pile-up",
+    "PV contrib.",
+    "not TPC PV",
+    "|z| PV",
+    "|#Deltaz| SPD PV",
+    "r PV",
+    "cent.", //2
     "with V0",
     "with jets",
     "jet selection"
@@ -1515,8 +1521,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     AliError(Form("Event is out of histogram range: cent: %g!", fdCentrality));
     return kFALSE;
   }
-  fh1EventCounterCut->Fill(2); // selected events (vertex, centrality)
-  fh1EventCounterCutCent[iCentIndex]->Fill(2);
+  fh1EventCounterCut->Fill(8); // selected events (centrality OK)
+  fh1EventCounterCutCent[iCentIndex]->Fill(8);
 
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
@@ -1559,8 +1565,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   if(iNV0s)
   {
-    fh1EventCounterCut->Fill(3); // events with V0s
-    fh1EventCounterCutCent[iCentIndex]->Fill(3);
+    fh1EventCounterCut->Fill(9); // events with V0s
+    fh1EventCounterCutCent[iCentIndex]->Fill(9);
   }
 
   AliAODv0* v0 = 0; // pointer to V0 candidates
@@ -1740,12 +1746,12 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
 
   if(bJetEventGood) // there should be some reconstructed jets
   {
-    fh1EventCounterCut->Fill(4); // events with jet(s)
-    fh1EventCounterCutCent[iCentIndex]->Fill(4); // events with jet(s)
+    fh1EventCounterCut->Fill(10); // events with jet(s)
+    fh1EventCounterCutCent[iCentIndex]->Fill(10); // events with jet(s)
     if(iNJetSel)
     {
-      fh1EventCounterCut->Fill(5); // events with selected jets
-      fh1EventCounterCutCent[iCentIndex]->Fill(5);
+      fh1EventCounterCut->Fill(11); // events with selected jets
+      fh1EventCounterCutCent[iCentIndex]->Fill(11);
     }
   }
   if(iNJetSel)
@@ -3367,12 +3373,15 @@ Double_t AliAnalysisTaskV0sInJetsEmcal::GetD(const AliVParticle* part1, const Al
 Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax)
 {
 // event selection
-  if((!fbIsPbPb) && (fAOD->IsPileupFromSPD()))
+  if(!fbIsPbPb)
   {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "SPD pile up");
-    return kFALSE;
+    if(fAOD->IsPileupFromSPD())
+    {
+      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "SPD pile-up");
+      return kFALSE;
+    }
+    fh1EventCounterCut->Fill(2); // not pile-up from SPD
   }
-
   AliAODVertex* vertex = fAOD->GetPrimaryVertex();
   if(!vertex)
   {
@@ -3380,26 +3389,27 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     return kFALSE;
   }
   Int_t iNContribMin = 3;
-  if(!fbIsPbPb)
-    iNContribMin = 2;
   if(vertex->GetNContributors() < iNContribMin)
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
     return kFALSE;
   }
+  fh1EventCounterCut->Fill(3); // enough contributors
   TString vtxTitle(vertex->GetTitle());
   if(vtxTitle.Contains("TPCVertex"))
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "TPC vertex");
     return kFALSE;
   }
+  fh1EventCounterCut->Fill(4); // not TPC vertex only
   Double_t zVertex = vertex->GetZ();
   if(TMath::Abs(zVertex) > dVtxZCut)
   {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
     return kFALSE;
   }
-  if(dDeltaZMax > 0.) // cut on |delta z| in 2011 data between SPD vertex and nominal primary vertex
+  fh1EventCounterCut->Fill(5); // PV z coordinate within range
+  if(dDeltaZMax > 0.) // cut on |delta z| between SPD vertex and nominal primary vertex
   {
     AliAODVertex* vertexSPD = fAOD->GetPrimaryVertexSPD();
     if(!vertexSPD)
@@ -3413,6 +3423,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on Delta z = %g - %g = %g", zVertex, zVertexSPD, zVertex - zVertexSPD));
       return kFALSE;
     }
+    fh1EventCounterCut->Fill(6); // delta z within range
   }
   Double_t xVertex = vertex->GetX();
   Double_t yVertex = vertex->GetY();
@@ -3422,6 +3433,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
     return kFALSE;
   }
+  fh1EventCounterCut->Fill(7); // radius within range
   if(fbIsPbPb)
   {
     fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");

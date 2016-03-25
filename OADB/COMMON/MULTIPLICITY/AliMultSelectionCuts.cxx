@@ -30,7 +30,9 @@ AliMultSelectionCuts::AliMultSelectionCuts() :
     fEvSel_TrackletsVsClusters (kTRUE),
     fEvSel_RejectPileupInMultBins (kTRUE),
     fEvSel_CheckConsistencySPDandTrackVertices (kTRUE),
-    fEvSel_NonZeroNContribs( kFALSE )
+    fEvSel_NonZeroNContribs( kFALSE ),
+    fEvSel_IsNotAsymmetricInVZERO( kFALSE ),
+    fEvSel_IsNotIncompleteDAQ(kFALSE)
 {
   // Constructor
   
@@ -43,7 +45,9 @@ AliMultSelectionCuts::AliMultSelectionCuts(const char * name, const char * title
     fEvSel_TrackletsVsClusters (kTRUE),
     fEvSel_RejectPileupInMultBins (kTRUE),
     fEvSel_CheckConsistencySPDandTrackVertices (kTRUE),
-    fEvSel_NonZeroNContribs( kFALSE )
+    fEvSel_NonZeroNContribs( kFALSE ),
+    fEvSel_IsNotAsymmetricInVZERO( kFALSE ),
+    fEvSel_IsNotIncompleteDAQ ( kFALSE )
 {
   // Constructor
   
@@ -63,6 +67,8 @@ AliMultSelectionCuts& AliMultSelectionCuts::operator=(const AliMultSelectionCuts
     fEvSel_RejectPileupInMultBins = o.fEvSel_RejectPileupInMultBins;
     fEvSel_CheckConsistencySPDandTrackVertices = o.fEvSel_CheckConsistencySPDandTrackVertices;
     fEvSel_NonZeroNContribs = o.fEvSel_NonZeroNContribs;
+    fEvSel_IsNotAsymmetricInVZERO = o.fEvSel_IsNotAsymmetricInVZERO;
+    fEvSel_IsNotIncompleteDAQ = o.fEvSel_IsNotIncompleteDAQ;
     return *this;
 }
 //________________________________________________________________
@@ -80,6 +86,8 @@ void AliMultSelectionCuts::Print(Option_t *option) const {
   Printf(" Reject Pileup SPD (mult bins).....: [%i]", fEvSel_RejectPileupInMultBins);
   Printf(" SPD and Track vertex consistency..: [%i]", fEvSel_CheckConsistencySPDandTrackVertices);
   Printf(" Non Zero NContribs to PV..........: [%i]", fEvSel_NonZeroNContribs);
+  Printf(" Reject Asymmetric in VZERO events.: [%i]", fEvSel_IsNotAsymmetricInVZERO);
+  Printf(" Reject IsIncompleteDAQ............: [%i]", fEvSel_IsNotIncompleteDAQ);
 }
 //________________________________________________________________
 /* Deprecated

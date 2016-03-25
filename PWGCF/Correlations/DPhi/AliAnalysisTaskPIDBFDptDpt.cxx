@@ -23,7 +23,6 @@
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include "TRandom.h"
-
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -38,7 +37,6 @@
 #include <TH2D.h>
 #include <TH3D.h>
 #include "AliAnalysisManager.h"
-
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliInputEventHandler.h"
@@ -48,16 +46,12 @@
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
 #include "AliAnalysisTaskPIDBFDptDpt.h"
-
 #include "AliESDVertex.h"
-#include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODInputHandler.h"
 #include "AliESD.h"
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODMCHeader.h"
@@ -79,7 +73,7 @@ ClassImp(AliAnalysisTaskPIDBFDptDpt)
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
 : AliAnalysisTaskSE(),
 fAODEvent(0),
-fESDEvent(0),             //! ESD Event
+fESDEvent(0),
 fInputHandler(0),
 fPIDResponse(0x0),
   fHelperPID(0x0),
@@ -113,6 +107,7 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       (0),
 fAnalysisType         ( "RealData" ),
+fSystemType           ( "PbPb" ),
 fExcludeResonancesInMC ( kFALSE ),
 fExcludeElectronsInMC ( kFALSE ),
 particleSpecies       ( 0 ),
@@ -250,9 +245,7 @@ _vertexZ ( 0),
   _vZ_y_eta_POI_AliHelperPID ( 0),
 
   _y_Pt_AllCh_MCAODTruth ( 0 ),
-  _y_Pt_Pion_MCAODTruth ( 0 ),
-  _y_Pt_Kaon_MCAODTruth ( 0 ),
-  _y_Pt_Proton_MCAODTruth ( 0 ),
+  _y_Pt_POI_MCAODTruth ( 0 ),
   
   _phidis_POI_AliHelperPID ( 0),
   _phidis_before_any_cuts ( 0),
@@ -441,6 +434,7 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       ( 0),
 fAnalysisType         ( "RealData" ),
+fSystemType           ( "PbPb" ),
 fExcludeResonancesInMC ( kFALSE ),
 fExcludeElectronsInMC ( kFALSE ),
 particleSpecies       ( 0 ),
@@ -577,9 +571,7 @@ _Ncluster2  ( 0),
   _vZ_y_eta_POI_AliHelperPID ( 0),
 
   _y_Pt_AllCh_MCAODTruth ( 0 ),
-  _y_Pt_Pion_MCAODTruth ( 0 ),
-  _y_Pt_Kaon_MCAODTruth ( 0 ),
-  _y_Pt_Proton_MCAODTruth ( 0 ),
+  _y_Pt_POI_MCAODTruth ( 0 ),
   
   _phidis_POI_AliHelperPID ( 0),
   _phidis_before_any_cuts ( 0),
@@ -744,7 +736,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     _outputHistoList = new TList();
     _outputHistoList->SetOwner();
     
-    _outputHistoList->Add( fHelperPID->GetOutputList()); // add AliHelperPID object output list to task output list
+    if ( _singlesOnly )   _outputHistoList->Add( fHelperPID->GetOutputList()); // add AliHelperPID object output list to task output list only for singles
     
     _nBins_M0 = 500; _min_M0   = 0.;    _max_M0    = 5000.;  _width_M0 = (_max_M0-_min_M0)/_nBins_M0;
     _nBins_M1 = 500; _min_M1   = 0.;    _max_M1    = 5000.;  _width_M1 = (_max_M1-_min_M1)/_nBins_M1;
@@ -977,9 +969,9 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
 {
     AliInfo(" AliAnalysisTaskPIDBFDptDpt::createHistoHistograms() Creating Event Histos");
     TString name;
-    
-    name = "eventAccounting";  _eventAccounting      = createHisto1D(name,name,10, -0.5, 9.5, "event Code", _title_counts);
-    
+
+    // histos for events:
+    name = "eventAccounting";  _eventAccounting      = createHisto1D(name,name,10, -0.5, 9.5, "event Code", _title_counts);    
     name = "m0"; _m0      = createHisto1D(name,name,_nBins_M1, _min_M1, _max_M1, _title_m0, _title_counts);
     name = "m1"; _m1      = createHisto1D(name,name,_nBins_M1, _min_M1, _max_M1, _title_m1, _title_counts);
     name = "m2"; _m2      = createHisto1D(name,name,_nBins_M2, _min_M2, _max_M2, _title_m2, _title_counts);
@@ -988,62 +980,44 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
     name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
     name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
     name = "zV"; _vertexZ = createHisto1D(name,name,_nBins_vertexZ, _min_vertexZ, _max_vertexZ, "z-Vertex (cm)", _title_counts);
-       
-    name = "etadis_POI_AliHelperPID";          _etadis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
-    name = "ydis_POI_AliHelperPID";            _ydis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
-    name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
-       
-    
-    name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-    name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");    
-    
-    name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
-    name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
-    
-    name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
-    name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
 
-    name = "T0";   _t0_1d    = createHisto1F(name,name, 1000, 0, 1000, "T0","counts");
-    name = "timeTOF";   _timeTOF_1d    = createHisto1F(name,name, 80000, 0, 80000, "timeTOF","counts"); 
-    name = "trackLength";   _trackLength    = createHisto1F(name,name, 1000, 0, 1000, "track Length","counts"); 
-    
-    name = "dedx_p";   _dedx_p = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
-    name = "beta_p";   _beta_p = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
-    name = "inverse_beta_p";   _inverse_beta_p = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-    name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");
-    
-    name = "nsigmakaon_1d";   _nsigmakaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmakaon","counts");
-    name = "nsigmaTOFkaon_1d";   _nsigmaTOFkaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmaTOFkaon","counts");
-    
-    name = "msquare_p_POI_AliHelperPID";   _msquare_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
-    name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
-
-    name = "dedx_p_POI_AliHelperPID";   _dedx_p_POI_AliHelperPID = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
-    name = "dedx_p_AliHelperPID_no_Undefined";   _dedx_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
-    
-    name = "beta_p_POI_AliHelperPID";   _beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
-    name = "beta_p_AliHelperPID_no_Undefined";   _beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
-
-    name = "inverse_beta_p_POI_AliHelperPID";   _inverse_beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-    name = "inverse_beta_p_AliHelperPID_no_Undefined";   _inverse_beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-
-    name = "vZ_y_Pt_POI_AliHelperPID";        _vZ_y_Pt_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", "y", "p_{T}" );
-
-    name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
-
-    name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    name = "y_Pt_Pion_MCAODTruth";        _y_Pt_Pion_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    name = "y_Pt_Kaon_MCAODTruth";        _y_Pt_Kaon_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    name = "y_Pt_Proton_MCAODTruth";      _y_Pt_Proton_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
-    
+    // histos for tracks:
     if ( _singlesOnly )
     {
+      name = "etadis_POI_AliHelperPID";          _etadis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
+      name = "ydis_POI_AliHelperPID";            _ydis_POI_AliHelperPID   = createHisto1F(name,name, 200, -1.0, 1.0, "y","counts");
+      name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");       
+      name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
+      name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");   
+      name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
+      name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");    
+      name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
+      name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
+      name = "T0";   _t0_1d    = createHisto1F(name,name, 1000, 0, 1000, "T0","counts");
+      name = "timeTOF";   _timeTOF_1d    = createHisto1F(name,name, 80000, 0, 80000, "timeTOF","counts"); 
+      name = "trackLength";   _trackLength    = createHisto1F(name,name, 1000, 0, 1000, "track Length","counts");   
+      name = "dedx_p";   _dedx_p = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
+      name = "beta_p";   _beta_p = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
+      name = "inverse_beta_p";   _inverse_beta_p = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
+      name = "msquare_p";   _msquare_p = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square",  "counts");   
+      name = "nsigmakaon_1d";   _nsigmakaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmakaon","counts");
+      name = "nsigmaTOFkaon_1d";   _nsigmaTOFkaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmaTOFkaon","counts");  
+      name = "msquare_p_POI_AliHelperPID";   _msquare_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
+      name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
+      name = "dedx_p_POI_AliHelperPID";   _dedx_p_POI_AliHelperPID = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
+      name = "dedx_p_AliHelperPID_no_Undefined";   _dedx_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");    
+      name = "beta_p_POI_AliHelperPID";   _beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
+      name = "beta_p_AliHelperPID_no_Undefined";   _beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
+      name = "inverse_beta_p_POI_AliHelperPID";   _inverse_beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
+      name = "inverse_beta_p_AliHelperPID_no_Undefined";   _inverse_beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
+      name = "vZ_y_Pt_POI_AliHelperPID";        _vZ_y_Pt_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", "y", "p_{T}" );
+      name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
+      name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
+      name = "y_Pt_POI_MCAODTruth";        _y_Pt_POI_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );      
      name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
-     name = n1Name + part_1_Name + vsZ + vsEtaPhi + vsPt;        _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);
-        
+     name = n1Name + part_1_Name + vsZ + vsEtaPhi + vsPt;        _n1_1_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_1, 0., double(_nBins_etaPhi_1), _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", _title_etaPhi_1,  _title_pt_1);        
      name = n1Name + part_2_Name + vsPt;                         _n1_2_vsPt = createHisto1F( name, name, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_2, _title_AvgN_2 );
-     name = n1Name + part_2_Name + vsZ + vsEtaPhi + vsPt;        _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);
-	
+     name = n1Name + part_2_Name + vsZ + vsEtaPhi + vsPt;        _n1_2_vsZVsEtaVsPhiVsPt = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_etaPhi_2, 0., double(_nBins_etaPhi_2), _nBins_pt_2, _min_pt_2, _max_pt_2, "zVertex", _title_etaPhi_2,  _title_pt_2);	
     }
     else
     {
@@ -1052,31 +1026,26 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
         name = n1Name+part_1_Name+vsM;            _n1_1_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
         name = s1ptName+part_1_Name+vsM;          _s1pt_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
         name = n1NwName+part_1_Name+vsM;          _n1Nw_1_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-        name = s1ptNwName+part_1_Name+vsM;        _s1ptNw_1_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
-        
+        name = s1ptNwName+part_1_Name+vsM;        _s1ptNw_1_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);        
         name = n1Name+part_2_Name+vsEtaPhi;       _n1_2_vsEtaVsPhi      = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgN_2);
         name = s1ptName+part_2_Name+vsEtaPhi;     _s1pt_2_vsEtaVsPhi    = createHisto2F(name,name, _nBins_eta_2, _min_eta_2, _max_eta_2,  _nBins_phi_2, _min_phi_2, _max_phi_2,  _title_eta_2,  _title_phi_2,  _title_AvgSumPt_2);
         name = n1Name+part_2_Name + vsM;          _n1_2_vsM             = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_2);
         name = s1ptName+part_2_Name + vsM;        _s1pt_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_2);
         name = n1NwName+part_2_Name+vsM;          _n1Nw_2_vsM           = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN_1);
-        name = s1ptNwName+part_2_Name+vsM;        _s1ptNw_2_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);
-        
+        name = s1ptNwName+part_2_Name+vsM;        _s1ptNw_2_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPt_1);        
         name = n2Name+pair_12_Name+vsEtaPhi;      _n2_12_vsEtaPhi       = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12, _title_AvgN2_12);
         name = s2PtPtName+pair_12_Name + vsEtaPhi;_s2PtPt_12_vsEtaPhi   = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtPt_12);
         name = s2PtNName+pair_12_Name + vsEtaPhi; _s2PtN_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgSumPtN_12);
         name = s2NPtName+pair_12_Name + vsEtaPhi; _s2NPt_12_vsEtaPhi    = createHisto1F(name,name, _nBins_etaPhi_12, 0.,        double(_nBins_etaPhi_12), _title_etaPhi_12,  _title_AvgNSumPt_12);
-        name = n2Name+pair_12_Name+vsPtVsPt;      _n2_12_vsPtVsPt       = createHisto2F(name,name, _nBins_pt_1, _min_pt_1, _max_pt_1, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_1, _title_pt_2, _title_AvgN2_12);
-        
+        name = n2Name+pair_12_Name+vsPtVsPt;      _n2_12_vsPtVsPt       = createHisto2F(name,name, _nBins_pt_1, _min_pt_1, _max_pt_1, _nBins_pt_2, _min_pt_2, _max_pt_2, _title_pt_1, _title_pt_2, _title_AvgN2_12);        
         name = n2Name+pair_12_Name + vsM;         _n2_12_vsM            = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN2_12);
         name = s2PtPtName+pair_12_Name + vsM;     _s2PtPt_12_vsM        = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtPt_12);
         name = s2PtNName+pair_12_Name + vsM;      _s2PtN_12_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtN_12);
-        name = s2NPtName+pair_12_Name + vsM;      _s2NPt_12_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);
-        
+        name = s2NPtName+pair_12_Name + vsM;      _s2NPt_12_vsM         = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);        
         name = n2NwName+pair_12_Name + vsM;       _n2Nw_12_vsM          = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgN2_12);
         name = s2PtPtNwName+pair_12_Name + vsM;   _s2PtPtNw_12_vsM      = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtPt_12);
         name = s2PtNNwName+pair_12_Name + vsM;    _s2PtNNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtN_12);
-        name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);
-        
+        name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);        
         name = "mInv";     _invMass     = createHisto1F(name,name, 50, 0.41, 0.55, "M_{inv}","counts");
         name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts");
     }
@@ -1174,9 +1143,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     
     _eventCount++;
     
-    if ( _eventAccounting )
-    { _eventAccounting -> Fill( 0 ); }
-    else { return; }
+    if ( _eventAccounting )  _eventAccounting -> Fill( 0 );
+    else   return;
     
     _eventAccounting -> Fill( 1 );
 
@@ -1219,20 +1187,21 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
         
         switch ( _centralityMethod )
         {
-            case 0: centrality = _mult0; break;
-            case 1: centrality = _mult1; break;
-            case 2: centrality = _mult2; break;
-            case 3: centrality = _mult3; break;
-            case 4: centrality = _mult4; break;
-            case 5: centrality = _mult5; break;
-            case 6: centrality = _mult6; break;
+            case 0: centrality = _mult0;  break;
+            case 1: centrality = _mult1;  break;
+            case 2: centrality = _mult2;  break;
+            case 3: centrality = _mult3;  break;
+            case 4: centrality = _mult4;  break;
+            case 5: centrality = _mult5;  break;
+            case 6: centrality = _mult6;  break;
             case 7: centrality = _mult4a; break;
         }
-        
-        if ( centrality < _centralityMin ||
-	     centrality > _centralityMax )
-	     // || fabs(v0Centr-trkCentr)>5.0)         //only for PbPb centrality
-        { return; }
+
+	if      ( fSystemType == "PbPb" )
+	  { if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
+	else if ( fSystemType == "pPb" || fSystemType == "pp" )
+	  { if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
+	else    return;
 	
         _eventAccounting -> Fill( 2 ); // count all events with right centrality
         
@@ -1306,8 +1275,11 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
 	    
 	    // QA for all the particles in the event
-	    _etadis_before_any_cuts -> Fill( eta );
-            _phidis_before_any_cuts -> Fill( phi );
+	    if ( _singlesOnly )
+	      {
+		_etadis_before_any_cuts -> Fill( eta );
+		_phidis_before_any_cuts -> Fill( phi );
+	      }
 	    
 	    // Kinematics cuts begins:
 	    if(charge == 0) continue;
@@ -1327,7 +1299,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    nClus = t -> GetTPCNcls();
 	    if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
 	    
-	    _Ncluster1 -> Fill( nClus );
+	    if ( _singlesOnly )    _Ncluster1 -> Fill( nClus );
 	    //_Ncluster2->Fill(nClus);   //_Ncluster2 same with _Ncluster1
 	    
 	    Bool_t TOFPID = fHelperPID -> GetfRequestTOFPID();
@@ -1338,14 +1310,17 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    if ( IDrec != particleSpecies ) continue; // select POI	    
 
 	    // QA for POI
-            _dcaz                      -> Fill( DCAZ );
-            _dcaxy                     -> Fill( DCAXY );
-            _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
-	    _ydis_POI_AliHelperPID     -> Fill( y );
-            _phidis_POI_AliHelperPID   -> Fill( phi );
-	    _vZ_y_Pt_POI_AliHelperPID  -> Fill( vertexZ, y, pt );
-	    _vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
-
+	    if ( _singlesOnly )
+	      {
+		_dcaz                      -> Fill( DCAZ );
+		_dcaxy                     -> Fill( DCAXY );
+		_etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
+		_ydis_POI_AliHelperPID     -> Fill( y );
+		_phidis_POI_AliHelperPID   -> Fill( phi );
+		_vZ_y_Pt_POI_AliHelperPID  -> Fill( vertexZ, y, pt );
+		_vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
+	      }
+	    
 	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
 	    
             //Particle 1
@@ -1414,11 +1389,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            }//if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            }//if ( _requestedCharge_1 == charge )
             
             if ( !_sameFilter && _requestedCharge_2 == charge )
-	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
-                
+	      //&& dedx >=  _dedxMin && dedx < _dedxMax)                
             {
                 iPhi   = int( phi/_width_phi_2);
                 
@@ -1482,7 +1456,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            } //if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            } //if ( !_sameFilter && _requestedCharge_2 == charge )
         } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
      } //end of "if ( fAnalysisType == "RealData" || fAnalysisType == "MCAODreco" )"
 
@@ -1507,7 +1481,13 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    if( !t -> IsPhysicalPrimary() ) continue;
 	    
             q      = t -> Charge();
+
+	    //cout << "step 1 Au-Au: q = " << q << endl; 
+	    
             charge = int( q );
+
+	    //cout << "step 2 Au-Au: charge = " << charge << endl;
+	    
             phi    = t -> Phi();
             pt     = t -> Pt();
             eta    = t -> Eta();
@@ -1533,7 +1513,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 
 	    // Kinematics cuts:
 	    if( charge == 0 ) continue;
-            if( pt < _min_pt_1 || pt > _max_pt_1) continue;         
+            if( pt < _min_pt_1 || pt > _max_pt_1 ) continue;         
 	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
 
 	/*
@@ -1550,11 +1530,21 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    double mass = TParticlePDG::Mass( pdg );
 	*/    
 	    
-	    // fill QA histograms
-	    _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles	    
-	    if( TMath::Abs( t -> GetPdgCode() ) == 211  )  _y_Pt_Pion_MCAODTruth   -> Fill( y, pt ); //Pion	    
-	    if( TMath::Abs( t -> GetPdgCode() ) == 321  )  _y_Pt_Kaon_MCAODTruth   -> Fill( y, pt ); //Kaon
-	    if( TMath::Abs( t -> GetPdgCode() ) == 2212 )  _y_Pt_Proton_MCAODTruth -> Fill( y, pt ); //Proton
+	    // fill track QA histograms
+	    if ( _singlesOnly )    _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles	    
+
+	    if( particleSpecies == 0 )
+	      { if( TMath::Abs( t -> GetPdgCode() ) != 211  )  continue; }
+	    else if( particleSpecies == 1 )
+	      { if( TMath::Abs( t -> GetPdgCode() ) != 321  )  continue; }
+	    else if( particleSpecies == 2 )
+	      { if( TMath::Abs( t -> GetPdgCode() ) != 2212 )  continue; }
+	    else   return;
+	    
+	    //cout << "step 3 Au-Au: particle ID: " << t -> GetPdgCode() << endl; 
+
+	    if ( _singlesOnly )    _y_Pt_POI_MCAODTruth -> Fill( y, pt ); //POI	    
+
 	    
 	    //Exclude resonances
 	    if( fExcludeResonancesInMC )
@@ -1574,17 +1564,24 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		  }
 		}
 	      }
-	    
+
+	    //cout << "step 4 Au-Au" << endl;
+
+	    /*
 	    //Exclude electrons with PDG                                                              
 	    if( fExcludeElectronsInMC ) {
 	      if( TMath::Abs( t -> GetPdgCode() ) == 11 ) continue;
 	    }
+	    */
 	    
 	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
+
+	    //cout << "step 5 Au-Au" << endl;
 	    
             //Particle 1
-            if ( _requestedCharge_1 == charge )
+	    // if ( _requestedCharge_1 == charge )
 	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+	    if ( q > 0 )
             {
                 iPhi   = int( phi/_width_phi_1);
                 
@@ -1593,13 +1590,18 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
                     return;
                 }
-                
+
+		//cout << "step 6 Au-Au" << endl;
+		
                 iEta    = int((eta-_min_eta_1)/_width_eta_1);
                 if (iEta<0 || iEta>=_nBins_eta_1)
                 {
                     AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
                     continue;
                 }
+
+		//cout << "step 7 Au-Au" << endl;
+		
                 iPt     = int((pt -_min_pt_1 )/_width_pt_1 );
                 if (iPt<0  || iPt >=_nBins_pt_1)
                 {
@@ -1611,6 +1613,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 
                 if (_correctionWeight_1)  corr = _correctionWeight_1[iZEtaPhiPt];
                 else  corr = 1;
+
+		//cout << "step 8 Au-Au" << endl;
 		
                 if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1)
                 {
@@ -1620,7 +1624,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                                 
                 if (_singlesOnly)
                 {
-                    __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
+		    __n1_1_vsPt[iPt]               += corr;       //cout << "step 9 Au-Au: __n1_1_vsPt[iPt] = " << __n1_1_vsPt[iPt] << endl;
                     __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;   
                 }
                 else
@@ -1648,9 +1652,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            }//if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            }//if ( q > 0 )
             
-            if ( !_sameFilter && _requestedCharge_2 == charge )
+            if ( q < 0 )
 	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
             {
                 iPhi   = int( phi/_width_phi_2);
@@ -1715,11 +1719,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            } //if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+            } //if ( q < 0 )
         } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
      } //end of "if ( fAnalysisType == "MCAOD" )" 
   } //if( fAODEvent )
-    
+
+    // Fill event QA histos
     _m0->Fill(_mult0);
     _m1->Fill(_mult1);
     _m2->Fill(_mult2);

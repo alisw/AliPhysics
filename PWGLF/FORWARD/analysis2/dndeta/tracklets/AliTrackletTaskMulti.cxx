@@ -313,6 +313,72 @@ AliTrackletTaskMulti::~AliTrackletTaskMulti()
 }
 
 //________________________________________________________________________
+void AliTrackletTaskMulti::Print(Option_t*) const
+{
+  Printf("%s - %s", GetName(), GetTitle());
+  TH1* hstat;
+  TList* lst = dynamic_cast<TList*>(GetOutputData(1));
+  if (!lst)  AliWarning("No output list yet");
+  else {
+    TH1* hstat=(TH1*)lst->FindObject("hStat");
+    if (!hstat) 
+      AliWarning("No statistics histogram yet");
+    else {
+      TH1*   stats = static_cast<TH1*>(hstat->Clone());
+      stats->SetDirectory(0);
+      TAxis* axis  = stats->GetXaxis();
+      for (Int_t i = 1; i <= 4; i++) {
+	Printf("%31s: %f", axis->GetBinLabel(i), stats->GetBinContent(i));
+      }
+      Double_t scale = stats->GetBinContent(4);
+      stats->Scale(1/scale);
+      for (Int_t i = 6; i <= 23; i++) {
+	Printf("%31s: %f", axis->GetBinLabel(i), stats->GetBinContent(i));
+      }
+      delete stats;
+    }
+  }
+  Printf("--- Overall options ---");
+  Printf("DoNormalReco:              %s", (fDoNormalReco ? "yes" : "no"));
+  Printf("DoInjection:               %s", (fDoInjection  ? "yes" : "no"));
+  Printf("DoRotation:                %s", (fDoRotation   ? "yes" : "no"));
+  Printf("UseMC:                     %s", (fUseMC        ? "yes" : "no"));
+  Printf("CheckReconstructables:     %s", (fCheckReconstructables ?
+					   "yes" : "no"));
+  Printf("--- Tracklet reco settings ---");
+  Printf("EtaMin:                    %f", fEtaMin);
+  Printf("EtaMax:                    %f", fEtaMax);
+  Printf("PhiMin:                    %f", fPhiMin);
+  Printf("PhiMax:                    %f", fPhiMax);
+  Printf("ZVertexMin:                %f", fZVertexMin);
+  Printf("ZVertexMax:                %f", fZVertexMax);
+  Printf("--- Tracklet cuts --- ");
+  Printf("ScaleDTBySin2T:            %s", (fScaleDTBySin2T ? "yes" : "no"));
+  Printf("CutOnDThetaX:              %s", (fCutOnDThetaX   ? "yes" : "no"));
+  Printf("NStdDev:                   %f", fNStdDev);
+  Printf("DPhiWindow:                %f", fDPhiWindow);
+  Printf("DThetaWindow:              %f", fDThetaWindow);
+  Printf("DPhiShift:                 %f", fDPhiShift);
+  Printf("PhiOverlapCut:             %f", fPhiOverlapCut);
+  Printf("ZetaOverlap:               %f", fZetaOverlap);
+  Printf("PhiRot:                    %f", fPhiRot);
+  Printf("InjScale:                  %f", fInjScale);
+  Printf("RemoveOverlaps:            %s", (fRemoveOverlaps ? "yes" : "no"));
+  Printf("--- Task options ---");
+  Printf("DPhiSCut:                  %f", fDPhiSCut);
+  Printf("NStdCut:                   %f", fNStdCut);
+  Printf("MCV0Scale:                 %f", fMCV0Scale);
+  Printf("TrigSel:                   0x%x", fTrigSel);
+  Printf("UseCentralityVar:          %s", fUseCentralityVar.Data());
+  Printf("UseSpecialOutput:          %s", (fUseSpecialOutput ? "yes" : "no"));
+  Printf("--- Reweight of stack ---");
+  Printf("ReweightStack:             %d", fReweightStack);
+  Printf("ReweightFlag:              %d", fReweightFlag);
+  Printf("EtaBinWidth:               %f", fEtaBinWidth);
+  
+}
+
+//________________________________________________________________________
 void AliTrackletTaskMulti::UserCreateOutputObjects() 
 {
   //
@@ -408,7 +474,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     handRP = static_cast<AliESDInputHandlerRP*>(handler);
     if (!handRP) { printf("No RP handler\n"); return; }
   }
-  AliESDEvent *esd  = handler->GetEvent();
+  AliESDEvent *esd  = static_cast<AliESDEvent*>(handler->GetEvent());
   if (!esd) { printf("No AliESDEvent\n"); return; }
   //
   //

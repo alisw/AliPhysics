@@ -441,6 +441,9 @@ protected:
   TArrayD*              fChi3C;                         // chi vs cent for vzero C ep_3
   Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
 
+  // save containers in clones array (object)
+  TClonesArray          *fTracksFromContainer;       //!jets
+
   // container objects
   AliJetContainer       *fJetsCont;                //!Jets
   AliParticleContainer  *fTracksCont;              //!Tracks

@@ -46,14 +46,14 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetAnalysisType                 (const char* analysisType                 ) { fAnalysisType                   = analysisType;                 }
         void SetCollidingSystem              (const char* collidingSystem              ) { fCollidingSystem                = collidingSystem;              }
         void SetSelectedTriggerClass         (AliVEvent::EOfflineTriggerTypes trigType ) { fkTriggerClass                  = trigType;                     }
-        void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete             ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
         void SetEventSelSDDstatus            (Bool_t eventselSDDstatus                 ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
+        void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete             ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
+        void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet      ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; }
+        void SetEventSelPileup               (Bool_t eventselPileup                    ) { fApplyEvSelPileup               = eventselPileup;               }
         void SetEventSelPhysicsSel           (Bool_t eventselPhysicsSel                ) { fApplyEvSelPhysicsSel           = eventselPhysicsSel;           }
         void SetEventSelNoTPConlyPrimVtx     (Bool_t eventselNoTPConlyPrimVtx          ) { fApplyEvSelNoTPConlyPrimVtx     = eventselNoTPConlyPrimVtx;     }
         void SetEventSelSPDvtxres            (Bool_t eventselSPDvtxres                 ) { fApplyEvSelSPDvtxres            = eventselSPDvtxres;            }
         void SetEventSelVtxProximity         (Bool_t eventselVtxProximity              ) { fApplyEvSelVtxProximity         = eventselVtxProximity;         }
-        void SetEventSelPileup               (Bool_t eventselPileup                    ) { fApplyEvSelPileup               = eventselPileup;               }
-        void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet      ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; } 
         void SetEventSelZprimVtxPos          (Bool_t eventselZprimVtxPos               ) { fApplyEvSelZprimVtxPos          = eventselZprimVtxPos;          }
         void SetRelaunchV0CascVertexers      (Bool_t rerunV0CascVertexers              ) { fRerunV0CascVertexers           = rerunV0CascVertexers;         }
         void SetWithSDDOn                    (Bool_t withsddOn                         ) { fwithSDD                        = withsddOn;                    }
@@ -95,14 +95,14 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         AliVEvent::EOfflineTriggerTypes fkTriggerClass;    // Trigger selection: kMB, kINT7, etc as needed
         AliPIDResponse   *fPIDResponse;                    //! PID response object
 
+        Bool_t            fApplyEvSelSDDstatus;            
         Bool_t            fApplyEvSelDAQincomplete;        //       
-        Bool_t            fApplyEvSelSDDstatus;            //
+        Bool_t            fApplyEvSelSPDclustervstracklet; //
+        Bool_t            fApplyEvSelPileup;               //
         Bool_t            fApplyEvSelPhysicsSel;           //
         Bool_t            fApplyEvSelNoTPConlyPrimVtx;     //
         Bool_t            fApplyEvSelSPDvtxres;            //
         Bool_t            fApplyEvSelVtxProximity;         //
-        Bool_t            fApplyEvSelPileup;               //
-        Bool_t            fApplyEvSelSPDclustervstracklet; //
         Bool_t            fApplyEvSelZprimVtxPos;          //
         Bool_t            fRerunV0CascVertexers;           // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t            fwithSDD;                        // Boolean : kTRUE = select events with SDD reco
@@ -122,21 +122,21 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         TList      *fListHistCascade;                   //! List of Cascade histograms
         // Cascades multiplicity plots
         TH1F *fHistCascadeMultiplicityBeforeAnySel;
-        TH1F *fHistCascadeMultiplicityAfterDAQincompleteEvRej;
         TH1F *fHistCascadeMultiplicityAfterSDDstatusSel;
+        TH1F *fHistCascadeMultiplicityAfterDAQincompleteEvRej;
+        TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
+        TH1F *fHistCascadeMultiplicityAfterPileupRej;
         TH1F *fHistCascadeMultiplicityAfterPhysicsSel;
         TH1F *fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel;
-        TH1F *fHistCascadeMultiplicityAfterPileupRej;
-        TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
         TH1F *fHistCascadeMultiplicityAfterZprimVtxPosSel;
         // Tracks multiplicity plots
         TH1F *fHistTrackMultiplicityBeforeAnySel;
-        TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
         TH1F *fHistTrackMultiplicityAfterSDDstatusSel;
+        TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
+        TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
+        TH1F *fHistTrackMultiplicityAfterPileupRej;
         TH1F *fHistTrackMultiplicityAfterPhysicsSel;
         TH1F *fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel;
-        TH1F *fHistTrackMultiplicityAfterPileupRej;
-        TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
         TH1F *fHistTrackMultiplicityAfterZprimVtxPosSel;
         // Vertex position plots (BestVertex)
         TH1F   *fHistPVx;                                             //! Best primary vertex X position distribution after all evnt selection
@@ -210,7 +210,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadepp(const AliAnalysisTaskCheckCascadepp&);            // not implemented
   AliAnalysisTaskCheckCascadepp& operator=(const AliAnalysisTaskCheckCascadepp&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadepp, 10);
+  ClassDef(AliAnalysisTaskCheckCascadepp, 11);
 };
 
 #endif

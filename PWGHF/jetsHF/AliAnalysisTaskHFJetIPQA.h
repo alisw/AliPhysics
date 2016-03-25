@@ -11,6 +11,8 @@ class TH1D;
 class TH2D;
 class AliHFJetsTagging;
 class TParticle;
+class TClonesArray;
+class AliAODMCParticle;
 
 class AliAnalysisTaskHFJetIPQA: public AliAnalysisTaskEmcalJet
 {
@@ -81,7 +83,13 @@ public:
 	bDStarPlus=413,
 	bDSPlus=431,
 	bK0l=431,
-	bSigmaPlus = 3222
+	bSigmaPlus = 3222,
+	bRhoPlus=213,
+	bBPlus = 521,
+	bB0 = 511,
+	bLambdaB =5122,
+	bLambdaC=4122,
+	bBStarPlus=523
 	};
 
 	enum particlearraxidx
@@ -100,7 +108,12 @@ public:
 	bIdxD0=11,
 	bIdxDPlus=12,
 	bIdxDStarPlus=13,
-	bIdxDSPlus=14
+	bIdxDSPlus=14,
+	bIdxLambdaC=15,
+	bIdxBPlus = 16,
+	bIdxB0 = 17,
+	bIdxLambdaB = 18,
+	bIdxBStarPlus=19
 	};
 
 
@@ -116,7 +129,6 @@ public:
 		double second;// to be compatible with std::pair
 		bool   is_electron; // added for electron contribution check
 		bool   is_fromB; // added for electron contribution check
-
 	};
 
 
@@ -125,25 +137,7 @@ public:
 	static const Int_t fgkMaxGener=10; // ancester level wanted to be checked
 	static const Int_t fgkMaxIter=100; // number of iteration to find out matching particle
 
-	/*
-      -------------------------------------------------------------------------------------
-     fParentSelect[0][0] =  411; //D+
-     fParentSelect[0][1] =  421; //D0
-     fParentSelect[0][2] =  431; //Ds+
-     fParentSelect[0][3] = 4122; //Lambdac+
-     fParentSelect[0][4] = 4132; //Ksic0
-     fParentSelect[0][5] = 4232; //Ksic+
-     fParentSelect[0][6] = 4332; //OmegaC0
 
-         -------------------------------------------------------------------------------------
-     fParentSelect[1][0] =  511; //B0
-     fParentSelect[1][1] =  521; //B+
-     fParentSelect[1][2] =  531; //Bs0
-     fParentSelect[1][3] = 5122; //Lambdab0
-     fParentSelect[1][4] = 5132; //Ksib-
-     fParentSelect[1][5] = 5232; //Ksib0
-     fParentSelect[1][6] = 5332; //Omegab-
-	 */
 	enum TTypeImpPar {kXY,kXYSig,kXYZ,kXYZSig,kXYZSigmaOnly};
 	AliAnalysisTaskHFJetIPQA();
 	AliAnalysisTaskHFJetIPQA(const char *name);
@@ -155,9 +149,6 @@ public:
 	AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&);*/
 	virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;};
 	Bool_t IsEventSelected();
-
-
-
 
 	void SetUseMonteCarloWeighingLinus(
 			TH1F *Pi0 ,
@@ -174,10 +165,16 @@ public:
 			TH1F *D0,
 			TH1F *DPlus,
 			TH1F *DStarPlus,
-			TH1F *DSPlus
+			TH1F *DSPlus,
+			TH1F *LambdaC,
+			TH1F *BPlus,
+			TH1F *B0,
+			TH1F *LambdaB,
+			TH1F *BStarPlus
+ //
 	)
 	{
-		for(int i =1 ; i< 497+1;++i){
+		for(int i =1 ; i< Pi0->GetNbinsX()+1;++i){
 			fBackgroundFactorLinus[bIdxPi0][i-1] =Pi0->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxEta][i-1] =Eta->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxEtaPrime][i-1] =EtaP->GetBinContent(i);
@@ -193,6 +190,12 @@ public:
 			fBackgroundFactorLinus[bIdxDPlus][i-1] =DPlus->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxDStarPlus][i-1] =DStarPlus->GetBinContent(i);
 			fBackgroundFactorLinus[bIdxDSPlus][i-1] =DSPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambdaC][i-1] =LambdaC->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxBPlus][i-1] =BPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxB0][i-1] =B0->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambdaB][i-1] =LambdaB->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxBStarPlus][i-1] =BStarPlus->GetBinContent(i);
+ //
 		}
 		return;
 	};
@@ -258,7 +261,8 @@ private:
 	Bool_t IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) ;
 	bool   IsPromptDMeson(AliAODMCParticle * part );
 	bool   IsPromptBMeson(AliAODMCParticle * part );
-
+	Bool_t GetBMesonWeight( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
 
 	Float_t  GetRapidity(const TParticle *part);
 
@@ -650,20 +654,19 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird_electron; //!
-
+	TClonesArray * fMCArray;//!
 	//Monte Carlo correction factor containers
 
-	Double_t fBackgroundFactor[9][44];
-	Double_t fBackgroundFactorBins[45];
-	Double_t fBackgroundFactorLinus[16][498]; //FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
-
-
+	Double_t fBackgroundFactor[9][44];//[9][44]
+	Double_t fBackgroundFactorBins[45];//[45]
+	Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
 	static bool mysort(const myvaluetuple& i, const myvaluetuple& j);
 
-	ClassDef(AliAnalysisTaskHFJetIPQA, 1)
+	ClassDef(AliAnalysisTaskHFJetIPQA, 3)
 };
 #endif
 
 
 
 
+ //

@@ -8,6 +8,7 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Efficiency (
                                                     const char *magfield = "up",
                                                     const char *file_DetectorResponseMatrices = "DetectorResponseMatrices.root",
                                                     const char *file_WeightsPtDistributions =   "WeightsPtDistributions.root",
+                                                    const char *file_CentralityBins =   "CentralityBins.root",
                                                     Double_t DCAxy_param0 = 0.00515869,
                                                     Double_t DCAxy_param1 = 0.01016680,
                                                     Double_t DCAxy_param2 = 1.34489,
@@ -66,6 +67,11 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Efficiency (
     TH2F *fWeight4 = (TH2F*) inputWeights->Get ("fHistoWeights(4)");
     TH2F *fWeight5 = (TH2F*) inputWeights->Get ("fHistoWeights(5)");
     
+    //Centrality Bins
+    TFile *inputCentrBins = TFile::Open (file_CentralityBins);
+    TH1F *fHistoCentralityBins = (TH1F*) inputCentrBins->Get ("fHistoCentralityBins");
+
+    
     
     //Task Name,InputBox & Output File
     const char * TaskName =   Form("DielectronTask_Efficiency_MCprod%d_Set%d_%s_MagField_%s",iMCprod,iset,centrality,magfield);
@@ -86,6 +92,7 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Efficiency (
 
     task -> AliAnalysisTaskDielectronsPbPb_Efficiency::GetDetectorResponseMatrices (fDetMatrixP,fDetMatrixTheta,fDetMatrixPhiElec,fDetMatrixPhiPos);
     task -> AliAnalysisTaskDielectronsPbPb_Efficiency::GetWeightsPtDistributions   (fWeight0,fWeight1,fWeight2,fWeight3,fWeight4,fWeight5);
+    task -> AliAnalysisTaskDielectronsPbPb_Efficiency::GetCentralityBins           (fHistoCentralityBins);
     mgr -> AddTask(task);
     AliAnalysisDataContainer *output = mgr->CreateContainer(InputBox,TList::Class(),AliAnalysisManager::kOutputContainer,OutputFile);
     mgr -> ConnectInput  (task,0,input);

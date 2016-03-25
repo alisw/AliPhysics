@@ -115,7 +115,9 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   AliClusterContainer *clusCont = correlationtask->AddClusterContainer(nClusters);
 
   // Particle Container
-  AliParticleContainer *partCont = correlationtask->AddParticleContainer(nTracks);
+  //AliParticleContainer *partCont = correlationtask->AddParticleContainer(nTracks);
+  AliTrackContainer *trackCont =  correlationtask->AddTrackContainer(nTracks);
+  if(trackCont && newFramework) trackCont->SetFilterHybridTracks(kTRUE);
   
   // Jet Containers
   AliJetContainer *jetCont0 = correlationtask->AddJetContainer(nJets, cutType, JetRadius);

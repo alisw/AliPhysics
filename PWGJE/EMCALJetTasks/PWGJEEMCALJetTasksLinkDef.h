@@ -29,6 +29,10 @@
 #pragma link C++ class AliJetTriggerSelectionTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
@@ -81,7 +85,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
-#pragma link C++ class AliAnalysisTaskGammaHadron+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
 #pragma link C++ namespace JETriggerRejectionAna+;
@@ -133,6 +136,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;

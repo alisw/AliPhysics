@@ -339,18 +339,345 @@ fh2dJetSignedImpParXYZSignificanceThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificanceudsgThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificancebThird_electron(0x0),
-fh2dJetSignedImpParXYZSignificancecThird_electron(0x0)
+fh2dJetSignedImpParXYZSignificancecThird_electron(0x0),
+fMCArray(0x0)
 {
+	for(int i =0 ; i<498;++i){
+		for(int j =0 ; j<16;++j){
+			fBackgroundFactorLinus[j][i]=1; //set default to 1
+		}}
 }
 // ######################################################################################## CONSTRUCTORS
-AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysisTaskEmcalJet(name, kTRUE),fJetCutsHF(new AliRDHFJetsCuts())
+AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysisTaskEmcalJet(name, kTRUE),fJetCutsHF(new AliRDHFJetsCuts()),
+		fHFJetUtils(0x0),
+		fh1dEventRejectionRDHFCuts(0x0),
+		fh1dVertexZ(0x0),
+		fh1dVertexZAccepted(0x0),
+		fh1dVertexR(0x0),
+		fh1dVertexRAccepted(0x0),
+		fh1dTracksAccepeted(0x0),
+		fh1dTracksImpParXY(0x0),
+		fh1dTracksImpParXYZ(0x0),
+		fh1dTracksImpParXYSignificance(0x0),
+		fh1dTracksImpParXYZSignificance(0x0),
+		fh1dTracksImpParXYTruth(0x0),
+		fh1dTracksImpParXYZTruth(0x0),
+		fh1dTracksImpParXYResidualTruth(0x0),
+		fh1dTracksImpParXYZResidualTruth(0x0),
+		fh1dTracksImpParXY_McCorr(0x0),
+		fh1dTracksImpParXYZ_McCorr(0x0),
+		fh1dTracksImpParXYSignificance_McCorr(0x0),
+		fh1dTracksImpParXYZSignificance_McCorr(0x0),
+		fh2dVertexChi2NDFNESDTracks(0x0),
+		fh1dJetGenPt(0x0),
+		fh1dJetGenPtUnidentified(0x0),
+		fh1dJetGenPtudsg(0x0),
+		fh1dJetGenPtc(0x0),
+		fh1dJetGenPtb(0x0),
+		fh1dJetRecPt(0x0),
+		fh1dJetRecPtAccepted(0x0),
+		fh1dJetRecEtaPhiAccepted(0x0),
+		fh1dJetRecPtUnidentified(0x0),
+		fh1dJetRecPtudsg(0x0),
+		fh1dJetRecPtc(0x0),
+		fh1dJetRecPtb(0x0),
+		fh1dJetRecPtUnidentifiedAccepted(0x0),
+		fh1dJetRecPtudsgAccepted(0x0),
+		fh1dJetRecPtcAccepted(0x0),
+		fh1dJetRecPtbAccepted(0x0),
+		fh2dJetGenPtVsJetRecPt(0x0),
+		fh2dJetSignedImpParXY(0x0),
+		fh2dJetSignedImpParXYUnidentified(0x0),
+		fh2dJetSignedImpParXYudsg(0x0),
+		fh2dJetSignedImpParXYb(0x0),
+		fh2dJetSignedImpParXYbNonBDecay(0x0),
+		fh2dJetSignedImpParXYc(0x0),
+		fh2dJetSignedImpParXYSignificance(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentified(0x0),
+		fh2dJetSignedImpParXYSignificanceudsg(0x0),
+		fh2dJetSignedImpParXYSignificanceb(0x0),
+		fh2dJetSignedImpParXYSignificancebNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancec(0x0),
+		fh2dJetSignedImpParXYZ(0x0),
+		fh2dJetSignedImpParXYZUnidentified(0x0),
+		fh2dJetSignedImpParXYZudsg(0x0),
+		fh2dJetSignedImpParXYZb(0x0),
+		fh2dJetSignedImpParXYZbNonBDecay(0x0),
+		fh2dJetSignedImpParXYZc(0x0),
+		fh2dJetSignedImpParXYZSignificance(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentified(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsg(0x0),
+		fh2dJetSignedImpParXYZSignificanceb(0x0),
+		fh2dJetSignedImpParXYZSignificancebNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancec(0x0),
+		fh2dJetSignedImpParXY_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYb_McCorr(0x0),
+		fh2dJetSignedImpParXYb_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYc_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificance_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceb_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancec_McCorr(0x0),
+		fh2dJetSignedImpParXYZ_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYZb_McCorr(0x0),
+		fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZc_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificance_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentified_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsg_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceb_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancec_McCorr(0x0),
+		fh2dJetSignedImpParXYFirst(0x0),
+		fh2dJetSignedImpParXYUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYudsgFirst(0x0),
+		fh2dJetSignedImpParXYbFirst(0x0),
+		fh2dJetSignedImpParXYbFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYcFirst(0x0),
+		fh2dJetSignedImpParXYSignificanceFirst(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgFirst(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst(0x0),
+		fh2dJetSignedImpParXYSignificancebFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecFirst(0x0),
+		fh2dJetSignedImpParXYZFirst(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYZudsgFirst(0x0),
+		fh2dJetSignedImpParXYZbFirst(0x0),
+		fh2dJetSignedImpParXYZbFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcFirst(0x0),
+		fh2dJetSignedImpParXYZSignificanceFirst(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgFirst(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirstNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecFirst(0x0),
+		fh2dJetSignedImpParXYSecond(0x0),
+		fh2dJetSignedImpParXYUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYudsgSecond(0x0),
+		fh2dJetSignedImpParXYbSecond(0x0),
+		fh2dJetSignedImpParXYbSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYcSecond(0x0),
+		fh2dJetSignedImpParXYSignificanceSecond(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgSecond(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond(0x0),
+		fh2dJetSignedImpParXYSignificancebSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecSecond(0x0),
+		fh2dJetSignedImpParXYZSecond(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYZudsgSecond(0x0),
+		fh2dJetSignedImpParXYZbSecond(0x0),
+		fh2dJetSignedImpParXYZbSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcSecond(0x0),
+		fh2dJetSignedImpParXYZSignificanceSecond(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgSecond(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecondNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecSecond(0x0),
+		fh2dJetSignedImpParXYThird(0x0),
+		fh2dJetSignedImpParXYUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYudsgThird(0x0),
+		fh2dJetSignedImpParXYbThird(0x0),
+		fh2dJetSignedImpParXYbThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYcThird(0x0),
+		fh2dJetSignedImpParXYSignificanceThird(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgThird(0x0),
+		fh2dJetSignedImpParXYSignificancebThird(0x0),
+		fh2dJetSignedImpParXYSignificancebThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecThird(0x0),
+		fh2dJetSignedImpParXYZThird(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYZudsgThird(0x0),
+		fh2dJetSignedImpParXYZbThird(0x0),
+		fh2dJetSignedImpParXYZbThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcThird(0x0),
+		fh2dJetSignedImpParXYZSignificanceThird(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgThird(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird(0x0),
+		fh2dJetSignedImpParXYZSignificancebThirdNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecThird(0x0),
+		fh2dJetSignedImpParXYFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYbFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYbFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYcFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZbFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecFirst_McCorr(0x0),
+		fh2dJetSignedImpParXYSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYbSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYbSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYcSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecSecond_McCorr(0x0),
+		fh2dJetSignedImpParXYThird_McCorr(0x0),
+		fh2dJetSignedImpParXYUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYbThird_McCorr(0x0),
+		fh2dJetSignedImpParXYbThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYcThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebThird_McCorr(0x0),
+		fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYSignificancecThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZbThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZbThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZcThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird_McCorr(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay(0x0),
+		fh2dJetSignedImpParXYZSignificancecThird_McCorr(0x0),
+		fh1dTracksImpParXY_electron(0x0),
+		fh1dTracksImpParXYZ_electron(0x0),
+		fh1dTracksImpParXYSignificance_electron(0x0),
+		fh1dTracksImpParXYZSignificance_electron(0x0),
+		//electrons
+		fh2dJetSignedImpParXY_electron(0x0),
+		fh2dJetSignedImpParXYUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYudsg_electron(0x0),
+		fh2dJetSignedImpParXYb_electron(0x0),
+		fh2dJetSignedImpParXYc_electron(0x0),
+		fh2dJetSignedImpParXYSignificance_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsg_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceb_electron(0x0),
+		fh2dJetSignedImpParXYSignificancec_electron(0x0),
+		fh2dJetSignedImpParXYZ_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYZudsg_electron(0x0),
+		fh2dJetSignedImpParXYZb_electron(0x0),
+		fh2dJetSignedImpParXYZc_electron(0x0),
+		fh2dJetSignedImpParXYZSignificance_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentified_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsg_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceb_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancec_electron(0x0),
+		fh2dJetSignedImpParXYFirst_electron(0x0),
+		fh2dJetSignedImpParXYUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYbFirst_electron(0x0),
+		fh2dJetSignedImpParXYcFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificancebFirst_electron(0x0),
+		fh2dJetSignedImpParXYSignificancecFirst_electron(0x0),
+		fh2dJetSignedImpParXYZFirst_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYZudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYZbFirst_electron(0x0),
+		fh2dJetSignedImpParXYZcFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancebFirst_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancecFirst_electron(0x0),
+		fh2dJetSignedImpParXYSecond_electron(0x0),
+		fh2dJetSignedImpParXYUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYbSecond_electron(0x0),
+		fh2dJetSignedImpParXYcSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificancebSecond_electron(0x0),
+		fh2dJetSignedImpParXYSignificancecSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSecond_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYZudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYZbSecond_electron(0x0),
+		fh2dJetSignedImpParXYZcSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancebSecond_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancecSecond_electron(0x0),
+		fh2dJetSignedImpParXYThird_electron(0x0),
+		fh2dJetSignedImpParXYUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYbThird_electron(0x0),
+		fh2dJetSignedImpParXYcThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificanceudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificancebThird_electron(0x0),
+		fh2dJetSignedImpParXYSignificancecThird_electron(0x0),
+		fh2dJetSignedImpParXYZThird_electron(0x0),
+		fh2dJetSignedImpParXYZUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYZudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYZbThird_electron(0x0),
+		fh2dJetSignedImpParXYZcThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificanceudsgThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancebThird_electron(0x0),
+		fh2dJetSignedImpParXYZSignificancecThird_electron(0x0),
+		fMCArray(0x0)
 {
+
+	for(int i =0 ; i<498;++i){
+		for(int j =0 ; j<16;++j){
+			fBackgroundFactorLinus[j][i]=1; //set default to 1
+		}}
+
 }
 // ########################################################################################  Main Loop
 Bool_t AliAnalysisTaskHFJetIPQA::Run()
 {
 
 	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+	if(fIsPythia)	fMCArray= dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+
 	//Main loop over AOD tracks with filterbit 4
 	double weight =1;
 	for(long itrack = 0; itrack<aev->GetNumberOfTracks();++itrack)
@@ -426,9 +753,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 		{
 			Int_t jetflavour =0;
 			Int_t partonpdg=0;
-			TClonesArray * mcparticles = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
 			AliAODMCParticle* parton = NULL;
-			parton = fHFJetUtils->IsMCJetParton(mcparticles, jetgen, 0.4);
+			parton = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
 			if(!parton) jetflavour =0;
 			else
 			{
@@ -496,10 +822,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 		{
 			jetmatched = 0x0;
 			jetmatched =jetrec->MatchedJet();
-			TClonesArray * mcparticles = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
 			AliAODMCParticle* parton = NULL;
 			if(jetmatched)
-				parton = fHFJetUtils->IsMCJetParton(mcparticles,jetmatched, 0.4);
+				parton = fHFJetUtils->IsMCJetParton(fMCArray,jetmatched, 0.4);
 			if(!parton) jetflavour =0;
 			else{
 				partonpdg = abs(parton->PdgCode());
@@ -511,19 +836,19 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 
 		fh1dJetRecPt->Fill(jetrec->Pt());
 		if(fIsPythia){
-			if(jetflavour==0) fh1dJetRecPtUnidentified->Fill(jetrec->Pt());
-			else if(jetflavour==1)fh1dJetRecPtudsg->Fill(jetrec->Pt());
-			else if(jetflavour==2)fh1dJetRecPtc->Fill(jetrec->Pt());
-			else if(jetflavour==3)fh1dJetRecPtb->Fill(jetrec->Pt());
+			if(jetflavour==0) fh1dJetRecPtUnidentified->Fill(jetpt);
+			else if(jetflavour==1)fh1dJetRecPtudsg->Fill(jetpt);
+			else if(jetflavour==2)fh1dJetRecPtc->Fill(jetpt);
+			else if(jetflavour==3)fh1dJetRecPtb->Fill(jetpt);
 		}
 		if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
 		fh1dJetRecEtaPhiAccepted->Fill(jetrec->Eta(),jetrec->Phi());
 		fh1dJetRecPtAccepted->Fill(jetpt);
 		if(fIsPythia){
-			if(jetflavour==0) fh1dJetRecPtUnidentifiedAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==1)fh1dJetRecPtudsgAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==2)fh1dJetRecPtcAccepted->Fill(jetrec->Pt());
-			else if(jetflavour==3)fh1dJetRecPtbAccepted->Fill(jetrec->Pt());
+			if(jetflavour==0) fh1dJetRecPtUnidentifiedAccepted->Fill(jetpt);
+			else if(jetflavour==1)fh1dJetRecPtudsgAccepted->Fill(jetpt);
+			else if(jetflavour==2)fh1dJetRecPtcAccepted->Fill(jetpt);
+			else if(jetflavour==3)fh1dJetRecPtbAccepted->Fill(jetpt);
 		}
 
 		std::vector<myvaluetuple> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
@@ -531,7 +856,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 		{
 			double dcatrackjet =999;
 			double lineardecaylenth = 999;
-//track = (AliAODTrack*)(((AliPicoTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack))))->GetTrack());
+			//track = (AliAODTrack*)(((AliPicoTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack))))->GetTrack());
 			track = (((AliAODTrack*)((jetconrec->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack)))));
 
 			if(!track) 	continue;
@@ -545,8 +870,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 				if(abs(dca[0])>1.) continue;
 				if(abs(dca[1])>2.) continue;
 				if(lineardecaylenth > 10.) continue;
-				if (dcatrackjet > 1.) continue;
-
+				if (dcatrackjet > 0.07) continue;
 
 				double cursImParXY =TMath::Abs(GetValImpactParameter(kXY,dca,cov))*sign;
 				double cursImParXYZ =TMath::Abs(GetValImpactParameter(kXY,dca,cov))*sign;
@@ -631,10 +955,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 						fh2dJetSignedImpParXYZSignificanceb->Fill(jetpt,cursImParXYZSig);
 
 						if(isfromBMeson){
-						fh2dJetSignedImpParXYb_McCorr->Fill(jetpt,cursImParXY,weight);
-						fh2dJetSignedImpParXYZb_McCorr->Fill(jetpt,cursImParXYZ,weight);
-						fh2dJetSignedImpParXYSignificanceb_McCorr->Fill(jetpt,cursImParXYSig,weight);
-						fh2dJetSignedImpParXYZSignificanceb_McCorr->Fill(jetpt,cursImParXYZSig,weight);
+							fh2dJetSignedImpParXYb_McCorr->Fill(jetpt,cursImParXY,weight);
+							fh2dJetSignedImpParXYZb_McCorr->Fill(jetpt,cursImParXYZ,weight);
+							fh2dJetSignedImpParXYSignificanceb_McCorr->Fill(jetpt,cursImParXYSig,weight);
+							fh2dJetSignedImpParXYZSignificanceb_McCorr->Fill(jetpt,cursImParXYZSig,weight);
 						}
 						else{
 							fh2dJetSignedImpParXYb_McCorrNonBDecay->Fill(jetpt,cursImParXY,weight);
@@ -927,13 +1251,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 					if(sImpParXYZ.at(2).is_fromB)fh2dJetSignedImpParXYZbThird_McCorr->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
 					if(sImpParXYSig.at(2).is_fromB) fh2dJetSignedImpParXYSignificancebThird_McCorr->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
 					if(sImpParXYZSig.at(2).is_fromB)fh2dJetSignedImpParXYZSignificancebFirst_McCorr->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
-
 					if(!sImpParXY.at(2).is_fromB) fh2dJetSignedImpParXYbThird_McCorrNonBDecay->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
 					if(!sImpParXYZ.at(2).is_fromB) fh2dJetSignedImpParXYZbThird_McCorrNonBDecay->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
 					if(!sImpParXYSig.at(2).is_fromB) fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
 					if(!sImpParXYZSig.at(2).is_fromB) fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay->Fill(jetpt,sImpParXYZSig.at(2).first,sImpParXYZSig.at(2).second);
-
-
 					if(sImpParXY.at(2).is_electron) 	fh2dJetSignedImpParXYbThird_electron->Fill(jetpt,sImpParXY.at(2).first,sImpParXY.at(2).second);
 					if(sImpParXYZ.at(2).is_electron)	fh2dJetSignedImpParXYZbThird_electron->Fill(jetpt,sImpParXYZ.at(2).first,sImpParXYZ.at(2).second);
 					if(sImpParXYSig.at(2).is_electron)	fh2dJetSignedImpParXYSignificancebThird_electron->Fill(jetpt,sImpParXYSig.at(2).first,sImpParXYSig.at(2).second);
@@ -984,16 +1305,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsEventSelected()
 }
 // ######################################################################################## Init histograms
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
-
-	const Int_t nBins2dSignificance =1000;
-	const Int_t nBins3dSignificance =1000;
-	const Int_t nBins2d=500;
-	const Int_t nBins3d =500;
+	const Int_t nBins2dSignificance =500;
+	const Int_t nBins3dSignificance =500;
+	const Int_t nBins2d=250;
+	const Int_t nBins3d =250;
 	fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");
 	fNparents = 7;
 
 	if (!fOutput) fOutput = new TList();
 	fOutput->SetOwner(kTRUE);
+
 	//Event selection histograms
 	fh1dEventRejectionRDHFCuts = new TH1D("fh1dEventRejectionRDHFCuts;reason;count","Rejection reasons",8,0,8);
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(1,"Accepted");
@@ -1116,7 +1437,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedThird","fh2dJetSignedImpParXYSignificanceUnidentifiedThird;pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedThird","fh2dJetSignedImpParXYZSignificanceUnidentifiedThird;pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-		fh2dJetSignedImpParXYudsgThird = new TH2D("fh2dJetSignedImpParXYThirdecond","fh2dJetSignedImpParXYudsgThird;pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYudsgThird = new TH2D("fh2dJetSignedImpParXYudsgThird","fh2dJetSignedImpParXYudsgThird;pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZudsgThird  = new TH2D("fh2dJetSignedImpParXYZudsgThird","fh2dJetSignedImpParXYZudsgThird;pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgThird","fh2dJetSignedImpParXYSignificanceudsgThird;pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgThird","fh2dJetSignedImpParXYZSignificanceudsgThird;pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
@@ -1141,7 +1462,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificanceudsg_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificanceudsg_McCorr","fh2dJetSignedImpParXYSignificanceudsg (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsg_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_McCorr","fh2dJetSignedImpParXYZSignificanceudsg (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-		fh2dJetSignedImpParXYc_McCorr= new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_McCorr","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYc_McCorr= new TH2D("fh2dJetSignedImpParXYc_McCorr","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZc_McCorr  = new TH2D("fh2dJetSignedImpParXYZc_McCorr","fh2dJetSignedImpParXYZc (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancec_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancec_McCorr","fh2dJetSignedImpParXYSignificancec (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancec_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancec_McCorr","fh2dJetSignedImpParXYZSignificancec (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
@@ -1162,7 +1483,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr","fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgFirst_McCorr = new TH2D("fh2dJetSignedImpParXYudsgFirst_McCorr","fh2dJetSignedImpParXYudsgFirst (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		fh2dJetSignedImpParXYZudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYudsgFirst_McCorr","fh2dJetSignedImpParXYZudsgFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZudsgFirst_McCorr","fh2dJetSignedImpParXYZudsgFirst (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr","fh2dJetSignedImpParXYSignificanceudsgFirst (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr","fh2dJetSignedImpParXYZSignificanceudsgFirst (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
@@ -1183,7 +1504,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		//N=2
 		fh2dJetSignedImpParXYUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYUnidentifiedSecond (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYZUnidentifiedSecond (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr","fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgSecond_McCorr = new TH2D("fh2dJetSignedImpParXYudsgSecond_McCorr","fh2dJetSignedImpParXYudsgSecond (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
@@ -1202,9 +1523,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZbSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYZbSecond_McCorr","fh2dJetSignedImpParXYZbSecond (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay","fh2dJetSignedImpParXYZbSecond (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancebSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond_McCorr","fh2dJetSignedImpParXYSignificancebSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-		fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond_McCorr","fh2dJetSignedImpParXYSignificancebSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay","fh2dJetSignedImpParXYSignificancebSecond (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebSecond_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancebSecond_McCorr","fh2dJetSignedImpParXYZSignificancebSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
-		fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificancebSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificancebSecond (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 
 		//N=3
@@ -1220,7 +1541,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 		fh2dJetSignedImpParXYcThird_McCorr= new TH2D("fh2dJetSignedImpParXYcThird_McCorr","fh2dJetSignedImpParXYcThird (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZcThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZcThird_McCorr","fh2dJetSignedImpParXYZcThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancecThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZcThird_McCorr","fh2dJetSignedImpParXYSignificancecThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancecThird_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancecThird_McCorr","fh2dJetSignedImpParXYSignificancecThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancecThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancecThird_McCorr","fh2dJetSignedImpParXYZSignificancecThird (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 
@@ -1230,9 +1551,8 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZbThird_McCorr = new TH2D("fh2dJetSignedImpParXYZbThird_McCorr","fh2dJetSignedImpParXYZbThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYZbThird_McCorrNonBDecay = new TH2D("fh2dJetSignedImpParXYZbThird_McCorrNonBDecay","fh2dJetSignedImpParXYZbThird (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 
-		fh2dJetSignedImpParXYSignificancebThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZbThird_McCorr","fh2dJetSignedImpParXYSignificancebThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebThird_McCorr  = new TH2D("fh2dJetSignedImpParXYSignificancebThird_McCorr","fh2dJetSignedImpParXYSignificancebThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay","fh2dJetSignedImpParXYSignificancebThird (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-
 		fh2dJetSignedImpParXYZSignificancebThird_McCorr  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird_McCorr","fh2dJetSignedImpParXYZSignificancebThird (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay","fh2dJetSignedImpParXYZSignificancebThird (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
@@ -1252,7 +1572,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYSignificanceudsg_electron  = new TH2D("fh2dJetSignedImpParXYSignificanceudsg_electron","fh2dJetSignedImpParXYSignificanceudsg (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsg_electron  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_electron","fh2dJetSignedImpParXYZSignificanceudsg (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-		fh2dJetSignedImpParXYc_electron= new TH2D("fh2dJetSignedImpParXYZSignificanceudsg_electron","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYc_electron= new TH2D("fh2dJetSignedImpParXYc_electron","fh2dJetSignedImpParXYc (after correction);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZc_electron  = new TH2D("fh2dJetSignedImpParXYZc_electron","fh2dJetSignedImpParXYZc (after correction);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificancec_electron  = new TH2D("fh2dJetSignedImpParXYSignificancec_electron","fh2dJetSignedImpParXYSignificancec (after correction);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancec_electron  = new TH2D("fh2dJetSignedImpParXYZSignificancec_electron","fh2dJetSignedImpParXYZSignificancec (after correction);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
@@ -1270,7 +1590,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_electron = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_electron","fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgFirst_electron = new TH2D("fh2dJetSignedImpParXYudsgFirst_electron","fh2dJetSignedImpParXYudsgFirst (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		fh2dJetSignedImpParXYZudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYudsgFirst_electron","fh2dJetSignedImpParXYZudsgFirst (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYZudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYZudsgFirst_electron","fh2dJetSignedImpParXYZudsgFirst (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
 		fh2dJetSignedImpParXYSignificanceudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgFirst_electron","fh2dJetSignedImpParXYSignificanceudsgFirst (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceudsgFirst_electron  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgFirst_electron","fh2dJetSignedImpParXYZSignificanceudsgFirst (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
@@ -1287,7 +1607,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		//N=2
 		fh2dJetSignedImpParXYUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYUnidentifiedSecond_electron","fh2dJetSignedImpParXYUnidentifiedSecond (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_electron","fh2dJetSignedImpParXYZUnidentifiedSecond (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond_electron","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_electron","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_electron = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_electron","fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYudsgSecond_electron = new TH2D("fh2dJetSignedImpParXYudsgSecond_electron","fh2dJetSignedImpParXYudsgSecond (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
@@ -1317,12 +1637,12 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 		fh2dJetSignedImpParXYcThird_electron= new TH2D("fh2dJetSignedImpParXYcThird_electron","fh2dJetSignedImpParXYcThird (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZcThird_electron  = new TH2D("fh2dJetSignedImpParXYZcThird_electron","fh2dJetSignedImpParXYZcThird (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancecThird_electron  = new TH2D("fh2dJetSignedImpParXYZcThird_electron","fh2dJetSignedImpParXYSignificancecThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancecThird_electron  = new TH2D("fh2dJetSignedImpParXYSignificancecThird_electron","fh2dJetSignedImpParXYSignificancecThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancecThird_electron  = new TH2D("fh2dJetSignedImpParXYZSignificancecThird_electron","fh2dJetSignedImpParXYZSignificancecThird (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		fh2dJetSignedImpParXYbThird_electron= new TH2D("fh2dJetSignedImpParXYbThird_electron","fh2dJetSignedImpParXYbThird (electrons);pt_jet (GeV/c); radial imp. parameter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fh2dJetSignedImpParXYZbThird_electron = new TH2D("fh2dJetSignedImpParXYZbThird_electron","fh2dJetSignedImpParXYZbThird (electrons);pt_jet (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificancebThird_electron  = new TH2D("fh2dJetSignedImpParXYZbThird_electron","fh2dJetSignedImpParXYSignificancebThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYSignificancebThird_electron  = new TH2D("fh2dJetSignedImpParXYSignificancebThird_electron","fh2dJetSignedImpParXYSignificancebThird (electrons);pt_jet (GeV/c); radial imp. parameter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		fh2dJetSignedImpParXYZSignificancebThird_electron  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird_electron","fh2dJetSignedImpParXYZSignificancebThird (electrons);pt_jet (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 	}
@@ -1590,6 +1910,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetSignedImpParXYZbThird_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYSignificancebThird_McCorr);
 		fOutput->Add(fh2dJetSignedImpParXYZSignificancebThird_McCorr);
+
 		fOutput->Add(fh2dJetSignedImpParXYbThird_McCorrNonBDecay);
 		fOutput->Add(fh2dJetSignedImpParXYZbThird_McCorrNonBDecay);
 		fOutput->Add(fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay);
@@ -1717,6 +2038,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 	fOutput->Add(fh1dJetRecEtaPhiAccepted);
 
 	if(fIsPythia){
+
 		fOutput->Add(fh1dJetRecPtUnidentified);
 		fOutput->Add(fh1dJetRecPtudsg);
 		fOutput->Add(fh1dJetRecPtc);
@@ -1726,7 +2048,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 		fOutput->Add(fh1dJetRecPtcAccepted);
 		fOutput->Add(fh1dJetRecPtbAccepted);
 	}
-
 
 	fOutput->Add(fh2dJetSignedImpParXY);
 	fOutput->Add(fh2dJetSignedImpParXYZ);
@@ -1747,11 +2068,10 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
 	TIter next(fOutput);
 	while (TObject *obj = next.Next()){
-		if(obj->IsA() == TH1::Class()){
+		if(obj->IsA() == TH1D::Class() || obj->IsA() == TH2D::Class()){
 			((TH1*)obj)->Sumw2();
 		}
 	}
-
 	PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 // ######################################################################################## Calculate impact parameters
@@ -2049,10 +2369,7 @@ void AliAnalysisTaskHFJetIPQA::DoJetLoop()
 // ######################################################################################## Jet matching 3/4
 Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpart,bool &isTrackFromPrompt){
 
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-	if(!mcpart) return -1;
+	if(!mcpart) return 1;
 	//******Check the following cases*****
 	// 1. is from primary D Meson
 	// 2. is from primary K0s or Lambda
@@ -2061,372 +2378,411 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactorLinus( AliAODMCParticle * mcpa
 
 	// check if particle is a primary charged pion or proton
 	Int_t pPdgcode = abs(mcpart->GetPdgCode());
-
 	Bool_t found = kFALSE;
 	Double_t pTWeight =0;
 	Int_t foundPdg =-1;
 	Int_t correctionidx =-1;
-
 	Int_t maPdgcode = 0;
+	Int_t maPdgcodeOld = 0;
+	AliAODMCParticle * motherOld =0x0;
 	Int_t pMotherLabel = 	mcpart->GetMother();
 	bool isprim = false;
 	AliAODMCParticle * mcpartMother = 0x0;
-	mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
+	if(pMotherLabel<0) isprim =true;
+	else mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(pMotherLabel));
 	if (!mcpartMother )isprim =true;
 
 	if(!isprim){
 		maPdgcode = abs(mcpartMother->GetPdgCode());
 		if(maPdgcode>0 && maPdgcode<6) isprim =true;
+		if(mcpartMother->GetStatus()>11) isprim =true;
 		if(maPdgcode==21) isprim =true;
-		if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
-	}
+		if(IsPromptBMeson(mcpartMother)) {
 
-	if(pPdgcode == bProton && 	mcpart->IsPhysicalPrimary() ){
-		//Is Primary proton
-		found = kTRUE;
-		foundPdg =bProton;
-		correctionidx = bIdxProton;
-		pTWeight =mcpart->Pt();
-	}
-	else if(pPdgcode == bPi&& 	mcpart->IsPhysicalPrimary() ){
-		//Is Primary charged pion
-		found = kTRUE;
-		foundPdg =bPi;
-		correctionidx = bIdxPi;
-		pTWeight =mcpart->Pt();
-		return 1;
-	}
-	else if(pPdgcode == bKaon&& 	mcpart->IsPhysicalPrimary() ){
-		//Is Primary charged kaon
-		found = kTRUE;
-		pTWeight =mcpart->Pt();
-		foundPdg =bKaon;
-		correctionidx = bIdxKaon;
-		return 1;
-	}
-	else if(ParticleIsPossibleSource(maPdgcode)){
-		if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
-			found = kTRUE;
-			foundPdg =maPdgcode;
-		}
+			isTrackFromPrompt = kTRUE;
+			if(GetBMesonWeight(mcpartMother,maPdgcode,pTWeight,correctionidx)){
+				found = kTRUE;
+				foundPdg =maPdgcode;
 
-	}
-	else {
-
-		while (mcpartMother->GetMother() >0){
-			pMotherLabel = 	mcpartMother->GetMother();
-			mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
-			if (!mcpartMother )isprim =true;
-			if(IsPromptBMeson(mcpartMother)) {isTrackFromPrompt = kTRUE;return 1; }
-
-			if(!isprim){
-				maPdgcode = abs(mcpartMother->GetPdgCode());
-				if(maPdgcode>0 && maPdgcode<6) isprim =true;
-				if(maPdgcode==21) isprim =true;
 			}
-			if(ParticleIsPossibleSource(maPdgcode)){
-				if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
-					found = kTRUE;
-					foundPdg =maPdgcode;
-					break;
+		}
+	}
+	if(!isTrackFromPrompt){
+		if(pPdgcode == bProton && 	isprim ){
+			//Is Primary proton
+			found = kTRUE;
+			foundPdg =bProton;
+			correctionidx = bIdxProton;
+			pTWeight =mcpart->Pt();
+		}
+		else if(pPdgcode == bPi&& 	isprim){
+			//Is Primary charged pion
+			found = kTRUE;
+			foundPdg =bPi;
+			correctionidx = bIdxPi;
+			pTWeight =mcpart->Pt();
+		}
+		else if(pPdgcode == bKaon&& 	isprim ){
+			//Is Primary charged kaon
+			found = kTRUE;
+			pTWeight =mcpart->Pt();
+			foundPdg =bKaon;
+			correctionidx = bIdxKaon;
+		}
+		else if(!isprim && ParticleIsPossibleSource(maPdgcode)){
+			if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
+				found = kTRUE;
+				foundPdg =maPdgcode;
+
+			}
+		}
+		else {
+			while (mcpartMother->GetMother() >0 && !isTrackFromPrompt){
+				maPdgcodeOld = maPdgcode;
+				motherOld =mcpartMother;
+				isprim=false;
+
+
+				pMotherLabel = 	mcpartMother->GetMother();
+				mcpartMother = 0x0;
+				mcpartMother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(pMotherLabel)));
+				if (!mcpartMother )isprim =true;
+				maPdgcode = abs(mcpartMother->GetPdgCode());
+
+				if(IsPromptBMeson(mcpartMother)) {
+					isTrackFromPrompt = kTRUE;
+					if(GetBMesonWeight(mcpartMother,maPdgcode,pTWeight,correctionidx)){
+						found = kTRUE;
+						foundPdg =maPdgcode;
+						break;
+					}}
+					if(!isprim){
+						maPdgcode = abs(mcpartMother->GetPdgCode());
+						if(maPdgcode>0 && maPdgcode<6) isprim =true;
+						if(mcpartMother->GetStatus()>11) isprim =true;
+						if(maPdgcode==21) isprim =true;
+					}
+					if(!isprim && ParticleIsPossibleSource(maPdgcode)){
+						if (IsSelectionParticle(mcpartMother,maPdgcode,pTWeight,correctionidx)) {
+							found = kTRUE;
+							foundPdg =maPdgcode;
+							break;
+						}
+					}
+					else if (!isprim) continue;
+					else break;
 				}
 			}
-			else if (!isprim) continue;
-			else break;
+
 		}
+		if (!found) {
+
+
+			return 1;
+		}
+		// Do the weighting
+
+		Double_t factor = 1;
+		//calculate pt of array entry
+		// 0.1 -25.GeV 0.05 per bin 498 bins
+		double wpos = ((pTWeight - 0.15)/ 0.05);
+		double  fractpart, intpart;
+		fractpart = modf (wpos , &intpart);
+		if (fractpart > 0) intpart = intpart + 1;
+		int  bin = floor(intpart);
+		if (bin > 497) bin = 497;			// above weight definition
+		if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
+		factor = fBackgroundFactorLinus[correctionidx][bin];
+		if (factor <= 0) return 1;
+		else
+			return factor;
 	}
 
-	//
-	if (!found) return 1;
-	// Do the weighting
 
-	Double_t factor = 1;
+	// ########################################################################################
 
-	//calculate pt of array entry
-	// 0.1 -25.GeV 0.05 per bin 498 bins
+	Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) {
 
-	double wpos = ((pTWeight - 0.15)/ 0.05);
-	double  fractpart, intpart;
-	 fractpart = modf (wpos , &intpart);
-	if (fractpart > 0) intpart = intpart + 1;
-	int  bin = floor(intpart);
+		// If a particle is not a physical primary, check if it comes from weak decay
 
-	if (bin > 497) bin = 497;			// above weight definition
-	if (pTWeight < 0.1+ 1E-5) bin = 0; //below weight definition
-
-	factor = fBackgroundFactorLinus[correctionidx][bin];
-
-
-	if (factor <= 0) return 1;
-	else
-	return factor;
-}
-
-
-// ########################################################################################
-
-Bool_t AliAnalysisTaskHFJetIPQA::IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) {
-
-	// If a particle is not a physical primary, check if it comes from weak decay
-
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-
-	Int_t mfl = 0;
-	Int_t indexMoth = particle->GetMother();
-	if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
-	AliAODMCParticle* moth = dynamic_cast<AliAODMCParticle *>(fMCArray->At(indexMoth));
-	Int_t pcodemoth = TMath::Abs(particle->GetPdgCode());
-	Int_t codemoth = TMath::Abs(moth->GetPdgCode());
-
-	// mass of the flavour
-	mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
-	if(mfl == 4|| mfl ==5) return kTRUE;
-
-	if(pcodemoth==bPi0){
-		if(codemoth == bK0s) return kTRUE;
-		else if(codemoth == bK0l) return kTRUE;
-		else if(TMath::Abs(codemoth) == bKaon) return kTRUE;
-		else if(TMath::Abs(codemoth) == bLambda) return kTRUE;
-		if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
+		Int_t mfl = 0;
+		Int_t indexMoth = particle->GetMother();
+		if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
+		AliAODMCParticle* moth = dynamic_cast<AliAODMCParticle *>(fMCArray->At(indexMoth));
+		Int_t pcodemoth = TMath::Abs(particle->GetPdgCode());
+		Int_t codemoth = TMath::Abs(moth->GetPdgCode());
+		// mass of the flavour
+		mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+		if(mfl == 4|| mfl ==5) return kTRUE;
+		if(pcodemoth==bPi0){
+			if(codemoth == bK0s) return kTRUE;
+			if(codemoth == bK0l) return kTRUE;
+			if(TMath::Abs(codemoth) == bKaon) return kTRUE;
+			if(TMath::Abs(codemoth) == bLambda) return kTRUE;
+			if(codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113 || codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bPhi){
+			if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bOmega){
+			if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bEtaPrime){
+			if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bRho){
+			if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331|| codemoth == bRhoPlus) return kTRUE;
+		}
+		else if (pcodemoth==bEta){
+			if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113|| codemoth == bRhoPlus) return kTRUE;    }
+		return kFALSE;
 	}
-	else if (pcodemoth==bPhi){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 331 || codemoth == 113) return kTRUE;
-	}
-	else if (pcodemoth==bOmega){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;
-	}
-	else if (pcodemoth==bEtaPrime){
-		if(codemoth == 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 113) return kTRUE;
-	}
-	else if (pcodemoth==bRho){
-		if(codemoth== 111 || codemoth == 221 || codemoth == 223 || codemoth == 333 || codemoth == 331) return kTRUE;
-	}
-	else if (pcodemoth==bEta){
-		if(codemoth == 111 || codemoth == 223 || codemoth == 333 || codemoth == 331 || codemoth == 113) return kTRUE;    }
-	return kFALSE;
-}
 
-// ########################################################################################
-Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart ,int &pdg,double &pT,int &idx ){
+	// ########################################################################################
 
-	pT = mcpart->Pt();
-	switch(pdg){
-	case bPi0:
-
-		if(!IsSecondaryFromWeakDecay(mcpart) && !mcpart->IsSecondaryFromMaterial()){
-			idx = bIdxPi0;
-			return kTRUE;
-
-		}
-
-		break;
-	case bEta:
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
-			idx = bIdxEta;
-			return kTRUE;
-
-		}
-
-		break;
-	case bEtaPrime:
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
-			idx = bIdxEtaPrime;
-			return kTRUE;
-		}
-
-		break;
-	case bOmega:
-		idx = bIdxOmega;
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
-			return kTRUE;
-		}
-
-		break;
-	case bPhi:
-		idx = bIdxPhi;
-
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
-			return kTRUE;
-		}
-
-		break;
-	case bRho:
-		idx = bIdxRho;
-		if(!IsSecondaryFromWeakDecay(mcpart)&& !mcpart->IsSecondaryFromMaterial()){
-			return kTRUE;
-		}
-		break;
-	case bD0:
-		idx = bIdxD0;
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bDPlus:
-		idx = bIdxDPlus;
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bIdxDSPlus:
-		idx = bDSPlus;
-
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-	case bDStarPlus:
-		idx = bIdxDStarPlus;
-
-		if(IsPromptDMeson(mcpart)){
-			return kTRUE;
-		}
-		break;
-
-	case bLambda:
-		idx = bIdxLambda;
-
-		if(mcpart->IsPhysicalPrimary())
-		{
-			return kTRUE;
-		}
-		break;
-	case bK0s:
-		idx = bIdxK0s;
-
-		if(mcpart->IsPhysicalPrimary())
-		{
-			return kTRUE;
-		}
-		break;
-	default:
-		break;
-	}
-	return kFALSE;
-}
-
-// ########################################################################################
-bool AliAnalysisTaskHFJetIPQA::IsPromptBMeson(AliAODMCParticle * part )
-{
-
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-	if(!part) return false;
-	int pdg = TMath::Abs(part->GetPdgCode());
-
-	if ((pdg >= 500 && pdg < 600 )||(pdg >= 5000 && pdg < 6000 ))
+	Bool_t AliAnalysisTaskHFJetIPQA::GetBMesonWeight( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  )
 	{
-		Int_t imo =  part->GetMother();
-		AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
-		Int_t mpdg = TMath::Abs(pm->GetPdgCode());
-		if (!(mpdg >5000 && mpdg <6000) && !(mpdg >500 && mpdg <600))
-			return true;
+		//Run after is primary check
+		//==> only switch required
+		pT = mcpart->Pt();
+		switch(pdg){
+		case bBPlus:
+			idx = bIdxBPlus;
+			return kTRUE;
+		case bB0:
+			idx = bIdxB0;
+			return kTRUE;
+		case bLambdaB:
+			idx = bIdxLambdaB;
+			return kTRUE;
+			break;
+		case bBStarPlus:
+			idx = bIdxBStarPlus;
+			return kTRUE;
+			break;
+		default:
+			break;
+		}
+		return kFALSE;
 	}
 
-	return false;
-}
+	// ########################################################################################
+	Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticle( AliAODMCParticle *  mcpart ,int &pdg,double &pT,int &idx ){
 
-// ########################################################################################
-bool AliAnalysisTaskHFJetIPQA::IsPromptDMeson(AliAODMCParticle * part )
-{
+		pT = mcpart->Pt();
 
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
+		bool isprim =false;
+		int mpdg = 0;
+		if(mcpart->GetMother()>-1)mpdg = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(mcpart->GetMother())))->GetPdgCode();
+		if(mpdg>0 && mpdg<6) isprim =true;
+		if(mpdg==21) isprim =true;
+		if(dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(mcpart->GetMother())))->GetStatus()>11) isprim =true;
 
-	if(!part) return false;
-	int pdg = TMath::Abs(part->GetPdgCode());
+		switch(pdg){
+		case bPi0:
+			if(!IsSecondaryFromWeakDecay(mcpart) ){
+				idx = bIdxPi0;
+				return kTRUE;
+			}
 
-	if ((pdg >= 400 && pdg < 500 )||(pdg >= 4000 && pdg < 5000 ))
+			break;
+		case bEta:
+			if(!IsSecondaryFromWeakDecay(mcpart) ){
+				idx = bIdxEta;
+				return kTRUE;
+			}
+
+			break;
+		case bEtaPrime:
+			if(!IsSecondaryFromWeakDecay(mcpart) ){
+				idx = bIdxEtaPrime;
+				return kTRUE;
+			}
+			break;
+		case bOmega:
+			idx = bIdxOmega;
+			if(!IsSecondaryFromWeakDecay(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bPhi:
+			idx = bIdxPhi;
+			if(!IsSecondaryFromWeakDecay(mcpart)){
+				return kTRUE;
+			}
+
+			break;
+		case bRho:
+			idx = bIdxRho;
+			if(!IsSecondaryFromWeakDecay(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bD0:
+			idx = bIdxD0;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bDPlus:
+			idx = bIdxDPlus;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bIdxDSPlus:
+			idx = bDSPlus;
+
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bDStarPlus:
+			idx = bIdxDStarPlus;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bLambdaC:
+			idx = bIdxLambdaC;
+			if(IsPromptDMeson(mcpart)){
+				return kTRUE;
+			}
+			break;
+		case bLambda:
+			idx = bIdxLambda;
+			if(mcpart->IsPhysicalPrimary())
+			{
+				return kTRUE;
+			}
+			break;
+		case bK0s:
+			idx = bIdxK0s;
+
+			if(mcpart->IsPhysicalPrimary())
+			{
+				return kTRUE;
+			}
+			break;
+		case bPi:
+			if(isprim){
+				idx =bIdxPi;
+				return kTRUE;
+			}
+			break;
+		case bKaon:
+			if(isprim){
+				idx =bIdxKaon;
+				return kTRUE;
+			}
+			break;
+		default:
+			break;
+		}
+		return kFALSE;
+	}
+
+	// ########################################################################################
+	bool AliAnalysisTaskHFJetIPQA::IsPromptBMeson(AliAODMCParticle * part )
 	{
-		Int_t imo =  part->GetMother();
-		AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
-		Int_t mpdg = TMath::Abs(pm->GetPdgCode());
-		if (!(mpdg >4000 && mpdg <6000) && !(mpdg >400 && mpdg <600))
-			return true;
 
-	}
-
-	return false;
-}
-// ########################################################################################
-Bool_t AliAnalysisTaskHFJetIPQA::ParticleIsPossibleSource(int pdg){
-
-	int pos[14] = {bPi0,bEta,bEtaPrime,bPhi,bRho,bOmega,bK0s,bLambda,bOmegaBaryon,bXiBaryon,bD0,bDPlus,bDStarPlus,bDSPlus};
-
-	for (int i =0 ;i<14 ;++i){
-		if (abs(pdg)==pos[i] ) return kTRUE;
-	}
-	return kFALSE;
-}
-// ######################################################################################## Jet matching 3/4
-void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
-{
-	Double_t d1 = -1;
-	Double_t d2 = -1;
-
-	switch (matching) {
-	case 1:
-		GetGeometricalMatchingLevel(jet1,jet2,d1);
-		d2 = d1;
-		break;
-	default:
-		break;
-	}
-
-	if (d1 >= 0) {
-
-		if (d1 < jet1->ClosestJetDistance()) {
-			jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
-			jet1->SetClosestJet(jet2, d1);
+		if(!part) return false;
+		int pdg = TMath::Abs(part->GetPdgCode());
+		if ((pdg >= 500 && pdg < 600 )||(pdg >= 5000 && pdg < 6000 ))
+		{
+			Int_t imo =  part->GetMother();
+			AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
+			Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+			if (!(mpdg >5000 && mpdg <6000) && !(mpdg >500 && mpdg <600))
+				return true;
 		}
-		else if (d1 < jet1->SecondClosestJetDistance()) {
-			jet1->SetSecondClosestJet(jet2, d1);
+		return false;
+	}
+
+	// ########################################################################################
+	bool AliAnalysisTaskHFJetIPQA::IsPromptDMeson(AliAODMCParticle * part )
+	{
+		if(!part) return false;
+		int pdg = TMath::Abs(part->GetPdgCode());
+		if ((pdg >= 400 && pdg < 500 )||(pdg >= 4000 && pdg < 5000 ))
+		{
+			Int_t imo =  part->GetMother();
+			AliAODMCParticle* pm = dynamic_cast<AliAODMCParticle *>(fMCArray->At(imo));
+			Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+			if (!(mpdg >4000 && mpdg <6000) && !(mpdg >400 && mpdg <600))
+				return true;
+
+		}
+		return false;
+	}
+	// ########################################################################################
+	Bool_t AliAnalysisTaskHFJetIPQA::ParticleIsPossibleSource(int pdg){
+		int pos[19] = {bPi0,bEta,bEtaPrime,bPhi,bRho,bOmega,bK0s,bLambda,bOmegaBaryon,bXiBaryon,bD0,bDPlus,bDStarPlus,bDSPlus,bLambdaB,bLambdaC,bBPlus,bB0,bBStarPlus};
+		for (int i =0 ;i<19 ;++i){
+			if (abs(pdg)==pos[i] ) return kTRUE;
+		}
+		return kFALSE;
+	}
+	// ######################################################################################## Jet matching 3/4
+	void AliAnalysisTaskHFJetIPQA::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
+	{
+		Double_t d1 = -1;
+		Double_t d2 = -1;
+
+		switch (matching) {
+		case 1:
+			GetGeometricalMatchingLevel(jet1,jet2,d1);
+			d2 = d1;
+			break;
+		default:
+			break;
+		}
+		if (d1 >= 0) {
+
+			if (d1 < jet1->ClosestJetDistance()) {
+				jet1->SetSecondClosestJet(jet1->ClosestJet(), jet1->ClosestJetDistance());
+				jet1->SetClosestJet(jet2, d1);
+			}
+			else if (d1 < jet1->SecondClosestJetDistance()) {
+				jet1->SetSecondClosestJet(jet2, d1);
+			}
+		}
+		if (d2 >= 0) {
+			if (d2 < jet2->ClosestJetDistance()) {
+				jet2->SetSecondClosestJet(jet2->ClosestJet(), jet2->ClosestJetDistance());
+				jet2->SetClosestJet(jet1, d2);
+			}
+			else if (d2 < jet2->SecondClosestJetDistance()) {
+				jet2->SetSecondClosestJet(jet1, d2);
+			}
 		}
 	}
-	if (d2 >= 0) {
-		if (d2 < jet2->ClosestJetDistance()) {
-			jet2->SetSecondClosestJet(jet2->ClosestJet(), jet2->ClosestJetDistance());
-			jet2->SetClosestJet(jet1, d2);
-		}
-		else if (d2 < jet2->SecondClosestJetDistance()) {
-			jet2->SetSecondClosestJet(jet1, d2);
-		}
+
+	// ######################################################################################## Jet matching 4/4
+	void AliAnalysisTaskHFJetIPQA::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const
+	{
+		Double_t deta = jet2->Eta() - jet1->Eta();
+		Double_t dphi = jet2->Phi() - jet1->Phi();
+		dphi = TVector2::Phi_mpi_pi(dphi);
+		d = TMath::Sqrt(deta * deta + dphi * dphi);
+	}// ######################################################################################## Monte Carlo correction factors
+	Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB){
+
+		AliAODMCParticle *pMC = 0x0;
+		AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
+
+		pMC = GetMCTrack(track);
+		if(pMC) 	if(TMath::Abs(pMC->PdgCode())==11)ise = true;
+
+		//double val =GetWeightFactor(pMC,0);
+		double val = GetWeightFactorLinus(pMC,fromB);
+		if(val != 0 )return val;
+		return 1.;
 	}
-}
 
-// ######################################################################################## Jet matching 4/4
-void AliAnalysisTaskHFJetIPQA::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const
-{
-	Double_t deta = jet2->Eta() - jet1->Eta();
-	Double_t dphi = jet2->Phi() - jet1->Phi();
-	dphi = TVector2::Phi_mpi_pi(dphi);
-	d = TMath::Sqrt(deta * deta + dphi * dphi);
-}// ######################################################################################## Monte Carlo correction factors
-Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB){
+	// ######################################################################################## Monte Carlo correction factors
 
-	AliAODMCParticle *pMC = 0x0;
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	AliAODMCHeader* mcheader = dynamic_cast<AliAODMCHeader*>(aev->FindListObject(AliAODMCHeader::StdBranchName()));
-	if (!mcheader) return 1;
-	TClonesArray * fMCparticles = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (!fMCparticles) return 1;
-	if(track->GetLabel()>-1)
-		pMC = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(track->GetLabel()));
-
-	if(pMC) 	if(TMath::Abs(pMC->PdgCode())==11)ise = true;
-	//double val =GetWeightFactor(pMC,0);
-
-	double val = GetWeightFactorLinus(pMC,fromB);
-	if(val != 0 )return val;
-	return 1.;
-}
-
-// ######################################################################################## Monte Carlo correction factors
-
-/*
+	/*
 // ######################################################################################## Monte Carlo correction factors
 Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* track){
 	// Todo: Best handle on missing mc information ... currently scale with 1
@@ -2480,269 +2836,296 @@ Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliAODTrack* tr
 
 	return 1.;
 }*/
-// ######################################################################################## Monte Carlo correction factors
-Int_t AliAnalysisTaskHFJetIPQA::GetElecSource(const AliAODMCParticle *  const mcpart,Double_t &mpt) const
-{
-	//
-	// Function for AliAODMCParticle
-	//
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-	if (!fMCArray) return -1;
-	////////////////
-	Int_t origin = -1;
-	Bool_t isFinalOpenCharm = kFALSE;
-
-	Int_t iLabel = mcpart->GetMother();
-	if ((iLabel<0) || (iLabel>=fMCArray->GetEntriesFast())){
-		AliDebug(1, "label is out of range, return\n");
-		return -1;
-	}
-
-	AliAODMCParticle *mctrack = NULL; // will change all the time
-	Int_t tmpMomLabel=0;
-	if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return -1;
-	AliAODMCParticle *partMother = mctrack;
-	AliAODMCParticle *partMotherCopy = mctrack;
-	Int_t maPdgcode = mctrack->GetPdgCode();
-	mpt = partMother->Pt();
-
-	Int_t grmaPdgcode;
-	Int_t ggrmaPdgcode;
-
-	// if the mother is charmed hadron
-
-	if(TMath::Abs(maPdgcode)==443){
+	// ######################################################################################## Monte Carlo correction factors
+	Int_t AliAnalysisTaskHFJetIPQA::GetElecSource(const AliAODMCParticle *  const mcpart,Double_t &mpt) const
+	{
 		//
-		// J/spi
+		// Function for AliAODMCParticle
 		//
-		Int_t jLabel = partMother->GetMother();
-		if ((jLabel>=0) && (jLabel<fMCArray->GetEntriesFast())){
-			if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
-				Int_t grandMaPDG = mctrack->GetPdgCode();
-				mpt = mctrack->Pt();
-				if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) {
-					return kB2Jpsi;
-				}
-			}
-		}
-		return kJpsi;
-	}
-	else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(maPdgcode)/1000.)%10) == kCharm ) {
-		//
-		// charm
-		//
-		for (Int_t i=0; i<fNparents; i++){
-			if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
-				isFinalOpenCharm = kTRUE;
-			}
-		}
-		if (!isFinalOpenCharm) {
+
+		if (!fMCArray) return -1;
+		////////////////
+		Int_t origin = -1;
+		Bool_t isFinalOpenCharm = kFALSE;
+
+		Int_t iLabel = mcpart->GetMother();
+		if ((iLabel<0) || (iLabel>=fMCArray->GetEntriesFast())){
+			AliDebug(1, "label is out of range, return\n");
 			return -1;
 		}
 
-		// iterate until you find B hadron as a mother or become top ancester
-		for (Int_t i=1; i<fgkMaxIter; i++){
+		AliAODMCParticle *mctrack = NULL; // will change all the time
+		Int_t tmpMomLabel=0;
+		if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return -1;
+		AliAODMCParticle *partMother = mctrack;
+		AliAODMCParticle *partMotherCopy = mctrack;
+		Int_t maPdgcode = mctrack->GetPdgCode();
+		mpt = partMother->Pt();
 
+		Int_t grmaPdgcode;
+		Int_t ggrmaPdgcode;
+
+		// if the mother is charmed hadron
+
+		if(TMath::Abs(maPdgcode)==443){
+			//
+			// J/spi
+			//
 			Int_t jLabel = partMother->GetMother();
-			if (jLabel == -1){
-				return kDirectCharm;
+			if ((jLabel>=0) && (jLabel<fMCArray->GetEntriesFast())){
+				if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))){
+					Int_t grandMaPDG = mctrack->GetPdgCode();
+					mpt = mctrack->Pt();
+					if((int(TMath::Abs(grandMaPDG)/100.)%10) == kBeauty || (int(TMath::Abs(grandMaPDG)/1000.)%10) == kBeauty) {
+						return kB2Jpsi;
+					}
+				}
 			}
-			if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
-				AliDebug(1, "Stack label is negative, return\n");
+			return kJpsi;
+		}
+		else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(maPdgcode)/1000.)%10) == kCharm ) {
+			//
+			// charm
+			//
+			for (Int_t i=0; i<fNparents; i++){
+				if (TMath::Abs(maPdgcode)==fParentSelect[0][i]){
+					isFinalOpenCharm = kTRUE;
+				}
+			}
+			if (!isFinalOpenCharm) {
 				return -1;
 			}
 
-			// if there is an ancester
-			if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))) {
+			// iterate until you find B hadron as a mother or become top ancester
+			for (Int_t i=1; i<fgkMaxIter; i++){
+
+				Int_t jLabel = partMother->GetMother();
+				if (jLabel == -1){
+					return kDirectCharm;
+				}
+				if ((jLabel<0) || (jLabel>=fMCArray->GetEntriesFast())){
+					AliDebug(1, "Stack label is negative, return\n");
+					return -1;
+				}
+
+				// if there is an ancester
+				if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(jLabel))))) {
+					return -1;
+				}
+				Int_t grandMaPDG = mctrack->GetPdgCode();
+				for (Int_t j=0; j<fNparents; j++){
+					if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
+						mpt = mctrack->Pt();
+						return kBeautyCharm;
+					}
+				}
+				partMother = mctrack;
+			} // end of iteration
+
+		} // end of if
+		else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
+			//
+			// beauty
+			//
+			for (Int_t i=0; i<fNparents; i++){
+				if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
+					mpt = partMotherCopy->Pt();
+					return kDirectBeauty;
+				}
+			}
+		} // end of if
+		else if ( TMath::Abs(maPdgcode) == 22 ) {
+			//
+			//conversion
+			//
+			tmpMomLabel = partMotherCopy->GetMother();
+			if(tmpMomLabel==-1) return kGamma;
+			if((tmpMomLabel<0) || (tmpMomLabel>=fMCArray->GetEntriesFast())) {
 				return -1;
 			}
-			Int_t grandMaPDG = mctrack->GetPdgCode();
-			for (Int_t j=0; j<fNparents; j++){
-				if (TMath::Abs(grandMaPDG)==fParentSelect[1][j]){
-					mpt = mctrack->Pt();
-					return kBeautyCharm;
-				}
+			if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+				return -1;
 			}
 			partMother = mctrack;
-		} // end of iteration
+			maPdgcode = partMother->GetPdgCode();
 
-	} // end of if
-	else if ( (int(TMath::Abs(maPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(maPdgcode)/1000.)%10) == kBeauty ) {
-		//
-		// beauty
-		//
-		for (Int_t i=0; i<fNparents; i++){
-			if (TMath::Abs(maPdgcode)==fParentSelect[1][i]){
-				mpt = partMotherCopy->Pt();
-				return kDirectBeauty;
-			}
-		}
-	} // end of if
-	else if ( TMath::Abs(maPdgcode) == 22 ) {
-		//
-		//conversion
-		//
-		tmpMomLabel = partMotherCopy->GetMother();
-		if(tmpMomLabel==-1) return kGamma;
-		if((tmpMomLabel<0) || (tmpMomLabel>=fMCArray->GetEntriesFast())) {
-			return -1;
-		}
-		if(!(mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-			return -1;
-		}
-		partMother = mctrack;
-		maPdgcode = partMother->GetPdgCode();
+			// check if the ligth meson is the decay product of heavy mesons
+			tmpMomLabel = partMother->GetMother();
+			if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
+				if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+					partMother = mctrack;
+					grmaPdgcode = partMother->GetPdgCode();
+					mpt = partMother->Pt();
 
-		// check if the ligth meson is the decay product of heavy mesons
-		tmpMomLabel = partMother->GetMother();
-		if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
-			if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-				partMother = mctrack;
-				grmaPdgcode = partMother->GetPdgCode();
-				mpt = partMother->Pt();
-
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
-					return kGammaB2M;
-				}
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
-					return kGammaD2M;
-				}
-
-				tmpMomLabel = partMother->GetMother();
-				if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandgrandmother
-					if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-						partMother = mctrack;
-						ggrmaPdgcode = partMother->GetPdgCode();
-						mpt = partMother->Pt();
-
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
-							return kGammaB2M;
-						}
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
-							return kGammaD2M;
-						}
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+						return kGammaB2M;
 					}
-				}//grandgrandgrandmother
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+						return kGammaD2M;
+					}
 
+					tmpMomLabel = partMother->GetMother();
+					if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandgrandmother
+						if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+							partMother = mctrack;
+							ggrmaPdgcode = partMother->GetPdgCode();
+							mpt = partMother->Pt();
+
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+								return kGammaB2M;
+							}
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+								return kGammaD2M;
+							}
+						}
+					}//grandgrandgrandmother
+
+					if ( TMath::Abs(maPdgcode) == 111 ) {
+						if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						else if(grmaPdgcode == 310) return kGammaK0s2P;
+						else if(grmaPdgcode == 130) return kGammaK0l2P;
+						else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
+						else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
+						else if(grmaPdgcode == 3222) return kGammaSigma2P;
+						return kGammaPi0;
+					}
+					else if ( TMath::Abs(maPdgcode) == 221 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaEta;
+					}
+					else if ( TMath::Abs(maPdgcode) == 223 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaOmega;
+					}
+					else if ( TMath::Abs(maPdgcode) == 333 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaPhi;
+					}
+					else if ( TMath::Abs(maPdgcode) == 331 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
+						return kGammaEtaPrime;
+					}
+					else if ( TMath::Abs(maPdgcode) == 113 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
+						return kGammaRho0;
+					}
+					else origin = kElse;//grandgrandmother but nothing we identify
+				}//mctrack grandgrandmother
+			}
+			else {
+				// grandmother is primary
 				if ( TMath::Abs(maPdgcode) == 111 ) {
-					if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
-					else if(grmaPdgcode == 310) return kGammaK0s2P;
-					else if(grmaPdgcode == 130) return kGammaK0l2P;
-					else if(TMath::Abs(grmaPdgcode) == 321) return kGammaK2P;
-					else if(TMath::Abs(grmaPdgcode) == 3122) return kGammaLamda2P;
-					else if(grmaPdgcode == 3222) return kGammaSigma2P;
 					return kGammaPi0;
 				}
 				else if ( TMath::Abs(maPdgcode) == 221 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaEta;
 				}
 				else if ( TMath::Abs(maPdgcode) == 223 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaOmega;
 				}
 				else if ( TMath::Abs(maPdgcode) == 333 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaPhi;
 				}
 				else if ( TMath::Abs(maPdgcode) == 331 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kGammaM2M;
 					return kGammaEtaPrime;
 				}
 				else if ( TMath::Abs(maPdgcode) == 113 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kGammaM2M;
 					return kGammaRho0;
 				}
-				else origin = kElse;//grandgrandmother but nothing we identify
-			}//mctrack grandgrandmother
+				else origin = kElse;//grandmother is primary but nothing we identify
+			}
+
+			return origin;
+
 		}
 		else {
-			// grandmother is primary
-			if ( TMath::Abs(maPdgcode) == 111 ) {
-				return kGammaPi0;
-			}
-			else if ( TMath::Abs(maPdgcode) == 221 ) {
-				return kGammaEta;
-			}
-			else if ( TMath::Abs(maPdgcode) == 223 ) {
-				return kGammaOmega;
-			}
-			else if ( TMath::Abs(maPdgcode) == 333 ) {
-				return kGammaPhi;
-			}
-			else if ( TMath::Abs(maPdgcode) == 331 ) {
-				return kGammaEtaPrime;
-			}
-			else if ( TMath::Abs(maPdgcode) == 113 ) {
-				return kGammaRho0;
-			}
-			else origin = kElse;//grandmother is primary but nothing we identify
-		}
+			//
+			// check if the ligth meson is the decay product of heavy mesons
+			//
+			tmpMomLabel = partMotherCopy->GetMother();
+			if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandmother
+				if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+					partMother = mctrack;
+					grmaPdgcode = partMother->GetPdgCode();
 
-		return origin;
-
-	}
-	else {
-		//
-		// check if the ligth meson is the decay product of heavy mesons
-		//
-		tmpMomLabel = partMotherCopy->GetMother();
-		if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandmother
-			if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-				partMother = mctrack;
-				grmaPdgcode = partMother->GetPdgCode();
-
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
-					return kB2M;
-				}
-				if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
-					return kD2M;
-				}
-
-				tmpMomLabel = partMother->GetMother();
-				if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
-					if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
-						partMother = mctrack;
-						ggrmaPdgcode = partMother->GetPdgCode();
-
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
-							return kB2M;
-						}
-						if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
-							return kD2M;
-						}
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kBeauty ) {
+						return kB2M;
 					}
-				}//grandgrandmother
+					if ( (int(TMath::Abs(grmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(grmaPdgcode)/1000.)%10) == kCharm ) {
+						return kD2M;
+					}
 
+					tmpMomLabel = partMother->GetMother();
+					if((tmpMomLabel>=0) && (tmpMomLabel<fMCArray->GetEntriesFast())) {//grandgrandmother
+						if((mctrack = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(tmpMomLabel))))) {
+							partMother = mctrack;
+							ggrmaPdgcode = partMother->GetPdgCode();
+
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kBeauty || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kBeauty ) {
+								return kB2M;
+							}
+							if ( (int(TMath::Abs(ggrmaPdgcode)/100.)%10) == kCharm || (int(TMath::Abs(ggrmaPdgcode)/1000.)%10) == kCharm ) {
+								return kD2M;
+							}
+						}
+					}//grandgrandmother
+
+					if ( TMath::Abs(maPdgcode) == 111 ) {
+						if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						else if(grmaPdgcode == 310) return kK0s2P;
+						else if(grmaPdgcode == 130) return kK0l2P;
+						else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
+						else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
+						else if(grmaPdgcode == 3222) return kSigma2P;
+						return kPi0;
+					}
+					else if ( TMath::Abs(maPdgcode) == 221 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						return kEta;
+					}
+					else if ( TMath::Abs(maPdgcode) == 223 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						return kOmega;
+					}
+					else if ( TMath::Abs(maPdgcode) == 333 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
+						return kPhi;
+					}
+					else if ( TMath::Abs(maPdgcode) == 331 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
+						return kEtaPrime;
+					}
+					else if ( TMath::Abs(maPdgcode) == 113 ) {
+						if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
+						return kRho0;
+					}
+					else if ( TMath::Abs(maPdgcode) == 321 ) {
+						return kKe3;
+					}
+					else if ( TMath::Abs(maPdgcode) == 130 ) {
+						return kK0L;
+					}
+					else origin = kElse;//grandmother but nothing we identidy
+				}//mctrack grandmother
+			}
+			else {
+				// no grandmother
 				if ( TMath::Abs(maPdgcode) == 111 ) {
-					if(grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
-					else if(grmaPdgcode == 310) return kK0s2P;
-					else if(grmaPdgcode == 130) return kK0l2P;
-					else if(TMath::Abs(grmaPdgcode) == 321) return kK2P;
-					else if(TMath::Abs(grmaPdgcode) == 3122) return kLamda2P;
-					else if(grmaPdgcode == 3222) return kSigma2P;
 					return kPi0;
 				}
 				else if ( TMath::Abs(maPdgcode) == 221 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
 					return kEta;
 				}
 				else if ( TMath::Abs(maPdgcode) == 223 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 333 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
 					return kOmega;
 				}
 				else if ( TMath::Abs(maPdgcode) == 333 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 331 || grmaPdgcode == 113) return kM2M;
 					return kPhi;
 				}
 				else if ( TMath::Abs(maPdgcode) == 331 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 113) return kM2M;
 					return kEtaPrime;
 				}
 				else if ( TMath::Abs(maPdgcode) == 113 ) {
-					if(grmaPdgcode == 111 || grmaPdgcode == 221 || grmaPdgcode == 223 || grmaPdgcode == 333 || grmaPdgcode == 331) return kM2M;
 					return kRho0;
 				}
 				else if ( TMath::Abs(maPdgcode) == 321 ) {
@@ -2751,226 +3134,208 @@ Int_t AliAnalysisTaskHFJetIPQA::GetElecSource(const AliAODMCParticle *  const mc
 				else if ( TMath::Abs(maPdgcode) == 130 ) {
 					return kK0L;
 				}
-				else origin = kElse;//grandmother but nothing we identidy
-			}//mctrack grandmother
-		}
-		else {
-			// no grandmother
-			if ( TMath::Abs(maPdgcode) == 111 ) {
-				return kPi0;
+				else origin = kElse;//mother but nothing we identify
 			}
-			else if ( TMath::Abs(maPdgcode) == 221 ) {
-				return kEta;
-			}
-			else if ( TMath::Abs(maPdgcode) == 223 ) {
-				return kOmega;
-			}
-			else if ( TMath::Abs(maPdgcode) == 333 ) {
-				return kPhi;
-			}
-			else if ( TMath::Abs(maPdgcode) == 331 ) {
-				return kEtaPrime;
-			}
-			else if ( TMath::Abs(maPdgcode) == 113 ) {
-				return kRho0;
-			}
-			else if ( TMath::Abs(maPdgcode) == 321 ) {
-				return kKe3;
-			}
-			else if ( TMath::Abs(maPdgcode) == 130 ) {
-				return kK0L;
-			}
-			else origin = kElse;//mother but nothing we identify
-		}
-	}//mother is something different from J/psi,charm,beauty or gamma
-	return origin;
-}
-
-//#########
-//__________________________________________
-Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel)
-{
-	//
-	// Get weighting factor for the realistic background estimation, for three possible background yield levels, indicated by the argument "iLevel": the best estimate (0), the lower uncertainty level (1), and the upper uncertainty level (2)
-	//
-	AliAODEvent* aev = dynamic_cast<AliAODEvent*>(InputEvent());
-	TClonesArray * fMCArray = dynamic_cast<TClonesArray*>(aev->FindListObject(AliAODMCParticle::StdBranchName()));
-
-
-	Double_t weightElecBg = 0.; // make 0 again
-	Double_t mesonPt = 0.;
-	Double_t mesonMotherPt = 0.;
-	Double_t bgcategory = 0.;
-	Bool_t condition = kTRUE;
-	Int_t mArr = -1;
-	Double_t mpt=0;
-	if (!mcpart) return 0;
-	Int_t mesonID = GetElecSource(mcpart,mpt);
-	//Printf("mesonID = %i pt = %f",mesonID,mpt);
-	//return 0.;
-	if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
-	else if(mesonID==kGammaEta || mesonID==kEta) mArr=1;           //eta
-	else if(mesonID==kGammaOmega || mesonID==kOmega) mArr=2;       //omega
-	else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
-	else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
-	else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
-	else if(mesonID==kKe3 || mesonID==kGammaK2P|| mesonID==kK2P) mArr=6; //ke3 or K->pi->e
-	else if(mesonID==kK0L || mesonID==kGammaK0s2P|| mesonID==kK0s2P) mArr=7; //K0L->e+X or k0s->pi->e
-	else if(mesonID==kGammaLamda2P|| mesonID==kLamda2P) mArr=8;    //lambda->pi->e
-
-
-
-	Double_t datamc[30]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999,-999};
-	Double_t xr[3]={-999,-999,-999};
-	datamc[0] = mesonID;
-	datamc[17] = mcpart->Pt(); //electron pt
-	datamc[18] = mcpart->Eta(); //electron eta
-
-	mcpart->XvYvZv(xr);
-	datamc[9] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-	datamc[10] = xr[2];
-
-	datamc[19] = (mcpart->IsPrimary()) ? 1 : 0;
-	datamc[20] = (mcpart->IsPhysicalPrimary()) ? 1 : 0;
-
-	datamc[24] = mcpart->Label();
-
-	if(!(mArr<0)){
-
-		AliAODMCParticle *mctrackmother = NULL; // will change all the time
-
-		if((mesonID>=kGammaPi0 && mesonID<=kGammaRho0) || mesonID==kGammaK2P || mesonID==kGammaK0s2P || mesonID==kGammaLamda2P) { // conversion electron
-			Int_t iLabel = mcpart->GetMother(); //gamma label
-			if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
-			iLabel = mctrackmother->GetMother(); //gamma's mother's label
-			if(!(mctrackmother= dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
-			mesonPt = mctrackmother->Pt(); //meson pt
-			datamc[28] = mctrackmother->Eta(); //meson eta
-			bgcategory = 1.;
-			if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
-			if(!mctrackmother->IsPrimary()) condition = kFALSE;
-			datamc[1] = bgcategory;
-			datamc[2] = mesonPt;
-			mctrackmother->XvYvZv(xr);
-			datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-			datamc[12] = xr[2];
-
-			datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-			datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-
-			//bgcategory 2, 3 is not defined for AOD
-
-			iLabel=mctrackmother->GetMother(); // gamma's mother's mother
-			datamc[26] = iLabel;
-			if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-				datamc[3]=mctrackmother->PdgCode();
-				mesonMotherPt=mctrackmother->Pt();
-				datamc[4]=mesonMotherPt;
-				datamc[29] = mctrackmother->Eta(); //meson mother's eta
-				if(TMath::Abs(mctrackmother->PdgCode())==310){
-					datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-					datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-					iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
-					if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-						datamc[5]=mctrackmother->PdgCode();
-						iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
-						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-							datamc[6]=mctrackmother->PdgCode();
-						}
-					}
-				}
-			}
-		}
-		else{ // nonHFE except for the conversion electron
-			Int_t iLabel = mcpart->GetMother(); //meson label
-			if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
-			mesonPt = mctrackmother->Pt(); //meson pt
-			datamc[28] = mctrackmother->Eta(); //meson eta
-			if(mesonID==kEta) bgcategory = -1.41; // to consider new branching ratio for the eta Dalitz decay
-			else 	bgcategory = -1.;
-			if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
-			if(!mctrackmother->IsPrimary()) condition = kFALSE;
-			datamc[1] = bgcategory;
-			datamc[2] = mesonPt;
-			datamc[23] = mctrackmother->PdgCode();
-			mctrackmother->XvYvZv(xr);
-			datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
-			datamc[12] = xr[2];
-
-			datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-			datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-
-			//bgcategory 2, 3 is not defined for AOD
-
-			iLabel=mctrackmother->GetMother(); // mesons' mother
-			datamc[26] = iLabel;
-			if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-				datamc[3]=mctrackmother->PdgCode();
-				mesonMotherPt=mctrackmother->Pt();
-				datamc[4]=mesonMotherPt;
-				datamc[29] = mctrackmother->Eta(); //meson mother's eta
-				if(TMath::Abs(mctrackmother->PdgCode())==310){
-					datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
-					datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
-					iLabel=mctrackmother->GetMother(); // mesons' mother's mother
-					if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-						datamc[5]=mctrackmother->PdgCode();
-						iLabel=mctrackmother->GetMother(); // meson's mother's mother's mother
-						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
-							datamc[6]=mctrackmother->PdgCode();
-						}
-					}
-				}
-			}
-		}
-
-		int kBgPtBins = 45;
-		weightElecBg=fBackgroundFactor[mArr][kBgPtBins-1];
-
-		if(mArr<=5 || mesonID==kKe3 || mesonID==kK0L){
-			for(int ii=0; ii<kBgPtBins; ii++){
-				if((mesonPt > fBackgroundFactorBins[ii]) && (mesonPt < fBackgroundFactorBins[ii+1])){
-					weightElecBg = fBackgroundFactor[mArr][ii];
-
-					break;
-				}
-			}
-		}
-		else{
-			for(int ii=0; ii<kBgPtBins; ii++){
-				if((mesonMotherPt > fBackgroundFactorBins[ii]) && (mesonMotherPt < fBackgroundFactorBins[ii+1])){
-					weightElecBg = fBackgroundFactor[mArr][ii];
-					break;
-				}
-			}
-		}
+		}//mother is something different from J/psi,charm,beauty or gamma
+		return origin;
 	}
 
-	if(!condition) weightElecBg=0.;
+	//#########
+	//__________________________________________
+	Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel)
+	{
+		//
+		// Get weighting factor for the realistic background estimation, for three possible background yield levels, indicated by the argument "iLevel": the best estimate (0), the lower uncertainty level (1), and the upper uncertainty level (2)
+		//
 
 
-	Double_t returnval = bgcategory*weightElecBg;
+		Double_t weightElecBg = 0.; // make 0 again
+		Double_t mesonPt = 0.;
+		Double_t mesonMotherPt = 0.;
+		Double_t bgcategory = 0.;
+		Bool_t condition = kTRUE;
+		Int_t mArr = -1;
+		Double_t mpt=0;
+		if (!mcpart) return 0;
+		Int_t mesonID = GetElecSource(mcpart,mpt);
+		//Printf("mesonID = %i pt = %f",mesonID,mpt);
+		//return 0.;
+		if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
+		else if(mesonID==kGammaEta || mesonID==kEta) mArr=1;           //eta
+		else if(mesonID==kGammaOmega || mesonID==kOmega) mArr=2;       //omega
+		else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
+		else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
+		else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
+		else if(mesonID==kKe3 || mesonID==kGammaK2P|| mesonID==kK2P) mArr=6; //ke3 or K->pi->e
+		else if(mesonID==kK0L || mesonID==kGammaK0s2P|| mesonID==kK0s2P) mArr=7; //K0L->e+X or k0s->pi->e
+		else if(mesonID==kGammaLamda2P|| mesonID==kLamda2P) mArr=8;    //lambda->pi->e
 
-	return returnval;
-}
-
-Float_t AliAnalysisTaskHFJetIPQA::GetRapidity(const TParticle *part){
-	//
-	// return rapidity
-	//
-	Float_t rapidity;
-	if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
-	else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
-	return rapidity;
-}
 
 
-bool AliAnalysisTaskHFJetIPQA::mysort(const myvaluetuple& i, const myvaluetuple& j)
-{
-	if(i.first <= j.first)
-		return false;
-	else
-		return true;
-}
+		Double_t datamc[30]={-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999,-999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999, -999,-999};
+		Double_t xr[3]={-999,-999,-999};
+		datamc[0] = mesonID;
+		datamc[17] = mcpart->Pt(); //electron pt
+		datamc[18] = mcpart->Eta(); //electron eta
 
+		mcpart->XvYvZv(xr);
+		datamc[9] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+		datamc[10] = xr[2];
+
+		datamc[19] = (mcpart->IsPrimary()) ? 1 : 0;
+		datamc[20] = (mcpart->IsPhysicalPrimary()) ? 1 : 0;
+
+		datamc[24] = mcpart->Label();
+
+		if(!(mArr<0)){
+
+			AliAODMCParticle *mctrackmother = NULL; // will change all the time
+
+			if((mesonID>=kGammaPi0 && mesonID<=kGammaRho0) || mesonID==kGammaK2P || mesonID==kGammaK0s2P || mesonID==kGammaLamda2P) { // conversion electron
+				Int_t iLabel = mcpart->GetMother(); //gamma label
+				if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
+				iLabel = mctrackmother->GetMother(); //gamma's mother's label
+				if(!(mctrackmother= dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
+				mesonPt = mctrackmother->Pt(); //meson pt
+				datamc[28] = mctrackmother->Eta(); //meson eta
+				bgcategory = 1.;
+				if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
+				if(!mctrackmother->IsPrimary()) condition = kFALSE;
+				datamc[1] = bgcategory;
+				datamc[2] = mesonPt;
+				mctrackmother->XvYvZv(xr);
+				datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+				datamc[12] = xr[2];
+
+				datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+				datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+
+				//bgcategory 2, 3 is not defined for AOD
+
+				iLabel=mctrackmother->GetMother(); // gamma's mother's mother
+				datamc[26] = iLabel;
+				if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+					datamc[3]=mctrackmother->PdgCode();
+					mesonMotherPt=mctrackmother->Pt();
+					datamc[4]=mesonMotherPt;
+					datamc[29] = mctrackmother->Eta(); //meson mother's eta
+					if(TMath::Abs(mctrackmother->PdgCode())==310){
+						datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+						datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+						iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
+						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+							datamc[5]=mctrackmother->PdgCode();
+							iLabel=mctrackmother->GetMother(); // gamma's mother's mother's mother
+							if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+								datamc[6]=mctrackmother->PdgCode();
+							}
+						}
+					}
+				}
+			}
+			else{ // nonHFE except for the conversion electron
+				Int_t iLabel = mcpart->GetMother(); //meson label
+				if(!(mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))) return 0;
+				mesonPt = mctrackmother->Pt(); //meson pt
+				datamc[28] = mctrackmother->Eta(); //meson eta
+				if(mesonID==kEta) bgcategory = -1.41; // to consider new branching ratio for the eta Dalitz decay
+				else 	bgcategory = -1.;
+				if(TMath::Abs((mctrackmother->Y()))>0.8) condition = kFALSE;
+				if(!mctrackmother->IsPrimary()) condition = kFALSE;
+				datamc[1] = bgcategory;
+				datamc[2] = mesonPt;
+				datamc[23] = mctrackmother->PdgCode();
+				mctrackmother->XvYvZv(xr);
+				datamc[11] = TMath::Sqrt(xr[0]*xr[0]+xr[1]*xr[1]);
+				datamc[12] = xr[2];
+
+				datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+				datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+
+				//bgcategory 2, 3 is not defined for AOD
+
+				iLabel=mctrackmother->GetMother(); // mesons' mother
+				datamc[26] = iLabel;
+				if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+					datamc[3]=mctrackmother->PdgCode();
+					mesonMotherPt=mctrackmother->Pt();
+					datamc[4]=mesonMotherPt;
+					datamc[29] = mctrackmother->Eta(); //meson mother's eta
+					if(TMath::Abs(mctrackmother->PdgCode())==310){
+						datamc[21] = (mctrackmother->IsPrimary()) ? 1 : 0;
+						datamc[22] = (mctrackmother->IsPhysicalPrimary()) ? 1 : 0;
+						iLabel=mctrackmother->GetMother(); // mesons' mother's mother
+						if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+							datamc[5]=mctrackmother->PdgCode();
+							iLabel=mctrackmother->GetMother(); // meson's mother's mother's mother
+							if((mctrackmother = dynamic_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(iLabel))))){
+								datamc[6]=mctrackmother->PdgCode();
+							}
+						}
+					}
+				}
+			}
+
+			int kBgPtBins = 45;
+			weightElecBg=fBackgroundFactor[mArr][kBgPtBins-1];
+
+			if(mArr<=5 || mesonID==kKe3 || mesonID==kK0L){
+				for(int ii=0; ii<kBgPtBins; ii++){
+					if((mesonPt > fBackgroundFactorBins[ii]) && (mesonPt < fBackgroundFactorBins[ii+1])){
+						weightElecBg = fBackgroundFactor[mArr][ii];
+
+						break;
+					}
+				}
+			}
+			else{
+				for(int ii=0; ii<kBgPtBins; ii++){
+					if((mesonMotherPt > fBackgroundFactorBins[ii]) && (mesonMotherPt < fBackgroundFactorBins[ii+1])){
+						weightElecBg = fBackgroundFactor[mArr][ii];
+						break;
+					}
+				}
+			}
+		}
+
+		if(!condition) weightElecBg=0.;
+
+
+		Double_t returnval = bgcategory*weightElecBg;
+
+		return returnval;
+	}
+
+	Float_t AliAnalysisTaskHFJetIPQA::GetRapidity(const TParticle *part){
+		//
+		// return rapidity
+		//
+		Float_t rapidity;
+		if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999;
+		else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz())));
+		return rapidity;
+	}
+
+
+	bool AliAnalysisTaskHFJetIPQA::mysort(const myvaluetuple& i, const myvaluetuple& j)
+	{
+		if(i.first <= j.first)
+			return false;
+		else
+			return true;
+	}
+ //
+
+	AliAODMCParticle* AliAnalysisTaskHFJetIPQA::GetMCTrack( const AliAODTrack* _track)
+	{
+		//
+		// return MC track
+		//
+		if(!fMCArray) { AliError("No fMCArray"); return NULL;}
+		Int_t nStack = fMCArray->GetEntriesFast();
+		Int_t label  = TMath::Abs(_track->GetLabel()); // negative label indicate poor matching quality
+		if(label > nStack) return NULL;
+		AliAODMCParticle *mctrack = (AliAODMCParticle*)fMCArray->At(label);
+		return mctrack;
+	}
 

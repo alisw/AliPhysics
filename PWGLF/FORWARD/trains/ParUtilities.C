@@ -24,6 +24,7 @@
 #else
 class TString;
 class Railway;
+class TProof; // Autoload 
 #endif
 
 // ===================================================================

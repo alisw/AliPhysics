@@ -269,8 +269,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
 
   // resolution cuts
   if(cutInstance == -1){
-    fesdTrackCuts->SetPtRange( 0.2 , 100. );
-    fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
+//    fesdTrackCuts->SetPtRange( 0.2 , 100. );
+//    fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
     fesdTrackCuts->SetMinNClustersITS(5);
     fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
     fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);

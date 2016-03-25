@@ -21,7 +21,11 @@
 #pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetFlavourTagExample+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AnalysisEngine+;
-#pragma link C++ class AliAnalysisTaskDmesonJets::AliJetDefinition+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliHFJetDefinition+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliD0InfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets+;
 #pragma link C++ class AliHFAODMCParticleContainer+;
 #pragma link C++ class AliHFTrackContainer+;

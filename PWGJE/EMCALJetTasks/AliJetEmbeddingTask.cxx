@@ -151,7 +151,7 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    PostData(2, fInput);
    
    const Int_t ndim = 4;
-   Int_t nbins = 60, mind = -30, maxd = 30, minm = 0, maxm = 40, minpt = 0, maxpt = 120;
+   Int_t nbins = 80, mind = -30, maxd = 30, minm = 0, maxm = 80, minpt = 0, maxpt = 120;
    const Int_t nbinshnsp[ndim] = {nbins, nbins, nbins, nbins};  
    const Double_t minhnsp[ndim] = {(Double_t)mind, (Double_t)mind, (Double_t)minm, (Double_t)minpt};
    const Double_t maxhnsp[ndim] = {(Double_t)maxd, (Double_t)maxd, (Double_t)maxm, (Double_t)maxpt};

@@ -19,33 +19,29 @@ class AliClusterContainer;
 class AliJJetTask : public AliAnalysisTaskEmcalJet {
  public:
 
+  enum { kJUndefined = -1 , kJRecoTrack, kJMCParticle };
   AliJJetTask();
-  AliJJetTask(const char *name, const int NJetFinder);
-  //AliJJetTask(const char * name, int njetfinder );
+  AliJJetTask(const char *name, const int nJetFinder); // FIXME: Is camelCase good for args?
   virtual ~AliJJetTask();
-
   
-  void                        UserCreateOutputObjects();
+  void UserCreateOutputObjects();
+
   void SetTrackArrayName( char *c ) { fTrackArrayName = c; }
-  vector<TClonesArray>* GetAliJJetCollection() {return &fJJets;}
-  TObjArray*           GetAliJJetList(int i) {return &fJJets[i]; }
-  TClonesArray*        GetJTracks()  {return &fJTracks;}
+  vector<TClonesArray> *GetAliJJetCollection() {return &fJJets;}
+  TObjArray*            GetAliJJetList(int i) {return &fJJets[i]; }
+  TClonesArray*         GetJTracks()  {return &fJTracks;}
+  TClonesArray*         GetMCJTracks()  {return &fJMCTracks;}
   int GetNumberOfJetCollections() {return fNJetFinder;}
-  //void SetNumberOfJetCollections(const int n) {
-  //    fJetsCont.resize(n); 
-  //    fJJets.resize(n);
-  //    fTracksCont.resize(n); 
-  //    fCaloClustersCont.resize(n); 
-  //    fNJetFinder=n;
-  //}
 
   int GetTaskEntry()        {return fTaskEntry;}
   void                        Terminate(Option_t *option);
 
+  void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
+  int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
   void SetDebug(int n) {debug = n; }
+  void SetMC(int mc) {fIsMC = mc;} 
   int  GetDebug(){ return debug; }
   vector<TString> &GetJetFinderString() { return fJetFinderString;}
-
 
  protected:
   void                        ExecOnce();
@@ -53,44 +49,37 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   Bool_t                      Run()              ;
   void                        CheckClusTrackMatching();
 
-
-
-
-
-
-  vector<AliJetContainer*>            fJetsCont;                   //!Jets
-  //AliJetContainer            **fJetsConts;              //!Jets
-  //Int_t 		     nJetsConts;
-  vector<AliParticleContainer*>       fTracksCont;                 //!Tracks
-  vector<AliClusterContainer*>        fCaloClustersCont;           //!Clusters  
+  vector<AliJetContainer*>            fJetsCont;          //!Jets
 
  private:
   AliJJetTask(const AliJJetTask& ap);            // not implemented
   AliJJetTask &operator=(const AliJJetTask&); // not implemented
 
-  //TVector *EtaGapThresholds;
-  //TVector *RGapThresholds;
-  //TVector *KlongBorders;
-  //TVector *XeBorders;
+  //==== FOR AliJ<Object>
+  // FIXME: We assume that we have only one of each. be carefull. This must be fixed later
+  // FIXME: What for CaloCluster? Not needed?
+  TClonesArray              fJTracks;     //! tracks array
+  TClonesArray              fJMCTracks;   //! mc tracks array
+  TClonesArray              fJClusters;   //! Clusters array
 
-  TClonesArray              fJTracks;  //! tracks array
-  vector<TClonesArray>      fJJets;  //! tracks array
+  vector<TClonesArray>      fJJets;       //! Jets array
+
   UInt_t                    fTaskEntry;
+  vector<int>               fTrackOrMCParticle;
 
-  vector<TString> fJetFinderString;
-
-
+  vector<TString>           fJetFinderString;
 
   TString    fTrackArrayName; // track constituents array name
 
-
   Int_t fNJetFinder;
   Int_t debug;
+  Int_t fIsMC;
 
-  ClassDef(AliJJetTask, 4) // jet sample analysis task
-
-
-
+  ClassDef(AliJJetTask, 5) 
+    // 5 : add fTrackOrMCParticle
+    // 5 : del fTracksCont
+    // 5 : del fCaloClusterCont
+    // 5 : Add fJClusters
 };
 
 

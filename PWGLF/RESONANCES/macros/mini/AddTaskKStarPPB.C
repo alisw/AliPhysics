@@ -9,7 +9,7 @@ enum pairYCutSet { kPairDefault,
 		   kNegative,
 		   kCentral,
 		   kWide1,
-		   kWide5
+		   kWide2
                  };
 
 enum eventCutSet { kEvtDefault = 0,
@@ -200,8 +200,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
     minYlab = -1.465;    maxYlab = 0.535;
   }
 
-  if (pairCutSetID==pairYCutSet::kWide5) { //|y_cm|<5
-    minYlab = -5.465;    maxYlab = -4.535;
+  if (pairCutSetID==pairYCutSet::kWide2) { //|y_cm|<2
+    minYlab = -2.465;    maxYlab = -1.535;
   }
   //-------------------------------------------
   //mixing settings

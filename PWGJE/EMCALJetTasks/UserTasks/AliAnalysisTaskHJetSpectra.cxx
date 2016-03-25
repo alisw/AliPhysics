@@ -57,7 +57,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
 
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcal.h"
@@ -90,14 +89,13 @@ fTTLowToSkip(-1.0), fTTHighToSkip(-1.0), fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhDphiTriggerJetAccept(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
- fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
-fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
- fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
+ //fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
+//fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
+// fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 fRhoRec(kRho),fRhoMC(kRho), fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
-fTrigTracksGen(),
-fTrigTracks()
+fpyVtx(3)
 {
    //default constructor
    for(Int_t ic =0; ic<kCAll; ic++){
@@ -114,14 +112,14 @@ fTrigTracks()
       fhTrackPt[ic]=NULL;
       fhTrackPtGen[ic]=NULL;
       fhCentrality[ic]=NULL;
-      fhVzeroATotMult[ic]=NULL;
+      /*fhVzeroATotMult[ic]=NULL;
       fhVzeroATotMultTT[ic]=NULL;
       fhZNAEnergy[ic]=NULL;
       fhZNAEnergyTT[ic]=NULL;
       fhTrackMultiplicity[ic]=NULL;
       fhTrackMultiplicityTT[ic]=NULL;
       fhZNAVzeroATrack[ic]=NULL;
-      fhZNAVzeroATrackTT[ic]=NULL;
+      fhZNAVzeroATrackTT[ic]=NULL;*/
       fhImpactParameter[ic]=NULL;
       fhImpactParameterTT[ic]=NULL;
 
@@ -157,7 +155,20 @@ fTrigTracks()
    fCentralityBins[2]=50.;
    fCentralityBins[3]=100.;
    fCentralityBins[4]=1e6; //centrality overflow bin
-   
+ 
+   ficb[0]=-1;
+   ficb[1]=-1;
+   ftmpArray[0]=0.;              
+   ftmpArray[1]=0.;              
+   //ftmpArrayX[0]=0.;              
+   //ftmpArrayX[1]=0.;              
+   //ftmpArrayX[2]=0.;              
+
+   for(Int_t i=0; i<999; i++){
+     frhovec[i] = 0.;
+     fTrigTracksGen[i]=0x0;
+     fTrigTracks[i]=0x0;
+   }
 }
 
 //________________________________________________________________________
@@ -177,15 +188,14 @@ fHistEvtSelection(0x0), fhKTAreaPt(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhCentralityV0MTT(0x0), fhCentralityV0ATT(0x0), fhCentralityV0CTT(0x0), fhCentralityZNATT(0x0),
- fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
- fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
- fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
+// fh2VzeroATotMultVsCent(0x0), fh2VzeroATotMultVsCentTT(0x0),
+// fh2ZNAEnergyVsCent(0x0), fh2ZNAEnergyVsCentTT(0x0),
+// fh2TrackMultVsCent(0x0), fh2TrackMultVsCentTT(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
 fRhoRec(kRho), fRhoMC(kRho), fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
-fTrigTracksGen(),
-fTrigTracks()
+fpyVtx(3)
 {
 //Constructor
 
@@ -203,14 +213,14 @@ fTrigTracks()
       fhTrackPt[ic]=NULL;
       fhTrackPtGen[ic]=NULL;
       fhCentrality[ic]=NULL;
-      fhVzeroATotMult[ic]=NULL;
+  /*    fhVzeroATotMult[ic]=NULL;
       fhVzeroATotMultTT[ic]=NULL;
       fhZNAEnergy[ic]=NULL;
       fhZNAEnergyTT[ic]=NULL;
       fhTrackMultiplicity[ic]=NULL;
       fhTrackMultiplicityTT[ic]=NULL;
       fhZNAVzeroATrack[ic]=NULL;
-      fhZNAVzeroATrackTT[ic]=NULL; 
+      fhZNAVzeroATrackTT[ic]=NULL;*/ 
       fhImpactParameter[ic]=NULL;
       fhImpactParameterTT[ic]=NULL;
 
@@ -248,6 +258,19 @@ fTrigTracks()
    fCentralityBins[3]=100.;
    fCentralityBins[4]=1e6; //centrality overflow bin
  
+   ficb[0]=-1;
+   ficb[1]=-1;
+   ftmpArray[0]=0.;              
+   ftmpArray[1]=0.;              
+   //ftmpArrayX[0]=0.;              
+   //ftmpArrayX[1]=0.;              
+   //ftmpArrayX[2]=0.;              
+
+   for(Int_t i=0; i<999; i++){
+      frhovec[i] = 0.;
+      fTrigTracksGen[i]=0x0;
+      fTrigTracks[i]=0x0;
+   }
    DefineOutput(1, TList::Class());
 }
   
@@ -346,9 +369,8 @@ Double_t AliAnalysisTaskHJetSpectra::GetSimPrimaryVertex(){
 
    if(mcHeader){
       
-      TArrayF pyVtx(3);
-      mcHeader->PrimaryVertex(pyVtx);
-      return (Double_t) (pyVtx[2]);
+      mcHeader->PrimaryVertex(fpyVtx);
+      return (Double_t) (fpyVtx[2]);
    }
    AliWarning(Form("In task %s: Pythia Vertex failed!", GetName()));
    return 9999.0;
@@ -585,20 +607,21 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Double_t centralityPercentileV0C = -1.0;
    Double_t centralityPercentileV0M = -1.0;
    Double_t centralityPercentileZNA = -1.0;
-   Double_t multVzero   = -1.0;
-   Double_t energyZdcNA = -1.0;
-   Int_t    icb[2]={0,-1}; //0=min bias ; -1 assigned centrality bin
+   //Double_t multVzero   = -1.0;
+   //Double_t energyZdcNA = -1.0;
+   ficb[0] = 0;  //0=min bias 
+   ficb[1] = -1; //-1 assigned centrality bin
 
-   if(InputEvent()->GetVZEROData()){
-      multVzero = InputEvent()->GetVZEROData()->GetMTotV0A();
-   }
+   //if(InputEvent()->GetVZEROData()){
+   //   multVzero = InputEvent()->GetVZEROData()->GetMTotV0A();
+   //}
 
    //if(InputEvent()->GetZDCData()){
       // AliESDZDC.h :   C --> 1     A--->2
       //Double_t GetZNAEnergy() const {return (Double_t) fZDCN2Energy;}
       //Double_t GetZNCEnergy() const {return (Double_t) fZDCN1Energy;}
    //   energyZdcNA =  InputEvent()->GetZDCData()->GetZNAEnergy();
-   energyZdcNA =  InputEvent()->GetZDCN2Energy(); //should be ZNA
+   //energyZdcNA =  InputEvent()->GetZDCN2Energy(); //should be ZNA
    //}
 
    if(fCollisionSystem != kpp){   //KINE Check MC event vertex
@@ -620,20 +643,22 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          return kFALSE;
       }
      
-      for(Int_t ic=0; ic<fCentralityBins.GetSize()-1;ic++){ 
-         if(fCentralityBins[ic] <= centralityPercentile &&
-            centralityPercentile < fCentralityBins[ic+1]){
-            icb[1] = ic+1; //MB is icb[0]=0;  other centralities icb[1]>0
+      if(!(fTypeOfData == kPythia || fTypeOfAnal == kKine)){ 
+         for(Int_t ic=0; ic<fCentralityBins.GetSize()-1;ic++){ 
+            if(fCentralityBins[ic] <= centralityPercentile &&
+               centralityPercentile < fCentralityBins[ic+1]){
+               ficb[1] = ic+1; //MB is ficb[0]=0;  other centralities ficb[1]>0
+            }
          }
       }
  
       for(Int_t ic=0; ic<2; ic++){
-         if(icb[ic]==-1) continue;  //MB +  CENT BIASED 
-         fhCentrality[icb[ic]]->Fill(centralityPercentile);
+         if(ficb[ic]==-1) continue;  //MB +  CENT BIASED 
+         fhCentrality[ficb[ic]]->Fill(centralityPercentile);
       } 
 
-      fh2VzeroATotMultVsCent->Fill(centralityPercentile, multVzero); 
-      fh2ZNAEnergyVsCent->Fill(centralityPercentile, energyZdcNA); 
+      //fh2VzeroATotMultVsCent->Fill(centralityPercentile, multVzero); 
+      //fh2ZNAEnergyVsCent->Fill(centralityPercentile, energyZdcNA); 
       //MB 
       fhCentralityV0M->Fill(centralityPercentileV0M); 
       fhCentralityV0A->Fill(centralityPercentileV0A);
@@ -642,13 +667,13 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    }
 
    for(Int_t ic=0; ic<2; ic++){
-      if(icb[ic]==-1) continue;   //MB +CENT bias 
-      fhVzeroATotMult[icb[ic]]->Fill(multVzero);
-      fhZNAEnergy[icb[ic]]->Fill(energyZdcNA);
+      if(ficb[ic]==-1) continue;   //MB +CENT bias 
+      //fhVzeroATotMult[ficb[ic]]->Fill(multVzero);
+      //fhZNAEnergy[ficb[ic]]->Fill(energyZdcNA);
 
       if(fTypeOfData == kHijing){
          fImpParam = GetImpactParameter(); 
-         fhImpactParameter[icb[ic]]->Fill(fImpParam);
+         fhImpactParameter[ficb[ic]]->Fill(fImpParam);
       }
    }
    //cout<<"energyZdcNA = "<<energyZdcNA<<endl;
@@ -714,7 +739,6 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
 
-      fTrigTracksGen.resize(0); //list of trigger particle indices true MC
 
       if(parContGen){ 
          parContGen->ResetCurrentID();
@@ -723,21 +747,23 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
        
             if(IsTrackInAcceptance(constTrackGen, kTRUE)){ 
                for(Int_t ic=0; ic<2; ic++){
-                  if(icb[ic]==-1) continue; 
-                  fhTrackPtGen[icb[ic]]->Fill(constTrackGen->Pt());  //inclusive pT spectrum of tracks
+                  if(ficb[ic]==-1) continue; 
+                  fhTrackPtGen[ficb[ic]]->Fill(constTrackGen->Pt());  //inclusive pT spectrum of tracks
                }
                if((fTTlow <= constTrackGen->Pt()) && (constTrackGen->Pt() < fTThigh)){
-                  fTrigTracksGen.push_back(constTrackGen);  //GEN trigger candidates
+                  if(ntriggersGen<999){
+                     fTrigTracksGen[ntriggersGen] = constTrackGen;  //GEN trigger candidates
+                     ntriggersGen++;
+                  }
                }
             }
          }
       }
  
-      ntriggersGen = (Int_t) fTrigTracksGen.size();
 
       for(Int_t ic=0; ic<2; ic++){
-         if(icb[ic]==-1) continue; 
-         fh1TriggerMultGen[icb[ic]]->Fill(ntriggersGen); 
+         if(ficb[ic]==-1) continue; 
+         fh1TriggerMultGen[ficb[ic]]->Fill(ntriggersGen); 
       } 
  
       if(ntriggersGen>0){
@@ -754,7 +780,6 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Int_t ntriggers = 0;
  
    if(fTypeOfAnal != kKine){
-      fTrigTracks.resize(0); //list pf trigger particle indices
       
       if(trkContRec){
          trkContRec->ResetCurrentID();
@@ -771,24 +796,26 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             if(IsTrackInAcceptance(constTrackRec, kFALSE)){  //rec  
                //Fill some inclusive spectra (Same analysis for gen level?)
                for(Int_t ic=0; ic<2; ic++){
-                  if(icb[ic]==-1) continue;
-                  fhTrackPhi[icb[ic]]->Fill(constTrackRec->Pt(), RelativePhi(constTrackRec->Phi(),0.0)); // phi = -pi,pi
-                  fhTrackEta[icb[ic]]->Fill(constTrackRec->Pt(), constTrackRec->Eta());
-                  fhTrackPt[icb[ic]]->Fill(constTrackRec->Pt());
+                  if(ficb[ic]==-1) continue;
+                  fhTrackPhi[ficb[ic]]->Fill(constTrackRec->Pt(), RelativePhi(constTrackRec->Phi(),0.0)); // phi = -pi,pi
+                  fhTrackEta[ficb[ic]]->Fill(constTrackRec->Pt(), constTrackRec->Eta());
+                  fhTrackPt[ficb[ic]]->Fill(constTrackRec->Pt());
                }
 
                if(fTTlow <= constTrackRec->Pt() && constTrackRec->Pt() < fTThigh){
-                  fTrigTracks.push_back(constTrackRec);  //trigger candidates
+                  if(ntriggers<999){
+                     fTrigTracks[ntriggers] = constTrackRec;  //trigger candidates
+                     ntriggers++; 
+                  }
                }
             }
          }
       }
       
       //   SELECT SINGLE INCLUSIVE REC LEVEL TRIGGER 
-      ntriggers = (Int_t) fTrigTracks.size();
       for(Int_t ic=0; ic<2; ic++){
-         if(icb[ic]==-1) continue;
-         fh1TriggerMult[icb[ic]]->Fill(ntriggers); 
+         if(ficb[ic]==-1) continue;
+         fh1TriggerMult[ficb[ic]]->Fill(ntriggers); 
       } 
       
       if(ntriggers>0){
@@ -878,8 +905,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             if(IsTrackInAcceptance(constTrackGen, kTRUE)){
                //pT spectrum of generator level particles
                for(Int_t ic=0; ic<2; ic++){
-                  if(icb[ic]==-1) continue;
-                  fhPtTrkTruePrimGen[icb[ic]]->Fill(constTrackGen->Pt(),constTrackGen->Eta());
+                  if(ficb[ic]==-1) continue;
+                  fhPtTrkTruePrimGen[ficb[ic]]->Fill(constTrackGen->Pt(),constTrackGen->Eta());
                } 
             }  
          }
@@ -902,16 +929,16 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
  
                      bRecPrim = kTRUE;
                      for(Int_t ic=0; ic<2; ic++){
-                        if(icb[ic]==-1) continue;
-                        fhPtTrkTruePrimRec[icb[ic]]->Fill(constTrackGen->Pt(),constTrackGen->Eta()); //this is well recontr phys primary
+                        if(ficb[ic]==-1) continue;
+                        fhPtTrkTruePrimRec[ficb[ic]]->Fill(constTrackGen->Pt(),constTrackGen->Eta()); //this is well recontr phys primary
                      }
                      break;
                   }//same label with rec particle
                }//loop over gen tracks
                if(!bRecPrim){
                   for(Int_t ic=0; ic<2; ic++){
-                     if(icb[ic]==-1) continue;
-                     fhPtTrkSecOrFakeRec[icb[ic]]->Fill(constTrackRec->Pt(),constTrackRec->Eta()); //matchnig to phys primary not found, this is fake or second.
+                     if(ficb[ic]==-1) continue;
+                     fhPtTrkSecOrFakeRec[ficb[ic]]->Fill(constTrackRec->Pt(),constTrackRec->Eta()); //matchnig to phys primary not found, this is fake or second.
                   }
                }
             }//loop over rec tracks
@@ -937,8 +964,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                ptGenCorr = jetGen->Pt() - jetGen->Area()*fRhoMC[ir]; // correct for rho
 
                for(Int_t ic=0; ic<2; ic++){
-                  if(icb[ic]==-1) continue;
-                  fhJetPtGen[icb[ic]][ir]->Fill(ptGenCorr);
+                  if(ficb[ic]==-1) continue;
+                  fhJetPtGen[ficb[ic]][ir]->Fill(ptGenCorr);
                }
             }
          }
@@ -982,12 +1009,12 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                ptRecCorr = jetRec->Pt() - jetRec->Area()*fRhoRec[ir]; //perp cone bg correction to pt 
 
                for(Int_t ic=0; ic<2; ic++){
-                  if(icb[ic]==-1) continue;
+                  if(ficb[ic]==-1) continue;
 
-                  fhJetPtGenVsJetPtRec[icb[ic]][ir]->Fill(ptRecCorr, ptGenCorr); //response matrix
+                  fhJetPtGenVsJetPtRec[ficb[ic]][ir]->Fill(ptRecCorr, ptGenCorr); //response matrix
 
                   if(ptGenCorr>0){
-                     fhJetPtResolutionVsPtGen[icb[ic]][ir]->Fill(ptGenCorr,(ptRecCorr-ptGenCorr)/ptGenCorr); //jet pT resolution
+                     fhJetPtResolutionVsPtGen[ficb[ic]][ir]->Fill(ptGenCorr,(ptRecCorr-ptGenCorr)/ptGenCorr); //jet pT resolution
                   }
                }
             }
@@ -1004,8 +1031,6 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    fHistEvtSelection->Fill(6); //Accepted events
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    Double_t areaJet,  pTJet; 
-   Double_t tmpArray[2];              
-   Double_t tmpArrayX[3];              
    Double_t dphi, dfi;
    Bool_t bFirstCycle = kTRUE; 
 
@@ -1014,23 +1039,23 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    //H-JET CORRELATIONS IN MC TRUTH
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
-      if(parContGen){
+      if(parContGen && ntriggersGen >0 && trackTTGen){
          bFirstCycle = kTRUE; 
-         for(Int_t it=0; it<ntriggersGen; it++){ //loop over trigger configurations
+         //for(Int_t it=0; it<ntriggersGen; it++){ //loop over trigger configurations
         
-            if(fTTtype==0){
-               if(it != indexSingleRndTrigGen) continue;
-            }
+         //   if(fTTtype==0){
+         //      if(it != indexSingleRndTrigGen) continue;
+         //   }
          
-            AliVParticle* triggerHadronGen = (AliVParticle*) (fTrigTracksGen[it]);
-            if(!triggerHadronGen) continue;
+            AliVParticle* triggerHadronGen = (AliVParticle*) trackTTGen; //(fTrigTracksGen[it]);
+            //if(!triggerHadronGen) continue;
          
             for(Int_t ic=0; ic<2; ic++){
-               if(icb[ic]==-1) continue;
-               fh1NtriggersGen[icb[ic]]->Fill((Float_t) triggerHadronGen->Pt()); //trigger pT gen 
+               if(ficb[ic]==-1) continue;
+               fh1NtriggersGen[ficb[ic]]->Fill((Float_t) triggerHadronGen->Pt()); //trigger pT gen 
          
                if( fTypeOfData == kHijing){ //impact parameter for triggered events
-                  fhImpactParameterTT[icb[ic]]->Fill(fImpParam);
+                  fhImpactParameterTT[ficb[ic]]->Fill(fImpParam);
                }
             }
          
@@ -1049,10 +1074,10 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                  
                   if(bFirstCycle){
                      for(Int_t ic=0; ic<2; ic++){
-                        if(icb[ic]==-1) continue;
+                        if(ficb[ic]==-1) continue;
 
-                        fhJetPhiGen[icb[ic]]->Fill( pTJet, RelativePhi(jetGen->Phi(),0.0));
-                        fhJetEtaGen[icb[ic]]->Fill( pTJet, jetGen->Eta());
+                        fhJetPhiGen[ficb[ic]]->Fill( pTJet, RelativePhi(jetGen->Phi(),0.0));
+                        fhJetEtaGen[ficb[ic]]->Fill( pTJet, jetGen->Eta());
                      }
                   }
                  
@@ -1064,8 +1089,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                  
                   for(Int_t ir=0; ir< kRho;ir++){
                      for(Int_t ic=0; ic<2; ic++){
-                        if(icb[ic]==-1) continue;
-                        fhDphiTriggerJetGen[icb[ic]][ir]->Fill((Float_t) (pTJet - areaJet*fRhoMC[ir]), (Float_t) dfi); //Rongrong's analysis
+                        if(ficb[ic]==-1) continue;
+                        fhDphiTriggerJetGen[ficb[ic]][ir]->Fill((Float_t) (pTJet - areaJet*fRhoMC[ir]), (Float_t) dfi); //Rongrong's analysis
                      } 
                   }
                   //-------------------------
@@ -1073,18 +1098,18 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                   if(TMath::Abs(dphi) < fDphiCut) continue;  //Dphi cut between trigger and assoc
                  
                  //Centrality, A, pTjet
-                  tmpArray[0] =  areaJet;
+                  ftmpArray[0] =  areaJet;
                   for(Int_t ir=0; ir< kRho;ir++){ 
-                     tmpArray[1] =  pTJet - areaJet*fRhoMC[ir];
+                     ftmpArray[1] =  pTJet - areaJet*fRhoMC[ir];
                      for(Int_t ic=0; ic<2; ic++){
-                        if(icb[ic]==-1) continue;
-                        fHJetSpecGen[icb[ic]][ir]->Fill(tmpArray);
+                        if(ficb[ic]==-1) continue;
+                        fHJetSpecGen[ficb[ic]][ir]->Fill(ftmpArray[0],ftmpArray[1]);
                      }
                   }
                }//JET LOOP
                bFirstCycle = kFALSE;
             }//container exists
-         }
+        // }
       }
    }
    
@@ -1150,13 +1175,13 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
  
             for(Int_t ir=0; ir < kRho-1; ir++){
                for(Int_t ic=0; ic<2; ic++){
-                  if(icb[ic]==-1) continue;
+                  if(ficb[ic]==-1) continue;
                   //1 Dim  distribution
-                  fhDeltaPtEmb[icb[ic]][ir]->Fill(
+                  fhDeltaPtEmb[ficb[ic]][ir]->Fill(
                        jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
 
                   //2 Dim distribution
-                  fhDeltaPtEmb2D[icb[ic]][ir]->Fill(jetEmb->Pt(),                
+                  fhDeltaPtEmb2D[ficb[ic]][ir]->Fill(jetEmb->Pt(),                
                        jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
 
 
@@ -1164,11 +1189,11 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                      dphi = TMath::Abs(RelativePhi(trackTT->Phi(), jetEmb->Phi())); 
                      if(TMath::Pi()/4 <  dphi && dphi < 3*TMath::Pi()/4){
                         //1 Dim  distribution
-                        fhDeltaPtEmbPerp[icb[ic]][ir]->Fill(
+                        fhDeltaPtEmbPerp[ficb[ic]][ir]->Fill(
                              jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
                         
                         //2 Dim distribution
-                        fhDeltaPtEmbPerp2D[icb[ic]][ir]->Fill(jetEmb->Pt(),                
+                        fhDeltaPtEmbPerp2D[ficb[ic]][ir]->Fill(jetEmb->Pt(),                
                              jetRec->Pt() - jetRec->Area() * fRhoRec[ir] - jetEmb->Pt());
                      }
                   }
@@ -1183,9 +1208,9 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
    for(Int_t ir=0; ir < kRho-1; ir++){
       for(Int_t ic=0; ic<2; ic++){
-         if(icb[ic]==-1) continue;
+         if(ficb[ic]==-1) continue;
 
-         fhRhoIncl[icb[ic]][ir]->Fill((Float_t) fRhoRec[ir]); 
+         fhRhoIncl[ficb[ic]][ir]->Fill((Float_t) fRhoRec[ir]); 
       }
    }
    if(ntriggers>0){
@@ -1194,9 +1219,9 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          //Estimate UE density in events with TT
          //Fill once per event
          for(Int_t ic=0; ic<2; ic++){
-            if(icb[ic]==-1) continue;
+            if(ficb[ic]==-1) continue;
 
-            fhRhoTT[icb[ic]][ir]->Fill( (Float_t) fRhoRec[ir]); 
+            fhRhoTT[ficb[ic]][ir]->Fill( (Float_t) fRhoRec[ir]); 
          }
       }
    }
@@ -1250,20 +1275,22 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
       for(Int_t ir=0; ir < kRho-1; ir++){
          for(Int_t ic=0; ic<2; ic++){
-            if(icb[ic]==-1) continue;
+            if(ficb[ic]==-1) continue;
             //fill delta pt histograms in inclusive events 
-            fhDeltaPtIncl[icb[ic]][ir]->Fill(deltapt[ir]); 
+            fhDeltaPtIncl[ficb[ic]][ir]->Fill(deltapt[ir]); 
   
             if(ntriggers>0){
                //fill delta pt histograms in events with TT (trigger track) 
-               fhDeltaPt[icb[ic]][ir]->Fill( deltapt[ir]); 
+               fhDeltaPt[ficb[ic]][ir]->Fill( deltapt[ir]); 
             }
          }
       }
    }
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    // Track Multiplicity
+   
    if(trkContRec){
+      /*
       Int_t mult   = 0;
       trkContRec->ResetCurrentID();
       while((constTrackRec = (AliVParticle*) (trkContRec->GetNextAcceptParticle()))){
@@ -1273,20 +1300,20 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       }
 
       for(Int_t ic=0; ic<2; ic++){
-         if(icb[ic]==-1) continue;
+         if(ficb[ic]==-1) continue;
          //MB  or CENT biases
-         fhTrackMultiplicity[icb[ic]]->Fill(mult);
+         fhTrackMultiplicity[ficb[ic]]->Fill(mult);
 
-         tmpArrayX[0] = energyZdcNA;
-         tmpArrayX[1] = multVzero;
-         tmpArrayX[2] = mult;
-         fhZNAVzeroATrack[icb[ic]]->Fill(tmpArrayX);
+         ftmpArrayX[0] = energyZdcNA;
+         ftmpArrayX[1] = multVzero;
+         ftmpArrayX[2] = mult;
+         fhZNAVzeroATrack[ficb[ic]]->Fill(ftmpArrayX);
          
          if(trackTT){//TT biased + TT&&CENT biased distributions
-            fhTrackMultiplicityTT[icb[ic]]->Fill(mult);
-            fhVzeroATotMultTT[icb[ic]]->Fill(multVzero);
-            fhZNAEnergyTT[icb[ic]]->Fill(energyZdcNA);
-            fhZNAVzeroATrackTT[icb[ic]]->Fill(tmpArrayX);
+            fhTrackMultiplicityTT[ficb[ic]]->Fill(mult);
+            fhVzeroATotMultTT[ficb[ic]]->Fill(multVzero);
+            fhZNAEnergyTT[ficb[ic]]->Fill(energyZdcNA);
+            fhZNAVzeroATrackTT[ficb[ic]]->Fill(ftmpArrayX);
          }
       }
       if(centralityPercentile > -0.1){
@@ -1298,7 +1325,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             fh2ZNAEnergyVsCentTT->Fill(centralityPercentile, energyZdcNA);
          }
       }
- 
+       */ 
 
       if(trackTT){ //TT biased distributions
          fhCentralityV0MTT->Fill((Float_t) centralityPercentileV0M);
@@ -1310,24 +1337,24 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //  H+JET IN RECONSTRUCTED DATA  
 
-   if(ntriggers>0){
+   if(ntriggers>0 && trackTT){
 
       bFirstCycle=kTRUE; 
       if(trkContRec){
 
-         for(Int_t it=0; it<ntriggers; it++){ //loop over trigger configurations
+       //  for(Int_t it=0; it<ntriggers; it++){ //loop over trigger configurations
 
-            if(fTTtype==0){
-               if(it != indexSingleRndTrig) continue;
-            }
+       //     if(fTTtype==0){
+       //        if(it != indexSingleRndTrig) continue;
+      //      }
 
-            AliVParticle* triggerHadron = (AliVParticle*)(fTrigTracks[it]);
-            if(!triggerHadron) continue;
+            AliVParticle* triggerHadron = (AliVParticle*)  trackTT;// (fTrigTracks[it]);
+            //if(!triggerHadron) continue;
           
             for(Int_t ic=0; ic<2; ic++){
-               if(icb[ic]==-1) continue;
+               if(ficb[ic]==-1) continue;
 
-               fh1Ntriggers[icb[ic]]->Fill((Float_t) triggerHadron->Pt()); //trigger p 
+               fh1Ntriggers[ficb[ic]]->Fill((Float_t) triggerHadron->Pt()); //trigger p 
             }
          
             //JET LOOP
@@ -1345,9 +1372,9 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                  
                   if(bFirstCycle){
                      for(Int_t ic=0; ic<2; ic++){
-                        if(icb[ic]==-1) continue;
-                        fhJetPhi[icb[ic]]->Fill( pTJet, RelativePhi(jetRec->Phi(),0.0));
-                        fhJetEta[icb[ic]]->Fill( pTJet, jetRec->Eta());
+                        if(ficb[ic]==-1) continue;
+                        fhJetPhi[ficb[ic]]->Fill( pTJet, RelativePhi(jetRec->Phi(),0.0));
+                        fhJetEta[ficb[ic]]->Fill( pTJet, jetRec->Eta());
                      }
                   }
                  
@@ -1358,10 +1385,10 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                   if(dfi >  1.5*TMath::Pi()) dfi -= TMath::TwoPi();
 
                   for(Int_t ic=0; ic<2; ic++){
-                     if(icb[ic]==-1) continue;
+                     if(ficb[ic]==-1) continue;
  
                      for(Int_t ir=0; ir< kRho;ir++){ 
-                        fhDphiTriggerJet[icb[ic]][ir]->Fill((Float_t) (pTJet - areaJet*fRhoRec[ir]), (Float_t) dfi); //Rongrong's analysis
+                        fhDphiTriggerJet[ficb[ic]][ir]->Fill((Float_t) (pTJet - areaJet*fRhoRec[ir]), (Float_t) dfi); //Rongrong's analysis
                      } 
                   }
                   //-------------------------
@@ -1370,17 +1397,17 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                   fhDphiTriggerJetAccept->Fill(dfi); //Accepted
                  
                  //Centrality, A, pTjet
-                  tmpArray[0] =  areaJet;
+                  ftmpArray[0] =  areaJet;
                   for(Int_t ir=0; ir< kRho;ir++){ 
-                     tmpArray[1] =  pTJet - areaJet*fRhoRec[ir];
+                     ftmpArray[1] =  pTJet - areaJet*fRhoRec[ir];
 
                      for(Int_t ic=0; ic<2; ic++){
-                        if(icb[ic]==-1) continue;
+                        if(ficb[ic]==-1) continue;
  
-                        fHJetSpec[icb[ic]][ir]->Fill(tmpArray);
+                        fHJetSpec[ficb[ic]][ir]->Fill(ftmpArray[0],ftmpArray[1]);
                  
                         if(ir<kRho-1){
-                           fARhoTT[icb[ic]][ir]->Fill((Float_t) (areaJet*fRhoRec[ir]));
+                           fARhoTT[ficb[ic]][ir]->Fill((Float_t) (areaJet*fRhoRec[ir]));
                         }
                      }
                   } 
@@ -1388,7 +1415,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
                bFirstCycle = kFALSE;
             }//container exists
-         }
+         //}
       }
    }
 
@@ -1433,14 +1460,12 @@ void AliAnalysisTaskHJetSpectra::Terminate(Option_t *){
 AliAnalysisTaskHJetSpectra::~AliAnalysisTaskHJetSpectra(){
    // Destructor. Clean-up the output list, but not the histograms that are put inside
    // (the list is owner and will clean-up these histograms). Protect in PROOF case.
-   //if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-   //   delete fOutput;
-   //}
+   if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+      delete fOutput;
+   }
    delete fRandom;
    delete fHelperClass;
  
-   fTrigTracksGen.resize(0); //list of trigger particle indices true MC
-   fTrigTracks.resize(0); //list pf trigger particle indices
 } 
 
 //________________________________________________________________________
@@ -1463,6 +1488,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    Bool_t bHistRec =  (fTypeOfAnal != kEmb  && fTypeOfAnal != kEmbSingl && fTypeOfAnal != kKine);
    Bool_t bNotKine =  (fTypeOfAnal != kKine);
 
+   Int_t icmax = (fTypeOfData == kPythia ||fTypeOfAnal == kKine) ? 1 : kCAll;
    //__________________________________________________________
    // Event statistics
    fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 7, -0.5, 6.5);
@@ -1477,7 +1503,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fOutput->Add(fHistEvtSelection);
    //___________________________________________________________
    // Hard trigger counter
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fh1NtriggersMB") : 
        Form("fh1Ntriggers%d%d",TMath::Nint(fCentralityBins[ic-1]),TMath::Nint(fCentralityBins[ic])); 
       fh1Ntriggers[ic] = new TH1D(name.Data(),"# of triggers",50,0.0,50.0);
@@ -1499,24 +1525,30 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    const Double_t lowBinSpec[dimSpec] = { 0.0,  -20.0};
    const Double_t hiBinSpec[dimSpec]  = { 2.0,  300.0};
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir< kRho; ir++){
          name = (ic==0) ? Form("fHJetSpecMB%s",bgtype[ir].Data()) : 
                           Form("fHJetSpec%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
                                   TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
 
-
+         /*  
          fHJetSpec[ic][ir] = new THnSparseF(
                       name.Data(),
                       Form("Recoil jet spectrum [A,pTjet-A*rho%s]",bgtype[ir].Data()),
                       dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
          if(bHistRec)  fOutput->Add((THnSparseF*) fHJetSpec[ic][ir]);
+         */
+         fHJetSpec[ic][ir] = new TH2D(
+                      name.Data(),
+                      Form("Recoil jet spectrum [A,pTjet-A*rho%s]",bgtype[ir].Data()),
+                      nBinsSpec[0], lowBinSpec[0], hiBinSpec[0], nBinsSpec[1], lowBinSpec[1],hiBinSpec[1]);
+         if(bHistRec)  fOutput->Add((TH2D*) fHJetSpec[ic][ir]);
       }
    } 
    //____________________________________________________________________
    //UE from cell median  [Centrality, rho, pTUe ]
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir< kRho-1; ir++){ //Skip Zero bg
          name = (ic==0) ? Form("fhRhoMB%s",bgtype[ir].Data()) : 
                           Form("fhRho%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1548,7 +1580,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    //_______________________________________________________________________
    // Delta pt distributions   
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir< kRho-1; ir++){
          //events with TT tracks
          name = (ic==0) ? Form("fhDeltaPtMB%s",bgtype[ir].Data()) : 
@@ -1618,7 +1650,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    //_______________________________________________________________________
    //inclusive azimuthal and pseudorapidity histograms
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
        name = (ic==0) ? Form("fhJetPhiMB") : 
                         Form("fhJetPhi%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                   TMath::Nint(fCentralityBins[ic])); 
@@ -1671,7 +1703,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       fOutput->Add(fhVertexZAcceptMC);
    }
    //-------------------------
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       for(Int_t ir=0; ir < kRho; ir++){ //Rongrong's analysis
          name = (ic==0) ? Form("fhDphiTriggerJetMB%s",bgtype[ir].Data()) : 
                           Form("fhDphiTriggerJet%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1686,7 +1718,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhDphiTriggerJetAccept = new TH1F("fhDphiTriggerJetAccept","Deltaphi trig-jet after cut",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
    if(bHistRec)  fOutput->Add(fhDphiTriggerJetAccept);
    //-------------------------
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhCentralityMB") : 
                        Form("fhCentrality%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1719,7 +1751,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhCentralityZNATT = (TH1F*) fhCentralityZNA->Clone("fhCentralityZNATT");
    if(bHistRec) fOutput->Add(fhCentralityZNATT);
    //-----------------------------------------------------
-   for(Int_t ic =0; ic<kCAll; ic++){
+  /* for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhVzeroATotMultMB") : 
                        Form("fhVzeroATotMult%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1740,10 +1772,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2VzeroATotMultVsCentTT = (TH2F*) fh2VzeroATotMultVsCent->Clone("fh2VzeroATotMultVsCentTT");
    if(bHistRec) fOutput->Add(fh2VzeroATotMultVsCentTT);
-
+   */
    //-----------------------------------------------------
-   //  ZDC ZNA energy 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   //  ZDC ZNA energy
+   /* 
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhZNAEnergyMB") : 
                        Form("fhZNAEnergy%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1764,10 +1797,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2ZNAEnergyVsCentTT = (TH2F*) fh2ZNAEnergyVsCent->Clone("fh2ZNAEnergyVsCentTT");
    if(bHistRec) fOutput->Add(fh2ZNAEnergyVsCentTT);
-
+   */
    //-----------------------------------------------------
    //   track multiplicity
-   for(Int_t ic =0; ic<kCAll; ic++){
+   /*
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhTrackMultiplicityMB") : 
                        Form("fhTrackMultiplicity%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
@@ -1787,16 +1821,17 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fh2TrackMultVsCentTT = (TH2D*) fh2TrackMultVsCent->Clone("fh2TrackMultVsCentTT");
    if(bNotKine) fOutput->Add(fh2TrackMultVsCentTT);
-
+   */
 
    //-----------------------------------------------------
    // ZNA energy versus Vzero mult. versus track mult. in all events 
+   /*
    const Int_t    dimZ   = 3;
    const Int_t    nBinsZ[dimZ]  = { 100,     100,   25 };
    const Double_t lowBinZ[dimZ] = { 0.0,     0.0,   0.0};
    const Double_t hiBinZ[dimZ]  = { 3000.0, 1000.0, 250};
 
-   for(Int_t ic =0; ic<kCAll; ic++){
+   for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhZNAVzeroATrackMB") : 
                        Form("fhZNAVzeroATrack%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                                    TMath::Nint(fCentralityBins[ic])); 
@@ -1816,7 +1851,8 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
       fhZNAVzeroATrackTT[ic] = (THnSparseF*) fhZNAVzeroATrack[ic]->Clone(name.Data()); 
       if(fTypeOfAnal ==  kRec)  fOutput->Add((THnSparseF*) fhZNAVzeroATrackTT[ic]);
-   } 
+   }
+   */ 
    //-----------------------------------------------------
 
   /*
@@ -1853,7 +1889,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    }
 
    if(fTypeOfAnal== kEff ){
-      for(Int_t ic =0; ic<kCAll; ic++){
+      for(Int_t ic =0; ic<icmax; ic++){
          for(Int_t ir=0; ir < kRho; ir++){
             name = (ic==0) ? Form("fhJetPtGenMB%s",bgtype[ir].Data()) : 
                              Form("fhJetPtGen%d%d%s",TMath::Nint(fCentralityBins[ic-1]),
@@ -1886,7 +1922,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       Double_t bins [] = {0, 0.2,0.4,0.6, 0.8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 8., 10., 20., 50.};
       Int_t nbins = sizeof(bins)/sizeof(Double_t)-1;
       
-      for(Int_t ic =0; ic<kCAll; ic++){
+      for(Int_t ic =0; ic<icmax; ic++){
          name = (ic==0) ? Form("fhPtTrkTruePrimRecMB") : 
                           Form("fhPtTrkTruePrimRec%d%d",TMath::Nint(fCentralityBins[ic-1]),
                             TMath::Nint(fCentralityBins[ic])); 
@@ -1912,7 +1948,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    }
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
-      for(Int_t ic =0; ic<kCAll; ic++){
+      for(Int_t ic =0; ic<icmax; ic++){
          name = (ic==0) ? Form("fh1NtriggersGenMB") : 
                           Form("fh1NtriggersGen%d%d",TMath::Nint(fCentralityBins[ic-1]),
                             TMath::Nint(fCentralityBins[ic])); 
@@ -1935,8 +1971,10 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
                                 TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
  
 
-            fHJetSpecGen[ic][ir] = (THnSparseF*)fHJetSpec[ic][ir]->Clone(name.Data());
-            fOutput->Add((THnSparseF*) fHJetSpecGen[ic][ir]);
+            fHJetSpecGen[ic][ir] = (TH2D*)fHJetSpec[ic][ir]->Clone(name.Data());
+            fOutput->Add((TH2D*) fHJetSpecGen[ic][ir]);
+            //fHJetSpecGen[ic][ir] = (THnSparseF*)fHJetSpec[ic][ir]->Clone(name.Data());
+            //fOutput->Add((THnSparseF*) fHJetSpecGen[ic][ir]);
          }
         
          //-------------------------
@@ -2112,7 +2150,6 @@ Double_t AliAnalysisTaskHJetSpectra::EstimateBgKT(AliJetContainer *jetCont, AliP
    AliEmcalJet*  jet        = NULL;
    AliVParticle* constTrack = NULL;
    Bool_t bKTJetCloseToTT = kFALSE;
-   static Double_t rhovec[999];
    Int_t nJetAcc = 0;
    Double_t jetpt;
    Double_t sumEmbPt;
@@ -2153,12 +2190,12 @@ Double_t AliAnalysisTaskHJetSpectra::EstimateBgKT(AliJetContainer *jetCont, AliP
       if(triggerHadron) fhKTAreaPt->Fill(jetpt,jet->Area());
 
       if(jetpt <0.005) jetpt = 0.; //set pt of ghost jets identical to zero
-      rhovec[nJetAcc] = jetpt/jet->Area();
+      frhovec[nJetAcc] = jetpt/jet->Area();
       nJetAcc++;
    }
 
    if(nJetAcc>0){
-      rhoKT = TMath::Median(nJetAcc, rhovec);
+      rhoKT = TMath::Median(nJetAcc, frhovec);
    }
  
   return rhoKT; 
@@ -2173,7 +2210,6 @@ Double_t AliAnalysisTaskHJetSpectra::EstimateBgKTcms(AliJetContainer *jetCont, A
    AliEmcalJet*  jet        = NULL;
    AliVParticle* constTrack = NULL;
    Bool_t bKTJetCloseToTT = kFALSE;
-   static Double_t rhovec[999];
    Int_t nJetAcc = 0;
    Double_t areaPhysJets = 0.0;
    Double_t areaAllJets  = 0.0;
@@ -2218,13 +2254,13 @@ Double_t AliAnalysisTaskHJetSpectra::EstimateBgKTcms(AliJetContainer *jetCont, A
 
       if(jetpt > 0.1){
          areaPhysJets += jet->Area();
-         rhovec[nJetAcc] = jetpt/jet->Area();
+         frhovec[nJetAcc] = jetpt/jet->Area();
          nJetAcc++;
       }
    }
 
    if(nJetAcc>0){
-      rhoKTcms = TMath::Median(nJetAcc, rhovec)*(areaPhysJets/areaAllJets);
+      rhoKTcms = TMath::Median(nJetAcc, frhovec)*(areaPhysJets/areaAllJets);
    }
  
   return rhoKTcms; 

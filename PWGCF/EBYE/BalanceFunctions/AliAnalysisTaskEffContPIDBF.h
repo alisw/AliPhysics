@@ -4,9 +4,9 @@
 // ---------------------------------------------------------------------
 //
 // Task for calculating the efficiency and contamination of the Balance 
-// Function for single particles and pairs
-// Modified By Noor Alam(VECC ,Kolkata)
-//[ Special thanks to Michael Weber]
+// Function for single particles (for Identified particles) 
+// Modified By Noor Alam (VECC ,Kolkata) sk.noor.alam@cern.ch
+//[ Special thanks to Michael Weber ]
 // ---------------------------------------------------------------------
 
 class TList;
@@ -58,6 +58,42 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
     HistMCTruthPtProton(0),
     HistMCTruthEtaProton(0),
     HistMCTruthPhiProton(0),
+    HistPionContaminationInPt(0),
+    HistPionPlusContaminationInPt(0),
+    HistPionMinusContaminationInPt(0),
+    Hist3dPionContamination(0),
+    Hist3dPionPlusContamination(0),
+    Hist3dPionMinusContamination(0),
+    HistKaonContaminationInPt(0),
+    HistKaonPlusContaminationInPt(0),
+    HistKaonMinusContaminationInPt(0),
+    Hist3dKaonContamination(0),
+    Hist3dKaonPlusContamination(0),
+    Hist3dKaonMinusContamination(0),
+    HistProtonContaminationInPt(0),
+    HistProtonPlusContaminationInPt(0),
+    HistProtonMinusContaminationInPt(0),
+    Hist3dProtonContamination(0),
+    Hist3dProtonPlusContamination(0),
+    Hist3dProtonMinusContamination(0), 
+    HistPionPurityInPt(0),
+    HistPionPlusPurityInPt(0),
+    HistPionMinusPurityInPt(0),
+    Hist3dPionPurity(0),
+    Hist3dPionPlusPurity(0),
+    Hist3dPionMinusPurity(0),
+    HistKaonPurityInPt(0),
+    HistKaonPlusPurityInPt(0),
+    HistKaonMinusPurityInPt(0),
+    Hist3dKaonPurity(0),
+    Hist3dKaonPlusPurity(0),
+    Hist3dKaonMinusPurity(0),
+    HistProtonPurityInPt(0),
+    HistProtonPlusPurityInPt(0),
+    HistProtonMinusPurityInPt(0),
+    Hist3dProtonPurity(0),
+    Hist3dProtonPlusPurity(0),
+    Hist3dProtonMinusPurity(0),
     fHistSigmaTPCVsTOFPionForPionAfterCut(0),
     fHistSigmaTPCVsTOFProtonForPionAfterCut(0),
     fHistSigmaTPCVsTOFKaonForPionAfterCut(0),
@@ -131,6 +167,7 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
     for(Int_t ipart=0;ipart<3;ipart++)
      for(Int_t ipid=0;ipid<3;ipid++)
       fnsigmas[ipart][ipid]=999.;
+
 }
 
     AliAnalysisTaskEffContPIDBF(const char *name);
@@ -256,7 +293,55 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
    TH1F *HistMCTruthPtProton; // Pt Proton
    TH1F *HistMCTruthEtaProton; // Eta Proton
    TH1F *HistMCTruthPhiProton; // Phi Proton
-   
+
+
+// Contamination and Purity Histogram 
+
+   TH1F *HistPionContaminationInPt; // Contamination Pion in Pt 
+   TH1F *HistPionPlusContaminationInPt; // Contamination Pion + in Pt 
+   TH1F *HistPionMinusContaminationInPt; // Contamination Pion - in Pt 
+   TH3D *Hist3dPionContamination; // Contamination Pion in Eta , Pt , Phi
+   TH3D *Hist3dPionPlusContamination; // Contamination Pion + in Eta , Pt , Phi
+   TH3D *Hist3dPionMinusContamination; // Contamination Pion - in Eta , Pt , Phi
+
+   TH1F *HistKaonContaminationInPt; // Contamination Kaon in Pt
+   TH1F *HistKaonPlusContaminationInPt; // Contamination Kaon +  in Pt
+   TH1F *HistKaonMinusContaminationInPt; // Contamination Kaon - in Pt
+   TH3D *Hist3dKaonContamination; // Contamination Kaon in Eta , Pt , Phi
+   TH3D *Hist3dKaonPlusContamination; // Contamination Kaon + in Eta , Pt , Phi
+   TH3D *Hist3dKaonMinusContamination; // Contamination Kaon - in Eta , Pt , Phi
+
+   TH1F *HistProtonContaminationInPt; // Contamination Proton in Pt
+   TH1F *HistProtonPlusContaminationInPt; // Contamination Proton + in Pt 
+   TH1F *HistProtonMinusContaminationInPt; // Contamination Proton - in Pt 
+   TH3D *Hist3dProtonContamination; // Contamination Proton in Eta , Pt , Phi
+   TH3D *Hist3dProtonPlusContamination; // Contamination Proton + in Eta , Pt , Phi
+   TH3D *Hist3dProtonMinusContamination; // Contamination Proton - in Eta , Pt , Phi
+
+
+   TH1F *HistPionPurityInPt; // Purity Pion in Pt 
+   TH1F *HistPionPlusPurityInPt; // Purity Pion + in Pt 
+   TH1F *HistPionMinusPurityInPt; // Purity Pion - in Pt 
+   TH3D *Hist3dPionPurity; // Purity Pion in Eta , Pt , Phi
+   TH3D *Hist3dPionPlusPurity; // Purity Pion + in Eta , Pt , Phi
+   TH3D *Hist3dPionMinusPurity; // Purity Pion - in Eta , Pt , Phi
+
+   TH1F *HistKaonPurityInPt; // Purity Kaon in Pt
+   TH1F *HistKaonPlusPurityInPt; // Purity Kaon +  in Pt
+   TH1F *HistKaonMinusPurityInPt; // Purity Kaon - in Pt
+   TH3D *Hist3dKaonPurity; // Purity Kaon in Eta , Pt , Phi
+   TH3D *Hist3dKaonPlusPurity; // Purity Kaon + in Eta , Pt , Phi
+   TH3D *Hist3dKaonMinusPurity; // Purity Kaon - in Eta , Pt , Phi
+
+   TH1F *HistProtonPurityInPt; // Purity Proton in Pt
+   TH1F *HistProtonPlusPurityInPt; // Purity Proton + in Pt 
+   TH1F *HistProtonMinusPurityInPt; // Purity Proton - in Pt 
+   TH3D *Hist3dProtonPurity; // Purity Proton in Eta , Pt , Phi
+   TH3D *Hist3dProtonPlusPurity; // Purity Proton + in Eta , Pt , Phi
+   TH3D *Hist3dProtonMinusPurity; // Purity Proton - in Eta , Pt , Phi
+// Contamination and Purity Histigram 
+
+
    // For MC Reco 
 
    TH2F *fHistSigmaTPCVsTOFPionForPionAfterCut;
