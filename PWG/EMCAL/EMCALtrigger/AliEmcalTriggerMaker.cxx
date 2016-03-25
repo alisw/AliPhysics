@@ -62,8 +62,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fPatchADC(NULL),
   fLevel0TimeMap(NULL),
   fITrigger(0),
-  fRejectOffAcceptancePatches(kFALSE),
   fDoQA(kFALSE),
+  fRejectOffAcceptancePatches(kFALSE),
   fQAHistos(NULL),
   fDebugLevel(0)
 {
@@ -96,8 +96,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fPatchADC(NULL),
   fLevel0TimeMap(NULL),
   fITrigger(0),
-  fRejectOffAcceptancePatches(kFALSE),
   fDoQA(doQA),
+  fRejectOffAcceptancePatches(kFALSE),
   fQAHistos(NULL),
   fDebugLevel(0)
 {

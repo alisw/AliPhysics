@@ -46,24 +46,24 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fOfflineBadChannels(),
   fFastORPedestal(5000),
   fTriggerBitConfig(NULL),
-  fGeometry(NULL),
-  fPatchAmplitudes(NULL),
-  fPatchADCSimple(NULL),
-  fPatchADC(NULL),
-  fLevel0TimeMap(NULL),
-  fTriggerBitMap(NULL),
   fPatchFinder(NULL),
   fLevel0PatchFinder(NULL),
   fL0MinTime(7),
   fL0MaxTime(10),
-  fADCtoGeV(1.),
   fMinCellAmp(0),
   fMinL0FastORAmp(0),
   fMinL1FastORAmp(0),
   fBkgThreshold(-1),
   fL0Threshold(0),
   fIsMC(kFALSE),
-  fDebugLevel(0)
+  fDebugLevel(0),
+  fGeometry(NULL),
+  fPatchAmplitudes(NULL),
+  fPatchADCSimple(NULL),
+  fPatchADC(NULL),
+  fLevel0TimeMap(NULL),
+  fTriggerBitMap(NULL),
+  fADCtoGeV(1.)
 {
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
@@ -395,8 +395,8 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
       | 1 << fTriggerBitConfig->GetGammaLowBit()
       | 1 << (fTriggerBitConfig->GetGammaHighBit() + fTriggerBitConfig->GetTriggerTypesEnd())
       | 1 << (fTriggerBitConfig->GetGammaLowBit() + fTriggerBitConfig->GetTriggerTypesEnd()),
-      bkgPatchMask = 1 << fTriggerBitConfig->GetBkgBit(),
-      l0PatchMask = 1 << fTriggerBitConfig->GetLevel0Bit();
+  bkgPatchMask = 1 << fTriggerBitConfig->GetBkgBit();
+      //l0PatchMask = 1 << fTriggerBitConfig->GetLevel0Bit();
 
   std::vector<AliEMCALTriggerRawPatch> patches;
   if (fPatchFinder) {

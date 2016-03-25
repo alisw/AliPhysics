@@ -97,8 +97,8 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
 AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
   TNamed(name,name),
   fOfflineBadChannels(),
-  fFastORPedestal(5000),
   fBadChannels(),
+  fFastORPedestal(5000),
   fFastorL0Th(400),
   fFastorL1Th(400),
   fADCperBin(16),
