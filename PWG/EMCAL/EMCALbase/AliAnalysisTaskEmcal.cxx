@@ -1114,7 +1114,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if ((fMinVz != -999) && (fMaxVz != -999)) {
+  if ((fMinVz > -998.) && (fMaxVz < 998.)) {
     if (fNVertCont == 0 ) {
       if (fGeneralHistograms) fHistEventRejection->Fill("vertex contr.",1);
       return kFALSE;
