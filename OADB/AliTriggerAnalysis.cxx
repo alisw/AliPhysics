@@ -217,8 +217,6 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){
     default:               str = "";                          break;
   }
   if (trigger & kOfflineFlag) str += " OFFLINE";
-  if (trigger & kOneParticle) AliError("AliTriggerAnalysis::kOneParticle functionality is obsolete");
-  if (trigger & kOneTrack)    AliError("AliTriggerAnalysis::kOneTrack functionality is obsolete");
   return str;
 }
 
@@ -457,7 +455,8 @@ AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliVEvent* ev
   
   const AliVAD* ad = event->GetADData();
   if (!ad) { 
-    AliError("AliVAD not available");
+    // print error only for runs from >=2015
+    if (event->GetRunNumber()>=208505) AliError("AliVAD not available");
     return kADInvalid; 
   }
   if (side != kASide && side != kCSide) {
@@ -759,7 +758,7 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
   // TODO: implement online and offline selection in AOD
   // TODO: read vtx thresholds from OCDB
   
-  if (event->GetDataLayoutType()!=AliVEvent::kAOD) {
+  if (event->GetDataLayoutType()==AliVEvent::kAOD) {
     // AOD analysis
     const AliAODTZERO* tzero = dynamic_cast<const AliAODEvent*>(event)->GetTZEROData();
     if (!tzero) {
@@ -768,7 +767,7 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
     }
     if (fMC) if(tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
   } 
-  else if (event->GetDataLayoutType()!=AliVEvent::kESD) {
+  else if (event->GetDataLayoutType()==AliVEvent::kESD) {
     // ESD analysis
     const AliESDTZERO* tzero = dynamic_cast<const AliESDEvent*>(event)->GetESDTZERO();
     if (!tzero) {
@@ -984,48 +983,47 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
 
 
 //-------------------------------------------------------------------------------------------------
-void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd){
-  // fills the histograms with the info from the ESD
+void AliTriggerAnalysis::FillHistograms(const AliVEvent* event){
+  fHistBitsSPD->Fill(SPDFiredChips(event, 0), SPDFiredChips(event, 1, kTRUE));
   
-  fHistBitsSPD->Fill(SPDFiredChips(aEsd, 0), SPDFiredChips(aEsd, 1, kTRUE));
+  ADTrigger(event, kASide, kFALSE, kTRUE);
+  ADTrigger(event, kCSide, kFALSE, kTRUE);
+  V0Trigger(event, kASide, kFALSE, kTRUE);
+  V0Trigger(event, kCSide, kFALSE, kTRUE);
+  T0Trigger(event, kFALSE, kTRUE);
+  ZDCTDCTrigger(event,kASide,kFALSE,kFALSE,kTRUE);
+  ZDCTimeTrigger(event,kTRUE);
+  IsSPDClusterVsTrackletBG(event, kTRUE);
   
-  ADTrigger(aEsd, kASide, kFALSE, kTRUE);
-  ADTrigger(aEsd, kCSide, kFALSE, kTRUE);
-  V0Trigger(aEsd, kASide, kFALSE, kTRUE);
-  V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
-  T0Trigger(aEsd, kFALSE, kTRUE);
-  ZDCTDCTrigger(aEsd,kASide,kFALSE,kFALSE,kTRUE);
-  ZDCTimeTrigger(aEsd,kTRUE);
-  IsSPDClusterVsTrackletBG(aEsd, kTRUE);
+//  TODO: Adjust for AOD
+//  AliESDZDC* zdcData = event->GetESDZDC();
+//  if (zdcData)  {
+//    UInt_t quality = zdcData->GetESDQuality();
+//    
+//    // from Nora's presentation, general first physics meeting 16.10.09
+//    static UInt_t zpc  = 0x20;
+//    static UInt_t znc  = 0x10;
+//    static UInt_t zem1 = 0x08;
+//    static UInt_t zem2 = 0x04;
+//    static UInt_t zpa  = 0x02;
+//    static UInt_t zna  = 0x01;
+//    
+//    fHistZDC->Fill(1, (quality & zna)  ? 1 : 0);
+//    fHistZDC->Fill(2, (quality & zpa)  ? 1 : 0);
+//    fHistZDC->Fill(3, (quality & zem2) ? 1 : 0);
+//    fHistZDC->Fill(4, (quality & zem1) ? 1 : 0);
+//    fHistZDC->Fill(5, (quality & znc)  ? 1 : 0);
+//    fHistZDC->Fill(6, (quality & zpc)  ? 1 : 0);
+//  }
+//  else {
+//    fHistZDC->Fill(-1);
+//    AliError("AliESDZDC not available");
+//  }
   
-  AliESDZDC* zdcData = aEsd->GetESDZDC();
-  if (zdcData)  {
-    UInt_t quality = zdcData->GetESDQuality();
-    
-    // from Nora's presentation, general first physics meeting 16.10.09
-    static UInt_t zpc  = 0x20;
-    static UInt_t znc  = 0x10;
-    static UInt_t zem1 = 0x08;
-    static UInt_t zem2 = 0x04;
-    static UInt_t zpa  = 0x02;
-    static UInt_t zna  = 0x01;
-    
-    fHistZDC->Fill(1, (quality & zna)  ? 1 : 0);
-    fHistZDC->Fill(2, (quality & zpa)  ? 1 : 0);
-    fHistZDC->Fill(3, (quality & zem2) ? 1 : 0);
-    fHistZDC->Fill(4, (quality & zem1) ? 1 : 0);
-    fHistZDC->Fill(5, (quality & znc)  ? 1 : 0);
-    fHistZDC->Fill(6, (quality & zpc)  ? 1 : 0);
-  }
-  else {
-    fHistZDC->Fill(-1);
-    AliError("AliESDZDC not available");
-  }
-  
-  if (fDoFMD) {
-    fHistFMDA->Fill(FMDHitCombinations(aEsd, kASide, kTRUE));
-    fHistFMDC->Fill(FMDHitCombinations(aEsd, kCSide, kTRUE));
-  }
+//  if (fDoFMD) {
+//    fHistFMDA->Fill(FMDHitCombinations(event, kASide, kTRUE));
+//    fHistFMDC->Fill(FMDHitCombinations(event, kCSide, kTRUE));
+//  }
 }
 
 
@@ -1055,12 +1053,12 @@ void AliTriggerAnalysis::SaveHistograms() const {
 
 
 //-------------------------------------------------------------------------------------------------
-void AliTriggerAnalysis::FillTriggerClasses(const AliESDEvent* aEsd){
+void AliTriggerAnalysis::FillTriggerClasses(const AliVEvent* event){
   // fills trigger classes map
-  TParameter<Long64_t>* count = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(aEsd->GetFiredTriggerClasses().Data()));
+  TParameter<Long64_t>* count = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(event->GetFiredTriggerClasses().Data()));
   if (!count) {
-    count = new TParameter<Long64_t>(aEsd->GetFiredTriggerClasses(), 0);
-    fTriggerClasses->Add(new TObjString(aEsd->GetFiredTriggerClasses().Data()), count);
+    count = new TParameter<Long64_t>(event->GetFiredTriggerClasses(), 0);
+    fTriggerClasses->Add(new TObjString(event->GetFiredTriggerClasses().Data()), count);
   }
   count->SetVal(count->GetVal() + 1);
 }

@@ -18,7 +18,7 @@
 //-------------------------------------------------------------------------
 //                      Implementation of   Class AliPhysicsSelection
 // This class selects collision candidates from data runs, applying selection cuts on triggers 
-// and background rejection based on the content of the ESD
+// and background rejection
 //
 // Usage:
 //
@@ -29,7 +29,7 @@
 //   fPhysicsSelection->SetAnalyzeMC()
 //
 // To check if an event is a collision candidate, use:
-//   fPhysicsSelection->IsCollisionCandidate(fESD)
+//   fPhysicsSelection->IsCollisionCandidate(fInputEvent)
 //
 // After processing save the resulting histograms to a file with (a folder physics_selection 
 //   will be created that contains the histograms):
@@ -120,6 +120,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliLog.h"
 
+#include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -131,6 +132,9 @@
 #include "AliOADBTriggerAnalysis.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliCDBManager.h"
+#include "AliGRPObject.h"
+#include "AliCDBEntry.h"
 
 using std::cout;
 using std::endl;
@@ -197,7 +201,7 @@ AliPhysicsSelection::~AliPhysicsSelection(){
   if (fCashedTokens)       { delete fCashedTokens;         fCashedTokens = 0;       }
 }
 
-UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const {
+UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const {
   // checks if the given trigger class(es) are found for the current event
   // format of trigger: +TRIGGER1,TRIGGER1b,TRIGGER1c -TRIGGER2 [#XXX] [&YY] [*ZZ]
   //   requires one out of TRIGGER1,TRIGGER1b,TRIGGER1c and rejects TRIGGER2
@@ -205,38 +209,30 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   //   if successful, YY is returned (for association between entry in fCollTrigClasses and AliVEvent::EOfflineTriggerTypes)
   //   triggerLogic is filled with ZZ, defaults to kCINT1
   
+  TString classes = event->GetFiredTriggerClasses();
+  
   Bool_t foundBCRequirement = kFALSE;
   Bool_t foundCorrectBC = kFALSE;
   
   UInt_t returnCode = AliVEvent::kUserDefined;
   triggerLogic = kCINT1;
   
-  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", aEsd->GetFiredTriggerClasses().Data()));
+  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", event->GetFiredTriggerClasses().Data()));
   
   TString str(trigger);
   TObjArray* tokens = str.Tokenize(" ");
   
-  for (Int_t i=0; i < tokens->GetEntries(); i++)
-  {
+  for (Int_t i=0; i < tokens->GetEntries(); i++) {
     TString str2(((TObjString*) tokens->At(i))->String());
-    
-    if (str2[0] == '+' || str2[0] == '-')
-    {
+    if (str2[0] == '+' || str2[0] == '-') {
       Bool_t flag = (str2[0] == '+');
-      
       str2.Remove(0, 1);
-      
       TObjArray* tokens2 = str2.Tokenize(",");
-      
       Bool_t foundTriggerClass = kFALSE;
-      for (Int_t j=0; j < tokens2->GetEntries(); j++)
-      {
+      for (Int_t j=0; j < tokens2->GetEntries(); j++) {
         TString str3(((TObjString*) tokens2->At(j))->String());
-        
-        if (flag && aEsd->IsTriggerClassFired(str3))
-          foundTriggerClass = kTRUE;
-        if (!flag && aEsd->IsTriggerClassFired(str3))
-        {
+        if (flag && classes.Contains(str3)) foundTriggerClass = kTRUE;
+        if (!flag && classes.Contains(str3)) {
           AliDebug(AliLog::kDebug+1, Form("Rejecting event because trigger class %s is present", str3.Data()));
           delete tokens2;
           delete tokens;
@@ -246,8 +242,7 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
       
       delete tokens2;
       
-      if (flag && !foundTriggerClass)
-      {
+      if (flag && !foundTriggerClass) {
         AliDebug(AliLog::kDebug+1, Form("Rejecting event because (none of the) trigger class(es) %s is present", str2.Data()));
         delete tokens;
         return kFALSE;
@@ -262,32 +257,20 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
       Int_t bcNumber = str2.Atoi();
       AliDebug(AliLog::kDebug+1, Form("Checking for bunch crossing number %d", bcNumber));
       
-      if (aEsd->GetBunchCrossNumber() == bcNumber)
+      if (event->GetBunchCrossNumber() == bcNumber)
       {
         foundCorrectBC = kTRUE;
         AliDebug(AliLog::kDebug+1, Form("Found correct bunch crossing %d", bcNumber));
       }
     }
-    else if (str2[0] == '&')
-    {
-      str2.Remove(0, 1);
-      
-      returnCode = str2.Atoll();
-    }
-    else if (str2[0] == '*')
-    {
-      str2.Remove(0, 1);
-      
-      triggerLogic = str2.Atoi();
-    }
-    else
-      AliFatal(Form("Invalid trigger syntax: %s", trigger));
+    else if (str2[0] == '&') { str2.Remove(0, 1); returnCode = str2.Atoll();  }
+    else if (str2[0] == '*') { str2.Remove(0, 1); triggerLogic = str2.Atoi(); }
+    else AliFatal(Form("Invalid trigger syntax: %s", trigger));
   }
   
   delete tokens;
   
-  if (foundBCRequirement && !foundCorrectBC)
-    return kFALSE;
+  if (foundBCRequirement && !foundCorrectBC) return kFALSE;
   
   return returnCode;
 }
@@ -306,9 +289,9 @@ TObject *AliPhysicsSelection::GetStatistics(const Option_t *option) const
 }   
 
 //______________________________________________________________________________
-Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline)
+Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline)
 {
-  // evaluates trigger logic. If called with no ESD pointer/triggerAnalysis pointer, it just caches the tokens
+  // evaluates trigger logic. If called with no event pointer/triggerAnalysis pointer, it just caches the tokens
   // Fills the statistics histogram, if booked at row i
   TString trigger(triggerLogic);
   
@@ -348,8 +331,8 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
     if (offline) 
       bit |= AliTriggerAnalysis::kOfflineFlag;
     
-    if(aEsd && triggerAnalysis) {
-      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) bit)));
+    if(event && triggerAnalysis) {
+      trigger.ReplaceAll(token, Form("%d", triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) bit)));
       //      if(fHistStatisticsTokens) 	      
     }
   }
@@ -371,8 +354,7 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
 }
 
 //______________________________________________________________________________
-UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
-{
+UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
   // checks if the given event is a collision candidate
   //
   // returns a bit word describing the fired offline triggers (see AliVEvent::EOfflineTriggerTypes)
@@ -381,48 +363,31 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     AliError("Cannot get the analysis manager");
     return 0;
   } 
-  mgr->LoadBranch("AliESDHeader.");
-  mgr->LoadBranch("AliESDRun.");
   
-  if (fCurrentRun != aEsd->GetRunNumber()) {
-    if (!Initialize(aEsd))
-      AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
-    if(fComputeBG) SetBIFactors(aEsd); // is this safe here?
+  if (fCurrentRun != event->GetRunNumber()) {
+    if (!Initialize(event))
+      AliFatal(Form("Could not initialize for run %d", event->GetRunNumber()));
+    if(fComputeBG) SetBIFactors(event); // is this safe here?
   }
-  const AliESDHeader* esdHeader = aEsd->GetHeader();
-  if (!esdHeader)
-  {
-    AliError("ESD Header could not be retrieved");
+  const AliVHeader* header = event->GetHeader();
+  if (!header) {
+    AliError("header could not be retrieved");
     return kFALSE;
   }
   
   // check event type; should be PHYSICS = 7 for data and 0 for MC
-  if (!fMC)
-  {
-    if (esdHeader->GetEventType() != 7)
-      return kFALSE;
+  if (!fMC) {
+    if (header->GetEventType() != 7) return kFALSE;
   }
-  else
-  {
-    if (esdHeader->GetEventType() != 0)
-      AliFatal(Form("Invalid event type for MC: %d", esdHeader->GetEventType()));
+  else {
+    if (header->GetEventType() != 0)
+      AliFatal(Form("Invalid event type for MC: %d",header->GetEventType()));
   }
-  
-  mgr->LoadBranch("AliMultiplicity.");
-  //mgr->LoadBranch("AliESDFMD.");
-  mgr->LoadBranch("AliESDVZERO.");
-  mgr->LoadBranch("AliESDZDC.");
-  mgr->LoadBranch("SPDVertex.");
-  mgr->LoadBranch("PrimaryVertex.");
-  mgr->LoadBranch("TPCVertex.");
-  mgr->LoadBranch("Tracks");
-  mgr->LoadBranch("SPDPileupVertices");
   
   UInt_t accept = 0;
   
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
-  for (Int_t i=0; i < count; i++)
-  {
+  for (Int_t i=0; i < count; i++) {
     const char* triggerClass = 0;
     if (i < fCollTrigClasses.GetEntries())
       triggerClass = ((TObjString*) fCollTrigClasses.At(i))->String();
@@ -433,20 +398,20 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     
     AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
     
-    triggerAnalysis->FillTriggerClasses(aEsd);
+    triggerAnalysis->FillTriggerClasses(event);
     
     Int_t triggerLogic = 0; 
-    UInt_t singleTriggerResult = CheckTriggerClass(aEsd, triggerClass, triggerLogic);
+    UInt_t singleTriggerResult = CheckTriggerClass(event, triggerClass, triggerLogic);
     
     if (singleTriggerResult)
     {
-      triggerAnalysis->FillHistograms(aEsd);
+      triggerAnalysis->FillHistograms(event);
       
       Bool_t isBin0 = kFALSE;
       if (fBin0CallBack != "") {
         isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
       } else if (fBin0CallBackPointer) {
-        isBin0 = (*fBin0CallBackPointer)(aEsd);
+        isBin0 = (*fBin0CallBackPointer)(event);
       }
       
       // ---->
@@ -455,43 +420,43 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       // (with all AliTriggerAnalysis tokens? Only we the tokens
       // actually used in the selection?) and clean up
       
-      AliESDVZERO *esdV0 = aEsd->GetVZEROData();
-      if(!esdV0) fSkipV0 = kTRUE;
+      AliVVZERO *vzero = event->GetVZEROData();
+      if (!vzero) fSkipV0 = kTRUE;
       
       // hardware trigger
-      Int_t fastORHW   = triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
-      //      Int_t fastORHWL1 = triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kSPDGFOL1); // SPD number of chips from trigger bits in second layer (!)
-      Bool_t v0AHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kV0A);// should replay hw trigger
-      Bool_t v0CHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, AliTriggerAnalysis::kV0C);// should replay hw trigger
+      Int_t fastORHW   = triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
+      //      Int_t fastORHWL1 = triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kSPDGFOL1); // SPD number of chips from trigger bits in second layer (!)
+      Bool_t v0AHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kV0A);// should replay hw trigger
+      Bool_t v0CHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kV0C);// should replay hw trigger
       
       // offline trigger
-      Int_t fastOROffline   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFO)); // SPD number of chips from clusters (!)
-      Int_t fastOROfflineL1 = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFOL1)); // SPD number of chips from clusters in second layer (!)
-      Bool_t v0A       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0A));
-      Bool_t v0C       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0C));
-      Bool_t v0ABG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0ABG));
-      Bool_t v0CBG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0CBG));
+      Int_t fastOROffline   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFO)); // SPD number of chips from clusters (!)
+      Int_t fastOROfflineL1 = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFOL1)); // SPD number of chips from clusters in second layer (!)
+      Bool_t v0A       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0A));
+      Bool_t v0C       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0C));
+      Bool_t v0ABG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0ABG));
+      Bool_t v0CBG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0CBG));
       Bool_t v0BG = v0ABG || v0CBG;
-      Bool_t t0       = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0    ));
-      Bool_t t0BG     = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0BG    ));
-      Bool_t t0PileUp = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
+      Bool_t t0       = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0    ));
+      Bool_t t0BG     = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0BG    ));
+      Bool_t t0PileUp = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
       
       // fmd
-      // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
-      // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
+      // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
+      // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
       // Bool_t fmd  = fmdA || fmdC;
       
       // ZDC
-      // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCA);
-      // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kZDCC);
-      Bool_t zdcA    = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
-      Bool_t zdcC    = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
-      Bool_t zdcTime = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
-      Bool_t znABG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
-      Bool_t znCBG   = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
+      // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCA);
+      // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCC);
+      Bool_t zdcA    = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
+      Bool_t zdcC    = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
+      Bool_t zdcTime = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
+      Bool_t znABG   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
+      Bool_t znCBG   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
       
-      Bool_t laserCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
-      Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));
+      Bool_t laserCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
+      Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));
       
       // Some "macros"
       Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
@@ -499,7 +464,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       
       // Background rejection
       Bool_t bgID = kFALSE;
-      bgID = triggerAnalysis->EvaluateTrigger(aEsd,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); // FIXME: temporarily, we keep both ways to validate the new one. if the external BG id is not set, it will use the new one
+      bgID = triggerAnalysis->EvaluateTrigger(event,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); // FIXME: temporarily, we keep both ways to validate the new one. if the external BG id is not set, it will use the new one
       
       /*Int_t ntrig = fastOROffline; // any 2 hits
       if(v0A)              ntrig += 1;
@@ -515,9 +480,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       AliDebug(AliLog::kDebug, Form("Triggers from OADB [0x%x][%d][%s][%s]",singleTriggerResult,AliOADBPhysicsSelection::GetActiveBit(singleTriggerResult),triggerLogicOffline.Data(),triggerLogicOnline.Data()));
       
       // replay hardware trigger (should only remove events for MC)
-      Bool_t onlineTrigger  = EvaluateTriggerLogic(aEsd, triggerAnalysis, triggerLogicOnline, kFALSE);
+      Bool_t onlineTrigger  = EvaluateTriggerLogic(event, triggerAnalysis, triggerLogicOnline, kFALSE);
       // offline selection
-      Bool_t offlineTrigger = EvaluateTriggerLogic(aEsd, triggerAnalysis, triggerLogicOffline, kTRUE);
+      Bool_t offlineTrigger = EvaluateTriggerLogic(event, triggerAnalysis, triggerLogicOffline, kTRUE);
       
       // Printf("%s %s", triggerLogicOnline.Data(), triggerLogicOffline.Data());
       // Printf("%d %d", onlineTrigger, offlineTrigger);
@@ -536,7 +501,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
         if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
         
         fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
-        if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+        if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(event->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
         
         // We fill the rest only if hw trigger is ok
         if (!onlineTrigger) {
@@ -578,10 +543,11 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
             
             fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
             
-            if (aEsd->IsPileupFromSPD())
-              fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
+// TODO: adjust for AOD
+//            if (event->IsPileupFromSPD())
+//              fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
             
-            // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+            // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(event->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
             if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
               accept |= singleTriggerResult; // only set for "all" (should not really matter)
           }
@@ -601,21 +567,24 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 }
 
 
-Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
-{
+Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
   DetectPassName();
-  // initializes the object for the given ESD
-  
-  AliInfo(Form("Initializing for beam type: %s", aEsd->GetESDRun()->GetBeamType()));
   fIsPP = kTRUE;
-  if (strcmp(aEsd->GetESDRun()->GetBeamType(), "A-A") == 0)
-    fIsPP = kFALSE;
-  
-  return Initialize(aEsd->GetRunNumber());
+  if (event->GetDataLayoutType()==AliVEvent::kESD) {
+    fIsPP = !TString(((AliESDEvent*) event)->GetESDRun()->GetBeamType()).EqualTo("A-A");
+  } else {
+    AliCDBManager* man = AliCDBManager::Instance();
+    if (man) {
+      man->SetDefaultStorage("raw://");
+      man->SetRun(event->GetRunNumber());
+      AliGRPObject* grp = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
+      if (grp) fIsPP = !grp->GetBeamType().EqualTo("A-A");
+    }
+  }
+  return Initialize(event->GetRunNumber());
 }
 
-Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
-{
+Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
   // initializes the object for the given run  
   
   
@@ -949,7 +918,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
           
           TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL C0LSR-ABCE-NOPF-TPC CBEAMB-B-NOPF-ALLNOTRD"; // We know we dont support those, so we print no warning	      
           if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU") && !alreadyFoundTriggers.Contains(singleTrig)) {
-            Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
+            Printf("WARNING: Found unknown trigger [%s] with %ld counts!", singleTrig, counts);
             alreadyFoundTriggers += singleTrig; // Avoid printing warning twice for the same trigger
           }
         }
@@ -1422,24 +1391,24 @@ Int_t AliPhysicsSelection::GetStatRow(const char * triggerBXClass, UInt_t offlin
   return nMatches;
 }
 
-void AliPhysicsSelection::SetBIFactors(const AliESDEvent * aESD) {
+void AliPhysicsSelection::SetBIFactors(const AliVEvent * event) {
   // Set factors for realtive bunch intesities
-  if(!aESD) { 
-    AliFatal("ESD not given");
+  if(!event) { 
+    AliFatal("Null event pointer");
   }
-  Int_t run = aESD->GetRunNumber();
+  Int_t run = event->GetRunNumber();
   if (run > 105268) {
-    // intensities stored in the ESDs
-    const AliESDRun* esdRun = aESD->GetESDRun();
-    Double_t intAB = esdRun->GetMeanIntensityIntecting(0);
-    Double_t intCB = esdRun->GetMeanIntensityIntecting(1);
-    Double_t intAA = esdRun->GetMeanIntensityNonIntecting(0);
-    Double_t intCC = esdRun->GetMeanIntensityNonIntecting(1);
-    
-    // cout << "INT " <<intAB <<endl;
-    // cout << "INT " <<intCB <<endl;
-    // cout << "INT " <<intAA <<endl;
-    // cout << "INT " <<intCC <<endl;
+// TODO: Adjust for AOD
+// intensities stored in the ESDs
+//    const AliESDRun* esdRun = event->GetESDRun();
+//    Double_t intAB = esdRun->GetMeanIntensityIntecting(0);
+//    Double_t intCB = esdRun->GetMeanIntensityIntecting(1);
+//    Double_t intAA = esdRun->GetMeanIntensityNonIntecting(0);
+//    Double_t intCC = esdRun->GetMeanIntensityNonIntecting(1);
+    Double_t intAB = 0;
+    Double_t intCB = 0;
+    Double_t intAA = 0;
+    Double_t intCC = 0;
     
     if (intAB > 0 && intAA > 0) {
       fBIFactorA = intAB/intAA;

@@ -71,8 +71,8 @@ public:
   Bool_t IsHVdipTPCEvent(const AliVEvent* event);
   Bool_t IsIncompleteEvent(const AliVEvent* event);
   
-  void FillHistograms(const AliESDEvent* aEsd);
-  void FillTriggerClasses(const AliESDEvent* aEsd);
+  void FillHistograms(const AliVEvent* event);
+  void FillTriggerClasses(const AliVEvent* event);
   
   void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
   void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }

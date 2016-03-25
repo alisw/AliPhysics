@@ -25,14 +25,14 @@
 
 //#define VERBOSE_STAT
 
-class AliESDEvent;
+class AliVEvent;
 class TH2F;
 class TH1F;
 class TCollection;
 class AliTriggerAnalysis;
 class AliAnalysisTaskSE;
-class AliOADBPhysicsSelection ;
-class AliOADBFillingScheme    ;
+class AliOADBPhysicsSelection;
+class AliOADBFillingScheme;
 class AliOADBTriggerAnalysis;
 class TPRegexp;
 
@@ -52,19 +52,19 @@ public:
   enum {kStatIdxAll=0,kStatIdxBin0=1};
   enum ETriggerLogic { kCINT1 = 0, kCMBS2A, kCMBS2C, kCMBAC, kCMBACS2, kHighMultL1 };
 
-  typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
+  typedef Bool_t (*Bin0Callback_t)(const AliVEvent *);
 
   AliPhysicsSelection();
   virtual ~AliPhysicsSelection();
     
   // AliAnalysisCuts interface
-  virtual UInt_t GetSelectionMask(const TObject* obj) { return IsCollisionCandidate((const AliESDEvent*) obj); }
+  virtual UInt_t GetSelectionMask(const TObject* obj) { return IsCollisionCandidate((const AliVEvent*) obj); }
   virtual Bool_t IsSelected(TList*) { return kFALSE; }
   virtual Bool_t IsSelected(TObject*)  {return kFALSE;}
     
   Int_t  GetCurrentRun() const {return fCurrentRun;}
-  UInt_t IsCollisionCandidate(const AliESDEvent* aEsd);
-  Bool_t Initialize(const AliESDEvent* aEsd);
+  UInt_t IsCollisionCandidate(const AliVEvent* event);
+  Bool_t Initialize(const AliVEvent* event);
   Bool_t Initialize(Int_t runNumber);
     
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
@@ -93,7 +93,7 @@ public:
   const TH2F* GetBunchCrossingHistogram() const { return fHistBunchCrossing; }
   virtual TObject *GetStatistics(const Option_t *option) const;
     
-  void SetBIFactors(const AliESDEvent * aESD);
+  void SetBIFactors(const AliVEvent * event);
   
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
   void SetComputeBG   (UInt_t flag = AliVEvent::kMB) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
@@ -107,8 +107,8 @@ public:
   void DetectPassName();
   Bool_t IsMC() const { return fMC; }
 protected:
-  UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const;
-  Bool_t EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline);
+  UInt_t CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const;
+  Bool_t EvaluateTriggerLogic(const AliVEvent* event, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline);
   TH2F * BookHistStatistics(const char * tag) ;
   Int_t GetStatRow(const char * triggerBXClass, UInt_t offlineTriggerType, UInt_t ** rowIDs) const;
   const char * GetTriggerString(TObjString * obj);
