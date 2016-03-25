@@ -24,6 +24,13 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   // ######### SETTERS/GETTERS
   void                        SetJetParticleArrayName(const char* name) { fJetParticleArrayName = name; }
+  void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
+
+  void                        ActivateFakejetRejection(Double_t minFakeFactor, Double_t maxFakeFactor)  { fMinFakeFactor = minFakeFactor; fMaxFakeFactor = maxFakeFactor; fUseFakejetRejection = kTRUE; }
+  void                        SetMinFakeFactor(Double_t value)  { fMinFakeFactor = value; }
+  void                        SetMaxFakeFactor(Double_t value)  { fMaxFakeFactor = value; }
+  void                        SetUseFakejetRejection(Bool_t value)  { fUseFakejetRejection = value; }
+  void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
   void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading;}
@@ -38,10 +45,16 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliJetContainer            *fJetsCont;                                //!Jets
   AliParticleContainer       *fTracksCont;                              //!Tracks
   Int_t                       fNumberOfCentralityBins;                  // Number of centrality bins
-  TClonesArray               *fJetsOutput;                              //!Array of basic correlation particles attached to the event
+  TClonesArray               *fJetsOutput;                              //!Array of basic correlation particles attached to the event (jets)
+  TClonesArray               *fTracksOutput;                            //!Array of basic correlation particles attached to the event (tracks)
   TString                     fJetParticleArrayName;                    // Name of fJetsOutput array
+  TString                     fTrackParticleArrayName;                  // Name of fTracksOutput array
 
   // Criteria for the selection of jets that are passed to the correlation task
+  Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
+  Bool_t                      fUseFakejetRejection;                     // Use fakejet rejection (a la ATLAS)
+  Double_t                    fMinFakeFactor;                           // min fake factor (cut below)
+  Double_t                    fMaxFakeFactor;                           // max fake factor (cut above)
   Int_t                       fEventCriteriumMode;                      // Mode of event selection
   Double_t                    fEventCriteriumMinBackground;             // Minimum background
   Double_t                    fEventCriteriumMaxBackground;             // Maximum background
@@ -55,6 +68,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   template <class T> T*       AddHistogram2D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0,  const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
 
   // ######### HELPER FUNCTIONS
+  Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
   AliEmcalJet*                GetSubleadingJet(const char* opt);
 
 
@@ -62,6 +76,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF(const AliAnalysisTaskChargedJetsHadronCF&);            // not implemented
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 1) // Charged jet+h analysis task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 3) // Charged jet+h analysis support task
 };
 #endif

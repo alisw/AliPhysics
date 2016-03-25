@@ -23,7 +23,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
   const Bool_t   doAODTrackProp            = kTRUE,
   const Bool_t   modifyMatchObjs           = kFALSE,
   const Bool_t   isMC                      = kFALSE,
-  const Int_t	 iOutput	               = 0,
+  const Int_t	   iOutput  	               = 0,
   const Bool_t   bMCNormalization          = kFALSE,
   const Bool_t   bNLMCut                   = kFALSE,
   const Int_t    NLMCut                    = 0,
@@ -36,7 +36,8 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
   const Double_t TMdeta                    = 0.02,
   const Double_t TMdphi                    = 0.03,
   const Bool_t   bTMClusterRejection       = kTRUE,
-  const Bool_t   bTMClusterRejectionInCone = kTRUE
+  const Bool_t   bTMClusterRejectionInCone = kTRUE,
+  const Float_t  iIsoConeRadius            = 0.4
 )
 {
 
@@ -297,7 +298,7 @@ Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s emctracks Ana: %s",inp
 
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALPhotonIsolation.C");
 
-    AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(periodstr,emctracks,emcclusters,pSel,dType,kTRUE, iOutput,isMC,bMCNormalization,bNLMCut,NLMCut,minPtCutCluster,EtIso,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC);
+    AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(periodstr,emctracks,emcclusters,pSel,dType,kTRUE, iOutput,isMC,bMCNormalization,bNLMCut,NLMCut,minPtCutCluster,EtIso,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC,TMdeta,TMdphi,bTMClusterRejection,bTMClusterRejectionInCone,iIsoConeRadius);
       task->SelectCollisionCandidates(pSel);
    if(isEmcalTrain)
     RequestMemory(task,500*1024);

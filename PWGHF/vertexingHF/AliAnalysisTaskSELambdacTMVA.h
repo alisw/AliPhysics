@@ -185,6 +185,10 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	TH2F *fhInvMassMisIdpKpiProb; //!<! hist for inv mass pKpi signal mis id'd as piKp most prob PID
 	TH2F *fhInvMassMisIdpiKpProb; //!<! hist for inv mass pKpi signal mis id'd as piKp most prob PID
   TNtuple *fNtupleLambdac; //!<! output ntuple
+	TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
+	TF1 *fFuncWeightFONLL7overLHC10f6a; //!<! weight function for FONLL vs p prod.
+	TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
+	TF1 *fFuncWeightFONLL5overLHC10f6a; //!<! weight function for FONLL vs p prod.
   Float_t fCutsKF[2]; /// cuts with KF vertexer
   Int_t fIsLc; /// is MC Lc - 0=not Lc, 1=Lc from c, 2=Lc from b
   Int_t fIsLcResonant; /// is Lc resonant - 1=non resonant, 2=via L1520 + pi, 3=via K* + p, 4=via Delta++ + K
@@ -215,7 +219,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	AliVertexingHFUtils *fVertUtil;         /// vertexing HF Util
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELambdacTMVA,7); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,8); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
   /// \endcond
 };
 

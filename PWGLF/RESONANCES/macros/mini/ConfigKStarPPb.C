@@ -132,9 +132,9 @@ Bool_t ConfigKStarPPb
 	  else 
 	    out->AddAxis(ptID, 200, 0.0, 20.0); //default use mother pt
     
-    // axis Z: centrality-multiplicity
+    // axis Z: centrality or multiplicity or rapidity
     if ((i==8) || (i==9)) {
-      out->AddAxis(yID, 200, -1.0, 1.0);
+      out->AddAxis(yID, 400, -2.0, 2.0);
     } else {
       if (!isPP)
 	out->AddAxis(centID, 100, 0.0, 100.0);
@@ -158,7 +158,7 @@ Bool_t ConfigKStarPPb
     Char_t  charge2R[6] = {'-', '+', '-', '+', '-', '+'};
 
     for (Int_t j = 0; j < 6; j++) {
-      AliRsnMiniOutput *outR = task->CreateOutput(Form("kstar_%s%s", nameR[j].Data(), suffix), outputR[j].Data(), compR[j].Data());
+      AliRsnMiniOutput *outR = task->CreateOutput(Form("Ks_%s%s", nameR[j].Data(), suffix), outputR[j].Data(), compR[j].Data());
       outR->SetCutID(0, iCutK);
       outR->SetCutID(1, iCutPi);
       outR->SetDaughter(0, AliRsnDaughter::kKaon);
@@ -175,7 +175,7 @@ Bool_t ConfigKStarPPb
       //axis Y: mother pt
       outR->AddAxis(ptID, 200, 0.0, 20.0); 
       //axis Z: rapidity
-      outR->AddAxis(yID, 200, -1.0, 1.0);
+      outR->AddAxis(yID, 400, -2.0, 2.0);
     }
 
     //get mothers for K* PDG = 313

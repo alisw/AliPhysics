@@ -1774,15 +1774,17 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
     if (jet2->Pt() < jets2->GetJetPtCut()) continue;
 
-    if (jets2->AcceptJet(jet2))
+    UInt_t rejectionReason = 0;
+    if (jets2->AcceptJet(jet2, rejectionReason))
       FillJetHisto(jet2, 2);
     else
-      fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(), jet2->Pt());
+      fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(rejectionReason), jet2->Pt());
 
     jet1 = jet2->MatchedJet();
 
     if (!jet1) continue;
-    if (!jets1->AcceptJet(jet1)) continue;
+    rejectionReason = 0;
+    if (!jets1->AcceptJet(jet1, rejectionReason)) continue;
     if (jet1->MCPt() < fMinJetMCPt) continue;
 
     Double_t d=-1, ce1=-1, ce2=-1;
@@ -1806,8 +1808,9 @@ Bool_t AliJetResponseMaker::FillHistograms()
 
   jets1->ResetCurrentID();
   while ((jet1 = jets1->GetNextJet())) {
-    if (!jets1->AcceptJet(jet1)) {
-      fHistRejectionReason1->Fill(jets1->GetRejectionReasonBitPosition(), jet1->Pt());
+    UInt_t rejectionReason = 0;
+    if (!jets1->AcceptJet(jet1, rejectionReason)) {
+      fHistRejectionReason1->Fill(jets1->GetRejectionReasonBitPosition(rejectionReason), jet1->Pt());
       continue;
     }
     if (jet1->MCPt() < fMinJetMCPt) continue;

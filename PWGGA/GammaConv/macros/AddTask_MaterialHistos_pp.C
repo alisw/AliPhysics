@@ -125,12 +125,24 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
   //"00200008400000002200000000";
   TString cutnumberEvent = "00000103"; 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+
+
+  Bool_t  enableConstructGamma=kFALSE;
+  if (trainConfig>200){
+    enableConstructGamma=kTRUE;
+  }
+  if (trainConfig>100 && trainConfig<200 ){
+    cutnumberPhoton = "10000000000000000500000000";
+  }
+
+
   
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
+    fV0ReaderV1->SetUseConstructGamma(enableConstructGamma);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
@@ -200,6 +212,50 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     cuts.AddCut("00000103", "00000009286342004254400000");
     cuts.AddCut("00000103", "00000009286372004254400000");
     cuts.AddCut("00000103", "00000009286372004204400000");
+ } else if (trainConfig == 4) {
+    cuts.AddCut("00000103", "00000009217300005800000000");
+    cuts.AddCut("00000103", "00000009217320005800000000");
+    cuts.AddCut("00000103", "00000009395074005200000000");
+    cuts.AddCut("00000103", "00000009395074005284400000");
+
+    // Offline V0Finder is used
+
+  } else  if(trainConfig == 101){
+    cuts.AddCut("00000103", "10000009266302004204400000");
+    //     cuts.AddCut("00000103", "00000009286372004204400000");
+  } else if (trainConfig == 102) {
+    cuts.AddCut("00000103", "10000009286342004204400000");
+    cuts.AddCut("00000103", "10000009286342001204400000");
+    cuts.AddCut("00000103", "10000009286342007204400000");
+  } else if (trainConfig == 103) {
+    cuts.AddCut("00000103", "10000009286342004254400000");
+    cuts.AddCut("00000103", "10000009286372004254400000");
+    cuts.AddCut("00000103", "10000009286372004204400000");
+  } else if (trainConfig == 104) {
+    cuts.AddCut("00000103", "10000009217300005800000000");
+    cuts.AddCut("00000103", "10000009217320005800000000");
+    cuts.AddCut("00000103", "10000009395074005200000000");
+    cuts.AddCut("00000103", "10000009395074005284400000");
+
+  } else  if(trainConfig == 111){
+    cuts.AddCut("00000003", "10000070000000000500004000");
+
+    // ConstructGamma is used
+
+  } else  if(trainConfig == 201){
+    cuts.AddCut("00000103", "00000009266302004204400000");
+    //     cuts.AddCut("00000103", "00000009286372004204400000");
+  } else if (trainConfig == 202) {
+    cuts.AddCut("00000103", "00000009286342004204400000");
+    cuts.AddCut("00000103", "00000009286342001204400000");
+    cuts.AddCut("00000103", "00000009286342007204400000");
+  } else if (trainConfig == 203) {
+    cuts.AddCut("00000103", "00000009286342004254400000");
+    cuts.AddCut("00000103", "00000009286372004254400000");
+    cuts.AddCut("00000103", "00000009286372004204400000");
+
+
+
   }else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

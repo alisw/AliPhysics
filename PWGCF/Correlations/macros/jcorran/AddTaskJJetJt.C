@@ -8,6 +8,7 @@ AliJJetJtTask* AddTaskJJetJt(
 		TString  cardSetting   = "",
 		Int_t	    Nrandom    =  1,
 		Int_t	    moveJet =  1,
+		Int_t	    doMC       = 0,
 		Int_t       debug 		 = 1	
 		)
 {  
@@ -41,6 +42,7 @@ AliJJetJtTask* AddTaskJJetJt(
 
 	AliJJetJtTask * jtTask = new AliJJetJtTask(taskName,"AOD");
 	jtTask->SetJetTaskName(jetTaskName);
+	jtTask->SetMC(doMC);
 	jtTask->SetCard( card );
 	jtTask->SelectCollisionCandidates(trigger);
 	jtTask->SetNrandom(Nrandom);

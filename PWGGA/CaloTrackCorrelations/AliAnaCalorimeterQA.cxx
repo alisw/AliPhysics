@@ -4225,7 +4225,10 @@ void AliAnaCalorimeterQA::MCHistograms()
       
       if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG, HIJING?
       
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) )  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) ||
+          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
       //printf("Take : i %d, %s, pdg %d, status %d \n",i, primStack->GetName(), pdg, status);
       
@@ -4250,7 +4253,10 @@ void AliAnaCalorimeterQA::MCHistograms()
       
       if ( status > 11 ) continue; //Working for PYTHIA and simple generators, check for HERWIG
    
-      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) )  continue ; //Protection against floating point exception
+      //Protection against floating point exception
+      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
 
       //printf("Take : i %d, %s, pdg %d, status %d \n",i, primAOD->GetName(), pdg, status);
       
@@ -4399,8 +4405,8 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
     } // Is MC
     
     // To be done properly with setters and data members ... 
-//    Float_t cellEmin [] = {0.05,0.1,0.15,0.2}; // uncomment
-//    Float_t cellTmin [] = {50.,100.,1000000.}; // uncomment
+    Float_t cellEmin [] = {0.05,0.1,0.15,0.2}; 
+    Float_t cellTmin [] = {50.,100.,1000000.}; 
 
     for(Int_t iw = 0; iw < 12; iw++)
     {
@@ -4410,32 +4416,21 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
         {
           GetCaloUtils()->GetEMCALRecoUtils()->SetW0(4+iw*0.05);
           
-//        Float_t newEnergy = 0; // uncomment
+          Float_t newEnergy = 0; 
           Float_t l0   = 0, l1   = 0;
           Float_t disp = 0, dEta = 0, dPhi    = 0;
           Float_t sEta = 0, sPhi = 0, sEtaPhi = 0;
           
-          //
-          // Uncomment when available AliRoot v5-08-02
-          //
-//          GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersWithCellCuts(GetEMCALGeometry(),  
-//                                                                                                   GetReader()->GetEMCALCells(), clus, 
-//                                                                                                   cellEmin[iEmin], cellTmin[iTmin], bc, 
-//                                                                                                   newEnergy, l0, l1, disp, dEta, dPhi, 
-//                                                                                                   sEta, sPhi, sEtaPhi);
+          GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersWithCellCuts(GetEMCALGeometry(),  
+                                                                                                   GetReader()->GetEMCALCells(), clus, 
+                                                                                                   cellEmin[iEmin], cellTmin[iTmin], bc, 
+                                                                                                   newEnergy, l0, l1, disp, dEta, dPhi, 
+                                                                                                   sEta, sPhi, sEtaPhi);
 
           
-          //
-          // Remove when available AliRoot v5-08-02
-          //
-          GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(),  
-                                                                                       GetReader()->GetEMCALCells(), clus, 
-                                                                                       l0, l1, disp, dEta, dPhi, 
-                                                                                       sEta, sPhi, sEtaPhi);
 
-          
           fhLambda0ForW0AndCellCuts[iw][iEmin][iTmin]->Fill(enOrg, l0, GetEventWeight());
-//        fhLambda1ForW0AndCellCuts[iw]->Fill(energy, clus->GetM20(), GetEventWeight());
+//        fhLambda1ForW0AndCellCuts[iw][iEmin][iTmin]->Fill(enOrg, l0, GetEventWeight());
           
           if(TMath::Abs(fClusterMomentum.Eta()) < 0.15)
             fhLambda0ForW0AndCellCutsEta0[iw][iEmin][iTmin]->Fill(enOrg, l0, GetEventWeight());

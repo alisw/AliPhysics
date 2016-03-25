@@ -104,7 +104,7 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   void                    FillEventPlaneHistograms(Double_t psi2, Double_t psi3) const;
   void                    FillAnalysisSummaryHistogram() const;
   // track selection
-  /* inline */     Bool_t PassesCuts(AliVTrack* track) const { return AcceptTrack(track, 0);}
+  /* inline */     Bool_t PassesCuts(AliVTrack* track) const { UInt_t rejectionReason = 0; return GetParticleContainer(0)->AcceptParticle(track, rejectionReason);} // due to framework updates
   /* inline */     Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0);}
   virtual void            Terminate(Option_t* option);
 

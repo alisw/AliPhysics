@@ -109,22 +109,22 @@ class AliJetContainer : public AliParticleContainer {
 
   AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
-  AliEmcalJet                *GetAcceptJet(Int_t i)                      ;
+  AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
   AliEmcalJet                *GetJetWithLabel(Int_t lab)            const;
-  AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)           ;
+  AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)      const;
   AliEmcalJet                *GetNextAcceptJet()                         ;
   AliEmcalJet                *GetNextJet()                               ;
-  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass);
-  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet);
-  Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
-  Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
+  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const;
+  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet) const;
+  Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i) const;
+  Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      GetNextMomentum(TLorentzVector &mom);
   Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom);
-  virtual Bool_t              AcceptObject(Int_t i)              { return AcceptJet(i);}
-  virtual Bool_t              AcceptObject(const TObject* obj)   { return AcceptJet(dynamic_cast<const AliEmcalJet*>(obj));}
-  virtual Bool_t              AcceptJet(Int_t i)                         ;
-  virtual Bool_t              AcceptJet(const AliEmcalJet* jet)          ;
-  virtual Bool_t              ApplyJetCuts(const AliEmcalJet* clus)      ;
+  virtual Bool_t              AcceptObject(Int_t i, UInt_t &rejectionReason) const { return AcceptJet(i, rejectionReason);}
+  virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const { return AcceptJet(dynamic_cast<const AliEmcalJet*>(obj), rejectionReason);}
+  virtual Bool_t              AcceptJet(Int_t i, UInt_t &rejectionReason) const;
+  virtual Bool_t              AcceptJet(const AliEmcalJet* jet, UInt_t &rejectionReason) const;
+  virtual Bool_t              ApplyJetCuts(const AliEmcalJet* clus, UInt_t &rejectionReason) const;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Int_t                       GetNAcceptedJets()                         ;

@@ -309,7 +309,9 @@ struct TrackletdNdetaTrain : public TrainSetup
     // FromOption(task, "InjScale",		"inj-scale",	1.);
     FromOption(task, "ShiftedDPhiCut",		"shifted-dphi-cut",-1.);
     FromOption(task, "DeltaCut",		"delta-cut",	    1.5);
-
+    if (fOptions.AsBool("cut-dtheta")) 
+      FromOption(task, "ScaleDThetaCut",	"dtheta-window",    0.025);
+    
     SetupReweighting(task);
 
     task->Print("");

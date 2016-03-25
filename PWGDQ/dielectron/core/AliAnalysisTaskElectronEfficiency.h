@@ -199,10 +199,15 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   
   
   Bool_t                          fCalcResolution;
-  TH2F*                           fPtGen_PtRec;
-  TH2F*                           fPtGen_PtRec_poslabel;
-  TH2F*                           fPgen_Prec;
-  TH2F*                           fPgen_Prec_poslabel;
+  TH2D*                           fPrecOverPgen_PGen;
+  TH2D*                           fPtRecOverPtGen_PtGen;
+  TH2D*                           f1PGenOver1PRec_1PGen;
+  TH2D*                           f1PtGenOver1PtRec_1PtGen;
+  TH2D*                           fPrecOverPgen_PGen_poslabel;
+  TH2D*                           fPtRecOverPtGen_PtGen_poslabel;
+  TH2D*                           f1PGenOver1PRec_1PGen_poslabel;
+  TH2D*                           f1PtGenOver1PtRec_1PtGen_poslabel;
+  
   TH2F*                           fEtaGen_EtaRec;
   TH2F*                           fPhiGen_PhiRec;
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec;

@@ -58,12 +58,12 @@ AliDielectron* ConfigJpsi_zzhou_lowpt(Int_t cutDefinition)
   SetupEventCuts(die,cutDefinition);  
   if (hasMC)SetupMCsignals(die);
   SetupTrackCuts(die,cutDefinition);
-  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition !=ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) {
+  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition ==ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) {
     SetupPairCuts(die,cutDefinition);
   }  
 
   //does hfe apply v0 cuts like jpsi? check!
-  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition !=ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) { 
+  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition ==ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) { 
   SetupV0Cuts(die,cutDefinition);
   }	
   
@@ -105,7 +105,7 @@ void SetupEventCuts(AliDielectron *die, Int_t cutDefinition)
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-
+  eventCuts->SetCentralityRange(40.,100.);
   //eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
   
@@ -148,7 +148,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("ptCut","pt cut");
   
   if (cutDefinition==ConfDef::kDefaultAny){
-    pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
+    //pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
+    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
     pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.,3.);
@@ -159,7 +160,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   }  else if(cutDefinition==ConfDef::kDefaultFirst) {
-    pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
+    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
     pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.,3.);
@@ -170,7 +171,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   } else if (cutDefinition==ConfDef::kITSNcluster3){
-    pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
+    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
     pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.,3.);
@@ -182,7 +183,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   } else if (cutDefinition==ConfDef::kITSNcluster4){
-    pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
+    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
     pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.,3.);
@@ -332,26 +333,26 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition){
 
 
   //nsigma
-  histos->UserHistogram("Track","","",200,0.2,20.,AliDielectronVarManager::kPt); 
-  histos->UserHistogram("Track","","",200,0.,20.,AliDielectronVarManager::kP);
+  histos->UserHistogram("Track","","",200,0.2,8.,AliDielectronVarManager::kPt); 
+  histos->UserHistogram("Track","","",200,0.,8.,AliDielectronVarManager::kP);
   histos->UserHistogram("Track","","",80,-1.0,1.0,AliDielectronVarManager::kEta); 
   histos->UserHistogram("Track","","",400,0.0,4.0,AliDielectronVarManager::kPhi);  
   histos->UserHistogram("Track","","",
-			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
+			200,0.2,8.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
   histos->UserHistogram("Track","","",
-			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
+			200,0.2,8.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,kTRUE);
   histos->UserHistogram("Track","","",
-			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
+			200,0.2,8.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,kTRUE);
   histos->UserHistogram("Track","","",
-			200,0.2,20.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro,kTRUE);
+			200,0.2,8.,100,-10.,10.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro,kTRUE);
   histos->UserHistogram("Track","","",
-			200,0.2,20.,100,-15.,15.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao,kTRUE); 
+			200,0.2,8.,100,-15.,15.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao,kTRUE); 
   histos->UserHistogram("Track","","",
-			200,0.2,20.,100,0.,1.2,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFbeta,kTRUE);
+			200,0.2,8.,100,0.,1.2,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFbeta,kTRUE);
   histos->UserHistogram("Track","","",
-			200,0.2,20.,200,-20.,20.,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaEle,kTRUE);   
+			200,0.2,8.,200,-20.,20.,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaEle,kTRUE);   
   histos->UserHistogram("Track","","",
-			100,0.2,20.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal); 
+			100,0.2,8.,200,0.,200.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal); 
   histos->UserHistogram("Track","","",
 			144,0.0,6.285,200,0.0,200,AliDielectronVarManager::kPhi,AliDielectronVarManager::kTPCsignal);
   histos->UserHistogram("Track","","",
@@ -373,15 +374,25 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition){
   histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(150,0.,150.),AliDielectronVarManager::kNaccTrckltsEsd10Corr);
   histos->UserHistogram("Track","","",AliDielectronHelper::MakeLinBinning(5,-0.5,2.0),AliDielectronVarManager::kTOFPIDBit);
   //rjim findable cluster vs pt
-  histos->UserHistogram("Track","","",200,0.,20.,161,-0.5,161.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
+  histos->UserHistogram("Track","","",200,0.,8.,161,-0.5,161.5,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   //rjim frac find vs pt
   histos->UserHistogram("Track","","",			
-			200,0.0,20.0,160,0,1.1,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCrFrac);
+			200,0.0,8.0,160,0,1.1,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCrFrac);
   // histos jpsi 2nd part
   //check tofbit
   //  histos->UserHistogram("Track","","",3.,-0.5,2.5, 200,0.,20.,AliDielectronVarManager::kTOFPIDBit,AliDielectronVarManager::kPt);
+
+  //jpsi nsigma vs centrality
+  histos->UserHistogram("Track","","",
+			12,40.0,100.0,100,-10,10,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kITSnSigmaEle);
+
+  histos->UserHistogram("Track","","",
+			12,40.0,100.0,100,-10,10,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTPCnSigmaEle);
   
-  //jpsi nsigma vseta
+  histos->UserHistogram("Track","","",
+			12,40.0,100.0,100,-10,10,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kTOFnSigmaEle);
+
+  //jpsi nsigma vs eta
   histos->UserHistogram("Track","","",
 			20,-1.0,1.0,100,-10,10,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
 
@@ -389,7 +400,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition){
 			20,-1.0,1.0,100,-10,10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
   
   histos->UserHistogram("Track","","",
-			20,-1.0,1.0,100,-10,10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle); 
+			20,-1.0,1.0,100,-10,10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);
+
   //jpsi nsigma vs phi
   histos->UserHistogram("Track","","",
 			20,0.0,7.0,100,-10,10,AliDielectronVarManager::kPhi,AliDielectronVarManager::kITSnSigmaEle);
@@ -466,7 +478,9 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
 	//
   
   AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
-	
+  //Event variables
+  cf->AddVariable(AliDielectronVarManager::kCentrality,"40.,50.,60.,70.,80.,90.,100.");
+  
   //pair variables
   cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0, 2.0, 3.0, 5.0");//, 7.0, 10.0
   
@@ -474,6 +488,7 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kY,"-1,-0.9,-0.8,-0.3,0,0.3,0.9,1.0");
   cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-3.0,-2.5,-2.0,-1.5,3.0");
   
   //leg variables
   cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.2, 1.3, 1.4, 1.5, 1.6, 2.0, 5.0",kTRUE);

@@ -65,12 +65,13 @@ AliAODMCParticle* AliMCParticleContainer::GetMCParticle(Int_t i) const
 }
 
 //________________________________________________________________________
-AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i)
+AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i) const
 {
   //return pointer to particle if particle is accepted
 
+  UInt_t rejectionReason = 0;
   if (i == -1) i = fCurrentID;
-  if (AcceptMCParticle(i)) {
+  if (AcceptMCParticle(i, rejectionReason)) {
       return GetMCParticle(i);
   }
   else {
@@ -112,7 +113,7 @@ AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part, Double_t mass)
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part, Double_t mass) const
 {
   if (part) {
     if (mass < 0) mass = part->M();
@@ -126,13 +127,13 @@ Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCPa
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part)
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part) const
 {
   return GetMomentum(mom,part,fMassHypothesis);
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
   //Get momentum of the i^th particle in array
 
@@ -210,10 +211,10 @@ Bool_t AliMCParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp)
+Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
-  Bool_t r = ApplyMCParticleCuts(vp);
+  Bool_t r = ApplyMCParticleCuts(vp, rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
@@ -226,37 +227,34 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp)
     GetMomentum(mom, vp);
   }
 
-  return ApplyKinematicCuts(mom);
+  return ApplyKinematicCuts(mom, rejectionReason);
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i)
+Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
-  Bool_t r = ApplyMCParticleCuts(GetMCParticle(i));
+  Bool_t r = ApplyMCParticleCuts(GetMCParticle(i), rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
   GetMomentum(mom, i);
 
-  return ApplyKinematicCuts(mom);
+  return ApplyKinematicCuts(mom, rejectionReason);
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp)
+Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, UInt_t &rejectionReason) const
 {
   // Return true if i^th particle is accepted.
-
-  fRejectionReason = 0;
-
   // Cuts on the particle properties
 
   if ((vp->GetFlag() & fMCFlag) != fMCFlag) {
-    fRejectionReason |= kMCFlag;
+    rejectionReason |= kMCFlag;
     return kFALSE;
   }
 
-  return ApplyParticleCuts(vp);
+  return ApplyParticleCuts(vp, rejectionReason);
 }
 
 //________________________________________________________________________

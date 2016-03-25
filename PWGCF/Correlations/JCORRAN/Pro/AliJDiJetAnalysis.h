@@ -100,6 +100,7 @@ class AliJDiJetAnalysis{
             kJNJetType 
         };
         enum{ kJEtaAll, kJEtaAlice, kJNJetSelection};
+        enum{ kJNJetTypeMax=12 }; // FIXME:
 
         AliJDiJetAnalysis();
         AliJDiJetAnalysis( AliJBaseCard * card );
@@ -117,12 +118,13 @@ class AliJDiJetAnalysis{
         vector<AliJBaseTrack*> SortTrackByPt( TObjArray * os );
 
 
-        void AddJets(TObjArray * jets ){ 
+        void AddJets(TObjArray * jets, int isTrackOrParticle ){ 
             if( !jets ) {
                 cout<<"JWARN_C1 in AddJets jets="<<jets<<endl;
                 //return;
             }
             fJetListOfList.Add( (TObject*)jets ); 
+            fTrackOrMCParticle.push_back( isTrackOrParticle );
             if( !jets ) return;
             for( int i=0;i<jets->GetEntriesFast();i++ ){
                 //((AliJJet*)jets->At(i))->ReSum();
@@ -155,8 +157,10 @@ class AliJDiJetAnalysis{
         TObjArray * fInputList; // comment needed
         TObjArray * fJetList; // comment needed
         TObjArray fJetListOfList; // !comment needed
-        AliJDiJet *fDiJets[kJNJetType][kJNJetSelection][kJNDiJetSelection]; // comment needed
-        TObjArray *fJets[kJNJetType][kJNJetSelection]; // comment needed
+        std::vector<int> fTrackOrMCParticle;
+        std::vector<int> fChargedOrFull;
+        AliJDiJet *fDiJets[kJNJetTypeMax][kJNJetSelection][kJNDiJetSelection]; // comment needed
+        TObjArray *fJets[kJNJetTypeMax][kJNJetSelection]; // comment needed
         bool   fIsFullAcceptance; // comment needed
         double fJetEtaRange; // comment needed
         int   fIsMartasDiJet; // comment needed
@@ -235,8 +239,8 @@ class AliJDiJetAnalysis{
         AliJTH1D fhPythiaJetSum;
 
 
-        int fDiJetBin[kJNJetType][kJNJetSelection][kJNDiJetSelection][10];
-        double fDiJetMass[kJNJetType][kJNJetSelection][kJNDiJetSelection][10];
+        int fDiJetBin[kJNJetTypeMax][kJNJetSelection][kJNDiJetSelection][10];
+        double fDiJetMass[kJNJetTypeMax][kJNJetSelection][kJNDiJetSelection][10];
 };
 
 #endif
