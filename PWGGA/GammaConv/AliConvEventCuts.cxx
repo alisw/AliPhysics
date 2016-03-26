@@ -2755,7 +2755,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
               } 
               if ( fMCStackAOD){
                 AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
-                if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
+                if (aodMCParticle && (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0) ){
                   if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
                     if (gh->NProduced() > 10){
                       AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA+10));
