@@ -212,6 +212,11 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     cuts.AddCut("00000103", "00000009286342004254400000");
     cuts.AddCut("00000103", "00000009286372004254400000");
     cuts.AddCut("00000103", "00000009286372004204400000");
+ } else if (trainConfig == 4) {
+    cuts.AddCut("00000103", "00000009217300005800000000");
+    cuts.AddCut("00000103", "00000009217320005800000000");
+    cuts.AddCut("00000103", "00000009395074005200000000");
+    cuts.AddCut("00000103", "00000009395074005284400000");
 
     // Offline V0Finder is used
 
@@ -226,7 +231,13 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     cuts.AddCut("00000103", "10000009286342004254400000");
     cuts.AddCut("00000103", "10000009286372004254400000");
     cuts.AddCut("00000103", "10000009286372004204400000");
-    } else  if(trainConfig == 111){
+  } else if (trainConfig == 104) {
+    cuts.AddCut("00000103", "10000009217300005800000000");
+    cuts.AddCut("00000103", "10000009217320005800000000");
+    cuts.AddCut("00000103", "10000009395074005200000000");
+    cuts.AddCut("00000103", "10000009395074005284400000");
+
+  } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
 
     // ConstructGamma is used

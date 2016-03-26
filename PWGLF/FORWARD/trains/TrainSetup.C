@@ -93,6 +93,7 @@ struct TrainSetup
     fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
     fOptions.Add("cent-oadb","PERIOD","Alternative OADB for centrality","");
     fOptions.Add("no-link","Do not make symlink to output",              false);
+    fOptions.Add("old-cent","Add old centrality task to train",          false);
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -778,9 +779,10 @@ protected:
 			"AOD:header,vertices,AliAODTZERO,AliAODVZERO,"
 			"AliAODZDC,AliAODAD");
     }
-    return;
-
-    // Ignore the rest - just kept for historical reasons 
+    if (!fOptions.Has("old-cent")) return;
+    
+    
+    // Check if input is AOD 
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
     if (isAOD) return;
     

@@ -156,7 +156,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const TClonesArray* const t
     fListOfTrackBitmaps->SetOwner(kTRUE);
   }
   else {
-    fListOfTrackBitmaps->Clear();
+    fListOfTrackBitmaps->Delete();
   }
 
   TIter next(tracks);
@@ -195,7 +195,7 @@ TObjArray* AliEmcalTrackSelection::GetAcceptedTracks(const AliVEvent* const even
     fListOfTrackBitmaps->SetOwner(kTRUE);
   }
   else {
-    fListOfTrackBitmaps->Clear();
+    fListOfTrackBitmaps->Delete();
   }
 
   for(int itrk = 0; itrk < event->GetNumberOfTracks(); itrk++){

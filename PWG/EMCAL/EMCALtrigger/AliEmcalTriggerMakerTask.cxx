@@ -34,9 +34,9 @@ ClassImp(AliEmcalTriggerMakerTask)
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   AliAnalysisTaskEmcal(),
   fTriggerMaker(NULL),
+  fV0(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
-  fV0(NULL),
   fUseL0Amplitudes(kFALSE),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
@@ -48,9 +48,9 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA):
   AliAnalysisTaskEmcal("AliEmcalTriggerMakerTask", doQA),
   fTriggerMaker(NULL),
+  fV0(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
-  fV0(NULL),
   fUseL0Amplitudes(kFALSE),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
@@ -171,7 +171,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     recpatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(fDoQA){
-      std::bitset<32> triggerbits = recpatch->GetTriggerBits();
+      //std::bitset<32> triggerbits = recpatch->GetTriggerBits();
       std::stringstream triggerbitstring;
       AliDebug(1, Form("Trigger maker - next patch: size %d, trigger bits %s", recpatch->GetPatchSize(), triggerbitstring.str().c_str()));
       // Handle types different - online - offline - re

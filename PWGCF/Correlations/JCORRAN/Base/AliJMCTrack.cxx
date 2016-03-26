@@ -51,6 +51,19 @@ AliJMCTrack::AliJMCTrack() :
 }
 
 //______________________________________________________________________________
+AliJMCTrack::AliJMCTrack(float px,float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge) : // constructor
+    AliJBaseTrack( px, py, pz, e, id, ptype, charge),
+    fPdgCode(0),
+    fVx(0),
+    fVy(0),
+    fVz(0)
+{
+  // default constructor
+  fMother[0] = fMother[1] = -1;
+  fDaughter[0] = fDaughter[1] = -1;
+}
+
+//______________________________________________________________________________
 AliJMCTrack::AliJMCTrack(const AliJMCTrack& a):
     AliJBaseTrack(a),
     fPdgCode(a.fPdgCode),

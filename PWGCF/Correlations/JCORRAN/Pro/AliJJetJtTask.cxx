@@ -156,16 +156,10 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
 
    fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
-   if(fDoMC){
-	   fMCJetTask = (AliJJetTask*)(man->GetTask( fMCJetTaskName));
-   }
 
 
    fJJetJtAnalysis = new AliJJetJtAnalysis(fCard);
    fJJetJtAnalysis->SetJetFinderName(fJetTask->GetJetFinderString());
-   if(fDoMC){
-	   fJJetJtAnalysis->SetMCJetFinderName(fMCJetTask->GetJetFinderString());
-   }
    fJJetJtAnalysis->SetNumberOfJetFinders(fJetTask->GetNumberOfJetCollections());
    fJJetJtAnalysis->SetNrandom(NRandom);
    fJJetJtAnalysis->SetMoveJet(moveJet);
@@ -182,16 +176,11 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
 
    for( int ij=0;ij< fJetTask->GetNumberOfJetCollections();ij++ ){
-	   fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ) );
-   }
-   if(fDoMC){
-	   for( int ij=0;ij< fMCJetTask->GetNumberOfJetCollections();ij++ ){
-		   fJJetJtAnalysis->AddMCJets( fMCJetTask->GetAliJJetList( ij ) );
-	   }
+	   fJJetJtAnalysis->AddJets( fJetTask->GetAliJJetList( ij ),fJetTask->GetTrackOrMCParticle(ij) );
    }
    fJJetJtAnalysis->SetJTracks(fJetTask->GetJTracks());
    if(fDoMC){
-	   fJJetJtAnalysis->SetMCJTracks(fMCJetTask->GetJTracks());
+	   fJJetJtAnalysis->SetMCJTracks(fJetTask->GetMCJTracks());
    }
    fFirstEvent = kTRUE;
 }
@@ -199,8 +188,6 @@ void AliJJetJtTask::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliJJetJtTask::UserExec(Option_t* /*option*/) 
 {
-
-
 	// Processing of one event
 	if( fJetTask->GetTaskEntry() != fEntry ) return;
 	fJJetJtAnalysis->ClearBeforeEvent();
