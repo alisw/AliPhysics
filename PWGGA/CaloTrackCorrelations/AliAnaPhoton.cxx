@@ -492,8 +492,6 @@ void AliAnaPhoton::FillAcceptanceHistograms()
         continue;
       }
       
-      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) )  continue ; //Protection against floating point exception
-      
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
@@ -529,8 +527,6 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       
       // Photon kinematics
       fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-
-      //printf("AOD E %f, pz %f\n",primAOD->E(),primAOD->Pz());
       
       photonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }

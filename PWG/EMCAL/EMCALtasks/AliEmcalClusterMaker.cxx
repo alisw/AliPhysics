@@ -142,7 +142,7 @@ Bool_t AliEmcalClusterMaker::Run()
 
   // loop over clusters
   Int_t clusCount = 0;
-  Int_t entries   = fCaloClusters->GetEntries();
+  //Int_t entries   = fCaloClusters->GetEntries();
   AliVCluster *clus = 0;
   clusters->ResetCurrentID();
   while ((clus = clusters->GetNextCluster())) {

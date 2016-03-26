@@ -2,6 +2,8 @@ void
 TryBuild()
 {
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include");
+  gROOT->LoadMacro("AliAODSimpleHeader.C+g");
+  gROOT->LoadMacro("AliSimpleHeaderTask.C+g");
   gROOT->LoadMacro("AliAODTracklet.C+g");
   gROOT->LoadMacro("AliTrackletWeights.C+g");
   gROOT->LoadMacro("AliTrackletAODUtils.C+g");
