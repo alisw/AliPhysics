@@ -1396,16 +1396,16 @@ AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label){
   } else {
     AliVTrack * track = 0x0;
     if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
-      track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
+      if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
       return track;
     }
     else{
       for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
-        track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+        if(event->GetTrack(ii)) track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
         if(track){
-        if(track->GetID() == label) {
-          return track;
-        }
+          if(track->GetID() == label) {
+            return track;
+          }
         }
       }
     }
