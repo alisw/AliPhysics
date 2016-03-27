@@ -7,6 +7,7 @@
 // 
 // Author: J.Otwinowski 04/14/2008 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 29/9/2014
 //------------------------------------------------------------------------------
 
 #include "TNamed.h"
@@ -15,11 +16,13 @@
 
 class TTree;
 class AliMCEvent;
-class AliESDEvent;
+//class AliESDEvent;
+class AliVEvent;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
-class AliESDfriend;
+class AliVfriendEvent;
 class AliESDVertex;
+
 
 class AliPerformanceObject : public TNamed {
 public :
@@ -37,7 +40,7 @@ public :
   
   // Execute analysis
   // call in the event loop 
-  virtual void Exec(AliMCEvent* const infoMC=0, AliESDEvent* const infoRC=0, AliESDfriend* const infoFriend=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseESDfriend=kFALSE) = 0;
+  virtual void Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE) = 0;
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list=0) = 0;
@@ -72,7 +75,7 @@ public :
 
   // draw all histograms from the folder
   void PrintHisto(Bool_t logz = kTRUE, const Char_t * outFileName = "PerformanceQAHisto.ps"); 
-
+    
   // create log axis 
   Double_t *CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax); 
 
@@ -136,11 +139,12 @@ protected:
   Int_t  fUseCentralityBin;  // centrality bin to be used 
 
   Bool_t fUseTOFBunchCrossing; // use TOFBunchCrossing, default is yes
-
+  Bool_t fUseSparse;
+    
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,8);
+  ClassDef(AliPerformanceObject,9);
 };
 
 #endif

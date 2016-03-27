@@ -8,6 +8,7 @@
 // which is a data member of AliPerformanceDCA.
 //  
 // Author: J.Otwinowski 04/02/2008 
+// Changes by J.Salzwedel 22/10/2014
 //------------------------------------------------------------------------------
 
 /*
@@ -42,8 +43,11 @@
 #include <TF1.h>
 
 #include "AliPerformanceDCA.h" 
-#include "AliESDEvent.h"   
-#include "AliESDVertex.h" 
+#include "AliVEvent.h"
+#include "AliESDVertex.h"
+#include "AliVVertex.h"
+#include "AliVTrack.h"
+#include "AliExternalTrackParam.h"
 #include "AliLog.h" 
 #include "AliMathBase.h"
 #include "AliRecInfoCuts.h" 
@@ -140,40 +144,40 @@ void AliPerformanceDCA::Init()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
   // Fill DCA comparison information
-  if(!esdEvent) return;
-  if(!esdTrack) return;
+  if(!vEvent || !vTrack) return;
 
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    // AliESDVertex *vtxESD = NULL;
+    // if(vVertex) vtxESD = dynamic_cast<AliESDVertex*>(vVertex);
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
       // JMT -- recaluclate DCA for HLT if not present
       if ( dca[0] == 0. && dca[1] == 0. ) {
-        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), vEvent->GetMagneticField(), dca );
       }
     */
   }
 
   // get TPC inner params at DCA to prim. vertex 
-  const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
-  if(!track) return;
+  const AliExternalTrackParam *etpTrack = vTrack->GetTPCInnerParam();
+  if(!etpTrack) return;
+  // read from V track
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParametersTPC(dca,cov);
 
-  // read from ESD track
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
-
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
- 
-  Double_t vDCAHisto[5]={dca[0],dca[1],track->Eta(),track->Pt(),track->Phi()};
+  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
+  Double_t vDCAHisto[5]={dca[0],dca[1],etpTrack->Eta(),etpTrack->Pt(),etpTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);
 
   //
@@ -184,19 +188,21 @@ void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
   // Fill DCA comparison information
-  if(!esdTrack) return;
-  if(!esdEvent) return;
-
+  if(!vTrack) return;
+  if(!vEvent) return;
+  
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    // const AliESDVertex *vtxESD = NULL;
+    // if(vVertex) vtxESD = dynamic_cast<AliESDVertex*>(vVertex);
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -206,15 +212,14 @@ void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
       }
     */
   }
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParameters(dca,cov);
+  if(vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
+  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParameters(dca,cov);
-
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
-  if(esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
-
-  Double_t vDCAHisto[5]={dca[0],dca[1],esdTrack->Eta(),esdTrack->Pt(), esdTrack->Phi()};
+  Double_t vDCAHisto[5]={dca[0],dca[1],vTrack->Eta(),vTrack->Pt(),vTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);
 
   //
@@ -224,7 +229,7 @@ void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
 
 }
 
-void AliPerformanceDCA::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDCA::ProcessConstrained(AliStack* const /*stack*/, AliVTrack *const /*vTrack*/)
 {
   // Fill DCA comparison information
   
@@ -260,13 +265,13 @@ return count;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
+void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend)
 {
   // Process comparison information 
   //
-  if(!esdEvent) 
+  if(!vEvent) 
   {
-    Error("Exec","esdEvent not available");
+    Error("Exec","vEvent not available");
     return;
   }
   AliHeader* header = 0;
@@ -300,42 +305,40 @@ void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     }
     genHeader->PrimaryVertex(vtxMC);
   } 
-  
-  // use ESD friends
-  if(bUseESDfriend) {
-    if(!esdFriend) {
-      Error("Exec","esdFriend not available");
+  // use V friends
+  if(bUseVfriend) {
+    if(!vFriendEvent) {
+      Error("Exec","vFriend not available");
       return;
     }
   }
 
   // trigger
   if(!bUseMC &&GetTriggerClass()) {
-    Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) return; 
   }
 
   // get event vertex
-  const AliESDVertex *vtxESD = NULL;
+  const AliVVertex *vVertex = NULL;
   if( IsUseTrackVertex() ) 
   { 
     // track vertex
-    vtxESD = esdEvent->GetPrimaryVertexTracks();
+    vVertex = vEvent->GetPrimaryVertexTracks();
   }
   else {
     // TPC track vertex
-    vtxESD = esdEvent->GetPrimaryVertexTPC();
+    vVertex = vEvent->GetPrimaryVertexTPC();
   }
-  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
+  if(vVertex && (vVertex->GetStatus()<=0)) return;
 
   //  Process events
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
   { 
-    AliESDtrack *track = esdEvent->GetTrack(iTrack);
+    AliVTrack *track = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
     if(!track) continue;
-
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,vEvent);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,vEvent);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
