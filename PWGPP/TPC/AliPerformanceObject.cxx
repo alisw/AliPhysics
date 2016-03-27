@@ -19,6 +19,7 @@
 //
 // Author: J.Otwinowski 14/04/2008 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 29/9/2014
 //------------------------------------------------------------------------------
 
 #include <iostream>
@@ -33,7 +34,6 @@
 #include "TMath.h"
 
 #include "AliLog.h" 
-#include "AliESDVertex.h" 
 #include "AliPerformanceObject.h" 
 
 using namespace std;
@@ -52,7 +52,8 @@ AliPerformanceObject::AliPerformanceObject():
   fHighMultiplicity(kFALSE),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
-  fUseTOFBunchCrossing(kTRUE)
+  fUseTOFBunchCrossing(kTRUE),
+  fUseSparse(1)
 {
   // constructor
 }
@@ -69,9 +70,11 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
-  fUseTOFBunchCrossing(kTRUE)
+  fUseTOFBunchCrossing(kTRUE),
+  fUseSparse(1)
 {
-  // constructor
+
+    // constructor
 }
 
 //_____________________________________________________________________________
