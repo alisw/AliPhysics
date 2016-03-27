@@ -775,8 +775,6 @@ return newFolder;
 Long64_t AliPerformanceTPC::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
-
-    cout<<"In merge ? "<<endl;
     
   if (!list)
   return 0;
