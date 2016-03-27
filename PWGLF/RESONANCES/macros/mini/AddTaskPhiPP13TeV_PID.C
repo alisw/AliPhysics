@@ -1,5 +1,5 @@
 /***************************************************************************
-              Anders Knospe - last modified on 9 July 2015
+              Anders Knospe - last modified on 26 March 2016
 
 //Lauches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
@@ -126,7 +126,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   }
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-  if(aodFilterBit<200) cutEventUtils->SetCheckIncompleteDAQ();
+  cutEventUtils->SetCheckIncompleteDAQ();
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
   if(isPP && (!isMC) && cutVertex){ 

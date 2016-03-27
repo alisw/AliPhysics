@@ -1,5 +1,5 @@
 /***************************************************************************
-              Anders Knospe - last modified on 9 July 2015
+              Anders Knospe - last modified on 26 March 2016
 
 *** Configuration script for phi analysis of 2015 pp 13-TeV data ***
 ****************************************************************************/
@@ -31,15 +31,15 @@ Bool_t ConfigPhiPP13TeV_PID
   AliRsnCutSetDaughterParticle* cutSetQ;
   AliRsnCutSetDaughterParticle* cutSetK;
 
-  Bool_t useFineMcBinning=kFALSE;
-  if(aodFilterBit>=100) useFineMcBinning=kTRUE;
-  aodFilterBit=aodFilterBit%100;
+  Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
+  Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
+  if(nsigmaKaTOF<1.e-10) nsigmaKaTOF=-1.;
 
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
     //Set custom quality cuts for systematic checks
     cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKa);
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
   }else{
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
@@ -81,16 +81,16 @@ Bool_t ConfigPhiPP13TeV_PID
   // [2] = like ++
   // [3] = like --
 
-  Bool_t  use    [8]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly, isMC,isMC, useMixLS,useMixLS};
-  Bool_t  useIM  [8]={ 1      ,  1     , 1      ,  1     ,  1     ,  0     , 1        , 1        };
-  TString name   [8]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"Res"   ,"MixingPP","MixingMM"};
-  TString comp   [8]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" ,"TRUE"  ,"MIX"     ,"MIX"     };
-  TString output [8]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"  ,"SPARSE"  };
-  Int_t   pdgCode[8]={333     , 333    ,333     ,333     , 333    ,333     , 333      ,333       };
-  Char_t  charge1[8]={'+'     , '+'    ,'+'     ,'-'     , '+'    ,'+'     ,'+'       ,'-'       };
-  Char_t  charge2[8]={'-'     , '-'    ,'+'     ,'-'     , '-'    ,'-'     ,'+'       ,'-'       };
+  Bool_t  use    [9]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,isMC, isMC,isMC, useMixLS,useMixLS};
+  Bool_t  useIM  [9]={ 1      ,  1     , 1      ,  1     ,  1     ,  1        ,  0     , 1        , 1        };
+  TString name   [9]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"TruesFine","Res"   ,"MixingPP","MixingMM"};
+  TString comp   [9]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" , "TRUE"    ,"TRUE"  ,"MIX"     ,"MIX"     };
+  TString output [9]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE","SPARSE"  ,"SPARSE"  };
+  Int_t   pdgCode[9]={333     , 333    ,333     ,333     , 333    , 333       ,333     , 333      ,333       };
+  Char_t  charge1[9]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'     ,'+'       ,'-'       };
+  Char_t  charge2[9]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'     ,'+'       ,'-'       };
 
-  for(Int_t i=0;i<8;i++){
+  for(Int_t i=0;i<9;i++){
     if(!use[i]) continue;
     AliRsnMiniOutput* out=task->CreateOutput(Form("phi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
     out->SetCutID(0,iCutK);
@@ -112,7 +112,7 @@ Bool_t ConfigPhiPP13TeV_PID
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterPt) out->AddAxis(sdpt,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
-    else if(isMC && useFineMcBinning) out->AddAxis(ptID,300,0.,3.);
+    else if(isMC && i==5) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     else out->AddAxis(ptID,200,0.,20.);//default use mother pt
 
     // axis Z: centrality-multiplicity
@@ -136,12 +136,24 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetMotherMass(1.019461);
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
-    if(useFineMcBinning) outm->AddAxis(ptID,300,0.,3.);
-    else outm->AddAxis(ptID,200,0.,20.);
+    outm->AddAxis(ptID,200,0.,20.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
+
+    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");
+    outmf->SetDaughter(0,AliRsnDaughter::kKaon);
+    outmf->SetDaughter(1,AliRsnDaughter::kKaon);
+    outmf->SetMotherPDG(333);
+    outmf->SetMotherMass(1.019461);
+    outmf->SetPairCuts(cutsPair);
+    outmf->AddAxis(imID,215,0.985,1.2);
+    outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
+    if(!isPP) outmf->AddAxis(centID,100,0.,100.);
+    else outmf->AddAxis(centID,161,-0.5,160.5);
+    if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
+    if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
     //get phase space of the decay from mothers
     AliRsnMiniOutput* outps=task->CreateOutput(Form("phi_phaseSpace%s", suffix),"HIST","TRUE");
