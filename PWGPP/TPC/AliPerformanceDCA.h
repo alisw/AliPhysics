@@ -6,16 +6,17 @@
 // reconstructed and MC particle tracks (DCA - Distance of Closest Approach 
 // to the vertex).   
 // 
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 22/10/2014
 //------------------------------------------------------------------------------
 
-class AliESDEvent; 
-class AliESDfriend; 
+class AliVEvent; 
+class AliVfriendEvent; 
 class AliStack; 
 class AliRecInfoCuts;
 class AliMCInfoCuts;
 class AliESDVertex;
-class AliESDtrack;
+class AliVTrack;
 class TH3;
 class TH2;
 class TH1;
@@ -35,7 +36,7 @@ public :
   virtual void Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -52,9 +53,9 @@ public :
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
 
-  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
+  void ProcessConstrained(AliStack* const stack, AliVTrack *const vTrack);
+  void ProcessTPC(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessTPCITS(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent);
 
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
