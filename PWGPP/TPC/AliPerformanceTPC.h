@@ -7,6 +7,7 @@
 // 
 // Author: J.Otwinowski 04/02/2008 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 01/10/2014
 //------------------------------------------------------------------------------
 
 class TString;
@@ -15,13 +16,16 @@ class TCanvas;
 class TH1;
 class TH2;
 class TH3;
+class TH1D;
+class TH2D;
+class TNtuple;
 
-class AliESDVertex;
-class AliESDtrack;
+class AliVTrack;
 class AliMCEvent;
 class AliStack;
-class AliESDEvent; 
-class AliESDfriend; 
+class AliVEvent;
+class AliVEvent;
+class AliVfriendEvent; 
 class AliMCInfoCuts;
 class AliRecInfoCuts;
 
@@ -31,7 +35,7 @@ class AliRecInfoCuts;
 class AliPerformanceTPC : public AliPerformanceObject {
 public :
   //AliPerformanceTPC(); 
-  AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE);
+  AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
 
   virtual ~AliPerformanceTPC();
 
@@ -39,7 +43,7 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
 
@@ -52,10 +56,14 @@ public :
   // produce summary
   virtual TTree* CreateSummary();
 
+  void FillClusterHistogram(double *vTPCClust);
+  void FillEventHistogram(double *vTPCEvent);
+  void FillTrackHistogram(double *vTPCTrackHisto);
+    
   // Process events
-  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent, Bool_t vertStatus);
+  void ProcessConstrained(AliStack* const stack, AliVTrack *const vTrack, AliVEvent *const vEvent);
+  void ProcessTPC(AliStack* const stack, AliVTrack *const vTrack, AliVEvent *const vEvent, Bool_t vertStatus);
+  void ProcessTPCITS(AliStack* const stack, AliVTrack *const vTrack, AliVEvent *const vEvent, Bool_t vertStatus);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderTPC",TString title = "Analysed TPC performance histograms");
@@ -85,6 +93,7 @@ public :
   Bool_t GetUseHLT() { return fUseHLT; }
 
 
+
 private:
 
   static Bool_t fgMergeTHnSparse;
@@ -104,11 +113,10 @@ private:
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   Bool_t fUseHLT; // use HLT ESD
-
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,12);
+  ClassDef(AliPerformanceTPC,13);
 };
 
 #endif

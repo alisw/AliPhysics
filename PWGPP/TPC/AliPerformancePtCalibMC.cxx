@@ -24,12 +24,13 @@
 // The result of the analysis (histograms/graphs) are stored in the folder which is
 // a data member of AliPerformancePtCalibMC.
 //
-// Author: S.Schuchmann 11/13/2009 
+// Author: S.Schuchmann 11/13/2009
+// Updated: J.Salzwedel 14/01/2015
 //------------------------------------------------------------------------------
 
 /*
  
-// after running the performance task, read the file, and get component
+// after running the QA task, read the file, and get component
 
 TFile f("Output.root");
 AliPerformancePtCalibMC *compObj = (AliPerformancePtCalibMC*)coutput->FindObject("AliPerformancePtCalibMC");
@@ -62,13 +63,12 @@ fout.Close();
 #include "TMath.h"
 #include "TFolder.h"
 
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
+#include "AliVEvent.h"
+#include "AliExternalTrackParam.h"
 #include "AliESDtrackCuts.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDfriend.h"
+#include "AliVfriendEvent.h"
 
 #include "AliPerformancePtCalibMC.h"
 #include "AliPerfAnalyzeInvPt.h"
@@ -334,19 +334,18 @@ void AliPerformancePtCalibMC::SetPtShift(const Double_t shiftVal ) {
 }
 
 //________________________________________________________________________
-void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const /*esdFriend*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseESDfriend*/)
+void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const /*vfriendEvent*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseVfriend*/)
 {
    //exec: read MC and esd or tpc tracks
    
    AliStack* stack = NULL;
  
-   if (!esdEvent) {
-      Printf("ERROR: Event not available");
-      return;
-   }
-
+  if (!vEvent) {
+    Printf("ERROR: Event not available");
+    return;
+  }
  
-   fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
+   fHistTrackMultiplicity->Fill(vEvent->GetNumberOfTracks());
 
    if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
@@ -365,10 +364,10 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
      
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
   
-   // read primary vertex info
-   Double_t tPrimaryVtxPosition[3];
-   // Double_t tPrimaryVtxCov[3];
-   const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexTPC();
+  // read primary vertex info
+  Double_t tPrimaryVtxPosition[3];
+  // Double_t tPrimaryVtxCov[3];
+  const AliVVertex *primaryVtx = vEvent->GetPrimaryVertexTPC();
  
    tPrimaryVtxPosition[0] = primaryVtx->GetX();
    tPrimaryVtxPosition[1] = primaryVtx->GetY();
@@ -382,29 +381,27 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
    //fill histos for pt spectra and shift of transverse momentum
    Int_t count=0;
  
-   for(Int_t j = 0;j<esdEvent->GetNumberOfTracks();j++){
-      AliESDtrack *esdTrack = esdEvent->GetTrack(j);
-      if(!esdTrack) continue;
-
-      //esd track cuts
-      if(fESDcuts){
-	 if(!fESDTrackCuts->AcceptTrack(esdTrack)) continue;
-      }
+  for(Int_t j = 0; j<vEvent->GetNumberOfTracks(); j++){
+    AliVTrack *vTrack = (AliVTrack*)vEvent->GetTrack(j);
+    if(!vTrack) continue;
+    if(fESDcuts){
+      if(!fESDTrackCuts->AcceptVTrack(vTrack)) continue;
+    }
       
-      // get MC info 
-      Int_t esdLabel = esdTrack->GetLabel();
-      if(esdLabel<0) continue;	
-      TParticle *  partMC = stack->Particle(esdLabel);
-      if (!partMC) continue;
+    // get MC info 
+    Int_t label = vTrack->GetLabel();
+    if(label<0) continue;	
+    TParticle *  partMC = stack->Particle(label);
+    if (!partMC) continue;
   
-      // fill correlation histos MC ESD
-      Double_t pESD  = esdTrack->GetP();
-      Double_t ptESD = esdTrack->GetSignedPt();
+    // fill correlation histos MC Recon
+    Double_t pRecon  = vTrack->P();
+    Double_t ptRecon = vTrack->GetSignedPt();
     
-      if(!ptESD || !(partMC->Pt()) ) continue;
-      Double_t mcPt = partMC->Pt();
-      Double_t invPtMC = 1.0/mcPt;
-      Int_t signMC = partMC->GetPdgCode();
+    if(!ptRecon || !(partMC->Pt()) ) continue;
+    Double_t mcPt = partMC->Pt();
+    Double_t invPtMC = 1.0/mcPt;
+    Int_t signMC = partMC->GetPdgCode();
       
       //pid
       if(fPions && !(fabs(signMC)-211<0.001)) continue;// pions only
@@ -424,14 +421,14 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	 fHistInvPtPtThetaPhiMC->Fill(momAngMC);
 	 
 	 //correlation histos MC ESD
-	 fHistInvPtMCESD->Fill(signMC*(fabs(invPtMC)),1.0/ptESD);
-	 fHistPtMCESD->Fill(fabs(mcPt),fabs(ptESD));
+	 fHistInvPtMCESD->Fill(signMC*(fabs(invPtMC)),1.0/ptRecon);
+	 fHistPtMCESD->Fill(fabs(mcPt),fabs(ptRecon));
       }
       
       // fill histos TPC or ESD
       if(fOptTPC){
 	 //TPC tracks and MC tracks
-	 const AliExternalTrackParam *tpcTrack = esdTrack->GetTPCInnerParam(); 
+	 const AliExternalTrackParam *tpcTrack = vTrack->GetTPCInnerParam(); 
 	 if(!tpcTrack) continue;
 	 if(fabs(tpcTrack->Eta())>=  fEtaAcceptance) continue;
       
@@ -459,71 +456,71 @@ void AliPerformancePtCalibMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const
 	    fHistInvPtMCTPC->Fill(signMC*(fabs(invPtMC)),invPt);
 	    fHistPtMCTPC->Fill(fabs(mcPt),fabs(signedPt));
 	
-	    //compare to MC info
-	    Double_t  ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
-	    Double_t  ptDiffTPC = (fabs(signedPt)-fabs(mcPt))/pow(mcPt,2);
-	    Double_t  invPtDiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
-	    Double_t  invPtDiffTPC = fabs(invPt)-1.0/fabs(mcPt);
-	    Double_t  pTPC  = tpcTrack->GetP();
+	//compare to MC info
+	Double_t  ptDiffRecon = (fabs(ptRecon)-fabs(mcPt))/pow(mcPt,2);
+	Double_t  ptDiffTPC = (fabs(signedPt)-fabs(mcPt))/pow(mcPt,2);
+	Double_t  invPtDiffRecon = fabs(1.0/ptRecon)-1.0/fabs(mcPt);
+	Double_t  invPtDiffTPC = fabs(invPt)-1.0/fabs(mcPt);
+	Double_t  pTPC  = tpcTrack->GetP();
 		  
-	    if(esdTrack->GetSign()>0){//compare momenta ESD track and TPC track
-	       fHistTPCMomentaPosP->Fill(fabs(pESD),fabs(pTPC));
-	       fHistTPCMomentaPosPt->Fill(fabs(ptESD),fabs(signedPt));
-	       fHistTPCMomentaPosInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
-	       fHistTPCMomentaPosPtMC->Fill(ptDiffESD,ptDiffTPC);
-	    }
-	    else{
-	       fHistTPCMomentaNegP->Fill(fabs(pESD),fabs(pTPC));
-	       fHistTPCMomentaNegPt->Fill(fabs(ptESD),fabs(signedPt));
-	       fHistTPCMomentaNegInvPtMC->Fill(invPtDiffESD,invPtDiffTPC);
-	       fHistTPCMomentaNegPtMC->Fill(ptDiffESD,ptDiffTPC);
-	    }
-	    fHistdedxPions->Fill(signedPt,esdTrack->GetTPCsignal());
-	    fHistMomresMCESD->Fill(fabs(mcPt),(fabs(ptESD)-fabs(mcPt))/fabs(mcPt));
-	    fHistMomresMCTPC->Fill(fabs(mcPt),(fabs(signedPt)-fabs(mcPt))/fabs(mcPt));
-	    count++;
-	 }
-	 else continue;
+	if(vTrack->GetSign()>0){//compare momenta ESD track and TPC track
+	  fHistTPCMomentaPosP->Fill(fabs(pRecon),fabs(pTPC));
+	  fHistTPCMomentaPosPt->Fill(fabs(ptRecon),fabs(signedPt));
+	  fHistTPCMomentaPosInvPtMC->Fill(invPtDiffRecon,invPtDiffTPC);
+	  fHistTPCMomentaPosPtMC->Fill(ptDiffRecon,ptDiffTPC);
+	}
+	else{
+	  fHistTPCMomentaNegP->Fill(fabs(pRecon),fabs(pTPC));
+	  fHistTPCMomentaNegPt->Fill(fabs(ptRecon),fabs(signedPt));
+	  fHistTPCMomentaNegInvPtMC->Fill(invPtDiffRecon,invPtDiffTPC);
+	  fHistTPCMomentaNegPtMC->Fill(ptDiffRecon,ptDiffTPC);
+	}
+	fHistdedxPions->Fill(signedPt,vTrack->GetTPCsignal());
+	fHistMomresMCESD->Fill(fabs(mcPt),(fabs(ptRecon)-fabs(mcPt))/fabs(mcPt));
+	fHistMomresMCTPC->Fill(fabs(mcPt),(fabs(signedPt)-fabs(mcPt))/fabs(mcPt));
+	count++;
       }
+      else continue;
+    }
    
- else{
-    // ESD tracks and MC tracks
-    if(fabs(esdTrack->Eta())>= fEtaAcceptance) continue;
-    Double_t invPt = 0.0;
+    else{
+      // ESD tracks and MC tracks
+      if(fabs(vTrack->Eta())>= fEtaAcceptance) continue;
+      Double_t invPt = 0.0;
       
-    if(ptESD) {
-       invPt = 1.0/ptESD; 
-       fHistPtShift0->Fill(ptESD);
+      if(ptRecon) {
+	invPt = 1.0/ptRecon; 
+	fHistPtShift0->Fill(ptRecon);
 	
        if(fShift){Printf("user shift of momentum SET to non zero value!");
 	  invPt += fDeltaInvP; //shift momentum for tests
-	  if(invPt) ptESD = 1.0/invPt; 
+	  if(invPt) ptRecon = 1.0/invPt;
 	  else continue;
        }
 
-       Double_t theta = esdTrack->Theta();
-       Double_t phi = esdTrack->Phi();
+	Double_t theta = vTrack->Theta();
+	Double_t phi = vTrack->Phi();
 
-       Double_t momAng[4] = {invPt,ptESD,theta,phi};
-       fHistInvPtPtThetaPhi->Fill(momAng);
+	Double_t momAng[4] = {invPt,ptRecon,theta,phi};
+	fHistInvPtPtThetaPhi->Fill(momAng);
 
-       //differences MC ESD tracks
-       Double_t ptDiffESD = (fabs(ptESD)-fabs(mcPt))/pow(mcPt,2);
-       Double_t invPtdiffESD = fabs(1.0/ptESD)-1.0/fabs(mcPt);
-       if(esdTrack->GetSign()>0){   
-	  fHistESDMomentaPosInvPtMC->Fill(invPtdiffESD);
-	  fHistESDMomentaPosPtMC->Fill(ptDiffESD);
-       }
-       else{
-	  fHistESDMomentaNegInvPtMC->Fill(invPtdiffESD);
-	  fHistESDMomentaNegPtMC->Fill(ptDiffESD);
-       }	
-       fHistdedxPions->Fill(ptESD,esdTrack->GetTPCsignal());
-       fHistMomresMCESD->Fill(fabs(mcPt),(fabs(ptESD)-fabs(mcPt))/fabs(mcPt));
-       count++;
+	//differences MC ESD tracks
+	Double_t ptDiffRecon = (fabs(ptRecon)-fabs(mcPt))/pow(mcPt,2);
+	Double_t invPtdiffRecon = fabs(1.0/ptRecon)-1.0/fabs(mcPt);
+	if(vTrack->GetSign()>0){   
+	  fHistESDMomentaPosInvPtMC->Fill(invPtdiffRecon);
+	  fHistESDMomentaPosPtMC->Fill(ptDiffRecon);
+	}
+	else{
+	  fHistESDMomentaNegInvPtMC->Fill(invPtdiffRecon);
+	  fHistESDMomentaNegPtMC->Fill(ptDiffRecon);
+	}	
+	fHistdedxPions->Fill(ptRecon,vTrack->GetTPCsignal());
+	fHistMomresMCESD->Fill(fabs(mcPt),(fabs(ptRecon)-fabs(mcPt))/fabs(mcPt));
+	count++;
+      }
     }
- }
-}
+  }
     
 fHistTrackMultiplicityCuts->Fill(count);
   

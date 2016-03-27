@@ -5,7 +5,8 @@
 // Class to keep information for MC  tracks 
 // to check propagation algorithm, B-field and material budget.   
 // 
-// Author: J.Otwinowski 09/06/2009 
+// Author: J.Otwinowski 09/06/200
+// Changes by J.Salzwedel 5/11/2014
 //------------------------------------------------------------------------------
 
 class TString;
@@ -16,14 +17,11 @@ class TH2F;
 class TParticle;
 class TClonesArray;
 
-class AliESDVertex;
-class AliESDtrack;
 class AliMCEvent;
 class AliStack;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
+class AliVEvent; 
+class AliVfriendEvent; 
 class AliMCEvent;
 class AliMCParticle;
 class AliMCInfoCuts;
@@ -42,7 +40,7 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
