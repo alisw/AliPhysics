@@ -585,7 +585,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     TStopwatch Watch;
     Watch.Start();
 
-    
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
@@ -751,6 +750,13 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     cout<<"For event "<<revent<<"TPC Event processing time "<<rtime/revent<<endl;
     Watch.Stop();
 
+    Double_t vtxPosition[3]= {0.,0.,0.};
+  vVertex->GetXYZ(vtxPosition);
+  Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
+  if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
+  else FillEventHistogram(vTPCEvent);
+  
+>>>>>>> rebase with master
 }
 
 
@@ -908,7 +914,7 @@ return newFolder;
 Long64_t AliPerformanceTPC::Merge(TCollection* const list) 
 {
   // Merge list of objects (needed by PROOF)
-    
+
   if (!list)
   return 0;
 
