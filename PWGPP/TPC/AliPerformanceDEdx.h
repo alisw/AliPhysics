@@ -15,19 +15,20 @@ class TH2F;
 class TNamed;
 class TString;
 
-class AliESDEvent; 
-class AliESDfriend; 
+class AliVEvent;
+class AliVfriendEvent;
 class AliMCEvent;
-class AliESDtrack;
+class AliVTrack;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
+
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceDEdx : public AliPerformanceObject {
 public :
-  AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
+  AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   
   virtual ~AliPerformanceDEdx();
 
@@ -35,7 +36,7 @@ public :
   virtual void Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+    virtual void Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -56,10 +57,10 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Process events
-  void  ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack); // not implemented
-  void  ProcessInnerTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void  ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack);      // not implemented
-  void  ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack); // not implemented
+  void  ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTrack); // not implemented
+  void  ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent *const vEvent);
+  void  ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const vTrack);      // not implemented
+  void  ProcessConstrained(AliMCEvent* const mcev, AliVTrack *const vTrack); // not implemented
 
   
   // produce summary (currently not used)
@@ -68,7 +69,8 @@ public :
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0)   {fCutsMC = cuts;} 
-
+  void FilldEdxHisotgram(double *vDeDxHisto);
+    
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
@@ -98,7 +100,7 @@ private:
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,5);
+  ClassDef(AliPerformanceDEdx,6);
 };
 
 #endif

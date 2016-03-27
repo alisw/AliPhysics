@@ -6,22 +6,25 @@
 // 
 // Author: J.Otwinowski 01/04/2009 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 30/9/2014
 //------------------------------------------------------------------------------
 
-class AliESDEvent;
-class AliESDfriend;
+
+class AliVEvent;
+class AliVfriendEvent;
 class AliMCEvent;
 class AliPerformanceObject;
 class AliMagF;
 class TList;
 class TTree;
+class TNtuple;
 
 #include "AliAnalysisTaskSE.h"
 
 class AliPerformanceTask : public AliAnalysisTaskSE {
  public:
   AliPerformanceTask();
-  AliPerformanceTask(const char *name, const char *title);
+    AliPerformanceTask(const char *name, const char *title);
   virtual ~AliPerformanceTask();
   
   virtual void   UserCreateOutputObjects();
@@ -36,8 +39,8 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   // Use MC
   void SetUseMCInfo(Bool_t useMCInfo = kFALSE) {fUseMCInfo = useMCInfo;}
 
-  // Use ESD friend
-  void SetUseESDfriend(Bool_t useESDFriend = kFALSE) {fUseESDfriend = useESDFriend;}
+  // Use V friend
+  void SetUseVfriend(Bool_t useVFriend = kFALSE) {fUseVfriend = useVFriend;}
 
   // Use HLT ESD
   void SetUseHLT(Bool_t useHLT = kFALSE) {fUseHLT = useHLT;}
@@ -57,13 +60,18 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   void  SetUseCentralityBin(Int_t bin) { fUseCentralityBin = bin; }
   Int_t GetUseCentralityBin()          { return fUseCentralityBin; }
 
+    void  SetDebug(Bool_t bD) { fDebug = bD;  }
+    Bool_t  GetDebug() { return fDebug; }
+
+    Bool_t ResetOutputData();
+    
  private:
 
   // Calculate centrality
   Int_t CalculateCentralityBin();
 
-  AliESDEvent *fESD;          //! ESD event
-  AliESDfriend *fESDfriend;   //! ESD friend event
+  AliVEvent *fVEvent;         //! V event
+  AliVfriendEvent *fVfriendEvent;   //! V friend event
   AliMCEvent *fMC;            //! MC event
 
   TList *fOutput;             //! list send on output container 1
@@ -72,17 +80,20 @@ class AliPerformanceTask : public AliAnalysisTaskSE {
   TList *fCompList;           // list of comparison objects
 
   Bool_t fUseMCInfo;          // use MC information
-  Bool_t fUseESDfriend;       // use ESD friend
-  Bool_t fUseHLT;             // use HLT ESD
+  Bool_t fUseVfriend;    // use V friend event
+  Bool_t fUseHLT;             // use HLT
 
   Bool_t fUseTerminate;       // use terminate function
 
   Int_t  fUseCentrality;      // use centrality (0=off(default),1=VZERO,2=SPD)
 
   Bool_t  fUseOCDB;           // use OCDB
-
+  Bool_t  fDebug;
+    
   Int_t fUseCentralityBin;  // centrality bin to be used 
-
+  Int_t fEvents;
+    
+    
   AliPerformanceTask(const AliPerformanceTask&); // not implemented
   AliPerformanceTask& operator=(const AliPerformanceTask&); // not implemented
   

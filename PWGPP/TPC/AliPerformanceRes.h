@@ -5,7 +5,8 @@
 // Class to keep information from comparison of 
 // reconstructed and MC particle tracks (TPC resolution).   
 // 
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 23/10/2014
 //------------------------------------------------------------------------------
 
 class TString;
@@ -14,13 +15,12 @@ class TCanvas;
 class TH1F;
 class TH2F;
 
-class AliESDVertex;
-class AliESDtrack;
+class AliVTrack;
 class AliMCEvent;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
+class AliVEvent; 
+class AliVfriendEvent; 
+class AliVfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
 class AliMCInfoCuts;
@@ -38,7 +38,7 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -50,11 +50,11 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process events
-  void ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent );
-  void ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack, AliESDEvent* const esdEvent);
+  void ProcessConstrained(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent );
+  void ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliVTrack *const vTrack, const AliVfriendTrack *const friendTrack, AliVEvent* const vEvent);
 
   AliTrackReference *GetFirstTPCTrackRef(AliMCParticle *mcParticle); 
   AliTrackReference *GetLastTPCTrackRef(AliMCParticle *mcParticle); 
