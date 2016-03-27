@@ -7,8 +7,9 @@
 // the analysis (histograms/graphs) are stored in the folder which is 
 // a data of AliPerformanceDEdx.
 //  
-// Author: J.Otwinowski 04/02/2008 
-// Changes by M.Knichel 15/10/2010
+// Author: J.Otwinowski   04/02/2008 
+// Changes by M.Knichel   15/10/2010
+// Changes by J.Salzwedel 15/10/2014
 //------------------------------------------------------------------------------
 
 /*AliPerformanceDEdx.cxx
@@ -48,10 +49,11 @@
 #include "AliPerformanceDEdx.h"
 #include "AliPerformanceTPC.h"
 #include "AliTPCPerformanceSummary.h"
-#include "AliESDEvent.h"
+#include "AliVEvent.h"
 #include "AliTracker.h"
 #include "AliMCEvent.h"
-#include "AliESDtrack.h"
+#include "AliVTrack.h"
+#include "AliExternalTrackParam.h"
 #include "AliStack.h"
 #include "AliLog.h" 
 #include "AliMCInfoCuts.h" 
@@ -68,8 +70,17 @@ ClassImp(AliPerformanceDEdx)
 Bool_t AliPerformanceDEdx::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceDEdx::fgUseMergeTHnSparse = kFALSE;
 
+TH1D *h_tpc_dedx_mips_0 = 0;
+TH1D *h_tpc_dedx_mipsele_0 = 0;
+
+TH2D *h_tpc_dedx_mips_c_0_5 = 0;
+TH2D *h_tpc_dedx_mips_a_0_5 = 0;
+TH2D *h_tpc_dedx_mips_c_0_1 = 0;
+TH2D *h_tpc_dedx_mips_a_0_1 = 0;
+
+
 //_____________________________________________________________________________
-AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):
+AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator, Bool_t useSparse):
  AliPerformanceObject(name,title),
 
   // dEdx 
@@ -85,6 +96,7 @@ AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, 
 {
   // named constructor
 
+  fUseSparse = useSparse;
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   Init();
@@ -102,8 +114,10 @@ AliPerformanceDEdx::~AliPerformanceDEdx()
 //_____________________________________________________________________________
 void AliPerformanceDEdx::Init()
 {
-  // Init histograms
-  
+
+    if(!fUseSparse) fFolderObj = new TObjArray;
+
+    // Init histograms
   // TPC dEdx
   // set p bins
   Int_t nPBins = 50;
@@ -136,19 +150,39 @@ void AliPerformanceDEdx::Init()
   Double_t xminQA[10] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0., 0.};
   Double_t xmaxQA[10] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160., 1.};
 
-   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:clsF",10,binsQA,xminQA,xmaxQA);
-   fDeDxHisto->SetBinEdges(7,binsP);
+    if(fUseSparse){
+        fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:clsF",10,binsQA,xminQA,xmaxQA);
+        fDeDxHisto->SetBinEdges(7,binsP);
 
-   fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
-   fDeDxHisto->GetAxis(1)->SetTitle("#phi (rad)");
-   fDeDxHisto->GetAxis(2)->SetTitle("y (cm)");
-   fDeDxHisto->GetAxis(3)->SetTitle("z (cm)");
-   fDeDxHisto->GetAxis(4)->SetTitle("sin#phi");
-   fDeDxHisto->GetAxis(5)->SetTitle("tan#lambda");
-   fDeDxHisto->GetAxis(6)->SetTitle("ncls");
-   fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
-   fDeDxHisto->GetAxis(8)->SetTitle("number of cls used for dEdx");
-   fDeDxHisto->GetAxis(9)->SetTitle("number of cls found over findable");
+        fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
+        fDeDxHisto->GetAxis(1)->SetTitle("#phi (rad)");
+        fDeDxHisto->GetAxis(2)->SetTitle("y (cm)");
+        fDeDxHisto->GetAxis(3)->SetTitle("z (cm)");
+        fDeDxHisto->GetAxis(4)->SetTitle("sin#phi");
+        fDeDxHisto->GetAxis(5)->SetTitle("tan#lambda");
+        fDeDxHisto->GetAxis(6)->SetTitle("ncls");
+        fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
+        fDeDxHisto->GetAxis(8)->SetTitle("number of cls used for dEdx");
+        fDeDxHisto->GetAxis(9)->SetTitle("number of cls found over findable");
+    }
+    else{
+    
+        h_tpc_dedx_mips_0 = new TH1D("h_tpc_dedx_mips_0","",binsQA[0],xminQA[0],xmaxQA[0]);
+        h_tpc_dedx_mipsele_0 = new TH1D("h_tpc_dedx_mipsele_0","",binsQA[0],xminQA[0],xmaxQA[0]);
+        h_tpc_dedx_mips_c_0_5 = new TH2D("h_tpc_dedx_mips_c_0_5","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[5],xminQA[5],xmaxQA[5]);
+        h_tpc_dedx_mips_a_0_5 = new TH2D("h_tpc_dedx_mips_a_0_5","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[5],xminQA[5],xmaxQA[5]);
+        h_tpc_dedx_mips_c_0_1 = new TH2D("h_tpc_dedx_mips_c_0_1","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[1],xminQA[1],xmaxQA[1]);
+        h_tpc_dedx_mips_a_0_1 = new TH2D("h_tpc_dedx_mips_a_0_1","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[1],xminQA[1],xmaxQA[1]);
+    
+        fFolderObj->Add(h_tpc_dedx_mips_0);
+        fFolderObj->Add(h_tpc_dedx_mipsele_0);
+        fFolderObj->Add(h_tpc_dedx_mips_c_0_5);
+        fFolderObj->Add(h_tpc_dedx_mips_a_0_5);
+        fFolderObj->Add(h_tpc_dedx_mips_c_0_1);
+        fFolderObj->Add(h_tpc_dedx_mips_a_0_1);
+        
+    }
+    
    //fDeDxHisto->Sumw2();
 
    // Init cuts
@@ -161,38 +195,39 @@ void AliPerformanceDEdx::Init()
 
    // init folder
    fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
-   
+
    // save merge status in object
    fMergeTHnSparseObj = fgMergeTHnSparse;
 
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessTPC(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessTPC(AliStack* const /*stack*/, AliVTrack *const /*vTrack*/)
 {
   // Fill dE/dx  comparison information
   AliDebug(AliLog::kWarning, "Warning: Not implemented");
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
  //
  // Fill TPC track information at inner TPC wall
- // 
-  if(!esdEvent) return;
-  if(!esdTrack) return;
+ // Only ESD events store TPC track information at inner TPC wall
+ //
+  if(!vEvent || !vTrack) return;
 
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    // const AliESDVertex *vtxESD = NULL;
+    // if(vVertex) vtxESD = dynamic_cast<AliESDVertex*>(vVertex);
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
     Bool_t isOK = kFALSE;
     if(fabs(b[2])>0.000001)
-      isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
-    //    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+      isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -204,13 +239,14 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   }
 
   // get external param. at inner TPC wall
-  const AliExternalTrackParam *innerParam =  esdTrack->GetInnerParam();
+  const AliExternalTrackParam *innerParam =  vTrack->GetInnerParam();
   if(!innerParam) return;
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParametersTPC(dca,cov);
 
-  if((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
+  if((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
 
   //
   // select primaries
@@ -224,11 +260,11 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  Float_t dedx = esdTrack->GetTPCsignal();
-  Int_t ncls = esdTrack->GetTPCNcls();
-  Int_t TPCSignalN = esdTrack->GetTPCsignalN();
-  //Float_t nCrossedRows = esdTrack->GetTPCClusterInfo(2,1);
-  Float_t nClsF = esdTrack->GetTPCClusterInfo(2,0);
+  Float_t dedx = vTrack->GetTPCsignal();
+  Int_t ncls = vTrack->GetTPCNcls();
+  Int_t TPCSignalN = vTrack->GetTPCsignalN();
+  //Float_t nCrossedRows = vTrack->GetTPCClusterInfo(2,1);
+  Float_t nClsF = vTrack->GetTPCClusterInfo(2,0);
 
 
   Double_t pt = innerParam->Pt();
@@ -249,13 +285,14 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
 
   //Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nCrossedRows};
   Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,Double_t(ncls),p,Double_t(TPCSignalN),nClsF};
-  fDeDxHisto->Fill(vDeDxHisto); 
-
+  if(fUseSparse) fDeDxHisto->Fill(vDeDxHisto);
+  else FilldEdxHisotgram(vDeDxHisto);
+    
   if(!stack) return;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessTPCITS(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessTPCITS(AliStack* const /*stack*/, AliVTrack *const /*vTrack*/)
 {
   // Fill dE/dx  comparison information
   
@@ -263,7 +300,7 @@ void AliPerformanceDEdx::ProcessTPCITS(AliStack* const /*stack*/, AliESDtrack *c
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceDEdx::ProcessConstrained(AliStack* const /*stack*/, AliVTrack *const /*vTrack*/)
 {
   // Fill dE/dx  comparison information
   
@@ -312,11 +349,11 @@ return count;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
+void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend)
 {
   // Process comparison information 
   //
-  if(!esdEvent) 
+  if(!vEvent)
   {
       AliDebug(AliLog::kError, "esdEvent not available");
       return;
@@ -356,43 +393,48 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
 
   } // end bUseMC
 
-  // use ESD friends
-  if(bUseESDfriend) {
-    if(!esdFriend) {
-      AliDebug(AliLog::kError, "esdFriend not available");
+  // use V friends
+  if(bUseVfriend) {
+    if(!vFriendEvent) {
+      AliDebug(AliLog::kError, "vFriend not available");
       return;
     }
   }
 
   // trigger
   if(!bUseMC && GetTriggerClass()) {
-    Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+    Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) return; 
   }
 
   // get event vertex
-  const AliESDVertex *vtxESD = NULL;
+  const AliVVertex *vVertex = NULL;
   if( IsUseTrackVertex() ) 
   { 
     // track vertex
-    vtxESD = esdEvent->GetPrimaryVertexTracks();
-  }
-  else {
+    vVertex = vEvent->GetPrimaryVertexTracks();
+  } else {
     // TPC track vertex
-    vtxESD = esdEvent->GetPrimaryVertexTPC();
+    vVertex = vEvent->GetPrimaryVertexTPC();
   }
-  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
-
+  if(vVertex && (vVertex->GetStatus()<=0)) return;
+  if(!vVertex) {
+    printf("ERROR: Could not determine primary vertex");
+    return;
+  }
+  
   //  Process events
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
-  { 
-    AliESDtrack *track = esdEvent->GetTrack(iTrack);
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
+  {
+    AliVParticle *particle = vEvent->GetTrack(iTrack);
+    if(!particle) continue;
+    AliVTrack *track = dynamic_cast<AliVTrack*>(particle);
     if(!track) continue;
 
     if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
-    else if(GetAnalysisMode() == 3) ProcessInnerTPC(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 3) ProcessInnerTPC(stack,track,vEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
@@ -413,135 +455,140 @@ void AliPerformanceDEdx::Analyse()
   //
   TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(kFALSE);
-  TH1F *h1D=0;
-  TH2F *h2D=0;
-  TObjArray *aFolderObj = new TObjArray;
-  TString selString;
+    if(fUseSparse){
+      TH1F *h1D=0;
+      TH2F *h2D=0;
+      TObjArray *aFolderObj = new TObjArray;
+      TString selString;
 
-  char name[256];
-  char title[256];
+      char name[256];
+      char title[256];
 
-  for(Int_t i=1; i<10; i++) { 
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, i);
-  }
+      for(Int_t i=1; i<10; i++) { 
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, i);
+      }
 
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 6, 7);
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 7, 8, 9);
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 8, 9);
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 6, 8, 9);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 6, 7);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 7, 8, 9);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 8, 9);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 6, 8, 9);
 
-  // resolution histograms for mips
-  //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
-  fDeDxHisto->GetAxis(2)->SetRangeUser(-15.,14.999);
-  fDeDxHisto->GetAxis(3)->SetRangeUser(-120.,119.999);
-  fDeDxHisto->GetAxis(4)->SetRangeUser(-0.4, 0.399);
-  fDeDxHisto->GetAxis(5)->SetRangeUser(-0.9,0.89);
-  fDeDxHisto->GetAxis(6)->SetRangeUser(60.,160.);
-  fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499); //p
-  fDeDxHisto->GetAxis(8)->SetRangeUser(60.,160.);
-  
- 
-  selString = "mipsres";
-  AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
+      // resolution histograms for mips
+      //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
+      fDeDxHisto->GetAxis(2)->SetRangeUser(-15.,14.999);
+      fDeDxHisto->GetAxis(3)->SetRangeUser(-120.,119.999);
+      fDeDxHisto->GetAxis(4)->SetRangeUser(-0.4, 0.399);
+      fDeDxHisto->GetAxis(5)->SetRangeUser(-0.9,0.89);
+      fDeDxHisto->GetAxis(6)->SetRangeUser(60.,160.);
+      fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499); //p
+      fDeDxHisto->GetAxis(8)->SetRangeUser(60.,160.);
+      
+     
+      selString = "mipsres";
+      AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
 
-  //
-  TObjArray *arr[10] = {0};
-  TF1 *f1[10] = {0};
-  
-  for(Int_t i=1; i<10; i++) 
-  { 
-    arr[i] = new TObjArray;
-    f1[i] = new TF1("gaus","gaus");
-    //printf("i %d \n",i);
+      //
+      TObjArray *arr[10] = {0};
+      TF1 *f1[10] = {0};
+      
+      for(Int_t i=1; i<10; i++) 
+      { 
+        arr[i] = new TObjArray;
+        f1[i] = new TF1("gaus","gaus");
+        //printf("i %d \n",i);
 
-    h2D = (TH2F*)fDeDxHisto->Projection(0,i);
+        h2D = (TH2F*)fDeDxHisto->Projection(0,i);
 
-    f1[i]->SetRange(40,60); // should be pion peak
-    h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
+        f1[i]->SetRange(40,60); // should be pion peak
+        h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
 
-    h1D = (TH1F*)arr[i]->At(1);
-    snprintf(name,256,"mean_dedx_mips_vs_%d",i);
-    h1D->SetName(name);
-    snprintf(title,256,"%s vs %s","mean_dedx_mips (a.u.)",fDeDxHisto->GetAxis(i)->GetTitle());
-    h1D->SetTitle(title);
-    h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
-    h1D->GetYaxis()->SetTitle("mean_dedx_mips (a.u.)");
-    //h1D->SetMinimum(40);
-    //h1D->SetMaximum(60);
+        h1D = (TH1F*)arr[i]->At(1);
+        snprintf(name,256,"mean_dedx_mips_vs_%d",i);
+        h1D->SetName(name);
+        snprintf(title,256,"%s vs %s","mean_dedx_mips (a.u.)",fDeDxHisto->GetAxis(i)->GetTitle());
+        h1D->SetTitle(title);
+        h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
+        h1D->GetYaxis()->SetTitle("mean_dedx_mips (a.u.)");
+        //h1D->SetMinimum(40);
+        //h1D->SetMaximum(60);
 
-    aFolderObj->Add(h1D);
+        aFolderObj->Add(h1D);
 
-    h1D = (TH1F*)arr[i]->At(2);
-    snprintf(name,256,"res_dedx_mips_vs_%d",i);
-    h1D->SetName(name);
-    snprintf(title,256,"%s vs %s","res_dedx_mips (a.u)",fDeDxHisto->GetAxis(i)->GetTitle());
-    h1D->SetTitle(title);
-    h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
-    h1D->GetYaxis()->SetTitle("res_dedx_mips (a.u.)");
-    //h1D->SetMinimum(0);
-    //h1D->SetMaximum(6);
+        h1D = (TH1F*)arr[i]->At(2);
+        snprintf(name,256,"res_dedx_mips_vs_%d",i);
+        h1D->SetName(name);
+        snprintf(title,256,"%s vs %s","res_dedx_mips (a.u)",fDeDxHisto->GetAxis(i)->GetTitle());
+        h1D->SetTitle(title);
+        h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
+        h1D->GetYaxis()->SetTitle("res_dedx_mips (a.u.)");
+        //h1D->SetMinimum(0);
+        //h1D->SetMaximum(6);
 
-    aFolderObj->Add(h1D);
-  }
+        aFolderObj->Add(h1D);
+      }
+        
+        // select MIPs (version from AliTPCPerfomanceSummary)
+        fDeDxHisto->GetAxis(0)->SetRangeUser(35,60);
+        fDeDxHisto->GetAxis(2)->SetRangeUser(-20,19.999);
+        fDeDxHisto->GetAxis(3)->SetRangeUser(-250,249.999);
+        fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 0.99);
+        fDeDxHisto->GetAxis(5)->SetRangeUser(-1,0.99);
+        fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
+        fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
+        fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
+        fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
 
-    // select MIPs (version from AliTPCPerfomanceSummary)
-    fDeDxHisto->GetAxis(0)->SetRangeUser(35,60);
-    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,19.999);
-    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,249.999);
-    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 0.99);
-    fDeDxHisto->GetAxis(5)->SetRangeUser(-1,0.99);
-    fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
-    fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
-    fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
-    fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
+        selString = "mips";
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
+        
+        selString = "mips_C";
+        fDeDxHisto->GetAxis(5)->SetRangeUser(-3,0);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
+        
+        selString = "mips_A";
+        fDeDxHisto->GetAxis(5)->SetRangeUser(0,3);
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);    
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
+        
+        //////////////////////////////////////// atti new start
+        // 
+        // select (version from AliTPCPerfomanceSummary) electrons                                                                                                      
+        fDeDxHisto->GetAxis(0)->SetRangeUser(70,100); //dedx for electrons
+        fDeDxHisto->GetAxis(2)->SetRangeUser(-20,19.999);
+        fDeDxHisto->GetAxis(3)->SetRangeUser(-250,249.999);
+        fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 0.99);
+        fDeDxHisto->GetAxis(5)->SetRangeUser(-1,0.99);
+        fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
+        fDeDxHisto->GetAxis(7)->SetRangeUser(0.32,0.38); //momenta for electrons
+        fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
+        fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
 
-    selString = "mips";
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
-    
-    selString = "mips_C";
-    fDeDxHisto->GetAxis(5)->SetRangeUser(-3,0);
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
-    
-    selString = "mips_A";
-    fDeDxHisto->GetAxis(5)->SetRangeUser(0,3);
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 5, &selString);    
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 1, &selString);
-    
-    //////////////////////////////////////// atti new start
-    // 
-    // select (version from AliTPCPerfomanceSummary) electrons                                                                                                      
-    fDeDxHisto->GetAxis(0)->SetRangeUser(70,100); //dedx for electrons
-    fDeDxHisto->GetAxis(2)->SetRangeUser(-20,19.999);
-    fDeDxHisto->GetAxis(3)->SetRangeUser(-250,249.999);
-    fDeDxHisto->GetAxis(4)->SetRangeUser(-1, 0.99);
-    fDeDxHisto->GetAxis(5)->SetRangeUser(-1,0.99);
-    fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
-    fDeDxHisto->GetAxis(7)->SetRangeUser(0.32,0.38); //momenta for electrons
-    fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
-    fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
+        selString = "mipsele";
+        AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
+        //////////////////////////////////////// atti new stop
 
-    selString = "mipsele";
-    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
-    //////////////////////////////////////// atti new stop
+        //restore cuts
+        for (Int_t i=0; i<fDeDxHisto->GetNdimensions(); i++) {
+          fDeDxHisto->GetAxis(i)->SetRange(1,fDeDxHisto->GetAxis(i)->GetNbins());
+        }
 
-    //restore cuts
-    for (Int_t i=0; i<fDeDxHisto->GetNdimensions(); i++) {
-      fDeDxHisto->GetAxis(i)->SetRange(1,fDeDxHisto->GetAxis(i)->GetNbins());
+        printf("exportToFolder\n");
+        // export objects to analysis folder
+        fAnalysisFolder = ExportToFolder(aFolderObj);
+        if (fFolderObj) delete fFolderObj;
+        fFolderObj = aFolderObj;
+        aFolderObj=0;
+
+
+      for(Int_t i=0;i<10;i++) { 
+        if(f1[i]) delete f1[i]; f1[i]=0;
+      }
     }
-
-    printf("exportToFolder\n");
-    // export objects to analysis folder
-    fAnalysisFolder = ExportToFolder(aFolderObj);
-    if (fFolderObj) delete fFolderObj;
-    fFolderObj = aFolderObj;
-    aFolderObj=0;
-
-
-  for(Int_t i=0;i<10;i++) { 
-    if(f1[i]) delete f1[i]; f1[i]=0;
-  }
-
+    else {
+        printf("exportToFolder\n");
+        fAnalysisFolder = ExportToFolder(fFolderObj);
+    }
 }
 
 //_____________________________________________________________________________
@@ -596,3 +643,37 @@ TTree* AliPerformanceDEdx::CreateSummary()
     return 0;
 }
 
+void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
+    
+    if(vDeDxHisto[0] >= 35 && vDeDxHisto[0] < 60)
+    if(vDeDxHisto[2] >= -20 && vDeDxHisto[2] < 20)
+    if(vDeDxHisto[3] >= -250 && vDeDxHisto[3] < 250)
+    if(vDeDxHisto[4] >= -1 && vDeDxHisto[4] < 1)
+    if(vDeDxHisto[6] >= 80 && vDeDxHisto[6] < 160)
+    if(vDeDxHisto[7] >= 0.4 && vDeDxHisto[7] < 0.55)
+    if(vDeDxHisto[8] >= 80 && vDeDxHisto[8] < 160)
+    if(vDeDxHisto[9] >= 0.5 && vDeDxHisto[9] < 1.){
+        if(vDeDxHisto[5] > -1 && vDeDxHisto[5] < 1) h_tpc_dedx_mips_0->Fill(vDeDxHisto[0]);
+        if(vDeDxHisto[5] > -3 && vDeDxHisto[5] < 0){
+            
+           h_tpc_dedx_mips_c_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
+           h_tpc_dedx_mips_c_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
+        }
+        else if(vDeDxHisto[5] > 0 && vDeDxHisto[5] < 3){
+            h_tpc_dedx_mips_a_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
+            h_tpc_dedx_mips_a_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
+
+        }
+    }
+    if(vDeDxHisto[0] >= 70 && vDeDxHisto[0] < 100) /*dedx for electrons*/
+    if(vDeDxHisto[2] >= -20 && vDeDxHisto[2] < 19.999)
+    if(vDeDxHisto[3] >= -250 && vDeDxHisto[3] < 249.999)
+    if(vDeDxHisto[4] >= -1 && vDeDxHisto[4] < 0.99)
+    if(vDeDxHisto[5] >= -1 && vDeDxHisto[5] < 0.99)
+    if(vDeDxHisto[6] >= 80 && vDeDxHisto[6] < 160)
+    if(vDeDxHisto[7] >= 0.32 && vDeDxHisto[7] < 0.38)  /*momenta for electrons*/
+    if(vDeDxHisto[8] >= 80 && vDeDxHisto[8] < 160)
+    if(vDeDxHisto[9] >= 0.5 && vDeDxHisto[9] < 1.)
+    h_tpc_dedx_mipsele_0->Fill(vDeDxHisto[0]);
+
+}

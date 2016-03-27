@@ -5,8 +5,9 @@
 // Class keeps matching information between 
 // central barrel detectors.   
 // 
-// Author: J.Otwinowski 17/10/2009  
-// Changes by M.Knichel 22/10/2010
+// Author: J.Otwinowski   17/10/2009  
+// Changes by M.Knichel   22/10/2010
+// Changes by J.Salzwedel 14/10/2014
 //------------------------------------------------------------------------------
 
 class TString;
@@ -15,14 +16,13 @@ class TCanvas;
 class TH1F;
 class TH2F;
 
-class AliESDVertex;
-class AliESDtrack;
+class AliVTrack;
 class AliMCEvent;
 class AliStack;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
+class AliVEvent; 
+class AliVfriendEvent; 
+class AliVfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
 class AliMCInfoCuts;
@@ -34,14 +34,14 @@ class AliExternalTrackParam;
 
 class AliPerformanceMatch : public AliPerformanceObject {
 public :
-  AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
+  AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   virtual ~AliPerformanceMatch();
 
   // Init data members
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent,AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -56,13 +56,13 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process matching
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
-  //  void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
-  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPCConstrain(AliStack* const stack, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack); // - 01.11.2011
+  void ProcessTPCITS(AliStack* const stack, AliVTrack *const vTrack);
+  void ProcessTPCTRD(AliStack* const stack, AliVTrack *const vTrack, AliVfriendTrack *const friendTrack);
+  void ProcessITSTPC(Int_t trackIdx, AliVEvent* const vEvent, AliStack* const stack, AliVTrack *const vTrack);
+  void ProcessTPCConstrain(AliStack* const stack, AliVEvent *const vEvent, AliVTrack *const vTrack); // - 01.11.2011
 
   // Fill histogrrams
-  void FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec);
+  void FillHistograms(AliVTrack *const refParam, AliVTrack *const param, Bool_t isRec);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderRes",TString title = "Analysed Resolution histograms");
@@ -132,7 +132,7 @@ private:
   AliPerformanceMatch(const AliPerformanceMatch&); // not implemented
   AliPerformanceMatch& operator=(const AliPerformanceMatch&); // not implemented
 
-  ClassDef(AliPerformanceMatch,4);
+  ClassDef(AliPerformanceMatch,5);
 };
 
 #endif
