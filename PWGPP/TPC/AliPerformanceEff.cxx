@@ -7,7 +7,8 @@
 // the analysis (histograms/graphs) are stored in the folder which is 
 // a data member of AliPerformanceEff.
 // 
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 10/30/2014
 //------------------------------------------------------------------------------
 
 /*
@@ -37,20 +38,19 @@
 #include "THnSparse.h"
 
 // 
-#include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
 #include "AliRecInfoCuts.h" 
 #include "AliMCInfoCuts.h" 
 #include "AliLog.h" 
-#include "AliESDVertex.h" 
-#include "AliExternalTrackParam.h" 
 #include "AliTracker.h" 
-#include "AliESDEvent.h" 
+#include "AliVEvent.h"
 #include "AliMCEvent.h" 
 #include "AliMCParticle.h" 
 #include "AliHeader.h" 
 #include "AliGenEventHeader.h" 
 #include "AliStack.h" 
-#include "AliPerformanceEff.h" 
+#include "AliPerformanceEff.h"
+#include <iostream>
 
 using namespace std;
 
@@ -169,10 +169,10 @@ void AliPerformanceEff::Init()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
+void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const vEvent)
 {
   // Fill TPC only efficiency comparison information 
-  if(!esdEvent) return;
+  if(!vEvent) return;
   if(!mcEvent) return;
 
   AliStack *stack = mcEvent->Stack();
@@ -182,40 +182,40 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
   }
 
   Int_t *labelsRec =  NULL;
-  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsRec =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsRec) 
   {
      Printf("Cannot create labelsRec");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
 
   Int_t *labelsAllRec =  NULL;
-  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsAllRec =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsAllRec) { 
      delete  [] labelsRec;
      Printf("Cannot create labelsAllRec");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
 
   // loop over rec. tracks
-  AliESDtrack *track=0;
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+  AliVTrack *vTrack=0;
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
   { 
-    track = esdEvent->GetTrack(iTrack);
-    if(!track) continue;
-    if(track->Charge()==0) continue;
+    vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+    if(!vTrack) continue;
+    if(vTrack->Charge()==0) continue;
 
     // if not fUseKinkDaughters don't use tracks with kink index > 0
-    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+    if(!fUseKinkDaughters && vTrack->GetKinkIndex(0) > 0) continue;
 
-    //Int_t label = TMath::Abs(track->GetLabel()); 
-	Int_t label = track->GetTPCLabel(); //Use TPC-only label for TPC-only efficiency analysis
+    //Int_t label = TMath::Abs(vTrack->GetLabel()); 
+    Int_t label = vTrack->GetTPCLabel(); //Use TPC-only label for TPC-only efficiency analysis 
     labelsAllRec[iTrack]=label;
 
     // TPC only
-    if(IsRecTPC(track) != 0) { 
+    if(IsRecTPC(vTrack) != 0) { 
       labelsRec[iTrack]=label;
     }
 
@@ -224,26 +224,24 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
   // 
   // MC histograms for efficiency studies
   //
-  Int_t nPart  = stack->GetNtrack();
-  //Int_t nPart  = stack->GetNprimary();
+  Int_t nPart = mcEvent->GetNumberOfTracks();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
   {
-	if (iMc == 0) continue;		//Cannot distinguish between track or fake track
-    TParticle* particle = stack->Particle(iMc);
-    if (!particle) continue;
-    if (!particle->GetPDG()) continue; 
-    if (particle->GetPDG()->Charge() == 0.0) continue;
+    if (iMc == 0) continue; //Cannot distinguish between track or fake track
+    TParticle *mcPart = stack->Particle(iMc);
+    if (!mcPart) continue;
+    if (!mcPart->GetPDG()) continue; 
+    if (mcPart->GetPDG()->Charge() == 0.0/* || mcPart->Charge() == -99*/) continue;
       
-    // physical primary
-     Bool_t prim = stack->IsPhysicalPrimary(iMc);
-     if(!prim) continue;
+    // check for physical primary
+    if(!stack->IsPhysicalPrimary(iMc)) continue;
 
     // --- check for double filling in stack
     // use only particles with no daughters in the list of primaries
     Int_t nDaughters = 0;// particle->GetNDaughters();
     
-    for( Int_t iDaught=0; iDaught < particle->GetNDaughters(); iDaught++ ) {
-      if( particle->GetDaughter(iDaught) < stack->GetNprimary() )
+    for( Int_t iDaught=0; iDaught < mcPart->GetNDaughters(); iDaught++ ) {
+      if( mcPart->GetDaughter(iDaught) < stack->GetNprimary() )
 	nDaughters++;
     }
 
@@ -265,7 +263,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
 
     Bool_t recStatus = kFALSE;
     Int_t nClones = 0, nFakes = 0;
-    for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
+    for(Int_t iRec=0; iRec<vEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check reconstructed
       if(iMc == labelsRec[iRec]) 
@@ -278,19 +276,20 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
-    // transform Pdg to Pid
-    Int_t pid = TransformToPID(particle);
 
-    Float_t mceta =  particle->Eta();
-    Float_t mcphi =  particle->Phi();
-    if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = particle->Pt();
-    Float_t charge = 0.;
-    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
-    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
     
+    // transform Pdg to Pid
+    Int_t pid = TransformToPID(mcPart);
+    Float_t mceta =  mcPart->Eta();
+    Float_t mcphi =  mcPart->Phi();
+    if(mcphi<0) mcphi += 2.*TMath::Pi();
+    Float_t mcpt = mcPart->Pt();
+    Float_t charge = 0.;
+    if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
+
     // Fill histograms
     Double_t vEffHisto[9] = {mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
     fEffHisto->Fill(vEffHisto);
@@ -300,49 +299,57 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
 }
 
 //_____________________________________________________________________________
-void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
+void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *const vEvent)
 {
   // Fill TPC only efficiency comparison information for secondaries
 
-  if(!esdEvent) return;
+  if(!vEvent) return;
+  if(!mcEvent) return;
+
+  AliStack *stack = mcEvent->Stack();
+  if (!stack) {
+    AliDebug(AliLog::kError, "Stack not available for event");
+    return;
+  }
 
   Int_t *labelsRecSec =  NULL;
-  labelsRecSec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsRecSec =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsRecSec) 
   {
      Printf("Cannot create labelsRecSec");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRecSec[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsRecSec[i] = 0; }
 
   Int_t *labelsAllRecSec =  NULL;
-  labelsAllRecSec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsAllRecSec =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsAllRecSec) { 
      delete [] labelsRecSec;
      Printf("Cannot create labelsAllRecSec");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRecSec[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsAllRecSec[i] = 0; }
 
   // loop over rec. tracks
-  AliESDtrack *track=0;
+  AliVTrack *vTrack=0;
   Int_t multAll=0, multRec=0;
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
-  { 
-    track = esdEvent->GetTrack(iTrack);
-    if(!track) continue;
-    if(track->Charge()==0) continue;
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
+  {
+    vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+    if(!vTrack) continue;
+
+    if(vTrack->Charge()==0) continue;
 
     // if not fUseKinkDaughters don't use tracks with kink index > 0
-    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+    if(!fUseKinkDaughters && vTrack->GetKinkIndex(0) > 0) continue;
 
     //Int_t label = TMath::Abs(track->GetLabel());
-	Int_t label = track->GetTPCLabel(); //Use TPC-only label for TPC-only efficiency analysis
+    Int_t label = vTrack->GetTPCLabel(); //Use TPC-only label for TPC-only efficiency analysis
     labelsAllRecSec[multAll]=label;
     multAll++;
 
     // TPC only
-    if(IsRecTPC(track) != 0) {
+    if(IsRecTPC(vTrack) != 0) {
       labelsRecSec[multRec]=label;
       multRec++;
     }
@@ -351,44 +358,21 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
   // 
   // MC histograms for efficiency studies
   //
-  if(mcEvent)  { 
- 
-  AliStack *stack = mcEvent->Stack();
-  if (stack) {
-
-  Int_t nPart  = stack->GetNtrack();
-  //Int_t nPart  = stack->GetNprimary();
+  // **********************************************************
+  Int_t nPart  = mcEvent->GetNumberOfTracks();
+  //Int_t nPart  = stack->GetNprimary(); //can't use this, since we need secondary
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
   {
-	if (iMc == 0) continue;		//Cannot distinguish between track or fake track
-    TParticle* particle = stack->Particle(iMc);
-    if (!particle) continue;
-    if (!particle->GetPDG()) continue; 
-    if (particle->GetPDG()->Charge() == 0.0) continue;
+    if (iMc == 0) continue; //Cannot distinguish between track or fake track
+    TParticle* mcPart = stack->Particle(iMc);
+    if (!mcPart) continue;
+    if (!mcPart->GetPdgCode()) continue; 
+    if (mcPart->GetPDG()->Charge() == 0.0) continue;
       
-    // physical primary
-    Bool_t prim = stack->IsPhysicalPrimary(iMc);
+    // only accept secondaries which can be reconstructed at TPC
+    if(stack->IsPhysicalPrimary(iMc)) continue;
 
-    // only secondaries which can be reconstructed at TPC
-    if(prim) continue;
-
-    //Float_t radius = TMath::Sqrt(particle->Vx()*particle->Vx()+particle->Vy()*particle->Vy()+particle->Vz()*particle->Vz());
-    //if(radius > fCutsMC->GetMaxR()) continue;
-
-    // only secondary electrons from gamma conversion
-    //if( TMath::Abs(particle->GetPdgCode())!=fCutsMC->GetEM() ||   particle->GetUniqueID() != 5) continue;
-
-    /*Bool_t findable = kFALSE;
-    for(Int_t iRec=0; iRec<multAll; ++iRec) 
-    {
-      // check findable
-      if(iMc == labelsAllRecSec[iRec]) 
-      {
-        findable = IsFindable(mcEvent,iMc);
-	break;
-      }
-    }*/
-	Bool_t findable = IsFindable(mcEvent,iMc);
+    Bool_t findable = IsFindable(mcEvent,iMc);
 
     Bool_t recStatus = kFALSE;
 	Int_t nClones = 0, nFakes = 0;
@@ -405,37 +389,36 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
-    Int_t pid = TransformToPID(particle);
+    Int_t pid = TransformToPID(mcPart);
 
-    Float_t mceta =  particle->Eta();
-    Float_t mcphi =  particle->Phi();
+    Float_t mceta =  mcPart->Eta();
+    Float_t mcphi =  mcPart->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = particle->Pt();
-    Float_t mcR = particle->R();
+    Float_t mcpt = mcPart->Pt();
+    Float_t mcR = mcPart->R();
 
     // get info about mother
-    Int_t motherLabel = particle->GetMother(0);
+    Int_t motherLabel = mcPart->GetMother(0);
     if(motherLabel < 0) continue;
     TParticle *mother = stack->Particle(motherLabel);
     if(!mother) continue; 
 
-    Float_t mother_eta = mother->Eta();
-    Float_t mother_phi = mother->Phi();
-    if(mother_phi<0) mother_phi += 2.*TMath::Pi();
+    Float_t motherEta = mother->Eta();
+    Float_t motherPhi = mother->Phi();
+    if(motherPhi<0) motherPhi += 2.*TMath::Pi();
 
     Float_t charge = 0.;
-    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
-    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+    if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
-    Double_t vEffSecHisto[12] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), mcR, mother_phi, mother_eta, static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
+    Double_t vEffSecHisto[12] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), mcR, motherPhi, motherEta, static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
     fEffSecHisto->Fill(vEffSecHisto);
   }
-  }
-  }
+
 
   if(labelsRecSec) delete [] labelsRecSec; labelsRecSec = 0;
   if(labelsAllRecSec) delete [] labelsAllRecSec; labelsAllRecSec = 0;
@@ -445,114 +428,103 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
 
 
 //_____________________________________________________________________________
-void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
+void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliVEvent *const vEvent)
 {
   // Fill efficiency comparison information
 
-  if(!esdEvent) return;
+  if(!vEvent) return;
   if(!mcEvent) return;
 
   AliStack *stack = mcEvent->Stack();
   if (!stack) {
-    AliDebug(AliLog::kError, "Stack not available");
+    AliDebug(AliLog::kError, "Stack not available for event");
     return;
   }
 
   Int_t *labelsRecTPCITS =  NULL;
-  labelsRecTPCITS =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsRecTPCITS =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsRecTPCITS) 
   {
      Printf("Cannot create labelsRecTPCITS");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRecTPCITS[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsRecTPCITS[i] = 0; }
 
   Int_t *labelsAllRecTPCITS =  NULL;
-  labelsAllRecTPCITS =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsAllRecTPCITS =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsAllRecTPCITS) { 
      delete [] labelsRecTPCITS;
      Printf("Cannot create labelsAllRecTPCITS");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRecTPCITS[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsAllRecTPCITS[i] = 0; }
 
   // loop over rec. tracks
-  AliESDtrack *track=0;
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+  AliVTrack *vTrack=0;
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
   { 
-    track = esdEvent->GetTrack(iTrack);
-    if(!track) continue;
-    if(track->Charge()==0) continue;
+    vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+    if(!vTrack) continue;
+    if(vTrack->Charge()==0) continue;
 
     // if not fUseKinkDaughters don't use tracks with kink index > 0
-    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+    if(!fUseKinkDaughters && vTrack->GetKinkIndex(0) > 0) continue;
 
     //Int_t label = TMath::Abs(track->GetLabel()); 
-	Int_t label = track->GetLabel();  //Use global label for combined efficiency analysis
+    Int_t label = vTrack->GetLabel();  //Use global label for combined efficiency analysis
     labelsAllRecTPCITS[iTrack]=label;
 
     // iTPC+ITS
-    if(IsRecTPCITS(track) != 0) 
+    if(IsRecTPCITS(vTrack) != 0) 
       labelsRecTPCITS[iTrack]=label;
   }
 
   // 
   // MC histograms for efficiency studies
   //
-  //Int_t nPart  = stack->GetNtrack();
-  Int_t nPart  = stack->GetNprimary();
+  //Int_t nPart  = mcEvent->GetNumberOfTracks();
+  Int_t nPart = mcEvent->GetNumberOfPrimaries();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
   {
-	if (iMc == 0) continue;		//Cannot distinguish between track or fake track
-    TParticle* particle = stack->Particle(iMc);
-    if (!particle) continue;
-    if (!particle->GetPDG()) continue; 
-    if (particle->GetPDG()->Charge() == 0.0) continue;
+    if (iMc == 0) continue; //Cannot distinguish between track or fake track
+    TParticle *mcPart = stack->Particle(iMc);
+    if (!mcPart) continue;
+    if (!mcPart->GetPdgCode()) continue; 
+    if (mcPart->GetPDG()->Charge() == 0.0) continue;
       
-    // physical primary
-    Bool_t prim = stack->IsPhysicalPrimary(iMc);
-    if(!prim) continue;
+    // check for physical primary
+    if(!stack->IsPhysicalPrimary(iMc)) continue;
 
-    /*Bool_t findable = kFALSE;
-    for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
-    {
-      // check findable
-      if(iMc == labelsAllRecTPCITS[iRec]) 
-      {
-        findable = IsFindable(mcEvent,iMc);
-	break;
-      }
-    }*/
-	Bool_t findable = IsFindable(mcEvent,iMc);
+    Bool_t findable = IsFindable(mcEvent,iMc);
 
     Bool_t recStatus = kFALSE;
-	Int_t nClones = 0, nFakes = 0;
-    for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
+    Int_t nClones = 0, nFakes = 0;
+    for(Int_t iRec=0; iRec<vEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check reconstructed
       if(iMc == labelsRecTPCITS[iRec]) 
       {
         if (recStatus && nClones < fgkMaxClones) nClones++;
-		recStatus = kTRUE;
+	recStatus = kTRUE;
       }
-	  //In order to relate the fake track to track parameters, we assign it to the best matching ESD track.
-	  if (labelsRecTPCITS[iRec] < 0 && -labelsRecTPCITS[iRec] == iMc && nFakes < fgkMaxFakes) nFakes++;
+      //In order to relate the fake track to track parameters, we assign it to the best matching reconstructed track.
+      if (labelsRecTPCITS[iRec] < 0 && -labelsRecTPCITS[iRec] == iMc && nFakes < fgkMaxFakes) nFakes++;
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
-    Int_t pid = TransformToPID(particle);
+    Int_t pid = TransformToPID(mcPart);
 
-    Float_t mceta =  particle->Eta();
-    Float_t mcphi =  particle->Phi();
+    Float_t mceta =  mcPart->Eta();
+    Float_t mcphi =  mcPart->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = particle->Pt();
+    Float_t mcpt = mcPart->Pt();
 
     Float_t charge = 0.;
-    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
-    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+    if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
     
     // Fill histograms
     Double_t vEffHisto[9] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
@@ -564,116 +536,99 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
 }
 
 //_____________________________________________________________________________
-void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
+void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliVEvent *const vEvent)
 {
-  // Process comparison information 
-  if(!esdEvent) return;
+  // Process MC vs reconstructed comparison information for TPC-only tracks
+  // constrained to the primary vertex
+  if(!vEvent) return;
   if(!mcEvent) return;
 
   AliStack *stack = mcEvent->Stack();
   if (!stack) {
-    AliDebug(AliLog::kError, "Stack not available");
+    AliDebug(AliLog::kError, "Stack not available for event");
     return;
   }
 
   Int_t *labelsRecConstrained =  NULL;
-  labelsRecConstrained =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsRecConstrained =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsRecConstrained) 
   {
      Printf("Cannot create labelsRecConstrained");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRecConstrained[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsRecConstrained[i] = 0; }
 
   Int_t *labelsAllRecConstrained =  NULL;
-  labelsAllRecConstrained =  new Int_t[esdEvent->GetNumberOfTracks()];
+  labelsAllRecConstrained =  new Int_t[vEvent->GetNumberOfTracks()];
   if(!labelsAllRecConstrained) { 
      delete [] labelsRecConstrained;
      Printf("Cannot create labelsAllRecConstrained");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRecConstrained[i] = 0; }
+  for(Int_t i=0;i<vEvent->GetNumberOfTracks();i++) { labelsAllRecConstrained[i] = 0; }
 
   // loop over rec. tracks
-  AliESDtrack *track=0;
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+  AliVTrack *vTrack=0;
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
   { 
-    track = esdEvent->GetTrack(iTrack);
-    if(!track) continue;
-    if(track->Charge()==0) continue;
+    vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+    if(!vTrack) continue;
 
     // if not fUseKinkDaughters don't use tracks with kink index > 0
-    if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
+    if(!fUseKinkDaughters && vTrack->GetKinkIndex(0) > 0) continue;
 
     //Int_t label = TMath::Abs(track->GetLabel()); 
-	Int_t label = track->GetLabel(); 
+    Int_t label = vTrack->GetLabel();
     labelsAllRecConstrained[iTrack]=label;
 
     // Constrained
-    if(IsRecConstrained(track) != 0) 
+    if(IsRecConstrained(vTrack) != 0) 
       labelsRecConstrained[iTrack]=label;
-
   }
 
   // 
   // MC histograms for efficiency studies
   //
- 
-
-  //Int_t nPart  = stack->GetNtrack();
-  Int_t nPart  = stack->GetNprimary();
+  Int_t nPart = mcEvent->GetNumberOfPrimaries();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
   {
-	if (iMc == 0) continue;		//Cannot distinguish between track or fake track
-    TParticle* particle = stack->Particle(iMc);
-    if (!particle) continue;
-    if (!particle->GetPDG()) continue; 
-    if (particle->GetPDG()->Charge() == 0.0) continue;
+    if (iMc == 0) continue; //Cannot distinguish between track or fake track
+    TParticle *mcPart = stack->Particle(iMc);
+    if (!mcPart) continue;
+    if (!mcPart->GetPdgCode()) continue; 
+    if (mcPart->GetPDG()->Charge() == 0.0) continue;
       
-    // physical primary
-    Bool_t prim = stack->IsPhysicalPrimary(iMc);
-    if(!prim) continue;
+    // check for physical primary
+    if(!stack->IsPhysicalPrimary(iMc)) continue;
 
-    /*Bool_t findable = kFALSE;
-    for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
-    {
-      // check findable
-      if(iMc == labelsAllRecConstrained[iRec]) 
-      {
-        findable = IsFindable(mcEvent,iMc);
-	break;
-      }
-    }*/
-	Bool_t findable = IsFindable(mcEvent,iMc);
+    Bool_t findable = IsFindable(mcEvent,iMc);
 
     Bool_t recStatus = kFALSE;
-	Int_t nClones = 0, nFakes = 0;
-    for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
+    Int_t nClones = 0, nFakes = 0;
+    for(Int_t iRec=0; iRec<vEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check reconstructed
       if(iMc == labelsRecConstrained[iRec]) 
       {
         if (recStatus && nClones < fgkMaxClones) nClones++;
-		recStatus = kTRUE;
+	recStatus = kTRUE;
       }
-	  //In order to relate the fake track to track parameters, we assign it to the best matching ESD track.
-	  if (labelsRecConstrained[iRec] < 0 && -labelsRecConstrained[iRec] == iMc && nFakes < fgkMaxFakes) nFakes++;
+      //In order to relate the fake track to track parameters, we assign it to the best matching reconstructed track.
+      if (labelsRecConstrained[iRec] < 0 && -labelsRecConstrained[iRec] == iMc && nFakes < fgkMaxFakes) nFakes++;
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
-    Int_t pid = TransformToPID(particle);
-
-    Float_t mceta =  particle->Eta();
-    Float_t mcphi =  particle->Phi();
+    Int_t pid = TransformToPID(mcPart);
+    Float_t mceta =  mcPart->Eta();
+    Float_t mcphi =  mcPart->Phi();
     if(mcphi<0) mcphi += 2.*TMath::Pi();
-    Float_t mcpt = particle->Pt();
-
+    Float_t mcpt = mcPart->Pt();
     Float_t charge = 0.;
-    if (particle->GetPDG()->Charge() < 0)  charge = -1.;    
-    else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
+    if (mcPart->GetPDG()->Charge() < 0)  charge = -1.;    
+    else if (mcPart->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
     Double_t vEffHisto[9] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
@@ -685,13 +640,13 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
 }
 
 //_____________________________________________________________________________
-void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
+void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend)
 {
   // Process comparison information 
   //
-  if(!esdEvent) 
+  if(!vEvent) 
   {
-    Error("Exec","esdEvent not available");
+    Error("Exec","vEvent not available");
     return;
   }
   AliHeader* header = 0;
@@ -730,9 +685,9 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     return;
   } 
 
-  // use ESD friends
-  if(bUseESDfriend) {
-    if(!esdFriend) {
+  // use V friends
+  if(bUseVfriend) {
+    if(!vFriendEvent) {
       Error("Exec","esdFriend not available");
       return;
     }
@@ -741,10 +696,10 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   //
   //  Process events
   //
-  if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,esdEvent);
-  else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,esdEvent);
-  else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,esdEvent);
-  else if(GetAnalysisMode() == 5) ProcessTPCSec(mcEvent,esdEvent);
+  if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,vEvent);
+  else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,vEvent);
+  else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,vEvent);
+  else if(GetAnalysisMode() == 5) ProcessTPCSec(mcEvent,vEvent);
   else {
     printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
     return;
@@ -752,18 +707,20 @@ void AliPerformanceEff::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 }
 
 //_____________________________________________________________________________
-Int_t AliPerformanceEff::TransformToPID(TParticle *particle) 
+Int_t AliPerformanceEff::TransformToPID(TParticle *mcPart) 
 {
+
+  
 // transform Pdg to Pid
 // Pdg convension is different for hadrons and leptons 
 // (e.g. K+/K- = 321/-321; e+/e- = -11/11 ) 
 
   Int_t pid = -1;
-  if( TMath::Abs(particle->GetPdgCode())==fCutsMC->GetEM() ) pid = 0; 
-  if( TMath::Abs(particle->GetPdgCode())==fCutsMC->GetMuM() ) pid = 1; 
-  if( TMath::Abs(particle->GetPdgCode())==fCutsMC->GetPiP() ) pid = 2; 
-  if( TMath::Abs(particle->GetPdgCode())==fCutsMC->GetKP() ) pid = 3; 
-  if( TMath::Abs(particle->GetPdgCode())==fCutsMC->GetProt() ) pid = 4; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetEM() ) pid = 0; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetMuM() ) pid = 1; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetPiP() ) pid = 2; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetKP() ) pid = 3; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetProt() ) pid = 4; 
 
 return pid;
 }
@@ -771,114 +728,75 @@ return pid;
 //_____________________________________________________________________________
 Bool_t AliPerformanceEff::IsFindable(const AliMCEvent *mcEvent, Int_t label) 
 {
-//
-// Findfindable tracks
-//
-if(!mcEvent) return kFALSE;
+  //
+  // Determine if track is findable
+  //
+  if(!mcEvent) return kFALSE;
 
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return kFALSE;
 
-  Int_t counter; 
+  Int_t counter;
   Float_t tpcTrackLength = mcParticle->GetTPCTrackLength(AliTracker::GetBz(),0.05,counter,3.0); 
   //printf("tpcTrackLength %f \n", tpcTrackLength);
-
-return (tpcTrackLength>fCutsMC->GetMinTrackLength());    
+  return (tpcTrackLength>fCutsMC->GetMinTrackLength());
 }
 
 //_____________________________________________________________________________
-Bool_t AliPerformanceEff::IsRecTPC(AliESDtrack *esdTrack) 
+Bool_t AliPerformanceEff::IsRecTPC(AliVTrack *vTrack) 
 {
 //
 // Check whether track is reconstructed in TPC
 //
-if(!esdTrack) return kFALSE;
-
-  const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
-  if(!track) return kFALSE;
-
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
+  if(!vTrack) return kFALSE;
 
   Bool_t recStatus = kFALSE;
-  if(esdTrack->GetTPCNcls()>fCutsRC->GetMinNClustersTPC()) recStatus = kTRUE; 
+  const AliExternalTrackParam *track = vTrack->GetTPCInnerParam();
+  if(!track) return recStatus;
+  
 
-  /*
-  if( TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && 
-      TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ())
-  {
-    recStatus = kTRUE;
-  }
-  */
+  if(vTrack->GetTPCNcls()>fCutsRC->GetMinNClustersTPC()) recStatus = kTRUE;
 
-return recStatus;
+  return recStatus;
 }
 
 //_____________________________________________________________________________
-Bool_t AliPerformanceEff::IsRecTPCITS(AliESDtrack *esdTrack) 
+Bool_t AliPerformanceEff::IsRecTPCITS(AliVTrack *vTrack) 
 {
 //
 // Check whether track is reconstructed in TPCITS
 //
-if(!esdTrack) return kFALSE;
-
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParameters(dca,cov);
+  if(!vTrack) return kFALSE;
 
   Bool_t recStatus = kFALSE;
 
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return kFALSE; // TPC refit
-  if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0) return kFALSE; // ITS refit
-  if (esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
-  //if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0) return kFALSE; // ITS refit
-  //Int_t clusterITS[200];
-  //if(esdTrack->GetITSclusters(clusterITS)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return recStatus; // TPC refit
+  if ((vTrack->GetStatus()&AliVTrack::kITSrefit)==0) return recStatus; // ITS refit
+  if (vTrack && vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return recStatus;  // min. nb. ITS clusters
 
   recStatus = kTRUE;
-  /*
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && 
-     TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ())
-  {
-    recStatus = kTRUE;
-  }
-  */
-
-return recStatus;
+  return recStatus;
 }
 
 //_____________________________________________________________________________
-Bool_t AliPerformanceEff::IsRecConstrained(AliESDtrack *esdTrack) 
+Bool_t AliPerformanceEff::IsRecConstrained(AliVTrack *vTrack) 
 {
 //
-// Check whether track is reconstructed in IsRecConstrained
+// Check whether track is reconstructed in IsRecConstrained.
+// Here we are looking for TPC-only tracks constrained to the primary
+// vertex.
 //
-  if(!esdTrack) return kFALSE;
 
-  const AliExternalTrackParam * track = esdTrack->GetConstrainedParam();
-  if(!track) return kFALSE;
-
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParameters(dca,cov);
-  //Int_t label = TMath::Abs(esdTrack->GetLabel()); 
-
+  if(!vTrack) return kFALSE;
   Bool_t recStatus = kFALSE;
 
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return kFALSE; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return kFALSE; // min. nb. TPC clusters
-  Int_t clusterITS[200];
-  if(esdTrack->GetITSclusters(clusterITS)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
-
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return kFALSE; // TPC refit
+  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return kFALSE; // min. nb. TPC clusters
+  const AliExternalTrackParam * track = vTrack->GetConstrainedParam();
+  if(!track) return recStatus;
+  if(vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
   recStatus = kTRUE;
-
-  /*
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && 
-     TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ())
-  {
-    recStatus = kTRUE;
-  }
-  */
-
-return recStatus;
+  return recStatus;
 }
 
 //_____________________________________________________________________________
@@ -903,9 +821,9 @@ Long64_t AliPerformanceEff::Merge(TCollection* const list)
     AliPerformanceEff* entry = dynamic_cast<AliPerformanceEff*>(obj);
     if (entry == 0) continue; 
   
-     fEffHisto->Add(entry->fEffHisto);
-     fEffSecHisto->Add(entry->fEffSecHisto);
-  count++;
+    fEffHisto->Add(entry->fEffHisto);
+    fEffSecHisto->Add(entry->fEffSecHisto);
+    count++;
   }
 
 return count;
