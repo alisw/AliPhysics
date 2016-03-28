@@ -928,7 +928,11 @@ Long64_t AliPerformanceTPC::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!merge) { fTPCTrackHisto->Reset(); fTPCClustHisto->Reset(); fTPCEventHisto->Reset(); }
+  if (!merge) {
+      if(fTPCTrackHisto) fTPCTrackHisto->Reset();
+      if(fTPCClustHisto)fTPCClustHisto->Reset();
+      if(fTPCEventHisto) fTPCEventHisto->Reset();
+  }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;
