@@ -8,6 +8,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
@@ -34,10 +35,11 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
   fTrackParticleArrayName(""),
+  hFakeFactorCutProfile(0),
   fJetOutputMode(0),
   fUseFakejetRejection(kFALSE),
-  fMinFakeFactor(0),
-  fMaxFakeFactor(0),
+  fMinFakeFactorPercentage(0),
+  fMaxFakeFactorPercentage(0),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -58,10 +60,11 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTracksOutput(),
   fJetParticleArrayName("JetsDPhiBasicParticles"),
   fTrackParticleArrayName(""),
+  hFakeFactorCutProfile(0),
   fJetOutputMode(0),
   fUseFakejetRejection(kFALSE),
-  fMinFakeFactor(0),
-  fMaxFakeFactor(0),
+  fMinFakeFactorPercentage(0),
+  fMaxFakeFactorPercentage(0),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -352,7 +355,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
         {
           Double_t fakeFactor = CalculateFakeFactor(leadingJet);
           FillHistogram("hFakeFactor", fakeFactor, fCent);
-          if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
+          if( (fakeFactor >= fMinFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
             new ((*fJetsOutput)[count]) AliPicoTrack(leadingJet->Pt() - fJetsCont->GetRhoVal()*leadingJet->Area(), leadingJet->Eta(), leadingJet->Phi(), leadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
         }
         else
@@ -369,7 +372,9 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
         {
           Double_t fakeFactor = CalculateFakeFactor(subleadingJet);
           FillHistogram("hFakeFactor", fakeFactor, fCent);
-          if((fakeFactor >= fMinFakeFactor) && (fakeFactor < fMaxFakeFactor))
+
+
+          if( (fakeFactor >= fMinFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
             new ((*fJetsOutput)[count]) AliPicoTrack(subleadingJet->Pt() - fJetsCont->GetRhoVal()*subleadingJet->Area(), subleadingJet->Eta(), subleadingJet->Phi(), subleadingJet->Charge(), 0, 0); // only Pt,Eta,Phi are interesting for correlations;
         }
         else
@@ -389,7 +394,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
         {
           Double_t fakeFactor = CalculateFakeFactor(jet);
           FillHistogram("hFakeFactor", fakeFactor, fCent);
-          if((fakeFactor < fMinFakeFactor) || (fakeFactor >= fMaxFakeFactor))
+          if( (fakeFactor >= fMinFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
           {
             jet = fJetsCont->GetNextAcceptJet(); 
             continue;
