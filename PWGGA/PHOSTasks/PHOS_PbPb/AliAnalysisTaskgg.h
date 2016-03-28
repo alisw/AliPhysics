@@ -37,6 +37,8 @@ protected:
   Int_t ConvertRunNumber(Int_t run) ; 
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
   
+  Int_t JetRejection(Int_t module) const; //Looks is there is a jet around
+  
   
 private:
   AliAnalysisTaskgg(const AliAnalysisTaskgg&); // not implemented
