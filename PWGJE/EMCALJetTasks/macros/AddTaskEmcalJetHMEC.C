@@ -52,8 +52,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   //-------------------------------------------------------
   
   // Determine cluster and track names
-  TString trackName(ntracks);
-  TString clusName(nclusters);
+  TString trackName(nTracks);
+  TString clusName(nCaloClusters);
 
   if (trackName == "usedefault") {
     if (dataType == kESD) {
@@ -110,12 +110,12 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
 
   // Add Containers
   // Clusters
-  AliClusterContainer * clusterContainer = correlationtask->AddClusterContainer(nCaloClusters);
+  AliClusterContainer * clusterContainer = correlationtask->AddClusterContainer(clusName);
   clusterContainer->SetMinE(3);
   // Tracks
-  AliTrackContainer * trackContainer = correlationtask->AddTrackContainer(nTracks);
+  AliTrackContainer * trackContainer = correlationtask->AddTrackContainer(trackName);
   trackContainer->SetMinPt(3);
-  trackContainer->SetEtaLimits(-1.0*TrkEta, TrkEta)
+  trackContainer->SetEtaLimits(-1.0*TrkEta, TrkEta);
   // Jets
   cout <<"Jet name: " << nJets;
   AliJetContainer * jetContainer = correlationtask->AddJetContainer(AliJetContainer::kFullJet,
