@@ -751,7 +751,12 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!merge) { fResolHisto->Reset(); fPullHisto->Reset(); fTrackingEffHisto->Reset(); fTPCConstrain->Reset(); }
+  if (!merge) {
+      if(fResolHisto) fResolHisto->Reset();
+      if(fPullHisto) fPullHisto->Reset();
+      if(fTrackingEffHisto) fTrackingEffHisto->Reset();
+      if(fTPCConstrain) fTPCConstrain->Reset();
+  }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;
