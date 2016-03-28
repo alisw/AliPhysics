@@ -77,7 +77,6 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	, fTree(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
-	, fCheckSixPion(0)
 	, fCheckV0FMD(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fIsMC(0)
@@ -120,6 +119,10 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	// standard constructor (the one which should be used)
 	//
 	// slot in TaskSE must start from 1
+
+	for (Int_t i = 0; i < 3; i++) {
+		fVertex[i] = 0.;
+	}
 	
 	// Two-track
 	for (Int_t i = 0; i < 2; i++) {
@@ -197,7 +200,6 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fTree(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
-	, fCheckSixPion(0)
 	, fCheckV0FMD(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fIsMC(0)
@@ -236,6 +238,9 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fRunNumber(0)
 	, fPeriod(0)
 {
+	for (Int_t i = 0; i < 3; i++) {
+		fVertex[i] = 0.;
+	}
 	// Two-track
 	for (Int_t i = 0; i < 2; i++) {
 		fTwoPionMask_TPC[i] = 0;
@@ -357,6 +362,9 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 	fTree->Branch("CheckFourPion",&fCheckFourPion);
 	fTree->Branch("CheckV0FMD",&fCheckV0FMD);
 	fTree->Branch("CheckTwoPion_ITSSA",&fCheckTwoPion_ITSSA);
+	for (Int_t i = 0; i < 3; i++) {
+		fTree->Branch(Form("Vertex_%d",i),&fVertex[i]);
+	}
 	//2 track
 	for (Int_t i = 0; i < 2; i++) {
 		fTree->Branch(Form("TwoPionMask_TPC_%d",i),&fTwoPionMask_TPC[i]);
@@ -380,7 +388,7 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 			}
 		}
 	}
-	//4 track
+	//2 track
 	for (Int_t i = 0; i < 4; i++) {
 		fTree->Branch(Form("FourPionMask_TPC_%d",i),&fFourPionMask_TPC[i]);
 		fTree->Branch(Form("FourPionMask_TOF_%d",i),&fFourPionMask_TOF[i]);
@@ -423,9 +431,10 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 		fHistEvent = new TH1D("fHistEvent","Number of Events for each selection",kAll,0,kAll);
 		fHistEvent->GetXaxis()->SetBinLabel(kInput+1,"InputEvent");
 		fHistEvent->GetXaxis()->SetBinLabel(kMCCheck+1,"MCEvent");
-		fHistEvent->GetXaxis()->SetBinLabel(kClusterCut+1,"ClusterCut");
+		fHistEvent->GetXaxis()->SetBinLabel(kOfflineCut+1,"OfflineCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kVtxCut+1,"VertexCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kPileUpCut+1,"PileupCut");
+		fHistEvent->GetXaxis()->SetBinLabel(kClusterCut+1,"ClusterCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kMBOR+1,"MBOR");
 		fHistEvent->GetXaxis()->SetBinLabel(kMBAND+1,"MBAND");
 		fHistEvent->GetXaxis()->SetBinLabel(kNG+1,"NoGap");
@@ -595,6 +604,9 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 void AliAnalysisTaskCDTree::UserExec(Option_t *)
 {
 	// Initialize all tree varialbles------------------------------------------
+	for (Int_t i = 0; i < 3; i++) {
+		fVertex[i] = -999.;
+	}
 	for (Int_t i = 0; i < 2; i++) {
 		fTwoPionMask_TPC[i] = 0;
 		fTwoPionMask_TOF[i] = 0;
@@ -696,13 +708,13 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 		PostOutputs();
 		return;
 	}
-	//fHistEvent->Fill(kInput);
+	fHistEvent->Fill(kOfflineCut);
 	//-------------------------------------------------------------------------
 
 	// EVENT SELECTION---------------------------------------------------------
 	Int_t kfo = 0;
 	Int_t ninnerp=-999, nouterp=-999;
-	Bool_t eventIsValid = CutEvent(fESDEvent, fHistSPDFiredChips,0x0,fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ, fSPDTrkvsCls_bf, fSPDTrkvsCls_af, fHistEvent);
+	Bool_t eventIsValid = CutEvent(fESDEvent, fHistSPDFiredChips,0x0,fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ, fVertex);
 	if (!eventIsValid) {
 		PostOutputs();
 		return;
@@ -726,6 +738,21 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 	else if (fRunNumber < 130851) fPeriod = 4;//10e
 	else if (fRunNumber < 135032) fPeriod = 5;//10f
 	else fPeriod = 6;//12b (8 TeV)
+	//-------------------------------------------------------------------------
+
+	//Cluster Cut--------------------------------------------------------------
+	const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
+	fSPDTrkvsCls_bf->Fill(mult->GetNumberOfTracklets(),fESDEvent->GetNumberOfITSClusters(0)+fESDEvent->GetNumberOfITSClusters(1));
+	Double_t cut_slope = 4.;
+	Double_t cut_offset = 65.;
+	Bool_t IsClusterCut = kFALSE;
+	if (fESDEvent->GetNumberOfITSClusters(0) + fESDEvent->GetNumberOfITSClusters(1) <= (cut_offset+cut_slope*mult->GetNumberOfTracklets())) IsClusterCut=kTRUE;
+	if (IsClusterCut) fSPDTrkvsCls_af->Fill(mult->GetNumberOfTracklets(),fESDEvent->GetNumberOfITSClusters(0)+fESDEvent->GetNumberOfITSClusters(1));
+	if (!IsClusterCut) {
+		PostOutputs();
+		return;
+	}
+	fHistEvent->Fill(kClusterCut);
 	//-------------------------------------------------------------------------
 
 	// TRIGGER ANALYSIS -------------------------------------------------------
@@ -1091,20 +1118,8 @@ void AliAnalysisTaskCDTree::PostOutputs()
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskCDTree::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 		TH1* hfochans, 
-		TH1 *hpriVtxX, TH1 *hpriVtxY, TH1 *hpriVtxZ, 
-		TH2D *hSPDTrkvsCls_bf, TH2D *hSPDTrkvsCls_af, TH1D *hEvent)
+		TH1 *hpriVtxX, TH1 *hpriVtxY, TH1 *hpriVtxZ, Double_t *hVertex)
 {
-	//Cluster Cut
-	const AliMultiplicity *mult = ESDEvent->GetMultiplicity();
-	hSPDTrkvsCls_bf->Fill(mult->GetNumberOfTracklets(),ESDEvent->GetNumberOfITSClusters(0)+ESDEvent->GetNumberOfITSClusters(1));
-	Double_t cut_slope = 4.;
-	Double_t cut_offset = 65.;
-	Bool_t IsClusterCut = kFALSE;
-	if (ESDEvent->GetNumberOfITSClusters(0) + ESDEvent->GetNumberOfITSClusters(1) <= (cut_offset+cut_slope*mult->GetNumberOfTracklets())) IsClusterCut=kTRUE;
-	if (IsClusterCut) hSPDTrkvsCls_af->Fill(mult->GetNumberOfTracklets(),ESDEvent->GetNumberOfITSClusters(0)+ESDEvent->GetNumberOfITSClusters(1));
-	if (!IsClusterCut) return kFALSE;
-	hEvent->Fill(kClusterCut);
-
 	AliTriggerAnalysis triggerAnalysis;
 
 	// SPD FastOR check-------------------------------------------------------
@@ -1136,6 +1151,10 @@ Bool_t AliAnalysisTaskCDTree::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 	}
 	const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < 10.);
 	if(!kpriv) return kFALSE;
+
+	hVertex[0] = vertex->GetX();
+	hVertex[1] = vertex->GetY();
+	hVertex[2] = vertex->GetZ();
 
 	if(hpriVtxX) hpriVtxX->Fill(vertex->GetX());
 	if(hpriVtxY) hpriVtxY->Fill(vertex->GetY());
