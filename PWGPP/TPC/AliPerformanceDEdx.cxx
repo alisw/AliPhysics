@@ -341,7 +341,9 @@ Long64_t AliPerformanceDEdx::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!merge) { fDeDxHisto->Reset(); }
+  if (!merge) {
+      if(fDeDxHisto) fDeDxHisto->Reset();
+  }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;  
 
