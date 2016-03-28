@@ -93,7 +93,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   Int_t  		 fMixingTracks;		       // size of track buffer for event mixing
   Int_t                  fNMIXtracks;              // threshold to use event pool # tracks
   Int_t                  fNMIXevents;              // threshold to use event pool # events
-  TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
+  TObjArray*             CloneAndReduceTrackList();
 
   // event selection types
   UInt_t         fTriggerEventType;

@@ -26,12 +26,14 @@
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
-#include "AliESDCaloCluster.h"
 #include "AliESDVertex.h"
 #include "AliCentrality.h"
 #include "AliAODJet.h"
 #include "AliEmcalJet.h"
 #include "AliESDtrackCuts.h"
+
+#include "AliClusterContainer.h"
+#include "AliTrackContainer.h"
 
 #include "TVector3.h"
 #include "AliPicoTrack.h"
@@ -44,7 +46,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   AliAnalysisTaskEmcalJet("HMEC",kFALSE),
   fTracksName(""),
   fJetsName(""),
-  fCaloClustersName(""),
   fPhimin(-10), 
   fPhimax(10),
   fEtamin(-0.9), 
@@ -100,7 +101,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
   fTracksName(""),
   fJetsName(""),
-  fCaloClustersName(""),
   fPhimin(-10), 
   fPhimax(10),
   fEtamin(-0.9), 
@@ -406,32 +406,30 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   fHistCentrality->Fill(fCent);
 
   TClonesArray *jets = 0;
-  TClonesArray *tracks = 0;
-  TClonesArray *clusters = 0;
 
-  clusters = dynamic_cast<TClonesArray*>(list->FindObject( fCaloClustersName ));
+  AliClusterContainer * clusters = GetClusterContainer(0);
   if (!clusters) {
-    AliError(Form("Pointer to clusters %s == 0", fCaloClustersName.Data() ));
+    AliError(Form("Unable to retreive clusters!"));
     return kTRUE;
   }
-  const Int_t Nclusters = clusters->GetEntries();
-  for (Int_t iclus = 0; iclus < Nclusters; iclus++) {
-    AliVCluster* cluster = static_cast<AliVCluster*>(clusters->At(iclus));
-    if (!cluster) {
-      printf("ERROR: Could not receive cluster %d\n", iclus);
-      continue;
-    }
-    TLorentzVector nPart;
+  const Int_t Nclusters = clusters->GetNClusters();
+
+  AliVCluster * cluster = 0;
+  TLorentzVector nPart;
+  while ((cluster = clusters->GetNextAcceptCluster()))
+  {
     cluster->GetMomentum(nPart, fvertex);
     fHistClusEtaPhiEn->Fill( nPart.Eta(), nPart.Phi(), nPart.E() );
   }
+  // Reset so that we can iterate again in the future.
+  clusters->ResetCurrentID();
 
-  tracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracks));
+  AliTrackContainer * tracks = GetTrackContainer(0);
   if (!tracks) {
-    AliError(Form("Pointer to tracks %s == 0", fTracks->GetName() ));
+    AliError(Form("Unable to retreive tracks!"));
     return kTRUE;
   }
-  const Int_t Ntracks=tracks->GetEntries();
+  const Int_t Ntracks = tracks->GetNTracks();
 
   jets= dynamic_cast<TClonesArray*>(list->FindObject(fJets));
   if (!jets) {
@@ -439,26 +437,6 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     return kTRUE;
   }
   const Int_t Njets = jets->GetEntries();
-
-  //Leticia's loop to find hardest track
-  Int_t iTT=-1;
-  Double_t ptmax=-10;
-
-  for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) {
-    AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
-    if (!track) {
-      printf("ERROR: Could not receive track %d\n", iTracks);
-      continue;
-    }
-
-    if(TMath::Abs(track->Eta())>0.9) continue;
-    if(track->Pt()<0.15) continue;
-    //iCount++;
-    if(track->Pt()>ptmax){
-      ptmax=track->Pt();
-      iTT=iTracks;
-    }
-  }
 
   Int_t ijethi=-1;
   Double_t highestjetpt=0.0;
@@ -511,9 +489,11 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
 
-    if(iTT>0){
-      AliVTrack* TT = static_cast<AliVTrack*>(tracks->At(iTT));
-      if(TMath::Abs(jetphi-TT->Phi()-TMath::Pi())<0.6) passedTTcut=1;
+    AliVTrack * leadingTrack = 0;
+    leadingTrack = tracks->GetLeadingTrack();
+    if (leadingTrack != 0)
+    {
+      if(TMath::Abs(jetphi-leadingTrack->Phi()-TMath::Pi())<0.6) passedTTcut=1;
       else passedTTcut=0;
     }
 
@@ -526,12 +506,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     if (jetPt > 15) {
 
-      for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++) {
-        AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
-        if (!track) {
-          printf("ERROR: Could not receive track %d\n", iTracks);
-          continue;
-        }
+      AliVTrack * track = 0;
+      while ((track = tracks->GetNextAcceptTrack())) {
 
         if(TMath::Abs(track->Eta())>fTrkEta) continue;
 
@@ -721,7 +697,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     }
 
     if(trigger & fMixingEventType) {
-      tracksClone = CloneAndReduceTrackList(tracks);
+      tracksClone = CloneAndReduceTrackList();
 
       //update pool if jet in event or not
       pool->UpdatePool(tracksClone);
@@ -881,16 +857,20 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 
 //_________________________________________________
 // From CF event mixing code PhiCorrelations
-TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList(TObjArray* tracks)
+TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
 {
   // clones a track list by using AliPicoTrack which uses much less memory (used for event mixing)
 
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
 
-  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  AliTrackContainer * tracks = GetTrackContainer(0);
+  // Ensure that we start from the beginning
+  tracks->ResetCurrentID();
+  AliVParticle * particle = 0;
+  while ((particle = tracks->GetNextAcceptTrack()))
   {
-    AliVParticle* particle = (AliVParticle*) tracks->At(i);
+    // TODO: Probably not necessary since the track container should already apply these cuts. But check it!
     if(TMath::Abs(particle->Eta())>fTrkEta) continue;
     if(particle->Pt()<0.15) continue;
 
