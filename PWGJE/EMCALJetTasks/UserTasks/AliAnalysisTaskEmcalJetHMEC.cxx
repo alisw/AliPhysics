@@ -44,13 +44,13 @@ ClassImp(AliAnalysisTaskEmcalJetHMEC)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() : 
   AliAnalysisTaskEmcalJet("HMEC",kFALSE),
-  fTracksName(""),
-  fJetsName(""),
-  fPhimin(-10), 
+  /*fTracksName(""),
+  fJetsName(""),*/
+  /*fPhimin(-10), 
   fPhimax(10),
   fEtamin(-0.9), 
   fEtamax(0.9),
-  fAreacut(0.0),
+  fAreacut(0.0),*/
   fTrkBias(5),
   fClusBias(5),
   fTrkEta(0.9),
@@ -99,13 +99,13 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) : 
   AliAnalysisTaskEmcalJet(name,kTRUE),
-  fTracksName(""),
-  fJetsName(""),
-  fPhimin(-10), 
+  /*fTracksName(""),
+  fJetsName(""),*/
+  /*fPhimin(-10), 
   fPhimax(10),
   fEtamin(-0.9), 
   fEtamax(0.9),
-  fAreacut(0.0),
+  fAreacut(0.0),*/
   fTrkBias(5),
   fClusBias(5),
   fTrkEta(0.9),
@@ -405,14 +405,11 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
   fHistCentrality->Fill(fCent);
 
-  TClonesArray *jets = 0;
-
   AliClusterContainer * clusters = GetClusterContainer(0);
   if (!clusters) {
-    AliError(Form("Unable to retreive clusters!"));
+    AliError("Unable to retreive clusters!");
     return kTRUE;
   }
-  const Int_t Nclusters = clusters->GetNClusters();
 
   AliVCluster * cluster = 0;
   TLorentzVector nPart;
@@ -426,33 +423,17 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
   AliTrackContainer * tracks = GetTrackContainer(0);
   if (!tracks) {
-    AliError(Form("Unable to retreive tracks!"));
+    AliError("Unable to retreive tracks!");
     return kTRUE;
   }
   const Int_t Ntracks = tracks->GetNTracks();
 
-  jets= dynamic_cast<TClonesArray*>(list->FindObject(fJets));
-  if (!jets) {
-    AliError(Form("Pointer to jets %s == 0", fJets->GetName() ));
-    return kTRUE;
-  }
-  const Int_t Njets = jets->GetEntries();
-
-  Int_t ijethi=-1;
-  Double_t highestjetpt=0.0;
   Int_t passedTTcut=0;
 
-  for (Int_t ijets = 0; ijets < Njets; ijets++){
-    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijets));
-    if (!jet) continue;
-    if(!AcceptthisJet(jet)) continue;
-
-    Double_t jetPt = jet->Pt();
-
-    if(highestjetpt<jetPt){
-      ijethi=ijets;
-      highestjetpt=jetPt;
-    }
+  AliJetContainer * jets = GetJetContainer(0);
+  if (!jets) {
+    AliError("Unable to retreive jets!");
+    return kTRUE;
   }
 
   // see if event is selected
@@ -460,10 +441,15 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
   TVector3 vector_jet, vector_hdr;
 
-  for (Int_t ijet = 0; ijet < Njets; ijet++){    
-    AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
-    if (!jet) continue; 
+  // For comparison below
+  AliEmcalJet * leadingJet = jets->GetLeadingJet();
 
+  // Just to be certain that we are interating from the start
+  jets->ResetCurrentID();
+
+  AliEmcalJet * jet = 0;
+  while ((jet = jets->GetNextAcceptJet())) {
+    
     // see if event is selected and our jet came from trigger event
     if (!(trig & fTriggerEventType)) continue;
     if (jet->Pt()<0.1) continue;
@@ -477,7 +463,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     vector_jet.SetXYZ( jet->Px(), jet->Py(), jet->Pz() );
 
     Double_t leadjet=0;
-    if (ijet==ijethi) leadjet=1;
+    if (jet == leadingJet) leadjet=1;
 
     FillHist(fHistJetPt[centbin], jet->Pt());
     FillHist(fHistLeadJetPt[centbin], jet->Pt());
@@ -489,6 +475,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
 
+    // TODO: Would we be better off taking the tracks in the Jet?
     AliVTrack * leadingTrack = 0;
     leadingTrack = tracks->GetLeadingTrack();
     if (leadingTrack != 0)
@@ -628,13 +615,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       //check for a trigger jet
       if (pool->IsReady() || pool->NTracksInPool() > fNMIXtracks || pool->GetCurrentNEvents() >= fNMIXevents) {
 
-        for (Int_t ijet = 0; ijet < Njets; ijet++){
+        jets->ResetCurrentID();
+        while ((jet = jets->GetNextAcceptJet())) {
           Double_t leadjet=0;
-          if (ijet==ijethi) leadjet=1;
+          if (jet == leadingJet) leadjet=1;
 
-          AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
-          if (!jet) continue;
-
+          // TODO: Is this still necessary?
           if(!AcceptthisJet(jet)) continue;
 
           Double_t jetPt = jet->Pt();	
@@ -718,22 +704,23 @@ void AliAnalysisTaskEmcalJetHMEC::Terminate(Option_t *)
 Int_t AliAnalysisTaskEmcalJetHMEC::AcceptthisJet(AliEmcalJet *jet) 
 {
   //applies all jet cuts except pt
-  float jetphi = jet->Phi();
+  /*float jetphi = jet->Phi();
   if (jetphi>TMath::Pi())
-    jetphi = jetphi-2*TMath::Pi();
+    jetphi = jetphi-2*TMath::Pi();*/
 
-  if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax))
+  // Acceptance is taken care of by the jet container
+  /*if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax))
     return 0;
   if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax))
-    return 0;
-  if (jet->Area()<fAreacut)
+    return 0;*/
+  /*if (jet->Area()<fAreacut)
     return 0;
   //prevents 0 area jets from sneaking by when area cut == 0
   if (jet->Area()==0)
-    return 0;  
+    return 0;  */
   //exclude jets with extremely high pt tracks which are likely misreconstructed
-  if(jet->MaxTrackPt()>100)
-    return 0;
+  /*if(jet->MaxTrackPt()>100)
+    return 0;*/
 
   //passed all above cuts
   return 1;
