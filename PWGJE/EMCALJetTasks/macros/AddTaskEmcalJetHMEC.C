@@ -5,11 +5,11 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *nJets          = "Jets",
    const char *nTracks        = "PicoTracks",
    const char *nCaloClusters  = "CaloClustersCorr",
-   const Double_t minPhi      = 1.8,
+   /*const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
-   const Double_t maxEta      = 0.3,
-   const Double_t minArea     = 0.4,
+   const Double_t maxEta      = 0.3,*/
+   //const Double_t minArea     = 0.4,
    const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
@@ -85,9 +85,9 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   //correlationtask->SetJetsName(nJets);
   //correlationtask->SetTracksName(nTracks);
   //correlationtask->SetCaloClustersName(nCaloClusters);
-  correlationtask->SetJetPhi(minPhi,maxPhi);
+  /*correlationtask->SetJetPhi(minPhi,maxPhi);
   correlationtask->SetJetEta(minEta,maxEta);
-  correlationtask->SetAreaCut(minArea);
+  correlationtask->SetAreaCut(minArea);*/
   if(EvtMix>0){
     correlationtask->SetMixingTracks(EvtMix);
     correlationtask->SetEventMixing(1);
@@ -119,12 +119,13 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   // Jets
   cout <<"Jet name: " << nJets;
   AliJetContainer * jetContainer = correlationtask->AddJetContainer(AliJetContainer::kFullJet,
-                                                                    AliJetContainer::antikt_algorithm,
-                                                                    AliJetContainer::pt_scheme,
-                                                                    jetRadius,
-                                                                    AliJetContainer::kEMCALfid,
-                                                                    trackContainer,
-                                                                    clusterContainer);
+                                   AliJetContainer::antikt_algorithm,
+                                   AliJetContainer::pt_scheme,
+                                   jetRadius,
+                                   AliJetContainer::kEMCALfid,
+                                   trackContainer,
+                                   clusterContainer);
+  jetContainer->SetMaxTrackPt(100);
 
   if (embeddingCorrection == kTRUE)
   {
