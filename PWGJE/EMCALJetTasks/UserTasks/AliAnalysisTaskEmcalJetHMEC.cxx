@@ -302,7 +302,7 @@ Double_t AliAnalysisTaskEmcalJetHMEC:: RelativePhi(Double_t mphi,Double_t vphi) 
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskEmcalJetHMEC::GetCentBin(Double_t cent) const {
+/*Int_t AliAnalysisTaskEmcalJetHMEC::GetCentBin(Double_t cent) const {
   // Get centrality bin.
 
   Int_t centbin = -1;
@@ -313,7 +313,7 @@ Int_t AliAnalysisTaskEmcalJetHMEC::GetCentBin(Double_t cent) const {
   else if (cent>=40 && cent<50) centbin = 4;
   else if (cent>=50 && cent<90) centbin = 5;
   return centbin;
-}
+}*/
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskEmcalJetHMEC::GetEtaBin(Double_t eta) const {
@@ -394,8 +394,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
   if (0==fRunType) fCent = 0.0; //put pp centrality to 0.0
 
-  Int_t centbin = GetCentBin(fCent);
-  if(centbin<0) return kTRUE;
+  //Int_t centbin = GetCentBin(fCent);
+  if(fCentBin<0) return kTRUE;
 
   Double_t fvertex[3]={0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
@@ -465,12 +465,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     Double_t leadjet=0;
     if (jet == leadingJet) leadjet=1;
 
-    FillHist(fHistJetPt[centbin], jet->Pt());
-    FillHist(fHistLeadJetPt[centbin], jet->Pt());
+    FillHist(fHistJetPt[fCentbin], jet->Pt());
+    FillHist(fHistLeadJetPt[fCentbin], jet->Pt());
 
     if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-      FillHist(fHistJetPtBias[centbin], jet->Pt());
-      FillHist(fHistLeadJetPtBias[centbin], jet->Pt());
+      FillHist(fHistJetPtBias[fCentbin], jet->Pt());
+      FillHist(fHistLeadJetPtBias[fCentbin], jet->Pt());
     }
 
     fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
@@ -485,7 +485,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     }
 
     if(passedTTcut)
-      FillHist(fHistJetPtTT[centbin], jet->Pt());
+      FillHist(fHistJetPtTT[fCentbin], jet->Pt());
 
     Int_t iptjet=-1;
     iptjet=GetpTjetBin(jetPt);
@@ -527,7 +527,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         if (dphijh > 1.5*TMath::Pi()) 
           dphijh-=2.*TMath::Pi();
 
-        fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
+        fHistJetH[fCentbin][iptjet][ieta]->Fill(dphijh,track->Pt());
         fHistJetHEtaPhi->Fill(deta,dphijh);
 
         // calculate single particle tracking efficiency for correlations
@@ -537,7 +537,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         Double_t dR=sqrt(deta*deta+dphijh*dphijh);
 
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-          fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
+          fHistJetHBias[fCentbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
           if(fDoLessSparseAxes) { // check if we want all dimensions
             if ( fRunType > 0 ) { //pA and AA
@@ -561,7 +561,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         }
 
         if(passedTTcut)
-          fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,trackpt);
+          fHistJetHTT[fCentbin][iptjet][ieta]->Fill(dphijh,trackpt);
 
       } //track loop
     }//jet pt cut
@@ -889,7 +889,7 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
   Double_t TRefficiency = -999;
   Int_t runNUM = fCurrentRunNumber;
   Int_t runSwitchGood = -999;
-  Int_t centbin = -99;
+  //Int_t centbin = -99;
 
   Double_t etaaxis = 0;
   Double_t ptaxis = 0;
@@ -899,19 +899,19 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 
     if ((runNUM == 167902 || runNUM == 167903 || runNUM == 167915 || runNUM == 167920 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
 
-    if(fCent>=0 && fCent<10) centbin = 0;
+    /*if(fCent>=0 && fCent<10) centbin = 0;
     else if (fCent>=10 && fCent<30)	centbin = 1;
     else if (fCent>=30 && fCent<50) centbin = 2;
-    else if (fCent>=50 && fCent<90)	centbin = 3;
+    else if (fCent>=50 && fCent<90)	centbin = 3;*/
 
-    if(runSwitchGood == 0 && centbin == 0) effSwitch = 2;
-    if(runSwitchGood == 0 && centbin == 1) effSwitch = 3;
-    if(runSwitchGood == 0 && centbin == 2) effSwitch = 4;
-    if(runSwitchGood == 0 && centbin == 3) effSwitch = 5;
-    if(runSwitchGood == 1 && centbin == 0) effSwitch = 6;
-    if(runSwitchGood == 1 && centbin == 1) effSwitch = 7;
-    if(runSwitchGood == 1 && centbin == 2) effSwitch = 8;
-    if(runSwitchGood == 1 && centbin == 3) effSwitch = 9;
+    if(runSwitchGood == 0 && fCentbin == 0) effSwitch = 2;
+    if(runSwitchGood == 0 && fCentbin == 1) effSwitch = 3;
+    if(runSwitchGood == 0 && fCentbin == 2) effSwitch = 4;
+    if(runSwitchGood == 0 && fCentbin == 3) effSwitch = 5;
+    if(runSwitchGood == 1 && fCentbin == 0) effSwitch = 6;
+    if(runSwitchGood == 1 && fCentbin == 1) effSwitch = 7;
+    if(runSwitchGood == 1 && fCentbin == 2) effSwitch = 8;
+    if(runSwitchGood == 1 && fCentbin == 3) effSwitch = 9;
 
   }
 
