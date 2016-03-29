@@ -51,7 +51,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TString                     fTrackParticleArrayName;                  // Name of fTracksOutput array
 
   // Criteria for the selection of jets that are passed to the correlation task
-  TProfile                    hFakeFactorCutProfile;                    // profile of the fake factor cut distribution
+  TProfile                  *hFakeFactorCutProfile;                    // profile of the fake factor cut distribution
   Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Bool_t                      fUseFakejetRejection;                     // Use fakejet rejection (a la ATLAS)
   Double_t                    fMinFakeFactorPercentage;                 // min fake factor (percentage relative to cut profile)
