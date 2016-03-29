@@ -63,8 +63,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // Set embedding correction
   void                    SetEmbeddingCorrectionHist(TH2F * embeddingCorrectionHist) { fEmbeddingCorrectionHist = embeddingCorrectionHist; }
 
-  void			  SetRunType(const Short_t runtype) { fRunType = runtype; }
-
  protected:
   void					 ExecOnce();
   Bool_t			     Run();
@@ -135,8 +133,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   THnSparse             *fhnMixedEvents;      //!mixed events matrix
   THnSparse             *fhnJH;      //!Fg events matrix
   TH3                   *fHistJHPsi; //! Psi angle distribution
-
-  Short_t               fRunType; // 0-pp 1-pA 2-AA
 
  private:
    

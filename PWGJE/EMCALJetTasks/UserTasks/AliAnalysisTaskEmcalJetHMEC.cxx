@@ -60,7 +60,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
-  fRunType(0),
   fCentBinSize(1),
   fESD(0),
   fAOD(0), 
@@ -115,7 +114,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
-  fRunType(0),
   fCentBinSize(1),
   fESD(0),
   fAOD(0), 
@@ -277,10 +275,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   Int_t nCentralityBins_pp  = 8;
   Double_t centralityBins_pp[9] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
 
-  if ( fRunType > 0 ) {   //all besides pp
+  if (fForceBeamType != kpp ) {   //all besides pp
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
   }
-  else if (0==fRunType) { //for pp only
+  else if (fForceBeamType == kpp) { //for pp only
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins_pp, centralityBins_pp, nZvtxBins, zvtxbin);
   }
 
@@ -349,17 +347,17 @@ void AliAnalysisTaskEmcalJetHMEC::ExecOnce() {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Main loop called for each event
-  if(!fTracks){
+  /*if(!fTracks){
     AliError(Form("No fTracks object!!\n"));
     return kTRUE;
   }
   if(!fJets){
     AliError(Form("No fJets object!!\n"));
     return kTRUE;
-  }
+  }*/
 
   // what kind of event do we have: AOD or ESD?
-  Bool_t esdMode = kTRUE; 
+  /*Bool_t esdMode = kTRUE; 
   if (dynamic_cast<AliAODEvent*>(InputEvent())) esdMode = kFALSE;
 
   // if we have ESD event, set up ESD object
@@ -384,25 +382,31 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   if(!list) {
     AliError(Form("ERROR: list not attached\n"));
     return kTRUE;
-  }
+  }*/
 
+  // TODO: This should be covered by AliAnalysisTaskEmcal
   // get centrality
   if (fCent<0) {
     AliError(Form("Centrality negative: %f", fCent));
     return kTRUE;
   }
 
-  if (0==fRunType) fCent = 0.0; //put pp centrality to 0.0
+  // TODO: Can we just use the fCent = 99, fCentBin = 0 def from AliAnalysisTaskEmcal?
+  if (fBeamType == kpp) fCent = 0.0; //put pp centrality to 0.0
 
+  // TODO: Should also be covered here
   //Int_t centbin = GetCentBin(fCent);
   if(fCentBin<0) return kTRUE;
 
-  Double_t fvertex[3]={0,0,0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
-  Double_t zVtx=fvertex[2];
+  // Filled by AliAnalysisTaskEmcal
+  //Double_t fvertex[3]={0,0,0};
+  //InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
+  Double_t zVtx=fVertex[2];
 
-  if(fabs(zVtx)>10.0) return kTRUE;
+  // Replaced by vz range call
+  //if(fabs(zVtx)>10.0) return kTRUE;
 
+  // TODO: Can we use a QA tasks for this?
   fHistCentrality->Fill(fCent);
 
   AliClusterContainer * clusters = GetClusterContainer(0);
@@ -411,11 +415,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     return kTRUE;
   }
 
+  // TODO: Can we use a QA task for this?
   AliVCluster * cluster = 0;
   TLorentzVector nPart;
   while ((cluster = clusters->GetNextAcceptCluster()))
   {
-    cluster->GetMomentum(nPart, fvertex);
+    cluster->GetMomentum(nPart, fVertex);
     fHistClusEtaPhiEn->Fill( nPart.Eta(), nPart.Phi(), nPart.E() );
   }
   // Reset so that we can iterate again in the future.
@@ -436,6 +441,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     return kTRUE;
   }
 
+  // TODO: I think this is covered in AliAnalysisTaskEmcal
   // see if event is selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
@@ -452,30 +458,32 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     
     // see if event is selected and our jet came from trigger event
     if (!(trig & fTriggerEventType)) continue;
-    if (jet->Pt()<0.1) continue;
+    // TODO: Can we just move this the jet container?
+    //if (jet->Pt()<0.1) continue;
 
+    // TODO: Can this be removed?
     if(!AcceptthisJet(jet)) continue;
 
     Double_t jetphi = jet->Phi();
     Double_t jetPt = jet->Pt();
-    Double_t jeteta=jet->Eta();
 
     vector_jet.SetXYZ( jet->Px(), jet->Py(), jet->Pz() );
 
     Double_t leadjet=0;
     if (jet == leadingJet) leadjet=1;
 
-    FillHist(fHistJetPt[fCentbin], jet->Pt());
-    FillHist(fHistLeadJetPt[fCentbin], jet->Pt());
+    FillHist(fHistJetPt[fCentBin], jet->Pt());
+    FillHist(fHistLeadJetPt[fCentBin], jet->Pt());
 
     if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-      FillHist(fHistJetPtBias[fCentbin], jet->Pt());
-      FillHist(fHistLeadJetPtBias[fCentbin], jet->Pt());
+      FillHist(fHistJetPtBias[fCentBin], jet->Pt());
+      FillHist(fHistLeadJetPtBias[fCentBin], jet->Pt());
     }
 
     fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
 
     // TODO: Would we be better off taking the tracks in the Jet?
+    // TODO: Discuss this cut! I don't quite understand it
     AliVTrack * leadingTrack = 0;
     leadingTrack = tracks->GetLeadingTrack();
     if (leadingTrack != 0)
@@ -485,7 +493,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     }
 
     if(passedTTcut)
-      FillHist(fHistJetPtTT[fCentbin], jet->Pt());
+      FillHist(fHistJetPtTT[fCentBin], jet->Pt());
 
     Int_t iptjet=-1;
     iptjet=GetpTjetBin(jetPt);
@@ -496,6 +504,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       AliVTrack * track = 0;
       while ((track = tracks->GetNextAcceptTrack())) {
 
+        // TODO: We should be able to remove this by apply the track eta cut in the run macro
         if(TMath::Abs(track->Eta())>fTrkEta) continue;
 
         fHistTrackPt->Fill(track->Pt());
@@ -513,7 +522,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
         Double_t tracketa=track->Eta();
         Double_t trackpt=track->Pt();
-        Double_t deta=tracketa-jeteta;
+        Double_t deta=tracketa-jet->Eta();
         Int_t ieta=GetEtaBin(deta);
         if (ieta<0) {
           AliError(Form("Eta Bin negative: %f", deta));
@@ -527,7 +536,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         if (dphijh > 1.5*TMath::Pi()) 
           dphijh-=2.*TMath::Pi();
 
-        fHistJetH[fCentbin][iptjet][ieta]->Fill(dphijh,track->Pt());
+        fHistJetH[fCentBin][iptjet][ieta]->Fill(dphijh,track->Pt());
         fHistJetHEtaPhi->Fill(deta,dphijh);
 
         // calculate single particle tracking efficiency for correlations
@@ -537,31 +546,27 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         Double_t dR=sqrt(deta*deta+dphijh*dphijh);
 
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-          fHistJetHBias[fCentbin][iptjet][ieta]->Fill(dphijh,trackpt);
+          fHistJetHBias[fCentBin][iptjet][ieta]->Fill(dphijh,trackpt);
+
+          Double_t eventActivity = 0.0;
+          if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
+            eventActivity = fCent;
+          }
+          else if (fBeamType == kpp) {
+            eventActivity = static_cast<Double_t>(Ntracks);
+          }
 
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            if ( fRunType > 0 ) { //pA and AA
-              Double_t triggerEntries[6] = {fCent,jetPt,trackpt,deta,dphijh,leadjet};
-              FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
-            }
-            else if (0==fRunType) {
-              Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet};
-              FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
-            }
+            Double_t triggerEntries[6] = {eventActivity,jetPt,trackpt,deta,dphijh,leadjet};
+            FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           } else { 
-            if ( fRunType > 0 ) { //pA and AA
-              Double_t triggerEntries[8] = {fCent,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
-              FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
-            }
-            else if (0==fRunType) {
-              Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
-              FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
-            }
+            Double_t triggerEntries[8] = {eventActivity,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
+            FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           }
         }
 
         if(passedTTcut)
-          fHistJetHTT[fCentbin][iptjet][ieta]->Fill(dphijh,trackpt);
+          fHistJetHTT[fCentBin][iptjet][ieta]->Fill(dphijh,trackpt);
 
       } //track loop
     }//jet pt cut
@@ -597,17 +602,17 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     if (trigger==0)  return kTRUE;
 
     AliEventPool *pool = 0;
-    if ( fRunType > 0 ) {//everything but pp
+    if (fBeamType == kAA || fBeamType == kpA) {//everything but pp
       pool = fPoolMgr->GetEventPool(fCent, zVtx);
     }
-    else if (0==fRunType) {//pp only
+    else if (fBeamType == kpp) {//pp only
       Double_t Ntrks = (Double_t)Ntracks*1.0;
       pool = fPoolMgr->GetEventPool(Ntrks, zVtx);
     }
 
     if (!pool){
-      if (fRunType > 0) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
-      else if (0==fRunType) AliFatal(Form("No pool found for ntracks_pp = %d, zVtx = %f", Ntracks, zVtx));
+      if (fBeamType == kAA || fBeamType == kpA) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
+      else if (fBeamType == kpp) AliFatal(Form("No pool found for ntracks_pp = %d, zVtx = %f", Ntracks, zVtx));
       return kTRUE;
     }
 
@@ -656,24 +661,21 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
                 Double_t DR=TMath::Sqrt(DPhi*DPhi+DEta*DEta);
                 if(DPhi<-0.5*TMath::Pi()) DPhi+=2.*TMath::Pi();
                 if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
+
+                Double_t eventActivity = 0;
+                if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
+                  eventActivity = fCent;
+                }
+                else if (fBeamType == kpp) {
+                  eventActivity = static_cast<Double_t>(Ntracks);
+                }
+
                 if(fDoLessSparseAxes) {  // check if we want all the axis filled
-                  if ( fRunType > 0 ) { //pA and AA
-                    Double_t triggerEntries[6] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet};
-                    FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
-                  }
-                  else if (0 == fRunType) { //pp
-                    Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet};
-                    FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
-                  }
+                  Double_t triggerEntries[6] = {eventActivity,jetPt,part->Pt(),DEta,DPhi,leadjet};
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
                 } else {
-                  if ( fRunType > 0 ) { //pA and AA
-                    Double_t triggerEntries[8] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
-                    FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
-                  }
-                  else if (0==fRunType) {
-                    Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
-                    FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
-                  }
+                  Double_t triggerEntries[8] = {eventActivity,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*mixefficiency), kFALSE);
                 }
               }
             }
@@ -904,14 +906,14 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
     else if (fCent>=30 && fCent<50) centbin = 2;
     else if (fCent>=50 && fCent<90)	centbin = 3;*/
 
-    if(runSwitchGood == 0 && fCentbin == 0) effSwitch = 2;
-    if(runSwitchGood == 0 && fCentbin == 1) effSwitch = 3;
-    if(runSwitchGood == 0 && fCentbin == 2) effSwitch = 4;
-    if(runSwitchGood == 0 && fCentbin == 3) effSwitch = 5;
-    if(runSwitchGood == 1 && fCentbin == 0) effSwitch = 6;
-    if(runSwitchGood == 1 && fCentbin == 1) effSwitch = 7;
-    if(runSwitchGood == 1 && fCentbin == 2) effSwitch = 8;
-    if(runSwitchGood == 1 && fCentbin == 3) effSwitch = 9;
+    if(runSwitchGood == 0 && fCentBin == 0) effSwitch = 2;
+    if(runSwitchGood == 0 && fCentBin == 1) effSwitch = 3;
+    if(runSwitchGood == 0 && fCentBin == 2) effSwitch = 4;
+    if(runSwitchGood == 0 && fCentBin == 3) effSwitch = 5;
+    if(runSwitchGood == 1 && fCentBin == 0) effSwitch = 6;
+    if(runSwitchGood == 1 && fCentBin == 1) effSwitch = 7;
+    if(runSwitchGood == 1 && fCentBin == 2) effSwitch = 8;
+    if(runSwitchGood == 1 && fCentBin == 3) effSwitch = 9;
 
   }
 
