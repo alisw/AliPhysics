@@ -9,7 +9,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
    const Double_t maxEta      = 0.3,*/
-   //const Double_t minArea     = 0.4,
+   const Double_t minArea     = 0.4,
    const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
@@ -23,8 +23,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    const char *branch         = "biased",
-   const char *CentEst         = "V0M",
-   const Short_t runtype       = 2, //0 - pp, 1 - pA, 2 - AA
+   const char *CentEst        = "V0M",
+   const Short_t beamType     = AliAnalysisTaskEmcal::kAA, 
    Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection"
@@ -106,7 +106,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetCentBinSize(centbinsize);
   correlationtask->SetDoEffCorr(doEffcorrSW);
   correlationtask->SetCentralityEstimator(CentEst);
-  correlationtask->SetRunType(runtype);
+  correlationtask->SetForceBeamType(beamType);
+  correlationtask->SetVzRange(-10,10);
 
   // Add Containers
   // Clusters
@@ -125,7 +126,9 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
                                    AliJetContainer::kEMCALfid,
                                    trackContainer,
                                    clusterContainer);
+  jetContainer->SetJetAreaCut(minArea);
   jetContainer->SetMaxTrackPt(100);
+  jetContainer->SetJetPtCut(.1);
 
   if (embeddingCorrection == kTRUE)
   {
