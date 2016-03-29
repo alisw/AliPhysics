@@ -266,6 +266,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fOpeningAngle;                        // min opening angle for meson
     Float_t           fPsiPairCut;                          //
     Bool_t            fDo2DPsiPairChi2;                     //
+    Bool_t            fIncludeRejectedPsiPair;              //
     Float_t           fCosPAngleCut;                        //
     Bool_t            fDoToCloseV0sCut;                     //
     Double_t          fminV0Dist;                           //
@@ -326,7 +327,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,7)
+    ClassDef(AliConversionPhotonCuts,8)
 };
 
 #endif

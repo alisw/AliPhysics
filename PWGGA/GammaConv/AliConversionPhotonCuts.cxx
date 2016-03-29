@@ -152,6 +152,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
   fDo2DPsiPairChi2(kFALSE),
+  fIncludeRejectedPsiPair(kFALSE),
   fCosPAngleCut(10000),
   fDoToCloseV0sCut(kFALSE),
   fminV0Dist(200.),
@@ -278,6 +279,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fOpeningAngle(ref.fOpeningAngle),
   fPsiPairCut(ref.fPsiPairCut),
   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
+  fIncludeRejectedPsiPair(ref.fIncludeRejectedPsiPair),
   fCosPAngleCut(ref.fCosPAngleCut),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
   fminV0Dist(ref.fminV0Dist),
@@ -2755,8 +2757,15 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     fDo2DPsiPairChi2 = kTRUE; //
     break;
   case 9:
-    fPsiPairCut = 0.5; //
-    break;
+    if (fIsHeavyIon==1){
+      fPsiPairCut = 0.1; //
+      fDo2DPsiPairChi2 = kTRUE;
+      fIncludeRejectedPsiPair = kTRUE;
+      break;
+    } else {
+      fPsiPairCut = 0.5; //
+      break;
+    }
   default:
     AliError(Form("PsiPairCut not defined %d",psiCut));
     return kFALSE;
@@ -3135,15 +3144,34 @@ Double_t AliConversionPhotonCuts::GetCosineOfPointingAngle( const AliConversionP
 Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photon) const {
 
   if (fDo2DPsiPairChi2){
-    if (fabs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){
-      return kTRUE;
+    if(fIncludeRejectedPsiPair){
+      if (fabs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut || (photon->GetPsiPair()) == 4){
+        return kTRUE;
+      } else {
+        return kFALSE;
+      }
+
     } else {
-      return kFALSE;
-    }    
+      if (fabs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){
+        return kTRUE;
+      } else {
+        return kFALSE;
+      }
+    }
   } else {
-    if(fabs(photon->GetPsiPair()) > fPsiPairCut){
-      return kFALSE;}
-    else{return kTRUE;}
+    if(fIncludeRejectedPsiPair){
+      if(fabs(photon->GetPsiPair()) > fPsiPairCut || (photon->GetPsiPair()) != 4){
+        return kFALSE;
+      } else {
+        return kTRUE;
+      }
+    } else {
+      if(fabs(photon->GetPsiPair()) > fPsiPairCut){
+        return kFALSE;
+      } else {
+        return kTRUE;
+      }
+    }
   } 
 }
 

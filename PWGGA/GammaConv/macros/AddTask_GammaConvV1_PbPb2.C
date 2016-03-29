@@ -263,6 +263,7 @@ void AddTask_GammaConvV1_PbPb2(  	Int_t 		trainConfig 				= 1,  								// chang
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
+        analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
