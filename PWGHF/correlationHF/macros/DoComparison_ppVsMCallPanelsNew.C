@@ -32,11 +32,11 @@ Double_t maxYaxis[nbinAssocpt]={5.7,1.9,2.2};// or 2.9 for the first and 1.9 for
 //Double_t maxYaxis[nbinAssocpt]={4.8,2.9,3.2};// or 2.9 for the first and 1.9 for the last
 //Double_t maxYaxis[nbinAssocpt]={3.8,1.9,2.2};// or 2.9 for the first and 1.9 for the last
 Double_t mesonptcenter[nbinDpt]={4.,6.5,12.};// needed for getting the baseline
-TString strPtAssocText[nbinAssocpt]={"#it{p}_{T}^{assoc} >0.3 GeV/#it{c}, |#Delta#eta| < 1.0","0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0","#it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0"};
-TString strPtRangeText[nbinDpt*nbinAssocpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} >0.3 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} >0.3 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} >0.3 GeV/#it{c}", "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}","3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} >1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} >1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} >1 GeV/#it{c}"};
-TString strPtMesonText[nbinDpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}|<0.5"};
+TString strPtAssocText[nbinAssocpt]={"#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}, |#Delta#eta| < 1.0","0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0","#it{p}_{T}^{assoc} > 1 GeV/#it{c}, |#Delta#eta| < 1.0"};
+TString strPtRangeText[nbinDpt*nbinAssocpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}","3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"};
+TString strPtMesonText[nbinDpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}| < 0.5"};
 
-TString strYText= "|#it{y}^{D}|<0.5, |#Delta#eta| < 1.0";
+TString strYText= "|#it{y}^{D}| < 0.5, |#Delta#eta| < 1";
 
 TString filenames[nSets][nbinAssocpt][nbinDpt];// [coll syst][ptassoc][ptmes]
 TString pedestalfilenames[nSets][nbinAssocpt];// [coll syst][ptassoc]
@@ -105,7 +105,8 @@ void SetPadStyle(TPad *p){
   /// p->SetFrameBorderMode(0);
   p->SetFillStyle(0);
   p->SetFrameFillStyle(4000);
-  //p->SetFrameBorderMode(0);
+  p->SetFrameBorderMode(0);
+
   //p->SetBorderMode(0);
   //  p->SetBorderSize(0);
   //  p->SetBottomMargin(0);
@@ -210,7 +211,7 @@ TH1D * GetHistoAndSyst(TString path, Int_t iset,TString hname, TString hnamesyst
 
   if(iset==0){//DATA
      if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.46,Form("#bf{%.0f#% scale uncertainty pp}",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.65,0.6,Form("#bf{{}^{+%.0f%s}_{-%.0f%s} scale uncertainty}","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    else tUncertainty=new TLatex(0.65,0.6,Form("{}^{#plus%.0f%s}_{#minus%.0f%s} scale uncertainty","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
    
   }
 
@@ -330,6 +331,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPed(Int_t binSystem, Int_t binAssoc,Int
   
   outputhisto->SetXTitle("#Delta#varphi (rad)");
   outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
+  outputhisto->GetYaxis()->CenterTitle();
   outputhisto->SetMarkerColor(kBlack);
   outputhisto->SetLineColor(kBlack);
   outputhisto->SetMarkerStyle(20);
@@ -396,6 +398,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedMC(Int_t binSystem, Int_t binAssoc,I
   TH1D * outputhisto = (TH1D*)histo->Clone(nameoutput.Data());
   outputhisto->Reset();
   outputhisto->SetStats(kFALSE);
+  outputhisto->GetYaxis()->CenterTitle();
     
   cout<<"*******"<<endl;
   for(Int_t iBin = 1; iBin <= histo->GetNbinsX();iBin++){
@@ -502,6 +505,8 @@ void DoComparison_ppVsMCallPanels(){
       cout<<"#################***************** "<<iassoc<<"  "<<jDpt<<endl;
       TPad *pd=cFinalPaperStyle->cd((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       SetPadStyle(pd);
+      pd->Modified();
+      pd->Update();
       //    gPad->SetLeftMargin(0.3);
       //    gPad->SetRightMargin(0.);
       //    gPad->SetTopMargin(0.3);
@@ -520,15 +525,19 @@ void DoComparison_ppVsMCallPanels(){
       h->Reset();
       h->GetXaxis()->SetLimits(startline,endline);
       h->SetLineColor(0);
-      h->GetYaxis()->SetTitleFont(42);
-      h->GetXaxis()->SetTitleFont(42);
-      h->GetYaxis()->SetLabelFont(42);
-      h->GetXaxis()->SetLabelFont(42);
-      h->GetYaxis()->SetTitleSize(0.07/(gPad->GetHNDC())*scaleHeightPads);
-      h->GetXaxis()->SetTitleSize(0.07/(gPad->GetWNDC())*scaleHeightPads);
-      h->GetYaxis()->SetLabelSize(0.07/(gPad->GetHNDC())*scaleHeightPads);
-      h->GetXaxis()->SetLabelSize(0.07/(gPad->GetWNDC())*scaleHeightPads);
-      h->GetYaxis()->SetTitleOffset(1.1*(gPad->GetHNDC())/scaleHeightPads);
+
+      h->GetYaxis()->SetTitleFont(43);
+      h->GetXaxis()->SetTitleFont(43);
+      h->GetYaxis()->SetLabelFont(43);
+      h->GetXaxis()->SetLabelFont(43);
+      h->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.07/(gPad->GetHNDC())*scaleHeightPads);
+      h->GetXaxis()->SetTitleSize(30*innerPadHeight/referencePadHeight*resizeTextFactor);//;0.07/(gPad->GetWNDC())*scaleHeightPads);
+      h->GetYaxis()->SetLabelSize(30*innerPadHeight/referencePadHeight*resizeTextFactor);//0.07/(gPad->GetHNDC())*scaleHeightPads);
+      h->GetXaxis()->SetLabelSize(30*innerPadHeight/referencePadHeight*resizeTextFactor);//0.07/(gPad->GetWNDC())*scaleHeightPads);
+      h->GetYaxis()->SetTitleOffset(5.5*innerPadHeight/referencePadHeight*resizeTextFactor);//8*innerPadHeight/referencePadHeight*resizeTextFactor);//1.3*(gPad->GetHNDC())/scaleHeightPads);
+      h->GetXaxis()->CenterTitle();
+      h->GetYaxis()->CenterTitle();
+
       //      h->GetXaxis()->Delete();
       //      h->GetYaxis()->Delete();
       if(jDpt>0){
@@ -541,8 +550,13 @@ void DoComparison_ppVsMCallPanels(){
 	h->GetXaxis()->SetLabelSize(0);
       }
 
+      if(iassoc==2 && jDpt>=0){
+	//	h->GetXaxis()->SetLabelOffset(-0.005);
+	h->GetXaxis()->SetTitleOffset(3.5*innerPadHeight/referencePadHeight*resizeTextFactor);//8*innerPadHeight/referencePadHeight*resizeTextFactor);
 
-      if(iassoc==2 && jDpt>0==1){
+      }
+
+      /*     if(iassoc==2 && jDpt>0==1){
 	h->GetXaxis()->SetLabelOffset(-0.005);
 	h->GetXaxis()->SetTitleOffset(0.8);
 
@@ -552,6 +566,8 @@ void DoComparison_ppVsMCallPanels(){
 	h->GetXaxis()->SetTitleOffset(0.8);
 
       }
+      */
+
       h->Draw();
 
 
@@ -570,13 +586,13 @@ void DoComparison_ppVsMCallPanels(){
       suberr[0][iassoc][jDpt]->Draw("E2");
 
       Float_t size=0.058;
-      SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.104,0.08);
+      SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.104,22);//0.08
       //      if(iassoc==2)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.11,0.2,0.06);
-      if(iassoc==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,0.087);
+      if(iassoc==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,22);//0.087
       //      if(iassoc==0 && jDpt==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.11,0.11,0.062);
-       if(iassoc==2 && jDpt==0)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,0.07);
-       if(iassoc==2 && jDpt==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,0.085);
-       if(iassoc==2 && jDpt==2)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,0.078);
+      if(iassoc==2 && jDpt==0)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,22);//0.07
+      if(iassoc==2 && jDpt==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,22);//0.085
+      if(iassoc==2 && jDpt==2)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,22);//0.078
      
       //     if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1){
       //ltscale[0][iassoc][jDpt]->SetY(0.11/gPad->GetHNDC()+gPad->GetBottomMargin());
@@ -660,7 +676,7 @@ void Set3x3PadPositions(TCanvas* c){
   innerPadHeight=(1-marginTop-marginBottom)/3.;// this is the height w/o margin, not the real pad height, which differs between inner pads and pads at the "boarders"!!
   Printf("innerPadHeight: %f",innerPadHeight);
   Printf("innerPadWidth: %f",innerPadWidth);
-  Double_t marginLeftForXAxis=0.005;
+  Double_t marginLeftForXAxis=0.02;
   Double_t marginBottomForYAxis=0.0;
 
  // Bottom row
@@ -686,7 +702,7 @@ void Set3x3PadPositions(TCanvas* c){
     pd8->GetPadPar(xl,yl,xu,yu);
     Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
  
-    pd8->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
+    pd8->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
     //pd8->SetLeftMargin(0.004/(1.-innerPadWidth-marginLeft+0.004));
     pd8->SetRightMargin(0.);
     pd8->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
@@ -707,7 +723,7 @@ void Set3x3PadPositions(TCanvas* c){
     Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
  
     pd9->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
-    pd9->SetRightMargin(marginRight/(innerPadWidth+marginRight+marginLeftForXAxis));
+    pd9->SetRightMargin(marginRight/(innerPadWidth+marginRight));
     pd9->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
     pd9->SetTopMargin(0.);
     pd9->SetFillStyle(0);
@@ -715,7 +731,7 @@ void Set3x3PadPositions(TCanvas* c){
     pd9->Modified();
     pd9->Update();
 
-      // Middle Row
+    // Middle Row
     pd4->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
     pd4->SetPad(0.,innerPadHeight+marginBottom-marginBottomForYAxis,innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
@@ -731,7 +747,7 @@ void Set3x3PadPositions(TCanvas* c){
     pd5->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
     pd5->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,2*innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
-    pd5->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
+    pd5->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
     pd5->SetRightMargin(0.);
     pd5->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
     pd5->SetTopMargin(0.);
@@ -744,7 +760,7 @@ void Set3x3PadPositions(TCanvas* c){
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
     pd6->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,1.,2.*innerPadHeight+marginBottom);
     pd6->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
-    pd6->SetRightMargin(marginRight/(innerPadWidth+marginRight+marginLeftForXAxis));
+    pd6->SetRightMargin(marginRight/(innerPadWidth+marginRight));
     pd6->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
     pd6->SetTopMargin(0.);
     pd6->Modified();
@@ -756,34 +772,32 @@ void Set3x3PadPositions(TCanvas* c){
     pd1->SetPad(0,2.*innerPadHeight+marginBottom-marginBottomForYAxis,innerPadWidth+marginLeft,1.);
     pd1->SetLeftMargin(marginLeft/(marginLeft+innerPadWidth));
     pd1->SetRightMargin(0.);
-    pd1->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
-    pd1->SetTopMargin(marginTop/(innerPadHeight+marginTop+marginBottomForYAxis));
+    pd1->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
+    pd1->SetTopMargin(marginTop/(innerPadHeight+marginTop));
     pd1->SetFillStyle(0);
-
     pd1->Modified();
     pd1->Update();
-      
-    scaleHeightPads=pd1->GetHNDC();
-    scaleWidthPads=pd1->GetWNDC();
-
+    
     pd2->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
     pd2->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,2.*innerPadHeight+marginBottom-marginBottomForYAxis,2*innerPadWidth+marginLeft,1);
-    pd2->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
+    pd2->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
     pd2->SetFillStyle(0);
     pd2->SetRightMargin(0);
-    pd2->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
-    pd2->SetTopMargin(marginTop/(innerPadHeight+marginTop+marginBottomForYAxis));
+    pd2->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
+    pd2->SetTopMargin(marginTop/(innerPadHeight+marginTop));
 
     pd3->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd3->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,2.*innerPadHeight+marginBottom,xHighPad9,1);
+    pd3->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,2.*innerPadHeight+marginBottom-marginBottomForYAxis,1,1);
     pd3->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
-    pd3->SetRightMargin(marginRight/(innerPadWidth+marginRight+marginLeftForXAxis));
-    pd3->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
-    pd3->SetTopMargin(marginTop/(innerPadHeight+marginTop+marginBottomForYAxis));
+    pd3->SetRightMargin(marginRight/(innerPadWidth+marginRight));
+    pd3->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
+    pd3->SetTopMargin(marginTop/(innerPadHeight+marginTop));
     pd3->SetFillStyle(0);
  
+scaleHeightPads=pd1->GetHNDC();
+    scaleWidthPads=pd1->GetWNDC();
 
 }
 
@@ -829,6 +843,10 @@ void SetScaleUncertaintyPositionAndSize(TLatex *tlpp,Float_t xx,Float_t yy,Float
   //  tlpp->SetX(0.09/gPad->GetWNDC()+gPad->GetLeftMargin());
   //tlpp->SetY(0.15/gPad->GetHNDC()+gPad->GetBottomMargin());
   //cout<<"innerPadHeight="<<innerPadHeight<<"  referencePadHeight="<<referencePadHeight<<"  resizeTextFactor="<<resizeTextFactor<<"  size="<<size<<"  total="<<size*innerPadHeight/referencePadHeight*resizeTextFactor<<endl;
+  tlpp->SetTextFont(43);
+  //  TString str=tlpp->GetTitle();
+  //  str.Prepend("#font[43]{");
+  //  str.Append("}");
   tlpp->SetTextSize(size*innerPadHeight/referencePadHeight*resizeTextFactor);
   //   tlpp->SetTextSize(size/(gPad->GetHNDC())*scaleHeightPads);
   //tlpp->SetTextSize(0.055);
@@ -977,7 +995,7 @@ TLegend *GetLegendData(TH1D *hpp,Int_t identifier){
     //    legend->SetTextSize(0.06/(gPad->GetHNDC())*scaleHeightPads);
     legend->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
-    legend->AddEntry(hpp,"pp #sqrt{#it{s}}=7 TeV","lep");
+    legend->AddEntry(hpp,"pp, #sqrt{#it{s}} = 7 TeV","lep");
     legend->SetName(Form("LegendDataPP_%d",identifier));
     return legend;
   }
@@ -993,10 +1011,10 @@ TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=
     //legend->SetTextSize(0.06/(gPad->GetHNDC())*scaleHeightPads);
     legend->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
-    legend->SetHeader("Simulations, pp #sqrt{#it{s}}=7 TeV");
-    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia0","l");
-    if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia2010","l");
-    if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia2011","l");   
+    legend->SetHeader("Simulations, pp, #sqrt{#it{s}} = 7 TeV");
+    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia 0","l");
+    if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia 2010","l");
+    if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
     if(hMC4)legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
     if(hMC5)legend->AddEntry(hMC5,"PYTHIA8, Tune 4C","l");
 

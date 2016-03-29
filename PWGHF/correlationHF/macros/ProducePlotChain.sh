@@ -99,13 +99,13 @@ declare doNicePlot=1
 declare doCompareMesons=1
 declare dofit=1
 declare doFitResultComparisonPPpPb=1
-declare dofitMC=0
+declare dofitMC=1
 declare doFitResultComparisonPPtoMC=1
 declare doFitResultComparisonPPbtoMC=1
-declare doFitResultComparisonPPtoPPbtoMCPP=0
+declare doFitResultComparisonPPtoPPbtoMCPP=1
 declare doCompareWithMC=1
 declare doComparepppPb=1
-declare doOldPlots=0
+declare doOldPlots=1
 ### MODIFY THE PARAMETERS BELOW ONLY IF YOU WANT TO RUN ONLY OVER FEW KINE CASES, OTHERWISE DO NOT TOUCH THEM
 declare -i firstcollsyst=0   #default 0
 declare -i lastcollsyst=1    #default 1 
@@ -138,7 +138,12 @@ declare -i imeson=${firstmeson}
 declare -i itrigbin=${firsttrigbin}
 declare -i iassocbin=${firstassocbin}
 
+##############################################################################################
+##### CREATE A DIRECTORY WHERE PAPER FIGURES WILL BE LINKED, JUST FOR CONVENIENCE #####
+###############################################################################################
 
+cd $baseStartingDir
+mkdir PaperFigures
 
 ############# GO TO MACRO PATH AND CP CODE ############
 if [ ${cpCode} = 1 ]; then
@@ -391,7 +396,9 @@ EOF
 .L ${HFCJlocalCodeDir}/DoPlotInSingleCanvasNoSpaces.C
 MergePPandPPbInSingleCanvas("${baseDir}/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_pp.root","${baseDir}/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_pPb.root")
 EOF
-cd ${baseDir}/AllPlots/NiceStylePlots/
+
+#### LINK FIGURES
+ln -s ${baseDir}/AllPlots/NiceStylePlots/Output_Plots/WeightedAverageDzeroDstarDplus/CanvasNoSpaces_WeightedAverageDzeroDstarDplus_ppAndpPb.* $baseStartingDir/PaperFigures
 fi
 
 if [ ${doCompareMesons} = 1 ];then
@@ -434,7 +441,8 @@ DoNiceSpecieComparisonPlot("${pttrig[1]}","${ptassoc[2]}","${collsystdir[0]}","$
 .q
 EOF
 
-
+#### LINK FIGURES
+ln -s ${baseDir}/AllPlots/CompareMesons/Output_SngCav_Comparison/Comparison_DHCorrelations_NiceStyle.* $baseStartingDir/PaperFigures
 fi
 
 ######## NOW FIT DISTRIBUTIONS ############
@@ -493,7 +501,11 @@ SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
 CompareFitResultsPPtoPPb()
 EOF
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb/ComparePPtoPPbFitResults.* $baseStartingDir/PaperFigures
+
 fi
+
 
 if [ ${doFitResultComparisonPPtoMC} = 1 ];then
     collsyst=0
@@ -539,6 +551,8 @@ CompareFitResultsPPtoPpbAndMCUniqueCanvas();
 EOF
 
 fi
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoMC/ComparePPtoMCnoSystFitResults.* $baseStartingDir/PaperFigures
 
 collsyst=${firstcollsyst}
 
@@ -573,6 +587,9 @@ EOF
 
 
 collsyst=${firstcollsyst}
+
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC/ComparePPbtoMCnoSystFitResults.* $baseStartingDir/PaperFigures
 fi
 
 
@@ -698,7 +715,8 @@ SetAverageMode($averageOpt)
 DoComparison_ppVsMCallPanels()
 EOF
     
-    
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/ComparisonToModels/CorrelationppMC3x3_2New.* $baseStartingDir/PaperFigures    
 fi
 
 if [ $doComparepppPb = 1 ]; then
@@ -761,10 +779,9 @@ SetAverageMode($averageOpt)
 DoComparison_ppVspPballPanels()
 .q
 EOF
-
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/ComparisonPPtoPPB/plotComparison_WeightedAverage_pp_pPb_UniqueCanvas*.* $baseStartingDir/PaperFigures    
 fi
-
-
 
 
 
