@@ -686,7 +686,7 @@ void AliJCORRAN::UserExec(){
 	if (fbLPpairCorrel) 
 		fassocPool->Mix(fpairList,  kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt);
 	else
-		fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt);
+		fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt, fbLPCorrel);
 
 	//--------------------------------------------------------------
 	// End of the Correlation

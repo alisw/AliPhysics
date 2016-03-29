@@ -100,25 +100,36 @@ public:
   AliJTH2D fhDphiAssoc2DIAA; // comment me
   AliJTH2D fhDphiAssoc2D; // comment me
   
+  // JV // 2D dphi deta histograms for acceptance correction
+  //AliJTH2D fhDphiDetaKlong;    // 2D histogram from deltaPhi-deltaEta plane in klong bins
+  AliJTH2D fhDphiDetaXlong;    // 2D histogram from deltaPhi-deltaEta plane in xlong bins
+  AliJTH2D fhDphiDetaPta;      // 2D histogram from deltaPhi-deltaEta plane in pta bins
+  
+  // JV // One dimensional deltaEta histograms for acceptance correction
+  AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
+  AliJTH1D fhDeta3DNearMixAcceptance; // Mixed event uncorrected deltaEta histogram in 3D near side for acceptance corfection
+  AliJTH1D fhDetaNearEtaGapAcceptance;   // Eta gap uncorrected deltaEta histogram for acceptance correction
+  AliJTH1D fhDeta3DNearEtaGapAcceptance; // Eta gap uncorrected deltaEta histogram in 3D near side for acceptance correction
+  
   // JV // 2D dphi deta histos to study better the background
-  AliJTH2D fhDphiDetaKlong;    // 2D histogram from deltaPhi-deltaEta plane in klong and eta gap bins
-  AliJTH2D fhDphiDetaKlongR;   // 2D histogram from deltaPhi-deltaEta plane in klong and R gap bins
-  AliJTH2D fhDphiDetaKlongPhi; // 2D histogram from deltaPhi-deltaEta plane in klong and R gap bins
-  AliJTH2D fhDphiDetaXe;       // 2D histogram from deltaPhi-deltaEta plane in xlong and eta gap bins
-  AliJTH2D fhDphiDetaXeR;      // 2D histogram from deltaPhi-deltaEta plane in xlong and R gap bins
-  AliJTH2D fhDphiDetaXePhi;    // 2D histogram from deltaPhi-deltaEta plane in xlong and R gap bins
-  AliJTH2D fhDphiDetaPta;      // 2D histogram from deltaPhi-deltaEta plane in pta and eta gap bins
-  AliJTH2D fhDphiDetaPtaR;     // 2D histogram from deltaPhi-deltaEta plane in pta and R gap bins
-  AliJTH2D fhDphiDetaPtaPhi;   // 2D histogram from deltaPhi-deltaEta plane in pta and R gap bins
+  AliJTH2D fhDphiDetaBgKlongEta; // 2D histogram from deltaPhi-deltaEta plane in klong and eta gap bins
+  AliJTH2D fhDphiDetaBgKlongR;   // 2D histogram from deltaPhi-deltaEta plane in klong and R gap bins
+  AliJTH2D fhDphiDetaBgKlongPhi; // 2D histogram from deltaPhi-deltaEta plane in klong and phi gap bins
+  AliJTH2D fhDphiDetaBgXlongEta; // 2D histogram from deltaPhi-deltaEta plane in xlong and eta gap bins
+  AliJTH2D fhDphiDetaBgXlongR;   // 2D histogram from deltaPhi-deltaEta plane in xlong and R gap bins
+  AliJTH2D fhDphiDetaBgXlongPhi; // 2D histogram from deltaPhi-deltaEta plane in xlong and phi gap bins
+  AliJTH2D fhDphiDetaBgPtaEta;   // 2D histogram from deltaPhi-deltaEta plane in pta and eta gap bins
+  AliJTH2D fhDphiDetaBgPtaR;     // 2D histogram from deltaPhi-deltaEta plane in pta and R gap bins
+  AliJTH2D fhDphiDetaBgPtaPhi;   // 2D histogram from deltaPhi-deltaEta plane in pta and phi gap bins
   
   // JV // pTa distributions in background bins
-  AliJTH1D fhBgAssocKlong;    // background pta distribution in klong and eta gap bins
+  AliJTH1D fhBgAssocKlongEta; // background pta distribution in klong and eta gap bins
   AliJTH1D fhBgAssocKlongR;   // background pta distribution in klong and R gap bins
   AliJTH1D fhBgAssocKlongPhi; // background pta distribution in klong and phi gap bins
-  AliJTH1D fhBgAssocXe;       // background pta distribution in xlong and eta gap bins
-  AliJTH1D fhBgAssocXeR;      // background pta distribution in xlong and R gap bins
-  AliJTH1D fhBgAssocXePhi;    // background pta distribution in xlong and phi gap bins
-  AliJTH1D fhBgAssocPta;      // background pta distribution in pta and eta gap bins
+  AliJTH1D fhBgAssocXlongEta; // background pta distribution in xlong and eta gap bins
+  AliJTH1D fhBgAssocXlongR;   // background pta distribution in xlong and R gap bins
+  AliJTH1D fhBgAssocXlongPhi; // background pta distribution in xlong and phi gap bins
+  AliJTH1D fhBgAssocPtaEta;   // background pta distribution in pta and eta gap bins
   AliJTH1D fhBgAssocPtaR;     // background pta distribution in pta and R gap bins
   AliJTH1D fhBgAssocPtaPhi;   // background pta distribution in pta and phi gap bins
   
