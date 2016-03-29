@@ -352,11 +352,11 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 		if (fCumulative)
 		{
 			fTotalInputs += nInputs;
-			HLTImportant("Root objects merging cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
+			HLTInfo("Root objects merging cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
 		}
 		else
 		{
-			HLTImportant("Root objects merging from %d inputs", nInputs);
+			HLTInfo("Root objects merging from %d inputs", nInputs);
 		}
 		if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, objectForAsyncProcessor))
 		{
@@ -380,7 +380,7 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 			{
 				char tmpType[32];
 				fDataType.PrintDataType(tmpType, 32);
-				HLTImportant("Merger Component pushing (%s, %d bytes)", tmpType, pushresult);
+				HLTInfo("Merger Component pushing (%s, %d bytes)", tmpType, pushresult);
 			}
 		}
 		else if (fAsyncProcess && CheckPushbackPeriod())

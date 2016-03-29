@@ -403,7 +403,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
     if (eventData->fEvent->GetNumberOfTracks() >= fMinTracks)
     {
-      if (fMinTracks) HLTImportant("Event has %d tracks, running AnalysisManager", eventData->fEvent->GetNumberOfTracks());
+      if (fMinTracks) HLTInfo("Event has %d tracks, running AnalysisManager", eventData->fEvent->GetNumberOfTracks());
       eventData->fRequestPush = CheckPushbackPeriod() && !fPushRequestOngoing;
       if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent, eventData))
       {
@@ -444,7 +444,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	fPushRequestOngoing = kFALSE;
 	if (pushResult)
 	{
-	  HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+	  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
 	  fNumEvents = 0;
 	}
 
@@ -457,7 +457,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         if (pushResult > 0)
         {
            if (fResetAfterPush) fAnalysisManager->ResetOutputData();
-           HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
            fNumEvents = 0;
         }
       }
