@@ -138,6 +138,18 @@ protected:
   double frawSizeVZERO; 
   double frawSizeEMCAL; 
   double frawSizeZDC; 
+  double frawSizeFMD;
+  double frawSizeTZERO;
+  double frawSizeACORDE;
+  double frawSizeCTP;
+  double frawSizeAD;
+  double frawSizeTOF;
+  double frawSizePHOS;
+  double frawSizeCPV;
+  double frawSizeHMPID;
+  double frawSizePMD;
+  double frawSizeMUTK;
+  double frawSizeMUTG;
   
   double fnClustersTPC; 
   double frawSizeTPC; 
