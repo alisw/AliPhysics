@@ -1,14 +1,8 @@
 // $Id$
 
 AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
-   const char *outfilename    = "AnalysisOutput.root",
-   const char *nJets          = "Jets",
    const char *nTracks        = "PicoTracks",
    const char *nCaloClusters  = "CaloClustersCorr",
-   /*const Double_t minPhi      = 1.8,
-   const Double_t maxPhi      = 2.74,
-   const Double_t minEta      = -0.3,
-   const Double_t maxEta      = 0.3,*/
    const Double_t minArea     = 0.4,
    const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
@@ -21,10 +15,10 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    Bool_t lessSparseAxes      = 0,
    Bool_t widertrackbin       = 0,
    UInt_t centbinsize         = 1,
-   const Int_t doEffcorrSW    = 0,
-   const char *branch         = "biased",
+   const char *suffix         = "biased",
    const char *CentEst        = "V0M",
    const Short_t beamType     = AliAnalysisTaskEmcal::kAA, 
+   const Int_t doEffcorrSW    = 0,
    Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection"
@@ -41,7 +35,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
     ::Error("AddTaskEmcalJetHMEC", "This task requires an input event handler");
     return NULL;
@@ -50,6 +45,22 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
+
+  // Determine data type
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
   
   // Determine cluster and track names
   TString trackName(nTracks);
@@ -79,10 +90,22 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
     }
   }
 
-  TString name(Form("Correlations_%s_%s", nJets, branch));
-  Double_t jetRadius = 0.2;
+  TString name("JetH");
+  if (!trackName.IsNull()) {
+    name += "_";
+    name += trackName;
+  }
+  if (!clusName.IsNull()) {
+    name += "_";
+    name += clusName;
+  }
+  if (strcmp(suffix, "") != 0)
+  {
+    name += "_";
+    name += suffix;
+  }
+
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
-  //correlationtask->SetJetsName(nJets);
   //correlationtask->SetTracksName(nTracks);
   //correlationtask->SetCaloClustersName(nCaloClusters);
   /*correlationtask->SetJetPhi(minPhi,maxPhi);
@@ -109,16 +132,19 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetForceBeamType(beamType);
   correlationtask->SetVzRange(-10,10);
 
+  // Determined by how we run the jet finder
+  Double_t jetRadius = 0.2;
+  Double_t minClusterPt = 3;
+  Double_t minTrackPt = 3;
   // Add Containers
   // Clusters
   AliClusterContainer * clusterContainer = correlationtask->AddClusterContainer(clusName);
-  clusterContainer->SetMinE(3);
+  clusterContainer->SetMinE(minClusterPt);
   // Tracks
   AliTrackContainer * trackContainer = correlationtask->AddTrackContainer(trackName);
-  trackContainer->SetMinPt(3);
+  trackContainer->SetMinPt(minTrackPt);
   trackContainer->SetEtaLimits(-1.0*TrkEta, TrkEta);
   // Jets
-  cout <<"Jet name: " << nJets;
   AliJetContainer * jetContainer = correlationtask->AddJetContainer(AliJetContainer::kFullJet,
                                    AliJetContainer::antikt_algorithm,
                                    AliJetContainer::pt_scheme,
@@ -161,9 +187,9 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   // Create containers for input/output
   mgr->ConnectInput (correlationtask, 0, mgr->GetCommonInputContainer() );
   AliAnalysisDataContainer *cojeth = mgr->CreateContainer(name,
-                                                           TList::Class(),
-                                                           AliAnalysisManager::kOutputContainer,
-                                                           outfilename);
+                TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectOutput(correlationtask,1,cojeth);
 
   return correlationtask;
