@@ -61,11 +61,11 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fCentBinSize(1),
-  fESD(0),
-  fAOD(0), 
+  //fESD(0),
+  //fAOD(0), 
   fPoolMgr(0x0), 
   fHistTrackPt(0),
-  fHistCentrality(0), 
+  //fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0), 
   fHistJHPsi(0),
@@ -115,11 +115,11 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fCentBinSize(1),
-  fESD(0),
-  fAOD(0), 
+  //fESD(0),
+  //fAOD(0), 
   fPoolMgr(0x0), 
   fHistTrackPt(0),
-  fHistCentrality(0), 
+  //fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0),  
   fHistJHPsi(0),
@@ -156,7 +156,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 
   // Create histograms
   fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
-  fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
+  //fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
@@ -233,7 +233,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   }
 
   fOutput->Add(fHistTrackPt);
-  fOutput->Add(fHistCentrality);
+  //fOutput->Add(fHistCentrality);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
   fOutput->Add(fHistClusEtaPhiEn);
@@ -406,8 +406,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Replaced by vz range call
   //if(fabs(zVtx)>10.0) return kTRUE;
 
-  // TODO: Can we use a QA tasks for this?
-  fHistCentrality->Fill(fCent);
+  // This is taken care of by hists in AliAnalysisTaskEmcal
+  //fHistCentrality->Fill(fCent);
 
   AliClusterContainer * clusters = GetClusterContainer(0);
   if (!clusters) {
@@ -509,6 +509,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
         fHistTrackPt->Fill(track->Pt());
 
+        // TODO: Need a second track container - one for jets and one for hadrons
         if (track->Pt()<0.15) continue;
 
         vector_hdr.SetXYZ( track->Px(), track->Py(), track->Pz() );

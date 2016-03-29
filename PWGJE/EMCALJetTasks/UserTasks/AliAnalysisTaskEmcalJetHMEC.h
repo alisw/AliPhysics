@@ -66,7 +66,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
  protected:
   void					 ExecOnce();
   Bool_t			     Run();
-  virtual Int_t          GetCentBin(Double_t cent) const;
+  //virtual Int_t          GetCentBin(Double_t cent) const;
   virtual Int_t          GetEtaBin(Double_t eta) const;
   virtual Int_t          GetpTjetBin(Double_t pt) const;
   virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
@@ -111,11 +111,11 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   UInt_t         fCentBinSize;
 
-  AliESDEvent           *fESD;    //! ESD object
-  AliAODEvent			*fAOD;    //! AOD object
+  //AliESDEvent           *fESD;    //! ESD object
+  //AliAODEvent			*fAOD;    //! AOD object
   AliEventPoolManager   *fPoolMgr; //!
   TH1                   *fHistTrackPt; //! Pt spectrum
-  TH1                   *fHistCentrality;//!
+  //TH1                   *fHistCentrality;//!
   TH2                   *fHistJetEtaPhi;//!
   TH2                   *fHistTrackEtaPhi[7];//!
   TH2                   *fHistJetHEtaPhi;//!
