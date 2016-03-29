@@ -786,10 +786,10 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
     fHistQyV0aBC = BookTH2F("fHistQyV0aBC", "Q_{y} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
     fHistQxV0cBC = BookTH2F("fHistQxV0cBC", "Q_{x} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
     fHistQyV0cBC = BookTH2F("fHistQyV0cBC", "Q_{y} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQxV0a = BookTH2F("fHistQxV0aBC", "Q_{x} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQyV0a = BookTH2F("fHistQyV0aBC", "Q_{y} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQxV0c = BookTH2F("fHistQxV0cBC", "Q_{x} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQyV0c = BookTH2F("fHistQyV0cBC", "Q_{y} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
+    fHistQxV0a = BookTH2F("fHistQxV0a", "Q_{x} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
+    fHistQyV0a = BookTH2F("fHistQyV0a", "Q_{y} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
+    fHistQxV0c = BookTH2F("fHistQxV0c", "Q_{x} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
+    fHistQyV0c = BookTH2F("fHistQyV0c", "Q_{y} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
     fHistMultVsCellBC = BookTH2F("fHistMultVsCellBC", "channel", "multiplicty", 64, -.5, 63.5, 100, 0, 1000);
     fHistMultVsCell = BookTH2F("fHistMultVsCell", "channel", "multiplicty", 64, -.5, 63.5, 100, 0, 1000);
 
@@ -1347,7 +1347,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
         // loop over all scintillators, construct Q-vectors in the same loop
         phi     = TMath::PiOver4()*(0.5+i%8);
         mult    = InputEvent()->GetVZEROData()->GetMultiplicity(i);
-        if(fFillQAHistograms) fHistMultVsCellBC->Fill(mult, i);
+        if(fFillQAHistograms) fHistMultVsCellBC->Fill(i, mult);
         // note that disabled rings have already been excluded in ReadVZEROCalibration2010h
         if(i < 32) {    // v0c side
             // fill Q-vectors for v0c side
@@ -1355,7 +1355,7 @@ void AliAnalysisTaskJetV2::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2
             Qc3[0] += mult*TMath::Cos(3.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
             Qc2[1] += mult*TMath::Sin(2.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
             Qc3[1] += mult*TMath::Sin(3.*phi)*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i);
-            if(fFillQAHistograms) fHistMultVsCell->Fill(mult*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i), i);
+            if(fFillQAHistograms) fHistMultVsCell->Fill(i, mult*fVZEROCpol/fVZEROgainEqualization->GetBinContent(1+i));
         } else {       // v0a side
             // fill Q-vectors for v0a side
             Qa2[0] += mult*TMath::Cos(2.*phi)*fVZEROApol/fVZEROgainEqualization->GetBinContent(1+i);
