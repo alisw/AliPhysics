@@ -33,7 +33,7 @@ public:
   		   kChargeADA,kChargeADC,kChargeEoI,kChargeEoIBB,kChargeEoIBG,
 		   kHPTDCTime,kHPTDCTimeBB,kHPTDCTimeBG,kWidth,
 		   kHPTDCTimeRebin,kHPTDCTimeRebinBB,kHPTDCTimeRebinBG,
-		   kBBFlagVsClock,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
+		   kBBFlagVsClock,kBBFlagVsClock_ADOR,kBGFlagVsClock,kBBFlagsPerChannel,kBGFlagsPerChannel,
 		   kChargeVsClockInt0,kChargeVsClockInt1,kMaxChargeClock,
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
 		   kPedestalDiffInt0,kPedestalDiffInt1,

@@ -567,6 +567,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			QAbox->Clear();
 
     			TH1D *hClockSlice;
+			Bool_t notConfgADA = kFALSE;
+			Bool_t notConfgADC = kFALSE;
 			Bool_t notSynchADA = kFALSE;
 			Bool_t notSynchADC = kFALSE;
 
@@ -577,8 +579,8 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 				for(Int_t iClock = 0; iClock<21; iClock++)flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
 				Int_t maxClock = TMath::LocMax(21,flagArray);
 				if(center == 0){
-					if(i>7)notSynchADA = kTRUE;
-					if(i<8)notSynchADC = kTRUE;
+					if(i>7)notConfgADA = kTRUE;
+					if(i<8)notConfgADC = kTRUE;
 					continue;
 					} 
 				if(maxClock != 10) {
@@ -586,12 +588,22 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i<8)notSynchADC = kTRUE;
 					}
 				}
-			if(notSynchADA || notSynchADC){
+			if(notConfgADA || notConfgADC){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kViolet);
+        			if(notConfgADA)QAbox->AddText("ADA: dead channels!");
+				if(!notConfgADA)QAbox->AddText("ADA ok");
+				if(notConfgADC)QAbox->AddText("ADC: dead channels!");
+				if(!notConfgADC)QAbox->AddText("ADC ok");
+				if(notConfgADA && notConfgADC)QAbox->SetFillColor(kViolet);
+				}
+				
+			else if(notSynchADA || notSynchADC){
 				QAbox->Clear();
         			QAbox->SetFillColor(kRed);
-        			if(notSynchADA)QAbox->AddText("ADA not configured");
+        			if(notSynchADA)QAbox->AddText("ADA misconfigured!");
 				if(!notSynchADA)QAbox->AddText("ADA ok");
-				if(notSynchADC)QAbox->AddText("ADC not configured");
+				if(notSynchADC)QAbox->AddText("ADC misconfigured!");
 				if(!notSynchADC)QAbox->AddText("ADC ok");
 				if(notSynchADA && notSynchADC)QAbox->SetFillColor(kRed);
 				}
@@ -604,11 +616,69 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			}
 		}
     	} 
-    TH2F *hBGFlagVsClock = (TH2F*)list->At(AliADQADataMakerRec::kBGFlagVsClock);
-    if (!hBGFlagVsClock) {
-      AliWarning("BGFlagVsClock histogram is not found");
+
+    TH2F *hBBFlagVsClock_ADOR = (TH2F*)list->At(AliADQADataMakerRec::kBBFlagVsClock_ADOR);
+    if (!hBBFlagVsClock_ADOR) {
+      AliWarning("BBFlagVsClock_ADOR histogram is not found");
     }
-    
+    else {
+    	if(hBBFlagVsClock_ADOR->GetListOfFunctions()->GetEntries()<1) hBBFlagVsClock_ADOR->GetListOfFunctions()->Add(new TPaveText(0.30,0.15,0.70,0.37,"NDC"));
+    	for(Int_t i=0; i<hBBFlagVsClock_ADOR->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hBBFlagVsClock_ADOR->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hBBFlagVsClock_ADOR->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hClockSlice;
+			Bool_t notConfgADA = kFALSE;
+			Bool_t notConfgADC = kFALSE;
+			Bool_t notSynchADA = kFALSE;
+			Bool_t notSynchADC = kFALSE;
+
+    			for(Int_t i=0; i<16; i++){
+      				hClockSlice = hBBFlagVsClock_ADOR->ProjectionY("hClockSlice",i+1,i+1);
+				Double_t center = hClockSlice->GetBinContent(11);
+				Double_t flagArray[19];
+				for(Int_t iClock = 1; iClock<20; iClock++)flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
+				Int_t maxClock = TMath::LocMax(19,flagArray);
+				if(center == 0){
+					if(i>7)notConfgADA = kTRUE;
+					if(i<8)notConfgADC = kTRUE;
+					continue;
+					} 
+				if(maxClock != 10) {
+					if(i>7)notSynchADA = kTRUE;
+					if(i<8)notSynchADC = kTRUE;
+					}
+				}
+			if(notConfgADA || notConfgADC){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kViolet);
+        			if(notConfgADA)QAbox->AddText("ADA: dead channels!");
+				if(!notConfgADA)QAbox->AddText("ADA ok");
+				if(notConfgADC)QAbox->AddText("ADC: dead channels!");
+				if(!notConfgADC)QAbox->AddText("ADC ok");
+				if(notConfgADA && notConfgADC)QAbox->SetFillColor(kViolet);
+				}
+				
+			else if(notSynchADA || notSynchADC){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kRed);
+        			if(notSynchADA)QAbox->AddText("ADA misconfigured!");
+				if(!notSynchADA)QAbox->AddText("ADA ok");
+				if(notSynchADC)QAbox->AddText("ADC misconfigured!");
+				if(!notSynchADC)QAbox->AddText("ADC ok");
+				if(notSynchADA && notSynchADC)QAbox->SetFillColor(kRed);
+				}
+			else {
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("ADA ok");
+				QAbox->AddText("ADC ok");
+				}				
+    			}
+		}
+    	}     
     TH2F *hPedestalDiffInt0  = (TH2F*)list->At(AliADQADataMakerRec::kPedestalDiffInt0);
     if (!hPedestalDiffInt0) {
       AliWarning("PedestalInt0 histogram is not found");
@@ -921,7 +991,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	pChargeZoom->Divide(6, 1);
     	pTime->Divide(4, 1);
 	pTimeRatio->Divide(4, 1);
-    	pClockFg->Divide(4, 1);
+    	pClockFg->Divide(5, 1);
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
 	pMeanTime->Divide(4, 1);
@@ -1074,7 +1144,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	myLegend3->Draw();
 		
 	//Clock Flags pad
-	for(Int_t iHist = 0; iHist<4; iHist++){
+	for(Int_t iHist = 0; iHist<5; iHist++){
 		pad = pClockFg->cd(iHist+1);
 		if(iHist>1)gPad->SetLogz();
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kBBFlagVsClock+iHist);
@@ -1106,9 +1176,10 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	//Saturation monitoring pad
 	pad = pMaxCh->cd();
 	gPad->SetLogz();
-	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeSaturation);
-	//histo->GetYaxis()->SetRangeUser(800,1024);
-	histo->DrawCopy("COLZ");
+	histo2D=(TH2*)list[esIndex]->At(AliADQADataMakerRec::kChargeSaturation);
+	histo2DCopy = (TH2*)histo2D->Clone("histoBlue");
+	histo2DCopy->RebinY(64);
+	histo2DCopy->DrawCopy("COLZ");
 
 	//Trigger inputs pad
 	pad = pTrigger->cd();
@@ -1236,7 +1307,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	histo->DrawCopy("colz");
     }
     
-    fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
+    //fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
     //fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
   }
 }
