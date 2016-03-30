@@ -443,12 +443,14 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistQxV0c;                     //! qx v0a before cuts
         TH2F*                   fHistQyV0c;                     //! qx v0a before cuts
         TH2F*                   fHistMultVsCellBC;              //! fHistMultVsCellBC
+        TH1F*                   fHistEPBC;                      //! fHistEPBC
+        TH1F*                   fHistEP;                        //! fHistEP
         TH2F*                   fHistMultVsCell;                //! fHistMultVsCell
 
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 7);
+        ClassDef(AliAnalysisTaskJetV2, 8);
 };
 
 #endif
