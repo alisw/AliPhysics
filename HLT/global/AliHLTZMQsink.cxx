@@ -110,7 +110,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
 
   int rc = 0;
   //init ZMQ context
-  fZMQcontext = zmq_ctx_new();
+  fZMQcontext = alizmq_context();
   HLTMessage(Form("ctx create ptr %p %s",fZMQcontext,(rc<0)?zmq_strerror(errno):""));
   if (!fZMQcontext) return -1;
 

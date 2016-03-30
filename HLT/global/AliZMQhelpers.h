@@ -4,6 +4,10 @@
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 // some of it might be inspired by czmq.h
 
+namespace AliZMQhelpers {
+  extern void* gZMQcontext; //a global ZMQ context
+}
+
 #include <string>
 #include <map>
 #include "TString.h"
@@ -23,6 +27,9 @@ typedef std::vector<std::pair<std::string, std::string> > aliStringVec;
 //  SUB>tcp://localhost:123123,@tcp://*:454545
 //  timeout is in ms, -1 is wait forever
 int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
+
+//get the global context
+void* alizmq_context();
 
 // extract the socket mode from a config string
 int alizmq_socket_type(std::string config);

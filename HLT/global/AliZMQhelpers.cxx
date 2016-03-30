@@ -16,6 +16,15 @@
 #include "TObjArray.h"
 #include "AliHLTMessage.h"
 
+//init the shared context to null
+void* AliZMQhelpers::gZMQcontext = NULL;
+
+//_______________________________________________________________________________________
+void* alizmq_context()
+{ 
+  if (!AliZMQhelpers::gZMQcontext) AliZMQhelpers::gZMQcontext=zmq_ctx_new();
+  return AliZMQhelpers::gZMQcontext;
+}
 
 //_______________________________________________________________________________________
 int alizmq_detach (void *self, const char *endpoints, bool serverish)

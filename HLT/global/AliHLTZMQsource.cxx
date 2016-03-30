@@ -115,7 +115,7 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
 
   int rc = 0;
   //init ZMQ stuff
-  fZMQcontext = zmq_ctx_new();
+  fZMQcontext = alizmq_context();
   HLTMessage(Form("ctx create rc %i errno %i",rc,errno));
 
   //init ZMQ socket
