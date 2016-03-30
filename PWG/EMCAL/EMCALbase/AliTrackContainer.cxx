@@ -260,7 +260,7 @@ AliVTrack* AliTrackContainer::GetNextTrack()
  * @param[in] mass (Optional) Mass hypothesis
  * @return
  */
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass) const
+Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
 {
   if (part) {
     if (mass < 0) mass = part->M();
@@ -280,7 +280,7 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part
  * @param[in] part Particle from which to obtain the momentum information
  * @return Always true
  */
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVTrack* part) const
+Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part) const
 {
   return GetMomentum(mom,part,fMassHypothesis);
 }
@@ -362,7 +362,7 @@ Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
  * @param[in] i Index to check
  * @return True if the request was successfull, false otherwise
  */
-Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
 
   Double_t mass = fMassHypothesis;
