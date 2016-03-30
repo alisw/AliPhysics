@@ -21,6 +21,7 @@ class AliAnalysisTaskAbsorptionStudies : public AliAnalysisTaskSE {
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(const Option_t*) {}
 
+    bool            mTOFtimeAnalysis;
     bool            mMCtrue;
     int             mMagField;  // positive: positive B, negative: negative B,  0: both B.
     AliESDtrackCuts mCuts;
