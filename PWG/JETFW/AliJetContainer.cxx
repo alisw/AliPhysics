@@ -51,7 +51,8 @@ AliJetContainer::AliJetContainer():
 {
   // Default constructor.
 
-  fClassName = "AliEmcalJet";
+  fBaseClassName = "AliEmcalJet";
+  SetClassName("AliEmcalJet");
 }
 
 //________________________________________________________________________
@@ -88,7 +89,8 @@ AliJetContainer::AliJetContainer(const char *name):
 {
   // Standard constructor.
 
-  fClassName = "AliEmcalJet";
+  fBaseClassName = "AliEmcalJet";
+  SetClassName("AliEmcalJet");
   SetMinPt(1);
 }
 
@@ -127,7 +129,8 @@ AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoSc
 {
   // Constructor.
 
-  fClassName = "AliEmcalJet";
+  fBaseClassName = "AliEmcalJet";
+  SetClassName("AliEmcalJet");
   SetMinPt(1);
 }
 
@@ -348,7 +351,7 @@ Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const {
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const
+Bool_t AliJetContainer::GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const
 {
   Double_t p = jet->P();
   Double_t e = TMath::Sqrt(mass*mass + p*p);
@@ -359,11 +362,11 @@ Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet,
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet) const
+Bool_t AliJetContainer::GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet) const
 {
   if (jet) {
     if (fMassHypothesis >= 0) {
-      GetMomentum(mom, jet, fMassHypothesis);
+      GetMomentumFromJet(mom, jet, fMassHypothesis);
     }
     else {
       jet->GetMomentum(mom);
@@ -382,7 +385,7 @@ Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
   //Get momentum of the i^th particle in array
 
   AliEmcalJet *jet = GetJet(i);
-  return GetMomentum(mom, jet);
+  return GetMomentumFromJet(mom, jet);
 }
 
 //________________________________________________________________________
@@ -391,7 +394,7 @@ Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom)
   //Get momentum of the next jet in array
 
   AliEmcalJet *jet = GetNextJet();
-  return GetMomentum(mom, jet);
+  return GetMomentumFromJet(mom, jet);
 }
 
 //________________________________________________________________________
@@ -400,7 +403,7 @@ Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
   //Get momentum of the i^th jet in array
 
   AliEmcalJet *jet = GetAcceptJet(i);
-  return GetMomentum(mom, jet);
+  return GetMomentumFromJet(mom, jet);
 }
 
 //________________________________________________________________________
@@ -409,7 +412,7 @@ Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom)
   //Get momentum of the next accepted jet in array
 
   AliEmcalJet *jet = GetNextAcceptJet();
-  return GetMomentum(mom, jet);
+  return GetMomentumFromJet(mom, jet);
 }
 
 //________________________________________________________________________
@@ -421,7 +424,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReaso
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  GetMomentum(mom, jet);
+  GetMomentumFromJet(mom, jet);
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -764,16 +767,6 @@ Int_t AliJetContainer::GetNAcceptedJets()
   fCurrentID = tempID;
 
   return nJet;
-}
-
-//________________________________________________________________________
-void AliJetContainer::SetClassName(const char *clname)
-{
-  // Set the class name
-
-  TClass cls(clname);
-  if (cls.InheritsFrom("AliEmcalJet")) fClassName = clname;
-  else AliError(Form("Unable to set class name %s for a AliJetContainer, it must inherits from AliEmcalJet!",clname));
 }
 
 //________________________________________________________________________

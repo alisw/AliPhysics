@@ -114,8 +114,8 @@ class AliJetContainer : public AliParticleContainer {
   AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)      const;
   AliEmcalJet                *GetNextAcceptJet()                         ;
   AliEmcalJet                *GetNextJet()                               ;
-  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const;
-  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet) const;
+  Bool_t                      GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const;
+  Bool_t                      GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet) const;
   Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
   Bool_t                      GetNextMomentum(TLorentzVector &mom);
@@ -152,7 +152,6 @@ class AliJetContainer : public AliParticleContainer {
   Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
   Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
-  void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
