@@ -163,6 +163,12 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hTofM2","TOF in M2" ,100,0.,20.,400,-4.e-6,4.e-6));
   fOutputContainer->Add(new TH2F("hTofM3","TOF in M3" ,100,0.,20.,400,-4.e-6,4.e-6));
   
+  //Jet QA
+  Double_t ptJet[12]={2.,3.,4.,5.,7.,10.,15.,20.,30.,50.,100.,500.} ;
+  fOutputContainer->Add(new TH2F("hTrackDist","Distance to track" ,100,0.,10.,11,ptJet));
+  fOutputContainer->Add(new TH1F("hTrackDistTmp","tmp",11,ptJet));
+  
+  
   //Single photon and pi0 spectrum
   Int_t nQ=120 ;
   Double_t qMax=0.3 ;
@@ -190,22 +196,22 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
     for(Int_t ikT=0; ikT<6; ikT++){ 
 //      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
  
-//      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+//      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
       
       
 //      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-//      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+//      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
     
     }        
 
@@ -215,12 +221,12 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
   }
 
-  for(Int_t ikT=0; ikT<6; ikT++){ 
-     fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
-     fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
-     fOutputContainer->Add(new TH3F(Form("hSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
-     fOutputContainer->Add(new TH3F(Form("hMiSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
-  }
+//   for(Int_t ikT=0; ikT<6; ikT++){ 
+//      fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+//      fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+//      fOutputContainer->Add(new TH3F(Form("hSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
+//      fOutputContainer->Add(new TH3F(Form("hMiSLr_%s",kTbins[ikT]),"Side-Long-r",nQ,-qMax,qMax,nQ,-qMax,qMax,30,0.,30.));
+//   }
   
   
   
@@ -427,6 +433,31 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   FillHistogram("hCenPHOSCells",fCentrality,cells->GetNumberOfCells()) ;
   FillHistogram("hCenTrack",fCentrality,fEvent->GetNumberOfTracks()) ;
   
+  //Fill track distribution
+  Int_t nt = fEvent->GetNumberOfTracks() ;
+  Double_t phiPHOS=270.*TMath::DegToRad() ;
+  TH1F * tmp = (TH1F*)fOutputContainer->FindObject("hTrackDistTmp") ;
+  tmp->Reset() ;
+  for(Int_t i=1; i<12; i++)tmp->SetBinContent(i,9.999) ;
+  for (Int_t i=0; i<nt; i++) {
+     AliAODTrack *aodTrack=static_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    if(!aodTrack->IsHybridGlobalConstrainedGlobal())
+      continue ;    
+    if(aodTrack->Pt()<2.)
+      continue;
+    Double_t dphi=aodTrack->Phi()-phiPHOS ;
+    while(dphi<-TMath::Pi())dphi+=TMath::TwoPi();
+    while(dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+    Double_t deta=aodTrack->Eta() ;
+    Double_t r=TMath::Sqrt(dphi*dphi+deta*deta);
+    Int_t ibin=tmp->FindBin(aodTrack->Pt()) ;
+    tmp->SetBinContent(ibin,TMath::Min(tmp->GetBinContent(ibin),r)) ;
+  }
+  for(Int_t i=1; i<12; i++)
+    FillHistogram("hTrackDist",tmp->GetBinContent(i),tmp->GetBinCenter(i)) ;
+  
+  
+  
   TVector3 localPos ;
   for (Int_t i=0; i<multClust; i++) {
     AliAODCaloCluster *clu = fEvent->GetCaloCluster(i);
@@ -519,6 +550,9 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     return ; 
   }
   
+  Int_t jetStatus[5]; 
+  for(Int_t mod=1; mod<5; mod++)
+    jetStatus[mod]=JetRejection(mod) ;
 
   const Double_t kgMass=0. ;
 	
@@ -611,13 +645,19 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
    	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
+	if(iCut>3){
+	  if((jetStatus[ph1->Module()])&1<<(iCut-4))
+	    continue ;
+	}
+	
+/*		
         if(iCut==3){//Both	
           Double_t dx = ph1->EMCx()-ph2->EMCx() ;
           Double_t dz = ph1->EMCz()-ph2->EMCz() ;
 	  Double_t r=TMath::Sqrt(dx*dx+dz*dz) ;
           FillHistogram(Form("hSLfine_%s",kTbin.Data()),qspf,qlpf) ;
           FillHistogram(Form("hSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
-	}
+	}*/
 	  
 	FillHistogram(Form("hQinv_%s",cut[iCut]),qinv,kT) ;
 	if(TMath::Abs(qo) < 0.05)
@@ -627,9 +667,9 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //        FillHistogram(Form("hOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
         // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-//        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
-        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+//        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+//        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
 
 
 //        FillHistogram(Form("hYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
@@ -714,14 +754,14 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 	for(Int_t iCut=0; iCut<7; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
-	
+/*	
           if(iCut==3){//Both	
             Double_t dx = ph1->EMCx()-ph2->EMCx() ;
             Double_t dz = ph1->EMCz()-ph2->EMCz() ;
 	    Double_t r=TMath::Sqrt(dx*dx+dz*dz) ;
             FillHistogram(Form("hMiSLfine_%s",kTbin.Data()),qspf,qlpf) ;
             FillHistogram(Form("hMiSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
-	  }  
+	  }  */
 	  
 	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
 	   if(TMath::Abs(qo) < 0.05)
@@ -731,10 +771,10 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-//          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
 
-          FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
-          FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//          FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+//          FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
 	  
 //          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
       
@@ -1015,8 +1055,7 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
   if(cut==4 ||cut==5 || cut==6 ){
     if(!(ph1->IsDispOK() && ph2->IsDispOK() && ph1->IsCPVOK() && ph2->IsCPVOK()))
       return kFALSE ;
-    if(ph1->Module() != ph2->Module())
-      return kTRUE ;
+/*
     Double_t dx = ph1->EMCx()-ph2->EMCx() ;
     Double_t dz = ph1->EMCz()-ph2->EMCz() ;
     if(cut==4)
@@ -1025,8 +1064,52 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
       return (dx*dx+dz*dz > 10.*10.) ;
     if(cut==6)
       return (dx*dx+dz*dz > 15.*15.) ;
-    
+    */
   }
   return kTRUE ;
   
 }
+//___________________________________________________________________________
+Int_t AliAnalysisTaskgg::JetRejection(Int_t module) const{
+  //We reject events with hard tracks in the vicinity of center of PHOS module
+  //track pT thresholds
+  const Double_t cutPt1=10.; //Maximal Track pT
+  const Double_t cutPt2=5.; //Track pT
+  const Double_t cutPt3=3.; //Track pT
+  
+  //Cone threshold
+  const Double_t cutR=0.5*0.5 ; //Cone radius squared
+  
+  Int_t result=0 ;
+  
+  //azimuthal angle of PHOS module
+  Double_t phiPHOS = TMath::DegToRad()*(270.+fPHOSGeo->GetPHOSAngle(module)); // (40,20,0,-20,-40) degrees
+  
+  Int_t nt = fEvent->GetNumberOfTracks() ;
+  for (Int_t i=0; i<nt; i++) {
+     AliAODTrack *aodTrack=static_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    if(!aodTrack->IsHybridGlobalConstrainedGlobal())
+      continue ;    
+    if(aodTrack->Pt()<cutPt3)
+      continue;
+    Double_t dphi=aodTrack->Phi()-phiPHOS ;
+    while(dphi<-TMath::Pi())dphi+=TMath::TwoPi();
+    while(dphi>TMath::Pi()) dphi-=TMath::TwoPi();
+    Double_t deta=aodTrack->Eta() ;
+    Double_t r=dphi*dphi+deta*deta;
+    if(r<cutR){
+      result=result|1<<0 ;
+      if(aodTrack->Pt()>cutPt2)
+	result=result|1<<1 ;
+        if(aodTrack->Pt()>cutPt1){
+	  result=result|1<<2 ;
+	  return result ;
+	}
+      
+    }
+
+  }
+  return result ;
+}
+
+

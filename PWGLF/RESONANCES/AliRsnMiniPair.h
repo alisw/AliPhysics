@@ -48,6 +48,7 @@ public:
    Double_t        Y(Bool_t mc)              const  {return fRef[ID(mc)].Rapidity();}
    Double_t        PtRatio(Bool_t mc)        const;
    Double_t        DipAngle(Bool_t mc)       const;
+   Double_t        DeltaCos(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
    Double_t        CosThetaJackson(Bool_t mc);
    Double_t        CosThetaTransversity(Bool_t mc);

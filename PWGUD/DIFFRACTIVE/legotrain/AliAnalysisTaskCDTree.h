@@ -82,7 +82,7 @@ class AliAnalysisTaskCDTree : public AliAnalysisTaskSE
 			kBinDD, // double diffractive
 			kBinMCAll
 		};
-		enum {kInput = 0, kMCCheck, kClusterCut, kVtxCut, kPileUpCut, kMBOR,kMBAND,kNG,kGA,kGC,kDG,kNG_wFMD,kGA_wFMD,kGC_wFMD,kDG_wFMD,kCheckDG,kCheckV0Hit,k2Tracks,k4Tracks,k6Tracks,kAll};
+		enum {kInput = 0, kMCCheck, kOfflineCut, kVtxCut, kPileUpCut, kClusterCut,kMBOR,kMBAND,kNG,kGA,kGC,kDG,kNG_wFMD,kGA_wFMD,kGC_wFMD,kDG_wFMD,kCheckDG,kCheckV0Hit,k2Tracks,k4Tracks,k6Tracks,kAll};
 
 		AliAnalysisTaskCDTree(const AliAnalysisTaskCDTree  &p);
 		AliAnalysisTaskCDTree& operator=(const AliAnalysisTaskCDTree  &p);
@@ -98,7 +98,7 @@ class AliAnalysisTaskCDTree : public AliAnalysisTaskSE
 				const Double_t vtxPos[], TH2 *hitMapSPDinner,
 				TH2 *hitMapSPDouter);
 		static Bool_t CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd, TH1* hfochans,
-				TH1* hpriVtxX, TH1* hpriVtxY, TH1* hpriVtxZ, TH2D *hspd1, TH2D *hspd2, TH1D *hEvent);
+				TH1* hpriVtxX, TH1* hpriVtxY, TH1* hpriVtxZ, Double_t *hVertex); 
 		static Int_t GetFastORmultiplicity(const AliESDEvent *ESDEvent);
 		Bool_t CheckV0Hit(const AliESDEvent *ESDEvent, TH1D* fHitV0A, TH1D* fHitV0C);
 		Int_t DetermineGap(const AliESDEvent *ESDEvent, const Bool_t wCent, const Bool_t wFMD); // determines the gap of all available detectors
@@ -137,10 +137,10 @@ class AliAnalysisTaskCDTree : public AliAnalysisTaskSE
 		//Two track
 		Bool_t fCheckTwoPion; //! Check that this event has 2 tracks
 		Bool_t fCheckFourPion; //! Check that this event has 4 tracks
-		Bool_t fCheckSixPion; //! Check that this event has 4 tracks
 		Bool_t fCheckV0FMD; //! Check that this event verified by V0 and FMD
 		Bool_t fCheckTwoPion_ITSSA; //!for 2tracks with ITSSA
 		Bool_t fIsMC;//!
+		Double_t fVertex[3];//!
 		Double_t fTwoPionTrack[2][9];//! First track Momentum, Energy and Sign
 		Double_t fTwoPionTPCSigma[2][9];//! TPC PID
 		Double_t fTwoPionTOFSigma[2][9];//! TOF PID

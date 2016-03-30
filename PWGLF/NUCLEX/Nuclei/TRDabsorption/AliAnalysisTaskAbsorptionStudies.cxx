@@ -28,7 +28,8 @@ enum {
 ClassImp(AliAnalysisTaskAbsorptionStudies)
 
 AliAnalysisTaskAbsorptionStudies::AliAnalysisTaskAbsorptionStudies(const char* name)
-  :AliAnalysisTaskSE(name),
+:AliAnalysisTaskSE(name),
+  mTOFtimeAnalysis(false),
   mMCtrue(false),
   mMagField(0),
   mCuts(),
@@ -112,19 +113,21 @@ void AliAnalysisTaskAbsorptionStudies::UserCreateOutputObjects() {
     mPhiPtMass = new THnSparseF("mPhiPtMass","",6,nBinsMass,minBinsMass,maxBinsMass);
     mOutput->Add(mPhiPtMass);
 
-    /// Positive/Negative, proper time / mismatch ,centrality, phi, pt, time
-    int nBinsTime[6]      = {  2  ,  2  , mCentrality.GetNbins(), mPhiAxis.GetNbins(), mPtAxis.GetNbins(), mTimeAxis.GetNbins()};
-    double minBinsTime[6] = { -0.5, -0.5, mCentrality.GetXmin(), mPhiAxis.GetXmin(), mPtAxis.GetXmin(), mTimeAxis.GetXmin()};
-    double maxBinsTime[6] = {  1.5,  1.5, mCentrality.GetXmax(), mPhiAxis.GetXmax(), mPtAxis.GetXmax(), mTimeAxis.GetXmax()};
-    mPhiPtTime = new THnSparseF("mPhiPtTime","",6,nBinsTime,minBinsTime,maxBinsTime);
-    mOutput->Add(mPhiPtTime);
+    if (mTOFtimeAnalysis) {
+      /// Positive/Negative, proper time / mismatch ,centrality, phi, pt, time
+      int nBinsTime[6]      = {  2  ,  2  , mCentrality.GetNbins(), mPhiAxis.GetNbins(), mPtAxis.GetNbins(), mTimeAxis.GetNbins()};
+      double minBinsTime[6] = { -0.5, -0.5, mCentrality.GetXmin(), mPhiAxis.GetXmin(), mPtAxis.GetXmin(), mTimeAxis.GetXmin()};
+      double maxBinsTime[6] = {  1.5,  1.5, mCentrality.GetXmax(), mPhiAxis.GetXmax(), mPtAxis.GetXmax(), mTimeAxis.GetXmax()};
+      mPhiPtTime = new THnSparseF("mPhiPtTime","",6,nBinsTime,minBinsTime,maxBinsTime);
+      mOutput->Add(mPhiPtTime);
 
-    /// Positive/Negative, species, centrality, phi, pt, time
-    int nBinsTimeSpecies[6]      = {  2  ,  4  , mCentrality.GetNbins(), mPhiAxis.GetNbins(), mPtAxis.GetNbins(), mTimeAxis.GetNbins()};
-    double minBinsTimeSpecies[6] = { -0.5, -0.5, mCentrality.GetXmin(), mPhiAxis.GetXmin(), mPtAxis.GetXmin(), mTimeAxis.GetXmin()};
-    double maxBinsTimeSpecies[6] = {  1.5,  3.5, mCentrality.GetXmax(), mPhiAxis.GetXmax(), mPtAxis.GetXmax(), mTimeAxis.GetXmax()};
-    mPhiPtTimeParticles = new THnSparseF("mPhiPtTimeParticles","",6,nBinsTimeSpecies,minBinsTimeSpecies,maxBinsTimeSpecies);
-    mOutput->Add(mPhiPtTimeParticles);
+      /// Positive/Negative, species, centrality, phi, pt, time
+      int nBinsTimeSpecies[6]      = {  2  ,  4  , mCentrality.GetNbins(), mPhiAxis.GetNbins(), mPtAxis.GetNbins(), mTimeAxis.GetNbins()};
+      double minBinsTimeSpecies[6] = { -0.5, -0.5, mCentrality.GetXmin(), mPhiAxis.GetXmin(), mPtAxis.GetXmin(), mTimeAxis.GetXmin()};
+      double maxBinsTimeSpecies[6] = {  1.5,  3.5, mCentrality.GetXmax(), mPhiAxis.GetXmax(), mPtAxis.GetXmax(), mTimeAxis.GetXmax()};
+      mPhiPtTimeParticles = new THnSparseF("mPhiPtTimeParticles","",6,nBinsTimeSpecies,minBinsTimeSpecies,maxBinsTimeSpecies);
+      mOutput->Add(mPhiPtTimeParticles);
+    }
   }
   PostData(1,mOutput);
   //
@@ -237,26 +240,28 @@ void AliAnalysisTaskAbsorptionStudies::UserExec(Option_t *){
       fill[5] = dcaxy;
       mPhiPtDCAxy->Fill(fill);
 
-      AliTOFPIDResponse* tofPID = &(mPIDresponse->GetTOFResponse());
-      fill[1] = 0.;
-      fill[5] = time;
-      mPhiPtTime->Fill(fill);
-      fill[1] = 1.;
-      fill[5] = tofPID->GetMismatchRandomValue(track->Eta());
-      mPhiPtTime->Fill(fill);
+      if (mTOFtimeAnalysis) {
+        AliTOFPIDResponse* tofPID = &(mPIDresponse->GetTOFResponse());
+        fill[1] = 0.;
+        fill[5] = time;
+        mPhiPtTime->Fill(fill);
+        fill[1] = 1.;
+        fill[5] = tofPID->GetMismatchRandomValue(track->Eta());
+        mPhiPtTime->Fill(fill);
 
-      fill[1] = 0.;
-      fill[5] = tofPID->GetExpectedSignal(track,AliPID::kPion);
-      mPhiPtTimeParticles->Fill(fill);
-      fill[1] = 1.;
-      fill[5] = tofPID->GetExpectedSignal(track,AliPID::kKaon);
-      mPhiPtTimeParticles->Fill(fill);
-      fill[1] = 2.;
-      fill[5] = tofPID->GetExpectedSignal(track,AliPID::kProton);
-      mPhiPtTimeParticles->Fill(fill);
-      fill[1] = 3.;
-      fill[5] = tofPID->GetExpectedSignal(track,AliPID::kDeuteron);
-      mPhiPtTimeParticles->Fill(fill);
+        fill[1] = 0.;
+        fill[5] = tofPID->GetExpectedSignal(track,AliPID::kPion);
+        mPhiPtTimeParticles->Fill(fill);
+        fill[1] = 1.;
+        fill[5] = tofPID->GetExpectedSignal(track,AliPID::kKaon);
+        mPhiPtTimeParticles->Fill(fill);
+        fill[1] = 2.;
+        fill[5] = tofPID->GetExpectedSignal(track,AliPID::kProton);
+        mPhiPtTimeParticles->Fill(fill);
+        fill[1] = 3.;
+        fill[5] = tofPID->GetExpectedSignal(track,AliPID::kDeuteron);
+        mPhiPtTimeParticles->Fill(fill);
+      }
     }
 
   }

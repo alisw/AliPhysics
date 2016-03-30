@@ -41,7 +41,9 @@ private:
 private:
   TClonesArray * fStack ;
   TList *       fMCEvents ;   //Containers for events with primary photons
-  TClonesArray* fMCEvent ;    //primaryS photons in current event
+  TClonesArray* fMCEvent ;    //primary photons in current event
+  TList *       fMCEventsH ;   //Containers for events with primary hadrons
+  TClonesArray* fMCEventH ;    //primary hadrons in current event
 
   
   

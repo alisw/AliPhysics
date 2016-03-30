@@ -39,8 +39,8 @@ AliEmcalContainer::AliEmcalContainer():
   fBitMap(0),
   fMinPt(0.15),
   fMaxPt(1000.),
-  fMinE(0.),
   fMaxE(1000.),
+  fMinE(0.),
   fMinEta(-0.9),
   fMaxEta(0.9),
   fMinPhi(-10),
@@ -74,8 +74,8 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fBitMap(0),
   fMinPt(0.15),
   fMaxPt(1000.),
-  fMinE(0.),
   fMaxE(1000.),
+  fMinE(0.),
   fMinEta(-0.9),
   fMaxEta(0.9),
   fMinPhi(-10),
@@ -91,6 +91,17 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
+}
+
+/**
+ * Index operator, accessing object in the container at a given index.
+ * Operates on all objects inside the container.
+ * @param index Index of the object to access
+ * @return Object at the given index (NULL if out of range)
+ */
+TObject *AliEmcalContainer::operator[](int index) const {
+  if(index >= 0 && index < GetNEntries()) return fClArray->At(index);
+  return NULL;
 }
 
 /**
@@ -126,6 +137,19 @@ void AliEmcalContainer::SetArray(AliVEvent *event)
   }
 
   fLabelMap = dynamic_cast<AliNamedArrayI*>(event->FindListObject(fClArrayName + "_Map"));
+}
+
+/**
+ * Count accepted entries in the container
+ * @return Number of accepted events in the container
+ */
+Int_t AliEmcalContainer::GetNAcceptEntries() const{
+  Int_t result = 0;
+  for(int index = 0; index < GetNEntries(); index++){
+    UInt_t rejectionReason = 0;
+    if(AcceptObject(index, rejectionReason)) result++;
+  }
+  return result;
 }
 
 /**
@@ -167,7 +191,7 @@ UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason
  * Helper function to calculate the distance between two jets or a jet and a particle
  * @param part1 First particle in the check
  * @param part2 Second particle to compare to
- * @param dist Maximum distance under which partices are considered as "same" in \f$ p_{t} \f$, \f$ \eta \f$ and \$ \phi \f$
+ * @param dist Maximum distance under which partices are considered as "same" in \f$ p_{t} \f$, \f$ \eta \f$ and \f$ \phi \f$
  * @return True if the particles are considered as the same, false otherwise
  */
 Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist)
@@ -219,4 +243,22 @@ Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_
   }
 
   return kTRUE;
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliEmcalIterableContainer AliEmcalContainer::all() const {
+  return AliEmcalIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
+  return AliEmcalIterableContainer(this, true);
 }

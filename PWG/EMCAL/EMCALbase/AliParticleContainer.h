@@ -74,10 +74,10 @@ class AliParticleContainer : public AliEmcalContainer {
   private:
     accept_iterator();
 
-    const AliParticleContainer      *fkContainer;       /// Container iterated over
-    TArrayI                          fAcceptIndices;    /// Indices of accepted clusters
-    int                              fCurrentPos;       /// Current position inside the container
-    bool                             fForward;          /// Direction, expressed in forward direction
+    const AliParticleContainer      *fkContainer;       ///< Container iterated over
+    TArrayI                          fAcceptIndices;    ///< Indices of accepted clusters
+    int                              fCurrentPos;       ///< Current position inside the container
+    bool                             fForward;          ///< Direction, expressed in forward direction
   };
 
   /**
@@ -134,9 +134,9 @@ class AliParticleContainer : public AliEmcalContainer {
   private:
     all_iterator();
 
-    const AliParticleContainer      *fkContainer;       /// Container iterated over
-    int                              fCurrentPos;       /// Current position inside the container
-    bool                             fForward;          /// Direction, expressed in forward direction
+    const AliParticleContainer      *fkContainer;       ///< Container iterated over
+    int                              fCurrentPos;       ///< Current position inside the container
+    bool                             fForward;          ///< Direction, expressed in forward direction
   };
 
   AliParticleContainer();
@@ -191,9 +191,9 @@ class AliParticleContainer : public AliEmcalContainer {
 
  protected:
 
-  Double_t                    fMinDistanceTPCSectorEdge;      /// require minimum distance to edge of TPC sector edge
-  Short_t                     fCharge;                        /// select particles with charge=fCharge
-  Short_t                     fGeneratorIndex;                /// select MC particles with generator index (default = -1 = switch off selection)
+  Double_t                    fMinDistanceTPCSectorEdge;      ///< require minimum distance to edge of TPC sector edge
+  Short_t                     fCharge;                        ///< select particles with charge=fCharge
+  Short_t                     fGeneratorIndex;                ///< select MC particles with generator index (default = -1 = switch off selection)
 
  private:
   AliParticleContainer(const AliParticleContainer& obj); // copy constructor
