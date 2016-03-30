@@ -15,10 +15,10 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    Bool_t lessSparseAxes      = 0,
    Bool_t widertrackbin       = 0,
    UInt_t centbinsize         = 1,
+   const Int_t doEffcorrSW    = 0,
    const char *suffix         = "biased",
    const char *CentEst        = "V0M",
    const Short_t beamType     = AliAnalysisTaskEmcal::kAA, 
-   const Int_t doEffcorrSW    = 0,
    Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection"
@@ -90,27 +90,18 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
     }
   }
 
-  TString name("JetH");
+  TString name("AliAnalysisTaskJetH");
   if (!trackName.IsNull()) {
-    name += "_";
-    name += trackName;
+    name += TString::Format("_%s", trackName.Data());
   }
   if (!clusName.IsNull()) {
-    name += "_";
-    name += clusName;
+    name += TString::Format("_%s", clusName.Data());
   }
-  if (strcmp(suffix, "") != 0)
-  {
-    name += "_";
-    name += suffix;
+  if (strcmp(suffix, "") != 0) {
+    name += TString::Format("_%s", suffix);
   }
 
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
-  //correlationtask->SetTracksName(nTracks);
-  //correlationtask->SetCaloClustersName(nCaloClusters);
-  /*correlationtask->SetJetPhi(minPhi,maxPhi);
-  correlationtask->SetJetEta(minEta,maxEta);
-  correlationtask->SetAreaCut(minArea);*/
   if(EvtMix>0){
     correlationtask->SetMixingTracks(EvtMix);
     correlationtask->SetEventMixing(1);
@@ -141,20 +132,33 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   AliClusterContainer * clusterContainer = correlationtask->AddClusterContainer(clusName);
   clusterContainer->SetMinE(minClusterPt);
   // Tracks
-  AliTrackContainer * trackContainer = correlationtask->AddTrackContainer(trackName);
-  trackContainer->SetMinPt(minTrackPt);
-  trackContainer->SetEtaLimits(-1.0*TrkEta, TrkEta);
+  // For jet finding
+  AliTrackContainer * tracksForJets = new AliTrackContainer(trackName);
+  tracksForJets->SetName("tracksForJets");
+  tracksForJets->SetMinPt(minTrackPt);
+  tracksForJets->SetEtaLimits(-1.0*TrkEta, TrkEta);
+  // Adopt the container
+  correlationtask->AdoptTrackContainer(tracksForJets);
+    
+  // For correlations
+  AliTrackContainer * tracksForCorrelations = new AliTrackContainer(trackName);
+  tracksForCorrelations->SetName("tracksForCorrelations");
+  tracksForCorrelations->SetMinPt(0.15);
+  tracksForCorrelations->SetEtaLimits(-1.0*TrkEta, TrkEta);
+  // Adopt the container
+  correlationtask->AdoptTrackContainer(tracksForCorrelations);
+
   // Jets
   AliJetContainer * jetContainer = correlationtask->AddJetContainer(AliJetContainer::kFullJet,
                                    AliJetContainer::antikt_algorithm,
                                    AliJetContainer::pt_scheme,
                                    jetRadius,
                                    AliJetContainer::kEMCALfid,
-                                   trackContainer,
+                                   tracksForJets,
                                    clusterContainer);
   jetContainer->SetJetAreaCut(minArea);
   jetContainer->SetMaxTrackPt(100);
-  jetContainer->SetJetPtCut(.1);
+  jetContainer->SetJetPtCut(0.1);
 
   if (embeddingCorrection == kTRUE)
   {

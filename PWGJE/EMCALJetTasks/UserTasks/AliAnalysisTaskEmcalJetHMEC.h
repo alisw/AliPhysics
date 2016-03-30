@@ -124,7 +124,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   TH1                   *fHistJetPt[6]; //!
   TH1                   *fHistJetPtBias[6];//!
-  TH1                   *fHistLeadJetPt[6];//!
   TH1                   *fHistLeadJetPtBias[6];//!
   TH1                   *fHistJetPtTT[6];//!
   TH2                   *fHistJetH[6][5][3];//!
