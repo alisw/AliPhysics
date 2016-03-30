@@ -1025,6 +1025,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Int_t label = track->GetLabel();
         AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label)));
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
+        if(!fStack->IsPhysicalPrimary(TMath::Abs(label))) continue;
+        AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
+        if(mother && mother->PdgCode() == 22) continue;
+        
         Double_t mcPt   = part->Pt();
         Double_t mcP    = part->P();
         Double_t recPt  = track->Pt();
