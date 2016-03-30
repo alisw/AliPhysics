@@ -41,7 +41,7 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
     enum type {kCent, kZvtx, kNdimensions};
   };
   struct cPairsDims {
-    enum type {kEta1, kEta2, kPhi1, kPhi2, kPt1, kPt2, kCent, kZvtx, kNdimensions};
+    enum type {kEta1, kEta2, kPhi1, kPhi2, kPtPair, kCent, kZvtx, kNdimensions};
   };
   struct cSinglesDims {
     enum type {kEta, kPhi, kPt, kCent, kZvtx, kNdimensions};
