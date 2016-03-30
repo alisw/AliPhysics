@@ -157,3 +157,13 @@ void AliAnalysisC2Utils::GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrac
   }
 }
 
+
+Int_t AliAnalysisC2Utils::ComputePtPairBin(Int_t pt1Bin, Int_t pt2Bin){
+  Int_t idx = 0;
+  for (Int_t i = 1; i <= pt2Bin; i++){
+    idx += i;
+  }
+  idx += (pt1Bin - pt2Bin);
+  idx -= 1;
+  return idx;
+}
