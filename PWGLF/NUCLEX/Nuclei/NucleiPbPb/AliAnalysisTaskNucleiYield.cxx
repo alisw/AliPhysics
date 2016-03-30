@@ -298,11 +298,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
     fATOFphiSignal = new TH3F("fATOFphiSignal",
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              64,0.,TMath::TwoPi(),28,0.2,3.,
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     fMTOFphiSignal = new TH3F("fMTOFphiSignal",
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              64,0.,TMath::TwoPi(),28,0.2,3.,
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     if (fRequireMinEnergyLoss > 0.) {
       fList->Add(fMTOFphiSignal);
