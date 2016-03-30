@@ -1612,7 +1612,7 @@ const AliVVertex* AliTrackletAODdNdeta::FindRealIP(AliVEvent* event,
 {
   const AliVVertex* ip   = event->GetPrimaryVertex();
   if (!ip) {
-    AliWarning("No real IP for this event found!");
+    if (DebugLevel() > 1) AliWarning("No real IP for this event found!");
     return 0;
   }
   return CheckIP(ip, maxDispersion, maxZError);
@@ -1628,7 +1628,7 @@ const AliVVertex* AliTrackletAODdNdeta::FindRealIP(AliVEvent* event,
     static_cast<AliAODSimpleHeader*>(event
 				     ->FindListObject("AliAODSimpleHeader"));
   if (!head) {
-    AliWarning("No simple header");
+    if (DebugLevel() > 1) AliWarning("No simple header");
     return 0;
   }
   if (!ip)
@@ -1650,7 +1650,7 @@ const AliVVertex* AliTrackletAODdNdeta::FindIP(AliVEvent* event,
   if (!ip) {
     ip = FindSimpleIP(event,maxDispersion,maxZError);
     if (!ip) {
-      AliWarning("No IP for this event found!");
+      if (DebugLevel() > 1) AliWarning("No IP for this event found!");
       return 0;
     }
   }
@@ -1696,7 +1696,7 @@ Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
   if (estTracklets)    
     nTracklets = estTracklets->GetValue();
 
-  cent->GetMultiplicityPercentile(fCentMethod);
+  return cent->GetMultiplicityPercentile(fCentMethod);
 }
   
 //____________________________________________________________________
