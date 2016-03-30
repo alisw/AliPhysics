@@ -10,28 +10,27 @@
  */
 #ifndef ALIFORWARDMULTIPLICITYDISTRIBUTION_H
 #define ALIFORWARDMULTIPLICITYDISTRIBUTION_H
-#include "AliBaseAODTask.h"
-
-class TH2D;
+#include "AliBaseMultTask.h"
 
 /**
  * Task to do the multiplicity distibution
  * 
  * @ingroup pwglf_forward Tasks
  * @ingroup pwglf_forward_multdist
- * @todo Should not inherit from AliBasedNdetaTask 
  */
-class AliForwardMultiplicityDistribution : public AliBaseAODTask
+class AliForwardMultiplicityDistribution : public AliBaseMultTask
 {
 public:
   /**
    * Default Constructor
    */
-  AliForwardMultiplicityDistribution();
+  AliForwardMultiplicityDistribution() : AliBaseMultTask() {}
   /**
    * Constructor
    */
-  AliForwardMultiplicityDistribution(const char* name);
+  AliForwardMultiplicityDistribution(const char* name)
+    : AliBaseMultTask(name)
+  {}
   /**
    * Destructor
    */
@@ -39,20 +38,24 @@ public:
   /**
    * Embedded Class begins here
    */
-  struct Bin : public TNamed
+  struct Bin : public AliBaseMultTask::Bin
   {
     /**
      * Default Constructor
      */
-    Bin();
+    Bin() : AliBaseMultTask::Bin(), fHistPileUp(0) {}
     /**
      * Constructor
      */
-    Bin(Double_t etaLow, Double_t etaHigh);
+    Bin(Double_t etaLow, Double_t etaHigh)
+      : AliBaseMultTask::Bin(etaLow, etaHigh), fHistPileUp(0)
+    {}    
     /**
      * Copy Constructor
      */    
-    Bin(const Bin&){;}
+    Bin(const Bin& o)
+       : AliBaseMultTask::Bin(o), fHistPileUp(0)
+    {}
     /**
      * Assignment operator
      */
@@ -60,60 +63,48 @@ public:
     /**
      * Destructor
      */    
-    ~Bin(){}
+    virtual ~Bin(){}
     /**
      *  Define outputs of a single eta bin
      */
-    virtual void CreateOutputObjectss(TList* cont,  Int_t max);
-    /**
+    virtual void CreateOutputObjects(TList* cont,  Int_t max);
+    /** 
      * Process a single eta bin
+     * 
+     * @param dndetaForward   Forward observations 
+     * @param dndetaCentral   Central observations 
+     * @param normForward     Acceptance 
+     * @param normCentral     Acceptance 
+     * @param mc              Primary "observations"
+     * @param ipZ             Interaction point 
+     * @param pileup          True if flagged as pile-up
+     * @param selectedTrigger Is event selected
+     * @param isMCNSDm        Is event MC NSD 
+     * @param isESDNSD        Is event real NSD 
+     * @param aodevent        Full event 
      */
-    virtual void Process(TH1D* dndetaForward, TH1D* dndetaCentral, TH1D* normForward,   TH1D* normCentral, Double_t VtxZ);
-    Double_t fEtaLow;           // low eta limit 
-    Double_t fEtaHigh;          // high eta limit 
-    TH1D*    fHist;             // multiplicity distribution hist 
-    TH1D*    fHistPlus05;       // mult. dist. hist scaled up with 5%
-    TH1D*    fHistPlus075;      // mult. dist. hist scaled up with 7.5%
-    TH1D*    fHistPlus10;       // mult. dist. hist scaled up with 10%
-    TH1D*    fHistMinus05;      // mult. dist. hist scaled down with 5%
-    TH1D*    fHistMinus075;     // mult. dist. hist scaled down with 7.5%
-    TH1D*    fHistMinus10;      // mult. dist. hist scaled down with 10%
-    TH1D*    fHistPlusSys;      // mult. dist. hist scaled up with the event uncertainty
-    TH1D*    fHistMinusSys;     // mult. dist, hist scaled down with the event uncertainty
-    TH2D*    fAcceptance;       // histogram showing the 'holes' in acceptance. 
-                                // BinContent of 1 shows a hole, and BinContent of 10 shows data coverage
-    TH2D*    fVtxZvsNdataBins;  // VtxZ vs. number of data acceptance bins (normalised to the eta range) 
+    virtual void Process(TH1D*              dndetaForward,
+			 TH1D*              dndetaCentral,
+			 TH1D*              normForward,
+			 TH1D*              normCentral,
+			 TH1D*              mc,
+			 Double_t           ipZ,
+			 Bool_t             pileup,
+			 Bool_t             selectedTrigger,
+			 Bool_t             isMCNSDm,
+			 Bool_t             isESDNSD,
+			 const AliAODEvent& aodevent,
+			 Double_t           minIPz,
+			 Double_t           maxIPz);
+    TH1D*    fHistPileUp;       // multiplicity distribution hist 
+
     
-    ClassDef(Bin,3);  // Manager of data 
+    ClassDef(Bin,4);  // Manager of data 
   };
-  /**
-   * Create Output Objects
-   */
-  virtual Bool_t Book();
-  /**
-   * User Exec
-   */
-  Bool_t Event(AliAODEvent& aod);
-  /**
-   * Terminate
-   */
-  Bool_t Finalize() { return true; }
-  /**
-   * Set Centrality
-   */
-  void SetCentrality(Int_t low, Int_t high) { SetCentralityAxis(low, high); }
-  /**
-   * Set fNBins, multiplicity histos run from 0 to fNBins
-   */
-  void SetNBins(Int_t n){fNBins= n;}
   /** 
    * Add another eta bin to the task
    */
-  void AddBin(Double_t etaLow, Double_t etaHigh){fBins.Add(new Bin(etaLow, etaHigh)); }
-  /**
-   *  Form name of eta bin
-   */
-  static const Char_t* FormBinName(Double_t etaLow, Double_t etaHigh);
+  AliBaseMultTask::Bin* MakeBin(Double_t etaLow, Double_t etaHigh);
 protected:
   /**
    * Copy Constructor
@@ -124,10 +115,15 @@ protected:
    */
   AliForwardMultiplicityDistribution& 
   operator=(const AliForwardMultiplicityDistribution&);
-
-  TList  fBins;      // eta bin list
-  Int_t  fNBins;     // multiplicity axis' runs from 0 to fNbins
-  ClassDef(AliForwardMultiplicityDistribution, 3); 
+  /** 
+   * Check the event
+   * 
+   * @param fwd Forwarddata 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t CheckEvent(const AliAODForwardMult& fwd);
+  ClassDef(AliForwardMultiplicityDistribution, 4); 
 };
 
 #endif

@@ -183,6 +183,10 @@
 #pragma link C++ class AliForwardMultiplicityBase+;
 #pragma link C++ class AliForwardMultiplicityTask+;
 #pragma link C++ class AliForwardQATask+;
+#pragma link C++ class AliBaseMultTask+;
+#pragma link C++ class AliBaseMultTask::Bin+;
+#pragma link C++ class AliForwardTriggerBiasCorrection+;
+#pragma link C++ class AliForwardTriggerBiasCorrection::Bin+;
 #pragma link C++ class AliForwardCreateResponseMatrices+;
 #pragma link C++ class AliForwardCreateResponseMatrices::Bin+;
 #pragma link C++ class AliForwardMultiplicityDistribution+;

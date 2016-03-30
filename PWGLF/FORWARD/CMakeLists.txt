@@ -98,6 +98,8 @@ set(SRCS_analysis2
   analysis2/AliForwardMultiplicityBase.cxx
   analysis2/AliForwardMultiplicityTask.cxx
   analysis2/AliForwardQATask.cxx
+  analysis2/AliBaseMultTask.cxx
+  analysis2/AliForwardTriggerBiasCorrection.cxx
   analysis2/AliForwardCreateResponseMatrices.cxx
   analysis2/AliForwardMultiplicityDistribution.cxx
   analysis2/AliForwardMultDists.cxx

@@ -1,23 +1,15 @@
-/**
- * @file   AliForwardCreateResponseMatrices.h
- * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
- * @date   Thu Feb  7 00:56:02 2013
+ /**
+ * @file   AliForwardTriggerBiasCorrection.h
+ * @author Valentina Zaccolo
+ * @date   Mon Feb  3 12:31:02 2013
  * 
  * @brief  
  * 
  * @ingroup pwglf_forward_multdist
  */
-/** 
- * @defgroup pwglf_forward_multdist Multiplicity Distributions
- * 
- * Code to do with @f$P(N_{ch})@f$ analysis
- *
- * @ingroup pwglf_forward_topical
- */
-#ifndef ALIFORWARDCREATERESPONSEMATRICES_H
-#define ALIFORWARDCREATERESPONSEMATRICES_H
-#include "AliBaseMultTask.h"
-
+#ifndef ALIFORWARDTRIGGERBIASCORRECTION_H
+#define ALIFORWARDTRIGGERBIASCORRECTION_H  
+#include <AliBaseMultTask.h>
 /**
  * Task to make the reponse matrices used by the multiplicity
  * distibution analysis
@@ -25,7 +17,7 @@
  * @ingroup pwglf_forward Tasks
  * @ingroup pwglf_forward_multdist
  */
-class AliForwardCreateResponseMatrices : public AliBaseMultTask
+class AliForwardTriggerBiasCorrection : public AliBaseMultTask
 {
 public:
   /** 
@@ -33,20 +25,19 @@ public:
    * Default Constructor 
    * 
    */
-  AliForwardCreateResponseMatrices() : AliBaseMultTask() {}
+  AliForwardTriggerBiasCorrection()
+    : AliBaseMultTask()
+  {}    
   /**
    *  Constructor
-   *
    */
-  AliForwardCreateResponseMatrices(const char* name)
+  AliForwardTriggerBiasCorrection(const char* name)
     : AliBaseMultTask(name)
   {}
   /** 
-   * 
    * Destructor
-   * 
    */
-  virtual ~AliForwardCreateResponseMatrices(){}
+  virtual ~AliForwardTriggerBiasCorrection(){}
   /**
    *  Embedded Class begins here
    */
@@ -55,20 +46,29 @@ public:
     /**
      * Default Constructor
      */
-    Bin() : AliBaseMultTask::Bin(), fResponseMatrix(0)  {}
+    Bin()
+      : AliBaseMultTask::Bin(),
+	fESDClass(0),
+	fMCClass(0),
+	fMCESDClass(0)
+    {}
     /**
      * Constructor
      */
     Bin(Double_t etaLow, Double_t etaHigh)
       : AliBaseMultTask::Bin(etaLow, etaHigh),
-	fResponseMatrix(0)
+	fESDClass(0),
+	fMCClass(0),
+	fMCESDClass(0)
     {}
     /**
      * Copy Constructor
      */ 
     Bin(const Bin& o)
       : AliBaseMultTask::Bin(o),
-	fResponseMatrix(0)
+	fESDClass(0),
+	fMCClass(0),
+	fMCESDClass(0)
     {}
     /**
      * Assignment Operator
@@ -77,7 +77,7 @@ public:
     /**
      * Destructor
      */
-    ~Bin(){}
+    ~Bin() {}
     /**
      * Define outputs of a single eta bin
      */
@@ -93,25 +93,31 @@ public:
      * @param ipZ             Interaction point 
      * @param pileup          True if flagged as pile-up
      * @param selectedTrigger Is event selected
-     * @param isMCNSDm        Is event MC NSD 
-     * @param isESDNSD        Is event real NSD 
+     * @param isMCClass       Is event MC NSD 
+     * @param isESDClass      Is event real NSD 
      * @param aodevent        Full event 
      */
     virtual void Process(TH1D*              dndetaForward,
 			 TH1D*              dndetaCentral,
 			 TH1D*              normForward,
 			 TH1D*              normCentral,
-			 TH1D*              mc,
+			 TH1D*              dndetaMC,
 			 Double_t           ipZ,
 			 Bool_t             pileup,
 			 Bool_t             selectedTrigger,
-			 Bool_t             isMCNSDm,
-			 Bool_t             isESDNSD,
+			 Bool_t             isMCClass,
+			 Bool_t             isESDClass,
 			 const AliAODEvent& aodevent,
 			 Double_t           minIPz,
 			 Double_t           maxIPz);
-    TH2D* fResponseMatrix;//! Response matrix (MC truth vs. ana multiplicity)
-    ClassDef(Bin,3); // Manager of data 
+    TH1D* fESDClass;   //! number of events found as ev. class
+		       //! selected by the analysis vs. multiplicity
+    TH1D* fMCClass;    //! number of events found as ev. class
+		       //! selected by the MC truth vs. multiplicity
+    TH1D* fMCESDClass; //! number of events found as ev. class
+		       //! selected by both analysis and MC truth
+		       //! vs. multiplicity
+    ClassDef(Bin,2); // Manager of data 
   };
   /** 
    * Create a bin
@@ -122,16 +128,22 @@ protected:
    * Copy Constructor
    *
    */
-  AliForwardCreateResponseMatrices(const AliForwardCreateResponseMatrices& o)
+  AliForwardTriggerBiasCorrection(const AliForwardTriggerBiasCorrection& o)
     : AliBaseMultTask(o)
   {}
   /**
    * Assignment operator
    *
    */
-  AliForwardCreateResponseMatrices& 
-  operator=(const AliForwardCreateResponseMatrices&) { return *this; }
-  ClassDef(AliForwardCreateResponseMatrices, 5); 
+  AliForwardTriggerBiasCorrection& 
+  operator=(const AliForwardTriggerBiasCorrection&) { return *this; }
+  /** 
+   * Check if this is OK class for reconstruction 
+   * 
+   * @return true if OK
+   */
+  Bool_t IsESDClass(AliAODForwardMult*) const;
+  ClassDef(AliForwardTriggerBiasCorrection, 5); 
 };
 
 #endif
