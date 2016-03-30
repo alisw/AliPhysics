@@ -1,20 +1,9 @@
-/* $Id$ */
-
 #include "AliPhysicsSelectionTask.h"
-
-#include <TFile.h>
-#include <TH1F.h>
-#include <TH2F.h>
-
-#include <AliLog.h>
-#include <AliESDEvent.h>
-#include <AliHeader.h>
-
 #include "AliPhysicsSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-
-//#include "AliBackgroundSelection.h"
+#include "TFile.h"
+#include "AliLog.h"
 
 ClassImp(AliPhysicsSelectionTask)
 
@@ -47,6 +36,7 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask(const char* opt) :
   } else {
     AliError("No input event handler connected to analysis manager. No Physics Event Selection.");
   }
+
   //
   TString opts = opt;
   opts.ToLower();
@@ -54,14 +44,11 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask(const char* opt) :
 
   // Define input and output slots here
   DefineOutput(1, TList::Class());
-  fBranchNames = "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,AliESDVZERO.,"
-                 "AliESDZDC.,SPDVertex.,PrimaryVertex.,TPCVertex.,Tracks,SPDPileupVertices";
   
   AliLog::SetClassDebugLevel("AliPhysicsSelectionTask", AliLog::kWarning);
 }
 
-AliPhysicsSelectionTask::~AliPhysicsSelectionTask()
-{
+AliPhysicsSelectionTask::~AliPhysicsSelectionTask(){
   //
   // Destructor
   //
@@ -75,8 +62,7 @@ AliPhysicsSelectionTask::~AliPhysicsSelectionTask()
   }
 }
 
-void AliPhysicsSelectionTask::UserCreateOutputObjects()
-{
+void AliPhysicsSelectionTask::UserCreateOutputObjects(){
   // create result objects and add to output list
 
   Printf("AliPhysicsSelectionTask::CreateOutputObjects");
@@ -94,8 +80,7 @@ void AliPhysicsSelectionTask::UserCreateOutputObjects()
   PostData(1, fOutput);
 }
 
-void AliPhysicsSelectionTask::UserExec(Option_t*)
-{
+void AliPhysicsSelectionTask::UserExec(Option_t*){
   // process the event
 
   // AliPhysicsSelection::IsCollisionCandidate is called from the event handler
@@ -103,16 +88,14 @@ void AliPhysicsSelectionTask::UserExec(Option_t*)
   PostData(1, fOutput);
 }
 
-void AliPhysicsSelectionTask::FinishTaskOutput()
-{
+void AliPhysicsSelectionTask::FinishTaskOutput(){
 // This gets called at the end of the processing on the worker. It allows dumping
 // statistics printed by the physics selection object to the statistics message
 // handled by the analysis manager.
    if (fPhysicsSelection) fPhysicsSelection->Print("STAT");
 }
 
-void AliPhysicsSelectionTask::Terminate(Option_t *)
-{
+void AliPhysicsSelectionTask::Terminate(Option_t *){
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.

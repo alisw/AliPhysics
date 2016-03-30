@@ -56,6 +56,8 @@ public:
     kTPCTOFpidLstar,         //cuts for L* in pPb
     kTPCTOFpidLstarPbPb2011, //cuts for L* in PbPb
     kTPCTOFpidLstarPbPb2011elRej,//cuts for L* in AA with electron rejection
+    kTPCTOFpidphipp2015,//TPC+TOF cuts for phi in pp 13 TeV (LHC15f)
+    kTPCpidphipp2015,//TPC cuts for phi in pp 13 TeV (LHC15f)
     kNDaughterCuts
   };
 
@@ -95,6 +97,13 @@ public:
 				AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, 
 				AliPID::EParticleType pid, 
 				Float_t nSigmaFast);
+
+   AliRsnCutSetDaughterParticle(const char *name, 
+				AliRsnCutTrackQuality *rsnTrackQualityCut, 
+				AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, 
+				AliPID::EParticleType pid, 
+                                Float_t nsigmaFastTPC,
+				Float_t nsigmaFastTOF);
    AliRsnCutSetDaughterParticle(const AliRsnCutSetDaughterParticle &copy);
    AliRsnCutSetDaughterParticle &operator=(const AliRsnCutSetDaughterParticle &copy);
    virtual ~AliRsnCutSetDaughterParticle();
@@ -136,4 +145,3 @@ public:
 };
 
 #endif
-

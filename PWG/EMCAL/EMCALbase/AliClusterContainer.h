@@ -75,10 +75,10 @@ class AliClusterContainer : public AliEmcalContainer {
   private:
     accept_iterator();
 
-    const AliClusterContainer       *fkContainer;       /// Container iterated over
-    TArrayI                          fAcceptIndices;    /// Indices of accepted clusters
-    int                              fCurrentPos;       /// Current position inside the container
-    bool                             fForward;          /// Direction, expressed in forward direction
+    const AliClusterContainer       *fkContainer;       ///< Container iterated over
+    TArrayI                          fAcceptIndices;    ///< Indices of accepted clusters
+    int                              fCurrentPos;       ///< Current position inside the container
+    bool                             fForward;          ///< Direction, expressed in forward direction
   };
 
   /**
@@ -135,9 +135,9 @@ class AliClusterContainer : public AliEmcalContainer {
   private:
     all_iterator();
 
-    const AliClusterContainer       *fkContainer;       /// Container iterated over
-    int                              fCurrentPos;       /// Current position inside the container
-    bool                             fForward;          /// Direction, expressed in forward direction
+    const AliClusterContainer       *fkContainer;       ///< Container iterated over
+    int                              fCurrentPos;       ///< Current position inside the container
+    bool                             fForward;          ///< Direction, expressed in forward direction
   };
 
   AliClusterContainer();
@@ -197,11 +197,11 @@ class AliClusterContainer : public AliEmcalContainer {
 
  protected:
   
-  Double_t         fClusTimeCutLow;             /// low time cut for clusters
-  Double_t         fClusTimeCutUp;              /// up time cut for clusters
-  Bool_t           fExoticCut;                  /// reject clusters marked as "exotic"
-  Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; /// cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
-  Int_t            fDefaultClusterEnergy;       /// default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
+  Double_t         fClusTimeCutLow;             ///< low time cut for clusters
+  Double_t         fClusTimeCutUp;              ///< up time cut for clusters
+  Bool_t           fExoticCut;                  ///< reject clusters marked as "exotic"
+  Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; ///< cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
+  Int_t            fDefaultClusterEnergy;       ///< default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor

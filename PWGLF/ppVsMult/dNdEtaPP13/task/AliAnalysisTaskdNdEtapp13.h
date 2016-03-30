@@ -8,7 +8,7 @@
 // Author:  ruben.shahoyan@cern.ch                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-class TH1F; 
+class TH1F;
 class TH2F;
 class TH3F;
 class AliESDEvent;
@@ -25,8 +25,8 @@ class AliPPVsMultUtils;
 
 #include "AliITSsegmentationSPD.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliTriggerAnalysis.h" 
-#include "AliVEvent.h" 
+#include "AliTriggerAnalysis.h"
+#include "AliVEvent.h"
 #include <TMath.h>
 
 class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
@@ -38,7 +38,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
     kHEtaZvCut,       // histo zv vs eta for tracklets passing final selection (dist<1 or |dPhi|<narrowWindow ...)
     kHDPhiDTheta,     // measured dTheta vs dPhi
     kHDPhiSDThetaX,   // dTheta (1/sin^2 scaled if needed) vs dPhi (bending subtracted)
-    kHWDist,          // Weighted distance 
+    kHWDist,          // Weighted distance
     //    kHEtaZvSPD1,      // histo zv vs eta for SPD1 single clusters
     kHWDvEta,         // WDist vs eta
     kNStandardH       // number of standard histos per centrality bin
@@ -50,7 +50,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
     kHStatCentBin,     // events per centrality bin
     kHCentDistNoSel,   // events per centrality percentile before selection
           kHCentDistTrig,   // events per centrality percentile after trigger
-    kHCentDist,        // events per centrality percentile 
+    kHCentDist,        // events per centrality percentile
     //
     kHNPrimMeanMC,     // <n> primaries per mult bin
     kHNPrim2PartMC,    // <n> prim per part.pair per mult bin
@@ -107,7 +107,12 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
     // These MUST be last one: this is just beginning of many histos (one per bin)
     kHZVEtaPrimMC,                        // Zv gen vs eta for all primary tracks (true MC multiplicity) in all events
     kHZVrEtaPrimMC=kHZVEtaPrimMC+50,      // Zv rec vs eta for all primary tracks (true MC multiplicity) in sel. events
-    kHZVResMC     =kHZVrEtaPrimMC+50      // zv resolution
+    kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
+
+    kHCorrMatrix=kHZVResMC+50 // correlation matrix
+
+//kHPtEtaPrimMC = kHCorrMatrix+50 // pT gen vs eta
+
   }; // custom histos
 
   // bins for saved parameters
@@ -140,7 +145,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
 	kZVMax,       // max ZVertex to process
 	//
 	kDPiSCut,     // cut on dphi used to extract signal (when WDist is used in analysis, put it equal to kDPhi
-	kNStdCut,     // cut on weighted distance (~1) used to extract signal 
+	kNStdCut,     // cut on weighted distance (~1) used to extract signal
 	//
 	kMCV0Scale,   // scaling value for V0 in MC
 	//
@@ -160,8 +165,8 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
 
   //
   AliAnalysisTaskdNdEtapp13(const char *name = "AliAnalysisTaskdNdEtapp13");
-  virtual ~AliAnalysisTaskdNdEtapp13(); 
-  
+  virtual ~AliAnalysisTaskdNdEtapp13();
+
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
@@ -195,7 +200,7 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   //
   void       SetDPhiSCut(Float_t c=0.06)        {fDPhiSCut = c;}
   void       SetNStdCut(Float_t c=1.0)          {fNStdCut = c;}
-  void       SetScaleMCV0(Float_t s=1.0)        {fMCV0Scale = s;}  
+  void       SetScaleMCV0(Float_t s=1.0)        {fMCV0Scale = s;}
   //
   void       SetEtaCut(Float_t etaCut)          {fEtaMax = TMath::Abs(etaCut); fEtaMin= -fEtaMax;}
   void       SetEtaMin(Float_t etaMin)          {fEtaMin = etaMin;}
@@ -232,13 +237,13 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   Int_t      GetCentralityBin(Float_t percentile) const;
   //
  protected:
-  TList*       fOutput;                   // output list send on output slot 1 
+  TList*       fOutput;                   // output list send on output slot 1
   //
   Bool_t       fDoNormalReco;              // do normal reco
   Bool_t       fDoInjection;               // do injection
   Bool_t       fDoRotation;                // do rotation
   //
-  Bool_t       fUseMC; 
+  Bool_t       fUseMC;
   Bool_t       fCheckReconstructables;
   //
   TObjArray*   fHistosTrData;              //! all tracklets in data
@@ -306,11 +311,11 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   //
   Double_t fWeight;
     AliPPVsMultUtils *fPPVsMultUtils; //!
- private:    
+ private:
   AliAnalysisTaskdNdEtapp13(const AliAnalysisTaskdNdEtapp13&); // not implemented
-  AliAnalysisTaskdNdEtapp13& operator=(const AliAnalysisTaskdNdEtapp13&); // not implemented 
-  
-  ClassDef(AliAnalysisTaskdNdEtapp13, 1);  
+  AliAnalysisTaskdNdEtapp13& operator=(const AliAnalysisTaskdNdEtapp13&); // not implemented
+
+  ClassDef(AliAnalysisTaskdNdEtapp13, 1);
 };
 
 

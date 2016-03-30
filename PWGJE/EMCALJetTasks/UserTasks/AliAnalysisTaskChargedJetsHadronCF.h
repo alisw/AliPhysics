@@ -26,9 +26,9 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetJetParticleArrayName(const char* name) { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
 
-  void                        ActivateFakejetRejection(Double_t minFakeFactor, Double_t maxFakeFactor)  { fMinFakeFactor = minFakeFactor; fMaxFakeFactor = maxFakeFactor; fUseFakejetRejection = kTRUE; }
-  void                        SetMinFakeFactor(Double_t value)  { fMinFakeFactor = value; }
-  void                        SetMaxFakeFactor(Double_t value)  { fMaxFakeFactor = value; }
+  void                        ActivateFakejetRejection(Double_t minFakeFactorPercentage, Double_t maxFakeFactorPercentage, TProfile cutProfile)  { fMinFakeFactorPercentage = minFakeFactorPercentage; fMaxFakeFactorPercentage = maxFakeFactorPercentage; hFakeFactorCutProfile = cutProfile; fUseFakejetRejection = kTRUE; }
+  void                        SetMinFakeFactorPercentage(Double_t value)  { fMinFakeFactorPercentage = value; }
+  void                        SetMaxFakeFactorPercentage(Double_t value)  { fMaxFakeFactorPercentage = value; }
   void                        SetUseFakejetRejection(Bool_t value)  { fUseFakejetRejection = value; }
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
@@ -51,10 +51,11 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TString                     fTrackParticleArrayName;                  // Name of fTracksOutput array
 
   // Criteria for the selection of jets that are passed to the correlation task
+  TProfile                    hFakeFactorCutProfile;                    // profile of the fake factor cut distribution
   Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Bool_t                      fUseFakejetRejection;                     // Use fakejet rejection (a la ATLAS)
-  Double_t                    fMinFakeFactor;                           // min fake factor (cut below)
-  Double_t                    fMaxFakeFactor;                           // max fake factor (cut above)
+  Double_t                    fMinFakeFactorPercentage;                 // min fake factor (percentage relative to cut profile)
+  Double_t                    fMaxFakeFactorPercentage;                 // max fake factor (percentage relative to cut profile)
   Int_t                       fEventCriteriumMode;                      // Mode of event selection
   Double_t                    fEventCriteriumMinBackground;             // Minimum background
   Double_t                    fEventCriteriumMaxBackground;             // Maximum background

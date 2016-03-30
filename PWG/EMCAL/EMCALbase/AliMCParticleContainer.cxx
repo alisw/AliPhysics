@@ -113,7 +113,7 @@ AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part, Double_t mass) const
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
 {
   if (part) {
     if (mass < 0) mass = part->M();
@@ -127,7 +127,7 @@ Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCPa
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part) const
+Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part) const
 {
   return GetMomentum(mom,part,fMassHypothesis);
 }
@@ -172,7 +172,7 @@ Bool_t AliMCParticleContainer::GetNextMomentum(TLorentzVector &mom)
 }
 
 //________________________________________________________________________
-Bool_t AliMCParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliMCParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
   //Get momentum of the i^th particle in array
 

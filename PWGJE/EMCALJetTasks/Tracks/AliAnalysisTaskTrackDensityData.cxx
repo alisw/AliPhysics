@@ -54,6 +54,7 @@ AliAnalysisTaskTrackDensityData::~AliAnalysisTaskTrackDensityData() {
 }
 
 void AliAnalysisTaskTrackDensityData::UserCreateOutputObjects(){
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
   fHistos = new THistManager("histos");
   fHistos->ReleaseOwner();
 

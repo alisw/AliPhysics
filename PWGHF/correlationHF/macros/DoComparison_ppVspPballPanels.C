@@ -12,14 +12,15 @@ Int_t style=1;
 TString collsyst[ncollsyst]={"pp","pPb"};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16"};
-TString strPtAssocText[nbinAssocpt]={"#it{p}_{T}^{assoc} >0.3 GeV/#it{c}","0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}","#it{p}_{T}^{assoc} >1 GeV/#it{c}"};
+TString strPtAssocText[nbinAssocpt]={"#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}","0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}","#it{p}_{T}^{assoc} > 1 GeV/#it{c}"};
 TString strPtMesonText[nbinDpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}"};
-TString strDeltaEta="|#Delta#eta| < 1.0";
+TString strDeltaEta="|#Delta#eta| < 1";
 Double_t minYaxis[nbinAssocpt]={-0.6,-0.6,-0.29}; // or -0.6 for all  
 Double_t maxYaxis[nbinAssocpt]={5.7,1.9,2.2};// or 4.1 for the first , 2.9 for the middle and 1.9 for the last
 Double_t mesonptcenter[nbinDpt]={4.,6.5,12.};// needed for getting the baseline
 Color_t colourSystem[ncollsyst]={kBlack,kRed}; 
-Color_t colourSystemBaseUnc[ncollsyst]={kBlack,kRed-7};
+Color_t colourSystemBaseUnc[ncollsyst]={kGray+1,kRed-9};//was {kBlack,kRed-7};
+Int_t fillColourBaselineStyle=1001;
 Int_t markerstyle[2]={20,21};// pp, p-Pb
 Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
@@ -50,7 +51,7 @@ Bool_t isReflected=kFALSE;
 
 Double_t scaleHeightPads=1;// do not touch this, it is regulated automatically in the macro
 Double_t scaleWidthPads=1;// do not touch this, it is regulated automatically in the macro
-Double_t ytitleoffset=4.8,xtitleoffset=3.45;
+Double_t ytitleoffset=5.5,xtitleoffset=4.;// was 4.8(y) and 3.45(x)
 Double_t referencePadHeight=0.2933; // Do not touch unless the canvas division is changed from 2x3, change canvasheight and resizeTextFactor instead
 Double_t referencePadHeight=0.44; // Do not touch unless the canvas division is changed from 2x3, change canvasheight and resizeTextFactor instead
 
@@ -460,12 +461,17 @@ void Set3x2PadPositions(TCanvas* c){
 
 }
 
-void SetColorGraphs(Int_t system,TGraph* gr){
-
-  gr->SetLineColor(colourSystem[system]);
-  gr->SetFillColor(colourSystem[system]);
-  gr->SetMarkerColor(colourSystem[system]);
-  
+void SetColorGraphs(Int_t system,TGraph* gr,Color_t color=-1){
+  if(color==-1){
+    gr->SetLineColor(colourSystem[system]);
+    gr->SetFillColor(colourSystem[system]);
+    gr->SetMarkerColor(colourSystem[system]);
+  }
+  else{
+    gr->SetLineColor(color);
+    gr->SetFillColor(color);
+    gr->SetMarkerColor(color);
+  }
 
   
 }
@@ -500,7 +506,7 @@ void SetScaleUncertaintyPositionAndSize(TLatex *tlpp,TLatex *tlpPb){
 
 TLegend *GetLegendDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     
-  TLegend * legend = new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.18/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.245/gPad->GetHNDC()+gPad->GetBottomMargin());
+  TLegend * legend = new TLegend(0.008/gPad->GetWNDC()+gPad->GetLeftMargin(),0.18/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.245/gPad->GetHNDC()+gPad->GetBottomMargin());
     //new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.14/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.2/gPad->GetHNDC()+gPad->GetBottomMargin());
   //previous settings: (0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.16/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.22/gPad->GetHNDC()+gPad->GetBottomMargin());
     legend->SetFillColor(0);
@@ -509,8 +515,8 @@ TLegend *GetLegendDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     legend->SetTextFont(43);
     legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
 			// old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-    legend->AddEntry(hpp,"pp #sqrt{#it{s}}=7 TeV, |#it{y}^{D}_{cms}|<0.5","lep");
-    legend->AddEntry(hpPb,"p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV, -0.96<#it{y}^{D}_{cms}<0.04","lep");
+    legend->AddEntry(hpp,"pp, #sqrt{#it{s}} = 7 TeV, |#it{y}^{D}| < 0.5","lep");
+    legend->AddEntry(hpPb,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04","lep");
     legend->SetName(Form("LegendDataPPandpPb_%d",identifier));
     return legend;
   }
@@ -661,7 +667,7 @@ void DoComparison_ppVspPballPanels(){
 	  Printf("Histo subtrcated obtained");
 	  cout<<"sub -> "<<subtractedhisto[icoll][kassoc][jmes]->GetBinContent(5)<<endl;	
 	  Printf("Histo subtrcated: pointer is working");
-	  grbase[icoll][kassoc][jmes]->SetFillStyle(3001);
+	  grbase[icoll][kassoc][jmes]->SetFillStyle(fillColourBaselineStyle);
 	  grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
 	  grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
 
@@ -683,7 +689,7 @@ void DoComparison_ppVspPballPanels(){
 	    subtractedhisto[icoll][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPedpPb(icoll,kassoc,jmes,histo[icoll][kassoc][jmes],err[icoll][kassoc][jmes],suberr[icoll][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[icoll][kassoc][jmes],grv2[icoll][kassoc][jmes]);
 	    cout<<"sub -> "<<subtractedhisto[icoll][kassoc][jmes]->GetBinContent(5)<<endl;
 	    subtractedhisto[icoll][kassoc][jmes]->GetYaxis()->SetRangeUser(-0.8,2*subtractedhisto[icoll][kassoc][jmes]->GetBinContent(subtractedhisto[icoll][kassoc][jmes]->GetMaximumBin()));    
-	    grbase[icoll][kassoc][jmes]->SetFillStyle(3001);
+	    grbase[icoll][kassoc][jmes]->SetFillStyle(fillColourBaselineStyle);
 	    grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
 	    grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
 	    
@@ -790,10 +796,10 @@ void DoComparison_ppVspPballPanels(){
 
 
       //  box2[4]->Draw("same");
-      SetColorGraphs(0,grbase[0][iassoc][jDpt]);
-      SetColorGraphs(1,grbase[1][iassoc][jDpt]);
-      grbase[0][iassoc][jDpt]->SetFillStyle(3001);
-      grbase[1][iassoc][jDpt]->SetFillStyle(3001);
+      SetColorGraphs(0,grbase[0][iassoc][jDpt],colourSystemBaseUnc[0]);// redundant...
+      SetColorGraphs(1,grbase[1][iassoc][jDpt],colourSystemBaseUnc[1]);// redundant...
+      grbase[0][iassoc][jDpt]->SetFillStyle(fillColourBaselineStyle);
+      grbase[1][iassoc][jDpt]->SetFillStyle(fillColourBaselineStyle);
       grbase[1][iassoc][jDpt]->Draw("E2");
       grbase[0][iassoc][jDpt]->Draw("E2"); 
       

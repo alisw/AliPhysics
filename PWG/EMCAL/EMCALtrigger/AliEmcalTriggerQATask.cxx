@@ -324,7 +324,7 @@ Bool_t AliEmcalTriggerQATask::FillHistograms()
 
     AliDebug(2, Form("nPatches = %d", nPatches));
 
-    Int_t type = 0;
+    //Int_t type = 0;
 
     for (Int_t i = 0; i < nPatches; i++) {
       AliDebug(2, Form("Processing patch %d", i));

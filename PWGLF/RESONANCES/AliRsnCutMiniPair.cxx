@@ -57,6 +57,9 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kDCAproduct:
          fCutValueD = pair->DCAProduct();
          return OkRangeD();
+      case kDeltaCosRange:
+         fCutValueD = pair->DeltaCos(kFALSE);
+         return OkRangeD();
       default:
          AliWarning("Undefined enum value");
          return kTRUE;

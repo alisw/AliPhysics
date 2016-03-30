@@ -80,6 +80,7 @@ set(SRCS
     PHOS_PbPb_MC/AliPHOSHijingEfficiency.cxx
     PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
     PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
+    PHOS_pp_pi0/AliAnalysisTaskPi0Conversion.cxx
     PHOS_pp_pi0/AliAnalysisTaskPi0PP.cxx
     PHOS_pp_pi0/AliCaloPhoton.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
