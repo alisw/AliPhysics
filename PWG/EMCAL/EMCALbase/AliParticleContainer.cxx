@@ -36,7 +36,8 @@ AliParticleContainer::AliParticleContainer():
   fCharge(-1),
   fGeneratorIndex(-1)
 {
-  fClassName = "AliVParticle";
+  fBaseClassName = "AliVParticle";
+  SetClassName("AliVParticle");
 }
 
 /**
@@ -49,7 +50,8 @@ AliParticleContainer::AliParticleContainer(const char *name) :
   fCharge(-1),
   fGeneratorIndex(-1)
 {
-  fClassName = "AliVParticle";
+  fBaseClassName = "AliVParticle";
+  SetClassName("AliVParticle");
 }
 
 /**
@@ -165,7 +167,7 @@ AliVParticle* AliParticleContainer::GetNextParticle()
  * @param[in] mass (Optional) Mass hypothesis
  * @return
  */
-Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
+Bool_t AliParticleContainer::GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
 {
   if (part) {
     if (mass < 0) mass = part->M();
@@ -185,9 +187,9 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle
  * @param[in] part Particle from which to obtain the momentum information
  * @return Always true
  */
-Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part) const
+Bool_t AliParticleContainer::GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part) const
 {
-  return GetMomentum(mom,part,fMassHypothesis);
+  return GetMomentumFromParticle(mom,part,fMassHypothesis);
 }
 
 /**
@@ -201,19 +203,9 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle
  */
 Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
-  Double_t mass = fMassHypothesis;
-
   if (i == -1) i = fCurrentID;
   AliVParticle *vp = GetParticle(i);
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
+  return GetMomentumFromParticle(mom, vp);
 }
 
 /**
@@ -227,18 +219,8 @@ Bool_t AliParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
  */
 Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  Double_t mass = fMassHypothesis;
-
   AliVParticle *vp = GetNextParticle();
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
+  return GetMomentumFromParticle(mom, vp);
 }
 
 /**
@@ -253,19 +235,9 @@ Bool_t AliParticleContainer::GetNextMomentum(TLorentzVector &mom)
  */
 Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
-  Double_t mass = fMassHypothesis;
-
   if (i == -1) i = fCurrentID;
   AliVParticle *vp = GetAcceptParticle(i);
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
+  return GetMomentumFromParticle(mom, vp);
 }
 
 /**
@@ -279,18 +251,8 @@ Bool_t AliParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) con
  */
 Bool_t AliParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  Double_t mass = fMassHypothesis;
-
   AliVParticle *vp = GetNextAcceptParticle();
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
+  return GetMomentumFromParticle(mom, vp);
 }
 
 /**
@@ -315,7 +277,7 @@ Bool_t AliParticleContainer::AcceptParticle(const AliVParticle *vp, UInt_t &reje
     GetMomentum(mom, id);
   }
   else {
-    GetMomentum(mom, vp);
+    GetMomentumFromParticle(mom, vp);
   }
 
   return ApplyKinematicCuts(mom, rejectionReason);
@@ -429,19 +391,6 @@ Int_t AliParticleContainer::GetNAcceptedParticles() const
     if(this->AcceptParticle(ipart, rejectionReason)) nPart++;
   }
   return nPart;
-}
-
-/**
- * Set the name of the class of the objets inside the underlying array.
- * @param[in] clname Name of the class of the object inside the underlying array.
- */
-void AliParticleContainer::SetClassName(const char *clname)
-{
-  // Set the class name
-
-  TClass cls(clname);
-  if (cls.InheritsFrom("AliVParticle")) fClassName = clname;
-  else AliError(Form("Unable to set class name %s for a AliParticleContainer, it must inherits from AliVParticle!",clname));
 }
 
 /**

@@ -34,7 +34,7 @@ AliEmcalContainer::AliEmcalContainer():
   TObject(),
   fName(),
   fClArrayName(),
-  fClassName(),
+  fBaseClassName(),
   fIsParticleLevel(kFALSE),
   fBitMap(0),
   fMinPt(0.15),
@@ -51,7 +51,8 @@ AliEmcalContainer::AliEmcalContainer():
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
-  fLoadedClass(0)
+  fLoadedClass(0),
+  fClassName()
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -69,7 +70,7 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   TObject(),
   fName(name),
   fClArrayName(name),
-  fClassName(),
+  fBaseClassName(),
   fIsParticleLevel(kFALSE),
   fBitMap(0),
   fMinPt(0.15),
@@ -86,7 +87,8 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
-  fLoadedClass(0)
+  fLoadedClass(0),
+  fClassName()
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -105,13 +107,27 @@ TObject *AliEmcalContainer::operator[](int index) const {
 }
 
 /**
+ * Set the name of the class of the objets inside the underlying array.
+ * @param[in] clname Name of the class of the object inside the underlying array.
+ */
+void AliEmcalContainer::SetClassName(const char *clname)
+{
+  TClass cls(clname);
+  if (cls.InheritsFrom(fBaseClassName)) {
+    fClassName = clname;
+  }
+  else {
+    AliError(Form("Unable to set class name %s for this container, it must inherits from %s!",clname,fBaseClassName.Data()));
+  }
+}
+
+/**
  * Connect the container to the array with content stored inside the virtual event.
  * The object name in the event must match the name given in the constructor
  * @param event Input event containing the array with content.
  */
 void AliEmcalContainer::SetArray(AliVEvent *event) 
 {
-
   const AliVVertex *vertex = event->GetPrimaryVertex();
   if (vertex) vertex->GetXYZ(fVertex);
 

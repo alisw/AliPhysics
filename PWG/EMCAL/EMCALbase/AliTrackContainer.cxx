@@ -44,7 +44,8 @@ AliTrackContainer::AliTrackContainer():
   fFilteredTracks(0),
   fTrackTypes(5000)
 {
-  fClassName = "AliVTrack";
+  fBaseClassName = "AliVTrack";
+  SetClassName("AliVTrack");
   fMassHypothesis = 0.139;
 }
 
@@ -64,7 +65,8 @@ AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   fFilteredTracks(0),
   fTrackTypes(5000)
 {
-  fClassName = "AliVTrack";
+  fBaseClassName = "AliVTrack";
+  SetClassName("AliVTrack");
 
   if (fTrackCutsPeriod.IsNull() && !AliTrackContainer::fgDefTrackCutsPeriod.IsNull()) {
     AliInfo(Form("Default track cuts period is %s", AliTrackContainer::fgDefTrackCutsPeriod.Data()));
@@ -252,19 +254,51 @@ AliVTrack* AliTrackContainer::GetNextTrack()
 }
 
 /**
- * Retrieve momentum information of a particle (part) and fill a TLorentzVector
+ * Retrieve the track type using the IndexOf method of the TClonesArray
+ * to retrieve the index of the provided track.
+ * @param track Track for which the type is requested.
+ * @return The track type from fTrackTypes
+ */
+Char_t AliTrackContainer::GetTrackType(const AliVTrack* track) const
+{
+  Int_t id = fFilteredTracks->IndexOf(track);
+  if (id >= 0) {
+    return fTrackTypes[id];
+  }
+  else {
+    return kUndefined;
+  }
+}
+
+/**
+ * Retrieve momentum information of a track and fill a TLorentzVector
  * with it. In case the optional parameter mass is provided, it is used as mass
  * hypothesis, otherwise the mass hypothesis from the particle itself is used.
  * @param[out] mom Momentum vector to be filled
- * @param[in] part Particle from which the momentum information is obtained.
+ * @param[in] track Track from which the momentum information is obtained.
  * @param[in] mass (Optional) Mass hypothesis
  * @return
  */
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
+Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTrack* track, Double_t mass) const
 {
-  if (part) {
-    if (mass < 0) mass = part->M();
-    mom.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), mass);
+  if (track) {
+    if (mass < 0) mass = track->M();
+
+    Bool_t useConstrainedParams = kFALSE;
+    if (fLoadedClass->InheritsFrom("AliESDtrack") && fTrackFilterType == AliEmcalTrackSelection::kHybridTracks) {
+      Char_t trackType = GetTrackType(track);
+      if (trackType == kHybridConstrained || trackType == kHybridConstrainedNoITSrefit) {
+        useConstrainedParams = kTRUE;
+      }
+    }
+
+    if (useConstrainedParams) {
+      const AliESDtrack *esdtrack = static_cast<const AliESDtrack*>(track);
+      mom.SetPtEtaPhiM(esdtrack->GetConstrainedParam()->Pt(), esdtrack->GetConstrainedParam()->Eta(), esdtrack->GetConstrainedParam()->Phi(), mass);
+    }
+    else {
+      mom.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), mass);
+    }
     return kTRUE;
   }
   else {
@@ -274,25 +308,25 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* p
 }
 
 /**
- * Fills a TLorentzVector with the momentum information of the particle provided
+ * Fills a TLorentzVector with the momentum information of the track provided
  * under a global mass hypothesis.
  * @param[out] mom Momentum vector of the particle provided
- * @param[in] part Particle from which to obtain the momentum information
+ * @param[in] track Track from which to obtain the momentum information
  * @return Always true
  */
-Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part) const
+Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTrack* part) const
 {
-  return GetMomentum(mom,part,fMassHypothesis);
+  return GetMomentumFromTrack(mom,part,fMassHypothesis);
 }
 
 /**
- * Fills a TLorentzVector with the monentum infomation of the
+ * Fills a TLorentzVector with the momentum information of the
  * \f$ i^{th} \f$ particle in the container, using a global
  * mass hypothesis. In case the provided index is out of
  * range, false is returned as return value.
  * @param[out] mom Momentum vector of the \f$ i^{th} \f$ particle in the array
- * @param[in] i Index of th particle to check
- * @return True if the request was successfull, false otherwise
+ * @param[in] i Index of the particle to check
+ * @return True if the request was successful, false otherwise
  */
 Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
@@ -320,13 +354,13 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 }
 
 /**
- * Fills a TLorentzVector with the monentum infomation of the
+ * Fills a TLorentzVector with the momentum information of the
  * next particle in the container, using a global mass hypothesis.
  * In case the iterator reached the end of the array, false
  * is returned as return value.
  * @deprecated Old style iterator - use all_iterator instead
  * @param[out] mom Momentum vector of the next particle
- * @return True if the request was successfull, false otherwise
+ * @return True if the request was successful, false otherwise
  */
 Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
 {
@@ -439,14 +473,7 @@ Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp, UInt_t &rejectionReas
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-
-  Int_t id = fFilteredTracks->IndexOf(vp);
-  if (id >= 0) {
-    GetMomentum(mom, id);
-  }
-  else {
-    GetMomentum(mom, vp);
-  }
+  GetMomentumFromTrack(mom, vp);
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
@@ -485,17 +512,6 @@ Bool_t AliTrackContainer::AcceptTrack(Int_t i, UInt_t &rejectionReason) const
 Bool_t AliTrackContainer::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const
 {
   return ApplyParticleCuts(vp, rejectionReason);
-}
-
-/**
- * Set the name of the class of the objets inside the underlying array.
- * @param[in] clname Name of the class of the object inside the underlying array.
- */
-void AliTrackContainer::SetClassName(const char *clname)
-{
-  TClass cls(clname);
-  if (cls.InheritsFrom("AliVTrack")) fClassName = clname;
-  else AliError(Form("Unable to set class name %s for a AliTrackContainer, it must inherits from AliVTrack!",clname));
 }
 
 /**
