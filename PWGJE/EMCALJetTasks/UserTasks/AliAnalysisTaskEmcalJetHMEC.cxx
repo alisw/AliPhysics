@@ -36,7 +36,8 @@
 #include "AliTrackContainer.h"
 
 #include "TVector3.h"
-#include "AliPicoTrack.h"
+//#include "AliPicoTrack.h"
+#include "AliBasicParticle.h"
 #include "AliEventPoolManager.h"
 
 ClassImp(AliAnalysisTaskEmcalJetHMEC)
@@ -82,7 +83,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
-    fHistLeadJetPt[icent]=0;
     fHistLeadJetPtBias[icent]=0;
     fHistJetPtTT[icent]=0;
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
@@ -134,7 +134,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   for(Int_t icent = 0; icent<6; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
-    fHistLeadJetPt[icent]=0;
     fHistLeadJetPtBias[icent]=0;
     fHistJetPtTT[icent]=0;
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
@@ -180,10 +179,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
     name = Form("fHistJetPtBias_%i",icent);   
     fHistJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutput->Add(fHistJetPtBias[icent]);
-
-    name = Form("fHistLeadJetPt_%i",icent);   
-    fHistLeadJetPt[icent] = new TH1F(name,name,200,0,200);
-    fOutput->Add(fHistLeadJetPt[icent]);
 
     name = Form("fHistLeadJetPtBias_%i",icent);   
     fHistLeadJetPtBias[icent] = new TH1F(name,name,200,0,200);
@@ -347,88 +342,31 @@ void AliAnalysisTaskEmcalJetHMEC::ExecOnce() {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Main loop called for each event
-  /*if(!fTracks){
-    AliError(Form("No fTracks object!!\n"));
-    return kTRUE;
-  }
-  if(!fJets){
-    AliError(Form("No fJets object!!\n"));
-    return kTRUE;
-  }*/
-
-  // what kind of event do we have: AOD or ESD?
-  /*Bool_t esdMode = kTRUE; 
-  if (dynamic_cast<AliAODEvent*>(InputEvent())) esdMode = kFALSE;
-
-  // if we have ESD event, set up ESD object
-  if(esdMode){
-    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-    if (!fESD) {
-      AliError(Form("ERROR: fESD not available\n"));
-      return kTRUE;
-    }
-  }
-
-  // if we have AOD event, set up AOD object
-  if(!esdMode){
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!fAOD) {
-      AliError(Form("ERROR: fAOD not available\n"));
-      return kTRUE;
-    }
-  }
-
-  TList *list = InputEvent()->GetList(); 
-  if(!list) {
-    AliError(Form("ERROR: list not attached\n"));
-    return kTRUE;
-  }*/
-
-  // TODO: This should be covered by AliAnalysisTaskEmcal
-  // get centrality
-  if (fCent<0) {
-    AliError(Form("Centrality negative: %f", fCent));
-    return kTRUE;
-  }
-
-  // TODO: Can we just use the fCent = 99, fCentBin = 0 def from AliAnalysisTaskEmcal?
-  if (fBeamType == kpp) fCent = 0.0; //put pp centrality to 0.0
-
-  // TODO: Should also be covered here
-  //Int_t centbin = GetCentBin(fCent);
-  if(fCentBin<0) return kTRUE;
-
-  // Filled by AliAnalysisTaskEmcal
-  //Double_t fvertex[3]={0,0,0};
-  //InputEvent()->GetPrimaryVertex()->GetXYZ(fvertex);
+  
+  // Get z vertex
   Double_t zVtx=fVertex[2];
 
-  // Replaced by vz range call
-  //if(fabs(zVtx)>10.0) return kTRUE;
-
-  // This is taken care of by hists in AliAnalysisTaskEmcal
-  //fHistCentrality->Fill(fCent);
-
+  // Retrieve clusters
   AliClusterContainer * clusters = GetClusterContainer(0);
   if (!clusters) {
-    AliError("Unable to retreive clusters!");
+    AliError(Form("%s: Unable to retrieve clusters!", GetName()));
     return kTRUE;
   }
 
   // TODO: Can we use a QA task for this?
   AliVCluster * cluster = 0;
-  TLorentzVector nPart;
-  while ((cluster = clusters->GetNextAcceptCluster()))
+  TLorentzVector part;
+  while ((clusters->GetNextAcceptMomentum(part)))
   {
-    cluster->GetMomentum(nPart, fVertex);
-    fHistClusEtaPhiEn->Fill( nPart.Eta(), nPart.Phi(), nPart.E() );
+    fHistClusEtaPhiEn->Fill( part.Eta(), part.Phi(), part.E() );
   }
   // Reset so that we can iterate again in the future.
   clusters->ResetCurrentID();
 
-  AliTrackContainer * tracks = GetTrackContainer(0);
+  // Retrieve tracks
+  AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
   if (!tracks) {
-    AliError("Unable to retreive tracks!");
+    AliError(Form("%s: Unable to retrieve tracks!", GetName()));
     return kTRUE;
   }
   const Int_t Ntracks = tracks->GetNTracks();
@@ -437,7 +375,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
   AliJetContainer * jets = GetJetContainer(0);
   if (!jets) {
-    AliError("Unable to retreive jets!");
+    AliError(Form("%s: Unable to retrieve jets!", GetName()));
     return kTRUE;
   }
 
@@ -473,7 +411,6 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     if (jet == leadingJet) leadjet=1;
 
     FillHist(fHistJetPt[fCentBin], jet->Pt());
-    FillHist(fHistLeadJetPt[fCentBin], jet->Pt());
 
     if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
       FillHist(fHistJetPtBias[fCentBin], jet->Pt());
@@ -647,7 +584,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
               const Int_t Nbgtrks = bgTracks->GetEntries();
 
               for(Int_t ibg=0; ibg<Nbgtrks; ibg++){
-                AliPicoTrack *part = static_cast<AliPicoTrack*>(bgTracks->At(ibg));         
+                AliBasicParticle *part = static_cast<AliBasicParticle*>(bgTracks->At(ibg));         
                 if(!part) continue;
                 if(TMath::Abs(part->Eta())>0.9) continue;
                 if(part->Pt()<0.15) continue;
@@ -849,7 +786,7 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 // From CF event mixing code PhiCorrelations
 TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
 {
-  // clones a track list by using AliPicoTrack which uses much less memory (used for event mixing)
+  // clones a track list by using AliBasicTrack which uses much less memory (used for event mixing)
 
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
@@ -858,6 +795,7 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
   // Ensure that we start from the beginning
   tracks->ResetCurrentID();
   AliVParticle * particle = 0;
+  AliBasicParticle * copyOfParticle = 0;
   while ((particle = tracks->GetNextAcceptTrack()))
   {
     // TODO: Probably not necessary since the track container should already apply these cuts. But check it!
@@ -877,7 +815,13 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
 
     if(hadbin>-1) fHistTrackEtaPhi[hadbin]->Fill(particle->Eta(),particle->Phi());
 
-    tracksClone->Add(new AliPicoTrack(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0, 0, 0, 0));
+    // Create new particle
+    copyOfParticle = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+    // Set so that we can do comparisons
+    copyOfParticle->SetUniqueID(particle->GetUniqueID());
+
+    tracksClone->Add(copyOfParticle);
+    //tracksClone->Add(new AliPicoTrack(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0, 0, 0, 0));
   }
 
   return tracksClone;
