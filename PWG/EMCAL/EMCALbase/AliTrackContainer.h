@@ -58,10 +58,10 @@ class AliTrackContainer : public AliParticleContainer {
   virtual AliVTrack          *GetAcceptTrack(Int_t i=-1)             const;
   virtual AliVTrack          *GetNextAcceptTrack()                        ;
   virtual AliVTrack          *GetNextTrack()                              ;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part, Double_t mass) const;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVTrack* part) const;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part) const;
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const;
-  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i);
+  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);
   Int_t                       GetNTracks()                              const   { return GetNParticles()         ; }

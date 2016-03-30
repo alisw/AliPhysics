@@ -37,13 +37,13 @@ class AliMCParticleContainer : public AliParticleContainer {
   virtual AliAODMCParticle   *GetNextAcceptMCParticle()                      ;
   virtual AliAODMCParticle   *GetNextMCParticle()                            ;
   virtual AliVParticle       *GetParticle(Int_t i=-1)                   const { return GetMCParticle(i)           ; }
-  virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)                   { return GetAcceptMCParticle(i)     ; }
+  virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)             const { return GetAcceptMCParticle(i)     ; }
   virtual AliVParticle       *GetNextAcceptParticle()                         { return GetNextAcceptMCParticle()  ; }
   virtual AliVParticle       *GetNextParticle()                               { return GetNextMCParticle()        ; }
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part, Double_t mass) const;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliAODMCParticle* part) const;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;
+  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part) const;
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const;
-  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i);
+  virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);
 
