@@ -2221,7 +2221,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
                   0.7,           // LHC11a 2.76TeV    
                   0., 0., 0., 0., 0.,     // LHC11b, LHC11c, LHC11d
                   0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                  0., 0., 0., 0., 0., 0.,      
+                  0., 0., 0., 0., 0.35, 0.35,/*0.,0.,*/
                   0.1,
                   0.1 
   };
@@ -2231,8 +2231,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
                   197469, 197692            // LHC13g
   };
   
-  Double_t thresholdEMCalL1[3] = { 8.398, 11.5, 6.};
-  Double_t spreadEMCalL1[3] = { 0., 0.5, 0.4};
+  Double_t thresholdEMCalL1[3] = { 10.7/*8.398*/, 11.5, 6.};
+  Double_t spreadEMCalL1[3] = { 1.4/*0.*/, 0.5, 0.4};
   
   Int_t runRangesEMCalL1G2[3] = { 195180,              // LHC13b-f  
                   197469, 197692            // LHC13g
