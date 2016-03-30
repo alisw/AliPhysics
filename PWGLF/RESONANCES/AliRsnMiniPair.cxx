@@ -207,6 +207,31 @@ Double_t AliRsnMiniPair::DipAngle(Bool_t mc) const
 }
 
 //__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DeltaCos(Bool_t mc) const
+{
+//
+// Difference of cos(theta) angles
+// - alpha : angle between particles of a pair in the case
+// when they are daughters of the resonance with the mass M
+// - beta : angle between particles of a pair
+// More info in Phys.Rev.C65 (2002) 034909
+
+   const TLorentzVector &p1 = fP1[ID(mc)];
+   const TLorentzVector &p2 = fP2[ID(mc)];
+   const TLorentzVector &mother = fRef[ID(mc)];
+
+   TVector3 p1Vect = p1.Vect();
+   TVector3 p2Vect = p2.Vect();
+
+   Double_t magP1P2 = TMath::Sqrt(p1Vect.Mag2()*p2Vect.Mag2());
+
+   Double_t cosA = (p1.E()*p2.E() - 0.5*(mother.M()*mother.M() - p1.M()*p1.M() - p2.M()*p2.M()))/magP1P2;
+   Double_t cosB = p1Vect.Dot(p2Vect)/magP1P2;
+
+   return cosB-cosA;
+}
+
+//__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
 {
   //returns pt of the <id> daughter 
