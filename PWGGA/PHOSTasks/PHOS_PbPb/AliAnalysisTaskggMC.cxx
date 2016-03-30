@@ -49,7 +49,7 @@ ClassImp(AliAnalysisTaskggMC)
 //________________________________________________________________________
 AliAnalysisTaskggMC::AliAnalysisTaskggMC(const char *name) 
 : AliAnalysisTaskgg(name),
-  fStack(0x0),fMCEvent(0x0),fMCEvents(0x0)
+  fStack(0x0),fMCEvent(0x0),fMCEvents(0x0),fMCEventH(0x0),fMCEventsH(0x0)
 {
 
 }
@@ -151,6 +151,10 @@ void AliAnalysisTaskggMC::UserCreateOutputObjects()
   
   fOutputContainer->Add(new TH2F("hQinv_MC","Qinv distribution",200,0.,0.5,20,0.,2.));
   fOutputContainer->Add(new TH2F("hMiQinv_MC","Qinv distribution",200,0.,0.5,20,0.,2.));
+  fOutputContainer->Add(new TH2F("hQinv_MChh","Qinv distribution",200,0.,0.5,20,0.,2.));
+  fOutputContainer->Add(new TH2F("hMiQinv_MChh","Qinv distribution",200,0.,0.5,20,0.,2.));
+  fOutputContainer->Add(new TH2F("hQinv_MCgh","Qinv distribution",200,0.,0.5,20,0.,2.));
+  fOutputContainer->Add(new TH2F("hMiQinv_MCgh","Qinv distribution",200,0.,0.5,20,0.,2.));
   
   for(Int_t iCut=0; iCut<nCuts; iCut++){
     for(Int_t ikT=0; ikT<6; ikT++){ 
@@ -181,8 +185,13 @@ void AliAnalysisTaskggMC::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hQinv_PhotPHOS_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
     fOutputContainer->Add(new TH2F(Form("hMiQinv_PhotPHOS_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
     fOutputContainer->Add(new TH2F(Form("hQinv_PhotVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinv_PhotVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
-    
+    fOutputContainer->Add(new TH2F(Form("hQinv_PiVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_ChargeVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_NeutralVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_PhotPiVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_PhotChargeVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_PhotNeutralVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+        
     
     //Common parent
     for(Int_t ip=0; ip<nParents; ip++){
@@ -216,6 +225,7 @@ void AliAnalysisTaskggMC::UserCreateOutputObjects()
   
     
   if(!fMCEvents)fMCEvents=new TList() ;
+  if(!fMCEventsH)fMCEventsH=new TList() ;
  
   PostData(1, fOutputContainer);
 
@@ -505,6 +515,9 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
     AliAODMCParticle * hadronParent1 = 0x0 ;
     Bool_t isPhotonAtPHOS1 = kFALSE; 
     Bool_t isPhotonAtVertex1 = kFALSE; 
+    Bool_t isPionAtVertex1 = kFALSE; 
+    Bool_t isChHadronAtVertex1 = kFALSE; 
+    Bool_t isNeuHadronAtVertex1 = kFALSE; 
 
     if(ph1->GetPrimary()>=0){
        AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(ph1->GetPrimary()) ;
@@ -518,7 +531,15 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
        }
        if(tmp->GetPdgCode()==22)
 	 isPhotonAtVertex1 = kTRUE ;
-       //Fins hadron parent
+       else
+         if(TMath::Abs(tmp->GetPdgCode())==211)
+	   isPionAtVertex1 = kTRUE ;
+	 else
+	   if(tmp->Charge()==0)
+	     isNeuHadronAtVertex1 =kTRUE ;
+	   else
+	     isChHadronAtVertex1 =kTRUE ;
+       //Finds hadron parent
        tmp = (AliAODMCParticle*)fStack->At(ph1->GetPrimary()) ;
        while(TMath::Abs(tmp->GetPdgCode())<100){ //gamma,mu,e
          if(tmp->GetMother()>=0){
@@ -554,6 +575,9 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
       AliAODMCParticle * hadronParent2 = 0x0 ;
       Bool_t isPhotonAtPHOS2 = kFALSE; 
       Bool_t isPhotonAtVertex2 = kFALSE; 
+      Bool_t isPionAtVertex2 = kFALSE; 
+      Bool_t isChHadronAtVertex2 = kFALSE; 
+      Bool_t isNeuHadronAtVertex2 = kFALSE; 
       if(ph2->GetPrimary()>=0){
          AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(ph2->GetPrimary()) ;
          if(tmp->GetPdgCode()==22)
@@ -566,6 +590,15 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
          }
          if(tmp->GetPdgCode()==22)
 	   isPhotonAtVertex2 = kTRUE ;
+         else
+           if(TMath::Abs(tmp->GetPdgCode())==211)
+	     isPionAtVertex2 = kTRUE ;
+	   else
+	     if(tmp->Charge()==0)
+	       isNeuHadronAtVertex2 =kTRUE ;
+	     else
+	       isChHadronAtVertex2 =kTRUE ;
+	 
          //Finds hadron parent
          tmp = (AliAODMCParticle*)fStack->At(ph2->GetPrimary()) ;
          while(TMath::Abs(tmp->GetPdgCode())<100){ //gamma,mu,e
@@ -735,6 +768,23 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
 	   FillHistogram(Form("hQinv_PhotPHOS_%s",cut[iCut]),qinv,kT) ;
 	if(isPhotonAtVertex1 && isPhotonAtVertex2)
 	   FillHistogram(Form("hQinv_PhotVert_%s",cut[iCut]),qinv,kT) ;
+	if(isPionAtVertex1 && isPionAtVertex2)
+	   FillHistogram(Form("hQinv_PiVert_%s",cut[iCut]),qinv,kT) ;
+	if(isChHadronAtVertex1 && isChHadronAtVertex2)
+	   FillHistogram(Form("hQinv_ChargeVert_%s",cut[iCut]),qinv,kT) ;
+	if(isNeuHadronAtVertex1 && isNeuHadronAtVertex2)
+	   FillHistogram(Form("hQinv_NeutralVert_%s",cut[iCut]),qinv,kT) ;
+	if((isPionAtVertex1 && isPhotonAtVertex2) || (isPhotonAtVertex1 && isPionAtVertex2))
+	   FillHistogram(Form("hQinv_PhotPiVert_%s",cut[iCut]),qinv,kT) ;
+	if((isChHadronAtVertex1&& isPhotonAtVertex2) || (isPhotonAtVertex1 && isChHadronAtVertex2))
+	   FillHistogram(Form("hQinv_PhotChargeVert_%s",cut[iCut]),qinv,kT) ;
+	if((isNeuHadronAtVertex1 && isPhotonAtVertex2) || (isPhotonAtVertex1 && isNeuHadronAtVertex2))
+	   FillHistogram(Form("hQinv_PhotNeutralVert_%s",cut[iCut]),qinv,kT) ;
+	
+	
+	
+	
+	
         FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
         FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
         FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
@@ -754,23 +804,6 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
     track1.SetP(mom1) ;
     AliFemtoParticle part1(&track1,kgMass) ;
     
-    Bool_t isPhotonAtPHOS1 = kFALSE; 
-    Bool_t isPhotonAtVertex1 = kFALSE; 
-    if(ph1->GetPrimary()>=0){
-      AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(ph1->GetPrimary()) ;
-      if(tmp->GetPdgCode()==22)
-  	isPhotonAtPHOS1 = kTRUE ;
-        //Look at vertex    
-        Double_t r=TMath::Sqrt(tmp->Xv()*tmp->Xv()+tmp->Yv()*tmp->Yv()) ;
-        while(r>1. && tmp->GetMother()>-1){
-             tmp = (AliAODMCParticle*)fStack->At(tmp->GetMother()) ;
-	     r=TMath::Sqrt(tmp->Xv()*tmp->Xv()+tmp->Yv()*tmp->Yv()) ;
-        }
-        if(tmp->GetPdgCode()==22)
-	  isPhotonAtVertex1 = kTRUE ;
-      
-    }
-
 
     for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
@@ -780,22 +813,6 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
 	if(!PairCut(ph1,ph2,kDefault))
 	  continue;
 
-
-        Bool_t isPhotonAtPHOS2 = kFALSE; 
-        Bool_t isPhotonAtVertex2 = kFALSE; 
-        if(ph2->GetPrimary()>=0){
-          AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(ph2->GetPrimary()) ;
-          if(tmp->GetPdgCode()==22)
-  	     isPhotonAtPHOS2 = kTRUE ;
-           //Look at vertex    
-           Double_t r=TMath::Sqrt(tmp->Xv()*tmp->Xv()+tmp->Yv()*tmp->Yv()) ;
-           while(r>1. && tmp->GetMother()>-1){
-             tmp = (AliAODMCParticle*)fStack->At(tmp->GetMother()) ;
-	     r=TMath::Sqrt(tmp->Xv()*tmp->Xv()+tmp->Yv()*tmp->Yv()) ;
-           }
-           if(tmp->GetPdgCode()==22)
-	     isPhotonAtVertex2 = kTRUE ;
-	}
 	
         AliFemtoTrack track2;
         AliFemtoThreeVector mom2;
@@ -855,10 +872,6 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
 	
 	  
 	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
-	  if(isPhotonAtPHOS1 && isPhotonAtPHOS2)
-	    FillHistogram(Form("hMiQinv_PhotPHOS_%s",cut[iCut]),qinv,kT) ;
-	  if(isPhotonAtVertex1 && isPhotonAtVertex2)
-	    FillHistogram(Form("hMiQinv_PhotVert_%s",cut[iCut]),qinv,kT) ;
 
           FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
           FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
@@ -1049,22 +1062,31 @@ void AliAnalysisTaskggMC::ProcessMC() {
     fMCEvent->Clear() ;
   else
     fMCEvent = new TClonesArray("TLorentzVector",2000) ;
+  if(fMCEventH)
+    fMCEventH->Clear() ;
+  else
+    fMCEventH = new TClonesArray("TLorentzVector",2000) ;
   Int_t n=fStack->GetEntriesFast() ;
-  Int_t iphot=0 ;
+  Int_t iphot=0, ihadr=0 ;
   for(Int_t i=0 ; i<n; i++){
      AliAODMCParticle *tmp = (AliAODMCParticle*)fStack->At(i) ;
-     if(tmp->GetPdgCode()!=22)
-       continue ;
      if(tmp->Pt()<0.1)
        continue ;
-     if(TMath::Abs(tmp->Eta())>0.25)
+     if(TMath::Abs(tmp->Eta())>0.15)
        continue ;
      Double_t r=TMath::Sqrt(tmp->Xv()*tmp->Xv()+tmp->Yv()*tmp->Yv()) ;
      if(r>1.)
        continue ;
-     if(iphot>=fMCEvent->GetSize())
-       fMCEvent->Expand(1.5*fMCEvent->GetSize());
-     new((*fMCEvent)[iphot++])TLorentzVector(tmp->Px(),tmp->Py(),tmp->Pz(),tmp->E()) ;
+     if(tmp->GetPdgCode()==22){
+       if(iphot>=fMCEvent->GetSize())
+         fMCEvent->Expand(1.5*fMCEvent->GetSize());
+       new((*fMCEvent)[iphot++])TLorentzVector(tmp->Px(),tmp->Py(),tmp->Pz(),tmp->E()) ;
+     }
+     else{
+       if(ihadr>=fMCEventH->GetSize())
+         fMCEventH->Expand(1.5*fMCEventH->GetSize());
+       new((*fMCEventH)[ihadr++])TLorentzVector(tmp->Px(),tmp->Py(),tmp->Pz(),tmp->E()) ;
+     }
   }
   
   //Make distribution
@@ -1077,6 +1099,25 @@ void AliAnalysisTaskggMC::ProcessMC() {
 
     }
   }
+  for(Int_t i1=0; i1<ihadr-1;i1++){
+    TLorentzVector * ph1=(TLorentzVector*)fMCEventH->At(i1) ;
+    for(Int_t i2=i1+1; i2<ihadr;i2++){
+      TLorentzVector * ph2=(TLorentzVector*)fMCEventH->At(i2) ;
+	
+      FillHistogram("hQinv_MChh",(*ph1+ *ph2).M(),0.5*(*ph1+ *ph2).Pt()) ;
+
+    }
+  }
+  for(Int_t i1=0; i1<iphot;i1++){
+    TLorentzVector * ph1=(TLorentzVector*)fMCEvent->At(i1) ;
+    for(Int_t i2=i1+1; i2<ihadr;i2++){
+      TLorentzVector * ph2=(TLorentzVector*)fMCEventH->At(i2) ;
+	
+      FillHistogram("hQinv_MCgh",(*ph1+ *ph2).M(),0.5*(*ph1+ *ph2).Pt()) ;
+
+    }
+  }
+  
   
   for(Int_t i1=0; i1<iphot;i1++){
     TLorentzVector * ph1=(TLorentzVector*)fMCEvent->At(i1) ;
@@ -1091,6 +1132,46 @@ void AliAnalysisTaskggMC::ProcessMC() {
     }
   }
   
+  for(Int_t i1=0; i1<iphot;i1++){
+    TLorentzVector * ph1=(TLorentzVector*)fMCEvent->At(i1) ;
+    for(Int_t ev=0; ev<fMCEventsH->GetSize();ev++){
+      TClonesArray * mixMC = static_cast<TClonesArray*>(fMCEventsH->At(ev)) ;
+      for(Int_t i2=0; i2<mixMC->GetEntriesFast();i2++){
+	TLorentzVector * ph2=(TLorentzVector*)mixMC->At(i2) ;
+
+        FillHistogram("hMiQinv_MCgh",(*ph1+ *ph2).M(),0.5*(*ph1+ *ph2).Pt()) ;
+	
+      }
+    }
+  }
+  for(Int_t i1=0; i1<ihadr;i1++){
+    TLorentzVector * ph1=(TLorentzVector*)fMCEventH->At(i1) ;
+    for(Int_t ev=0; ev<fMCEvents->GetSize();ev++){
+      TClonesArray * mixMC = static_cast<TClonesArray*>(fMCEvents->At(ev)) ;
+      for(Int_t i2=0; i2<mixMC->GetEntriesFast();i2++){
+	TLorentzVector * ph2=(TLorentzVector*)mixMC->At(i2) ;
+
+        FillHistogram("hMiQinv_MCgh",(*ph1+ *ph2).M(),0.5*(*ph1+ *ph2).Pt()) ;
+	
+      }
+    }
+  }
+
+  for(Int_t i1=0; i1<ihadr;i1++){
+    TLorentzVector * ph1=(TLorentzVector*)fMCEventH->At(i1) ;
+    for(Int_t ev=0; ev<fMCEventsH->GetSize();ev++){
+      TClonesArray * mixMC = static_cast<TClonesArray*>(fMCEvents->At(ev)) ;
+      for(Int_t i2=0; i2<mixMC->GetEntriesFast();i2++){
+	TLorentzVector * ph2=(TLorentzVector*)mixMC->At(i2) ;
+
+        FillHistogram("hMiQinv_MChh",(*ph1+ *ph2).M(),0.5*(*ph1+ *ph2).Pt()) ;
+	
+      }
+    }
+  }
+  
+  
+  
   if(fMCEvent->GetEntriesFast()>0){
     fMCEvents->AddFirst(fMCEvent) ;
     fMCEvent=0;
@@ -1101,6 +1182,15 @@ void AliAnalysisTaskggMC::ProcessMC() {
     }
   }
   
+  if(fMCEventH->GetEntriesFast()>0){
+    fMCEventsH->AddFirst(fMCEventH) ;
+    fMCEventH=0;
+    if(fMCEventsH->GetSize()>1){//Remove redundant events
+      TClonesArray * tmp = static_cast<TClonesArray*>(fMCEventsH->Last()) ;
+      fMCEventsH->RemoveLast() ;
+      delete tmp ;
+    }
+  }
   
 }
 //___________________________________________________________________________
