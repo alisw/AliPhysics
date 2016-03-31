@@ -1,12 +1,3 @@
-// inputlist.txt file should be placed in same path of this code.
-// example of inputlist.txt
-// ------
-// /Users/bong/Desktop/test/new/235226
-// /Users/bong/Desktop/test/new/235685
-// ------
-// the path of inputlist.txt should contain a AnalysisReults.root file.
-// 2016.03.11. blim
-
 #include <stdio.h>
 
 void ValueFromRoot(int i, const char *filename);
