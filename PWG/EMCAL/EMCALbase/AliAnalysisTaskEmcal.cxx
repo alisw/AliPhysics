@@ -75,6 +75,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxVz(999),
   fTrackPtCut(0),
   fMinNTrack(0),
+  fZvertexDiff(0.5),
   fUseAliAnaUtils(kFALSE),
   fRejectPileup(kFALSE),
   fTklVsClusSPDCut(kFALSE),
@@ -116,6 +117,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEPV0A(-1.0),
   fEPV0C(-1.0),
   fNVertCont(0),
+  fNVertSPDCont(0),
   fBeamType(kNA),
   fPythiaHeader(0),
   fPtHard(0),
@@ -141,6 +143,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
+  fVertexSPD[0] = 0;
+  fVertexSPD[1] = 0;
+  fVertexSPD[2] = 0;
 
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
@@ -172,6 +177,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxVz(999),
   fTrackPtCut(0),
   fMinNTrack(0),
+  fZvertexDiff(0.5),
   fUseAliAnaUtils(kFALSE),
   fRejectPileup(kFALSE),
   fTklVsClusSPDCut(kFALSE),
@@ -213,6 +219,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEPV0A(-1.0),
   fEPV0C(-1.0),
   fNVertCont(0),
+  fNVertSPDCont(0),
   fBeamType(kNA),
   fPythiaHeader(0),
   fPtHard(0),
@@ -238,7 +245,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fVertex[0] = 0;
   fVertex[1] = 0;
   fVertex[2] = 0;
-
+  fVertexSPD[0] = 0;
+  fVertexSPD[1] = 0;
+  fVertexSPD[2] = 0;
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
 
@@ -455,13 +464,14 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
   fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
   fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"Bkg evt");
+  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
+  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
+  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
+  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
+  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
+  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
+  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
+  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
   fHistEventRejection->GetYaxis()->SetTitle("counts");
   fOutput->Add(fHistEventRejection);
 
@@ -1120,9 +1130,19 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
     Double_t vz = fVertex[2];
-    if (vz<fMinVz || vz>fMaxVz) {
+    if (vz < fMinVz || vz > fMaxVz) {
       if (fGeneralHistograms) fHistEventRejection->Fill("Vz",1);
       return kFALSE;
+    }
+
+    if (fNVertSPDCont > 0 && fZvertexDiff < 999) {
+      Double_t vzSPD = fVertexSPD[2];
+      Double_t dvertex = TMath::Abs(vz-vzSPD);
+      //if difference larger than fZvertexDiff
+      if (dvertex > fZvertexDiff) {
+        if (fGeneralHistograms) fHistEventRejection->Fill("VzSPD",1);
+        return kFALSE;
+      }
     }
   }
 
@@ -1236,6 +1256,11 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   fVertex[2] = 0;
   fNVertCont = 0;
 
+  fVertexSPD[0] = 0;
+  fVertexSPD[1] = 0;
+  fVertexSPD[2] = 0;
+  fNVertSPDCont = 0;
+
   if (fGeneratePythiaInfoObject && MCEvent()) {
     GeneratePythiaInfoObject(MCEvent());
   }
@@ -1244,6 +1269,12 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   if (vert) {
     vert->GetXYZ(fVertex);
     fNVertCont = vert->GetNContributors();
+  }
+
+  const AliVVertex *vertSPD = InputEvent()->GetPrimaryVertexSPD();
+  if (vertSPD) {
+    vertSPD->GetXYZ(fVertexSPD);
+    fNVertSPDCont = vertSPD->GetNContributors();
   }
 
   fBeamType = GetBeamType();

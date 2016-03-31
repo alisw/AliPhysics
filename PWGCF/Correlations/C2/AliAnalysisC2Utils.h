@@ -22,7 +22,19 @@ class AliAnalysisC2Utils : public TObject {
   static void TransformPoints(Double_t *points_in, Double_t *points_out);
   static THnS* CreateTransformedHist(THn *h);
   static void GetDCA(Double_t& DCAtang, Double_t& DCAlong, AliAODTrack* AODt);
-
+  // Create scalar for the two given pt bins
+  //
+  // Since the analysis requires that pt1 < pt2, it would be a wast of
+  // space to maintain both dimensions in the pair histogram. Ie, all
+  // bins where pt1 > pt2 would be empty.  Hence, this function
+  // computes a unique bin index for the two pt bins in the interval
+  // [0, \sum_{i=1}^{pt2} i]
+  //
+  // This binning requires that the pt1 and pt2 intervals are identical.
+  //
+  // The formular used is:
+  // idx = \sum_{i=1}^{pt2} i + (pt1 - pt2) - 1
+  static Int_t ComputePtPairBin(Int_t pt1Bin, Int_t pt2Bin);
  private:
   ClassDef(AliAnalysisC2Utils,1);
 };
