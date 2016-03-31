@@ -97,7 +97,7 @@ public:
 
 protected:
 
-  std::set<Short_t>          fOfflineBadChannels;          ///< Abd ID of offline bad channels
+  std::set<Short_t>          fOfflineBadChannels;          ///< Abs ID of offline bad channels
   std::set<Short_t>          fBadChannels;                 ///< Container of bad channels
   TArrayF                    fFastORPedestal;              ///< FastOR pedestal
   Bool_t                     fEnabledPatchTypes[3];        ///< Patch types to be plotted
