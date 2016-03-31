@@ -307,15 +307,15 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     return kTRUE;
   }
 
+  // Retrieve jets
   AliJetContainer * jets = GetJetContainer(0);
   if (!jets) {
     AliError(Form("%s: Unable to retrieve jets!", GetName()));
     return kTRUE;
   }
 
-  // TODO: I think this is covered in AliAnalysisTaskEmcal
-  // see if event is selected
-  UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  // Determine the trigger for the event
+  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
   // Trigger track related to h-jet
   Int_t passedTTcut=0;
@@ -347,7 +347,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   while ((jet = jets->GetNextAcceptJet())) {
     
     // see if event is selected and our jet came from trigger event
-    if (!(trig & fTriggerEventType)) continue;
+    if (!(trigger & fTriggerEventType)) continue;
 
     Double_t jetPt = jet->Pt();
 
@@ -464,10 +464,6 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     // 3. The reduced and bgTracks arrays must both be passed into
     //    FillCorrelations(). Also nMix should be passed in, so a weight
     //    of 1./nMix can be applied.
-
-    UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    // if event was not selected (triggered) for any reseason (should never happen) then return
-    if (trigger==0)  return kTRUE;
 
     AliEventPool *pool = 0;
     if (fBeamType == kAA || fBeamType == kpA) {//everything but pp
