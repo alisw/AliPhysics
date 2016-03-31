@@ -303,12 +303,13 @@ void AliEmcalTriggerQAPP::Init()
   TString hname;
   TString htitle;
 
-  Int_t maxFORabsId = 5000;
-  Int_t ndet = 2;
-  if (!fDCalPlots) {
-    maxFORabsId = 3000;
-    ndet = 1;
+  Int_t nTotTRU = 32; // there are 32 TRU in the EMCal (10 full SM * 3 TRU + 2 small SM * 1 TRU)
+  Int_t ndet = 1;
+  if (kTRUE || fDCalPlots) {
+    nTotTRU += 14; // there are additional 14 TRU in DCal
+    ndet += 1;
   }
+  Int_t maxFORabsId = nTotTRU * 96;  // there are 96 channels in each TRU
 
   hname = Form("EMCTRQA_histFastORL0");
   htitle = Form("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
@@ -370,9 +371,23 @@ void AliEmcalTriggerQAPP::Init()
   htitle = Form("EMCTRQA_histCellAmpVsFastORL0Amp;FastOR L0 amplitude;2x2 cell sum energy (GeV)");
   fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
 
+  hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered");
+  htitle = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered;FastOR L0 amplitude;2x2 cell sum energy (GeV)");
+  fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+
   hname = Form("EMCTRQA_histCellAmpVsFastORL1Amp");
   htitle = Form("EMCTRQA_histCellAmpVsFastORL1Amp;FastOR L1 amplitude;2x2 cell sum energy (GeV)");
   fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+
+  for (Int_t nTRU = 0; nTRU < nTotTRU; nTRU++) {
+    hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTRU%d", nTRU);
+    htitle = Form("EMCTRQA_histCellAmpVsFastORL0Amp%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+
+    hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d", nTRU);
+    htitle = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+  }
 
   hname = Form("EMCTRQA_histFastORNoOffline");
   htitle = Form("EMCTRQA_histFastORNoOffline;FastOR abs. ID;entries with no offline energy");
@@ -565,10 +580,13 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
   Bool_t isDCal = kFALSE;
 
   Double_t offlineAmp = 0;
+  Int_t nTRU = -1;
+  Int_t nADC = -1;
 
   if (fGeom) {
     Int_t idx[4] = {-1};
     fGeom->GetCellIndexFromFastORIndex(fastor->GetAbsId(), idx);
+    fGeom->GetTRUFromAbsFastORIndex(fastor->GetAbsId(), nTRU, nADC);
     Double_t pos[3] = {0};
     if (idx[0] >= 0) {
       fGeom->GetGlobal(idx[0], pos);
@@ -604,10 +622,20 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
 
       hname = Form("EMCTRQA_histFastORL0AmpTimeOk");
       fHistManager.FillTH2(hname, fastor->GetAbsId(), L0amp);
+
+      hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered");
+      fHistManager.FillTH2(hname, L0amp, offlineAmp);
+
+      hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d",nTRU);
+      fHistManager.FillTH2(hname, L0amp, offlineAmp);
     }
 
     hname = Form("EMCTRQA_histCellAmpVsFastORL0Amp");
     fHistManager.FillTH2(hname, L0amp, offlineAmp);
+
+    hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTRU%d",nTRU);
+    fHistManager.FillTH2(hname, L0amp, offlineAmp);
+
     if (offlineAmp == 0) {
       hname = Form("EMCTRQA_histFastORNoOffline");
       fHistManager.FillTH1(hname, fastor->GetAbsId());
