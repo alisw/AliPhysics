@@ -194,6 +194,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistClusterEnergyFracCellsBeforeQA(NULL),
   fHistClusterEnergyFracCellsAfterQA(NULL),
   fHistClusterIncludedCellsTimingAfterQA(NULL),
+  fHistClusterIncludedCellsTimingEnergyAfterQA(NULL),
   fHistClusterDistanceInTimeCut(NULL),
   fHistClusterDistanceOutTimeCut(NULL),
   fHistClusterRBeforeQA(NULL),
@@ -333,6 +334,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEnergyFracCellsBeforeQA(NULL),
   fHistClusterEnergyFracCellsAfterQA(NULL),
   fHistClusterIncludedCellsTimingAfterQA(NULL),
+  fHistClusterIncludedCellsTimingEnergyAfterQA(NULL),
   fHistClusterDistanceInTimeCut(NULL),
   fHistClusterDistanceOutTimeCut(NULL),
   fHistClusterRBeforeQA(NULL),
@@ -613,9 +615,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
       fHistClusterEnergyFracCellsAfterQA->Sumw2();
       fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
-      fHistClusterIncludedCellsTimingAfterQA = new TH1F(Form("ClusterIncludedCellsTiming_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCellsTiming_afterClusterQA; t (ns)",200,-500,500);
+      fHistClusterIncludedCellsTimingAfterQA = new TH2F(Form("ClusterIncludedCellsTiming_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCellsTiming_afterClusterQA; cluster E (GeV);t (ns)",100,0.05,50,200,-500,500);
+      SetLogBinningXTH2(fHistClusterIncludedCellsTimingAfterQA);
       fHistClusterIncludedCellsTimingAfterQA->Sumw2();
       fHistExtQA->Add(fHistClusterIncludedCellsTimingAfterQA);
+      fHistClusterIncludedCellsTimingEnergyAfterQA = new TH2F(Form("ClusterIncludedCellsTimingEnergy_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCellsTimingEnergy_afterClusterQA; cell E (GeV);t (ns)",100,0.05,5.,200,-500,500);
+      SetLogBinningXTH2(fHistClusterIncludedCellsTimingEnergyAfterQA);
+      fHistClusterIncludedCellsTimingEnergyAfterQA->Sumw2();
+      fHistExtQA->Add(fHistClusterIncludedCellsTimingEnergyAfterQA);
       fHistClusterDistanceInTimeCut = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut; dist row; dist col",20,-10,10,20,-10,10);
       fHistClusterDistanceInTimeCut->Sumw2();
       fHistExtQA->Add(fHistClusterDistanceInTimeCut);
@@ -649,9 +656,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
       fHistClusterEnergyFracCellsAfterQA->Sumw2();
       fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
-      fHistClusterIncludedCellsTimingAfterQA = new TH1F(Form("ClusterIncludedCellsTiming_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCellsTiming_afterClusterQA; t (ns)",200,-500,500);
+      fHistClusterIncludedCellsTimingAfterQA = new TH2F(Form("ClusterIncludedCellsTiming_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCellsTiming_afterClusterQA; E (GeV);t (ns)",100,0.05,50,200,-500,500);
+      SetLogBinningXTH2(fHistClusterIncludedCellsTimingAfterQA);
       fHistClusterIncludedCellsTimingAfterQA->Sumw2();
       fHistExtQA->Add(fHistClusterIncludedCellsTimingAfterQA);
+      fHistClusterIncludedCellsTimingEnergyAfterQA = new TH2F(Form("ClusterIncludedCellsTimingEnergy_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCellsTimingEnergy_afterClusterQA; cell E (GeV);t (ns)",100,0.05,5.,200,-500,500);
+      SetLogBinningXTH2(fHistClusterIncludedCellsTimingEnergyAfterQA);
+      fHistClusterIncludedCellsTimingEnergyAfterQA->Sumw2();
+      fHistExtQA->Add(fHistClusterIncludedCellsTimingEnergyAfterQA);
       fHistClusterDistanceInTimeCut = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut; dist row; dist col",20,-10,10,20,-10,10);
       fHistClusterDistanceInTimeCut->Sumw2();
       fHistExtQA->Add(fHistClusterDistanceInTimeCut);
@@ -1164,10 +1176,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if(fHistClusterIncludedCellsAfterQA){
       Int_t nCellCluster = cluster->GetNCells();
       for(Int_t iCell=0;iCell<nCellCluster;iCell++){
-        fHistClusterIncludedCellsAfterQA->Fill(cluster->GetCellAbsId(iCell));
-        if(cluster->E()>0.) fHistClusterEnergyFracCellsAfterQA->Fill(cluster->GetCellAbsId(iCell),cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))/cluster->E());
-        if(isMC==0) fHistClusterIncludedCellsTimingAfterQA->Fill(cells->GetCellTime(cluster->GetCellAbsId(iCell))*1E9);
-        else fHistClusterIncludedCellsTimingAfterQA->Fill(cells->GetCellTime(cluster->GetCellAbsId(iCell))*1E8);
+        Int_t cellID = cluster->GetCellAbsId(iCell);
+        Double_t cellAmp = cells->GetCellAmplitude(cellID);
+        Double_t cellTime = cells->GetCellTime(cellID);
+        fHistClusterIncludedCellsAfterQA->Fill(cellID);
+        if(cluster->E()>0.) fHistClusterEnergyFracCellsAfterQA->Fill(cellID,cellAmp/cluster->E());
+        if(isMC==0){
+          fHistClusterIncludedCellsTimingAfterQA->Fill(cluster->E(),cellTime*1E9);
+          fHistClusterIncludedCellsTimingEnergyAfterQA->Fill(cellAmp,cellTime*1E9);
+        }else{
+          fHistClusterIncludedCellsTimingAfterQA->Fill(cluster->E(),cellTime*1E8);
+          fHistClusterIncludedCellsTimingEnergyAfterQA->Fill(cellAmp,cellTime*1E8);
+        }
       }
     }
     
@@ -4018,6 +4038,20 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else return kNoMC;
 }
 
+//________________________________________________________________________
+void AliCaloPhotonCuts::SetLogBinningXTH2(TH2* histoRebin){
+  TAxis *axisafter = histoRebin->GetXaxis();
+  Int_t bins = axisafter->GetNbins();
+  Double_t from = axisafter->GetXmin();
+  Double_t to = axisafter->GetXmax();
+  Double_t *newbins = new Double_t[bins+1];
+  newbins[0] = from;
+  Double_t factor = TMath::Power(to/from, 1./bins);
+  for(Int_t i=1; i<=bins; ++i) newbins[i] = factor * newbins[i-1];
+  axisafter->Set(bins, newbins);
+  delete [] newbins;
+  return;
+}
 
 //________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){

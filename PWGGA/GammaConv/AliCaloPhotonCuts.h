@@ -230,6 +230,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
     Float_t     CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
 
+    void        SetLogBinningXTH2 (TH2* histoRebin);
       
   protected:
     TList      *fHistograms;
@@ -352,7 +353,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistClusterIncludedCellsAfterQA;         // CellIDs in Cluster of accepted ones
     TH1F*     fHistClusterEnergyFracCellsBeforeQA;      // Energy fraction of CellIDs in Cluster
     TH1F*     fHistClusterEnergyFracCellsAfterQA;       // Energy fraction of CellIDs in Cluster of accepted ones
-    TH1F*     fHistClusterIncludedCellsTimingAfterQA;   // Timing of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterIncludedCellsTimingAfterQA;   // Timing of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterIncludedCellsTimingEnergyAfterQA;   // Timing vs Energy of CellIDs in Cluster of accepted ones
     TH2F*     fHistClusterDistanceInTimeCut;            // distance of clusters: within cluster timing cut + within cluster timing cut
     TH2F*     fHistClusterDistanceOutTimeCut;           // distance of clusters: within cluster timing cut + outside cluster timing cut
 
@@ -382,7 +384,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,23)
+    ClassDef(AliCaloPhotonCuts,24)
 };
 
 #endif
