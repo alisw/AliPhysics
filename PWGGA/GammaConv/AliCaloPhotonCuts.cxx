@@ -3609,7 +3609,8 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
                 ) {
         energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
         if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807*0.995*0.9970, -3.377, -0.8535);        
-      }  
+      }
+      else fPeriodNameAvailable = kFALSE;
       break;
 
     // NonLinearity Calo - kPi0MC + kSDM
@@ -3626,7 +3627,8 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
                 ) {
         energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
         if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772*0.995*0.9981, -3.256, -0.4449);      
-      }  
+      }
+      else fPeriodNameAvailable = kFALSE;
       break;
 
 // *************** 20 + x **** modified tender Settings 1 - pp
