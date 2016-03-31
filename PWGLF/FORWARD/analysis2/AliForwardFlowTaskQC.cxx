@@ -168,6 +168,72 @@ AliForwardFlowTaskQC::operator=(const AliForwardFlowTaskQC& o)
 
   return *this;
 }
+//____________________________________________________________________
+namespace {
+  Double_t GetEdge(const TString& str, Int_t start, Int_t end)
+  {
+    TString sub(str(start, end));
+    return sub.Atof();
+  }
+  Bool_t ExtractBins(const TString& spec, TArrayD& edges)
+  {
+    TArrayD tmp(200);
+    Int_t   start = 0;
+    Int_t   cnt   = 0;
+    for (Int_t i=1; i<spec.Length(); i++) {
+      if (spec[i] == '-' || spec[i] == ':') {
+  Double_t c = GetEdge(spec, start, i);
+  if (cnt > 0 && c < tmp[cnt-1]) {
+    Warning("ExtractBins",
+      "Invalid edge @ %d: %f (< %f)", cnt, c, tmp[cnt-1]);
+  tmp.Set(0);
+  return false;
+  }
+  tmp[cnt] = c;
+  i++;
+  start = i;
+  cnt++;
+      }
+    }
+    if (start+1 != spec.Length()) {
+      Double_t c = GetEdge(spec, start, spec.Length());
+      tmp[cnt] = c;
+      cnt++;
+    }
+    edges.Set(cnt, tmp.GetArray());
+    return true;
+  }
+}
+
+//________________________________________________________________________
+void
+AliForwardFlowTaskQC::SetCentralityAxis(const char* bins)
+{
+  if (!bins || bins[0] == '\0') return;
+
+  TString     spec(bins);
+  if (spec.EqualTo("none", TString::kIgnoreCase))
+    return;
+
+  TArrayD edges;
+  if (spec.EqualTo("default", TString::kIgnoreCase) ||
+      spec.EqualTo("pbpb", TString::kIgnoreCase)) {
+    //                 1  2  3   4   5   6   7   8   9   10  11
+    Double_t tmp[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
+    edges.Set(11, tmp);
+  }
+  else if (spec.EqualTo("ppb", TString::kIgnoreCase) ||
+     spec.EqualTo("pbp", TString::kIgnoreCase)) {
+    //                 1  2  3   4   5   6   7   8
+    Double_t tmp[] = { 0, 5, 10, 20, 40, 60, 80, 100 };
+    edges.Set(8, tmp);
+  }
+  else {
+    ExtractBins(spec, edges);
+  }
+  TAxis* centAxis = new TAxis(edges.GetSize()-1, edges.GetArray());
+  SetCentralityAxis(centAxis);
+}
 //_____________________________________________________________________
 void AliForwardFlowTaskQC::SetFlowFlags(UShort_t flags)
 {
