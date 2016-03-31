@@ -65,7 +65,7 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   // phiNbins must be divisable by 2, but not by 4; so that we can later shift it by pi/2 (2pi is total int.)
   // The idea is to have the deltaPhi histogram with a bin centered arround 0
   const Int_t phiNbins = 26;
-  const Double_t pt_bin_edges[] = {1.0, 2.0, 3.0, 4.0};
+  const Double_t pt_bin_edges[] = {3.0, 4.0, 6.0, 8.0, 15.0};
   const Int_t npTbins = sizeof(pt_bin_edges) / sizeof(pt_bin_edges[0]) - 1;
   const Int_t nptPairBins = AliAnalysisC2Utils::ComputePtPairBin(npTbins, npTbins) + 1;
   const Double_t cent_bin_edges[] = {0, 20, 40, 90};
