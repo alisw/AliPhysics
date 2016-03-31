@@ -13,6 +13,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Bool_t bUseVZERO=kFALSE,
                              Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
+                             Bool_t bDivSigma=kFALSE,
                              Bool_t bCalculateCRCZDC=kFALSE,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bZDCMCCen=kTRUE,
@@ -73,7 +74,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  Double_t centrMax=100.;
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
- Bool_t bDivSigma=kFALSE;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
