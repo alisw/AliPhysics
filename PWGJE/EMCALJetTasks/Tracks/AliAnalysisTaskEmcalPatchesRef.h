@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include "AliCutValueRange.h"
 
 class AliAnalysisUtils;
 class THistManager;
@@ -27,6 +28,7 @@ public:
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
   void SetRequestAnalysisUtil(bool doUse) { fRequestAnalysisUtil = doUse; }
+  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); }
 
 protected:
 
@@ -48,6 +50,8 @@ protected:
 
   Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;
+
+  AliCutValueRange<double>            fCentralityRange;
 
 private:
   AliAnalysisTaskEmcalPatchesRef(const AliAnalysisTaskEmcalPatchesRef &);

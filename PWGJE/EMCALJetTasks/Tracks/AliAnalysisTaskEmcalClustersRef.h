@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include "AliCutValueRange.h"
 
 class AliAnalysisUtils;
 class AliEMCALGeometry;
@@ -33,6 +34,7 @@ public:
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
 
   void SetRequestAnalysisUtil(Bool_t doRequest) { fRequestAnalysisUtil = doRequest; }
+  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); }
 
 protected:
 
@@ -58,6 +60,7 @@ protected:
 
   Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;
+  AliCutValueRange<double>            fCentralityRange;
 
 private:
   AliAnalysisTaskEmcalClustersRef(const AliAnalysisTaskEmcalClustersRef &);
