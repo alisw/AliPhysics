@@ -75,7 +75,7 @@ TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is 
 TMap fMergeListMap;          //map with the lists of objects to be merged in
 Int_t fMaxObjects = 1;        //trigger merge after this many messages
 
-long fPushbackPeriod = -1;        //! in milliseconds
+long fPushbackPeriod = -1;        //in seconds, -1 means never
 TTimeStamp fLastPushBackTime;
 Bool_t fCacheOnly = kFALSE;
 
