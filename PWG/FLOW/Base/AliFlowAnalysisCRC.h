@@ -898,8 +898,10 @@ public:
   void SetFlowSPZDCRbRList(TList* const TL) {this->fFlowSPZDCRbRList = TL;};
   void SetFlowSPZDCRunsList(TList* const TL, Int_t r) {this->fFlowSPZDCRunsList[r] = TL;};
   
- void SetFlowSPZDCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorPro[c][eg][h] = TP;};
- TProfile* GetFlowSPZDCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorPro[c][eg][h];};
+ void SetFlowSPZDCCorPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorPro[r][c][eg][h] = TP;};
+ TProfile* GetFlowSPZDCCorPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorPro[r][c][eg][h];};
+  void SetFlowSPZDCCorNUA(TProfile* const TP, Int_t const r, Int_t const c, Int_t const h) {this->fFlowSPZDCCorNUA[r][c][h] = TP;};
+  TProfile* GetFlowSPZDCCorNUA(Int_t const r, Int_t const c, Int_t const h) const {return this->fFlowSPZDCCorNUA[r][c][h];};
  void SetFlowSPZDCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowSPZDCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorHist[c][eg][h];};
  
@@ -1506,9 +1508,10 @@ private:
  TList *fFlowSPZDCList;    //! SPZDC List
  TList *fFlowSPZDCRbRList; //! CRC list of histograms RbR
  TList *fFlowSPZDCRunsList[fCRCMaxnRun]; //! list of runs
- const static Int_t fFlowNPro = 10;
- const static Int_t fFlowNNUA = 20;
- TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
+ const static Int_t fFlowNPro = 12;
+ const static Int_t fFlowNNUA = 2;
+ TProfile *fFlowSPZDCCorPro[fCRCMaxnRun][fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
+ TProfile *fFlowSPZDCCorNUA[fCRCMaxnRun][fCRCMaxnCen][fFlowNPro]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
  TProfile *fFlowSPZDCIntPro[fCRCMaxnRun][fFlowNHarm][fFlowNPro]; //! reference flow
  TH1D *fFlowSPZDCIntHist[fFlowNHarm][fFlowNPro]; //!
