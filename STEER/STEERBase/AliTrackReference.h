@@ -33,7 +33,8 @@ public:
 		    kZDC   = 15,
 		    kMFT   = 16,
 		    kHALL  = 17,
-		    kFIT  = 18 //alla
+		    kFIT  = 18, //alla
+		    kAD = 19
     };
   AliTrackReference();
   AliTrackReference(Int_t label, Int_t id = -999);
