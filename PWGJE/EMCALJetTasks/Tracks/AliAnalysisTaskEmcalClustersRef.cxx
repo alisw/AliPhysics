@@ -27,6 +27,7 @@
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
+#include "AliCentrality.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
@@ -53,7 +54,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fGeometry(NULL),
     fClusterContainer(""),
     fRequestAnalysisUtil(kTRUE),
-    fTriggerStringFromPatches(kFALSE)
+    fTriggerStringFromPatches(kFALSE),
+    fCentralityRange(-999., 999.)
 {
 }
 
@@ -69,7 +71,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fGeometry(NULL),
     fClusterContainer(""),
     fRequestAnalysisUtil(kTRUE),
-    fTriggerStringFromPatches(kFALSE)
+    fTriggerStringFromPatches(kFALSE),
+    fCentralityRange(-999., 999.)
 {
   DefineOutput(1, TList::Class());
 }
@@ -174,8 +177,15 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, triggerpatches);
       isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, triggerpatches);
       isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, triggerpatches);
+      isDJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ1, triggerpatches);
+      isDJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ2, triggerpatches);
+      isDG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG1, triggerpatches);
+      isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, triggerpatches);
+      isDMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDL0, triggerpatches);
   }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
+  double centrality = InputEvent()->GetCentrality() ? InputEvent()->GetCentrality()->GetCentralityPercentile("V0M") : -1;
+  if(!fCentralityRange.IsInRange(centrality)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
@@ -531,18 +541,30 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
 TString AliAnalysisTaskEmcalClustersRef::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
   TString triggerstring = "";
   if(!triggerpatches) return triggerstring;
-  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
-  double  minADC_EJ1 = 260.,
-          minADC_EJ2 = 127.,
-          minADC_EG1 = 140.,
-          minADC_EG2 = 89.;
+  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0, nDJ1 = 0, nDJ2 = 0, nDG1 = 0, nDG2 = 0;
+  double  minADC_J1 = 260.,
+          minADC_J2 = 127.,
+          minADC_G1 = 140.,
+          minADC_G2 = 89.;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
-    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
-    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;
-    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_EG1) nEG1++;
-    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_EG2) nEG2++;
+    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_J1){
+      if(patch->IsDCalPHOS()) nDJ1++;
+      else nEJ1++;
+    }
+    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_J2){
+      if(patch->IsDCalPHOS()) nDJ2++;
+      else nEJ2++;
+    }
+    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_G1){
+      if(patch->IsDCalPHOS()) nDG1++;
+      else nEG1++;
+    }
+    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_G2){
+      if(patch->IsDCalPHOS()) nDG2++;
+      else nEG2++;
+    }
   }
   if(nEJ1) triggerstring += "EJ1";
   if(nEJ2){
@@ -556,6 +578,22 @@ TString AliAnalysisTaskEmcalClustersRef::GetFiredTriggerClassesFromPatches(const
   if(nEG2){
     if(triggerstring.Length()) triggerstring += ",";
     triggerstring += "EG2";
+  }
+  if(nDJ1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DJ1";
+  }
+  if(nDJ2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DJ2";
+  }
+  if(nDG1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DG1";
+  }
+  if(nDG2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DG2";
   }
   return triggerstring;
 }
