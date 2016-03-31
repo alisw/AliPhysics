@@ -498,7 +498,8 @@ Bool_t AliV0ReaderV1::Notify()
     }
   }
   if (fPeriodName.CompareTo("LHC15a3a") == 0  || fPeriodName.CompareTo("LHC15a3a_plus") == 0   || fPeriodName.CompareTo("LHC15a3b") == 0   ||
-    fPeriodName.CompareTo("LHC15g1a") == 0    || fPeriodName.CompareTo("LHC15g1b") == 0    ){
+    fPeriodName.CompareTo("LHC15g1a") == 0    || fPeriodName.CompareTo("LHC15g1b") == 0 || fPeriodName.CompareTo("LHC16c2") == 0
+ || fPeriodName.CompareTo("LHC16c3a") == 0 || fPeriodName.CompareTo("LHC16c3b") == 0 || fPeriodName.CompareTo("LHC16c3c") == 0){
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     if(man) {
       AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
