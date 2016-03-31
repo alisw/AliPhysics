@@ -101,12 +101,10 @@ void AliAnalysisTaskEmcalJetHMEC::InitializeArraysToZero()
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
     fHistLeadJetPtBias[icent]=0;
-    fHistJetPtTT[icent]=0;
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
         fHistJetH[icent][iptjet][ieta]=0;
         fHistJetHBias[icent][iptjet][ieta]=0;
-        fHistJetHTT[icent][iptjet][ieta]=0;
       }
     }
   }
@@ -148,10 +146,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
     fHistLeadJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutput->Add(fHistLeadJetPtBias[icent]);
 
-    name = Form("fHistJetPtTT_%i",icent);   
-    fHistJetPtTT[icent] = new TH1F(name,name,200,0,200);
-    fOutput->Add(fHistJetPtTT[icent]);
-
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){	
         name = Form("fHistJetH_%i_%i_%i",icent,iptjet,ieta);   
@@ -161,11 +155,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
         name = Form("fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);   
         fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
         fOutput->Add(fHistJetHBias[icent][iptjet][ieta]);
-
-        name = Form("fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);   
-        fHistJetHTT[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
-        fOutput->Add(fHistJetHTT[icent][iptjet][ieta]);
-
       }
     }
   }
@@ -317,9 +306,6 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Determine the trigger for the event
   UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
-  // Trigger track related to h-jet
-  Int_t passedTTcut=0;
-
   // Get z vertex
   Double_t zVertex=fVertex[2];
 
@@ -363,20 +349,6 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     }
 
     fHistJetEtaPhi->Fill(jet->Eta(),jet->Phi());
-
-    // TODO: Would we be better off taking the tracks in the Jet?
-    // TODO: Discuss this cut! I don't quite understand it
-    // This was for the h-jet idea. For now, I am just going to remove it.
-    AliVTrack * leadingTrack = 0;
-    leadingTrack = tracks->GetLeadingTrack();
-    if (leadingTrack != 0)
-    {
-      if(TMath::Abs(jet->Phi()-leadingTrack->Phi()-TMath::Pi())<0.6) passedTTcut=1;
-      else passedTTcut=0;
-    }
-
-    if(passedTTcut)
-      FillHist(fHistJetPtTT[fCentBin], jet->Pt());
 
     Int_t iptjet=-1;
     iptjet=GetJetPtBin(jetPt);
@@ -432,9 +404,6 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
             FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           }
         }
-
-        if(passedTTcut)
-          fHistJetHTT[fCentBin][iptjet][ieta]->Fill(dphijh,track->Pt());
 
       } //track loop
     }//jet pt cut
