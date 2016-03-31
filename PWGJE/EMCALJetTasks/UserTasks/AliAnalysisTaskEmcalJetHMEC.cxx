@@ -44,17 +44,9 @@ ClassImp(AliAnalysisTaskEmcalJetHMEC)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() : 
-  AliAnalysisTaskEmcalJet("HMEC",kFALSE),
-  /*fTracksName(""),
-  fJetsName(""),*/
-  /*fPhimin(-10), 
-  fPhimax(10),
-  fEtamin(-0.9), 
-  fEtamax(0.9),
-  fAreacut(0.0),*/
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHMEC",kFALSE),
   fTrkBias(5),
   fClusBias(5),
-  fTrkEta(0.9),
   fDoEventMixing(0),
   fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
@@ -62,11 +54,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fCentBinSize(1),
-  //fESD(0),
-  //fAOD(0), 
   fPoolMgr(0x0), 
   fHistTrackPt(0),
-  //fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0), 
   fHistJHPsi(0),
@@ -75,39 +64,13 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fhnJH(0x0)
 {
   // Default Constructor
-
-  for(Int_t ipta=0; ipta<7; ipta++){
-    fHistTrackEtaPhi[ipta]=0;
-  }
-
-  for(Int_t icent = 0; icent<6; ++icent){
-    fHistJetPt[icent]=0;
-    fHistJetPtBias[icent]=0;
-    fHistLeadJetPtBias[icent]=0;
-    fHistJetPtTT[icent]=0;
-    for(Int_t iptjet = 0; iptjet<5; ++iptjet){
-      for(Int_t ieta = 0; ieta<3; ++ieta){	
-        fHistJetH[icent][iptjet][ieta]=0;
-        fHistJetHBias[icent][iptjet][ieta]=0;
-        fHistJetHTT[icent][iptjet][ieta]=0;
-      }
-    }
-  }
-
+  InitializeArraysToZero();
 }
+
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) : 
   AliAnalysisTaskEmcalJet(name,kTRUE),
-  /*fTracksName(""),
-  fJetsName(""),*/
-  /*fPhimin(-10), 
-  fPhimax(10),
-  fEtamin(-0.9), 
-  fEtamax(0.9),
-  fAreacut(0.0),*/
-  fTrkBias(5),
   fClusBias(5),
-  fTrkEta(0.9),
   fDoEventMixing(0),
   fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
@@ -115,11 +78,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fCentBinSize(1),
-  //fESD(0),
-  //fAOD(0), 
   fPoolMgr(0x0), 
   fHistTrackPt(0),
-  //fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0),  
   fHistJHPsi(0),
@@ -128,6 +88,12 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fhnJH(0x0)
 {
   // Constructor
+  InitializeArraysToZero();
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetHMEC::InitializeArraysToZero()
+{
   for(Int_t ipta=0; ipta<7; ipta++){
     fHistTrackEtaPhi[ipta]=0;
   }
@@ -144,7 +110,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
       }
     }
   }
-
 }
 
 //________________________________________________________________________
@@ -155,7 +120,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 
   // Create histograms
   fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
-  //fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
@@ -228,7 +192,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   }
 
   fOutput->Add(fHistTrackPt);
-  //fOutput->Add(fHistCentrality);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
   fOutput->Add(fHistClusEtaPhiEn);
@@ -280,71 +243,55 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 }
 
 //________________________________________________________________________
-
-Double_t AliAnalysisTaskEmcalJetHMEC:: RelativePhi(Double_t mphi,Double_t vphi) {
-
-  if (vphi < -1*TMath::Pi()) vphi += (2*TMath::Pi());
-  else if (vphi > TMath::Pi()) vphi -= (2*TMath::Pi());
-  if (mphi < -1*TMath::Pi()) mphi += (2*TMath::Pi());
-  else if (mphi > TMath::Pi()) mphi -= (2*TMath::Pi());
-  Double_t dphi = vphi-mphi;
-  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
-  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
-
-  return dphi;//dphi in [-Pi, Pi]                                                                                                    
-}
-
-//________________________________________________________________________
-/*Int_t AliAnalysisTaskEmcalJetHMEC::GetCentBin(Double_t cent) const {
-  // Get centrality bin.
-
-  Int_t centbin = -1;
-  if (cent>=0 && cent<10) centbin = 0;
-  else if (cent>=10 && cent<20) centbin = 1;
-  else if (cent>=20 && cent<30) centbin = 2;
-  else if (cent>=30 && cent<40) centbin = 3;
-  else if (cent>=40 && cent<50) centbin = 4;
-  else if (cent>=50 && cent<90) centbin = 5;
-  return centbin;
-}*/
-
-//________________________________________________________________________
 Int_t AliAnalysisTaskEmcalJetHMEC::GetEtaBin(Double_t eta) const {
   // Get eta bin for histos.
 
   Int_t etabin = -1;
-  if (TMath::Abs(eta)<=0.4) etabin = 0;
-  else if (TMath::Abs(eta)>0.4 && TMath::Abs(eta)<0.8) etabin = 1;
-  else if (TMath::Abs(eta)>=0.8) etabin = 2;
+  eta = TMath::Abs(eta);
+  if      (eta <= 0.4)              etabin = 0;
+  else if (eta >  0.4 && eta < 0.8) etabin = 1;
+  else if (eta >= 0.8)              etabin = 2;
   return etabin;
 }
+
 //________________________________________________________________________
-Int_t AliAnalysisTaskEmcalJetHMEC::GetpTjetBin(Double_t pt) const 
+Int_t AliAnalysisTaskEmcalJetHMEC::GetTrackPtBin(Double_t pt) const
+{
+  Int_t ptBin = -1;
+  if      (pt <  0.5) ptBin = 0;
+  else if (pt <  1  ) ptBin = 1;
+  else if (pt <  2  ) ptBin = 2;
+  else if (pt <  3  ) ptBin = 3;
+  else if (pt <  5  ) ptBin = 4;
+  else if (pt <  8  ) ptBin = 5;
+  else if (pt < 20  ) ptBin = 6;
+
+  return ptBin;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEmcalJetHMEC::GetJetPtBin(Double_t pt) const 
 {
   // Get jet pt  bin for histos.
 
-  Int_t ptbin = -1;
-  if (pt>=15 && pt<20) ptbin = 0;
-  else if (pt>=20 && pt<25) ptbin = 1;
-  else if (pt>=25 && pt<30) ptbin = 2;
-  else if (pt>=30 && pt<60) ptbin = 3;
-  else if (pt>=60) ptbin = 4;
+  Int_t ptBin = -1;
+  if      (pt >= 15 && pt < 20) ptBin = 0;
+  else if (pt >= 20 && pt < 25) ptBin = 1;
+  else if (pt >= 25 && pt < 30) ptBin = 2;
+  else if (pt >= 30 && pt < 60) ptBin = 3;
+  else if (pt >= 60)            ptBin = 4;
 
-  return ptbin;
+  return ptBin;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::ExecOnce() {
   AliAnalysisTaskEmcalJet::ExecOnce();
-
 }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Main loop called for each event
-  
-  // Get z vertex
-  Double_t zVtx=fVertex[2];
 
   // Retrieve clusters
   AliClusterContainer * clusters = GetClusterContainer(0);
@@ -353,25 +300,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     return kTRUE;
   }
 
-  // TODO: Can we use a QA task for this?
-  AliVCluster * cluster = 0;
-  TLorentzVector part;
-  while ((clusters->GetNextAcceptMomentum(part)))
-  {
-    fHistClusEtaPhiEn->Fill( part.Eta(), part.Phi(), part.E() );
-  }
-  // Reset so that we can iterate again in the future.
-  clusters->ResetCurrentID();
-
   // Retrieve tracks
   AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
   if (!tracks) {
     AliError(Form("%s: Unable to retrieve tracks!", GetName()));
     return kTRUE;
   }
-  const Int_t Ntracks = tracks->GetNTracks();
-
-  Int_t passedTTcut=0;
 
   AliJetContainer * jets = GetJetContainer(0);
   if (!jets) {
@@ -383,26 +317,38 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // see if event is selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+  // Trigger track related to h-jet
+  Int_t passedTTcut=0;
+
+  // Get z vertex
+  Double_t zVertex=fVertex[2];
+
+  //
   TVector3 vector_jet, vector_hdr;
 
+  // TODO: Can we use a QA task for this?
+  AliVCluster * cluster = 0;
+  TLorentzVector part;
+  while ((clusters->GetNextAcceptMomentum(part)))
+  {
+    fHistClusEtaPhiEn->Fill( part.Eta(), part.Phi(), part.E() );
+  }
+  // Reset so that we can iterate again in the future.
+  clusters->ResetCurrentID();
+
+  // For the jets below
+  AliEmcalJet * jet = 0;
   // For comparison below
   AliEmcalJet * leadingJet = jets->GetLeadingJet();
 
   // Just to be certain that we are interating from the start
   jets->ResetCurrentID();
 
-  AliEmcalJet * jet = 0;
   while ((jet = jets->GetNextAcceptJet())) {
     
     // see if event is selected and our jet came from trigger event
     if (!(trig & fTriggerEventType)) continue;
-    // TODO: Can we just move this the jet container?
-    //if (jet->Pt()<0.1) continue;
 
-    // TODO: Can this be removed?
-    if(!AcceptthisJet(jet)) continue;
-
-    Double_t jetphi = jet->Phi();
     Double_t jetPt = jet->Pt();
 
     vector_jet.SetXYZ( jet->Px(), jet->Py(), jet->Pz() );
@@ -414,18 +360,18 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
       FillHist(fHistJetPtBias[fCentBin], jet->Pt());
-      FillHist(fHistLeadJetPtBias[fCentBin], jet->Pt());
     }
 
-    fHistJetEtaPhi->Fill(jet->Eta(),jetphi);
+    fHistJetEtaPhi->Fill(jet->Eta(),jet->Phi());
 
     // TODO: Would we be better off taking the tracks in the Jet?
     // TODO: Discuss this cut! I don't quite understand it
+    // This was for the h-jet idea. For now, I am just going to remove it.
     AliVTrack * leadingTrack = 0;
     leadingTrack = tracks->GetLeadingTrack();
     if (leadingTrack != 0)
     {
-      if(TMath::Abs(jetphi-leadingTrack->Phi()-TMath::Pi())<0.6) passedTTcut=1;
+      if(TMath::Abs(jet->Phi()-leadingTrack->Phi()-TMath::Pi())<0.6) passedTTcut=1;
       else passedTTcut=0;
     }
 
@@ -433,7 +379,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       FillHist(fHistJetPtTT[fCentBin], jet->Pt());
 
     Int_t iptjet=-1;
-    iptjet=GetpTjetBin(jetPt);
+    iptjet=GetJetPtBin(jetPt);
     if(iptjet<0) continue;
 
     if (jetPt > 15) {
@@ -441,38 +387,22 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       AliVTrack * track = 0;
       while ((track = tracks->GetNextAcceptTrack())) {
 
-        // TODO: We should be able to remove this by apply the track eta cut in the run macro
-        if(TMath::Abs(track->Eta())>fTrkEta) continue;
-
         fHistTrackPt->Fill(track->Pt());
-
-        // TODO: Need a second track container - one for jets and one for hadrons
-        if (track->Pt()<0.15) continue;
 
         vector_hdr.SetXYZ( track->Px(), track->Py(), track->Pz() );
         if ( (jetPt>20.) && (jetPt<60.) ) {
-          fHistJHPsi->Fill(Ntracks, track->Pt(), vector_hdr.Angle(vector_jet) * TMath::RadToDeg() );
+          fHistJHPsi->Fill(tracks->GetNTracks(), track->Pt(), vector_hdr.Angle(vector_jet) * TMath::RadToDeg() );
         }
 
-        Double_t trackphi = track->Phi();
-        if (trackphi > TMath::Pi())
-          trackphi = trackphi-2*TMath::Pi();
-
-        Double_t tracketa=track->Eta();
-        Double_t trackpt=track->Pt();
-        Double_t deta=tracketa-jet->Eta();
-        Int_t ieta=GetEtaBin(deta);
+        Double_t deta = track->Eta()-jet->Eta();
+        Int_t ieta = GetEtaBin(deta);
         if (ieta<0) {
           AliError(Form("Eta Bin negative: %f", deta));
           continue;
         }
 
         //Jet pt, track pt, dPhi,deta,fCent
-        Double_t dphijh = RelativePhi(jetphi,trackphi);
-        if (dphijh < -0.5*TMath::Pi())
-          dphijh+= 2*TMath::Pi();
-        if (dphijh > 1.5*TMath::Pi()) 
-          dphijh-=2.*TMath::Pi();
+        Double_t dphijh = DeltaPhi(jet->Phi(),track->Phi(), -0.5*TMath::Pi(), 3*TMath::Pi()/2.0);
 
         fHistJetH[fCentBin][iptjet][ieta]->Fill(dphijh,track->Pt());
         fHistJetHEtaPhi->Fill(deta,dphijh);
@@ -484,27 +414,27 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         Double_t dR=sqrt(deta*deta+dphijh*dphijh);
 
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
-          fHistJetHBias[fCentBin][iptjet][ieta]->Fill(dphijh,trackpt);
+          fHistJetHBias[fCentBin][iptjet][ieta]->Fill(dphijh,track->Pt());
 
           Double_t eventActivity = 0.0;
           if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
             eventActivity = fCent;
           }
           else if (fBeamType == kpp) {
-            eventActivity = static_cast<Double_t>(Ntracks);
+            eventActivity = static_cast<Double_t>(tracks->GetNTracks());
           }
 
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            Double_t triggerEntries[6] = {eventActivity,jetPt,trackpt,deta,dphijh,leadjet};
+            Double_t triggerEntries[6] = {eventActivity,jetPt,track->Pt(),deta,dphijh,leadjet};
             FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           } else { 
-            Double_t triggerEntries[8] = {eventActivity,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
+            Double_t triggerEntries[8] = {eventActivity,jetPt,track->Pt(),deta,dphijh,leadjet,0.0,dR};
             FillHist(fhnJH, triggerEntries, 1.0/trefficiency);
           }
         }
 
         if(passedTTcut)
-          fHistJetHTT[fCentBin][iptjet][ieta]->Fill(dphijh,trackpt);
+          fHistJetHTT[fCentBin][iptjet][ieta]->Fill(dphijh,track->Pt());
 
       } //track loop
     }//jet pt cut
@@ -541,16 +471,16 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     AliEventPool *pool = 0;
     if (fBeamType == kAA || fBeamType == kpA) {//everything but pp
-      pool = fPoolMgr->GetEventPool(fCent, zVtx);
+      pool = fPoolMgr->GetEventPool(fCent, zVertex);
     }
     else if (fBeamType == kpp) {//pp only
-      Double_t Ntrks = (Double_t)Ntracks*1.0;
-      pool = fPoolMgr->GetEventPool(Ntrks, zVtx);
+      Double_t Ntrks = (Double_t)tracks->GetNTracks()*1.0;
+      pool = fPoolMgr->GetEventPool(Ntrks, zVertex);
     }
 
     if (!pool){
-      if (fBeamType == kAA || fBeamType == kpA) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCent, zVtx));
-      else if (fBeamType == kpp) AliFatal(Form("No pool found for ntracks_pp = %d, zVtx = %f", Ntracks, zVtx));
+      if (fBeamType == kAA || fBeamType == kpA) AliFatal(Form("No pool found for centrality = %f, zVertex = %f", fCent, zVertex));
+      else if (fBeamType == kpp) AliFatal(Form("No pool found for ntracks_pp = %d, zVertex = %f", tracks->GetNTracks(), zVertex));
       return kTRUE;
     }
 
@@ -563,12 +493,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
           Double_t leadjet=0;
           if (jet == leadingJet) leadjet=1;
 
-          // TODO: Is this still necessary?
-          if(!AcceptthisJet(jet)) continue;
-
           Double_t jetPt = jet->Pt();	
-          Double_t jetphi = jet->Phi();
-          Double_t jeteta=jet->Eta();
 
           // make sure event contains jet above our threshold (reduce stats of sparse)
           if (jetPt < 15) continue;
@@ -589,8 +514,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
                 if(TMath::Abs(part->Eta())>0.9) continue;
                 if(part->Pt()<0.15) continue;
 
-                Double_t DEta = part->Eta()-jeteta;
-                Double_t DPhi = RelativePhi(jetphi,part->Phi());
+                Double_t DEta = part->Eta()-jet->Eta();
+                Double_t DPhi = DeltaPhi(jet->Phi(),part->Phi(), -1.0*TMath::Pi(), TMath::Pi());
 
                 // calculate single particle tracking efficiency of mixed events for correlations
                 Double_t mixefficiency = -999;
@@ -605,7 +530,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
                   eventActivity = fCent;
                 }
                 else if (fBeamType == kpp) {
-                  eventActivity = static_cast<Double_t>(Ntracks);
+                  eventActivity = static_cast<Double_t>(tracks->GetNTracks());
                 }
 
                 if(fDoLessSparseAxes) {  // check if we want all the axis filled
@@ -641,33 +566,6 @@ void AliAnalysisTaskEmcalJetHMEC::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskEmcalJetHMEC::AcceptthisJet(AliEmcalJet *jet) 
-{
-  //applies all jet cuts except pt
-  /*float jetphi = jet->Phi();
-  if (jetphi>TMath::Pi())
-    jetphi = jetphi-2*TMath::Pi();*/
-
-  // Acceptance is taken care of by the jet container
-  /*if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax))
-    return 0;
-  if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax))
-    return 0;*/
-  /*if (jet->Area()<fAreacut)
-    return 0;
-  //prevents 0 area jets from sneaking by when area cut == 0
-  if (jet->Area()==0)
-    return 0;  */
-  //exclude jets with extremely high pt tracks which are likely misreconstructed
-  /*if(jet->MaxTrackPt()>100)
-    return 0;*/
-
-  //passed all above cuts
-  return 1;
-}
-
-//________________________________________________________________________
-
 THnSparse* AliAnalysisTaskEmcalJetHMEC::NewTHnSparseF(const char* name, UInt_t entries){
   // generate new THnSparseF, axes are defined in GetDimParams()
 
@@ -702,6 +600,7 @@ THnSparse* AliAnalysisTaskEmcalJetHMEC::NewTHnSparseF(const char* name, UInt_t e
   return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
 {
   // stores label and binning of axis for THnSparse
@@ -787,41 +686,28 @@ void AliAnalysisTaskEmcalJetHMEC::GetDimParams(Int_t iEntry, TString &label, Int
 TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
 {
   // clones a track list by using AliBasicTrack which uses much less memory (used for event mixing)
-
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
 
-  AliTrackContainer * tracks = GetTrackContainer(0);
+  // Loop over all tracks
+  AliVParticle * particle = 0;
+  AliBasicParticle * clone = 0;
+  AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
   // Ensure that we start from the beginning
   tracks->ResetCurrentID();
-  AliVParticle * particle = 0;
-  AliBasicParticle * copyOfParticle = 0;
+
   while ((particle = tracks->GetNextAcceptTrack()))
   {
-    // TODO: Probably not necessary since the track container should already apply these cuts. But check it!
-    if(TMath::Abs(particle->Eta())>fTrkEta) continue;
-    if(particle->Pt()<0.15) continue;
-
-    Double_t trackpt=particle->Pt();
-
-    Int_t hadbin=-1;
-    if(trackpt<0.5) hadbin=0;
-    else if(trackpt<1) hadbin=1;
-    else if(trackpt<2) hadbin=2;
-    else if(trackpt<3) hadbin=3;
-    else if(trackpt<5) hadbin=4;
-    else if(trackpt<8) hadbin=5;
-    else if(trackpt<20) hadbin=6;
-
-    if(hadbin>-1) fHistTrackEtaPhi[hadbin]->Fill(particle->Eta(),particle->Phi());
+    // Fill some QA information about the tracks
+    Int_t trackPtBin = GetTrackPtBin(particle->Pt());
+    if(trackPtBin > -1) fHistTrackEtaPhi[trackPtBin]->Fill(particle->Eta(),particle->Phi());
 
     // Create new particle
-    copyOfParticle = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
-    // Set so that we can do comparisons
-    copyOfParticle->SetUniqueID(particle->GetUniqueID());
+    clone = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+    // Set so that we can do comparisons using the IsEqual() function.
+    clone ->SetUniqueID(particle->GetUniqueID());
 
-    tracksClone->Add(copyOfParticle);
-    //tracksClone->Add(new AliPicoTrack(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0, 0, 0, 0));
+    tracksClone->Add(clone);
   }
 
   return tracksClone;
@@ -846,20 +732,19 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 
     if ((runNUM == 167902 || runNUM == 167903 || runNUM == 167915 || runNUM == 167920 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
 
-    /*if(fCent>=0 && fCent<10) centbin = 0;
-    else if (fCent>=10 && fCent<30)	centbin = 1;
-    else if (fCent>=30 && fCent<50) centbin = 2;
-    else if (fCent>=50 && fCent<90)	centbin = 3;*/
-
-    if(runSwitchGood == 0 && fCentBin == 0) effSwitch = 2;
+    /*if(runSwitchGood == 0 && fCentBin == 0) effSwitch = 2;
     if(runSwitchGood == 0 && fCentBin == 1) effSwitch = 3;
     if(runSwitchGood == 0 && fCentBin == 2) effSwitch = 4;
     if(runSwitchGood == 0 && fCentBin == 3) effSwitch = 5;
     if(runSwitchGood == 1 && fCentBin == 0) effSwitch = 6;
     if(runSwitchGood == 1 && fCentBin == 1) effSwitch = 7;
     if(runSwitchGood == 1 && fCentBin == 2) effSwitch = 8;
-    if(runSwitchGood == 1 && fCentBin == 3) effSwitch = 9;
+    if(runSwitchGood == 1 && fCentBin == 3) effSwitch = 9;*/
 
+    // Determine which efficiency to use.
+    // This is just a way to map all possible values of the cent bin and runSwitchGood to a unique flag.
+    // 4 is the number of cent bins, and we want to index the effSwitch starting at 2.
+    effSwitch = 2 + runSwitchGood*4 + fCentBin;
   }
 
   // 0-10% centrality: Semi-Good Runs
@@ -952,6 +837,7 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
   return TRefficiency;
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Double_t weight, Bool_t noCorrection)
 {
   if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
@@ -984,6 +870,7 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Doubl
   }
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight, Bool_t noCorrection)
 {
   if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
@@ -1007,7 +894,7 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue
     {
       // Determine the value to fill based on the center of the bins.
       // This in principle allows the binning between the correction and hist to be different
-      fillValue[1]  = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+      fillValue[1] = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
       Printf("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1));
       // minus 1 since loop starts at 1
       hist->Fill(fillValue, weight*yBinsContent.at(index-1));
@@ -1015,6 +902,7 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue
   }
 }
 
+//________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::accessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
 {
   for (Int_t index = 1; index <= hist->GetYaxis()->GetNbins(); index++)

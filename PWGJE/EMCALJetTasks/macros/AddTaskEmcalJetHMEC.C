@@ -122,6 +122,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   correlationtask->SetCentralityEstimator(CentEst);
   correlationtask->SetForceBeamType(beamType);
   correlationtask->SetVzRange(-10,10);
+  // TODO: Set this properly
+  correlationtask->SetNCentBins(5);
 
   // Determined by how we run the jet finder
   Double_t jetRadius = 0.2;

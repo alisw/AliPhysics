@@ -23,10 +23,10 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskEmcalJetHMEC() {}
   
   virtual void            UserCreateOutputObjects();
-  virtual Double_t        RelativePhi(Double_t mphi, Double_t vphi);
+  //virtual Double_t        RelativePhi(Double_t mphi, Double_t vphi);
 //  virtual void            UserExec(Option_t *option);
   virtual void            Terminate(Option_t *);
-  virtual Int_t           AcceptthisJet(AliEmcalJet *jet);
+  //virtual Int_t           AcceptthisJet(AliEmcalJet *jet);
   virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
@@ -38,7 +38,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual void            SetTrkBias(Double_t b)                   { fTrkBias    = b; }  //require a track with pt > b in jet
   virtual void            SetClusBias(Double_t b)                  { fClusBias   = b; }  //require a cluster with pt > b in jet
 
-  virtual void            SetTrkEta(Double_t e)                    { fTrkEta   = e; }  //eta range of the associated tracks
 
   /*virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
   virtual void            SetJetPhi(Double_t pmin, Double_t pmax)  { fPhimin = pmin; fPhimax = pmax; }*/
@@ -64,11 +63,13 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetEmbeddingCorrectionHist(TH2F * embeddingCorrectionHist) { fEmbeddingCorrectionHist = embeddingCorrectionHist; }
 
  protected:
-  void					 ExecOnce();
-  Bool_t			     Run();
+  void                   ExecOnce();
+  Bool_t                 Run();
   //virtual Int_t          GetCentBin(Double_t cent) const;
+  void                   InitializeArraysToZero();
   virtual Int_t          GetEtaBin(Double_t eta) const;
-  virtual Int_t          GetpTjetBin(Double_t pt) const;
+  virtual Int_t          GetTrackPtBin(Double_t pt) const;
+  virtual Int_t          GetJetPtBin(Double_t pt) const;
   virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
 
   // Fill methods which allow for the embedding correction
@@ -76,21 +77,10 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                   FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight = 1.0, Bool_t noCorrection = kTRUE);
   void                   accessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor = -1.0);
 
-  /*TString                fTracksName;              // name of tracks collection
-  TString                fJetsName;                // name of Jet collection
-  TString                fCaloClustersName;        // name of Calo Cluster collection
-  */
-  /*Double_t               fPhimin;                  // phi min of jet
-  Double_t               fPhimax;                  // phi max of jet
-  Double_t               fEtamin;                  // eta min of jet
-  Double_t               fEtamax;                  // eta max of jet
-  Double_t               fAreacut;                 // area cut of jet
-  */
   Double_t               fTrkBias;
   Double_t               fClusBias;
-  Double_t               fTrkEta;                  // eta min/max of tracks
   Int_t                  fDoEventMixing;           // flag to do evt mixing
-  Int_t  		 fMixingTracks;		       // size of track buffer for event mixing
+  Int_t                  fMixingTracks;            // size of track buffer for event mixing
   Int_t                  fNMIXtracks;              // threshold to use event pool # tracks
   Int_t                  fNMIXevents;              // threshold to use event pool # events
   TObjArray*             CloneAndReduceTrackList();
@@ -111,8 +101,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   UInt_t         fCentBinSize;
 
-  //AliESDEvent           *fESD;    //! ESD object
-  //AliAODEvent			*fAOD;    //! AOD object
   AliEventPoolManager   *fPoolMgr; //!
   TH1                   *fHistTrackPt; //! Pt spectrum
   //TH1                   *fHistCentrality;//!
