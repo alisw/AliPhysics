@@ -12,10 +12,11 @@
 // If you have any comment or question of this code,
 // Please send a mail to Bong-Hwi or Jihye
 //
-// Last update: 2016.03.02 (blim)
+// Last update: 2016.03.31 (blim)
 //
 //#include <Riostream.h>
 #include <iostream>
+#include "AliAnalysisBGMonitorQA.h"
 #include <TFile.h>
 #include <TChain.h>
 #include <TTree.h>
@@ -30,7 +31,6 @@
 #include "AliESDfriend.h"
 #include "AliVEvent.h"
 #include "AliESDInputHandler.h"
-#include "AliAnalysisBGMonitorQA.h"
 #include "AliLog.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
@@ -71,10 +71,10 @@ fTreeTrack(0),
 fTreeTrack2(0),
 fList(0),
 fList2(0), //add new List for both result 2015.08.20. (blim)
-fUseTree(kFALSE)
+fUseTree(kFALSE),
+runNumber(0),fvertZ(0),fvertX(0),fvertY(0),fvertTPCZ(0),fvertTPCX(0),fvertTPCY(0),fvertZ2(0),fvertX2(0),fvertY2(0),fvertTPCX2(0),fvertTPCY2(0),fvertTPCZ2(0),fv0a(0),fv0c(0),fad0a(0),fad0c(0),fMulta(0),fMultc(0),fTriCha(0),fTriChc(0),fV0M(0),fbx(0),ftime(0),fSpdC1(0),fSpdC2(0),fSpdT(0),ntracks(0),V0A(0),V0C(0),V0ABG(0),V0CBG(0),VBA(0),VBC(0),VGA(0),VGC(0),VTX(0),bgID(0),bgID2(0),t0PileUp(0),spdPileUp(0),spdPileUpOutOfBunch(0),triMask(0),fastORHW(0),SPD1(0),SPD2(0),SPDHw1(0),SPDHw2(0),ntr(0),nbunch(0),nV0A(0),nV0C(0),nV0ABG(0),nV0CBG(0) // add initiallize 2016.03.31. (blim)
 
 {
-    
     // Constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -98,7 +98,7 @@ void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
         AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
         
         if (esdH) {
-	  fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+             fESD = dynamic_cast<AliESDEvent*> (InputEvent());
             if(fESD) {
                 fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
                 if (!fESDfriend){
