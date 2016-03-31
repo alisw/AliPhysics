@@ -341,6 +341,10 @@ protected:
     // --- Add the flow task -----------------------------------------
     if (fOptions.Has("flow") && !CreateFlowTasks()) return;
   }
+  // The code below is redundant and shouldn't be used. We keep it
+  // here for reference.  If one needs a special physics selection,
+  // one can use the option "ps" defined by the TrainSetup.C class.
+#if 0
   //__________________________________________________________________
   /** 
    * Create physics selection , and add to manager
@@ -393,6 +397,7 @@ protected:
     if (!fOptions.Has("cent")) return;
     TrainSetup::CreateCentralitySelection(mc);
   }
+#endif
   //__________________________________________________________________
   const char* ClassName() const { return "MakeFullTrain"; }
 };
