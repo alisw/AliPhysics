@@ -65,29 +65,28 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   // phiNbins must be divisable by 2, but not by 4; so that we can later shift it by pi/2 (2pi is total int.)
   // The idea is to have the deltaPhi histogram with a bin centered arround 0
   const Int_t phiNbins = 26;
-  const Double_t pt_bin_edges[] = {1.0, 2.0, 3.0};
+  const Double_t pt_bin_edges[] = {1.0, 2.0, 3.0, 4.0};
   const Int_t npTbins = sizeof(pt_bin_edges) / sizeof(pt_bin_edges[0]) - 1;
+  const Int_t nptPairBins = AliAnalysisC2Utils::ComputePtPairBin(npTbins, npTbins) + 1;
   const Double_t cent_bin_edges[] = {0, 20, 40, 90};
   const Int_t nCent    = sizeof(cent_bin_edges)/sizeof(cent_bin_edges[0]) - 1;
   const Int_t nZvtx    = 20;
   const Int_t nbins[cPairsDims::kNdimensions] = {etaNbins, etaNbins,
 						 phiNbins, phiNbins,
-						 npTbins, npTbins,
+						 nptPairBins,
 						 nCent, nZvtx};
   const Double_t xmin[cPairsDims::kNdimensions] = {-0.8, -0.8,
 						   0, 0,
-						   0, 0,    // Dummy value
+						   0,
 						   0, -10};
   const Double_t xmax[cPairsDims::kNdimensions] = {0.8, 0.8,
 						   2*TMath::Pi(), 2*TMath::Pi(),
-						   1, 1,  // Dummy value
+						   Double_t(nptPairBins),
 						   100, 10};
   this->fPairs = new THnC("pairs",
-			  "<N_{1}N_{2}>;#eta_{1};#eta_{2};#phi_{1};#phi_{2};p_{T,1};p_{T,2};cent;z_{vtx};",
+			  "<N_{1}N_{2}>;#eta_{1};#eta_{2};#phi_{1};#phi_{2};p_{pair};cent;z_{vtx};",
 			  cPairsDims::kNdimensions, nbins, xmin, xmax);
   this->fPairs->GetAxis(cPairsDims::kCent)->Set(nCent, cent_bin_edges);
-  this->fPairs->GetAxis(cPairsDims::kPt1)->Set(npTbins, pt_bin_edges);
-  this->fPairs->GetAxis(cPairsDims::kPt2)->Set(npTbins, pt_bin_edges);
   // exclude_over_under_flow(this->fPairs);
   this->fOutputList->Add(fPairs);
 
@@ -227,13 +226,14 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
 	// gurantee that pt1 is always smaller than pt2. This takes care of mirrored pairs
 	if (tracks[iTrack].pt > tracks[jTrack].pt)
 	  continue;
+	Int_t pt1Bin = this->fSingles->GetAxis(cSinglesDims::kPt)->FindFixBin(tracks[iTrack].pt);
+	Int_t pt2Bin = this->fSingles->GetAxis(cSinglesDims::kPt)->FindFixBin(tracks[jTrack].pt);
 	Double_t stuffing[8] =
 	  {tracks[iTrack].eta,
 	   tracks[jTrack].eta,
 	   AliAnalysisC2Utils::WrapAngle(tracks[iTrack].phi, this->fPairs->GetAxis(cPairsDims::kPhi1)),
 	   AliAnalysisC2Utils::WrapAngle(tracks[jTrack].phi, this->fPairs->GetAxis(cPairsDims::kPhi2)),
-	   tracks[iTrack].pt,
-	   tracks[jTrack].pt,
+	   Double_t(AliAnalysisC2Utils::ComputePtPairBin(pt1Bin, pt2Bin) + 0.5),  // +.5 to hit the bin center
 	   centrality,
 	   zvtx};
 	this->fPairs->Fill(stuffing, weight * weight);

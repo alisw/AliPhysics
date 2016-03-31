@@ -148,6 +148,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
+  void                        SetZvertexDiffValue(Double_t cut)                     { fZvertexDiff  = cut                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
@@ -242,6 +243,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxVz;                      ///< max vertex for event selection
   Double_t                    fTrackPtCut;                 ///< cut on track pt in event selection
   Int_t                       fMinNTrack;                  ///< minimum nr of tracks in event with pT>fTrackPtCut
+  Double_t                    fZvertexDiff;                ///< upper limit for distance between primary and SPD vertex
   Bool_t                      fUseAliAnaUtils;             ///< used for LHC13* data: z-vtx, Ncontributors, z-vtx resolution cuts
   Bool_t                      fRejectPileup;               ///< Reject pilup using function AliAnalysisUtils::IsPileUpEvent()
   Bool_t                      fTklVsClusSPDCut;            ///< Apply tracklet-vs-cluster SPD cut to reject background events in pp
@@ -285,7 +287,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fEPV0A;                      //!<!event plane V0A
   Double_t                    fEPV0C;                      //!<!event plane V0C
   Double_t                    fVertex[3];                  //!<!event vertex
+  Double_t                    fVertexSPD[3];               //!<!event Svertex
   Int_t                       fNVertCont;                  //!<!event vertex number of contributors
+  Int_t                       fNVertSPDCont;               //!<!event SPD vertex number of contributors
   BeamType                    fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   Double_t                    fPtHard;                     //!<!event pt hard
