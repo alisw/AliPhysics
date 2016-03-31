@@ -7,7 +7,7 @@
  * 
  * 
  */
-AliAnalysisTask*
+AliAnalysisTaskSE*
 AddTaskTriggerCorrection(const char* trig="INEL",
 			 Double_t vzMin=-4,
 			 Double_t vzMax=4)
