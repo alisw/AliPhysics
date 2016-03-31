@@ -7,7 +7,7 @@
  * 
  * 
  */
-AliAnalysisTask*
+AliAnalysisTaskSE*
 AddTaskCreateRespMatr(const char* trig="V0AND",
                       Double_t vzMin=-4, 
                       Double_t vzMax=4)
