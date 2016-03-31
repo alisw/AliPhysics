@@ -55,7 +55,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fClusterContainer(""),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
-    fCentralityRange(-999., 999.)
+    fCentralityRange(-999., 999.),
+    fVertexRange(-999., 999.)
 {
 }
 
@@ -72,7 +73,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fClusterContainer(""),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
-    fCentralityRange(-999., 999.)
+    fCentralityRange(-999., 999.),
+    fVertexRange(-999., 999.)
 {
   DefineOutput(1, TList::Class());
 }
@@ -187,6 +189,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   double centrality = InputEvent()->GetCentrality() ? InputEvent()->GetCentrality()->GetCentralityPercentile("V0M") : -1;
   if(!fCentralityRange.IsInRange(centrality)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
+  if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
   // Fill reference distribution for the primary vertex before any z-cut
@@ -196,7 +199,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   }
   // Apply vertex z cut
-  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
+  if(!fVertexRange.IsInRange(vtx->GetZ())) return;
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
