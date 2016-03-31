@@ -183,9 +183,10 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       continue;
     // eta, phi, pt, q are pure virtual in AliVParticle, so it should be safe to just call them on AliVParticle
     cNano_track tmp_track = {
-      .eta = particle->Eta(), //fRndmGenerator->Rndm() * 1.6 - 0.8;
-      .phi = particle->Phi(), //fRndmGenerator->Rndm() * 2*TMath::Pi();
-      .pt = particle->Pt()};
+      particle->Eta(), //fRndmGenerator->Rndm() * 1.6 - 0.8;
+      particle->Phi(), //fRndmGenerator->Rndm() * 2*TMath::Pi();
+      particle->Pt()
+    };
 
     // check if this is a under/overflow bin. If so, discard the track
     Int_t ptBinIndex = this->fSingles->GetAxis(cSinglesDims::kPt)->FindFixBin(tmp_track.pt);
