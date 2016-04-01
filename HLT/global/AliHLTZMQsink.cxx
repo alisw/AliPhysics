@@ -40,6 +40,8 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fSendRunNumber(kTRUE)
   , fNskippedErrorMessages(0)
   , fZMQerrorMsgSkip(100)
+  , fSendECSparamString(kFALSE)
+  , fECSparamString()
 {
   //ctor
 }
@@ -155,7 +157,12 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
 
   int rc = 0;
   Bool_t doSend = kTRUE;
+  Bool_t doSendECSparamString = kFALSE;
   
+  //cache an ECS param topic
+  char ecsParamTopic[kAliHLTComponentDataTypeTopicSize];
+  DataType2Topic(kAliHLTDataTypeECSParam, ecsParamTopic);
+
   //in case we reply to requests instead of just pushing/publishing
   //we poll for requests
   if (fZMQpollIn)
@@ -174,6 +181,13 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         if (more) {
           requestSize = zmq_recv(fZMQout, request, kAliHLTComponentDataTypeTopicSize, 0);
           zmq_getsockopt(fZMQout, ZMQ_RCVMORE, &more, &moreSize);
+        }
+        //if request is for ECS params, set the flag
+        if (Topicncmp(requestTopic, ecsParamTopic, requestTopicSize))
+        //if (*reinterpret_cast<const AliHLTUInt64_t*>(requestTopic) ==
+        //    *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeECSParam.fID))
+        {
+          doSendECSparamString = kTRUE;
         }
       } while (more==1);
     }
@@ -208,11 +222,31 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
          iBlock++) 
     {
       inputBlock = &blocks[iBlock];
-      //don't include provate data unless explicitly asked to
-      if (!fIncludePrivateBlocks)
+      //cache the ECS param string
+      if (*reinterpret_cast<const AliHLTUInt64_t*>(inputBlock->fDataType.fID) ==
+          *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeECSParam.fID))
       {
-        if (!memcmp(inputBlock->fDataType.fOrigin, &kAliHLTDataOriginPrivate, kAliHLTComponentDataTypefOriginSize))
-          continue;
+        const char* ecsparamstr = reinterpret_cast<const char*>(inputBlock->fPtr);
+        int ecsparamsize = inputBlock->fSize;
+        if (ecsparamstr[ecsparamsize-1]!=0)
+        {
+          fECSparamString.Insert(0, ecsparamstr, ecsparamsize);
+          fECSparamString += "";
+        }
+        else
+        {
+          fECSparamString = ecsparamstr;
+        }
+        //if we requested the ECS param, we can continue here, will be sent anyway
+        if (doSendECSparamString) continue;
+      }
+
+      //don't include provate data unless explicitly asked to
+      if (!fIncludePrivateBlocks && 
+          *reinterpret_cast<const AliHLTUInt32_t*>(inputBlock->fDataType.fOrigin) ==
+          *reinterpret_cast<const AliHLTUInt32_t*>(kAliHLTDataOriginPrivate))
+      {
+        continue;
       }
 
       //check if the data type matches the request
@@ -223,15 +257,31 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         selectedBlockIdx.push_back(iBlock);
       }
     }
+    int nSelectedBlocks = selectedBlockIdx.size();
+    int nSentBlocks = 0;
 
-    if (fSendRunNumber && selectedBlockIdx.size()>0)
+    //only send the INFO block if there is something to send
+    if (fSendRunNumber && nSelectedBlocks>0)
     {
       string runNumberString = "run=";
       char tmp[34];
       snprintf(tmp,34,"%i",GetRunNo()); 
       runNumberString+=tmp;
-      zmq_send(fZMQout, "INFO", 4, ZMQ_SNDMORE);
-      zmq_send(fZMQout, runNumberString.data(), runNumberString.size(), ZMQ_SNDMORE);
+      rc = zmq_send(fZMQout, "INFO", 4, ZMQ_SNDMORE);
+      rc = zmq_send(fZMQout, runNumberString.data(), runNumberString.size(), ZMQ_SNDMORE);
+      if (rc>=0) nSentBlocks++;
+    }
+
+    //maybe send the ECS param string
+    //once if requested or always if so configured
+    if (fSendECSparamString || doSendECSparamString)
+    {
+      AliHLTDataTopic topic = kAliHLTDataTypeECSParam;
+      rc = zmq_send(fZMQout, &topic, sizeof(topic), ZMQ_SNDMORE);
+      int flags = (nSelectedBlocks==0)?0:ZMQ_SNDMORE;
+      rc = zmq_send(fZMQout, fECSparamString.Data(), fECSparamString.Length(), flags);
+      if (rc>=0) nSentBlocks++;
+      doSendECSparamString = kFALSE;
     }
 
     //send the selected blocks
@@ -254,14 +304,20 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       if (rc<0 && (fNskippedErrorMessages++ >= fZMQerrorMsgSkip))
       {
         fNskippedErrorMessages=0;
-        HLTWarning("error sending data frame %s, %s", blockTopic.Description().c_str(),zmq_strerror(errno));
+        HLTWarning("error sending data frame %s, %s",
+                   blockTopic.Description().c_str(),
+                   zmq_strerror(errno));
+      }
+      else
+      {
+        nSentBlocks++;
       }
       HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
     
     //send an empty message if we really need a reply (ZMQ_REP mode)
-    //only in case no blocks were selected
-    if (selectedBlockIdx.size() == 0 && fZMQsocketType==ZMQ_REP)
+    //only in case no blocks were sent
+    if (nSentBlocks == 0 && fZMQsocketType==ZMQ_REP)
     { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
       HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
@@ -305,6 +361,11 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   else if (option.EqualTo("SendRunNumber"))
   {
     fSendRunNumber=(value.EqualTo("0") || value.EqualTo("no") || value.EqualTo("false"))?kFALSE:kTRUE;
+  }
+
+  else if (option.EqualTo("SendECSparamString"))
+  {
+    fSendECSparamString=(value.EqualTo("0") || value.EqualTo("no") || value.EqualTo("false"))?kFALSE:kTRUE;
   }
 
   else if (option.EqualTo("pushback-period"))
