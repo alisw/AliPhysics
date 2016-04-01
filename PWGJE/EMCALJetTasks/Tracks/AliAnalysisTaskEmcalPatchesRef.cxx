@@ -22,12 +22,13 @@
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
-#include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
+#include "AliMultEstimator.h"
 
 #include "AliAnalysisTaskEmcalPatchesRef.h"
 
@@ -79,6 +80,7 @@ AliAnalysisTaskEmcalPatchesRef::~AliAnalysisTaskEmcalPatchesRef() {
  * + Patch eta-phi map - separated by patch type - for different trigger classes and different min. energies
  */
 void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
+  AliInfo(Form("Creating histograms for task %s\n", GetName()));
   fAnalysisUtil = new AliAnalysisUtils;
 
   TArrayD energybinning, etabinning;
@@ -104,7 +106,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
-
+  AliDebug(1, "Histograms done");
 }
 
 /**
@@ -112,6 +114,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
  * @param Not used
  */
 void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
+  AliDebug(1, Form("%s: Start function\n", GetName()));
   TClonesArray *patches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
@@ -144,21 +147,37 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
       isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, patches);
 
   }
-  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
-  double centrality = InputEvent()->GetCentrality() ? InputEvent()->GetCentrality()->GetCentralityPercentile("V0M") : -1;
-  if(!fCentralityRange.IsInRange(centrality)) return;
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)){
+    AliDebug(1, Form("%s: Reject trigger\n", GetName()));
+    return;
+  }
+  AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
+  AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
+  if(!fCentralityRange.IsInRange(centrality)){
+    AliDebug(1, Form("%s: Reject centrality\n", GetName()));
+    return;
+  }
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-  if(vtx->GetNContributors() < 1) return;
-    // Fill reference distribution for the primary vertex before any z-cut
-    if(fRequestAnalysisUtil){
-      if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
-      if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-      if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+  if(vtx->GetNContributors() < 1){
+    AliDebug(1, Form("%s: Reject contributor\n", GetName()));
+    return;
+  }
+  // Fill reference distribution for the primary vertex before any z-cut
+  if(fRequestAnalysisUtil){
+    AliDebug(1, Form("%s: Reject analysis util\n", GetName()));
+    if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
+    if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
+    if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   }
   // Apply vertex z cut
-  if(!fVertexRange.IsInRange(vtx->GetZ())) return;
+  if(!fVertexRange.IsInRange(vtx->GetZ())){
+    AliDebug(1, Form("%s: Reject Z\n", GetName()));
+    return;
+  }
+  AliDebug(1, Form("%s: Event Selected\n", GetName()));
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
@@ -233,6 +252,8 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     return;
   }
 
+  AliDebug(1, Form("%s: Number of trigger patches %d\n", GetName(), patches->GetEntries()));
+
   Double_t vertexpos[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
 
@@ -241,7 +262,9 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     if(!IsOfflineSimplePatch(*patchIter)) continue;
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
 
-    bool isDCAL = SelectDCALPatch(*patchIter), isSingleShower = SelectSingleShowerPatch(*patchIter), isJetPatch = SelectJetPatch(*patchIter);
+    bool isDCAL         = SelectDCALPatch(*patchIter),
+        isSingleShower  = SelectSingleShowerPatch(*patchIter),
+        isJetPatch      = SelectJetPatch(*patchIter);
 
     std::vector<TString> patchnames;
     if(isJetPatch){
