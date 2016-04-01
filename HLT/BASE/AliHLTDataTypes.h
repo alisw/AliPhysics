@@ -774,7 +774,7 @@ extern "C" {
     }
 
     //Print this datatype to a string, bufferlen is the len of the buffer, this function will return a zero-terminated string of max len bufferLen - 1
-    void PrintDataType(char* buffer, unsigned int bufferLen);
+    void PrintDataType(char* buffer, unsigned int bufferLen) const;
   };
 
   /**

@@ -376,7 +376,7 @@ const char kAliHLTDataOriginPTR[kAliHLTComponentDataTypefOriginSize]  = {'P','T'
 /** config **/
 const char kAliHLTDataOriginCONFIG[kAliHLTComponentDataTypefOriginSize] = {'C','O','N','F'};
 
-void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen)
+void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen) const
 {
 	if (bufferLen == 1) *buffer = 0;
 	if (bufferLen <= 1) return;
