@@ -36,6 +36,8 @@
 #include "AliLog.h"
 #include "AliVCluster.h"
 #include "AliVVertex.h"
+#include "AliMultSelection.h"
+#include "AliMultEstimator.h"
 
 #include "AliAnalysisTaskEmcalClustersRef.h"
 
@@ -90,6 +92,7 @@ AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
  * Creates output histograms: distribution of cluster energy for different trigger classes and number of events
  */
 void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
+  AliInfo(Form("Creating histograms for task %s\n", GetName()));
   fAnalysisUtil = new AliAnalysisUtils;
 
   TArrayD energybinning;
@@ -136,6 +139,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
+  AliDebug(1, "End creating histograms");
 }
 
 
@@ -144,6 +148,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
  * @param
  */
 void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
+  AliDebug(1, Form("%s: UserExec start\n", GetName()));
   if(!fGeometry){
     fGeometry = AliEMCALGeometry::GetInstance();
     if(!fGeometry)
@@ -185,21 +190,37 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, triggerpatches);
       isDMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDL0, triggerpatches);
   }
-  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
-  double centrality = InputEvent()->GetCentrality() ? InputEvent()->GetCentrality()->GetCentralityPercentile("V0M") : -1;
-  if(!fCentralityRange.IsInRange(centrality)) return;
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)){
+    AliDebug(1, Form("%s: Reject trigger\n", GetName()));
+    return;
+  }
+  AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
+  AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
+  if(!fCentralityRange.IsInRange(centrality)){
+    AliDebug(1, Form("%s: reject centrality\n", GetName()));
+    return;
+  }
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-  if(vtx->GetNContributors() < 1) return;
+  if(vtx->GetNContributors() < 1){
+    AliDebug(1, Form("%s: Reject contributors\n", GetName()));
+    return;
+  }
   // Fill reference distribution for the primary vertex before any z-cut
   if(fRequestAnalysisUtil){
+    AliDebug(1, Form("%s: Reject analysis util\n", GetName()));
     if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
     if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
     if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   }
   // Apply vertex z cut
-  if(!fVertexRange.IsInRange(vtx->GetZ())) return;
+  if(!fVertexRange.IsInRange(vtx->GetZ())){
+    AliDebug(1, Form("%s: Reject z", GetName()));
+    return;
+  }
+  AliDebug(1, Form("%s: Event Selected\n", GetName()));
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
