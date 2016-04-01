@@ -7,6 +7,9 @@
  * 
  * 
  */
+// class AliAnalysisTaskSE;
+// #include "AliForwardMultiplicityDistribution.h"
+
 AliAnalysisTaskSE*
 AddTaskMultDistributions(const char* trig = "INEL",
 			 Double_t    vzMin = -4,
