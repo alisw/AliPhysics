@@ -271,6 +271,9 @@ install ( FILES analysis2/AddTaskdNdeta.C
                 analysis2/AddTaskForwardMultDists.C
                 analysis2/AddTaskForwardQA.C
 		analysis2/AddTaskMCParticleFilter.C
+		analysis2/AddTaskMultDistributions.C
+		analysis2/AddTaskCreateRespMatr.C
+		analysis2/AddTaskTriggerCorrection.C 
 		analysis2/DrawdNdeta.C
 		analysis2/DrawdNdetaSummary.C
 		analysis2/DrawMCCorrSummary.C
