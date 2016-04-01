@@ -561,7 +561,7 @@ protected:
       TObjArray* afr = fr.Tokenize(",+:");
       TObject*   ofr = 0;
       TIter      nfr(afr);
-      while (ofr = nfr()) input->AddFriend(const_cast<char*>(ofr->GetName()));
+      while ((ofr = nfr())) input->AddFriend(const_cast<char*>(ofr->GetName()));
       afr->Delete();
       ret = input;
     }
@@ -1005,7 +1005,7 @@ protected:
 			      m.Data()));
     void* ptr = reinterpret_cast<void*>(ret);
     Info("AddTenderSupply", "Adding supply %s (an %s object): %p",
-	 n.Data(), cls.Data(), ret);
+	 n.Data(), cls.Data(), ptr);
     return ptr;
   }
   /** 
@@ -1310,7 +1310,7 @@ protected:
   virtual void AddMonitor(const TString& name)
   {
     if (fRailway->Mode() != Railway::kProof) return;
-    Warning("CreateMonitors", "Monitoring not supported yet");
+    Warning("CreateMonitors", "Monitoring not supported yet (%s)", name.Data());
   }
   //__________________________________________________________________
   /** 
