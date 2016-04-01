@@ -1088,7 +1088,7 @@ TH1* AliMTRChEffAnalysis::GetHisto ( TList* effHistoList, Int_t itype, Int_t ico
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Bool_t perRPC, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
+TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Bool_t perRPC, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
 {
   /// Get run ranges with an efficiency compatible with constant
 
@@ -1119,6 +1119,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
         TString canName = perRPC ? Form("testRanges_ch%i",11+ich) : Form("testRanges_RPC%i",irpc);
         can = new TCanvas(canName.Data(),canName.Data(),10*ich,10*ich,1200,800);
         can->Divide(6,3,0,0);
+        can->SetMargin(0.,0.,0.,0.);
         canList.AddAt(can,ican);
       }
 
@@ -1126,12 +1127,21 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
         Int_t currDE = ( perRPC ) ? idetel : boards[idetel];
 //      for ( Int_t icount=0; icount<2; icount++ ) {
         TGraphAsymmErrors* trendGraph = GetTrendEff(itype,icount,ich,currDE);
-        TArrayI range = GetHomogeneusRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
+        TArrayI range = GetHomogeneousRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
         trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
 
         can->cd(idetel+1);
         gPad->SetTicks(1,1);
+        gPad->SetMargin(0.08,0.,0.08,0.);
         TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
+
+        TString legendName = Form("%s_%i",can->GetName(),currDE);
+        TLegend* leg = static_cast<TLegend*>(gPad->GetListOfPrimitives()->FindObject(legendName.Data()));
+        if ( ! leg ) {
+          leg = new TLegend(0.2,0.15,0.8,0.4);
+          leg->SetHeader(Form("%s %i",perRPC?"RPC":"Board",currDE));
+          leg->SetName(legendName.Data());
+        }
 
         if ( ! perRPC ) {
           Int_t icolor = ich+1;
@@ -1145,8 +1155,11 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
           }
         }
         trendGraph->GetXaxis()->SetLabelSize(0.07);
+        trendGraph->SetTitle("");
 
         trendGraph->Draw(drawOpt.Data());
+        leg->AddEntry(trendGraph,Form("Chamber %i",11+ich),"lp");
+        leg->Draw();
         for ( Int_t ichange=2; ichange<range.GetSize(); ichange++ ) {
           // Store only the run when the change applies
           if ( ichange%2 == 1 ) continue;
@@ -1219,7 +1232,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Bool_t returnIndex )
+TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Bool_t returnIndex )
 {
   /// Get run ranges with an efficiency compatible with constant
 
