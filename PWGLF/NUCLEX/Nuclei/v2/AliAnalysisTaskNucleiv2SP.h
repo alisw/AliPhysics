@@ -42,6 +42,7 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   void SetAnalysisType (const char* analysisType = "ESD")   { fAnalysisType = analysisType; }
   void SetApplyFlatten(Bool_t  applyFlatten)    {fApplyFlatten  = applyFlatten; }
   void SetYear(Int_t  year)    {fYear  = year; }
+  void SetHarmonic(Int_t  harmonic)    {fHarmonic  = harmonic; }
   
  private:
 
@@ -56,6 +57,7 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   TString        fCentrality;                    //
   Bool_t         fApplyFlatten;                  //
   Int_t          fYear;                          // Year of data tacking
+  Int_t          fHarmonic;                      // Flow Harmonic
      
   TList	*fListHist;	           // List of  histograms
  
