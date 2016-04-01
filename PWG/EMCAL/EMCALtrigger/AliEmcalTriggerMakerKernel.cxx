@@ -116,7 +116,7 @@ void AliEmcalTriggerMakerKernel::SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowma
 
 void AliEmcalTriggerMakerKernel::ConfigureForPbPb2015()
 {
-  AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigOld();
+  AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
   SetTriggerBitConfig(triggerBitConfig);
 
   // Initialize patch finder
