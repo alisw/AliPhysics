@@ -264,7 +264,7 @@ TString AliMuonEventCuts::GetDefaultTrigClassPatterns () const
 {
   /// Get the default patterns
   /// (done in such a way to get all muon triggers)
-  return "CM*,C0M*,CINT*,CPBI*,CCENT*,CV*,!*ABCE*,!*-ACE-*,!*-AC-*,!*-E-*,!*WU*,!*EGA*,!*EJE*,!*PHS*";
+  return "CM*,C0M*,CINT*,CPBI*,CCENT*,CV*,!*ABCE*,!*-ACE-*,!*-AC-*,!*-A-*,!*-C-*,!*-E-*,!*WU*,!*EGA*,!*EJE*,!*PHS*";
 }
 
 //________________________________________________________________________
