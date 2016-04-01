@@ -899,34 +899,33 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
     Double_t pullTOF = -999; 
     Bool_t trkFlag = kFALSE;
     
-    AliESDtrack *track;
-    // AliAODTrack *aodtrack;
+    //AliESDtrack *track;
+    AliAODTrack *track;
   
-    //*************************************************************
-
+    //------------------------------------------------------------
+    
     for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
 
-      AliVTrack* atrack = (AliVTrack*) fevent->GetTrack(j);
-      if (!atrack)
-	continue;
-      if (atrack->Eta() < -0.9 || atrack->Eta() > 0.9) continue;
+
+      AliAODTrack *track=dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(j));       
+      if(!track)continue;
       
-      track = new AliESDtrack((AliVTrack*)atrack);
-      
-      trkFlag = AcceptTrack((AliAODTrack*)atrack);
+      if (track->Eta() < -0.9 || track->Eta() > 0.9) continue;
+
+      trkFlag = AcceptTrack(track);
       
       if(!trkFlag){
       	continue;
       }
       
       // cout<<track<<endl;
-      status  = (ULong_t)atrack->GetStatus();
+      status  = (ULong_t)track->GetStatus();
       isTPC   = (((status) & AliVTrack::kTPCin)  != 0);
      
-      Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
+      Bool_t hasTOFout  = status&AliVTrack::kTOFout; 
       hasTOF     = kFALSE;
       if (hasTOFout) hasTOF = kTRUE;
-      Float_t trackLenghtTOF = atrack->GetIntegratedLength(); 
+      Float_t trackLenghtTOF = track->GetIntegratedLength(); 
       if (trackLenghtTOF < 350.) hasTOF = kFALSE;
 
       UInt_t mapITS=track->GetITSClusterMap();
@@ -937,9 +936,9 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
       Double_t d=-999;
      
       Double_t dca[2], covd[3];
-      AliAODTrack* track_clone=(AliAODTrack*)atrack->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
-      Bool_t isDCA = track_clone->PropagateToDCA(fevent->GetPrimaryVertex(),fevent->GetMagneticField(),9999.,dca,covd);
-      delete track_clone;
+      //AliAODTrack* track_clone=(AliAODTrack*)track->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
+      Bool_t isDCA = track->PropagateToDCA(fevent->GetPrimaryVertex(),fevent->GetMagneticField(),9999.,dca,covd);
+      //      delete track_clone;
       if(!isDCA)dca[0]=-999.;
       d = dca[0];
       
@@ -947,32 +946,38 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
       
       //---- (Usefull) Stuff
       
-      //      TPCSignal=atrack->GetTPCsignal(); 
+      //      TPCSignal=track->GetTPCsignal(); 
       TPCSignal=track->GetTPCsignal(); 
       
       if (TPCSignal<10)continue;
       if (TPCSignal>1000)continue;
      
-      pinTPC = atrack->GetTPCmomentum();
+      pinTPC = track->GetTPCmomentum();
           
       //   if((status) & (AliVTrack::kITSrefit!=0)){
-      fhBB->Fill(pinTPC*atrack->Charge(),TPCSignal);
+      fhBB->Fill(pinTPC*track->Charge(),TPCSignal);
 	// }
       
-      Double_t p    = atrack->P();
-      timeTOF = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);      // ps
+      Double_t p    = track->P();
+      timeTOF = track->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);      // ps
             
       if(hasTOF){
 	
 	betaTOF= trackLenghtTOF/(timeTOF * 2.99792457999999984e-02);
 	//	cout<<trackLenghtTOF<<" "<<betaTOF<<" "<<pinTPC<<endl;
-	fhTOF->Fill(pinTPC*track->GetSign(),betaTOF);
-	gamma =  1/TMath::Sqrt(1 - betaTOF*betaTOF);
-	massTOF = pinTPC/TMath::Sqrt(gamma*gamma - 1);
+	fhTOF->Fill(pinTPC*track->Charge(),betaTOF);
+	//	if(betaTOF>0 && betaTOF < 1)
+	  gamma =  1/TMath::Sqrt(1 - betaTOF*betaTOF);
+	// else					       
+	//   gamma = 0;
+	// if(gamma>=1)
+	  massTOF = pinTPC/TMath::Sqrt(gamma*gamma - 1);
+	// else 
+	//   massTOF = 0.;
       }
       
       
-      nSigmaNegPion=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType) 2));
+      nSigmaNegPion=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) 2));
       
       //2 is pion
       
@@ -980,7 +985,7 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
 	
 	if (TMath::Abs(d)>fgRmax) continue;
 	
-	fhBBPions->Fill(pinTPC*track->GetSign(),TPCSignal);
+	fhBBPions->Fill(pinTPC*track->Charge(),TPCSignal);
 	
 	if(pinTPC<3.){
 	  PionsTPC[nPionsTPC++]=j;
@@ -989,7 +994,7 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
     
       Bool_t isHeITSrefit=((status) & (AliVTrack::kITSrefit));
       
-      nSigma3He  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType) 7)));
+      nSigma3He  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) 7)));
       
       if(nSigma3He  < 3.) {
 	
@@ -998,33 +1003,33 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
 	  if(hasTOF){
 	    // if(TMath::Abs(massTOF) > 5.0)continue;
 	    // if(TMath::Abs(massTOF) < 1.8 )continue;
-	    fhMassTOF->Fill(massTOF*atrack->Charge());
+	    fhMassTOF->Fill(massTOF*track->Charge());
 	    // cout<<massTOF<<endl;
 	  }
 	
 	//------------------------------
 	
-	fhBBHe->Fill(pinTPC*atrack->Charge(),TPCSignal);
+	fhBBHe->Fill(pinTPC*track->Charge(),TPCSignal);
 	// if(pinTPC<1.2)
 	//   HeTPC[nHeTPC++]=j;
 	// else
 	//   if(hasTOF && TMath::Abs(pullTOF)<=3)
 	//     HeTPC[nHeTPC++]=j;
 	
-	//atrack->GetImpactParameters(impactXY, impactZ);
-
+	//track->GetImpactParameters(impactXY, impactZ);
+	
 	impactXY = dca[0];
 	impactZ  = dca[1];
 	
 	tHeleventtype	 =(Float_t)eventtype;
 	tHelpercentile   =(Float_t)percentile;
-	tHelSign	 =(Float_t)track->GetSign();
+	tHelSign	 =(Float_t)track->Charge();
 	tHelpinTPC	 =(Float_t)pinTPC;
-	tHelGetTPCsignal =(Float_t)atrack->GetTPCsignal();
-	tHelPx	         =(Float_t)atrack->Px();
-	tHelPy	         =(Float_t)atrack->Py();
-	tHelPz	         =(Float_t)atrack->Pz();
-	tHelEta	         =(Float_t)atrack->Eta();
+	tHelGetTPCsignal =(Float_t)track->GetTPCsignal();
+	tHelPx	         =(Float_t)track->Px();
+	tHelPy	         =(Float_t)track->Py();
+	tHelPz	         =(Float_t)track->Pz();
+	tHelEta	         =(Float_t)track->Eta();
 	tHelisTOF	 =(Float_t)hasTOF;
 	tHelTOFpull	 =(Float_t)pullTOF;
 	tHeMass          =(Float_t)massTOF;
@@ -1043,6 +1048,13 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
 	
 	}
       }
+      
+      //delete track;
+    
+      //track->Delete();
+      // track = NULL;
+      // track = NULL;
+      
     }  //! track
     
     PionsTPC.Set(nPionsTPC);
@@ -1269,9 +1281,21 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
 	
 	fNtuple1->Fill();  
 	vertex.Delete();
+	// vPion.Delete();
+	// vHelium.Delete();
+	// vSum.Delete();
+
+	// delete aPionTrack ;
+	// delete aHeTrack;
+	delete PionTrack ;
+	delete HeTrack;
+	
+	PionTrack  = NULL;
+	HeTrack    = NULL;
       }// positive TPC
       
     } //negative tpc
+      
     
   }
   
