@@ -1265,17 +1265,18 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
          ncount = 0;
          stage++;
          if (gSystem->AccessPathName(file) || TestBit(AliAnalysisGrid::kTest) || fOverwriteMode) {
-            command = "find ";
+            command = "alien_find ";
             command += Form("%s -o %d ",options.Data(), nstart);
             command += path;
             command += delimiter;
             command += pattern;
             command += conditions;
             printf("command: %s\n", command.Data());
-            TGridResult *res = gGrid->Command(command);
-            if (res) delete res;
+            //TGridResult *res = gGrid->Command(command);
+            //if (res) delete res;
             // Write standard output to file
-            gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage, file.Data()));
+            gSystem->Exec(Form("%s > __tmp%d__%s", command.Data(), stage, file.Data()));
+            //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage, file.Data()));
             Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
             Bool_t nullFile = kFALSE;
             if (!hasGrep) {
@@ -1361,16 +1362,17 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             ncount = 0;
             stage++;
             if (gSystem->AccessPathName(file) || TestBit(AliAnalysisGrid::kTest) || fOverwriteMode) {
-               command = "find ";
+               command = "alien_find ";
                command +=  Form("%s -o %d ",options.Data(), nstart);
                command += path;
                command += delimiter;
                command += pattern;
                command += conditions;
-               TGridResult *res = gGrid->Command(command);
-               if (res) delete res;
+               //TGridResult *res = gGrid->Command(command);
+               //if (res) delete res;
                // Write standard output to file
-               gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
+               //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
+               gSystem->Exec(Form("%s > __tmp%d__%s", command.Data(), stage, file.Data()));
                Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
                Bool_t nullFile = kFALSE;
                if (!hasGrep) {
@@ -1512,16 +1514,17 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             ncount = 0;
             stage++;
             if (gSystem->AccessPathName(file) || TestBit(AliAnalysisGrid::kTest) || fOverwriteMode) {
-               command = "find ";
+               command = "alien_find ";
                command +=  Form("%s -o %d ",options.Data(), nstart);
                command += path;
                command += delimiter;
                command += pattern;
                command += conditions;
-               TGridResult *res = gGrid->Command(command);
-               if (res) delete res;
+               //TGridResult *res = gGrid->Command(command);
+               //if (res) delete res;
                // Write standard output to file
-               gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
+               gSystem->Exec(Form("%s > __tmp%d__%s", command.Data(), stage, file.Data()));
+               //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
                Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
                Bool_t nullFile = kFALSE;
                if (!hasGrep) {
@@ -4091,6 +4094,7 @@ void AliAnalysisAlien::WriteAnalysisMacro(Long64_t nentries, Long64_t firstentry
       }
       if (TObject::TestBit(AliAnalysisGrid::kUseMC)) comment += "/MC";
       else comment += " data";
+      out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\");" << endl << endl;
       out << "const char *anatype = \"" << type.Data() << "\";" << endl << endl;
       func.ReplaceAll(".C", "");
       out << "void " << func.Data() << "()" << endl; 
@@ -4341,7 +4345,7 @@ void AliAnalysisAlien::WriteAnalysisMacro(Long64_t nentries, Long64_t firstentry
       out << "}" << endl << endl;
       if (!IsLocalTest() && !fMCLoop) {
          out <<"//________________________________________________________________________________" << endl;
-         out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\")" << endl;
+         out << "TChain* CreateChain(const char *xmlfile, const char *type)" << endl;
          out << "{" << endl;
          out << "// Create a chain using url's from xml file" << endl;
          out << "   TString filename;" << endl;
@@ -4360,7 +4364,7 @@ void AliAnalysisAlien::WriteAnalysisMacro(Long64_t nentries, Long64_t firstentry
          out << "   printf(\"***************************************\\n\");" << endl;
          out << "   printf(\"    Getting chain of trees %s\\n\", treename.Data());" << endl;
          out << "   printf(\"***************************************\\n\");" << endl;
-         out << "   TAlienCollection *coll = TAlienCollection::Open(xmlfile);" << endl;
+         out << "   TAlienCollection *coll = dynamic_cast<TAlienCollection *>(TAlienCollection::Open(xmlfile));" << endl;
          out << "   if (!coll) {" << endl;
          out << "      ::Error(\"CreateChain\", \"Cannot create an AliEn collection from %s\", xmlfile);" << endl;
          out << "      return NULL;" << endl;
