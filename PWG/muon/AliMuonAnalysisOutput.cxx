@@ -93,7 +93,7 @@ Bool_t AliMuonAnalysisOutput::Init()
   //
   if ( ! fOutputList ) {
     AliError("No output list provided or found!");
-    return kTRUE;
+    return kFALSE;
   }
   fCounterCollection = static_cast<AliCounterCollection*>(fOutputList->At(0));
   fMergeableCollection = static_cast<AliMergeableCollection*>(fOutputList->At(1));
