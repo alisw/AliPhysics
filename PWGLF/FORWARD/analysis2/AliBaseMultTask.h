@@ -156,6 +156,7 @@ public:
    * User Exec
    */
   virtual Bool_t Event(AliAODEvent& aod);
+  virtual Bool_t Finalize() {return true;}
 protected:
   /**
    * NAmed constructor 
