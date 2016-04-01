@@ -84,7 +84,7 @@ namespace EMCalTriggerPtAnalysis {
 		if(fHasLimit[0] && fHasLimit[1]){
 			// Double-sided limited, correct choise of comparison operator
 		  Bool_t withinUpper = fUseSmallerEqual ? (value <= fLimits[1]) : (value < fLimits[1]),
-		         withinLower = fUseLargerEqual ? (value >= fLimits[1]) : (value > fLimits[1]);
+		         withinLower = fUseLargerEqual ? (value >= fLimits[0]) : (value > fLimits[0]);
 		  result = withinLower && withinUpper;
 			if(fNegate)
 			  result = !result;
