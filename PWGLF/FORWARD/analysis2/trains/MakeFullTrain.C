@@ -96,6 +96,7 @@ protected:
     UShort_t fld    = fOptions.AsInt   ("aod-field", 0);
     UShort_t sys    = fOptions.AsInt   ("sys",       0);
     Bool_t   satVtx = fOptions.AsBool  ("satellite");
+    Bool_t   mc     = HasMCHandler();
     TString  cor    = "";
     if (fOptions.Has("aod-corr")) cor = fOptions.Get("aod-corr");
     
@@ -114,7 +115,7 @@ protected:
 				     Form("%d,%lu,%hu,%hu,%hd,\"%s\",\"%s\"", 
 					  mc, run, sys, sNN, fld, 
 					  cenConfig.Data(),cor.Data()));
-    if (cen) return false;
+    if (!cen) return false;
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig));
     if (!cor.IsNull()) {
       if (fwd) 
@@ -140,7 +141,8 @@ protected:
     
     AliAnalysisTaskSE* tsk = CoupleSECar("AddTaskdNdeta.C",args,mask);
     if (!tsk) {
-      Printf("Failed to add task via AddTaskdNdeta.C(%s,%s)", cfg);
+      Printf("Failed to add task via AddTaskdNdeta.C(%s,%s)",
+	     which, config.Data());
       return false;
     }
     FromOption(tsk, "TriggerMask",         "trigger",        "INEL");
@@ -175,8 +177,8 @@ protected:
     const char* mac = "AddTaskForwardFlowQC.C";
     AliAnalysisTaskSE* task =
       CoupleSECar(mac,Form(fmt, det, useEtaGap, use3cor, tracks));
-    if (!task) return;
-    FromOption(tsk, "CentralityAxis",      "cent-bins",      "default");
+    if (!task) return false;
+    FromOption(task, "CentralityAxis",      "cent-bins",      "default");
     return true;
   }
   /** 
@@ -199,6 +201,7 @@ protected:
     Bool_t   addFlow  = fOptions.AsBool  ("flow-afterburner");
     Double_t fmdCut   = fOptions.AsDouble("flow-outlier-fmd");
     Double_t spdCut   = fOptions.AsDouble("flow-outlier-spd");
+    Bool_t   satVtx   = fOptions.AsBool  ("satellite");
     
     fwdDets.ToUpper();
     Bool_t doFMD      = fwdDets.Contains("FMD");
@@ -278,11 +281,15 @@ protected:
    */
   Bool_t CreatePNchTask(const char* mac)
   {
+    Info("CreatePNchTask","\n"
+	 "*****************************************************\n"
+	 "Creating a task via %s\n"
+	 "*****************************************************", mac);
     AliAnalysisTaskSE* tsk =  CoupleSECar(mac);
-    if (!tsk) return;
+    if (!tsk) return false;
     FromOption(tsk, "TriggerMask",      "trigger",     "INEL");
     FromOption(tsk, "FilterMask",       "filter",      "OUTLIER|PILEUP-BIN");
-    FromOption(tsk, "CentralityMethod", "cent",        "");
+    // FromOption(tsk, "CentralityMethod", "cent",        "");
     FromOption(tsk, "CentralityAxis",   "cent-bins",   "default");
     FromOption(tsk, "IpZMin",           "ipz-min",     -10.);
     FromOption(tsk, "IpZMax",           "ipz-max",     +10.);
@@ -321,9 +328,9 @@ protected:
     
     // --- Add dN/deta tasks -----------------------------------------
     if (fOptions.Has("dndeta")) {
-      if (!CreatedNdetaTasks("Forward")) return;
-      if (!CreatedNdetaTasks("Central")) return;
-      if (mc && !CreatedNdetaTasks("MCTruth")) return;
+      if (!CreatedNdetaTask("Forward")) return;
+      if (!CreatedNdetaTask("Central")) return;
+      if (mc && !CreatedNdetaTask("MCTruth")) return;
     }
     
     // --- P(Nch) task -----------------------------------------------
