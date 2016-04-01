@@ -353,7 +353,7 @@ const char kAliHLTDataOriginCPV[kAliHLTComponentDataTypefOriginSize]   = {'C','P
 const char kAliHLTDataOriginPMD[kAliHLTComponentDataTypefOriginSize]   = {'P','M','D',' '};
 
 /** T0 */
-const char kAliHLTDataOriginT0[kAliHLTComponentDataTypefOriginSize]   = {'T','Z','R','O'};
+const char kAliHLTDataOriginT0[kAliHLTComponentDataTypefOriginSize]   = {'T','0',' ',' '};
 
 /** VZERO */
 const char kAliHLTDataOriginVZERO[kAliHLTComponentDataTypefOriginSize]   = {'V','Z','R','O'};
