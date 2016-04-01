@@ -607,7 +607,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 			}
 			//--Loop over clusters and fill histograms
 			if(fGamma_Or_Pi0==0) CorrelateClusterAndTrack(0,bgTracks,1,1.0/nMix);//correlate with mixed event
-			else                 CorrelatePi0AndTrack(0,bgTracks,1,1.0/nMix);    //correlate with same event
+			else                 CorrelatePi0AndTrack(0,bgTracks,1,1.0/nMix);    //correlate with mixed event
 		}
 	}
 
@@ -822,6 +822,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	if (!clusters) return 0;
 	Int_t NoOfClustersInEvent =clusters->GetNClusters();
 	Int_t nAccClusters = 0;
+	Int_t nAccPi0Clusters = 0;
+	Double_t Pi0Mass = 0.13487;
+	Double_t Pi0Window = 0.03; //can eventually modulate this based on pT of Pi0 candidate!
 	Double_t EffWeight_Gamma;
 	Double_t EffWeight_Hadron;
 
@@ -836,17 +839,42 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	{
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
-			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
-			if(!cluster || !AccClusterForAna(cluster))continue; //check if the cluster is a good cluster
+		  cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
+		  if(!cluster || !AccClusterForAna(cluster))continue; //check if the cluster is a good cluster
 			//clusters->GetLeadingCluster("e");
-
+		  
 			TLorentzVector CaloClusterVec;
 			cluster->GetMomentum(CaloClusterVec, fVertex);
 			//acc if pi0 candidate
 			nAccClusters++;
+
+			for( Int_t NoCluster2 = 0; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
+			  {
+			    if(NoCluster1!=NoCluster2)
+			      {
+				cluster2=(AliVCluster*) clusters->GetAcceptCluster(NoCluster2);
+				if(!cluster2 || !AccClusterForAna(cluster2))continue; //check if the cluster is a good cluster
+				
+				TLorentzVector CaloClusterVec2;
+				TLorentzVector CaloClusterVecpi0;
+				cluster2->GetMomentum(CaloClusterVec2, fVertex);
+				if(cluster2->E()>2 && cluster->E()>2)
+				{
+				  CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
+				  fHistpi0->Fill(CaloClusterVecpi0.M());
+				  if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){
+				    nAccPi0Clusters++; //need eventually to divide by 2, otherwise double counting the pi0's
+				  }
+				}
+			      }
+			  }
+
+			
 		}
-		Weight=1.0/(1.0*nAccClusters);
+		if(nAccPi0Clusters>0) Weight=2.0/(1.0*nAccPi0Clusters); //2 to avoid double counting.
+		else Weight = 0;
 	}
+	//if(nAccClusters>0) cout<<"Pi0: "<<nAccPi0Clusters<<" all accepted clusters: "<<nAccClusters<<endl;
 	//...........................................
 	//run the real loop for filling the histograms
 	for( Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
@@ -859,72 +887,66 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		TLorentzVector CaloClusterVec;
 		cluster->GetMomentum(CaloClusterVec, fVertex);
 
-		//here I don't really know what to do in your case
-		//eff of pi0? or eff of gamma? or some mix up of the two ?
-		EffWeight_Gamma=GetEff(CaloClusterVec);
-
-		fHistNoClus_pt->Fill(CaloClusterVec.Pt()); //the .pt only works for gammas (E=M) for other particle this is wrong
-
-		//...........................................
-		//--combine gammas with same event tracks
-		if(SameMix==0)
-		{
-			//cout<<"SameMix==0"<<endl;
-			if(!tracks)  return 0;
-			Int_t NoOfTracksInEvent =tracks->GetNParticles();
-			AliVParticle* track=0;
-
-			for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
-			{
-				track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
-				if(!track)continue; //check if the track is a good track
-
-				//**fill here eventually a pi0 four-vector instead of CaloClusterVec
-				//EffWeight_Hadron=GetEff(TLorentzVector)track);
-				Fill_GH_Hisograms(1,CaloClusterVec,track,2,0,-360,Weight);
-			}
-		}
-		//...........................................
-		//--combine gammas with mixed event tracks
-		if(SameMix==1)
-		{
-			Int_t Nbgtrks = bgTracksArray->GetEntries();
-			for(Int_t ibg=0; ibg<Nbgtrks; ibg++)
-			{
-                AliPicoTrack* track = static_cast<AliPicoTrack*>(bgTracksArray->At(ibg));
-				if(!track) continue;
-
-				//**fill here eventually a pi0 four-vector instead of CaloClusterVec
-				//EffWeight_Hadron=GetEff((TLorentzVector)track);
-				Fill_GH_Hisograms(0,CaloClusterVec,track,2,0,-360,Weight);
-			}
-		}
-
-		nAccClusters++;
-
-		//**probably you can use such a combination to do all your fill histogram inside
-
-		//...........................................
-		//--double cluster loop for testing
 		for( Int_t NoCluster2 = 0; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
-		{
-			if(NoCluster1!=NoCluster2)
-			{
+			  {
+			    if(NoCluster1!=NoCluster2)
+			      {
 				cluster2=(AliVCluster*) clusters->GetAcceptCluster(NoCluster2);
 				if(!cluster2 || !AccClusterForAna(cluster2))continue; //check if the cluster is a good cluster
-
+				
 				TLorentzVector CaloClusterVec2;
 				TLorentzVector CaloClusterVecpi0;
 				cluster2->GetMomentum(CaloClusterVec2, fVertex);
 				if(cluster2->E()>2 && cluster->E()>2)
 				{
-					CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
-					fHistpi0->Fill(CaloClusterVecpi0.M());
+				  CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
+				 
+
+				  //here I don't really know what to do in your case
+				  //eff of pi0? or eff of gamma? or some mix up of the two ?
+				  EffWeight_Gamma=GetEff(CaloClusterVecpi0);//currently just assigns 1!!! need eventually to input Pi0 efficiency histogram
+				  
+				  fHistNoClus_pt->Fill(CaloClusterVecpi0.Pt()); //the .pt only works for gammas (E=M) for other particle this is wrong
+				  
+				  //...........................................
+				  //--combine gammas with same event tracks
+				  if(SameMix==0)
+				    {
+				      //cout<<"SameMix==0"<<endl;
+				      if(!tracks)  return 0;
+				      Int_t NoOfTracksInEvent =tracks->GetNParticles();
+				      AliVParticle* track=0;
+				      
+				      for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
+					{
+					  track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
+					  if(!track)continue; //check if the track is a good track
+					  
+					  //**fill here eventually a pi0 four-vector instead of CaloClusterVec
+					  //EffWeight_Hadron=GetEff(TLorentzVector)track);
+					  Fill_GH_Hisograms(1,CaloClusterVecpi0,track,2,0,-360,Weight);
+					}
+				    }
+				  //...........................................
+				  //--combine gammas with mixed event tracks
+				  if(SameMix==1)
+				    {
+				      Int_t Nbgtrks = bgTracksArray->GetEntries();
+				      for(Int_t ibg=0; ibg<Nbgtrks; ibg++)
+					{
+					  AliPicoTrack* track = static_cast<AliPicoTrack*>(bgTracksArray->At(ibg));
+					  if(!track) continue;
+					  
+					  //**fill here eventually a pi0 four-vector instead of CaloClusterVec
+					  //EffWeight_Hadron=GetEff((TLorentzVector)track);
+					  Fill_GH_Hisograms(0,CaloClusterVecpi0,track,2,0,-360,Weight);
+					}
+				    } 
 				}
-			}
-		}
+			      }
+			  }
 	}
-	return nAccClusters;
+	return nAccPi0Clusters/2;
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::Fill_GH_Hisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight)
