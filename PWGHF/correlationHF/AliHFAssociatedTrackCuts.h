@@ -67,6 +67,7 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	AliESDtrackCuts * GetESDTrackCuts() const {return fESDTrackCuts;}
 	AliAODPidHF * GetPIDObject() const {return fPidObj;}
 	TH3D * GetEfficiencyWeight() const {return fEffWeights;}
+	TH2D * GetTrigEfficiencyWeight() const {return fTrigEffWeights;}
 	
 	Int_t GetMaxNEventsInPool() const {return fPoolMaxNEvents;}
 	Int_t GetMinNTracksInPool() const {return fPoolMinNTracks;}
