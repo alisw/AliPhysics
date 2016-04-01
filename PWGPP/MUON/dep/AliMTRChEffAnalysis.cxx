@@ -385,6 +385,41 @@ Int_t AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const ch
 }
 
 //________________________________________________________________________
+Int_t AliMTRChEffAnalysis::CompareEfficiencyMethods ( const char* source, const char* opt, const char* canvasNameSuffix ) const
+{
+  /// Compare efficiency methods
+  if ( ! fConditions ) {
+    AliWarning("No condition found! Please specify the default efficiency condition with SetEffConditions and then add additional tests with AddSystematicCondition");
+    return -1;
+  }
+
+  AliTrigChEffOutput trigOut(source);
+
+  Int_t nConditions = fConditions->GetEntriesFast();
+
+  TObjArray condTitle(nConditions);
+  condTitle.SetOwner();
+  GetShortConditionTitles(&trigOut,condTitle);
+
+  TString titles = "";
+  TObjArray effMapList;
+  effMapList.SetOwner();
+
+  for ( Int_t icond=0; icond<nConditions; icond++ ) {
+    TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
+
+    TList* effList = GetEffHistoList(&trigOut, condition);
+    AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(effList);
+    effMapList.Add(effMap);
+    titles += Form("%s,",condTitle.At(icond)->GetName());
+  }
+
+  titles.Remove(TString::kTrailing,',');
+  return CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
+}
+
+
+//________________________________________________________________________
 void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
 {
   if ( ! HasMergedResults() ) return;
@@ -758,8 +793,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
 
   Int_t nConditions = fConditions->GetEntriesFast();
 
-
-  TObjArray* refCondition = 0x0;
   TObjArray condTitle(nConditions);
   condTitle.SetOwner();
 
@@ -773,28 +806,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
     imerged++;
 
     // Get meaningful short titles for each systematic
-    if ( imerged == 0 ) {
-      for ( Int_t icond=0; icond<nConditions; icond++ ) {
-        TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
-        TString title = "";
-        if ( icond == 0 ) {
-          refCondition = condition;
-          title = condition->GetName();
-        }
-        for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
-          TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
-          TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
-          if ( currCond == refCond ) continue;
-          TString add = currCond;
-          if ( ic == 3 ) add = trigOut->GetHistoName(-1,-1,-1,currCond.Atoi(),-1,-1);
-          else if ( ic == 4 ) add = trigOut->GetHistoName(-1,-1,-1,-1,currCond.Atoi(),-1);
-          else if ( ic == 5 ) add = trigOut->GetHistoName(-1,-1,-1,-1,-1,currCond.Atoi());
-          title += Form("_%s",add.Data());
-        }
-        title.Remove(TString::kLeading,'_');
-        condTitle.AddAt(new TObjString(title),icond);
-      }
-    }
+    if ( imerged == 0 ) GetShortConditionTitles(trigOut,condTitle);
 
     TArrayI isEmpty(nConditions);
 
@@ -1416,6 +1428,39 @@ TList* AliMTRChEffAnalysis::GetRunList ( const char* runList ) const
   }
   rl->Sort();
   return rl;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::GetShortConditionTitles ( AliTrigChEffOutput* trigOut, TObjArray& condTitles ) const
+{
+  /// Get short condition titles
+
+  Int_t nConditions = fConditions->GetEntriesFast();
+  TObjArray* refCondition = 0x0;
+
+  for ( Int_t icond=0; icond<nConditions; icond++ ) {
+    TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
+    TString title = "";
+    if ( icond == 0 ) {
+      refCondition = condition;
+      title = condition->GetName();
+    }
+    for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
+      TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
+      TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
+      if ( currCond == refCond ) continue;
+      TString add = currCond;
+      if ( ic == 3 ) add = trigOut->GetHistoName(-1,-1,-1,currCond.Atoi(),-1,-1);
+      else if ( ic == 4 ) add = trigOut->GetHistoName(-1,-1,-1,-1,currCond.Atoi(),-1);
+      else if ( ic == 5 ) add = trigOut->GetHistoName(-1,-1,-1,-1,-1,currCond.Atoi());
+      title += Form("_%s",add.Data());
+    }
+    title.Remove(TString::kLeading,'_');
+    title.ReplaceAll(",","|");
+    condTitles.AddAt(new TObjString(title),icond);
+  }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________
