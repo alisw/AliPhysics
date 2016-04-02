@@ -188,4 +188,5 @@ class AliAnalysisTaskEmcalJetTree : public AliAnalysisTaskEmcalJetTreeBase {
   ClassDef(AliAnalysisTaskEmcalJetTree, 1)
   /// \endcond
 };
+
 #endif

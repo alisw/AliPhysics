@@ -215,7 +215,27 @@ template <class T>
 AliAnalysisTaskEmcalJetTree<T>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
   fCurrentOutput()
+{
+}
 
+template <>
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>::AliAnalysisTaskEmcalJetTree() :
+  AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
+  fCurrentOutput()
+{
+}
+
+template <>
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>::AliAnalysisTaskEmcalJetTree() :
+  AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
+  fCurrentOutput()
+{
+}
+
+template <>
+AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>::AliAnalysisTaskEmcalJetTree() :
+  AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
+  fCurrentOutput()
 {
 }
 
