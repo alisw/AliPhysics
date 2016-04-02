@@ -176,6 +176,7 @@ AliAnalysisTaskEmcalJetTreeBase::AliAnalysisTaskEmcalJetTreeBase(const char *nam
   fTree(0)
 {
   DefineOutput(2, TTree::Class());
+  SetHistoType(kTTree);
 }
 
 /// Static method to create a specialized instance of AliAnalysisTaskEmcalJetTree
