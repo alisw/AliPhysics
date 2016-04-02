@@ -115,4 +115,8 @@ public:
   static aliStringVec* TokenizeOptionString(const TString str);
 };
 
+//a general utility to tokenize strings
+std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
+//parse 
+stringMap ParseParamString(const std::string paramString);
 #endif
