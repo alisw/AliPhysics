@@ -8,37 +8,30 @@
 #include "AliAnalysisTaskEmcalJetHMEC.h"
 
 // TODO: Clean up includes
-//#include "TChain.h"
-//#include "TTree.h"
-//#include "TList.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
-#include "THnSparse.h"
-//#include "TCanvas.h"
-//#include <TClonesArray.h>
-//#include <TParticle.h>
-#include "AliVTrack.h"
-//#include "TParameter.h"
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
+#include <THnSparse.h>
+#include <TVector3.h>
 
-#include "AliAODEvent.h"
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDVertex.h"
-//#include "AliCentrality.h"
-//#include "AliAODJet.h"
+#include "AliInputEventHandler.h"
+#include "AliEventPoolManager.h"
+#include "AliBasicParticle.h"
+#include "AliVTrack.h"
 #include "AliEmcalJet.h"
-//#include "AliESDtrackCuts.h"
 
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 
-#include "TVector3.h"
-#include "AliBasicParticle.h"
-#include "AliEventPoolManager.h"
+//#include "AliAnalysisTask.h"
+//#include "AliAODEvent.h"
+//#include "AliESDEvent.h"
+//#include "AliESDInputHandler.h"
+//#include "AliESDVertex.h"
+//#include "AliCentrality.h"
+//#include "AliAODJet.h"
+//#include "AliESDtrackCuts.h"
 
 ClassImp(AliAnalysisTaskEmcalJetHMEC)
 
@@ -94,18 +87,17 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::InitializeArraysToZero()
 {
-  // TODO: Replace loop limits with enum!
-  for(Int_t ipta=0; ipta<7; ipta++){
-    fHistTrackEtaPhi[ipta]=0;
+  for(Int_t trackPtBin = 0; trackPtBin < kMaxTrackPtBins; trackPtBin++){
+    fHistTrackEtaPhi[trackPtBin]=0;
   }
-  for(Int_t icent = 0; icent<6; ++icent){
-    fHistJetPt[icent]=0;
-    fHistJetPtBias[icent]=0;
-    fHistLeadJetPtBias[icent]=0;
-    for(Int_t iptjet = 0; iptjet<5; ++iptjet){
-      for(Int_t ieta = 0; ieta<3; ++ieta){	
-        fHistJetH[icent][iptjet][ieta]=0;
-        fHistJetHBias[icent][iptjet][ieta]=0;
+  for(Int_t centralityBin = 0; centralityBin < kMaxCentralityBins; ++centralityBin){
+    fHistJetPt[centralityBin]=0;
+    fHistJetPtBias[centralityBin]=0;
+    fHistLeadJetPtBias[centralityBin]=0;
+    for(Int_t jetPtBin = 0; jetPtBin < kMaxJetPtBins; ++jetPtBin){
+      for(Int_t etaBin = 0; etaBin < kMaxEtaBins; ++etaBin){
+        fHistJetH[centralityBin][jetPtBin][etaBin]=0;
+        fHistJetHBias[centralityBin][jetPtBin][etaBin]=0;
       }
     }
   }
@@ -128,57 +120,55 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 
   TString name;
 
-  // TODO: Replace loop limits with enum!
-  for(Int_t ipta=0; ipta<7; ++ipta){
-    name = Form("fHistTrackEtaPhi_%i", ipta);
-    fHistTrackEtaPhi[ipta] = new TH2F(name,name,400,-1,1,720,0.0,2.0*TMath::Pi());
-    fOutput->Add(fHistTrackEtaPhi[ipta]);
+  for(Int_t trackPtBin = 0; trackPtBin < kMaxTrackPtBins; ++trackPtBin){
+    name = Form("fHistTrackEtaPhi_%i", trackPtBin);
+    fHistTrackEtaPhi[trackPtBin] = new TH2F(name,name,400,-1,1,720,0.0,2.0*TMath::Pi());
+    fOutput->Add(fHistTrackEtaPhi[trackPtBin]);
   }
 
-  // TODO: Replace loop limits with enum!
-  for(Int_t icent = 0; icent<6; ++icent){
-    name = Form("fHistJetPt_%i",icent);   
-    fHistJetPt[icent] = new TH1F(name,name,200,0,200);
-    fOutput->Add(fHistJetPt[icent]);
+  for(Int_t centralityBin = 0; centralityBin < kMaxCentralityBins; ++centralityBin){
+    name = Form("fHistJetPt_%i",centralityBin);
+    fHistJetPt[centralityBin] = new TH1F(name,name,200,0,200);
+    fOutput->Add(fHistJetPt[centralityBin]);
 
-    name = Form("fHistJetPtBias_%i",icent);   
-    fHistJetPtBias[icent] = new TH1F(name,name,200,0,200);
-    fOutput->Add(fHistJetPtBias[icent]);
+    name = Form("fHistJetPtBias_%i",centralityBin);
+    fHistJetPtBias[centralityBin] = new TH1F(name,name,200,0,200);
+    fOutput->Add(fHistJetPtBias[centralityBin]);
 
-    name = Form("fHistLeadJetPtBias_%i",icent);   
-    fHistLeadJetPtBias[icent] = new TH1F(name,name,200,0,200);
-    fOutput->Add(fHistLeadJetPtBias[icent]);
+    name = Form("fHistLeadJetPtBias_%i",centralityBin);
+    fHistLeadJetPtBias[centralityBin] = new TH1F(name,name,200,0,200);
+    fOutput->Add(fHistLeadJetPtBias[centralityBin]);
 
-    for(Int_t iptjet = 0; iptjet<5; ++iptjet){
-      for(Int_t ieta = 0; ieta<3; ++ieta){	
-        name = Form("fHistJetH_%i_%i_%i",icent,iptjet,ieta);   
-        fHistJetH[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
-        fOutput->Add(fHistJetH[icent][iptjet][ieta]);
+    for(Int_t jetPtBin = 0; jetPtBin < kMaxJetPtBins; ++jetPtBin){
+      for(Int_t etaBin = 0; etaBin < kMaxEtaBins; ++etaBin){
+        name = Form("fHistJetH_%i_%i_%i",centralityBin,jetPtBin,etaBin);
+        fHistJetH[centralityBin][jetPtBin][etaBin]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
+        fOutput->Add(fHistJetH[centralityBin][jetPtBin][etaBin]);
 
-        name = Form("fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);   
-        fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
-        fOutput->Add(fHistJetHBias[icent][iptjet][ieta]);
+        name = Form("fHistJetHBias_%i_%i_%i",centralityBin,jetPtBin,etaBin);
+        fHistJetHBias[centralityBin][jetPtBin][etaBin]=new TH2F(name,name,72,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
+        fOutput->Add(fHistJetHBias[centralityBin][jetPtBin][etaBin]);
       }
     }
   }
 
-  // TODO: Remove variable that is always filled as 0!
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
   if(fDoLessSparseAxes) {
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5;
   } else {
-    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7; 
+    cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7;
+    //cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7;
   }
   fhnJH = NewTHnSparseF("fhnJH", cifras);
   fhnJH->Sumw2();
   fOutput->Add(fhnJH);
 
-  // TODO: Remove variable that is always filled as 0!
   if(fDoEventMixing){    
     if(fDoLessSparseAxes) { 
       cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5;
     } else {
-      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7; 
+      cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7;
+      //cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7;
     }
     fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
     fhnMixedEvents->Sumw2();
@@ -414,7 +404,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
             Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           } else { 
-            Double_t triggerEntries[8] = {eventActivity, jet->Pt(), track->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), 0.0, deltaR};
+            Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
         }
@@ -514,7 +504,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
                   Double_t triggerEntries[6] = {eventActivity, jet->Pt(), bgTrack->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
                   FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), kTRUE);
                 } else {
-                  Double_t triggerEntries[8] = {eventActivity, jet->Pt(), bgTrack->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), 0.0, deltaR};
+                  Double_t triggerEntries[7] = {eventActivity, jet->Pt(), bgTrack->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
                   FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), kTRUE);
                 }
               }
