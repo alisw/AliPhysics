@@ -178,7 +178,7 @@ class AliAnalysisTaskEmcalJetTree : public AliAnalysisTaskEmcalJetTreeBase {
   void                        AllocateTTree(const AliJetContainer* jets);
   void                        FillTTree(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets);
 
-  std::map<std::string, vector<T> > fCurrentOutput;  //!<! This vector contains the pointers of the tree branch objects
+  std::map<std::string, vector<T> > *fCurrentOutput;  //!<! This vector contains the pointers of the tree branch objects
 
  private:
   AliAnalysisTaskEmcalJetTree(const AliAnalysisTaskEmcalJetTree&);            // not implemented
