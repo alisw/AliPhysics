@@ -58,6 +58,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetEmbeddingCorrectionHist(TH2F * embeddingCorrectionHist) { fEmbeddingCorrectionHist = embeddingCorrectionHist; }
 
  protected:
+  // TODO: Look for a more precise solution
   enum binArrayLimits_t {
     kMaxJetPtBins = 5,
     kMaxTrackPtBins = 7,
