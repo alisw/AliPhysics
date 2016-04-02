@@ -272,7 +272,7 @@ void AliAnalysisTaskEmcalJetTree<T>::AllocateTTree(const AliJetContainer* jets)
 template <class T>
 void AliAnalysisTaskEmcalJetTree<T>::UserCreateOutputObjects()
 {
-  fCurrentOutput = new std::map<std::string, vector<T> >();
+  fCurrentOutput = new std::map<std::string, std::vector<T> >();
   TString treeName = TString::Format("%s_jets", GetName());
   fTree = new TTree(treeName, treeName);
 
