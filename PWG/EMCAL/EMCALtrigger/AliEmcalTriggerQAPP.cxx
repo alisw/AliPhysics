@@ -305,8 +305,8 @@ void AliEmcalTriggerQAPP::Init()
 
   Int_t nTotTRU = 32; // there are 32 TRU in the EMCal (10 full SM * 3 TRU + 2 small SM * 1 TRU)
   Int_t ndet = 1;
-  if (kTRUE || fDCalPlots) {
-    nTotTRU += 14; // there are additional 14 TRU in DCal
+  if (fDCalPlots) {
+    nTotTRU += 20; // there are additional 14 TRU in DCal, some skip in between (see below)
     ndet += 1;
   }
   Int_t maxFORabsId = nTotTRU * 96;  // there are 96 channels in each TRU
@@ -380,6 +380,9 @@ void AliEmcalTriggerQAPP::Init()
   fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
 
   for (Int_t nTRU = 0; nTRU < nTotTRU; nTRU++) {
+    if (nTRU == 34 || nTRU == 35 ||
+        nTRU == 40 || nTRU == 41 ||
+        nTRU == 46 || nTRU == 47) continue;
     hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTRU%d", nTRU);
     htitle = Form("EMCTRQA_histCellAmpVsFastORL0Amp%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
     fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
