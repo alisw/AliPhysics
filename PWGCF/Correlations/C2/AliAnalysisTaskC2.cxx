@@ -71,21 +71,24 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   const Double_t cent_bin_edges[] = {0, 20, 40, 90};
   const Int_t nCent    = sizeof(cent_bin_edges)/sizeof(cent_bin_edges[0]) - 1;
   const Int_t nZvtx    = 20;
-  const Int_t nbins[cPairsDims::kNdimensions] = {etaNbins, etaNbins,
-						 phiNbins, phiNbins,
-						 nptPairBins,
-						 nCent, nZvtx};
-  const Double_t xmin[cPairsDims::kNdimensions] = {-0.8, -0.8,
-						   0, 0,
-						   0,
-						   0, -10};
-  const Double_t xmax[cPairsDims::kNdimensions] = {0.8, 0.8,
-						   2*TMath::Pi(), 2*TMath::Pi(),
-						   Double_t(nptPairBins),
-						   100, 10};
+  const Int_t nbins_pairs[cPairsDims::kNdimensions] = {
+    etaNbins, etaNbins,
+    phiNbins, phiNbins,
+    nptPairBins,
+    nCent, nZvtx};
+  const Double_t xmin_pairs[cPairsDims::kNdimensions] = {
+    -0.8, -0.8,
+    0, 0,
+    0,
+    0, -10};
+  const Double_t xmax_pairs[cPairsDims::kNdimensions] = {
+    0.8, 0.8,
+    2*TMath::Pi(), 2*TMath::Pi(),
+    Double_t(nptPairBins),
+    100, 10};
   this->fPairs = new THnC("pairs",
 			  "<N_{1}N_{2}>;#eta_{1};#eta_{2};#phi_{1};#phi_{2};p_{pair};cent;z_{vtx};",
-			  cPairsDims::kNdimensions, nbins, xmin, xmax);
+			  cPairsDims::kNdimensions, nbins_pairs, xmin_pairs, xmax_pairs);
   this->fPairs->GetAxis(cPairsDims::kCent)->Set(nCent, cent_bin_edges);
   // exclude_over_under_flow(this->fPairs);
   this->fOutputList->Add(fPairs);
@@ -93,21 +96,24 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   {
     // eta, phi, pt, cent, zvtx
     // Reuse values from pairs histogram where appropriate
-    Int_t nbins_singles[cSinglesDims::kNdimensions] = {nbins[cPairsDims::kEta1],
-						       nbins[cPairsDims::kPhi1],
-						       npTbins,
-						       nbins[cPairsDims::kCent],
-						       nbins[cPairsDims::kZvtx]};
-    Double_t xmin_singles[cSinglesDims::kNdimensions] = {xmin[cPairsDims::kEta1],
-							 xmin[cPairsDims::kPhi1],
-							 0,  // Dummy
-							 xmin[cPairsDims::kCent],
-							 xmin[cPairsDims::kZvtx]};
-    Double_t xmax_singles[cSinglesDims::kNdimensions] = {xmax[cPairsDims::kEta1],
-							 xmax[cPairsDims::kPhi1],
-							 1,  // Dummy
-							 xmax[cPairsDims::kCent],
-							 xmax[cPairsDims::kZvtx]};
+    Int_t nbins_singles[cSinglesDims::kNdimensions] = {
+      nbins_pairs[cPairsDims::kEta1],
+      nbins_pairs[cPairsDims::kPhi1],
+      npTbins,
+      nbins_pairs[cPairsDims::kCent],
+      nbins_pairs[cPairsDims::kZvtx]};
+    Double_t xmin_singles[cSinglesDims::kNdimensions] = {
+      xmin_pairs[cPairsDims::kEta1],
+      xmin_pairs[cPairsDims::kPhi1],
+      0,  // Dummy
+      xmin_pairs[cPairsDims::kCent],
+      xmin_pairs[cPairsDims::kZvtx]};
+    Double_t xmax_singles[cSinglesDims::kNdimensions] = {
+      xmax_pairs[cPairsDims::kEta1],
+      xmax_pairs[cPairsDims::kPhi1],
+      1,  // Dummy
+      xmax_pairs[cPairsDims::kCent],
+      xmax_pairs[cPairsDims::kZvtx]};
     this->fSingles = new THnS("singles", "<N_{1}>;#eta_{1};#phi_{1};p_{T};cent;z_{vtx};",
 			      cSinglesDims::kNdimensions, nbins_singles, xmin_singles, xmax_singles);
     this->fSingles->GetAxis(cSinglesDims::kPt)->Set(npTbins, pt_bin_edges);
@@ -116,12 +122,18 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   }
   {
     // Event counter
-    Int_t nbins_evt_counter[cEventCounterDims::kNdimensions] =
-      {nbins[cEventCounterDims::kCent], nbins[cPairsDims::kZvtx]};
-    Double_t xmin_evt_counter[cEventCounterDims::kNdimensions] =
-      {xmin[cEventCounterDims::kCent], xmin[cPairsDims::kZvtx]};
-    Double_t xmax_evt_counter[cEventCounterDims::kNdimensions] =
-      {xmax[cEventCounterDims::kCent], xmax[cPairsDims::kZvtx]};
+    Int_t nbins_evt_counter[cEventCounterDims::kNdimensions] = {
+      nbins_pairs[cPairsDims::kCent],
+      nbins_pairs[cPairsDims::kZvtx]
+    };
+    Double_t xmin_evt_counter[cEventCounterDims::kNdimensions] = {
+      xmin_pairs[cPairsDims::kCent],
+      xmin_pairs[cPairsDims::kZvtx]
+    };
+    Double_t xmax_evt_counter[cEventCounterDims::kNdimensions] = {
+      xmax_pairs[cPairsDims::kCent],
+      xmax_pairs[cPairsDims::kZvtx]
+    };
     this->fEventCounter = new THnF("eventCounter", "Event counter;cent;z_{vtx};",
 				   cEventCounterDims::kNdimensions,
 				   nbins_evt_counter, xmin_evt_counter, xmax_evt_counter);
