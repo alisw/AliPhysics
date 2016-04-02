@@ -66,18 +66,22 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
     if ((infg1) && (infg2)) {
       // assume the emission point is in [cm] and try to judge if
       // both particles are primary
-      Double_t dist1 = infg1->GetGlobalEmissionPoint()->Perp();
-      Double_t dist2 = infg2->GetGlobalEmissionPoint()->Perp();
+      // Double_t dist1 = infg1->GetGlobalEmissionPoint()->Perp();
+      //  Double_t dist2 = infg2->GetGlobalEmissionPoint()->Perp();
+
+      Double_t dist1 = ((AliFemtoModelGlobalHiddenInfo*)infg1->GetHiddenInfo())->GetGlobalEmissionPoint()->Perp();
+      Double_t dist2 = ((AliFemtoModelGlobalHiddenInfo*)infg2->GetHiddenInfo())->GetGlobalEmissionPoint()->Perp();
+
 
       if ((dist1 > 0.05) && (dist2 > 0.05)) {
 	// At least one particle is non primary
-	if (!(inf1->GetEmissionPoint())) {
+	if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) {
 	  AliFemtoLorentzVector tPos(-1000,1000,-500,0);
 	  inf1->SetEmissionPoint(&tPos);
 	}
 	else
 	  inf1->SetEmissionPoint(-1000,1000,-500,0);
-	if (!(inf2->GetEmissionPoint())) {
+	if (!(((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint())) {
 	  AliFemtoLorentzVector tPos(fRandom->Gaus(0,1000.0),fRandom->Gaus(0,1000),fRandom->Gaus(0,1000),0.0);
 	  inf2->SetEmissionPoint(&tPos);
 	}
@@ -94,6 +98,7 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   // The source is the 3D Gaussian ellipsoid in the LCMS frame
 
   // Calculate sum momenta
+  /*
   Double_t tPx = inf1->GetTrueMomentum()->x() + inf2->GetTrueMomentum()->x();
   Double_t tPy = inf1->GetTrueMomentum()->y() + inf2->GetTrueMomentum()->y();
   Double_t tPz = inf1->GetTrueMomentum()->z() + inf2->GetTrueMomentum()->z();
@@ -102,9 +107,21 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->Mag2());
   Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->Mag2());
   Double_t tEs = tE1 + tE2;
+  */
+
+  Double_t tPx = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->x()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->x();
+  Double_t tPy = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->y()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->y();
+  Double_t tPz = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->z()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->z();
+  Double_t tM1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
+  Double_t tM2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
+  Double_t tE1 = sqrt(tM1*tM1 + ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->Mag2());
+  Double_t tE2 = sqrt(tM2*tM2 + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->Mag2());
+  Double_t tEs = tE1 + tE2;
 
   Double_t tPt = sqrt(tPx*tPx + tPy*tPy);
   Double_t tMt = sqrt(tEs*tEs - tPz*tPz);
+
+  if (!(tPx==0 && tPy==0 && tPz==0 )) {
 
   // Generate positions in PRF from a Gaussian
   Double_t tROutS =  fRandom->Gaus(0,fSizeInv); // reuse of long
@@ -133,18 +150,20 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tXlong = tRLong;
   Double_t tXtime = tDt;
   
-  if (!(inf1->GetEmissionPoint())) {
+  if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) {
     AliFemtoLorentzVector tPos(0,0,0,0);
     inf1->SetEmissionPoint(&tPos);
   }
   else
     inf1->SetEmissionPoint(0,0,0,0);
-  if (!(inf2->GetEmissionPoint())) {
+  if (!(((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint())) {
     AliFemtoLorentzVector tPos(tXout,tXside,tXlong,tXtime);
     inf2->SetEmissionPoint(&tPos);
   }
   else
     inf2->SetEmissionPoint(tXout, tXside, tXlong, tXtime);
+
+  }
 }
 
 //_______________________
