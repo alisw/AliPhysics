@@ -3,44 +3,39 @@
 
 // $Id$
 
-class TClonesArray;
-class TList;
+//class TClonesArray;
+//class TList;
 class TH1;
 class TH2;
 class TH3;
 class THnSparse;
 class AliEmcalJet;
-class AliESDEvent;
-class AliAODEvent;
 class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
 class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
  public:
+  enum jetBias_t {
+    kDisableBias = 10000
+  };
+
   AliAnalysisTaskEmcalJetHMEC();
   AliAnalysisTaskEmcalJetHMEC(const char *name);
   virtual ~AliAnalysisTaskEmcalJetHMEC() {}
-  
+
+  // TODO: Cleanup and organize arguments
+  // TODO: Move functions to protected unless good reason not to be!
+  // TODO: Consider moving to THistManager
   virtual void            UserCreateOutputObjects();
-  //virtual Double_t        RelativePhi(Double_t mphi, Double_t vphi);
-//  virtual void            UserExec(Option_t *option);
+  //  virtual void            UserExec(Option_t *option);
   virtual void            Terminate(Option_t *);
-  //virtual Int_t           AcceptthisJet(AliEmcalJet *jet);
   virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
-  /*virtual void            SetTracksName(const char *n)             {fTracksName=n;}
-  virtual void            SetJetsName(const char *jn)              {fJetsName=jn;}
-  virtual void            SetCaloClustersName(const char *cn)      {fCaloClustersName=cn;}*/
-
-  //virtual void            SetAreaCut(Double_t a)                   { fAreacut    = a; }
   virtual void            SetTrkBias(Double_t b)                   { fTrkBias    = b; }  //require a track with pt > b in jet
   virtual void            SetClusBias(Double_t b)                  { fClusBias   = b; }  //require a cluster with pt > b in jet
 
-
-  /*virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
-  virtual void            SetJetPhi(Double_t pmin, Double_t pmax)  { fPhimin = pmin; fPhimax = pmax; }*/
   virtual void            SetEventMixing(Int_t yesno)              { fDoEventMixing=yesno;}
   virtual void            SetMixingTracks(Int_t tracks)            { fMixingTracks = tracks; }
 
@@ -63,14 +58,23 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetEmbeddingCorrectionHist(TH2F * embeddingCorrectionHist) { fEmbeddingCorrectionHist = embeddingCorrectionHist; }
 
  protected:
+  enum binArrayLimits_t {
+    kMaxJetPtBins = 5,
+    kMaxTrackPtBins = 7,
+    kMaxCentralityBins = 6,
+    kMaxEtaBins = 3
+  };
+
   void                   ExecOnce();
   Bool_t                 Run();
-  //virtual Int_t          GetCentBin(Double_t cent) const;
   void                   InitializeArraysToZero();
   virtual Int_t          GetEtaBin(Double_t eta) const;
   virtual Int_t          GetTrackPtBin(Double_t pt) const;
   virtual Int_t          GetJetPtBin(Double_t pt) const;
   virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
+
+  void GetDeltaEtaDeltaPhiDeltaR(AliVParticle * particleOne, AliVParticle * particleTwo, Double_t & deltaPhi, Double_t & deltaEta, Double_t & deltaR);
+  Bool_t BiasedJet(AliEmcalJet * jet);
 
   // Fill methods which allow for the embedding correction
   void                   FillHist(TH1 * hist, Double_t fillValue, Double_t weight = 1.0, Bool_t noCorrection = kTRUE);
@@ -103,7 +107,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   AliEventPoolManager   *fPoolMgr; //!
   TH1                   *fHistTrackPt; //! Pt spectrum
-  //TH1                   *fHistCentrality;//!
   TH2                   *fHistJetEtaPhi;//!
   TH2                   *fHistTrackEtaPhi[7];//!
   TH2                   *fHistJetHEtaPhi;//!
@@ -120,10 +123,10 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TH3                   *fHistJHPsi; //! Psi angle distribution
 
  private:
-   
+
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
-  
+
   ClassDef(AliAnalysisTaskEmcalJetHMEC, 10); 
 };
 #endif

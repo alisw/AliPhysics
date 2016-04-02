@@ -101,6 +101,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
     name += TString::Format("_%s", suffix);
   }
 
+  // TODO: Cleanup arguments (after cleanup of the task)
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
   if(EvtMix>0){
     correlationtask->SetMixingTracks(EvtMix);
@@ -112,7 +113,6 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   }
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
-  correlationtask->SetTrkEta(TrkEta);
   correlationtask->SetTrigType(trigevent);
   correlationtask->SetMixType(mixevent);
   correlationtask->SetDoLessSparseAxes(lessSparseAxes);
@@ -140,7 +140,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   tracksForJets->SetMinPt(minTrackPt);
   tracksForJets->SetEtaLimits(-1.0*TrkEta, TrkEta);
   // Adopt the container
-  correlationtask->AdoptTrackContainer(tracksForJets);
+  correlationtask->AdoptParticleContainer(tracksForJets);
     
   // For correlations
   AliTrackContainer * tracksForCorrelations = new AliTrackContainer(trackName);
@@ -148,7 +148,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   tracksForCorrelations->SetMinPt(0.15);
   tracksForCorrelations->SetEtaLimits(-1.0*TrkEta, TrkEta);
   // Adopt the container
-  correlationtask->AdoptTrackContainer(tracksForCorrelations);
+  correlationtask->AdoptParticleContainer(tracksForCorrelations);
 
   // Jets
   AliJetContainer * jetContainer = correlationtask->AddJetContainer(AliJetContainer::kFullJet,
