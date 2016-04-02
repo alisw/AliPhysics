@@ -167,7 +167,8 @@ set(SRCS
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx  
-    UserTasks/AliAnalysisTaskPi0Hadron.cxx)
+    UserTasks/AliAnalysisTaskPi0Hadron.cxx
+    UserTasks/AliAnalysisTaskEmcalJetTree.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
@@ -178,7 +179,7 @@ if(FASTJET_FOUND)
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
-	AliJetEmbeddingFromPYTHIATask.cxx
+	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
         UserTasks/AliAnalysisTaskEmcalJetExtractor.cxx

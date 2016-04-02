@@ -64,155 +64,6 @@ AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo(const AliEmca
   jet.GetMomentum(*this);
 }
 
-// Definitions of class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase)
-/// \endcond
-
-/// Constructor that sets the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase::AliEmcalJetInfoSummaryBase(const AliEmcalJetInfo& source) :
-  fPt(0),
-  fEta(0),
-  fPhi(0),
-  fNEF(0),
-  fZLeading(0)
-{
-  Set(source);
-}
-
-/// Reset the object
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase::Reset()
-{
-  fPt = 0;
-  fEta = 0;
-  fPhi = 0;
-  fNEF = 0;
-  fZLeading = 0;
-}
-
-/// Set the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase::Set(const AliEmcalJetInfo& source)
-{
-  fPt = source.Pt();
-  fEta = source.Eta();
-  fPhi = source.Phi_0_2pi();
-  fNEF = source.fNEF;
-  fZLeading = source.fZ;
-}
-
-// Definitions of class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP)
-/// \endcond
-
-/// Constructor that sets the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP::AliEmcalJetInfoSummaryPP(const AliEmcalJetInfo& source) :
-  AliEmcalJetInfoSummaryBase(),
-  fNConstituents(0)
-{
-  Set(source);
-}
-
-/// Reset the object
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP::Reset()
-{
-  AliEmcalJetInfoSummaryBase::Reset();
-  fNConstituents = 0;
-}
-
-/// Set the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP::Set(const AliEmcalJetInfo& source)
-{
-  AliEmcalJetInfoSummaryBase::Set(source);
-  fNConstituents = Char_t(source.fNConstituents);
-}
-
-// Definitions of class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb)
-/// \endcond
-
-/// Constructor that sets the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb::AliEmcalJetInfoSummaryPbPb(const AliEmcalJetInfo& source) :
-  AliEmcalJetInfoSummaryBase(),
-  fCent(0),
-  fEP(0),
-  fArea(0),
-  fNConstituents(0),
-  fCorrPt(0)
-{
-  Set(source);
-}
-
-/// Reset the object
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb::Reset()
-{
-  AliEmcalJetInfoSummaryBase::Reset();
-  fCent = 0;
-  fEP = 0;
-  fArea = 0;
-  fNConstituents = 0;
-  fCorrPt = 0;
-}
-
-/// Set the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb::Set(const AliEmcalJetInfo& source)
-{
-  AliEmcalJetInfoSummaryBase::Set(source);
-  fCent = Char_t(source.fCent);
-  fEP = source.fEP;
-  fArea = source.fArea;
-  fNConstituents = Short_t(source.fNConstituents);
-  fCorrPt = source.fCorrPt;
-}
-
-// Definitions of class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding)
-/// \endcond
-
-/// Constructor that sets the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding::AliEmcalJetInfoSummaryEmbedding(const AliEmcalJetInfo& source) :
-  AliEmcalJetInfoSummaryPbPb(),
-  fMCPt(0)
-{
-  Set(source);
-}
-
-/// Reset the object
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding::Reset()
-{
-  AliEmcalJetInfoSummaryPbPb::Reset();
-  fMCPt = 0;
-}
-
-/// Set the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-void AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding::Set(const AliEmcalJetInfo& source)
-{
-  AliEmcalJetInfoSummaryPbPb::Set(source);
-  fMCPt = source.fMCPt;
-}
-
 // Definitions of class AliAnalysisTaskEmcalJetSpectraQA
 
 /// \cond CLASSIMP
@@ -225,9 +76,7 @@ AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
   fAreaAxis(kTRUE),
-  fHistManager(),
-  fCurrentJetInfo(0),
-  fTreeList(0)
+  fHistManager()
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -241,43 +90,18 @@ AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA(const char *n
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
   fAreaAxis(kTRUE),
-  fHistManager(name),
-  fCurrentJetInfo(0),
-  fTreeList(0)
+  fHistManager(name)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
 
-/// Allocate output TTree for a jet container
+/// This method is not implemented. It can be overloaded in derived classes to have a tree output.
 ///
 /// \param jets Valid pointer to an AliJetContainer object
 void AliAnalysisTaskEmcalJetSpectraQA::AllocateTTree(const AliJetContainer* jets)
 {
-  TString classname;
-
-  if (!fTreeList) {
-    fTreeList = new THashList();
-    fTreeList->SetName("Jets");
-  }
-
-  if (fForceBeamType == kpp) {
-    classname = "AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP";
-    fCurrentJetInfo = new AliEmcalJetInfoSummaryPP();
-  }
-  else {
-    if (fIsEmbedded) {
-      classname = "AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding";
-      fCurrentJetInfo = new AliEmcalJetInfoSummaryEmbedding();
-    }
-    else {
-      classname = "AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb";
-      fCurrentJetInfo = new AliEmcalJetInfoSummaryPbPb();
-    }
-  }
-
-  TTree* tree = new TTree(jets->GetName(), jets->GetName());
-  tree->Branch("Jets", classname, &fCurrentJetInfo, 32000, 0);
-  fTreeList->Add(tree);
+  AliError("Tree output not implemented. Falling back to THnSparse output");
+  AllocateTHnSparse(jets);
 }
 
 /// Allocate output THnSparse for a jet container
@@ -549,10 +373,9 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
     }
   }
 
-  fOutput->Add(fHistManager.GetListOfHistograms());
-
-  if (fHistoType == kTTree) fOutput->Add(fTreeList);
-
+  TIter nextElement(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = nextElement())) fOutput->Add(obj);
   PostData(1, fOutput);
 }
 
@@ -561,8 +384,6 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 /// \return kTRUE if successful
 Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
 {
-  // Fill histograms.
-
   TString histname;
 
   AliJetContainer* jets = 0;
@@ -723,6 +544,16 @@ void AliAnalysisTaskEmcalJetSpectraQA::FillTHX(const AliEmcalJetInfo& jet, const
   }
 }
 
+/// This method is not implemented. It can be overloaded in derived classes to have a tree output.
+///
+/// \param jet  Jet containing the information to be sent to the tree/histograms
+/// \param jets Jet container
+void AliAnalysisTaskEmcalJetSpectraQA::FillTTree(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
+{
+  AliError("Tree output not implemented. Falling back to THnSparse output");
+  FillTHnSparse(jet, jets);
+}
+
 /// Fill THnSparse histogram with jet
 ///
 /// \param jet  Jet containing the information to be sent to the tree/histograms
@@ -770,22 +601,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::FillTHnSparse(const AliEmcalJetInfo& jet,
   histJetObservables->Fill(contents);
 }
 
-/// Fill tree with jet info
-///
-/// \param jet  Jet containing the information to be sent to the tree/histograms
-void AliAnalysisTaskEmcalJetSpectraQA::FillTTree(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
-{
-  static TTree* tree = 0;
-
-  if (!tree || TString(tree->GetName()) != jets->GetName()) tree = static_cast<TTree*>(fTreeList->FindObject(jets->GetName()));
-  if (!tree) return;
-
-  fCurrentJetInfo->Set(jet);
-
-  tree->Fill();
-}
-
-/// Fill histogram or tree with jet
+/// Fill histogram with jet
 ///
 /// \param jet  Jet containing the information to be sent to the tree/histograms
 /// \param jets Jet container
