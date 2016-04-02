@@ -210,32 +210,38 @@ AliAnalysisTaskEmcalJetTreeBase* AliAnalysisTaskEmcalJetTreeBase::CreateInstance
 templateClassImp(AliAnalysisTaskEmcalJetTree)
 /// \endcond
 
-/// Default constractor for ROOT I/O purposes
+/// Default constructor for ROOT I/O purposes
 template <class T>
 AliAnalysisTaskEmcalJetTree<T>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput()
+  fCurrentOutput(0)
 {
 }
 
+/// Specialized default constructor (AliEmcalJetInfoSummaryPP) for ROOT I/O purposes
+/// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
 template <>
 AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput()
+  fCurrentOutput(0)
 {
 }
 
+/// Specialized default constructor (AliEmcalJetInfoSummaryPbPb) for ROOT I/O purposes
+/// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
 template <>
 AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput()
+  fCurrentOutput(0)
 {
 }
 
+/// Specialized default constructor (AliEmcalJetInfoSummaryEmbedding) for ROOT I/O purposes
+/// This is needed to address a "feature" (aka bug) of ROOT CINT, to be checked (maybe fixed in newer versions of ROOT)
 template <>
 AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>::AliAnalysisTaskEmcalJetTree() :
   AliAnalysisTaskEmcalJetTreeBase("AliAnalysisTaskEmcalJetTree"),
-  fCurrentOutput()
+  fCurrentOutput(0)
 {
 }
 
@@ -245,7 +251,7 @@ AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSumm
 template <class T>
 AliAnalysisTaskEmcalJetTree<T>::AliAnalysisTaskEmcalJetTree(const char *name) :
   AliAnalysisTaskEmcalJetTreeBase(name),
-  fCurrentOutput()
+  fCurrentOutput(0)
 {
 }
 
@@ -255,7 +261,7 @@ AliAnalysisTaskEmcalJetTree<T>::AliAnalysisTaskEmcalJetTree(const char *name) :
 template <class T>
 void AliAnalysisTaskEmcalJetTree<T>::AllocateTTree(const AliJetContainer* jets)
 {
-  typename std::map<std::string,std::vector<T> >::iterator it = (fCurrentOutput.insert(std::pair<std::string,std::vector<T> >(jets->GetName(), std::vector<T>()))).first;
+  typename std::map<std::string,std::vector<T> >::iterator it = (fCurrentOutput->insert(std::pair<std::string,std::vector<T> >(jets->GetName(), std::vector<T>()))).first;
   Printf("setting branch");
   fTree->Branch(jets->GetName(), &((*it).second));
   Printf("branch is set");
@@ -265,6 +271,7 @@ void AliAnalysisTaskEmcalJetTree<T>::AllocateTTree(const AliJetContainer* jets)
 template <class T>
 void AliAnalysisTaskEmcalJetTree<T>::UserCreateOutputObjects()
 {
+  fCurrentOutput = new std::map<std::string, vector<T> >();
   TString treeName = TString::Format("%s_jets", GetName());
   fTree = new TTree(treeName, treeName);
 
@@ -279,11 +286,11 @@ void AliAnalysisTaskEmcalJetTree<T>::UserCreateOutputObjects()
 template <class T>
 void AliAnalysisTaskEmcalJetTree<T>::FillTTree(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
 {
-  static typename std::map<std::string, std::vector<T> >::iterator it = fCurrentOutput.end();
+  static typename std::map<std::string, std::vector<T> >::iterator it = fCurrentOutput->end();
 
-  if (it == fCurrentOutput.end() || TString(jets->GetName()) != it->first) {
-    it = fCurrentOutput.find(jets->GetName());
-    if (it == fCurrentOutput.end()) return;
+  if (it == fCurrentOutput->end() || TString(jets->GetName()) != it->first) {
+    it = fCurrentOutput->find(jets->GetName());
+    if (it == fCurrentOutput->end()) return;
   }
 
   it->second.push_back(T(jet));
@@ -297,7 +304,7 @@ Bool_t AliAnalysisTaskEmcalJetTree<T>::FillHistograms()
 {
   typedef typename std::map<std::string, std::vector<T> >::iterator iterator_type;
 
-  for (iterator_type it = fCurrentOutput.begin(); it != fCurrentOutput.end(); it++) {
+  for (iterator_type it = fCurrentOutput->begin(); it != fCurrentOutput->end(); it++) {
     it->second.clear();
   }
 
