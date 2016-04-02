@@ -740,19 +740,41 @@ void AliRsnCutSetDaughterParticle::Init()
 
     case AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015:
 
-      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
-      iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
-      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
-      AddCut(fCutQuality);
-      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+      if(fNsigmaTOF<10.){
+	iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+	iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+	AddCut(fCutQuality);
+	iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
 
-      AddCut(iCutTPCNSigma);
-      AddCut(iCutTOFMatch);
-      AddCut(iCutTOFNSigma);
-      
-      // scheme:
-      // quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
-      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+	AddCut(iCutTPCNSigma);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTOFNSigma);
+
+	// scheme:
+	// quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
+	SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+
+      }else{
+	iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+	iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+	AddCut(fCutQuality);
+	iCutTOFNSigma->SinglePIDRange(fNsigmaTOF-10.);
+
+	AddCut(iCutTPCNSigma);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTOFNSigma);
+
+
+	iCutTPCTOFNSigma->AddPIDRange(fNsigmaTPC,0.7,1.8);
+	AddCut(iCutTPCTOFNSigma);
+
+	// scheme:
+	// quality & [ (TPCTOF & TOF) | {!TPCTOF && [(TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma)]} ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&((%s&(!%s))|(%s&%s))))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+      }
+
        break;
 
     case AliRsnCutSetDaughterParticle::kTPCpidphipp2015:
