@@ -29,10 +29,17 @@
 #pragma link C++ class AliJetTriggerSelectionTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
