@@ -374,6 +374,29 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   return rc;
 }
 
+int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags)
+{
+  int rc = 0;
+  rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
+  if (rc<0) 
+  {
+    //printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
+    return rc;
+  }
+
+  zmq_msg_t dataMsg;
+  zmq_msg_init_size(&dataMsg, data.size());
+  memcpy(zmq_msg_data(&dataMsg), data.data(), zmq_msg_size(&dataMsg));
+  rc = zmq_msg_send(&dataMsg, socket, flags);
+  if (rc<0) 
+  {
+    //printf("unable to send data: %s\n", data.c_str());
+    zmq_msg_close(&dataMsg);
+    return rc;
+  }
+  return rc;
+}
+
 //______________________________________________________________________________
 void alizmq_deleteTObject(void*, void* object)
 {

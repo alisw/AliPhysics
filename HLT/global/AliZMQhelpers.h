@@ -71,6 +71,7 @@ int alizmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags);
 
 //send a single frame
 int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, int compression=0);
+int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags);
 
 //deallocate an object - callback for ZMQ
 void alizmq_deleteTObject(void*, void* object);
