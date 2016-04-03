@@ -183,9 +183,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
           zmq_getsockopt(fZMQout, ZMQ_RCVMORE, &more, &moreSize);
         }
         //if request is for ECS params, set the flag
-        if (Topicncmp(requestTopic, ecsParamTopic, requestTopicSize))
-        //if (*reinterpret_cast<const AliHLTUInt64_t*>(requestTopic) ==
-        //    *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeECSParam.fID))
+        if (*reinterpret_cast<const AliHLTUInt64_t*>(requestTopic) ==
+            *reinterpret_cast<const AliHLTUInt64_t*>(kAliHLTDataTypeECSParam.fID))
         {
           doSendECSparamString = kTRUE;
         }
@@ -281,6 +280,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       int flags = (nSelectedBlocks==0)?0:ZMQ_SNDMORE;
       rc = zmq_send(fZMQout, fECSparamString.Data(), fECSparamString.Length(), flags);
       if (rc>=0) nSentBlocks++;
+      HLTMessage("sent ECS params, as per request, rc=%i",rc);
       doSendECSparamString = kFALSE;
     }
 
