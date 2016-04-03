@@ -81,6 +81,12 @@ AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
 }
 
 void AliEmcalTriggerMakerKernel::Init(){
+  if (!fTriggerBitConfig) {
+    AliWarning("Trigger bit configuration was not provided! Assuming new bit configuration (>= 2013).");
+    AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
+    SetTriggerBitConfig(triggerBitConfig);
+  }
+
   fPatchAmplitudes = new AliEMCALTriggerDataGrid<double>;
   fPatchADCSimple = new AliEMCALTriggerDataGrid<double>;
   fPatchADC = new AliEMCALTriggerDataGrid<double>;
