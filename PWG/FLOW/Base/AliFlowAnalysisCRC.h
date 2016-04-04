@@ -1500,16 +1500,16 @@ private:
  Int_t fPtDiffNBins;
  Double_t fPtDiffMinPt;
  Double_t fPtDiffMaxPt;
- TH1D *fPtDiffQRe[fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fPtDiffQIm[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fPtDiffMul[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TH1D *fPtDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fPtDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fPtDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
  
  // Flow SP ZDC
  TList *fFlowSPZDCList;    //! SPZDC List
  TList *fFlowSPZDCRbRList; //! CRC list of histograms RbR
  TList *fFlowSPZDCRunsList[fCRCMaxnRun]; //! list of runs
- const static Int_t fFlowNPro = 12;
- const static Int_t fFlowNNUA = 2;
+ const static Int_t fFlowNPro = 18;
+ const static Int_t fFlowNNUA = 6;
  TProfile *fFlowSPZDCCorPro[fCRCMaxnRun][fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPZDCCorNUA[fCRCMaxnRun][fCRCMaxnCen][fFlowNPro]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
