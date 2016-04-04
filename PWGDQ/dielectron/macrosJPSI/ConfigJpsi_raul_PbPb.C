@@ -14,9 +14,7 @@ TVectorD *GetRunNumbers();
 
 void SetupMCsignals(AliDielectron *die);
 
-Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
-Bool_t isAOD=kTRUE;
+//Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 Bool_t kRot=1;
 Bool_t kMix=1;
 
