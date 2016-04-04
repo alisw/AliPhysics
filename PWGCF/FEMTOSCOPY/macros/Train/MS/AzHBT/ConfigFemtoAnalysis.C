@@ -27,7 +27,7 @@
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistanceLM.h"
-#include "AliFemtoPairCutRadialDistanceLM_fixed.h"
+#include "AliFemtoPairCutRadialDistanceKK.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -147,7 +147,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
      */
     
     //including delta eta delta phi star cuts
-    AliFemtoAnalysisAzimuthalPbPb_fixed		*ana[2][8][2];				//[charge][mult][cuts]
+    AliFemtoAnalysisAzimuthalPbPb2Order		*ana[2][8][2];				//[charge][mult][cuts]
     AliFemtoBasicEventCut				*mecetaphitpc[2][8][2];	//[charge][mult][cuts]
     AliFemtoCutMonitorEventMult			*cutPassEvMetaphitpc[2][8][2];//[charge][mult][cuts]
     AliFemtoCutMonitorEventMult			*cutFailEvMetaphitpc[2][8][2];//[charge][mult][cuts]
@@ -155,8 +155,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
     AliFemtoCutMonitorEventVertex		*cutFailEvVetaphitpc[2][8][2];//[charge][mult][cuts]
     AliFemtoESDTrackCut					*dtc1etaphitpc[2][8][2];//[charge][mult][cuts]
     AliFemtoESDTrackCut					*dtc2etaphitpc[2][8][2];//[charge][mult][cuts]
-    AliFemtoPairCutRadialDistanceLM_fixed      *sqpcetaphitpc[2][8][2];//[charge][mult][cuts]
-    AliFemtoPairCutRadialDistanceLM_fixed      *sqpcetaphitpcRD[2][8][2];//[charge][mult][cuts]
+    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpcRD[2][8][2];//[charge][mult][cuts]
     
     
     //AliFemtoKTPairCut             *ktpaircut[2][10][5][4][9];		//[charge][mult][cuts][ktrange][phibins]
@@ -171,8 +171,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
                     for (int ichg=0; ichg<2; ichg++) {
                         if (runch[ichg]) {
                             
-                            ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb_fixed(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],10);
-                            //ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb_fixed(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],6);
+                            ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],10);
+                            //ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],6);
                             
                             ana[ichg][imult][icuts]->SetNumEventsToMix(3);
                             ana[ichg][imult][icuts]->SetMinSizePartCollection(4);
@@ -214,8 +214,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
                             dtc1etaphitpc[ichg][imult][icuts]->SetMaxImpactXY(2.4);//was 0.20
                             dtc1etaphitpc[ichg][imult][icuts]->SetMaxImpactZ(3.0);//was 0.15
                             
-                            sqpcetaphitpc[ichg][imult][icuts] = new AliFemtoPairCutRadialDistanceLM_fixed();
-                            sqpcetaphitpcRD[ichg][imult][icuts] = new AliFemtoPairCutRadialDistanceLM_fixed();
+                            sqpcetaphitpc[ichg][imult][icuts] = new AliFemtoPairCutRadialDistanceKK();
+                            sqpcetaphitpcRD[ichg][imult][icuts] = new AliFemtoPairCutRadialDistanceKK();
                             
                             sqpcetaphitpc[ichg][imult][icuts]->SetShareQualityMax(1.0);
                             sqpcetaphitpc[ichg][imult][icuts]->SetShareFractionMax(1.0); //was 1
