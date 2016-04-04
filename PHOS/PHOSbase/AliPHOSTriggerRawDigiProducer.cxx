@@ -50,6 +50,7 @@ AliPHOSTriggerRawDigiProducer::AliPHOSTriggerRawDigiProducer(AliRawReader *rawRe
    fRawStream(0),
    fTriggerReader(new AliPHOSTriggerRawReader)
 {
+  SetAnalyseModule(1);
   SetAnalyseModule(2);
   SetAnalyseModule(3);
   SetAnalyseModule(4);
