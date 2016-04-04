@@ -85,6 +85,7 @@ public :
 
   void SetTRDTriggerHQU(const Bool_t require = kFALSE) { fTRDTriggerRequiredHQU = require;}
   void SetTRDTriggerHJT(const Bool_t require = kFALSE) { fTRDTriggerRequiredHJT = require;}
+  void SetTRDTriggerHSE(const Bool_t require = kFALSE) { fTRDTriggerRequiredHSE = require;}
   
   
   // Fill histograms
@@ -342,6 +343,7 @@ private:
   
   Bool_t fTRDTriggerRequiredHQU;
   Bool_t fTRDTriggerRequiredHJT;
+  Bool_t fTRDTriggerRequiredHSE;
   Bool_t triggerResult;
   
   // generic function to change binning
