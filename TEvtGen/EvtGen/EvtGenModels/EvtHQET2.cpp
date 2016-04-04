@@ -103,7 +103,7 @@ void EvtHQET2::init(){
     if ( getNArg()==2 ) {hqetffmodel = new EvtHQET2FF(getArg(0),getArg(1)); 
     calcamp = new EvtSemiLeptonicScalarAmp;} 
     else {
-    report(ERROR,"EvtGen") << "HQET2 model for scalar meson daughters needs 2 arguments. Sorry."<<endl;
+    report(Severity::Error,"EvtGen") << "HQET2 model for scalar meson daughters needs 2 arguments. Sorry."<<endl;
     ::abort();
   }  
   }
@@ -111,12 +111,12 @@ void EvtHQET2::init(){
     if ( getNArg()==4 ){ hqetffmodel = new EvtHQET2FF(getArg(0),getArg(1),getArg(2),getArg(3));
     calcamp = new EvtSemiLeptonicVectorAmp; }
     else  {
-    report(ERROR,"EvtGen") << "HQET2 model for vector meson daughtersneeds 4 arguments. Sorry."<<endl;
+    report(Severity::Error,"EvtGen") << "HQET2 model for vector meson daughtersneeds 4 arguments. Sorry."<<endl;
     ::abort();
     }
   }
   else{
-    report(ERROR,"EvtGen") << "HQET2 model handles only scalar and vector meson daughters. Sorry."<<endl;
+    report(Severity::Error,"EvtGen") << "HQET2 model handles only scalar and vector meson daughters. Sorry."<<endl;
     ::abort();
   }
 

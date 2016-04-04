@@ -82,7 +82,7 @@ void EvtPDL::readPDT(const std::string fname){
   EvtId i;
 
   if (!indec) {
-    report(ERROR,"EvtGen") << "Could not open:"<<fname.c_str()<<"EvtPDL"<<endl;
+    report(Severity::Error,"EvtGen") << "Could not open:"<<fname.c_str()<<"EvtPDL"<<endl;
     return;
   }
 
@@ -157,8 +157,8 @@ void EvtPDL::readPDT(const std::string fname){
 	tmp.setName(pname);
         if (_particleNameLookup.find(std::string(pname))!=
 	    _particleNameLookup.end()) {
-	    report(ERROR,"EvtGen")<<"The particle name:"<<pname<<" is already defined."<<endl;
-	    report(ERROR,"EvtGen") << "Will terminate execution.";
+	    report(Severity::Error,"EvtGen")<<"The particle name:"<<pname<<" is already defined."<<endl;
+	    report(Severity::Error,"EvtGen") << "Will terminate execution.";
 	    ::abort();
 	}
 	_particleNameLookup[std::string(pname)]=_nentries;
@@ -197,7 +197,7 @@ void EvtPDL::aliasChgConj(EvtId a,EvtId abar){
   if (EvtPDL::chargeConj(EvtId(a.getId(),a.getId()))!=
 		 EvtId(abar.getId(),abar.getId())) {
 
-    report(ERROR,"EvtGen")<<"Can't charge conjugate the two aliases:"
+    report(Severity::Error,"EvtGen")<<"Can't charge conjugate the two aliases:"
 			  <<EvtPDL::name(a).c_str()<<" and "<<EvtPDL::name(abar).c_str()<<endl;
       
     ::abort();
@@ -224,7 +224,7 @@ EvtId EvtPDL::chargeConj(EvtId id){
 
   if (id.getAlias()!=id.getId()) {
 
-    report(ERROR,"EvtGen")<<"Trying to charge conjugate alias particle:"
+    report(Severity::Error,"EvtGen")<<"Trying to charge conjugate alias particle:"
 			  <<name(id).c_str()<<" without defining the alias!"<<endl;
       
     ::abort();
@@ -261,7 +261,7 @@ void EvtPDL::alias(EvtId num,const std::string& newname){
   if ( _firstAlias < partlist().size() ) {
     for(size_t i=_firstAlias;i<partlist().size();i--){
       if (newname==partlist()[i].getName()){
-	report(WARNING,"EvtGen")<<"Redefining alias:"<<newname.c_str()<<" will be ignored!"<<endl;
+	report(Severity::Warning,"EvtGen")<<"Redefining alias:"<<newname.c_str()<<" will be ignored!"<<endl;
 	return;
       }
     }
@@ -275,8 +275,8 @@ void EvtPDL::alias(EvtId num,const std::string& newname){
   partlist()[entry].setName(newname);
   if (_particleNameLookup.find(std::string(newname))!=
       _particleNameLookup.end()){
-	    report(ERROR,"EvtGen")<<"The particle name:"<<newname<<" is already defined."<<endl;
-	    report(ERROR,"EvtGen") << "Will terminate execution.";
+	    report(Severity::Error,"EvtGen")<<"The particle name:"<<newname<<" is already defined."<<endl;
+	    report(Severity::Error,"EvtGen") << "Will terminate execution.";
 	    ::abort();
   }
   _particleNameLookup[std::string(newname)]=entry;

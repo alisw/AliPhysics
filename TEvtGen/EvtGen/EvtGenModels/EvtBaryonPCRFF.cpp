@@ -237,7 +237,7 @@ void EvtBaryonPCRFF::getraritaff( EvtId parent, EvtId daught,
 
 void EvtBaryonPCRFF::getscalarff(EvtId, EvtId, double, double, double*, double*) {
 
-  report(ERROR,"EvtGen") << "Not implemented :getscalarff in EvtBaryonPCRFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getscalarff in EvtBaryonPCRFF.\n";  
   ::abort();
 
 }
@@ -245,7 +245,7 @@ void EvtBaryonPCRFF::getscalarff(EvtId, EvtId, double, double, double*, double*)
 void EvtBaryonPCRFF::getvectorff(EvtId, EvtId, double, double, double*, double*,
 				 double*, double*) {
 
-  report(ERROR,"EvtGen") << "Not implemented :getvectorff in EvtBaryonPCRFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getvectorff in EvtBaryonPCRFF.\n";  
   ::abort();
 
 }
@@ -253,7 +253,7 @@ void EvtBaryonPCRFF::getvectorff(EvtId, EvtId, double, double, double*, double*,
 void EvtBaryonPCRFF::gettensorff(EvtId, EvtId, double, double, double*, double*,
 				 double*, double*) {
 
-  report(ERROR,"EvtGen") << "Not implemented :gettensorff in EvtBaryonPCRFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :gettensorff in EvtBaryonPCRFF.\n";  
   ::abort();
 
 }
@@ -261,7 +261,7 @@ void EvtBaryonPCRFF::gettensorff(EvtId, EvtId, double, double, double*, double*,
 void EvtBaryonPCRFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 				 double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBaryonPCRFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBaryonPCRFF.\n";  
   ::abort();
 
 }

@@ -317,6 +317,6 @@ void EvtD0gammaDalitz::readPDGValues()
 
 void EvtD0gammaDalitz::reportInvalidAndExit() const
 {
-  report( ERROR, "EvtD0gammaDalitz" ) << "EvtD0gammaDalitz: Invalid mode." << std::endl;
+  report( Severity::Error, "EvtD0gammaDalitz" ) << "EvtD0gammaDalitz: Invalid mode." << std::endl;
   exit( 1 );
 }

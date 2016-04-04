@@ -101,7 +101,7 @@ void EvtBToVlnuBall::init(){
     _Ballmodel = new EvtBToVlnuBallFF(getArg(0),getArg(1),getArg(2),getArg(3),getArg(4),getArg(5),getArg(6),getArg(7));
     _calcamp = new EvtSemiLeptonicVectorAmp; 
   } else {
-    report(ERROR,"EvtGen") << "Ball model handles only vector meson daughters. Sorry." << endl;
+    report(Severity::Error,"EvtGen") << "Ball model handles only vector meson daughters. Sorry." << endl;
     ::abort();
   }
 

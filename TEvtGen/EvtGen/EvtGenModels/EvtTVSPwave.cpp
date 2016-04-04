@@ -71,8 +71,8 @@ void EvtTVSPwave::decay( EvtParticle *p ){
   EvtComplex af(getArg(4)*cos(getArg(5)),getArg(4)*sin(getArg(5)));
 
   if (ap!=EvtComplex(0.0,0.0)||af!=EvtComplex(0.0,0.0)) {
-    report(ERROR,"EvtGen") << "dfslkh8945wqh:In EvtTensorToVectorScalar.c\n";
-    report(ERROR,"EvtGen") << "P or F wave not yet implemented!! (ryd) \n";
+    report(Severity::Error,"EvtGen") << "dfslkh8945wqh:In EvtTensorToVectorScalar.c\n";
+    report(Severity::Error,"EvtGen") << "P or F wave not yet implemented!! (ryd) \n";
   }
 
   p->initializePhaseSpace(getNDaug(),getDaugs());

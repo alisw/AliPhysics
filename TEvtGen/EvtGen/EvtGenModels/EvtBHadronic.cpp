@@ -222,7 +222,7 @@ void EvtBHadronic::decay( EvtParticle *p){
     jb[0]=fp*(p4b+p4[0])+fm*q;
     break;
   default:
-    report(ERROR,"EvtGen")<<"In EvtBHadronic, unknown hadronic current."<<endl;
+    report(Severity::Error,"EvtGen")<<"In EvtBHadronic, unknown hadronic current."<<endl;
     
   }  
 
@@ -246,7 +246,7 @@ void EvtBHadronic::decay( EvtParticle *p){
 
 
   default:
-    report(ERROR,"EvtGen")<<"In EvtBHadronic, unknown W current."<<endl;
+    report(Severity::Error,"EvtGen")<<"In EvtBHadronic, unknown W current."<<endl;
 
   }  
 

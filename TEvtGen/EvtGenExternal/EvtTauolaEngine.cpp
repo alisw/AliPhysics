@@ -50,7 +50,7 @@ EvtTauolaEngine::EvtTauolaEngine(bool useEvtGenRandom) {
   // Number of possible decay modes in Tauola
   _nTauolaModes = 22;
 
-  report(INFO,"EvtGen")<<"Setting up TAUOLA."<<endl;
+  report(Severity::Info,"EvtGen")<<"Setting up TAUOLA."<<endl;
 
   // These three lines are not really necessary since they are the default.
   // But they are here so that we know what the initial conditions are.
@@ -61,7 +61,7 @@ EvtTauolaEngine::EvtTauolaEngine(bool useEvtGenRandom) {
   // Initial the Tauola external generator
   if (useEvtGenRandom == true) {
       
-    report(INFO,"EvtGen")<<"Using EvtGen random number engine also for Tauola++"<<endl;
+    report(Severity::Info,"EvtGen")<<"Using EvtGen random number engine also for Tauola++"<<endl;
       
     Tauolapp::Tauola::setRandomGenerator(EvtRandom::Flat);
       
@@ -171,7 +171,7 @@ void EvtTauolaEngine::setUpPossibleTauModes() {
 
       if (gotAnyTauolaModes == true && nNonTauolaModes > 0) {
 	
-	report(ERROR, "EvtGen") << "Please remove all non-TAUOLA decay modes for particle "
+	report(Severity::Error, "EvtGen") << "Please remove all non-TAUOLA decay modes for particle "
 				<<EvtPDL::name(particleId)<<endl;
 	::abort();
 	
@@ -181,19 +181,19 @@ void EvtTauolaEngine::setUpPossibleTauModes() {
       // let Tauola know about these normalised branching fractions
       if (totalTauModeBF > 0.0) {
 
-	report(INFO,"EvtGen")<<"Setting TAUOLA BF modes using the definitions for the particle "
+	report(Severity::Info,"EvtGen")<<"Setting TAUOLA BF modes using the definitions for the particle "
 			     <<EvtPDL::name(particleId)<<endl;
 
 	for (iTauMode = 0; iTauMode < _nTauolaModes; iTauMode++) {
 	  
 	  tauolaModeBFs[iTauMode] /= totalTauModeBF;
 	  double modeBF = tauolaModeBFs[iTauMode];
-	  report(INFO,"EvtGen")<<"Setting TAUOLA BF for mode "<<iTauMode+1<<" = "<<modeBF<<endl;
+	  report(Severity::Info,"EvtGen")<<"Setting TAUOLA BF for mode "<<iTauMode+1<<" = "<<modeBF<<endl;
 	  Tauolapp::Tauola::setTauBr(iTauMode+1, modeBF);
 	  
 	}
 
-	report(INFO,"EvtGen")<<"Any other TAUOLA BF modes for other tau particle decay mode definitions will be ignored!"
+	report(Severity::Info,"EvtGen")<<"Any other TAUOLA BF modes for other tau particle decay mode definitions will be ignored!"
 			     <<endl;
 
       }

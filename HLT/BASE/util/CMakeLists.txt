@@ -62,6 +62,7 @@ set(SRCS
     AliHLTRootFileStreamerComponent.cxx
     AliHLTRootFileWriterComponent.cxx
     AliHLTRootSchemaEvolutionComponent.cxx
+    AliHLTObjectRenamer.cxx
    )
 
 # Headers from sources
@@ -119,8 +120,10 @@ if(ZEROMQ_FOUND)
   target_link_libraries(ZMQhistViewer HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   add_executable(ZMQproxy ZMQproxy.cxx)
   target_link_libraries(ZMQproxy HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQHLTchain ZMQHLTchain.cxx)
+  target_link_libraries(ZMQHLTchain HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   
   # Installation of 
-  install(TARGETS ZMQfileProxy ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQDIMlumiregServer RUNTIME DESTINATION bin)
+  install(TARGETS ZMQfileProxy ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQHLTchain ZMQDIMlumiregServer RUNTIME DESTINATION bin)
   install(PROGRAMS ZMQmonitor.py DESTINATION bin)
 endif(ZEROMQ_FOUND)

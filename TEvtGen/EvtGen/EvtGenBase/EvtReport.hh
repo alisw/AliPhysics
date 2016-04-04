@@ -42,19 +42,21 @@
 //
 // constants, enums and typedefs
 //
-enum Severity {
-   EMERGENCY,           // fatal
-   ALERT,               // requires immediate action
-   CRITICAL,            // serious
-   ERROR,
-   WARNING,
-   NOTICE,              // "normal but significant"
-   INFO,                // informational
-   DEBUG                // debug
+namespace Severity {
+  enum Enum {
+    Emergency,           // fatal
+    Alert,               // requires immediate action
+    Critical,            // serious
+    Error,
+    Warning,
+    Notice,              // "normal but significant"
+    Info,                // informational
+    Debug                // debug
+  };
 };
 
 // function declaration
-std::ostream& report( Severity severity ,
+std::ostream& report( Severity::Enum severity ,
                  const char* facility = 0 ) ;
 
 // inline function definitions

@@ -32,9 +32,10 @@ class AliSplineFit;
 
 class AliTPCPreprocessorOffline:public TNamed { 
 public:
+  enum EGainCalibType {kNoGainCalib=0, kFullGainCalib, kResidualGainQA, kCombinedGainCalib, kNGainCalibTypes};
   AliTPCPreprocessorOffline();
   virtual ~AliTPCPreprocessorOffline();
-  void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
+  void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, AliCDBStorage* fullStorage, AliCDBStorage* residualStorage=0x0);
   void UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t lstartRun);
 
   //
@@ -59,7 +60,7 @@ public:
   //
   // Gain part
   //
-  void CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* ocdbStorage);
+  void CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  AliCDBStorage* fullStorage, AliCDBStorage* residualStorage=0x0);
   void ReadGainGlobal(const Char_t* fileName="CalibObjectsTrain1.root");
   void MakeQAPlot(Float_t  FPtoMIPratio);
   Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit = 500, Float_t FPtoMIPratio = 1.43); 
@@ -71,6 +72,21 @@ public:
   void SetTimeGainRange(Double_t minGain=2.0, Double_t maxGain = 3.0) 
        {fMinGain = minGain; fMaxGain = maxGain;};
   Bool_t ValidateTimeGain();
+
+  void SetGainCalibrationType(EGainCalibType type) { fGainCalibrationType=type;}
+  static EGainCalibType GetGainCalibrationTypeFromString(const TString& type);
+  Bool_t SetGainCalibrationType(const TString& type);
+  Bool_t ProduceCombinedGainCalibration();
+  EGainCalibType GetGainCalibrationType() const { return fGainCalibrationType; }
+
+  void GetGraphs(const char* name, TGraphErrors* &grOCDB, TGraphErrors* &grThis);
+  TGraphErrors* CombineGraphs(TGraphErrors *grOCDB, TGraphErrors *grThis, const Int_t type=0, const Bool_t multiply=kTRUE);
+  static Bool_t GetPointWithError(const TGraphErrors *gr, const Double_t xPos, Double_t &y, Double_t &ey, Bool_t evalConst=kTRUE);
+
+  const TObjArray* GetGainArray()         const { return fGainArray;         }
+  const TObjArray* GetGainArrayCombined() const { return fGainArrayCombined; }
+
+  void SetGainArray(TObjArray *arr) { fGainArray=arr; }
   //
   // Alignment time part
   //
@@ -120,20 +136,22 @@ public:
 
 private:
   Bool_t fNormaliseQA;                     // normalise the QA histograms in the same way as the derived graphs
-  Int_t fMinEntries;                      // minimal number of entries for fit
+  EGainCalibType fGainCalibrationType;     // gain calibration type
+  Int_t fMinEntries;                       // minimal number of entries for fit
   Int_t fStartRun;                         // start Run - used to make fast selection in THnSparse
   Int_t fEndRun;                           // end   Run - used to make fast selection in THnSparse
   Int_t fStartTime;                        // fStartTime - used to make fast selection in THnSparse
   Int_t fEndTime;                          // fEndTime   - used to make fast selection in THnSparse
   AliCDBStorage*  fOCDBstorage;            // OCDB storage
-  TObjArray * fVdriftArray;               // array with output calibration graphs
-  AliTPCcalibTime * fTimeDrift;           // input data to construct calibration graphs
+  TObjArray * fVdriftArray;                // array with output calibration graphs
+  AliTPCcalibTime * fTimeDrift;            // input data to construct calibration graphs
   TGraphErrors * fGraphMIP;                // graph time dependence of MIP
   TGraphErrors * fGraphCosmic;             // graph time dependence at Plateu
   TGraphErrors * fGraphAttachmentMIP;      // graph time dependence of attachment (signal vs. mean driftlength)
   AliSplineFit * fFitMIP;                  // fit of dependence - MIP
   AliSplineFit * fFitCosmic;               // fit of dependence - Plateu
   TObjArray    * fGainArray;               // array to be stored in the OCDB
+  TObjArray    * fGainArrayCombined;       // array to be stored in the OCDB, contains the combined Full (+) Residual calibration
   TObjArray    * fArrQAhist;               // QA histograms
   AliTPCcalibTimeGain * fGainMIP;          // calibration component for MIP
   AliTPCcalibTimeGain * fGainCosmic;       // calibration component for cosmic
@@ -154,10 +172,14 @@ private:
 
   AliCDBEntry* fDriftCDBentry;         //!the freshly produced CDB entry
 
+  void ScaleY(TGraphErrors *graph, Double_t normval);
+  Bool_t NormaliseYToMean(TGraphErrors *graph);
+  Bool_t NormaliseYToWeightedMeandEdx(TGraphErrors *graph);
+  Bool_t NormaliseYToTruncateddEdx(TGraphErrors *graph);
 private:
   AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented
   AliTPCPreprocessorOffline(const AliTPCPreprocessorOffline&); // not implemented
-  ClassDef(AliTPCPreprocessorOffline,2)
+  ClassDef(AliTPCPreprocessorOffline,3)
 };
 
 #endif

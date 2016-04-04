@@ -52,7 +52,7 @@ void EvtKKLambdaCFF::getscalarff(EvtId, EvtId,
 				 double, double, double*,
 				 double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getscalarff in EvtKKLambdaCFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getscalarff in EvtKKLambdaCFF.\n";  
   ::abort();
 
 }
@@ -61,7 +61,7 @@ void EvtKKLambdaCFF::getvectorff(EvtId, EvtId,
 				 double, double, double*,
 				 double*, double*, double* ){
   
-  report(ERROR,"EvtGen") << "Not implemented :getvectorff in EvtKKLambdaCFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getvectorff in EvtKKLambdaCFF.\n";  
   ::abort();
 
 }
@@ -70,7 +70,7 @@ void EvtKKLambdaCFF::getvectorff(EvtId, EvtId,
 void EvtKKLambdaCFF::gettensorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :gettensorff in EvtKKLambdaCFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :gettensorff in EvtKKLambdaCFF.\n";  
   ::abort();
 
 }
@@ -78,7 +78,7 @@ void EvtKKLambdaCFF::gettensorff(EvtId, EvtId, double, double, double*,
 void EvtKKLambdaCFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 				double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtKKLambdaCFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtKKLambdaCFF.\n";
   ::abort();
 
 }
@@ -86,7 +86,7 @@ void EvtKKLambdaCFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtKKLambdaCFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 				 double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtKKLambdaCFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtKKLambdaCFF.\n";
   ::abort();
 
 }

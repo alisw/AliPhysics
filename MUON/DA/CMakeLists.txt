@@ -20,9 +20,6 @@ include_directories(
 set(STATIC_DEPENDENCIES MUONcalib-static MUONcore-static MUONmapping-static MUONraw-static RAWDatarec-static)
 generateDA("MTR" "" "${STATIC_DEPENDENCIES}")
 
-set(STATIC_DEPENDENCIES ESD-static MUONcalib-static MUONcore-static MUONmapping-static MUONraw-static RAWDatarec-static STEERBase-static)
-generateDA("MCH" "GAIN" "${STATIC_DEPENDENCIES}")
-
 set(STATIC_DEPENDENCIES MUONcalib-static MUONcore-static MUONmapping-static MUONraw-static RAWDatabase-static RAWDatarec-static STEERBase-static)
 generateDA("MCH" "OCC" "${STATIC_DEPENDENCIES}")
 

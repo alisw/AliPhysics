@@ -79,10 +79,10 @@ EvtParticle* EvtParticleFactory::particleFactory(EvtSpinType::spintype spinType)
     return new EvtHighSpinParticle;
   }
 
-  report(ERROR,"EvtGen")<<"Error in EvtParticleFactory::particleFactory"<<endl;
-  report(ERROR,"EvtGen")<<"Tried to create non-existing particle"
+  report(Severity::Error,"EvtGen")<<"Error in EvtParticleFactory::particleFactory"<<endl;
+  report(Severity::Error,"EvtGen")<<"Tried to create non-existing particle"
 			<<" with spin type:"<<spinType<<endl;
-  report(ERROR,"EvtGen")<<"Will terminate execution"<<endl;
+  report(Severity::Error,"EvtGen")<<"Will terminate execution"<<endl;
 
 
   ::abort();
@@ -185,11 +185,11 @@ EvtParticle* EvtParticleFactory::particleFactory(EvtId id,
     return myPart;
   }
 
-  report(ERROR,"EvtGen")<<"Error in EvtParticleFactory::particleFactory"<<endl;
-  report(ERROR,"EvtGen")<<"Tried to create non-existing particle"
+  report(Severity::Error,"EvtGen")<<"Error in EvtParticleFactory::particleFactory"<<endl;
+  report(Severity::Error,"EvtGen")<<"Tried to create non-existing particle"
 			<<" with spin type:"<<thisSpin
 			<<"  and name:"<<EvtPDL::name(id).c_str()<<endl;
-  report(ERROR,"EvtGen")<<"Will terminate execution"<<endl;
+  report(Severity::Error,"EvtGen")<<"Will terminate execution"<<endl;
 
 
 

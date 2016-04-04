@@ -8,7 +8,7 @@ using std::endl;
 EvtMBreitWigner::EvtMBreitWigner( const EvtId& id, const vector<string>& args )
 {
     if( args.size() != 0 ) {
-        report(ERROR, "EvtGen")<<"Unknown input arguments passed in to lineshape."<<endl;
+        report(Severity::Error, "EvtGen")<<"Unknown input arguments passed in to lineshape."<<endl;
         ::abort();
     }
 

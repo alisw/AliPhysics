@@ -73,7 +73,7 @@ public:
      * @param ref The object to check
      * @return True if objects are equal, false otherwise
      */
-    virtual Bool_t IsEqual(const TObject *ref);
+    virtual Bool_t IsEqual(const TObject *ref) const;
 
     /**
      * Compare objects. If objects differ, return always greater (+1). Otherwise compare col and
@@ -81,7 +81,7 @@ public:
      * @param ref The object ot comparte to
      * @return 0 if objects are equal, -1 if this object is smaller, +1 if this object is larger.
      */
-    virtual Int_t Compare(const TObject *ref);
+    virtual Int_t Compare(const TObject *ref) const;
 
   private:
     Int_t                    fCol;            ///< Column of the trigger channel

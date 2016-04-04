@@ -88,7 +88,7 @@ void EvtGoityRoberts::decay( EvtParticle *p){
       DecayBDpilnuGR(p,getDaug(0),getDaug(2),getDaug(3));
     }
     else{
-      report(ERROR,"EvtGen") << "Wrong daugther in EvtGoityRoberts!\n";
+      report(Severity::Error,"EvtGen") << "Wrong daugther in EvtGoityRoberts!\n";
     }
   }
   return ;
@@ -165,7 +165,7 @@ void EvtGoityRoberts::DecayBDstarpilnuGR(EvtParticle *pb,EvtId ndstar,
                pow((2*betas*betad/(betasd)),3.5)*
                exp(lambdabar*lambdabar*(1.0-w*w)/(2*betasd));
 
-  //report(INFO,"EvtGen") <<"rho's:"<<rho1<<rho2<<endl;
+  //report(Severity::Info,"EvtGen") <<"rho's:"<<rho1<<rho2<<endl;
 
   EvtComplex h1nr,h2nr,h3nr,f1nr,f2nr;
   EvtComplex f3nr,f4nr,f5nr,f6nr,knr,g1nr,g2nr,g3nr,g4nr,g5nr;
@@ -285,7 +285,7 @@ void EvtGoityRoberts::DecayBDstarpilnuGR(EvtParticle *pb,EvtId ndstar,
    l2=EvtLeptonVACurrent(neutrino->spParentNeutrino(),lepton->spParent(1));
     }
     else{
-   report(DEBUG,"EvtGen") << "42387dfs878w wrong lepton number\n";
+   report(Severity::Debug,"EvtGen") << "42387dfs878w wrong lepton number\n";
     }
  }
 
@@ -418,7 +418,7 @@ void EvtGoityRoberts::DecayBDpilnuGR(EvtParticle *pb,EvtId nd,
               neutrino->spParentNeutrino(),lepton->spParent(1));
     }
     else{
-     report(ERROR,"EvtGen") << "42387dfs878w wrong lepton number\n";
+     report(Severity::Error,"EvtGen") << "42387dfs878w wrong lepton number\n";
     }
   }
 

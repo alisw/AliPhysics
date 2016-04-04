@@ -63,10 +63,10 @@ void EvtVVpipi::init(){
 
   if ((!(getDaug(1)==PIP&&getDaug(2)==PIM))&&
       (!(getDaug(1)==PI0&&getDaug(2)==PI0))) {
-    report(ERROR,"EvtGen") << "EvtVVpipi generator expected "
+    report(Severity::Error,"EvtGen") << "EvtVVpipi generator expected "
                            << " pi+ and pi- (or pi0 and pi0) "
 			   << "as 2nd and 3rd daughter. "<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
 

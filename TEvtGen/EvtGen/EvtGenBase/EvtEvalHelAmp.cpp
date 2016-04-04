@@ -284,7 +284,7 @@ void EvtEvalHelAmp::evalAmp( EvtParticle *p, EvtAmp& amp){
   }
 
   if (fabs(prob1-prob2)>0.000001*prob1){
-    report(INFO,"EvtGen") << "prob1,prob2:"<<prob1<<" "<<prob2<<endl;
+    report(Severity::Info,"EvtGen") << "prob1,prob2:"<<prob1<<" "<<prob2<<endl;
     ::abort();
   }
     
@@ -357,7 +357,7 @@ void EvtEvalHelAmp::setUpRotationMatrices(EvtParticle* p,double theta, double ph
     break;
 
   default:
-    report(ERROR,"EvtGen") << "Spin2(_JA2)="<<_JA2<<" not supported!"<<endl;
+    report(Severity::Error,"EvtGen") << "Spin2(_JA2)="<<_JA2<<" not supported!"<<endl;
     ::abort();
   }
   
@@ -388,7 +388,7 @@ void EvtEvalHelAmp::setUpRotationMatrices(EvtParticle* p,double theta, double ph
     break;
 
   default:
-    report(ERROR,"EvtGen") << "Spin2(_JB2)="<<_JB2<<" not supported!"<<endl;
+    report(Severity::Error,"EvtGen") << "Spin2(_JB2)="<<_JB2<<" not supported!"<<endl;
     ::abort();
   }
   
@@ -417,7 +417,7 @@ void EvtEvalHelAmp::setUpRotationMatrices(EvtParticle* p,double theta, double ph
     break;
 
   default:
-    report(ERROR,"EvtGen") << "Spin2(_JC2)="<<_JC2<<" not supported!"<<endl;
+    report(Severity::Error,"EvtGen") << "Spin2(_JC2)="<<_JC2<<" not supported!"<<endl;
     ::abort();
   }
   

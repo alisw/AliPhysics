@@ -33,7 +33,7 @@ class AliDCSSensorArray : public TNamed {
   virtual ~AliDCSSensorArray();
   AliDCSSensorArray &operator=(const AliDCSSensorArray &c);
   virtual void Print(const Option_t* option="") const;
-
+  virtual void DumpToTree(const char * fname="dcsDump.root", Int_t deltaT=10);
   void SetStartTime (const TTimeStamp& start) { fStartTime = start; }
   void SetEndTime   (const TTimeStamp& end) { fEndTime = end; }
   TTimeStamp GetStartTime () const { return fStartTime; }

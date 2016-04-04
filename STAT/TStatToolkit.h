@@ -249,7 +249,7 @@ Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorT<T> &params , Float_t fraction
   for (Int_t ibin0=1; ibin0<nbins; ibin0++){
     Double_t sum0=0, sum1=0, sum2=0;
     Int_t ibin1=ibin0;
-    for ( ibin1=ibin0; ibin1<nbins; ibin1++){
+    for ( ibin1=ibin0; ibin1<=nbins; ibin1++){
       Double_t cont=his1D->GetBinContent(ibin1);
       Double_t x= his1D->GetBinCenter(ibin1);
       sum0+=cont;

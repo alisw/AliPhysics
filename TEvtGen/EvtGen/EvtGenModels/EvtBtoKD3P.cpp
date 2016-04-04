@@ -121,7 +121,7 @@ void EvtBtoKD3P::decay(EvtParticle *p){
     std::string name2=model2->getName();
 
     if (name1 != "PTO3P") {
-      report(ERROR,"EvtGen") 
+      report(Severity::Error,"EvtGen") 
 	<< "D daughters of EvtBtoKD3P decay must decay via the \"PTO3P\" model"
 	<< endl
 	<< "    but found to decay via " << name1.c_str() 
@@ -141,19 +141,19 @@ void EvtBtoKD3P::decay(EvtParticle *p){
       }
     }
     if (false == idMatch) {
-      report(ERROR,"EvtGen") 
+      report(Severity::Error,"EvtGen") 
 	<< "D daughters of EvtBtoKD3P decay must decay to the same final state"
 	<< endl
 	<< "   particles in the same order (not CP-conjugate order)," << endl
 	<< "   but they were found to decay to" << endl;
       for (d = 0; d < model1->getNDaug(); ++d) {
-	report(ERROR,"") << "   " << EvtPDL::name(daugs1[d]).c_str() << " ";
+	report(Severity::Error,"") << "   " << EvtPDL::name(daugs1[d]).c_str() << " ";
       }
-      report(ERROR,"") << endl;
+      report(Severity::Error,"") << endl;
       for (d = 0; d < model1->getNDaug(); ++d) {
-	report(ERROR,"") << "   "  << EvtPDL::name(daugs2[d]).c_str() << " ";
+	report(Severity::Error,"") << "   "  << EvtPDL::name(daugs2[d]).c_str() << " ";
       }
-      report(ERROR,"") << endl << ". Will terminate execution!" << endl;
+      report(Severity::Error,"") << endl << ". Will terminate execution!" << endl;
       assert(0);
     }      
 
@@ -167,7 +167,7 @@ void EvtBtoKD3P::decay(EvtParticle *p){
   
   // make sure the models haven't changed since the first call:
   if (_model1 != model1 || _model2 != model2) {
-    report(ERROR,"EvtGen") 
+    report(Severity::Error,"EvtGen") 
       << "D daughters of EvtBtoKD3P decay should have only 1 decay modes, "
       << endl
       << "    but a new decay mode was found after the first call" << endl
@@ -208,7 +208,7 @@ void EvtBtoKD3P::decay(EvtParticle *p){
   std::vector<EvtVector4R> v = model2->initDaughters(x);  
   
   if(v.size() != theD->getNDaug()) {    
-    report(ERROR,"EvtGen") 
+    report(Severity::Error,"EvtGen") 
       << "Number of daughters " << theD->getNDaug() 
       << " != " << "Momentum vector size " << v.size() 
       << endl

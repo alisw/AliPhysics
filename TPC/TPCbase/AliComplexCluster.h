@@ -10,6 +10,16 @@
 #include "TObject.h"
 #include "TMath.h"
 #include "AliTPCclusterMI.h"
+#include "limits.h"
+
+namespace AliComplexClusterHelper {
+  inline Int_t Clamp(Int_t val, Int_t min, Int_t max)
+  {
+    // limit to range, inspire by boost clamp
+    return (val<min)?min:(val>max)?max:val;
+  }
+}
+
 
 class AliComplexCluster : public TObject {
 public:
@@ -70,20 +80,20 @@ class AliTPCTrackerPoint  {
   Float_t  GetAngleZ() const  {return (Float_t(fTAngleZ)*0.02);}
   Float_t  GetAngleY() const {return (Float_t(fTAngleY)*0.02);}
   //
-  void     SetX(Float_t x)  { fTX = Short_t(TMath::Nint(x*100.));} 
-  void     SetY(Float_t y)  { fTY = Short_t(TMath::Nint(y*100.));} 
-  void     SetZ(Float_t z)  { fTZ = Short_t(TMath::Nint(z*100.));} 
-  void     SetAngleZ(Float_t anglez) {fTAngleZ = Char_t(TMath::Nint(anglez*50.));}
-  void     SetAngleY(Float_t angley) {fTAngleY = Char_t(TMath::Nint(angley*50.));}
+  void     SetX(Float_t x)  { fTX = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(x*100.), SHRT_MIN, SHRT_MAX));}
+  void     SetY(Float_t y)  { fTY = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(y*100.), SHRT_MIN, SHRT_MAX));}
+  void     SetZ(Float_t z)  { fTZ = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(z*100.), SHRT_MIN, SHRT_MAX));}
+  void     SetAngleZ(Float_t anglez) {fTAngleZ = Char_t(AliComplexClusterHelper::Clamp(TMath::Nint(anglez*50.),SCHAR_MIN,SCHAR_MAX));}
+  void     SetAngleY(Float_t angley) {fTAngleY = Char_t(AliComplexClusterHelper::Clamp(TMath::Nint(angley*50.),SCHAR_MIN,SCHAR_MAX));}
   Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
   Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
   Float_t  GetErrZ()   const {return (fErrZ*0.005);}
   Float_t  GetErrY()   const {return (fErrY*0.005);}
-  void     SetErrZ(Float_t errz) {fErrZ = UChar_t(TMath::Nint(errz*200.));}
-  void     SetErrY(Float_t erry) {fErrY = UChar_t(TMath::Nint(erry*200.));}
+  void     SetErrZ(Float_t errz) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(errz*200.),0,UCHAR_MAX));}
+  void     SetErrY(Float_t erry) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(erry*200.),0,UCHAR_MAX));}
 
-  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
-  void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
+  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmaz*50.),0,UCHAR_MAX));}
+  void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmay*50.),0,UCHAR_MAX));}
 
   Char_t   IsShared() const {return fIsShared;}
   void     SetShared(Char_t s) {fIsShared=s;}
@@ -146,19 +156,22 @@ class AliTPCTrackerPoints  {
     Float_t  GetAngleZ() const  {return (Float_t(fTAngleZ)*0.02);}
     Float_t  GetAngleY() const {return (Float_t(fTAngleY)*0.02);}
     //
-    void     SetX(Float_t x)  { fTX = Short_t(TMath::Nint(x*100.));} 
-    void     SetY(Float_t y)  { fTY = Short_t(TMath::Nint(y*100.));} 
-    void     SetZ(Float_t z)  { fTZ = Short_t(TMath::Nint(z*100.));} 
-    void     SetAngleZ(Float_t anglez) {fTAngleZ = Char_t(TMath::Nint(anglez*50.));}
-    void     SetAngleY(Float_t angley) {fTAngleY = Char_t(TMath::Nint(angley*50.));}
+    void     SetX(Float_t x)  { fTX = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(x*100.), SHRT_MIN, SHRT_MAX));}
+    void     SetY(Float_t y)  { fTY = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(y*100.), SHRT_MIN, SHRT_MAX));}
+    void     SetZ(Float_t z)  { fTZ = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(z*100.), SHRT_MIN, SHRT_MAX));}
+    void     SetAngleZ(Float_t anglez) {fTAngleZ = Char_t(AliComplexClusterHelper::Clamp(TMath::Nint(anglez*50.),SCHAR_MIN,SCHAR_MAX));}
+    void     SetAngleY(Float_t angley) {fTAngleY = Char_t(AliComplexClusterHelper::Clamp(TMath::Nint(angley*50.),SCHAR_MIN,SCHAR_MAX));}
+    //
     Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
     Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
     Float_t  GetErrZ()   const {return (fErrZ*0.005);}
     Float_t  GetErrY()   const {return (fErrY*0.005);}
-    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(TMath::Nint(errz*200.));}
-    void     SetErrY(Float_t erry) {fErrY = UChar_t(TMath::Nint(erry*200.));}
-    void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
-    void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
+    //
+    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(errz*200.),0,UCHAR_MAX));}
+    void     SetErrY(Float_t erry) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(erry*200.),0,UCHAR_MAX));}
+    void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmaz*50.),0,UCHAR_MAX));}
+    void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmay*50.),0,UCHAR_MAX));}
+
     //
   private:
     Short_t   fTX;        ///< x position of the cluster  in cm - 10 mum prec
@@ -212,10 +225,11 @@ class AliTPCClusterPoint  {
   Float_t  GetQ()  const {return fQ;}
 
   //
-  void     SetY(Float_t y){ fCY = Short_t(TMath::Nint(y*100.));} 
-  void     SetZ(Float_t z){ fCZ = Short_t(TMath::Nint(z*100.));} 
-  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
-  void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
+  void     SetY(Float_t y){ fCY = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(y*100.), SHRT_MIN, SHRT_MAX));}
+  void     SetZ(Float_t z){ fCZ = Short_t(AliComplexClusterHelper::Clamp(TMath::Nint(z*100.), SHRT_MIN, SHRT_MAX));}
+  void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmaz*50.),0,UCHAR_MAX));}
+  void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmay*50.),0,UCHAR_MAX));}
+
   void     SetQ(Float_t q) {fQ = UShort_t(q);}
   void     SetMax(Float_t max) {fMax = UShort_t(max);}
   void     SetType(Char_t type) {fCType = type;}

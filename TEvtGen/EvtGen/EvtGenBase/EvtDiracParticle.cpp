@@ -47,7 +47,7 @@ void EvtDiracParticle::init(EvtId part_n,const EvtVector4R& p4){
   setpart_num(part_n);
 
   if (EvtPDL::getStdHep(part_n)==0){
-    report(ERROR,"EvtGen") << "Error in EvtDiracParticle::init, part_n="
+    report(Severity::Error,"EvtGen") << "Error in EvtDiracParticle::init, part_n="
                            << part_n.getId()<<endl;
     ::abort();
   }
@@ -93,7 +93,7 @@ void EvtDiracParticle::init(EvtId part_n,const EvtVector4R& p4,
   setpart_num(part_n);
   
   if (EvtPDL::getStdHep(part_n)==0){
-    report(ERROR,"EvtGen") << "Error in EvtDiracParticle::init, part_n="
+    report(Severity::Error,"EvtGen") << "Error in EvtDiracParticle::init, part_n="
                            << part_n.getId()<<std::endl;
     ::abort();
   }

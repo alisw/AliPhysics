@@ -50,7 +50,7 @@ void EvtIncoherentMixing::incoherentB0Mix( const EvtId id, double &t ,
   static EvtId B0B = EvtPDL::getId( "anti-B0" ) ;
  
   if ( ( B0 != id ) && ( B0B != id ) ) {
-    report(ERROR,"EvtGen") << "Bad configuration in incoherentB0Mix" 
+    report(Severity::Error,"EvtGen") << "Bad configuration in incoherentB0Mix" 
                            << std::endl ;
     ::abort() ;
   }
@@ -91,7 +91,7 @@ void EvtIncoherentMixing::incoherentBsMix( const EvtId id, double &t ,
   static EvtId BSB = EvtPDL::getId( "anti-B_s0" ) ;
  
   if ( ( BS != id ) && ( BSB != id ) ) {
-    report(ERROR,"EvtGen") << "Bad configuration in incoherentBsMix" 
+    report(Severity::Error,"EvtGen") << "Bad configuration in incoherentBsMix" 
                            << std::endl ;
     ::abort() ;
   }

@@ -31,13 +31,13 @@ Bool_t AliEMCALTriggerChannelContainer::HasChannel(int col, int row){
 }
 
 
-Bool_t AliEMCALTriggerChannelContainer::AliEMCALTriggerChannelPosition::IsEqual(const TObject *ref){
+Bool_t AliEMCALTriggerChannelContainer::AliEMCALTriggerChannelPosition::IsEqual(const TObject *ref) const {
   const AliEMCALTriggerChannelPosition *refpos = dynamic_cast<const AliEMCALTriggerChannelPosition *>(ref);
   if(!refpos) return false;
   return fCol == refpos->fCol && fRow == refpos->fRow;
 }
 
-Int_t AliEMCALTriggerChannelContainer::AliEMCALTriggerChannelPosition::Compare(const TObject *ref){
+Int_t AliEMCALTriggerChannelContainer::AliEMCALTriggerChannelPosition::Compare(const TObject *ref) const {
   const AliEMCALTriggerChannelPosition *refpos = dynamic_cast<const AliEMCALTriggerChannelPosition *>(ref);
   if(!refpos) return 1;
   if(fCol == refpos->fCol){

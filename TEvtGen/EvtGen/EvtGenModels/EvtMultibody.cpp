@@ -39,7 +39,7 @@ void EvtMultibody::init()
         if(getArgStr( i )=="RESONANCE") {
             _decayTree->addtree( getArgStr( ++i ) );
         } else {
-            report(ERROR,"EvtGen")
+            report(Severity::Error,"EvtGen")
                 << "Syntax error at " << getArgStr( i ) << std::endl;
             ::abort();
         }

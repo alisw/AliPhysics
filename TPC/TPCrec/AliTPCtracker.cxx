@@ -762,6 +762,10 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   // Use calibrated cluster error from OCDB
   //
+  const float kEpsZBoundary = 1.e-6; // to disentangle A,C and A+C-common regions
+  const float kMaxExpArg = 9.; // limit r-dumped error to this exp. argument
+  const float kMaxExpArgZ = TMath::Sqrt(2.*kMaxExpArg);
+  const AliTPCRecoParam* rp = AliTPCReconstructor::GetRecoParam();
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
   Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
@@ -775,17 +779,43 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   }
   erry2*=erry2;
   Double_t addErr=0;
-  const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
-  const Double_t *errInnerDeep = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepY();
+  const Double_t *errInner = rp->GetSystematicErrorClusterInner();
   double dr = TMath::Abs(cl->GetX()-85.);
-  if (errInner[0]>0) addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
-  if (errInnerDeep[0]>0) addErr += errInnerDeep[0]*TMath::Exp(-dr/errInnerDeep[1]);
+  if (errInner[0]>0) {
+    //
+    // is the Z-range limited
+    float argExp = dr/errInner[1];
+    if (argExp<kMaxExpArg) {
+      const TVectorF* zranges = rp->GetSystErrClInnerRegZ(); // is the Z-range of dumped error defined?
+      int nz;
+      if (zranges && (nz=zranges->GetNoElements())) {
+	Bool_t sideC = (cl->GetDetector()/18)&0x1; // is this C-side cluster
+	const TVectorF* zrangesSigI = rp->GetSystErrClInnerRegZSigInv();
+	float zcl = cl->GetZ(); // chose the closest range within 3 sigma
+	const float* zr = zranges->GetMatrixArray();
+	const float* zsi= zrangesSigI->GetMatrixArray();
+	float dzarg = 999.;
+	for (int i=nz;i--;) { // find closest region
+	  if      (zr[i]<-kEpsZBoundary && !sideC) continue; // don't apply to A-side clusters if the Z-boundary is for C-region
+	  else if (zr[i]>kEpsZBoundary  &&  sideC) continue; // don't apply to C-side clusters if the Z-boundary is for A-region
+	  float dz = TMath::Abs( (zr[i]-zcl)*zsi[i] );
+	  if (dz<dzarg) dzarg = dz;
+	}
+	if (dzarg<kMaxExpArgZ) { // is it small enough to call exp?
+	  argExp += 0.5*dzarg*dzarg;
+	  if (argExp<kMaxExpArg) addErr=errInner[0]*TMath::Exp(-argExp);
+	}	
+      }
+      else addErr=errInner[0]*TMath::Exp(-argExp); // no condition on Z
+    }
+
+  }
   erry2+=addErr*addErr;
 
-  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  AliTPCReconstructor::GetSystematicErrorCluster() : rp->GetSystematicErrorCluster();
   erry2+=errCluster[0]*errCluster[0];
   //
-  double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorY();
+  double useDist = rp->GetUseDistortionFractionAsErrorY();
   if (useDist>0) {
     float dstY = cl->GetDistortionY()*useDist;
     float dstX = cl->GetDistortionX()*useDist;
@@ -930,6 +960,10 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   // Use calibrated cluster error from OCDB
   //
+  const float kEpsZBoundary = 1.e-6; // to disentangle A,C and A+C-common regions
+  const float kMaxExpArg = 9.; // limit r-dumped error to this exp. argument
+  const float kMaxExpArgZ = TMath::Sqrt(2.*kMaxExpArg);
+  const AliTPCRecoParam* rp = AliTPCReconstructor::GetRecoParam();
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
   Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
@@ -945,16 +979,41 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   }
   errz2*=errz2;
   Double_t addErr=0;
-  const Double_t *errInner = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInner();
-  const Double_t *errInnerDeepZ = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorClusterInnerDeepZ();
+  const Double_t *errInner = rp->GetSystematicErrorClusterInner();
   double dr = TMath::Abs(cl->GetX()-85.);
-  if (errInner[0]>0)      addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
-  if (errInnerDeepZ[0]>0) addErr += errInnerDeepZ[0]*TMath::Exp(-dr/errInnerDeepZ[1]);
-  errz2+=addErr*addErr;
-  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ? AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  if (errInner[0]>0) {
+    //
+    // is the Z-range limited
+    float argExp = dr/errInner[1];
+    if (argExp<kMaxExpArg) {
+      const TVectorF* zranges = rp->GetSystErrClInnerRegZ(); // is the Z-range of dumped error defined?
+      int nz;
+      if (zranges && (nz=zranges->GetNoElements())) {
+	Bool_t sideC = (cl->GetDetector()/18)&0x1; // is this C-side cluster
+	const TVectorF* zrangesSigI = rp->GetSystErrClInnerRegZSigInv();
+	float zcl = cl->GetZ(); 
+	const float* zr = zranges->GetMatrixArray();
+	const float* zsi= zrangesSigI->GetMatrixArray();
+	float dzarg = 999.;
+	for (int i=nz;i--;) { // find closest region
+	  if      (zr[i]<-kEpsZBoundary && !sideC) continue; // don't apply to A-side clusters if the Z-boundary is for C-region
+	  else if (zr[i]>kEpsZBoundary  &&  sideC) continue; // don't apply to C-side clusters if the Z-boundary is for A-region
+	  float dz = TMath::Abs((zr[i]-zcl)*zsi[i]);
+	  if (dz<dzarg) dzarg = dz;
+	}
+	if (dzarg<kMaxExpArgZ) { // is it small enough to call exp?
+	  argExp += 0.5*dzarg*dzarg;
+	  if (argExp<kMaxExpArg) addErr=errInner[0]*TMath::Exp(-argExp);
+	}
+      }
+      else addErr=errInner[0]*TMath::Exp(-argExp); // no condition on Z
+    }
+  }
+
+  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ? AliTPCReconstructor::GetSystematicErrorCluster() : rp->GetSystematicErrorCluster();
   errz2+=errCluster[1]*errCluster[1];
   //
-  double useDist = AliTPCReconstructor::GetRecoParam()->GetUseDistortionFractionAsErrorZ();
+  double useDist = rp->GetUseDistortionFractionAsErrorZ();
   if (useDist>0) {
     float dstZ = cl->GetDistortionZ()*useDist;
     float dstX = cl->GetDistortionX()*useDist*seed->GetTgl();

@@ -319,7 +319,7 @@ void EvtISGW2FF::EvtISGW2FF1S0 (EvtId parent,EvtId daugt,
 	nfp = 3.0;
       }
       else{
-      report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
       }
     }
   }
@@ -345,7 +345,7 @@ void EvtISGW2FF::EvtISGW2FF1S0 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-      report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	}
       }
     }
@@ -373,7 +373,7 @@ void EvtISGW2FF::EvtISGW2FF1S0 (EvtId parent,EvtId daugt,
 	  }
 	  else{
 
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	  }
 	}
       }
@@ -402,13 +402,13 @@ void EvtISGW2FF::EvtISGW2FF1S0 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	  }
 	}
     
       else{
-	report(ERROR,"EvtGen") << "Not implemented parent in get_isgw_ff_1S0.\n";
-	report(ERROR,"EvtGen") << "Parent:"<<parent.getId()<<endl;
+	report(Severity::Error,"EvtGen") << "Not implemented parent in get_isgw_ff_1S0.\n";
+	report(Severity::Error,"EvtGen") << "Parent:"<<parent.getId()<<endl;
       }
     }
     }
@@ -433,7 +433,7 @@ void EvtISGW2FF::EvtISGW2FF1S0 (EvtId parent,EvtId daugt,
     ((1.0+r2*(tm-t)/12.0)*(1.0+r2*(tm-t)/12.0));
   
 //  for w use wt def with physical masses.
-//  report(ERROR,"EvtGen") << "before w\n";
+//  report(Severity::Error,"EvtGen") << "before w\n";
   
   ai = -1.0* ( 6.0/( 33.0 - 2.0*nf));  
   cji = pow(( EvtGetas( msb,msb ) / EvtGetas( msq,msq ) ),ai);
@@ -537,7 +537,7 @@ void  EvtISGW2FF::EvtISGW2FF3S1(EvtId parent,EvtId daugt,double t,double mass,
 	nfp = 0.0;
       }
       else{
-	report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3S1.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3S1.\n";
       }
     }
   }
@@ -567,7 +567,7 @@ void  EvtISGW2FF::EvtISGW2FF3S1(EvtId parent,EvtId daugt,double t,double mass,
 	  nfp = 0.0;
 	}
 	else{
-	  report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3S1.\n";
+	  report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3S1.\n";
 	}
       }
     }
@@ -597,7 +597,7 @@ void  EvtISGW2FF::EvtISGW2FF3S1(EvtId parent,EvtId daugt,double t,double mass,
 	    nfp = 2.0;
 	  }
 	  else{
-	report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3S1.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3S1.\n";
 	  }
 	}
       }
@@ -628,12 +628,12 @@ void  EvtISGW2FF::EvtISGW2FF3S1(EvtId parent,EvtId daugt,double t,double mass,
 	  nfp = 2.0;
 	}
 	else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	  }
 	}
       
       else{
-	report(ERROR,"EvtGen") << "Not implemented parent in get_isgw2_ff_3S1.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented parent in get_isgw2_ff_3S1.\n";
       }
     }
     }
@@ -765,7 +765,7 @@ void EvtISGW2FF::EvtISGW2FF21S0 (EvtId parent,EvtId daugt,
       }
       else{
 
-      report(ERROR,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_21S0.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_21S0.\n";
       }
     }
   }
@@ -782,11 +782,11 @@ void EvtISGW2FF::EvtISGW2FF21S0 (EvtId parent,EvtId daugt,
 	nfp = 0.0;
       }
       else{
-	report(ERROR,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_21S0.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_21S0.\n";
       }
     }
     else{
-      report(ERROR,"EvtGen") << "Not implemented parent in get_EvtISGW2_ff_21S0.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented parent in get_EvtISGW2_ff_21S0.\n";
     }
   }
   
@@ -886,7 +886,7 @@ void EvtISGW2FF::EvtISGW2FF23S1 (EvtId parent,EvtId daugt,
 	nfp=3.0;
       }
       else{
-      report(ERROR,"EvtGen") << "Not implemented daugt in get_isgw_ff_23P1.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented daugt in get_isgw_ff_23P1.\n";
       }
     }
   }
@@ -905,11 +905,11 @@ void EvtISGW2FF::EvtISGW2FF23S1 (EvtId parent,EvtId daugt,
 	nfp = 0.0;
       }
       else{      
-	report(ERROR,"EvtGen") << "Not implemented daugt in get_isgw_ff_23P1.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt in get_isgw_ff_23P1.\n";
       }
     }
     else{
-      report(ERROR,"EvtGen") << "Not implemented parent in get_isgw_ff_23P1.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented parent in get_isgw_ff_23P1.\n";
     }
   }
 
@@ -1026,7 +1026,7 @@ void EvtISGW2FF::EvtISGW2FF1P1 (EvtId parent,EvtId daugt,
 	nfp = 3.0;
       }
       else{
-	report(ERROR,"EvtGen") << "Not implemented daugt in get_isgw_ff_1P1.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt in get_isgw_ff_1P1.\n";
       }
     }
   }
@@ -1050,7 +1050,7 @@ void EvtISGW2FF::EvtISGW2FF1P1 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	  report(ERROR,"EvtGen") << "Not implemented daugt in get_isgw_ff_1P1.\n";
+	  report(Severity::Error,"EvtGen") << "Not implemented daugt in get_isgw_ff_1P1.\n";
 	}
       }
     }
@@ -1077,13 +1077,13 @@ void EvtISGW2FF::EvtISGW2FF1P1 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"
                          <<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	}
       }
     
     else{
-      report(ERROR,"EvtGen") << "Not implemented parent in get_isgw_ff_1P1.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented parent in get_isgw_ff_1P1.\n";
     }
     }
   }
@@ -1232,7 +1232,7 @@ void EvtISGW2FF::EvtISGW2FF3P1 (EvtId parent,EvtId daugt,
 	nfp = 3.0;
       }
       else{
-	report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3P1.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3P1.\n";
       }
     }
   }
@@ -1259,7 +1259,7 @@ void EvtISGW2FF::EvtISGW2FF3P1 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	  report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3P1.\n";
+	  report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_3P1.\n";
 	}
       }
     }
@@ -1286,12 +1286,12 @@ void EvtISGW2FF::EvtISGW2FF3P1 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	  }
 	}
     
     else{
-      report(ERROR,"EvtGen") << "Not implemented parent in get_isgw_ff_3P1.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented parent in get_isgw_ff_3P1.\n";
     }
     }
   }
@@ -1437,7 +1437,7 @@ void EvtISGW2FF::EvtISGW2FF3P0 (EvtId parent,EvtId daugt,
 	nfp = 3.0;
       }
       else{
-	report(ERROR,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_3P0.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_3P0.\n";
       }
     }
   }
@@ -1462,7 +1462,7 @@ void EvtISGW2FF::EvtISGW2FF3P0 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	  report(ERROR,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_3P0.\n";
+	  report(Severity::Error,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_3P0.\n";
 	}
       }
     }
@@ -1487,7 +1487,7 @@ void EvtISGW2FF::EvtISGW2FF3P0 (EvtId parent,EvtId daugt,
 	    nfp = 0.0;
 	  }
 	  else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_3P0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt in get_EvtISGW2_ff_3P0.\n";
 	  }
 	}
       }
@@ -1514,11 +1514,11 @@ void EvtISGW2FF::EvtISGW2FF3P0 (EvtId parent,EvtId daugt,
 	    nfp = 2.0;
 	  }
 	  else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	  }
 	}
 	else{
-	  report(ERROR,"EvtGen") << "Not implemented parent in get_EvtISGW2_ff_3P0.\n";
+	  report(Severity::Error,"EvtGen") << "Not implemented parent in get_EvtISGW2_ff_3P0.\n";
 	}
       }
     }
@@ -1631,7 +1631,7 @@ void EvtISGW2FF::EvtISGW2FF3P2 (EvtId parent,EvtId daugt,
       }
       else{
 
-	report(ERROR,"EvtGen") << "Not implemented daugt in get_isgw_ff_3P2.\n";
+	report(Severity::Error,"EvtGen") << "Not implemented daugt in get_isgw_ff_3P2.\n";
       }
     }
   }
@@ -1656,7 +1656,7 @@ void EvtISGW2FF::EvtISGW2FF3P2 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	  report(ERROR,"EvtGen") << "Not implemented daugt in get_isgw_ff_3P2.\n";
+	  report(Severity::Error,"EvtGen") << "Not implemented daugt in get_isgw_ff_3P2.\n";
 	}
       }
     }
@@ -1683,12 +1683,12 @@ void EvtISGW2FF::EvtISGW2FF3P2 (EvtId parent,EvtId daugt,
 	  nfp = 2.0;
 	}
 	else{
-	    report(ERROR,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
+	    report(Severity::Error,"EvtGen") << "Not implemented daugt:"<<daugt.getId()<<" in get_isgw_ff_1S0.\n";
 	  }
       }
     
     else{
-      report(ERROR,"EvtGen") << "Not implemented parent in get_isgw_ff_3P2.\n";
+      report(Severity::Error,"EvtGen") << "Not implemented parent in get_isgw_ff_3P2.\n";
     }
     }
   }
@@ -1788,7 +1788,7 @@ double EvtISGW2FF::EvtGetas ( double mass )
 void EvtISGW2FF::getbaryonff(EvtId, EvtId, double, double, double*, 
 			     double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtISGW2FF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtISGW2FF.\n";  
 
   ::abort();
 
@@ -1797,7 +1797,7 @@ void EvtISGW2FF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtISGW2FF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 			    double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtISGW2FF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtISGW2FF.\n";
   ::abort();
 
 }
@@ -1805,7 +1805,7 @@ void EvtISGW2FF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtISGW2FF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 			     double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtISGW2FF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtISGW2FF.\n";
   ::abort();
 
 }

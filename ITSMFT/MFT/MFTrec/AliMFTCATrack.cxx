@@ -167,10 +167,16 @@ void  AliMFTCATrack::EvalSignedPt(){
 	Double_t phi = TMath::ATan2(slopeY_Z,slopeX_Z);
 	Double_t xS,x0;
 	Double_t chi2 = AliMFTTrackExtrap::LinearRegression(nptr, u,v, x0, xS);
+  AliInfo(Form("chi2 = %f x0, xS %f %f",chi2,x0,xS));;
+
+  if (TMath::Abs(x0)<1.e-10) {
+    fPt = 1.e6;
+    return;
+  }
+  
 	Double_t rx = -xS/(2.*x0);
 	Double_t ry =  1./(2.*x0);
 	Double_t rr = TMath::Sqrt(rx*rx+ry*ry);
-	AliInfo(Form("chi2 = %f",chi2));;
 	AliInfo(Form("Rx,Ry = %f %f",rx,ry));;
 	AliInfo(Form("R = %f",rr));;
 	AliInfo(Form("Phi = %f",phi));;

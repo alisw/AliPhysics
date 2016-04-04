@@ -2341,7 +2341,7 @@ void  AliTPCcalibAlignInterpolation::MakeNDFit(const char * inputFile, const cha
     fitCorrs[icorr]->SetHistogram((THn*)(hN->Clone()));  
     TStopwatch timer;
     fitCorrs[0]->SetStreamer(pcstream);
-    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"delta:1", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"3:0.05:0.1:1","2:2:2:2",0.0001);
+    if (icorr==0) fitCorrs[icorr]->MakeFit(treeDist,"delta:(1+sqrt(abs(qptCenter)))/sqrt(entries)", "RCenter:sectorCenter:kZCenter:qptCenter",cutFit+cutAcceptFit,"3:0.05:0.1:18","2:2:2:2",0.0001);
     timer.Print();
     AliNDLocalRegression::AddVisualCorrection(fitCorrs[icorr]);
     treeDist->SetAlias(TString::Format("delta_Fit%d",icorr).Data(),TString::Format("AliNDLocalRegression::GetCorrND(%d,RCenter,sectorCenter,kZCenter,qptCenter+0)",hashIndex).Data());

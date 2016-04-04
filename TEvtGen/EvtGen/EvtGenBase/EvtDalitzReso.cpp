@@ -516,7 +516,7 @@ double EvtDalitzReso::angDep(const EvtDalitzPoint& x)
   // unphysical cosines indicate we are in big trouble
   double cosTh = x.cosTh(_pairAng,_pairRes);  // angle between common(reso,ang) and other(reso)
   if(fabs(cosTh) > 1.) {
-    report(INFO,"EvtGen") << "cosTh " << cosTh << std::endl; 
+    report(Severity::Info,"EvtGen") << "cosTh " << cosTh << std::endl; 
     assert(0);
   }
   

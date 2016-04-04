@@ -98,7 +98,7 @@ EvtComplex EvtResonance::resAmpl() {
     break;
 
   default:
-    report(DEBUG,"EvtGen") << "EvtGen: wrong spin in EvtResonance" << endl;
+    report(Severity::Debug,"EvtGen") << "EvtGen: wrong spin in EvtResonance" << endl;
     ampl = EvtComplex(0.0);
     break;         
 

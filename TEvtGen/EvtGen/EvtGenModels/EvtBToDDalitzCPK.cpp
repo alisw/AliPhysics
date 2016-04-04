@@ -84,7 +84,7 @@ void EvtBToDDalitzCPK::init ( )
   }
   
   if ( _flag == 0 ) {
-    report( ERROR , "EvtGen" ) << "EvtBToDDalitzCPK : Invalid mode." 
+    report( Severity::Error , "EvtGen" ) << "EvtBToDDalitzCPK : Invalid mode." 
                                << std::endl ;
     assert( 0 ) ;
   }

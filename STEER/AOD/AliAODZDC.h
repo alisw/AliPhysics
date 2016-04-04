@@ -46,13 +46,28 @@ public:
   virtual Bool_t GetZNCentroidInPbPb(Float_t beamEne, Double_t centrZNC[2], Double_t centrZNA[2]);
   virtual Bool_t GetZNCentroidInpp(Double_t centrZNC[2], Double_t centrZNA[2]);
 
+  // Setters dealing only with the 1st stored TDC hit
   virtual Float_t GetZNCTime() const {return fZNCTDC;}
   virtual Float_t GetZNATime() const {return fZNATDC;}
   virtual Float_t GetZPCTime() const {return fZPCTDC;}
   virtual Float_t GetZPATime() const {return fZPATDC;}
-
+  //
   virtual Float_t GetZDCTimeSum() const {return fZDCTDCSum;}
   virtual Float_t GetZDCTimeDiff() const {return fZDCTDCDifference;}
+
+  // Jan.2016: propagating multi-hit structure of TDC hits to AODs
+  virtual Float_t GetZNCTDCm(Int_t i) const {return fZNCTDCm[i];}
+  virtual Float_t GetZNATDCm(Int_t i) const {return fZNATDCm[i];}
+  virtual Float_t GetZPCTDCm(Int_t i) const {return fZPCTDCm[i];}
+  virtual Float_t GetZPATDCm(Int_t i) const {return fZPATDCm[i];}
+  //
+  virtual Bool_t GetTDCSum(Float_t sum[4]); 
+  virtual Bool_t GetTDCDiff(Float_t diff[4]); 
+  //
+  virtual Bool_t  IsZNAfired() {return fIsZNAfired;}
+  virtual Bool_t  IsZNCfired() {return fIsZNCfired;}
+  virtual Bool_t  IsZNANDfired() {if(IsZNAfired() &&IsZNCfired()) return kTRUE;
+  				  else return kFALSE;}
 
   // Setters  
   
@@ -64,19 +79,29 @@ public:
   void  SetZPATowers(const Double_t value[5], const Double_t valueLG[5]);
   
   void  SetZDCParticipants(Int_t npart, Int_t npartA, Int_t npartC) 
-  	{fZDCParticipants=npart; fZDCPartSideA=npartA; fZDCPartSideC=npartC;}
-  
+  	{fZDCParticipants=npart; fZDCPartSideA=npartA; fZDCPartSideC=npartC;}  
   void  SetZDCImpactParameter(Float_t b, Float_t bA, Float_t bC)
   	{fImpactParameter=b; fImpactParamSideA=bA; fImpactParamSideC=bC;}
  
+  // Setters dealing only with the 1st stored TDC hit
   void  SetZDCTDCSum(Float_t tdc)  {fZDCTDCSum = tdc;}
   void  SetZDCTDCDiff(Float_t tdc) {fZDCTDCDifference = tdc;}
-  
+  //
   void  SetZNCTDC(Float_t tdc) {fZNCTDC = tdc;}
   void  SetZNATDC(Float_t tdc) {fZNATDC = tdc;}
   void  SetZPCTDC(Float_t tdc) {fZPCTDC = tdc;}
   void  SetZPATDC(Float_t tdc) {fZPATDC = tdc;}
- 
+
+  // Jan.2016: propagating multi-hit structure of TDC hits to AODs
+  void  SetZNCTDCm(Int_t i, Float_t tdc) {fZNCTDCm[i] = tdc;}
+  void  SetZNATDCm(Int_t i, Float_t tdc) {fZNATDCm[i] = tdc;}
+  void  SetZPCTDCm(Int_t i, Float_t tdc) {fZPCTDCm[i] = tdc;}
+  void  SetZPATDCm(Int_t i, Float_t tdc) {fZPATDCm[i] = tdc;}
+  //
+  void  SetZNAfired() {fIsZNAfired = kTRUE;}
+  void  SetZNCfired() {fIsZNCfired = kTRUE;}
+  void  SetZPAfired() {fIsZPAfired = kTRUE;}
+  void  SetZPCfired() {fIsZPCfired = kTRUE;}
  
 protected:
   
@@ -103,14 +128,27 @@ protected:
   Double32_t   fImpactParamSideA;  // impact parameter estimated by the ZDC (ONLY in A-A)
   Double32_t   fImpactParamSideC;  // impact parameter estimated by the ZDC (ONLY in A-A)
   //
+  // These data members deals only with the 1st stored TDC hit
   Float_t   fZDCTDCSum;	   	   // ZDC TDC sum in ns corrected 4 phase shift
   Float_t   fZDCTDCDifference;	   // ZDC TDC diff. in ns corrected 4 phase shift
   Float_t   fZNCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift        
   Float_t   fZNATDC;     	   // ZNA TDC in ns corrected 4 phase shift;     
   Float_t   fZPCTDC; 	   	   // ZNC TDC in ns corrected 4 phase shift        
   Float_t   fZPATDC;     	   // ZNA TDC in ns corrected 4 phase shift;     
+  //
+  // Jan.2016: propagating multi-hit structure of TDC hits to AODs
+  Float_t   fZNCTDCm[4];	// true if ZNC TDC has at least 1 hit
+  Float_t   fZNATDCm[4];	// true if ZNA TDC has at least 1 hit
+  Float_t   fZPCTDCm[4];	// true if ZPC TDC has at least 1 hit
+  Float_t   fZPATDCm[4];	// true if ZPA TDC has at least 1 hit
+  //
+  Bool_t    fIsZNAfired;	// if true ZNA is fired in the event 
+  Bool_t    fIsZNCfired;	// if true ZNC is fired in the event 
+  Bool_t    fIsZPAfired;	// if true ZPA is fired in the event 
+  Bool_t    fIsZPCfired;	// if true ZPC is fired in the event
+  
 
-  ClassDef(AliAODZDC,3)
+  ClassDef(AliAODZDC,4)
 };
 
 #endif

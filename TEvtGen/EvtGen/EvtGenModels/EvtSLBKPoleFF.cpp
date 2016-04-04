@@ -44,11 +44,11 @@ void EvtSLBKPoleFF::getscalarff(EvtId parent,EvtId daught,
 // from the arguments.
 
    if ( numSLBKPoleargs != 4 ) {//modified
-     report(ERROR,"EvtGen") << "Problem in EvtSLBKPoleFF::getscalarff\n";
-     report(ERROR,"EvtGen") << "wrong number of arguments!\n";
-     report(ERROR,"EvtGen") << "number args:"<<numSLBKPoleargs<<" (expected 4)\n";
-     report(ERROR,"EvtGen") << "Parent:"<<EvtPDL::name(parent)<<"\n";
-     report(ERROR,"EvtGen") << "Daughter:"<<EvtPDL::name(daught)<<"\n";
+     report(Severity::Error,"EvtGen") << "Problem in EvtSLBKPoleFF::getscalarff\n";
+     report(Severity::Error,"EvtGen") << "wrong number of arguments!\n";
+     report(Severity::Error,"EvtGen") << "number args:"<<numSLBKPoleargs<<" (expected 4)\n";
+     report(Severity::Error,"EvtGen") << "Parent:"<<EvtPDL::name(parent)<<"\n";
+     report(Severity::Error,"EvtGen") << "Daughter:"<<EvtPDL::name(daught)<<"\n";
 
    }
 
@@ -79,14 +79,14 @@ void EvtSLBKPoleFF::getvectorff(EvtId parent,EvtId /*daught*/,
 			     double *a2f, double *vf, double *a0f ){
 
    if ( numSLBKPoleargs !=8 ) {//modified
-     report(ERROR,"EvtGen") << "Problem in EvtSLBKPoleFF::getvectorff\n";//modified
-     report(ERROR,"EvtGen") << "wrong number of arguements!!!\n";
-     report(ERROR,"EvtGen") << numSLBKPoleargs<<"\n";//modified
+     report(Severity::Error,"EvtGen") << "Problem in EvtSLBKPoleFF::getvectorff\n";//modified
+     report(Severity::Error,"EvtGen") << "wrong number of arguements!!!\n";
+     report(Severity::Error,"EvtGen") << numSLBKPoleargs<<"\n";//modified
 //     printf("\n*********************%d*********************",numSLBKPoleargs);
   }
 
 
-   report(INFO,"EvtGen")<<"Check the implementation of EvtSLBKPoleFF::getvectorff()!\n";
+   report(Severity::Info,"EvtGen")<<"Check the implementation of EvtSLBKPoleFF::getvectorff()!\n";
 
 
   double mb=EvtPDL::getMeanMass(parent);
@@ -181,11 +181,11 @@ void EvtSLBKPoleFF::gettensorff(EvtId parent,EvtId /*daught*/,
 			     double *kf, double *bpf, double *bmf ){
 
   if ( numSLBKPoleargs !=16 ) {
-     report(ERROR,"EvtGen") << "Problem in EvtSLBKPoleFF::gettensorff\n";
-     report(ERROR,"EvtGen") << "wrong number of arguements!!!\n";
+     report(Severity::Error,"EvtGen") << "Problem in EvtSLBKPoleFF::gettensorff\n";
+     report(Severity::Error,"EvtGen") << "wrong number of arguements!!!\n";
   }
 
-  report(INFO,"EvtGen")<<"Check the implementation of EvtSLBKPoleFF::gettensorff()!\n";
+  report(Severity::Info,"EvtGen")<<"Check the implementation of EvtSLBKPoleFF::gettensorff()!\n";
 
   double mb=EvtPDL::getMeanMass(parent);
   double mb2 = mb*mb;
@@ -224,7 +224,7 @@ void EvtSLBKPoleFF::gettensorff(EvtId parent,EvtId /*daught*/,
 void EvtSLBKPoleFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 				double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtSLBKPoleFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtSLBKPoleFF.\n";  
   ::abort();
 
 }
@@ -232,7 +232,7 @@ void EvtSLBKPoleFF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtSLBKPoleFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 			       double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtSLBKPoleFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtSLBKPoleFF.\n";
   ::abort();
 
 }
@@ -240,7 +240,7 @@ void EvtSLBKPoleFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtSLBKPoleFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 				double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtSLBKPoleFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtSLBKPoleFF.\n";
   ::abort();
 
 }

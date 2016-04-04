@@ -456,20 +456,23 @@ Int_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const
 	    continue;
 	}
 	for(Int_t is(AliPID::kSPECIES); is--;){
-	    if(kNorm) prLayer[is] /= s;
-	    prob[is] *= prLayer[is];
+	    if(kNorm) prLayer[is] /= s;  // probability in each layer for each particle species normalized to the sum of probabilities for given layer
+	    prob[is] *= prLayer[is];  // multiply single layer probabilities to get probability for complete track
 	}
 	ntrackletsPID++;
     }
     if(!kNorm) return ntrackletsPID;
 
     s=0.;
-    for(Int_t is(AliPID::kSPECIES); is--;) s+=prob[is];
+    // sum probabilities for all considered particle species
+    for(Int_t is(AliPID::kSPECIES); is--;) { s+=prob[is];
+    }
     if(s<1.e-30){
 	AliDebug(2, "Null total prob.");
 	return 0;
     }
-    for(Int_t is(AliPID::kSPECIES); is--;) prob[is]/=s;
+    // norm to the summed probability  (default values: s=1 prob[is]=0.2)
+    for(Int_t is(AliPID::kSPECIES); is--;){ prob[is]/=s; }
     return ntrackletsPID;
 }
 
@@ -504,7 +507,31 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
   } else {
       AliDebug(3,"No references available");
   }
-  AliDebug(1, Form("Eval 1D dEdx %f Probability %e", dEdx[0],probLayer));
+
+  switch(PIDmethod){
+  case kLQ2D: // 2D LQ
+      {
+	  AliDebug(1,Form("Eval 2D Q0 %f Q1 %f P %e ",dEdx[0],dEdx[1],probLayer));
+      }
+      break;
+  case kLQ1D: // 1D LQ
+      {
+	  AliDebug(1, Form("Eval 1D dEdx %f Probability %e", dEdx[0],probLayer));
+      }
+      break;
+  case kLQ3D: // 3D LQ
+      {
+	  AliDebug(1, Form("Eval 1D dEdx %f %f %f Probability %e", dEdx[0],dEdx[1],dEdx[2],probLayer));
+      }
+      break;
+  case kLQ7D: // 7D LQ
+      {
+	  AliDebug(1, Form("Eval 1D dEdx %f %f %f %f %f %f %f Probability %e", dEdx[0],dEdx[1],dEdx[2],dEdx[3],dEdx[4],dEdx[5],dEdx[6],probLayer));
+      }
+      break;
+  default:
+      break;
+  }
 
   return probLayer;
 
@@ -587,7 +614,9 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
 {
     //
     // Recalculate dE/dx
+    // removed missing slices cut, detailed checks see presentation in TRD meeting: https://indico.cern.ch/event/506345/contribution/3/attachments/1239069/1821088/TRDPID_missingslices_charge.pdf
     //
+
   switch(PIDmethod){
   case kNN: // NN 
       break;
@@ -595,17 +624,16 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[0]=0;
       out[1]=0;
       for(Int_t islice = 0; islice < nSlice; islice++){
-	  if(in[islice]<=0){out[0]=0;out[1]=0;return kFALSE;}  // Require that all slices are filled
+       //   if(in[islice]<=0){out[0]=0;out[1]=0;return kFALSE;}  // Require that all slices are filled
 
 	  if(islice<kNsliceQ0LQ2D)out[0]+= in[islice];
 	  else out[1]+= in[islice];
       }
       // normalize signal to number of slices
-
-
       out[0]*=1./Double_t(kNsliceQ0LQ2D);
       out[1]*=1./Double_t(nSlice-kNsliceQ0LQ2D);
-      if(out[0] < 1e-6) return kFALSE;
+      if(out[0] <= 0) return kFALSE;
+      if(out[1] <= 0) return kFALSE;
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f",out[0],out[1]));
       break;
   case kLQ1D: // 1D LQ
@@ -615,7 +643,7 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
 	  if(in[islice] > 0) out[0] += in[islice];  // no neg dE/dx values
       }
       out[0]*=1./Double_t(kNsliceQ0LQ1D);
-      if(out[0] < 1e-6) return kFALSE;
+      if(out[0] <= 0) return kFALSE;
       AliDebug(3,Form("CookdEdx dEdx %f",out[0]));
       break;
   case kLQ3D: // 3D LQ
@@ -623,7 +651,7 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[1]=0;
       out[2]=0;
       for(Int_t islice = 0; islice < nSlice; islice++){
-	  if(in[islice]<=0){out[0]=0;out[1]=0;out[2]=0;return kFALSE;}  // Require that all slices are filled
+	 // if(in[islice]<=0){out[0]=0;out[1]=0;out[2]=0;return kFALSE;}  // Require that all slices are filled
 	  if(islice<kNsliceQ0LQ3D)out[0]+= in[islice];
 	  out[1]=(in[3]+in[4]);
 	  out[2]=(in[5]+in[6]);
@@ -632,7 +660,9 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[0]*=1./Double_t(kNsliceQ0LQ3D);
       out[1]*=1./2.;
       out[2]*=1./2.;
-      if(out[0] < 1e-6) return kFALSE;
+      if(out[0] <= 0) return kFALSE;
+      if(out[1] <= 0) return kFALSE;
+      if(out[2] <= 0) return kFALSE;
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f Q2 %f",out[0],out[1],out[2]));
       break;
   case kLQ7D: // 7D LQ
@@ -645,7 +675,7 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
 	      return kFALSE;}  // Require that all slices are filled
 	  out[islice]=in[islice];
       }
-      if(out[0] < 1e-6) return kFALSE;
+      for(Int_t i=0;i<nSlice;i++) {if(out[i]<=0) return kFALSE; }
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f Q2 %f Q3 %f Q4 %f Q5 %f Q6 %f Q7 %f",out[0],out[1],out[2],out[3],out[4],out[5],out[6],out[7]));
       break;
 
@@ -674,13 +704,18 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
     return kTRUE;
   } 
   Double_t probEle = like[AliPID::kElectron]/(like[AliPID::kElectron] + like[AliPID::kPion]);
+  AliDebug(3,Form("probabilities like %f %f %f \n",probEle,like[AliPID::kElectron],like[AliPID::kPion]));
   Double_t params[4];
   if(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod)){
     AliError("No Params found for the given configuration");
     return kTRUE;
   }
+
+  
+
   Double_t threshold = 1. - params[0] - params[1] * p - params[2] * TMath::Exp(-params[3] * p);
-  if(probEle > TMath::Max(TMath::Min(threshold, 0.99), 0.2)) return kTRUE; // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
+  AliDebug(3,Form("is ident details %i %f %f %i %f %f %f %f \n",nTracklets, level, centrality,PIDmethod,probEle, threshold,TMath::Min(threshold, 0.99),TMath::Max(TMath::Min(threshold, 0.99), 0.2)));
+  if(probEle > TMath::Max(TMath::Min(threshold, 0.99), 0.2)) return kTRUE;  // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
   return kFALSE;
 }
 

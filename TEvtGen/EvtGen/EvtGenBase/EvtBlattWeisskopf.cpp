@@ -20,7 +20,7 @@ EvtBlattWeisskopf::EvtBlattWeisskopf(int LL, double R, double p0)
 {
   if(R < 0) {
 
-    report(INFO,"EvtGen") << "Radius " << R << " negative" << endl;
+    report(Severity::Info,"EvtGen") << "Radius " << R << " negative" << endl;
     assert(0);
   }
 
@@ -31,7 +31,7 @@ EvtBlattWeisskopf::EvtBlattWeisskopf(int LL, double R, double p0)
   _F0 = compute(_p0);
   if(_F0 <= 0) {
     
-    report(INFO,"EvtGen") << "Invalid nominal form factor computed " << _F0 << endl;
+    report(Severity::Info,"EvtGen") << "Invalid nominal form factor computed " << _F0 << endl;
     assert(0);
   } 
 }
@@ -46,7 +46,7 @@ EvtBlattWeisskopf::~EvtBlattWeisskopf()
 double EvtBlattWeisskopf::operator()(double p) const
 {
   double ret = compute(p)/_F0;
-  //  report(INFO,"EvtGen") << p << " " << _p0 << " " << _F0 << " " << _LL << " " << _radial << " " << ret << endl;
+  //  report(Severity::Info,"EvtGen") << p << " " << _p0 << " " << _F0 << " " << _LL << " " << _radial << " " << ret << endl;
   return ret;
 }
 

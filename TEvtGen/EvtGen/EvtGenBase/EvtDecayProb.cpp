@@ -50,15 +50,15 @@ void EvtDecayProb::makeDecay(EvtParticle* p, bool recursive){
   }while(ntimes&&(_prob<dummy));
 
   if (ntimes==0){
-    report(DEBUG,"EvtGen") << "Tried accept/reject:10000"
+    report(Severity::Debug,"EvtGen") << "Tried accept/reject:10000"
 			   <<" times, and rejected all the times!"<<endl;
-    report(DEBUG,"EvtGen") << "Is therefore accepting the last event!"<<endl;
-    report(DEBUG,"EvtGen") << "Decay of particle:"<<
+    report(Severity::Debug,"EvtGen") << "Is therefore accepting the last event!"<<endl;
+    report(Severity::Debug,"EvtGen") << "Decay of particle:"<<
       EvtPDL::name(p->getId()).c_str()<<"(channel:"<<
       p->getChannel()<<") with mass "<<p->mass()<<endl;
     
     for(size_t ii=0;ii<p->getNDaug();ii++){
-      report(DEBUG,"EvtGen") <<"Daughter "<<ii<<":"<<
+      report(Severity::Debug,"EvtGen") <<"Daughter "<<ii<<":"<<
 	EvtPDL::name(p->getDaug(ii)->getId()).c_str()<<" with mass "<<
 	p->getDaug(ii)->mass()<<endl;
     }				   

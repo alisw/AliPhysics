@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 set(SRCS
     AliMUONGMSSubprocessor.cxx
     AliMUONHVSubprocessor.cxx
+    AliMUONLVSubprocessor.cxx
     AliMUONOccupancySubprocessor.cxx
     AliMUONPedestalSubprocessor.cxx
     AliMUONPreprocessor.cxx
@@ -65,7 +66,7 @@ set(ALIROOT_DEPENDENCIES STEERBase STEER CDB MUONcore MUONgeometry MUONcalib MUO
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Follow headers dependencies
@@ -103,7 +104,7 @@ if(ALIROOT_STATIC)
     # list of shared dependencies / the name of the variable containing the list of static ones
     generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
     target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root)
-    
+
     # Public include folders that will be propagated to the dependecies
     target_include_directories(${MODULE}-static PUBLIC ${incdirs})
 

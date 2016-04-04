@@ -40,6 +40,7 @@
 
 #include "AliTPCRecoParam.h"
 
+
 /// \cond CLASSIMP
 ClassImp(AliTPCRecoParam)
 /// \endcond
@@ -111,6 +112,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSkipTimeBins(5),              // number of time bins to be skiiped (corrupted signal druing gating opening)
   fUseTOFCorrection(kTRUE),
   fUseCorrectionMap(kFALSE),
+  fSystErrClInnerRegZ(0),
+  fSystErrClInnerRegZSigInv(0),
   fUseSystematicCorrelation(kTRUE)
 {
   /// constructor
@@ -121,11 +124,6 @@ AliTPCRecoParam::AliTPCRecoParam():
   // systematic error parameterization at INNER wall of the TPC
   fSystematicErrorClusterInner[0]=0.5;   // 0.5 cm
   fSystematicErrorClusterInner[1]=5;     // 5 cm slope
-  //
-  fSystematicErrorClusterInnerDeepY[0]=0;
-  fSystematicErrorClusterInnerDeepY[1]=20;
-  fSystematicErrorClusterInnerDeepZ[0]=0;
-  fSystematicErrorClusterInnerDeepZ[1]=20;
   //
   fSystematicErrorCluster[0]=0;   // sy cluster error
   fSystematicErrorCluster[1]=0;   // sz cluster error
@@ -144,10 +142,34 @@ AliTPCRecoParam::AliTPCRecoParam():
 }
 
 //_____________________________________________________________________________
+AliTPCRecoParam::AliTPCRecoParam(const AliTPCRecoParam& src)
+{
+  // copy c-tor
+  memcpy(this,&src,sizeof(AliTPCRecoParam)); // make 1st a shallow copy
+  // 
+  // now treat the pointers
+  if (fSystErrClInnerRegZ)       fSystErrClInnerRegZ       = new TVectorF(*fSystErrClInnerRegZ);
+  if (fSystErrClInnerRegZSigInv) fSystErrClInnerRegZSigInv = new TVectorF(*fSystErrClInnerRegZSigInv);
+}
+
+//_____________________________________________________________________________
+AliTPCRecoParam& AliTPCRecoParam::operator=(const AliTPCRecoParam& src)
+{
+  // assignment operator
+  if (fSystErrClInnerRegZ) delete fSystErrClInnerRegZ;
+  if (fSystErrClInnerRegZSigInv) delete fSystErrClInnerRegZSigInv;
+  memcpy(this,&src,sizeof(AliTPCRecoParam)); // make 1st a shallow copy
+  // now treat the pointers
+  if (fSystErrClInnerRegZ)       fSystErrClInnerRegZ       = new TVectorF(*fSystErrClInnerRegZ);
+  if (fSystErrClInnerRegZSigInv) fSystErrClInnerRegZSigInv = new TVectorF(*fSystErrClInnerRegZSigInv);
+}
+
+//_____________________________________________________________________________
 AliTPCRecoParam::~AliTPCRecoParam()
 {
   /// destructor
-
+  delete fSystErrClInnerRegZ;
+  delete fSystErrClInnerRegZSigInv;
 }
 
 void AliTPCRecoParam::Print(const Option_t* /*option*/) const{

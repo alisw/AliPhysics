@@ -4,6 +4,10 @@
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 // some of it might be inspired by czmq.h
 
+namespace AliZMQhelpers {
+  extern void* gZMQcontext; //a global ZMQ context
+}
+
 #include <string>
 #include <map>
 #include "TString.h"
@@ -23,6 +27,9 @@ typedef std::vector<std::pair<std::string, std::string> > aliStringVec;
 //  SUB>tcp://localhost:123123,@tcp://*:454545
 //  timeout is in ms, -1 is wait forever
 int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
+
+//get the global context
+void* alizmq_context();
 
 // extract the socket mode from a config string
 int alizmq_socket_type(std::string config);
@@ -64,6 +71,7 @@ int alizmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags);
 
 //send a single frame
 int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, int compression=0);
+int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags);
 
 //deallocate an object - callback for ZMQ
 void alizmq_deleteTObject(void*, void* object);
@@ -108,4 +116,8 @@ public:
   static aliStringVec* TokenizeOptionString(const TString str);
 };
 
+//a general utility to tokenize strings
+std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
+//parse 
+stringMap ParseParamString(const std::string paramString);
 #endif

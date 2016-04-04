@@ -63,13 +63,13 @@ void ReadIntegers(const char* filename, std::vector<int>& integers)
   /// separated by "," or by return carriage
   ifstream in(gSystem->ExpandPathName(filename));
   int i;
-  
+
   char line[10000];
-  
+
   in.getline(line,10000,'\n');
-  
+
   TString sline(line);
-  
+
   if (sline.Contains(","))
   {
     TObjArray* a = sline.Tokenize(",");
@@ -83,13 +83,13 @@ void ReadIntegers(const char* filename, std::vector<int>& integers)
   else
   {
     integers.push_back(sline.Atoi());
-    
+
     while ( in >> i )
     {
       integers.push_back(i);
     }
   }
-  
+
   std::sort(integers.begin(),integers.end());
 }
 
@@ -99,31 +99,31 @@ void MUONStatusMap(AliMUONVStore*& vstatus,
                    AliMUONVStore*& vstatusMap,
                    const char* cdbStorage = "alien://folder=/alice/data/2011/OCDB",
                    Int_t runNumber=145292)
-{  
+{
 
   AliCDBManager::Instance()->SetDefaultStorage(cdbStorage);
   AliCDBManager::Instance()->SetRun(runNumber);
-  
+
   AliMUONCDB::LoadMapping();
-  
+
   AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
-  
+
   AliMUONCalibrationData cd(runNumber);
-  
+
   AliMUONPadStatusMaker statusMaker(cd);
-  
+
   statusMaker.SetLimits(*recoParam);
-  
+
   UInt_t mask = recoParam->PadGoodnessMask();
 
   statusMaker.Report(mask);
-  
+
   vstatus = static_cast<AliMUONVStore*>(statusMaker.StatusStore()->Clone());
-  
+
   const Bool_t deferredInitialization = kFALSE;
-  
+
   AliMUONPadStatusMapMaker statusMapMaker(cd,mask,deferredInitialization);
-    
+
   vstatusMap = static_cast<AliMUONVStore*>(statusMapMaker.StatusMap()->Clone());
 }
 
@@ -131,7 +131,7 @@ void MUONStatusMap(AliMUONVStore*& vstatus,
 Int_t GetBadChannels(Int_t runNumber,
                      Int_t& nbadped,
                      Int_t& nbadhv,
-                     Int_t& nbadgain,
+                     Int_t& nbadlv,
                      Int_t& nbadocc,
                      Int_t& nmissing,
                      Int_t& nreco,
@@ -142,102 +142,110 @@ Int_t GetBadChannels(Int_t runNumber,
 //    AliCDBManager::Instance()->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB?cacheFold=/local/cdb");
     AliCDBManager::Instance()->SetDefaultStorage("raw://");
   }
-  
+
   AliCDBManager::Instance()->SetRun(runNumber);
-  
+
   AliMpCDB::LoadDDLStore();
-  
+
   AliMUONCalibrationData cd(runNumber,true);
-  
+
   AliMUONPadStatusMaker statusMaker(cd);
-  
+
   AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
 
   statusMaker.SetLimits(*recoParam);
-  
+
   AliMpManuIterator it;
   Int_t detElemId, manuId;
-  
-  Int_t pedCheck = ( 
+
+  Int_t pedCheck = (
                      AliMUONPadStatusMaker::kPedMeanZero |
                      AliMUONPadStatusMaker::kPedMeanTooLow |
                      AliMUONPadStatusMaker::kPedMeanTooHigh |
                      AliMUONPadStatusMaker::kPedSigmaTooLow |
                      AliMUONPadStatusMaker::kPedSigmaTooHigh );
-     
-  Int_t hvCheck = ( 
+
+  Int_t hvCheck = (
                    AliMUONPadStatusMaker::kHVError |
                    AliMUONPadStatusMaker::kHVTooLow |
                    AliMUONPadStatusMaker::kHVTooHigh |
                    AliMUONPadStatusMaker::kHVChannelOFF |
                    AliMUONPadStatusMaker::kHVSwitchOFF );
 
-  
+
   Int_t occCheck = (
-                    AliMUONPadStatusMaker::kManuOccupancyTooHigh 
+                    AliMUONPadStatusMaker::kManuOccupancyTooHigh
                    );
-                    
+
+  Int_t lvCheck = ( AliMUONPadStatusMaker::kLVTooLow );
+
   Int_t ntotal(0);
   Int_t nbad(0);
   nbadped=0;
   nbadocc=0;
-  nbadgain=0;
   nbadhv=0;
+  nbadlv=0;
   nmissing=0;
   nreco=0;
-  
+
   while ( it.Next(detElemId,manuId) )
   {
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-    
+
     if ( chamber >= 0 && AliMpDEManager::GetChamberId(detElemId) != chamber ) continue;
-    
+
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
       if ( de->IsConnectedChannel(manuId,manuChannel) )
       {
         ++ntotal;
-        
+
         UInt_t status = statusMaker.PadStatus(detElemId, manuId, manuChannel);
-        
+
         if (!status) continue;
-        
+
         bool bad(false);
-        
-        if ( status & AliMUONPadStatusMaker::BuildStatus(pedCheck,0,0,0) ) 
+
+        if ( status & AliMUONPadStatusMaker::BuildStatus(pedCheck,0,0,0) )
         {
           ++nbadped;
           bad=true;
         }
-        
-        if ( status & AliMUONPadStatusMaker::BuildStatus(0,hvCheck,0,0) ) 
+
+        if ( status & AliMUONPadStatusMaker::BuildStatus(0,hvCheck,0,0) )
         {
           ++nbadhv;
           bad=true;
         }
-        
-        if ( status & AliMUONPadStatusMaker::BuildStatus(0,0,0,occCheck) ) 
+
+        if ( status & AliMUONPadStatusMaker::BuildStatus(0,0,lvCheck,0) )
+        {
+          ++nbadlv;
+          bad=true;
+        }
+
+        if ( status & AliMUONPadStatusMaker::BuildStatus(0,0,0,occCheck) )
         {
           ++nbadocc;
           bad=true;
         }
-        
-        if ( status & recoParam->PadGoodnessMask() ) 
+
+        if ( status & recoParam->PadGoodnessMask() )
         {
           ++nreco;
         }
-        
+
         if ( status & AliMUONPadStatusMaker::BuildStatus(AliMUONPadStatusMaker::kMissing,0,0,AliMUONPadStatusMaker::kMissing) )
         {
           bad=true;
           ++nmissing;
         }
-        
+
         if (bad) ++nbad;
       }
     }
   }
-  
+
   if ( chamber<0 && ntotal!=NTOTALNUMBEROFPADS)
   {
     cerr << Form("ERROR ! NOT THE EXPECTED NUMBER OF CHANNELS (%d vs 1064008) FOR RUN %09d",
@@ -246,12 +254,12 @@ Int_t GetBadChannels(Int_t runNumber,
   else
   {
     cout << Form("Chamber %d - %d channels",chamber,ntotal) << endl;
-    cout << Form("nbadped %5d nbadhv %5d nbadgain %5d nbadocc %5d nmissing %5d nreco %5d",
-                 nbadped,nbadhv,nbadgain,nbadocc,nmissing,nreco) << endl;
+    cout << Form("nbadped %5d nbadhv %5d nbadlv %5d nbadocc %5d nmissing %5d nreco %5d",
+                 nbadped,nbadhv,nbadlv,nbadocc,nmissing,nreco) << endl;
   }
-  
-  AliCDBManager::Instance()->ClearCache(); 
- 
+
+  AliCDBManager::Instance()->ClearCache();
+
   return nbad;
 }
 
@@ -259,25 +267,25 @@ Int_t GetBadChannels(Int_t runNumber,
 void Draw(TFile* f, const char* gname, TLegend* l, Bool_t normalized)
 {
   if (!f) return;
-  
+
   TGraph* g = static_cast<TGraph*>(f->Get(gname));
-  
+
   if (!g) return;
-  
-  if ( normalized ) 
+
+  if ( normalized )
   {
     g = static_cast<TGraph*>(g->Clone());
-    for ( Int_t i = 0; i < g->GetN(); ++i ) 
+    for ( Int_t i = 0; i < g->GetN(); ++i )
     {
       Double_t y = g->GetY()[i];
       g->SetPoint(i,g->GetX()[i],y/NTOTALNUMBEROFPADS);
     }
   }
-  
+
   g->Draw("lp");
   g->GetXaxis()->SetNdivisions(505);
   g->GetXaxis()->SetNoExponent();
-  
+
   if (l) l->AddEntry(g,gname,"LP");
 }
 
@@ -285,7 +293,7 @@ void Draw(TFile* f, const char* gname, TLegend* l, Bool_t normalized)
 void DrawPeriod(int runmin, int runmax, int run1, int run2, double ymin, double ymax, const char* label)
 {
   if ( run1 < runmin || run1 > runmax || run2 < runmin || run2 > runmax ) return;
-  
+
   TBox* b = new TBox(run1,ymin,run2,ymax);
   b->SetFillColor(5);
   b->Draw();
@@ -300,28 +308,28 @@ void DrawEvolution(const char* file, bool normalized=true)
 {
 
   TFile* f = TFile::Open(gSystem->ExpandPathName(file));
-  
+
   if (!f) return;
-  
+
   TCanvas* c = new TCanvas("mch-status-evolution","mch-status-evolution");
-  
+
   c->SetGridy();
   c->SetTicky();
-  
+
   c->Draw();
-  
+
   TLegend* l = new TLegend(0.1,0.7,0.3,0.95,"ch evolution");
 
   TGraph* g = static_cast<TGraph*>(f->Get("nbad"));
   if (!g) return;
-  
+
   int runmin = TMath::Nint(g->GetX()[0]);
   int runmax = TMath::Nint(g->GetX()[g->GetN()-1]);
-  
+
   cout << Form("Run range found in file %s = %d - %d",file,runmin,runmax) << endl;
-  
+
   double ymax(0.4);
-  
+
   TH2* h = new TH2F("hframe","hframe;Run number;Fraction of dead channels",100,runmin-200,runmax+200,100,0,ymax);
 
   gStyle->SetOptStat(kFALSE);
@@ -344,7 +352,7 @@ void DrawEvolution(const char* file, bool normalized=true)
   DrawPeriod(runmin,runmax,135658,136376,0,ymax,"10g");
 
   DrawPeriod(runmin,runmax,137133,139513,0,ymax,"10h");
-  
+
   DrawPeriod(runmin,runmax,143856,146860,0,ymax,"11a");
 
   DrawPeriod(runmin,runmax,148370,150702,0,ymax,"11b");
@@ -360,7 +368,7 @@ void DrawEvolution(const char* file, bool normalized=true)
   DrawPeriod(runmin,runmax,167703,170593,0,ymax,"11h");
 
   // 2012
-    
+
     DrawPeriod(runmin,runmax,176661,177295,0,ymax,"12a");
 
     DrawPeriod(runmin,runmax,177384,178053,0,ymax,"12b");
@@ -368,23 +376,23 @@ void DrawEvolution(const char* file, bool normalized=true)
     DrawPeriod(runmin,runmax,179603,180569,0,ymax,"12c");
 
     DrawPeriod(runmin,runmax,183913,186320,0,ymax,"12d");
-    
+
     DrawPeriod(runmin,runmax,186365,186602,0,ymax,"12e");
-    
+
     DrawPeriod(runmin,runmax,186668,188123,0,ymax,"12f");
-    
+
     DrawPeriod(runmin,runmax,188362,188503,0,ymax,"12g");
-    
+
     DrawPeriod(runmin,runmax,189122,190110,0,ymax,"12h");
-  
+
   // 2013
-  
+
   DrawPeriod(runmin,runmax,195344,195483,0,ymax,"13b");
   DrawPeriod(runmin,runmax,195529,195677,0,ymax,"13c");
   DrawPeriod(runmin,runmax,195681,195873,0,ymax,"13d");
   DrawPeriod(runmin,runmax,195949,196311,0,ymax,"13e");
   DrawPeriod(runmin,runmax,196433,197388,0,ymax,"13f");
-  
+
   // 2015
   // periods are from the logbook, taking only PHYSICS% partitions
   // into account
@@ -408,20 +416,21 @@ void DrawEvolution(const char* file, bool normalized=true)
   Draw(f,"nbadped",l,normalized);
   Draw(f,"nbadocc",l,normalized);
   Draw(f,"nbadhv",l,normalized);
+  Draw(f,"nbadlv",l,normalized);
   Draw(f,"nmissing",l,normalized);
   Draw(f,"nreco",l,normalized);
-  
+
   h->Draw("same");
 
   c->RedrawAxis("g");
-  
+
   l->Draw();
 }
 
 //______________________________________________________________________________
 void MUONStatusMapEvolution(const char* runlist, const char* outfile)
 {
-  // Compute the number of bad pads (because of bad ped, bad hv, bad occupancy
+  // Compute the number of bad pads (because of bad ped, bad hv, bad lv,
   // or missing in configuration)
   //
   // output a root file with the different graphs.
@@ -433,56 +442,60 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   // a huge period, e.g. a full year, while this method is better restricted
   // to a period or even less (depending on your success of accessing the OCDB)
   //
-  
+
   std::vector<int> runs;
 
   ReadIntegers(runlist,runs);
-  
-  if ( runs.empty() ) 
+
+  if ( runs.empty() )
   {
     cout << "No runs to process..." << endl;
-    return;    
+    return;
   }
-  
+
   int year(2015);
-  
+
   if ( runs[0] <= 139699 ) year=2010;
-  
+
   if ( runs[0] <= 176000 ) year=2011;
-  
+
   if ( runs[0] <= 195344 ) year = 2012;
 
   if ( runs[0] <= 198000 ) year = 2013;
 
   TString defaultOCDB;
-  
+
   defaultOCDB.Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",year);
-  
+
 //  defaultOCDB.Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year);
-  
+
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
   AliCDBManager::Instance()->SetRun(0);
 
   TList glist;
-  
+
   glist.SetOwner(kTRUE);
-  
+
   TGraph* gnbad = new TGraph(runs.size());
   gnbad->SetName("nbad");
   glist.Add(gnbad);
-  
+
   TGraph* gnbadped = new TGraph(runs.size());
   gnbadped->SetName("nbadped");
   glist.Add(gnbadped);
-  
+
   TGraph* gnbadocc = new TGraph(runs.size());
   gnbadocc->SetName("nbadocc");
   glist.Add(gnbadocc);
-  
+
   TGraph* gnbadhv = new TGraph(runs.size());
   gnbadhv->SetName("nbadhv");
   glist.Add(gnbadhv);
-  
+
+  TGraph* gnbadlv = new TGraph(runs.size());
+  gnbadlv->SetName("nbadlv");
+  glist.Add(gnbadlv);
+
   TGraph* gnmissing = new TGraph(runs.size());
   gnmissing->SetName("nmissing");
   glist.Add(gnmissing);
@@ -490,27 +503,28 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   TGraph* gnreco = new TGraph(runs.size());
   gnreco->SetName("nreco");
   glist.Add(gnreco);
-  
-  for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i ) 
+
+  for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
   {
     Int_t runNumber = runs[i];
     Int_t nbadped;
     Int_t nbadhv;
-    Int_t nbadgain;
+    Int_t nbadlv;
     Int_t nbadocc;
     Int_t nmissing;
     Int_t nreco;
-    
-    Int_t nbad = GetBadChannels(runNumber,nbadped,nbadhv,nbadgain,nbadocc,nmissing,nreco);
-    
+
+    Int_t nbad = GetBadChannels(runNumber,nbadped,nbadhv,nbadlv,nbadocc,nmissing,nreco);
+
     gnbad->SetPoint(i,runNumber,nbad);
     gnbadped->SetPoint(i,runNumber,nbadped);
     gnbadhv->SetPoint(i,runNumber,nbadhv);
+    gnbadlv->SetPoint(i,runNumber,nbadlv);
     gnbadocc->SetPoint(i,runNumber,nbadocc);
     gnmissing->SetPoint(i,runNumber,nmissing);
     gnreco->SetPoint(i,runNumber,nreco);
   }
-  
+
   TIter next(&glist);
   TGraph* g;
   Int_t index(0);
@@ -532,8 +546,8 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
     ++index;
     g->Write();
   }
-    
+
   f.Close();
-  
-  
+
+
 }

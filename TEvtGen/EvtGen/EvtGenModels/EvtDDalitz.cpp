@@ -359,7 +359,7 @@ void EvtDDalitz::init(){
   }
 
   if ( _flag==0) {
-    report(ERROR,"EvtGen") << "EvtDDaltiz: Invalid mode."<<endl;
+    report(Severity::Error,"EvtGen") << "EvtDDaltiz: Invalid mode."<<endl;
     assert(0);
   }
 }

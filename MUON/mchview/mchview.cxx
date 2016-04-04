@@ -62,35 +62,35 @@ Int_t Usage()
 int main(int argc, char** argv)
 {
   /// Main function for the program
-  
+
   gEnv->SetValue("Cocoa.EnableAntiAliasing","auto");
 
   TObjArray args;
-  
-  for ( int i = 1; i < argc; ++i ) 
+
+  for ( int i = 1; i < argc; ++i )
   {
     args.Add(new TObjString(argv[i]));
   }
-  
+
   Int_t nok(0);
-  
+
   TObjArray filesToOpen;
   Bool_t isGeometryFixed(kFALSE);
   Int_t gix(0),giy(0);
   Int_t gox(0),goy(0);
   Bool_t ASCIImapping(kFALSE);
   TString defaultOCDB("raw://");
-  
+
   {
     Long_t id, size, flags, modtime;
     TDatime now;
 
     TString testPath;
-    
+
     testPath.Form("/cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",now.GetYear());
-    
+
     if ( !gSystem->GetPathInfo(testPath.Data(),&id,&size,&flags,&modtime) )
-    
+
     {
       if ( flags & 0x1 )
       {
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
       }
     }
   }
-  
+
   if (!gGrid && !defaultOCDB.Contains("/cvmfs/") )
   {
     TGrid::Connect("alien://");
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
   for ( Int_t i = 0; i <= args.GetLast(); ++i )
   {
     TString a(static_cast<TObjString*>(args.At(i))->String());
-    if ( a == "--version" ) 
+    if ( a == "--version" )
     {
       cout << "mchview Version " << AliMUONMchViewApplication::Version() << " ($Id$)" << endl;
       ++nok;
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
     {
       // do nothing. Let AliMUONMchViewApplication handle that one. (and the next one as well).
       nok += 2;
-      ++i;      
+      ++i;
     }
     else if ( a == "--ocdb" )
     {
@@ -151,18 +151,18 @@ int main(int argc, char** argv)
       return Usage();
     }
   }
-  
+
   if ( nok < args.GetLast() )
   {
     return Usage();
   }
-  
+
   std::cout << "Using defaultOCDB=" << defaultOCDB.Data() << std::endl;
-  
+
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
-  AliCDBManager::Instance()->SetRun(196792);
- 
-  if ( ASCIImapping ) 
+  AliCDBManager::Instance()->SetRun(0);
+
+  if ( ASCIImapping )
   {
     AliMpDataProcessor mp;
     {
@@ -175,12 +175,12 @@ int main(int argc, char** argv)
       AliMpDataStreams dataStreams(datamap);
       AliMpManuStore::ReadData(dataStreams);
     }
-    
+
 //    AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/Neighbours","local://$ALICE_ROOT/OCDB");
 
   }
-  
-  gROOT->SetStyle("Plain");  
+
+  gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   Int_t n = gStyle->GetNumberOfColors();
   Int_t* colors = new Int_t[n+2];
@@ -203,14 +203,14 @@ int main(int argc, char** argv)
   {
     theApp = new AliMUONMchViewApplication("mchview",&argc,argv);
   }
-   
+
   TIter next(&filesToOpen);
   TObjString* s;
   while ( ( s = static_cast<TObjString*>(next()) ) )
   {
     theApp->Open(s->String().Data());
   }
-  
+
   // --- Start the event loop ---
   theApp->Run(kTRUE);
 

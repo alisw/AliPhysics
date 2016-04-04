@@ -64,7 +64,7 @@ void EvtHelAmp::init(){
   int _nC=EvtSpinType::getSpinStates(EvtPDL::getSpinType(getDaug(1)));
 
   if (verbose()){
-    report(INFO,"EvtGen")<<"_nA,_nB,_nC:"
+    report(Severity::Info,"EvtGen")<<"_nA,_nB,_nC:"
 			 <<_nA<<","<<_nB<<","<<_nC<<endl;
   }
 
@@ -74,7 +74,7 @@ void EvtHelAmp::init(){
   int _JC2=EvtSpinType::getSpin2(EvtPDL::getSpinType(getDaug(1)));
 
   if (verbose()){
-    report(INFO,"EvtGen")<<"_JA2,_JB2,_JC2:"
+    report(Severity::Info,"EvtGen")<<"_JA2,_JB2,_JC2:"
 			 <<_JA2<<","<<_JB2<<","<<_JC2<<endl;
   }
 
@@ -96,19 +96,19 @@ void EvtHelAmp::init(){
   fillHelicity(_lambdaC2,_nC,_JC2,getDaug(1));
 
   if (verbose()){
-    report(INFO,"EvtGen")<<"Helicity states of particle A:"<<endl;
+    report(Severity::Info,"EvtGen")<<"Helicity states of particle A:"<<endl;
     for(i=0;i<_nA;i++){
-      report(INFO,"EvtGen")<<_lambdaA2[i]<<endl;
+      report(Severity::Info,"EvtGen")<<_lambdaA2[i]<<endl;
     }
 
-    report(INFO,"EvtGen")<<"Helicity states of particle B:"<<endl;
+    report(Severity::Info,"EvtGen")<<"Helicity states of particle B:"<<endl;
     for(i=0;i<_nB;i++){
-      report(INFO,"EvtGen")<<_lambdaB2[i]<<endl;
+      report(Severity::Info,"EvtGen")<<_lambdaB2[i]<<endl;
     }
 
-    report(INFO,"EvtGen")<<"Helicity states of particle C:"<<endl;
+    report(Severity::Info,"EvtGen")<<"Helicity states of particle C:"<<endl;
     for(i=0;i<_nC;i++){
-      report(INFO,"EvtGen")<<_lambdaC2[i]<<endl;
+      report(Severity::Info,"EvtGen")<<_lambdaC2[i]<<endl;
     }
   }
 
@@ -133,7 +133,7 @@ void EvtHelAmp::init(){
 	_HBC[ib][ic]=getArg(argcounter)*exp(EvtComplex(0.0,getArg(argcounter+1)));;
 	argcounter+=2;
 	if (verbose()){
-	  report(INFO,"EvtGen")<<"_HBC["<<ib<<"]["<<ic<<"]="
+	  report(Severity::Info,"EvtGen")<<"_HBC["<<ib<<"]["<<ic<<"]="
 			       <<_HBC[ib][ic]<<endl;
 	}
       }
@@ -162,7 +162,7 @@ void EvtHelAmp::initProbMax(){
   double maxprob=_evalHelAmp->probMax();
 
   if (verbose()){
-    report(INFO,"EvtGen")<<"Calculated probmax"<<maxprob<<endl;
+    report(Severity::Info,"EvtGen")<<"Calculated probmax"<<maxprob<<endl;
   }
 
   setProbMax(maxprob);

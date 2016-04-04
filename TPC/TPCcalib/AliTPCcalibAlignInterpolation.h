@@ -13,7 +13,7 @@ class TCut;
 
 class AliTPCcalibAlignInterpolation : public AliTPCcalibBase {
 public :
-  enum {kAlignmentBugFixedBit = BIT(24)};
+  enum {kAlignmentBugFixedBit = BIT(23)};
   enum EStreamFlags{ // flags to store addition data/code debugging infomation - needed in case something go wrong
     kStreamITSRefit          =0x00001,    // flag: stream ITS refit
     kStreamTRDRefit          =0x00002,    // flag: stream TRD refit

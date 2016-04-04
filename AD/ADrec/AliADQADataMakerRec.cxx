@@ -191,20 +191,21 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     
     Double_t xq[1] = {0.9};
     Double_t yq[1];
-
-    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBins(fCurrentCycle,0,fCurrentCycle);
+    UInt_t currentBins = ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetNbinsX();
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBins(currentBins+1,0,currentBins+1);
     ((TH1F*)GetRawsData(kChargeADA_PC))->GetQuantiles(1,yq,xq);
    
-    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBinContent(fCurrentCycle,yq[0]);
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBinContent(currentBins,yq[0]);
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->LabelsOption("v");
-    if (fCurrentCycle%10 == 0)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->SetBinLabel(fCurrentCycle,Form("%d:%d:%d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond())); 
+    if (currentBins%10 == 1)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->SetBinLabel(fCurrentCycle,Form("%d:%d:%d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond()));
+  
     ((TH1F*)GetRawsData(kChargeADA_PC))->Reset("ICES");
     
-    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBins(fCurrentCycle,0,fCurrentCycle);
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBins(currentBins+1,0,currentBins+1);
     ((TH1F*)GetRawsData(kChargeADC_PC))->GetQuantiles(1,yq,xq);
-    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBinContent(fCurrentCycle,yq[0]);
+    ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBinContent(currentBins,yq[0]);
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetXaxis()->LabelsOption("v");
-    if (fCurrentCycle%10 == 0)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetXaxis()->SetBinLabel(fCurrentCycle,Form("%d:%d:%d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond()));
+    if (currentBins%10 == 1)((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetXaxis()->SetBinLabel(fCurrentCycle,Form("%d:%d:%d",currentTime.GetHour(),currentTime.GetMinute(),currentTime.GetSecond()));
     ((TH1F*)GetRawsData(kChargeADC_PC))->Reset("ICES");
     
     Int_t nCorrelation = 0;
@@ -620,7 +621,7 @@ void AliADQADataMakerRec::InitRaws()
     Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), !expert, image, saveCorr); iHisto++;  
   }
   
-  h2i = new TH2I("H2I_ChargeSaturation", "Maximum charge per clock, both Ints;Channel;Charge [ADC counts]",kNChannelBins, kChannelMin, kChannelMax, 1025, 0, 1025);
+  h2i = new TH2I("H2I_ChargeSaturation", "Maximum charge per clock, both Ints;Channel;Charge [ADC counts]",kNChannelBins, kChannelMin, kChannelMax, 1024, 1, 1025);
   Add2RawsList(h2i,kChargeSaturation, !expert, image, saveCorr); iHisto++;	
   
   // Creation of Time histograms 
@@ -769,10 +770,13 @@ void AliADQADataMakerRec::InitRaws()
   Add2RawsList(h1d,kPairTimeDiffRMS, expert, !image, !saveCorr); iHisto++;
 
   //Creation of Clock histograms
-  h2d = new TH2F("H2D_BBFlagVsClock", "BB-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  h2d = new TH2F("H2D_BBFlagVsClock", "BB-Flags vs LHC-Clock(All events);Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
   Add2RawsList(h2d,kBBFlagVsClock, !expert, image, saveCorr); iHisto++;
+  
+  h2d = new TH2F("H2D_BBFlagVsClock_ADOR", "BB-Flags vs LHC-Clock(AD-OR);Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  Add2RawsList(h2d,kBBFlagVsClock_ADOR, !expert, image, saveCorr); iHisto++;
 	
-  h2d = new TH2F("H2D_BGFlagVsClock", "BG-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
+  h2d = new TH2F("H2D_BGFlagVsClock", "BG-Flags vs LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
   Add2RawsList(h2d,kBGFlagVsClock, !expert, image, saveCorr); iHisto++;
  
   for(Int_t iInt=0;iInt<kNintegrator;iInt++){
@@ -1089,6 +1093,14 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     FillRawsData(kNBGCoincADC,pBGmulADC);
     FillRawsData(kNBBCoincCorr,pBBmulADA,pBBmulADC);
     FillRawsData(kNBGCoincCorr,pBGmulADA,pBGmulADC);
+    
+    for(Int_t iChannel=0; iChannel<16; iChannel++) {
+    	for(Int_t iEvent=0; iEvent<21; iEvent++){
+		offlineCh = kOfflineChannel[iChannel];
+		Bool_t bbFlag = rawStream->GetBBFlag(iChannel,iEvent);
+		if(pBBmulADA>0 || pBBmulADC>0)FillRawsData(kBBFlagVsClock_ADOR, offlineCh,(float)iEvent-10,(float)bbFlag);
+		}
+	}
     
     //Triggers
     Bool_t UBA = kFALSE;

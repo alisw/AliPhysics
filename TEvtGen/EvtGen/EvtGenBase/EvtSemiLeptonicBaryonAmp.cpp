@@ -152,7 +152,7 @@ void EvtSemiLeptonicBaryonAmp::CalcAmp( EvtParticle *parent,
 			    parent->getDaug(1)->spParent(1));
     }
     else{
-      report(ERROR,"EvtGen") << "Wrong lepton number"<<endl;
+      report(Severity::Error,"EvtGen") << "Wrong lepton number"<<endl;
     }
   }
 
@@ -338,7 +338,7 @@ double EvtSemiLeptonicBaryonAmp::CalcMaxProb( EvtId parent, EvtId baryon,
 
       }
 
-      //report(DEBUG,"EvtGen") << "prob,probctl:"<<prob<<" "
+      //report(Severity::Debug,"EvtGen") << "prob,probctl:"<<prob<<" "
       //			    << probctl[0]<<" "
       //			    << probctl[1]<<" "
       //			    << probctl[2]<<std::endl;
@@ -457,7 +457,7 @@ void EvtSemiLeptonicBaryonAmp::CalcAmp(EvtParticle *parent,
 			    parent->getDaug(1)->spParent(1));
       
     } else {
-      report(ERROR,"EvtGen")<< "Wrong lepton number \n";
+      report(Severity::Error,"EvtGen")<< "Wrong lepton number \n";
       ::abort();
     }
 
@@ -521,7 +521,7 @@ void EvtSemiLeptonicBaryonAmp::CalcAmp(EvtParticle *parent,
     }
 
     else {
-      report(ERROR,"EvtGen") << "Dirac semilep. baryon current " 
+      report(Severity::Error,"EvtGen") << "Dirac semilep. baryon current " 
 			     << "not implemented for this decay sequence." 
 			     << std::endl;
       ::abort();
@@ -575,7 +575,7 @@ void EvtSemiLeptonicBaryonAmp::CalcAmp(EvtParticle *parent,
 			    parent->getDaug(1)->spParent(1));
       
     } else {
-      report(ERROR,"EvtGen")<< "Wrong lepton number \n";
+      report(Severity::Error,"EvtGen")<< "Wrong lepton number \n";
     }
       
     //  Baryon Current
@@ -594,7 +594,7 @@ void EvtSemiLeptonicBaryonAmp::CalcAmp(EvtParticle *parent,
       pflag = 1;
     }
     else {
-      report(ERROR,"EvtGen") << "Rarita-Schwinger semilep. baryon current " 
+      report(Severity::Error,"EvtGen") << "Rarita-Schwinger semilep. baryon current " 
 			     << "not implemented for this decay sequence." 
 			     << std::endl;
       ::abort();

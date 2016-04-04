@@ -98,7 +98,7 @@ EvtSpinAmp::EvtSpinAmp( const vector<EvtSpinType::spintype>& type,
     }
 
     if(_elem.size() != num ) {
-        report(ERROR,"EvtGen")<<"Wrong number of elements input:"
+        report(Severity::Error,"EvtGen")<<"Wrong number of elements input:"
             <<_elem.size()<<" vs. "<<num<<endl;
        ::abort(); 
     }
@@ -117,7 +117,7 @@ void EvtSpinAmp::checktwospin( const vector<unsigned int>& twospin ) const
     if( _twospin == twospin )
         return;
 
-    report( ERROR, "EvtGen" )
+    report( Severity::Error, "EvtGen" )
         <<"Dimension or order of tensors being operated on does not match"
         <<endl;
     ::abort();
@@ -126,12 +126,12 @@ void EvtSpinAmp::checktwospin( const vector<unsigned int>& twospin ) const
 void EvtSpinAmp::checkindexargs( const vector<int>& index ) const
 {
     if( index.size()==0 ) {
-        report(ERROR,"EvtGen") << "EvtSpinAmp can't handle no indices" << endl;
+        report(Severity::Error,"EvtGen") << "EvtSpinAmp can't handle no indices" << endl;
         ::abort();
     }
 
     if( index.size() != _twospin.size() ) {
-        report( ERROR, "EvtGen" ) << "Rank of EvtSpinAmp index does not match: " 
+        report( Severity::Error, "EvtGen" ) << "Rank of EvtSpinAmp index does not match: " 
             <<_twospin.size()<<" expected "<<index.size()<<" input."<<endl;
         ::abort();
     }
@@ -139,15 +139,15 @@ void EvtSpinAmp::checkindexargs( const vector<int>& index ) const
     for( size_t i=0; i<_twospin.size(); ++i ) {
         if( static_cast<int>(_twospin[i])>=abs(index[i]) && static_cast<int>(_twospin[i])%2==index[i]%2 )
             continue; 
-        report(ERROR,"EvtGen")<<"EvtSpinAmp index out of range" << endl;
-        report(ERROR,"EvtGen")<<" Index: ";
+        report(Severity::Error,"EvtGen")<<"EvtSpinAmp index out of range" << endl;
+        report(Severity::Error,"EvtGen")<<" Index: ";
         for(size_t j=0; j<_twospin.size(); ++j )
-            report(ERROR," ")<<_twospin[j];
+            report(Severity::Error," ")<<_twospin[j];
 
-        report(ERROR, " ")<<endl<<" Index: ";
+        report(Severity::Error, " ")<<endl<<" Index: ";
         for(size_t j=0; j<index.size(); ++j )
-            report(ERROR," ")<<index[j];
-        report(ERROR, " ")<<endl;
+            report(Severity::Error," ")<<index[j];
+        report(Severity::Error, " ")<<endl;
         ::abort();
     }
 }
@@ -172,16 +172,16 @@ EvtComplex & EvtSpinAmp::operator()( const vector<int>& index )
     
     size_t trueindex = findtrueindex(index);
     if(trueindex >= _elem.size()) {
-        report(ERROR,"EvtGen")<<"indexing error "<<trueindex<<" "<<_elem.size()<<endl;
+        report(Severity::Error,"EvtGen")<<"indexing error "<<trueindex<<" "<<_elem.size()<<endl;
         for(size_t i=0; i<_twospin.size(); ++i) {
-            report(ERROR,"")<<_twospin[i]<<" ";
+            report(Severity::Error,"")<<_twospin[i]<<" ";
         }
-        report(ERROR,"")<<endl;
+        report(Severity::Error,"")<<endl;
 
         for(size_t i=0; i<index.size(); ++i) {
-            report(ERROR,"")<<index[i]<<" ";
+            report(Severity::Error,"")<<index[i]<<" ";
         }
-        report(ERROR,"")<<endl;
+        report(Severity::Error,"")<<endl;
 
         ::abort();
     }
@@ -195,16 +195,16 @@ const EvtComplex & EvtSpinAmp::operator()( const vector<int>& index ) const
     
     size_t trueindex = findtrueindex(index);
     if(trueindex >= _elem.size()) {
-        report(ERROR,"EvtGen")<<"indexing error "<<trueindex<<" "<<_elem.size()<<endl;
+        report(Severity::Error,"EvtGen")<<"indexing error "<<trueindex<<" "<<_elem.size()<<endl;
         for(size_t i=0; i<_twospin.size(); ++i) {
-            report(ERROR,"")<<_twospin[i]<<" ";
+            report(Severity::Error,"")<<_twospin[i]<<" ";
         }
-        report(ERROR,"")<<endl;
+        report(Severity::Error,"")<<endl;
 
         for(size_t i=0; i<index.size(); ++i) {
-            report(ERROR,"")<<index[i]<<" ";
+            report(Severity::Error,"")<<index[i]<<" ";
         }
-        report(ERROR,"")<<endl;
+        report(Severity::Error,"")<<endl;
 
         ::abort();
     }
@@ -387,7 +387,7 @@ bool EvtSpinAmp::iterate( vector<int>& index ) const
 bool EvtSpinAmp::allowed( const vector<int>& index ) const
 {
     if( index.size() != _type.size() ) {
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
             <<"Wrong dimensino index input to allowed."<<endl;
         ::abort();
     }
@@ -398,7 +398,7 @@ bool EvtSpinAmp::allowed( const vector<int>& index ) const
                 if(abs(index[i])!=2) return false;
                 break;
             case EvtSpinType::NEUTRINO:
-                report(ERROR,"EvtGen")
+                report(Severity::Error,"EvtGen")
                     <<"EvMultibody currently cannot handle neutrinos."<<endl;
                 ::abort();
 	    default:
@@ -433,17 +433,17 @@ void EvtSpinAmp::intcont( size_t a, size_t b )
 {
   
     if(rank()<=2) {
-      report(ERROR,"EvtGen")<<"EvtSpinAmp can't handle no indices" << endl;
+      report(Severity::Error,"EvtGen")<<"EvtSpinAmp can't handle no indices" << endl;
       ::abort();
     }
 
     size_t newrank=rank()-2;
 
     if(_twospin[a]!=_twospin[b]) {
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
             <<"Contaction called on indices of different dimension" 
             <<endl;
-        report(ERROR,"EvtGen")
+        report(Severity::Error,"EvtGen")
             <<"Called on "<<_twospin[a]<<" and "<<_twospin[b]
             <<endl;
         ::abort();

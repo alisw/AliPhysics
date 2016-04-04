@@ -9,7 +9,7 @@
 /// \ingroup shuttle
 /// \class AliMUONTrackerPreprocessor
 /// \brief Shuttle preprocessor for MUON tracker
-/// 
+///
 //  Author Laurent Aphecetche
 
 #include "AliMUONPreprocessor.h"
@@ -23,7 +23,7 @@ class AliMUONTrackerPreprocessor : public AliMUONPreprocessor
 public:
   AliMUONTrackerPreprocessor(AliShuttleInterface* shuttle);
   virtual ~AliMUONTrackerPreprocessor();
-  
+
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
 
 private:
@@ -31,7 +31,7 @@ private:
   AliMUONTrackerPreprocessor(const AliMUONTrackerPreprocessor& rhs);
   /// Not implemented
   AliMUONTrackerPreprocessor& operator=(const AliMUONTrackerPreprocessor& rhs);
-  
+
 private:
   AliMUONVSubprocessor* fPedestalSubprocessor; ///< Pedestal subprocessor
   AliMUONVSubprocessor* fGMSSubprocessor; ///< GMS subprocessor
@@ -39,8 +39,9 @@ private:
   AliMUONVSubprocessor* fOccupancySubprocessor; ///< Occupancy subprocessor
   AliMUONVSubprocessor* fBusPatchEvolutionSubprocessor; ///< Buspatch evolution subprocessor
   AliMUONVSubprocessor* fConfigSubprocessor; ///< config subprocessor
-  
-  ClassDef(AliMUONTrackerPreprocessor,6) // MUON Tracker Shuttle preprocessor
+  AliMUONVSubprocessor* fLVSubprocessor;  ///< LV subprocessor
+
+  ClassDef(AliMUONTrackerPreprocessor,7) // MUON Tracker Shuttle preprocessor
 };
 
 #endif

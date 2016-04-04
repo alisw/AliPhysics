@@ -206,25 +206,25 @@ void EvtSVVHelCPMix::decay( EvtParticle *p){
   // Now set the amplitude
 
   amp.vertex(0,0,amplSum00);
-  report(INFO,"EvtGen") << "00: " << amplSum00 << std::endl;  
+  report(Severity::Info,"EvtGen") << "00: " << amplSum00 << std::endl;  
   amp.vertex(0,1,amplSum01);
-  report(INFO,"EvtGen") << "01: " << amplSum01 << std::endl;
+  report(Severity::Info,"EvtGen") << "01: " << amplSum01 << std::endl;
   amp.vertex(0,2,amplSum02);
-  report(INFO,"EvtGen") << "02: " << amplSum02 << std::endl;
+  report(Severity::Info,"EvtGen") << "02: " << amplSum02 << std::endl;
 
   amp.vertex(1,0,amplSum10);
-  report(INFO,"EvtGen") << "10: " << amplSum10 << std::endl;
+  report(Severity::Info,"EvtGen") << "10: " << amplSum10 << std::endl;
   amp.vertex(1,1,amplSum11);
-  report(INFO,"EvtGen") << "11: " << amplSum11 << std::endl;
+  report(Severity::Info,"EvtGen") << "11: " << amplSum11 << std::endl;
   amp.vertex(1,2,amplSum12);
-  report(INFO,"EvtGen") << "12: " << amplSum12 << std::endl;
+  report(Severity::Info,"EvtGen") << "12: " << amplSum12 << std::endl;
 
   amp.vertex(2,0,amplSum20);
-  report(INFO,"EvtGen") << "20: " << amplSum20 << std::endl;
+  report(Severity::Info,"EvtGen") << "20: " << amplSum20 << std::endl;
   amp.vertex(2,1,amplSum21);
-  report(INFO,"EvtGen") << "21: " << amplSum21 << std::endl;
+  report(Severity::Info,"EvtGen") << "21: " << amplSum21 << std::endl;
   amp.vertex(2,2,amplSum22);
-  report(INFO,"EvtGen") << "22: " << amplSum22 << std::endl;
+  report(Severity::Info,"EvtGen") << "22: " << amplSum22 << std::endl;
 
   return ;
 

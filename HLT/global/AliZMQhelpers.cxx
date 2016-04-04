@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cassert>
 #include <unistd.h>
+#include <vector>
 
 #include "AliHLTDataTypes.h"
 #include "TString.h"
@@ -16,6 +17,15 @@
 #include "TObjArray.h"
 #include "AliHLTMessage.h"
 
+//init the shared context to null
+void* AliZMQhelpers::gZMQcontext = NULL;
+
+//_______________________________________________________________________________________
+void* alizmq_context()
+{ 
+  if (!AliZMQhelpers::gZMQcontext) AliZMQhelpers::gZMQcontext=zmq_ctx_new();
+  return AliZMQhelpers::gZMQcontext;
+}
 
 //_______________________________________________________________________________________
 int alizmq_detach (void *self, const char *endpoints, bool serverish)
@@ -364,6 +374,29 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   return rc;
 }
 
+int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags)
+{
+  int rc = 0;
+  rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
+  if (rc<0) 
+  {
+    //printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
+    return rc;
+  }
+
+  zmq_msg_t dataMsg;
+  zmq_msg_init_size(&dataMsg, data.size());
+  memcpy(zmq_msg_data(&dataMsg), data.data(), zmq_msg_size(&dataMsg));
+  rc = zmq_msg_send(&dataMsg, socket, flags);
+  if (rc<0) 
+  {
+    //printf("unable to send data: %s\n", data.c_str());
+    zmq_msg_close(&dataMsg);
+    return rc;
+  }
+  return rc;
+}
+
 //______________________________________________________________________________
 void alizmq_deleteTObject(void*, void* object)
 {
@@ -687,5 +720,48 @@ aliStringVec* AliOptionParser::TokenizeOptionString(const TString strIn)
   delete lines;
 
   return options;
+}
+
+//tokenize a std::string
+using namespace std;
+vector<string> TokenizeString(const string input, const string delimiters)
+{
+  vector<string> output;
+  output.reserve(10);
+  size_t start = 0;
+  size_t end = input.find_first_of(delimiters);
+  do
+  {
+    output.push_back(input.substr(start, end-start));
+    start = ++end;
+    end = input.find_first_of(delimiters, start);
+    if (end == string::npos)
+    {
+      output.push_back(input.substr(start, input.length()));
+    }
+  } while (end != string::npos);
+  return output;
+}
+
+//tokenize a string delimited by semi-colons and return a map
+//of key value pairs, "KEY=VALUE;key2=value2"
+stringMap ParseParamString(const string paramString)
+{
+  vector<string> tokens = TokenizeString( paramString, ";");
+  stringMap output;
+  for (vector<string>::iterator i=tokens.begin(); i!=tokens.end(); ++i)
+  {
+    if (i->empty()) continue;
+    size_t pos = i->find_first_of("=");
+    if (pos == string::npos)
+    {
+      output[*i] = "";
+    }
+    else
+    {
+      output[i->substr(0,pos)] = i->substr(pos+1,string::npos);
+    }
+  }
+  return output;
 }
 

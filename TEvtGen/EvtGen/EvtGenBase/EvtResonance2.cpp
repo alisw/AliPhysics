@@ -118,7 +118,7 @@ EvtComplex EvtResonance2::resAmpl() {
     power=5;
     break;
   default:
-    report(INFO,"EvtGen") << "Incorrect spin in EvtResonance22.cc\n";
+    report(Severity::Info,"EvtGen") << "Incorrect spin in EvtResonance22.cc\n";
   }
   
   double gammaAB= gammaR*pow(pAB/pR,power)*(mR/mAB)*fR*fR;
@@ -141,7 +141,7 @@ EvtComplex EvtResonance2::resAmpl() {
   break;
 
   default:
-    report(INFO,"EvtGen") << "Incorrect spin in EvtResonance22.cc\n";
+    report(Severity::Info,"EvtGen") << "Incorrect spin in EvtResonance22.cc\n";
   }
 
   return ampl;

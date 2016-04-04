@@ -522,7 +522,7 @@ double EvtPropSLPole::calcMaxProb( EvtId parent, EvtId meson,
 
       }
 
-      //report(DEBUG,"EvtGen") << "prob,probctl:"<<prob<<" "
+      //report(Severity::Debug,"EvtGen") << "prob,probctl:"<<prob<<" "
       //                            << probctl[0]<<" "
       //                            << probctl[1]<<" "
       //                            << probctl[2]<<endl;

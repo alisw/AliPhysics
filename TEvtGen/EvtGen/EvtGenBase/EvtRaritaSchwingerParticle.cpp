@@ -46,7 +46,7 @@ void EvtRaritaSchwingerParticle::init(EvtId id,const EvtVector4R& p4){
     setpart_num(id);
     
     if (EvtPDL::getStdHep(id)==0){
-	report(ERROR,"EvtGen") << "Error in EvtRaritaSchwingerParticle::init, part_n="
+	report(Severity::Error,"EvtGen") << "Error in EvtRaritaSchwingerParticle::init, part_n="
 			       << id.getId()<<endl;
 	::abort();
     }
@@ -102,7 +102,7 @@ void EvtRaritaSchwingerParticle::init(EvtId id,const EvtVector4R& p4,
   setpart_num(id);
 
   if (EvtPDL::getStdHep(id)==0){
-    report(ERROR,"EvtGen") << "Error in EvtRaritaSchwingerParticle::init, part_n="
+    report(Severity::Error,"EvtGen") << "Error in EvtRaritaSchwingerParticle::init, part_n="
                            << id.getId()<<std::endl;
     ::abort();
   }

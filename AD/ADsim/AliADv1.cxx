@@ -66,6 +66,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliTrackReference.h"
 
 
 ClassImp(AliADv1)
@@ -1213,10 +1214,8 @@ void AliADv1::StepManager()
       nPhotons_ad       = 0;
    }
        
-   //   Do we need track reference ????
-   // if( gMC->IsTrackEntering() || gMC->IsTrackExiting() ) {
-   //    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), 49);
-   // }
+    //Track reference   
+    if( gMC->IsTrackEntering() || gMC->IsTrackExiting() ) AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kAD);
 }
 //_________________________________________________________
 void AliADv1::AddHit(Int_t track, Int_t *vol, Float_t *hits)

@@ -64,7 +64,7 @@ void EvtSSDCP::init(){
        && ( getParentId() != EvtPDL::getId( "anti-B0" ) ) 
        && ( getParentId() != EvtPDL::getId( "B_s0" ) )
        && ( getParentId() != EvtPDL::getId( "anti-B_s0" ) ) ) {
-    report( ERROR , "EvtGen" ) << "EvtSSDCP only decays B0 and B0s" 
+    report( Severity::Error , "EvtGen" ) << "EvtSSDCP only decays B0 and B0s" 
                                << std::endl ;
     ::abort() ;
   }
@@ -74,10 +74,10 @@ void EvtSSDCP::init(){
        (!((d2type==EvtSpinType::SCALAR)||(d2type==EvtSpinType::VECTOR)||(d2type==EvtSpinType::TENSOR)))||
        (!((d1type==EvtSpinType::SCALAR)||(d1type==EvtSpinType::VECTOR)||(d1type==EvtSpinType::TENSOR)))
        ) {
-    report(ERROR,"EvtGen") << "EvtSSDCP generator expected "
+    report(Severity::Error,"EvtGen") << "EvtSSDCP generator expected "
                            << "one of the daugters to be a scalar, the other either scalar, vector, or tensor, found:"
 			   << EvtPDL::name(getDaug(0)).c_str()<<" and "<<EvtPDL::name(getDaug(1)).c_str()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
 
@@ -143,7 +143,7 @@ void EvtSSDCP::init(){
   _dgamma=_gamma*_dgog;  //dgamma/c (1/mm) 
 
   if (verbose()){
-    report(INFO,"EvtGen") << "SSD_CP will generate CP/CPT violation:"
+    report(Severity::Info,"EvtGen") << "SSD_CP will generate CP/CPT violation:"
 			  << endl << endl
 			  << "    " << EvtPDL::name(getParentId()).c_str() << " --> "
 			  << EvtPDL::name(getDaug(0)).c_str() << " + "
@@ -234,13 +234,13 @@ void EvtSSDCP::decay( EvtParticle *p){
   if (!flip){
     if (other_b==B0B||other_b==B0Bs){
       //at t=0 we have a B0
-      //report(INFO,"EvtGen") << "B0B"<<endl;
+      //report(Severity::Info,"EvtGen") << "B0B"<<endl;
       amp=BB*_A_f+barBB*_Abar_f;
       //std::cout << "noflip B0B tag:"<<amp<<std::endl;
       //amp=0.0;
     }
     if (other_b==B0||other_b==B0s){
-      //report(INFO,"EvtGen") << "B0"<<endl;
+      //report(Severity::Info,"EvtGen") << "B0"<<endl;
       amp=BbarB*_A_f+barBbarB*_Abar_f;
     }
   }else{

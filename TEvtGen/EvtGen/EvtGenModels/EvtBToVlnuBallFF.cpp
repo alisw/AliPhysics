@@ -94,7 +94,7 @@ void EvtBToVlnuBallFF::getvectorff(EvtId parent,EvtId /*daught*/,
 void EvtBToVlnuBallFF::getscalarff(EvtId, EvtId, double, double, double*, 
 			       double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getvectorff in EvtBToVlnuBallFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getvectorff in EvtBToVlnuBallFF.\n";  
   ::abort();
 
 }
@@ -104,7 +104,7 @@ void EvtBToVlnuBallFF::getscalarff(EvtId, EvtId, double, double, double*,
 void EvtBToVlnuBallFF::gettensorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :gettensorff in EvtBToVlnuBallFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :gettensorff in EvtBToVlnuBallFF.\n";  
   ::abort();
 
 }
@@ -114,7 +114,7 @@ void EvtBToVlnuBallFF::gettensorff(EvtId, EvtId, double, double, double*,
 void EvtBToVlnuBallFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBToVlnuBallFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBToVlnuBallFF.\n";  
   ::abort();
 
 }
@@ -123,7 +123,7 @@ void EvtBToVlnuBallFF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtBToVlnuBallFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 				  double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtBToVlnuBallFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtBToVlnuBallFF.\n";
   ::abort();
 
 }
@@ -131,7 +131,7 @@ void EvtBToVlnuBallFF::getdiracff(EvtId, EvtId, double, double, double*, double*
 void EvtBToVlnuBallFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 				   double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtBToVlnuBallFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtBToVlnuBallFF.\n";
   ::abort();
 
 }

@@ -115,7 +115,7 @@ void EvtAmp::setNState(int parent_states,int *daug_states){
   }
 
   if (_nontrivial>5) {
-    report(ERROR,"EvtGen") << "Too many nontrivial states in EvtAmp!"<<endl;
+    report(Severity::Error,"EvtGen") << "Too many nontrivial states in EvtAmp!"<<endl;
   }
 
 }
@@ -202,7 +202,7 @@ EvtSpinDensity EvtAmp::getSpinDensity(){
 	  temp += _amp[_pstates*kk+i]*conj(_amp[_pstates*kk+j]);}
 
 	//        if (_nontrivial>3){
-	//report(ERROR,"EvtGen") << "Can't handle so many states in EvtAmp!"<<endl;
+	//report(Severity::Error,"EvtGen") << "Can't handle so many states in EvtAmp!"<<endl;
 	//}
         
         rho.set(i,j,temp);
@@ -295,7 +295,7 @@ EvtAmp EvtAmp::contract(int k,const EvtSpinDensity& rho){
   }
 
   if (_nontrivial==0) {
-    report(ERROR,"EvtGen")<<"Should not be here EvtAmp!"<<endl;
+    report(Severity::Error,"EvtGen")<<"Should not be here EvtAmp!"<<endl;
   }
 
 
@@ -370,7 +370,7 @@ EvtSpinDensity EvtAmp::contract(int k,const EvtAmp& amp2){
 
     for(j=0;j<_nstate[k];j++){
       if (_nontrivial==0) {
-	report(ERROR,"EvtGen")<<"Should not be here1 EvtAmp!"<<endl;
+	report(Severity::Error,"EvtGen")<<"Should not be here1 EvtAmp!"<<endl;
         rho.set(0,0,EvtComplex(1.0,0.0)); 
         return rho;
       }
@@ -417,7 +417,7 @@ EvtAmp EvtAmp::contract(int , const EvtAmp& ,const EvtAmp& ){
   
   //Do we need this method?
   EvtAmp tmp;
-  report(DEBUG,"EvtGen") << "EvtAmp::contract not written yet" << endl;
+  report(Severity::Debug,"EvtGen") << "EvtAmp::contract not written yet" << endl;
   return tmp;
 
 }
@@ -428,28 +428,28 @@ void EvtAmp::dump(){
   int i,list[10];
   for (i = 0; i < 10; i++) {list[i] = 0;}
 
-  report(DEBUG,"EvtGen") << "Number of daugthers:"<<_ndaug<<endl;
-  report(DEBUG,"EvtGen") << "Number of states of the parent:"<<_pstates<<endl;
-  report(DEBUG,"EvtGen") << "Number of states on daughters:";
+  report(Severity::Debug,"EvtGen") << "Number of daugthers:"<<_ndaug<<endl;
+  report(Severity::Debug,"EvtGen") << "Number of states of the parent:"<<_pstates<<endl;
+  report(Severity::Debug,"EvtGen") << "Number of states on daughters:";
   for (i=0;i<_ndaug;i++){
-    report(DEBUG,"EvtGen") <<dstates[i]<<" ";
+    report(Severity::Debug,"EvtGen") <<dstates[i]<<" ";
   }
-  report(DEBUG,"EvtGen") << endl;
-  report(DEBUG,"EvtGen") << "Nontrivial index of  daughters:";
+  report(Severity::Debug,"EvtGen") << endl;
+  report(Severity::Debug,"EvtGen") << "Nontrivial index of  daughters:";
   for (i=0;i<_ndaug;i++){
-    report(DEBUG,"EvtGen") <<_dnontrivial[i]<<" ";
+    report(Severity::Debug,"EvtGen") <<_dnontrivial[i]<<" ";
   }
-  report(DEBUG,"EvtGen") <<endl;
-  report(DEBUG,"EvtGen") <<"number of nontrivial states:"<<_nontrivial<<endl;
-  report(DEBUG,"EvtGen") << "Nontrivial particles number of states:";
+  report(Severity::Debug,"EvtGen") <<endl;
+  report(Severity::Debug,"EvtGen") <<"number of nontrivial states:"<<_nontrivial<<endl;
+  report(Severity::Debug,"EvtGen") << "Nontrivial particles number of states:";
   for (i=0;i<_nontrivial;i++){
-    report(DEBUG,"EvtGen") <<_nstate[i]<<" ";
+    report(Severity::Debug,"EvtGen") <<_nstate[i]<<" ";
   }
-  report(DEBUG,"EvtGen") <<endl;
-  report(DEBUG,"EvtGen") <<"Amplitudes:"<<endl;
+  report(Severity::Debug,"EvtGen") <<endl;
+  report(Severity::Debug,"EvtGen") <<"Amplitudes:"<<endl;
   if (_nontrivial==0){
     list[0] = 0;
-    report(DEBUG,"EvtGen") << getAmp(list) << endl;
+    report(Severity::Debug,"EvtGen") << getAmp(list) << endl;
   }
 
   int allloop[10];
@@ -466,14 +466,14 @@ void EvtAmp::dump(){
   }
   int index = 0;
   for (i=0;i<allloop[_nontrivial-1];i++) {
-    report(DEBUG,"EvtGen") << getAmp(list) << " ";
+    report(Severity::Debug,"EvtGen") << getAmp(list) << " ";
     if ( i==allloop[index]-1 ) {
       index ++;
-      report(DEBUG,"EvtGen") << endl;
+      report(Severity::Debug,"EvtGen") << endl;
     }
   }
 
-  report(DEBUG,"EvtGen") << "-----------------------------------"<<endl;
+  report(Severity::Debug,"EvtGen") << "-----------------------------------"<<endl;
 
 }
 

@@ -69,12 +69,12 @@ EvtGen::EvtGen(const char* const decayName,
 	       int mixingType, bool useXml){
 
 
-  report(INFO,"EvtGen") << "Initializing EvtGen"<<endl;
+  report(Severity::Info,"EvtGen") << "Initializing EvtGen"<<endl;
 
   if (randomEngine==0){
     static EvtSimpleRandomEngine defaultRandomEngine;
     EvtRandom::setRandomEngine(&defaultRandomEngine);
-    report(INFO,"EvtGen") <<"No random engine given in "
+    report(Severity::Info,"EvtGen") <<"No random engine given in "
 			  <<"EvtGen::EvtGen constructor, "
 			  <<"will use default EvtSimpleRandomEngine."<<endl;
   }
@@ -82,11 +82,11 @@ EvtGen::EvtGen(const char* const decayName,
     EvtRandom::setRandomEngine(randomEngine);    
   }
 
-  report(INFO,"EvtGen") << "Storing known decay models"<<endl;
+  report(Severity::Info,"EvtGen") << "Storing known decay models"<<endl;
   EvtModelReg dummy(extraModels);
 
-  report(INFO,"EvtGen") << "Main decay file name  :"<<decayName<<endl;
-  report(INFO,"EvtGen") << "PDT table file name   :"<<pdtTableName<<endl;
+  report(Severity::Info,"EvtGen") << "Main decay file name  :"<<decayName<<endl;
+  report(Severity::Info,"EvtGen") << "PDT table file name   :"<<pdtTableName<<endl;
   
   _pdl.readPDT(pdtTableName);
 
@@ -97,7 +97,7 @@ EvtGen::EvtGen(const char* const decayName,
   }
 
   _mixingType = mixingType;
-  report(INFO,"EvtGen") << "Mixing type integer set to "<<_mixingType<<endl;
+  report(Severity::Info,"EvtGen") << "Mixing type integer set to "<<_mixingType<<endl;
   EvtCPUtil::getInstance()->setMixingType(_mixingType);
 
   // Set the radiative correction engine
@@ -115,7 +115,7 @@ EvtGen::EvtGen(const char* const decayName,
 
   }
 
-  report(INFO,"EvtGen") << "Done initializing EvtGen"<<endl;
+  report(Severity::Info,"EvtGen") << "Done initializing EvtGen"<<endl;
 
 }
 
@@ -125,7 +125,7 @@ void EvtGen::readUDecay(const char* const uDecayName, bool useXml){
   ifstream indec;
 
   if ( uDecayName[0] == 0) {
-    report(INFO,"EvtGen") << "Is not reading a user decay file!"<<endl;
+    report(Severity::Info,"EvtGen") << "Is not reading a user decay file!"<<endl;
   }
   else{  
     indec.open(uDecayName);
@@ -138,7 +138,7 @@ void EvtGen::readUDecay(const char* const uDecayName, bool useXml){
     }    
     else{
       
-      report(INFO,"EvtGen") << "Can not find UDECAY file '"
+      report(Severity::Info,"EvtGen") << "Can not find UDECAY file '"
 			    <<uDecayName<<"'.  Stopping"<<endl;
       ::abort();
     }
@@ -193,8 +193,8 @@ void EvtGen::generateDecay(EvtParticle *p){
     }
 
     if ( times==10000) {
-      report(ERROR,"EvtGen") << "Your event has been rejected 10000 times!"<<endl;
-      report(ERROR,"EvtGen") << "Will now abort."<<endl;
+      report(Severity::Error,"EvtGen") << "Your event has been rejected 10000 times!"<<endl;
+      report(Severity::Error,"EvtGen") << "Will now abort."<<endl;
       ::abort();
       times=0;
     }

@@ -62,7 +62,7 @@ void EvtBToPlnuBKFF::getscalarff(EvtId parent,EvtId /*daught*/,
 void EvtBToPlnuBKFF::getvectorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getvectorff in EvtBToPlnuBKFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getvectorff in EvtBToPlnuBKFF.\n";  
   ::abort();
 
 }
@@ -72,7 +72,7 @@ void EvtBToPlnuBKFF::getvectorff(EvtId, EvtId, double, double, double*,
 void EvtBToPlnuBKFF::gettensorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :gettensorff in EvtBToPlnuBKFf.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :gettensorff in EvtBToPlnuBKFf.\n";  
   ::abort();
 
 }
@@ -82,7 +82,7 @@ void EvtBToPlnuBKFF::gettensorff(EvtId, EvtId, double, double, double*,
 void EvtBToPlnuBKFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBToPlnuBKFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBToPlnuBKFF.\n";  
   ::abort();
 
 }
@@ -90,7 +90,7 @@ void EvtBToPlnuBKFF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtBToPlnuBKFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 				double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtBToPlnuBKFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtBToPlnuBKFF.\n";
   ::abort();
 
 }
@@ -98,7 +98,7 @@ void EvtBToPlnuBKFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtBToPlnuBKFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 				 double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtBToPlnuBKFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtBToPlnuBKFF.\n";
   ::abort();
 
 }

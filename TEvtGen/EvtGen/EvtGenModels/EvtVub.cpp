@@ -57,10 +57,10 @@ void EvtVub::init(){
 
   if (getNArg()<6) {
 
-    report(ERROR,"EvtGen") << "EvtVub generator expected "
+    report(Severity::Error,"EvtGen") << "EvtVub generator expected "
                            << " at least 6 arguments (mb,a,alpha_s,Nbins,m1,w1,...) but found: "
 			   <<getNArg()<<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
 
   }
@@ -74,10 +74,10 @@ void EvtVub::init(){
   _weights      = new double[_nbins];
  
   if (getNArg()-4 != 2*_nbins) {
-    report(ERROR,"EvtGen") << "EvtVub generator expected " 
+    report(Severity::Error,"EvtGen") << "EvtVub generator expected " 
                            << _nbins << " masses and weights but found: "
 			   <<(getNArg()-4)/2 <<endl;
-    report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
     ::abort();
   }
   int i,j = 4;
@@ -85,23 +85,23 @@ void EvtVub::init(){
   for (i=0;i<_nbins;i++) {
     _masses[i] = getArg(j++);
     if (i>0 && _masses[i] <= _masses[i-1]) {
-      report(ERROR,"EvtGen") << "EvtVub generator expected " 
+      report(Severity::Error,"EvtGen") << "EvtVub generator expected " 
 			     << " mass bins in ascending order!"
 			     << "Will terminate execution!"<<endl;
       ::abort();
     }
     _weights[i] = getArg(j++);
     if (_weights[i] < 0) {
-      report(ERROR,"EvtGen") << "EvtVub generator expected " 
+      report(Severity::Error,"EvtGen") << "EvtVub generator expected " 
 			     << " weights >= 0, but found: " 
 			     <<_weights[i] <<endl;
-      report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+      report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
       ::abort();
     }
     if ( _weights[i] > maxw ) maxw = _weights[i];
   }
   if (maxw == 0) {
-    report(ERROR,"EvtGen") << "EvtVub generator expected at least one " 
+    report(Severity::Error,"EvtGen") << "EvtVub generator expected at least one " 
 			   << " weight > 0, but found none! " 
 			   << "Will terminate execution!"<<endl;
     ::abort();
@@ -232,7 +232,7 @@ void EvtVub::decay( EvtParticle *p ){
 	    
 	    double y = _dGamma->getdGdxdzdp(x,z,p2)/_dGMax*p2;
 	    
-	    if ( y > 1 ) report(WARNING,"EvtGen")<<"EvtVub decay probability > 1 found: " << y << endl;
+	    if ( y > 1 ) report(Severity::Warning,"EvtGen")<<"EvtVub decay probability > 1 found: " << y << endl;
 	    if ( y >= xran ) tryit = 0;
 	  }
 	}

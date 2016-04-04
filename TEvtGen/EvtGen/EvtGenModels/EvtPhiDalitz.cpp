@@ -59,8 +59,8 @@ void EvtPhiDalitz::init(){
      if ( getDaug(i) == EvtPDL::getId("pi0")) _locPi0=i;
   }
   if ( _locPip == -1 || _locPim == -1 || _locPi0 == -1 ) {
-    report(ERROR,"EvtGen") << getModelName() << "generator expects daughters to be pi+ pi- pi0\n";
-    report(ERROR,"EvtGen") << "Found " << EvtPDL::name(getDaug(0)) << " " 
+    report(Severity::Error,"EvtGen") << getModelName() << "generator expects daughters to be pi+ pi- pi0\n";
+    report(Severity::Error,"EvtGen") << "Found " << EvtPDL::name(getDaug(0)) << " " 
 			   << EvtPDL::name(getDaug(1)) << " " 
 			   << EvtPDL::name(getDaug(2)) << std::endl;
 

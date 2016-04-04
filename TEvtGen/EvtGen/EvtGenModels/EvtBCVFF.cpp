@@ -101,7 +101,7 @@ void EvtBCVFF::getvectorff(EvtId,EvtId,
       };
   }
   else {
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
     ::abort();
   };
 }
@@ -110,7 +110,7 @@ void EvtBCVFF::getvectorff(EvtId,EvtId,
 void EvtBCVFF::getscalarff(EvtId, EvtId, double, double, double*, 
 			       double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
   ::abort();
 
 }
@@ -120,7 +120,7 @@ void EvtBCVFF::getscalarff(EvtId, EvtId, double, double, double*,
 void EvtBCVFF::gettensorff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
   ::abort();
 
 }
@@ -130,7 +130,7 @@ void EvtBCVFF::gettensorff(EvtId, EvtId, double, double, double*,
 void EvtBCVFF::getbaryonff(EvtId, EvtId, double, double, double*, 
 			       double*, double*, double*){
   
-  report(ERROR,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
+  report(Severity::Error,"EvtGen") << "Not implemented :getbaryonff in EvtBCVFF.\n";  
   ::abort();
 
 }
@@ -138,7 +138,7 @@ void EvtBCVFF::getbaryonff(EvtId, EvtId, double, double, double*,
 void EvtBCVFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 			       double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getdiracff in EvtBCVFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getdiracff in EvtBCVFF.\n";
   ::abort();
 
 }
@@ -146,7 +146,7 @@ void EvtBCVFF::getdiracff(EvtId, EvtId, double, double, double*, double*,
 void EvtBCVFF::getraritaff(EvtId, EvtId, double, double, double*, double*, 
 				double*, double*, double*, double*, double*, double*) {
   
-  report(ERROR,"EvtGen") << "Not implemented :getraritaff in EvtBCVFF.\n";
+  report(Severity::Error,"EvtGen") << "Not implemented :getraritaff in EvtBCVFF.\n";
   ::abort();
 
 }

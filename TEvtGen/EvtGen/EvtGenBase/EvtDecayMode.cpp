@@ -59,13 +59,13 @@ EvtDecayMode::EvtDecayMode(const char* decay)
 
   if(i == string::npos) {
 
-    report(INFO,"EvtGen") << "No non-space character found" << endl;
+    report(Severity::Info,"EvtGen") << "No non-space character found" << endl;
     assert(0);
   }
 
   if(j == string::npos) {
     
-    report(INFO,"EvtGen") << "No space before -> found" << endl;
+    report(Severity::Info,"EvtGen") << "No space before -> found" << endl;
     assert(0);
   }
 
@@ -75,7 +75,7 @@ EvtDecayMode::EvtDecayMode(const char* decay)
   j = s.find_first_of("->",j);
   if(i != j) {
 
-    report(INFO,"EvtGen") << "Multiple mothers?" << i << "," << j << endl;
+    report(Severity::Info,"EvtGen") << "Multiple mothers?" << i << "," << j << endl;
     assert(0);
   }
   j += 2;

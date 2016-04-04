@@ -72,7 +72,7 @@ bool EvtDalitzTable::fileHasBeenRead(const std::string dec_name) {
 void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
 
   if (verbose) {
-    report(INFO,"EvtGen")<<"EvtDalitzTable: Reading in xml parameter file "<<dec_name<<endl;
+    report(Severity::Info,"EvtGen")<<"EvtDalitzTable: Reading in xml parameter file "<<dec_name<<endl;
   }
 
   _readFiles.push_back(dec_name);
@@ -123,10 +123,10 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
         }
 
         if(nDaughters!=3) {
-          report(ERROR,"EvtGen") <<
+          report(Severity::Error,"EvtGen") <<
                 "Expected to find three daughters for dalitzDecay of "<<decayParent<<" near line "
                 <<parser.getLineNumber()<<", "<<"found "<<nDaughters<<endl;
-              report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+              report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
               ::abort();
         }
 
@@ -168,11 +168,11 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
         }
 
         if(nDaughters!=3 || nCopyDaughters!=3) {
-          report(ERROR,"EvtGen") <<
+          report(Severity::Error,"EvtGen") <<
                 "Expected to find three daughters for copyDecay of "<<decayParent<<
                 " from "<<copyParent<<" near line "<<parser.getLineNumber()<<
                 ", "<<"found "<<nDaughters<<" and "<<nCopyDaughters<<endl;
-          report(ERROR,"EvtGen") << "Will terminate execution!"<<endl;
+          report(Severity::Error,"EvtGen") << "Will terminate execution!"<<endl;
               ::abort();
         }
 
@@ -221,8 +221,8 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
         if(particle != "") {
           EvtId resId = EvtPDL::getId(particle);
           if(resId == EvtId(-1,-1)) {
-            report(ERROR,"EvtGen") <<"Unknown particle name:"<<particle.c_str()<<endl;
-            report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+            report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<particle.c_str()<<endl;
+            report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
             ::abort();
           } else {
             mass = EvtPDL::getMeanMass(resId);
@@ -246,7 +246,7 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
           spinType = EvtSpinType::TENSOR;
           break;
         default:
-          report(ERROR,"EvtGen") << "Unsupported spin near line "<<parser.getLineNumber()<<" of XML file."<<endl;
+          report(Severity::Error,"EvtGen") << "Unsupported spin near line "<<parser.getLineNumber()<<" of XML file."<<endl;
           ::abort();
         }
 
@@ -283,12 +283,12 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
             resDaughter[nResDaug++] = EvtPDL::getId(resDaug);
           }
           if(nResDaug != 2) {
-            report(ERROR,"EvtGen") << "Resonance must have exactly 2 daughters near line "<<parser.getLineNumber()<<" of XML file."<<endl;
+            report(Severity::Error,"EvtGen") << "Resonance must have exactly 2 daughters near line "<<parser.getLineNumber()<<" of XML file."<<endl;
             ::abort();
           }
           int nRes = getDaughterPairs(resDaughter, daughter, angAndResPairs);
           if(nRes==0) {
-            report(ERROR,"EvtGen") << "Resonance daughters must match decay daughters near line "<<parser.getLineNumber()<<" of XML file."<<endl;
+            report(Severity::Error,"EvtGen") << "Resonance daughters must match decay daughters near line "<<parser.getLineNumber()<<" of XML file."<<endl;
             ::abort();
           }
           if(parser.readAttributeBool("normalise",true)) cAmp /= sqrt(nRes);
@@ -309,7 +309,7 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
               angAndResPairs.push_back(std::make_pair(EvtCyclic3::AB,EvtCyclic3::AB));
               break;
             }
-            report(ERROR,"EvtGen") << "Daughter pair must be 1, 2 or 3 near line "<<parser.getLineNumber()<<" of XML file."<<endl;
+            report(Severity::Error,"EvtGen") << "Daughter pair must be 1, 2 or 3 near line "<<parser.getLineNumber()<<" of XML file."<<endl;
             ::abort();
           }
         }
@@ -324,8 +324,8 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
         }
       } else if(parser.getTagTitle() == "/dalitzDecay") {
         if(probMax < 0) {
-          report(INFO,"EvtGen") << "probMax is not defined for " << decayParent << " -> " << daugStr << endl;
-          report(INFO,"EvtGen") << "Will now estimate probMax. This may take a while. Once probMax is calculated, update the XML file to skip this step in future." << endl;
+          report(Severity::Info,"EvtGen") << "probMax is not defined for " << decayParent << " -> " << daugStr << endl;
+          report(Severity::Info,"EvtGen") << "Will now estimate probMax. This may take a while. Once probMax is calculated, update the XML file to skip this step in future." << endl;
           probMax = calcProbMax(dp,dalitzDecay);
         }
         dalitzDecay->setProbMax(probMax);
@@ -333,7 +333,7 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
         delete dalitzDecay;
         dalitzDecay = 0;
       } else if(verbose) {
-        report(INFO,"EvtGen") << "Unexpected tag "<<parser.getTagTitle()
+        report(Severity::Info,"EvtGen") << "Unexpected tag "<<parser.getTagTitle()
                               <<" found in XML decay file near line "
                               <<parser.getLineNumber()<<". Tag will be ignored."<<endl;
       }
@@ -362,7 +362,7 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
   }
 
   if(!endReached) {
-    report(ERROR,"EvtGen") << "Either the decay file ended prematurely or the file is badly formed.\n"
+    report(Severity::Error,"EvtGen") << "Either the decay file ended prematurely or the file is badly formed.\n"
                           <<"Error occured near line"<<parser.getLineNumber()<<endl;
     ::abort();
   }
@@ -370,8 +370,8 @@ void EvtDalitzTable::readXMLDecayFile(const std::string dec_name, bool verbose){
 
 void EvtDalitzTable::checkParticle(std::string particle) {
   if (EvtPDL::getId(particle)==EvtId(-1,-1)) {
-    report(ERROR,"EvtGen") <<"Unknown particle name:"<<particle.c_str()<<endl;
-    report(ERROR,"EvtGen") <<"Will terminate execution!"<<endl;
+    report(Severity::Error,"EvtGen") <<"Unknown particle name:"<<particle.c_str()<<endl;
+    report(Severity::Error,"EvtGen") <<"Will terminate execution!"<<endl;
     ::abort();
   }
 }
@@ -410,7 +410,7 @@ void EvtDalitzTable::copyDecay(EvtId parent, EvtId* daughters,
     }
   }
   //if we get here then there was no match
-  report(ERROR,"EvtGen") << "Did not find dalitz decays for particle:"
+  report(Severity::Error,"EvtGen") << "Did not find dalitz decays for particle:"
          <<copy<<"\n";
 }
 
@@ -421,7 +421,7 @@ std::vector<EvtDalitzDecayInfo> EvtDalitzTable::getDalitzTable(const EvtId& pare
   }
 
   if (table.empty()){
-    report(ERROR,"EvtGen") << "Did not find dalitz decays for particle:"
+    report(Severity::Error,"EvtGen") << "Did not find dalitz decays for particle:"
          <<parent<<"\n";
   }
 
@@ -455,7 +455,7 @@ EvtDalitzReso EvtDalitzTable::getResonance(std::string shape, EvtDalitzPlot dp, 
   } else if( shape=="NonRes_Exp" ) {
     return EvtDalitzReso( dp, resPair, EvtDalitzReso::NON_RES_EXP, alpha );
   } else { //NBW
-    if( shape!="NBW") report(WARNING,"EvtGen")<<"EvtDalitzTable: shape "<<shape<<" is unknown. Defaulting to NBW."<<endl;
+    if( shape!="NBW") report(Severity::Warning,"EvtGen")<<"EvtDalitzTable: shape "<<shape<<" is unknown. Defaulting to NBW."<<endl;
     return EvtDalitzReso( dp, angPair, resPair, spinType, mass, width, EvtDalitzReso::NBW, FFp, FFr );
   }
 }
@@ -544,8 +544,8 @@ double EvtDalitzTable::calcProbMax(EvtDalitzPlot dp, EvtDalitzDecayInfo* model) 
       if(prob > maxProb) maxProb = prob;
     }
   }
-  report(INFO,"EvtGen") << "Largest probability found was " << maxProb << endl;
-  report(INFO,"EvtGen") << "Setting probMax to " << factor*maxProb << endl;
+  report(Severity::Info,"EvtGen") << "Largest probability found was " << maxProb << endl;
+  report(Severity::Info,"EvtGen") << "Setting probMax to " << factor*maxProb << endl;
   return factor*maxProb;
 }
 
