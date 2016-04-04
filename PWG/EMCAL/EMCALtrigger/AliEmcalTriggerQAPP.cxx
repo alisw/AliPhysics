@@ -75,6 +75,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
   fNL0DCal(0),
   fNL1DCal(0),
   fEventTimeStamp(0),
+  fEventTimeStampBin(0),
   fNTotTRU(0),
   fMaxFORabsId(0)
 {
@@ -129,6 +130,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
   fNL0DCal(0),
   fNL1DCal(0),
   fEventTimeStamp(0),
+  fEventTimeStampBin(0),
   fNTotTRU(0),
   fMaxFORabsId(0)
 {
@@ -183,6 +185,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const AliEmcalTriggerQAPP& triggerQA) :
   fNL0DCal(0),
   fNL1DCal(0),
   fEventTimeStamp(0),
+  fEventTimeStampBin(0),
   fNTotTRU(0),
   fMaxFORabsId(0)
 {
@@ -620,29 +623,9 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
     }
   }
 
-  UInt_t timeStamp = 0;
-
-  if (fTimeStampBinWidth > 0) {
-    UInt_t timeStampBins = fEventTimeStamp / fTimeStampBinWidth;
-    timeStamp = timeStampBins*fTimeStampBinWidth;
-
-    hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u", timeStamp);
-    if (!fHistManager.FindObject(hname)) {
-      TString htitle;
-
-      hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u", timeStamp);
-      htitle = Form("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
-      fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
-
-      hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u", timeStamp);
-      htitle = Form("EMCTRQA_histLargeAmpFastORL0 (>%d);FastOR abs. ID;entries above %d", fFastorL0Th, fFastorL0Th);
-      fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
-    }
-  }
-
   if (L0amp > fMinL0FastORAmp) {
     if (fTimeStampBinWidth > 0) {
-      hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u", timeStamp);
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
       fHistManager.FillTH1(hname, fastor->GetAbsId());
     }
 
@@ -695,7 +678,7 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
 
   if (L0amp > fFastorL0Th) {
     if (fTimeStampBinWidth > 0) {
-      hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u", timeStamp);
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
       fHistManager.FillTH1(hname, fastor->GetAbsId());
     }
 
@@ -848,4 +831,41 @@ Int_t AliEmcalTriggerQAPP::GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t i
   else {
     return 0;
   }
+}
+
+/**
+ * This function should be called every event to set the new time stamp.
+ * It sets the time stamp in the internal field, computes the time stamp bin
+ * based on fTimeStampBinWidth and creates the "by-time-stamp" histograms.
+ * \param timeStamp Time stamp of the event
+ */
+void AliEmcalTriggerQAPP::EventTimeStamp(UInt_t timeStamp)
+{
+  fEventTimeStamp = timeStamp;
+
+  if (fTimeStampBinWidth == 0) return;
+
+  UInt_t timeStampBins = fEventTimeStamp / fTimeStampBinWidth;
+  fEventTimeStampBin = timeStampBins*fTimeStampBinWidth;
+
+  TString hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+  if (!fHistManager.FindObject(hname)) {
+    TString htitle;
+
+    hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    htitle = TString::Format("EMCTRQA_histEvents;;events");
+    TH1* hevents = fHistManager.CreateTH1(hname, htitle, 1, 0, 1);
+    hevents->GetXaxis()->SetBinLabel(1, TString::Format("%u <= time stamp < %u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth));
+
+    hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    htitle = TString::Format("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
+    fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+
+    hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    htitle = TString::Format("EMCTRQA_histLargeAmpFastORL0 (>%d);FastOR abs. ID;entries above %d", fFastorL0Th, fFastorL0Th);
+    fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+  }
+
+  hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+  fHistManager.FillTH1(hname, 0.);
 }

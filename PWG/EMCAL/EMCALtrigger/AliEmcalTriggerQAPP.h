@@ -89,7 +89,7 @@ public:
   void   ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells);
   void   ProcessCell(const AliEmcalCellInfo& cell);
   void   EventCompleted();
-  void   SetEventTimeStamp(UInt_t timeStamp) { fEventTimeStamp = timeStamp; }
+  void   EventTimeStamp(UInt_t timeStamp);
 
   static Int_t  GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t itype);
 
@@ -134,6 +134,7 @@ protected:
   Int_t                      fNL0DCal;                     //!<! DCal number of L0 FastORs (will be reset each event)
   Int_t                      fNL1DCal;                     //!<! DCal number of L1 FastORs (will be reset each event)
   UInt_t                     fEventTimeStamp;              //!<! Time stamp of the current event
+  UInt_t                     fEventTimeStampBin;           //!<! Time stamp bin
   Int_t                      fNTotTRU;                     //!<! Total number of TRUs
   Int_t                      fMaxFORabsId;                 //!<! Maximum FastOR abs id
 

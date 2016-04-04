@@ -93,6 +93,12 @@ void AliEmcalTriggerQATaskPP::ExecOnce()
 
   fESDEvent = dynamic_cast<AliESDEvent*>(InputEvent());
 
+  if (!fESDEvent){
+    fMinTimeStamp = 0;
+    fMaxTimeStamp = 0;
+    fTimeStampBinWidth = 0;
+  }
+
   if (!fInitialized) return;
 
   fTriggerPatches = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTriggerPatchesName));
@@ -157,7 +163,7 @@ Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
   if (fESDEvent) {
     if (fESDEvent->GetTimeStamp() < fMinTimeStamp) return kFALSE;
     if (fMaxTimeStamp > fMinTimeStamp && fESDEvent->GetTimeStamp() > fMaxTimeStamp) return kFALSE;
-    GetTriggerQA(fCentBin)->SetEventTimeStamp(fESDEvent->GetTimeStamp());
+    GetTriggerQA(fCentBin)->EventTimeStamp(fESDEvent->GetTimeStamp());
   }
 
   if (fTriggerPatches) {
