@@ -39,6 +39,7 @@ class AliHLTEMCALGeometry;
  */
 class AliHLTEMCALTriggerQAComponent : public AliHLTCaloProcessor {
 public:
+
   AliHLTEMCALTriggerQAComponent();
   virtual ~AliHLTEMCALTriggerQAComponent();
 
@@ -109,7 +110,7 @@ protected:
    void HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& htlfastor, AliEMCALTriggerFastOR& fastor) const;
 
    /** push histograms contained in the list */
-   void PushHistograms(THashList* list);
+   void PushHistograms(TCollection* list);
 
    /** initialise the geometry */
    void InitialiseGeometry();

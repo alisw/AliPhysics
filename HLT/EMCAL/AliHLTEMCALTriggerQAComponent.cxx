@@ -21,7 +21,8 @@
 
 #include "AliEMCALTriggerConstants.h"
 #include "AliEMCALTriggerFastOR.h"
-#include "AliEMCALTriggerQA.h"
+#include "AliEMCALTriggerOnlineQAPbPb.h"
+//#include "AliEMCALTriggerOnlineQAPP.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALGeometry.h"
@@ -127,7 +128,7 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
   return 0;
 }
 
-void AliHLTEMCALTriggerQAComponent::PushHistograms(THashList* list)
+void AliHLTEMCALTriggerQAComponent::PushHistograms(TCollection* list)
 {
   TIter next(list);
 
@@ -372,29 +373,50 @@ int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
     return -ENOMEM;
   }
   InitialiseGeometry();
-  fTriggerQAPtr = new AliEMCALTriggerQA;
-  fTriggerQAPtr->Init();
+
+  Int_t debugLevel = 0;
+  Bool_t enabledPatchType[3] = {kTRUE};
+
+  enum BeamType { kPP, kPbPb } beam = kPP;
 
   for (int i = 0; i < argc; i++) {
     TString option(argv[i]);
+    if (option == "-pp") beam = kPP;
+    if (option == "-PbPb") beam = kPbPb;
     if (option == "-newTriggerBitConfig") fTriggerBitConfig = new AliEMCALTriggerBitConfigNew;
     if (option == "-oldTriggerBitConfig") fTriggerBitConfig = new AliEMCALTriggerBitConfigOld;
     if (option == "-noHistoReset") fHistoResetOnPush = kFALSE;
     if (option.BeginsWith("-debugLevel")) {
       option.Remove(0, 11);
-      Int_t dl = option.Atoi();
-      if (dl >= 0) fTriggerQAPtr->SetDebugLevel(dl);
+      debugLevel = option.Atoi();
+      if (debugLevel < 0) debugLevel = 0;
     }
     if (option.BeginsWith("-disableOffline")) {
-      fTriggerQAPtr->EnablePatchType(AliEMCALTriggerQA::kOfflinePatch, kFALSE);
+      enabledPatchType[AliEMCALTriggerQA::kOfflinePatch] = kFALSE;
     }
     if (option.BeginsWith("-disableOnline")) {
-      fTriggerQAPtr->EnablePatchType(AliEMCALTriggerQA::kOnlinePatch, kFALSE);
+      enabledPatchType[AliEMCALTriggerQA::kOnlinePatch] = kFALSE;
     }
     if (option.BeginsWith("-disableRecalc")) {
-      fTriggerQAPtr->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch, kFALSE);
+      enabledPatchType[AliEMCALTriggerQA::kRecalcPatch] = kFALSE;
     }
   }
+
+  switch (beam) {
+  case kPP:
+    //fTriggerQAPtr = new AliEMCALTriggerOnlineQAPP("PPTriggerQA");
+    break;
+  case kPbPb:
+    fTriggerQAPtr = new AliEMCALTriggerOnlineQAPbPb("PbPbTriggerQA");
+    break;
+  }
+
+  fTriggerQAPtr->Init();
+
+  fTriggerQAPtr->SetDebugLevel(debugLevel);
+  fTriggerQAPtr->EnablePatchType(AliEMCALTriggerQA::kOfflinePatch, enabledPatchType[AliEMCALTriggerQA::kOfflinePatch]);
+  fTriggerQAPtr->EnablePatchType(AliEMCALTriggerQA::kOnlinePatch, enabledPatchType[AliEMCALTriggerQA::kOnlinePatch]);
+  fTriggerQAPtr->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch, enabledPatchType[AliEMCALTriggerQA::kRecalcPatch]);
 
   // if not specified use new trigger bit config
   if (!fTriggerBitConfig) fTriggerBitConfig = new AliEMCALTriggerBitConfigNew;
