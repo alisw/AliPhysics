@@ -4,19 +4,18 @@
 #include "TH1F.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisC2Settings.h"
 
 class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskC2Base();
-  AliAnalysisTaskC2Base(const char *name, Int_t mode);
+  AliAnalysisTaskC2Base(const char *name);
   virtual ~AliAnalysisTaskC2Base() {};
 
+  AliAnalysisC2Settings fSettings;
   virtual void UserCreateOutputObjects();
   Bool_t IsValidEvent();
   Bool_t IsValidParticle(AliVParticle *particle);
-
-  enum {kMCTRUTH, kRECON};  /// Types of data this analysis can access
-  const Int_t fMode;        /// The type of data this task is accessing
 
  protected:
   TList      *fOutputList;
@@ -30,13 +29,6 @@ class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
     enum type {neutralCharge, etaAcceptance, notHybridGCG, notAODPrimary,
 	       notMCPrimary, dca, nDiscardTrackReasons};
   };
-
-  /// Struct to bundle basic settings for this analysis
-  /// The values are set in the constructor of this class 
-  struct {
-    Double_t etaAcceptanceLowEdge;
-    Double_t etaAcceptanceUpEdge;
-  } fSettings;
 
   TH1F *fDiscardedEvents;
   TH1F *fDiscardedTracks;

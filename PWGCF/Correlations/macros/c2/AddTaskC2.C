@@ -6,41 +6,26 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskC2.h"
 #include "AliAnalysisTaskC2Base.h"
+#include "AliAnalysisC2Settings.h"
 #include "AliVEvent.h"
 
 #include <iostream>
 #include <string>
 #endif
 
-AliAnalysisTaskC2 *AddTaskC2(Int_t mode) {
-  TString postfix;
-  if (mode == AliAnalysisTaskC2Base::kMCTRUTH){
-    ::Info("AddTaskC2", "Running in MC Truth mode");
-    postfix = "_mcTruth";
-  }
-  else if (mode == AliAnalysisTaskC2::kRECON){
-    ::Info("AddTaskC2", "Running in Reconstructed mode");
-    postfix = "_recon";
-  }
-  else {
-    ::Error("AddTaskC2", "Invalid mode");
-    return NULL;
-  }
-
+AliAnalysisTaskC2 *AddTaskC2() {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskC2", "No analysis manager to connect to.");
     return NULL;
   }
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("sums%s", postfix.Data()) ,
+    mgr->CreateContainer(Form("sums") ,
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("%s:c2_correlations%s",
-			      mgr->GetCommonFileName(),
-			      postfix.Data()));
+			 Form("%s:c2_correlations", mgr->GetCommonFileName()));
 
-  AliAnalysisTaskC2 *c2Task = new AliAnalysisTaskC2("TaskC2", mode);
+  AliAnalysisTaskC2 *c2Task = new AliAnalysisTaskC2("TaskC2");
   //c2Task->SelectCollisionCandidates(AliVEvent::kAny);
 
   if (!c2Task) {
