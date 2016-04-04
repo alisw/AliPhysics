@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisC2Settings.cxx
   AliAnalysisC2Utils.cxx
   AliAnalysisTaskC2.cxx
   AliAnalysisTaskC2Base.cxx

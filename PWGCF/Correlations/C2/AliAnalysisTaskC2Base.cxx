@@ -21,6 +21,7 @@
 
 #include "AliAnalysisTaskC2Base.h"
 #include "AliAnalysisC2Utils.h"
+#include "AliAnalysisC2Settings.h"
 
 using std::cout;
 using std::endl;
@@ -29,24 +30,20 @@ using std::endl;
 AliAnalysisTaskC2Base::AliAnalysisTaskC2Base()
   : AliAnalysisTaskSE(),
     fOutputList(0),
-    fMode(0),
     fDiscardedEvents(0),
-    fDiscardedTracks(0)
+    fDiscardedTracks(0),
+    fSettings()
 {
-  this->fSettings.etaAcceptanceLowEdge = -0.8;
-  this->fSettings.etaAcceptanceUpEdge = 0.8;
 }
 
 //________________________________________________________________________
-AliAnalysisTaskC2Base::AliAnalysisTaskC2Base(const char *name, Int_t mode)
+AliAnalysisTaskC2Base::AliAnalysisTaskC2Base(const char *name)
   : AliAnalysisTaskSE(name),
     fOutputList(0),
-    fMode(mode),
     fDiscardedEvents(0),
-    fDiscardedTracks(0)
+    fDiscardedTracks(0),
+    fSettings()
 {
-  this->fSettings.etaAcceptanceLowEdge = -0.8;
-  this->fSettings.etaAcceptanceUpEdge = 0.8;
   DefineOutput(1, TList::Class());
 }
 
@@ -118,31 +115,29 @@ Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle)
 
   // restric eta region; assuming symmetric eta range and equal range for all histograms
   // TODO: This should be done more transparently, instead of just using one of the hists!
-  else if (particle->Eta() < this->fSettings.etaAcceptanceLowEdge ||
-	   particle->Eta() > this->fSettings.etaAcceptanceUpEdge) {
+  else if (particle->Eta() < this->fSettings.fEtaAcceptanceLowEdge ||
+	   particle->Eta() > this->fSettings.fEtaAcceptanceUpEdge) {
     this->fDiscardedTracks->Fill(cDiscardTrackReasons::etaAcceptance);
     return false;
   }
-  if ((kMCTRUTH == fMode) && !(mcParticle->IsPhysicalPrimary())) {
+  if ((this->fSettings.kMCTRUTH == this->fSettings.fDataType) && !(mcParticle->IsPhysicalPrimary())) {
     this->fDiscardedTracks->Fill(cDiscardTrackReasons::notMCPrimary);
     return false;
   }
-  if ((kRECON == fMode) && !aodTrack->IsHybridGlobalConstrainedGlobal()){
+  if ((this->fSettings.kRECON == this->fSettings.fDataType) && !aodTrack->IsHybridGlobalConstrainedGlobal()){
     this->fDiscardedTracks->Fill(cDiscardTrackReasons::notHybridGCG);
     return false;
   }
-  if ((kRECON == fMode) && (aodTrack->GetType() != aodTrack->kPrimary)){
+  if ((this->fSettings.kRECON == this->fSettings.fDataType) && (aodTrack->GetType() != aodTrack->kPrimary)){
     this->fDiscardedTracks->Fill(cDiscardTrackReasons::notAODPrimary);
     return false;
   }
-  if (kRECON == fMode) {
+  if (this->fSettings.kRECON == this->fSettings.fDataType) {
     Double_t dcaTang;
     Double_t dcaLong;
-    Double_t maxDcaTang = 3.0;
-    Double_t maxDcaLong = 2.4;
     AliAnalysisC2Utils::GetDCA(dcaTang, dcaLong, aodTrack);
-    if (TMath::Abs(dcaTang) > maxDcaTang ||
-	TMath::Abs(dcaLong) > maxDcaLong){
+    if (TMath::Abs(dcaTang) > this->fSettings.fMaxDcaTang ||
+	TMath::Abs(dcaLong) > this->fSettings.fMaxDcaLong){
       this->fDiscardedTracks->Fill(cDiscardTrackReasons::dca); \
       return false;
     }
