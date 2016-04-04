@@ -34,6 +34,7 @@ class THistManager;
 class TString;
 class AliEmcalTriggerQAPP;
 class THnSparse;
+class AliESDEvent;
 
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcal.h"
@@ -56,6 +57,8 @@ class AliEmcalTriggerQATaskPP : public AliAnalysisTaskEmcal {
   void SetADCperBin(Int_t n);
   void SetMinAmplitude(Int_t m)                     { fMinAmplitude            = m   ; }
   void EnableDCal(Bool_t e = kTRUE)                 { fDCalPlots               = e   ; }
+  void SetTimeStampRange(UInt_t min, UInt_t max)    { fMinTimeStamp            = min ; fMaxTimeStamp = max; }
+  void EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
 
   AliEmcalTriggerQAPP* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fNcentBins ? static_cast<AliEmcalTriggerQAPP*>(fEMCALTriggerQA->At(i)) : 0; }
 
@@ -71,7 +74,11 @@ class AliEmcalTriggerQATaskPP : public AliAnalysisTaskEmcal {
   Int_t                                     fADCperBin;                  ///< ADC counts per bin
   Int_t                                     fMinAmplitude;               ///< Minimum trigger patch amplitude
   Bool_t                                    fDCalPlots;                  ///< Whether to add DCal QA plots
+  UInt_t                                    fMinTimeStamp;               ///< Minimum event time stamp (only ESD)
+  UInt_t                                    fMaxTimeStamp;               ///< Maximum event time stamp (only ESD)
+  UInt_t                                    fTimeStampBinWidth;          ///< Time stamp bin width
 
+  AliESDEvent                              *fESDEvent;                   //!<! current ESD event
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
 
  private:
@@ -79,7 +86,7 @@ class AliEmcalTriggerQATaskPP : public AliAnalysisTaskEmcal {
   AliEmcalTriggerQATaskPP &operator=(const AliEmcalTriggerQATaskPP&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQATaskPP, 2)
+  ClassDef(AliEmcalTriggerQATaskPP, 3)
   /// \endcond
 };
 
