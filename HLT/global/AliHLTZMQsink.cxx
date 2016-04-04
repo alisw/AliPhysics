@@ -203,19 +203,10 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     }
   }  
 
-  if (doSend)
+  //caching the ECS param string has to happen for non data event
+  if (!IsDataEvent())
   {
-    //set the time of current push
-    if (fPushbackDelayPeriod>0)
-    {
-      TDatime time;
-      fLastPushbackDelayTime=time.Get();
-    }
-
-    //first make a map of selected blocks, and identify the last one
-    //so we can properly mark the last block for multipart ZMQ sending later
     const AliHLTComponentBlockData* inputBlock = NULL;
-    std::vector<int> selectedBlockIdx;
     for (int iBlock = 0;
          iBlock < evtData.fBlockCnt;
          iBlock++) 
@@ -236,9 +227,29 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         {
           fECSparamString = ecsparamstr;
         }
-        //if we requested the ECS param, we can continue here, will be sent anyway
-        if (doSendECSparamString) continue;
+        break;
       }
+    }
+  }
+
+  if (doSend)
+  {
+    //set the time of current push
+    if (fPushbackDelayPeriod>0)
+    {
+      TDatime time;
+      fLastPushbackDelayTime=time.Get();
+    }
+
+    //first make a map of selected blocks, and identify the last one
+    //so we can properly mark the last block for multipart ZMQ sending later
+    const AliHLTComponentBlockData* inputBlock = NULL;
+    std::vector<int> selectedBlockIdx;
+    for (int iBlock = 0;
+         iBlock < evtData.fBlockCnt;
+         iBlock++) 
+    {
+      inputBlock = &blocks[iBlock];
 
       //don't include provate data unless explicitly asked to
       if (!fIncludePrivateBlocks && 
