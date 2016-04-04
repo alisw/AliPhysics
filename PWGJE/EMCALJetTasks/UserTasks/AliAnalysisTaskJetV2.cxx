@@ -777,7 +777,7 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
  
     // Mar 24 2016 - add some figures that are missing for the thesis
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i ++) {
-        fHistRhoEtaBC[i] = BookTH2F("fHistRho", "#rho [GeV/c]", "#eta", 100, 0, 150, 50, -1, 1, i);
+        fHistRhoEtaBC[i] = BookTH2F("fHistRhoEtaBC", "#rho [GeV/c]", "#eta", 100, 0, 150, 50, -1, 1, i);
         fHistJetPtBC[i] = BookTH1F("fHistJetPtBC", "p_{t, jet} [GeV/c]", 350, -100, 250, i);
         fHistJetEtaPhiBC[i] = BookTH2F("fHistJetEtaPhiBC", "#eta", "#phi", 100, etaMin, etaMax, 100, phiMin, phiMax, i);
         fHistJetPtAreaBC[i] = BookTH2F("fHistJetPtAreaBC", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.3, i);
