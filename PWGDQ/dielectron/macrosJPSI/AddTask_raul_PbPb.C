@@ -1,12 +1,12 @@
-//Bool_t isAOD=kFALSE;
-//Bool_t hasMC=kFALSE;
+Bool_t isAOD=kTRUE;
+Bool_t hasMC=kFALSE;
 Int_t iPeriod=-1;
 enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k11a, k11d, k11h, k12h, k13b, k13c, k13d, k13e, k13f,k15f,k15o};
 
 AliAnalysisTask* AddTask_raul_PbPb(TString cfg="ConfigJpsi_raul_PbPb",
 				   Bool_t gridconf=kFALSE,
-				   TString prod="LHC10h"
-				       /*Bool_t isMC=kFALSE*/){
+				   TString prod="LHC10h",
+				   Bool_t isMC=kFALSE){
   //get the current analysis manager
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -16,10 +16,10 @@ AliAnalysisTask* AddTask_raul_PbPb(TString cfg="ConfigJpsi_raul_PbPb",
   }
   
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   //AOD input?
-  Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
+  isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   if(isAOD) hasMC=isMC;
   
   
