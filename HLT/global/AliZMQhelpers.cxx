@@ -16,6 +16,8 @@
 #include "TPRegexp.h"
 #include "TObjArray.h"
 #include "AliHLTMessage.h"
+#include "TStreamerInfo.h"
+#include "TList.h"
 
 //init the shared context to null
 void* AliZMQhelpers::gZMQcontext = NULL;
@@ -260,11 +262,20 @@ int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::stri
   //prepare topic msg
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, topic.size());
+  if (rc<0) {
+    delete topicMsg;
+    return -1;
+  }
   memcpy(zmq_msg_data(topicMsg),topic.data(),topic.size());
 
   //prepare data msg
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( dataMsg, data.size());
+  if (rc<0) {
+    delete topicMsg;
+    delete dataMsg;
+    return -1;
+  }
   memcpy(zmq_msg_data(dataMsg),data.data(),data.size());
 
   //add the frame to the message
@@ -273,7 +284,8 @@ int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::stri
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression)
+int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression,
+                   aliZMQTstreamerInfo* streamers)
 {
   //add a frame to the mesage
   int rc = 0;
@@ -281,7 +293,10 @@ int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, 
   //prepare topic msg
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
-  if (rc<0) return -1;
+  if (rc<0) {
+    delete topicMsg;
+    return -1;
+  }
   memcpy(zmq_msg_data(topicMsg), topic, sizeof(*topic));
 
   //prepare data msg
@@ -289,6 +304,23 @@ int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, 
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
        alizmq_deleteTObject, tmessage);
+  if (rc<0) {
+    delete topicMsg;
+    delete dataMsg;
+    return -1;
+  }
+  
+  //update the list of streamers used
+  if (streamers) {
+    const TList* streamerInfos = tmessage->GetStreamerInfos();
+    if (streamerInfos) {
+      TIter nextInfo(streamerInfos);
+      TStreamerInfo* info=NULL;
+      while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
+        (*streamers)[info->GetNumber()] = info;
+      }
+    }
+  }
 
   //add the frame to the message
   message->push_back(std::make_pair(topicMsg,dataMsg));
@@ -349,9 +381,139 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, int compression)
+int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* streamers)
+{
+  //prepend the streamer info to the message as first block.
+  int rc = 0;
+
+  AliHLTDataTopic topic = kAliHLTDataTypeStreamerInfo;
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, sizeof(topic));
+  if (rc<0) {
+    delete topicMsg;
+    return -1;
+  }
+  memcpy(zmq_msg_data(topicMsg), &topic, sizeof(topic));
+
+  //prepare data msg
+  TList listOfInfos;
+  for (aliZMQTstreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
+    listOfInfos.Add(i->second);
+  }
+  AliHLTMessage* tmessage = AliHLTMessage::Stream(&listOfInfos, 1); //compress
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
+       alizmq_deleteTObject, tmessage);
+  if (rc<0) {
+    delete topicMsg;
+    delete dataMsg;
+    return -1;
+  }
+
+  message->insert(message->begin(),std::make_pair(topicMsg,dataMsg));
+
+  return 0;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it)
 {
   int rc = 0;
+  TObject* obj = NULL;
+  rc = alizmq_msg_iter_data(it,obj); 
+  TList* list = dynamic_cast<TList*>(obj);
+  if (!list) {
+    delete obj;
+    return -1;
+  }
+
+  //process, this copied from TSocket::RecvStreamerInfos(TMessage*)
+  TIter next(list);
+  TStreamerInfo *info;
+  TObjLink *lnk = list->FirstLink();
+  // First call BuildCheck for regular class
+  while (lnk) {
+    info = (TStreamerInfo*)lnk->GetObject();
+    TObject *element = info->GetElements()->UncheckedAt(0);
+    Bool_t isstl = element && strcmp("This",element->GetName())==0;
+    if (!isstl) {
+      info->BuildCheck();
+      //Printf("RecvStreamerInfos: importing TStreamerInfo: %s, version = %d",
+      //    info->GetName(), info->GetClassVersion());
+    }
+    lnk = lnk->Next();
+  }
+  // Then call BuildCheck for stl class
+  lnk = list->FirstLink();
+  while (lnk) {
+    info = (TStreamerInfo*)lnk->GetObject();
+    TObject *element = info->GetElements()->UncheckedAt(0);
+    Bool_t isstl = element && strcmp("This",element->GetName())==0;
+    if (isstl) {
+      info->BuildCheck();
+      //Printf("RecvStreamerInfos: importing TStreamerInfo: %s, version = %d",
+      //    info->GetName(), info->GetClassVersion());
+    }
+    lnk = lnk->Next();
+  }
+  delete list;
+
+  return 0;  
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, 
+                    int compression, aliZMQTstreamerInfo* streamers)
+{
+  int rc = 0;
+
+  AliHLTMessage* tmessage = AliHLTMessage::Stream(object, compression);
+  zmq_msg_t dataMsg;
+  rc = zmq_msg_init_data( &dataMsg, tmessage->Buffer(), tmessage->Length(),
+      alizmq_deleteTObject, tmessage);
+  
+  //first update the list of streamers used
+  if (streamers) {
+    const TList* streamerInfos = tmessage->GetStreamerInfos();
+    if (streamerInfos) {
+      TIter nextInfo(streamerInfos);
+      TStreamerInfo* info=NULL;
+      while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
+        (*streamers)[info->GetNumber()] = info;
+      }
+      
+      //only do this when actually sending
+      //this will place the streamer infos before the last object
+      if ((flags & ZMQ_SNDMORE) == 0)
+      {
+        AliHLTDataTopic streamerTopic = kAliHLTDataTypeStreamerInfo;
+        rc = zmq_send( socket, &streamerTopic, sizeof(topic), ZMQ_SNDMORE );
+        if (rc<0) {
+          zmq_msg_close(&dataMsg); //have to close to release
+          return rc;
+        }
+
+        TList listOfInfos;
+        for (aliZMQTstreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
+          listOfInfos.Add(i->second);
+        }
+
+        AliHLTMessage* tmessageStreamers = AliHLTMessage::Stream(&listOfInfos, compression);
+        zmq_msg_t streamerMsg;
+        rc = zmq_msg_init_data(&streamerMsg , tmessageStreamers->Buffer(), tmessageStreamers->Length(),
+            alizmq_deleteTObject, tmessageStreamers);
+
+        rc = zmq_msg_send(&streamerMsg, socket, ZMQ_SNDMORE);
+        if (rc<0) {
+          zmq_msg_close(&dataMsg); //have to close to release
+          zmq_msg_close(&streamerMsg);
+          return rc;
+        }
+      }
+    }
+  }
+
+  //then send the object topic
   rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
   if (rc<0) 
   {
@@ -359,11 +521,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
     return rc;
   }
 
-  AliHLTMessage* tmessage = AliHLTMessage::Stream(object, 0);
-  
-  zmq_msg_t dataMsg;
-  rc = zmq_msg_init_data( &dataMsg, tmessage->Buffer(), tmessage->Length(),
-      alizmq_deleteTObject, tmessage);
+  //send the object itself
   rc = zmq_msg_send(&dataMsg, socket, flags);
   if (rc<0) 
   {
@@ -374,6 +532,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   return rc;
 }
 
+//______________________________________________________________________________
 int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags)
 {
   int rc = 0;
