@@ -822,6 +822,11 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
     float errDist2 = dstY*dstY +angle2*dstX*dstX;
     erry2 += dstY*dstY +angle2*dstX*dstX;
   }
+  double useDisp = rp->GetUseDistDispFractionAsErrorY();
+  if (useDisp>0) {
+    useDisp *= cl->GetDistortionDispersion();
+    erry2 += useDisp*useDisp;
+  }
   seed->SetErrorY2(erry2);
   //
   return erry2;
@@ -1018,6 +1023,11 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
     float dstZ = cl->GetDistortionZ()*useDist;
     float dstX = cl->GetDistortionX()*useDist*seed->GetTgl();
     errz2 += dstZ*dstZ+dstX*dstX;
+  }
+  double useDisp = rp->GetUseDistDispFractionAsErrorZ();
+  if (useDisp>0) {
+    useDisp *= cl->GetDistortionDispersion();
+    errz2 += useDisp*useDisp;
   }
   seed->SetErrorZ2(errz2);
   //
@@ -2051,9 +2061,12 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   transform->Transform(x,&idROC,0,1);
   const float* clCorr = transform->GetLastMapCorrection();
   const float* clCorrRef = transform->GetLastMapCorrectionRef();
+  //
   cluster->SetDistortions(clCorr[0]-clCorrRef[0],
 			  clCorr[1]-clCorrRef[1],
 			  clCorr[2]-clCorrRef[2]); // memorize distortions (difference to reference one)
+  // store the dispersion difference
+  cluster->SetDistortionDispersion(clCorr[3]>clCorrRef[3] ? TMath::Sqrt(clCorr[3]*clCorr[3] - clCorrRef[3]*clCorrRef[3]) : 0);
   //
   // in debug mode  check the transformation
   //
