@@ -38,6 +38,8 @@ protected:
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
   
   Int_t JetRejection(Int_t module) const; //Looks is there is a jet around
+
+  Double_t EtaPhiWeight(Int_t kTbin, Double_t x) const ;
   
   
 private:
