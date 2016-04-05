@@ -56,6 +56,8 @@ class AliEMCALTriggerPatchInfo: public TObject {
   AliEMCALTriggerPatchInfo &operator=(const AliEMCALTriggerPatchInfo &p);
   virtual ~AliEMCALTriggerPatchInfo();
 
+  void Reset();
+
   /**
    * Initialize patch
    * @param col0        Start column of the patch

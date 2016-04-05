@@ -121,7 +121,7 @@ void AliEMCALTriggerQA::EnableTriggerType(EMCalTriggerType_t type, Bool_t e)
  * \param itype Amplitude type (online, recalc, offline)
  * \return amplitude
  */
-Int_t AliEMCALTriggerQA::GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t itype)
+Int_t AliEMCALTriggerQA::GetAmplitude(const AliEMCALTriggerPatchInfo* patch, Int_t itype)
 {
   if (!patch) return 0;
   if (itype == 0 || itype == 1) {

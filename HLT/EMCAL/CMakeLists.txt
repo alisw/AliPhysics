@@ -36,6 +36,7 @@ include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
 # Sources in alphabetical order
 set(SRCS
     AliHLTEMCALAgent.cxx
+    AliHLTEMCALCaloCells.cxx
     AliHLTEMCALClusterizerComponent.cxx
     AliHLTEMCALClusterizerComponentNbyN.cxx
     AliHLTEMCALClusterMonitorComponent.cxx

@@ -36,6 +36,7 @@ set(SRCS
   AliEMCALTriggerBitConfig.cxx
   AliEMCALTriggerQA.cxx
   AliEMCALTriggerOnlineQAPbPb.cxx
+  AliEMCALTriggerOnlineQAPP.cxx
   AliEMCALTriggerFastOR.cxx
   )
 

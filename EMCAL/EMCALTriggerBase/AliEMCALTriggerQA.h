@@ -19,6 +19,7 @@ class TCollection;
 class TObjArray;
 class AliEMCALTriggerFastOR;
 class AliVCaloCells;
+class AliEMCALGeometry;
 
 /**
  * @class AliEMCALTriggerQA
@@ -61,8 +62,8 @@ public:
 
   // This is the minimum set of methods that must be implemented by derived classes
   virtual void           Init() = 0;
-  virtual void           ProcessPatch(AliEMCALTriggerPatchInfo* patch) = 0;
-  virtual void           ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells = 0) = 0;
+  virtual void           ProcessPatch(const AliEMCALTriggerPatchInfo* patch) = 0;
+  virtual void           ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells = 0) = 0;
   virtual void           EventCompleted() = 0;
   virtual TCollection*   GetListOfHistograms() = 0;
 
@@ -72,14 +73,14 @@ public:
   virtual void   EventTimeStamp(UInt_t timeStamp);
 
   // These virtual methods are implemented only for PbPb
-  virtual void   ProcessBkgPatch(AliEMCALTriggerPatchInfo* /*patch*/) {;}
+  virtual void   ProcessBkgPatch(const AliEMCALTriggerPatchInfo* /*patch*/) {;}
   virtual void   ComputeBackground() {;}
   virtual void   GetEMCalMedian(Double_t /*median*/[3]) const {;}
   virtual void   GetDCalMedian(Double_t /*median*/[3])  const {;}
   virtual void   GetEMCalBkg(Double_t /*bkg*/[3])       const {;}
   virtual void   GetDCalBkg(Double_t /*bkg*/[3])        const {;}
 
-  static Int_t  GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t itype);
+  static Int_t  GetAmplitude(const AliEMCALTriggerPatchInfo* patch, Int_t itype);
 
   static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
   static const TString    fgkPatchTypes[3];             ///< Patch type names

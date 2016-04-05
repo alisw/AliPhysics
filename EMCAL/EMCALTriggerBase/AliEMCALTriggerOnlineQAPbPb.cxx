@@ -235,7 +235,7 @@ void AliEMCALTriggerOnlineQAPbPb::Init()
  * Process a patch, filling relevant histograms.
  * \param patch Pointer to a valid trigger patch
  */
-void AliEMCALTriggerOnlineQAPbPb::ProcessPatch(AliEMCALTriggerPatchInfo* patch)
+void AliEMCALTriggerOnlineQAPbPb::ProcessPatch(const AliEMCALTriggerPatchInfo* patch)
 {
   TString hname;
 
@@ -314,7 +314,7 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessPatch(AliEMCALTriggerPatchInfo* patch)
  * Process a patch, filling relevant histograms.
  * \param patch Pointer to a valid trigger patch
  */
-void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(AliEMCALTriggerPatchInfo* patch)
+void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(const AliEMCALTriggerPatchInfo* patch)
 {
   TString hname;
 
@@ -390,7 +390,7 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(AliEMCALTriggerPatchInfo* patc
  * Process a FastOR, filling relevant histograms.
  * \param patch Pointer to a valid trigger FastOR
  */
-void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/)
+void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/)
 {
   TString hname;
 

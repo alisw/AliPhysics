@@ -37,9 +37,9 @@ public:
   Int_t  GetBkgPatchType()      const { return fBkgPatchType  ; }
 
   void   Init();
-  void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
-  void   ProcessBkgPatch(AliEMCALTriggerPatchInfo* patch);
-  void   ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/ = 0);
+  void   ProcessPatch(const AliEMCALTriggerPatchInfo* patch);
+  void   ProcessBkgPatch(const AliEMCALTriggerPatchInfo* patch);
+  void   ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* /*cells*/ = 0);
   void   EventCompleted();
   void   ComputeBackground();
 
