@@ -25,24 +25,23 @@ ClassImp(AliAnalysisTaskEmcalJetHMEC)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() : 
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHMEC",kFALSE),
-  fTrkBias(5),
-  fClusBias(5),
-  fDoEventMixing(0),
-  fNMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
-  fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHMEC", kFALSE),
+  fTrackBias(5),
+  fClusterBias(5),
+  fDoEventMixing(kFALSE),
+  fNMixingTracks(50000), fMinNMixedTracks(5000), fMinNMixedEvents(5), fMixedEventNCentBins(10),
+  fPoolMgr(0), 
+  fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
-  fCentBinSize(1),
-  fPoolMgr(0x0), 
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0), 
   fHistJHPsi(0),
   fHistJetHEtaPhi(0), 
-  fhnMixedEvents(0x0),
-  fhnJH(0x0)
+  fhnMixedEvents(0),
+  fhnJH(0)
 {
   // Default Constructor
   InitializeArraysToZero();
@@ -50,23 +49,23 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) : 
-  AliAnalysisTaskEmcalJet(name,kTRUE),
-  fClusBias(5),
-  fDoEventMixing(0),
-  fNMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
-  fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
+  AliAnalysisTaskEmcalJet(name, kTRUE),
+  fTrackBias(5),
+  fClusterBias(5),
+  fDoEventMixing(kFALSE),
+  fNMixingTracks(50000), fMinNMixedTracks(5000), fMinNMixedEvents(5), fMixedEventNCentBins(10),
+  fPoolMgr(0), 
+  fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
-  fCentBinSize(1),
-  fPoolMgr(0x0), 
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0),  
   fHistJHPsi(0),
   fHistJetHEtaPhi(0),
-  fhnMixedEvents(0x0),
-  fhnJH(0x0)
+  fhnMixedEvents(0),
+  fhnJH(0)
 {
   // Constructor
   InitializeArraysToZero();
@@ -184,7 +183,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 
   if (fForceBeamType != kpp ) {   //all besides pp
     // Event Activity is centrality in AA, pA
-    nEventActivityBins = 100;
+    nEventActivityBins = fMixedEventNCentBins;
     eventActivityBins = GenerateFixedBinArray(nEventActivityBins, 0, 100);
   }
   else if (fForceBeamType == kpp) { //for pp only
@@ -299,7 +298,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   while ((jet = jets->GetNextAcceptJet())) {
     
     // Selects only events that we are interested in (ie triggered)
-    if (!(eventTrigger & fTriggerEventType)) continue;
+    if (!(eventTrigger & fTriggerType)) continue;
 
     // Jet properties
     // Determine if we have the lead jet
@@ -385,7 +384,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
   TObjArray* tracksClone = 0;
 
-  if(fDoEventMixing > 0){
+  if(fDoEventMixing == kTRUE){
 
     // event mixing
 
@@ -422,9 +421,9 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     // The number of events in the pool
     Int_t nMix = pool->GetCurrentNEvents();
 
-    if(eventTrigger & fTriggerEventType) {
+    if(eventTrigger & fTriggerType) {
       // check for a trigger jet
-      if (pool->IsReady() || pool->NTracksInPool() >= fNMIXtracks || nMix >= fNMIXevents) {
+      if (pool->IsReady() || pool->NTracksInPool() >= fMinNMixedTracks || nMix >= fMinNMixedEvents) {
 
         jets->ResetCurrentID();
         while ((jet = jets->GetNextAcceptJet())) {
@@ -502,7 +501,7 @@ void AliAnalysisTaskEmcalJetHMEC::Terminate(Option_t *)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetHMEC::BiasedJet(AliEmcalJet * jet)
 {
-  if ((jet->MaxTrackPt() > fTrkBias) || (jet->MaxClusterPt() > fClusBias))
+  if ((jet->MaxTrackPt() > fTrackBias) || (jet->MaxClusterPt() > fClusterBias))
   {
     return kTRUE;
   }
