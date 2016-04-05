@@ -43,6 +43,11 @@
 #pragma link C++ class AliAnalysisTaskHelium3Pi+;
 #pragma link C++ class AliAnalysisTaskHelium3PiAOD+;
 #pragma link C++ class AliAnalysisTaskHelium3PiMC+;
+#pragma link C++ class AliAnalysisTaskHypTritEventTree+;
+#pragma link C++ class AliReducedHypTritV0+;
+#pragma link C++ class AliReducedHypTritTrack+;
+#pragma link C++ class AliReducedHypTritEvent+;
+
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
