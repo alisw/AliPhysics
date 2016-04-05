@@ -159,12 +159,15 @@ AliTPCRecoParam::AliTPCRecoParam(const AliTPCRecoParam& src)
 AliTPCRecoParam& AliTPCRecoParam::operator=(const AliTPCRecoParam& src)
 {
   // assignment operator
-  if (fSystErrClInnerRegZ) delete fSystErrClInnerRegZ;
-  if (fSystErrClInnerRegZSigInv) delete fSystErrClInnerRegZSigInv;
-  memcpy(this,&src,sizeof(AliTPCRecoParam)); // make 1st a shallow copy
-  // now treat the pointers
-  if (fSystErrClInnerRegZ)       fSystErrClInnerRegZ       = new TVectorF(*fSystErrClInnerRegZ);
-  if (fSystErrClInnerRegZSigInv) fSystErrClInnerRegZSigInv = new TVectorF(*fSystErrClInnerRegZSigInv);
+  if (this!=&src) {
+    if (fSystErrClInnerRegZ) delete fSystErrClInnerRegZ;
+    if (fSystErrClInnerRegZSigInv) delete fSystErrClInnerRegZSigInv;
+    memcpy(this,&src,sizeof(AliTPCRecoParam)); // make 1st a shallow copy
+    // now treat the pointers
+    if (fSystErrClInnerRegZ)       fSystErrClInnerRegZ       = new TVectorF(*fSystErrClInnerRegZ);
+    if (fSystErrClInnerRegZSigInv) fSystErrClInnerRegZSigInv = new TVectorF(*fSystErrClInnerRegZSigInv);
+  }
+  return *this;
 }
 
 //_____________________________________________________________________________
