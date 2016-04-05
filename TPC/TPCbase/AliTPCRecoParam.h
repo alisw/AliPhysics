@@ -272,7 +272,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 26)
+  ClassDef(AliTPCRecoParam, 27)
   /// \endcond
 };
 
