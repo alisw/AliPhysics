@@ -263,6 +263,7 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
       || triggerNoFlags==kTPCLaserWarmUp
       || triggerNoFlags==kTPCHVdip
       || triggerNoFlags==kIncompleteEvent
+      || triggerNoFlags==kEMCAL
       || triggerNoFlags==kEmcalL0
       || triggerNoFlags==kEmcalL1GammaHigh
       || triggerNoFlags==kEmcalL1GammaLow
@@ -314,6 +315,7 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     case kTPCLaserWarmUp:  return IsLaserWarmUpTPCEvent(event);
     case kTPCHVdip:        return IsHVdipTPCEvent(event);
     case kIncompleteEvent: return IsIncompleteEvent(event);
+    case kEMCAL:           return EMCALCellsTrigger(event);
     case kEmcalL0:         return EMCALTrigger(event,kEmcalL0);
     case kEmcalL1GammaHigh:return EMCALTrigger(event,kEmcalL1GammaHigh);
     case kEmcalL1GammaLow: return EMCALTrigger(event,kEmcalL1GammaLow);
@@ -374,6 +376,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliVEvent* event, Trigger
     case kZNCBG:            return ZDCTimeBGTrigger(event,kCSide);
     case kFMDA:             return FMDTrigger(event, kASide);
     case kFMDC:             return FMDTrigger(event, kCSide);
+    case kEMCAL:            return EMCALCellsTrigger(event);
     case kEmcalL0:          return EMCALTrigger(event,kEmcalL0);
     case kEmcalL1GammaHigh: return EMCALTrigger(event,kEmcalL1GammaHigh);
     case kEmcalL1GammaLow:  return EMCALTrigger(event,kEmcalL1GammaLow);
@@ -787,6 +790,51 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
   }
   
   return kT0Empty;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::EMCALCellsTrigger(const AliVEvent* event){
+  //
+  // Returns the EMCAL trigger decision
+  // so far only implemented for LHC11a data
+  // see http://alisoft.cern.ch/viewvc/trunk/PWGGA/EMCALTasks/AliEmcalPhysicsSelection.cxx?view=markup&root=AliRoot Revision 56136
+  //
+  
+  Bool_t isFired = kTRUE;
+  const Int_t runNumber = event->GetRunNumber();
+  
+  // Get EMCAL cells
+  AliVCaloCells *cells = event->GetEMCALCells();
+  const Short_t nCells = cells->GetNumberOfCells();
+  
+  // count cells above threshold per sm
+  Int_t nCellCount[10] = {0,0,0,0,0,0,0,0,0,0};
+  for(Int_t iCell=0; iCell<nCells; ++iCell) {
+    Short_t cellId = cells->GetCellNumber(iCell);
+    Double_t cellE = cells->GetCellAmplitude(cellId);
+    Int_t sm       = cellId / (24*48);
+    if (cellE>0.1)
+      ++nCellCount[sm];
+  }
+  
+  // Trigger decision for LHC11a
+  Bool_t isLedEvent = kFALSE;
+  if ((runNumber>=144871) && (runNumber<=146860)) {
+    if (nCellCount[4] > 100)
+      isLedEvent = kTRUE;
+    else {
+      if ((runNumber>=146858) && (runNumber<=146860)) {
+        if (nCellCount[3]>=35)
+          isLedEvent = kTRUE;
+      }
+    }
+  }
+  
+  if (isLedEvent) {
+    isFired = kFALSE;
+  }
+  
+  return isFired;
 }
 
 

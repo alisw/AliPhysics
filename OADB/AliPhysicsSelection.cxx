@@ -449,11 +449,11 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
       // ZDC
       // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCA);
       // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCC);
-      Bool_t zdcA    = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
-      Bool_t zdcC    = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
-      Bool_t zdcTime = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
-      Bool_t znABG   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
-      Bool_t znCBG   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
+      Bool_t zdcA    = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
+      Bool_t zdcC    = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
+      Bool_t zdcTime = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
+      Bool_t znABG   = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
+      Bool_t znCBG   = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
       
       Bool_t laserCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
       Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));

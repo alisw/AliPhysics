@@ -31,7 +31,7 @@ public:
     kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kZNA, kZNC, kZNABG, kZNCBG, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
     kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
     kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kTPCHVdip,
-    kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE,
+    kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
     kADA, kADC, kADABG, kADCBG,
@@ -63,6 +63,7 @@ public:
   Bool_t ZDCTimeBGTrigger(const AliVEvent* event, AliceSide side) const;
   Bool_t FMDTrigger(const AliVEvent* event, AliceSide side);
   Bool_t TRDTrigger(const AliVEvent* event, Trigger trigger);
+  Bool_t EMCALCellsTrigger(const AliVEvent* event);
   Bool_t EMCALTrigger(const AliVEvent* event, Trigger trigger);
 
   Int_t SPDFiredChips(const AliVEvent* event, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
