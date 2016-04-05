@@ -157,6 +157,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t dEtaSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t dPhiSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, AliAODTrack *trackb, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en, Double_t &dPhiS_eb, Double_t &dEtaS_eb);
+  Double_t DeltaPhi(AliAODcascade *casc, AliAODTrack *trk);
+  Double_t DeltaEta(AliAODcascade *casc, AliAODTrack *trk);
 
  protected:
 	

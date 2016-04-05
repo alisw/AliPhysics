@@ -111,6 +111,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   mgr->ConnectOutput(task,10,coutputLc10);
   AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleXi_mcgenpairvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,11,coutputLc11);
+  AliAnalysisDataContainer *coutputLc12 = mgr->CreateContainer(Form("eleXi_correlationvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  mgr->ConnectOutput(task,12,coutputLc12);
 
   return task;
 
