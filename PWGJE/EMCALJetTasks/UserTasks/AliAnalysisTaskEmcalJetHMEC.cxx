@@ -37,7 +37,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
-  fHistClusEtaPhiEn(0), 
   fHistJHPsi(0),
   fHistJetHEtaPhi(0), 
   fhnMixedEvents(0),
@@ -61,7 +60,6 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
-  fHistClusEtaPhiEn(0),  
   fHistJHPsi(0),
   fHistJetHEtaPhi(0),
   fhnMixedEvents(0),
@@ -80,7 +78,6 @@ void AliAnalysisTaskEmcalJetHMEC::InitializeArraysToZero()
   for(Int_t centralityBin = 0; centralityBin < kMaxCentralityBins; ++centralityBin){
     fHistJetPt[centralityBin]=0;
     fHistJetPtBias[centralityBin]=0;
-    fHistLeadJetPtBias[centralityBin]=0;
     for(Int_t jetPtBin = 0; jetPtBin < kMaxJetPtBins; ++jetPtBin){
       for(Int_t etaBin = 0; etaBin < kMaxEtaBins; ++etaBin){
         fHistJetH[centralityBin][jetPtBin][etaBin]=0;
@@ -101,9 +98,12 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
-  fHistClusEtaPhiEn = new TH3F("fHistClusEtaPhiEn","Clus eta-phi-energy",900,-1.8,1.8,720,-3.2,3.2,20,0,20);
-
   fHistJHPsi = new TH3F("fHistJHPsi","Jet-Hadron ntr-trpt-dpsi",20,0,100,200,0,20,120,0,180);
+
+  fOutput->Add(fHistTrackPt);
+  fOutput->Add(fHistJetEtaPhi);
+  fOutput->Add(fHistJetHEtaPhi);
+  fOutput->Add(fHistJHPsi);
 
   TString name;
 
@@ -121,10 +121,6 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
     name = Form("fHistJetPtBias_%i",centralityBin);
     fHistJetPtBias[centralityBin] = new TH1F(name,name,200,0,200);
     fOutput->Add(fHistJetPtBias[centralityBin]);
-
-    name = Form("fHistLeadJetPtBias_%i",centralityBin);
-    fHistLeadJetPtBias[centralityBin] = new TH1F(name,name,200,0,200);
-    fOutput->Add(fHistLeadJetPtBias[centralityBin]);
 
     for(Int_t jetPtBin = 0; jetPtBin < kMaxJetPtBins; ++jetPtBin){
       for(Int_t etaBin = 0; etaBin < kMaxEtaBins; ++etaBin){
@@ -161,13 +157,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
     fhnMixedEvents->Sumw2();
     fOutput->Add(fhnMixedEvents);
   }
-
-  fOutput->Add(fHistTrackPt);
-  fOutput->Add(fHistJetEtaPhi);
-  fOutput->Add(fHistJetHEtaPhi);
-  fOutput->Add(fHistClusEtaPhiEn);
-  fOutput->Add(fHistJHPsi);
-
+  
   PostData(1, fOutput);
 
   // Event Mixing
@@ -350,14 +340,14 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
           fHistJHPsi->Fill(tracks->GetNTracks(), track->Pt(), trackVector.Angle(jetVector) * TMath::RadToDeg() );
         }
 
-        fHistJetH[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi ,track->Pt());
+        fHistJetH[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track->Pt());
         fHistJetHEtaPhi->Fill(deltaEta, deltaPhi);
 
         // Calculate single particle tracking efficiency for correlations
         efficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorrection);
 
         if (biasedJet == kTRUE) {
-          fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi ,track->Pt());
+          fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track->Pt());
 
           if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
             eventActivity = fCent;
