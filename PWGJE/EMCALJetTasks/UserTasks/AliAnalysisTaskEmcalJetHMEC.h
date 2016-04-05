@@ -1,10 +1,6 @@
 #ifndef AliAnalysisTaskEmcalJetHMEC_H
 #define AliAnalysisTaskEmcalJetHMEC_H
 
-// $Id$
-
-//class TClonesArray;
-//class TList;
 class TH1;
 class TH2;
 class TH3;
@@ -37,7 +33,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual void            SetClusBias(Double_t b)                  { fClusBias   = b; }  //require a cluster with pt > b in jet
 
   virtual void            SetEventMixing(Int_t yesno)              { fDoEventMixing=yesno;}
-  virtual void            SetMixingTracks(Int_t tracks)            { fMixingTracks = tracks; }
+  virtual void            SetNumberOfMixingTracks(Int_t tracks)            { fNMixingTracks = tracks; }
 
   // event trigger/mixed selection - setters
   virtual void            SetTrigType(UInt_t te)       { fTriggerEventType = te; }
@@ -63,6 +59,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
     kMaxJetPtBins = 5,
     kMaxTrackPtBins = 7,
     kMaxCentralityBins = 6,
+    kMixedEventMulitplictyBins = 8,
     kMaxEtaBins = 3
   };
 
@@ -85,7 +82,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   Double_t               fTrkBias;
   Double_t               fClusBias;
   Int_t                  fDoEventMixing;           // flag to do evt mixing
-  Int_t                  fMixingTracks;            // size of track buffer for event mixing
+  Int_t                  fNMixingTracks;            // size of track buffer for event mixing
   Int_t                  fNMIXtracks;              // threshold to use event pool # tracks
   Int_t                  fNMIXevents;              // threshold to use event pool # events
   TObjArray*             CloneAndReduceTrackList();

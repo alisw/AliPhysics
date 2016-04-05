@@ -1,5 +1,3 @@
-// $Id$
-
 AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *nTracks        = "PicoTracks",
    const char *nCaloClusters  = "CaloClustersCorr",
@@ -104,7 +102,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   // TODO: Cleanup arguments (after cleanup of the task)
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
   if(EvtMix>0){
-    correlationtask->SetMixingTracks(EvtMix);
+    correlationtask->SetNumberOfMixingTracks(EvtMix);
     correlationtask->SetEventMixing(1);
     correlationtask->SetNMixedTracks(nmixingTR);
     correlationtask->SetNMixedEvents(nmixingEV);

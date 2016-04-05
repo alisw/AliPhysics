@@ -1,5 +1,3 @@
-// $Id$
-
 //////////
 //Measure Jet-hadron correlations
 //Does event Mixing using AliEventPoolManager
@@ -7,7 +5,6 @@
 
 #include "AliAnalysisTaskEmcalJetHMEC.h"
 
-// TODO: Clean up includes
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -24,15 +21,6 @@
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 
-//#include "AliAnalysisTask.h"
-//#include "AliAODEvent.h"
-//#include "AliESDEvent.h"
-//#include "AliESDInputHandler.h"
-//#include "AliESDVertex.h"
-//#include "AliCentrality.h"
-//#include "AliAODJet.h"
-//#include "AliESDtrackCuts.h"
-
 ClassImp(AliAnalysisTaskEmcalJetHMEC)
 
 //________________________________________________________________________
@@ -41,7 +29,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fTrkBias(5),
   fClusBias(5),
   fDoEventMixing(0),
-  fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
+  fNMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
@@ -65,7 +53,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
   fClusBias(5),
   fDoEventMixing(0),
-  fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
+  fNMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
@@ -183,49 +171,28 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 
   PostData(1, fOutput);
 
-  // TODO: Refactor this section. Cleanup variable names
-  //Event Mixing
-  Int_t trackDepth = fMixingTracks; 
-  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
-
-  Int_t nZvtxBins  = 10;
-  // bins for second buffer are shifted by 100 cm
-  Double_t vertexBins[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
-  Double_t* zvtxbin = vertexBins;
-
-  // TODO: Refactor here in particular
-  //  Int_t nCentralityBins  = 100;
-  Int_t nCentralityBins = 100;
-  Double_t mult = 1.0;
-  if(fCentBinSize==1) { 
-    nCentralityBins = 100;
-    mult = 1.0;  
-  } else if(fCentBinSize==2){
-    nCentralityBins = 50;
-    mult = 2.0;
-  } else if(fCentBinSize==5){
-    nCentralityBins = 20;
-    mult = 5.0;
-  } else if(fCentBinSize==10){
-    nCentralityBins = 10;
-    mult = 10.0;
-  }
-  Double_t centralityBins[nCentralityBins];
-  for(Int_t ic=0; ic<nCentralityBins; ic++){
-    centralityBins[ic]=mult*ic;
-  }
-
-  // for pp we need mult bins for event mixing. Create binning here, to also make a histogram from it
-  Int_t nCentralityBins_pp  = 8;
-  Double_t centralityBins_pp[9] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
+  // Event Mixing
+  Int_t poolSize = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+  // ZVertex
+  Int_t nZVertexBins = 10;
+  Double_t* zVertexBins = GenerateFixedBinArray(nZVertexBins, -10, 10);
+  // Event activity (centrality of multiplicity)
+  Int_t nEventActivityBins = 8;
+  Double_t* eventActivityBins = 0;
+  // +1 to accomodate the fact that we define bins rather than array entries.
+  Double_t multiplicityBins[kMixedEventMulitplictyBins+1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
 
   if (fForceBeamType != kpp ) {   //all besides pp
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+    // Event Activity is centrality in AA, pA
+    nEventActivityBins = 100;
+    eventActivityBins = GenerateFixedBinArray(nEventActivityBins, 0, 100);
   }
   else if (fForceBeamType == kpp) { //for pp only
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins_pp, centralityBins_pp, nZvtxBins, zvtxbin);
+    // Event Activity is multiplicity in pp
+    eventActivityBins = multiplicityBins;
   }
 
+  fPoolMgr = new AliEventPoolManager(poolSize, fNMixingTracks, nEventActivityBins, eventActivityBins, nZVertexBins, zVertexBins);
 }
 
 //________________________________________________________________________
@@ -325,14 +292,14 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   AliEmcalJet * leadingJet = jets->GetLeadingJet();
 
   // Determine the trigger for the current event
-  UInt_t trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  UInt_t eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
   // Just to be certain that we are interating from the start
   jets->ResetCurrentID();
   while ((jet = jets->GetNextAcceptJet())) {
     
     // Selects only events that we are interested in (ie triggered)
-    if (!(trigger & fTriggerEventType)) continue;
+    if (!(eventTrigger & fTriggerEventType)) continue;
 
     // Jet properties
     // Determine if we have the lead jet
@@ -455,7 +422,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     // The number of events in the pool
     Int_t nMix = pool->GetCurrentNEvents();
 
-    if(trigger & fTriggerEventType) {
+    if(eventTrigger & fTriggerEventType) {
       // check for a trigger jet
       if (pool->IsReady() || pool->NTracksInPool() >= fNMIXtracks || nMix >= fNMIXevents) {
 
@@ -514,7 +481,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       }
     }
 
-    if(trigger & fMixingEventType) {
+    if(eventTrigger & fMixingEventType) {
       tracksClone = CloneAndReduceTrackList();
 
       //update pool if jet in event or not
