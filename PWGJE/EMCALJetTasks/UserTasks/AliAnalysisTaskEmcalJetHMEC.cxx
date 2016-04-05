@@ -29,7 +29,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
-  fNMixingTracks(50000), fMinNMixedTracks(5000), fMinNMixedEvents(5), fMixedEventNCentBins(10),
+  fNMixingTracks(50000), fMinNTracksMixedEvents(5000), fMinNEventsMixedEvents(5), fNCentBinsMixedEvent(10),
   fPoolMgr(0), 
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
@@ -53,7 +53,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
-  fNMixingTracks(50000), fMinNMixedTracks(5000), fMinNMixedEvents(5), fMixedEventNCentBins(10),
+  fNMixingTracks(50000), fMinNTracksMixedEvents(5000), fMinNEventsMixedEvents(5), fNCentBinsMixedEvent(10),
   fPoolMgr(0), 
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
@@ -183,7 +183,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
 
   if (fForceBeamType != kpp ) {   //all besides pp
     // Event Activity is centrality in AA, pA
-    nEventActivityBins = fMixedEventNCentBins;
+    nEventActivityBins = fNCentBinsMixedEvent;
     eventActivityBins = GenerateFixedBinArray(nEventActivityBins, 0, 100);
   }
   else if (fForceBeamType == kpp) { //for pp only
@@ -423,7 +423,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     if(eventTrigger & fTriggerType) {
       // check for a trigger jet
-      if (pool->IsReady() || pool->NTracksInPool() >= fMinNMixedTracks || nMix >= fMinNMixedEvents) {
+      if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
         jets->ResetCurrentID();
         while ((jet = jets->GetNextAcceptJet())) {
@@ -687,15 +687,6 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
     if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170152 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309)) runSwitchGood = 0;
 
     if ((runNUM == 167902 || runNUM == 167903 || runNUM == 167915 || runNUM == 167920 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
-
-    /*if(runSwitchGood == 0 && fCentBin == 0) effSwitch = 2;
-    if(runSwitchGood == 0 && fCentBin == 1) effSwitch = 3;
-    if(runSwitchGood == 0 && fCentBin == 2) effSwitch = 4;
-    if(runSwitchGood == 0 && fCentBin == 3) effSwitch = 5;
-    if(runSwitchGood == 1 && fCentBin == 0) effSwitch = 6;
-    if(runSwitchGood == 1 && fCentBin == 1) effSwitch = 7;
-    if(runSwitchGood == 1 && fCentBin == 2) effSwitch = 8;
-    if(runSwitchGood == 1 && fCentBin == 3) effSwitch = 9;*/
 
     // Determine which efficiency to use.
     // This is just a way to map all possible values of the cent bin and runSwitchGood to a unique flag.

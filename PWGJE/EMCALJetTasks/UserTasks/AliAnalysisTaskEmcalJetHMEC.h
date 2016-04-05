@@ -30,9 +30,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // Mixed events
   virtual void            SetEventMixing(Bool_t enable)              { fDoEventMixing = enable;}
   virtual void            SetNumberOfMixingTracks(Int_t tracks)      { fNMixingTracks = tracks; }
-  virtual void            SetMinNForMixedTracks(Int_t nmt)           { fMinNMixedTracks = nmt; }
-  virtual void            SetMinNForMixedEvents(Int_t nme)           { fMinNMixedEvents = nme; }
-  virtual void            SetMixedEventNCentBins(Bool_t centbins)    { fMixedEventNCentBins = centbins; }
+  virtual void            SetMinNTracksForMixedEvents(Int_t nmt)           { fMinNTracksMixedEvents = nmt; }
+  virtual void            SetMinNEventsForMixedEvents(Int_t nme)           { fMinNEventsMixedEvents = nme; }
+  virtual void            SetNCentBinsMixedEvent(Bool_t centbins)    { fNCentBinsMixedEvent = centbins; }
   // Switch to cut out some unneeded sparse axis
   void                    SetDoLessSparseAxes(Bool_t dlsa)           { fDoLessSparseAxes = dlsa; }
   void                    SetDoWiderTrackBin(Bool_t wtrbin)          { fDoWiderTrackBin = wtrbin; }
@@ -88,9 +88,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // Event Mixing
   Bool_t                 fDoEventMixing;           ///< flag to do evt mixing
   Int_t                  fNMixingTracks;           ///< size of track buffer for event mixing
-  Int_t                  fMinNMixedTracks;         ///< threshold to use event pool # tracks
-  Int_t                  fMinNMixedEvents;         ///< threshold to use event pool # events
-  UInt_t                 fMixedEventNCentBins;     ///< N cent bins for the event mixing pool
+  Int_t                  fMinNTracksMixedEvents;   ///< threshold to use event pool # tracks
+  Int_t                  fMinNEventsMixedEvents;   ///< threshold to use event pool # events
+  UInt_t                 fNCentBinsMixedEvent;     ///< N cent bins for the event mixing pool
   AliEventPoolManager   *fPoolMgr;                 //!<! Event pool manager
   // Event selection types
   UInt_t                 fTriggerType;             ///<
