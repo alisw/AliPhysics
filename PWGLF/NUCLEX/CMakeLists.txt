@@ -42,6 +42,8 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
+  Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
   Nuclei/DeltaMasses/AliAnalysisMCNuclMult.cxx
