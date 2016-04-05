@@ -132,6 +132,7 @@ AliTPCTrackerPoints& AliTPCTrackerPoints::operator=(const AliTPCTrackerPoints& o
     memcpy(fPoints,o.fPoints,159*sizeof(AliTPCTrackerPoints::Point));
     memcpy(fShared,o.fShared,20*sizeof(UChar_t));
   }
+  return *this;
 }
 
 /// \cond CLASSIMP
