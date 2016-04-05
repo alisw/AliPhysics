@@ -110,11 +110,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TH2                   *fHistTrackEtaPhi[7];      //!<!
   TH2                   *fHistJetHEtaPhi;          //!<!
 
-  TH3                   *fHistClusEtaPhiEn;        //!<!
-
   TH1                   *fHistJetPt[6];            //!<!
   TH1                   *fHistJetPtBias[6];        //!<!
-  TH1                   *fHistLeadJetPtBias[6];    //!<!
   TH2                   *fHistJetH[6][5][3];       //!<!
   TH2                   *fHistJetHBias[6][5][3];   //!<!
   TH3                   *fHistJHPsi;               //!<! Psi angle distribution
