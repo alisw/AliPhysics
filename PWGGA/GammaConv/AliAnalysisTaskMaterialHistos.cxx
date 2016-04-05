@@ -589,9 +589,6 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   }
 
 	
-	if(eventQuality != 0){// Event Not Accepted
-		return;
-	}
 
 	fConversionGammas=fV0Reader->GetReconstructedGammas();// Gammas from default Cut
 	
