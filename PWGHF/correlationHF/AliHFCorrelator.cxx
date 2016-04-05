@@ -23,7 +23,7 @@
 //						   Author S.Bjelogrlic
 //                         Utrecht University 
 //                      sandro.bjelogrlic@cern.ch
-//
+//                         
 //-----------------------------------------------------------------------
 
 /* $Id: AliHFCorrelator.cxx 64115 2013-09-05 12:34:55Z arossi $ */
@@ -85,8 +85,12 @@ fEtaTrigger(0),
 
 fDeltaPhi(0),
 fDeltaEta(0),
-fk0InvMass(0)
-
+fk0InvMass(0),
+fnMultBins(1),
+fnMultBinLimits(1),
+fMultBinLimits(0),
+fMinMultCand(-1.),
+fMaxMultCand(100000.)
 {
 	// default constructor	
 }
@@ -131,7 +135,12 @@ fEtaTrigger(0),
 
 fDeltaPhi(0),
 fDeltaEta(0),
-fk0InvMass(0)
+  fk0InvMass(0),
+fnMultBins(1),
+fnMultBinLimits(1),
+fMultBinLimits(0),
+fMinMultCand(-1.),
+fMaxMultCand(100000.)
 {
 	fhadcuts = cuts;
      if(!fDMesonCutObject) AliInfo("D meson cut object not loaded - if using centrality the estimator will be V0M!");
@@ -175,7 +184,12 @@ fEtaTrigger(0),
 
 fDeltaPhi(0),
 fDeltaEta(0),
-fk0InvMass(0)
+  fk0InvMass(0),
+fnMultBins(1),
+fnMultBinLimits(1),
+fMultBinLimits(0),
+fMinMultCand(-1.),
+fMaxMultCand(100000.)
 {
 	fhadcuts = cuts;
     fDMesonCutObject = cutObject;
@@ -216,8 +230,36 @@ AliHFCorrelator::~AliHFCorrelator()
 	if(fDeltaEta) fDeltaEta=0;
 	
 	if(fk0InvMass) fk0InvMass=0;
-	
+	if(fMultBinLimits) {delete [] fMultBinLimits; fMultBinLimits=0;}
 }
+
+//---------------------------------------------------------------------------
+
+void AliHFCorrelator::SetMultBins(Int_t nMultBinLimits, Double_t *MultBinLimits) {
+
+if(fMultBinLimits) {
+    delete [] fMultBinLimits;
+    fMultBinLimits = NULL;
+    printf("Changing the Mult bins\n");
+  }
+
+  if(nMultBinLimits != fnMultBins+1){
+    cout<<"Warning: MultBinLimits dimention "<<nMultBinLimits<<" != nMultBins+1 ("<<fnMultBins+1<<")\nSetting nMultBins to "<<nMultBinLimits-1<<endl;
+    SetNMultBins(nMultBinLimits-1);
+  }
+
+  fnMultBinLimits = nMultBinLimits;
+  //SetGlobalIndex();
+  //cout<<"Changing also Global Index -> "<<fGlobalIndex<<endl;
+  fMultBinLimits = new Double_t[fnMultBinLimits];
+  for(Int_t ib=0; ib<nMultBinLimits; ib++){ fMultBinLimits[ib]=MultBinLimits[ib];
+
+    cout<<" $$$$$$$$$$$$$$ ok $$$$$$$$$$$$$$"<<endl;
+cout<<"fMultBinLimits["<<ib<<"]="<<fMultBinLimits[ib]<<endl;
+  }
+    return;}
+
+
 //_____________________________________________________
 Bool_t AliHFCorrelator::DefineEventPool(){
 	// definition of the Pool Manager for Event Mixing
@@ -400,6 +442,23 @@ Double_t AliHFCorrelator::SetCorrectPhiRange(Double_t phi){
 	if(phi>fPhiMax) phi = phi - 2*pi;
 	
 	return phi;
+}
+
+//_____________________________________________________
+
+Int_t AliHFCorrelator::MultBin(Double_t Mult) const {
+  //
+  //give the pt bin where the pt lies.
+  //
+  Int_t Multbin=-1;
+  if(Mult<fMultBinLimits[0])return Multbin;
+  for (Int_t i=0;i<fnMultBins;i++){
+    if(Mult<fMultBinLimits[i+1]) {
+      Multbin=i;
+      break;
+    }
+  }
+  return Multbin;
 }
 
 //_____________________________________________________

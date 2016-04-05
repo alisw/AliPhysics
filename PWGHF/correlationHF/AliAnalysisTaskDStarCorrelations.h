@@ -23,13 +23,19 @@
 //
 //						   Author S.Bjelogrlic
 //                         Utrecht University 
-//                      sandro.bjelogrlic@cern.ch
-//
+//                      sandro.bjelogrlic@cern.ch                       
+//                      Mandeep Kour->CorrelationVsMultiplicity
+//                      mandeep.kour@cern.ch
 //-----------------------------------------------------------------------
-
+#include <TROOT.h>
+#include <TSystem.h>
 #include <TH2F.h>
 #include <TH1D.h>
 #include <TH3D.h>
+#include <TProfile.h>
+#include <TArrayD.h>
+#include <TRandom.h>
+#include <THnSparse.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -38,9 +44,9 @@
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliNormalizationCounter.h"
 #include "AliHFCorrelator.h"
-#include <THnSparse.h>
 #include "AliAnalysisUtils.h"
 #include "AliVertexingHFUtils.h"
+
 class TParticle ;
 class TClonesArray ;
 class AliAODMCParticle;
@@ -58,8 +64,8 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
  public :
   
   enum CollSyst {pp,pA,AA};
-    enum DEffVariable{kNone,kMult,kCentr,kRapidity,kEta};
-    enum BkgMethod{kDZeroSB, kDStarSB};
+  enum DEffVariable{kNone,kMult,kCentr,kRapidity,kEta};
+  enum BkgMethod{kDZeroSB, kDStarSB};
   
   AliAnalysisTaskDStarCorrelations();
   AliAnalysisTaskDStarCorrelations(const Char_t* name,AliRDHFCutsDStartoKpipi* cuts, AliHFAssociatedTrackCuts *AsscCuts, AliAnalysisTaskDStarCorrelations::CollSyst syst,Bool_t mode);
@@ -86,6 +92,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     void SetCorrelator(Int_t l) {fselect = l;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
     void SetMonteCarlo(Bool_t k) {fmontecarlo = k;}
     void SetUseMixing (Bool_t j) {fmixing = j;}
+    void SetUseMult (Bool_t j) {fmult = j;}
     void SetUseFullMode (Bool_t j) {fFullmode = j;}
     void SetCollSys(CollSyst system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
     void SetEfficiencyVariable(DEffVariable var){fEfficiencyVariable = var;} // set the efficiency variable to use
@@ -117,16 +124,47 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     fDMesonSigmas[3] = SBmax;
     
   }
+void SetUseMultarray(Int_t nMultBin, Double_t *MultBinLimits,Double_t minMult,Double_t maxMult)
+  { fmultarray=new  Double_t[nMultBin+1];
+    fnmultBins=nMultBin;
+    for(Int_t i=0;i<fnmultBins+1;i++)
+      {
+    fmultarray[i]=MultBinLimits[i];
+      }
+    
+    fminMult= minMult;
+    fmaxMult= maxMult;
+}
 
-  
+void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+    void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+    void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+    }
+void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+    }
+
+  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2, kNtrk03=3, kNtrk05=4, kVZEROA=5, kVZEROEq=6, kVZEROAEq=7 };
+  void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
+  Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
+  TProfile* GetEstimatorHistogram(const AliVEvent *event);
+  void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+  enum { kEta10=0, kEta10to16=1, kEtaVZERO=2, kEta03=3, kEta05=5, kEtaVZEROA=5};
  
-  
-
   void SetDeffMapvsPt(TH1D * map){fDeffMapvsPt = map;}
   void SetDeffMapvsPtvsMult(TH2D * map){fDeffMapvsPtvsMult = (TH2D*)map;}
   void SetDeffMapvsPtvsMultvsEta(TH2D * map){fDeffMapvsPtvsEta = map;}
   
-  
+  void SetUseMCEventType(Bool_t k){fMCEventType = k;}  
   
 
 private:
@@ -144,6 +182,11 @@ private:
   Int_t fselect; // select what to correlate with a D* 1-chargedtracks,2-chargedkaons,3-k0s
   Bool_t fmontecarlo;//switch for MC
   Bool_t fmixing;// switch for event mixing
+  Bool_t fmult;// switch for multiplicity analysis
+  Int_t fnmultBins;
+  Double_t* fmultarray;//[fnmultBins]
+  Double_t fminMult;
+  Double_t fmaxMult;
   Bool_t fFullmode;
   CollSyst fSystem; // pp, pPb or PbPb
   DEffVariable  fEfficiencyVariable; // set second variable to study efficiency (mult, centr, y, eta)
@@ -155,25 +198,28 @@ private:
   Bool_t fUseHadronicChannelAtKineLevel; //
   Bool_t fRemoveMoreThanOneDmesonCandidate; // flag to remove a second, 3rd etc candidate if there is any - useful in PbPb
   Bool_t fLimitAcceptanceForMC; // flag to remove a second, 3rd etc candidate if there is any - useful in PbPb
- 
+ Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+ Int_t fDoVZER0ParamVertexCorr; 
+
   Int_t fPhiBins;
   Int_t fEvents; //! number of event
   Int_t fDebugLevel; //! debug level
   Int_t fDisplacement; // set 0 for no displacement cut, 1 for absolute d0, 2 for d0/sigma_d0
   Int_t fDim;//
   Int_t fNofPtBins;
-     Double_t fMaxEtaDStar;
+  Double_t fMaxEtaDStar;
   Float_t *fDMesonSigmas;//[fDim]
   Float_t * fD0Window;  //[fNofPtBins]
    
+  Bool_t fMCEventType; // Use MC event type 
   
-  
+  Double_t fRefMult;   // refrence multiplcity (period b)
   
   TList *fOutput;                  //! user output data
-    TList *fDmesonOutput; //!output related to d meson
-    TList *fTracksOutput; //!output related to tracks
-    TList *fEMOutput; //! output with EM checks
-    TList *fCorrelationOutput; // ! output with correlation sparses
+  TList *fDmesonOutput; //!output related to d meson
+  TList *fTracksOutput; //!output related to tracks
+  TList *fEMOutput; //! output with EM checks
+  TList *fCorrelationOutput; // ! output with correlation sparses
   TList *fOutputMC;                //! outpu for MC
   AliRDHFCutsDStartoKpipi *fCuts;  // Cuts D*
   AliHFAssociatedTrackCuts *fAssocCuts; // cuts for associated
@@ -183,7 +229,7 @@ private:
   TH1D * fDeffMapvsPt; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
-  
+  TProfile* fMultEstimatorAvg[4]; 
   ClassDef(AliAnalysisTaskDStarCorrelations,9); // class for D meson correlations
   
 };
