@@ -92,7 +92,7 @@ void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task)
   eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)
   eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();
+  eleFinalState->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);//equiv. to IsPrimary();
   task->AddSignalMC(eleFinalState);
 }
 
