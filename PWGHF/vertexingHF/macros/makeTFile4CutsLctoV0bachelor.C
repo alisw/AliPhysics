@@ -107,12 +107,11 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}
   for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
    anacutsval[0][ipt2]=0.25;   // inv. mass if K0S [GeV/c2]
-   anacutsval[1][ipt2]=0.25;   // inv. mass if Lambda [GeV/c2]
+   anacutsval[1][ipt2]=1.00;   // inv. mass if Lambda [GeV/c2]
    anacutsval[3][ipt2]=0.05;   // inv. mass V0 if Lambda [GeV/c2] ---> WE ARE SEARCHING Lc -> p+K0S, so cut on m(Lambda) has to be leave as it was at filtering level!!!
    anacutsval[7][ipt2]=1000.;  // dca cascade cut [cm]
    anacutsval[8][ipt2]=1.5;    // dca V0 cut [nSigma] // it's 1.5 x offline V0s
    anacutsval[9][ipt2]=0.99;   // cosPA V0 cut // it's 0.90 x offline V0s at reconstruction level, 0.99 at filtering level
-   anacutsval[11][ipt2]=0.09;  // d0 max V0 wrt PV [cm]
    anacutsval[12][ipt2]=0.;    // mass K0S veto [GeV/c2]
    anacutsval[13][ipt2]=0.005; // mass Lambda/LambdaBar veto [GeV/c2]
    anacutsval[16][ipt2]=0.;    // V0 type cut
@@ -195,6 +194,13 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   anacutsval[10][3]=0.10;  // d0 max bachelor wrt PV [cm]
   anacutsval[10][4]=0.10;  // d0 max bachelor wrt PV [cm]
   anacutsval[10][5]=0.10;  // d0 max bachelor wrt PV [cm]
+
+  anacutsval[11][0]=0.05;  // d0 max V0 wrt PV [cm]
+  anacutsval[11][1]=0.05;  // d0 max V0 wrt PV [cm]
+  anacutsval[11][2]=0.09;  // d0 max V0 wrt PV [cm]
+  anacutsval[11][3]=0.09;  // d0 max V0 wrt PV [cm]
+  anacutsval[11][4]=999.;  // d0 max V0 wrt PV [cm]
+  anacutsval[11][5]=999.;  // d0 max V0 wrt PV [cm]
 
   anacutsval[14][0]=0.100; // mass Gamma veto [GeV/c2]
   anacutsval[14][1]=0.100; // mass Gamma veto [GeV/c2]
