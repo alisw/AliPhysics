@@ -3,16 +3,16 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *nCaloClusters  = "CaloClustersCorr",
    const Double_t minArea     = 0.4,
    const Int_t EvtMix         = 0, 
-   const Double_t TrkBias     = 5,
-   const Double_t ClusBias    = 5,
-   const Double_t TrkEta      = 0.9,
+   const Double_t trackBias     = 5,
+   const Double_t clusterBias    = 5,
+   const Double_t trackEta      = 0.9,
    const Int_t nmixingTR      = 5000,
    const Int_t nmixingEV      = 5,
    UInt_t trigevent           = AliVEvent::kAny,
    UInt_t mixevent            = AliVEvent::kAny,
    Bool_t lessSparseAxes      = 0,
    Bool_t widertrackbin       = 0,
-   UInt_t centbinsize         = 1,
+   UInt_t mixedEventsNCentBins = 1,
    const Int_t doEffcorrSW    = 0,
    const char *suffix         = "biased",
    const char *CentEst        = "V0M",
@@ -101,21 +101,20 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
 
   // TODO: Cleanup arguments (after cleanup of the task)
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
-  if(EvtMix>0){
-    correlationtask->SetNumberOfMixingTracks(EvtMix);
-    correlationtask->SetEventMixing(1);
-    correlationtask->SetNMixedTracks(nmixingTR);
-    correlationtask->SetNMixedEvents(nmixingEV);
-  }else{
-    correlationtask->SetEventMixing(EvtMix);
-  }
-  correlationtask->SetTrkBias(TrkBias);
-  correlationtask->SetClusBias(ClusBias);
-  correlationtask->SetTrigType(trigevent);
-  correlationtask->SetMixType(mixevent);
+  // Mixed events
+  correlationtask->SetEventMixing(static_cast<Bool_t>(EvtMix));
+  correlationtask->SetNumberOfMixingTracks(EvtMix);
+  correlationtask->SetMinNForMixedTracks(nmixingTR);
+  correlationtask->SetMinNForMixedEvents(nmixingEV);
+  // Set jet bias
+  correlationtask->SetTrackBias(trackBias);
+  correlationtask->SetClusterBias(clusterBias);
+  // Triggers
+  correlationtask->SetTriggerType(trigevent);
+  correlationtask->SetMixedEventTriggerType(mixevent);
   correlationtask->SetDoLessSparseAxes(lessSparseAxes);
   correlationtask->SetDoWiderTrackBin(widertrackbin);
-  correlationtask->SetCentBinSize(centbinsize);
+  correlationtask->SetMixedEventNCentBins(mixedEventsNCentBins)
   correlationtask->SetDoEffCorr(doEffcorrSW);
   correlationtask->SetCentralityEstimator(CentEst);
   correlationtask->SetForceBeamType(beamType);
@@ -136,7 +135,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   AliTrackContainer * tracksForJets = new AliTrackContainer(trackName);
   tracksForJets->SetName("tracksForJets");
   tracksForJets->SetMinPt(minTrackPt);
-  tracksForJets->SetEtaLimits(-1.0*TrkEta, TrkEta);
+  tracksForJets->SetEtaLimits(-1.0*trackEta, trackEta);
   // Adopt the container
   correlationtask->AdoptParticleContainer(tracksForJets);
     
@@ -144,7 +143,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   AliTrackContainer * tracksForCorrelations = new AliTrackContainer(trackName);
   tracksForCorrelations->SetName("tracksForCorrelations");
   tracksForCorrelations->SetMinPt(0.15);
-  tracksForCorrelations->SetEtaLimits(-1.0*TrkEta, TrkEta);
+  tracksForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
   // Adopt the container
   correlationtask->AdoptParticleContainer(tracksForCorrelations);
 
