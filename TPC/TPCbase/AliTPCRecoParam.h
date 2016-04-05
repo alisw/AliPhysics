@@ -153,7 +153,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t GetUseDistortionFractionAsErrorZ() const {return fDistortionFractionAsErrorYZ[1];}
   Double_t GetUseDistDispFractionAsErrorY() const {return fDistDispFractionAsErrorYZ[0];}
   Double_t GetUseDistDispFractionAsErrorZ() const {return fDistDispFractionAsErrorYZ[1];}
-  void     SetUseDistDispDistortionFractionAsErrorY(double v) {fDistDispFractionAsErrorYZ[0] = v;}
+  void     SetUseDistortionFractionAsErrorY(double v) {fDistortionFractionAsErrorYZ[0] = v;}
   void     SetUseDistortionFractionAsErrorZ(double v) {fDistortionFractionAsErrorYZ[1] = v;}
   void     SetUseDistDispFractionAsErrorY(double v) {fDistDispFractionAsErrorYZ[0] = v;}
   void     SetUseDistDispFractionAsErrorZ(double v) {fDistDispFractionAsErrorYZ[1] = v;}
