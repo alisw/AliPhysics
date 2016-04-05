@@ -9,9 +9,9 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            Bool_t UseReco=kTRUE, // flag for Kine/pure MC (kFALSE) or Reconstruction (kTRUE) analysis - in data, kTRUE by default
                                                            Bool_t UseHadChannelinMC, // flag to use D*->Kpipi (kTRUE) or any decay (kFALSE) in MC kine
                                                            Bool_t fullmode = kFALSE, // flag to run in fast mode (kFALSE) or slow and detailed (kTRUE)
-                                                           Bool_t UseEffic=kFALSE, // flag to use associated track eff (kTRUE = YES, kFALSE = NO)
-                                                           Bool_t UseDEffic = kFALSE, // flag to use Dmeson track eff (kTRUE = YES, kFALSE = NO)
-                                                           Bool_t useDStarSidebands = kFALSE, // flag to use sidebands from D0 (kFALSE) or sidebands from Dstar (kTRUE)
+                                                           Bool_t UseEffic=kTRUE, // flag to use associated track eff (kTRUE = YES, kFALSE = NO)
+                                                           Bool_t UseDEffic = kTRUE, // flag to use Dmeson track eff (kTRUE = YES, kFALSE = NO)
+                                                           Bool_t useDStarSidebands = kTRUE, // flag to use sidebands from D0 (kFALSE) or sidebands from Dstar (kTRUE)
                                                            Bool_t useOnlyOneDStarPerEvent, // use only one D* per event (kTRUE) or all of them (kFALSE)
                                                            Bool_t limitaccept, // kTRUE to run only with acceptance cut on MC kine
                                                            AliAnalysisTaskDStarCorrelations::DEffVariable var, // variable to use in D mesn efficiency correction besides pt
@@ -28,11 +28,12 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            TString TrackCutsFile, // path of associated cut object
                                                            TString suffix = "", // suffix for output
                                                            TString cutsDstarname = "DStartoKpipiCuts", // name of Dstar cut container
-							   TString cutsTrkname = "AssociatedCuts" // name of track cut container	
+							   TString cutsTrkname = "AssociatedCuts", // name of track cut container
+							   Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***
+							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10, 
+							   Double_t refMult=9.26, Bool_t usemultiplicity;
                                                            )
 {
-
- 
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -80,18 +81,17 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     if(usedispl == 1) cout << "Using absolute displacement cut" << endl;
     if(usedispl == 2) cout << "Using relative displacement cut" << endl;
     
-    
     cout << "Number of bins in deltaphi = " << nbins << endl;
     
     cout << "N of Sigmas in D* selection =" << DStarSigma << endl;
     cout << "N of Sigmas in D0 selection = " << D0Sigma << endl;
     cout << "D0 Sidebands taken from  = " << D0SBSigmaLow << " - " << D0SBSigmaHigh << " sigmas " << endl; endl;
     
-   
-    
     cout << "DStar cut object:     " << DStarCutsFile << endl;
     cout << "Tracks cut object:    " << TrackCutsFile << endl;
   
+    if(UseMCEventType) cout << "Using MC event type" << endl;
+    else cout << "Not Using MC event type " << endl;
     
     cout << "==========================================================" << endl;
     //gSystem->Sleep(2000);
@@ -159,6 +159,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
 // ******************************** SELECTING THE MC PROCESS  ************************************
 
+    if(UseMCEventType){
 	TString selectMCproc = "";
 	
 	Int_t NMCevents = corrCuts->GetNofMCEventType();
@@ -169,7 +170,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 
 	 cout << "Select process string = " << selectMCproc << endl;
 	
-
+    } //end if UseMCEventType
 
 // ******************************** CREATING THE TASK ************************************
  
@@ -208,7 +209,9 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetEfficiencyVariable(var);
     task->SetMaxDStarEta(eta);
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
-	if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
+    task->SetUseMCEventType(UseMCEventType);
+
+    if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
     if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);
 
 	if(trackselect == 1) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged hadrons \n");
@@ -218,9 +221,50 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	if(mixing) Info (" AliAnalysisTaskDStarCorrelations","Event Mixing Analysis\n");
 	if(!mixing) Info (" AliAnalysisTaskDStarCorrelations","Single Event Analysis \n");
 
-  // Create and connect containers for input/output
-	//TString dcavalue = " ";
-    
+  //Settings for multiplicity differential analysis
+  if(usemultiplicity) {
+   // Estimator changes  
+	Double_t minMult,maxMult;
+  	TVectorD *mult = (TVectorD*)filecuts->Get("mult");
+	Double_t *multarray= mult->GetMatrixArray();
+	Int_t multbins=mult->GetNoElements();
+	multbins=multbins-1;
+	minMult=multarray[0];
+	maxMult=multarray[multbins-1];
+	task->SetUseMultarray(multbins,multarray,minMult,maxMult);
+	task->SetUseMult(usemultiplicity);
+	if(estimatorFilename.EqualTo("") ) {
+  	  printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+ 	 } else {
+                     
+  	   TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+  	   if(!fileEstimator)  {
+   	     AliFatal("File with multiplicity estimator not found\n");
+   	     return;
+   	   }
+
+    	  task->SetReferenceMultiplcity(refMult);
+ 	  const Char_t* profilebasename="SPDmult10";
+    	  if(recoEstimator==AliAnalysisTaskDStarCorrelations::kVZEROA || recoEstimator==AliAnalysisTaskDStarCorrelations::kVZEROAEq) profilebasename="VZEROAmult";
+    	  else if(recoEstimator==AliAnalysisTaskDStarCorrelations::kVZERO || recoEstimator==AliAnalysisTaskDStarCorrelations::kVZEROEq) profilebasename="VZEROMmult";
+    	  cout<<endl<<endl<<" profilebasename="<<profilebasename<<endl<<endl;
+
+  	  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+      	  TProfile* multEstimatorAvg[4];                       
+      	  for(Int_t ip=0; ip<4; ip++) {
+	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+	    if (!multEstimatorAvg[ip]) {
+	      AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+	      return;
+	    }
+          }
+      	  task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+      	  task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+      	  task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+       	  task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+        }
+   }
+
   TString contname1 = "OutputEvent";
     TString contname2 = "OutputDmeson";
     TString contname3 = "OutputTracks";
@@ -337,10 +381,11 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	contname2 += TrackCutObjNamePrefix;
 	counter+= TrackCutObjNamePrefix;
 */	
-	outputfile += selectMCproc;
-	//outputfileMC += selectMCproc;
-	
-	
+	if(UseMCEventType){
+	  outputfile += selectMCproc;
+	  //outputfileMC += selectMCproc;	  
+	}
+		
 	TString reco = "";
 	
 	if(UseReco) reco = "_reco";
@@ -406,4 +451,3 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   return task ;
 
 }
-
