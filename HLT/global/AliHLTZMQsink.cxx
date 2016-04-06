@@ -403,6 +403,12 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
     fZMQerrorMsgSkip = value.Atoi();
   }
 
+  else
+  {
+    HLTError("unrecognized option %s", option.Data());
+    return -1;
+  }
+
   return 1; 
 }
 
