@@ -224,10 +224,10 @@ AliPIDResponse* AliHFEtools::GetDefaultPID(Bool_t isMC, Bool_t isESD){
 
   }
   if(fgLogLevel){
-    printf("Error - You are using the default PID: You should use the PID coming from the tender\n");
-    printf("Error - Arrrrrrrrr...\n");
-    printf("Error - Please rethink your program logic. Using default PID is really dangerous\n");
-    printf("Error - TOF PID is adapted to Monte Carlo\n");
+    AliErrorClass("Error - You are using the default PID: You should use the PID coming from the tender\n");
+    AliErrorClass("Error - Arrrrrrrrr...\n");
+    AliErrorClass("Error - Please rethink your program logic. Using default PID is really dangerous\n");
+    AliErrorClass("Error - TOF PID is adapted to Monte Carlo\n");
   }
   return fgDefaultPID;
 }
@@ -470,8 +470,11 @@ TList *AliHFEtools::GetHFEResultList(const TString str){
 
     TFile *f = TFile::Open(str.Data());
     if(!f || f->IsZombie()){
-        printf("Could not read file %s\n",str.Data()); 
+        AliErrorClassF("Could not read file %s\n",str.Data()); 
         return NULL ;
+    }
+    if(f->TestBit(TFile::kRecovered)){
+        AliErrorClassF("File \"%s\" is corrupt!\n",str.Data());
     }
     gROOT->cd();
     TKey *k;
@@ -481,7 +484,8 @@ TList *AliHFEtools::GetHFEResultList(const TString str){
         if(s.Contains("Results")) break;
     }
     if(!k){
-        printf("Output container not found\n");
+        //AliError("Output container not found\n");
+        AliErrorClass("Output container not found\n");
         f->Close(); delete f;
         return NULL;
     } 
@@ -498,8 +502,11 @@ TList *AliHFEtools::GetHFEQAList(const TString str){
 
     TFile *f = TFile::Open(str.Data());
     if(!f || f->IsZombie()){
-        printf("Could not read file %s\n",str.Data()); 
+        AliErrorClassF("Could not read file %s\n",str.Data()); 
         return NULL ;
+    }
+    if(f->TestBit(TFile::kRecovered)){
+        AliErrorClassF("File \"%s\" is corrupt!\n",str.Data());
     }
     gROOT->cd();
     TKey *k;
@@ -509,7 +516,7 @@ TList *AliHFEtools::GetHFEQAList(const TString str){
         if(s.Contains("QA")) break;
     }
     if(!k){
-        printf("Output container not found\n");
+        AliErrorClass("Output container not found\n");
         f->Close(); delete f;
         return NULL;
     } 
@@ -563,4 +570,91 @@ void AliHFEtools::NormaliseBinWdithAsymm(TGraphAsymmErrors *graph){
     yerrorslow[ipt] /= binwidth;
     yerrorshigh[ipt] /= binwidth;
   }
+}
+
+TGraphErrors *AliHFEtools::Normalise(const TH1 * const input, Int_t fNEvents, Double_t fEtaRange, Int_t fNCharges){
+  // 
+  // Normalise input spectrum to 1/(2*Pi*p_{T})*dN/dp_{T} (GeV/c)^{-2}
+  // expects to be set:
+  //   - Number of events
+  //   - Number of charges
+  //   - Eta range
+  //
+  // Return:
+  //   - Normalised spectrum as TGraphErrors if normalisation is successfull (NULL otherwise)
+  //
+  Bool_t fAbort(kFALSE);
+  if(fNEvents < 0){
+    //AliError("Number of events not set");
+    fAbort = kTRUE;
+  }
+  if(fNCharges < 0){
+    //AliError("Number of charges not set");
+    fAbort = kTRUE;
+  }
+  if(fEtaRange < 0.){
+    //AliError("Eta range not set");
+    fAbort = kTRUE;
+  }
+  if(fAbort){
+    //AliError("Abort normalisation");
+    return NULL;
+  }
+
+  TGraphErrors *spectrumNormalized = new TGraphErrors(input->GetNbinsX());
+  Double_t p = 0, dp = 0; 
+  Double_t n = 0, dN = 0;
+  Double_t nCorr = 0, dNcorr = 0;
+  Double_t errdN = 0;
+  int npoints(0);
+  for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
+    p = input->GetXaxis()->GetBinCenter(ibin);
+    dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+    n = input->GetBinContent(ibin)/(2.*dp);   // Correction for binwidth in one step
+    dN = input->GetBinError(ibin)/(2.*dp);   // Correction for binwidth in one step
+    // New point
+    nCorr = 1./static_cast<Double_t>(fNCharges) * 1./fEtaRange * 1./static_cast<Double_t>(fNEvents) * 1./(2. * TMath::Pi() * p) * n;
+    errdN = 1./(2. * TMath::Pi() * p);
+    dNcorr = 1./static_cast<Double_t>(fNCharges) * 1./fEtaRange * 1./static_cast<Double_t>(fNEvents) * TMath::Sqrt(errdN * errdN * dN *dN);
+      
+    spectrumNormalized->SetPoint(npoints, p, nCorr);
+    spectrumNormalized->SetPointError(npoints, dp, dNcorr);
+    npoints++;
+  }
+  spectrumNormalized->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  spectrumNormalized->GetYaxis()->SetTitle("#frac{1}{2 #pi p_{T}} #frac{dN}{dp_{T}} / [GeV/c]^{-2}");
+  spectrumNormalized->SetMarkerStyle(22);
+  spectrumNormalized->SetMarkerColor(kBlue);
+  spectrumNormalized->SetLineColor(kBlue);
+    
+  return spectrumNormalized;
+}
+
+Int_t AliHFEtools::GetNumberOfEvents(const TString filename, Double_t centmin, Double_t centmax){
+
+  TList *resultlist = GetHFEResultList(filename);
+  if(!resultlist) return -1;
+  AliCFContainer *evcont = (AliCFContainer *)resultlist->FindObject("eventContainer");
+  evcont->SetRangeUser(4,centmin,centmax);
+
+  AliCFDataGrid eventGridall("eventGridall", "EventGridall", *evcont, AliHFEcuts::kEventStepRecNoPileUp);
+  TH2D *spectrum_zrangeall = (TH2D *) eventGridall.Project(0,3);
+  TH1D *alleventsnovertex = (TH1D *) spectrum_zrangeall->ProjectionX("bin0b",1,1);
+  TH1D *alleventswithvertex = (TH1D *) spectrum_zrangeall->ProjectionX("bin>0b",2,2);
+  Double_t nballeventsnovertex = alleventsnovertex->Integral();
+  Double_t nballeventswithvertex = alleventswithvertex->Integral();
+
+
+  // number of events after z requirement for events with a primary vertex reconstructed
+  AliCFDataGrid eventGrid("eventGrid", "EventGrid", *evcont, AliHFEcuts::kEventStepReconstructed);
+  TH2D *spectrum_zrange = (TH2D *) eventGrid.Project(0,3);
+  TH1D *eventswithvertex = (TH1D *) spectrum_zrange->ProjectionX("bin>0",2,2);
+  Double_t nbeventswithvertex = eventswithvertex->Integral();
+
+  Double_t fraction = 1.;
+  if(nballeventswithvertex > 0.) fraction = (nballeventswithvertex-nbeventswithvertex)/nballeventswithvertex;
+
+  Double_t correctednumberofevents = nbeventswithvertex + nballeventsnovertex *(1-fraction);
+
+  return Int_t(correctednumberofevents);
 }

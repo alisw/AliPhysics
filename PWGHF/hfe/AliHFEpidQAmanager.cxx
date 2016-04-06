@@ -29,6 +29,8 @@
 //
 #include <TList.h>
 
+#include "AliLog.h"
+
 #include "AliAODpidUtil.h"
 #include "AliESDpid.h"
 #include "AliVParticle.h"
@@ -40,7 +42,6 @@
 #include "AliHFEemcalPIDqa.h"  //s.s
 #include "AliHFEbayesPIDqa.h"
 #include "AliHFEpidQAmanager.h"
-#include "AliLog.h"
 
 ClassImp(AliHFEpidQAmanager)
 

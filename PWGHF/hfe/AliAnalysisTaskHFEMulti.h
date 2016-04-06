@@ -91,6 +91,11 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
       kpPb = 1,
       kPbPb = 2
     } ECollisionSystem_t;
+    enum { 
+      kNtrk10=0,
+      kVZERO=1
+    };
+
 
     AliAnalysisTaskHFEMulti();
     AliAnalysisTaskHFEMulti(const char * name);
@@ -183,6 +188,16 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     void SetMultiProfileLHC13c(TProfile * hprof){
         fMultEstimatorAvg[1]=hprof;
     }
+    void SetV0AProfileLHC13b(TProfile * hprof){
+        fMultEstimatorAvg[2]=hprof;
+    }
+    void SetV0AProfileLHC13c(TProfile * hprof){
+        fMultEstimatorAvg[3]=hprof;
+    }
+    void SetMCNtrWeight(TH1F * hw){
+        fMCNtrWeight=hw;
+    }
+    void SetMultiEstimator(Int_t estimator) { fMultiEstimatorSystem = estimator; }
 
 
 
@@ -207,6 +222,7 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     void ProcessESD();
     void ProcessAOD();
     Int_t GetITSMultiplicity(AliVEvent *ev);
+    Int_t GetVZEROMultiplicity(AliVEvent *ev);
     Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult); 
     Int_t GetNcharged();
     Bool_t IsMCFakeTrack(const AliVTrack * const trk) const;
@@ -258,9 +274,12 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     AliHFEmcQA *fMCQA;                    //! MC QA
     AliHFEextraCuts *fExtraCuts;          //! temporary implementation for IP QA
     AliHFENonPhotonicElectron *fBackgroundSubtraction; // Background subtraction
-    TProfile* fMultEstimatorAvg[2];       // multiplicity profile as function of Zvertex position
+    TProfile* fMultEstimatorAvg[4];       // multiplicity profile as function of Zvertex position
+    TH1F *fMCNtrWeight;                   // weighting factors for MC Ntr 
     Double_t fRefMulti;                   // Reference multiplicity
+    Int_t fMultiEstimatorSystem;          // Setter for multiplicity estimator
 
+    AliPIDResponse *fPIDResponse;         //! PID response object
 
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
@@ -272,7 +291,7 @@ class AliAnalysisTaskHFEMulti : public AliAnalysisTaskSE{
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
 
-    ClassDef(AliAnalysisTaskHFEMulti, 1)       // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFEMulti, 4)       // The electron Analysis Task
 };
 #endif
 
