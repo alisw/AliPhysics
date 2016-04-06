@@ -473,8 +473,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111063031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00000113","1111111063033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00000113","1111111063032000000","0163103100000050"); //no M02 cut
-    cuts.AddCut("00000113","1113121063032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00000113","1111221063032220000","0163103100000050"); //no modules with TRD infront
+    cuts.AddCut("00000113","1113111063032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00000113","1111211063032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 105){  // trackMatching variations
     cuts.AddCut("00000113","1111111061032220000","0163103100000050"); //
     cuts.AddCut("00000113","1111111062032220000","0163103100000050"); //
