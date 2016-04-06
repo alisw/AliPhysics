@@ -259,7 +259,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fAreaEmc(jet.fAreaEmc),
   fAxisInEmcal(jet.fAxisInEmcal),
   fFlavourTagging(jet.fFlavourTagging),
-  fFlavourTracks(new TObjArray(*(jet.fFlavourTracks))),
+  fFlavourTracks((jet.fFlavourTracks) ? new TObjArray(*(jet.fFlavourTracks)) : 0),
   fMaxCPt(jet.fMaxCPt),
   fMaxNPt(jet.fMaxNPt),
   fMCPt(jet.fMCPt),
@@ -338,7 +338,7 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     fAreaEmc            = jet.fAreaEmc;
     fAxisInEmcal        = jet.fAxisInEmcal;
     fFlavourTagging     = jet.fFlavourTagging;
-    fFlavourTracks      = new TObjArray(*(jet.fFlavourTracks));
+    fFlavourTracks      = (jet.fFlavourTracks) ? new TObjArray(*(jet.fFlavourTracks)) : 0;
     fMaxCPt             = jet.fMaxCPt;
     fMaxNPt             = jet.fMaxNPt;
     fMCPt               = jet.fMCPt;
