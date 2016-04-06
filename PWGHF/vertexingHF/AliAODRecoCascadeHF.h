@@ -95,6 +95,14 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   }
   Bool_t SelectLctoV0(const Double_t *cutsLctoV0, Bool_t okLck0sp, Bool_t okLcLpi, Bool_t okLcLbarpi) const;
 
+  // D+ and Ds decaying into cascade
+  Double_t InvMassDplustoK0spi() const {
+    UInt_t pdg[2]={211,310}; return InvMass(2,pdg);
+  }
+  Double_t InvMassDstoK0sK() const {
+    UInt_t pdg[2]={321,310}; return InvMass(2,pdg);
+  }
+
   Int_t MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                   Int_t *pdgDg,Int_t *pdgDg2prong,
                   TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
