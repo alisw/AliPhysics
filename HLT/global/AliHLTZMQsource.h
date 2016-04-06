@@ -59,6 +59,7 @@ class AliHLTZMQsource : public AliHLTComponent, public AliOptionParser  {
     TString fMessageFilter;   //ZMQ subscription
     ULong_t fZMQrequestTimeout;  //timeout in ms
     Bool_t fZMQneverBlock;    //dont block on receive
+    Bool_t fForwardHLTinput;  //forward everything on HLT input as well as ZMQ input
 
     ClassDef(AliHLTZMQsource, 0)
 };
