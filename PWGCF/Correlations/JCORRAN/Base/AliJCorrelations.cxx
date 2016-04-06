@@ -558,15 +558,6 @@ void AliJCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, TL
         } else {
           hBackgroundUnlikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
         }
-        
-        // Special acceptance histograms
-        if(gapType == 0 && iGap == 0){
-          if(assocType == 1){
-            fhistos->fhDeta3DNearEtaGapAcceptance[fCentralityBin][fpttBin][iBin]->Fill(dEtaRndm,fTrackPairEfficiency);
-          } else if (assocType == 2){
-            fhistos->fhDetaNearEtaGapAcceptance[fCentralityBin][fpttBin][iBin]->Fill(dEtaRndm,fTrackPairEfficiency);
-          }
-        }
       }
     }
   }
@@ -924,9 +915,10 @@ double AliJCorrelations::GetGeoAccCorrIncl(double deltaEta, int assocBin, int as
   
   if(assocBin < 0) return GetGeoAccCorrFlat(deltaEta);
   
+  // Define the acceptance histogram
   TH1D *acceptanceHistogram;
   
-  // Choose different acceptance histogram for xlong bins
+  // Choose different acceptance histogram for xlong bins and other bins
   if(assocType == 1){
     acceptanceHistogram = fhistos->fhDEta3DNearMixFromFile[fCentralityBin][fpttBin][assocBin];
   } else {

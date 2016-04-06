@@ -108,8 +108,6 @@ public:
   // JV // One dimensional deltaEta histograms for acceptance correction
   AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
   AliJTH1D fhDeta3DNearMixAcceptance; // Mixed event uncorrected deltaEta histogram in 3D near side for acceptance corfection
-  AliJTH1D fhDetaNearEtaGapAcceptance;   // Eta gap uncorrected deltaEta histogram for acceptance correction
-  AliJTH1D fhDeta3DNearEtaGapAcceptance; // Eta gap uncorrected deltaEta histogram in 3D near side for acceptance correction
   
   // JV // 2D dphi deta histos to study better the background
   AliJTH2D fhDphiDetaBgKlongEta; // 2D histogram from deltaPhi-deltaEta plane in klong and eta gap bins
@@ -260,8 +258,11 @@ public:
   AliJTH1D fhIphiAssocFromFile  ;//FK//mix2
   AliJTH1D fhDphiAssocMixFromFile  ;//FK//mix2
   
-  TH1D *fhDEtaNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // mixed event near side delta eta distribution
-  TH1D *fhDEta3DNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // mixed event 3D near side delta eta distribution
+  AliJTH1D fhDEtaNearMixFromFile;
+  AliJTH1D fhDEta3DNearMixFromFile;
+  
+  //TH1D *fhDEtaNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim];   // mixed event near side delta eta distribution
+  //TH1D *fhDEta3DNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // mixed event 3D near side delta eta distribution
   
   //===================================================
   // Event/Track histograms
@@ -388,6 +389,9 @@ protected:
   double fUEBinsx[101], fUEBinsxFar[101];    // logarithmic bins for the underlaying event
   double fLowRange, fHighRange;              // lower and upper range for dphi histos
   bool fenable2DHistos;                      // enable the filling of two dimensional histograms
+  
+private:
+  void NormalizeAcceptanceHistos(AliJTH1D &acceptanceHisto, corrType assocType);
 };
 
 #endif
