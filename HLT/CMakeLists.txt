@@ -18,13 +18,6 @@ option(HLT_OPENCL "Build HLT GPU tracker using OpenCL" OFF)
 
 add_definitions(-Duse_aliroot -DUSE_ROOT -DROWHOUGHPARAMS)
 
-# AliRoot debug mode
-if(ALIDEBUG)
-    add_definitions(-DDEBUG -D__DEBUG)
-else()
-    add_definitions(-DNDEBUG)
-endif (ALIDEBUG)
-
 # MLUC
 if(ALIHLT_MLUCDIR)
     add_definitions(-Duse_logging)
