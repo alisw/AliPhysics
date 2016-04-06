@@ -46,7 +46,9 @@ set(SRCS
   AliRDHFCutsD0toKpi.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
+  AliRDHFCutsDplustoK0spi.cxx
   AliRDHFCutsDstoKKpi.cxx
+  AliRDHFCutsDstoK0sK.cxx
   AliRDHFCutsLctopKpi.cxx
   AliRDHFCutsLctoV0.cxx
   AliRDHFCutsD0toKpipipi.cxx
