@@ -268,6 +268,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoXicElectronMCS1(0),
 	fHistoXicElectronMCS2(0),
 	fHistoElectronMCGen(0),
+	fHistoBottomElectronMCGen(0),
+	fHistoCharmElectronMCGen(0),
 	fHistoXiMCGen(0),
 	fHistoLambdaPtvsDl(0),
 	fHistoLambdaPtvsDlSide(0),
@@ -520,6 +522,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoXicElectronMCS1(0),
 	fHistoXicElectronMCS2(0),
 	fHistoElectronMCGen(0),
+	fHistoBottomElectronMCGen(0),
+	fHistoCharmElectronMCGen(0),
 	fHistoXiMCGen(0),
 	fHistoLambdaPtvsDl(0),
 	fHistoLambdaPtvsDlSide(0),
@@ -1670,7 +1674,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							if(trk->Charge()>0) fHistoXicElectronMCS1->Fill(cont_mcele);
 							else fHistoXicElectronMCS2->Fill(cont_mcele);
 
-							fHistoResponseElePt->Fill(mcele->Pt(),trk->Pt());
+							fHistoResponseElePt->Fill(mcxic->Pt(),trk->Pt());
 							fHistoResponseXiPt->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 							fHistoResponseEleXiPt->Fill(mcxic->Pt(),exobj->Pt());
 
@@ -2790,30 +2794,42 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCEleROOTObjects(AliAODMCParti
   //
   // Fill tree depending on fWriteMCVariableTree 
   //
-	if(!mcepart) return;
+  if(!mcepart) return;
+
+  Int_t pdgarray_ele[100], labelarray_ele[100], ngen_ele;
+  GetMCDecayHistory(mcepart,mcArray,pdgarray_ele,labelarray_ele,ngen_ele);
+  Bool_t ele_from_bottom = HaveBottomInHistory(pdgarray_ele);
+  Bool_t ele_from_charm = HaveCharmInHistory(pdgarray_ele);
+
+  Double_t contmc[3];
+  contmc[0] = mcepart->Pt();
+  contmc[1] = mcepart->Eta();
+  contmc[2] = fCentrality;
+
+  if(ele_from_bottom){
+    fHistoBottomElectronMCGen->Fill(contmc);
+  }else if(ele_from_charm){
+    fHistoCharmElectronMCGen->Fill(contmc);
+  }
 
 
-	Bool_t hfe_flag = kFALSE;
-	Int_t labemother = mcepart->GetMother();
-	Int_t pdgmotherele = -9999;
-	if(labemother>=0){
-		AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labemother);
-		pdgmotherele = motherele->GetPdgCode();
-		if(abs(pdgmotherele)>4000&&abs(pdgmotherele)<4400){
-			hfe_flag = kTRUE;
-		}
-	}
-	if(!hfe_flag) return;
+  Bool_t hfe_flag = kFALSE;
+  Int_t labemother = mcepart->GetMother();
+  Int_t pdgmotherele = -9999;
+  if(labemother>=0){
+    AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labemother);
+    pdgmotherele = motherele->GetPdgCode();
+    if(abs(pdgmotherele)>4000&&abs(pdgmotherele)<4400){
+      hfe_flag = kTRUE;
+    }
+  }
+  if(!hfe_flag) return;
 
-	Double_t contmc[3];
-	contmc[0] = mcepart->Pt();
-	contmc[1] = mcepart->Eta();
-	contmc[2] = fCentrality;
-	fHistoElectronMCGen->Fill(contmc);
+  fHistoElectronMCGen->Fill(contmc);
 
-	for(Int_t i=0;i<8;i++){
-		fCandidateMCEleVariables[i] = -9999.;
-	}
+  for(Int_t i=0;i<8;i++){
+    fCandidateMCEleVariables[i] = -9999.;
+  }
 
 	fCandidateMCEleVariables[ 0] = fCentrality;
 	fCandidateMCEleVariables[ 1] = mcepart->Px();
@@ -3272,6 +3288,10 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   Double_t xmax_elemcgen[3]={10.,1.0	,100};
   fHistoElectronMCGen = new THnSparseF("fHistoElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
   fOutputAll->Add(fHistoElectronMCGen);
+  fHistoBottomElectronMCGen = new THnSparseF("fHistoBottomElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoBottomElectronMCGen);
+  fHistoCharmElectronMCGen = new THnSparseF("fHistoCharmElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoCharmElectronMCGen);
   fHistoXicElectronMCGen = new THnSparseF("fHistoXicElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
   fOutputAll->Add(fHistoXicElectronMCGen);
   fHistoXicElectronMCGen1 = new THnSparseF("fHistoXicElectronMCGen1","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
@@ -3311,7 +3331,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoEleXiPtvsRapidityMCS=new TH2F("fHistoEleXiPtvsRapidityMCS","EleXi pt vs rap",20,0.,20.,40,-2.,2.);
   fOutputAll->Add(fHistoEleXiPtvsRapidityMCS);
 
-  fHistoResponseElePt = new TH2D("fHistoResponseElePt","",100,0.,10.,100,0.,10.);
+  fHistoResponseElePt = new TH2D("fHistoResponseElePt","",100,0.,20.,100,0.,10.);
   fOutputAll->Add(fHistoResponseElePt);
   fHistoResponseXiPt = new TH2D("fHistoResponseXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseXiPt);

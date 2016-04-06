@@ -324,6 +324,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoXicElectronMCS1;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCS2;         //!<! electron in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoBottomElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoCharmElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoXiMCGen;         //!<! Xi in mcArray (only from charmed baryon)
 
 	TH2F *fHistoLambdaPtvsDl; //!<! Lambda proper life time distribution
@@ -392,7 +394,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,23); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,24); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

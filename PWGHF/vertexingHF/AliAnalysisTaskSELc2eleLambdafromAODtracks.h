@@ -389,6 +389,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElectronFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoBottomElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoCharmElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoLambdaMCGen;         //!<! Lambda in mcArray (only from charmed baryon)
 
   THnSparse* fHistoElePtvsV0dlRS;         //!<! Feeddown subtraction using Lambda vertex distribution
@@ -600,7 +602,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,24); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,25); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
