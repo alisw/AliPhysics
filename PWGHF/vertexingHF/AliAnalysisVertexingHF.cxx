@@ -54,7 +54,9 @@
 #include "AliAODRecoCascadeHF.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsJpsitoee.h"
+#include "AliRDHFCutsDplustoK0spi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDstoK0sK.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCutsLctoV0.h"
@@ -123,7 +125,9 @@ fTrackFilterSoftPi(0x0),
 fTrackFilterBachelor(0x0),
 fCutsD0toKpi(0x0),
 fCutsJpsitoee(0x0),
+fCutsDplustoK0spi(0x0),
 fCutsDplustoKpipi(0x0),
+fCutsDstoK0sK(0x0),
 fCutsDstoKKpi(0x0),
 fCutsLctopKpi(0x0),
 fCutsLctoV0(0x0),
@@ -145,6 +149,8 @@ fOKInvMassLc(kFALSE),
 fOKInvMassDstar(kFALSE),
 fOKInvMassD0to4p(kFALSE),
 fOKInvMassLctoV0(kFALSE),
+fOKInvMassDplustoK0s(kFALSE),
+fOKInvMassDstoK0s(kFALSE),
 fnTrksTotal(0),
 fnSeleTrksTotal(0),
 fMakeReducedRHF(kFALSE),
@@ -216,7 +222,9 @@ fTrackFilterSoftPi(source.fTrackFilterSoftPi),
 fTrackFilterBachelor(source.fTrackFilterBachelor),
 fCutsD0toKpi(source.fCutsD0toKpi),
 fCutsJpsitoee(source.fCutsJpsitoee),
+fCutsDplustoK0spi(source.fCutsDplustoK0spi),
 fCutsDplustoKpipi(source.fCutsDplustoKpipi),
+fCutsDstoK0sK(source.fCutsDstoK0sK),
 fCutsDstoKKpi(source.fCutsDstoKKpi),
 fCutsLctopKpi(source.fCutsLctopKpi),
 fCutsLctoV0(source.fCutsLctoV0),
@@ -238,6 +246,8 @@ fOKInvMassLc(source.fOKInvMassLc),
 fOKInvMassDstar(source.fOKInvMassDstar),
 fOKInvMassD0to4p(source.fOKInvMassD0to4p),
 fOKInvMassLctoV0(source.fOKInvMassLctoV0),
+fOKInvMassDplustoK0s(source.fOKInvMassDplustoK0s),
+fOKInvMassDstoK0s(source.fOKInvMassDstoK0s),
 fnTrksTotal(0),
 fnSeleTrksTotal(0),
 fMakeReducedRHF(kFALSE),
@@ -308,7 +318,9 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fTrackFilterBachelor = source.fTrackFilterBachelor;
   fCutsD0toKpi = source.fCutsD0toKpi;
   fCutsJpsitoee = source.fCutsJpsitoee;
+  fCutsDplustoK0spi = source.fCutsDplustoK0spi;
   fCutsDplustoKpipi = source.fCutsDplustoKpipi;
+  fCutsDstoK0sK = source.fCutsDstoK0sK;
   fCutsDstoKKpi = source.fCutsDstoKKpi;
   fCutsLctopKpi = source.fCutsLctopKpi;
   fCutsLctoV0 = source.fCutsLctoV0;
@@ -330,6 +342,8 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fOKInvMassDstar = source.fOKInvMassDstar;
   fOKInvMassD0to4p = source.fOKInvMassD0to4p;
   fOKInvMassLctoV0 = source.fOKInvMassLctoV0;
+  fOKInvMassDplustoK0s = source.fOKInvMassDplustoK0s;
+  fOKInvMassDstoK0s = source.fOKInvMassDstoK0s;
   fMassDzero = source.fMassDzero;
   fMassDplus = source.fMassDplus;
   fMassDs = source.fMassDs;
@@ -351,7 +365,9 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fTrackFilterBachelor) { delete fTrackFilterBachelor; fTrackFilterBachelor=0;}
   if(fCutsD0toKpi) { delete fCutsD0toKpi; fCutsD0toKpi=0; }
   if(fCutsJpsitoee) { delete fCutsJpsitoee; fCutsJpsitoee=0; }
+  if(fCutsDplustoK0spi) { delete fCutsDplustoK0spi; fCutsDplustoK0spi=0; }
   if(fCutsDplustoKpipi) { delete fCutsDplustoKpipi; fCutsDplustoKpipi=0; }
+  if(fCutsDstoK0sK) { delete fCutsDstoK0sK; fCutsDstoK0sK=0; }
   if(fCutsDstoKKpi) { delete fCutsDstoKKpi; fCutsDstoKKpi=0; }
   if(fCutsLctopKpi) { delete fCutsLctopKpi; fCutsLctopKpi=0; }
   if(fCutsLctoV0) { delete fCutsLctoV0; fCutsLctoV0=0; }
@@ -378,9 +394,17 @@ TList *AliAnalysisVertexingHF::FillListOfCuts() {
     AliRDHFCutsJpsitoee *cutsJpsitoee = new AliRDHFCutsJpsitoee(*fCutsJpsitoee);
     list->Add(cutsJpsitoee);
   }
+  if (fCutsDplustoK0spi) {
+    AliRDHFCutsDplustoK0spi *cutsDplustoK0spi = new AliRDHFCutsDplustoK0spi(*fCutsDplustoK0spi);
+    list->Add(cutsDplustoK0spi);
+  }
   if(fCutsDplustoKpipi) {
     AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi(*fCutsDplustoKpipi);
     list->Add(cutsDplustoKpipi);
+  }
+  if (fCutsDstoK0sK) {
+    AliRDHFCutsDstoK0sK *cutsDstoK0sK = new AliRDHFCutsDstoK0sK(*fCutsDstoK0sK);
+    list->Add(cutsDstoK0sK);
   }
   if(fCutsDstoKKpi) {
     AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi(*fCutsDstoKKpi);
@@ -402,7 +426,7 @@ TList *AliAnalysisVertexingHF::FillListOfCuts() {
     AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi(*fCutsDStartoKpipi);
     list->Add(cutsDStartoKpipi);
   }
-  
+
   //___ Check consitstency of cuts between vertexer and analysis tasks
   Bool_t bCutsOk = CheckCutsConsistency();
   if (bCutsOk == kFALSE) {AliFatal("AliAnalysisVertexingHF::FillListOfCuts vertexing and the analysis task cuts are not consistent!");}
@@ -578,7 +602,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   // event selection + PID configuration
   if(!fCutsD0toKpi->IsEventSelected(event)) return;
   if(fCutsJpsitoee) fCutsJpsitoee->SetupPID(event);
+  if(fCutsDplustoK0spi) fCutsDplustoK0spi->SetupPID(event);
   if(fCutsDplustoKpipi) fCutsDplustoKpipi->SetupPID(event);
+  if(fCutsDstoK0sK) fCutsDstoK0sK->SetupPID(event);
   if(fCutsDstoKKpi) fCutsDstoKKpi->SetupPID(event);
   if(fCutsLctopKpi) fCutsLctopKpi->SetupPID(event);
   if(fCutsLctoV0) fCutsLctoV0->SetupPID(event);
@@ -627,176 +653,178 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     postrack1->GetPxPyPz(mompos1);
 
     // Make cascades with V0+track
-    // 
+    //
     if(fCascades) {
       // loop on V0's
       for(iv0=0; iv0<nv0; iv0++){
 
-	//AliDebug(1,Form("   loop on v0s for track number %d and v0 number %d",iTrkP1,iv0));	
-	if ( !TESTBIT(seleFlags[iTrkP1],kBitBachelor) ) continue;
-        if ( fUsePIDforLc2V0 && !TESTBIT(seleFlags[iTrkP1],kBitProtonCompat) ) continue; //clm
+          //AliDebug(1,Form("   loop on v0s for track number %d and v0 number %d",iTrkP1,iv0));
+          if ( !TESTBIT(seleFlags[iTrkP1],kBitBachelor) ) continue;
 
-	// Get the V0 
-	if(fInputAOD) {
-	  v0 = ((AliAODEvent*)event)->GetV0(iv0);
-	} else {
-	  esdV0 = ((AliESDEvent*)event)->GetV0(iv0);
-	}
-	if ( (!v0 || !v0->IsA()->InheritsFrom("AliAODv0") ) && 
-	     (!esdV0 || !esdV0->IsA()->InheritsFrom("AliESDv0") ) ) continue;
-	
-	if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
+          if ( fUsePIDforLc2V0 && !TESTBIT(seleFlags[iTrkP1],kBitProtonCompat) ) continue; //clm
+        
+        // Get the V0
+        if(fInputAOD) {
+          v0 = ((AliAODEvent*)event)->GetV0(iv0);
+        } else {
+          esdV0 = ((AliESDEvent*)event)->GetV0(iv0);
+        }
+        if ( (!v0 || !v0->IsA()->InheritsFrom("AliAODv0") ) &&
+            (!esdV0 || !esdV0->IsA()->InheritsFrom("AliESDv0") ) ) continue;
+        
+        if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
                     (v0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
-
+        
         if ( esdV0 && ((esdV0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
-		       ( esdV0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
-
-	// Get the tracks that form the V0
-	//  ( parameters at primary vertex )
-	//   and define an AliExternalTrackParam out of them
-	AliExternalTrackParam * posV0track;
-	AliExternalTrackParam * negV0track;
-
-	if(fInputAOD){
+                       ( esdV0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
+        
+        // Get the tracks that form the V0
+        //  ( parameters at primary vertex )
+        //   and define an AliExternalTrackParam out of them
+        AliExternalTrackParam * posV0track;
+        AliExternalTrackParam * negV0track;
+        
+        if(fInputAOD){
           AliAODTrack *posVV0track = (AliAODTrack*)(v0->GetDaughter(0));
-	  AliAODTrack *negVV0track = (AliAODTrack*)(v0->GetDaughter(1));
-	  if( !posVV0track || !negVV0track ) continue;
-	  //
-	  // Apply some basic V0 daughter criteria
-	  //
-	  // bachelor must not be a v0-track                                                                  
-	  if (posVV0track->GetID() == postrack1->GetID() ||
-	      negVV0track->GetID() == postrack1->GetID()) continue;
-	  // reject like-sign v0                                                                              
-	  if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
-	  // avoid ghost TPC tracks                                                                           
-	  if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
-	     !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-	  // Get AliExternalTrackParam out of the AliAODTracks
-	  Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
-	  posVV0track->PxPyPz(pxpypz); 	                  posVV0track->XvYvZv(xyz);
-	  posVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=posVV0track->Charge();
-	  posV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
-	  negVV0track->PxPyPz(pxpypz); 	                  negVV0track->XvYvZv(xyz);
-	  negVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=negVV0track->Charge();
-	  negV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
-	}  else {
-	  AliESDtrack *posVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetPindex() ));
+          AliAODTrack *negVV0track = (AliAODTrack*)(v0->GetDaughter(1));
+          if( !posVV0track || !negVV0track ) continue;
+          //
+          // Apply some basic V0 daughter criteria
+          //
+          // bachelor must not be a v0-track
+          if (posVV0track->GetID() == postrack1->GetID() ||
+              negVV0track->GetID() == postrack1->GetID()) continue;
+          // reject like-sign v0
+          if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
+          // avoid ghost TPC tracks
+          if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
+             !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+          // Get AliExternalTrackParam out of the AliAODTracks
+          Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
+          posVV0track->PxPyPz(pxpypz); 	                  posVV0track->XvYvZv(xyz);
+          posVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=posVV0track->Charge();
+          posV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
+          negVV0track->PxPyPz(pxpypz); 	                  negVV0track->XvYvZv(xyz);
+          negVV0track->GetCovarianceXYZPxPyPz(cv);	  sign=negVV0track->Charge();
+          negV0track = new AliExternalTrackParam(xyz,pxpypz,cv,sign);
+        }  else {
+          AliESDtrack *posVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetPindex() ));
           AliESDtrack *negVV0track = (AliESDtrack*)(event->GetTrack( esdV0->GetNindex() ));
-	  if( !posVV0track || !negVV0track ) continue;
-	  //
-	  // Apply some basic V0 daughter criteria
-	  //
-	  // bachelor must not be a v0-track                                                                  
-	  if (posVV0track->GetID() == postrack1->GetID() ||
-	      negVV0track->GetID() == postrack1->GetID()) continue;
-	  // reject like-sign v0                                                                              
-	  if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
-	  // avoid ghost TPC tracks                                                                           
-	  if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
-	     !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-	  //  reject kinks (only necessary on AliESDtracks)
-	  if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
-	  // Get AliExternalTrackParam out of the AliESDtracks	
-	  posV0track = new AliExternalTrackParam(*posVV0track);
-	  negV0track = new AliExternalTrackParam(*negVV0track);
-
-	  // Define the AODv0 from ESDv0 if reading ESDs
-	  v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
-	}
-	if( !posV0track || !negV0track ){
-	  AliDebug(1,Form(" Couldn't get the V0 daughters"));
-	  continue;
-	}
-
-	// fill in the v0 two-external-track-param array
- 	twoTrackArrayV0->AddAt(posV0track,0);
- 	twoTrackArrayV0->AddAt(negV0track,1);
-
- 	// Get the V0 dca
-	dcaV0 = v0->DcaV0Daughters();
-
-	// Define the V0 (neutral) track
-	AliNeutralTrackParam *trackV0=NULL;
-	if(fInputAOD) {
-	  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
-	  if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);
-	} else {  
-	  Double_t xyz[3], pxpypz[3];
-	  esdV0->XvYvZv(xyz);
-	  esdV0->PxPyPz(pxpypz);
-	  Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
-	  trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
-	}
-
-
-	// Fill in the object array to create the cascade
-	twoTrackArrayCasc->AddAt(postrack1,0);
-	twoTrackArrayCasc->AddAt(trackV0,1);
-	// Compute the cascade vertex
-	AliAODVertex *vertexCasc = 0;
-	if(fFindVertexForCascades) {  
-	  // DCA between the two tracks
-	  dcaCasc = postrack1->GetDCA(trackV0,fBzkG,xdummy,ydummy);
-	  // Vertexing+	  
-	  vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion,kFALSE);
-	} else {
-	  // assume Cascade decays at the primary vertex
-	  Double_t pos[3],cov[6],chi2perNDF;
-	  fV1->GetXYZ(pos);
-	  fV1->GetCovMatrix(cov);
-	  chi2perNDF = fV1->GetChi2toNDF();
-	  vertexCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
-	  dcaCasc = 0.;
-	}
-	if(!vertexCasc) {
-	  delete posV0track; posV0track=NULL;
-	  delete negV0track; negV0track=NULL;
-	  delete trackV0; trackV0=NULL;
-	  if(!fInputAOD) {delete v0; v0=NULL;}
-	  twoTrackArrayV0->Clear();
-	  twoTrackArrayCasc->Clear();
-	  continue; 
-	}
-
-	// Create and store the Cascade if passed the cuts
-	ioCascade = MakeCascade(twoTrackArrayCasc,event,vertexCasc,v0,dcaCasc,okCascades);
-	if(okCascades && ioCascade) {
-	  //AliDebug(1,Form("Storing a cascade object... "));
-	  // add the vertex and the cascade to the AOD
-	  rc = new(aodCascadesRef[iCascades++])AliAODRecoCascadeHF(*ioCascade);
+          if( !posVV0track || !negVV0track ) continue;
+          //
+          // Apply some basic V0 daughter criteria
+          //
+          // bachelor must not be a v0-track
+          if (posVV0track->GetID() == postrack1->GetID() ||
+              negVV0track->GetID() == postrack1->GetID()) continue;
+          // reject like-sign v0
+          if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
+          // avoid ghost TPC tracks
+          if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
+             !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+          //  reject kinks (only necessary on AliESDtracks)
+          if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
+          // Get AliExternalTrackParam out of the AliESDtracks
+          posV0track = new AliExternalTrackParam(*posVV0track);
+          negV0track = new AliExternalTrackParam(*negVV0track);
+          
+          // Define the AODv0 from ESDv0 if reading ESDs
+          v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
+        }
+        if( !posV0track || !negV0track ){
+          AliDebug(1,Form(" Couldn't get the V0 daughters"));
+          continue;
+        }
+        
+        // fill in the v0 two-external-track-param array
+        twoTrackArrayV0->AddAt(posV0track,0);
+        twoTrackArrayV0->AddAt(negV0track,1);
+        
+        // Get the V0 dca
+        dcaV0 = v0->DcaV0Daughters();
+        
+        // Define the V0 (neutral) track
+        AliNeutralTrackParam *trackV0=NULL;
+        if(fInputAOD) {
+          const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+          if(trackVV0)  trackV0 = new AliNeutralTrackParam(trackVV0);
+        } else {
+          Double_t xyz[3], pxpypz[3];
+          esdV0->XvYvZv(xyz);
+          esdV0->PxPyPz(pxpypz);
+          Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
+          trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
+        }
+        
+        
+        // Fill in the object array to create the cascade
+        twoTrackArrayCasc->AddAt(postrack1,0);
+        twoTrackArrayCasc->AddAt(trackV0,1);
+        // Compute the cascade vertex
+        AliAODVertex *vertexCasc = 0;
+        if(fFindVertexForCascades) {
+          // DCA between the two tracks
+          dcaCasc = postrack1->GetDCA(trackV0,fBzkG,xdummy,ydummy);
+          // Vertexing+
+          vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion,kFALSE);
+        } else {
+          // assume Cascade decays at the primary vertex
+          Double_t pos[3],cov[6],chi2perNDF;
+          fV1->GetXYZ(pos);
+          fV1->GetCovMatrix(cov);
+          chi2perNDF = fV1->GetChi2toNDF();
+          vertexCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
+          dcaCasc = 0.;
+        }
+        if(!vertexCasc) {
+          delete posV0track; posV0track=NULL;
+          delete negV0track; negV0track=NULL;
+          delete trackV0; trackV0=NULL;
+          if(!fInputAOD) {delete v0; v0=NULL;}
+          twoTrackArrayV0->Clear();
+          twoTrackArrayCasc->Clear();
+          continue;
+        }
+        
+        // Create and store the Cascade if passed the cuts
+        ioCascade = MakeCascade(twoTrackArrayCasc,event,vertexCasc,v0,dcaCasc,okCascades);
+        if(okCascades && ioCascade) {
+          //AliDebug(1,Form("Storing a cascade object... "));
+          // add the vertex and the cascade to the AOD
+          rc = new(aodCascadesRef[iCascades++])AliAODRecoCascadeHF(*ioCascade);
           if(fMakeReducedRHF){
             UShort_t id[2]={(UShort_t)postrack1->GetID(),(UShort_t)iv0};
             rc->SetProngIDs(2,id);
-	    rc->DeleteRecoD();
+            rc->DeleteRecoD();
           }else{
-	    AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc);
-	    rc->SetSecondaryVtx(vCasc);
-	    vCasc->SetParent(rc);
-	    if(!fInputAOD) vCasc->AddDaughter(v0); // just to fill ref #0 ??
-	    AddRefs(vCasc,rc,event,twoTrackArrayCasc); // add the track (proton)
-	    vCasc->AddDaughter(v0); // fill the 2prong V0 
+            AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc);
+            rc->SetSecondaryVtx(vCasc);
+            vCasc->SetParent(rc);
+            if(!fInputAOD) vCasc->AddDaughter(v0); // just to fill ref #0 ??
+            AddRefs(vCasc,rc,event,twoTrackArrayCasc); // add the track (proton)
+            vCasc->AddDaughter(v0); // fill the 2prong V0 
           }
-	  rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
-	}
-
-
-	// Clean up 
-	delete posV0track; posV0track=NULL;
-	delete negV0track; negV0track=NULL;
-	delete trackV0; trackV0=NULL;
-	twoTrackArrayV0->Clear();
-	twoTrackArrayCasc->Clear();
-	if(ioCascade) { delete ioCascade; ioCascade=NULL; }
-	if(vertexCasc) { delete vertexCasc; vertexCasc=NULL; }
-	if(!fInputAOD) {delete v0; v0=NULL;}
-
+          rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
+        }
+        
+        
+        // Clean up 
+        delete posV0track; posV0track=NULL;
+        delete negV0track; negV0track=NULL;
+        delete trackV0; trackV0=NULL;
+        twoTrackArrayV0->Clear();
+        twoTrackArrayCasc->Clear();
+        if(ioCascade) { delete ioCascade; ioCascade=NULL; }
+        if(vertexCasc) { delete vertexCasc; vertexCasc=NULL; }
+        if(!fInputAOD) {delete v0; v0=NULL;}
+        
       } // end loop on V0's
       
       // re-set parameters at vertex
       SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
-    }
+    } // end fCascades
 
+  
     // If there is less than 2 particles continue
     if(trkEntries<2) {
       AliDebug(1,Form(" Not enough tracks: %d",trkEntries));
@@ -1803,7 +1831,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   return kTRUE;
 }
 //----------------------------------------------------------------------------
-Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rCasc, Bool_t DStar){
+Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rCasc, Bool_t DStar, Bool_t recoSecVtx){
   // method to retrieve daughters from trackID 
   // and fill on-the-fly the data member of rCasc and their AliAODRecoDecayHF2Prong daughters
   if(rCasc->GetIsFilled()!=0) return kTRUE;//if 0: reduced dAOD. skip if rd is already filled (1: standard dAOD, 2: already refilled)
@@ -1849,10 +1877,17 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
   fV1->GetCovMatrix(cov);
   
+  Double_t dispersion, xdummy, ydummy;
+
   Double_t dca = 0.;
   AliAODVertex *vtxCasc = 0x0;
   Double_t chi2perNDF = fV1->GetChi2toNDF();
-  vtxCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
+  if (recoSecVtx) {
+    dca = esdB->GetDCA(trackV0,fBzkG,xdummy,ydummy);
+    vtxCasc = ReconstructSecondaryVertex(twoTrackArrayCasc,dispersion,kFALSE);
+  } else {
+    vtxCasc = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,2);
+  }
   if(!vtxCasc) {
     twoTrackArrayCasc->Clear();
     twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
@@ -2039,7 +2074,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   if(!presel) return 0x0;
 
   //  AliDebug(2,Form("         building the cascade"));
-  okCascades= kFALSE; 
+  okCascades = kFALSE;
   Bool_t dummy1,dummy2,dummy3;
 
   // We use Make2Prong to construct the AliAODRecoCascadeHF
@@ -2078,13 +2113,31 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   }
   
   // select Cascades
-  if(fCascades && fInputAOD){
-    okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
+  if (fCascades && fInputAOD) {
+    if (fOKInvMassLctoV0) {
+      Int_t isLctoK0s = fCutsLctoV0->IsSelected(tmpCascade, AliRDHFCuts::kCandidate);
+      if (isLctoK0s>0) {
+        okCascades = kTRUE;
+        theCascade->SetSelectionBit(AliRDHFCuts::kLctoV0Cuts);
+      }
+    }
+    if (fOKInvMassDplustoK0s) {
+      if (fCutsDplustoK0spi->IsSelected(tmpCascade, AliRDHFCuts::kCandidate)>0) {
+        okCascades = kTRUE;
+        theCascade->SetSelectionBit(AliRDHFCuts::kDplustoK0sCuts);
+      }
+    }
+    if (fOKInvMassDstoK0s) {
+      if (fCutsDstoK0sK->IsSelected(tmpCascade, AliRDHFCuts::kCandidate)) {
+        okCascades = kTRUE;
+        theCascade->SetSelectionBit(AliRDHFCuts::kDstoK0sCuts);
+      }
+    }
   }
   else { 
     //AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); 
     okCascades=kTRUE; 
-  }// no cuts implemented from ESDs
+  } // no cuts implemented from ESDs
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
   tmpCascade->UnsetOwnPrimaryVtx(); 
   delete tmpCascade; tmpCascade=NULL;
@@ -2129,10 +2182,10 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   if(!refill){//skip if it is called in refill step because already checked
     // invariant mass cut (try to improve coding here..)
     Bool_t okMassCut=kFALSE;
-    if(!okMassCut && fD0toKpi)   if(SelectInvMassAndPtD0Kpi(px,py,pz)) okMassCut=kTRUE;
-    if(!okMassCut && fJPSItoEle) if(SelectInvMassAndPtJpsiee(px,py,pz)) okMassCut=kTRUE;
+    if(!okMassCut && fD0toKpi)   if(SelectInvMassAndPtD0Kpi(px,py,pz))     okMassCut=kTRUE;
+    if(!okMassCut && fJPSItoEle) if(SelectInvMassAndPtJpsiee(px,py,pz))    okMassCut=kTRUE;
     if(!okMassCut && fDstar)     if(SelectInvMassAndPtDstarD0pi(px,py,pz)) okMassCut=kTRUE;
-    if(!okMassCut && fCascades)  if(SelectInvMassAndPtCascade(px,py,pz)) okMassCut=kTRUE;
+    if(!okMassCut && fCascades)  if(SelectInvMassAndPtCascade(px,py,pz))   okMassCut=kTRUE;
     if(!okMassCut) {
       //AliDebug(2," candidate didn't pass mass cut");
       return 0x0;    
@@ -2742,9 +2795,13 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     if(fCutsD0toKpipipi) fCutsD0toKpipipi->PrintAll();
   }
   if(fCascades) {
-    printf("Reconstruct cascades candidates formed with v0s.\n");
+    printf("Reconstruct cascade candidates formed with v0s.\n");
     printf("  Lc -> k0s P & Lc -> L Pi cuts:\n");
     if(fCutsLctoV0) fCutsLctoV0->PrintAll();
+    printf("  D+ -> K0s pi cuts:\n");
+    if(fCutsDplustoK0spi) fCutsDplustoK0spi->PrintAll();
+    printf("  Ds -> K0s K cuts:\n");
+    if(fCutsDstoK0sK) fCutsDstoK0sK->PrintAll();
   }
 
   return;
@@ -3122,21 +3179,54 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtCascade(Double_t *px,
   minPt=fCutsLctoV0->GetMinPtCandidate();
   if(minPt>0.1) 
     if(fMassCalc2->Pt2() < minPt*minPt) return retval;
-  fOKInvMassLctoV0=kFALSE; 
-  mrange=fCutsLctoV0->GetMassCut();
-  lolim=fMassLambdaC-mrange;
-  hilim=fMassLambdaC+mrange;
-  pdg2[0]=2212;pdg2[1]=310;
-  minv2=fMassCalc2->InvMass2(2,pdg2);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassLctoV0=kTRUE;
+    
+  fOKInvMassLctoV0     = kFALSE;
+  fOKInvMassDplustoK0s = kFALSE;
+  fOKInvMassDstoK0s    = kFALSE;
+  
+  // LambdaC candidate
+  if (fCutsLctoV0) {
+    mrange  = fCutsLctoV0->GetMassCut();
+    lolim   = fMassLambdaC - mrange;
+    hilim   = fMassLambdaC + mrange;
+    pdg2[0] = 2212; pdg2[1] = 310;
+    minv2   = fMassCalc2->InvMass2(2, pdg2);
+    if ((minv2 > lolim*lolim) && (minv2 < hilim*hilim)) {
+        retval = kTRUE;
+        fOKInvMassLctoV0 = kTRUE;
+    }
+    pdg2[0] = 211; pdg2[1] = 3122;
+    minv2   = fMassCalc2->InvMass2(2, pdg2);
+    if ((minv2>lolim*lolim) && (minv2<hilim*hilim)) {
+        retval = kTRUE;
+        fOKInvMassLctoV0 = kTRUE;
+    }
   }
-  pdg2[0]=211;pdg2[1]=3122;
-  minv2=fMassCalc2->InvMass2(2,pdg2);
-  if(minv2>lolim*lolim && minv2<hilim*hilim ){
-    retval=kTRUE;
-    fOKInvMassLctoV0=kTRUE;
+
+  // D+ cascade candidate
+  if (fCutsDplustoK0spi) {
+    mrange  = fCutsDplustoK0spi->GetMassCut();
+    lolim   = fMassDplus - mrange;
+    hilim   = fMassDplus + mrange;
+    pdg2[0] = 211; pdg2[1] = 310;
+    minv2   = fMassCalc2->InvMass2(2, pdg2);
+    if ((minv2 > lolim*lolim) && (minv2 < hilim*hilim)) {
+        retval = kTRUE;
+        fOKInvMassDplustoK0s = kTRUE;
+    }
+  }
+  
+  // Ds cascade candidate
+  if (fCutsDstoK0sK) {
+    mrange  = fCutsDstoK0sK->GetMassCut();
+    lolim   = fMassDs - mrange;
+    hilim   = fMassDs + mrange;
+    pdg2[0] = 321; pdg2[1] = 310;
+    minv2   = fMassCalc2->InvMass2(2, pdg2);
+    if ((minv2 > lolim*lolim) && (minv2 < hilim*hilim)) {
+        retval = kTRUE;
+        fOKInvMassDstoK0s = kTRUE;
+    }
   }
 
   return retval;
@@ -3490,18 +3580,28 @@ void AliAnalysisVertexingHF::SetMasses(){
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){
   //
-  /// Check the Vertexer and the analysts task consitstecny
+  /// Check the Vertexer and the analysts task consitstency
   //
 
 
   //___ Check if the V0 type from AliRDHFCutsLctoV0 is the same as the one set in the ConfigVertexingHF.C for AliAnalysisVertexingHF
 
 
-  if ( fCutsLctoV0 && fV0TypeForCascadeVertex != fCutsLctoV0->GetV0Type())
-  {
+  if (fCutsLctoV0 && fV0TypeForCascadeVertex != fCutsLctoV0->GetV0Type()) {
     printf("ERROR: V0 type doesn not match in AliAnalysisVertexingHF (%d) required in AliRDHFCutsLctoV0 (%d)\n",fV0TypeForCascadeVertex,fCutsLctoV0->GetV0Type());
     return kFALSE;
   }
+
+  if (fCutsDplustoK0spi && fV0TypeForCascadeVertex != fCutsDplustoK0spi->GetV0Type()) {
+    printf("ERROR: V0 type doesn not match in AliAnalysisVertexingHF (%d) required in AliRDHfCutsDplustoK0spi (%d)\n",fV0TypeForCascadeVertex,fCutsDplustoK0spi->GetV0Type());
+    return kFALSE;
+  }
+
+  if (fCutsDstoK0sK && fV0TypeForCascadeVertex != fCutsDstoK0sK->GetV0Type()) {
+    printf("ERROR: V0 type doesn not match in AliAnalysisVertexingHF (%d) required in AliRDHFCutsDstoK0sK (%d)\n",fV0TypeForCascadeVertex,fCutsDstoK0sK->GetV0Type());
+    return kFALSE;
+  }
+
   return kTRUE;
 }
 //-----------------------------------------------------------------------------

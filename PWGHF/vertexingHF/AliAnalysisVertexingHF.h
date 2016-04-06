@@ -31,7 +31,9 @@ class AliAnalysisFilter;
 class AliRDHFCuts;
 class AliRDHFCutsD0toKpi;
 class AliRDHFCutsJpsitoee;
+class AliRDHFCutsDplustoK0spi;
 class AliRDHFCutsDplustoKpipi;
+class AliRDHFCutsDstoK0sK;
 class AliRDHFCutsDstoKKpi;
 class AliRDHFCutsLctopKpi;
 class AliRDHFCutsLctoV0;
@@ -68,7 +70,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void FixReferences(AliAODEvent *aod);  
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd3);
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2Prong *rd2);
-  Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc,Bool_t isDStar);
+  Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc,Bool_t isDStar,Bool_t recoSecVtx=kFALSE);
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
@@ -159,8 +161,12 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsD0toKpi* GetCutsD0toKpi() const { return fCutsD0toKpi; }
   void SetCutsJpsitoee(AliRDHFCutsJpsitoee* cuts) { fCutsJpsitoee = cuts; }
   AliRDHFCutsJpsitoee* GetCutsJpsitoee() const { return fCutsJpsitoee; }
+  void SetCutsDplustoK0spi(AliRDHFCutsDplustoK0spi* cuts) { fCutsDplustoK0spi = cuts; }
+  AliRDHFCutsDplustoK0spi* GetCutsDplustoK0spi() const { return fCutsDplustoK0spi; }
   void SetCutsDplustoKpipi(AliRDHFCutsDplustoKpipi* cuts) { fCutsDplustoKpipi = cuts; }
   AliRDHFCutsDplustoKpipi* GetCutsDplustoKpipi() const { return fCutsDplustoKpipi; }
+  void SetCutsDstoK0sK(AliRDHFCutsDstoK0sK* cuts) { fCutsDstoK0sK = cuts; }
+  AliRDHFCutsDstoK0sK* GetCutsDstoK0sK() const { return fCutsDstoK0sK; }
   void SetCutsDstoKKpi(AliRDHFCutsDstoKKpi* cuts) { fCutsDstoKKpi = cuts; }
   AliRDHFCutsDstoKKpi* GetCutsDstoKKpi() const { return fCutsDstoKKpi; }
   void SetCutsLctopKpi(AliRDHFCutsLctopKpi* cuts) { fCutsLctopKpi = cuts; }
@@ -264,7 +270,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t f3Prong;    /// D+,Ds,Lc
   Bool_t f4Prong;    /// D0->Kpipipi
   Bool_t fDstar;     /// D*->D0pi
-  Bool_t fCascades;  /// cascades, Lc --> v0+track
+  Bool_t fCascades;  /// cascades, Lc --> v0+track, D+ --> K0s+Pi, Ds --> K0s+K
   Bool_t fLikeSign;  /// Like-sign pairs
   Bool_t fLikeSign3prong;  /// Like-sign triplets
   Bool_t fMixEvent; /// event mixing
@@ -303,7 +309,9 @@ class AliAnalysisVertexingHF : public TNamed {
   // candidates cuts
   AliRDHFCutsD0toKpi *fCutsD0toKpi; /// D0->Kpi cuts
   AliRDHFCutsJpsitoee *fCutsJpsitoee; /// J/psi->ee cuts
+  AliRDHFCutsDplustoK0spi *fCutsDplustoK0spi; /// D+->K0s+pi
   AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi; /// D+->Kpipi cuts
+  AliRDHFCutsDstoK0sK *fCutsDstoK0sK; /// Ds->K0s+K
   AliRDHFCutsDstoKKpi *fCutsDstoKKpi; /// Ds->KKpi cuts
   AliRDHFCutsLctopKpi *fCutsLctopKpi; /// Lc->pKpi cuts
   AliRDHFCutsLctoV0 *fCutsLctoV0; /// Lc --> v0 + bachelor cuts
@@ -327,6 +335,8 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fOKInvMassDstar; /// combination fullfilling D* inv mass selection
   Bool_t fOKInvMassD0to4p; /// 4tracks fullfilling D0 inv mass selection
   Bool_t fOKInvMassLctoV0; /// triplet fullfilling Lc inv mass selection
+  Bool_t fOKInvMassDplustoK0s; /// triplet fullfilling D+->K0s+pi inv mass selection
+  Bool_t fOKInvMassDstoK0s; /// triplet fullfilling Ds->K0s+K inv mass selection
 
   Int_t  fnTrksTotal;
   Int_t  fnSeleTrksTotal;
