@@ -229,6 +229,8 @@ void AliHLTMessage::Reset()
      delete [] fBufUncompressed;
      fBufUncompressed=NULL;
    }
+
+   delete fInfos; fInfos=NULL;
 }
 
 //______________________________________________________________________________
