@@ -23,15 +23,15 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   // Jet bias - setters
   virtual void            SetTrackBias(Double_t b)                   { fTrackBias    = b; }  //require a track with pt > b in jet
-  virtual void            SetClusterBias(Double_t b)                  { fClusterBias = b; }  //require a cluster with pt > b in jet
+  virtual void            SetClusterBias(Double_t b)                 { fClusterBias = b; }  //require a cluster with pt > b in jet
   // Event trigger/mixed selection - setters
   virtual void            SetTriggerType(UInt_t te)                  { fTriggerType = te; }
   virtual void            SetMixedEventTriggerType(UInt_t me)        { fMixingEventType = me; }
   // Mixed events
   virtual void            SetEventMixing(Bool_t enable)              { fDoEventMixing = enable;}
   virtual void            SetNumberOfMixingTracks(Int_t tracks)      { fNMixingTracks = tracks; }
-  virtual void            SetMinNTracksForMixedEvents(Int_t nmt)           { fMinNTracksMixedEvents = nmt; }
-  virtual void            SetMinNEventsForMixedEvents(Int_t nme)           { fMinNEventsMixedEvents = nme; }
+  virtual void            SetMinNTracksForMixedEvents(Int_t nmt)     { fMinNTracksMixedEvents = nmt; }
+  virtual void            SetMinNEventsForMixedEvents(Int_t nme)     { fMinNEventsMixedEvents = nme; }
   virtual void            SetNCentBinsMixedEvent(Bool_t centbins)    { fNCentBinsMixedEvent = centbins; }
   // Switch to cut out some unneeded sparse axis
   void                    SetDoLessSparseAxes(Bool_t dlsa)           { fDoLessSparseAxes = dlsa; }
@@ -40,7 +40,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   void                    SetDoEffCorr(Int_t effcorr)                { fDoEffCorrection = effcorr; }
   virtual void            SetEffCorrFunc(Double_t efffunc)           { fEffFunctionCorrection = efffunc; }
   // Set embedding correction
-  void                    SetEmbeddingCorrectionHist(TH2F * embeddingCorrectionHist) { fEmbeddingCorrectionHist = embeddingCorrectionHist; }
+  void                    SetEmbeddingCorrectionHist(TH2F * hist)    { fEmbeddingCorrectionHist = hist; }
 
   virtual void            UserCreateOutputObjects();
   virtual void            Terminate(Option_t *);
