@@ -424,9 +424,8 @@ class AliJHistManager: public AliJNamed{
 
         AliJTH1 * GetAliJTH1(int i){ return GetTH1(fHistNames[i]); }
         int GetNAliJTH1(){ return fHistNames.size(); }
+        bool HistogramExists(TString name);
 
-
-        TDirectory * fDirectory; // TODO move to private?
 
     private:
         TString                     fConfigStr;
@@ -437,6 +436,7 @@ class AliJHistManager: public AliJNamed{
         std::vector<TString>        fBinConfigs;
         std::vector<TString>        fHistNames;
         std::vector<TString>        fHistConfigs;
+        TDirectory *fDirectory;
 };
 
 #endif

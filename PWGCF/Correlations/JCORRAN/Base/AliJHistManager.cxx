@@ -736,6 +736,9 @@ AliJTH1 * AliJHistManager::GetBuiltTH1(TString s ){
         if( fHist[i]->GetName() == s ) return fHist[i];
     return NULL;
 }
+// Note: Returning NULL crashes the code, something should be done about this.
+// The error given by compiler is: non-const lvalue reference to type 'AliJTH1D' (aka 'AliJTH1Derived<TH1D>') cannot bind to a temporary of type 'long'
+// The reoson for crash is that NULL cannot be used in dynamic_cast<AliJTH1D&>
 AliJTH1 * AliJHistManager::GetTH1(TString s ){
     AliJTH1 * h = GetBuiltTH1(s);
     if( h ) return h;
@@ -812,6 +815,13 @@ int AliJHistManager::LoadConfig(){
         }
     }
     return 1;
+}
+
+bool AliJHistManager::HistogramExists(TString name){
+  for(int i = 0; i < fHistNames.size(); i++){
+    if(fHistNames[i] == name) return true;
+  }
+  return false;
 }
 
 
