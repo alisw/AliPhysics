@@ -44,6 +44,19 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   AliAnalysisTaskEbyeIterPID();
   virtual ~AliAnalysisTaskEbyeIterPID();
 
+enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr=8,};
+  enum momentTypeUnlike {
+    kPiPosPiNeg=0,
+    kPiPosKaNeg=1,
+    kPiPosPrNeg=2,
+    kKaPosPiNeg=3,
+    kKaPosKaNeg=4,
+    kKaPosPrNeg=5,
+    kPrPosPiNeg=6,
+    kPrPosKaNeg=7,
+    kPrPosPrNeg=8,
+  };
+
 // ---------------------------------------------------------------------------------
 //                                    Methods
 // ---------------------------------------------------------------------------------
@@ -148,6 +161,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
    void  FillTPCdEdxCheck();                  // Quick check for the TPC dEdx 
    void  FillTPCdEdxMC();                     // Fill all info + TIdenMC from MC to do MC closure test
    void  FastGen();                           // Run over galice.root for Fastgen
+   void  WeakAndMaterial();                   // Look full acceptance, weak decay and material 
    void  FillDnchDeta();                      // Fill dnch/deta values for each cent and eta bin  
    void  FillTPCdEdxMCEffMatrix();            // Prepare efficiency matrix
    void  FillCleanElectrons();                // Fill Clean Electrons 
@@ -180,6 +194,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   TTree            * fTreedEdxCheck;          // tree to check dEdx performance for a small data sample 
   TTree            * fTreeBayes;              // tree to save bayesian probabilities
   TTree            * fTreeCuts;               // tree to save all variables for control plots
+  TTree            * fTreeMCFullAcc;          // tree with full acceptance filled with MC
 
   TH1F             * fhEta;                   // helper histogram for TIdentity tree
   TH1F             * fhCent;                  // helper histogram for TIdentity tree
