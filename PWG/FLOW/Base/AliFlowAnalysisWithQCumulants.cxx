@@ -99,6 +99,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fFillMultipleControlHistograms(kFALSE),
  fHarmonic(2),
  fAnalysisLabel(NULL),
+ fMaxCommonResultsHistogram(8),
  // 2a.) particle weights:
  fWeightsList(NULL),
  fUsePhiWeights(kFALSE),
@@ -751,6 +752,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fUse2DHistograms = (Bool_t)fIntFlowFlags->GetBinContent(18);
  fFillProfilesVsMUsingWeights = (Bool_t)fIntFlowFlags->GetBinContent(19);
  fUseQvectorTerms = (Bool_t)fIntFlowFlags->GetBinContent(20);
+ fMaxCommonResultsHistogram = (Bool_t)fIntFlowFlags->GetBinContent(21);
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -1373,35 +1375,71 @@ void AliFlowAnalysisWithQCumulants::PrintFinalResultsForIntegratedFlow(TString t
  {
   for(Int_t b=0;b<4;b++)
   {
-   dVn[0] = (fCommonHistsResults2nd->GetHistIntFlow())->GetBinContent(1); 
-   dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlow())->GetBinError(1); 
-   dVn[1] = (fCommonHistsResults4th->GetHistIntFlow())->GetBinContent(1); 
-   dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlow())->GetBinError(1); 
-   dVn[2] = (fCommonHistsResults6th->GetHistIntFlow())->GetBinContent(1); 
-   dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlow())->GetBinError(1); 
-   dVn[3] = (fCommonHistsResults8th->GetHistIntFlow())->GetBinContent(1); 
-   dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlow())->GetBinError(1);    
-  }  
+   if(fCommonHistsResults2nd)
+   {
+    dVn[0] = (fCommonHistsResults2nd->GetHistIntFlow())->GetBinContent(1);
+    dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlow())->GetBinError(1);
+   }
+   if(fCommonHistsResults4th)
+   {
+    dVn[1] = (fCommonHistsResults4th->GetHistIntFlow())->GetBinContent(1);
+    dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlow())->GetBinError(1);
+   }
+   if(fCommonHistsResults6th)
+   {
+    dVn[2] = (fCommonHistsResults6th->GetHistIntFlow())->GetBinContent(1);
+    dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlow())->GetBinError(1);
+   }
+   if(fCommonHistsResults8th)
+   {
+    dVn[3] = (fCommonHistsResults8th->GetHistIntFlow())->GetBinContent(1);
+    dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlow())->GetBinError(1);
+   }
+  } // for(Int_t b=0;b<4;b++)
  } else if(type == "RP")
    {
-    dVn[0] = (fCommonHistsResults2nd->GetHistIntFlowRP())->GetBinContent(1); 
-    dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlowRP())->GetBinError(1); 
-    dVn[1] = (fCommonHistsResults4th->GetHistIntFlowRP())->GetBinContent(1); 
-    dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlowRP())->GetBinError(1); 
-    dVn[2] = (fCommonHistsResults6th->GetHistIntFlowRP())->GetBinContent(1); 
-    dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlowRP())->GetBinError(1); 
-    dVn[3] = (fCommonHistsResults8th->GetHistIntFlowRP())->GetBinContent(1); 
-    dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlowRP())->GetBinError(1); 
+    if(fCommonHistsResults2nd)
+    {
+     dVn[0] = (fCommonHistsResults2nd->GetHistIntFlowRP())->GetBinContent(1);
+     dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlowRP())->GetBinError(1);
+    }
+    if(fCommonHistsResults4th)
+    {
+     dVn[1] = (fCommonHistsResults4th->GetHistIntFlowRP())->GetBinContent(1);
+     dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlowRP())->GetBinError(1);
+    }
+    if(fCommonHistsResults6th)
+    {
+     dVn[2] = (fCommonHistsResults6th->GetHistIntFlowRP())->GetBinContent(1);
+     dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlowRP())->GetBinError(1);
+    }
+    if(fCommonHistsResults8th)
+    {
+     dVn[3] = (fCommonHistsResults8th->GetHistIntFlowRP())->GetBinContent(1);
+     dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlowRP())->GetBinError(1);
+    }
    } else if(type == "POI")
      {
-      dVn[0] = (fCommonHistsResults2nd->GetHistIntFlowPOI())->GetBinContent(1); 
-      dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlowPOI())->GetBinError(1); 
-      dVn[1] = (fCommonHistsResults4th->GetHistIntFlowPOI())->GetBinContent(1); 
-      dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlowPOI())->GetBinError(1); 
-      dVn[2] = (fCommonHistsResults6th->GetHistIntFlowPOI())->GetBinContent(1); 
-      dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlowPOI())->GetBinError(1); 
-      dVn[3] = (fCommonHistsResults8th->GetHistIntFlowPOI())->GetBinContent(1); 
-      dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlowPOI())->GetBinError(1); 
+      if(fCommonHistsResults2nd)
+      {
+       dVn[0] = (fCommonHistsResults2nd->GetHistIntFlowPOI())->GetBinContent(1);
+       dVnErr[0] = (fCommonHistsResults2nd->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      if(fCommonHistsResults4th)
+      {
+       dVn[1] = (fCommonHistsResults4th->GetHistIntFlowPOI())->GetBinContent(1);
+       dVnErr[1] = (fCommonHistsResults4th->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      if(fCommonHistsResults6th)
+      {
+       dVn[2] = (fCommonHistsResults6th->GetHistIntFlowPOI())->GetBinContent(1);
+       dVnErr[2] = (fCommonHistsResults6th->GetHistIntFlowPOI())->GetBinError(1);
+      }
+      if(fCommonHistsResults8th)
+      {
+       dVn[3] = (fCommonHistsResults8th->GetHistIntFlowPOI())->GetBinContent(1);
+       dVnErr[3] = (fCommonHistsResults8th->GetHistIntFlowPOI())->GetBinError(1);
+      }
      } else if(type == "RF, rebinned in M" && fCalculateCumulantsVsM)
        {
         for(Int_t b=0;b<4;b++)
@@ -1549,27 +1587,39 @@ void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
  } // end of if(fFillMultipleControlHistograms)
  
  // b) Book common result histograms: 
- //  Common result histograms for QC{2}:
- TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC";
- commonHistResults2ndOrderName += fAnalysisLabel->Data();
- fCommonHistsResults2nd = new AliFlowCommonHistResults(commonHistResults2ndOrderName.Data(),"",fHarmonic);
- fHistList->Add(fCommonHistsResults2nd);  
- //  Common result histograms for QC{4}:
- TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderQC";
- commonHistResults4thOrderName += fAnalysisLabel->Data();
- fCommonHistsResults4th = new AliFlowCommonHistResults(commonHistResults4thOrderName.Data(),"",fHarmonic);
- fHistList->Add(fCommonHistsResults4th); 
- //  Common result histograms for QC{6}:
- TString commonHistResults6thOrderName = "AliFlowCommonHistResults6thOrderQC";
- commonHistResults6thOrderName += fAnalysisLabel->Data();
- fCommonHistsResults6th = new AliFlowCommonHistResults(commonHistResults6thOrderName.Data(),"",fHarmonic);
- fHistList->Add(fCommonHistsResults6th);  
- //  Common result histograms for QC{8}:
- TString commonHistResults8thOrderName = "AliFlowCommonHistResults8thOrderQC";
- commonHistResults8thOrderName += fAnalysisLabel->Data();
- fCommonHistsResults8th = new AliFlowCommonHistResults(commonHistResults8thOrderName.Data(),"",fHarmonic);
- fHistList->Add(fCommonHistsResults8th); 
- 
+ if(fMaxCommonResultsHistogram >= 2)
+ {
+  //  Common result histograms for QC{2}:
+  TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC";
+  commonHistResults2ndOrderName += fAnalysisLabel->Data();
+  fCommonHistsResults2nd = new AliFlowCommonHistResults(commonHistResults2ndOrderName.Data(),"",fHarmonic);
+  fHistList->Add(fCommonHistsResults2nd);
+ }
+ if(fMaxCommonResultsHistogram >= 4)
+ {
+  //  Common result histograms for QC{4}:
+  TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderQC";
+  commonHistResults4thOrderName += fAnalysisLabel->Data();
+  fCommonHistsResults4th = new AliFlowCommonHistResults(commonHistResults4thOrderName.Data(),"",fHarmonic);
+  fHistList->Add(fCommonHistsResults4th);
+ }
+ if(fMaxCommonResultsHistogram >= 6)
+ {
+  //  Common result histograms for QC{6}:
+  TString commonHistResults6thOrderName = "AliFlowCommonHistResults6thOrderQC";
+  commonHistResults6thOrderName += fAnalysisLabel->Data();
+  fCommonHistsResults6th = new AliFlowCommonHistResults(commonHistResults6thOrderName.Data(),"",fHarmonic);
+  fHistList->Add(fCommonHistsResults6th);
+ }
+ if(fMaxCommonResultsHistogram >= 8)
+ {
+  //  Common result histograms for QC{8}:
+  TString commonHistResults8thOrderName = "AliFlowCommonHistResults8thOrderQC";
+  commonHistResults8thOrderName += fAnalysisLabel->Data();
+  fCommonHistsResults8th = new AliFlowCommonHistResults(commonHistResults8thOrderName.Data(),"",fHarmonic);
+  fHistList->Add(fCommonHistsResults8th);
+ }
+
 } // end of void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
 
 //=======================================================================================================================
@@ -1689,7 +1739,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",20,0.,20.);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",21,0.,21.);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.04);
@@ -1715,6 +1765,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(18,"fUse2DHistograms");
  fIntFlowFlags->GetXaxis()->SetBinLabel(19,"fFillProfilesVsMUsingWeights");
  fIntFlowFlags->GetXaxis()->SetBinLabel(20,"fUseQvectorTerms");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(21,"fMaxCommonResultsHistogram");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -14996,12 +15047,12 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsIntFlow()
  } // end of for(Int_t b=0;b<4;b++)
   
  // Fill AliFlowCommonHistResults histogram:
- fCommonHistsResults2nd->FillIntegratedFlow(v[0],vError[0]); // to be improved (hardwired 2nd in the name)  
- fCommonHistsResults4th->FillIntegratedFlow(v[1],vError[1]); // to be improved (hardwired 4th in the name)
+ if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillIntegratedFlow(v[0],vError[0]);} // to be improved (hardwired 2nd in the name)
+ if(fCommonHistsResults4th){fCommonHistsResults4th->FillIntegratedFlow(v[1],vError[1]);} // to be improved (hardwired 4th in the name)
  if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights||fUseTrackWeights)) // to be improved (calculate also 6th and 8th order)
  {
-  fCommonHistsResults6th->FillIntegratedFlow(v[2],vError[2]); // to be improved (hardwired 6th in the name)
-  fCommonHistsResults8th->FillIntegratedFlow(v[3],vError[3]); // to be improved (hardwired 8th in the name) 
+  if(fCommonHistsResults6th){fCommonHistsResults6th->FillIntegratedFlow(v[2],vError[2]);} // to be improved (hardwired 6th in the name)
+  if(fCommonHistsResults8th){fCommonHistsResults8th->FillIntegratedFlow(v[3],vError[3]);} // to be improved (hardwired 8th in the name)
  }
  
 } // end of AliFlowAnalysisWithQCumulants::FillCommonHistResultsIntFlow()
@@ -15687,17 +15738,17 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
  // storing the results for integrated flow in common histos: (to be improved: new method for this?)
  if(type == "POI")
  {
-  fCommonHistsResults2nd->FillIntegratedFlowPOI(dVn2nd,dErrVn2nd); 
-  fCommonHistsResults4th->FillIntegratedFlowPOI(dVn4th,dErrVn4th); 
-  fCommonHistsResults6th->FillIntegratedFlowPOI(dVn6th,0.); // to be improved (errors)
-  fCommonHistsResults8th->FillIntegratedFlowPOI(dVn8th,0.); // to be improved (errors)
+  if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillIntegratedFlowPOI(dVn2nd,dErrVn2nd);}
+  if(fCommonHistsResults4th){fCommonHistsResults4th->FillIntegratedFlowPOI(dVn4th,dErrVn4th);}
+  if(fCommonHistsResults6th){fCommonHistsResults6th->FillIntegratedFlowPOI(dVn6th,0.);} // to be improved (errors)
+  if(fCommonHistsResults8th){fCommonHistsResults8th->FillIntegratedFlowPOI(dVn8th,0.);} // to be improved (errors)
  }
  else if (type == "RP")
  {
-  fCommonHistsResults2nd->FillIntegratedFlowRP(dVn2nd,dErrVn2nd); 
-  fCommonHistsResults4th->FillIntegratedFlowRP(dVn4th,dErrVn4th);
-  fCommonHistsResults6th->FillIntegratedFlowRP(dVn6th,0.); // to be improved (errors)
-  fCommonHistsResults8th->FillIntegratedFlowRP(dVn8th,0.); // to be improved (errors)
+  if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillIntegratedFlowRP(dVn2nd,dErrVn2nd);}
+  if(fCommonHistsResults4th){fCommonHistsResults4th->FillIntegratedFlowRP(dVn4th,dErrVn4th);}
+  if(fCommonHistsResults6th){fCommonHistsResults6th->FillIntegratedFlowRP(dVn6th,0.);} // to be improved (errors)
+  if(fCommonHistsResults8th){fCommonHistsResults8th->FillIntegratedFlowRP(dVn8th,0.);} // to be improved (errors)
  }
  
  delete flow2ndPt;
@@ -16136,13 +16187,14 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type)
    } 
   
  // to be improved - check all pointers used in this method
-     
+ /*
  if(!(fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th))
  {
   cout<<"WARNING: fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th"<<endl; 
   cout<<"         is NULL in AFAWQC::FCHRIF() !!!!"<<endl;
   exit(0);
  }
+ */
  
  // pt:
  for(Int_t p=1;p<=fnBinsPt;p++)
@@ -16159,16 +16211,16 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type)
  
   if(type == "RP")
   {
-   fCommonHistsResults2nd->FillDifferentialFlowPtRP(p,v2,v2Error);
-   fCommonHistsResults4th->FillDifferentialFlowPtRP(p,v4,v4Error);
-   fCommonHistsResults6th->FillDifferentialFlowPtRP(p,v6,0.);
-   fCommonHistsResults8th->FillDifferentialFlowPtRP(p,v8,0.);
+   if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillDifferentialFlowPtRP(p,v2,v2Error);}
+   if(fCommonHistsResults4th){fCommonHistsResults4th->FillDifferentialFlowPtRP(p,v4,v4Error);}
+   if(fCommonHistsResults6th){fCommonHistsResults6th->FillDifferentialFlowPtRP(p,v6,0.);}
+   if(fCommonHistsResults8th){fCommonHistsResults8th->FillDifferentialFlowPtRP(p,v8,0.);}
   } else if(type == "POI")
     {
-     fCommonHistsResults2nd->FillDifferentialFlowPtPOI(p,v2,v2Error);
-     fCommonHistsResults4th->FillDifferentialFlowPtPOI(p,v4,v4Error);
-     fCommonHistsResults6th->FillDifferentialFlowPtPOI(p,v6,0.);
-     fCommonHistsResults8th->FillDifferentialFlowPtPOI(p,v8,0.);
+     if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillDifferentialFlowPtPOI(p,v2,v2Error);}
+     if(fCommonHistsResults4th){fCommonHistsResults4th->FillDifferentialFlowPtPOI(p,v4,v4Error);}
+     if(fCommonHistsResults6th){fCommonHistsResults6th->FillDifferentialFlowPtPOI(p,v6,0.);}
+     if(fCommonHistsResults8th){fCommonHistsResults8th->FillDifferentialFlowPtPOI(p,v8,0.);}
     }
  } // end of for(Int_t p=1;p<=fnBinsPt;p++)   
  
@@ -16188,16 +16240,16 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type)
  
   if(type == "RP")
   {
-   fCommonHistsResults2nd->FillDifferentialFlowEtaRP(e,v2,v2Error);
-   fCommonHistsResults4th->FillDifferentialFlowEtaRP(e,v4,v4Error);
-   fCommonHistsResults6th->FillDifferentialFlowEtaRP(e,v6,0.);
-   fCommonHistsResults8th->FillDifferentialFlowEtaRP(e,v8,0.);
+   if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillDifferentialFlowEtaRP(e,v2,v2Error);}
+   if(fCommonHistsResults4th){fCommonHistsResults4th->FillDifferentialFlowEtaRP(e,v4,v4Error);}
+   if(fCommonHistsResults6th){fCommonHistsResults6th->FillDifferentialFlowEtaRP(e,v6,0.);}
+   if(fCommonHistsResults8th){fCommonHistsResults8th->FillDifferentialFlowEtaRP(e,v8,0.);}
   } else if(type == "POI")
     {
-     fCommonHistsResults2nd->FillDifferentialFlowEtaPOI(e,v2,v2Error);
-     fCommonHistsResults4th->FillDifferentialFlowEtaPOI(e,v4,v4Error);
-     fCommonHistsResults6th->FillDifferentialFlowEtaPOI(e,v6,0.);
-     fCommonHistsResults8th->FillDifferentialFlowEtaPOI(e,v8,0.);
+     if(fCommonHistsResults2nd){fCommonHistsResults2nd->FillDifferentialFlowEtaPOI(e,v2,v2Error);}
+     if(fCommonHistsResults4th){fCommonHistsResults4th->FillDifferentialFlowEtaPOI(e,v4,v4Error);}
+     if(fCommonHistsResults6th){fCommonHistsResults6th->FillDifferentialFlowEtaPOI(e,v6,0.);}
+     if(fCommonHistsResults8th){fCommonHistsResults8th->FillDifferentialFlowEtaPOI(e,v8,0.);}
     }
  } // end of for(Int_t e=1;e<=fnBinsEta;e++)    
  
@@ -17953,6 +18005,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(17.5,(Int_t)fUse2DHistograms); 
  fIntFlowFlags->Fill(18.5,(Int_t)fFillProfilesVsMUsingWeights); 
  fIntFlowFlags->Fill(19.5,(Int_t)fUseQvectorTerms); 
+ fIntFlowFlags->Fill(20.5,(Int_t)fMaxCommonResultsHistogram);
 
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
@@ -20897,16 +20950,16 @@ void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimp
  {
   if(nRP>1)
   {
-   fCommonHists2nd->FillControlHistograms(anEvent);                                        
+   if(fCommonHists2nd){fCommonHists2nd->FillControlHistograms(anEvent);}
    if(nRP>3)
    {
-    fCommonHists4th->FillControlHistograms(anEvent);                                        
+    if(fCommonHists4th){fCommonHists4th->FillControlHistograms(anEvent);}
     if(nRP>5)
     {
-     fCommonHists6th->FillControlHistograms(anEvent);                                        
+     if(fCommonHists6th){fCommonHists6th->FillControlHistograms(anEvent);}
      if(nRP>7)
      {
-      fCommonHists8th->FillControlHistograms(anEvent);                                        
+      if(fCommonHists8th){fCommonHists8th->FillControlHistograms(anEvent);}
      } // end of if(nRP>7)  
     } // end of if(nRP>5) 
    } // end of if(nRP>3)                                                                                                                      
@@ -24636,6 +24689,7 @@ void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0); 
  }
+ /*
  if(!(fCommonHistsResults2nd && fCommonHistsResults4th && fCommonHistsResults6th && fCommonHistsResults8th))
  {
   cout<<endl;
@@ -24644,6 +24698,7 @@ void AliFlowAnalysisWithQCumulants::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0);
  } 
+ */
 
  // NUA stuff:
  for(Int_t sc=0;sc<2;sc++) // sin/cos
