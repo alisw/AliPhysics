@@ -230,7 +230,8 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
-   gROOT->LoadMacro("ConfigRhoPPb.C");
+   // gROOT->LoadMacro("ConfigRhoPPb.C");
+   gROOT->LoadMacro("${ALICE_PHYSICS}/PWGLF/RESONANCES/macros/mini/ConfigRhoPPb.C");
    if (!ConfigRhoPPb(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(),/*  useMixLS, */isMC&checkReflex, yaxisvar)) return 0x0;
    
    
