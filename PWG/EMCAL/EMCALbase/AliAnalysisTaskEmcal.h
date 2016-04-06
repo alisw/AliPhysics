@@ -120,6 +120,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliMCParticleContainer     *AddMCParticleContainer(const char *n);
   AliClusterContainer        *AddClusterContainer(const char *n);
   void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.Add(cont)                        ; }
+  void                        AdoptTrackContainer(AliTrackContainer* cont)          { AdoptParticleContainer(cont)                        ; }
+  void                        AdoptMCParticleContainer(AliMCParticleContainer* cont){ AdoptParticleContainer(cont)                        ; }
   void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }
   AliParticleContainer       *GetParticleContainer(Int_t i=0)         const;
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
