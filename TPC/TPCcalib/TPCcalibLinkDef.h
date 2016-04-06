@@ -52,6 +52,8 @@
 #pragma link C++ class AliTPCcalibSummary;         // Tree creation of calibration parameters
 #pragma link C++ class  AliAnalysisTaskPt+;
 
+#pragma link C++ class  AliTPCDcalibRes+;
+
 #endif
 
 
