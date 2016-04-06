@@ -138,6 +138,7 @@ protected:
   double frawSizeVZERO; 
   double frawSizeEMCAL; 
   double frawSizeZDC; 
+  double frawSizeTRD;
   double frawSizeFMD;
   double frawSizeTZERO;
   double frawSizeACORDE;

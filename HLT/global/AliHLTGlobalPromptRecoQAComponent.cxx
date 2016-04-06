@@ -285,6 +285,8 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
 
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
+
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginFMD); //All the other detectors where we do not have reco yet
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginT0);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginACORDE);
@@ -692,6 +694,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t rawSizeVZERO = 0;
   AliHLTUInt32_t rawSizeEMCAL = 0;
   AliHLTUInt32_t rawSizeZDC = 0;
+  AliHLTUInt32_t rawSizeTRD = 0;
 
   AliHLTUInt32_t rawSizeFMD = 0;
   AliHLTUInt32_t rawSizeTZERO = 0;
@@ -935,6 +938,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nFlatESDFriendSize += iter->fSize;
     }
 
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD))
+    {
+      rawSizeTRD += iter->fSize;
+    }
+
     //other detector sizes
     if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginFMD))
     {
@@ -976,11 +984,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       rawSizePMD += iter->fSize;
     }
-    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON))
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON) && iter->fSpecification < (1 << 20))
     {
       rawSizeMUTK += iter->fSize;
     }
-    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON))
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON) && iter->fSpecification >= (1 << 20))
     {
       rawSizeMUTG += iter->fSize;
     }
@@ -1052,6 +1060,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fzdcZNA = zdcZNA;
   fzdcZNAC = zdcZNA+zdcZNC;
   fzdcRecoSize = zdcRecoSize;
+  frawSizeTRD = rawSizeTRD;
   frawSizeFMD = rawSizeFMD;
   frawSizeTZERO = rawSizeTZERO;
   frawSizeACORDE = rawSizeACORDE;
@@ -1084,10 +1093,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (fPrintStats && (fPrintStats == 2 || pushed_something) && nPrinted++ % fPrintDownscale == 0) //Don't print this for every event if we use a pushback period
   {
     HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx (%'d)"
-      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)   -   (FMD %d, T0 %d, ACO %d, CTP %d, AD %d, TOF %d, PHO %d, CPV %d, HMP %d, PMD %d, MTK %d, MTG %d)",
+      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)   -   (TRD %'d, FMD %'d, T0 %'d, ACO %'d, CTP %'d, AD %'d, TOF %'d, PHO %'d, CPV %'d, HMP %'d, PMD %'d, MTK %'d, MTG %'d)",
       nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, compressedSizeTPC,
       nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize,
-      rawSizeFMD, rawSizeTZERO, rawSizeACORDE, rawSizeCTP, rawSizeAD, rawSizeTOF, rawSizePHOS, rawSizeCPV, rawSizeHMPID, rawSizePMD, rawSizeMUTK, rawSizeMUTG);
+      rawSizeTRD, rawSizeFMD, rawSizeTZERO, rawSizeACORDE, rawSizeCTP, rawSizeAD, rawSizeTOF, rawSizePHOS, rawSizeCPV, rawSizeHMPID, rawSizePMD, rawSizeMUTK, rawSizeMUTG);
   }
 
   return iResult;
