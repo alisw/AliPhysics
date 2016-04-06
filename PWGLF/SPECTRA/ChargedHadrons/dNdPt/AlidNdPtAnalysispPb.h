@@ -26,6 +26,9 @@ class AliESDfriend;
 class AliESDfriendTrack;
 class AlidNdPtHelper;
 class AliAnalysisUtils;
+class AliTRDTriggerAnalysis;
+class AliESDVertex;
+class AliTRDSensorArray;
 
 #include "AlidNdPt.h"
 #include "TObjString.h"
@@ -74,6 +77,11 @@ public :
   void SetBinsEta(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); } }
   void SetBinsZv(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fZvNbins = nbins; fBinsZv = CloneArray(fZvNedges = nbins+1,edges); } }
 
+  void SetTRDTriggerHQU(const Bool_t require = kFALSE) { fTRDTriggerRequiredHQU = require;}
+  void SetTRDTriggerHJT(const Bool_t require = kFALSE) { fTRDTriggerRequiredHJT = require;}
+  void SetTRDTriggerHSE(const Bool_t require = kFALSE) { fTRDTriggerRequiredHSE = require;}
+  
+  
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj, Int_t multMB);
   void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj);
@@ -354,7 +362,12 @@ private:
   Bool_t fIs2013pA;
 
   Bool_t fIsInit;
-
+  
+  Bool_t fTRDTriggerRequiredHQU;
+  Bool_t fTRDTriggerRequiredHJT;
+  Bool_t fTRDTriggerRequiredHSE;
+  Bool_t triggerResult;
+  
   // generic function to change binning
   Bool_t CanChangeBins();
 
