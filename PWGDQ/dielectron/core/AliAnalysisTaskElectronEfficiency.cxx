@@ -1042,6 +1042,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     
     if(fCalcResolution && fResolutionCuts){ // calculate electron pt resolution
       UInt_t selectedMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
+      Int_t Nprimaries = mcEvent->GetNumberOfPrimaries();
       for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         AliESDtrack *track = fESD->GetTrack(iTracks);
         if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
@@ -1049,13 +1050,15 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Int_t label = track->GetLabel();
         AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label)));
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
-        if(!fStack->IsPhysicalPrimary(TMath::Abs(label))) continue;
+        Int_t mcLabel = part->Label();
+        if(!fStack->IsPhysicalPrimary(mcLabel)) continue;
         Int_t pdg = TMath::Abs(part->PdgCode());
         if(pdg != 11 && pdg != 211) continue;
-        if(pdg == 211 && part->GetMother() > 0) continue;
+        if(pdg == 211 && (mcLabel > Nprimaries || mcLabel < 0)) continue;
         if(pdg == 11){
+          if(part->GetMother() > Nprimaries || part->GetMother() < 0) continue;
           AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
-          if(!mother || mother->PdgCode() == 22 || mother->GetMother() > 0) continue;
+          if(!mother || mother->PdgCode() == 22) continue;
         }
 
         Double_t mcPt   = part->Pt();
