@@ -116,10 +116,10 @@ Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
 //----------------------------------------------------------------------------
 Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                                      Int_t *pdgDg,Int_t *pdgDg2prong,
-				     TClonesArray *mcArray, Bool_t isV0) const
+             TClonesArray *mcArray, Bool_t isV0) const
 {
   ///
-  /// Check if this candidate is matched to a MC signal
+  /// Check if this candidate is matched to a MC signal (Lc->V0+X, D+->K0s+pi, Ds->K0s+K)
   /// If no, return -1
   /// If yes, return label (>=0) of the AliAODMCParticle
   ///
@@ -132,7 +132,9 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
   if ( isV0 &&
        ( (pdgDg[1]==2212 && pdgDg[0]==310) ||
-	 (pdgDg[1]==211 && pdgDg[0]==3122) ) ) {
+         (pdgDg[1]==211 && pdgDg[0]==3122) ||
+         (pdgDg[1]==211 && pdgDg[0]==310)  ||
+         (pdgDg[1]==321 && pdgDg[0]==310) ) ) {
     AliWarning(Form("Please, pay attention: first element in AliAODRecoCascadeHF object must be the bachelor and second one V0. Skipping! (pdgDg[0] = %d, (pdgDg[1] = %d)", pdgDg[0], pdgDg[1]));
     return -1;
   }
@@ -158,7 +160,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
       if(!trk) continue;
       Int_t lab = trk->GetLabel();
       if(lab==-1) { // this daughter is the 2prong
-	lab=lab2Prong;
+  lab=lab2Prong;
       } else if(lab<-1) continue;
       dgLabels[i] = lab;
     }
@@ -171,32 +173,32 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
   Int_t finalLabel = AliAODRecoDecay::MatchToMC(pdgabs,mcArray,dgLabels,2,2,pdgDg);
 
-  if (finalLabel>=0){
-    // debug printouts for Lc->V0 bachelor case
-
+  if (finalLabel>=0) {
+    // Debug printouts for Lc->V0 bachelor, D+->K0s+pi, Ds->K0s+K cases
+     
     if ( isV0 && (dgLabels[0]!=-1 && dgLabels[1]!=-1) ) {
       AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
       Bool_t onTheFly = theV0->GetOnFlyStatus();
-      if (pdgDg[0]==2212 && pdgDg[1]==310) {
-	AliAODMCParticle*k0s = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
-	if(k0s){
-	  Int_t labK0 = k0s->GetMother();	
-	  AliAODMCParticle*k0bar = dynamic_cast<AliAODMCParticle*>(mcArray->At(labK0));
-	  if(k0bar){
-	    AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d) -> LabelK0S=%d (%d -> %d %d)",onTheFly,labK0,k0bar->GetPdgCode(),lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
-	    AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
-			    finalLabel,pdgabs,
-			    dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
-	  }
-	}
+      if (pdgDg[1]==310 && (pdgDg[0]==2212 || pdgDg[0]==211 || pdgDg[0]==321)) {
+        AliAODMCParticle*k0s = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
+        if (k0s) {
+          Int_t labK0 = k0s->GetMother();
+          AliAODMCParticle*k0bar = dynamic_cast<AliAODMCParticle*>(mcArray->At(labK0));
+          if (k0bar) {
+            AliDebug(1, Form(" (onTheFly=%1d) LabelV0=%d (%d) -> LabelK0S=%d (%d -> %d %d)",
+                             onTheFly, labK0, k0bar->GetPdgCode(), lab2Prong, pdgabs2prong, pdgDg2prong[0], pdgDg2prong[1]));
+            AliDebug(1, Form(" LabelCandidate=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
+                             finalLabel, pdgabs, dgLabels[0], pdgDg[0], dgLabels[1], pdgDg[1]));
+          }
+        }
       } else if (pdgDg[0]==211 && pdgDg[1]==3122) {
-	AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d -> %d %d)",onTheFly,lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
-	AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
-			finalLabel,pdgabs,
-		      dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
+        AliDebug(1,Form(" (onTheFly=%1d) LabelV0=%d (%d -> %d %d)",onTheFly,lab2Prong,pdgabs2prong,pdgDg2prong[0],pdgDg2prong[1]));
+        AliDebug(1,Form(" LabelLc=%d (%d) -> LabelBachelor=%d (%d) LabelV0=%d (%d)",
+                     finalLabel,pdgabs,
+                     dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
       }
-
     }
+   
   }
 
   return finalLabel;
