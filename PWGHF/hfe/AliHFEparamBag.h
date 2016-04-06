@@ -78,6 +78,7 @@ public:
     Double_t ipPar[3];
     Bool_t mcQADebugTree;
     Double_t RefMulti;
+    Int_t MultiSystem;
 
     void SetName(const char *name) { fName = name; };
     const char *GetName() const;
@@ -85,6 +86,6 @@ public:
 
 
 
-    ClassDef(AliHFEparamBag, 2)
+    ClassDef(AliHFEparamBag, 4)
 };
 #endif

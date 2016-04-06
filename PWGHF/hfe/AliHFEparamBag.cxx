@@ -64,7 +64,8 @@ AliHFEparamBag::AliHFEparamBag():
     ipCharge(kFALSE),
     ipOpp(kFALSE),
     mcQADebugTree(kFALSE),
-    RefMulti(0.0)
+    RefMulti(0.0),
+    MultiSystem(0)
 {
     memset(tpcdEdxcutlow,0,sizeof(Double_t)*12);
     memset(tpcdEdxcuthigh,0,sizeof(Double_t)*12);
@@ -116,7 +117,8 @@ AliHFEparamBag::AliHFEparamBag(const char *name):
     ipCharge(kFALSE),
     ipOpp(kFALSE),
     mcQADebugTree(kFALSE),
-    RefMulti(0.0)
+    RefMulti(0.0),
+    MultiSystem(0)
 {
     memset(tpcdEdxcutlow,0,sizeof(Double_t)*12);
     memset(tpcdEdxcuthigh,0,sizeof(Double_t)*12);
@@ -167,7 +169,8 @@ AliHFEparamBag::AliHFEparamBag(const AliHFEparamBag &ref):
     ipCharge(ref.ipCharge),
     ipOpp(ref.ipOpp),
     mcQADebugTree(ref.mcQADebugTree),
-    RefMulti(ref.RefMulti)
+    RefMulti(ref.RefMulti),
+    MultiSystem(ref.MultiSystem)
 {
     memcpy(tpcdEdxcutlow,ref.tpcdEdxcutlow,sizeof(Double_t)*12);
     memcpy(tpcdEdxcuthigh,ref.tpcdEdxcuthigh,sizeof(Double_t)*12);

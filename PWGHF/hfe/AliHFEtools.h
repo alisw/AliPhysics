@@ -22,6 +22,10 @@
 
 #include <TObject.h>
 
+#include <AliHFEcuts.h>
+#include <AliCFContainer.h>
+#include <AliCFDataGrid.h>
+
 class TArrayD;
 class TParticle;
 class AliAODMCParticle;
@@ -62,6 +66,8 @@ class AliHFEtools : public TObject{
     static void NormaliseBinWidth(TH1 *histo);
     static void NormaliseBinWdith(TGraphErrors *graph);
     static void NormaliseBinWdithAsymm(TGraphAsymmErrors *graph);
+    static TGraphErrors *Normalise(const TH1 * const input, Int_t fNEvents, Double_t fEtaRange, Int_t fNCharges = 2);
+    static Int_t GetNumberOfEvents(const TString filename, Double_t centmin = -1., Double_t centmax = 11.);
 
   private:
       AliHFEtools(const AliHFEtools &);
