@@ -86,7 +86,7 @@ void AliHLTZMQsink::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   //what data types do we accept
   list.clear();
-  list.push_back(kAliHLTAllDataTypes);
+  list.push_back(kAliHLTAnyDataType);
 }
 
 //______________________________________________________________________________
@@ -281,8 +281,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     }
   }
 
-  //cache streamer infos
-  if (fSendStreamerInfos)
+  //always cache streamer infos
   {
     const AliHLTComponentBlockData* inputBlock = NULL;
     for (int iBlock = 0;
@@ -306,6 +305,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         TCollection* coll = dynamic_cast<TCollection*>(obj);
         if (coll)
         {
+          HLTMessage("updating streamer infos");
           UpdateSchema(coll);
         }
         //delete the remaining infos and destroy the collection
@@ -496,6 +496,11 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   else if (option.EqualTo("ZMQerrorMsgSkip"))
   {
     fZMQerrorMsgSkip = value.Atoi();
+  }
+
+  else if (option.EqualTo("schema"))
+  {
+    fSendStreamerInfos = kTRUE;
   }
 
   else
