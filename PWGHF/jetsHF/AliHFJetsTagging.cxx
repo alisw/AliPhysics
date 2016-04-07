@@ -40,6 +40,13 @@
 #include "AliEmcalJet.h"
 #include "AliLog.h"
 
+
+#include "AliMCParticle.h"
+#include "AliMCEvent.h"
+#include "AliESDtrack.h"
+#include "AliESDEvent.h"
+
+
 #include "AliVertexerTracks.h"
 #include "AliExternalTrackParam.h"
 #include "AliVVertex.h"
@@ -146,6 +153,73 @@ AliAODMCParticle*  AliHFJetsTagging::IsMCJetParton(const TClonesArray *arrayMC,c
   return 0x0;
 }
 
+AliMCParticle*  AliHFJetsTagging::IsMCJetParton(const AliMCEvent *mcevent,const AliEmcalJet *jet, Double_t radius){
+	//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+  Int_t mcEntries=mcevent->GetNumberOfTracks();
+	//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+  Double_t ptpart=-1;
+  Double_t dR=-99;
+  const Int_t arraySize=99;
+	//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+  Int_t countpart[arraySize],countpartcode[arraySize],maxInd=-1,count=0;
+  Double_t maxPt=0;
+  for(Int_t ii=0;ii<arraySize;ii++){
+    countpart[ii]=0;
+    countpartcode[ii]=0;
+  }
+	//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+  for(Int_t ii=0;ii<mcEntries;ii++){
+		//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+    AliMCParticle* part =  (AliMCParticle*)  mcevent->GetTrack(ii);
+    if(!part)continue;
+	//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+    Int_t pdgcode=part->PdgCode();
+	//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+    if(abs(pdgcode)==21 || ( abs(pdgcode)>=1 && abs(pdgcode)<=5)){
+		//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+    	ptpart=part->Pt();
+		//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+      dR = jet->DeltaR(part);
+		//Printf("%s:%i",__FUNCTION__,__LINE__);
+
+      if(dR<radius){
+        if(abs(pdgcode)==5){
+	  return part;
+	}
+        else{
+	  if (count >arraySize-1) return 0x0;
+          countpartcode[count]=pdgcode;
+          countpart[count]=ii;
+          if(ptpart>maxPt){
+            maxPt=ptpart;
+            maxInd=ii;
+          }
+          count++;
+        }
+      }
+    }
+  }
+  for(Int_t ij=0;ij<count;ij++){
+      if(abs(countpartcode[ij])==4)
+	return (AliMCParticle*)mcevent->GetTrack(countpart[ij]);
+    }
+  if(maxInd>-1){
+    AliMCParticle* partmax = (AliMCParticle*)mcevent->GetTrack(maxInd);
+    return partmax;
+  }
+  return 0x0;
+}
+
+
 AliAODMCParticle* AliHFJetsTagging::IsMCJetMeson(const TClonesArray *arrayMC, const AliEmcalJet *jet, Double_t radius){
 
   Int_t MCentries=arrayMC->GetEntries();
@@ -190,6 +264,54 @@ AliAODMCParticle* AliHFJetsTagging::IsMCJetMeson(const TClonesArray *arrayMC, co
   }
   return parton3;
 }
+
+
+
+AliMCParticle* AliHFJetsTagging::IsMCJetMeson(const AliMCEvent *mcevent, const AliEmcalJet *jet, Double_t radius){
+
+  Int_t MCentries=mcevent->GetNumberOfTracks();
+  Double_t ptpart=-1;
+
+  AliMCParticle* parton3 = 0;
+  AliMCParticle* charm_parton=0;
+
+  Double_t dR=-99;
+  Int_t maxInd=-1;
+  Double_t maxPt=0;
+  for(Int_t ii=0;ii<MCentries;ii++){
+    AliMCParticle* part =  (AliMCParticle*)  mcevent->GetTrack(ii);
+    if(!part)continue;
+    Int_t pdgcode=part->PdgCode();
+       if(IsDMeson(pdgcode) || IsBMeson(pdgcode)){
+
+      ptpart=part->Pt();
+      dR = jet->DeltaR(part);
+
+      if(dR<radius){
+        if(IsBMeson(pdgcode)){
+          return part;
+        }
+        else {
+	  if(IsDMeson(pdgcode)) {
+	    charm_parton=part;
+	  }
+	 if(ptpart>maxPt){
+            maxPt=ptpart;
+            maxInd=ii;
+	 }
+        }
+     }
+  }
+ }
+    if(charm_parton) return charm_parton;
+
+  if(maxInd>-1){
+    AliMCParticle* partmax =  (AliMCParticle*)  mcevent->GetTrack(maxInd);
+    return partmax;
+  }
+  return parton3;
+}
+
 
 Bool_t AliHFJetsTagging::IsBMeson(Int_t pc){
 	int bPdG[] = {511,521,10511,10521,513,523,10513,10523,20513,20523,20513,20523,515,525,531,
