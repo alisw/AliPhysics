@@ -942,9 +942,14 @@ class AliHLTComponent : public AliHLTLogging {
   /** Get the schema map and get/set the use flag
   */
   TList* GetSchema() {return &fSchema;}
-  int GetSchemaUpdatesLeft() const {return fSchemaUpdatesLeft;}
-  void SetSchemaUpdatesLeft(int s) {fSchemaUpdatesLeft = s;}
+  Bool_t GetUseSchema() const {return fUseSchema;}
+  void SetUseSchema(Bool_t s=kTRUE) {fUseSchema = s;}
+  int UpdateSchema(const TCollection* listOfStreamerInfos);
   int UpdateSchema(TCollection* listOfStreamerInfos);
+  /** push back a schema evolution block (only when new streamer infos
+   * are added
+   */
+  int PushBackSchema();
 
   /**
    * Default method for the internal initialization.
@@ -1910,8 +1915,11 @@ class AliHLTComponent : public AliHLTLogging {
   /// A map of ROOT streamer infos
   TList fSchema;                                                   //! transient
 
-  /// How many schema updates are left                             //! transient
-  int fSchemaUpdatesLeft;                                          //! transient
+  /// How many schema updates are left
+  Bool_t fUseSchema;                                               //! transient
+
+  /// signal a change in the schema list
+  Bool_t fSchemaUpdated;                                           //! transient
 
   ClassDef(AliHLTComponent, 0)
 };
