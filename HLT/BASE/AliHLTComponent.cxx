@@ -1540,7 +1540,7 @@ int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataT
     //chache the streamer infos during the first few times
     //no need to do this every time as we mostly push the same objects
     if (fSchemaUpdatesLeft > 0) {
-      const TList* schemaList = msg.GetStreamerInfos();
+      TList* schemaList = msg.GetStreamerInfos();
       if (schemaList)  UpdateSchema(schemaList);
       fSchemaUpdatesLeft--;
     }
@@ -3096,13 +3096,17 @@ void AliHLTComponent::GetBxByBz(const Double_t r[3], Double_t b[3])
   AliHLTMisc::Instance().GetBxByBz(r, b);
 }
 
-int AliHLTComponent::UpdateSchema(const TList* listOfStremaerInfos)
+int AliHLTComponent::UpdateSchema(TCollection* listOfStreamerInfos)
 {
   //update the schema cache with the contents of the list from AliHLTMessage
-  TIter nextInfo(listOfStremaerInfos);
+  TIter nextInfo(listOfStreamerInfos);
   TStreamerInfo* info=NULL;
   while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
-    fSchema[info->GetNumber()] = info;
+    const char* infoName = info->GetName();
+    if (!fSchema.FindObject(infoName)) {
+      fSchema.Add(info);
+      listOfStreamerInfos->Remove(info); //take ownership
+    }
   }
   return 0;
 }
