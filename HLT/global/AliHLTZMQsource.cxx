@@ -172,7 +172,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
         iBlock < evtData.fBlockCnt;
         iBlock++) 
     {
-      Forward(&blocks[iBlock]);
+      outputBlocks.push_back(blocks[iBlock]);
     }  
   }
 
