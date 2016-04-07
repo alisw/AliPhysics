@@ -68,7 +68,7 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList);
+  Int_t PushToFXS(const TObject* pObject, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList);
 
   /**
    * Insert an object into the output. FXS header will be inserted before the root object.
