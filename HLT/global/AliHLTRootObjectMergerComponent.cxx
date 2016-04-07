@@ -298,6 +298,7 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 		AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* buf = NULL;
 		for (const AliHLTComponentBlockData* blk = GetFirstInputBlock(fDataType); blk != NULL; blk = GetNextInputBlock())
 		{
+			if (blk->GetDataType() == (kAliHLTAnyDataType | kAliHLTDataOriginPrivate)) continue;
 			if (buf == NULL) buf = fAsyncProcessor.AllocateMultiBuffer();
 			if (buf == NULL)
 			{
