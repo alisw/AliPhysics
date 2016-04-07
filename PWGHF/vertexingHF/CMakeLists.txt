@@ -177,6 +177,7 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS.C
+            ConfigVertexingHF_DplustoK0s_DstoK0s.C
         DESTINATION
             PWGHF/vertexingHF/)
 
