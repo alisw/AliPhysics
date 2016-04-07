@@ -48,6 +48,7 @@ set(SRCS
     AliHLTFilePublisher.cxx
     AliHLTFileWriter.cxx
     AliHLTFXSFileWriter.cxx
+    AliHLTFXSWriterComponent.cxx
     AliHLTGlobalBarrelTrack.cxx
     AliHLTJets.cxx
     AliHLTLoaderPublisherComponent.cxx
