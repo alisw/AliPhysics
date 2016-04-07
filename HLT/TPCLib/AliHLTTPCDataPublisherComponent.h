@@ -216,8 +216,8 @@ protected:
   /// inherited from AliHLTComponent: argument scan
   int ScanConfigurationArgument(int argc, const char** argv);
 
-  /// read cluster from HLTOUT
-  int ReadClusterFromHLTOUT(AliRawClusterContainer* pContainer);
+  /// read cluster from HLTInput
+  int ReadClusterFromHLTInput(AliRawClusterContainer* pContainer);
 
   /// inherited from AliHLTRawReaderPublisherComponent: get specification
   virtual int GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t &specification) const;
