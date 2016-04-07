@@ -49,7 +49,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	float surfaceAtmosPressure;
 	float cavernAtmosPressure;
 	float cavernAtmosPressure2;
-	float beamEnergy;
+	int beamEnergy;
 	
 	if (defaults)
 	{
@@ -62,7 +62,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 		surfaceAtmosPressure = 971.127;
 		cavernAtmosPressure = 974.75;
 		cavernAtmosPressure2 = 975.55;
-		beamEnergy = 14000 / 0.12;
+		beamEnergy = 6501;
 	}
 	else
 	{
@@ -78,7 +78,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 		//DimCurrentInfo LHCBeamType1Dim("DCS_GRP_LHC_BEAM_TYPE_1", -1);
 		//DimCurrentInfo LHCBeamType2Dim("DCS_GRP_LHC_BEAM_TYPE_2", -1);
 		//LHC Energy has not been used before, but it was seto to constant ((cmsEnergy = 14000) / 0.12), I think it is better to use dim value
-		DimCurrentInfo LHCBeamEnergyDim("DCS_GRP_LHC_BEAM_ENERGY", -123456.f);
+		DimCurrentInfo LHCBeamEnergyDim("DCS_GRP_LHC_BEAM_ENERGY", -12345678);
 		l3Polarity = solenoidPolarityDim.getInt();
 		l3Current = solenoidCurrentDim.getFloat();
 		dipolePolarity = dipolePolarityDim.getInt();
@@ -86,7 +86,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 		surfaceAtmosPressure = pressureSurfaceDim.getFloat();
 		cavernAtmosPressure = pressureCavernDim.getFloat();
 		cavernAtmosPressure2 = pressureCavernDim2.getFloat();
-		beamEnergy = LHCBeamEnergyDim.getFloat();
+		beamEnergy = LHCBeamEnergyDim.getInt();
 	}
 	
 	if (l3Polarity == -12345678) {printf("Error obtaining L3 Polarity from DIM\n"); return(1);}
