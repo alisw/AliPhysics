@@ -114,9 +114,9 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxY2X(0)
   ,fDY2X(0)
   ,fDY2XI(0)
-  ,fBinMinQ(0)
-  ,fBinDQ(0)
-  ,fBinDQI(0)
+//  ,fBinMinQ(0) // obsolete binning
+//  ,fBinDQ(0)
+//  ,fBinDQI(0)
 
   ,fNMaxNeighb(0)
   ,fKernelType(kGaussianKernel)
@@ -172,7 +172,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
     fArrNDStat[i] = 0;
     fTmpFile[i] = 0;
   }
-
+  for (int i=kNQBins+1;i--;) fQ2PTBound[i] = 0;
   SetKernelType();
 }
 
@@ -184,9 +184,9 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
   delete[] fMaxY2X;
   delete[] fDY2X;
   delete[] fDY2XI;
-  delete[] fBinMinQ;
-  delete[] fBinDQ;
-  delete[] fBinDQI;
+  //  delete[] fBinMinQ;
+  //  delete[] fBinDQ;
+  //  delete[] fBinDQI;
   delete fVDriftParam;
   delete fVDriftGraph;
   delete fHDelY;
@@ -956,6 +956,13 @@ void  AliTPCDcalibRes::WriteVoxelDefinitions()
       for (int iq=0;iq<kNQBins;iq++) {
 	vdef.bvox[kVoxQ] = iq;
 	int idxy = ix*fNY2XBins + ip;
+	float xc = 0.5*(vdef.vmin[kVoxX]+vdef.vmax[kVoxX]);
+	float yc = 0.5*(vdef.vmin[kVoxF]+vdef.vmax[kVoxF])*xc;
+	float tgp0 = tgpXY(xc,yc, 0.5*(vdef.vmin[kVoxX]+vdef.vmax[kVoxX],fQ2PTBound[iq]),fBz);
+	float tgp1 = tgpXY(xc,yc, 0.5*(vdef.vmin[kVoxX]+vdef.vmax[kVoxX],fQ2PTBound[iq+1]),fBz);
+	vdef.vmin[kVoxQ] = tgp0<tgp1 ? tgp0:tgp1;
+	vdef.vmax[kVoxQ] = tgp0<tgp1 ? tgp1:tgp0;
+	/*
 	if (fBinDQI[idxy]>0) {
 	  vdef.vmin[kVoxQ] = fBinMinQ[idxy] + iq*fBinDQ[idxy];
 	  vdef.vmax[kVoxQ] = vdef.vmin[kVoxQ] + fBinDQ[idxy];
@@ -964,6 +971,7 @@ void  AliTPCDcalibRes::WriteVoxelDefinitions()
 	  vdef.vmin[kVoxQ] = -1;
 	  vdef.vmax[kVoxQ] =  1;	  
 	}
+	*/	
 	//
 	for (int iz=0;iz<fNZ2XBins;iz++) {
 	  vdef.bvox[kVoxZ] = iz;
@@ -3152,10 +3160,16 @@ void AliTPCDcalibRes::InitBinning()
   fDY2XI  = new Float_t[fNXBins];        // inverse of Y/X bin size at given X bin
   fDY2X   = new Float_t[fNXBins];        // Y/X bin size at given X bin
   //
-  fNXYBinsProd = fNXBins*fNY2XBins;
-  fBinMinQ = new Float_t[fNXYBinsProd];
-  fBinDQI  = new Float_t[fNXYBinsProd];
-  fBinDQ   = new Float_t[fNXYBinsProd];
+  fQ2PTBound[0] = -fMaxQ2Pt;
+  fQ2PTBound[1] = -fMidQ2Pt;
+  fQ2PTBound[2] =  0;
+  fQ2PTBound[3] =  fMidQ2Pt;
+  fQ2PTBound[4] =  fMaxQ2Pt;
+  //
+  // fNXYBinsProd = fNXBins*fNY2XBins;
+  // fBinMinQ = new Float_t[fNXYBinsProd];
+  // fBinDQI  = new Float_t[fNXYBinsProd];
+  // fBinDQ   = new Float_t[fNXYBinsProd];
   //
   const float kMaxY2X = TMath::Tan(0.5f*kSecDPhi);
 
@@ -3164,16 +3178,16 @@ void AliTPCDcalibRes::InitBinning()
     fMaxY2X[ix] = kMaxY2X - kDeadZone/x;
     fDY2XI[ix] = fNY2XBins / (2.f*fMaxY2X[ix]);
     fDY2X[ix] = 1.f/fDY2XI[ix];
-    for (int iy=0;iy<fNY2XBins;iy++) {
-      float y = GetY2X(ix,iy)*x;
-      float tgMn = tgpXY(x,y,-fMaxQ2Pt,fBz);
-      float tgMx = tgpXY(x,y, fMaxQ2Pt,fBz);
-      if (tgMn>tgMx) swap(tgMn,tgMx);
-      int ixy = ix*fNY2XBins + iy;
-      fBinMinQ[ixy] = TMath::Abs(fBz)>0.01 ? tgMn : -0.5;
-      fBinDQ[ixy]   = TMath::Abs(fBz)>0.01 ? (tgMx-tgMn)/kNQBins : 1.;
-      fBinDQI[ixy]  = 1./fBinDQ[ixy];
-    }
+    // for (int iy=0;iy<fNY2XBins;iy++) {
+    //   float y = GetY2X(ix,iy)*x;
+    //   float tgMn = tgpXY(x,y,-fMaxQ2Pt,fBz);
+    //   float tgMx = tgpXY(x,y, fMaxQ2Pt,fBz);
+    //   if (tgMn>tgMx) swap(tgMn,tgMx);
+    //   int ixy = ix*fNY2XBins + iy;
+    //   fBinMinQ[ixy] = TMath::Abs(fBz)>0.01 ? tgMn : -0.5;
+    //   fBinDQ[ixy]   = TMath::Abs(fBz)>0.01 ? (tgMx-tgMn)/kNQBins : 1.;
+    //   fBinDQI[ixy]  = 1./fBinDQ[ixy];
+    // }
   }
   //
   fDZ2XI = fNZ2XBins/kMaxZ2X;
@@ -3183,6 +3197,8 @@ void AliTPCDcalibRes::InitBinning()
   fDeltaYbinI  = fNDeltaYBins/(2.0f*fMaxDY);
   fDeltaZbinI  = fNDeltaZBins/(2.0f*fMaxDZ);
   //
+
+
   fNGVoxPerSector = fNY2XBins*fNZ2XBins*fNXBins;
   fNBProdSectG[0] = fNY2XBins*fNZ2XBins;
   fNBProdSectG[1] = fNZ2XBins;

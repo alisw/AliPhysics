@@ -369,9 +369,11 @@ protected:
   Float_t  *fMaxY2X;        //[fNXBins] max Y/X at each X bin, account for dead zones
   Float_t  *fDY2X;          //[fNXBins] Y/X bin size at given X bin
   Float_t  *fDY2XI;         //[fNXBins] inverse of Y/X bin size at given X bin
-  Float_t  *fBinMinQ;       //[fNXYBinsProd] min value of tg(inclination) at given X,Y bin
-  Float_t  *fBinDQ;         //[fNXYBinsProd] tg(inclination) bin size at given X,Y bin
-  Float_t  *fBinDQI;        //[fNXYBinsProd] inverse of tg(inclination) bin size at given X,Y bin
+  // this is obsolete: we bin in q/pt, but convert it on the fly to tgSlp
+  //  Float_t  *fBinMinQ;       //[fNXYBinsProd] min value of tg(inclination) at given X,Y bin
+  //  Float_t  *fBinDQ;         //[fNXYBinsProd] tg(inclination) bin size at given X,Y bin
+  //  Float_t  *fBinDQI;        //[fNXYBinsProd] inverse of tg(inclination) bin size at given X,Y bin
+  Float_t  fQ2PTBound[kNQBins+1]; // q2pt bins boundaries
 
   Long64_t fNBProdSt[kVoxHDim]; // aux arrays for fast bin calculation
   Long64_t fNBProdDY[kVoxHDim];
