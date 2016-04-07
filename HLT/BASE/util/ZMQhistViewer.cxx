@@ -48,7 +48,7 @@ TString fFileName="";
 TFile* fFile=NULL;
 
 int fPollInterval = 0;
-int fPollTimeout = 1000; //1s
+int fPollTimeout = 100000; //100s
 Bool_t fSort = kTRUE;
 
 //internal state
