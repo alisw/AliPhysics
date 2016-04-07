@@ -1,9 +1,9 @@
-
 AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
-		const char *ntracks            = "PicoTracks",
+		Bool_t IsESD = kFALSE,
+		const char *ntracks            = "Tracks",
 		const char *nclusters           = "",
 		const char *njets              = "Jets",
-		const char *nrho               = "",
+		const char *nrho               = "			",
 		Double_t jetradius =0.4,
 		Bool_t isMC = kFALSE,
 		const char * type = "TPC",
@@ -14,6 +14,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 		const char* suffix = ""
 )
 {
+
+
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,6 +25,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 		return NULL;
 	}
 
+
 	// Check the analysis type using the event handlers connected to the analysis manager.
 	//==============================================================================
 	if (!mgr->GetInputEventHandler())
@@ -30,6 +33,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 		::Error("AddTaskEmcalJetSample", "This task requires an input event handler");
 		return NULL;
 	}
+
+
 
 
 	TFile* filecorrectionfactors;
@@ -109,11 +114,21 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
 	jetTask->SetIsPythia(isMC);
 
 	DefineCutsTaskpp(jetTask,-1.,100);
+	if(IsESD) {
+		jetTask->SetRunESD();
+		  AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
+			   esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
+			   esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
+			   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
+		 jetTask->SetESDCuts(new AliESDtrackCuts(*esdTrackCutsH));
+	}
+
 	//-------------------------------------------------------
 	// Final settings, pass to manager and set the containers
 	//-------------------------------------------------------
 
 	mgr->AddTask(jetTask);
+
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;

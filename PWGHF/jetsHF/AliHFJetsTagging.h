@@ -33,6 +33,8 @@ class AliAODMCParticle;
 class TClonesArray;
 class AliEmcalJet;
 class TVector2;
+class AliMCEvent;
+class AliMCParticle;
 
 #include <TNamed.h>
 #include <vector>
@@ -47,7 +49,11 @@ public:
 
   AliHFJetsTagging& operator=(const AliHFJetsTagging& corr);  // Assignment operator
   AliAODMCParticle* IsMCJetParton(const TClonesArray *arrayMC,const AliEmcalJet *jet,Double_t radius=0.7);
+  AliMCParticle* IsMCJetParton(const AliMCEvent *mcevent,const AliEmcalJet *jet,Double_t radius=0.7);
+
   AliAODMCParticle* IsMCJetMeson(const TClonesArray *arrayMC,const AliEmcalJet *jet ,Double_t radius=0.7);
+  AliMCParticle* IsMCJetMeson(const AliMCEvent *mcEvent,const AliEmcalJet *jet ,Double_t radius=0.7);
+
   AliAODMCParticle* GetAODMCParticleFromAodTrack(const TClonesArray *arrayMC,const AliAODTrack* track);
 
   Bool_t IsBMeson(Int_t pc);   
