@@ -288,6 +288,14 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       delete pHLTOUT;
       pHLTOUT=NULL;
     }
+    // same for HLTInput
+    AliHLTOUT* pHLTInput=NULL;
+    pSystem->InvalidateHLTInput(&pHLTInput);
+    if (pHLTInput) {
+      pHLTInput->Reset();
+      delete pHLTInput;
+      pHLTInput=NULL;
+    }
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       // this is the highest level where an error can be detected, no error
       // codes can be returned
@@ -315,9 +323,11 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
 	input=rawReader;
       }
       pHLTOUT=new AliHLTOUTRawReader(input, eventNo, fpEsdManager);
-      if (pHLTOUT) {
-	if (pHLTOUT->Init()>=0) {
+      pHLTInput=new AliHLTOUTRawReader(rawReader);
+      if (pHLTOUT && pHLTInput) {
+	if (pHLTOUT->Init()>=0 && pHLTInput->Init()>=0) {
 	  pSystem->InitHLTOUT(pHLTOUT);
+	  pSystem->InitHLTInput(pHLTInput);
 	} else {
 	  AliError("error : initialization of HLTOUT handler failed");
 	}
@@ -330,7 +340,9 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
 
     if ((iResult=pSystem->Reconstruct(1, NULL, rawReader))>=0) {
     }
-  }
+    pSystem->InvalidateHLTInput(&pHLTInput);
+    delete pHLTInput;
+   }
 }
 
 void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree*/, 
