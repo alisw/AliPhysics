@@ -164,6 +164,11 @@ fMaxDevZN(5.)
       }
     }
   }
+  for(Int_t c=0; c<2; c++) {
+    for(Int_t k=0; k<2; k++) {
+      fNvsCenCut[c][k] = NULL;
+    }
+  }
  
 }
 
@@ -277,6 +282,11 @@ fMaxDevZN(5.)
       }
     }
   }
+  for(Int_t c=0; c<2; c++) {
+    for(Int_t k=0; k<2; k++) {
+      fNvsCenCut[c][k] = NULL;
+    }
+  }
  
 }
 
@@ -376,6 +386,13 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
         for(Int_t c=0; c<2; c++) {
           if(fEtaWeightsHist[h][b][c]) fQC->SetEtaWeightsHist(fEtaWeightsHist[h][b][c],h,b,c);
         }
+      }
+    }
+  }
+  if(fMinMulZN>1){
+    for(Int_t c=0; c<2; c++) {
+      for(Int_t k=0; k<2; k++) {
+        if(fNvsCenCut[c][k]) fQC->SetNvsCenCut(fNvsCenCut[c][k],c,k);
       }
     }
   }

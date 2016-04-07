@@ -16640,6 +16640,11 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
       }
     }
   }
+  for(Int_t h=0; h<2; h++) {
+    for (Int_t c=0; c<2; c++) {
+      fNvsCenCut[h][c]=NULL;
+    }
+  }
   for(Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t c=0; c<2; c++) {
       fhZNCentroid[h][c] = NULL;
@@ -16649,6 +16654,9 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
       fhZNResvsCen[h][c] = NULL;
     }
     fhZNCvsZNA[h] = NULL;
+  }
+  for (Int_t c=0; c<2; c++) {
+    fhZNvsCen[c] = NULL;
   }
   for (Int_t c=0; c<4; c++) {
     fhZNQVecCov[c] = NULL;
@@ -16762,6 +16770,11 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
   fhZNCvsZNA[h] = new TH2F(Form("hZNCvsZNA[%d]",h),Form("hZNCvsZNA[%d]",h), 100, 0., 100., 100, 0., 100.);
   fVariousList->Add(fhZNCvsZNA[h]);
  }
+  for (Int_t c=0; c<2; c++) {
+    fhZNvsCen[c] = new TH2F(Form("fhZNvsCen[%d]",c), Form("fhZNvsCen[%d]",c), 100, 0., 100., 100, 0., 100.);
+    fhZNvsCen[c]->Sumw2();
+    fVariousList->Add(fhZNvsCen[c]);
+  }
  for (Int_t c=0; c<4; c++) {
   fhZNQVecCov[c] = new TProfile(Form("fhZNQVecCov[%d]",c), Form("fhZNQVecCov[%d]",c), 100, 0., 100.,"s");
   fhZNQVecCov[c]->Sumw2();
@@ -18017,6 +18030,8 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   fhZNSpectra[fCenBin][0]->Fill(ZCM);
   fhZNSpectra[fCenBin][1]->Fill(ZAM);
   fhZNCvsZNA[fCenBin]->Fill(ZCM,ZAM);
+  fhZNvsCen[0]->Fill(fCentralityEBE,ZCM);
+  fhZNvsCen[1]->Fill(fCentralityEBE,ZAM);
   fhZNCenvsMul[fCenBin][0]->Fill(sqrt(ZCRe*ZCRe+ZCIm*ZCIm),ZCM);
   fhZNCenvsMul[fCenBin][1]->Fill(sqrt(ZARe*ZARe+ZAIm*ZAIm),ZAM);
   fhZNResvsMul[fCenBin][0]->Fill(ZARe*ZCRe+ZAIm*ZCIm,ZCM);
@@ -19186,23 +19201,13 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
        fFlowSPZDCIntPro[fRunBin][hr][6]->Fill(fCentralityEBE,Q2Im*ZARe*ZCIm/NZC/NZA,WZA*WZC);
        fFlowSPZDCIntPro[fRunBin][hr][7]->Fill(fCentralityEBE,Q2Im*ZAIm*ZCRe/NZC/NZA,WZA*WZC);
        
-       Q2ARe /= QMA;
-       Q2AIm /= QMA;
-       Q2CRe /= QMC;
-       Q2CIm /= QMC;
        // subevents
-       fFlowSPZDCIntPro[fRunBin][hr][8]->Fill(fCentralityEBE,Q2ARe*ZARe*ZCRe/NZC/NZA,WZA*WZC);
-       fFlowSPZDCIntPro[fRunBin][hr][9]->Fill(fCentralityEBE,Q2ARe*ZAIm*ZCIm/NZC/NZA,WZA*WZC);
-       fFlowSPZDCIntPro[fRunBin][hr][10]->Fill(fCentralityEBE,Q2AIm*ZARe*ZCIm/NZC/NZA,WZA*WZC);
-       fFlowSPZDCIntPro[fRunBin][hr][11]->Fill(fCentralityEBE,Q2AIm*ZAIm*ZCRe/NZC/NZA,WZA*WZC);
-       
-       fFlowSPZDCIntPro[fRunBin][hr][12]->Fill(fCentralityEBE,Q2CRe*ZARe*ZCRe/NZC/NZA,WZA*WZC);
-       fFlowSPZDCIntPro[fRunBin][hr][13]->Fill(fCentralityEBE,Q2CRe*ZAIm*ZCIm/NZC/NZA,WZA*WZC);
-       fFlowSPZDCIntPro[fRunBin][hr][14]->Fill(fCentralityEBE,Q2CIm*ZARe*ZCIm/NZC/NZA,WZA*WZC);
-       fFlowSPZDCIntPro[fRunBin][hr][15]->Fill(fCentralityEBE,Q2CIm*ZAIm*ZCRe/NZC/NZA,WZA*WZC);
-       
-       fFlowSPZDCIntPro[fRunBin][hr][16]->Fill(fCentralityEBE,Q2ARe*Q2CRe);
-       fFlowSPZDCIntPro[fRunBin][hr][17]->Fill(fCentralityEBE,Q2AIm*Q2CIm);
+       fFlowSPZDCIntPro[fRunBin][hr][8]->Fill(fCentralityEBE,Q2Re*ZARe*ZCRe/NZC/NZA,WZA*WZC);
+       fFlowSPZDCIntPro[fRunBin][hr][9]->Fill(fCentralityEBE,Q2Re*ZAIm*ZCIm/NZC/NZA,WZA*WZC);
+       fFlowSPZDCIntPro[fRunBin][hr][10]->Fill(fCentralityEBE,Q2Im*ZARe*ZCIm/NZC/NZA,WZA*WZC);
+       fFlowSPZDCIntPro[fRunBin][hr][11]->Fill(fCentralityEBE,Q2Im*ZAIm*ZCRe/NZC/NZA,WZA*WZC);
+       fFlowSPZDCIntPro[fRunBin][hr][12]->Fill(fCentralityEBE,ZARe*ZCRe*ZAIm*ZCIm/NZC/NZA/NZC/NZA,WZA*WZC*WZA*WZC);
+       fFlowSPZDCIntPro[fRunBin][hr][13]->Fill(fCentralityEBE,ZARe*ZCIm*ZAIm*ZCRe/NZC/NZA/NZC/NZA,WZA*WZC*WZA*WZC);
        
        // NUA terms
        fFlowSPZDCIntNUA[fRunBin][0]->Fill(fCentralityEBE,Q2Re);        // cos(2*phi)
@@ -19571,11 +19576,11 @@ void AliFlowAnalysisCRC::FillVarious()
     // ZDC-C (eta < -8.8)
     Double_t ZCRe = fZDCFlowVect[0].X();
     Double_t ZCIm = fZDCFlowVect[0].Y();
-    Double_t ZCM  = fZDCFlowVect[0].GetMult();
+    Double_t ZCM  = fZDCFlowVect[0].GetMult()/1380.;
     // ZDC-A (eta > 8.8)
     Double_t ZARe = fZDCFlowVect[1].X();
     Double_t ZAIm = fZDCFlowVect[1].Y();
-    Double_t ZAM  = fZDCFlowVect[1].GetMult();
+    Double_t ZAM  = fZDCFlowVect[1].GetMult()/1380.;
     
     if( fInvertZDC ) ZARe = -ZARe;
     
@@ -19592,36 +19597,30 @@ void AliFlowAnalysisCRC::FillVarious()
     PPA.Set(VARe,VAIm);
     PPC.Set(VCRe,VCIm);
     SPV.Set(ZARe-ZCRe,ZAIm-ZCIm);
+//    printf("prova: %e %e \n",cos(SPA.Phi()-SPC.Phi()),(ZARe*ZCRe-ZAIm*ZCIm)/(fZDCFlowVect[0].Mod()*fZDCFlowVect[1].Mod()));
+    
     
     if(SPV.Phi()>TMath::Pi()) {
       SPV.SetMagPhi(1,SPV.Phi()-TMath::Pi());
     }
     
-    fZDCESEHistEP[0]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(PPC)));
-    fZDCESEHistEP[1]->Fill(fCentralityEBE,fabs(SPA.DeltaPhi(SPC)));
-    
     PPA.SetMagPhi(1,PPA.Phi()/2.);
     PPC.SetMagPhi(1,PPC.Phi()/2.);
+    
+    fZDCESEHistEP[0]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(PPC)));
+    fZDCESEHistEP[1]->Fill(fCentralityEBE,fabs(SPA.DeltaPhi(SPC)));
     
     fZDCESEHistEP[2]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
     fZDCESEHistEP[3]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
     
-    if(fabs(SPA.DeltaPhi(SPC))>TMath::Pi()/2. && fabs(PPA.DeltaPhi(PPC))<TMath::Pi()/2.) {
-      fZDCESEHistEP[4]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
-      fZDCESEHistEP[5]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
-    }
-    if(fabs(SPA.DeltaPhi(SPC))>3.*TMath::Pi()/4. && fabs(PPA.DeltaPhi(PPC))<TMath::Pi()/4.) {
-      fZDCESEHistEP[6]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
-      fZDCESEHistEP[7]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
-    }
+    fZDCESEHistEP[4]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
+    fZDCESEHistEP[5]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
+    
+    fZDCESEHistEP[6]->Fill(fCentralityEBE,fabs(PPA.DeltaPhi(SPV)));
+    fZDCESEHistEP[7]->Fill(fCentralityEBE,fabs(PPC.DeltaPhi(SPV)));
     
     // Q-vectors
-    Double_t SP = VARe*(ZCRe*ZARe-ZCIm*ZAIm) + VAIm*(ZCIm*ZARe+ZCIm*ZAIm);
-    fZDCESEHistQV[0]->Fill(fCentralityEBE,SP);
-    fZDCESEHistQV[1]->Fill(fCentralityEBE,SP,ZCM*ZAM*VAM);
-    SP = VCRe*(ZCRe*ZARe-ZCIm*ZAIm) + VCIm*(ZCIm*ZARe+ZCIm*ZAIm);
-    fZDCESEHistQV[2]->Fill(fCentralityEBE,SP);
-    fZDCESEHistQV[3]->Fill(fCentralityEBE,SP,ZCM*ZAM*VCM);
+    fZDCESEHistQV[fCenBin]->Fill(fabs(PPA.DeltaPhi(SPV)),fabs(PPC.DeltaPhi(SPV)));
     
   }
   
@@ -21618,29 +21617,16 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
           Double_t cosAsinC = fFlowSPZDCIntPro[r][hr][0]->GetBinContent(3);
           Double_t sinAcosC = fFlowSPZDCIntPro[r][hr][0]->GetBinContent(4);
           
-          Double_t cos2QA = fFlowSPZDCIntNUA[r][2]->GetBinContent(c);
-          Double_t sin2QA = fFlowSPZDCIntNUA[r][3]->GetBinContent(c);
-          Double_t cos2QC = fFlowSPZDCIntNUA[r][4]->GetBinContent(c);
-          Double_t sin2QC = fFlowSPZDCIntNUA[r][5]->GetBinContent(c);
-          
           Double_t NUAcorRes=0;
           if(j==4) NUAcorRes = cos2Q*cosAcosC;
           if(j==5) NUAcorRes = cos2Q*sinAsinC;
           if(j==6) NUAcorRes = sin2Q*cosAsinC;
           if(j==7) NUAcorRes = sin2Q*sinAcosC;
           
-          if(j==8) NUAcorRes = cos2QA*cosAcosC;
-          if(j==9) NUAcorRes = cos2QA*sinAsinC;
-          if(j==10) NUAcorRes = sin2QA*cosAsinC;
-          if(j==11) NUAcorRes = sin2QA*sinAcosC;
-          
-          if(j==12) NUAcorRes = cos2QC*cosAcosC;
-          if(j==13) NUAcorRes = cos2QC*sinAsinC;
-          if(j==14) NUAcorRes = sin2QC*cosAsinC;
-          if(j==15) NUAcorRes = sin2QC*sinAcosC;
-          
-          if(j==16) NUAcorRes = cos2QA*cos2QC;
-          if(j==17) NUAcorRes = sin2QA*sin2QC;
+          if(j==8) NUAcorRes = cos2Q*cosAcosC;
+          if(j==9) NUAcorRes = cos2Q*sinAsinC;
+          if(j==10) NUAcorRes = sin2Q*cosAsinC;
+          if(j==11) NUAcorRes = sin2Q*sinAcosC;
           
           if(sumw>0.) {
             SumTwo    += sumwx;
@@ -24741,6 +24727,11 @@ void AliFlowAnalysisCRC::GetPointersForVarious()
   TH2F* ZNCvsZNA = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNCvsZNA[%d]",h)));
   if(ZNCvsZNA) this->SetZNCvsZNA(ZNCvsZNA,h);
  }
+  for (Int_t c=0; c<2; c++) {
+    TH2F* ZNvsCen = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNvsCen[%d]",c)));
+    if(ZNvsCen) this->SetZNvsCen(ZNvsCen,c);
+  }
+  
  for (Int_t c=0; c<4; c++) {
   TProfile* ZNQVecCov = dynamic_cast<TProfile*>(fVariousList->FindObject(Form("fhZNQVecCov[%d]",c)));
   if(ZNQVecCov) this->SetZNQVecCov(ZNQVecCov,c);

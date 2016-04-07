@@ -851,12 +851,16 @@ public:
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
  void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
  TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
+ void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
+ TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
  void SetZNCentroid(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCentroid[eg][h] = n;};
  TH2F* GetZNCentroid(Int_t const eg, Int_t const h) const {return this->fhZNCentroid[eg][h];};
  void SetZNSpectra(TH1F* const n, Int_t const eg, Int_t const h) {this->fhZNSpectra[eg][h] = n;};
  TH1F* GetZNSpectra(Int_t const eg, Int_t const h) const {return this->fhZNSpectra[eg][h];};
  void SetZNCvsZNA(TH2F* const n, Int_t const h) {this->fhZNCvsZNA[h] = n;};
  TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
+ void SetZNvsCen(TH2F* const n, Int_t const h) {this->fhZNvsCen[h] = n;};
+ TH2F* GetZNvsCen(Int_t const h) const {return this->fhZNvsCen[h];};
  void SetZNCenvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenvsMul[eg][h] = n;};
  TH2F* GetZNCenvsMul(Int_t const eg, Int_t const h) const {return this->fhZNCenvsMul[eg][h];};
  void SetZNResvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsMul[eg][h] = n;};
@@ -1545,6 +1549,7 @@ private:
  TH1D* fCenWeigCalHist; //! Centrality weights
  TH1D* fPtWeightsHist[10]; //! Pt weights
  TH1D* fEtaWeightsHist[10][21][2]; //! Eta weights
+ TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
  Double_t *fCRCPtBins; //!
  Double_t fCenWeightEbE;
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
@@ -1553,6 +1558,7 @@ private:
  TH2F* fhZNCenvsMul[fCRCMaxnCen][2]; //! rad vs mul
  TH2F* fhZNResvsMul[fCRCMaxnCen][2]; //! res vs mul
  TH2F* fhZNResvsCen[fCRCMaxnCen][2]; //! res vs rad
+ TH2F* fhZNvsCen[2]; //! cen vs mul
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
  TH2D *fZDCESEHistQV[fCRCMaxnCen]; //! Test ZDC ESE
