@@ -44,7 +44,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kTRUE, // no-prompt
 							 Int_t configuration = AliCFTaskVertexingHF::kCheetah,
 							 Int_t pdgCode = 4122, Char_t isSign = 2, Char_t lcToV0bachelorDecayMode = 0,
-							 TString usercomment = "username")
+							 TString usercomment = "username",
+							 Bool_t useWeight=kFALSE)
 {
 
 
@@ -434,7 +435,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
     task->SetCountLctoLambdapi();
     break;
   }
-  task->SetUseWeight(kFALSE);
+  task->SetUseWeight(useWeight);
   task->SetSign(isSign);
   task->SetCentralitySelection(kFALSE);
   task->SetFakeSelection(0);
