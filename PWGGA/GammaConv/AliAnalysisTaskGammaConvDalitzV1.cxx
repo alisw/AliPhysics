@@ -1743,29 +1743,35 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 
 Bool_t AliAnalysisTaskGammaConvDalitzV1::Notify()
 {
-	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-	  
-		if( !((AliConvEventCuts*)fCutEventArray->At(iCut))->GetDoEtaShift() ){
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (((AliConvEventCuts*)fCutEventArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        ((AliConvEventCuts*)fCutEventArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fCutEventArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fCutEventArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+    
+    
+    if( !((AliConvEventCuts*)fCutEventArray->At(iCut))->GetDoEtaShift() ){
 
-			hEtaShift[iCut]->Fill(0.,0.);
-			continue; // No Eta Shift requested, continue
-		}
-		
-		
-		if( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-			((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
-			((AliConvEventCuts*)fCutEventArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
-			 hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
-			continue;
-		} else {
-			printf(" Gamma Conversion Dalitz Task %s :: Eta Shift Manually Set to %f \n\n",
-			(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCutNumber()).Data(),((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift());
-			((AliConvEventCuts*)fCutEventArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
-			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
-		}
-	}
-	
-	return kTRUE;
+      hEtaShift[iCut]->Fill(0.,0.);
+      continue; // No Eta Shift requested, continue
+    }
+    
+    
+    if( ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
+      ((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCorrectEtaShiftFromPeriod();
+      ((AliConvEventCuts*)fCutEventArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
+      hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
+      continue;
+    } else {
+      printf(" Gamma Conversion Dalitz Task %s :: Eta Shift Manually Set to %f \n\n",
+      (((AliConvEventCuts*)fCutEventArray->At(iCut))->GetCutNumber()).Data(),((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift());
+      ((AliConvEventCuts*)fCutEventArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
+      hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fCutEventArray->At(iCut))->GetEtaShift()));
+    }
+  }
+  
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -2798,7 +2804,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 				if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) { 
 					if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
 						if (((TParticle*)MCStack->Particle(gammaMotherLabel))->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gammaMotherLabel,fMCStack,fInputEvent);
+							weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(gammaMotherLabel,fMCStack,fInputEvent);
 						}
 					}
 				}
@@ -2820,7 +2826,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 					if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) { 
 						Int_t secMotherLabel = ((TParticle*)MCStack->Particle(gammaMotherLabel))->GetMother(0);
 						if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack, fInputEvent) && MCStack->Particle(gammaMotherLabel)->GetPdgCode()==310){
-							weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+							weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
 						}
 					}
 					hESDTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec); 
@@ -2830,7 +2836,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 				if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) {
 					if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
 						if (((TParticle*)MCStack->Particle(gammaMotherLabel))->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gammaMotherLabel,fMCStack,fInputEvent);
+							weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(gammaMotherLabel,fMCStack,fInputEvent);
 						}
 					}
 				}
@@ -2844,7 +2850,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 					if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) { 
 						Int_t secMotherLabel = ((TParticle*)MCStack->Particle(gammaMotherLabel))->GetMother(0);
 						if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack, fInputEvent) && MCStack->Particle(gammaMotherLabel)->GetPdgCode()==310){
-							weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+							weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
 						}
 					}
 					hESDTrueSecondaryMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec);
@@ -3079,7 +3085,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles()
 			if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) { 
 				if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
 					if (particle->Pt()>0.005){
-						weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+						weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(i, fMCStack,fInputEvent);
 					}
 				}
 			}
@@ -3098,7 +3104,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles()
 			if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) { 
 				if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
 					if (particle->Pt()>0.005){
-						weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+						weighted= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(i, fMCStack,fInputEvent);
 					}
 				}
 			}
