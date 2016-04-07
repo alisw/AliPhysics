@@ -55,6 +55,7 @@ set(SRCS
     AliAnalysisHFCorrOnFlySim.cxx
     AliHFCorrFitter.cxx
     AliHFCorrFitSystematics.cxx
+    AliDhCorrelationExtraction.cxx
   ) 						
 
 # Headers from sources
