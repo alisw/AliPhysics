@@ -14,6 +14,7 @@
 #include "AliZMQhelpers.h"
 #include <map>
 #include <string>
+#include "TRegexp.h"
 
 class AliHLTZMQsink : public AliHLTComponent, public AliOptionParser {
 public:
@@ -63,6 +64,8 @@ private:
   Int_t fZMQerrorMsgSkip; //downscale ZMQ send warnings
   Bool_t fSendECSparamString; //send the full ECS param string
   TString fECSparamString; //the ECS param string from SOR event
+  Bool_t fSendStreamerInfos;   //send the cached streamer infos
+  TRegexp fCDBpattern;          //keep the pattern for cdb string checks
   
   ClassDef(AliHLTZMQsink, 1)
 };
