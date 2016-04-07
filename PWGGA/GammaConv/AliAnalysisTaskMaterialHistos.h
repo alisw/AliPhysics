@@ -29,6 +29,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t *option);
+    virtual Bool_t Notify                   ();
 		virtual void   Terminate(Option_t *);
 		void SetIsHeavyIon(Int_t flag)                                { fIsHeavyIon                 = flag    ;}
 		void SetIsMC(Int_t isMC){fIsMC=isMC;}

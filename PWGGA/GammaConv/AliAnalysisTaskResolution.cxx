@@ -99,6 +99,16 @@ AliAnalysisTaskResolution::~AliAnalysisTaskResolution()
 	// default deconstructor
    
 }
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskResolution::Notify()
+{
+    if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        fEventCuts->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskResolution::UserCreateOutputObjects()
 {

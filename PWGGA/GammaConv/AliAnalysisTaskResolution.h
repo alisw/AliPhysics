@@ -27,6 +27,7 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		virtual ~AliAnalysisTaskResolution();
 
 		virtual void   UserCreateOutputObjects();
+    virtual Bool_t Notify                   ();
 		virtual void   UserExec(Option_t *option);
 		virtual void   Terminate(Option_t *);
 
