@@ -159,7 +159,7 @@ void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime * const  timeDrift){
     if (addHist->GetEntries()<fMinEntries) continue;
     TH1D* histo    =addHist->Projection(3);
     TH1D* histoTime=addHist->Projection(0);
-    printf("%s\t%f\t%d\t%d\n",histo->GetName(), histo->GetEntries(),histo->FindFirstBinAbove(0),histo->FindLastBinAbove(0));
+    AliInfo(Form("%s\t%f\t%d\t%d",histo->GetName(), histo->GetEntries(),histo->FindFirstBinAbove(0),histo->FindLastBinAbove(0)));
 
     if (fStartRun<=0){ 
       fStartRun=histo->FindFirstBinAbove(0);
@@ -180,8 +180,8 @@ void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime * const  timeDrift){
   }}
   if (fStartRun<0) fStartRun=0;
   if (fEndRun<0) fEndRun=100000000;
-  printf("Run range  :\t%d-%d\n", fStartRun, fEndRun);
-  printf("Time range :\t%d-%d\n", fStartTime, fEndTime);
+  AliInfo(Form("Run range  :\t%d-%d", fStartRun, fEndRun));
+  AliInfo(Form("Time range :\t%d-%d", fStartTime, fEndTime));
 
 }
 
@@ -235,7 +235,7 @@ Int_t AliTPCPreprocessorOffline::CalibTimeVdrift(AliTPCcalibTime* timeDrift, Int
   // 4. validate OCDB entries
   //
   if(fSwitchOnValidation==kTRUE && ValidateTimeDrift()==kFALSE) { 
-    Printf("TPC time drift OCDB parameters out of range!");
+    AliWarning("TPC time drift OCDB parameters out of range!");
     return 1;
   }
   //
@@ -354,7 +354,7 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
   //
   // Validate time gain corrections 
   //
-  Printf("ValidateTimeGain..." );
+  AliInfo("ValidateTimeGain..." );
   Float_t minGain = fMinGain;
   Float_t maxGain = fMaxGain;
 
@@ -375,7 +375,7 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
       fCalibrationStatus |= kCalibFailedTimeGain;
       return kFALSE;
     }
-    Printf("Assuming given run is a cosmic run. Using gain calibration from Fermi-plateau muons.");
+    AliInfo("Assuming given run is a cosmic run. Using gain calibration from Fermi-plateau muons.");
   }
   if(gr->GetN()<1) 
   { 
@@ -503,7 +503,7 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
 
   // ---| gain vs time |--------------------------------------------------------
   GetGraphs("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL", grOCDB, grThis);
-  printf("Graphs: %p, %p: %s, %s\n", grOCDB, grThis, grOCDB?grOCDB->GetName():"", grThis?grThis->GetName():"");
+  AliInfo(Form("Graphs: %p, %p: %s, %s", grOCDB, grThis, grOCDB?grOCDB->GetName():"", grThis?grThis->GetName():""));
   if (!grOCDB || !grThis) {
     AliError("Gain vs. time for beam cannot be processed");
     if (fGainMIP) {
@@ -511,7 +511,7 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
     }
   } else {
     grCombined = CombineGraphs(grOCDB, grThis, 1 );
-    printf("Combined: %p: %s\n", grCombined, grCombined?grCombined->GetName():"");
+    AliInfo(Form("Combined: %p: %s", grCombined, grCombined?grCombined->GetName():""));
     if (grCombined) {
       splineFit = AliTPCcalibTimeGain::MakeSplineFit(grCombined);
       fGainArrayCombined->AddAt(splineFit ,0);
@@ -523,7 +523,7 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
   }
 
   GetGraphs("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL", grOCDB, grThis);
-  printf("Graphs: %p, %p: %s, %s\n", grOCDB, grThis, grOCDB?grOCDB->GetName():"", grThis?grThis->GetName():"");
+  AliInfo(Form("Graphs: %p, %p: %s, %s", grOCDB, grThis, grOCDB?grOCDB->GetName():"", grThis?grThis->GetName():""));
   if (!grOCDB || !grThis) {
     AliError("Gain vs. time from cosmics cannot be processed");
     if (fGainCosmic) {
@@ -531,7 +531,7 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
     }
   } else {
     grCombined = CombineGraphs(grOCDB, grThis, 1);
-    printf("Combined: %p: %s\n", grCombined, grCombined?grCombined->GetName():"");
+    AliInfo(Form("Combined: %p: %s", grCombined, grCombined?grCombined->GetName():""));
     if (grCombined) {
       splineFit = AliTPCcalibTimeGain::MakeSplineFit(grCombined);
       fGainArrayCombined->AddAt(splineFit ,1);
@@ -805,7 +805,7 @@ Bool_t AliTPCPreprocessorOffline::GetPointWithError(const TGraphErrors *gr, cons
 
   // ===| 2 and more points |===================================================
   Int_t point = TMath::BinarySearch(npoints, gr->GetX(), xPos);
-  printf("n, i: %d, %d\n", npoints, point);
+  Printf("n, i: %d, %d", npoints, point);
   if (point==-1)        point=0;
   if (point==npoints-1) --point;
 
@@ -815,7 +815,7 @@ Bool_t AliTPCPreprocessorOffline::GetPointWithError(const TGraphErrors *gr, cons
   gr->GetPoint(point+1, x2, y2);
   ey2 = gr->GetErrorY(point+1);
 
-  printf("%d, (%.2f, %.2f), (%.2f, %.2f)\n", point, x1, y1, x2, y2);
+  Printf("%d, (%.2f, %.2f), (%.2f, %.2f)", point, x1, y1, x2, y2);
 
   if ( !(x2>x1) ) {
      AliTPCPreprocessorOffline p;
@@ -843,16 +843,16 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
   //
   // Validate time drift velocity corrections 
   //
-  Printf("ValidateTimeDrift..." );
+  AliInfo("ValidateTimeDrift..." );
 
   Float_t maxVDriftCorr = fMaxVdriftCorr;
 
   TGraphErrors* gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
-  Printf("ALIGN_ITSB_TPC_DRIFTVD graph = %p",gr);
+  AliInfo(Form("ALIGN_ITSB_TPC_DRIFTVD graph = %p",gr));
   if (!gr)
   {
     gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_TOFB_TPC_DRIFTVD");
-    Printf("ALIGN_TOFB_TPC_DRIFTVD graph = %p",gr);
+    AliInfo(Form("ALIGN_TOFB_TPC_DRIFTVD graph = %p",gr));
   }
 
   if(!gr) 
@@ -870,7 +870,7 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
   //}
 
   if(gr->GetN()<1)  { 
-    Printf("ALIGN_ITSB_TPC_DRIFTVD number of points = %d",gr->GetN());
+    AliInfo(Form("ALIGN_ITSB_TPC_DRIFTVD number of points = %d",gr->GetN()));
     {
       fCalibrationStatus|=kCalibFailedTimeDrift;
       return kFALSE;
@@ -880,7 +880,7 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
   // check whether drift velocity corrections in the range
   for(Int_t iPoint = 0; iPoint<gr->GetN(); iPoint++) 
   {
-    //Printf("Y value from the graph: %f",TMath::Abs(gr->GetY()[iPoint]));
+    //AliInfo(Form("Y value from the graph: %f",TMath::Abs(gr->GetY()[iPoint])));
     if(TMath::Abs(gr->GetY()[iPoint]) > maxVDriftCorr)  
     {
       fCalibrationStatus|=kCalibFailedTimeDrift;
@@ -925,7 +925,7 @@ void AliTPCPreprocessorOffline::PrintArray(TObjArray *array){
   Int_t entries = array->GetEntries();
   for (Int_t i=0; i<entries; i++){
     if (!array->At(i)) continue;
-    printf("%d\t %s\n", i,  array->At(i)->GetName());
+    Printf("%d\t %s", i,  array->At(i)->GetName());
   }
 }
 
@@ -1032,10 +1032,10 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
       TGraphErrors* graph=AliTPCcalibBase::FitSlices(newHist,2,0,400,100,0.05,0.95, kTRUE);
       delete newHist;
       if (!graph) {
-	printf("Graph =%s filtered out\n", name.Data());
+	AliInfo(Form("Graph =%s filtered out", name.Data()));
 	continue;
       }
-      printf("name=%s graph=%i, N=%i\n", name.Data(), graph==0, graph->GetN());
+      AliInfo(Form("name=%s graph=%i, N=%i", name.Data(), graph==0, graph->GetN()));
       Int_t pos=name.Index("_");
       name=name(pos,name.Capacity()-pos);
       TString graphName=graph->ClassName();
@@ -1051,7 +1051,7 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
         graph->GetYaxis()->SetTitle("v_{dcor}");
         graph->SetName(graphName);
         graph->SetTitle(graphName);
-        printf("Graph %d\t=\t%s\n", i, graphName.Data());
+        AliInfo(Form("Graph %d\t=\t%s", i, graphName.Data()));
         vdriftArray->Add(graph);
       }
     }
@@ -1451,7 +1451,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   if(fSwitchOnValidation==kTRUE &&
      (fGainCalibrationType==kFullGainCalib || fGainCalibrationType==kCombinedGainCalib) &&
      (!combinedGainSuccessful || !ValidateTimeGain()) ) {
-    Printf("TPC time gain OCDB parameters out of range!");
+    AliWarning("TPC time gain OCDB parameters out of range!");
     return;
   }
 
@@ -2213,7 +2213,8 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
 
   TString *strDeltaITS = TStatToolkit::FitPlaneConstrain(fAlignTree,"mean:err", fstringFast.Data(),cutFit, chi2,npoints,param,covar,-1,0, npointsMax, 1);
   TObjArray* tokArr = strDeltaITS->Tokenize("++");
-  tokArr->Print();
+  static bool verboseOutput = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+  if (verboseOutput) tokArr->Print();
   delete tokArr;
   fAlignTree->SetAlias("fitYFast",strDeltaITS->Data());
   delete strDeltaITS;
