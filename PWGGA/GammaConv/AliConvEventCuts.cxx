@@ -3789,9 +3789,9 @@ Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliS
     else if ( TMath::Abs(pdgSecondary) != 0 )
       return 1;
     
-  } else {    
-    return 0;  
-  } 
+  }
+
+  return 0;
 }
 
 //________________________________________________________________________
@@ -3849,7 +3849,7 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
     else if ( TMath::Abs(pdgSecondary) != 0 )
       return 1;
     
-  } else {    
-    return 0;  
-  } 
+  }
+
+  return 0;
 }
