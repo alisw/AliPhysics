@@ -205,6 +205,7 @@ int AliHLTGlobalEsdConverterComponent::GetOutputDataTypes(AliHLTComponentDataTyp
   tgtList.clear();
   tgtList.push_back( kAliHLTDataTypeESDObject|kAliHLTDataOriginOut );
   tgtList.push_back( kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut );
+  tgtList.push_back( kAliHLTDataTypeStreamerInfo|kAliHLTDataOriginHLT );
   return tgtList.size();
 }
 
@@ -273,7 +274,9 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
       } else if (argument.Contains("-skipobject=")) {
 	argument.ReplaceAll("-skipobject=", "");
 	skipObjects=argument;
-      } else {
+      } else if (argument.CompareTo("-schema")==0) {
+        SetUseSchema();
+      }else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
 	break;
@@ -407,6 +410,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
       pTree->GetUserInfo()->Add(pESD);
       pESD->WriteToTree(pTree);
       iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginOut, 0);
+
     } else {
       iResult=PushBack(pESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOut, 0);
     }
@@ -421,6 +425,9 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
     pTree->GetUserInfo()->Clear();
     delete pTree;
   }
+
+  //push back the root streamers if they are available and changed
+  PushBackSchema();
 
   fBenchmark.Stop(0);
   HLTBenchmark( fBenchmark.GetStatistics() );
