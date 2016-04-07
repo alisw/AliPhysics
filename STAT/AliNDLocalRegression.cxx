@@ -1112,3 +1112,43 @@ void AliNDLocalRegression::DumpToTree(Int_t nDiv,  TTreeStream & stream){
     }
   }
 }
+
+
+Double_t AliNDLocalRegression::EvalGraphKernel(TGraph * gr, Double_t evalTime, Double_t kernelWidth, Int_t sigmaCut, Bool_t evalLog, Int_t pol, TVectorD *param, TMatrixD *covar){
+  ///
+  ///
+  ///   Interpolate graph using local regression with kernel width  
+  ///    
+  Int_t kMinEntries=4;
+  Int_t npoints=gr->GetN();
+  Int_t index0= TMath::BinarySearch(npoints, gr->GetX(), evalTime-sigmaCut*kernelWidth);
+  Int_t index1= TMath::BinarySearch(npoints, gr->GetX(), evalTime+sigmaCut*kernelWidth);
+  if (index1-index0 < kMinEntries) {
+    Int_t index= TMath::BinarySearch(npoints, gr->GetX(), evalTime);
+    index0=index-kMinEntries/2;
+    index1=index+kMinEntries/2;
+  }
+  if (index0<0) index0=0;
+  if (index1>=npoints) index1=npoints-1;
+  TLinearFitter fitter(pol+1, TString::Format("pol%d",pol));
+  Double_t mkernel2=1./(kernelWidth*kernelWidth);
+  for (Int_t ipoint=index0; ipoint<=index1; ipoint++){
+    Double_t x=gr->GetX()[ipoint]-evalTime;
+    Double_t y=gr->GetY()[ipoint];
+    if (evalLog==kFALSE){
+      fitter.AddPoint(&x, gr->GetY()[ipoint], TMath::Exp(x*x*mkernel2));
+    }else{
+      if (y>0) fitter.AddPoint(&x, TMath::Log(y) , TMath::Exp(x*x*mkernel2));
+    }
+  }
+  Int_t hasFailed=(fitter.GetNpoints()>kMinEntries)? fitter.Eval():1;
+  if (hasFailed) return 0;
+  
+  if (param){
+    fitter.GetParameters(*param);
+  }
+  if (covar) fitter.GetCovarianceMatrix(*covar);  
+  return (evalLog==0) ? fitter.GetParameter(0) : TMath::Exp(fitter.GetParameter(0));
+}
+
+
