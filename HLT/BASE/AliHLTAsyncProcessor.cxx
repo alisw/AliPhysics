@@ -324,7 +324,7 @@ int AliHLTAsyncProcessor::QueueAsyncTask(void* (*processFunction)(void*), void* 
 
 int AliHLTAsyncProcessor::IsQueuedTaskCompleted()
 {
-	HLTInfo("%d results ready for retrieval", fMe->fOutputQueueUsed);
+	//HLTInfo("%d results ready for retrieval", fMe->fOutputQueueUsed);
 	return(fMe->fOutputQueueUsed);
 }
 
