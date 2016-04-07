@@ -123,7 +123,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
 	fDebugLevel = 0;
-	AnaEntry = 0;
 	fCent = -1;
 	fCBin = -1;
 	fEffMode = 0;
@@ -214,7 +213,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
 	// Create histograms
 	// Called once
-	AnaEntry = 0;
 	// need to fill to book a histo
 	fHMG = new AliJHistManager("AliJFFlucHistManager","test");
 	// set AliJBin here // 
@@ -339,7 +337,6 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// Main loop
-	if (AnaEntry==0){ cout<< "start event loop " << endl; } ;
 	// find Centrality
 	double inputCent = fCent;
 	fCBin = -1;
@@ -604,7 +601,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	} // QC method done.
 
 	//1 evt is done...
-	AnaEntry++;
 }
 
 //________________________________________________________________________
