@@ -263,12 +263,12 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 		}
 		if (fInitialized)
 		{
-			HLTImportant("Received updated cluster transformation map with new calibration");
+			HLTInfo("Received updated cluster transformation map with new calibration");
 			fgTransform.DeInit();
 		}
 		else
 		{
-			HLTImportant("Received initial cluster transformation map");
+			HLTInfo("Received initial cluster transformation map");
 		}
 
 		HLTInfo( "received configuration object." );
