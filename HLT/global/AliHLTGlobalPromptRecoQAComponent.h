@@ -64,7 +64,6 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
   const char* GetComponentID() {return "PromptRecoQA";};
   void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
-  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   AliHLTComponent* Spawn() {return new AliHLTGlobalPromptRecoQAComponent;}
 

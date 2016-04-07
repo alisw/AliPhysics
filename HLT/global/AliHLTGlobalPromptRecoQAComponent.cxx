@@ -311,16 +311,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
 AliHLTComponentDataType AliHLTGlobalPromptRecoQAComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTMultipleDataType;
-}
-
-int AliHLTGlobalPromptRecoQAComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList){ 
-// see header file for class documentation
-
-  tgtList.clear();
-  tgtList.push_back( kAliHLTDataTypeHistogram|kAliHLTDataOriginOut );
-  tgtList.push_back( kAliHLTDataTypeTObject|kAliHLTDataOriginOut );
-  return tgtList.size();
+  return kAliHLTDataTypeHistogram|kAliHLTDataOriginOut;
 }
 
 void AliHLTGlobalPromptRecoQAComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
