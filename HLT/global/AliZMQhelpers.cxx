@@ -284,7 +284,67 @@ int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::stri
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression,
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, void* data, int size)
+{
+  //add a frame to the mesage
+  int rc = 0;
+  
+  //prepare topic msg
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
+  if (rc<0) {
+    delete topicMsg;
+    return -1;
+  }
+  memcpy(zmq_msg_data(topicMsg),topic,sizeof(*topic));
+
+  //prepare data msg
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( dataMsg, size);
+  if (rc<0) {
+    delete topicMsg;
+    delete dataMsg;
+    return -1;
+  }
+  memcpy(zmq_msg_data(dataMsg),data,size);
+
+  //add the frame to the message
+  message->push_back(std::make_pair(topicMsg,dataMsg));
+  return message->size();
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::string& data)
+{
+  //add a frame to the mesage
+  int rc = 0;
+  
+  //prepare topic msg
+  zmq_msg_t* topicMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
+  if (rc<0) {
+    delete topicMsg;
+    return -1;
+  }
+  memcpy(zmq_msg_data(topicMsg),topic,sizeof(*topic));
+
+  //prepare data msg
+  zmq_msg_t* dataMsg = new zmq_msg_t;
+  rc = zmq_msg_init_size( dataMsg, data.size());
+  if (rc<0) {
+    delete topicMsg;
+    delete dataMsg;
+    return -1;
+  }
+  memcpy(zmq_msg_data(dataMsg),data.data(),data.size());
+
+  //add the frame to the message
+  message->push_back(std::make_pair(topicMsg,dataMsg));
+  return message->size();
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object, int compression,
                    aliZMQTstreamerInfo* streamers)
 {
   //add a frame to the mesage

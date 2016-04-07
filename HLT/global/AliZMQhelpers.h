@@ -52,7 +52,9 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish=false);
 //general multipart messages (aliZMQmsg)
 //to access, just iterate over it.
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
-int alizmq_msg_add(aliZMQmsg* message, AliHLTDataTopic* topic, TObject* object, int compression=0, aliZMQTstreamerInfo* streamers=NULL);
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object, int compression=0, aliZMQTstreamerInfo* streamers=NULL);
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::string& data);
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, void* buffer, int size);
 int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data);
 int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
