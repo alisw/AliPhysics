@@ -631,9 +631,9 @@ inline Int_t AliTPCDcalibRes::GetQBin(float q2pt)
   //
   float q2ptA = TMath::Abs(q2pt);
   if (q2ptA>=fMaxQ2Pt) return -1;
-  int bin = (q2ptA<fMidQ2Pt) ?  0 : 1;
-  if (q2pt>0) bin = kNQBins-1 - bin;
+  for (int bin=kNQBins;bin--;) if (q2pt>fQ2PTBound[bin]) return bin;
 }
+
 //_____________________________________________________
 
 /*
