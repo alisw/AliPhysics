@@ -31,8 +31,8 @@ AliAnalysisV0LamCutProcessing::AliAnalysisV0LamCutProcessing(TList *const output
   //output histograms that will store information about the V0s.
 
 
-  fDefaultVariableCutType = varCutIndex;
-  if(fDefaultVariableCutType > 0) {
+  fVariableCutType = varCutIndex;
+  if(fVariableCutType > 0) {
     fNumberOfVariableCutValues = 3;//needs to be manually set if values change
   }
   else fNumberOfVariableCutValues = 1;
@@ -52,70 +52,70 @@ AliAnalysisV0LamCutProcessing::AliAnalysisV0LamCutProcessing(TList *const output
   vector<Double_t> valueMassALamDiff;
 
   // Set all variable cut values, or set just the nominal value
-  if(kDCAProton == fDefaultVariableCutType) {
+  if(kDCAProton == fVariableCutType) {
     valueDCAPrimProton.push_back(0.09);
     valueDCAPrimProton.push_back(0.1);
     valueDCAPrimProton.push_back(0.11);
   } else {
     valueDCAPrimProton.push_back(0.1);
   }
-  if(kDCAPion == fDefaultVariableCutType) {
+  if(kDCAPion == fVariableCutType) {
     valueDCAPrimPion.push_back(0.27);
     valueDCAPrimPion.push_back(0.3);
     valueDCAPrimPion.push_back(0.33);
   } else {
     valueDCAPrimPion.push_back(0.3);
   }
-  if(kDCADaughter == fDefaultVariableCutType) {
+  if(kDCADaughter == fVariableCutType) {
     valueDCADaughters.push_back(0.36);
     valueDCADaughters.push_back(0.4);
     valueDCADaughters.push_back(0.44);
   } else {
     valueDCADaughters.push_back(0.4);
   }
-  if(kProperDecayLength == fDefaultVariableCutType) {
+  if(kProperDecayLength == fVariableCutType) {
     valueProperDecayLength.push_back(54);
     valueProperDecayLength.push_back(60);
     valueProperDecayLength.push_back(66);
   } else {
     valueProperDecayLength.push_back(60);
   }
-  if(kEta == fDefaultVariableCutType) {
+  if(kEta == fVariableCutType) {
     valueEta.push_back(0.72);
     valueEta.push_back(0.8);
     valueEta.push_back(0.88);
   } else {
     valueEta.push_back(0.8);
   }
-  if(kCosPointing == fDefaultVariableCutType) {
+  if(kCosPointing == fVariableCutType) {
     valueCosPointing.push_back(0.99923);
     valueCosPointing.push_back(0.9993);
     valueCosPointing.push_back(0.99937);
   } else {
     valueCosPointing.push_back(0.9993);
   }
-  if(kDCAV0 == fDefaultVariableCutType) {
+  if(kDCAV0 == fVariableCutType) {
     valueV0DCA.push_back(0.45);
     valueV0DCA.push_back(0.5);
     valueV0DCA.push_back(0.55);
   } else {
     valueV0DCA.push_back(0.5);
   }
-  if(kPt == fDefaultVariableCutType) {
+  if(kPt == fVariableCutType) {
     valuePt.push_back(0.36);
     valuePt.push_back(0.4);
     valuePt.push_back(0.44);
   } else {
     valuePt.push_back(0.4);
   }
-  if(kMassLam == fDefaultVariableCutType) {
+  if(kMassLam == fVariableCutType) {
     valueMassLamDiff.push_back(0.00342);
     valueMassLamDiff.push_back(0.0038);
     valueMassLamDiff.push_back(0.00418);
   } else {
     valueMassLamDiff.push_back(0.0038);
   }
-  if(kMassALam == fDefaultVariableCutType) {
+  if(kMassALam == fVariableCutType) {
     valueMassALamDiff.push_back(0.00342);
     valueMassALamDiff.push_back(0.0038);
     valueMassALamDiff.push_back(0.00418);

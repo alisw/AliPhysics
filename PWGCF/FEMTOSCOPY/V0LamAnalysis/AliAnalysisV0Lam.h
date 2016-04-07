@@ -24,8 +24,11 @@ class AliAODMCParticle;
 
 class AliAnalysisV0Lam : public AliAnalysisTaskSE {
   public:
+    enum SysStudy { kNoStudy = 0,
+		    kTopologicalStudy = 1,
+		    kTwoTrackStudy = 2};
     AliAnalysisV0Lam();
-    AliAnalysisV0Lam(const char *name, Int_t varCutType, Int_t nomincalCutIndex, Bool_t flattenCent);
+    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent);
     virtual ~AliAnalysisV0Lam();
     virtual void UserCreateOutputObjects();
     virtual void Exec(Option_t *option);
@@ -34,11 +37,18 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     {
       nCentBins   = 20,
       zVertexBins = 10,
-      nEventsToMix =  5,
+      nEventsToMix =  5
     };
 
   
   private:
+
+    enum TwoTrackCut { kSameProtProt = 0, kSamePiPi = 1, kSameProtPi = 2,
+		       kDiffProtProt = 3, kDiffPiPi = 4, kDiffProtPi = 5};
+    enum PairType { kLamLam = 0,  kALamALam = 1,
+		    kLamALam = 2, kALamLam = 3};
+
+    
     AliAODEvent    *fAOD; //! AOD object
     TList          *fOutputList; //! Compact Output list
     AliAODpidUtil  *fpidAOD; //!
@@ -55,10 +65,12 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     double fSigmaCutTPCProton; 
     double fPDGLambda, fPDGProton, fPDGPion; //true PDG masses
     int    fEventCount;
-    int    fNumberOfVariableCutValues; //this is > 1 if checking systematics of a
+    SysStudy fSysStudyType;
+    int    fNumberOfTopologicalCutValues; //this is > 1 if checking systematics of a
     int    fNumberOfCfVariableCutValues; //Only different from above if doing variable avg sep cuts
-    int    fDefaultCutType;             //DCA, CosP, Mass... which is being varied
+    int    fVariableCutType;             //DCA, CosP, Mass... which is being varied
     int    fNominalCutIndex;    //Index of nominal cut value
+    
     int    fNumberVariableAvgSepCuts;
     bool   fIsUsingVariableAvgSepCut;
     bool   fIsMCEvent;
@@ -184,7 +196,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     //Functions
     void MyInit();
     vector<TVector3> GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield);
-    Double_t GetAverageSeparation(vector<TVector3> &globalPositions1st, vector<TVector3> &globalPositions2nd);
+    Double_t GetAverageSeparation(const vector<TVector3> &globalPositions1st, const vector<TVector3> &globalPositions2nd);
     TVector3 GetEmissionPoint(const AliAODMCParticle * const track, TVector3 primVertex);
     void DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const event, const int totalV0s);
     int DetermineWhichV0IsWorse(const AliAnalysisV0LamEvent * const event, const int V01, const int V02, const int Criterion, const int cutIndex);
@@ -208,7 +220,10 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     double CalculateKstar(TVector3 p1, TVector3 p2, double mass1, double mass2);
     void BinMomentumSmearing(TVector3 v01MomentumRecon,TVector3 v01MomentumTruth, TVector3 v02MomentumRecon,TVector3 v02MomentumTruth, int pairType);
     /* void DoMomResCorrelationWeighting(const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent, Int_t centBin, Int_t pairType); */
-    void DoPairStudies(const AliAnalysisV0LamEvent *event, const int centralityBin);
+    void DoPairStudies(const AliAnalysisV0LamEvent *const event, const Int_t centralityBin);
+    void FillAvgSepHists(PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
+    void FillCorrelationHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixed, const Int_t cutBin, const Int_t centralityBin);
+    vector<Bool_t> CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02);
     bool RejectEventCentFlat(float MagField, float CentPercent);
     
 
