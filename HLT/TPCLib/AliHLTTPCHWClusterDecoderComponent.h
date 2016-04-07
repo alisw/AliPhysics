@@ -157,8 +157,9 @@ private:
 
   AliHLTTPCHWCFData* fpDecoder; // decoder
   AliHLTTPCHWClusterMergerV1* fpClusterMerger; //! merger instance
-  Bool_t fDoMerge; // flag
-  bool fTPCPresent;
+  Bool_t fDoMerge; // flag whether to merge clusters at branch borders
+  Bool_t fAlreadyMerged; // flag whether the incoming clusters are already merged at branch borders
+  bool fTPCPresent; //flag whether TPC is present in detector list
 
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 };

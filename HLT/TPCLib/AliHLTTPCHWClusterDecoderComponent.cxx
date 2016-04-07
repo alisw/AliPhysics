@@ -59,6 +59,7 @@ AliHLTTPCHWClusterDecoderComponent::AliHLTTPCHWClusterDecoderComponent()
 fpDecoder(NULL),
 fpClusterMerger(NULL),
 fDoMerge(1),
+fAlreadyMerged(0),
 fTPCPresent(0),
 fBenchmark("HWClusterDecoder")
 {
@@ -191,6 +192,13 @@ int AliHLTTPCHWClusterDecoderComponent::ScanConfigurationArgument(int argc, cons
   if (argument.CompareTo("-do-not-merge")==0){
     fDoMerge = 0;
     return 1;
+  }
+  
+  if (argument.CompareTo("-already-merged") == 0)
+  {
+    fDoMerge = 0;
+    fAlreadyMerged = 1;
+    return(1);
   }
 
   // unknown argument
@@ -348,8 +356,6 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 
   } // end of loop over data blocks  
 
-  AliHLTTPCRawClustersDescriptor desc; 
-  desc.SetMergedClustersFlag(0);
 
   if( fDoMerge && fpClusterMerger ){
     fpClusterMerger->Clear();
@@ -359,9 +365,11 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
     }
     int nMerged = fpClusterMerger->Merge();
     fpClusterMerger->Clear();
-    desc.SetMergedClustersFlag(1);
     HLTInfo("Merged %d clusters",nMerged);   
   }
+
+  AliHLTTPCRawClustersDescriptor desc; 
+  desc.SetMergedClustersFlag(fDoMerge || fAlreadyMerged ? 1 : 0);
 
   // Write header block 
   if( isInputPresent ){
