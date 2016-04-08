@@ -18,6 +18,7 @@
 #include "AliPHOSTriggerRawDigiProducer.h"
 #include "AliPHOSTriggerRawReader.h"
 #include "AliPHOSTRURawReader.h"
+#include "AliPHOSTriggerSTURawStream.h"
 #include "AliPHOSTriggerParameters.h"
 #include "AliPHOSTriggerRawDigit.h"
 #include "AliPHOSGeometry.h"
@@ -68,6 +69,73 @@ AliPHOSTriggerRawDigiProducer::~AliPHOSTriggerRawDigiProducer()
 
 void AliPHOSTriggerRawDigiProducer::ProcessEvent(TClonesArray* tdigits)
 {
+  ProcessL0(tdigits);
+  ProcessL1(tdigits);
+}
+
+void AliPHOSTriggerRawDigiProducer::ProcessL1(TClonesArray* tdigits)
+{
+  AliPHOSTriggerSTURawStream inPHOSSTU(fRawReader);
+  Int_t iDigit = tdigits->GetEntries();
+  
+  fRawReader->Reset();
+  fRawReader->Select("PHOS", 20,20);
+
+  if(inPHOSSTU.ReadPayLoad()){
+    
+    for(Int_t iG = 0; iG<3; iG++) {// loop over trigger thresholds: high(0), medium(1), low(2).
+      for(Int_t ith=0; ith<inPHOSSTU.GetNL1GammaPatch(iG); ith++){
+
+  	Int_t itru, ieta, iphi;
+  	inPHOSSTU.GetL1GammaPatch(ith,iG,itru,ieta,iphi);
+	
+  	Int_t x=-1, y=-1;
+  	GetGammaPatchXY(itru,ieta,iphi,x,y);
+	
+  	Int_t module,xloc,zloc;
+  	GetL1GammaPatchModuleXZ(itru,x,y,module,xloc,zloc);
+
+	new((*tdigits)[iDigit]) AliPHOSTriggerRawDigit(module,xloc,zloc,iG,-1);
+	iDigit++;
+      }
+    }
+  }//if(inPHOSSTU.ReadPayLoad())
+  
+}
+
+void AliPHOSTriggerRawDigiProducer::GetGammaPatchXY(Int_t itru, Int_t ieta, Int_t iphi, Int_t& x, Int_t& y)
+{
+  x =   ieta/*xpos in TRU*/ + (int)(itru%2) * 14/*xoff in Det*/ ;
+  y =   iphi/*ypos in TRU*/ + (int)(itru/2) * 8 /*yoff in Det*/ ;
+}
+
+void AliPHOSTriggerRawDigiProducer::GetL1GammaPatchModuleXZ(Int_t itru, Int_t xglob, Int_t yglob, Int_t& module, Int_t& x, Int_t& z)
+{
+  //convert L1 gamma patch (xglob,yglob) in Detector Global system to local module (x,z).
+  //Module numeration follows the "offline" agreement.
+  
+  // 0 <= xglob <= 27, 0 <= yglob <= 111.
+  
+  if(0<=itru && itru<4) module=1;
+  if(4<=itru && itru<12 ) module=2;
+  if(12<=itru && itru<20 ) module=3;
+  if(20<=itru && itru<28 ) module=4;
+  
+  z = 56-2*(xglob+1);
+
+  Int_t offset;
+  Int_t mod = module; // online numeration
+  
+  if(mod==1) offset = 0;
+  if(mod==2) offset = 16;
+  if(mod==3) offset = 16+32;
+  if(mod==4) offset = 16+32+32;
+  
+  x = (yglob - offset)*2; 
+}
+
+void AliPHOSTriggerRawDigiProducer::ProcessL0(TClonesArray* tdigits)
+{
   
   fTriggerReader->Reset();
 
@@ -112,7 +180,7 @@ void AliPHOSTriggerRawDigiProducer::ProcessEvent(TClonesArray* tdigits)
 		if( triggered ){
 		  // Get peak values
 		  const int TSmax = Get4x4Max(fTriggerReader, fParameters, mod, TRURow, branch, xIdx, zIdx);
-		  new((*tdigits)[iDigit]) AliPHOSTriggerRawDigit(mod,xIdx,zIdx,TRURow,branch,TSmax); 
+		  new((*tdigits)[iDigit]) AliPHOSTriggerRawDigit(mod,xIdx,zIdx,TRURow,branch,TSmax);
 		  iDigit++;
 		}// end  "if triggered"
 	      

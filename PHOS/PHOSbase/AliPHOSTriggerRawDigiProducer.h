@@ -24,6 +24,12 @@ class AliPHOSTriggerRawDigiProducer
   
   void ProcessEvent(TClonesArray* tdigits);
 
+  void ProcessL0(TClonesArray* tdigits);
+  void ProcessL1(TClonesArray* tdigits);
+
+  void GetGammaPatchXY(Int_t itru, Int_t ieta, Int_t iphi, Int_t& x, Int_t& y);
+  void GetL1GammaPatchModuleXZ(Int_t itru, Int_t xglob, Int_t yglob, Int_t& module, Int_t& x, Int_t& z);
+
   void SetTriggerParameters(AliPHOSTriggerParameters* parameters) {fParameters = parameters;}
   void SetAnalyseModule(int mod, bool analyse = true) {fModules[mod] = analyse;}
     
@@ -62,7 +68,7 @@ private:
   AliPHOSTriggerRawReader * fTriggerReader;   //! TriggerRawReader
   static const Int_t fgkSTUDDL = 20; //! DDL ID of the PHOS STU
 
-  ClassDef(AliPHOSTriggerRawDigiProducer,2)
+  ClassDef(AliPHOSTriggerRawDigiProducer,3)
 };
 
 #endif
