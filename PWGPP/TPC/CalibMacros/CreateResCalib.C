@@ -19,6 +19,6 @@ void postProcResCalib(int run=245231
 
   AliTPCDcalibRes* clb = new AliTPCDcalibRes(run, tmin, tmax);
   clb->SetOCDBPath("local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB");
-  clb->ProcessFromStatTree();
+  clb->ProcessFromLocalBinnedTrees();
   clb->Save();
 }
