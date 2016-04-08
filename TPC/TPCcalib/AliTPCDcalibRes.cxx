@@ -90,6 +90,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxRMSLong(0.8)
   ,fMaxRejFrac(0.15)
   ,fFilterOutliers(kTRUE) 
+  ,fMaxFitYErr2(1.0)
+  ,fMaxFitXErr2(1.0)
   ,fNY2XBins(15)
   ,fNZ2XBins(10)
   ,fNXBins(-1)
@@ -1053,8 +1055,9 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, const float* tg, const float
   if (np<fMinEntriesVoxel) return;
   float a,b,err[3];
   TVectorF zres(10);
-  if (!TStatToolkit::LTMUnbinned(np,dz,zres,0.8)) {zres[1]=zres[2]=zres[3]=zres[4]=999.;};
+  if (!TStatToolkit::LTMUnbinned(np,dz,zres,0.8)) return;
   AliTPCDcalibRes::medFit(np, tg, dy, a,b, err);
+  if (err[0]>fMaxFitYErr2 || err[1]>fMaxFitXErr2) return;
   //printf("N:%3d A:%+e B:%+e / %+e %+e %+e | %+e %+e / %+e %+e\n",np,a,b,err[0],err[1],err[2], zres[1],zres[2], zres[3],zres[4]);
   //
   voxRes.D[kResX] = -b;
@@ -1936,9 +1939,9 @@ void AliTPCDcalibRes::WriteResTree()
   resTree->Branch("res", &voxRes);
   for (int i=0;i<kVoxDim;i++) {
     resTree->SetAlias(kVoxName[i],Form("bvox[%d]",i));
-    resTree->SetAlias(Form("%sAV",kVoxName[kVoxV]),Form("stat[%d]",kVoxV));
+    resTree->SetAlias(Form("%sAV",kVoxName[i]),Form("stat[%d]",i));
   }
-  resTree->SetAlias(Form("%sAV",kVoxName[kVox]),Form("stat[%d]",i));
+  resTree->SetAlias(Form("%sAV",kVoxName[kVoxV]),Form("stat[%d]",kVoxV));
   for (int i=0;i<kResDim;i++) {
     resTree->SetAlias(kResName[i],Form("D[%d]",i));
     resTree->SetAlias(Form("%sE",kResName[i]),Form("E[%d]",i));

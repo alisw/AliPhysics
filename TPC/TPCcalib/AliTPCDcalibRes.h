@@ -218,6 +218,12 @@ class AliTPCDcalibRes: public TNamed
   void     SetMaxRejFrac(float v=0.15)           {fMaxRejFrac = v;}
   void     SetFilterOutliers(Bool_t v=kTRUE)     {fFilterOutliers = v;}
 
+  void     SetMaxFitYErr2(float v=1.0)           {fMaxFitYErr2 = v;}
+  void     SetMaxFitXErr2(float v=1.0)           {fMaxFitXErr2 = v;}
+
+  Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
+  Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
+
   Int_t    GetRun()                         const {return fRun;}
   Long64_t GetTMin()                        const {return fTMin;}
   Long64_t GetTMax()                        const {return fTMax;}  
@@ -294,6 +300,8 @@ protected:
   Float_t  fMaxRejFrac;              // max outlier clusters tagged to accept the track
   Bool_t   fFilterOutliers;          // reject outliers
 
+  Float_t  fMaxFitYErr2;             // cut on median fit Y err^2
+  Float_t  fMaxFitXErr2;             // cut on median fit X err^2
 
   // -------------------------------Binning
   Int_t    fNY2XBins;    // y/x bins per sector
