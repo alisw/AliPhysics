@@ -17,13 +17,8 @@ void AddTaskPHOSpi0Conversion(const char* name = "PHOSconv")
   
   AliAnalysisTaskPi0Conversion * task = new AliAnalysisTaskPi0Conversion(Form("%s", name));
   
-  
-  }
   task->SelectCollisionCandidates(AliVEvent::kMB);
   
-  
-
-
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   
