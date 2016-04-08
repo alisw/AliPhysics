@@ -821,7 +821,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 			else{
 				partonESD = fHFJetUtils->IsMCJetParton(MCEvent(), jetgen, 0.4);
 			}
-			if(!parton) jetflavour =0;
+			if(!(partonAOD) && !(partonESD)) jetflavour =0;
 			else
 			{
 				if(!fESD)partonpdg = abs(partonAOD->PdgCode());
