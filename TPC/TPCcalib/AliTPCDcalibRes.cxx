@@ -895,9 +895,22 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   TTree *sectTree = (TTree*) sectFile->Get(treeName.Data());
   if (!sectTree) AliFatalF("tree %s is not found in file %s",treeName.Data(),sectFileName.Data());
   //
-  if (!fSectGVoxRes[is]) fSectGVoxRes[is] = new bres_t[fNGVoxPerSector]; // here we keep main result
-  bres_t* sectData = fSectGVoxRes[is];
-  for (int i=fNGVoxPerSector;i--;) sectData[i].bsec = is;
+  if (fSectGVoxRes[is]) delete[] fSectGVoxRes[is];
+  fSectGVoxRes[is] = new bres_t[fNGVoxPerSector]; // here we keep main result
+  bres_t*  sectData = fSectGVoxRes[is];
+  // by default set the COG estimates to bin center
+  for (int ix=0;ix<fNXBins;ix++) {
+    for (int ip=0;ip<fNY2XBins;ip++) {
+      for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
+	int binGlo = GetVoxGBin(ix,ip,iz);
+	bres_t &resVox = sectData[binGlo];
+	resVox.bsec = is;
+	GetVoxelCoordinates(resVox.bsec,resVox.bvox[kVoxX],resVox.bvox[kVoxF],resVox.bvox[kVoxZ],
+			    resVox.stat[kVoxX],resVox.stat[kVoxF],resVox.stat[kVoxZ]);
+      }
+    } 
+  }
+  //
   dts_t *dtsP = &fDTS; 
   sectTree->SetBranchAddress("dts",&dtsP);
   int npoints = sectTree->GetEntries();
@@ -992,7 +1005,7 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, const float* tg, const float
   voxRes.D[kResZ] = zres[1];
   voxRes.E[kResX] = TMath::Sqrt(err[2]);
   voxRes.E[kResY] = TMath::Sqrt(err[0]);
-  voxRes.E[kResZ] = zres[1];
+  voxRes.E[kResZ] = zres[4];
   //
   // store the statistics
   ULong64_t binStat = GetBin2Fill(voxRes.bvox,kVoxV);
