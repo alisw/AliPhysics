@@ -1879,8 +1879,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     GetStatInfo(his1D,infoMultNeg,0);
 
     delete his1D;
-    
-    pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
     //
     (*pcstream)<<"trending"<<
       "infoVertX.="<<&infoVertexX <<       // vertex X stat information
