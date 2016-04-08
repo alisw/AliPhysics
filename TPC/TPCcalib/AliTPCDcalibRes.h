@@ -111,7 +111,7 @@ class AliTPCDcalibRes: public TNamed
  void ProcessDispersions();
  void ProcessSectorResiduals(int is);
  void ProcessSectorDispersions(int is);
- void ProcessVoxelResiduals(int np, const float* tg, const float *dy, const float *dz, bres_t& voxRes);
+ void ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes);
  void ProcessVoxelDispersions(int np, const float* tg, float *dy, bres_t& voxRes);
  //
  void InitGeom();

@@ -66,7 +66,7 @@ namespace TStatToolkit
   void MedianFilter(TH1 * his1D, Int_t nmedian);
 
   template <typename T> Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
-  template <typename T> Bool_t LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep=1.0);
+  template <typename T> Int_t*  LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep=1.0);
 
   //
   template <typename T> 
@@ -612,7 +612,7 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
 }
 
 template <typename T> 
-Bool_t TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep)
+Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep)
 {
   //
   // LTM : Trimmed mean of unbinned array
@@ -634,12 +634,14 @@ Bool_t TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
   //             - 5 - first accepted element (of sorted array)
   //             - 6 - last accepted  element (of sorted array)
   //
+  // On success returns index of sorted events 
+  //
   static int book = 0;
   static int *index = 0;
   static double* w = 0;
   int keepN = np*keep;
   if (keepN>np) keepN = np;
-  if (keepN<2) return kFALSE;
+  if (keepN<2) return 0;
   params[0] = 0.0f;
   if (book<np) {
     delete[] index;
@@ -676,11 +678,11 @@ Bool_t TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
     params[6] = limJ;
   }
   //
-  if (!params[0]) return kFALSE;
+  if (!params[0]) return 0;
   params[2] = TMath::Sqrt(params[2]);
   params[3] = params[2]/TMath::Sqrt(params[0]); // error on mean
   params[4] = params[3]/TMath::Sqrt(2.0); // error on RMS
-  return kTRUE;
+  return index;
 }
 
 #endif

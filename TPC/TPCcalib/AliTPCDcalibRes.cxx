@@ -1049,14 +1049,28 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
 }
 
 //_________________________________________________
-void AliTPCDcalibRes::ProcessVoxelResiduals(int np, const float* tg, const float *dy, const float *dz, bres_t& voxRes)
+void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes)
 {
   // extract X,Y,Z distortions of the voxel
   if (np<fMinEntriesVoxel) return;
   float a,b,err[3];
-  TVectorF zres(10);
-  if (!TStatToolkit::LTMUnbinned(np,dz,zres,0.8)) return;
-  AliTPCDcalibRes::medFit(np, tg, dy, a,b, err);
+  TVectorF zres(7),yres(7);
+  if (!TStatToolkit::LTMUnbinned(np,dz,zres,0.8)) return; 
+  //
+  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,0.9);
+  if (!indY) return;
+  // rearrange used events in increasing order
+  for (int i=0;i<np;i++) {
+    int ip = index[i];
+    if (i!=ip) {
+      swap(dy[i],dy[ip]);
+      swap(tg[i],tg[ip]);      
+    }
+  }
+  int npuse = TMath::NInt(yres[0]);
+  int offs =  TMath::NInt(yres[5]);
+  // use only entries selected by LTM for the fit
+  AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
   if (err[0]>fMaxFitYErr2 || err[1]>fMaxFitXErr2) return;
   //printf("N:%3d A:%+e B:%+e / %+e %+e %+e | %+e %+e / %+e %+e\n",np,a,b,err[0],err[1],err[2], zres[1],zres[2], zres[3],zres[4]);
   //
