@@ -53,6 +53,10 @@
 #pragma link C++ class  AliAnalysisTaskPt+;
 
 #pragma link C++ class  AliTPCDcalibRes+;
+#pragma link C++ class AliTPCDcalibRes::dts_t+;
+#pragma link C++ class AliTPCDcalibRes::dtc_t+;
+#pragma link C++ class AliTPCDcalibRes::bres_t+;
+
 
 #endif
 
