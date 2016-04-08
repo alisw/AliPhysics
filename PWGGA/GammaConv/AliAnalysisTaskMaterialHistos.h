@@ -29,7 +29,6 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t *option);
-    virtual Bool_t Notify                   ();
 		virtual void   Terminate(Option_t *);
 		void SetIsHeavyIon(Int_t flag)                                { fIsHeavyIon                 = flag    ;}
 		void SetIsMC(Int_t isMC){fIsMC=isMC;}
@@ -95,6 +94,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hESDConversionEta;              //!  
 		TH1F**            hESDConversionMidPtEta;         //!
 		TH1F**            hESDConversionPt;              //!
+		TH1F**            hESDConversionPt5cm;              //!
 		TH1F**           	hESDConversionDCA;             //!
 		TH1F**           	hESDConversionMidPtDCA;        //!
 		TH1F**           	hESDConversionPsiPair;         //!
@@ -115,6 +115,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hMCTrueConversionEta;              //!  
 		TH1F**            hMCTrueConversionMidPtEta;         //!
 		TH1F**            hMCTrueConversionPt;               //!
+		TH1F**            hMCTrueConversionPt5cm;               //!
   	TH2F**            hMCTrueConversionAsymP;            //!
 		TH1F**            hMCTrueConversionDCA;              //!
 		TH1F**            hMCTrueConversionMidPtDCA;         //!
@@ -143,7 +144,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-		ClassDef(AliAnalysisTaskMaterialHistos, 2);
+        ClassDef(AliAnalysisTaskMaterialHistos, 3);
 };
 
 #endif

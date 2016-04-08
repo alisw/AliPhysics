@@ -78,6 +78,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 	hESDConversionEta(NULL),
 	hESDConversionMidPtEta(NULL),
 	hESDConversionPt(NULL),
+	hESDConversionPt5cm(NULL),
 	hESDConversionDCA(NULL),            
 	hESDConversionMidPtDCA(NULL),            
  	hESDConversionPsiPair(NULL),       
@@ -97,6 +98,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 	hMCTrueConversionEta(NULL),
 	hMCTrueConversionMidPtEta(NULL),
 	hMCTrueConversionPt(NULL),
+	hMCTrueConversionPt5cm(NULL),
 	hMCTrueConversionAsymP(NULL),
 	hMCTrueConversionDCA(NULL),
 	hMCTrueConversionMidPtDCA(NULL),
@@ -168,6 +170,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
 	hESDConversionEta(NULL),
 	hESDConversionMidPtEta(NULL),
 	hESDConversionPt(NULL),
+	hESDConversionPt5cm(NULL),
 	hESDConversionDCA(NULL),            
 	hESDConversionMidPtDCA(NULL),            
  	hESDConversionPsiPair(NULL),       
@@ -187,6 +190,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
 	hMCTrueConversionEta(NULL),
 	hMCTrueConversionMidPtEta(NULL),
 	hMCTrueConversionPt(NULL),
+	hMCTrueConversionPt5cm(NULL),
 	hMCTrueConversionAsymP(NULL),
 	hMCTrueConversionDCA(NULL),
 	hMCTrueConversionMidPtDCA(NULL),
@@ -224,19 +228,6 @@ AliAnalysisTaskMaterialHistos::~AliAnalysisTaskMaterialHistos()
   //   fGammaCandidates = 0x0;
   // }
 }
-
-//_____________________________________________________________________________
-Bool_t AliAnalysisTaskMaterialHistos::Notify()
-{
-  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
-        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
-    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
-      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
-    }  
-  }
-}
-
 //________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 {
@@ -272,6 +263,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	hESDConversionEta              = new TH1F*[fnCuts];
 	hESDConversionMidPtEta         = new TH1F*[fnCuts];
 	hESDConversionPt               = new TH1F*[fnCuts];
+	hESDConversionPt5cm            = new TH1F*[fnCuts];
 	hESDConversionDCA              = new TH1F*[fnCuts];
 	hESDConversionMidPtDCA         = new TH1F*[fnCuts];
 	hESDConversionPsiPair          = new TH1F*[fnCuts];
@@ -293,6 +285,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	hMCTrueConversionEta           = new TH1F*[fnCuts];
 	hMCTrueConversionMidPtEta      = new TH1F*[fnCuts];
 	hMCTrueConversionPt            = new TH1F*[fnCuts];
+	hMCTrueConversionPt5cm         = new TH1F*[fnCuts];
 	
 	hMCTrueConversionAsymP         = new TH2F*[fnCuts];
 	hMCTrueConversionDCA           = new TH1F*[fnCuts];
@@ -398,6 +391,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 			hESDConversionPt[iCut]                = new TH1F("ESD_ConversionMapping_Pt","ESD_ConversionMapping_Pt",nBinsPt,0.,20.);
 			fESDList[iCut]->Add(hESDConversionPt[iCut]);
 
+			hESDConversionPt5cm[iCut]                = new TH1F("ESD_ConversionMapping_Pt5cm","ESD_ConversionMapping_Pt5cm",nBinsPt,0.,20.);
+			fESDList[iCut]->Add(hESDConversionPt5cm[iCut]);
+
 			hESDConversionDCA[iCut]                = new TH1F("ESD_ConversionMapping_DCA","ESD_ConversionMapping_DCA",nBinsPt,0.,5.);
 			fESDList[iCut]->Add(hESDConversionDCA[iCut]);
 
@@ -478,6 +474,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 				fTrueList[iCut]->Add(hMCTrueConversionMidPtEta[iCut]);
 				hMCTrueConversionPt[iCut]               = new TH1F("ESD_TrueConversionMapping_Pt","ESD_TrueConversionMapping_Pt",nBinsPt,0.,20.);
 				fTrueList[iCut]->Add(hMCTrueConversionPt[iCut]);
+
+				hMCTrueConversionPt5cm[iCut]               = new TH1F("ESD_TrueConversionMapping_Pt5cm","ESD_TrueConversionMapping_Pt5cm",nBinsPt,0.,20.);
+				fTrueList[iCut]->Add(hMCTrueConversionPt5cm[iCut]);
 				
 				hMCTrueConversionAsymP[iCut]               = new TH2F("ESD_TrueConversionMapping_AsymP","ESD_TrueConversionMapping_AsymP",nBinsPt,0.01,20.,500,0.,1.);
 				fTrueList[iCut]->Add(hMCTrueConversionAsymP[iCut]);
@@ -860,6 +859,9 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 			hESDConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());  
 			hESDConversionEta[fiCut]->Fill(gamma->GetPhotonEta());              
 			hESDConversionPt[fiCut]->Fill(gamma->GetPhotonPt());              
+			if(gamma->GetConversionRadius()>5){
+			  hESDConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
+			}
 			hESDConversionR[fiCut]->Fill(gamma->GetConversionRadius());      
 			hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
 
@@ -890,7 +892,10 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 					hMCTrueConversionMappingRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());       
 					hMCTrueConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());       
 					hMCTrueConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                  
-					hMCTrueConversionPt[fiCut]->Fill(gamma->GetPhotonPt());                
+					hMCTrueConversionPt[fiCut]->Fill(gamma->GetPhotonPt()); 
+					if(gamma->GetConversionRadius()>5){
+					  hMCTrueConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
+					}
 					hMCTrueConversionR[fiCut]->Fill(gamma->GetConversionRadius());  
 					hMCTrueConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
 					hMCTrueConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair()); 
