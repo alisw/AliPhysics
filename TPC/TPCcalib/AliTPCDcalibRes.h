@@ -170,19 +170,19 @@ public:
 
 //------------------------------------ misc. stat. methods
 
-  void    FitCircle(int np, const float* x, const float* y, 
-		    double &xc, double &yc, double &r, float* dy=0);
-  void    DiffToMA(int np, const float *y, const int winLR, float* diffMA);
-  int     DiffToLocLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
-  int     DiffToMedLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
-  float   RoFunc(int np, const float* x, const float* y, float b, float &aa);
-  Float_t SelKthMin(int k, int np, float* arr);
-  void    medFit(int np, const float* x, const float* y, float &a, float &b, float delI=0.f);
-  Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
-  Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);
-  Bool_t  GetTruncNormMuSig(double a, double b, double &mean, double &sig);
-  void    TruncNormMod(double a, double b, double mu0, double sig0, double &muCf, double &sigCf);
-  Double_t GetLogL(TH1F* histo, int bin0, int bin1, double &mu, double &sig, double &logL0);
+  static void    FitCircle(int np, const float* x, const float* y, 
+			   double &xc, double &yc, double &r, float* dy=0);
+  static void    DiffToMA(int np, const float *y, const int winLR, float* diffMA);
+  static int     DiffToLocLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
+  static int     DiffToMedLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
+  static float   RoFunc(int np, const float* x, const float* y, float b, float &aa);
+  static Float_t SelKthMin(int k, int np, float* arr);
+  static void    medFit(int np, const float* x, const float* y, float &a, float &b, float *err=0, float delI=0.f);
+  static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
+  static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);
+  static Bool_t  GetTruncNormMuSig(double a, double b, double &mean, double &sig);
+  static void    TruncNormMod(double a, double b, double mu0, double sig0, double &muCf, double &sigCf);
+  static Double_t GetLogL(TH1F* histo, int bin0, int bin1, double &mu, double &sig, double &logL0);
 
 //------------------------------------
 

@@ -1304,7 +1304,7 @@ Double_t AliTPCDcalibRes::GetLogL(TH1F* histo, int bin0, int bin1, double &mu, d
   const double kNuLarge = 5.0, kMinSig2BinH = 0.01;
   double dxh = 0.5*histo->GetBinWidth(1);
   if ((sig/dxh)<kMinSig2BinH) {
-    AliWarningF("Too small sigma %.4e is provided for bin width %.4e",sig,dxh);
+    AliWarningClassF("Too small sigma %.4e is provided for bin width %.4e",sig,dxh);
     logL0 = -1;
     return -1e9;
   }
@@ -1399,11 +1399,11 @@ Bool_t AliTPCDcalibRes::GetTruncNormMuSig(double a, double b, double &mean, doub
   const int kMaxIter = 200;
   //
   if (sig<1e-12) {
-    AliWarningF("Input sigma %e is too small",sig);
+    AliWarningClassF("Input sigma %e is too small",sig);
     return kFALSE;
   }
   if ( (b-a)/sig<kMinWindow ) {
-    AliWarningF("Truncation window %e-%e is %e sigma only",a,b,(b-a)/sig);
+    AliWarningClassF("Truncation window %e-%e is %e sigma only",a,b,(b-a)/sig);
     return kFALSE;
   }
   //
@@ -1887,11 +1887,18 @@ int AliTPCDcalibRes::DiffToMedLine(int np, const float* x, const float *y, const
 }
 
 //___________________________________________________________________
-void AliTPCDcalibRes::medFit(int np, const float* x, const float* y, float &a, float &b, float delI)
+void AliTPCDcalibRes::medFit(int np, const float* x, const float* y, float &a, float &b, float* err,float delI)
 {
   // Median linear fit: minimizes abs residuals instead of squared ones
   // Adapted from "Numerical Recipes in C"
   float aa,bb,b1,b2,f,f1,f2,sigb,chisq=0.0f;
+  if (np<2) {
+    a = b = 0.0;
+    if (err) {
+      err[0] = err[1] = err[2] = 999.;
+    }
+    return;
+  }
   if (!delI) {
     float sx=0.0f,sxx=0.0f,sy=0.0f,sxy=0.0f,del;
     //
@@ -1903,6 +1910,11 @@ void AliTPCDcalibRes::medFit(int np, const float* x, const float* y, float &a, f
     float delI = 1./del;
     aa = (sxx*sy-sx*sxy)*delI;
     bb = (np*sxy-sx*sy)*delI;
+    if (err) {
+      err[0] = sxx*delI;
+      err[1] = sx*delI;
+      err[2] = np*delI;
+    }
   }
   else { // initial values provided
     aa = a;
