@@ -4,13 +4,13 @@
 void trainCorr(int row, float* tzLoc, float* corrLoc);
 
 
-const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxDim] = {"y2x","x","z2x"};
+const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxHDim] = {"z2x","y2x","x","N"};
 const char* AliTPCDcalibRes::kResName[AliTPCDcalibRes::kResDim] = {"dX","dY","dZ","Disp"};
 
 const float AliTPCDcalibRes::kSecDPhi = 20.f*TMath::DegToRad();
 const float AliTPCDcalibRes::kMaxQ2Pt = 3.0f;
-const float AliTPCDcalibRes::kMaxTgSlp = 2.5f;
-const float AliTPCDcalibRes::kMaxResid = 10.0f;
+//const float AliTPCDcalibRes::kMaxTgSlp = 2.0f;
+//const float AliTPCDcalibRes::kMaxResid = 10.0f;
 const float AliTPCDcalibRes::kMinX = 85.0f;
 const float AliTPCDcalibRes::kMaxX = 246.0f;
 const float AliTPCDcalibRes::kMaxZ2X = 1.0f;
@@ -199,7 +199,7 @@ void AliTPCDcalibRes::ProcessFromLocalBinnedTrees()
   // do per-sector projections and fits
   ProcessResiduals();
   //
-  ProcessDispersions();
+  //  ProcessDispersions();
   //
   CreateCorrectionObject();
   //
@@ -922,6 +922,10 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
     return;
   }
   if (npoints>kMaxPnt) npoints = kMaxPnt;
+  sw.Stop();
+  AliInfoF("Sector %2d. Extracted %d points of unbinned data. Timing: real: %.3f cpu: %.3f",
+	   is, npoints, sw.RealTime(), sw.CpuTime());
+  sw.Start(kFALSE);
   //
   Short_t *resYArr = new Short_t[npoints];
   Short_t *resZArr = new Short_t[npoints];
@@ -940,6 +944,11 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
     binArr[nacc] = GetVoxGBin(fDTS.bvox);
     nacc++;
   }
+  //
+  delete sectTree;
+  sectFile->Close(); // to reconsider: reuse the file
+  delete sectFile;
+  //
   TMath::Sort(nacc, binArr, index, kFALSE); // sort in voxel increasing order
   UShort_t curBin = 0xffff;
   UChar_t bvox[kVoxDim];
@@ -971,20 +980,68 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
     ProcessVoxelResiduals(npBin,tg,dy,dz,resVox);
   }
   //
+  sw.Stop();
+  AliInfoF("Sector %2d. Extracted residuals. Timing: real: %.3f cpu: %.3f",
+	   is, sw.RealTime(), sw.CpuTime());
+  sw.Start(kFALSE);
+
+  Smooth0(is);
+  //
+  sw.Stop();
+  AliInfoF("Sector %2d. Smoothed residuals. Timing: real: %.3f cpu: %.3f",
+	   is, sw.RealTime(), sw.CpuTime());
+  sw.Start(kFALSE);
+
+  // now process dispersions
+  curBin = 0xffff;
+
+  nproc = 0;
+  npBin = 0;
+  while (nproc<nacc) {
+    int ip = index[nproc++];
+    if (curBin!=binArr[ip]) {
+      if (npBin) {
+	bres_t& resVox = sectData[curBin];
+	GBin2Vox(curBin,resVox.bvox);  // parse voxel
+	ProcessVoxelDispersions(npBin,tg,dy,resVox);	
+      }
+      curBin = binArr[ip];
+      npBin = 0;
+    }
+    if (npBin==dya.GetSize()) {
+      dya.Set(100+npBin); dy = dya.GetArray();
+      tga.Set(100+npBin); tg = tga.GetArray();
+    }
+    dy[npBin] = resYArr[ip]*kMaxResid/0x7fff;
+    tg[npBin] = tgslArr[ip]*kMaxTgSlp/0x7fff;
+    npBin++;
+  }
+  if (npBin) {
+    bres_t& resVox = sectData[curBin];
+    GBin2Vox(curBin,resVox.bvox);  // parse voxel
+    ProcessVoxelDispersions(npBin,tg,dy,resVox);
+  }
+  //
+  // now smooth the dispersion
+  for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
+    for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+      for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
+	int binGlo = GetVoxGBin(bvox);
+	bres_t *voxRes = &sectData[binGlo];
+	Bool_t res = GetSmoothEstimateDim(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
+					  int(kResD), voxRes->DS[kResD]);
+      }
+    }
+  }
+
   delete[] binArr;
   delete[] resYArr;
   delete[] resZArr;
   delete[] tgslArr;
   delete[] index;
   //
-  delete sectTree;
-  sectFile->Close(); // to reconsider: reuse the file
-  delete sectFile;
-  //
-  Smooth0(is);
-  //
   sw.Stop(); 
-  AliInfoF("Sector %2d | timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
+  AliInfoF("Sector %2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
   AliSysInfo::AddStamp("ProcSectRes",is,1,0,0);
   //
 }
@@ -1879,8 +1936,9 @@ void AliTPCDcalibRes::WriteResTree()
   resTree->Branch("res", &voxRes);
   for (int i=0;i<kVoxDim;i++) {
     resTree->SetAlias(kVoxName[i],Form("bvox[%d]",i));
-    resTree->SetAlias(Form("%sAV",kVoxName[i]),Form("stat[%d]",i));
+    resTree->SetAlias(Form("%sAV",kVoxName[kVoxV]),Form("stat[%d]",kVoxV));
   }
+  resTree->SetAlias(Form("%sAV",kVoxName[kVox]),Form("stat[%d]",i));
   for (int i=0;i<kResDim;i++) {
     resTree->SetAlias(kResName[i],Form("D[%d]",i));
     resTree->SetAlias(Form("%sE",kResName[i]),Form("E[%d]",i));

@@ -32,6 +32,8 @@
 #include "AliTPCChebCorr.h"
 
 
+#define kMaxResid  10.0f    
+#define kMaxTgSlp  2.0f
 
 class AliTPCDcalibRes: public TNamed
 {
@@ -373,8 +375,8 @@ protected:
   //
   static const float kSecDPhi;
   static const float kMaxQ2Pt;
-  static const float kMaxTgSlp;
-  static const float kMaxResid; // max allowed residual  
+  //  static const float kMaxTgSlp;
+  //  static const float kMaxResid; // max allowed residual  
   static const float kMinX;   // min X to cover
   static const float kMaxX;   // max X to cover
   static const float kMaxZ2X;   // max z/x
