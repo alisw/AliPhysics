@@ -47,6 +47,7 @@
 #include "TUUID.h"
 #include "TTree.h"
 #include "TChain.h"
+#include "TStopwatch.h"
 #include "AliTPCPerformanceSummary.h"
 #include "TSystem.h"
 #include "AliPerformanceTPC.h"
@@ -160,6 +161,8 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   fUseSparse = useSparse;
+  rtime = 0;
+  revent = 0;
   Init();
 }
 
@@ -578,6 +581,10 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     Error("Exec","vEvent not available");
     return;
   }
+
+    TStopwatch Watch;
+    Watch.Start();
+
     
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -739,6 +746,11 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
   else FillEventHistogram(vTPCEvent);
   
+    rtime +=Watch.RealTime()*1000;
+    revent++;
+    cout<<"For event "<<revent<<"TPC Event processing time "<<rtime/revent<<endl;
+    Watch.Stop();
+
 }
 
 
