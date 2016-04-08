@@ -807,9 +807,9 @@ void AliAnalysisTaskEmcal::ExecOnce()
   LoadPythiaInfo(InputEvent());
 
   if (fNeedEmcalGeom) {
-    fGeom = AliEMCALGeometry::GetInstance();
+    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
-      AliError(Form("%s: Can not create geometry", GetName()));
+      AliFatal(Form("%s: Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kFALSE).", GetName()));
       return;
     }
   }
