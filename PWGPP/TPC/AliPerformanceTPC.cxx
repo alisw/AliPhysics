@@ -163,7 +163,6 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   fUseSparse = useSparse;
   rtime = 0;
   revent = 0;
->>>>>>> rebase with master
   Init();
 }
 
@@ -757,7 +756,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
   else FillEventHistogram(vTPCEvent);
   
->>>>>>> rebase with master
 }
 
 
