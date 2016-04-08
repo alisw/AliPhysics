@@ -585,6 +585,10 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     TStopwatch Watch;
     Watch.Start();
 
+<<<<<<< 78b6a213d3cdaea9af86d895edd1f71d8c99ff7a
+=======
+    
+>>>>>>> More pointer protection
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
@@ -756,7 +760,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
   else FillEventHistogram(vTPCEvent);
   
->>>>>>> rebase with master
 }
 
 
