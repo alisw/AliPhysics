@@ -1,5 +1,7 @@
 #include "AliTPCDcalibRes.h"
 
+using std::swap;
+
 // this must be standalone f-n, since the signature is important for Chebyshev training
 void trainCorr(int row, float* tzLoc, float* corrLoc);
 
