@@ -36,6 +36,7 @@ ClassImp(AliAnalysisTaskMaterialHistos)
 
 AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTaskSE(),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fConversionCutArray(NULL),
 	fEventCutArray(NULL),
@@ -128,6 +129,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 //________________________________________________________________________
 AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) : AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fConversionCutArray(NULL),
 	fEventCutArray(NULL),
@@ -544,7 +546,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	}
 	
 	
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
 		if (fV0Reader->GetV0FindingEfficiencyHistograms())
 			fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
