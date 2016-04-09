@@ -906,6 +906,9 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
       for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
 	int binGlo = GetVoxGBin(ix,ip,iz);
 	bres_t &resVox = sectData[binGlo];
+	resVox.bvox[kVoxX] = ix;
+	resVox.bvox[kVoxF] = ip;
+	resVox.bvox[kVoxZ] = iz;	
 	resVox.bsec = is;
 	GetVoxelCoordinates(resVox.bsec,resVox.bvox[kVoxX],resVox.bvox[kVoxF],resVox.bvox[kVoxZ],
 			    resVox.stat[kVoxX],resVox.stat[kVoxF],resVox.stat[kVoxZ]);
@@ -1060,18 +1063,14 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,0.9);
   if (!indY) return;
   // rearrange used events in increasing order
-  for (int i=0;i<np;i++) {
-    int ip = index[i];
-    if (i!=ip) {
-      swap(dy[i],dy[ip]);
-      swap(tg[i],tg[ip]);      
-    }
-  }
-  int npuse = TMath::NInt(yres[0]);
-  int offs =  TMath::NInt(yres[5]);
+  TStatToolkit::Reorder(np,dy,indY);
+  TStatToolkit::Reorder(np,tg,indY);
+  //
+  int npuse = TMath::Nint(yres[0]);
+  int offs =  TMath::Nint(yres[5]);
   // use only entries selected by LTM for the fit
   AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
-  if (err[0]>fMaxFitYErr2 || err[1]>fMaxFitXErr2) return;
+  if (err[0]>fMaxFitYErr2 || err[2]>fMaxFitXErr2) return;
   //printf("N:%3d A:%+e B:%+e / %+e %+e %+e | %+e %+e / %+e %+e\n",np,a,b,err[0],err[1],err[2], zres[1],zres[2], zres[3],zres[4]);
   //
   voxRes.D[kResX] = -b;
