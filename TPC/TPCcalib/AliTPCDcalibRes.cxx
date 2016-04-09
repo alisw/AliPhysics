@@ -93,7 +93,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxRejFrac(0.15)
   ,fFilterOutliers(kTRUE) 
   ,fMaxFitYErr2(1.0)
-  ,fMaxFitXErr2(1.0)
+  ,fMaxFitXErr2(1.5)
   ,fNY2XBins(15)
   ,fNZ2XBins(10)
   ,fNXBins(-1)
@@ -1062,16 +1062,33 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   TVectorF zres(7),yres(7);
   if (!TStatToolkit::LTMUnbinned(np,dz,zres,0.8)) return; 
   //
-  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,0.9);
+  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,0.95);
   if (!indY) return;
   // rearrange used events in increasing order
   TStatToolkit::Reorder(np,dy,indY);
   TStatToolkit::Reorder(np,tg,indY);
   //
+  // 1st fit to get crude slope
   int npuse = TMath::Nint(yres[0]);
   int offs =  TMath::Nint(yres[5]);
   // use only entries selected by LTM for the fit
   AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
+  float yc[np],ycm[np];
+  for (int i=np;i--;) yc[i] = dy[i]-(a*b*tg[i]);
+  memcpy(ycm,yc,np*sizeof(float));
+  //
+  // robust estimate of sigma after crude slope correction
+  float sigMAD = AliTPCDcalibRes::MAD2Sigma(np,ycm);
+  // find LTM estimate matching to sigMAD, keaping at least given fraction
+  indY = LTMUnbinnedSig(np, ycm, yres, sigMAD,0.7);
+  if (!indY) return;
+  // final fit
+  TStatToolkit::Reorder(np,dy,indY);
+  TStatToolkit::Reorder(np,tg,indY);
+  npuse = TMath::Nint(yres[0]);
+  offs =  TMath::Nint(yres[5]);
+  AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
+
   if (err[0]>fMaxFitYErr2 || err[2]>fMaxFitXErr2) return;
   //printf("N:%3d A:%+e B:%+e / %+e %+e %+e | %+e %+e / %+e %+e\n",np,a,b,err[0],err[1],err[2], zres[1],zres[2], zres[3],zres[4]);
   //
@@ -1654,19 +1671,104 @@ int AliTPCDcalibRes::DiffToMedLine(int np, const float* x, const float *y, const
   return nAcc;
 }
 
+//_________________________________________________________
+Int_t* AliTPCDcalibRes::LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac)
+{
+  //
+  // LTM : Trimmed keeping at most minFrac of unbinned array to reach targer sigma
+  // 
+  // Robust statistic to estimate properties of the distribution
+  // To handle binning error special treatment
+  // for definition of unbinned data see:
+  //     http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  //
+  // Function parameters:
+  //     np      - number of points in the array
+  //     arr     - data array (unsorted)
+  //     params  - vector with parameters
+  //             - 0 - area
+  //             - 1 - mean
+  //             - 2 - rms 
+  //             - 3 - error estimate of mean
+  //             - 4 - error estimate of RMS
+  //             - 5 - first accepted element (of sorted array)
+  //             - 6 - last accepted  element (of sorted array)
+  //
+  // On success returns index of sorted events 
+  //
+  static int *index = 0, book = 0;
+  static double* w = 0;
+  params[0] = 0.0f;
+  if (book<np) {
+    delete[] index;
+    book = np;
+    index = new int[book];
+    delete[] w;
+    w = new double[book+book];
+  }
+  //
+  double *wx1 = w, *wx2 = wx1+np;
+  TMath::Sort(np,arr,index,kFALSE); // sort in increasing order
+  // build cumulants
+  double sum1=0.0,sum2=0.0;
+  for (int i=0;i<np;i++) {
+    double x = arr[index[i]];
+    wx1[i] = (sum1+=x);
+    wx2[i] = (sum2+=x*x);
+  }
+  //
+  int keepMax = np;
+  int keepMin = minFrac*np;
+  if (keepMin>keepMax) keepMin = keepMax;
+  //
+  float sig2Tgt = sigTgt*sigTgt;
+  while (1) {
+    double minRMS = sum2+1e6;
+    int keepN = (keepMax+keepMin)>>1;
+    if (keepN<2) return 0;
+    //
+    params[0] = keepN;
+    int limI = np - keepN+1;
+    for (int i=0;i<limI;i++) {
+      int limJ = i+keepN-1;
+      Double_t sum1 = wx1[limJ] - (i ? wx1[i-1] : 0.0);
+      Double_t sum2 = wx2[limJ] - (i ? wx2[i-1] : 0.0);
+      double mean = sum1/keepN;
+      double rms2 = sum2/keepN - mean*mean;
+      if (rms2>minRMS) continue;
+      minRMS = rms2;
+      params[1] = mean;
+      params[2] = rms2;
+      params[5] = i;
+      params[6] = limJ;
+    }
+    if (minRMS<sig2Tgt) keepMin = keepN;
+    else                keepMax = keepN;
+    if (keepMin>=keepMax-1) break;
+  }
+  //
+  if (!params[0]) return 0;
+  params[2] = TMath::Sqrt(params[2]);
+  params[3] = params[2]/TMath::Sqrt(params[0]); // error on mean
+  params[4] = params[3]/TMath::Sqrt(2.0); // error on RMS
+  return index;
+}
+
 //___________________________________________________________________
 float AliTPCDcalibRes::MAD2Sigma(int np, float* y)
 {
   // Sigma calculated from median absolute deviations, https://en.wikipedia.org/wiki/Median_absolute_deviation
-  // the input array is modified
+  // the input array is not modified
   if (np<2) return 0;
   int nph = np>>1;
   if (nph&0x1) nph -= 1;
-  float median = (np&0x1) ? SelKthMin(nph,np,y) : 0.5f*(SelKthMin(nph-1,np,y)+SelKthMin(nph,np,y));
+  float yc[np]; 
+  memcpy(yc,y,np*sizeof(float));
+  float median = (np&0x1) ? SelKthMin(nph,np,yc) : 0.5f*(SelKthMin(nph-1,np,yc)+SelKthMin(nph,np,yc));
   // build abs differences to median
-  for (int i=np;i--;) y[i] = TMath::Abs(y[i]-median);
+  for (int i=np;i--;) yc[i] = TMath::Abs(yc[i]-median);
   // now get median of abs deviations
-  median = (np&0x1) ? SelKthMin(nph,np,y) : 0.5f*(SelKthMin(nph-1,np,y)+SelKthMin(nph,np,y));
+  median = (np&0x1) ? SelKthMin(nph,np,yc) : 0.5f*(SelKthMin(nph-1,np,yc)+SelKthMin(nph,np,yc));
   return median*1.4826; // convert to Gaussian sigma
 }
 

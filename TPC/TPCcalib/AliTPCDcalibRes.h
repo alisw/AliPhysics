@@ -142,6 +142,7 @@ class AliTPCDcalibRes: public TNamed
  static float   RoFunc(int np, const float* x, const float* y, float b, float &aa);
  static Float_t SelKthMin(int k, int np, float* arr);
  static void    medFit(int np, const float* x, const float* y, float &a, float &b, float *err=0, float delI=0.f);
+ static Int_t*  LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac=0.7);
  static Float_t MAD2Sigma(int np, float* y);
  static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
  static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);
@@ -219,7 +220,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetFilterOutliers(Bool_t v=kTRUE)     {fFilterOutliers = v;}
 
   void     SetMaxFitYErr2(float v=1.0)           {fMaxFitYErr2 = v;}
-  void     SetMaxFitXErr2(float v=1.0)           {fMaxFitXErr2 = v;}
+  void     SetMaxFitXErr2(float v=1.5)           {fMaxFitXErr2 = v;}
 
   Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
   Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
