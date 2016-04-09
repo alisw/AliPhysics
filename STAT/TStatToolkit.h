@@ -68,6 +68,7 @@ namespace TStatToolkit
   template <typename T> Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
   template <typename T> Int_t*  LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep=1.0);
 
+  template <typename T> void Reorder(int np, T *arr, const int *idx);
   //
   template <typename T> 
   void LTM(TH1 * his, TVectorT<T> *param=0 , Float_t fraction=1,  Bool_t verbose=kFALSE);
@@ -683,6 +684,15 @@ Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
   params[3] = params[2]/TMath::Sqrt(params[0]); // error on mean
   params[4] = params[3]/TMath::Sqrt(2.0); // error on RMS
   return index;
+}
+
+template <typename T> 
+void TStatToolkit::Reorder(int np, T *arr, const int *idx)
+{
+  // rearange arr in order given by idx
+  T arrc[np];
+  memcpy(arrc,arr,np*sizeof(T));
+  for (int i=np;i--;) arr[i] = arrc[idx[i]];
 }
 
 #endif
