@@ -12,7 +12,7 @@
 // If you have any comment or question of this code,
 // Please send a mail to Bong-Hwi or Jihye
 //
-// Last update: 2016.03.31 (blim)
+// Last update: 2016.04.09 (blim)
 //
 //#include <Riostream.h>
 #include <iostream>
@@ -81,7 +81,7 @@ runNumber(0),fvertZ(0),fvertX(0),fvertY(0),fvertTPCZ(0),fvertTPCX(0),fvertTPCY(0
     DefineOutput(2, TList::Class()); //add new line for both result 2015.08.20. (blim)
     DefineOutput(0, TTree::Class()); //add new line for Tree result 2016.01.29. (blim)
     
-    if(fUseTree==kTRUE) DefineOutput(3, TTree::Class());
+    if(fUseTree==kTRUE) DefineOutput(0, TTree::Class());
     
     
 }
@@ -98,7 +98,7 @@ void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
         AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
         
         if (esdH) {
-             fESD = dynamic_cast<AliESDEvent*> (InputEvent());
+             fESD = esdH->GetEvent();
             if(fESD) {
                 fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
                 if (!fESDfriend){
@@ -169,7 +169,7 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
     fTreeTrack->Branch("BGFlagC",&BGFlagC,"BGFlagC[nbunch]/I"); // V0C BG flag for PF protection
     fTreeTrack->Branch("BBFlagA",&BBFlagA,"BBFlagA[nbunch]/I"); // V0A BG flag for PF protection
     fTreeTrack->Branch("BBFlagC",&BBFlagC,"BBFlagC[nbunch]/I"); // V0C BG flag for PF protection
-    if(fUseTree==kTRUE)PostData(3, fTreeTrack);
+    if(fUseTree==kTRUE)PostData(0, fTreeTrack);
     
     if(fList != NULL){
         delete fList;
@@ -1038,7 +1038,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     if(fUseTree==kTRUE)fTreeTrack->Fill();
     PostData(1, fList);
     PostData(2, fList2);
-    if(fUseTree==kTRUE)PostData(3, fTreeTrack);
+    if(fUseTree==kTRUE)PostData(0, fTreeTrack);
     fTreeTrack2->Fill();
     PostData(0, fTreeTrack2);
 }
