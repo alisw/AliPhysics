@@ -94,6 +94,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fPIDResponse(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fMaxR(200),
   fMinR(0),
   fEtaCut(0.9),
@@ -221,6 +222,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   AliAnalysisCuts(ref),
   fHistograms(NULL),
   fPIDResponse(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fMaxR(ref.fMaxR),
   fMinR(ref.fMinR),
   fEtaCut(ref.fEtaCut),
@@ -821,8 +823,8 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
     magField =  -1.0;
   }
   
-  AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative() );
-  AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive() );
+  AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative());
+  AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive());
   Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
   cutIndex++; //7
@@ -1397,7 +1399,7 @@ AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label){
 
   } else {
     AliVTrack * track = 0x0;
-    if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+    if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
       if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
       return track;
     }
