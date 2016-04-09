@@ -106,7 +106,7 @@ struct TObjectTitleComparator {
   }
 
   bool operator()(const TObject* left, const TObject* right) {
-    return strcmp(left->GetTitle(),right->GetTitle())<=0;
+    return strcmp(left->GetTitle(),right->GetTitle())<0;
   }
 };
 
@@ -116,7 +116,7 @@ struct TObjectNameComparator {
   }
 
   bool operator()(const TObject* left, const TObject* right) {
-    return strcmp(left->GetTitle(),right->GetTitle())<=0;
+    return strcmp(left->GetTitle(),right->GetTitle())<0;
   }
 };
 
