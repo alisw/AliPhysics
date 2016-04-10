@@ -66,6 +66,19 @@ set(SRCS
     AliHLTObjectRenamer.cxx
    )
 
+if(ZEROMQ_FOUND) 
+  include_directories(
+                      ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
+                      ${AliRoot_SOURCE_DIR}/HLT/global
+                      ${ZEROMQ_INCLUDE_DIR}
+                      )
+
+  set(SRCS
+      ${SRCS}
+      AliZMQhistViewer.cxx
+     )
+endif(ZEROMQ_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 

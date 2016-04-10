@@ -35,6 +35,7 @@
 #pragma link C++ class AliHLTCorruptorComponent+;
 #pragma link C++ class AliHLTESDTrackCuts+;
 #pragma link C++ class AliHLTObjectRenamer+;
+#pragma link C++ class AliZMQhistViewer;
 
 #endif // __CINT__
 //
