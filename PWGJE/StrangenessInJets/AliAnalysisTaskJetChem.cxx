@@ -2429,7 +2429,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1IMALaConeSmear);
     fCommonHistList->Add(fh2MC2K0Cone);
     fCommonHistList->Add(fh2MC2LaCone);
-    fCommonHistList->Add(fh2MC2LaCone);
+    fCommonHistList->Add(fh2MC2ALaCone);
     /* fCommonHistList->Add(fhnrecMCHijingLaIncl);
     fCommonHistList->Add(fhnrecMCHijingLaCone);
     fCommonHistList->Add(fhnrecMCHijingALaIncl);
