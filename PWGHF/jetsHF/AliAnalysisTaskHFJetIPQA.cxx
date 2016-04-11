@@ -8,10 +8,11 @@
 
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
-
+#include "AliAnalysisUtils.h"
 #include "TParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
 
 #include "AliAODMCHeader.h"
@@ -350,7 +351,8 @@ fh2dJetSignedImpParXYZSignificancebThird_electron(0x0),
 fh2dJetSignedImpParXYZSignificancecThird_electron(0x0),
 fMCArray(0x0),
 fMCEvent(0x0),
-fESDTrackCut(0x0)
+fESDTrackCut(0x0),
+fUtils(new AliAnalysisUtils())
 {
 	for(int i =0 ; i<498;++i){
 		for(int j =0 ; j<16;++j){
@@ -676,6 +678,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysi
 		fMCArray(0x0),
 		fMCEvent(0x0),
 		fESDTrackCut(0x0)
+		, fUtils(new AliAnalysisUtils())
 {
 
 	for(int i =0 ; i<498;++i){
@@ -1380,11 +1383,110 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run()
 	return kTRUE;
 }
 
+
+Bool_t AliAnalysisTaskHFJetIPQA::IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits){
+	WhyRejected =0;
+	Int_t fMinVtxContr=1;
+	Int_t fMinVtxType=3;
+	Bool_t accept=kTRUE;
+	Int_t fMinContrPileup = 5;
+	Float_t fMinDzPileup = 0.8;
+	Double_t fMaxVtxZ = 10;
+	RejectionBits=0;
+	//Physics Selection Cut
+
+	    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+	    if(!isSelected) {
+	      if(accept) WhyRejected=7;
+	      RejectionBits+=1<<kPhysicsSelection;
+	      accept=kFALSE;
+	    }
+
+	    // vertex requirements
+	    const AliVVertex *vertex = event->GetPrimaryVertex();
+
+
+	    if(!vertex || vertex->GetNContributors() ==0){
+	      accept=kFALSE;
+	      if(!vertex)
+	    	   RejectionBits+=1<<kNoVertex;
+	      else {
+	    	    RejectionBits+=1<<kNoContributors;
+	      }
+	    }else{
+	    	const AliVVertex* trkVtx = dynamic_cast<const AliVVertex*>(event->GetPrimaryVertex());
+	    	const AliVVertex* spdVtx = dynamic_cast<const AliVVertex*>(event->GetPrimaryVertexSPD());
+	    	TString vtxTtl = trkVtx->GetTitle();
+	    	if(!vtxTtl.Contains("VertexerTracks"))
+	    	{
+	    		  accept=kFALSE;
+	    		  RejectionBits+=1<<kNoVertexTracks;
+
+	    	}
+	    	if(trkVtx->GetNContributors()<2)	{
+	    	    		 accept=kFALSE;
+	    	    		 RejectionBits+=1<<kTooFewVtxContrib;
+	    	    	}
+	    	Double_t cov[6] = { 0 };
+	    	spdVtx->GetCovarianceMatrix(cov);
+	    	Double_t zRes = TMath::Sqrt(cov[5]);
+	    	if(spdVtx->IsFromVertexerZ() && (zRes > 0.25)) {
+	    		  accept=kFALSE;
+	    		  RejectionBits+=1<<kVertexZResolution;
+	    	}
+
+	    	if((TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)) {
+	  		  accept=kFALSE;
+	  		  RejectionBits+=1<<kDeltaVertexZ;
+	    	}
+	    	if(spdVtx->GetNContributors() <1) {
+	    		 accept=kFALSE;
+	    		RejectionBits+=1<<kVertexZContrib;
+	    	}
+
+	    	 if(TMath::Abs(trkVtx->GetZ())>=fMaxVtxZ) {
+	    		        RejectionBits+=1<<kZVtxOutFid;
+	    		        if(accept) WhyRejected=6;
+	    		        accept=kFALSE;
+	    	 }
+	    }
+//Pileup
+	        Int_t cutc=(Int_t)fMinContrPileup;
+	        Double_t cutz=(Double_t)fMinDzPileup;
+	        if(event->IsPileupFromSPD(5, 0.8, 3.0, 2.0, 5.0)) {
+	          if(accept) WhyRejected=1;
+	          RejectionBits+=1<<kPileupSPD;
+	          accept=kFALSE;
+	        }
+//Special out-of bunch pileup cuts
+	    	// SPD Cluster vs Tracklet plot to estimate pileup effect
+	    	Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
+	    	Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
+	    	Int_t nTracklets = event->GetMultiplicity()->GetNumberOfTracklets();
+			if(nClustersLayer0 + nClustersLayer1 > 65 + 4 * nTracklets){
+				 accept=kFALSE;
+				RejectionBits+=1<<kSPDClusterCut;
+			}
+			if(fUtils->IsPileUpMV(event)){
+
+				 accept=kFALSE;
+				RejectionBits+=1<<kMVPileup;
+			}
+
+
+
+
+return accept;
+}
+
 // ######################################################################################## Event Selection
 Bool_t AliAnalysisTaskHFJetIPQA::IsEventSelected()	{
-	//		Printf("%s:%i",__FUNCTION__,__LINE__);
-
 	AliAODEvent* aev = NULL;
+
+	Int_t WhyRejected =0;
+	ULong_t RejectionBits=0;
+
+
 	if(!fESD)
 	{
 		aev = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -1394,15 +1496,44 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsEventSelected()	{
 			double vtxy = aev->GetPrimaryVertex()->GetY();
 			fh1dVertexR->Fill(vtxx,vtxy);
 		}else return kFALSE;
-		if(!(fJetCutsHF->IsEventSelected(aev)))
+
+/*
+ *
+ * fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(1,"Accepted");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(2,"Rejected");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(3,"DueToPhysicsSelection");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(4,"DueCentralitySelection");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(5,"ZVertexOutsideFiducialRegion");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(6,"IsEventRejectedDueToNotRecoVertex");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(7,"IsEventRejectedDueToVertexContributors");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(8,"DueToTrigger");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(9,"DueToSPDTrackletClusterCut");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(10,"DueToMVPileup");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(11,"NoVertexTracks");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(12,"NoContributors");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(13,"DeltaVertexZSPDTracks");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(14,"ZVertexResolution");
+
+ */
+		if(!(IsSelected(aev,WhyRejected,RejectionBits)))
 		{
+
 			fh1dEventRejectionRDHFCuts->SetBinContent(2,fh1dEventRejectionRDHFCuts->GetBinContent(2)+1);
-			if(fJetCutsHF->IsEventRejectedDueToNotRecoVertex())fh1dEventRejectionRDHFCuts->SetBinContent(6,fh1dEventRejectionRDHFCuts->GetBinContent(6)+1);
-			else if(fJetCutsHF->IsEventRejectedDuePhysicsSelection())fh1dEventRejectionRDHFCuts->SetBinContent(3,fh1dEventRejectionRDHFCuts->GetBinContent(3)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToCentrality())fh1dEventRejectionRDHFCuts->SetBinContent(4,fh1dEventRejectionRDHFCuts->GetBinContent(4)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToVertexContributors())fh1dEventRejectionRDHFCuts->SetBinContent(7,fh1dEventRejectionRDHFCuts->GetBinContent(7)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToZVertexOutsideFiducialRegion())fh1dEventRejectionRDHFCuts->SetBinContent(5,fh1dEventRejectionRDHFCuts->GetBinContent(5)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToTrigger())fh1dEventRejectionRDHFCuts->SetBinContent(8,fh1dEventRejectionRDHFCuts->GetBinContent(8)+1);
+			if(RejectionBits&(1<<kPhysicsSelection))fh1dEventRejectionRDHFCuts->SetBinContent(3,fh1dEventRejectionRDHFCuts->GetBinContent(3)+1);
+			else if(RejectionBits&(1<<kNoVertex))fh1dEventRejectionRDHFCuts->SetBinContent(6,fh1dEventRejectionRDHFCuts->GetBinContent(6)+1);
+			else if(RejectionBits&(1<<kNoVertexTracks))fh1dEventRejectionRDHFCuts->SetBinContent(11,fh1dEventRejectionRDHFCuts->GetBinContent(11)+1);
+			else if(RejectionBits&(1<<kNoContributors))fh1dEventRejectionRDHFCuts->SetBinContent(12,fh1dEventRejectionRDHFCuts->GetBinContent(12)+1);
+			else if(RejectionBits&(1<<kTooFewVtxContrib))fh1dEventRejectionRDHFCuts->SetBinContent(7,fh1dEventRejectionRDHFCuts->GetBinContent(7)+1);
+			else if(RejectionBits&(1<<kVertexZContrib))fh1dEventRejectionRDHFCuts->SetBinContent(15,fh1dEventRejectionRDHFCuts->GetBinContent(15)+1);
+			else if(RejectionBits&(1<<kVertexZResolution))fh1dEventRejectionRDHFCuts->SetBinContent(14,fh1dEventRejectionRDHFCuts->GetBinContent(14)+1);
+			else if(RejectionBits&(1<<kDeltaVertexZ))fh1dEventRejectionRDHFCuts->SetBinContent(13,fh1dEventRejectionRDHFCuts->GetBinContent(13)+1);
+			else if(RejectionBits&(1<<kZVtxOutFid))fh1dEventRejectionRDHFCuts->SetBinContent(5,fh1dEventRejectionRDHFCuts->GetBinContent(5)+1);
+			else if(RejectionBits&(1<<kOutsideCentrality))fh1dEventRejectionRDHFCuts->SetBinContent(4,fh1dEventRejectionRDHFCuts->GetBinContent(4)+1);
+			else if(RejectionBits&(1<<kNotSelTrigger))fh1dEventRejectionRDHFCuts->SetBinContent(8,fh1dEventRejectionRDHFCuts->GetBinContent(8)+1);
+			else if(RejectionBits&(1<<kSPDClusterCut))fh1dEventRejectionRDHFCuts->SetBinContent(9,fh1dEventRejectionRDHFCuts->GetBinContent(9)+1);
+			else if(RejectionBits&(1<<kMVPileup))fh1dEventRejectionRDHFCuts->SetBinContent(10,fh1dEventRejectionRDHFCuts->GetBinContent(10)+1);
+
+
 			return kFALSE;
 		}else {
 			fh1dEventRejectionRDHFCuts->SetBinContent(1,fh1dEventRejectionRDHFCuts->GetBinContent(1)+1);
@@ -1417,47 +1548,31 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsEventSelected()	{
 	AliESDEvent* eev = NULL;
 	if(fESD)
 	{
-		////		Printf("%s:%i",__FUNCTION__,__LINE__);
-
-
 		eev = dynamic_cast<AliESDEvent*>(InputEvent());
-		////		Printf("%s:%i",__FUNCTION__,__LINE__);
-
-
 		if(eev && eev->GetPrimaryVertex() && eev->GetPrimaryVertex()->GetNContributors()>0){
-			//		Printf("%s:%i",__FUNCTION__,__LINE__);
-
 			fh1dVertexZ->Fill(eev->GetPrimaryVertex()->GetZ());
-			//		Printf("%s:%i",__FUNCTION__,__LINE__);
-
 			double vtxx = eev->GetPrimaryVertex()->GetX();
-			//		Printf("%s:%i",__FUNCTION__,__LINE__);
-
 			double vtxy = eev->GetPrimaryVertex()->GetY();
 			fh1dVertexR->Fill(vtxx,vtxy);
-			////		Printf("%s:%i",__FUNCTION__,__LINE__);
-
-
 		}else return kFALSE;
-		////		Printf("%s:%i",__FUNCTION__,__LINE__);
 
-
-		if(!(fJetCutsHF->IsEventSelected(eev)))
+		if(!(IsSelected(eev,WhyRejected,RejectionBits)))
 		{
-			////		Printf("%s:%i",__FUNCTION__,__LINE__);
-
-
 			fh1dEventRejectionRDHFCuts->SetBinContent(2,fh1dEventRejectionRDHFCuts->GetBinContent(2)+1);
-			if(fJetCutsHF->IsEventRejectedDueToNotRecoVertex())fh1dEventRejectionRDHFCuts->SetBinContent(6,fh1dEventRejectionRDHFCuts->GetBinContent(6)+1);
-			else if(fJetCutsHF->IsEventRejectedDuePhysicsSelection())fh1dEventRejectionRDHFCuts->SetBinContent(3,fh1dEventRejectionRDHFCuts->GetBinContent(3)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToCentrality())fh1dEventRejectionRDHFCuts->SetBinContent(4,fh1dEventRejectionRDHFCuts->GetBinContent(4)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToVertexContributors())fh1dEventRejectionRDHFCuts->SetBinContent(7,fh1dEventRejectionRDHFCuts->GetBinContent(7)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToZVertexOutsideFiducialRegion())fh1dEventRejectionRDHFCuts->SetBinContent(5,fh1dEventRejectionRDHFCuts->GetBinContent(5)+1);
-			else if(fJetCutsHF->IsEventRejectedDueToTrigger())fh1dEventRejectionRDHFCuts->SetBinContent(8,fh1dEventRejectionRDHFCuts->GetBinContent(8)+1);
-			////		Printf("%s:%i",__FUNCTION__,__LINE__);
-
-
-			return kFALSE;
+					if(RejectionBits&(1<<kPhysicsSelection))fh1dEventRejectionRDHFCuts->SetBinContent(3,fh1dEventRejectionRDHFCuts->GetBinContent(3)+1);
+					else if(RejectionBits&(1<<kNoVertex))fh1dEventRejectionRDHFCuts->SetBinContent(6,fh1dEventRejectionRDHFCuts->GetBinContent(6)+1);
+					else if(RejectionBits&(1<<kNoVertexTracks))fh1dEventRejectionRDHFCuts->SetBinContent(11,fh1dEventRejectionRDHFCuts->GetBinContent(11)+1);
+					else if(RejectionBits&(1<<kNoContributors))fh1dEventRejectionRDHFCuts->SetBinContent(12,fh1dEventRejectionRDHFCuts->GetBinContent(12)+1);
+					else if(RejectionBits&(1<<kTooFewVtxContrib))fh1dEventRejectionRDHFCuts->SetBinContent(7,fh1dEventRejectionRDHFCuts->GetBinContent(7)+1);
+					else if(RejectionBits&(1<<kVertexZContrib))fh1dEventRejectionRDHFCuts->SetBinContent(15,fh1dEventRejectionRDHFCuts->GetBinContent(15)+1);
+					else if(RejectionBits&(1<<kVertexZResolution))fh1dEventRejectionRDHFCuts->SetBinContent(14,fh1dEventRejectionRDHFCuts->GetBinContent(14)+1);
+					else if(RejectionBits&(1<<kDeltaVertexZ))fh1dEventRejectionRDHFCuts->SetBinContent(13,fh1dEventRejectionRDHFCuts->GetBinContent(13)+1);
+					else if(RejectionBits&(1<<kZVtxOutFid))fh1dEventRejectionRDHFCuts->SetBinContent(5,fh1dEventRejectionRDHFCuts->GetBinContent(5)+1);
+					else if(RejectionBits&(1<<kOutsideCentrality))fh1dEventRejectionRDHFCuts->SetBinContent(4,fh1dEventRejectionRDHFCuts->GetBinContent(4)+1);
+					else if(RejectionBits&(1<<kNotSelTrigger))fh1dEventRejectionRDHFCuts->SetBinContent(8,fh1dEventRejectionRDHFCuts->GetBinContent(8)+1);
+					else if(RejectionBits&(1<<kSPDClusterCut))fh1dEventRejectionRDHFCuts->SetBinContent(9,fh1dEventRejectionRDHFCuts->GetBinContent(9)+1);
+					else if(RejectionBits&(1<<kMVPileup))fh1dEventRejectionRDHFCuts->SetBinContent(10,fh1dEventRejectionRDHFCuts->GetBinContent(10)+1);
+					return kFALSE;
 		}else {
 			fh1dEventRejectionRDHFCuts->SetBinContent(1,fh1dEventRejectionRDHFCuts->GetBinContent(1)+1);
 			fh1dVertexZAccepted->Fill(eev->GetPrimaryVertex()->GetZ());
@@ -1465,9 +1580,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsEventSelected()	{
 			double vtxy = eev->GetPrimaryVertex()->GetY();
 			fh1dVertexRAccepted->Fill(vtxx,vtxy);
 			fh2dVertexChi2NDFNESDTracks->Fill(eev->GetPrimaryVertex()->GetChi2perNDF(),eev->GetNumberOfTracks());
-			////		Printf("%s:%i",__FUNCTION__,__LINE__);
-
-
 			return kTRUE;
 		}
 	}
@@ -1509,15 +1621,25 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 	fOutput->SetOwner(kTRUE);
 
 	//Event selection histograms
-	fh1dEventRejectionRDHFCuts = new TH1D("fh1dEventRejectionRDHFCuts;reason;count","Rejection reasons",8,0,8);
+	fh1dEventRejectionRDHFCuts = new TH1D("fh1dEventRejectionRDHFCuts;reason;count","Rejection reasons",15,0,15);
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(1,"Accepted");
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(2,"Rejected");
-	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(3,"PhysicsSelection");
-	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(4,"CentralitySelection");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(3,"DueToPhysicsSelection");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(4,"DueCentralitySelection");
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(5,"ZVertexOutsideFiducialRegion");
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(6,"IsEventRejectedDueToNotRecoVertex");
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(7,"IsEventRejectedDueToVertexContributors");
 	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(8,"DueToTrigger");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(9,"DueToSPDTrackletClusterCut");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(10,"DueToMVPileup");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(11,"NoVertexTracks");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(12,"NoContributorsVertexTracks");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(13,"DeltaVertexZSPDTracks");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(14,"ZVertexResolution");
+	fh1dEventRejectionRDHFCuts->GetXaxis()->SetBinLabel(15,"VertexZContributors");
+
+
+
 	//Vertex Z before and after
 	fh1dVertexZ = new TH1D("fh1dVertexZ","Vertex Z before Event selection;primary vertex z (cm);count",500,-30,30);
 	fh1dVertexZAccepted = new TH1D("fh1dVertexZAccepted","Vertex Z after Event selection;primary vertex z (cm);count",500,-30,30);
