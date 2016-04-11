@@ -387,28 +387,28 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   }
   else
   {
-    fAxes["nClustersSPD"].set( 100, 0., 500.,  &fnClustersSPD );
+    fAxes["nClustersSPD"].set( 100, 0., 800.,  &fnClustersSPD );
     fAxes["rawSizeSPD"].set( 100, 0., 10e3, &frawSizeSPD );
-    fAxes["nClustersSDD"].set( 100, 0., 500.,  &fnClustersSDD );
+    fAxes["nClustersSDD"].set( 100, 0., 1e3,  &fnClustersSDD );
     fAxes["rawSizeSDD"].set( 100, 0., 50e3, &frawSizeSDD );
-    fAxes["nClustersSSD"].set( 100, 0., 600.,  &fnClustersSSD );
-    fAxes["rawSizeSSD"].set( 100, 0., 8e3, &frawSizeSSD );
+    fAxes["nClustersSSD"].set( 100, 0., 1e3,  &fnClustersSSD );
+    fAxes["rawSizeSSD"].set( 100, 0., 100e3, &frawSizeSSD );
     fAxes["nClustersITS"].set( 100, 0., 10e3, &fnClustersITS );
     fAxes["rawSizeITS"].set( 100, 0., 100e3, &frawSizeITS );
     fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
     fAxes["rawSizeEMCAL"].set( 100, 0., 100e3, &frawSizeEMCAL );
     fAxes["rawSizeZDC"].set( 100, 0., 10e3, &frawSizeZDC );
-    fAxes["nClustersTPC"].set( 100, 0., 20e3, &fnClustersTPC );
-    fAxes["rawSizeTPC"].set( 100, 0., 5e6, &frawSizeTPC );
-    fAxes["hwcfSizeTPC"].set( 100, 0., 1., &fhwcfSizeTPC );
+    fAxes["nClustersTPC"].set( 100, 0., 1.8e6, &fnClustersTPC );
+    fAxes["rawSizeTPC"].set( 100, 0., 40e6, &frawSizeTPC );
+    fAxes["hwcfSizeTPC"].set( 100, 0., 40e6, &fhwcfSizeTPC );
     fAxes["clusterSizeTPCtransformed"].set( 100, 0., 1., &fclusterSizeTPCtransformed );
     fAxes["clusterSizeTPC"].set( 100, 0., 6500e3, &fclusterSizeTPC );
-    fAxes["compressedSizeTPC"].set( 100, 0., 1500e3, &fcompressedSizeTPC );
+    fAxes["compressedSizeTPC"].set( 100, 0., 10e6, &fcompressedSizeTPC );
     fAxes["nITSSAPtracks"].set( 100, 0., 100., &fnITSSAPtracks );
-    fAxes["nTPCtracklets"].set( 100, 0., 1e3, &fnTPCtracklets );
-    fAxes["nTPCtracks"].set( 100, 0., 700., &fnTPCtracks );
-    fAxes["nITSTracks"].set( 100, 0., 1., &fnITSTracks );
-    fAxes["nITSOutTracks"].set( 100, 0., 1., &fnITSOutTracks );
+    fAxes["nTPCtracklets"].set( 100, 0., 7e3, &fnTPCtracklets );
+    fAxes["nTPCtracks"].set( 100, 0., 5e3, &fnTPCtracks );
+    fAxes["nITSTracks"].set( 100, 0., 5e3, &fnITSTracks );
+    fAxes["nITSOutTracks"].set( 100, 5e3, 1., &fnITSOutTracks );
     fAxes["vZEROMultiplicity"].set( 100, 0., 40e3, &fvZEROMultiplicity );
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 2e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 2e3, &fvZEROTriggerChargeC );
@@ -427,8 +427,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nESDFriendSize"].set( 100, 0., 1., &fnESDFriendSize );
     fAxes["nFlatESDSize"].set( 100, 0., 1., &fnFlatESDSize );
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
-    fAxes["nHLTInSize"].set( 100, 0., 6e6, &fnHLTInSize );
-    fAxes["nHLTOutSize"].set( 100, 0., 2e6, &fnHLTOutSize );
+    fAxes["nHLTInSize"].set( 100, 0., 40e6, &fnHLTInSize );
+    fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
   }
 
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
