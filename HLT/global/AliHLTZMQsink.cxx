@@ -132,7 +132,7 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   }
   
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
-  HLTInfo(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",
+  HLTMessage(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",
                fZMQoutConfig.Data(),alizmq_socket_name(fZMQsocketType),
                fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
   
@@ -362,7 +362,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       char tmp[34];
       snprintf(tmp,34,"%i",GetRunNo()); 
       runNumberString+=tmp;
-      rc = alizmq_msg_add(&message, "INFO", runNumberString);
+      AliHLTDataTopic topic = kAliHLTDataTypeInfo;
+      rc = alizmq_msg_add(&message, &topic, runNumberString);
       if (rc<0) {
         HLTWarning("ZMQ error adding INFO");
       }
@@ -402,7 +403,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       doSendCDB = kFALSE;
     }
 
-    //send the selected blocks
+    //add the selected blocks
     for (int iSelectedBlock = 0;
          iSelectedBlock < selectedBlockIdx.size();
          iSelectedBlock++) 
@@ -414,7 +415,6 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       if (rc<0) {
         HLTWarning("ZMQ error adding block %s", blockTopic.Description().c_str());
       }
-      HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
 
     
@@ -428,9 +428,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       }
     }
     rc = alizmq_msg_send(&message, fZMQout, 0);
-    if (rc<0){ 
-      HLTWarning("ZMQ error sending message: %s", zmq_strerror(errno));
-    }
+    HLTMessage(Form("sent data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     alizmq_msg_close(&message);
   }
 
