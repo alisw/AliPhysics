@@ -115,6 +115,9 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDensityData.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
+    UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
+    UserTasks/AliAnalysisTaskChargedJetsHadronToy.cxx
+    UserTasks/AliAnalysisTaskEmcalJetExtractor.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
     UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
@@ -181,8 +184,6 @@ if(FASTJET_FOUND)
         AliJetEmbeddingFromAODTask.cxx
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
-        UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
-        UserTasks/AliAnalysisTaskEmcalJetExtractor.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullpAJets_Eli_Mod.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
