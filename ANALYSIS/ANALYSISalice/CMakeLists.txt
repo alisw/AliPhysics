@@ -44,6 +44,7 @@ set(SRCS
     AliAnalysisTaskTagCreator.cxx
     AliTrackSelectionFactory.cxx
     AliAODv0KineCuts.cxx
+    AliAODITSsaTrackCuts.cxx
     AliAODTrackSelection.cxx
     AliESDpidCuts.cxx
     AliESDtrackCuts.cxx
