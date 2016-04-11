@@ -263,9 +263,7 @@ template <class T>
 void AliAnalysisTaskEmcalJetTree<T>::AllocateTTree(const AliJetContainer* jets)
 {
   typename std::map<std::string,std::vector<T> >::iterator it = (fCurrentOutput->insert(std::pair<std::string,std::vector<T> >(jets->GetName(), std::vector<T>()))).first;
-  Printf("setting branch");
   fTree->Branch(jets->GetName(), &((*it).second));
-  Printf("branch is set");
 }
 
 /// Overloads base class method. Creates output objects
