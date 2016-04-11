@@ -452,9 +452,9 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 			}	
 		}
 	
-	
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
-        analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+        
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisEventCuts[i]->SetEtaShift(stringShift);
@@ -464,16 +464,12 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
-		
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
 		if( ! analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data()) ) {
 			cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
 			return 0;
 		}
-        analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-		
-		
-					
-		
+    
 		
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);

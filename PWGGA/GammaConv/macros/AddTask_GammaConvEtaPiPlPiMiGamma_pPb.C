@@ -195,8 +195,8 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i] = new AliConvEventCuts();   
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());    
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 

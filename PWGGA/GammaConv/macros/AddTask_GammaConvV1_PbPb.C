@@ -2010,8 +2010,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
       if (headerSelectionInt == 1) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
       if (headerSelectionInt == 2) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
@@ -2036,8 +2036,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
 
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
-    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);

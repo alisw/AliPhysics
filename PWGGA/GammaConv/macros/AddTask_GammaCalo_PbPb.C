@@ -292,15 +292,15 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]    = new AliConvEventCuts();   
-    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
     analysisClusterCuts[i]  = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
-    analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
