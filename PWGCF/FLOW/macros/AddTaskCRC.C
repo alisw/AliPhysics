@@ -75,7 +75,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
  Int_t CRC2nEtaBins=6;
-  Float_t MaxDevZN=10.,
+  Float_t MaxDevZN=10.;
   Bool_t bCalculateCME=kFALSE;
  
  // define CRC suffix
