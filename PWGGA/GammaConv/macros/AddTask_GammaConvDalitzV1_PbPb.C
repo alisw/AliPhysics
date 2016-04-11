@@ -223,21 +223,20 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
       if (i == 1 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
       if (i == 2 && doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
     }
-    
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);    
     if( ! analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data()) ) {
       cout<<"ERROR: analysisEventCuts [" <<i<<"]"<<endl;
       return 0;
     }
-    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     if( ! analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
       return 0;
     }      
-    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
     

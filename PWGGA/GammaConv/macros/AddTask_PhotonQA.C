@@ -109,13 +109,13 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   }   
 
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
-  analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
   analysisEventCuts->SetV0ReaderName(V0ReaderName);
+  analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
   analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
   AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
-  analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
   analysisCuts->SetV0ReaderName(V0ReaderName);
+  analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
   analysisCuts->SetFillCutHistograms("",kFALSE);
   
   AliAnalysisTaskConversionQA *fQA = new AliAnalysisTaskConversionQA(Form("%s_%s_QA",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()));

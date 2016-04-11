@@ -181,14 +181,14 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(),photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
     
     analysisEventCuts[i] = new AliConvEventCuts();
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
-    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
   

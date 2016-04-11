@@ -368,12 +368,11 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
         analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
       }
     }
-    
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);    
     if( ! analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data()) ){
       cout<<"ERROR: analysisEventCuts [ " << i <<" ] "<<endl;
       return 0;
     }
-    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
       
     if (doEtaShiftIndCuts) {
       analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
@@ -386,11 +385,11 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
       
     
     analysisCuts[i] = new AliConversionPhotonCuts();
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     if( ! analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data()) ) {
       cout<<"ERROR: analysisCuts [ " << i <<" ] "<<endl;
       return 0;
     }
-    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);	   

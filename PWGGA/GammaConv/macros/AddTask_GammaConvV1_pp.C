@@ -871,17 +871,17 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
-    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
-	
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     if (trainConfig > 106 && trainConfig < 115){
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
-        analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+        analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
         analysisClusterCuts[i]->SetFillCutHistograms("");   
     }  
@@ -890,8 +890,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     if (trainConfig == 76 ){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
-      analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
-      analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     
     if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
