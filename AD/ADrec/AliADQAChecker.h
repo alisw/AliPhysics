@@ -71,6 +71,8 @@ private:
   Float_t fTimeRatioBBZoomMax; //Max for Zoom time/BB ratio
   Float_t fTimeRatioBGZoomMin; //Min for Zoom time/BG ratio
   Float_t fTimeRatioBGZoomMax; //Max for Zoom time/BG ratio
+  Float_t fChargeTrendMin;
+  Float_t fChargeTrendMax;
   Float_t fMaxNoTimeRate; 
   Float_t fMaxNoFlagRate;
   Float_t fMaxBBVariation;
@@ -78,7 +80,7 @@ private:
   Float_t fAsynchronBB;
   Float_t fAsynchronBG; 
 
-  ClassDef(AliADQAChecker,5)  // description 
+  ClassDef(AliADQAChecker,6)  // description 
 
 };
 
