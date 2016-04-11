@@ -88,6 +88,7 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
       HLTDebug("Block %d received %d fastor triggers", ndx, triggerhead->fNfastor);
       for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
         fTriggerMakerPtr->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
+        fTriggerMakerPtr->SetL0Amplitude(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fAmplitude));
         fTriggerMakerPtr->SetBitMask(dataptr->fCol, dataptr->fRow, dataptr->fTriggerBits);
         dataptr++;
       }
@@ -161,7 +162,9 @@ int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   InitialiseGeometry();
   Float_t jetTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
   Float_t gammaTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
-  Float_t bkgTh[2] = {0};
+  Float_t bkgTh[2] = {0}, l0Th[2] = {0};
+  Int_t jetpatchsize = 16;
+  Bool_t runBkgAlgo = false;
   for(Int_t iarg = 0; iarg < argc; iarg++){
     TString argstring(argv[iarg]);
     if(argstring.Contains("-gammalowonthresh")){
@@ -180,17 +183,32 @@ int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
       jetTh[AliHLTEMCALTriggerMaker::kHighThreshold] = TString(argv[++iarg]).Atof();
     } else if(argstring.Contains("-jethighoffthresh")){
       jetTh[AliHLTEMCALTriggerMaker::kHighThreshold + AliHLTEMCALTriggerMaker::kNthresholds] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-runbkgalgo")){
+      runBkgAlgo = true;
     } else if(argstring.Contains("-bkgonthresh")){
       bkgTh[0] = TString(argv[++iarg]).Atof();
     } else if(argstring.Contains("-bkgoffthresh")){
       bkgTh[1] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-l0onthresh")){
+      l0Th[0] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-l0offthresh")){
+      l0Th[1] = TString(argv[++iarg]).Atof();
+    } else if(argstring.Contains("-jetpatchsize")){
+      jetpatchsize = TString(argv[++iarg]).Atoi();
     }
   }
+  if(runBkgAlgo)
+    HLTDebug("running jet background algorithm\n");
+  else
+    HLTDebug("do not run the jet background algorithm\n");
   fTriggerMakerPtr = new AliHLTEMCALTriggerMaker;
+  fTriggerMakerPtr->SetJetPatch(jetpatchsize, 4);
+  fTriggerMakerPtr->SetRunBkgAlgorithm(runBkgAlgo);
   for(UInt_t ithresh = AliHLTEMCALTriggerMaker::kHighThreshold; ithresh < AliHLTEMCALTriggerMaker::kNthresholds; ithresh++){
     fTriggerMakerPtr->SetGammaThresholds(AliHLTEMCALTriggerMaker::ThresholdType_t(ithresh), gammaTh[ithresh], gammaTh[ithresh + AliHLTEMCALTriggerMaker::kNthresholds]);
     fTriggerMakerPtr->SetJetThresholds(AliHLTEMCALTriggerMaker::ThresholdType_t(ithresh), jetTh[ithresh], jetTh[ithresh + AliHLTEMCALTriggerMaker::kNthresholds]);
   }
+  fTriggerMakerPtr->SetLevel0Thresholds(l0Th[0], l0Th[1]);
   fTriggerMakerPtr->SetBkgThresholds(bkgTh[0], bkgTh[1]);
   fTriggerMakerPtr->Initialise(fGeometry);
   return 0;
