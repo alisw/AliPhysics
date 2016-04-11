@@ -53,6 +53,11 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
     genP->SetTune(350);
     if(cr==0) genP->SetTune(354);
   }
+  if(tune == 3){ // tune Perugia2012 ('central' Perugia 2012)
+    genP->SetTune(370);
+    if(cr==0) genP->SetTune(375);
+  }
+
   genP->Print();
   return genP;
 }
