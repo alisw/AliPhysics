@@ -100,8 +100,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -116,6 +117,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
 		if(cutnumberEvent!=""){
 			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+            fEventCuts->SetV0ReaderName(V0ReaderName);
 			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
 				fV0ReaderV1->SetEventCuts(fEventCuts);
 				fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -128,6 +130,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
 			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
 			fCuts->SetIsHeavyIon(isHeavyIon);
+            fCuts->SetV0ReaderName(V0ReaderName);
 			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
@@ -184,6 +187,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
 
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
+    task->SetV0ReaderName(V0ReaderName);
 
     CutHandlerNeutralMixed cuts;
 	
@@ -302,10 +306,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();   
         analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+        analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
 		analysisCuts[i] = new AliConversionPhotonCuts();
+        analysisCuts[i]->SetV0ReaderName(V0ReaderName);
         if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetConversionCut(i)).Data()) ) {
 				cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
 				return 0;
@@ -315,6 +321,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
 		}
 
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
+        analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
         if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
 				cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
 				return 0;

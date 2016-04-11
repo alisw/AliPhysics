@@ -47,8 +47,9 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 		AddTaskPIDResponse(isMC);
 	}
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -64,6 +65,7 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 		if(V0ReaderEventCutNumber!=""){
 			fEventCuts= new AliConvEventCuts(V0ReaderEventCutNumber.Data(),V0ReaderEventCutNumber.Data());
 			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+            fEventCuts->SetV0ReaderName(V0ReaderName);
 			if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
 				fV0ReaderV1->SetEventCuts(fEventCuts);
 				fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -80,6 +82,7 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 			fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
 			fCuts->SetIsHeavyIon(IsHeavyIon);
+            fCuts->SetV0ReaderName(V0ReaderName);
 			if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
@@ -105,16 +108,19 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 
 	AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
 	analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
+    analysisEventCuts->SetV0ReaderName(V0ReaderName);
 	analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
 	AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
 	analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
+    analysisCuts->SetV0ReaderName(V0ReaderName);
 	analysisCuts->SetFillCutHistograms("",kFALSE);
 	
 	AliAnalysisTaskMaterial *fMaterial= new AliAnalysisTaskMaterial(Form("%s_%s_Material",(analysisEventCuts->GetCutNumber()).Data(),(analysisCuts->GetCutNumber()).Data()));
 	fMaterial->SetEventCuts(analysisEventCuts,IsHeavyIon);
 	fMaterial->SetConversionCuts(analysisCuts,IsHeavyIon);
 	fMaterial->SetIsMC(isMC);
+    fMaterial->SetV0ReaderName(V0ReaderName);
 	mgr->AddTask(fMaterial);
 	
 	AliAnalysisDataContainer *coutput1 =
