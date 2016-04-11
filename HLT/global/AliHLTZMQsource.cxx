@@ -45,6 +45,7 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fZMQrequestTimeout(1000)
   , fZMQneverBlock(kTRUE)
   , fForwardHLTinput(false)
+  , fOutputBufferSize(10000000)
 {
 }
 
@@ -91,7 +92,7 @@ AliHLTComponentDataType AliHLTZMQsource::GetOutputDataType()
 void AliHLTZMQsource::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   // overloaded from AliHLTComponent
-  constBase=1000000;
+  constBase=fOutputBufferSize;
   inputMultiplier=1.0;
 }
 
@@ -131,7 +132,7 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   rc = zmq_setsockopt(fZMQin, ZMQ_SUBSCRIBE, fMessageFilter.Data(), fMessageFilter.Length());
   
   HLTMessage(Form("socket create ptr %p %s",fZMQin,(rc<0)?zmq_strerror(errno):""));
-  HLTInfo(Form("ZMQ connected to: %s rc %i %s",fZMQinConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
+  HLTMessage(Form("ZMQ connected to: %s rc %i %s",fZMQinConfig.Data(),rc,(rc<0)?zmq_strerror(errno):""));
 
   return retCode;
 }
@@ -160,6 +161,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
   //if (!IsDataEvent()) return 0;
 
   //init internal
+  AliHLTUInt32_t initialOutputBufferCapacity = outputBufferSize;
   AliHLTUInt32_t outputBufferCapacity = outputBufferSize;
   outputBufferSize=0;
   int blockSize = 0;
@@ -231,7 +233,10 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
       //get (fill) the block data
       blockSize = zmq_recv(fZMQin, block, outputBufferCapacity, (fZMQneverBlock)?ZMQ_DONTWAIT:0);
       if (blockSize < 0 && errno == EAGAIN) break; //nothing on the socket
-      if (blockSize > outputBufferCapacity) {retCode = ENOSPC; break;}//no space for message
+      if (blockSize > outputBufferCapacity) {
+        HLTWarning("output buffer too small: %i", initialOutputBufferCapacity);
+        retCode = -ENOSPC; break;
+      }//no space for message
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     }
 
@@ -299,6 +304,10 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
       fZMQneverBlock = kFALSE;
     else if (value.EqualTo("1") || value.EqualTo("yes") || value.Contains("true",TString::kIgnoreCase) )
       fZMQneverBlock = kTRUE;
+  }
+  else if (option.EqualTo("OutputBufferSize"))
+  {
+    fOutputBufferSize = value.Atoi();
   }
   else if (option.EqualTo("forwardHLTinput"))
   {
