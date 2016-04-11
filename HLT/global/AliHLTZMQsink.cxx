@@ -49,8 +49,10 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQerrorMsgSkip(100)
   , fSendECSparamString(kFALSE)
   , fECSparamString()
+  , fECSparamMap()
   , fSendStreamerInfos(kFALSE)
   , fCDBpattern("^/*[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/*$")
+  , fInfoString()
 {
   //ctor
 }
@@ -124,18 +126,23 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   if (!fZMQcontext) return -1;
 
   //init ZMQ socket
-  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig.Data(), 0, 10 ); 
+  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig, 0, 10 ); 
   if (!fZMQout || rc<0) 
   {
-    HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.Data(),zmq_strerror(errno));
+    HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.c_str(),zmq_strerror(errno));
     return -1;
   }
   
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
   HLTMessage(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",
-               fZMQoutConfig.Data(),alizmq_socket_name(fZMQsocketType),
+               fZMQoutConfig.c_str(),alizmq_socket_name(fZMQsocketType),
                fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
   
+  //init a simple info string with just the run number
+  char tmp[34];
+  snprintf(tmp,34,"%i",GetRunNo()); 
+  fInfoString  = "run="; fInfoString += tmp;
+
   return retCode;
 }
 
@@ -269,13 +276,21 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         int ecsparamsize = inputBlock->fSize;
         if (ecsparamstr[ecsparamsize-1]!=0)
         {
-          fECSparamString.Insert(0, ecsparamstr, ecsparamsize);
+          fECSparamString.insert(0, ecsparamstr, ecsparamsize);
           fECSparamString += "";
         }
         else
         {
           fECSparamString = ecsparamstr;
         }
+        fECSparamMap = ParseParamString(fECSparamString);
+
+        int ecsRunNo = atoi(fECSparamMap["RUN_NUMBER"].c_str());
+        if (ecsRunNo != GetRunNo()) {
+          HLTWarning("Mismatch run from OCDB: %i and ECS: %i",GetRunNo(),ecsRunNo);
+        }
+        
+        fInfoString += ";HLT_MODE=" + fECSparamMap["HLT_MODE"];
         break;
       }
     }
@@ -358,12 +373,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     //only send the INFO block if there is some data to send
     if (fSendRunNumber && nSelectedBlocks>0)
     {
-      string runNumberString = "run=";
-      char tmp[34];
-      snprintf(tmp,34,"%i",GetRunNo()); 
-      runNumberString+=tmp;
-      AliHLTDataTopic topic = kAliHLTDataTypeInfo;
-      rc = alizmq_msg_add(&message, &topic, runNumberString);
+      rc = alizmq_msg_add(&message, "INFO", fInfoString);
       if (rc<0) {
         HLTWarning("ZMQ error adding INFO");
       }
@@ -374,7 +384,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     if ((fSendECSparamString && nSelectedBlocks>0) || doSendECSparamString)
     {
       AliHLTDataTopic topic = kAliHLTDataTypeECSParam;
-      rc = alizmq_msg_add(&message, &topic, fECSparamString.Data());
+      rc = alizmq_msg_add(&message, &topic, fECSparamString);
       if (rc<0) {
         HLTWarning("ZMQ error adding ECS param string");
       }
@@ -458,7 +468,7 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
         fZMQpollIn=kFALSE;
         break;
       default:
-        HLTFatal("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.Data());
+        HLTFatal("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.c_str());
         return -EINVAL;
     }
   }
