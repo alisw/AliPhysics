@@ -62,6 +62,7 @@ ClassImp( AliAnalysisTaskGammaConvDalitzV1 )
 //-----------------------------------------------------------------------------------------------
 AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fElecSelector(NULL),
 	fBGHandler(NULL),
 	fESDEvent(NULL),
@@ -281,6 +282,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* name ):
 	AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fElecSelector(NULL),
 	fBGHandler(NULL),
 	fESDEvent(NULL),
@@ -1504,7 +1506,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 	fVectorDoubleCountTrueEtas.clear();
 	fVectorDoubleCountTrueConvGammas.clear();
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 
@@ -1573,7 +1575,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 	// Execute analysis for current event
 	//
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 

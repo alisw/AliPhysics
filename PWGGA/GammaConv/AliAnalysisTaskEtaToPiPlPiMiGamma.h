@@ -37,7 +37,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		virtual Bool_t Notify();
 		virtual void Terminate(const Option_t *);
 
-			
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
 			
 		void SetIsHeavyIon(Int_t flag){
@@ -87,6 +87,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		
 
 		AliV0ReaderV1 					*fV0Reader;									//
+        TString                         fV0ReaderName;
 		AliPrimaryPionSelector			*fPionSelector;								//
 		AliGammaConversionAODBGHandler 	**fBGHandler;								//
 		AliESDEvent 					*fESDEvent;									//
@@ -182,7 +183,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 4 );
+        ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 5 );
 };
 
 #endif // ALIANALYSISTASKETATOPIPLPIMIGAMMA_H

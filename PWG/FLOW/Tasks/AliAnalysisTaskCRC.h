@@ -181,6 +181,10 @@ public:
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
  void SetQVecList(TList* const kList) {this->fQVecList = kList;};
  TList* GetQVecList() const {return this->fQVecList;};
+  void SetZDCESEList(TList* const kList) {this->fZDCESEList = kList;};
+  TList* GetZDCESEList() const {return this->fZDCESEList;};
+  void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
+  TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
  void SetnCenBin(Int_t const n) {this->fnCenBin = n;};
  Int_t GetnCenBin() const {return this->fnCenBin;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
@@ -285,6 +289,8 @@ private:
  TString fDataSet;
  TString fCorrWeight;
  TList *fQVecList;       // list with weights
+ TList *fCRCZDCCalibList; // ZDC calibration
+ TList *fZDCESEList;       // list with weights
  TH1D* fCenWeightsHist;
  TH1D* fPtWeightsHist[10];
  TH1D* fEtaWeightsHist[10][21][2];
@@ -293,7 +299,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 2);
+ ClassDef(AliAnalysisTaskCRC, 3);
 };
 
 //================================================================================================================

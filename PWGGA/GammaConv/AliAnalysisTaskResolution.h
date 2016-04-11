@@ -31,6 +31,7 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		virtual void   UserExec(Option_t *option);
 		virtual void   Terminate(Option_t *);
 
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
 		void SetConversionCuts(AliConversionPhotonCuts* conversionCuts,Int_t IsHeavyIon ){
 			fConversionCuts=conversionCuts;
@@ -49,6 +50,7 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		Int_t CountTracks09();
 
 		AliV0ReaderV1 *fV0Reader;
+        TString fV0ReaderName;
 		TClonesArray *fConversionGammas; //Reconstructed Photons;
 		AliConvEventCuts *fEventCuts; // Cuts used by the V0Reader
 		AliConversionPhotonCuts *fConversionCuts; // Cuts used by the V0Reader
@@ -74,7 +76,7 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		AliAnalysisTaskResolution& operator=(const AliAnalysisTaskResolution&); // not implemented
 
 
-	ClassDef(AliAnalysisTaskResolution, 2);
+    ClassDef(AliAnalysisTaskResolution, 3);
 };
 
 #endif

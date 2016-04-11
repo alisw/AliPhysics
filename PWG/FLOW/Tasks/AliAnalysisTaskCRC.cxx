@@ -111,6 +111,8 @@ fCenBinWidth(10.),
 fDataSet(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
+fCRCZDCCalibList(NULL),
+fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -240,6 +242,8 @@ fCenBinWidth(10.),
 fDataSet(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
+fCRCZDCCalibList(NULL),
+fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -371,9 +375,15 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
  }
  // Q Vector weights:
- if(fUseCRCRecenter || fRecenterZDC) {
+ if(fUseCRCRecenter) {
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
+  if (fRecenterZDC) {
+    if(fCRCZDCCalibList) fQC->SetCRCZDCCalibList(fCRCZDCCalibList);
+  }
+  if (fQAZDCCuts) {
+    if(fZDCESEList) fQC->SetZDCESEList(fZDCESEList);
+  }
   if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
   if(fUsePtWeights){
     for(Int_t c=0; c<10; c++) {

@@ -782,14 +782,14 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         fHistJetEtaPhiBC[i] = BookTH2F("fHistJetEtaPhiBC", "#eta", "#phi", 100, etaMin, etaMax, 100, phiMin, phiMax, i);
         fHistJetPtAreaBC[i] = BookTH2F("fHistJetPtAreaBC", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.3, i);
     }
-    fHistQxV0aBC = BookTH2F("fHistQxV0aBC", "Q_{x} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQyV0aBC = BookTH2F("fHistQyV0aBC", "Q_{y} V0A", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQxV0cBC = BookTH2F("fHistQxV0cBC", "Q_{x} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQyV0cBC = BookTH2F("fHistQyV0cBC", "Q_{y} V0C", "centrality class", 100, -400, 400, 9, .5, 9.5);
-    fHistQxV0a = BookTH2F("fHistQxV0a", "Q_{x} V0A", "centrality class", 100, -10, 10, 9, .5, 9.5);
-    fHistQyV0a = BookTH2F("fHistQyV0a", "Q_{y} V0A", "centrality class", 100, -10, 10, 9, .5, 9.5);
-    fHistQxV0c = BookTH2F("fHistQxV0c", "Q_{x} V0C", "centrality class", 100, -10, 10, 9, .5, 9.5);
-    fHistQyV0c = BookTH2F("fHistQyV0c", "Q_{y} V0C", "centrality class", 100, -10, 10, 9, .5, 9.5);
+    fHistQxV0aBC = BookTH2F("fHistQxV0aBC", "Q_{x} V0A", "centrality class", 100, -500, 500, 10, -.5, 9.5);
+    fHistQyV0aBC = BookTH2F("fHistQyV0aBC", "Q_{y} V0A", "centrality class", 100, -500, 500, 10, -.5, 9.5);
+    fHistQxV0cBC = BookTH2F("fHistQxV0cBC", "Q_{x} V0C", "centrality class", 100, -500, 500, 10, -.5, 9.5);
+    fHistQyV0cBC = BookTH2F("fHistQyV0cBC", "Q_{y} V0C", "centrality class", 100, -500, 500, 10, -.5, 9.5);
+    fHistQxV0a = BookTH2F("fHistQxV0a", "Q_{x} V0A", "centrality class", 100, -10, 10, 10, -.5, 9.5);
+    fHistQyV0a = BookTH2F("fHistQyV0a", "Q_{y} V0A", "centrality class", 100, -10, 10, 10, -.5, 9.5);
+    fHistQxV0c = BookTH2F("fHistQxV0c", "Q_{x} V0C", "centrality class", 100, -10, 10, 10, -.5, 9.5);
+    fHistQyV0c = BookTH2F("fHistQyV0c", "Q_{y} V0C", "centrality class", 100, -10, 10, 10, -.5, 9.5);
     fHistMultVsCellBC = BookTH2F("fHistMultVsCellBC", "channel", "multiplicty", 64, -.5, 63.5, 100, 0, 1000);
     fHistMultVsCell = BookTH2F("fHistMultVsCell", "channel", "multiplicty", 64, -.5, 63.5, 100, 0, 1000);
     fHistEPBC = BookTH1F("fHistEPBC", "#Psi_{EP, 2}, uncalibrated", 100, -0.5*TMath::Pi(), 0.5*TMath::Pi());
