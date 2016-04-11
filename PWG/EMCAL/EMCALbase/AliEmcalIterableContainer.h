@@ -74,7 +74,7 @@ public:
     iterator(const AliEmcalIterableContainer *cont, int currentpos, bool forward = true);
     iterator(const iterator &ref);
     iterator &operator=(const iterator &ref);
-    ~iterator(){}
+    virtual ~iterator(){}
 
     bool operator!=(const iterator &ref) const;
 
