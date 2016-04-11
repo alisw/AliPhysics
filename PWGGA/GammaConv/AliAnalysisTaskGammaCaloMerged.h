@@ -30,6 +30,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     virtual void   UserExec(Option_t *);
     virtual void   Terminate(const Option_t*);
 
+    void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;    
     }
@@ -86,6 +87,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
+    TString                 fV0ReaderName;
     AliVEvent*              fInputEvent;                                        // current event
     AliMCEvent*             fMCEvent;                                           // corresponding MC event
     AliStack*               fMCStack;                                           // stack belonging to MC event
@@ -227,7 +229,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 6);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 7);
 };
 
 #endif

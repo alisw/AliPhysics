@@ -119,8 +119,9 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -135,6 +136,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		if(cutnumberEvent!=""){
 			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+            fEventCuts->SetV0ReaderName(V0ReaderName);
 			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
 				fEventCuts->DoEtaShift(doEtaShift);
 				fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -148,6 +150,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
 			fCuts->SetIsHeavyIon(isHeavyIon);
+            fCuts->SetV0ReaderName(V0ReaderName);
 			if(trainConfig==193 || trainConfig==194 || trainConfig==195 || trainConfig==196){
 			  fCuts->SetDodEdxSigmaCut(kFALSE);
 			}
@@ -179,6 +182,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	task= new AliAnalysisTaskGammaConvV1(Form("GammaConvV1_%i",trainConfig));
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
+    task->SetV0ReaderName(V0ReaderName);
 	// Cut Numbers to use in Analysis
 	
 	CutHandlerConv cuts;
@@ -1362,6 +1366,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 
 		analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
+        analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisEventCuts[i]->SetEtaShift(stringShift);
@@ -1376,6 +1381,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
+        analysisCuts[i]->SetV0ReaderName(V0ReaderName);
 		if ((trainConfig == 193 || trainConfig == 194 || trainConfig == 195 || trainConfig == 196 )&& i==3 ) {
 		        analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
 		}

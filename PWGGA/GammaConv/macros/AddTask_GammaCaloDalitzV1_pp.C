@@ -61,9 +61,10 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
+    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
 	  
-		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -79,6 +80,7 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 		if(cutnumberEvent!=""){
 			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+            fEventCuts->SetV0ReaderName(V0ReaderName);
 			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
 				fEventCuts->DoEtaShift(doEtaShift);
 				fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -92,6 +94,7 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
 			fCuts->SetIsHeavyIon(isHeavyIon);
+            fCuts->SetV0ReaderName(V0ReaderName);
 			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
@@ -145,6 +148,7 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 	task= new AliAnalysisTaskGammaCaloDalitzV1(Form("GammaCaloDalitz_%i",trainConfig));
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
+    task->SetV0ReaderName(V0ReaderName);
 
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
@@ -253,17 +257,20 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+        analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
+        analysisCuts[i]->SetV0ReaderName(V0ReaderName);
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 	
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
+        analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
 		ClusterCutList->Add(analysisClusterCuts[i]);
 		analysisClusterCuts[i]->SetExtendedMatching(enableExtendedMatching);
 		analysisClusterCuts[i]->SetFillCutHistograms("");

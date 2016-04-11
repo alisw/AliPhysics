@@ -64,6 +64,7 @@ ClassImp(AliAnalysisTaskGammaCaloDalitzV1)
 //________________________________________________________________________
 AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(): AliAnalysisTaskSE(),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fElecSelector(NULL),
 	fBGClusHandler(NULL),
 	fInputEvent(NULL),
@@ -309,6 +310,7 @@ AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(): AliAnalysi
 AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(const char *name):
 	AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fElecSelector(NULL),
 	fBGClusHandler(NULL),
 	fInputEvent(NULL),
@@ -1654,7 +1656,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 	fVectorDoubleCountTrueEtas.clear();
 	fVectorDoubleCountTrueConvGammas.clear();
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
   
 	if(fV0Reader)
