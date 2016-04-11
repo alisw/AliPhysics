@@ -17,8 +17,12 @@ public:
 
   void Print(const Option_t * opt = "") const;
 
-  static AliNanoAODTrackMapping * GetInstance() {
-    if(!fInstance) LoadInstance() ;
+  static AliNanoAODTrackMapping * GetInstance(const char * vars = 0) {
+    if(!fInstance) {
+      if (vars) fInstance = new AliNanoAODTrackMapping(vars);
+      else LoadInstance() ;
+    }
+    
     return fInstance;
   }  
   
