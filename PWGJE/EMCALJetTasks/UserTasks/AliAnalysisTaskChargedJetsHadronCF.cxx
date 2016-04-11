@@ -435,7 +435,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 //########################################################################
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()
+void AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()
 {
   // Calculate leading + subleading jet
   fLeadingJet    = fJetsCont->GetLeadingJet("rho");

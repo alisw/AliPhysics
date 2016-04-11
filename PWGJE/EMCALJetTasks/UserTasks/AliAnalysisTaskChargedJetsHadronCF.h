@@ -89,7 +89,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // ######### HELPER FUNCTIONS
   Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
   AliEmcalJet*                GetSubleadingJet(const char* opt);
-  Bool_t                      CalculateEventProperties();
+  void                        CalculateEventProperties();
 
 
  private:
