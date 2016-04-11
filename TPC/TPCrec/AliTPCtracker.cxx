@@ -2059,7 +2059,7 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t idROC = cluster->GetDetector();
   transform->Transform(x,&idROC,0,1);
-  const float* clCorr = transform->GetLastMapCorrection();
+  const float* clCorr = transform->GetLastMapCorrection(); 
   const float* clCorrRef = transform->GetLastMapCorrectionRef();
   //
   cluster->SetDistortions(clCorr[0]-clCorrRef[0],
@@ -2075,14 +2075,25 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     cluster->GetGlobalXYZ(gx);
     Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
     TTreeSRedirector &cstream = *fDebugStreamer;
+    Int_t timeStamp=transform->GetCurrentTimeStamp();
+    float* nCclCorr = (float*)transform->GetLastMapCorrection();  
+    float* nCclCorrRef = (float*)transform->GetLastMapCorrectionRef();
+
     cstream<<"Transform"<<  // needed for debugging of the cluster transformation, resp. used for later visualization 
       "event="<<event<<
+      "timeStamp="<<timeStamp<<
       "x0="<<x[0]<<
       "x1="<<x[1]<<
       "x2="<<x[2]<<
       "gx0="<<gx[0]<<
       "gx1="<<gx[1]<<
       "gx2="<<gx[2]<<
+      "dx="<<nCclCorr[0]<<
+      "dy="<<nCclCorr[1]<<
+      "dz="<<nCclCorr[2]<<
+      "dxRef="<<nCclCorrRef[0]<<
+      "dyRef="<<nCclCorrRef[1]<<
+      "dzRef="<<nCclCorrRef[2]<<
       "Cl.="<<cluster<<
       "\n"; 
   }
