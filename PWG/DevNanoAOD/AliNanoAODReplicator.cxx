@@ -126,6 +126,21 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
 AliNanoAODReplicator::~AliNanoAODReplicator()
 {
   // dtor
+  // if(fTracks)   delete fTracks;
+  // if(fHeader)   delete fHeader;
+  // if(fVertices) delete fVertices;
+  if(fTracks){
+    fTracks->Clear("C");
+    delete fTracks;
+  }
+  if(fHeader)   {
+    fHeader->Clear("C");
+    delete fHeader;
+  }
+  if(fVertices) {
+    fVertices->Clear("C");
+    delete fVertices;
+  }
   delete fTrackCut;
   delete fList;
 }
@@ -407,6 +422,7 @@ TList* AliNanoAODReplicator::GetList() const
 
       fTracks = new TClonesArray("AliNanoAODTrack");      
       fTracks->SetName("tracks"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
+      fTracks->SetOwner(kTRUE);
       fList->Add(fTracks);    
 
       fHeader = new AliNanoAODHeader(3);// TODO: to be customized
@@ -416,7 +432,7 @@ TList* AliNanoAODReplicator::GetList() const
 
       fVertices = new TClonesArray("AliAODVertex",2);
       fVertices->SetName("vertices");    
-    
+      fVertices->SetOwner(kTRUE);
         
       fList->Add(fVertices);
     
