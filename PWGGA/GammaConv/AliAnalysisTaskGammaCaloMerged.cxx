@@ -550,14 +550,12 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMotherPtOpenAngle[iCut]               = new TH2F("ESD_Mother_Pt_OpenAngle","ESD_Mother_Pt_OpenAngle",350,0.03,35.,100,0, 0.5);
       SetLogBinningXTH2(fHistoMotherPtOpenAngle[iCut]);
       fESDList[iCut]->Add(fHistoMotherPtOpenAngle[iCut]);
+      if (fIsMC == 2){
+        fHistoMotherPtY[iCut]->Sumw2();
+        fHistoMotherPtAlpha[iCut]->Sumw2();
+        fHistoMotherPtOpenAngle[iCut]->Sumw2();
+      }
     }
-    
-    if (fIsMC == 2){
-      fHistoMotherPtY[iCut]->Sumw2();
-      fHistoMotherPtAlpha[iCut]->Sumw2();
-      fHistoMotherPtOpenAngle[iCut]->Sumw2();
-    }
-
   }
   
   if (fIsMC > 0){
