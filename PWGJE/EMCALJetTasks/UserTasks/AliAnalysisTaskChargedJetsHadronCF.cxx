@@ -280,6 +280,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
   }
 
   // Jet matching. Only done if SetJetMatchingArrayName() called
+  Bool_t matchedFound = kFALSE;
   if(fJetsInput)
   {
     // Go through all jets and check if the matching condition is fulfiled by at least one jet
@@ -296,10 +297,15 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
         bestMatchDeltaR = deltaR;
       }
     }
-    // Check if a matching jet is found. If not, do not select jet
-    if(bestMatchDeltaR > 0.9*fJetsCont->GetJetRadius())
-      return kFALSE;
+    // Check if a matching jet is found.
+    if(bestMatchDeltaR < 0.9*fJetsCont->GetJetRadius())
+      matchedFound = kTRUE;
   }
+
+  if(fJetOutputMode==4) // matching jets only
+    return matchedFound;
+  else if(fJetOutputMode==5) // non-matching jets only
+    return !matchedFound;
 
   return kTRUE;
 }
