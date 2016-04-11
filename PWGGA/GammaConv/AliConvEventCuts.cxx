@@ -3868,7 +3868,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   ) {
     fPeriodEnum = kLHC15fm;
   } else if (periodName.CompareTo("LHC15n") == 0 ){
-    fPeriodEnum == kLHC15n;  
+    fPeriodEnum = kLHC15n;
   } else if (periodName.CompareTo("LHC15o") == 0 ){
     fPeriodEnum = kLHC15o;  
     
