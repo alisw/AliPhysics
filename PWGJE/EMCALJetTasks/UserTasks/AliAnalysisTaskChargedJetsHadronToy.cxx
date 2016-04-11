@@ -166,7 +166,8 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   {
     if( (!(dynamic_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertex()) || (!(dynamic_cast<AliAODEvent*>(InputEvent()))->GetPrimaryVertex()->GetNContributors()) )
     {
-      Double_t* p = new Double_t[3] {0., 0., 0.};
+      Double_t* p = new Double_t[3];
+      p[0] = 0.; p[1] = 0.; p[2] = 0.; // for backwards compatibility
       AliAODVertex* vertex = new AliAODVertex(p,1.);
       vertex->SetNContributors(100);
       vertex->SetName("PrimaryVertex");
