@@ -204,7 +204,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 	Int_t absId;
 	
 	fGeom->RelToAbsNumbering(relId,absId);
-	trgESD->Add(mod,absId,tdig->GetAmp(),0.,(Int_t*)NULL,0,0,0);
+	trgESD->Add(mod,absId,tdig->GetAmp(),0.,(Int_t*)NULL,0,tdig->GetL1Threshold(),tdig->GetType());
       }
     }  
   }

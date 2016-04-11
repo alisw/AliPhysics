@@ -23,7 +23,8 @@ class AliPHOSTriggerRawDigit : public AliDigitNew
 
   void GetModXZ(Int_t& mod, Int_t& modX, Int_t& modZ);
   Int_t GetL1Threshold() { return fL1Threshold; }
-
+  Int_t GetType() { return fType; } 
+  
  private:
 
   Int_t fType; // 0-L0, 1-L1
