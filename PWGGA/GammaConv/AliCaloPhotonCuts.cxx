@@ -2610,6 +2610,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
   if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
 
   printf("NonLinearity Correction: \n");
+  printf("VO Reader name: %s \n",fV0ReaderName.Data());
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(periodName);
   if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %o \n", fSwitchNonLinearity, periodName.Data(), fCurrentMC );
