@@ -89,6 +89,12 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusMergedPtvsM02(NULL),
   fHistoClusMergedPtvsM02Accepted(NULL),
+  fHistoClusNCellsPt(NULL),
+  fHistoClusMergedNCellsPt(NULL),
+  fHistoClusMergedNParticlePt(NULL),
+  fHistoClusMergedNCellsAroundPt(NULL),
+  fHistoClusMergedNCellsAroundAndInPt(NULL),
+  fHistoClusMergedEAroundE(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCPi0Pt(NULL),
   fHistoMCPi0WOWeightPt(NULL),
@@ -219,6 +225,12 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoClusMergedPtvsM02(NULL),
   fHistoClusMergedPtvsM02Accepted(NULL),
+  fHistoClusNCellsPt(NULL),
+  fHistoClusMergedNCellsPt(NULL),
+  fHistoClusMergedNParticlePt(NULL),
+  fHistoClusMergedNCellsAroundPt(NULL),
+  fHistoClusMergedNCellsAroundAndInPt(NULL),
+  fHistoClusMergedEAroundE(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCPi0Pt(NULL),
   fHistoMCPi0WOWeightPt(NULL),
@@ -328,10 +340,6 @@ AliAnalysisTaskGammaCaloMerged::~AliAnalysisTaskGammaCaloMerged()
 //________________________________________________________________________
 void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   
-  if (fIsMC == 2){
-    fDoClusterQA                              = 0;
-  }
-
   Int_t invMassBins                           = 800;
   Float_t startMass                           = 0;
   Float_t endMass                             = 0.8;
@@ -387,7 +395,18 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   fHistoClusOverlapHeadersGammaPt             = new TH1F*[fnCuts];
   fHistoClusMergedPtvsM02                     = new TH2F*[fnCuts];
   fHistoClusMergedPtvsM02Accepted             = new TH2F*[fnCuts];
-  
+  if (fDoClusterQA > 0){
+    fHistoClusNCellsPt                        = new TH2F*[fnCuts];
+    fHistoClusMergedNCellsPt                  = new TH2F*[fnCuts];
+    fHistoClusMergedNCellsAroundPt            = new TH2F*[fnCuts];
+    fHistoClusMergedNCellsAroundAndInPt       = new TH2F*[fnCuts];
+    fHistoClusMergedEAroundE                  = new TH2F*[fnCuts];
+
+    if (fIsMC > 0){
+      fHistoClusMergedNParticlePt             = new TH2F*[fnCuts];
+    }
+    
+  }  
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     TString cutstringEvent                        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -457,50 +476,50 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     }
 
     if(fIsHeavyIon == 1) 
-      fHistoNGoodESDTracks[iCut]                  = new TH1F("GoodESDTracks","GoodESDTracks",4000,0,4000);
+      fHistoNGoodESDTracks[iCut]                  = new TH1F("GoodESDTracks","GoodESDTracks",4000,-0.5,3999.5);
     else if(fIsHeavyIon == 2) 
-      fHistoNGoodESDTracks[iCut]                  = new TH1F("GoodESDTracks","GoodESDTracks",400,0,400);
+      fHistoNGoodESDTracks[iCut]                  = new TH1F("GoodESDTracks","GoodESDTracks",400,-0.5,399.5);
     else 
-      fHistoNGoodESDTracks[iCut]                  = new TH1F("GoodESDTracks","GoodESDTracks",200,0,200);
+      fHistoNGoodESDTracks[iCut]                  = new TH1F("GoodESDTracks","GoodESDTracks",200,-0.5,199.5);
     fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
 
     fHistoVertexZ[iCut]                           = new TH1F("VertexZ","VertexZ",1000,-50,50);
     fESDList[iCut]->Add(fHistoVertexZ[iCut]);
 
     if(fIsHeavyIon == 1) 
-      fHistoNClusterCandidates[iCut]              = new TH1F("GammaCandidates","GammaCandidates",600,0,600);
+      fHistoNClusterCandidates[iCut]              = new TH1F("GammaCandidates","GammaCandidates",600,-0.5,599.5);
     else if(fIsHeavyIon == 2) 
-      fHistoNClusterCandidates[iCut]              = new TH1F("GammaCandidates","GammaCandidates",400,0,400);
+      fHistoNClusterCandidates[iCut]              = new TH1F("GammaCandidates","GammaCandidates",400,-0.5,399.5);
     else 
-      fHistoNClusterCandidates[iCut]              = new TH1F("GammaCandidates","GammaCandidates",100,0,100);
+      fHistoNClusterCandidates[iCut]              = new TH1F("GammaCandidates","GammaCandidates",100,-0.5,99.5);
     fESDList[iCut]->Add(fHistoNClusterCandidates[iCut]);
 
     if(fIsHeavyIon == 1) 
-      fHistoNClusterMergedCandidates[iCut]        = new TH1F("MergedCandidates","MergedCandidates",600,0,600);
+      fHistoNClusterMergedCandidates[iCut]        = new TH1F("MergedCandidates","MergedCandidates",300,-0.5,299.5);
     else if(fIsHeavyIon == 2) 
-      fHistoNClusterMergedCandidates[iCut]        = new TH1F("MergedCandidates","MergedCandidates",400,0,400);
+      fHistoNClusterMergedCandidates[iCut]        = new TH1F("MergedCandidates","MergedCandidates",200,-0.5,199.5);
     else 
-      fHistoNClusterMergedCandidates[iCut]        = new TH1F("MergedCandidates","MergedCandidates",100,0,100);
+      fHistoNClusterMergedCandidates[iCut]        = new TH1F("MergedCandidates","MergedCandidates",50,-0.5,49.5);
     fESDList[iCut]->Add(fHistoNClusterMergedCandidates[iCut]);
 
     
     if(fIsHeavyIon == 1) 
-      fHistoNGoodESDTracksVsNClusterCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",4000,0,4000,600,0,600);
+      fHistoNGoodESDTracksVsNClusterCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",4000,-0.5,3999.5,600,-0.5,599.5);
     else if(fIsHeavyIon == 2) 
-      fHistoNGoodESDTracksVsNClusterCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",400,0,400,400,0,400);
+      fHistoNGoodESDTracksVsNClusterCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",400,-0.5,399.5,400,-0.5,399.5);
     else 
-      fHistoNGoodESDTracksVsNClusterCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",200,0,200,100,0,100);
+      fHistoNGoodESDTracksVsNClusterCandidates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",200,-0.5,199.5,100,-0.5,99.5);
     fESDList[iCut]->Add(fHistoNGoodESDTracksVsNClusterCandidates[iCut]);
 
     fHistoSPDClusterTrackletBackground[iCut]      = new TH2F("SPD tracklets vs SPD clusters","SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
     fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
     
     if(fIsHeavyIon == 1) 
-      fHistoNV0Tracks[iCut]                       = new TH1F("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
+      fHistoNV0Tracks[iCut]                       = new TH1F("V0 Multiplicity","V0 Multiplicity",30000,-0.5,29999.5);
     else if(fIsHeavyIon == 2) 
-      fHistoNV0Tracks[iCut]                       = new TH1F("V0 Multiplicity","V0 Multiplicity",2500,0,2500);
+      fHistoNV0Tracks[iCut]                       = new TH1F("V0 Multiplicity","V0 Multiplicity",2500,-0.5,2499.5);
     else 
-      fHistoNV0Tracks[iCut]                       = new TH1F("V0 Multiplicity","V0 Multiplicity",1500,0,1500);
+      fHistoNV0Tracks[iCut]                       = new TH1F("V0 Multiplicity","V0 Multiplicity",1500,-0.5,1499.5);
     fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
     fProfileEtaShift[iCut]                        = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
     fESDList[iCut]->Add(fProfileEtaShift[iCut]);
@@ -532,6 +551,32 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoClusMergedPtvsM02Accepted[iCut]->Sumw2();
     }
     
+    if (fDoClusterQA > 0){
+      fHistoClusNCellsPt[iCut]                      = new TH2F("Clus_NCells_Pt","Clus_NCells_Pt",100,-0.5,99.5,500,0,50);
+      fESDList[iCut]->Add(fHistoClusNCellsPt[iCut]);
+      fHistoClusMergedNCellsPt[iCut]                = new TH2F("ClusMerged_NCells_Pt","ClusMerged_NCells_Pt",100,-0.5,99.5,500,0,50);
+      fESDList[iCut]->Add(fHistoClusMergedNCellsPt[iCut]);
+      fHistoClusMergedNCellsAroundPt[iCut]          = new TH2F("ClusMerged_NCellsAroundClus_Pt","ClusMerged_NCellsAroundClus_Pt",100,-0.5,99.5,500,0,50);
+      fESDList[iCut]->Add(fHistoClusMergedNCellsAroundPt[iCut]);
+      fHistoClusMergedNCellsAroundAndInPt[iCut]     = new TH2F("ClusMerged_NCellsAroundAndInClus_Pt","ClusMerged_NCellsAroundAndInClus_Pt",100,-0.5,99.5,500,0,50);
+      fESDList[iCut]->Add(fHistoClusMergedNCellsAroundAndInPt[iCut]);
+      fHistoClusMergedEAroundE[iCut]                = new TH2F("ClusMerged_EAroundClus_E","ClusMerged_EAroundClus_E",500,0,100,500,0,50);
+      fESDList[iCut]->Add(fHistoClusMergedEAroundE[iCut]);
+  
+      if (fIsMC > 0){
+        fHistoClusMergedNParticlePt[iCut]           = new TH2F("ClusMerged_NPart_Pt","ClusMerged_NPart_Pt",100,-0.5,99.5,500,0,50);
+        fESDList[iCut]->Add(fHistoClusMergedNParticlePt[iCut]);
+        if (fIsMC == 2){
+          fHistoClusNCellsPt[iCut]->Sumw2();
+          fHistoClusMergedNCellsPt[iCut]->Sumw2();
+          fHistoClusMergedNCellsAroundPt[iCut]->Sumw2();
+          fHistoClusMergedNCellsAroundAndInPt[iCut]->Sumw2();
+          fHistoClusMergedEAroundE[iCut]->Sumw2();
+          fHistoClusMergedNParticlePt[iCut]->Sumw2();
+          fHistoClusMergedEAroundE[iCut]->Sumw2();
+        }  
+      }
+    }  
   
     fHistoMotherInvMassPt[iCut]                   = new TH2F("ESD_Mother_InvMass_Pt","ESD_Mother_InvMass_Pt",invMassBins, startMass, endMass,500, 0, 50);
     fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
@@ -735,13 +780,13 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         }
         if (fDoMesonQA > 0){
           if (GetSelectedMesonID() != 2){
-            fHistoMCPi0PtJetPt[iCut]                = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",350,0.03,35.,200,0,200);
+            fHistoMCPi0PtJetPt[iCut]                = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",350,0.03,35.,200,-0.5,199.5);
             fHistoMCPi0PtJetPt[iCut]->Sumw2();
             SetLogBinningXTH2(fHistoMCPi0PtJetPt[iCut]);
             fMCList[iCut]->Add(fHistoMCPi0PtJetPt[iCut]);
           }
           if (GetSelectedMesonID() != 1){
-            fHistoMCEtaPtJetPt[iCut]                = new TH2F("MC_Eta_Pt_JetPt","MC_Eta_Pt_JetPt",350,0.03,35.,200,0,200);
+            fHistoMCEtaPtJetPt[iCut]                = new TH2F("MC_Eta_Pt_JetPt","MC_Eta_Pt_JetPt",350,0.03,35.,200,-0.5,199.5);
             fHistoMCEtaPtJetPt[iCut]->Sumw2();
             SetLogBinningXTH2(fHistoMCEtaPtJetPt[iCut]);
             fMCList[iCut]->Add(fHistoMCEtaPtJetPt[iCut]);
@@ -1248,14 +1293,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     }
     
     // check whether photon is from correct header 
-    if (fIsFromMBHeader && fIsOverlappingWithOtherHeader)
-      fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), 
-                            fWeightJetJetMC);
-      
+    if (fIsFromMBHeader && fIsOverlappingWithOtherHeader){
+      fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
+    }  
     // only cluster candidates from correct header will be processed fully  
     if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
-      fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), 
-                      fWeightJetJetMC);  
+      fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);  
+      if (fDoClusterQA > 0){
+        fHistoClusNCellsPt[fiCut]->Fill(clus->GetNCells(), PhotonCandidate->Pt(), fWeightJetJetMC);
+      }  
       fNClusterCandidates++;
     } else {
       delete clus;
@@ -1360,7 +1406,12 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
       fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
       fHistoClusMergedPtvsM02Accepted[fiCut]->Fill( PhotonCandidate->Pt(), clus->GetM02(), fWeightJetJetMC);  
-
+      if (fDoClusterQA > 0){
+        fHistoClusMergedNCellsPt[fiCut]->Fill(clus->GetNCells(), PhotonCandidate->Pt(), fWeightJetJetMC);
+        if (fIsMC > 0){
+          fHistoClusMergedNParticlePt[fiCut]->Fill(clus->GetNLabels(), PhotonCandidate->Pt(), fWeightJetJetMC);
+        }  
+      }  
       if (fDoMesonQA > 0 ){
         fHistoMotherPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
         fHistoMotherPtAlpha[fiCut]->Fill(pi0cand->Pt(),fabs(pi0cand->GetAlpha()), fWeightJetJetMC);

@@ -112,11 +112,18 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherPtAlpha;                                //! array of histograms with signal +BG  pt, alpha
     TH2F**                  fHistoMotherPtOpenAngle;                            //! array of histograms with signal +BG  pt, openAngle
 
-    // histograms for rec photon clusters
+    // histograms for rec photon clusters/pi0 candidate
     TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
     TH2F**                  fHistoClusMergedPtvsM02;                            //! array of histos with cluster merged, pt vs M02
     TH2F**                  fHistoClusMergedPtvsM02Accepted;                    //! array of histos with cluster merged accepted mesons, pt vs M02
+    TH2F**                  fHistoClusNCellsPt;                                 //! array of histos with cluster NCells vs Pt
+    TH2F**                  fHistoClusMergedNCellsPt;                           //! array of histos with merged cluster NCells vs Pt
+    TH2F**                  fHistoClusMergedNParticlePt;                        //! array of histos with merged cluster N MC paricles in cluster vs Pt
+    TH2F**                  fHistoClusMergedNCellsAroundPt;                     //! array of histos with number of cells surrounding merged cluster vs merged cluster Pt        
+    TH2F**                  fHistoClusMergedNCellsAroundAndInPt;                //! array of histos with number of cells surrounding merged cluster + Ncells in clus vs merged cluster Pt        
+    TH2F**                  fHistoClusMergedEAroundE;                           //! array of histos with E surrounding merged cluster vs merged cluster E        
+    
     //histograms for pure MC quantities
     TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
     TH1F**                  fHistoMCPi0Pt;                                      //! array of histos with weighted pi0, pT
@@ -229,7 +236,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 7);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 8);
 };
 
 #endif
