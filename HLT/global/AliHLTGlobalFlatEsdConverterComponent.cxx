@@ -688,7 +688,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  flatV0 = flatV0->GetNextV0NonConst();	  
 	}
       } else {
-	HLTWarning("xxx No V0 data block");
+	HLTInfo("No V0 data block");
       }
       flatEsd->SetV0sEnd( nV0s, v0size );
     }
