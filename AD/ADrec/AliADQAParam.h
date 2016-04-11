@@ -212,6 +212,6 @@ class AliADQAParam : public TNamed
   Float_t fAsynchronBG;
   
 
-  ClassDef(AliADQAParam,4)
+  ClassDef(AliADQAParam,5)
 };
 #endif
