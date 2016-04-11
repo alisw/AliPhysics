@@ -2082,7 +2082,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
       if(tracklabel > event->GetNumberOfTracks() ) continue;
       inTrack = esdev->GetTrack(tracklabel);
     } else {
-      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
         inTrack = dynamic_cast<AliVTrack*>(event->GetTrack(tracklabel));
       } else {
         for(Int_t ii=0;ii<event->GetNumberOfTracks();ii++) {
@@ -2238,7 +2238,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
       trackParam = new AliExternalTrackParam(*in);
     } else if(aodev) {
-      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
         inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       } else {
         for(Int_t ii=0;ii<aodev->GetNumberOfTracks();ii++) {

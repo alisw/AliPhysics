@@ -63,6 +63,7 @@ ClassImp(AliAnalysisTaskGammaCaloMerged)
 //________________________________________________________________________
 AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
@@ -192,6 +193,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
 AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
@@ -948,7 +950,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   }
   
 
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
   
   if(fV0Reader)

@@ -63,6 +63,7 @@ ClassImp(AliAnalysisTaskGammaConvV1)
 //________________________________________________________________________
 AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
   fInputEvent(NULL),
@@ -273,6 +274,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
   fInputEvent(NULL),
@@ -1515,7 +1517,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   mapMultipleCountTrueEtas.clear();
   mapMultipleCountTrueConvGammas.clear();
 
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
   if(fV0Reader)

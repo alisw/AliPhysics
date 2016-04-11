@@ -38,6 +38,7 @@ ClassImp(AliAnalysisTaskResolution)
 //________________________________________________________________________
 AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fEventCuts(NULL),
 	fConversionCuts(NULL),
@@ -66,6 +67,7 @@ AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
 //________________________________________________________________________
 AliAnalysisTaskResolution::AliAnalysisTaskResolution(const char *name) : AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fEventCuts(NULL),
 	fConversionCuts(NULL),
@@ -154,7 +156,7 @@ void AliAnalysisTaskResolution::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskResolution::UserExec(Option_t *){
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
 	if(eventQuality != 0){// Event Not Accepted

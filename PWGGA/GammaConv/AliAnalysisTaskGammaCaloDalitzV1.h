@@ -32,6 +32,7 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		virtual void   Terminate(const Option_t*);
 		void InitBack();
 
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 		void SetIsHeavyIon(Int_t flag){
 			fIsHeavyIon = flag;    
 		}
@@ -116,6 +117,7 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 	
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
+        TString                             fV0ReaderName;
 		AliDalitzElectronSelector				*fElecSelector;							// basic electron Selection			
 		AliGammaConversionAODBGHandler 		**fBGClusHandler;					// BG handler for Cluster
 		AliVEvent 							*fInputEvent;						// current event
@@ -379,7 +381,7 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCaloDalitzV1(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloDalitzV1 &operator=(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 3);
+        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 4);
 };
 
 #endif

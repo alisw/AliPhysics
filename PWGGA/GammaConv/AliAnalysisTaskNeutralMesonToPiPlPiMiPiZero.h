@@ -38,6 +38,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		virtual Bool_t Notify();
 		virtual void Terminate(const Option_t *);
 
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 			
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
 		void SetIsHeavyIon(Int_t flag){
@@ -104,6 +105,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
 		AliV0ReaderV1 					*fV0Reader;									// V0Reader for basic conversion photon selection
+        TString                         fV0ReaderName;
 		AliPrimaryPionSelector			*fPionSelector;								// primary charged pion selector, basic selection of pi+,pi-
 		AliGammaConversionAODBGHandler	**fBGHandlerPiPl;							// BG handler Pos Pion
 		AliGammaConversionAODBGHandler	**fBGHandlerPiMi;							// BG handler Neg Pion
@@ -224,7 +226,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-		ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 5);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 6);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
