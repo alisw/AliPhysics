@@ -60,7 +60,7 @@ class AliParticleContainer : public AliEmcalContainer {
   public:
     accept_iterator(const AliParticleContainer *cont, int startpos, bool forward  = true);
     accept_iterator(const accept_iterator &other);
-    ~accept_iterator() {}
+    virtual ~accept_iterator() {}
     accept_iterator &operator=(const accept_iterator &other);
     bool operator!=(const accept_iterator &other) const;
 
@@ -120,7 +120,7 @@ class AliParticleContainer : public AliEmcalContainer {
   public:
     all_iterator(const AliParticleContainer *cont, int startpos, bool forward  = true);
     all_iterator(const all_iterator &other);
-    ~all_iterator() {}
+    virtual ~all_iterator() {}
     all_iterator &operator=(const all_iterator &other);
     bool operator!=(const all_iterator &other) const;
 
