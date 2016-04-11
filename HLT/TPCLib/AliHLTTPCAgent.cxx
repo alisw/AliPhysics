@@ -107,6 +107,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     bool bPublishRaw=rawReader!=NULL || runloader==NULL;
 
     AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
+
+    bool isRawHLTOUT = 1;
     int tpcInputMode = 0;
     if( pHLT ){
       TString hltoptions = pHLT->GetConfigurationString();
@@ -116,7 +118,11 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	for (int i=0; i<iEntries; i++) {
 	  if (!pTokens->At(i)) continue;
 	  TString token = pTokens->At(i)->GetName();
-	  if (token.Contains("TPC-input=")) {
+	  if (token.CompareTo("ignore-hltout")==0) {
+	    isRawHLTOUT = 0;
+	  } else if (token.CompareTo("run-online-config")==0) {
+	    isRawHLTOUT = 0;
+	  } else if (token.Contains("TPC-input=")) {
 	    TString param=token.ReplaceAll("TPC-input=", "");
 	    if (param == "default") {
 	      tpcInputMode = 0;
@@ -153,7 +159,19 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString compressorInput;
     TString trackerInput;
 
-    arg.Form("-publish-clusters off -publish-raw filtered");
+    // Default TPC input: raw data or compressed clusters 
+
+    if( isRawHLTOUT ){
+      // Compressed clusters are already copied from the raw file to the HLTOUT.
+      // The system should only reconstruct raw data for the sectors where the compressed clusters are missing
+      arg.Form("-publish-clusters off -publish-raw filtered");
+    } else {
+      // HLTOUT is initially empty, therefore the HLT system reconstructs everything
+      // The prefered input data is compressed clusters. TPC raw data is only published when the clusters are not present.
+      arg.Form("-publish-clusters all -publish-raw filtered");
+    }
+
+    // Overwrite the default input when "TPC-input=.." option is set by user
 
     if( tpcInputMode==1 ){
       arg.Form("-publish-clusters off -publish-raw all");
