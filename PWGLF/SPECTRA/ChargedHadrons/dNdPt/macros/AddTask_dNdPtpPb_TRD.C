@@ -68,7 +68,6 @@ CheckLoadLibrary("libPWG0selectors");
   // Create standard esd track cuts
   //
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  gROOT->LoadMacro("/u/tdrozhzh/dNdPt-Tools/testFramework/tdrozhzh_TRD_pPb/AlidNdPtAnalysispPb.cxx+"); //new macro with HSE
 
   //gROOT->LoadMacro("./CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
