@@ -155,6 +155,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
 	fFFlucAna->SetSCwithQC( IsSCwithQC );
 	fFFlucAna->SetEbEWeight( IsEbEWeighted ); 
+//	fFFlucAna->SetSCwithFineCentbin( IsSCwithFineCentBin );
 	// setting histos for phi modulation
 	if( IsPhiModule==kTRUE){
 			for(int icent=0; icent<7; icent++){
@@ -180,7 +181,10 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fOutput = gDirectory;
 	fOutput->cd();
 	fFFlucAna->SetEffConfig( fEffMode, fEffFilterBit );
-	fFFlucAna->UserCreateOutputObjects(); 
+	fFFlucAna->UserCreateOutputObjects();
+	
+	//test
+	// 
 	
 	PostData(1, fOutput);
 }
@@ -212,8 +216,16 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if (headerH) {
 			gReactionPlane = headerH->ReactionPlaneAngle();
 			gImpactParameter = headerH->ImpactParameter();
-			fImpactParameter = headerH->ImpactParameter(); // fImpact is init as -1.
+			fImpactParameter = headerH->ImpactParameter(); 
 			fCent = GetCentralityFromImpactPar(gImpactParameter);
+			if( fALICEIPinfo == kTRUE){
+				//force to use ALICE impact parameter setting
+				double ALICE_Cent[8] = {0, 5, 10, 20, 30, 40, 50, 60};
+				double ALICE_IPinfo[8] = {0, 3.50, 4.94, 6.98, 8.55, 9.88, 11.04, 12.09};
+				for(int icent=0; icent<8; icent++){
+					if(fImpactParameter >= ALICE_IPinfo[icent] && fImpactParameter < ALICE_IPinfo[icent+1]) fCent = (ALICE_Cent[icent]+ALICE_Cent[icent+1])/2;
+				}
+			}
 			//cout << gImpactParameter << "\t"<< fCent << endl;
 		}
 		if( fEvtNum == 1 ){
@@ -253,7 +265,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			fFFlucAna->SetEventCentrality( fCent );
 			fFFlucAna->SetEventImpactParameter( fImpactParameter); // need this??
 			fFFlucAna->SetEventVertex( fvertex );
-			fFFlucAna->SetEtaRange( fEta_min, fEta_max ) ;
+			fFFlucAna->SetEtaRange( fEta_min, fEta_max );
+			fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
 			fFFlucAna->UserExec(""); // doing some analysis here. 
 			// 
 		}
@@ -393,7 +406,6 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	}
 	// cut on outliers //-- 2010aod data only
 	if( IsKineOnly == kFALSE){
-			if (Event_status == kFALSE) return Event_status; 
 			Float_t multTPC(0.); 
 			Float_t multGlob(0.);	
 			Int_t nTracks = event->GetNumberOfTracks(); 
@@ -417,8 +429,12 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 				if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) ) continue;
 				multGlob++; 	
 			}
+			TPCTracks = multTPC;
+			GlobTracks = multGlob;
 			//cout <<  Form("Multi TPC : %.2f, Multi Glob : %.2f", multTPC, multGlob) << endl;
-			if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) Event_status = kFALSE;
+			if( fCutOutliers == kTRUE){
+					if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) Event_status = kFALSE;
+			}
 	}
 
 	return Event_status;

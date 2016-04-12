@@ -238,6 +238,14 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< TH1D("h_IP", "h_IP", 400, -2, 20)
 		<< "END" ;
 
+	fh_TrkQA_TPCvsCent
+		<< TH2D("h_trk_Cent_vs_TPC","h_trk_Cent_vs_TPC", 100, 0, 100, 100, 0, 3000)
+		<< "END" ;
+
+	fh_TrkQA_TPCvsGlob
+		<< TH2D("h_trk_Glob_vs_TPC", "h_trk_Glob_vs_TPC", 100, 0, 2000, 100, 0, 3000)
+		<< "END";
+
 	fh_vertex
 		<< TH1D("h_vertex","h_vertex", 400, -20, 20)
 		<< fVertexBin
@@ -643,6 +651,8 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 	for(int iaxis=0; iaxis<3; iaxis++){
 		fh_vertex[iaxis]->Fill(  fVertex[iaxis] );
 	}
+	fh_TrkQA_TPCvsCent->Fill( fCent, fTPCtrks);
+	fh_TrkQA_TPCvsGlob->Fill( fGlbtrks, fTPCtrks);
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::CalculateQnSP( double eta1, double eta2, int harmonics)
