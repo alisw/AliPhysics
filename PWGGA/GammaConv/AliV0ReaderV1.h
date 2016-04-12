@@ -8,7 +8,7 @@
 #include "AliConvEventCuts.h"
 #include "AliExternalTrackParam.h"
 #include "TObject.h"
-#include "AliMCEvent.h"   // for CF
+#include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliKFParticle.h"
 #include "TParticle.h"

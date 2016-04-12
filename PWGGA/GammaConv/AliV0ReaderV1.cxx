@@ -1,7 +1,9 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Svein Lindal, Daniel Lohner                                   *
+ * Developers: Friederike Bock                                            *
+ * Original Authors: Svein Lindal, Daniel Lohner                          *
+ *                                                                        *
  * Version 1.0                                                            *
  *                                                                        *
  *                                                                        *

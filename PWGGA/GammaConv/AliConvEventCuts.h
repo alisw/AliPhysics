@@ -2,7 +2,7 @@
 #define ALICONVEVENTCUTS_H
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Svein Lindal, Daniel Lohner                                    *
+// Authors: Friederike Bock, Daniel Muehlheim
 
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
