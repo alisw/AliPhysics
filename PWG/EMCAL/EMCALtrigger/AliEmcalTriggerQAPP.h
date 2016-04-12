@@ -142,7 +142,7 @@ private:
   AliEmcalTriggerQAPP &operator=(const AliEmcalTriggerQAPP &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQAPP, 3);
+  ClassDef(AliEmcalTriggerQAPP, 4);
   /// \endcond
 };
 

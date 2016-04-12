@@ -199,7 +199,7 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalContainer,7);
+  ClassDef(AliEmcalContainer,8);
   /// \endcond
 };
 #endif
