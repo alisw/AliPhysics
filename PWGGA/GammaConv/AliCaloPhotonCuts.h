@@ -1,8 +1,8 @@
 #ifndef ALICALOPHOTONCUTS_H
 #define ALICALOPHOTONCUTS_H
 
-// Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Svein Lindal, Daniel Lohner                                    *
+// Class handling all kinds of selection cuts for Gamma Calo analysis
+// Authors: Friederike Bock, Daniel Muehlheim
 
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -229,7 +229,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
     Float_t     CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
     Float_t     CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
-
+    Double_t    GetDistanceBetweenClusters(AliVCluster* cluster1, AliVCluster* cluster2);
     void        SetLogBinningXTH2 (TH2* histoRebin);
       
   protected:
@@ -315,13 +315,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
-  //     TH1F*     fHistDistanceToBadChannelBeforeAcc;  // distance to bad channel before acceptance cuts
-  //     TH1F*     fHistDistanceToBadChannelAfterAcc;   // distance to bad channel after acceptance cuts
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
-  //     TH2F*     fHistExoticCellBeforeQA;             // Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
-  //     TH2F*     fHistExoticCellAfterQA;              // Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
-  //     TH1F*     fHistNMatchedTracks;                 // number of matched tracks
     TH1F*     fHistEnergyOfClusterBeforeNL;             // enery per cluster before NonLinearity correction
     TH1F*     fHistEnergyOfClusterAfterNL;              // enery per cluster after NonLinearity correction
     TH1F*     fHistEnergyOfClusterBeforeQA;             // enery per cluster before acceptance cuts
