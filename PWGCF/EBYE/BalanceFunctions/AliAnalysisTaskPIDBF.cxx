@@ -48,8 +48,10 @@
 
 
 
-// Analysis task for the BF vs Psi code
-// Authors: Panos.Christakoglou@nikhef.nl
+// Analysis task for the PID BF code:
+// Base Class : AliBalancePsi.cxx
+// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch
+//[Special thanks to Michael Weber(m.weber@cern.ch) and Panos Christakoglou(panos.christakoglou@cern.ch)] 
 
 using std::cout;
 using std::endl;
@@ -282,6 +284,7 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
     }
   }
 
+ TString gAnalysisLevel = fBalance->GetAnalysisLevel();
   //QA list
   fList = new TList();
   fList->SetName("listQA");
@@ -361,36 +364,74 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
   fHistMixTracks = new TH2F("fHistMixTracks","Number of mixed tracks;Centrality percentile;N_{mix,trks}",101, 0, 101, 200, 0, fMixingTracks * 1.5);
   fList->Add(fHistMixTracks);
 
-if(fUsePID){
 
+   if(gAnalysisLevel == "AOD") {
+
+   if(fUsePID){
   switch(fParticleType_){
   case kPion_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Pion particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Pion Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Pion After Cut ",200,0.0,200);
+  fList->Add(HistNSigmaBeforeCut);
+  fList->Add(HistNSigmaAfterCut);
+  fList->Add(HistEtaTest); 		 	 
   break;
 
   case kKaon_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Kaon particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Kaon Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Kaon After Cut ",200,0.0,200);
+  fList->Add(HistNSigmaBeforeCut);
+  fList->Add(HistNSigmaAfterCut);
+  fList->Add(HistEtaTest); 		 	 
   break;
 
   case kProton_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Proton particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Proton Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Proton After Cut ",200,0.0,200);
-  break;
-  }
-}
-
-else {
-  HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of All Charged particles ",40,-1.6,1.6);
-} // end of switch command
-
-  fList->Add(HistEtaTest); 		 	 
   fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistNSigmaAfterCut);
+  fList->Add(HistEtaTest); 		 	 
+  break;
+  } // Switch end
+ } // fUsePID End
+
+  else {
+  HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of All Charged particles ",40,-1.6,1.6);
+  fList->Add(HistEtaTest);
+}
+
+} //Analysis Level AOD end
+
+ else if(gAnalysisLevel == "MCAOD"){
+     if(fUsePID){
+     switch(fParticleType_){
+     case kPion_:
+     HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC Pion particles ",40,-1.6,1.6);
+     fList->Add(HistEtaTest);
+     break;  
+
+     case kKaon_:
+     HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC Kaon particles ",40,-1.6,1.6);
+     fList->Add(HistEtaTest);
+     break;
+
+     case kProton_:
+     HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC Proton particles ",40,-1.6,1.6);
+     fList->Add(HistEtaTest);
+     break;
+    }
+ }
+
+else {
+  HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC All Charged particles ",40,-1.6,1.6);
+  fList->Add(HistEtaTest);
+}
+ 
+}
+
   //TPC vs VZERO multiplicity
   fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",10001,-0.5,10000.5,4001,-0.5,4000.5);
   if(fMultiplicityEstimator == "V0A") 
@@ -1806,10 +1847,8 @@ else {
 	
 	// Remove neutral tracks
 	if( vCharge == 0 ) continue;
-	
 	//Exclude resonances
 	if(fExcludeResonancesInMC) {
-	  
 	  Bool_t kExcludeParticle = kFALSE;
 	  Int_t gMotherIndex = aodTrack->GetMother();
 	  if(gMotherIndex != -1) {
@@ -1846,23 +1885,117 @@ else {
 	  if(TMath::Abs(aodTrack->GetPdgCode()) == 11) continue;
 	  
 	}
+
+      //if(TMath::Abs(aodTrack->GetPdgCode())==211) cout<<" Pion pdg code is "<<TMath::Abs(aodTrack->GetPdgCode())<<endl;
+
+
+       //cout<<" Hi noor are you in MC AOD level"<<endl;
 	
 	// fill QA histograms
-	fHistPt->Fill(vPt,gCentrality);
-	fHistEta->Fill(vEta,gCentrality);
-	fHistRapidity->Fill(vY,gCentrality);
-	if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
-	else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
-	fHistPhi->Fill(vPhi,gCentrality);
-	if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-	else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
-	
-	//=======================================correction
-	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
-	
-	// add the track to the TObjArray
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+// For MC PID ---------------------------------------------------------------
+     if(fUsePID) {
+
+     switch(fParticleType_){
+
+         case kPion_:
+
+         if(TMath::Abs(aodTrack->GetPdgCode()) == 211){
+        //cout<<" i am in MC pion loop"<<endl;
+        // fill QA histograms
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+        } // Pion  end 
+       break;
+
+         case kKaon_:
+
+         if(TMath::Abs(aodTrack->GetPdgCode()) == 321){
+         //cout<<" i am in MC Kaon loop"<<endl;
+        // fill QA histograms
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+        } // Kaon  end 
+       break;
+
+         case kProton_:
+
+         if(TMath::Abs(aodTrack->GetPdgCode()) == 2212){
+         //cout<<" i am in MC proton loop"<<endl;
+        // fill QA histograms
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+        } // Proton  end 
+       break;
+
+  } // Switch end
+} // fUsePID end
+// For MC PID ---------------------------------------------------------------
+
+// For All Charge Particles 
+else {
+//cout<<"  I am now at All particles track "<<endl;
+
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+
+        }  
+// For All Charge Particles 
       }//aodTracks
     }//MC event
   }//MCAOD
