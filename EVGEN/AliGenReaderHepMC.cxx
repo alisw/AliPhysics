@@ -39,13 +39,10 @@ void AliGenReaderHepMC::Copy(TObject&) const
 
 void AliGenReaderHepMC::Init()
 {
-   // check if file exists, using FILE to avoid (the otherwise faster) POSIX dependencies
-   if (FILE *file = fopen(fFileName,"r"))  {
-      AliInfo(Form("File %s opened", fFileName));
-      fclose(file);
-   } else {
+   // check if file exists
+   if (access(fFileName, R_OK) != 0)
       AliError(Form("Couldn't open input file: %s", fFileName));
-   }
+
    // Initialisation
    fEventsHandle = new HepMC::IO_GenEvent(fFileName, std::ios::in);
    fParticleArray = new TClonesArray("TParticle");
