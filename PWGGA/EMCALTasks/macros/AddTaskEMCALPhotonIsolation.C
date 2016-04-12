@@ -213,8 +213,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
  // if (clusterCont) clusterCont->SetClusPtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
-  task->GetParticleContainer(0)->SetClassName("AliAODTrack");
-  task->GetParticleContainer(0)->SetFilterHybridTracks(kTRUE);
+  task->GetTrackContainer(0)->SetClassName("AliAODTrack");
+  task->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
   
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
     // #### Add analysis task
