@@ -343,13 +343,14 @@ Int_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::GetPadRow()  const
 
 Int_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::GetCharge()  const
 {
-  // 32 bit fixed point number with 12 bits after the point
-  return AliHLTTPCHWCFEmulator::ReadBigEndian(fCharge)>>12;
+  // 30 bit fixed point number with 12 bits after the point
+  AliHLTUInt32_t word1=AliHLTTPCHWCFEmulator::ReadBigEndian(fCharge);
+  return (word1 & 0x3FFFFFFF)>>12;
 }
 
 Int_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::GetQMax()    const
 {
-  // 24 bit fixed point number with 12 bits after the point
+  // 23 bit fixed point number with 12 bits after the point
   AliHLTUInt32_t header=AliHLTTPCHWCFEmulator::ReadBigEndian(fHeader);
-  return (header & 0xFFFFFF )>>12;
+  return (header & 0x7FFFFF )>>12;
 }
