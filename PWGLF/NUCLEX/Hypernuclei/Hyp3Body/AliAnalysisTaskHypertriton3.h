@@ -61,11 +61,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
-  void SetRequestRefit(bool itsR = kFALSE) {fRequestITSrefit = itsR;}
+  void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion;}
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
   void SetChargeTriplet(bool sign_c = kTRUE, bool ls_c = kTRUE) {fMinvSignal = sign_c; fMinvLikeSign = ls_c;}
+  void SetMotherType(bool matter = kTRUE, bool antimatter = kTRUE){fChooseMatter = matter; fChooseAntiMatter = antimatter;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
@@ -106,6 +107,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
  private:
   Bool_t HasTOF(AliESDtrack *trk, float &beta_tof);
   Bool_t PassPIDSelection(AliESDtrack *trk, int specie, Bool_t isTOFin); // specie according to AliPID enum: 2-pion, 4-proton, 5-deuteron
+  void CombineThreeTracks(Bool_t isMatter, TArrayI arrD, TArrayI arrP, TArrayI arrPi, Bool_t cent0, Bool_t cent1);
 
   AliESDEvent        *fESDevent;                   ///< ESD event
   AliESDtrackCuts    *fESDtrackCuts;               ///< First set of ESD track cuts
@@ -126,9 +128,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
   Bool_t             fRequestITSrefit;             ///< flag for switch the ITSrefit request in the track cuts
+  Bool_t             fRequestITSrefitPion;         ///< flag for switch the ITSrefit request only for candidate pion track cuts
   Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
   Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
+  Bool_t             fChooseMatter;                ///< flag to switch on/off the study of the hypertriton
+  Bool_t             fChooseAntiMatter;            ///< flag to switch on/off the study of the anti-hypertriton
   Bool_t             fMinvSignal;                  ///< flag for correct charge triplet - signal
   Bool_t             fMinvLikeSign;                ///< flag for like-sign charge triplet
   Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
@@ -196,8 +201,14 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   //TH2F               *fHistCorrDCApprimary;                 //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
   //TH2F               *fHistCorrDCApiprimary;                //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
   TH1F               *fHistDCApiprimary;                    //!<! DCA pion-primary vertex distribution
+  TH1F               *fHistDCAXYpiprimary;                  //!<! DCA_xy pion-primary vertex distribution
+  TH1F               *fHistDCAZpiprimary;                   //!<! DCA_z pion-primary vertex distribution
   TH1F               *fHistDCApprimary;                     //!<! DCA proton-primary vertex distribution
+  TH1F               *fHistDCAXYpprimary;                   //!<! DCA_xy proton-primary vertex distribution
+  TH1F               *fHistDCAZpprimary;                    //!<! DCA_z proton-primary vertex distribution
   TH1F               *fHistDCAdprimary;                     //!<! DCA deuteron-primary vertex distribution
+  TH1F               *fHistDCAXYdprimary;                   //!<! DCA_xy deuteron-primary vertex distribution
+  TH1F               *fHistDCAZdprimary;                    //!<! DCA_z deuteron-primary vertex distribution
   TH1F               *fHistDCAdeupro;                       //!<! DCA deuteron-proton distribution
   TH1F               *fHistDCApiondeu;	                    //!<! DCA pion-deuteron distribution
   TH1F               *fHistDCApionpro;                      //!<! DCA pion-proton distribution
@@ -207,12 +218,15 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistZDecayVtx;                       //!<! Reco secondary vertex Z coordinate
   TH1F               *fHistXDecayVtx;                       //!<! Reco secondary vertex X coordinate
   TH1F               *fHistYDecayVtx;                       //!<! Reco secondary vertex Y coordinate
-  TH1F               *fHistDCAXYdeuvtx;                     //!<! \f$DCA_{xy}\f$ candidate deuteron-secondary vertex
-  TH1F               *fHistDCAZdeuvtx;                      //!<! \f$DCA_{z}\f$ candidate deuteron-secondary vertex
-  TH1F               *fHistDCAXYprovtx;                     //!<! \f$DCA_{xy}\f$ candidate proton-secondary vertex
-  TH1F               *fHistDCAZprovtx;                      //!<! \f$DCA_{z}\f$ candidate proton-secondary vertex
+  TH1F               *fHistDCApionvtx;                      //!<! \f$DCA\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAXYpionvtx;                    //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAZpionvtx;                     //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
+  TH1F               *fHistDCAprovtx;                       //!<! \f$DCA\f$ candidate proton-secondary vertex
+  TH1F               *fHistDCAXYprovtx;                     //!<! \f$DCA_{xy}\f$ candidate proton-secondary vertex
+  TH1F               *fHistDCAZprovtx;                      //!<! \f$DCA_{z}\f$ candidate proton-secondary vertex
+  TH1F               *fHistDCAdeuvtx;                       //!<! \f$DCA\f$ candidate deuteron-secondary vertex
+  TH1F               *fHistDCAXYdeuvtx;                     //!<! \f$DCA_{xy}\f$ candidate deuteron-secondary vertex
+  TH1F               *fHistDCAZdeuvtx;                      //!<! \f$DCA_{z}\f$ candidate deuteron-secondary vertex
   TH1F               *fHistDecayLengthH3L;                  //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistNormalizedDecayL;                //!<! Normalized decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistLifetime;                        //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$
@@ -370,7 +384,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3&); // not implemented
   AliAnalysisTaskHypertriton3& operator=(const AliAnalysisTaskHypertriton3&); // not implemented
 
-  ClassDef(AliAnalysisTaskHypertriton3, 2); // analysisclass
+  ClassDef(AliAnalysisTaskHypertriton3, 3); // analysisclass
 
 };
 
