@@ -216,8 +216,6 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   socket  = zmq_socket(context, zmqSocketMode);
 
   //set socket options
-  int lingerValue = 0;
-  rc += zmq_setsockopt(socket,  ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
   rc += zmq_setsockopt(socket, ZMQ_RCVHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_SNDHWM, &highWaterMark, sizeof(highWaterMark));
   rc += zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
@@ -229,7 +227,9 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   }
 
   //by default subscribe to everything if we happen to be SUB
-  rc = zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
+  if (zmqSocketMode == ZMQ_SUB) {
+    rc = zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
+  }
 
   //connect the socket to the endpoints
   //when reinitializing sometimes it is not possible to bind the same port again fast,
@@ -247,6 +247,8 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
     return -5;
   }
 
+  int lingerValue = 0;
+  rc += zmq_setsockopt(socket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
   //printf("socket mode: %s, endpoints: %s\n",alizmq_socket_name(zmqSocketMode), zmqEndpoints.c_str());
 
   //reset the object containers
@@ -483,7 +485,6 @@ int alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it)
   rc = alizmq_msg_iter_data(it,obj); 
   TList* list = dynamic_cast<TList*>(obj);
   if (!list) {
-    delete obj;
     return -1;
   }
 
