@@ -1408,6 +1408,30 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       fHistoClusMergedPtvsM02Accepted[fiCut]->Fill( PhotonCandidate->Pt(), clus->GetM02(), fWeightJetJetMC);  
       if (fDoClusterQA > 0){
         fHistoClusMergedNCellsPt[fiCut]->Fill(clus->GetNCells(), PhotonCandidate->Pt(), fWeightJetJetMC);
+        Double_t energyAround   = 0;
+        Double_t nCellsAround   = 0;
+        for (Int_t j = 0; j < nclus; j++){
+          if (j == i) continue;
+          AliVCluster* clusTemp   = NULL;
+          if(fInputEvent->IsA()==AliESDEvent::Class()) clusTemp = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
+          else if(fInputEvent->IsA()==AliAODEvent::Class()) clusTemp = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+
+          if (!clusTemp){
+            delete clusTemp;
+            continue;
+          }
+          
+          Double_t R = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDistanceBetweenClusters(clus, clusTemp);
+          
+          if (R < 0.1){
+            nCellsAround        = nCellsAround+clusTemp->GetNCells();
+            energyAround        = energyAround+clusTemp->E();
+          }
+          delete clusTemp;
+        }  
+        fHistoClusMergedNCellsAroundPt[fiCut]->Fill(nCellsAround, PhotonCandidate->Pt(), fWeightJetJetMC);
+        fHistoClusMergedNCellsAroundAndInPt[fiCut]->Fill(nCellsAround+clus->GetNCells(), PhotonCandidate->Pt(), fWeightJetJetMC);
+        fHistoClusMergedEAroundE[fiCut]->Fill(energyAround, clus->E(), fWeightJetJetMC);
         if (fIsMC > 0){
           fHistoClusMergedNParticlePt[fiCut]->Fill(clus->GetNLabels(), PhotonCandidate->Pt(), fWeightJetJetMC);
         }  
