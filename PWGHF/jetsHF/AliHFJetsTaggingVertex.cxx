@@ -104,46 +104,50 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
   AliESDtrackCuts *esdtrcuts = fCutsHFjets->GetTrackCuts();
   
   Int_t nTrksInJet = jet->GetNumberOfTracks();
-  AliInfoF(MSGINFO("nTrksInJet = %d"), nTrksInJet);
+  AliInfoF(MSGINFO("nTrksInJet = %d \n"), nTrksInJet);
   
   if (nTrksInJet < 2) {
     AliWarning(MSGWARNING("Cannot find vertices w/ only one track"));
     return 0;
-  }
-  
+  } 
+ 
+
   Int_t nProngTrack = fCutsHFjets->GetNprongs();
   if ( nProngTrack < 2 || nProngTrack > 3 ) {
     AliWarning(MSGWARNING("Cannot find vertices w/ less(more) than two(three) tracks"));
     return 0;
   }
-  
   //make array of ESD tracks, then needed for fTrackArray
   typedef vector< pair<Int_t, AliESDtrack *> > vctr_pair_int_esdTrk;
   vctr_pair_int_esdTrk arrESDtrkInfo;
   arrESDtrkInfo.reserve(nTrksInJet);
-
+  
   for (Int_t j = 0; j < nTrksInJet; ++j) {
     
-    AliVTrack *jTrk   = ((AliPicoTrack *)jet->TrackAt(j, fTrackArrayIn))->GetTrack();
-    Int_t      jTrkID = jTrk->GetID();
+    AliAODTrack *jTrk   = ((AliAODTrack*)jet->TrackAt(j, fTrackArrayIn));
+    //utilize dynamic cast and then check pointer
+    Int_t jTrkID = jTrk->GetID();
     
+    AliInfoF(MSGINFO("Track index  %d"), jTrkID);
     if (jTrkID < 0) {
 
       AliInfoF(MSGINFO("Track with index < 0 %d"), jTrkID);
       continue;
     }
+   
     
-    AliAODTrack *tmpAODtrk = (* fAODTrackInfo)[jTrkID].first;
-    
-    if (!tmpAODtrk) {
+    // AliAODTrack *tmpAODtrk = (* fAODTrackInfo)[jTrkID].first;
+    // printf("tmpAODtrk =%x \n",tmpAODtrk);
+ 
+    // if (!tmpAODtrk) {
   
-      AliWarning(MSGWARNING("AliPicoTrack %d not found on AOD event. Please check the physics selection for Emcal"));
-      continue;
-    }
+    //   AliWarning(MSGWARNING("AliPicoTrack %d not found on AOD event. Please check the physics selection for Emcal"));
+    //   continue;
+    // }
     
-    if (!fCutsHFjets->IsDaughterSelected(tmpAODtrk, v1, esdtrcuts)) continue;
+    if (!fCutsHFjets->IsDaughterSelected(jTrk, v1, esdtrcuts)) continue;
     
-    AliESDtrack *tmpESDtrk = new AliESDtrack(tmpAODtrk);
+    AliESDtrack *tmpESDtrk = new AliESDtrack(jTrk);
     
     arrESDtrkInfo.push_back(make_pair(jTrkID, tmpESDtrk));
   }
