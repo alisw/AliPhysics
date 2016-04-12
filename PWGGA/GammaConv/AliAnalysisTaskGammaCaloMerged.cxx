@@ -1423,7 +1423,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
           
           Double_t R = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDistanceBetweenClusters(clus, clusTemp);
           
-          if (R < 0.1){
+          if (R < 0.15){
             nCellsAround        = nCellsAround+clusTemp->GetNCells();
             energyAround        = energyAround+clusTemp->E();
           }
