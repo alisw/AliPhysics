@@ -45,6 +45,7 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fADCOfflineValues(NULL),
   fL0Amplitudes(NULL),
   fTriggerBitMasks(NULL),
+  fLevel0TimeMap(NULL),
   fTriggerBitConfig(NULL),
   fJetPatchSize(8),
   fJetSubregionSize(4),
@@ -52,6 +53,8 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fGammaSubregionSize(1),
   fBkgPatchSize(8),
   fBkgSubregionSize(4),
+  fL0MinTime(7),
+  fL0MaxTime(10),
   fBufferSize(0),
   fBkgThresholdOnline(-0.1),
   fBkgThresholdOffline(-0.1),
@@ -74,6 +77,7 @@ AliHLTEMCALTriggerMaker::~AliHLTEMCALTriggerMaker() {
   if(fADCOfflineValues) delete fADCOfflineValues;
   if(fL0Amplitudes) delete fL0Amplitudes;
   if(fTriggerBitMasks) delete fTriggerBitMasks;
+  if(fLevel0TimeMap) delete fLevel0TimeMap;
 }
 
 void AliHLTEMCALTriggerMaker::ResetADC(){
@@ -81,6 +85,7 @@ void AliHLTEMCALTriggerMaker::ResetADC(){
   fADCOfflineValues->Reset();
   fL0Amplitudes->Reset();
   fTriggerBitMasks->Reset();
+  fLevel0TimeMap->Reset();
 }
 
 void AliHLTEMCALTriggerMaker::AddDigit(const AliHLTCaloDigitDataStruct *digit){
@@ -100,6 +105,10 @@ void AliHLTEMCALTriggerMaker::SetADC(Int_t col, Int_t row, Float_t adc){
 
 void AliHLTEMCALTriggerMaker::SetL0Amplitude(Int_t col, Int_t row, Float_t amp){
   (*fL0Amplitudes)(col, row) = amp;
+}
+
+void AliHLTEMCALTriggerMaker::SetL0Time(Int_t col, Int_t row, UChar_t time){
+  (*fLevel0TimeMap)(col, row) = time;
 }
 
 void AliHLTEMCALTriggerMaker::SetBitMask(Int_t col, Int_t row, Int_t bitMask){
@@ -152,7 +161,10 @@ AliHLTCaloTriggerPatchDataStruct *next = NULL;
   // Do Level0 patches as well
   std::vector<AliEMCALTriggerRawPatch> l0patches = fL0PatchFinder->FindPatches(*fL0Amplitudes, *fADCOfflineValues);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
-    if(!IsSameTRU(*patchit)) continue;
+    ELevel0TriggerStatus_t L0trigger = CheckForL0(patchit->GetRowStart(), patchit->GetColStart());
+    if (L0trigger == kNotLevel0) continue;
+    Int_t onlinebits = 0;
+    if (L0trigger == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit());
     Int_t offlinebits = 0;
     if(patchit->GetADC() > fLevel0ThresholdOnline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
     if(patchit->GetOfflineADC() > fLevel0ThresholdOffline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
@@ -162,7 +174,6 @@ AliHLTCaloTriggerPatchDataStruct *next = NULL;
     fTriggerPatchDataPtr = next;
     patchcount++;
     fBufferSize -= sizeof(AliHLTCaloTriggerPatchDataStruct);
-
   }
   return patchcount;
 }
@@ -235,21 +246,37 @@ void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input,
   output.fBitMask = input.GetBitmask() | (*fTriggerBitMasks)(output.fCol, output.fRow) | offlinebits;
 }
 
-Bool_t AliHLTEMCALTriggerMaker::IsSameTRU(const AliEMCALTriggerRawPatch &patch) const {
-  Bool_t isSameTRU = true;
-  int myAbsID = -1, firstAbsID = -1;
-  for(int irow = patch.GetRowStart(); irow < patch.GetRowStart() + patch.GetPatchSize(); ++irow){
-    for(int icol = patch.GetColStart(); icol < patch.GetColStart() + patch.GetPatchSize(); ++icol){
-      fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, myAbsID);
-      if(firstAbsID < 0) firstAbsID = myAbsID;
-      else {
-        if(myAbsID != firstAbsID){
-          // abs fastor IDs do not match, patch is not fully in same TRU
-          isSameTRU = false;
-          break;
-        }
+AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckForL0(Int_t col, Int_t row) const {
+  ELevel0TriggerStatus_t result = kLevel0Candidate;
+
+  if(col < 0 || row < 0){
+    AliError(Form("Patch outside range [col %d, row %d]", col, row));
+    return kNotLevel0;
+  }
+  const Int_t kColsEta = 48;
+  Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
+  fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
+  fkGeometryPtr->GetGeometryPtr()->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
+  int nvalid(0);
+  const int kNRowsPhi = fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2;
+  for(int ipos = 0; ipos < 2; ipos++){
+    if(row + ipos >= kNRowsPhi) continue;    // boundary check
+    for(int jpos = 0; jpos < 2; jpos++){
+      if(col + jpos >= kColsEta) continue;  // boundary check
+      // Check whether we are in the same TRU
+      trumod = -1;
+      fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
+      fkGeometryPtr->GetGeometryPtr()->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
+      if(trumod != truref) {
+        result = kNotLevel0;
+        return result;
       }
+      if(col + jpos >= kColsEta) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
+      if(row + ipos >= kNRowsPhi) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
+      Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
+      if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
     }
   }
-  return isSameTRU;
+  if (nvalid == 4) result = kLevel0Fired;
+  return result;
 }

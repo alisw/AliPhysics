@@ -43,6 +43,8 @@ template<typename T> class AliEMCALTriggerPatchFinder;
  */
 class AliHLTEMCALTriggerMaker : public TObject, public AliHLTLogging {
 public:
+  enum ELevel0TriggerStatus_t { kNotLevel0, kLevel0Candidate, kLevel0Fired };
+
   enum ThresholdType_t{
 	  kHighThreshold = 0,
 	  kLowThreshold = 1,
@@ -97,6 +99,14 @@ public:
    * @param amp L0 Amplitude
    */
   void SetL0Amplitude(Int_t col, Int_t row, Float_t amp);
+
+  /**
+   * Set the L0 trigger time for a given col / row combination
+   * @param col Column
+   * @param row Row
+   * @param amp L0 trigger time
+   */
+  void SetL0Time(Int_t col, Int_t row, UChar_t time);
 
     /**
    * Set the bit mask from the STU for a given col / row combination
@@ -200,7 +210,7 @@ protected:
    * @return True if all fastors are in the same TRU, false
    * otherwise
    */
-  Bool_t IsSameTRU(const AliEMCALTriggerRawPatch &patch) const;
+  ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
 private:
   /** Pointer to the output buffer */
@@ -220,6 +230,8 @@ private:
   AliEMCALTriggerDataGrid<float>				*fL0Amplitudes;
   /** Grid with trigger bit mask from STU */
   AliEMCALTriggerDataGrid<int>                  *fTriggerBitMasks;
+  /** Grid with L0 trigger time values used to retrieve L0 decision */
+  AliEMCALTriggerDataGrid<unsigned char>        *fLevel0TimeMap;
   /** Trigger bit configurtion */
   AliEMCALTriggerBitConfig                      *fTriggerBitConfig;
   /** Jet patch size **/
@@ -234,6 +246,10 @@ private:
   Int_t                                         fBkgPatchSize;
   /** Background subregion size **/
   Int_t                                         fBkgSubregionSize;
+  /** Minimum time bin for a valid L0 trigger decision **/
+  Char_t                                        fL0MinTime;
+  /** Maximum time bin for a valid L0 trigger decision **/
+  Char_t                                        fL0MaxTime;
 
   /** Available space in buffer */
   AliHLTUInt32_t                                fBufferSize;

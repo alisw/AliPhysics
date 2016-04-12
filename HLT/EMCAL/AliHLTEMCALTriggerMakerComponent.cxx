@@ -90,6 +90,9 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
         fTriggerMakerPtr->SetADC(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fL1TimeSum));
         fTriggerMakerPtr->SetL0Amplitude(dataptr->fCol, dataptr->fRow, static_cast<Float_t>(dataptr->fAmplitude));
         fTriggerMakerPtr->SetBitMask(dataptr->fCol, dataptr->fRow, dataptr->fTriggerBits);
+        if (dataptr->fNL0Times > 0) {
+          fTriggerMakerPtr->SetL0Time(Int_t(dataptr->fCol), Int_t(dataptr->fRow), dataptr->fL0Times[0]);
+        }
         dataptr++;
       }
       nfastor += triggerhead->fNfastor;

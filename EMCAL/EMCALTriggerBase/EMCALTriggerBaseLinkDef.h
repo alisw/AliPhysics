@@ -8,6 +8,7 @@
 #pragma link C++ class AliEMCALTriggerDataGrid<double>+;
 #pragma link C++ class AliEMCALTriggerDataGrid<int>+;
 #pragma link C++ class AliEMCALTriggerDataGrid<char>+;
+#pragma link C++ class AliEMCALTriggerDataGrid<unsigned char>+;
 
 #pragma link C++ class AliEMCALTriggerRawPatch+;
 #pragma link C++ class AliEMCALTriggerPatchFinder<float>+;

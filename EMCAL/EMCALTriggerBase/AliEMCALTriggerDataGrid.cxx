@@ -139,3 +139,4 @@ template class AliEMCALTriggerDataGrid<int>;
 template class AliEMCALTriggerDataGrid<double>;
 template class AliEMCALTriggerDataGrid<float>;
 template class AliEMCALTriggerDataGrid<char>;
+template class AliEMCALTriggerDataGrid<unsigned char>;
