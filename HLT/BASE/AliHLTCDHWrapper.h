@@ -32,8 +32,10 @@ class AliHLTCDHWrapper {
   }
 
   inline void CheckVersion() {
+#ifdef DEBUG
     if(fCDH)
       assert(GetVersion() == 2 || GetVersion() == 3);
+#endif
   }
   
   inline UChar_t GetVersion() const { 
