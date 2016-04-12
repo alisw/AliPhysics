@@ -68,6 +68,7 @@ TString fTitleAnnotation = "";
 
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
+stringMap fInfoMap;
 
 //internal state
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
@@ -254,14 +255,11 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
   {
     //check if we have a runnumber in the string
     alizmq_msg_iter_data(block, fInfo);
-    size_t runTagPos = fInfo.find("run");
-    size_t runStartPos = fInfo.find("=",runTagPos);
-    size_t runEndPos = fInfo.find(" ");
-    string runString = fInfo.substr(runStartPos+1,runEndPos-runStartPos-1);
-    if (fVerbose) printf("received run=%s\n",runString.c_str());
+    fInfoMap = ParseParamString(fInfo);
+    int runnumber = atoi(fInfoMap["run"].c_str());
 
-    int runnumber = atoi(runString.c_str());
-    
+    if (fVerbose) printf("received run=%i\n",runnumber);
+
     if (runnumber!=fRunNumber && fAllowResetAtSOR) 
     {
       if (ResetOutputData(fAllowResetAtSOR)>0)

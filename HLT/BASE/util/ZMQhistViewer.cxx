@@ -54,6 +54,7 @@ TFile* fFile=NULL;
 int fPollInterval = 0;
 int fPollTimeout = 100000; //100s
 Bool_t fSort = kTRUE;
+stringMap fInfoMap;
 
 //internal state
 void* fZMQcontext = NULL;             //ze zmq context
@@ -221,29 +222,26 @@ int GetData()
       if (fVerbose) Printf("processing INFO %s", info.c_str());
 
       fCanvas->SetTitle(info.c_str());
-      size_t runTagPos = info.find("run");
-      if (runTagPos != std::string::npos)
+
+      fInfoMap = ParseParamString(info);
+      int runnumber = atoi(fInfoMap["run"].c_str());
+
+      if (fVerbose) printf("received run=%i\n",runnumber);
+
+      if (runnumber!=fRunNumber && fAllowResetAtSOR) 
       {
-        size_t runStartPos = info.find("=",runTagPos);
-        size_t runEndPos = info.find(" ");
-        string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
-        if (fVerbose) printf("received run=%s\n",runString.c_str());
+        if (fVerbose) printf("Run changed, resetting!\n");
+        vector<TObject*> tmp = fDrawables;
+        fDrawables.clear();
+        fCanvas->Clear();
+        gSystem->ProcessEvents();
 
-        int runnumber = atoi(runString.c_str());
-
-        if (runnumber!=fRunNumber && fAllowResetAtSOR) 
+        for (vector<TObject*>::iterator i=tmp.begin(); i!=tmp.end(); ++i)
         {
-          if (fVerbose) printf("Run changed, resetting!\n");
-          for (vector<TObject*>::iterator i=fDrawables.begin(); i!=fDrawables.end(); ++i)
-          {
-            delete *i;
-          }
-          fDrawables.clear();
-          fCanvas->Clear();
-          gSystem->ProcessEvents();
+          delete *i;
         }
-        fRunNumber = runnumber; 
       }
+      fRunNumber = runnumber; 
       continue;
     }
 
