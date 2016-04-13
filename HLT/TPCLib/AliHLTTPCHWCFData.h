@@ -67,6 +67,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
   Float_t  GetSigmaZ2(int i) const;
   Int_t    GetCharge(int i)  const;
   Int_t    GetQMax(int i)    const;
+  Bool_t   IsDeconvoluted(int i) const;
 
   int CheckVersion();
   bool CheckAssumption(int format, const AliHLTUInt8_t* pData, int size) const;
@@ -138,6 +139,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     }
     Int_t    GetCharge()  const;
     Int_t    GetQMax()    const {return -1;}
+    Bool_t   IsDeconvoluted() const {return 0;}
   };
 
   struct AliHLTTPCHWClusterV1 {
@@ -161,6 +163,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     }
     Int_t    GetCharge()  const;
     Int_t    GetQMax()    const;
+    Bool_t   IsDeconvoluted() const;
   };
 
   template<typename T>
@@ -181,7 +184,8 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Float_t  GetSigmaZ2(int i) const {return fpClusterArray[i]->GetSigmaZ2();}
     Int_t    GetCharge(int i)  const {return fpClusterArray[i]->GetCharge();}
     Int_t    GetQMax(int i)    const {return fpClusterArray[i]->GetQMax();}
-
+    Bool_t   IsDeconvoluted(int i) const {return fpClusterArray[i]->IsDeconvoluted();}
+    
   private:
     const T* fpClusterArray; //! array of clusters
     int fEntries;            //! number of entries
@@ -252,6 +256,13 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
       switch (fVersion) {
       case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetQMax();
       case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetQMax();
+      } return -1;
+    }
+
+    Bool_t    IsDeconvoluted()    const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->IsDeconvoluted();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->IsDeconvoluted();
       } return -1;
     }
 
