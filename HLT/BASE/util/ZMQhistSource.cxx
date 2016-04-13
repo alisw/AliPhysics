@@ -20,6 +20,9 @@
 #include "AliZMQhelpers.h"
 #include <sstream>
 #include <vector>
+#include "TRandom.h"
+#include "TTimeStamp.h"
+#include "TSystem.h"
 
 void* fZMQout = NULL;
 void* fZMQcontext = NULL;
@@ -93,6 +96,9 @@ int main(int argc, char** argv)
     TMessage::EnableSchemaEvolutionForAll();
       if (fVerbose && AliHLTMessage::UsesSchemaEvolutionForAll()) printf("enabled...\n");
   }
+
+  TTimeStamp time;
+  gRandom->SetSeed(time.GetNanoSec()+gSystem->GetPid());
 
   //main loop
   int iterations=0;
