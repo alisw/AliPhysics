@@ -83,6 +83,7 @@ protected:
   TH1                       *fHistFastORL0;                    //!<! Counter of FastOR L0 signal above zero
   TH1                       *fHistFastORL0LargeAmp;            //!<! Counter of FastOR L0 signal above some large amplitude
   TH2                       *fHistFastORL0Amp;                 //!<! Amplitude spectra of each FastOR L0 channel
+  TH2                       *fHistFastORL0Time;                //!<! Time spectra of each FastOR L0 channel
   TH2                       *fHistFastORL0BySM[fgkSM];         //!<! Counter of FastOR L0 signal above zero (by SM)
   TH2                       *fHistFastORL0LargeAmpBySM[fgkSM]; //!<! Counter of FastOR L0 signal above some large amplitude (by SM)
   TH2                       *fHistFastORL0AmpBySM[fgkSM];      //!<! Integrated amplitude of each FastOR L0 channel (by SM)
@@ -98,6 +99,7 @@ protected:
   TH2                       *fHistFEEvsSTUBySM[fgkSM];         //!<! Correlation FEE vs STU (by SM)
 
   // Trigger patch histograms
+  TH1                       *fHistPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];    //!<! Spectra of patch amplitudes
   TH1                       *fHistMaxPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes]; //!<! Spectra of maximum patch amplitudes
   TH2                       *fHistMaxEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Position of the maximum patch
   TH2                       *fHistAmpEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Position of the maximum patch weighted by the amplitude

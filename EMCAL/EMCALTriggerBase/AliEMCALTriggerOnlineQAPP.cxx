@@ -43,6 +43,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
   fHistFastORL0(0),
   fHistFastORL0LargeAmp(0),
   fHistFastORL0Amp(0),
+  fHistFastORL0Time(0),
   fHistFastORL1(0),
   fHistFastORL1LargeAmp(0),
   fHistFastORL1Amp(0)
@@ -66,6 +67,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
   for (Int_t itrigger = 0; itrigger < fgkNTriggerTypes; itrigger++) {
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        fHistPatchAmp[idet][itrigger][ipatch] = 0;
         fHistMaxPatchAmp[idet][itrigger][ipatch] = 0;
       }
       fMaxPatchEMCal[itrigger][ipatch] = new AliEMCALTriggerPatchInfo;
@@ -75,6 +77,10 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
       fHistAmpEdgePos[itrigger][ipatch] = 0;
     }
   }
+
+  fEnabledPatchTypes[kOnlinePatch] = kTRUE;
+  fEnabledPatchTypes[kRecalcPatch] = kTRUE;
+  fEnabledPatchTypes[kOfflinePatch] = kTRUE;
 }
 
 /// Default constructor
@@ -92,6 +98,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
   fHistFastORL0(0),
   fHistFastORL0LargeAmp(0),
   fHistFastORL0Amp(0),
+  fHistFastORL0Time(0),
   fHistFastORL1(0),
   fHistFastORL1LargeAmp(0),
   fHistFastORL1Amp(0)
@@ -113,6 +120,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
   for (Int_t itrigger = 0; itrigger < fgkNTriggerTypes; itrigger++) {
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        fHistPatchAmp[idet][itrigger][ipatch] = 0;
         fHistMaxPatchAmp[idet][itrigger][ipatch] = 0;
       }
       fMaxPatchEMCal[itrigger][ipatch] = new AliEMCALTriggerPatchInfo;
@@ -125,7 +133,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
 
   fEnabledPatchTypes[kOnlinePatch] = kTRUE;
   fEnabledPatchTypes[kRecalcPatch] = kTRUE;
-  fEnabledPatchTypes[kOfflinePatch] = kFALSE;
+  fEnabledPatchTypes[kOfflinePatch] = kTRUE;
 
   fEnabledTriggerTypes[EMCALTrigger::kTMEMCalBkg] = kFALSE;
   fEnabledTriggerTypes[EMCALTrigger::kTMEMCalLevel0] = kTRUE;
@@ -150,6 +158,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const AliEMCALTriggerOnline
   fHistFastORL0(0),
   fHistFastORL0LargeAmp(0),
   fHistFastORL0Amp(0),
+  fHistFastORL0Time(0),
   fHistFastORL1(0),
   fHistFastORL1LargeAmp(0),
   fHistFastORL1Amp(0)
@@ -177,6 +186,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const AliEMCALTriggerOnline
 
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        fHistPatchAmp[idet][itrigger][ipatch] = 0;
         fHistMaxPatchAmp[idet][itrigger][ipatch] = 0;
       }
       fMaxPatchEMCal[itrigger][ipatch] = new AliEMCALTriggerPatchInfo;
@@ -222,8 +232,13 @@ void AliEMCALTriggerOnlineQAPP::Init()
 
   hname = "EMCTRQA_histFastORL0Amp";
   htitle = "L0 amplitudes;FastOR abs. ID;amplitude";
-  fHistFastORL0Amp = new TH2F(hname, htitle, 5000, 0, 5000, 1024, 0, 4096);
+  fHistFastORL0Amp = new TH2F(hname, htitle, 5000, 0, 5000, 512, 0, 4096);
   fHistograms.Add(fHistFastORL0Amp);
+
+  hname = "EMCTRQA_histFastORL0Time";
+  htitle = "L0 trigger time;FastOR abs. ID;L0 trigger time";
+  fHistFastORL0Time = new TH2F(hname, htitle, 5000, 0, 5000, 20, 0, 20);
+  fHistograms.Add(fHistFastORL0Time);
 
   hname = "EMCTRQA_histFastORL1";
   htitle = "L1;FastOR abs. ID;entries above 0";
@@ -237,7 +252,7 @@ void AliEMCALTriggerOnlineQAPP::Init()
 
   hname = "EMCTRQA_histFastORL1Amp";
   htitle = "L1 amplitudes;FastOR abs. ID;amplitude";
-  fHistFastORL1Amp = new TH2F(hname, htitle, 5000, 0, 5000, 1024, 0, 4096);
+  fHistFastORL1Amp = new TH2F(hname, htitle, 5000, 0, 5000, 512, 0, 4096);
   fHistograms.Add(fHistFastORL1Amp);
 
   Int_t nSM = fgkSM;
@@ -297,6 +312,11 @@ void AliEMCALTriggerOnlineQAPP::Init()
         htitle = TString::Format("EMCTRQA_hist%sMaxPatchAmp%s%s;amplitude;entries", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
         fHistMaxPatchAmp[idet][itrig][ipatch] = new TH1F(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
         fHistograms.Add(fHistMaxPatchAmp[idet][itrig][ipatch]);
+
+        hname = TString::Format("EMCTRQA_hist%sPatchAmp%s%s", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
+        htitle = TString::Format("EMCTRQA_hist%sPatchAmp%s%s;amplitude;entries", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
+        fHistPatchAmp[idet][itrig][ipatch] = new TH1F(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
+        fHistograms.Add(fHistPatchAmp[idet][itrig][ipatch]);
       }
 
       hname = TString::Format("EMCTRQA_histMaxEdgePos%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
@@ -336,16 +356,22 @@ void AliEMCALTriggerOnlineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pat
       if (!fEnabledPatchTypes[ipatch]) continue;
       if (!patch->TestTriggerBit(triggerBits[itrig]+offsets[ipatch])) continue;
 
+      Int_t idet = 0;
       if (patch->IsEMCal()) {
-        if (GetAmplitude(fMaxPatchEMCal[itrig][ipatch], ipatch) < amplitudes[ipatch]) *(fMaxPatchEMCal[itrig][ipatch]) = *patch;
+        idet = 0;
+        if (GetAmplitude(fMaxPatchEMCal[itrig][ipatch], ipatch) < amplitudes[ipatch]) {
+          *(fMaxPatchEMCal[itrig][ipatch]) = *patch;
+        }
       }
       else if (patch->IsDCalPHOS()) {
+        idet = 1;
         if (GetAmplitude(fMaxPatchDCal[itrig][ipatch], ipatch) < amplitudes[ipatch]) *(fMaxPatchDCal[itrig][ipatch]) = *patch;
       }
       else {
         AliWarning(Form("Patch is not EMCal nor DCal/PHOS (pos: %d, %d)", patch->GetRowStart(), patch->GetColStart()));
       }
 
+      fHistPatchAmp[idet][itrig][ipatch]->Fill(amplitudes[ipatch]);
       fHistAmpEdgePos[itrig][ipatch]->Fill(patch->GetColStart(), patch->GetRowStart(), amplitudes[ipatch]);
     }
 
@@ -373,6 +399,7 @@ void AliEMCALTriggerOnlineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fasto
     fHistFastORL0->Fill(fastor->GetAbsId());
     if (L0amp > fFastorL0Th) fHistFastORL0LargeAmp->Fill(fastor->GetAbsId());
     fHistFastORL0Amp->Fill(fastor->GetAbsId(), L0amp);
+    fHistFastORL0Time->Fill(fastor->GetAbsId(), fastor->GetL0Time());
   }
 
   if (L1amp > fMinL1FastORAmp) {
