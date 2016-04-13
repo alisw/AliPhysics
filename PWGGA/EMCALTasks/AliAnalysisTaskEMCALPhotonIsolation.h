@@ -42,6 +42,7 @@ class AliStack;
 class TParticle;
 class AliClusterContainer;
 class AliParticleContainer;
+class AliTrackContainer;
 class AliEmcalParticle;
     //AliRoot Syste
 class AliEMCALTrack;

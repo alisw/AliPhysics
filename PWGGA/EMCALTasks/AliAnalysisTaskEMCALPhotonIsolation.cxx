@@ -25,6 +25,7 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliClusterContainer.h"
+#include "AliTrackContainer.h"
 #include "AliVTrack.h"
 #include "AliEmcalParticle.h"
 #include "AliParticleContainer.h"
@@ -761,7 +762,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
 {
     //   Init the analysis.
   
-  AliParticleContainer *tracks = GetParticleContainer(0);
+  AliTrackContainer *tracks = GetTrackContainer(0);
   if (!tracks) {
     AliError(Form("%s: This task needs a particle container!", GetName()));
     return;
@@ -1065,7 +1066,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
   
   
     // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
-  AliParticleContainer* tracks = GetParticleContainer(0);
+  AliTrackContainer* tracks = GetTrackContainer(0);
   AliVTrack* mt = 0;
     // AliVCluster *clust = partC -> GetCluster();
   
@@ -2421,7 +2422,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   
     // I would like to remove this part and fill the tracks multiplicity histogram in FillQAHistograms, is that ok for thnSparses? (especially cause here the histogram is filled several times per event)
     // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
-  AliParticleContainer *tracks = GetParticleContainer(0);
+  AliTrackContainer *tracks = GetTrackContainer(0);
   //Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
   tracks->ResetCurrentID();
   AliVTrack *emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle());
