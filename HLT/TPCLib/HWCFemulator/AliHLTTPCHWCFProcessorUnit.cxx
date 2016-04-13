@@ -35,6 +35,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
   fOutput(),
   fkBunch(0),
   fBunchIndex(0),
+  fIsDeconvoluted(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
   fUseTimeBinWindow(0),
@@ -55,6 +56,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit(const AliHLTTPCHWCFProces
   fOutput(),
   fkBunch(0),
   fBunchIndex(0),
+  fIsDeconvoluted(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
   fUseTimeBinWindow(0),
@@ -76,6 +78,7 @@ int AliHLTTPCHWCFProcessorUnit::Init()
 
   fkBunch = 0;
   fBunchIndex = 0;
+  fIsDeconvoluted = 0;
   return 0;
 }
 
@@ -97,6 +100,7 @@ int AliHLTTPCHWCFProcessorUnit::InputStream( const AliHLTTPCHWCFBunch *bunch )
 
   fkBunch = bunch;
   fBunchIndex = 0;
+  fIsDeconvoluted = 0;
   return 0;
 }
 
@@ -121,6 +125,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fP = 0;
   fOutput.fP2 = 0;
   fOutput.fTMean = 0;
+  fOutput.fIsDeconvoluted = 0;
   fOutput.fMC.clear();
   
   if( fkBunch->fFlag==2 && fkBunch->fData.size()==1 ){ // rcu trailer word, forward it 
@@ -165,7 +170,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     if( !fUseTimeBinWindow ){
       for( ; fBunchIndex<fkBunch->fData.size(); fBunchIndex++ ){
 	if( fDeconvolute ){
-	  if( fkBunch->fData[fBunchIndex].fPeak != 0 ){
+	  if( fkBunch->fData[fBunchIndex].fPeak != 0 ){	    
 	    fBunchIndex++;
 	    break;
 	  }
@@ -197,6 +202,8 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
       if( iEnd  > iPeak + kHalfTimeBinWindow + 1) iEnd = iPeak + kHalfTimeBinWindow + 1;
     }
 
+    if( iStart>0 || iEnd<fkBunch->fData.size() ) fIsDeconvoluted = 1;    
+
     fOutput.fQmax = qPeak*fkBunch->fGain;
     fOutput.fQ = 0;
     fOutput.fT = 0;
@@ -204,6 +211,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     fOutput.fP = 0;
     fOutput.fP2 = 0;
     fOutput.fTMean = fkBunch->fData[iPeak].fTime;
+    fOutput.fIsDeconvoluted = fIsDeconvoluted;
     fOutput.fMC.clear();
 
     for( AliHLTUInt32_t i=iStart; i<iEnd; i++ ){

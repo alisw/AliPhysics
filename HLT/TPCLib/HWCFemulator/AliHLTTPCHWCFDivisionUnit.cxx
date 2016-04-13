@@ -113,6 +113,10 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   fOutput.fFlag = 1;
   // bit 23 is 0, bits 30,31 are 1
   fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax)&0x7FFFFF);
+
+  // set is_deconvoluted flag at bit 23. For the future, at the moment the feature is suppressed
+  // fOutput.fRowQ += (fkInput->fIsDeconvoluted &0x1) << 23;
+
   // bits 30,31 are 0
   fOutput.fQ = fkInput->fQ & 0x3FFFFFFF;
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
