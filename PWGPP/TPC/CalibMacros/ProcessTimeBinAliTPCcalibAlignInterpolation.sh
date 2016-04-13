@@ -1,5 +1,7 @@
 #!/bin/bash
-# 
+#
+# This is the script to run the TPC SP calibration procedure as implemented
+# in AliTPCcalibAlignInterpolation
 #
 # arguments: 
 # 1) start time
