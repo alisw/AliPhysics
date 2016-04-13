@@ -203,6 +203,11 @@ protected:
   void InitializeLevel0PatchFinders(Bool_t isDCAL);
 
   /**
+   * Initialize the lookup tables used by the trigger maker
+   */
+  void InitializeLookupTables();
+
+  /**
    * Check whether all fastors are in the same TRU. This
    * is a condition to accept the patch as valid Level0
    * patch.
@@ -232,6 +237,8 @@ private:
   AliEMCALTriggerDataGrid<int>                  *fTriggerBitMasks;
   /** Grid with L0 trigger time values used to retrieve L0 decision */
   AliEMCALTriggerDataGrid<unsigned char>        *fLevel0TimeMap;
+  /** Lookup table with TRU indices */
+  AliEMCALTriggerDataGrid<int>                  *fTRUIndexMap;
   /** Trigger bit configurtion */
   AliEMCALTriggerBitConfig                      *fTriggerBitConfig;
   /** Jet patch size **/

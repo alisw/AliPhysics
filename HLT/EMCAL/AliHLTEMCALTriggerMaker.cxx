@@ -46,6 +46,7 @@ AliHLTEMCALTriggerMaker::AliHLTEMCALTriggerMaker() :
   fL0Amplitudes(NULL),
   fTriggerBitMasks(NULL),
   fLevel0TimeMap(NULL),
+  fTRUIndexMap(NULL),
   fTriggerBitConfig(NULL),
   fJetPatchSize(8),
   fJetSubregionSize(4),
@@ -209,6 +210,7 @@ void AliHLTEMCALTriggerMaker::Initialise(const AliHLTEMCALGeometry *geo){
     InitializeLevel0PatchFinders(true);
   }
 
+  InitializeLookupTables();
 }
 
 void AliHLTEMCALTriggerMaker::InitializeLevel1PatchFinders(Bool_t isDCAL){
@@ -249,6 +251,18 @@ void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input,
   output.fBitMask = input.GetBitmask() | (*fTriggerBitMasks)(output.fCol, output.fRow) | offlinebits;
 }
 
+void AliHLTEMCALTriggerMaker::InitializeLookupTables(){
+  fTRUIndexMap = new AliEMCALTriggerDataGrid<int>;
+  fTRUIndexMap->Allocate(48, fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2);
+  int absFastor, truid, adc;
+  for(int icol = 0; icol < 48; icol++){
+    for(int irow = 0; irow < fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2; irow++){
+      fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, absFastor);
+      fkGeometryPtr->GetGeometryPtr()->GetTRUFromAbsFastORIndex(absFastor, truid, adc);
+    }
+  }
+}
+
 AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckForL0(Int_t col, Int_t row) const {
   ELevel0TriggerStatus_t result = kLevel0Candidate;
 
@@ -256,9 +270,7 @@ AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckFo
     AliError(Form("Patch outside range [col %d, row %d]", col, row));
     return kNotLevel0;
   }
-  Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
-  fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
-  fkGeometryPtr->GetGeometryPtr()->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
+  Int_t truref = (*fTRUIndexMap)(col, row), trumod(-1);
   int nvalid(0);
   const Int_t kColsEta = 48;
   const int kNRowsPhi = fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2;
@@ -267,9 +279,7 @@ AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckFo
     for(int jpos = 0; jpos < 2; jpos++){
       if(col + jpos >= kColsEta) continue;  // boundary check
       // Check whether we are in the same TRU
-      trumod = -1;
-      fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
-      fkGeometryPtr->GetGeometryPtr()->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
+      trumod = (*fTRUIndexMap)(col + jpos, row + ipos);
       if(trumod != truref) {
         result = kNotLevel0;
         return result;
