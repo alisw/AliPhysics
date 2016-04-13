@@ -121,17 +121,17 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     HLTError("Not enough space to write new trigger patches");
     return -1;
   }
-  */
+   */
 
   //AliHLTUInt32_t mysize = availableSize;
   std::vector<AliEMCALTriggerRawPatch> foundpatches = fPatchFinder->FindPatches(*fADCValues, *fADCOfflineValues);
   Int_t patchcount = 0;
-AliHLTCaloTriggerPatchDataStruct *next = NULL;
+  AliHLTCaloTriggerPatchDataStruct *next = NULL;
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchiter = foundpatches.begin(); patchiter != foundpatches.end(); ++patchiter){
-	if(fBufferSize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
-		HLTWarning("Buffer exceeded after %d trigger patches", patchcount);
-		break;
-	}
+    if(fBufferSize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
+      HLTWarning("Buffer exceeded after %d trigger patches", patchcount);
+      break;
+    }
     next = fTriggerPatchDataPtr + 1;
     // Set offline bits
     // Note: trigger patch can contain more than one patch type
@@ -161,7 +161,7 @@ AliHLTCaloTriggerPatchDataStruct *next = NULL;
   // Do Level0 patches as well
   std::vector<AliEMCALTriggerRawPatch> l0patches = fL0PatchFinder->FindPatches(*fL0Amplitudes, *fADCOfflineValues);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
-    ELevel0TriggerStatus_t L0trigger = CheckForL0(patchit->GetRowStart(), patchit->GetColStart());
+    ELevel0TriggerStatus_t L0trigger = CheckForL0(patchit->GetColStart(), patchit->GetRowStart());
     if (L0trigger == kNotLevel0) continue;
     Int_t onlinebits = 0;
     if (L0trigger == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit());
@@ -194,6 +194,9 @@ void AliHLTEMCALTriggerMaker::Initialise(const AliHLTEMCALGeometry *geo){
   fTriggerBitMasks = new AliEMCALTriggerDataGrid<int>;
   fTriggerBitMasks->Allocate(48, fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2);
 
+  fLevel0TimeMap = new AliEMCALTriggerDataGrid<unsigned char>;
+  fLevel0TimeMap->Allocate(48, fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2);
+
   fPatchFinder = new AliEMCALTriggerPatchFinder<float>;
   InitializeLevel1PatchFinders(false);
   if(fkGeometryPtr->GetGeometryPtr()->GetNumberOfSuperModules() > 12){
@@ -203,7 +206,7 @@ void AliHLTEMCALTriggerMaker::Initialise(const AliHLTEMCALGeometry *geo){
   fL0PatchFinder = new AliEMCALTriggerPatchFinder<float>;
   InitializeLevel0PatchFinders(false);
   if(fkGeometryPtr->GetGeometryPtr()->GetNumberOfSuperModules() > 12){
-	InitializeLevel0PatchFinders(true);
+    InitializeLevel0PatchFinders(true);
   }
 
 }
@@ -253,11 +256,11 @@ AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckFo
     AliError(Form("Patch outside range [col %d, row %d]", col, row));
     return kNotLevel0;
   }
-  const Int_t kColsEta = 48;
   Int_t truref(-1), trumod(-1), absFastor(-1), adc(-1);
   fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
   fkGeometryPtr->GetGeometryPtr()->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
   int nvalid(0);
+  const Int_t kColsEta = 48;
   const int kNRowsPhi = fkGeometryPtr->GetGeometryPtr()->GetNTotalTRU() * 2;
   for(int ipos = 0; ipos < 2; ipos++){
     if(row + ipos >= kNRowsPhi) continue;    // boundary check
