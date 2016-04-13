@@ -1,3 +1,8 @@
+/// \class AliJetEmbeddingFromPYTHIATask
+/// \brief Class for Pythia event embedding into data
+///
+/// The class inherits from AliJetEmbeddingFromAODTask and takes care of the implemetation of the track embedding into the original or a copy of the track array using the method AddTrack (see AliJetModelBaseTask)
+
 #ifndef ALIJETEMBEDDINGFROMPYTHIATASK_H
 #define ALIJETEMBEDDINGFROMPYTHIATASK_H
 

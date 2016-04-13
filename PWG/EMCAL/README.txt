@@ -36,4 +36,6 @@ Recalibration and clusterization is handled by the EMCAL preparation wagon.
 gSystem->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
 AddTaskEmcalPreparation();
 </pre>
+
+*For suggestions and fixes, write to ...*
 */
