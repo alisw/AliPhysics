@@ -176,19 +176,19 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   }
 
   // 2. Create underlying event
+  Int_t     UEmultiplicity = fUEMultiplicity;
+  Double_t  UEthrownPt = 0.;
+  Double_t etaMin = -0.9;
+  Double_t etaMax = +0.9;
+
   if(fCreateUE)
   {
-    Double_t etaMin = -0.9;
-    Double_t etaMax = +0.9;
-
-    Double_t thrownPt = 0.;
     Int_t count = fOutputArrTracks->GetEntries();
 
-    Int_t multiplicity = fUEMultiplicity;
     if(fUEMultDistribution)
-      multiplicity = (Int_t)fUEMultDistribution->GetRandom();
+      UEmultiplicity = (Int_t)fUEMultDistribution->GetRandom();
 
-    for(Int_t i=0;i<multiplicity; i++)
+    for(Int_t i=0;i<UEmultiplicity; i++)
     {
       Double_t trackPt = fUEDistribution->GetRandom();
       Double_t trackEta = etaMin + fRandom->Rndm()*(etaMax-etaMin);
@@ -205,18 +205,16 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
       static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
       static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetCharge(trackCharge);
       count++;
-      thrownPt += trackPt;
+      UEthrownPt += trackPt;
     }
-
-    std::cout << Form("Created the underlying event using %i particles. Pt per unit area: %5.2f", multiplicity, thrownPt/(TMath::TwoPi()*(etaMax-etaMin))) << std::endl;
   }
 
   // 3. Embed gaussian jets into event
+  Double_t JETthrownPt = 0.;
   if(fCreateJets)
   {
     // Define jets and throw them into the acceptance
 
-    Double_t thrownPt = 0.;
     for(Int_t i=0;i<fGeneratedJetCount; i++)
     {
       Double_t jetEta = fGeneratedJetMinEta + fRandom->Rndm()*(fGeneratedJetMaxEta-fGeneratedJetMinEta);
@@ -228,7 +226,8 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 
       Int_t count = fOutputArrTracks->GetEntries();
       Int_t particlesInJet = 0;
-      while(thrownPt < jetPt)
+      JETthrownPt = 0;
+      while(JETthrownPt < jetPt)
       {
         Double_t trackPt = fGeneratedJetParticleDistribution->GetRandom();
         Double_t trackEta = jetEta + fDistEtaGaussian->GetRandom();
@@ -246,13 +245,16 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 
         count++;
         particlesInJet++;
-        thrownPt += trackPt;
+        JETthrownPt += trackPt;
       }
-      std::cout << Form("Created a gaussian %5.2f GeV jet using %i particles",thrownPt, particlesInJet) << std::endl;
 
       // Save the generated jet for later matching
-      new ((*fGeneratedJetsArr)[i]) AliEmcalJet(thrownPt, jetEta, jetPhi, 0);
+      new ((*fGeneratedJetsArr)[i]) AliEmcalJet(JETthrownPt, jetEta, jetPhi, 0);
     }
   }
+
+  std::cout << Form("Event has been generated using %3i particles UE (pT density: %5.2f). ", UEmultiplicity, UEthrownPt/(TMath::TwoPi()*(etaMax-etaMin))) << std::endl;
+  std::cout << Form("  %i embedded gaussian jets (pT density: %5.2f). ", fGeneratedJetCount, JETthrownPt/(TMath::TwoPi()*(etaMax-etaMin))) << std::endl;
+
 }
 

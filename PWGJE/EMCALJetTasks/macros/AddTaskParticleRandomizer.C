@@ -33,6 +33,7 @@ AliAnalysisTaskParticleRandomizer* AddTaskParticleRandomizer(
   randomizer->SetRandomizeInEta(randomizeInEta);
   randomizer->SetRandomizeInPt(randomizeInPt);
 
+  randomizer->SetName(Form("ParticleRandomizer_%s_%s", inputParticles, outputParticles));
   mgr->AddTask(randomizer);
 
   //==============================================================================
