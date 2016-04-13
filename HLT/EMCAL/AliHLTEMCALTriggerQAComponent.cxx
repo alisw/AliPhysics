@@ -226,10 +226,13 @@ void AliHLTEMCALTriggerQAComponent::HLTPatch2Patch(const AliHLTCaloTriggerPatchD
   patch.Initialize(htlpatch.fCol, htlpatch.fRow, htlpatch.fSize, htlpatch.fADC, htlpatch.fOfflineADC, EMCALTrigger::kEMCL1ADCtoGeV*htlpatch.fADC, htlpatch.fBitMask, vect, fGeometry->GetGeometryPtr());
 }
 
-void AliHLTEMCALTriggerQAComponent::HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& htlfastor, AliEMCALTriggerFastOR& fastor) const
+void AliHLTEMCALTriggerQAComponent::HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& hltfastor, AliEMCALTriggerFastOR& fastor) const
 {  
-  // TO DO: here I always pass 8 as L0 time, need to check whether L0 times are in fact processed upstream
-  fastor.Initialize(htlfastor.fAmplitude, htlfastor.fL1TimeSum, htlfastor.fRow, htlfastor.fCol, 8, fGeometry->GetGeometryPtr());
+  Int_t l0time = 0;
+  if (hltfastor.fNL0Times > 0) {
+    l0time = hltfastor.fL0Times[0];
+  }
+  fastor.Initialize(hltfastor.fAmplitude, hltfastor.fL1TimeSum, hltfastor.fRow, hltfastor.fCol, l0time, fGeometry->GetGeometryPtr());
 }
 
 const char* AliHLTEMCALTriggerQAComponent::GetComponentID()
