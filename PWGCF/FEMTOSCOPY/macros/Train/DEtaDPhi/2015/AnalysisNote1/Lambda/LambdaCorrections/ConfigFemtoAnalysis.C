@@ -361,6 +361,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
 					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
 					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
+					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 				      
 					//V0 second particle cut
 					dtc5etaphitpc[aniter] = new AliFemtoV0TrackCut();
@@ -386,6 +387,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
 					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
 					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0034,LambdaMass+0.0034);
+					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 
 					
 					
