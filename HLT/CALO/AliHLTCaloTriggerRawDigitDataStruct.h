@@ -48,6 +48,8 @@ struct AliHLTCaloTriggerRawDigitDataStruct {
   UChar_t     fNTimeSamples;
   /** Time samples */
   Int_t       fTimeSamples[15];
+  /** Subregion */
+  Int_t   fL1SubRegion;
 };
 
 /**
@@ -84,6 +86,13 @@ void SetL0Time(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t i);
  * @param l1timeSum
  */
 void SetL1TimeSum(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t l1timeSum);
+
+/**
+ * Set the L1 subregion
+ * @param dig Input digit
+ * @param l1subregion l1 subregion
+ */
+void SetL1SubRegion(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t l1subregion);
 
 /**
  * Set time samples to the digit
@@ -133,6 +142,13 @@ Bool_t GetTimeSample(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t iSamp
  * @return Level0 time sum
  */
 Int_t GetL0TimeSum(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t time);
+
+/**
+ * Get the L1 subregion
+ * @param dig Input digit
+ * @return Level1 subregion
+ */
+Int_t GetL1SubRegion(const AliHLTCaloTriggerRawDigitDataStruct &dig);
 
 /**
  * Get trigger bit

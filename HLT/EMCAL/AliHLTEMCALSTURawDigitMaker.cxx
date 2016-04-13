@@ -101,7 +101,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
     fTriggerData->SetL1RawData(stustream->GetRawData());
 
-    Int_t iTRU, x, y;
+    Int_t iTRU, jTRU, x, y;
 
     TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
     fDCSConfigSTU->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
@@ -153,6 +153,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
       }
     }
 
+    Int_t vx, vy, lphi;
     for (int ithr = 0; ithr < 2; ithr++) {
       for (Int_t i = 0; i < stustream->GetNL1GammaPatch(ithr); i++) {
         if (stustream->GetL1GammaPatch(i, ithr, iTRU, x, y)) { // col (0..23), row (0..3)
@@ -160,15 +161,26 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
           //if(iTRU >= 32)iTRU -= 32;
           iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, detector);
 
-          HLTDebug("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
+          if (fkGeometryPtr->GetGeometryPtr()->GetTriggerMappingVersion() == 1) {
+            // Run 1
 
-          Int_t vx = 23 - x, vy = y + 4 * int(iTRU / 2); // Position in EMCal frame
+            HLTDebug("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
 
-          if (iTRU % 2) vx += 24; // C side
+            vx = 23 - x;
+            vy = y + 4 * int(iTRU / 2); // Position in EMCal frame
 
-          vx = vx - int(sizeL1gsubr.X()) * int(sizeL1gpatch.X()) + 1;
+            if (iTRU % 2) vx += 24; // C side
 
-          if (vx >= 0 && vy < 105) {
+            vx = vx - int(sizeL1gsubr.X()) * int(sizeL1gpatch.X()) + 1;
+            lphi = 64;
+          } else {
+            // Run 2
+            fkGeometryPtr->GetGeometryPtr()->GetTRUFromSTU(iTRU, x, y, jTRU, vx, vy, detector);
+            fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInTRU(jTRU, vx, vy, idx);
+            lphi = 103;
+          }
+
+          if (vx >= 0 && vy < lphi) {
             if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
               HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
               SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
@@ -181,11 +193,19 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
         if (stustream->GetL1JetPatch(i, ithr, x, y)) { // col (0,15), row (0,11)
           HLTDebug("| STU => Found L1 jet [%d] patch at (%2d , %2d)\n", ithr, x, y);
 
-          Int_t ix = int(sizeL1jsubr.X()) * (11 - y - int(sizeL1jpatch.X()) + 1);
-          Int_t iy = int(sizeL1jsubr.Y()) * (15 - x - int(sizeL1jpatch.Y()) + 1);
+          if (fkGeometryPtr->GetGeometryPtr()->GetTriggerMappingVersion() == 1) {
+            vx = 11 - y - int(sizeL1jpatch.X()) + 1;
+            vy = 15 - x - int(sizeL1jpatch.Y()) + 1;
+          }
+          else {
+            vx = y;
+            vy = x;
+          }
+          vx *= int(sizeL1jsubr.X());
+          vy *= int(sizeL1jsubr.Y());
 
-          if (ix >= 0 && iy >= 0) {
-            if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(ix, iy, idx)) {
+          if (vx >= 0 && vy >= 0) {
+            if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
               HLTDebug("| STU => Add L1 jet patch at (%2d , %2d)\n", ix, iy);
               SetTriggerBit(GetRawDigit(idx), kL1JetHigh + ithr, 1);
             }
@@ -193,7 +213,18 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
         }
       }
     }
+
+    if (detector == 1) {
+      UInt_t sregion[36] = {0};
+      stustream->GetPHOSSubregion(sregion);
+      for (int isr=0;isr<36;isr++) {
+        if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPHOSSubregion(isr, idx)) {
+          SetL1SubRegion(GetRawDigit(idx), sregion[isr]);
+        }
+      }
+    }
   }
+
   /*
   for(int idig = 0; idig < fNRawDigits; idig++){
     PrintRawDigit(fRawDigitBuffer[idig]);

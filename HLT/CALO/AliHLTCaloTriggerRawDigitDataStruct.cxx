@@ -38,6 +38,10 @@ void SetL1TimeSum(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t l1timeSum){
   dig.fL1TimeSum = l1timeSum;
 }
 
+void SetL1SubRegion(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t l1subregion){
+  dig.fL1SubRegion = l1subregion;
+}
+
 void SetTimeSamples(AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t nsamples, Int_t *samples){
   memcpy(dig.fTimeSamples, samples, sizeof(Int_t) * 15);
   dig.fNTimeSamples = nsamples;
@@ -76,6 +80,10 @@ Int_t GetL0TimeSum(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t time) {
     if (timeBin >= time && timeBin < time + 4) value += amp;
   }
   return value;
+}
+
+Int_t GetL1SubRegion(const AliHLTCaloTriggerRawDigitDataStruct &dig){
+  return dig.fL1SubRegion;
 }
 
 Int_t GetTriggerBit(const AliHLTCaloTriggerRawDigitDataStruct &dig, const TriggerType_t type, const Int_t mode) {
