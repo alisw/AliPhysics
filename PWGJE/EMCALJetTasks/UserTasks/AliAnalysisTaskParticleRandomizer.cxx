@@ -66,14 +66,14 @@ void AliAnalysisTaskParticleRandomizer::ExecOnce()
   {
     fJetRemovalArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fJetRemovalArrayName.Data())));
     if(!fJetRemovalArray)
-      AliFatal(Form("Jet array '%s' demand but not found in event!", fJetRemovalArrayName.Data()));
+      AliError(Form("Jet array '%s' demanded but not found in event!", fJetRemovalArrayName.Data()));
   }
 
   if((InputEvent()->FindListObject(Form("%s", fOutputArrayName.Data()))))
     AliFatal(Form("Output array '%s' already exists in the event! Rename it.", fInputArrayName.Data()));
 
   if(strcmp(fInputArray->GetClass()->GetName(), "AliAODTrack"))
-    AliFatal(Form("Track type %s not yet supported. Use AliAODTrack", fInputArray->GetClass()->GetName()));
+    AliError(Form("Track type %s not yet supported. Use AliAODTrack", fInputArray->GetClass()->GetName()));
 
   // Copy the input array to the output array
   fOutputArray = new TClonesArray(fInputArray->GetClass()->GetName());
