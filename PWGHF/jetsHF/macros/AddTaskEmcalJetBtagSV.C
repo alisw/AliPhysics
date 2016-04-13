@@ -1,4 +1,4 @@
-AliAnalysisTaskEmcalJetBtagSV2 *AddTaskEmcalJetBtagSV(const char *trkcontname   = "tracks",
+AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   = "tracks",
                                                      const char *jetcontname   = "Jets",
                                                      const char *mctrkcontname = "mcparticles",
                                                      const char *mcjetcontname = "MCJets",
