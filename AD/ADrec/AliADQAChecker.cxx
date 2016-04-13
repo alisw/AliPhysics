@@ -1307,7 +1307,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	histo->DrawCopy("colz");
     }
     
-    fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
+    //fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
     //fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
   }
 }
