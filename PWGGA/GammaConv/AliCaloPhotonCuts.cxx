@@ -1,16 +1,16 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                         *
- * Authors: Friederike Bock, Baldo Sahlmueller                           *
- * Version 1.0                                                 *
- *                                                    *
+ *                                                                        *
+ * Authors: Friederike Bock, Daniel Muehlheim                             *
+ * Version 1.0                                                            *
+ *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is        *
- * provided "as is" without express or implied warranty.               *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 ////////////////////////////////////////////////
@@ -156,13 +156,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistClusterEtavsPhiBeforeAcc(NULL),
   fHistClusterEtavsPhiAfterAcc(NULL),
   fHistClusterEtavsPhiAfterQA(NULL),
-  //fHistDistanceToBadChannelBeforeAcc(NULL),
-  //fHistDistanceToBadChannelAfterAcc(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
-  //fHistExoticCellBeforeQA(NULL),
-  //fHistExoticCellAfterQA(NULL),
-  //fHistNMatchedTracks(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
   fHistEnergyOfClusterAfterNL(NULL),
   fHistEnergyOfClusterBeforeQA(NULL),
@@ -296,13 +291,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEtavsPhiBeforeAcc(NULL),
   fHistClusterEtavsPhiAfterAcc(NULL),
   fHistClusterEtavsPhiAfterQA(NULL),
-  //fHistDistanceToBadChannelBeforeAcc(NULL),
-  //fHistDistanceToBadChannelAfterAcc(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
-  //fHistExoticCellBeforeQA(NULL),
-  //fHistExoticCellAfterQA(NULL),
-  //fHistNMatchedTracks(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
   fHistEnergyOfClusterAfterNL(NULL),
   fHistEnergyOfClusterBeforeQA(NULL),
@@ -368,10 +358,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 //________________________________________________________________________
 AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   // Destructor
-  //Deleting fHistograms leads to seg fault it it's added to output collection of a task
-  // if(fHistograms)
-  //    delete fHistograms;
-  // fHistograms = NULL;
   if(fCutString != NULL){
     delete fCutString;
     fCutString = NULL;
@@ -477,17 +463,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEtavsPhiAfterQA=new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
         fHistograms->Add(fHistClusterEtavsPhiAfterQA);
   } else{AliError(Form("Cluster Type is not EMCAL nor PHOS nor all: %i",fClusterType));}
-//----------------
   if(fIsJetJet){
     fHistClusterEtavsPhiBeforeAcc->Sumw2();
     fHistClusterEtavsPhiAfterAcc->Sumw2();
     fHistClusterEtavsPhiAfterQA->Sumw2();
   }
-//----------------
-  //fHistDistanceToBadChannelBeforeAcc = new TH1F(Form("DistanceToBadChannel_beforeAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_beforeAcceptance",200,0,40);
-  //fHistograms->Add(fHistDistanceToBadChannelBeforeAcc);
-  //fHistDistanceToBadChannelAfterAcc = new TH1F(Form("DistanceToBadChannel_afterAcceptance %s",GetCutNumber().Data()),"DistanceToBadChannel_afterAcceptance",200,0,40);
-  //fHistograms->Add(fHistDistanceToBadChannelAfterAcc);
   
   // Cluster quality related histograms
   Double_t timeMin = -2e-6;
@@ -501,12 +481,6 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistograms->Add(fHistClusterTimevsEBeforeQA);
   fHistClusterTimevsEAfterQA=new TH2F(Form("ClusterTimeVsE_afterClusterQA %s",GetCutNumber().Data()),"ClusterTimeVsE_afterClusterQA",800,timeMin,timeMax,100,0,40);
   fHistograms->Add(fHistClusterTimevsEAfterQA);
-    //fHistExoticCellBeforeQA=new TH2F(Form("ExoticCell_beforeClusterQA %s",GetCutNumber().Data()),"ExoticCell_beforeClusterQA",400,0,40,50,0.75,1);
-    //fHistograms->Add(fHistExoticCellBeforeQA);
-    //fHistExoticCellAfterQA=new TH2F(Form("ExoticCell_afterClusterQA %s",GetCutNumber().Data()),"ExoticCell_afterClusterQA",400,0,40,50,0.75,1);
-    //fHistograms->Add(fHistExoticCellAfterQA);
-    //fHistNMatchedTracks = new TH1F(Form("NMatchedTracks_%s",GetCutNumber().Data()),"NMatchedTracks",22,-1.5,20.5);
-    //fHistograms->Add(fHistNMatchedTracks);
   if(fUseNonLinearity){
     fHistEnergyOfClusterBeforeNL = new TH1F(Form("EnergyOfCluster_beforeNonLinearity %s",GetCutNumber().Data()),"EnergyOfCluster_beforeNonLinearity",500,0,50);
     fHistograms->Add(fHistEnergyOfClusterBeforeNL);
@@ -890,10 +864,6 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCS
     if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE;// no photon as mothers!
     }
-    // decision on prim/sec moved to main task
-//     if(particle->GetMother(0) >= fMCStack->GetNprimary()){
-//       return kFALSE;// the gamma has a mother, and it is not a primary particle
-//     }
     return kTRUE;
   }
   return kFALSE;
@@ -913,10 +883,6 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *
     if(particle->GetMother(0) >-1 && fMCStack->Particle(particle->GetMother(0))->GetPdgCode() == 11){
       return kFALSE;// no photon as mothers!
     }
-    // decision on prim/sec moved to main task
-//     if(particle->GetMother(0) >= fMCStack->GetNprimary()){
-//       return kFALSE;// the gamma has a mother, and it is not a primary particle
-//     }
     return kTRUE;
   }
   return kFALSE;
@@ -935,11 +901,6 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
     if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
         return kFALSE;// no photon as mothers!
     }
-    // decision on prim/sec moved to main task
-//    Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-//    if(!isPrimary){
-//      return kFALSE;// the gamma has a mother, and it is not a primary particle
-//    }
     return kTRUE;// return in case of accepted gamma
   }
   return kFALSE;
@@ -959,34 +920,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex,cluster->E());
   cutIndex++;
 
-//   Double_t minR = 999.0;
-  // get the minimum radius of tracks to cluster
-//   if(fHistDistanceTrackToClusterBeforeQA || fHistDistanceTrackToClusterAfterQA){
-//     Float_t pos[3];
-//     cluster->GetPosition(pos);// Get cluster position
-//     
-//     TVector3 cp(pos);
-//     int NtrMatched = 0;
-//     NtrMatched = cluster->GetNTracksMatched();
-//     fHistNMatchedTracks->Fill(NtrMatched);
-//     //loop over tracks for Jet QA
-//     TList *l = event->GetList();
-//     TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
-//     for(int itrack = 0;itrack < NtrMatched;itrack++){
-//       AliVTrack *trackcluster = static_cast<AliVTrack*>(tracks->At(itrack));
-//       if (! trackcluster) {
-//         AliError(Form("Couldn't get ESD track %d\n", itrack));
-//         continue;
-//       }
-//       Double_t dphi = -999.0;
-//       Double_t deta = -999.0;
-//       AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
-//       cout << "here" << endl;
-//       Double_t dr = sqrt(dphi*dphi + deta+deta);
-//       if(dr < minR)
-//         minR = dr;
-//     }//loop over tracks
-//   }
 
   Int_t nLM = GetNumberOfLocalMaxima(cluster, event);
   Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
@@ -994,8 +927,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   
   // Fill Histos before Cuts
   if(fHistClusterTimevsEBeforeQA) fHistClusterTimevsEBeforeQA->Fill(cluster->GetTOF(), cluster->E(), weight);
-//   if(fHistExoticCellBeforeQA) fHistExoticCellBeforeQA->Fill(cluster->E(), weight);
-//   if(fHistDistanceTrackToClusterBeforeQA) fHistDistanceTrackToClusterBeforeQA->Fill(minR, weight);
   if(fHistEnergyOfClusterBeforeQA) fHistEnergyOfClusterBeforeQA->Fill(cluster->E(), weight);
   if(fHistNCellsBeforeQA) fHistNCellsBeforeQA->Fill(cluster->GetNCells(), weight);
   if(fHistM02BeforeQA) fHistM02BeforeQA->Fill(cluster->GetM02(), weight);
@@ -1030,46 +961,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   }  
   cutIndex++;//2, next cut
 
-  // Minimum distance to track
-//   if (fUseDistTrackToCluster){
-//      Float_t pos[3];
-//      cluster->GetPosition(pos);// Get cluster position
-//      TVector3 cp(pos);
-//      int NtrMatched = 0;
-//      NtrMatched = cluster->GetNTracksMatched();
-//     fHistNMatchedTracks->Fill(NtrMatched);
-//      if(NtrMatched > 0){
-//       //loop over tracks for QA
-//       TList *l = event->GetList();
-//       TClonesArray *tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
-//       
-//       Double_t dphi = 999.0;
-//       Double_t deta = 999.0;
-//       Double_t dr2 = 999.0;
-// 
-//       for(int itrack = 0;itrack < NtrMatched;itrack++){
-//         AliVTrack *trackcluster = NULL;
-//         trackcluster = static_cast<AliVTrack*>(tracks->At(itrack));
-//         if (! trackcluster) {
-//         AliError(Form("Couldn't get ESD track %d\n", itrack));
-//         continue;
-//         }
-//         AliPicoTrack::GetEtaPhiDiff(trackcluster, cluster, dphi, deta);
-//         dr2 = dphi*dphi + deta+deta;
-//         //cout << dr << endl;
-//         if(dr2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
-//     //        if(dphi < fMinDistTrackToCluster || deta < fMinDistTrackToCluster){
-//         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
-//         return kFALSE;
-//         }
-//         
-//       }//loop over tracks
-//     }
-// //    if(cluster->GetEmcCpvDistance() < fMinDistTrackToCluster){
-// //      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
-// //      return kFALSE;
-// //    }
-//   }
   if (fIsPureCalo>0 && fVectorMatchedClusterIDs.size()>0){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
@@ -1160,8 +1051,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster, etaCluster, weight);
   if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E(), weight);
-//   if(fHistExoticCellAfterQA) fHistExoticCellAfterQA->Fill(cluster->E(), weight);
-//   if(fHistDistanceTrackToClusterAfterQA) fHistDistanceTrackToClusterAfterQA->Fill(minR, weight);
   if(fHistEnergyOfClusterAfterQA) fHistEnergyOfClusterAfterQA->Fill(cluster->E(), weight);
   if(fHistNCellsAfterQA) fHistNCellsAfterQA->Fill(cluster->GetNCells(), weight);
   if(fHistM02AfterQA) fHistM02AfterQA->Fill(cluster->GetM02(), weight);
@@ -2000,12 +1889,6 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
   if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
   cutIndex++;
 
-//  Double_t vertex[3] = {0,0,0};
-//   event->GetPrimaryVertex()->GetXYZ(vertex);
-  // TLorentzvector with cluster
-//  TLorentzVector clusterVector;
-//  cluster->GetMomentum(clusterVector,vertex);
-
   Float_t clusPos[3]={0,0,0};
   cluster->GetPosition(clusPos);
   TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
@@ -2082,7 +1965,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
       if(tracklabel > event->GetNumberOfTracks() ) continue;
       inTrack = esdev->GetTrack(tracklabel);
     } else {
-      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
         inTrack = dynamic_cast<AliVTrack*>(event->GetTrack(tracklabel));
       } else {
         for(Int_t ii=0;ii<event->GetNumberOfTracks();ii++) {
@@ -2238,7 +2121,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
       trackParam = new AliExternalTrackParam(*in);
     } else if(aodev) {
-      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
         inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       } else {
         for(Int_t ii=0;ii<aodev->GetNumberOfTracks();ii++) {
@@ -2610,6 +2493,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
   if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
 
   printf("NonLinearity Correction: \n");
+  printf("VO Reader name: %s \n",fV0ReaderName.Data());
   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (periodName.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(periodName);
   if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %o \n", fSwitchNonLinearity, periodName.Data(), fCurrentMC );
@@ -4052,6 +3936,38 @@ void AliCaloPhotonCuts::SetLogBinningXTH2(TH2* histoRebin){
   delete [] newbins;
   return;
 }
+
+//________________________________________________________________________
+Double_t AliCaloPhotonCuts::GetDistanceBetweenClusters(AliVCluster* cluster1, AliVCluster* cluster2){
+  
+  Float_t clusPos1[3]   = {0,0,0};
+  cluster1->GetPosition(clusPos1);
+  TVector3 clusterVector1(clusPos1[0],clusPos1[1],clusPos1[2]);
+  Double_t etaCluster1  = clusterVector1.Eta();
+  Double_t phiCluster1  = clusterVector1.Phi();
+  if (phiCluster1 < 0) phiCluster1 += 2*TMath::Pi();
+ 
+  Float_t clusPos2[3]   = {0,0,0};
+  cluster2->GetPosition(clusPos2);
+  TVector3 clusterVector2(clusPos2[0],clusPos2[1],clusPos2[2]);
+  Double_t etaCluster2  = clusterVector2.Eta();
+  Double_t phiCluster2  = clusterVector2.Phi();
+  if (phiCluster2 < 0) phiCluster2 += 2*TMath::Pi();
+  
+  Double_t deltaEta     = TMath::Abs(etaCluster1-etaCluster2);
+  Double_t deltaPhi     = 0;
+  if (phiCluster1 > phiCluster2){
+    deltaPhi            = phiCluster1-phiCluster2;
+    if (deltaPhi > TMath::Pi()) 
+      deltaPhi          = 2*TMath::Pi()-deltaPhi;
+  } else {
+    deltaPhi            = phiCluster2-phiCluster1;
+    if (deltaPhi > TMath::Pi()) 
+      deltaPhi          = 2*TMath::Pi()-deltaPhi;
+  }  
+  Double_t r            = TMath::Sqrt(deltaPhi*deltaPhi+deltaEta*deltaEta);
+  return r;
+}  
 
 //________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){

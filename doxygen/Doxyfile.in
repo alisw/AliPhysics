@@ -761,12 +761,17 @@ WARN_LOGFILE           =
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
+                         @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks/Tracks \
+                         @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks/UserTasks \
+                         @CMAKE_SOURCE_DIR@/PWGJE/FlavourJetTasks \
+                         @CMAKE_SOURCE_DIR@/PWGJE/StrangenessInJets \
                          @CMAKE_SOURCE_DIR@/PWGLF/STRANGENESS/Hypernuclei/NucleiPbPb2011 \
                          @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
+                         @CMAKE_SOURCE_DIR@/PWGMM \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/macros \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QA/macros \
@@ -774,6 +779,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALbase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtasks \
+                         @CMAKE_SOURCE_DIR@/PWG/JETFW \
                          @CMAKE_SOURCE_DIR@/PWGHF \
                          @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF \
                          @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF/macros

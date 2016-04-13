@@ -40,6 +40,7 @@ ClassImp(AliAnalysisTaskConversionQA)
 //________________________________________________________________________
 AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE(),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fConversionGammas(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
@@ -131,6 +132,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
 
 AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : AliAnalysisTaskSE(name),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fConversionGammas(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
@@ -437,7 +439,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     fTreeList->Add(fTreeQA);
   }
 
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   
   if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
     if (fV0Reader->GetV0FindingEfficiencyHistograms())

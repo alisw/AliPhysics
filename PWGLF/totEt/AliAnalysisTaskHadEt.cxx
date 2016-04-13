@@ -143,9 +143,9 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   }
 
   Bool_t selectPrimaries=kTRUE;
-  if(fEsdtrackCutsITSTPC) delete fEsdtrackCutsITSTPC;
-  if(fEsdtrackCutsITS) delete fEsdtrackCutsITS;
-  if(fEsdtrackCutsTPC) delete fEsdtrackCutsTPC;
+//   if(fEsdtrackCutsITSTPC) delete fEsdtrackCutsITSTPC;
+//   if(fEsdtrackCutsITS) delete fEsdtrackCutsITS;
+//   if(fEsdtrackCutsTPC) delete fEsdtrackCutsTPC;
   //We do not use these because we are using the 2010 900 GeV data
 //   if(fRecAnalysis->DataSet()==2009){
 //     cout<<"Setting track cuts for the 2009 p+p collisions at 900 GeV"<<endl;
@@ -193,7 +193,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   }
   if(fRecAnalysis->DataSet()==2015){
     cout<<"Setting track cuts for the 2011 Pb+Pb collisions at 2.76 TeV"<<endl;
-    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selectPrimaries);
+    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selectPrimaries,1,kTRUE,kTRUE);//extra arguments in 2015: replace cluster cut by number of crossed rows, cut acceptance edges, and remove distorted TPC regions
+    fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");

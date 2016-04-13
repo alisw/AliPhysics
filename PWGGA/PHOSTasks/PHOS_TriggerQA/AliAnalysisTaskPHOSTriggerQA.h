@@ -18,11 +18,13 @@ class AliAnalysisTaskPHOSTriggerQA : public AliAnalysisTaskSE {
 public:
 
   AliAnalysisTaskPHOSTriggerQA();
-  AliAnalysisTaskPHOSTriggerQA(const char *name);
+  AliAnalysisTaskPHOSTriggerQA(const char *name, Int_t L1_threshold=-1);
   virtual ~AliAnalysisTaskPHOSTriggerQA() {}
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
+
+  void SelectL1Threshold(Int_t L1_threshold) { fL1Threshold = L1_threshold; } 
   
 private:
 
@@ -42,6 +44,7 @@ private:
   TList * fOutputContainer;   //final histogram container
   AliPHOSGeometry  *fPHOSGeo; //! PHOS geometry
   Int_t fEventCounter;        // number of analyzed events
+  Int_t fL1Threshold;         // -1 - L0, 0 - L1 High, 1 - L1 Medium, 2 - L1 Low
 
   ClassDef(AliAnalysisTaskPHOSTriggerQA, 1); // PHOS analysis task
 };

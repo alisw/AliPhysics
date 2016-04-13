@@ -67,9 +67,10 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
+    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+    if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
 		
-	        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -84,6 +85,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		if(cutnumberEvent!=""){
 			fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 			fEventCuts->SetPreSelectionCutFlag(kTRUE);
+            fEventCuts->SetV0ReaderName(V0ReaderName);
 			if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
 				fEventCuts->DoEtaShift(doEtaShift);
 				fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -97,6 +99,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
 			fCuts->SetIsHeavyIon(isHeavyIon);
+            fCuts->SetV0ReaderName(V0ReaderName);
 			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
@@ -154,6 +157,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	task= new AliAnalysisTaskGammaConvDalitzV1(Form("GammaConvDalitzV1_%i",trainConfig));
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
+    task->SetV0ReaderName(V0ReaderName);
 
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 4;
@@ -448,8 +452,9 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 			}	
 		}
 	
-	
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+        
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
 			analysisEventCuts[i]->SetEtaShift(stringShift);
@@ -459,15 +464,12 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
-		
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
 		if( ! analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data()) ) {
 			cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
 			return 0;
 		}
-		
-		
-					
-		
+    
 		
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);

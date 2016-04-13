@@ -59,6 +59,7 @@ AliAnalysisTaskEtaPhigg::AliAnalysisTaskEtaPhigg(const char *name)
   fEvent(0x0),
   fPHOSEvent(0x0),
   fPCMEvent(0x0),
+  fHadrEvent(0x0),
   fV0AFlat(0x0),
   fV0CFlat(0x0),
   fRP(0.),
@@ -98,6 +99,7 @@ AliAnalysisTaskEtaPhigg::AliAnalysisTaskEtaPhigg(const char *name)
       for(Int_t k=0;k<1;k++){ //no RP bins
 	fPHOSEvents[i][j][k]=0 ;
 	fPCMEvents[i][j][k]=0 ;
+	fHadrEvents[i][j][k]=0 ;
       }
   }
   
@@ -135,9 +137,15 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 10,0.,10.)) ;
  
   fOutputContainer->Add(new TH2F("phiRP","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
- 
- 
+  fOutputContainer->Add(new TH2F("phiRPV0A","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("phiRPV0Aflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("phiRPV0C","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("phiRPV0Cflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
+  fOutputContainer->Add(new TH2F("phiRPV0AC","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
+  fOutputContainer->Add(new TH2F("phiRPV0ACflat","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
+  fOutputContainer->Add(new TH2F("phiRPvsV0A","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
+  fOutputContainer->Add(new TH2F("phiRPvsV0C","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
+
   //vertex distribution
   fOutputContainer->Add(new TH2F("hZvertex","Z vertex position", 50,-25.,25.,nRuns,0.,float(nRuns))) ;
   
@@ -201,6 +209,9 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH3F(Form("hPCMv2"),"Two-photon",100,-TMath::Pi()/2,TMath::Pi()/2.,100,0.,10.,100,0.,10.));
   fOutputContainer->Add(new TH3F(Form("hmiPCMv2"),"Two-photon",100,-TMath::Pi()/2,TMath::Pi()/2.,100,0.,10.,100,0.,10.));
+
+  fOutputContainer->Add(new TH3F("hGammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,TMath::Pi()/2.,10,0.,2.));
+  fOutputContainer->Add(new TH3F("hmiGammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,TMath::Pi()/2.,10,0.,2.));
   
   for(Int_t iCut=0; iCut<nCuts; iCut++){
     //Photon flow
@@ -218,12 +229,23 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
 
     fOutputContainer->Add(new TH3F(Form("hetaphiPHOS_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
     fOutputContainer->Add(new TH3F(Form("hmietaphiPHOS_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+
+    
+    fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
+
+    fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
+
+    fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));  
+    
   }
     
   for(Int_t ikT=0; ikT<7; ikT++){   
 
-    fOutputContainer->Add(new TH3F(Form("hetaphiPCMRP_%s",kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,20.,0.,2.));
-    fOutputContainer->Add(new TH3F(Form("hmietaphiPCMRP_%s",kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,20.,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hetaphiPCMRP_%s",kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.));
+    fOutputContainer->Add(new TH2F(Form("hmietaphiPCMRP_%s",kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.));
 
     fOutputContainer->Add(new TH3F(Form("hetaphiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
     fOutputContainer->Add(new TH3F(Form("hmietaphiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
@@ -235,23 +257,13 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
       fOutputContainer->Add(new TH3F(Form("hmietaphiPHOS_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
 
       fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-
-      
-      fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
-      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
-
-      fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
-      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
-
-      fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCM_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
-      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,0.,10.));
+      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCM_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));      
      
-      fOutputContainer->Add(new TH3F(Form("hetaphiPHOSRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,20.,0.,2.));
-      fOutputContainer->Add(new TH3F(Form("hetaphiPHOSPCMRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,20.,0.,2.));
+      fOutputContainer->Add(new TH2F(Form("hetaphiPHOSRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.));
+      fOutputContainer->Add(new TH2F(Form("hetaphiPHOSPCMRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.));
 
-      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,20.,0.,2.));
-      fOutputContainer->Add(new TH3F(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,20.,0.,2.));
+      fOutputContainer->Add(new TH2F(Form("hmietaphiPHOSRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.));
+      fOutputContainer->Add(new TH2F(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.));
     }        
   }
 
@@ -429,19 +441,32 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
   //V0C
   Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
 
+  //Whole V0
+  fRP = eventPlane->CalculateVZEROEventPlane(fEvent,10, harmonics,qx,qy);
+
   while(rpV0A<0)rpV0A+=TMath::TwoPi()/harmonics ;
   while(rpV0A>TMath::TwoPi()/harmonics)rpV0A-=TMath::TwoPi()/harmonics ;
   
   while(rpV0C<0)rpV0C+=TMath::TwoPi()/harmonics ;
   while(rpV0C>TMath::TwoPi()/harmonics)rpV0C-=TMath::TwoPi()/harmonics ;
 
-  FillHistogram("phiRP",0.5*(rpV0A+rpV0C),fCentrality) ;  
+  while(fRP<0)fRP+=TMath::TwoPi()/harmonics ;
+  while(fRP>TMath::TwoPi()/harmonics)fRP-=TMath::TwoPi()/harmonics ;
+  
+  
+  FillHistogram("phiRP",fRP,fCentrality) ;  
+  FillHistogram("phiRPV0A",rpV0A,fCentrality) ;  
+  FillHistogram("phiRPV0C",rpV0C,fCentrality) ;  
+  FillHistogram("phiRPV0AC",rpV0A,rpV0C) ;  
 
   rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
   rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
+  FillHistogram("phiRPV0Aflat",rpV0A,fCentrality) ;  
+  FillHistogram("phiRPV0Cflat",rpV0C,fCentrality) ;  
+  FillHistogram("phiRPV0ACflat",rpV0A,rpV0C) ;  
   
-  fRP=0.5*(rpV0A+rpV0C) ;  
-  FillHistogram("phiRPflat",fRP,fCentrality) ;  
+  FillHistogram("phiRPvsV0A",fRP,rpV0A) ;  
+  FillHistogram("phiRPvsV0C",fRP,rpV0C) ;  
   
  
   FillHistogram("hSelEvents",5.5,fRunNumber-0.5) ;
@@ -462,6 +487,13 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     fPCMEvents[zvtx][fCenBin][irp]=new TList() ;
   TList * prevPCM =  fPCMEvents[zvtx][fCenBin][irp] ;
 
+  if(!fHadrEvents[zvtx][fCenBin][irp]) 
+    fHadrEvents[zvtx][fCenBin][irp]=new TList() ;
+  TList * prevHadr = fHadrEvents[zvtx][fCenBin][irp] ;
+  TClonesArray * prevHadrEvent = (TClonesArray*)prevHadr->At(0) ;
+  Int_t nPrevHadr= 0; 
+  if(prevHadrEvent)nPrevHadr=prevHadrEvent->GetEntriesFast() ;
+  
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
   else
@@ -472,6 +504,10 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
   else
     fGammaCandidates = new TClonesArray("AliAODConversionPhoton",200) ;
   
+  if(fHadrEvent)
+    fHadrEvent->Clear() ;
+  else
+    fHadrEvent = new TClonesArray("TVector3",10000) ;
 
   TVector3 vertex(vtx5);
   
@@ -571,6 +607,20 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
   FillHistogram("hCenPCM",fCentrality,inPCM) ;
 //  printf("Is selected=%d, n=%d, inPCM=%d \n",fV0Reader->IsEventSelected(), fV0Reader->GetNReconstructedGammas(), inPCM) ;
 
+
+  //charged hadrons
+  Int_t nHadr = 0;
+  for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+      if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+      if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      if(fabs(curTrack->Eta())>0.5) continue;
+      if(curTrack->Pt()<1.) continue;
+      new((*fHadrEvent)[nHadr++]) TVector3(curTrack->Px(),curTrack->Py(),curTrack->Pz()) ;     
+  }
+
+  
+  
   const Double_t kgMass=0. ;
 	
   const Int_t nCuts=7 ;
@@ -624,8 +674,22 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
           FillHistogram(Form("hetaphiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	FillHistogram(Form("hetaphiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	FillHistogram(Form("hetaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+	FillHistogram(Form("hetaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
 	
+	//gamma-hadron
+	if(iCut==3){ // both
+	  for(Int_t ih=0; ih<nHadr; ih){
+	    TVector3 *v = (TVector3*)fHadrEvent->At(ih) ;
+	    Double_t dPhiHadr=TVector2::Phi_mpi_pi(v->Phi()-ph1->Phi()) ;
+	    FillHistogram("hGammaHadr",dPhi,dPhiHadr) ;
+	  }
+	  for(Int_t ih=0; ih<nPrevHadr; ih){
+	    TVector3 *v = (TVector3*)prevHadrEvent->At(ih) ;
+	    Double_t dPhiHadr=TVector2::Phi_mpi_pi(v->Phi()-ph1->Phi()) ;
+	    FillHistogram("mihGammaHadr",dPhi,dPhiHadr) ;
+	  }
+	  
+	}
       }
     }
   }
@@ -666,7 +730,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
         FillHistogram(Form("hetaphiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	FillHistogram(Form("hetaphiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	FillHistogram(Form("hetaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+	FillHistogram(Form("hetaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
       }
     }
   }
@@ -701,7 +765,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
       FillHistogram(Form("hPCMv2"),dPhi,e1,e2) ;
 	
       FillHistogram(Form("hetaphiPCM_%s",kTbin.Data()),dEta,dPhi,asym) ;
-      FillHistogram(Form("hetaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+      FillHistogram(Form("hetaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi);
      
     }
   }
@@ -742,7 +806,8 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
             FillHistogram(Form("hmietaphiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	  FillHistogram(Form("hmietaphiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  FillHistogram(Form("hmietaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+	  FillHistogram(Form("hmietaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	  
 	}
       }
     }
@@ -786,7 +851,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
           FillHistogram(Form("hmietaphiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	  FillHistogram(Form("hmietaphiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+	  FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
 	}
       } // end of loop i2
     }
@@ -826,7 +891,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
           FillHistogram(Form("hmietaphiPHOSPCM_%s_mod%d",cut[iCut],ph2->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	  FillHistogram(Form("hmietaphiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+	  FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
 	}
       } // end of loop i2
     }
@@ -862,7 +927,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
 	FillHistogram(Form("hmiPCMv2"),dPhi,e1,e2) ;
 	
 	FillHistogram(Form("hmietaphiPCM_%s",kTbin.Data()),dEta,dPhi,asym) ;
-	FillHistogram(Form("hmietaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi,0.5*(e1+e2));
+	FillHistogram(Form("hmietaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi);
       } // end of loop i2
     }
   } // end of loop i1
@@ -891,6 +956,13 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
       delete tmp ;
     }
   }
+
+  //Hadrons
+  prevHadr->AddFirst(fHadrEvent);
+  TClonesArray * tmp = static_cast<TClonesArray*>(prevHadr->Last()) ;
+  prevHadr->RemoveLast() ;
+  delete tmp ;
+    
   // Post output data.
   PostData(1, fOutputContainer);
   fEventCounter++;

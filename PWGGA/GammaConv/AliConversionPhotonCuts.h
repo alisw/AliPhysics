@@ -37,8 +37,6 @@ using namespace std;
 class AliConversionPhotonCuts : public AliAnalysisCuts {
       
   public: 
-    
-
     enum cutIds {
       kv0FinderType,                
       ketaCut,                                     

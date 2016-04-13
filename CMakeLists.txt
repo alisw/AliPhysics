@@ -200,6 +200,7 @@ else()
   add_subdirectory(PWGLF)
   add_subdirectory(PWGPP)
   add_subdirectory(PWGUD)
+  add_subdirectory(PWGMM)
 
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")

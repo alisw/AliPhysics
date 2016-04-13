@@ -34,6 +34,7 @@ public:
     virtual void   UserExec(Option_t *);
     virtual void   Terminate(const Option_t*);
     
+    void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetIsHeavyIon(Int_t flag){
         fIsHeavyIon = flag;
         
@@ -86,6 +87,7 @@ public:
     
 protected:
 	AliV0ReaderV1 						*fV0Reader;											//
+    TString                             fV0ReaderName;
 	AliGammaConversionAODBGHandler 		**fBGHandler;										//
 	AliConversionAODBGHandlerRP    		**fBGHandlerRP;										//
 	AliVEvent 							*fInputEvent;										//
@@ -203,7 +205,7 @@ private:
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-	ClassDef(AliAnalysisTaskGammaConvFlow, 5);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 6);
 };
 
 #endif
