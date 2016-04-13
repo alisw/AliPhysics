@@ -177,6 +177,8 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   Int_t inPHOS[3] = {};
   Int_t ntr = 0;
 
+  Int_t kUsedCluster[] = {multClu*0};
+  
   //Loop over 4x4 fired regions
   while(trgESD->Next()) {
 
@@ -194,10 +196,12 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
     FillHistogram(key,trelid[2]-1,trelid[3]-1);
     
     inPHOS[trelid[0]-1]++;
-
+    
     for (Int_t i=0; i<multClu; i++) {
       
       AliESDCaloCluster *c1 = event->GetCaloCluster(i);
+      if(kUsedCluster[i]) continue; // already matched to some trigger patch
+      
       if(!c1->IsPHOS()) continue;
       if(c1->GetType() == AliESDCaloCluster::kPHOSCharged) continue; // reject CPV cluster
       
@@ -218,6 +222,8 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
       FillHistogram(key,relid[2]-1,relid[3]-1);
       
       if( Matched(trelid,relid) ) {
+	
+	kUsedCluster[i] = 1;
 	
 	snprintf(key,55,"hPhotTrigSM%d",relid[0]);
 	FillHistogram(key,c1->E());
