@@ -254,7 +254,8 @@ AliHLTComponentDataType AliHLTEMCALTriggerQAComponent::GetOutputDataType()
 void AliHLTEMCALTriggerQAComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   //see header file for documentation
-  constBase = 250000000;
+  //constBase = 250000000;
+  constBase = 250000;
   // to be reviewed later
   inputMultiplier = 0;
 }
