@@ -1,3 +1,8 @@
+/// \class AliJetEmbeddingFromGenTask
+/// \brief Class for embedding a generated monte carlo event into a data event
+///
+/// The class inherits from AliJetModelBaseTask. This class takes care of the generation of the PYTHIA or HERWIG event and uses the base class method AddTrack (see AliJetModelBaseTask) to add each track into the original track array or a copy of the track array
+
 #ifndef ALIJETEMBEDDINGFROMGENTASK_H
 #define ALIJETEMBEDDINGFROMGENTASK_H
 

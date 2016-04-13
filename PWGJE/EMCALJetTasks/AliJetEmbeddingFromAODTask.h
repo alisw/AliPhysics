@@ -1,3 +1,8 @@
+/// \class AliJetEmbeddingFromAODTask
+/// \brief Class for embedding a AOD event into a data event
+///
+/// The class inherits from AliJetModelBaseTask. This class takes care of handling the AOD files to be used for the embedding. It uses the base class method AddTrack (see AliJetModelBaseTask) to add each track into the original track array or a copy of the track array
+
 #ifndef ALIJETEMBEDDINGFROMAODTASK_H
 #define ALIJETEMBEDDINGFROMAODTASK_H
 
