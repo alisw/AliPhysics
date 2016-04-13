@@ -918,12 +918,14 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
  TObjArray *pulserObjects = new TObjArray;
  TObjArray *pulserObjectsOCDB=0;   
  pulserObjects->SetOwner(kTRUE);
- pulserObjectsOCDB->SetOwner(kTRUE);
+
   
  AliCDBEntry* entry = GetFromOCDB("Calib", "Pulser");
  if (entry) pulserObjectsOCDB = (TObjArray*)entry->GetObject();
  if ( pulserObjectsOCDB==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC pulser entry available.\n");
+ } else {
+     pulserObjectsOCDB->SetOwner(kTRUE);
  }
 
  AliTPCCalPad *pulserTmean = new AliTPCCalPad("PulserTmean","PulserTmean");
