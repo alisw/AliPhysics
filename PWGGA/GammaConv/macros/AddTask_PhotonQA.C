@@ -50,8 +50,9 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   }
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
     
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -69,6 +70,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
       if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
+        fEventCuts->SetV0ReaderName(V0ReaderName);
         if (IsHeavyIon==2){
           fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
           fEventCuts->DoEtaShift(doEtaShiftV0Reader);
@@ -82,6 +84,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
       fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(IsHeavyIon);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -106,10 +109,12 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   }   
 
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
+  analysisEventCuts->SetV0ReaderName(V0ReaderName);
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
   analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
   AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
+  analysisCuts->SetV0ReaderName(V0ReaderName);
   analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
   analysisCuts->SetFillCutHistograms("",kFALSE);
   
@@ -118,6 +123,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
   fQA->FillType(kTree,kHistograms);
   fQA->SetIsMC(isMC);
+  fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();

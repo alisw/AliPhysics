@@ -207,12 +207,15 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
  TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
  cout<<"name des containers  "<<name.Data()<<endl;
-    AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
+ AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
  //  AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
  // if (clusterCont) clusterCont->SetClusPtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
+  task->GetTrackContainer(0)->SetClassName("AliAODTrack");
+  task->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
+  
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
     // #### Add analysis task
   manager->AddTask(task);

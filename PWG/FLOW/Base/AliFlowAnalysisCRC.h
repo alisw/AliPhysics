@@ -713,6 +713,10 @@ public:
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
  void SetCRCQVecWeightsList(TList* const wlist) {this->fCRCQVecWeightsList = wlist;}
  TList* GetCRCQVecWeightsList() const {return this->fCRCQVecWeightsList;}
+  void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
+  TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  void SetZDCESEList(TList* const kList) {this->fZDCESEList = kList;};
+  TList* GetZDCESEList() const {return this->fZDCESEList;};
  // 12.a) EbE Corr:
  void SetCRCCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCorrProdTempHist[c][eg][h] = TH;};
  TH1D* GetCRCCorrProdTempHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCorrProdTempHist[c][eg][h];};
@@ -740,14 +744,14 @@ public:
  TProfile* GetCRCNUATermsPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[r][c][eg][h];};
  
  // 12.e) Q Vectors:
- void SetCRCQVecReHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecRe[r][c] = TH;};
- TProfile* GetCRCQVecReHist(Int_t const r, Int_t const c) const {return this->fCRCQVecRe[r][c];};
- void SetCRCQVecImHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecIm[r][c] = TH;};
- TProfile* GetCRCQVecImHist(Int_t const r, Int_t const c) const {return this->fCRCQVecIm[r][c];};
- void SetCRCQVecReCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecReCorr[r][c] = TH;};
- TProfile* GetCRCQVecReCorrHist(Int_t const r, Int_t const c) const {return this->fCRCQVecReCorr[r][c];};
- void SetCRCQVecImCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCQVecImCorr[r][c] = TH;};
- TProfile* GetCRCQVecImCorrHist(Int_t const r, Int_t const c) const {return this->fCRCQVecImCorr[r][c];};
+ void SetCRCQ2ReHist(TProfile* const TH, Int_t const r) {this->fCRCQ2Re[r] = TH;};
+ TProfile* GetCRCQ2ReHist(Int_t const r) const {return this->fCRCQ2Re[r];};
+ void SetCRCQ2ImHist(TProfile* const TH, Int_t const r) {this->fCRCQ2Im[r] = TH;};
+ TProfile* GetCRCQ2ImHist(Int_t const r) const {return this->fCRCQ2Im[r];};
+ void SetCRCQ2ReCorrHist(TProfile* const TH, Int_t const r) {this->fCRCQ2ReCorr[r] = TH;};
+ TProfile* GetCRCQ2ReCorrHist(Int_t const r) const {return this->fCRCQ2ReCorr[r];};
+ void SetCRCQ2ImCorrHist(TProfile* const TH, Int_t const r) {this->fCRCQ2ImCorr[r] = TH;};
+ TProfile* GetCRCQ2ImCorrHist(Int_t const r) const {return this->fCRCQ2ImCorr[r];};
  void SetCRCPhiHist(TH2D* const TH, Int_t const r, Int_t const c, Int_t const i) {this->fCRCPhiHist[r][c][i] = TH;};
  TH2D* GetCRCPhiHist(Int_t const r, Int_t const c, Int_t const i) const {return this->fCRCPhiHist[r][c][i];};
  
@@ -1375,16 +1379,21 @@ private:
  TList *fCRCQVecList; //! Q Vectors list
  TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
  TList *fCRCQVecWeightsList; //! Weights for Q Vectors
- TProfile *fCRCQVecRe[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Re
- TProfile *fCRCQVecIm[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Im
- TProfile *fCRCQVecReCorr[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Re
- TProfile *fCRCQVecImCorr[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Im
+ TList *fCRCZDCCalibList; //! ZDC calibration
+ TList *fZDCESEList; //! ZDC ESE
+ TProfile *fCRCQ2Re[fCRCMaxnRun]; //! Q Vectors Re
+ TProfile *fCRCQ2Im[fCRCMaxnRun]; //! Q Vectors Im
+ TProfile *fCRCQ2ReCorr[fCRCMaxnRun]; //! Q Vectors Re
+ TProfile *fCRCQ2ImCorr[fCRCMaxnRun]; //! Q Vectors Im
  TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
+ AliFlowVector fTPCQ2Recenter;
  
  // temp
  TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
- TProfile *fTPCQHist[fCRCQVecnCR][2];  //! Run-by-run TPCQvecHist
+ TProfile *fTPCQHist[2];  //! Run-by-run TPCQvecHist
  TProfile *fZDCQHist[4];               //! Run-by-run ZDCQvecHist
+ TH1D *fZDCESEMinHist[2]; //!
+ TH1D *fZDCESEMaxHist[2]; //!
  
  TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
@@ -1567,7 +1576,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 4);
+ ClassDef(AliFlowAnalysisCRC, 5);
  
 };
 

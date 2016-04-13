@@ -41,6 +41,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		
 		void SetLogBinningXTH2(TH2* histoRebin);
 			
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
 			
 		void SetIsHeavyIon(Int_t flag){
@@ -93,6 +94,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 		
 		AliV0ReaderV1 							*fV0Reader;
+        TString                                  fV0ReaderName;
 		AliDalitzElectronSelector				*fElecSelector;
 		AliGammaConversionAODBGHandler 			**fBGHandler;
 		AliESDEvent 							*fESDEvent;
@@ -312,7 +314,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 		AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 6 );
+        ClassDef( AliAnalysisTaskGammaConvDalitzV1, 7 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H

@@ -1,16 +1,16 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
-*                                            *
-* Authors: Svein Lindal, Daniel Lohner                       *
-* Version 1.0                                    *
-*                                         *
-* Permission to use, copy, modify and distribute this software and its   *
-* documentation strictly for non-commercial purposes is hereby granted   *
-* without fee, provided that the above copyright notice appears in all   *
-* copies and that both the copyright notice and this permission notice   *
-* appear in the supporting documentation. The authors make no claims     *
-* about the suitability of this software for any purpose. It is        *
-* provided "as is" without express or implied warranty.             *
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.  *
+*                                                                         *
+* Authors: Friederike Bock, Daniel Muehlheim                              *
+* Version 1.0                                                             *
+*                                                                         *
+* Permission to use, copy, modify and distribute this software and its    *
+* documentation strictly for non-commercial purposes is hereby granted    *
+* without fee, provided that the above copyright notice appears in all    *
+* copies and that both the copyright notice and this permission notice    *
+* appear in the supporting documentation. The authors make no claims      *
+* about the suitability of this software for any purpose. It is           *
+* provided "as is" without express or implied warranty.                   *
 **************************************************************************/
 
 ////////////////////////////////////////////////
@@ -1946,41 +1946,42 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                              70, 85, 99, 115, 132,
                                              150, 169, 190, 212, 235,
                                              1000};
-            Double_t weightsBins[20]     = {  1, 1, 1, 1, 1,
-                                              1, 1, 1, 1, 1,
-                                              1, 1, 1, 1, 1,
-                                              1, 1, 1, 1, 1};
+            Double_t weightsBins[20]     = {  0.955373, 0.821992, 0.780789, 0.505334, 0.259068,
+                                              0.127333, 0.0466297, 0.0177833, 0.00793359, 0.00287752,
+                                              0.00120152, 0.00045384, 0.000233819, 0.000114206, 5.86274e-05,
+                                              3.1154e-05, 1.77343e-05, 9.71544e-06, 5.48182e-06, 8.08904e-06}; //preliminary estimates
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 20) weight = weightsBins[bin];
-
+            //temporary fix
+            else eventAccepted = kFALSE;
         } else if ( fPeriodEnum == kLHC16c3a ){
             Double_t ptHardBinRanges[6] = {  7, 9, 12, 16, 21, 1000};
-            Double_t weightsBins[5]     = {  1, 1, 1, 1, 1};
+            Double_t weightsBins[5]     = {  0.00672445, 0.00799158, 0.00678934, 0.00463908, 0.00600068}; //preliminary estimates
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 5) weight = weightsBins[bin];
 
         } else if (fPeriodEnum == kLHC16c3b ){
             Double_t ptHardBinRanges[7] = {  14, 19, 26, 35, 48, 66, 1000};
-            Double_t weightsBins[6]     = {  1, 1, 1, 1, 1, 1};
+            Double_t weightsBins[6]     = {  0.00608281, 0.00393646, 0.00200138, 0.000986267, 0.000389051, 0.0001863}; //preliminary estimates
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 6) weight = weightsBins[bin];
 
         } else if (fPeriodEnum == kLHC16c3c ){
             Double_t ptHardBinRanges[8] = {  0, 5, 11, 21, 36, 57, 84, 1000};
-            Double_t weightsBins[7]     = {  1, 1, 1, 1, 1, 1, 1};
+            Double_t weightsBins[7]     = {  0.00151999, 0.000100346, 1.27688e-05, 1.82388e-06, 3.08506e-07, 6.00308e-08, 1.88414e-08}; //preliminary estimates
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 7) weight = weightsBins[bin];
 
         } else if ( fPeriodEnum == kLHC13b4_fix || fPeriodEnum == kLHC13b4_plus ){
           Double_t ptHardBinRanges[11]   = {  5,     11,   21,   36,   57, 
-                            84,    117,   152,  191,    234,
-                            1000};
+                                             84,    117,   152,  191,    234,
+                                             1000};
           Double_t weightsBins[10]     = {  2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
-                            5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
+                                            5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 10) weight = weightsBins[bin];
@@ -2089,31 +2090,33 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                            70, 85, 99, 115, 132,
                                            150, 169, 190, 212, 235,
                                            1000};
-          Double_t weightsBins[20]     = {  1, 1, 1, 1, 1,
-                                            1, 1, 1, 1, 1,
-                                            1, 1, 1, 1, 1,
-                                            1, 1, 1, 1, 1};
+          Double_t weightsBins[20]     = {  0.955373, 0.821992, 0.780789, 0.505334, 0.259068,
+                                            0.127333, 0.0466297, 0.0177833, 0.00793359, 0.00287752,
+                                            0.00120152, 0.00045384, 0.000233819, 0.000114206, 5.86274e-05,
+                                            3.1154e-05, 1.77343e-05, 9.71544e-06, 5.48182e-06, 8.08904e-06}; //preliminary estimates
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
+          //temporary fix
+          else eventAccepted = kFALSE;
 
       } else if ( fPeriodEnum == kLHC16c3a ){
           Double_t ptHardBinRanges[6] = {  7, 9, 12, 16, 21, 1000};
-          Double_t weightsBins[5]     = {  1, 1, 1, 1, 1};
+          Double_t weightsBins[5]     = {  0.00672445, 0.00799158, 0.00678934, 0.00463908, 0.00600068}; //preliminary estimates
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 5) weight = weightsBins[bin];
 
       } else if ( fPeriodEnum == kLHC16c3b ){
           Double_t ptHardBinRanges[7] = {  14, 19, 26, 35, 48, 66, 1000};
-          Double_t weightsBins[6]     = {  1, 1, 1, 1, 1, 1};
+          Double_t weightsBins[6]     = {  0.00608281, 0.00393646, 0.00200138, 0.000986267, 0.000389051, 0.0001863}; //preliminary estimates
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 6) weight = weightsBins[bin];
 
       } else if ( fPeriodEnum == kLHC16c3c ){
           Double_t ptHardBinRanges[8] = {  0, 5, 11, 21, 36, 57, 84, 1000};
-          Double_t weightsBins[7]     = {  1, 1, 1, 1, 1, 1, 1};
+          Double_t weightsBins[7]     = {  0.00151999, 0.000100346, 1.27688e-05, 1.82388e-06, 3.08506e-07, 6.00308e-08, 1.88414e-08}; //preliminary estimates
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 7) weight = weightsBins[bin];
@@ -2123,7 +2126,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                            84,    117,  152,  191,  234,
                                           1000};
         Double_t weightsBins[10]     = {  2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
-                          5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
+                                          5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 10) weight = weightsBins[bin];
@@ -3865,7 +3868,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   ) {
     fPeriodEnum = kLHC15fm;
   } else if (periodName.CompareTo("LHC15n") == 0 ){
-    fPeriodEnum == kLHC15n;  
+    fPeriodEnum = kLHC15n;
   } else if (periodName.CompareTo("LHC15o") == 0 ){
     fPeriodEnum = kLHC15o;  
     

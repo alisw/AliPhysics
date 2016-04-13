@@ -63,6 +63,7 @@ ClassImp(AliAnalysisTaskGammaCalo)
 //________________________________________________________________________
 AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fBGHandler(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
@@ -267,6 +268,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fBGHandler(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
@@ -1404,7 +1406,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 
   fMapMultipleCountTrueClusterGammas.clear();
 
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
   
   if(fV0Reader)

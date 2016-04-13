@@ -16,6 +16,7 @@ class AliAODMCParticle;
 class AliMCEvent;
 class AliESDEvent;
 class AliESDtrack;
+class AliAnalysisUtils;
 #include "AliESDtrackCuts.h"
 
 
@@ -161,6 +162,9 @@ public:
 	AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&);*/
 	virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;};
 	Bool_t IsEventSelected();
+	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+	  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kVertexZContrib,kPhysicsSelection,kNoContributors,kDeltaVertexZ,kNoVertexTracks,kVertexZResolution,kMVPileup,kSPDClusterCut,kZVtxSPDOutFid,kCentralityFlattening};
+	Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
 
 	void SetUseMonteCarloWeighingLinus(
 			TH1F *Pi0 ,
@@ -688,7 +692,7 @@ private:
 	TClonesArray * fMCArray;//!
 	AliMCEvent   * fMCEvent;//!;
 	AliESDtrackCuts  *fESDTrackCut;// copy to manager - root from AddTask
-
+	AliAnalysisUtils *fUtils;//!
 	//Monte Carlo correction factor containers
 
 	Double_t fBackgroundFactor[9][44];//[9][44]

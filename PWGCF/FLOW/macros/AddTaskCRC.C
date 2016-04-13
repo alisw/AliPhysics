@@ -6,13 +6,14 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
                              Bool_t bCalculateCRC2=kFALSE,
-                             Int_t CRC2nEtaBins=6,
+                             Bool_t bUseCRCRecenter,
                              TString QVecWeightsFileName,
                              Bool_t bUsePhiEtaWeights,
                              TString PhiEtaWeightsFileName,
                              Bool_t bUseVZERO=kFALSE,
                              Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
+                             TString ZDCCalibFileName,
                              Bool_t bDivSigma=kFALSE,
                              Bool_t bCalculateCRCZDC=kFALSE,
                              TString sCorrWeight="TPCmVZuZDCu",
@@ -25,7 +26,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Double_t dDCAxy=2.4,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
-                             Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
@@ -33,7 +33,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              TString EtaWeightsFileName="",
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
-                             Float_t MaxDevZN=9.,
+                             TString ZDCESEFileName="",
                              Bool_t bCenFlattening=kTRUE,
                              TString CenWeightsFileName="",
                              const char* suffix="") {
@@ -74,6 +74,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  Double_t centrMax=100.;
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
+ Int_t CRC2nEtaBins=6;
+  Float_t MaxDevZN=10.;
+  Bool_t bCalculateCME=kFALSE;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -312,13 +315,29 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskQC->SetRecenterZDC(bUseZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
- taskQC->SetUseCRCRecenter(kFALSE);
+ taskQC->SetUseCRCRecenter(bUseCRCRecenter);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bUseZDC);
  taskQC->SetCorrWeight(sCorrWeight);
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
+  if(bSetQAZDC) {
+    TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
+    if(!ZDCESEFile) {
+      cout << "ERROR: ZDCESEFile not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCESEList = dynamic_cast<TList*>(ZDCESEFile->FindObjectAny("ZDCESE"));
+    if(ZDCESEList) {
+      taskQC->SetZDCESEList(ZDCESEList);
+      cout << "ZDCESE set (from " <<  ZDCESEFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: ZDCESEList not found!" << endl;
+      exit(1);
+    }
+  } // end of if(bSetQAZDC)
  
  if(bCenFlattening && sDataSet=="2011") {
   TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");
@@ -382,19 +401,35 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
     }
   } // end of if(bUseEtaWeights)
  
+  if(bUseCRCRecenter) {
+    TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
+    if(!QVecWeightsFile) {
+      cout << "ERROR: QVecWeightsFile not found!" << endl;
+      exit(1);
+    }
+    TList* QVecWeightsList = dynamic_cast<TList*>(QVecWeightsFile->FindObjectAny("Q Vectors"));
+    if(QVecWeightsList) {
+      taskQC->SetQVecList(QVecWeightsList);
+      cout << "Q Vector weights set (from " <<  QVecWeightsFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: QVecWeightsList not found!" << endl;
+      exit(1);
+    }
+  } // end of if(bUseCRCRecenter)
  if(bUseZDC) {
-  TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
-  if(!QVecWeightsFile) {
-   cout << "ERROR: QVecWeightsFile not found!" << endl;
+  TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
+  if(!ZDCCalibFile) {
+   cout << "ERROR: ZDC calibration not found!" << endl;
    exit(1);
   }
-  TList* QVecWeightsList = dynamic_cast<TList*>(QVecWeightsFile->FindObjectAny("Q Vectors"));
-  if(QVecWeightsList) {
-   taskQC->SetQVecList(QVecWeightsList);
-   cout << "Q Vector weights set (from " <<  QVecWeightsFileName.Data() << ")" << endl;
+  TList* ZDCCalibList = dynamic_cast<TList*>(ZDCCalibFile->FindObjectAny("Q Vectors"));
+  if(ZDCCalibList) {
+   taskQC->SetCRCZDCCalibList(ZDCCalibList);
+   cout << "ZDC calibration set (from " <<  ZDCCalibFileName.Data() << ")" << endl;
   }
   else {
-   cout << "ERROR: QVecWeightsList not found!" << endl;
+   cout << "ERROR: ZDCCalibList not found!" << endl;
    exit(1);
   }
  } // end of if(bUseZDC)

@@ -32,6 +32,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     virtual void   Terminate(const Option_t*);
     void InitBack();
 
+    void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;    
     }
@@ -131,6 +132,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
   
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
+    TString                             fV0ReaderName;
     AliGammaConversionAODBGHandler**    fBGHandler;             // BG handler for Conversion 
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           // BG handler for Conversion (possibility to mix with respect to RP)
     AliGammaConversionAODBGHandler**    fBGClusHandler;         // BG handler for Cluster
@@ -410,7 +412,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 24);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 25);
 };
 
 #endif
