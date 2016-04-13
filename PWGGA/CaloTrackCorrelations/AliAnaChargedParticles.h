@@ -76,6 +76,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhiPos;                       //!<! eta vs phi distribution of positive charge
   TH2F * fhEtaPhiNeg;                       //!<! eta vs phi distribution of negative charge
   
+  TH2F * fhTrackResolution;                 //!<! track resolution sigma pT vs pT, ESDs
+  
   TH1F * fhPtVtxOutBC0;                     //!<! pT distribution of tracks from a vertex with BC!=0
   TH2F * fhEtaPhiVtxOutBC0;                 //!<! eta/phi distribution of tracks from a vertex with BC!=0
   TH1F * fhPtVtxInBC0;                      //!<! pT distribution of tracks from a vertex with BC=0
@@ -163,7 +165,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,10) ;
+  ClassDef(AliAnaChargedParticles,11) ;
   /// \endcond
 
 } ;
