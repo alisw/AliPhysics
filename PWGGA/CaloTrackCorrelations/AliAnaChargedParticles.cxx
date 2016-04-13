@@ -53,6 +53,7 @@ fhPtVtxInBC0(0),   fhEtaPhiVtxInBC0(0),
 fhPtSPDRefit(0),         fhPtNoSPDRefit(0),         fhPtNoSPDNoRefit(0),
 fhEtaPhiSPDRefitPt02(0), fhEtaPhiNoSPDRefitPt02(0), fhEtaPhiNoSPDNoRefitPt02(0),
 fhEtaPhiSPDRefitPt3(0),  fhEtaPhiNoSPDRefitPt3(0),  fhEtaPhiNoSPDNoRefitPt3(0),
+fhTrackResolution(0),
 // TOF
 fhTOFSignal(0),    fhTOFSignalPtCut(0),  fhTOFSignalBCOK(0),
 fhPtTOFSignal(0),  fhPtTOFSignalDCACut(0),
@@ -262,14 +263,17 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     outputContainer->Add(fhPtCutDCABCOK);
   }
   
-  fhPtNotPrimary  = new TH1F ("hPtNotPrimary","#it{p}_{T} distribution, not primary", nptbins,ptmin,ptmax); 
-  fhPtNotPrimary->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  outputContainer->Add(fhPtNotPrimary);
+  if( GetReader()->GetDataType() == AliCaloTrackReader::kAOD )
+  {
+    fhPtNotPrimary  = new TH1F ("hPtNotPrimary","#it{p}_{T} distribution, not primary", nptbins,ptmin,ptmax); 
+    fhPtNotPrimary->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNotPrimary);
+    
+    fhPtNotSharedClusterCut  = new TH1F ("hPtNotSharedClusterCut","#it{p}_{T} distribution, shared clusters cut out", nptbins,ptmin,ptmax); 
+    fhPtNotSharedClusterCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtNotSharedClusterCut);
+  }
   
-  fhPtNotSharedClusterCut  = new TH1F ("hPtNotSharedClusterCut","#it{p}_{T} distribution, shared clusters cut out", nptbins,ptmin,ptmax); 
-  fhPtNotSharedClusterCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-  outputContainer->Add(fhPtNotSharedClusterCut);
-
   fhPhiNeg  = new TH2F ("hPhiNegative","#phi of negative charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiNeg->SetYTitle("#phi (rad)");
@@ -303,6 +307,15 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaPhiNeg->SetXTitle("#eta ");
   fhEtaPhiNeg->SetYTitle("#phi (rad)");  
   outputContainer->Add(fhEtaPhiNeg);
+  
+  if( GetReader()->GetDataType() == AliCaloTrackReader::kESD )
+  {
+    fhTrackResolution  = new TH2F ("hTrackResolution","Track resolution: #sigma_{#it{p}_{T}} vs #it{p}_{T}, ESDs", 
+                                   nptbins,ptmin,ptmax,600,0,0.3);
+    fhTrackResolution->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhTrackResolution->SetYTitle("#sigma_{#it{p}_{T}} / #it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhTrackResolution);
+  }
   
   if(fFillVertexBC0Histograms)
   {
@@ -867,6 +880,14 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
     
+    if(esdTrack && TMath::Abs(esdTrack->GetParameter()[4]) > 0 )
+    {
+      fhTrackResolution->Fill(TMath::Abs(esdTrack->GetParameter()[4]), 
+                              TMath::Sqrt(esdTrack->GetCovariance()[14])/TMath::Abs(esdTrack->GetParameter()[4]), 
+                              GetEventWeight());
+    }
+
+
     if(aodTrack)
     {
       Double_t frac = Double_t(aodTrack->GetTPCnclsS()) / Double_t(aodTrack->GetTPCncls());
