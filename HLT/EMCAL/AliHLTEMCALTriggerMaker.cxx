@@ -96,7 +96,7 @@ void AliHLTEMCALTriggerMaker::AddDigit(const AliHLTCaloDigitDataStruct *digit){
   fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetFastORIndexFromCellIndex(fkGeometryPtr->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digit->fModule, digit->fX, digit->fZ), fastorIndex);
   int globCol, globRow;
   fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(fastorIndex, globCol, globRow);
-  (*fADCOfflineValues)(globCol, globRow) += digit->fEnergy;
+  (*fADCOfflineValues)(globCol, globRow) += digit->fEnergy/EMCALTrigger::kEMCL1ADCtoGeV;
 }
 
 void AliHLTEMCALTriggerMaker::SetADC(Int_t col, Int_t row, Float_t adc){
