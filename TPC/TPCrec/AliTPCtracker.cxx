@@ -1379,6 +1379,12 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
   Int_t lower   = arr->LowerBound();
   Int_t entries = arr->GetEntriesFast();
 
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform() ;
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
+  transform->SetCurrentTimeStamp( GetTimeStamp());
+  transform->SetCurrentRun( GetRunNumber() );
+
   AliWarning("Sector Change ins not checked in LoadClusters(const TObjArray *arr)");
 
   for (Int_t i=lower; i<entries; i++) {
@@ -1436,6 +1442,12 @@ Int_t  AliTPCtracker::LoadClusters(const TClonesArray *arr)
   // RS: Check for possible sector change due to the distortions: TODO
   AliWarning("Sector Change ins not checked in LoadClusters(const TClonesArray *arr)");
   //
+
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform() ;
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
+  transform->SetCurrentTimeStamp( GetTimeStamp());
+  transform->SetCurrentRun( GetRunNumber() );
   //
   AliTPCclusterMI *clust=0;
   Int_t count[72][96] = { {0} , {0} }; 
@@ -1494,6 +1506,13 @@ Int_t  AliTPCtracker::LoadClusters()
   // load clusters to the memory
   static AliTPCClustersRow *clrow= new AliTPCClustersRow("AliTPCclusterMI");
   //
+
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform() ;
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
+  transform->SetCurrentTimeStamp( GetTimeStamp());
+  transform->SetCurrentRun( GetRunNumber() );
+
   //  TTree * tree = fClustersArray.GetTree();
   AliInfo("LoadClusters()\n");
 
@@ -2055,7 +2074,7 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     AliFatal("Tranformations not in calibDB");
     return;
   }
-  if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
+  //  if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t idROC = cluster->GetDetector();
   transform->Transform(x,&idROC,0,1);
@@ -2068,6 +2087,9 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   // store the dispersion difference
   cluster->SetDistortionDispersion(clCorr[3]>clCorrRef[3] ? TMath::Sqrt(clCorr[3]*clCorr[3] - clCorrRef[3]*clCorrRef[3]) : 0);
   //
+  cluster->SetX(x[0]);
+  cluster->SetY(x[1]);
+  cluster->SetZ(x[2]);
   // in debug mode  check the transformation
   //
   if ((AliTPCReconstructor::StreamLevel()&kStreamTransform)>0) { 
@@ -2097,9 +2119,6 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
       "Cl.="<<cluster<<
       "\n"; 
   }
-  cluster->SetX(x[0]);
-  cluster->SetY(x[1]);
-  cluster->SetZ(x[2]);
   // The old stuff:
   //
   // 
@@ -8003,8 +8022,11 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;  
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
-  transform->SetCurrentTimeStamp( esd->GetTimeStamp());
-  transform->SetCurrentRun(esd->GetRunNumber());
+  transform->SetCurrentTimeStamp( GetTimeStamp());
+  transform->SetCurrentRun( GetRunNumber());
+
+  //transform->SetCurrentTimeStamp( esd->GetTimeStamp());
+  //transform->SetCurrentRun(esd->GetRunNumber());
   //
   if (AliTPCReconstructor::GetExtendedRoads()){
     fClExtraRoadY = AliTPCReconstructor::GetExtendedRoads()[0];
