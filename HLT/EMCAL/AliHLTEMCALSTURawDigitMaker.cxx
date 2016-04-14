@@ -155,10 +155,8 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
     Int_t vx, vy, lphi;
     for (int ithr = 0; ithr < 2; ithr++) {
-      printf("STU Reader: Number Gamma patches with threshold %d: %d\n", ithr, stustream->GetNL1GammaPatch(ithr));
       for (Int_t i = 0; i < stustream->GetNL1GammaPatch(ithr); i++) {
         if (stustream->GetL1GammaPatch(i, ithr, iTRU, x, y)) { // col (0..23), row (0..3)
-          printf("Index %d: TRU: %d (%d, %d) [detector %d]\n", i, iTRU, x, y, detector);
 
           if (fkGeometryPtr->GetGeometryPtr()->GetTriggerMappingVersion() == 1) {
             // Run 1
