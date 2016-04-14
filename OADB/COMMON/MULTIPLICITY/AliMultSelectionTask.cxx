@@ -1389,7 +1389,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 		Bool_t lItsHijing = IsHijing(); 
 		Bool_t lItsDPMJet = IsDPMJet(); 
 		if ( lItsHijing ){ 
-			lProductionName = Form("%s-DefaultMC-Hijing",lPeriodName.Data());
+			lProductionName = Form("%s-DefaultMC-HIJING",lPeriodName.Data());
 			AliWarning(Form(" This is HIJING! Will use OADB named %s",lProductionName.Data()));
 		}
 		if ( lItsDPMJet ){ 
