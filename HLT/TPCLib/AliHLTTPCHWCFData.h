@@ -42,7 +42,8 @@ class TArrayC;
  *   word 0: header (big endian 32bit unsigned)
  *           bit 31-30: 0x11 indicates cluster
  *           bit 29-24: row number in partition
- *           bit 23-0: Qmax, fixed point number with 6 bits after the point
+ *           bit 23: tag to mark deconvoluted clusters
+ *           bit 22-0: Qmax, fixed point number with 6 bits after the point
  *   word 1: total charge 32bit  big endian, fixed point number with 12 bits after the point
  *   word 2: pad (float)
  *   word 3: time (float)
