@@ -22,11 +22,13 @@ AliAnalysisTaskADPilot *AddTaskADPilot(){
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("ADQAListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ADQA", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("ADQAListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ADQA", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ADQATSTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ADQA", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);
+  mgr->ConnectOutput(task, 2, coutput2);
 
 return task;
 }
