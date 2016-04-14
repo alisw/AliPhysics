@@ -76,6 +76,7 @@ AliFlowEventSimple::AliFlowEventSimple():
   fShuffleTracks(kFALSE),
   fMothersCollection(NULL),
   fCentrality(-1.),
+  fCentralityVar(-1.),
   fRun(-1),
   fZNCM(0.),
   fZNAM(0.),
@@ -122,6 +123,7 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
+  fCentralityVar(-1.),
   fRun(-1),
   fZNCM(0.),
   fZNAM(0.),
@@ -170,6 +172,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fShuffleTracks(anEvent.fShuffleTracks),
   fMothersCollection(new TObjArray()),
   fCentrality(anEvent.fCentrality),
+  fCentralityVar(anEvent.fCentralityVar),
   fRun(anEvent.fRun),
   fZNCM(anEvent.fZNCM),
   fZNAM(anEvent.fZNAM),
@@ -246,6 +249,7 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fMCReactionPlaneAngleWrap = anEvent.fMCReactionPlaneAngleWrap;
   fShuffleTracks = anEvent.fShuffleTracks;
   fCentrality = anEvent.fCentrality;
+  fCentralityVar = anEvent.fCentralityVar;
   fRun = anEvent.fRun;
   fZNCM = anEvent.fZNCM;
   fZNAM = anEvent.fZNAM;
@@ -796,6 +800,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fShuffleTracks(kFALSE),
   fMothersCollection(new TObjArray()),
   fCentrality(-1.),
+  fCentralityVar(-1.),
   fRun(-1),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
