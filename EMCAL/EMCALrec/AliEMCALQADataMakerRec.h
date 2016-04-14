@@ -1,7 +1,7 @@
 #ifndef ALIEMCALQADATAMAKERREC_H
 #define ALIEMCALQADATAMAKERREC_H
 
-///
+//_________________________________________________________________________
 /// \class AliEMCALQADataMakerRec
 /// \brief EMCal reconstruction QA
 ///
@@ -17,11 +17,13 @@
 ///
 /// Change histograms for DQM shifter: --  Yaxian Mao 04/2010
 /// Calculate the amplitude ratio from current run and the LED reference, for QAChecker use
-/// Also calculate the ratio of amplitude from LED Monitor system (current/Reference), to check LED system  
+/// Also calculate the ratio of amplitude from LED Monitor system (current/Reference), 
+/// to check LED system  
 ///
-/// \author J.Klay (Cal Poly) 
-/// \author S. Salur LBL 
-/// \date 2008
+/// \author Jenn Klay, Cal Poly, 2008 
+/// \author Sevil Salur, LBL, 2008 
+/// \author Yaxian Mao <Yaxian.Mao@cern.ch>, CCNU, 2009-2011
+/// \author Davide Lodato <davide.francesco.lodato@cern.ch>, Nikhef, 2015
 ///
 
 // --- ROOT system ---
@@ -190,7 +192,7 @@ private:
 //  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALQADataMakerRec,6)
+  ClassDef(AliEMCALQADataMakerRec,6) ;
   /// \endcond
 };
 
