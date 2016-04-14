@@ -66,7 +66,7 @@ elif mode=="REP":
 else:
     print "not a valid mode"
     quit()
-socket.set(zmq.LINGER,10)
+#socket.set(zmq.LINGER,10)
 if endpoint[0]=='>' or endpoint[0]=='-' or endpoint[0]=='+':
     print "connect to: "+endpoint[1:]
     socket.connect(str(endpoint[1:]))
