@@ -24,7 +24,7 @@
 #include "AliTriggerConfiguration.h"
 #endif
 
-Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
+Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi = kFALSE)
 {
   Int_t badrun=0;
   Int_t goodrun=0;
@@ -49,10 +49,11 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       return 2;
     }
   //----------------------Take trending tree------------------------------------ 
-  Int_t runNumber=0;
+  Int_t runNumber=0; Int_t fillNumber=0;
   Int_t adReady=0,invalidInput=0,qaNotFound=0,adActive=0,adQANotfound=0,noEntries=0;
   Int_t LHCstate = -1; Float_t runTime = 0;
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
+  Float_t meanChargeChannelTime[16];
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
   Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
   Float_t meanTimeErrADA = -1024, meanTimeErrADC = -1024;
@@ -70,6 +71,13 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   Float_t channelTimeMean[16], channelTimeSigma[16];
   Float_t flagNoTimeFraction[16];
   Float_t thresholdData[16], thresholdOCDB[16];
+
+  Float_t integratedChargeChannel[16];
+  Float_t triggerChargeChannel[16];
+  Float_t tailChargeChannel[16];
+  Float_t integratedChargeChannel_Weighted[16];
+  Float_t triggerChargeChannel_Weighted[16];
+  Float_t tailChargeChannel_Weighted[16];
   
   ttree->SetBranchAddress("adReady",&adReady);
   ttree->SetBranchAddress("invalidInput",&invalidInput);
@@ -78,11 +86,13 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("adQANotfound",&adQANotfound);
   ttree->SetBranchAddress("noEntries",&noEntries);
   ttree->SetBranchAddress("run",&runNumber);
+  ttree->SetBranchAddress("fill",&fillNumber);
   
   ttree->SetBranchAddress("LHCstate",&LHCstate);
   ttree->SetBranchAddress("runTime",&runTime);
   ttree->SetBranchAddress("meanTotalChargeADA",&meanTotalChargeADA);
   ttree->SetBranchAddress("meanTotalChargeADC",&meanTotalChargeADC);
+  ttree->SetBranchAddress("meanChargeChannelTime", &meanChargeChannelTime[0]);
   ttree->SetBranchAddress("meanTimeADA",&meanTimeADA);
   ttree->SetBranchAddress("meanTimeADC",&meanTimeADC);
   ttree->SetBranchAddress("meanTimeErrADA",&meanTimeErrADA);
@@ -119,7 +129,15 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("flagNoTimeFraction", &flagNoTimeFraction[0]);
   ttree->SetBranchAddress("thresholdData", &thresholdData[0]);
   ttree->SetBranchAddress("thresholdOCDB", &thresholdOCDB[0]);
-  cout<<"XXX"<<endl;
+  
+  ttree->SetBranchAddress("integratedChargeChannel", &integratedChargeChannel[0]);
+  ttree->SetBranchAddress("triggerChargeChannel", &triggerChargeChannel[0]);
+  ttree->SetBranchAddress("tailChargeChannel", &tailChargeChannel[0]);
+  
+  ttree->SetBranchAddress("integratedChargeChannel_Weighted", &integratedChargeChannel_Weighted[0]);
+  ttree->SetBranchAddress("triggerChargeChannel_Weighted", &triggerChargeChannel_Weighted[0]);
+  ttree->SetBranchAddress("tailChargeChannel_Weighted", &tailChargeChannel_Weighted[0]);
+  
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
   Int_t nRuns=ttree->GetEntries();
@@ -135,9 +153,12 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   TH1F *hRunTime = new TH1F("hRunTime","Run duration;;Time (min)",nRuns,-0.5,nRuns-0.5);
   TH1I *hLHCstate = new TH1I("hLHCstate","LHC state;;State",nRuns,-0.5,nRuns-0.5);
   TH1I *hNEvents = new TH1I("hNEvents","Number of events;;Number of events",nRuns,-0.5,nRuns-0.5);
+  TH1I *hFillNumber = new TH1I("hFillNumber","Fill number;;Fill",nRuns,-0.5,nRuns-0.5);
       
   TH1F *hMeanTotalChargeADA = new TH1F("hMeanTotalChargeADA","Mean total charge;;Charge (ADC counts)",nRuns,-0.5,nRuns-0.5);
   TH1F *hMeanTotalChargeADC = new TH1F("hMeanTotalChargeADC","Mean total charge;;Charge (ADC counts)",nRuns,-0.5,nRuns-0.5);
+  
+  TH2F *hMeanChargeChannelTime = new TH2F("hMeanChargeChannelTime","Mean charge per channel with time;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
   
   TH1F *hMeanTimeADA = new TH1F("hMeanTimeADA","Mean time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
   TH1F *hMeanTimeADC = new TH1F("hMeanTimeADC","Mean time;;Time (ns)",nRuns,-0.5,nRuns-0.5);
@@ -179,6 +200,15 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   TH2F *hThresholdData = new TH2F("hThresholdData","Threshold from data fit;Channel;Threshold",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
   TH2F *hThresholdOCDB = new TH2F("hThresholdOCDB","Threshold from OCDB;Channel;Threshold",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
   
+  TH2F *hTriggerChargeChannel = new TH2F("hTriggerChargeChannel","Mean trigger charge per channel;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hTailChargeChannel = new TH2F("hTailChargeChannel","Mean tail charge per channel;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hIntegratedChargeChannel = new TH2F("hIntegratedChargeChannel","Mean integrated charge per channel;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  
+  TH2F *hTriggerChargeChannel_Weighted = new TH2F("hTriggerChargeChannel_Weighted","Mean trigger charge per channel;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hTailChargeChannel_Weighted = new TH2F("hTailChargeChannel_Weighted","Mean tail charge per channel;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hIntegratedChargeChannel_Weighted = new TH2F("hIntegratedChargeChannel_Weighted","Mean integrated charge per channel;Channel;Charge (ADC counts)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  
+  
   char ChannelInt[10];
   for(Int_t iPM=0; iPM<16; iPM++){
   	for(Int_t iInt=0; iInt<2; iInt++){
@@ -190,9 +220,11 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   fListHist.Add(hRunTime);
   fListHist.Add(hLHCstate); 
-  fListHist.Add(hNEvents);   
+  fListHist.Add(hNEvents); 
+  fListHist.Add(hFillNumber);   
   fListHist.Add(hMeanTotalChargeADA);
   fListHist.Add(hMeanTotalChargeADC);
+  fListHist.Add(hMeanChargeChannelTime);
   fListHist.Add(hMeanTimeADA);
   fListHist.Add(hMeanTimeADC);
   fListHist.Add(hMeanTimeSigmaADA);
@@ -223,14 +255,68 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   fListHist.Add(hFlagNoTime);
   fListHist.Add(hThresholdData);
   fListHist.Add(hThresholdOCDB);
+  fListHist.Add(hTriggerChargeChannel);
+  fListHist.Add(hTailChargeChannel);
+  fListHist.Add(hIntegratedChargeChannel);
+  fListHist.Add(hTriggerChargeChannel_Weighted);
+  fListHist.Add(hTailChargeChannel_Weighted);
+  fListHist.Add(hIntegratedChargeChannel_Weighted);
   
-  cout<<"XXX"<<endl;
+  if(showLumi){
+  	TFile *treandFileEVS = TFile::Open("trendingEVS.root");
+  	TTree *ttreeEVS=(TTree*)treandFileEVS->Get("trending");
+  
+  	Int_t runEVS                = 0;
+  	Double_t muEVS              = 0;
+  	Double_t lumi_seenEVS       = 0;
+  	Double_t interactionRateEVS = 0;
+  	ttreeEVS->SetBranchAddress("run",&runEVS);
+  	ttreeEVS->SetBranchAddress("mu",&muEVS);
+  	ttreeEVS->SetBranchAddress("interactionRate",&interactionRateEVS);
+  	ttreeEVS->SetBranchAddress("lumi_seen",&lumi_seenEVS);
+  	
+  	Double_t lumi[1000];
+  	Double_t lumiInt[1000];
+  	lumiInt[0] = 0.0;
+  
+  	ttreeEVS->GetEntry(0);
+  	Int_t nRunsEVS=ttreeEVS->GetEntries();
+  	UInt_t EVSruns[1000];
+  	for(Int_t irunEVS=0;irunEVS<nRunsEVS;irunEVS++) { ttreeEVS->GetEntry(irunEVS); EVSruns[irunEVS] = runEVS;}
+	
+	Double_t channelBins[17];
+	for(Int_t ichannel = 0; ichannel<17; ichannel++ )channelBins[ichannel] = -0.5 + ichannel;
+	
+	TH1F *hFillNumberLumi = new TH1F("hFillNumberLumi","Fill number;;Fill",nRuns,-0.5,nRuns-0.5);
+	TH1F *hLumiSeen = new TH1F("hLumiSeen","Lumi seen;;Lumi",nRuns,-0.5,nRuns-0.5);
+	TH1F *hLumiIntegrated = new TH1F("hLumiIntegrated","Lumi integrated;;Lumi",nRuns,-0.5,nRuns-0.5);
+  }
+
+  
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
   for(Int_t irun=0;irun<nRuns;irun++){
   
       ttree->GetEntry(irun);
       sprintf(runlabel,"%i",runNumber);
+      
+      if(showLumi){
+      	Bool_t foundEVS = kFALSE;
+      	Int_t irunFound = 0;
+      	for(Int_t irunEVS=0;irunEVS<nRunsEVS;irunEVS++){
+      		if(runNumber == EVSruns[irunEVS]){
+			irunFound = irunEVS; 
+			foundEVS = kTRUE;
+			break;
+			}
+		}
+      	if(!foundEVS) continue;
+      	ttreeEVS->GetEntry(irunFound);
+      }
+      
+      if(triggerChargeChannel[0] == 1023)continue;
+      //if(runNumber == 238940 || runNumber == 238941 || runNumber == 238621 || runNumber == 233613)continue;
+      //if(fillNumber == 4555)continue;
       
       //----------------------Bad runs------------------------------------
       if(invalidInput==1 || qaNotFound==1 || adActive==1 || adQANotfound==1 || noEntries==1){
@@ -271,6 +357,26 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       //----------------------Good runs------------------------------------
       else 
 	{
+	if(showLumi){
+		lumi[goodrun] = lumi_seenEVS;
+		lumiInt[goodrun+1] = lumi_seenEVS;
+		for(Int_t pastrun = 0; pastrun<goodrun; pastrun++)lumiInt[goodrun+1] += lumi[pastrun];
+	
+		hFillNumberLumi->SetBins(goodrun+1,lumiInt);
+		hFillNumberLumi->SetBinContent(goodrun+1,fillNumber);
+		
+		hLumiSeen->SetBins(goodrun+1,0,goodrun+1);
+		hLumiSeen->SetBinContent(goodrun+1,lumi_seenEVS);
+		hLumiSeen->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+		hLumiIntegrated->SetBins(goodrun+1,0,goodrun+1);
+		hLumiIntegrated->SetBinContent(goodrun+1,lumiInt[goodrun+1]);
+		hLumiIntegrated->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	}
+	
+	hFillNumber->SetBins(goodrun+1,0,goodrun+1);
+	hFillNumber->SetBinContent(goodrun+1,fillNumber);
+	hFillNumber->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
 	hRunTime->SetBins(goodrun+1,0,goodrun+1);
 	hRunTime->SetBinContent(goodrun+1,runTime);
 	hRunTime->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
@@ -290,6 +396,61 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hMeanTotalChargeADC->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTotalChargeADC->SetBinContent(goodrun+1,meanTotalChargeADC);
 	hMeanTotalChargeADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hMeanChargeChannelTime->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<16; i++) hMeanChargeChannelTime->SetBinContent(i+1,goodrun+1,meanChargeChannelTime[i]);
+	hMeanChargeChannelTime->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	if(showLumi){
+		hTriggerChargeChannel->SetBins(17,channelBins,goodrun+1,lumiInt);
+		for(Int_t i=0; i<16; i++) hTriggerChargeChannel->SetBinContent(i+1,goodrun+1,triggerChargeChannel[i]/MPV[i]);
+		hTriggerChargeChannel->GetXaxis()->SetTitle("Integrated lumi [#mub]");
+	
+		hTailChargeChannel->SetBins(17,channelBins,goodrun+1,lumiInt);
+		for(Int_t i=0; i<16; i++) hTailChargeChannel->SetBinContent(i+1,goodrun+1,tailChargeChannel[i]/MPV[i]);
+		hTailChargeChannel->GetXaxis()->SetTitle("Integrated lumi [#mub]");
+	
+		hIntegratedChargeChannel->SetBins(17,channelBins,goodrun+1,lumiInt);
+		for(Int_t i=0; i<16; i++) hIntegratedChargeChannel->SetBinContent(i+1,goodrun+1,integratedChargeChannel[i]/MPV[i]);
+		hIntegratedChargeChannel->GetXaxis()->SetTitle("Integrated lumi [#mub]");
+	
+		hTriggerChargeChannel_Weighted->SetBins(17,channelBins,goodrun+1,lumiInt);
+		for(Int_t i=0; i<16; i++) hTriggerChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,triggerChargeChannel_Weighted[i]/MPV[i]);
+		hTriggerChargeChannel_Weighted->GetXaxis()->SetTitle("Integrated lumi [#mub]");
+	
+		hTailChargeChannel_Weighted->SetBins(17,channelBins,goodrun+1,lumiInt);
+		for(Int_t i=0; i<16; i++) hTailChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,tailChargeChannel_Weighted[i]/MPV[i]);
+		hTailChargeChannel_Weighted->GetXaxis()->SetTitle("Integrated lumi [#mub]");
+	
+		hIntegratedChargeChannel_Weighted->SetBins(17,channelBins,goodrun+1,lumiInt);
+		for(Int_t i=0; i<16; i++) hIntegratedChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,integratedChargeChannel_Weighted[i]/MPV[i]);
+		hIntegratedChargeChannel_Weighted->GetXaxis()->SetTitle("Integrated lumi [#mub]");
+		}
+	else{	
+		hTriggerChargeChannel->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+		for(Int_t i=0; i<16; i++) hTriggerChargeChannel->SetBinContent(i+1,goodrun+1,triggerChargeChannel[i]/MPV[i]);
+		hTriggerChargeChannel->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+		hTailChargeChannel->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+		for(Int_t i=0; i<16; i++) hTailChargeChannel->SetBinContent(i+1,goodrun+1,tailChargeChannel[i]/MPV[i]);
+		hTailChargeChannel->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+		hIntegratedChargeChannel->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+		for(Int_t i=0; i<16; i++) hIntegratedChargeChannel->SetBinContent(i+1,goodrun+1,integratedChargeChannel[i]/MPV[i]);
+		hIntegratedChargeChannel->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+		hTriggerChargeChannel_Weighted->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+		for(Int_t i=0; i<16; i++) hTriggerChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,triggerChargeChannel_Weighted[i]/MPV[i]);
+		hTriggerChargeChannel_Weighted->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+		hTailChargeChannel_Weighted->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+		for(Int_t i=0; i<16; i++) hTailChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,tailChargeChannel_Weighted[i]/MPV[i]);
+		hTailChargeChannel_Weighted->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+		hIntegratedChargeChannel_Weighted->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+		for(Int_t i=0; i<16; i++) hIntegratedChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,integratedChargeChannel_Weighted[i]/MPV[i]);
+		hIntegratedChargeChannel_Weighted->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+		}
 	
 	hMeanTimeADA->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTimeADA->SetBinContent(goodrun+1,meanTimeADA);
@@ -380,7 +541,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hRatePhysBGC->SetBinContent(goodrun+1,ratePhysBGC);
 	if(ratePhysBGC!=0)hRatePhysBGC->SetBinError(goodrun+1,rateErr/ratePhysBGC);
 	hRatePhysBGC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
-	
+
 	hMPV->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
 	for(Int_t i=0; i<16; i++){
 		hMPV->SetBinContent(i+1,goodrun+1,MPV[i]);
@@ -431,7 +592,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hThresholdOCDB->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
 	for(Int_t i=0; i<16; i++) hThresholdOCDB->SetBinContent(i+1,goodrun+1,thresholdOCDB[i]);
 	hThresholdOCDB->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
-	
+
 	goodrun++;
         }
     }
@@ -488,8 +649,298 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
     	
   c1->Print(Form("%s/QA_Resume_%d_%d.pdf(",plotDir.Data(),minRun,maxRun));
-  c1->SaveAs(Form("%s/ADQA__Mean_charge.png",plotDir.Data()));
   
+  TH1D *hChannelSlice;
+  TH1D *hChannelSliceBlue;
+  TH1D *hChannelSliceRed;
+  
+  TF1 *linFitBlue = new TF1("linFitBlue","pol1",0,10e6);
+  linFitBlue->SetLineWidth(1);
+  linFitBlue->SetLineStyle(kDashed);
+  linFitBlue->SetLineColor(kBlue);
+  
+  TF1 *linFitRed = new TF1("linFitRed","pol1",0,10e6);
+  linFitRed->SetLineWidth(1);
+  linFitRed->SetLineStyle(kDashed);
+  linFitRed->SetLineColor(kRed);
+  
+  TH1F *hFitIntegrated = new TH1F("hFitIntegrated","Slope/Offset of linear fit",16,-0.5,15.5);
+  hFitIntegrated->GetXaxis()->SetTitle("Channel"); 
+  hFitIntegrated->SetMarkerStyle(kOpenSquare);
+  hFitIntegrated->SetMarkerColor(kRed);
+  
+  TH1F *hFitIntegrated_Weighted = new TH1F("hFitIntegrated_Weighted","Slope/Offset of linear fit",16,-0.5,15.5);
+  hFitIntegrated_Weighted->GetXaxis()->SetTitle("Channel"); 
+  hFitIntegrated_Weighted->SetMarkerStyle(kFullCircle);
+  hFitIntegrated_Weighted->SetMarkerColor(kRed);
+ 
+  TCanvas *c101 = new TCanvas("Integrated Charge channel"," ",6000,600); 
+  c101->Draw();						
+  c101->cd();
+  TPad *myPad101 = new TPad("myPad101", "The pad",0,0,1,1);
+  myPad101->Draw();
+  myPadSetUp(myPad101,0.04,0.10,0.02,0.20);
+  myPad101->cd();
+
+  for(Int_t i = 0; i<16; i++){
+  	gPad->SetGridy();
+	hChannelSliceBlue = hIntegratedChargeChannel->ProjectionY("hChannelSliceBlue",i+1,i+1);
+	hChannelSliceRed = hIntegratedChargeChannel_Weighted->ProjectionY("hChannelSliceRed",i+1,i+1);
+	hChannelSliceBlue->SetLineColor(kBlue);
+	hChannelSliceRed->SetLineColor(kRed);
+	hChannelSliceBlue->Fit(linFitBlue);
+	hFitIntegrated->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
+	hFitIntegrated->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
+	hChannelSliceRed->Fit(linFitRed);
+	hFitIntegrated_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
+	hFitIntegrated_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+	myHistSetUp(hChannelSliceBlue);
+	hChannelSliceBlue->SetLineWidth(1);
+	myScaleSetUp(hChannelSliceBlue,hChannelSliceRed);
+	hChannelSliceBlue->SetTitle(Form("Quantile of integrated charge channel %d",i));
+	if(showLumi) hChannelSliceBlue->GetXaxis()->SetTitle("Integrated lumi [1/#mub]");
+	else hChannelSliceBlue->GetXaxis()->SetTitle("");
+	hChannelSliceBlue->GetXaxis()->SetLabelSize(0.05);
+	hChannelSliceBlue->GetYaxis()->SetTitle("Quantile 0.95");
+	hChannelSliceBlue->GetYaxis()->SetTitleOffset(0.3);
+	hChannelSliceBlue->DrawCopy("HIST");
+	hChannelSliceRed->DrawCopy("HISTsame");
+	linFitBlue->Draw("same");
+	linFitRed->Draw("same");
+	if(showLumi)AddFillSeparationLines(hFillNumberLumi);
+	else AddFillSeparationLines(hFillNumber);
+	
+  	if(i == 0)c101->Print(Form("%s/GainMon_%d_%d.pdf(",plotDir.Data(),minRun,maxRun));
+	else c101->Print(Form("%s/GainMon_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+	}
+
+  TH1F *hFitTrigger = new TH1F("hFitTrigger","Slope/Offset of linear fit",16,-0.5,15.5);
+  hFitTrigger->GetXaxis()->SetTitle("Channel"); 
+  hFitTrigger->SetMarkerStyle(kOpenSquare);
+  hFitTrigger->SetMarkerColor(kBlue);
+  
+  TH1F *hFitTrigger_Weighted = new TH1F("hFitTrigger_Weighted","Slope/Offset of linear fit",16,-0.5,15.5);
+  hFitTrigger_Weighted->GetXaxis()->SetTitle("Channel"); 
+  hFitTrigger_Weighted->SetMarkerStyle(kFullCircle);
+  hFitTrigger_Weighted->SetMarkerColor(kBlue);
+
+  TCanvas *c102 = new TCanvas("Trigger charge channel"," ",6000,600); 
+  c102->Draw();						
+  c102->cd();
+  TPad *myPad102 = new TPad("myPad102", "The pad",0,0,1,1);
+  myPad102->Draw();
+  myPadSetUp(myPad102,0.04,0.10,0.02,0.20);
+  myPad102->cd();
+  
+  for(Int_t i = 0; i<16; i++){
+  	gPad->SetGridy();
+	hChannelSliceBlue = hTriggerChargeChannel->ProjectionY("hChannelSliceBlue",i+1,i+1);
+	hChannelSliceRed = hTriggerChargeChannel_Weighted->ProjectionY("hChannelSliceRed",i+1,i+1);
+	hChannelSliceBlue->SetLineColor(kBlue);
+	hChannelSliceRed->SetLineColor(kRed);
+	hChannelSliceBlue->Fit(linFitBlue);
+	hFitTrigger->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
+	hFitTrigger->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
+	hChannelSliceRed->Fit(linFitRed);
+	hFitTrigger_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
+	hFitTrigger_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+	myHistSetUp(hChannelSliceBlue);
+	hChannelSliceBlue->SetLineWidth(1);
+	myScaleSetUp(hChannelSliceBlue,hChannelSliceRed);
+	hChannelSliceBlue->SetTitle(Form("Quantile of trigger charge channel %d",i));
+	if(showLumi) hChannelSliceBlue->GetXaxis()->SetTitle("Integrated lumi [1/#mub]");
+	else hChannelSliceBlue->GetXaxis()->SetTitle("");
+	hChannelSliceBlue->GetXaxis()->SetLabelSize(0.05);
+	hChannelSliceBlue->GetYaxis()->SetTitle("Quantile 0.95");
+	hChannelSliceBlue->GetYaxis()->SetTitleOffset(0.3);
+	hChannelSliceBlue->DrawCopy("HIST");
+	hChannelSliceRed->DrawCopy("HISTsame");
+	linFitBlue->Draw("same");
+	linFitRed->Draw("same");
+	if(showLumi)AddFillSeparationLines(hFillNumberLumi);
+	else AddFillSeparationLines(hFillNumber);
+
+  	c102->Print(Form("%s/GainMon_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+	}
+	
+  TH1F *hFitTail = new TH1F("hFitTail","Slope/Offset of linear fit",16,-0.5,15.5);
+  hFitTail->GetXaxis()->SetTitle("Channel"); 
+  hFitTail->SetMarkerStyle(kOpenSquare);
+  hFitTail->SetMarkerColor(kGreen);
+  
+  TH1F *hFitTail_Weighted = new TH1F("hFitTail_Weighted","Slope/Offset of linear fit",16,-0.5,15.5);
+  hFitTail_Weighted->GetXaxis()->SetTitle("Channel"); 
+  hFitTail_Weighted->SetMarkerStyle(kFullCircle);
+  hFitTail_Weighted->SetMarkerColor(kGreen);
+	
+  TCanvas *c103 = new TCanvas("Tail charge channel"," ",6000,600); 
+  c103->Draw();						
+  c103->cd();
+  TPad *myPad103 = new TPad("myPad103", "The pad",0,0,1,1);
+  myPad103->Draw();
+  myPadSetUp(myPad103,0.04,0.10,0.02,0.20);
+  myPad103->cd();
+  
+  for(Int_t i = 0; i<16; i++){
+  	gPad->SetGridy();
+	hChannelSliceBlue = hTailChargeChannel->ProjectionY("hChannelSliceBlue",i+1,i+1);
+	hChannelSliceRed = hTailChargeChannel_Weighted->ProjectionY("hChannelSliceRed",i+1,i+1);
+	hChannelSliceBlue->SetLineColor(kBlue);
+	hChannelSliceRed->SetLineColor(kRed);
+	hChannelSliceBlue->Fit(linFitBlue);
+	hFitTail->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
+	hFitTail->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
+	hChannelSliceRed->Fit(linFitRed);
+	hFitTail_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
+	hFitTail_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+	myHistSetUp(hChannelSliceBlue);
+	hChannelSliceBlue->SetLineWidth(1);
+	myScaleSetUp(hChannelSliceBlue,hChannelSliceRed);
+	hChannelSliceBlue->SetTitle(Form("Quantile of tail charge channel %d",i));
+	if(showLumi) hChannelSliceBlue->GetXaxis()->SetTitle("Integrated lumi [1/#mub]");
+	else hChannelSliceBlue->GetXaxis()->SetTitle("");
+	hChannelSliceBlue->GetXaxis()->SetLabelSize(0.05);
+	hChannelSliceBlue->GetYaxis()->SetTitle("Quantile 0.95");
+	hChannelSliceBlue->GetYaxis()->SetTitleOffset(0.3);
+	hChannelSliceBlue->DrawCopy("HIST");
+	hChannelSliceRed->DrawCopy("HISTsame");
+	linFitBlue->Draw("same");
+	linFitRed->Draw("same");
+	if(showLumi)AddFillSeparationLines(hFillNumberLumi);
+	else AddFillSeparationLines(hFillNumber);
+	
+	c103->Print(Form("%s/GainMon_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+	}
+
+  TF1 *constFitADA_Int = new TF1("constFitADA_Int","pol0",7.9,15.5);
+  constFitADA_Int->SetLineWidth(2);
+  constFitADA_Int->SetLineStyle(kDashed);
+  constFitADA_Int->SetLineColor(kRed);
+  
+  TF1 *constFitADC_Int = new TF1("constFitADC_Int","pol0",-0.1,7.5);
+  constFitADC_Int->SetLineWidth(2);
+  constFitADC_Int->SetLineStyle(kDashed);
+  constFitADC_Int->SetLineColor(kRed);
+  
+  TF1 *constFitADA_IntW = new TF1("constFitADA_IntW","pol0",7.9,15.5);
+  constFitADA_IntW->SetLineWidth(2);
+  constFitADA_IntW->SetLineStyle(kSolid);
+  constFitADA_IntW->SetLineColor(kRed);
+  
+  TF1 *constFitADC_IntW = new TF1("constFitADC_IntW","pol0",-0.1,7.5);
+  constFitADC_IntW->SetLineWidth(2);
+  constFitADC_IntW->SetLineStyle(kSolid);
+  constFitADC_IntW->SetLineColor(kRed);
+  
+  TF1 *constFitADA_Trg = new TF1("constFitADA_Trg","pol0",7.9,15.5);
+  constFitADA_Trg->SetLineWidth(2);
+  constFitADA_Trg->SetLineStyle(kDashed);
+  constFitADA_Trg->SetLineColor(kBlue);
+  
+  TF1 *constFitADC_Trg = new TF1("constFitADC_Trg","pol0",-0.1,7.5);
+  constFitADC_Trg->SetLineWidth(2);
+  constFitADC_Trg->SetLineStyle(kDashed);
+  constFitADC_Trg->SetLineColor(kBlue);
+  
+  TF1 *constFitADA_TrgW = new TF1("constFitADA_TrgW","pol0",7.9,15.5);
+  constFitADA_TrgW->SetLineWidth(2);
+  constFitADA_TrgW->SetLineStyle(kSolid);
+  constFitADA_TrgW->SetLineColor(kBlue);
+  
+  TF1 *constFitADC_TrgW = new TF1("constFitADC_TrgW","pol0",-0.1,7.5);
+  constFitADC_TrgW->SetLineWidth(2);
+  constFitADC_TrgW->SetLineStyle(kSolid);
+  constFitADC_TrgW->SetLineColor(kBlue);
+  
+  TF1 *constFitADA_Tail = new TF1("constFitADA_Tail","pol0",7.9,15.5);
+  constFitADA_Tail->SetLineWidth(2);
+  constFitADA_Tail->SetLineStyle(kDashed);
+  constFitADA_Tail->SetLineColor(kGreen);
+  
+  TF1 *constFitADC_Tail = new TF1("constFitADC_Tail","pol0",-0.1,7.5);
+  constFitADC_Tail->SetLineWidth(2);
+  constFitADC_Tail->SetLineStyle(kDashed);
+  constFitADC_Tail->SetLineColor(kGreen);
+  
+  TF1 *constFitADA_TailW = new TF1("constFitADA_TailW","pol0",7.9,15.5);
+  constFitADA_TailW->SetLineWidth(2);
+  constFitADA_TailW->SetLineStyle(kSolid);
+  constFitADA_TailW->SetLineColor(kGreen);
+  
+  TF1 *constFitADC_TailW = new TF1("constFitADC_TailW","pol0",-0.1,7.5);
+  constFitADC_TailW->SetLineWidth(2);
+  constFitADC_TailW->SetLineStyle(kSolid);
+  constFitADC_TailW->SetLineColor(kGreen);
+  
+  hFitIntegrated->Fit(constFitADA_Int,"R");
+  hFitIntegrated->Fit(constFitADC_Int,"R");
+  hFitIntegrated_Weighted->Fit(constFitADA_IntW,"R");
+  hFitIntegrated_Weighted->Fit(constFitADC_IntW,"R");
+  hFitTrigger->Fit(constFitADA_Trg,"R");
+  hFitTrigger->Fit(constFitADC_Trg,"R");
+  hFitTrigger_Weighted->Fit(constFitADA_TrgW,"R");
+  hFitTrigger_Weighted->Fit(constFitADC_TrgW,"R");
+  hFitTail->Fit(constFitADA_Tail,"R");
+  hFitTail->Fit(constFitADC_Tail,"R");
+  hFitTail_Weighted->Fit(constFitADA_TailW,"R");
+  hFitTail_Weighted->Fit(constFitADC_TailW,"R");
+
+  TCanvas *c104 = new TCanvas("Slopes"," ",800,400); 
+  c104->Draw();						
+  c104->cd();
+  TPad *myPad104 = new TPad("myPad104", "The pad",0,0,1,1);
+  myPadSetUp(myPad104,0.15,0.1,0.04,0.15);
+  myPad104->SetGridy();
+  myPad104->Draw();
+  myPad104->cd();
+
+  myHistSetUp(hFitIntegrated);
+  
+  //hFitIntegrated->GetYaxis()->SetRangeUser(-70e-9,0.0);
+  //hFitIntegrated->GetYaxis()->SetRangeUser(-0.0020,0.0);
+  hFitIntegrated->Draw("E");
+  hFitIntegrated_Weighted->Draw("Esame");
+  hFitTrigger->Draw("Esame");
+  hFitTrigger_Weighted->Draw("Esame");
+  hFitTail->Draw("Esame");
+  hFitTail_Weighted->Draw("Esame");
+  constFitADA_Int->Draw("same");
+  constFitADC_Int->Draw("same");
+  constFitADA_IntW->Draw("same");
+  constFitADC_IntW->Draw("same");
+  constFitADA_Trg->Draw("same");
+  constFitADC_Trg->Draw("same");
+  constFitADA_TrgW->Draw("same");
+  constFitADC_TrgW->Draw("same");
+  constFitADA_Tail->Draw("same");
+  constFitADC_Tail->Draw("same");
+  constFitADA_TailW->Draw("same");
+  constFitADC_TailW->Draw("same");
+  
+  TLegend *myLegend1 = new TLegend(0.70,0.17,0.97,0.52);
+  myLegendSetUp(myLegend1,0.04,1);
+  myLegend1->AddEntry(hFitIntegrated,"Integrated charge","p");
+  myLegend1->AddEntry(hFitIntegrated_Weighted,"Integrated charge weighted","p");
+  myLegend1->AddEntry(hFitTrigger,"Trigger charge","p");
+  myLegend1->AddEntry(hFitTrigger_Weighted,"Trigger charge weighted","p");
+  myLegend1->AddEntry(hFitTail,"Tail charge","p");
+  myLegend1->AddEntry(hFitTail_Weighted,"Tail charge weighted","p");
+  myLegend1->Draw();
+  
+  TLegend *myLegend2 = new TLegend(0.70,0.17,0.97,0.52);
+  myLegendSetUp(myLegend2,0.04,1);
+  //myLegend2->SetFillStyle(kSolid);
+  myLegend2->AddEntry(constFitADA_Int," ","l");
+  myLegend2->AddEntry(constFitADA_IntW," ","l");
+  myLegend2->AddEntry(constFitADA_Trg," ","l");
+  myLegend2->AddEntry(constFitADA_TrgW," ","l");
+  myLegend2->AddEntry(constFitADA_Tail," ","l");
+  myLegend2->AddEntry(constFitADA_TailW," ","l");
+  myLegend2->Draw();
+  
+  c104->Print(Form("%s/GainMon_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  
+  	
   TCanvas *c2 = new TCanvas("MeanTime"," ",800,400); 
   c2->Draw();						
   c2->cd();
@@ -512,7 +963,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c2->SaveAs(Form("%s/ADQA__Mean_time.png",plotDir.Data()));
   
   TCanvas *c3 = new TCanvas("MeanTimeSigma"," ",800,400); 
   c3->Draw();						
@@ -536,8 +986,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c3->SaveAs(Form("%s/ADQA__Mean_time_Sigma.png",plotDir.Data()));
-  
+   
   TCanvas *c21 = new TCanvas("ChannelTime"," ",800,400); 
   c21->Draw();						
   c21->cd();
@@ -559,7 +1008,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad22->Divide(4,4);
   myPad22->Draw();
   
-  TH1D *hChannelSlice;
   for(Int_t i = 0; i<16; i++){
   	myPadSetUp(myPad22->cd(i+1),0.15,0.00,0.05,0.15);
   	myPad22->cd(i+1);
@@ -636,7 +1084,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c4->SaveAs(Form("%s/ADQA__RateUB.png",plotDir.Data()));
   
   TCanvas *c41 = new TCanvas("Physics selection rate BB"," ",800,400); 
   c41->Draw();						
@@ -659,7 +1106,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c41->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c41->SaveAs(Form("%s/ADQA__RatePhysBB.png",plotDir.Data()));
   
   TCanvas *c5 = new TCanvas("Rate UG"," ",800,400); 
   c5->Draw();						
@@ -682,7 +1128,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c5->SaveAs(Form("%s/ADQA__RateUG.png",plotDir.Data()));
   
   TCanvas *c51 = new TCanvas("Physics selection rate BG"," ",800,400); 
   c51->Draw();						
@@ -705,7 +1150,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c51->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c51->SaveAs(Form("%s/ADQA__RatePhysBG.png",plotDir.Data()));
   
   TCanvas *c6 = new TCanvas("Rate AD"," ",800,400); 
   c6->Draw();						
@@ -733,7 +1177,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend2->Draw();
   
   c6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c6->SaveAs(Form("%s/ADQA__RateAD.png",plotDir.Data()));
   
   TCanvas *c61 = new TCanvas("Physics selection rate AD"," ",800,400); 
   c61->Draw();						
@@ -757,7 +1200,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend2->Draw();
   
   c61->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c61->SaveAs(Form("%s/ADQA__RatePhysAD.png",plotDir.Data()));
   
   TCanvas *c11 = new TCanvas("Rate VZERO_AD"," ",800,400); 
   c11->Draw();						
@@ -785,7 +1227,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend3->Draw();
   
   c11->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c11->SaveAs(Form("%s/ADQA__RateRatio.png",plotDir.Data()));
   
   TCanvas *c15 = new TCanvas("FlagNoTime"," ",800,400); 
   c15->Draw();						
@@ -800,7 +1241,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   if(hFlagNoTime->Integral()!=0)hFlagNoTime->Draw("COLZTEXT");
  
   c15->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c15->SaveAs(Form("%s/ADQA__FlagNoTime.png",plotDir.Data()));
   
   TCanvas *c151 = new TCanvas("FlagNoTime 1D"," ",1200,800); 
   c151->Draw();						
@@ -839,7 +1279,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   if(hMPV->Integral()!=0)hMPV->Draw("COLZTEXT");
  
   c7->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c7->SaveAs(Form("%s/ADQA__MPV.png",plotDir.Data()));
   
   TCanvas *c71 = new TCanvas("MPV 1D"," ",1200,800); 
   c71->Draw();						
@@ -852,15 +1291,17 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   	myPadSetUp(myPad71->cd(i+1),0.15,0.00,0.05,0.15);
   	myPad71->cd(i+1);
   	gPad->SetGridy();
-	hChannelSlice = hMPV->ProjectionY("hChannelSlice",i+1,i+1);
+	hChannelSlice = hMPV->ProjectionY("hChannelSlice",i+1,i+1,"e");
+	for(Int_t j = 0; j<hChannelSlice->GetNbinsX(); j++)hChannelSlice->SetBinError(j+1,hMPV->GetBinError(i+1,j+1));
 	myHistSetUp(hChannelSlice);
 	hChannelSlice->SetLineWidth(1);
 	myScaleSetUp(hChannelSlice);
 	hChannelSlice->GetXaxis()->SetTitle("");
 	hChannelSlice->GetYaxis()->SetTitle("MPV (ADC counts)");
 	hChannelSlice->SetTitle(Form("MPV channel %d",i));
-	hChannelSlice->GetYaxis()->SetRangeUser(2,30);
-	hChannelSlice->DrawCopy("HIST");
+	hChannelSlice->GetYaxis()->SetRangeUser(0,17);
+	hChannelSlice->SetMarkerStyle(kFullCircle);
+	hChannelSlice->DrawCopy("E");
 	}
  
   c71->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -889,7 +1330,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c13->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c13->SaveAs(Form("%s/ADQA__SlewingChi2.png",plotDir.Data()));
   
   TCanvas *c14 = new TCanvas("Saturation"," ",800,400); 
   c14->Draw();						
@@ -913,7 +1353,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myLegend1->Draw();
   
   c14->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c14->SaveAs(Form("%s/ADQA__Saturation.png",plotDir.Data()));
   
   if(hADready->GetEntries())
     {
@@ -921,7 +1360,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad1->cd();
       hADready->Draw();
       cBad1->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad1->SaveAs(Form("%s/ADQA__adReady.png",plotDir.Data()));
     }
   if(hInvalidInput->GetEntries())
     {
@@ -929,7 +1367,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad2->cd();
       hInvalidInput->Draw();
       cBad2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad2->SaveAs(Form("%s/ADQA__InvalidInput_%d_%d.png",plotDir.Data(),minRun,maxRun));
     }
   if(hQANotFound->GetEntries())
     {
@@ -937,7 +1374,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad3->cd();
       hQANotFound->Draw();
       cBad3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad3->SaveAs(Form("%s/ADQA__QA_Not_Found_%d_%d.png",plotDir.Data()));
     }
   if(hADactive->GetEntries())
     {
@@ -945,7 +1381,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad4->cd();
       hADactive->Draw();
       cBad4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad4->SaveAs(Form("%s/ADQA__AD_not_Active.png",plotDir.Data()));
     }
   if(hADqaNotfound->GetEntries())
     {
@@ -953,7 +1388,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad5->cd();
       hADqaNotfound->Draw();
       cBad5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad5->SaveAs(Form("%s/ADQA__adQA_Not_Found.png",plotDir.Data()));
     }
   if(hNoEntries->GetEntries())
     {
@@ -961,7 +1395,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad6->cd();
       hNoEntries->Draw();
       cBad6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-      cBad6->SaveAs(Form("%s/ADQA__NoEntries.png",plotDir.Data()));
     }
     
   TCanvas *c16 = new TCanvas("Thresholds"," ",1200,800); 
@@ -1015,7 +1448,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   if(hMeanPedestal->Integral()!=0)hMeanPedestal->Draw("COLZTEXT");
  
   c8->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c8->SaveAs(Form("%s/ADQA__PedMean.png",plotDir.Data())); 
   
   TCanvas *c81 = new TCanvas("Pedestal mean 1D Int0"," ",1200,800); 
   c81->Draw();						
@@ -1076,7 +1508,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   if(hWidthPedestal->Integral()!=0)hWidthPedestal->Draw("COLZTEXT");
  
   c9->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c9->SaveAs(Form("%s/ADQA__PedWidth.png",plotDir.Data())); 
   
   TCanvas *c91 = new TCanvas("Pedestal width 1D Int0"," ",1200,800); 
   c91->Draw();						
@@ -1138,7 +1569,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hRunTime->Draw("P");
  
   c10->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c10->SaveAs(Form("%s/ADQA__RunTime.png",plotDir.Data()));
   
   TCanvas *c11 = new TCanvas("LHC state"," ",800,400); 
   c11->Draw();						
@@ -1162,7 +1592,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hLHCstate->Draw("P");
  
   c11->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
-  c11->SaveAs(Form("%s/ADQA__LHCstate.png",plotDir.Data())); 
   
   TCanvas *c12 = new TCanvas("Number of events"," ",800,400); 
   c12->Draw();						
@@ -1179,12 +1608,24 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hNEvents->Draw("P");
  
   c12->Print(Form("%s/QA_Resume_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
-  c12->SaveAs(Form("%s/ADQA__NEvents.png",plotDir.Data()));
-  
-  
-  
   
   return 0;
+}
+
+void AddFillSeparationLines(TH1* hFillNumber){
+  gPad->Update();
+  Double_t ymin = gPad->GetUymin();
+  Double_t ymax = gPad->GetUymax();
+  TLine * fillSeparationLine = new TLine();
+  fillSeparationLine->SetLineColor(kBlack);
+  fillSeparationLine->SetLineStyle(kDashed);
+  fillSeparationLine->SetLineWidth(1);
+  for(Int_t iBin = 1; iBin < hFillNumber->GetXaxis()->GetNbins(); iBin++) {
+    UInt_t fillOld = hFillNumber->GetBinContent(iBin);
+    UInt_t fillNew = hFillNumber->GetBinContent(iBin + 1);
+    if (fillOld==fillNew) continue;
+    fillSeparationLine->DrawLine(hFillNumber->GetBinLowEdge(iBin+1),ymin,hFillNumber->GetBinLowEdge(iBin+1),ymax);
+  }
 }
 
 void myScaleSetUp(TH1* histoBlue, TH1* histoRed){
