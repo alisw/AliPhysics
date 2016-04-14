@@ -22,6 +22,11 @@
 #include "AliHLTEMCALTriggerMaker.h"
 #include "AliHLTEMCALTriggerMakerComponent.h"
 
+#include <TStopwatch.h>
+
+#include <bitset>
+#include <iostream>
+
 ClassImp(AliHLTEMCALTriggerMakerComponent)
 
 //AliHLTEMCALTriggerMakerComponent gAliHLTEMCALTriggerMakerComponent;
@@ -49,6 +54,11 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
   if(! IsDataEvent()){
     return 0;
   }
+
+#ifdef __PROFILE__
+  TStopwatch profile;
+  profile.Start();
+#endif
 
   //see header file for documentation
   UInt_t offset           = 0;
@@ -118,6 +128,11 @@ int AliHLTEMCALTriggerMakerComponent::DoEvent ( const AliHLTComponentEventData& 
     outputBlocks.push_back(bd);
   }
   size = mysize;
+
+#ifdef __PROFILE__
+  profile.Stop();
+  printf("End of trigger maker component: %f (Wall) / %f (CPU)\n", profile.RealTime(), profile.CpuTime());
+#endif
   return 0;
 }
 
@@ -152,7 +167,7 @@ AliHLTComponentDataType AliHLTEMCALTriggerMakerComponent::GetOutputDataType(){
 }
 
 void AliHLTEMCALTriggerMakerComponent::GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier ){
-  constBase = 5000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct);
+  constBase = 10000 *(float)sizeof(AliHLTCaloTriggerPatchDataStruct) + sizeof(AliHLTCaloTriggerHeaderStruct);
   inputMultiplier = 0; // (float)sizeof(AliHLTCaloTriggerPatchDataStruct)/sizeof(AliHLTCaloDigitDataStruct)+1;
 }
 
