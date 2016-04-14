@@ -51,6 +51,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fAnalysisType(NULL),
  fPIDResponse(NULL),
  fMaxNoGlobalTracksAOD(3),
+ fProcessBothKineAndReco(kFALSE),
+ fRejectFakeTracks(kTRUE),
+ fMC(NULL),
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
@@ -174,6 +177,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fAnalysisType(NULL),
  fPIDResponse(NULL),
  fMaxNoGlobalTracksAOD(3),
+ fProcessBothKineAndReco(kFALSE),
+ fRejectFakeTracks(kTRUE),
+ fMC(NULL),
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
@@ -335,14 +341,20 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserExec(Option_t *)
 
  // b) Insanity checks:
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::UserExec(Option_t *)";
- if(aMC){*fAnalysisType="MC";}
+ if(aMC && aAOD && fProcessBothKineAndReco){*fAnalysisType="MC_AOD";}
+ else if(aMC){*fAnalysisType="MC";}
  else if(aESD){*fAnalysisType="ESD";}
  else if(aAOD){*fAnalysisType="AOD";}
- else{Fatal(sMethodName.Data(),"Neither MC, nor ESD, nor AOD. Okay...");}
+ else{Fatal(sMethodName.Data(),"Neither MC, nor ESD, nor AOD, nor MC_AOD. Okay...");}
  InsanityChecksUserExec();
 
  // c) Start analysis over MC, ESD or AOD:
- if(aMC){MC(aMC);}
+ if(fProcessBothKineAndReco) // TBI: this is a bit shaky, isn't it...
+ {
+  fMC = aMC;
+  AOD(aAOD);
+ }
+ else if(aMC){MC(aMC);}
  else if(aESD){ESD(aESD);}
  else if(aAOD){AOD(aAOD);}
  else{Fatal(sMethodName.Data(),"Neither MC, nor ESD, nor AOD. Okay...");} // TBI I have this check already
@@ -414,6 +426,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::NormalizeCorrelationFunctions()
 void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEvent *ave)
 {
  // Fill control histograms for global event observables.
+
+ // TBI: add support for fProcessBothKineAndReco
 
  // To do:
  // 1) Add support for MC and ESD.
@@ -823,6 +837,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::DoSomeDebugging(AliVEvent *ave)
 {
  // Do all debugging in this function.
 
+ // TBI: add support for fProcessBothKineAndReco
+
  // a) Determine Ali{MC,ESD,AOD}Event;
  // b) Wait for specified event.
 
@@ -872,7 +888,7 @@ Int_t AliAnalysisTaskMultiparticleFemtoscopy::CurrentEventNumber()
   // TBI
  }
 
- else if(fAnalysisType->EqualTo("AOD"))
+ else if(fAnalysisType->Contains("AOD")) // TBI: Okay...?
  {
   currentEventNumber = (Int_t)fGetNumberOfTracksHist->GetEntries(); // TBI there is an issue clearly if fFillControlHistogramsEvent is not enabled. Yes, this is really shaky...
  }
@@ -975,14 +991,15 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserExec()
  }
 
  // d) Insanity checks specific only for AOD analyses:
- if(fAnalysisType->EqualTo("AOD")) // TBI 'else if' ?
+ if(fAnalysisType->Contains("AOD")) // TBI 'else if' ?
  {
   if(!fGlobalTracksAOD[0]){Fatal(sMethodName.Data(),"!fGlobalTracksAOD[0]");}
   if(0 != fGlobalTracksAOD[0]->GetSize()){Fatal(sMethodName.Data(),"0 != fGlobalTracksAOD[0]->GetSize()");}
+  if(fProcessBothKineAndReco && fEstimateBackground){Fatal(sMethodName.Data(),"fProcessBothKineAndReco && fEstimateBackground");}
   // Remark: Note that the similar check is not needed for instance for fGlobalTracksAOD[1] and fGlobalTracksAOD[2],
   // which are used to estimate background, since some events can be stored in a buffer, until a suitable co-event is found,
   // to calculate background.
- } // if(fAnalysisType->EqualTo("AOD")
+ } // if(fAnalysisType->Contains("AOD")
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserExec()
 
@@ -1221,7 +1238,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::ResetEBEObjects()
  }
 
  // d) Reset event-by-event objects specific only for AOD analyses:
- if(fAnalysisType->EqualTo("AOD")) // TBI 'else if' ?
+ if(fAnalysisType->Contains("AOD")) // TBI 'else if' ?
  {
   if(fGlobalTracksAOD[0]) fGlobalTracksAOD[0]->Delete();
   // Remark: Note that fGlobalTracksAOD[1] and fGlobalTracksAOD[2] used for event mixing do not have
@@ -1239,7 +1256,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
  // a) Insanity checks;
  // b) Trivial checks; // TBI
  // c) Track quality cuts;
- // d) PID. 
+ // d) PID;
+ // e) PID MC (if available).
 
  // a) Insanity checks
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)";
@@ -1284,6 +1302,16 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
   return kFALSE; // TBI remove eventually
  }
 
+ // e) PID MC (if available):
+ if(fProcessBothKineAndReco)
+ {
+  if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
+  AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
+  if(charge < 0 && mcParticle->GetPdgCode() == -211) return kTRUE;
+  else if(charge > 0 && mcParticle->GetPdgCode() == 211) return kTRUE;
+  else return kFALSE;
+ } // if(fProcessBothKineAndReco)
+
  return kTRUE;
 
 } // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)
@@ -1298,7 +1326,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
  // a) Insanity checks;
  // b) Trivial checks;
  // c) Track quality cuts;
- // d) PID. 
+ // d) PID;
+ // e) PID MC (if available).
 
  // a) Insanity checks:
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)";
@@ -1343,6 +1372,16 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
   return kFALSE; // TBI remove eventually
  }
 
+ // e) PID MC (if available):
+ if(fProcessBothKineAndReco)
+ {
+  if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
+  AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
+  if(charge < 0 && mcParticle->GetPdgCode() == -321) return kTRUE;
+  else if(charge > 0 && mcParticle->GetPdgCode() == 321) return kTRUE;
+  else return kFALSE;
+ } // if(fProcessBothKineAndReco)
+
  return kTRUE;
 
 } // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)
@@ -1356,7 +1395,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t
  // a) Insanity checks;
  // b) Trivial checks;
  // c) Track quality cuts;
- // d) PID. 
+ // d) PID;
+ // e) PID MC (if available).
 
  // a) Insanity checks:
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)";
@@ -1399,6 +1439,16 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t
   // TBI use combined TPC and TOf
   return kFALSE; // TBI remove eventually
  }
+
+ // e) PID MC (if available):
+ if(fProcessBothKineAndReco)
+ {
+  if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
+  AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
+  if(charge < 0 && mcParticle->GetPdgCode() == -2212) return kTRUE;
+  else if(charge > 0 && mcParticle->GetPdgCode() == 2212) return kTRUE;
+  else return kFALSE;
+ } // if(fProcessBothKineAndReco)
 
  return kTRUE;
 
@@ -2159,6 +2209,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonGlobalTrackCuts(AliAO
  //if(gtrack->GetTPCNcls()<70) return kFALSE;
  //if(gtrack->GetTPCsignalN()<70) return kFALSE;
 
+ if(fRejectFakeTracks && gtrack->GetLabel()<0) return kFALSE; // TBI is it more precise <=0 ?
+
  return kTRUE;
 
 } // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonGlobalTrackCuts(AliAODTrack *gtrack)
@@ -2174,6 +2226,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack
  if(!atrack){Fatal(sMethodName.Data(),"!atrack");}
 
  if(!atrack->TestFilterBit(128)) return kFALSE; // TPC-only TBI setter
+
+ if(fRejectFakeTracks && atrack->GetLabel()<0) return kFALSE; // TBI is it more precise <=0 ?
 
  return kTRUE; 
 
@@ -2204,6 +2258,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODMCPar
 Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonEventCuts(AliVEvent *ave)
 {
  // Check if the event passes common event cuts.
+
+ // TBI: add support for fProcessBothKineAndReco
 
  // a) Determine Ali{MC,ESD,AOD}Event;
 
