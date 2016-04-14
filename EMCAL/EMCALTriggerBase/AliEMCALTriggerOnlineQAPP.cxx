@@ -67,6 +67,9 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
   for (Int_t itrigger = 0; itrigger < fgkNTriggerTypes; itrigger++) {
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        fNPatches[idet][itrigger][ipatch] = 0;
+
+        fHistNPatches[idet][itrigger][ipatch] = 0;
         fHistPatchAmp[idet][itrigger][ipatch] = 0;
         fHistMaxPatchAmp[idet][itrigger][ipatch] = 0;
       }
@@ -120,6 +123,9 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
   for (Int_t itrigger = 0; itrigger < fgkNTriggerTypes; itrigger++) {
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        fNPatches[idet][itrigger][ipatch] = 0;
+
+        fHistNPatches[idet][itrigger][ipatch] = 0;
         fHistPatchAmp[idet][itrigger][ipatch] = 0;
         fHistMaxPatchAmp[idet][itrigger][ipatch] = 0;
       }
@@ -186,6 +192,9 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const AliEMCALTriggerOnline
 
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        fNPatches[idet][itrigger][ipatch] = 0;
+
+        fHistNPatches[idet][itrigger][ipatch] = 0;
         fHistPatchAmp[idet][itrigger][ipatch] = 0;
         fHistMaxPatchAmp[idet][itrigger][ipatch] = 0;
       }
@@ -308,6 +317,11 @@ void AliEMCALTriggerOnlineQAPP::Init()
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       if (!fEnabledPatchTypes[ipatch]) continue;
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
+        hname = TString::Format("EMCTRQA_hist%sNPatches%s%s", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
+        htitle = TString::Format("EMCTRQA_hist%sNPatches%s%s;num. of patches;events", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
+        fHistNPatches[idet][itrig][ipatch] = new TH1F(hname, htitle, 100, 0, 5000);
+        fHistograms.Add(fHistNPatches[idet][itrig][ipatch]);
+
         hname = TString::Format("EMCTRQA_hist%sMaxPatchAmp%s%s", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
         htitle = TString::Format("EMCTRQA_hist%sMaxPatchAmp%s%s;amplitude;entries", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
         fHistMaxPatchAmp[idet][itrig][ipatch] = new TH1F(hname, htitle, fgkMaxPatchAmp[itrig]/fADCperBin, 0, fgkMaxPatchAmp[itrig]);
@@ -371,6 +385,7 @@ void AliEMCALTriggerOnlineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pat
         AliWarning(Form("Patch is not EMCal nor DCal/PHOS (pos: %d, %d)", patch->GetRowStart(), patch->GetColStart()));
       }
 
+      fNPatches[idet][itrig][ipatch]++;
       fHistPatchAmp[idet][itrig][ipatch]->Fill(amplitudes[ipatch]);
       fHistAmpEdgePos[itrig][ipatch]->Fill(patch->GetColStart(), patch->GetRowStart(), amplitudes[ipatch]);
     }
@@ -451,25 +466,30 @@ void AliEMCALTriggerOnlineQAPP::EventCompleted()
 {
   fHistEvents->Fill(0);
 
-  enum {kEMCAL,kDCAL};
+  enum {kEMCAL=0,kDCAL=1};
   for (Int_t itrig = 0; itrig < fgkNTriggerTypes; itrig++) {
     if (EMCALTrigger::kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
 
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       if (!fEnabledPatchTypes[ipatch]) continue;
 
-      if (fMaxPatchEMCal[itrig][ipatch]) {
+      fHistNPatches[kEMCAL][itrig][ipatch]->Fill(fNPatches[kEMCAL][itrig][ipatch]);
+      fHistNPatches[kDCAL][itrig][ipatch]->Fill(fNPatches[kDCAL][itrig][ipatch]);
+
+      if (fMaxPatchEMCal[itrig][ipatch]->GetColStart() >= 0) {
         fHistMaxEdgePos[itrig][ipatch]->Fill(fMaxPatchEMCal[itrig][ipatch]->GetColStart(),
             fMaxPatchEMCal[itrig][ipatch]->GetRowStart());
         fHistMaxPatchAmp[kEMCAL][itrig][ipatch]->Fill(GetAmplitude(fMaxPatchEMCal[itrig][ipatch], ipatch));
       }
 
-      if (fMaxPatchDCal[itrig][ipatch]) {
+      if (fMaxPatchDCal[itrig][ipatch]->GetColStart() >= 0) {
         fHistMaxEdgePos[itrig][ipatch]->Fill(fMaxPatchDCal[itrig][ipatch]->GetColStart(),
             fMaxPatchDCal[itrig][ipatch]->GetRowStart());
         fHistMaxPatchAmp[kDCAL][itrig][ipatch]->Fill(GetAmplitude(fMaxPatchDCal[itrig][ipatch], ipatch));
       }
 
+      fNPatches[kEMCAL][itrig][ipatch] = 0;
+      fNPatches[kDCAL][itrig][ipatch] = 0;
       fMaxPatchEMCal[itrig][ipatch]->Reset();
       fMaxPatchDCal[itrig][ipatch]->Reset();
     }

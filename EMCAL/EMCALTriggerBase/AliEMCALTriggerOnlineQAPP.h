@@ -74,6 +74,7 @@ protected:
 
   AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[fgkNTriggerTypes][fgkNPatchTypes];  //!<! EMCal max patch (will be reset each event)
   AliEMCALTriggerPatchInfo  *fMaxPatchDCal[fgkNTriggerTypes][fgkNPatchTypes];   //!<! DCal max patch (will be reset each event)
+  UShort_t                   fNPatches[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];//!<! Number of patches in the current event
   TList                      fHistograms;                                       //!<! List of histograms
 
   // General histograms
@@ -99,7 +100,8 @@ protected:
   TH2                       *fHistFEEvsSTUBySM[fgkSM];         //!<! Correlation FEE vs STU (by SM)
 
   // Trigger patch histograms
-  TH1                       *fHistPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];    //!<! Spectra of patch amplitudes
+  TH1                       *fHistNPatches[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];    //!<! Spectra of patch amplitudes
+  TH1                       *fHistPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];    //!<! Number of patches
   TH1                       *fHistMaxPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes]; //!<! Spectra of maximum patch amplitudes
   TH2                       *fHistMaxEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Position of the maximum patch
   TH2                       *fHistAmpEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Position of the maximum patch weighted by the amplitude
