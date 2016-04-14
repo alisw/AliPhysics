@@ -18,6 +18,7 @@
 #include <THashList.h>
 #include <TH1.h>
 #include <TString.h>
+#include <TStopwatch.h>
 
 #include "AliEMCALTriggerConstants.h"
 #include "AliEMCALTriggerFastOR.h"
@@ -92,6 +93,11 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
   if (!blocks) return 0;
 
+#ifdef __PROFILE__
+  TStopwatch profile;
+  profile.Start();
+#endif
+
   if (!RetrieveFiredTriggerClasses()) {
     HLTDebug("No trigger classes received\n");
   }
@@ -126,6 +132,11 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
   fLocalEventCount++;
 
+#ifdef __PROFILE__
+  profile.Stop();
+  printf("End of trigger maker QA: %f (Wall) / %f (CPU)\n", profile.RealTime(), profile.CpuTime());
+#endif
+
   PushHistograms(fTriggerQAPtr->GetListOfHistograms());
 
   return 0;
@@ -136,6 +147,12 @@ void AliHLTEMCALTriggerQAComponent::ProcessCells(const AliHLTComponentBlockData*
   if (!block) return;
   AliHLTCaloDigitDataStruct* digit = reinterpret_cast<AliHLTCaloDigitDataStruct*>(block->fPtr);
   if (!digit) return;
+
+#ifdef __PROFILE__
+  TStopwatch profile;
+  profile.Start();
+#endif
+
   Int_t nDigits = block->fSize/sizeof(AliHLTCaloDigitDataStruct);
   cells.CreateContainer(nDigits);
 
@@ -143,6 +160,11 @@ void AliHLTEMCALTriggerQAComponent::ProcessCells(const AliHLTComponentBlockData*
     cells.SetCell(idigit, digit->fID, digit->fEnergy, digit->fTime);
     digit++;
   }
+
+#ifdef __PROFILE__
+  profile.Stop();
+  printf("End of ProcessCells: %f (Wall) / %f (CPU)\n", profile.RealTime(), profile.CpuTime());
+#endif
 }
 
 void AliHLTEMCALTriggerQAComponent::PushHistograms(TCollection* list)
@@ -167,6 +189,11 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerPatches(const AliHLTComponentB
   AliHLTCaloTriggerPatchDataStruct* hltpatchPtr = reinterpret_cast<AliHLTCaloTriggerPatchDataStruct*>(block->fPtr);
   if (!hltpatchPtr) return;
 
+#ifdef __PROFILE__
+  TStopwatch profile;
+  profile.Start();
+#endif
+
   UInt_t nPatches = block->fSize/sizeof(AliHLTCaloTriggerPatchDataStruct);
 
   AliEMCALTriggerPatchInfo patch;
@@ -181,10 +208,15 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerPatches(const AliHLTComponentB
     fTriggerQAPtr->ComputeBackground();
   }
 
+  HLTDebug("Number of patches: %d", nPatches);
   for(UInt_t ipatch = 0; ipatch < nPatches; ipatch++) {
     HLTPatch2Patch(hltpatchPtr[ipatch], patch);
     fTriggerQAPtr->ProcessPatch(&patch);
   }
+#ifdef __PROFILE__
+  profile.Stop();
+  printf("End of ProcessTriggerPatches: %f (Wall) / %f (CPU)\n", profile.RealTime(), profile.CpuTime());
+#endif
 }
 
 void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells)
@@ -192,6 +224,11 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentB
   if (!block) return;
   AliHLTCaloTriggerPatchDataStruct* hltpatchPtr = reinterpret_cast<AliHLTCaloTriggerPatchDataStruct*>(block->fPtr);
   if (!hltpatchPtr) return;
+
+#ifdef __PROFILE__
+  TStopwatch profile;
+  profile.Start();
+#endif
 
   AliHLTCaloTriggerHeaderStruct* triggerhead = reinterpret_cast<AliHLTCaloTriggerHeaderStruct *>(block->fPtr);
   AliHLTCaloTriggerDataStruct *dataptr = reinterpret_cast<AliHLTCaloTriggerDataStruct *>(reinterpret_cast<AliHLTUInt8_t* >(block->fPtr) + sizeof(AliHLTCaloTriggerHeaderStruct));
@@ -203,6 +240,11 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentB
     HLTFastor2Fastor(dataptr[datacount], fastor);
     fTriggerQAPtr->ProcessFastor(&fastor, &cells);
   }
+
+#ifdef __PROFILE__
+  profile.Stop();
+  printf("End of ProcessTriggerFastors: %f (Wall) / %f (CPU)\n", profile.RealTime(), profile.CpuTime());
+#endif
 }
 
 bool AliHLTEMCALTriggerQAComponent::CheckInputDataType(const AliHLTComponentDataType &datatype)
