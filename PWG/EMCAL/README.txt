@@ -5,6 +5,7 @@ The EMCAL framework consists of three parts:
 - \subpage READMEcorefw
 - \subpage READMEtrgfw
 - \subpage READMEfwtasks
+- \subpage READMEjetfw
 
 Goal of the EMCAL framework is to provide the user with all functionalities
 to steer the different steps in the preparation chain, handle data, process
