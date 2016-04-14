@@ -1270,7 +1270,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
           result=10;
         }
 
-        calCE->Delete();
+    //    calCE->Delete();
         delete calCE;
       }
       ++index;
@@ -1325,7 +1325,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
           while ( (obj=nextObj()) ){
             arrFitGraphs->Add(obj->Clone());
           }
-          calCE->Delete();
+//          calCE->Delete();
           delete calCE;
         }
         ++index2;
