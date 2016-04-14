@@ -171,13 +171,13 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     ELevel0TriggerStatus_t L0trigger = CheckForL0(patchit->GetColStart(), patchit->GetRowStart());
     if (L0trigger == kNotLevel0) continue;
     Int_t onlinebits = 0;
-    if (L0trigger == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit());
+    if (L0trigger == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit()+fTriggerBitConfig->GetTriggerTypesEnd());
     Int_t offlinebits = 0;
     if(patchit->GetADC() > fLevel0ThresholdOnline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
     if(patchit->GetOfflineADC() > fLevel0ThresholdOffline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
-    if(!offlinebits) continue;
+    if(!(offlinebits || onlinebits))  continue;
     next = fTriggerPatchDataPtr + 1;
-    MakeHLTPatch(*patchit, *fTriggerPatchDataPtr, offlinebits, 0, 1 << (kL0 +  kTriggerTypeEnd));
+    MakeHLTPatch(*patchit, *fTriggerPatchDataPtr, offlinebits, 0, onlinebits);
     fTriggerPatchDataPtr = next;
     patchcount++;
     fBufferSize -= sizeof(AliHLTCaloTriggerPatchDataStruct);
