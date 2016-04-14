@@ -171,6 +171,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnOverlapHistograms()           { fFillOverlapHistograms = kTRUE ; }
   void         SwitchOffOverlapHistograms()          { fFillOverlapHistograms = kFALSE; }
+  
+  void         SwitchOnRejectParticlesCloseToTrigger()    { fRejectParticlesCloseToTriggerInCone = kTRUE ; }
+  void         SwitchOffRejectParticlesCloseToTrigger()   { fRejectParticlesCloseToTriggerInCone = kFALSE ; }
 
   
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
@@ -200,6 +203,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
+  Bool_t   fRejectParticlesCloseToTriggerInCone;      ///<  Fill histograms and calculate sum pT in cone or pT max in cone only with tracks or clusters far enough (fDistMinToTrigger) from trigger particle.
   
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
@@ -221,6 +225,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtTrigBinLimit[20];                       ///<  Pt bin limits on pt trigger.
   
   Float_t  fMinCellsAngleOverlap;                     ///<  Number of cells that define the cluster overlap.
+  
+  Float_t  fDistMinToTrigger;                         ///<  Minimal distance between triger particles and particles in cone to count them for this isolation.
   
   //  Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                                  ///<  Number of cone sizes to test. Multiple cones and pt thresholds analysis.
