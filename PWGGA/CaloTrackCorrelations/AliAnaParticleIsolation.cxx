@@ -962,24 +962,50 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
     ptcone = fMomentum.Pt();
     
-    fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
-    fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight());
+    Float_t DistToTrigger = TMath::Sqrt((aodParticle->Eta() - fMomentum.Eta())*(aodParticle->Eta() - fMomentum.Eta()) + (aodParticle->Phi() - fMomentum.Phi())*(aodParticle->Phi() - fMomentum.Phi()));
     
-    if(IsPileUpAnalysisOn())
+    if(fRejectParticlesCloseToTriggerInCone && DistToTrigger > fDistMinToTrigger)
     {
-      if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, ptcone, GetEventWeight());
+      fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
+      fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight());
+      
+      if(IsPileUpAnalysisOn())
+      {
+        if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, ptcone, GetEventWeight());
+      }
+      
+      if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), ptcone, GetEventWeight());
+      
+      coneptsumCluster+=ptcone;
+      if(ptcone > coneptLeadCluster) coneptLeadCluster = ptcone;
     }
-    
-    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), ptcone, GetEventWeight());
-    
-    coneptsumCluster+=ptcone;
-    if(ptcone > coneptLeadCluster) coneptLeadCluster = ptcone;
+    else
+    {
+      fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
+      fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight());
+      
+      if(IsPileUpAnalysisOn())
+      {
+        if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, ptcone, GetEventWeight());
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, ptcone, GetEventWeight());
+      }
+      
+      if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), ptcone, GetEventWeight());
+      
+      coneptsumCluster+=ptcone;
+      if(ptcone > coneptLeadCluster) coneptLeadCluster = ptcone;
+    }
   }
   
   fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
@@ -1090,37 +1116,76 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
     Float_t pTtrack = track->Pt();
     
-    fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
-    fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());
+    Float_t DistToTrigger = TMath::Sqrt((aodParticle->Eta() - track->Eta())*(aodParticle->Eta() - track->Eta()) + (aodParticle->Phi() - track->Phi())*(aodParticle->Phi() - track->Phi()));
     
-    if(IsPileUpAnalysisOn())
+    if(fRejectParticlesCloseToTriggerInCone && DistToTrigger > fDistMinToTrigger)
     {
-      ULong_t status = track->GetStatus();
-      Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
-      //Double32_t tof = track->GetTOFsignal()*1e-3;
-      Int_t trackBC = track->GetTOFBunchCrossing(bz);
+      fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
+      fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());
       
-      if     ( okTOF && trackBC!=0 ) fhPtTrackInConeOtherBC->Fill(ptTrig,pTtrack, GetEventWeight());
-      else if( okTOF && trackBC==0 ) fhPtTrackInConeBC0    ->Fill(ptTrig,pTtrack, GetEventWeight());
+      if(IsPileUpAnalysisOn())
+      {
+        ULong_t status = track->GetStatus();
+        Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+        //Double32_t tof = track->GetTOFsignal()*1e-3;
+        Int_t trackBC = track->GetTOFBunchCrossing(bz);
+        
+        if     ( okTOF && trackBC!=0 ) fhPtTrackInConeOtherBC->Fill(ptTrig,pTtrack, GetEventWeight());
+        else if( okTOF && trackBC==0 ) fhPtTrackInConeBC0    ->Fill(ptTrig,pTtrack, GetEventWeight());
+        
+        Int_t vtxBC = GetReader()->GetVertexBC();
+        if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight());
+        
+        if(GetReader()->IsPileUpFromSPD())             {   fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight());
+          if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight());
+          if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()); }
+        if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight());
+      }
       
-      Int_t vtxBC = GetReader()->GetVertexBC();
-      if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight());
       
-      if(GetReader()->IsPileUpFromSPD())             {   fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight());
-        if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight());
-        if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()); }
-      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight());
+      coneptsumTrack+=pTtrack;
+      if(pTtrack > coneptLeadTrack) coneptLeadTrack = pTtrack;
     }
-    
-    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight());
-    
-    coneptsumTrack+=pTtrack;
-    if(pTtrack > coneptLeadTrack) coneptLeadTrack = pTtrack;
+    else
+    {
+      fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
+      fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());
+      
+      if(IsPileUpAnalysisOn())
+      {
+        ULong_t status = track->GetStatus();
+        Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+        //Double32_t tof = track->GetTOFsignal()*1e-3;
+        Int_t trackBC = track->GetTOFBunchCrossing(bz);
+        
+        if     ( okTOF && trackBC!=0 ) fhPtTrackInConeOtherBC->Fill(ptTrig,pTtrack, GetEventWeight());
+        else if( okTOF && trackBC==0 ) fhPtTrackInConeBC0    ->Fill(ptTrig,pTtrack, GetEventWeight());
+        
+        Int_t vtxBC = GetReader()->GetVertexBC();
+        if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight());
+        
+        if(GetReader()->IsPileUpFromSPD())             {   fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight());
+          if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight());
+          if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()); }
+        if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight());
+      }
+      
+      if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight());
+      
+      coneptsumTrack+=pTtrack;
+      if(pTtrack > coneptLeadTrack) coneptLeadTrack = pTtrack;
+    }
   }
 
   fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
