@@ -111,6 +111,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Int_t GetMaxNoGlobalTracksAOD() const {return this->fMaxNoGlobalTracksAOD;};
   void SetProcessBothKineAndReco(Bool_t pbkar) {this->fProcessBothKineAndReco = pbkar;};
   Bool_t GetProcessBothKineAndReco() const {return this->fProcessBothKineAndReco;};
+  void SetProcessOnlyKine(Bool_t pok) {this->fProcessOnlyKine = pok;};
+  Bool_t GetProcessOnlyKine() const {return this->fProcessOnlyKine;};
   void SetRejectFakeTracks(Bool_t rft) {this->fRejectFakeTracks = rft;};
   Bool_t GetRejectFakeTracks() const {return this->fRejectFakeTracks;};
 
@@ -194,6 +196,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Int_t fMaxNoGlobalTracksAOD; // maximum # of TExMap *fGlobalTracksAOD objects to be booked. Default is 3, one for default analysis, and two for event mixing
   TExMap *fGlobalTracksAOD[10]; //! global tracks in AOD. [0] is used in the default analysis, [1] and [2] for event mixing, etc.
   Bool_t fProcessBothKineAndReco; // process both aMC and aAOD, typically to get purities (TBI: add support for ESD)
+  Bool_t fProcessOnlyKine; // process only aMC
   Bool_t fRejectFakeTracks; // if set to kFALSE, and if fMC is available, get the corresponding MC particle by taking absolute value of label
   AliMCEvent *fMC; // placeholder for MC info
 
