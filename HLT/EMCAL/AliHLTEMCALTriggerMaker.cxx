@@ -136,14 +136,16 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     next = fTriggerPatchDataPtr + 1;
     // Set offline bits
     // Note: trigger patch can contain more than one patch type
-    Int_t offlinebits = 0;
+    UInt_t offlinebits = 0, onlinebitmask = 0;
     if(patchiter->GetPatchSize() == fGammaPatchSize){
+      onlinebitmask = 1 << kL1GammaHigh | 1 << kL1GammaLow | 1 << (kL1GammaHigh + kTriggerTypeEnd) | (1 << kL1GammaLow + kTriggerTypeEnd);
       if(patchiter->GetADC() > fGammaThresholdOnline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchiter->GetOfflineADC() > fGammaThresholdOffline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchiter->GetADC() > fGammaThresholdOnline[kLowThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
       if(patchiter->GetOfflineADC() > fGammaThresholdOffline[kLowThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
     }
     if (patchiter->GetPatchSize() == fJetPatchSize){
+      onlinebitmask = 1 << kL1JetHigh | 1 << kL1JetLow | 1 << (kL1JetHigh + kTriggerTypeEnd) | (1 << kL1JetLow + kTriggerTypeEnd);
       if(patchiter->GetADC() > fJetThresholdOnline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchiter->GetOfflineADC() > fJetThresholdOffline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchiter->GetADC() > fJetThresholdOnline[kLowThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
@@ -153,7 +155,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
       if(patchiter->GetADC() > fBkgThresholdOnline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetBkgBit());
       if(patchiter->GetOfflineADC() > fBkgThresholdOffline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
     }
-    MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr, offlinebits);
+    MakeHLTPatch(*patchiter, *fTriggerPatchDataPtr, offlinebits, onlinebitmask, 0);
     fTriggerPatchDataPtr = next;
     patchcount++;
     fBufferSize -= sizeof(AliHLTCaloTriggerPatchDataStruct);
@@ -171,7 +173,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     if(patchit->GetOfflineADC() > fLevel0ThresholdOffline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
     if(!offlinebits) continue;
     next = fTriggerPatchDataPtr + 1;
-    MakeHLTPatch(*patchit, *fTriggerPatchDataPtr, offlinebits);
+    MakeHLTPatch(*patchit, *fTriggerPatchDataPtr, offlinebits, 0, 1 << (kL0 +  kTriggerTypeEnd));
     fTriggerPatchDataPtr = next;
     patchcount++;
     fBufferSize -= sizeof(AliHLTCaloTriggerPatchDataStruct);
@@ -242,13 +244,14 @@ void AliHLTEMCALTriggerMaker::InitializeLevel0PatchFinders(Bool_t isDCAL){
   fL0PatchFinder->AddTriggerAlgorithm(l0trigger);
 }
 
-void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits) const {
+void AliHLTEMCALTriggerMaker::MakeHLTPatch(const AliEMCALTriggerRawPatch &input, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits, UInt_t onlinebitmask, UInt_t level0bits) const {
   output.fCol = input.GetColStart();
   output.fRow = input.GetRowStart();
   output.fSize = input.GetPatchSize();
   output.fADC = input.GetADC();
   output.fOfflineADC = input.GetOfflineADC();
-  output.fBitMask = input.GetBitmask() | (*fTriggerBitMasks)(output.fCol, output.fRow) | offlinebits;
+  Int_t onlinebits = (*fTriggerBitMasks)(output.fCol, output.fRow) & onlinebitmask;
+  output.fBitMask = input.GetBitmask() | onlinebits | offlinebits | level0bits;
 }
 
 void AliHLTEMCALTriggerMaker::InitializeLookupTables(){

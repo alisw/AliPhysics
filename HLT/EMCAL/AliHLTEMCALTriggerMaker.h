@@ -191,7 +191,7 @@ protected:
    * @param inputpatch EMCAL raw patch to be converted into an EMCAL HLT patch
    * @param output HLT trigger patch obtaied using the information in the EMCAL raw patch
    */
-   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits) const;
+   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits, UInt_t onlinebitmask, UInt_t level0bits) const;
 
   /**
    * Initialise trigger patch finders in the EMCAL or DCAL at Level1
