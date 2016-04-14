@@ -99,7 +99,11 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
 	fHistTimePerPM_UnCorr(0),
 	fHistTimeVsChargeADA_UnCorr(0),
 	fHistTimeVsChargeADC_UnCorr(0),
-	//fHistTimeVsChargePerPM_UnCorr(0),
+	fHistTimeVsChargePerPM_UnCorr(0),
+	//fHistTimeVsChargePerPM_UnCorr_Cut(0),
+	//fHistTimePairCorrelation(0),
+	//fHistTimePairCorrelation_Cut(0),
+	fTimeSlewingTree(0),
 	fHistChargeTriggerPerPMPerV0Flag(0),
 	fHistChargeTailPerPMPerV0Flag(0),
 	fHistChargeBBPerPMPerV0Flag(0), 
@@ -176,7 +180,11 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
 	fHistTimePerPM_UnCorr(0),
 	fHistTimeVsChargeADA_UnCorr(0),
 	fHistTimeVsChargeADC_UnCorr(0),
-	//fHistTimeVsChargePerPM_UnCorr(0),
+	fHistTimeVsChargePerPM_UnCorr(0),
+	//fHistTimeVsChargePerPM_UnCorr_Cut(0),
+	//fHistTimePairCorrelation(0),
+	//fHistTimePairCorrelation_Cut(0),
+	fTimeSlewingTree(0),
 	fHistChargeTriggerPerPMPerV0Flag(0),
 	fHistChargeTailPerPMPerV0Flag(0),
 	fHistChargeBBPerPMPerV0Flag(0),
@@ -200,14 +208,19 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
 {
   // Constructor
   // Output slot #1 writes into a TList container
+  for(Int_t i=0; i<16; i++){ fAdc[i] = 0; fTdc[i] = 0; fAdcTail[i] = 0;}
+  
   fAnalysisUtils->SetUseOutOfBunchPileUp(kTRUE);
+ 
   
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 //________________________________________________________________________
 AliAnalysisTaskADPilot::~AliAnalysisTaskADPilot(){
   // Destructor
   if (fListHist) { delete fListHist; fListHist = 0x0; }
+  if(fTimeSlewingTree){ delete fTimeSlewingTree; fTimeSlewingTree = 0x0; }
 }
 //________________________________________________________________________
 void AliAnalysisTaskADPilot::UserCreateOutputObjects()
@@ -236,6 +249,11 @@ void AliAnalysisTaskADPilot::UserCreateOutputObjects()
   const Int_t kNChannelBins  =   16;
   const Float_t kChannelMin    =    -0.5;
   const Float_t kChannelMax    =   15.5;
+  
+  fTimeSlewingTree = new TTree("fTimeSlewingTree", "fTimeSlewingTree");
+  fTimeSlewingTree ->Branch("fAdc", &fAdc[0], "fAdc[16]/s");
+  fTimeSlewingTree ->Branch("fAdcTail", &fAdcTail[0], "fAdcTail[16]/s");
+  fTimeSlewingTree ->Branch("fTdc", &fTdc[0], "fTdc[16]/s");
   
 
   fListHist = new TList();
@@ -559,17 +577,37 @@ if (!fHistMaxChargeValueInt1) {
     fHistMaxChargeValueInt1 = CreateHist2D("fHistMaxChargeValueInt1","Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
     fListHist->Add(fHistMaxChargeValueInt1);
   }
-/*/ 
+ 
 if(!fHistTimeVsChargePerPM_UnCorr) {
     fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",2600, 400, 3000, 
     					200,-4,0,
-					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
+					kNChannelBins, kChannelMin, kChannelMax,"Leading time [TDC counts]","ADC counts","Channel");
     fListHist->Add(fHistTimeVsChargePerPM_UnCorr);
   } 
-/*/   
+/*  
+if(!fHistTimeVsChargePerPM_UnCorr_Cut) {
+    fHistTimeVsChargePerPM_UnCorr_Cut = CreateHist3D("fHistTimeVsChargePerPM_UnCorr_Cut","Raw Time vs Charge per PM",2600, 400, 3000, 
+    					200,-4,0,
+					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
+    fListHist->Add(fHistTimeVsChargePerPM_UnCorr_Cut);
+  }
+  
+if(!fHistTimePairCorrelation) {
+    fHistTimePairCorrelation = CreateHist3D("fHistTimePairCorrelation"," per Pair",1200, 3400, 4600, 
+    					500,-250,250,
+					8, -0.5, 7.5,"t1+t2[TDC counts]","t1-t2[TDC counts]","Channel");
+    fListHist->Add(fHistTimePairCorrelation);
+  }
+if(!fHistTimePairCorrelation_Cut) {
+    fHistTimePairCorrelation_Cut = CreateHist3D("fHistTimePairCorrelation_Cut"," per Pair",1200, 3400, 4600, 
+    					500,-250,250,
+					8, -0.5, 7.5,"t1+t2[TDC counts]","t1-t2[TDC counts]","Channel");
+    fListHist->Add(fHistTimePairCorrelation_Cut);
+  }        */
 
   // Post output data.
   PostData(1, fListHist);
+  PostData(2, fTimeSlewingTree);
 }
 
 //________________________________________________________________________
@@ -617,10 +655,12 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   
   fRun=fEvent->GetRunNumber();
   
+  /*/
   if (fRun!=fOldRun){
     SetCalibData();
     fOldRun=fRun;
   }
+  /*/
   
   //Triggers from VZERO for reference
   AliESDVZERO* esdVZERO = fESD->GetVZEROData();
@@ -675,6 +715,11 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 	if(esdAD->GetTime(i) < -1024+1e-6 && (esdAD->GetBBFlag(i)||esdAD->GetBGFlag(i)))fHistFlagNoTime->Fill(i);
 	
 	if(esdADfriend){
+		if(esdAD->GetAdc(i)>0)fHistTimeVsChargePerPM_UnCorr->Fill(TMath::Nint(esdADfriend->GetTime(i)/(25./256.)),TMath::Log10(1.0/esdAD->GetAdc(i)),i);
+		fAdc[i] = esdAD->GetAdc(i);
+		fTdc[i] = TMath::Nint(esdADfriend->GetTime(i)/(25./256.));
+		fAdcTail[i] = esdAD->GetAdcTail(i);
+		
 		if(!esdAD->GetBBFlag(i)) {
 			fHistChargeNoFlag->Fill(esdAD->GetAdc(i));
 			fHistTimeNoFlag->Fill(i,esdADfriend->GetTime(i));
@@ -682,7 +727,6 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		fHistTimePerPM_UnCorr->Fill(i,esdADfriend->GetTime(i));
  		if(i<8) fHistTimeVsChargeADC_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
  		if(i>7) fHistTimeVsChargeADA_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
-		//if(esdAD->GetAdc(i)>0)fHistTimeVsChargePerPM_UnCorr->Fill(TMath::Nint(esdADfriend->GetTime(i)/(25./256.)),TMath::Log10(1.0/esdAD->GetAdc(i)),i);
 		Int_t nbbFlag = 0;
       		Int_t nbgFlag = 0;
 		Int_t charge[21];
@@ -706,13 +750,9 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock))localPF = kFALSE;
 		for(Int_t iClock=11; iClock<21; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock))localPF = kFALSE;
 		
-		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,10);
-		Float_t triggerCharge = esdADfriend->GetPedestal(i,10) - fCalibData->GetPedestal(k);
-		Float_t tailCharge = 0;
-		for(Int_t iClock = 14; iClock <= 20; iClock++){
-			k = i + 16*esdADfriend->GetIntegratorFlag(i,iClock); 
-			tailCharge += esdADfriend->GetPedestal(i,iClock) - fCalibData->GetPedestal(k);
-			}
+		Float_t triggerCharge = esdAD->GetAdcTrigger(i);
+		Float_t tailCharge = esdAD->GetAdcTail(i);
+		
 		if(esdAD->GetBBFlag(i)){
 			fHistChargeTriggerPerChannel->Fill(i,triggerCharge);
 			fHistChargeTailPerChannel->Fill(i,tailCharge);
@@ -786,9 +826,10 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   	for(Int_t i = 0; i<6; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i);
 	for(Int_t i = 12; i<16; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i-6);	
   }
-  
+  fTimeSlewingTree->Fill();
   // Post output data.
   PostData(1, fListHist);
+  PostData(2, fTimeSlewingTree);
 }
 
 //________________________________________________________________________
