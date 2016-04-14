@@ -74,7 +74,7 @@ AliEMCALTracker::AliEMCALTracker() :
 }
 
 ///
-/// Copy constructor
+/// Copy constructor.
 /// Besides copying all parameters, duplicates all collections.
 ///
 //------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy) :
 }
 
 ///
-/// Assignment operator; use copy ctor
+/// Assignment operator; use copy ctor.
 ///
 //------------------------------------------------------------------------------
 AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& source)
@@ -169,7 +169,7 @@ void AliEMCALTracker::Clear(Option_t* option)
 ///
 /// Load EMCAL clusters in the form of AliEMCALRecPoint,
 /// from simulation temporary files.
-/// (When included in reconstruction chain, this method is used automatically)
+/// (When included in reconstruction chain, this method is used automatically).
 ///
 //------------------------------------------------------------------------------
 Int_t AliEMCALTracker::LoadClusters(TTree *cTree) 
