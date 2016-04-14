@@ -52,6 +52,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fPIDResponse(NULL),
  fMaxNoGlobalTracksAOD(3),
  fProcessBothKineAndReco(kFALSE),
+ fProcessOnlyKine(kFALSE),
  fRejectFakeTracks(kTRUE),
  fMC(NULL),
  // 1.) Control histograms:
@@ -178,6 +179,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fPIDResponse(NULL),
  fMaxNoGlobalTracksAOD(3),
  fProcessBothKineAndReco(kFALSE),
+ fProcessOnlyKine(kFALSE),
  fRejectFakeTracks(kTRUE),
  fMC(NULL),
  // 1.) Control histograms:
@@ -342,7 +344,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserExec(Option_t *)
  // b) Insanity checks:
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::UserExec(Option_t *)";
  if(aMC && aAOD && fProcessBothKineAndReco){*fAnalysisType="MC_AOD";}
- else if(aMC){*fAnalysisType="MC";}
+ else if(aMC && fProcessOnlyKine){*fAnalysisType="MC";} // TBI this is a bit shaky, isnt' it...
  else if(aESD){*fAnalysisType="ESD";}
  else if(aAOD){*fAnalysisType="AOD";}
  else{Fatal(sMethodName.Data(),"Neither MC, nor ESD, nor AOD, nor MC_AOD. Okay...");}
@@ -354,7 +356,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserExec(Option_t *)
   fMC = aMC;
   AOD(aAOD);
  }
- else if(aMC){MC(aMC);}
+ else if(aMC && fProcessOnlyKine){MC(aMC);}
  else if(aESD){ESD(aESD);}
  else if(aAOD){AOD(aAOD);}
  else{Fatal(sMethodName.Data(),"Neither MC, nor ESD, nor AOD. Okay...");} // TBI I have this check already
