@@ -963,11 +963,6 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     
     ptcone = fMomentum.Pt();
     
-    distToTrigger = GetIsolationCut()->Radius(aodParticle->Eta(), aodParticle->Phi(), fMomentum.Eta(), fMomentum.Phi());
-    
-    if ( fRejectParticlesCloseToTriggerInCone && 
-        distToTrigger < fDistMinToTrigger       ) continue ;
-
     fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
     fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight());
     
@@ -1098,11 +1093,6 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
     
     pTtrack       = track->Pt();
-    
-    distToTrigger = GetIsolationCut()->Radius(aodParticle->Eta(), aodParticle->Phi(), track->Eta(), track->Phi());
-
-    if ( fRejectParticlesCloseToTriggerInCone && 
-         distToTrigger < fDistMinToTrigger       ) continue ;
     
     fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
     fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());
