@@ -865,6 +865,14 @@ public:
  TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
  void SetZNvsCen(TH2F* const n, Int_t const h) {this->fhZNvsCen[h] = n;};
  TH2F* GetZNvsCen(Int_t const h) const {return this->fhZNvsCen[h];};
+  void SetZNvsTCen(TH2F* const n, Int_t const h) {this->fhZNvsTCen[h] = n;};
+  TH2F* GetZNvsTCen(Int_t const h) const {return this->fhZNvsTCen[h];};
+  void SetCenvsMul(TH2F* const n, Int_t const h) {this->fhCenvsMul[h] = n;};
+  TH2F* GetCenvsMul(Int_t const h) const {return this->fhCenvsMul[h];};
+  void SetCenvsDif(TH2F* const n, Int_t const h) {this->fhCenvsDif[h] = n;};
+  TH2F* GetCenvsDif(Int_t const h) const {return this->fhCenvsDif[h];};
+  void SetZNvsMul(TH2F* const n, Int_t const h) {this->fhZNvsMul[h] = n;};
+  TH2F* GetZNvsMul(Int_t const h) const {return this->fhZNvsMul[h];};
  void SetZNCenvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenvsMul[eg][h] = n;};
  TH2F* GetZNCenvsMul(Int_t const eg, Int_t const h) const {return this->fhZNCenvsMul[eg][h];};
  void SetZNResvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsMul[eg][h] = n;};
@@ -1106,6 +1114,7 @@ private:
  Double_t fNumberOfPOIsEBE; // # of Particles of Interest
  Double_t fReferenceMultiplicityEBE; // reference multiplicity
  Double_t fCentralityEBE; // centrality percentile
+ Double_t fCentralityVarEBE; // centrality (alternative estimation) percentile
  //  3d.) profiles:
  TProfile *fAvMultiplicity; //! profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
  TProfile *fIntFlowCorrelationsPro; //! average correlations <<2>>, <<4>>, <<6>> and <<8>> (with wrong errors!)
@@ -1568,6 +1577,11 @@ private:
  TH2F* fhZNResvsMul[fCRCMaxnCen][2]; //! res vs mul
  TH2F* fhZNResvsCen[fCRCMaxnCen][2]; //! res vs rad
  TH2F* fhZNvsCen[2]; //! cen vs mul
+  TH2F* fhZNvsTCen[2]; //! cen vs mul
+  TH2F* fhCenvsMul[2]; //! cen vs mul
+  TH2F* fhCenvsDif[2]; //! cen vs mul
+  TH2F* fhZNvsMul[2]; //! cen vs mul
+  
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
  TH2D *fZDCESEHistQV[fCRCMaxnCen]; //! Test ZDC ESE
