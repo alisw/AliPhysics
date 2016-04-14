@@ -105,7 +105,7 @@ void AliHLTEMCALTriggerMaker::SetADC(Int_t col, Int_t row, Float_t adc){
 }
 
 void AliHLTEMCALTriggerMaker::SetL0Amplitude(Int_t col, Int_t row, Float_t amp){
-  (*fL0Amplitudes)(col, row) = amp;
+  (*fL0Amplitudes)(col, row) = amp*4; // to compensate for the last two bits that are chopped away in the hardware chain
 }
 
 void AliHLTEMCALTriggerMaker::SetL0Time(Int_t col, Int_t row, UChar_t time){
