@@ -155,14 +155,14 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
     Int_t vx, vy, lphi;
     for (int ithr = 0; ithr < 2; ithr++) {
+      printf("STU Reader: Number Gamma patches with threshold %d: %d\n", ithr, stustream->GetNL1GammaPatch(ithr));
       for (Int_t i = 0; i < stustream->GetNL1GammaPatch(ithr); i++) {
         if (stustream->GetL1GammaPatch(i, ithr, iTRU, x, y)) { // col (0..23), row (0..3)
-
-          //if(iTRU >= 32)iTRU -= 32;
-          iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, detector);
+          printf("Index %d: TRU: %d (%d, %d) [detector %d]\n", i, iTRU, x, y, detector);
 
           if (fkGeometryPtr->GetGeometryPtr()->GetTriggerMappingVersion() == 1) {
             // Run 1
+            iTRU = fkGeometryPtr->GetGeometryPtr()->GetTRUIndexFromSTUIndex(iTRU, detector);
 
             HLTDebug("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
 
@@ -173,18 +173,17 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
             vx = vx - int(sizeL1gsubr.X()) * int(sizeL1gpatch.X()) + 1;
             lphi = 64;
+            if (vx >= 0 && vy < lphi) {
+              if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
+            	HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy, index);
+            	SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
+              }
+            }
           } else {
             // Run 2
             fkGeometryPtr->GetGeometryPtr()->GetTRUFromSTU(iTRU, x, y, jTRU, vx, vy, detector);
             fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInTRU(jTRU, vx, vy, idx);
-            lphi = 103;
-          }
-
-          if (vx >= 0 && vy < lphi) {
-            if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
-              HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
-              SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
-            }
+            SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
           }
         }
       }
