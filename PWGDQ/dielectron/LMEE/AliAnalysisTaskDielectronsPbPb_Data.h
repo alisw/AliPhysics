@@ -48,7 +48,8 @@ public:
         fDCAz_max =     DCAz_max;
     }
     
-    void SetTrackCuts (Int_t ITS_minNcls, Int_t TPC_minNcls, Int_t TPC_nClsdEdx, Int_t TPC_minCr, Double_t MinCrOverFindableCls, Double_t MaxGoldenChi2, Double_t MaxTPCchi2, Double_t MaxITSchi2, Double_t MaxFracSharedCls)  {
+    void SetTrackCuts (Int_t ITS_minNcls, Int_t TPC_minNcls, Int_t TPC_nClsdEdx, Int_t TPC_minCr, Double_t MinCrOverFindableCls, Double_t MaxGoldenChi2,
+                       Double_t MaxTPCchi2, Double_t MaxITSchi2, Double_t MaxFracSharedCls, const char *ITSreq)  {
     
         fITS_minNcls =          ITS_minNcls;
         fTPC_minNcls =          TPC_minNcls;
@@ -59,6 +60,7 @@ public:
         fMaxTPCchi2 =           MaxTPCchi2;
         fMaxITSchi2 =           MaxITSchi2;
         fMaxFracSharedCls =     MaxFracSharedCls;
+        fITSreq =               ITSreq;
     }
     
     void SetPIDCuts (Double_t nsigmaTOF_max, Double_t nsigmaITS_max, Double_t nsigmaTPC_min, Double_t nsigmaTPC_max)  {
@@ -75,6 +77,13 @@ public:
         fPhivLim = PhivLim;
     }
     
+    void SetKinematicCuts (Double_t PtMin, Double_t PtMax, Double_t EtaLim)  {
+        
+        fPtMin  = PtMin;
+        fPtMax  = PtMax;
+        fEtaLim = EtaLim;
+    }
+
     void EventMixingSettings (Int_t MaxNumberEvts, Int_t MaxNumberTrks, Int_t NumberEvtsToMix, Int_t NcentralityBins, Int_t NvertexBins, Int_t NeventPlaneBins)  {
         
         fMaxNumberEvts =   MaxNumberEvts;
@@ -136,12 +145,16 @@ private:
     Double_t fMaxTPCchi2;//
     Double_t fMaxITSchi2;//
     Double_t fMaxFracSharedCls;//
+    const char *fITSreq;//
     Double_t fnsigmaTOF_max;//
     Double_t fnsigmaITS_max;//
     Double_t fnsigmaTPC_min;//
     Double_t fnsigmaTPC_max;//
     Double_t fMassLim;//
     Double_t fPhivLim;//
+    Double_t fPtMin;//
+    Double_t fPtMax;//
+    Double_t fEtaLim;//
     Int_t    fNcentralityBins;//
     Int_t    fNvertexBins;//
     Int_t    fNeventPlaneBins;//
