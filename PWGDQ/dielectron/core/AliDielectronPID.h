@@ -36,7 +36,7 @@ class AliDielectronVarCuts;
 
 class AliDielectronPID : public AliAnalysisCuts {
 public:
-  enum DetType {kITS, kTPC, kTRD, kTRDeleEff, kTRDeleEff2D, kTRDeleEff3D, kTRDeleEff7D, kTOF, kEMCAL};
+  enum DetType {kITS, kTPC, kTRD, kTRD2D, kTRD3D, kTRD7D, kTRDeleEff, kTRDeleEff2D, kTRDeleEff3D, kTRDeleEff7D, kTOF, kEMCAL};
   enum PIDbitType {kIgnore=0, kRequire, kIfAvailable};
   
   AliDielectronPID();
@@ -139,7 +139,7 @@ private:
   THnBase* fMapElectronCutLow[kNmaxPID];  //map for the electron lower cut in units of n-sigma widths 1 centered to zero
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut, Double_t *values);
-  Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
+	Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod);
   Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D);
   Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedEMCAL(AliVTrack * const part, Int_t icut);
