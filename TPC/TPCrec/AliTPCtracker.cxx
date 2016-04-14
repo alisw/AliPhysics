@@ -2100,6 +2100,7 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     Int_t timeStamp=transform->GetCurrentTimeStamp();
     float* nCclCorr = (float*)transform->GetLastMapCorrection();  
     float* nCclCorrRef = (float*)transform->GetLastMapCorrectionRef();
+    transform->SetDebugStreamer(fDebugStreamer);
 
     cstream<<"Transform"<<  // needed for debugging of the cluster transformation, resp. used for later visualization 
       "event="<<event<<

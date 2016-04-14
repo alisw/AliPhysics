@@ -13,6 +13,7 @@
 ///  rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
 
 class AliTPCRecoParam;
+class TTreeSRedirector;
 #include "AliTPCChebCorr.h"
 #include "AliTransform.h"
 #include <time.h>
@@ -64,6 +65,9 @@ public:
   static int  SectorUp(int idROC);
   static int  SectorDown(int idROC);
   static double GetMaxY2X() {return fgkMaxY2X;}
+  void SetDebugStreamer(TTreeSRedirector * pcstream){fDebugStreamer=pcstream;}
+  TTreeSRedirector *GetDebugStreemer() const { return fDebugStreamer;}     //!debug streamer
+
   //
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
@@ -83,6 +87,7 @@ private:
   static const Double_t fgkSin20;       // sin(20)
   static const Double_t fgkCos20;       // sin(20)
   static const Double_t fgkMaxY2X;      // tg(10)
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
   //
   ClassDef(AliTPCTransform,3)
   /// \endcond

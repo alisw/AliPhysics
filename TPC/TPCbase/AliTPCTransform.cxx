@@ -72,6 +72,7 @@
 #include "AliTPCChebDist.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "TTreeStream.h"
 
 /// \cond CLASSIMP
 ClassImp(AliTPCTransform)
@@ -92,7 +93,8 @@ AliTPCTransform::AliTPCTransform():
   fCorrMapCache1(0),
   fCurrentRun(0),             //! current run
   fCurrentTimeStamp(0),       //! current time stamp
-  fTimeDependentUpdated(kFALSE)
+  fTimeDependentUpdated(kFALSE),
+  fDebugStreamer(0)
 {
   //
   // Speed it up a bit!
@@ -116,7 +118,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCorrMapCache1(transform.fCorrMapCache1),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
-  fTimeDependentUpdated(transform.fTimeDependentUpdated)
+  fTimeDependentUpdated(transform.fTimeDependentUpdated),
+  fDebugStreamer(0)
 {
   /// Speed it up a bit!
 
@@ -325,6 +328,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t deltaZcorrTime=0;
   static time_t    lastStampT=-1;
   //
+  Bool_t isChange=(lastStampT!=(Int_t)fCurrentTimeStamp);
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
     lastStampT=fCurrentTimeStamp;
     if(fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
@@ -404,6 +408,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   // Z coordinate
   //
+  Double_t delay=0;
   if (AliTPCcalibDB::Instance()->IsTrgL0()){
     // by defualt we assume L1 trigger is used - make a correction in case of  L0
     AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
@@ -412,6 +417,21 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
       Double_t delay = ctp->GetDelayL1L0()*0.000000025;
       x[2]-=delay/param->GetTSample();
     }
+  }
+  if (isChange && fDebugStreamer!=NULL){
+    //
+    //
+    (*fDebugStreamer)<<"transformDump"<<
+      "fCurrentTimeStamp="<<lastStampT<<
+      "delay="<<delay<<
+      "driftCorr="<<driftCorr<<
+      "vdcorrectionTime="<<vdcorrectionTime<<
+      "time0corrTime="<<time0corrTime<<
+      "deltaZcorrTime="<<deltaZcorrTime<<
+      "vdcorrectionTimeG="<<vdcorrectionTimeGY<<
+      "\n";
+      
+      
   }
   x[2]-= param->GetNTBinsL1();
   x[2]*= zwidth;  // tranform time bin to the distance to the ROC
