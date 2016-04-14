@@ -138,14 +138,14 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     // Note: trigger patch can contain more than one patch type
     UInt_t offlinebits = 0, onlinebitmask = 0;
     if(patchiter->GetPatchSize() == fGammaPatchSize){
-      onlinebitmask = 1 << kL1GammaHigh | 1 << kL1GammaLow | 1 << (kL1GammaHigh + kTriggerTypeEnd) | (1 << kL1GammaLow + kTriggerTypeEnd);
+      onlinebitmask = 1 << kL1GammaHigh | 1 << kL1GammaLow | 1 << (kL1GammaHigh + kTriggerTypeEnd) | 1 << (kL1GammaLow + kTriggerTypeEnd);
       if(patchiter->GetADC() > fGammaThresholdOnline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchiter->GetOfflineADC() > fGammaThresholdOffline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchiter->GetADC() > fGammaThresholdOnline[kLowThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
       if(patchiter->GetOfflineADC() > fGammaThresholdOffline[kLowThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
     }
     if (patchiter->GetPatchSize() == fJetPatchSize){
-      onlinebitmask = 1 << kL1JetHigh | 1 << kL1JetLow | 1 << (kL1JetHigh + kTriggerTypeEnd) | (1 << kL1JetLow + kTriggerTypeEnd);
+      onlinebitmask = 1 << kL1JetHigh | 1 << kL1JetLow | 1 << (kL1JetHigh + kTriggerTypeEnd) | 1 << (kL1JetLow + kTriggerTypeEnd);
       if(patchiter->GetADC() > fJetThresholdOnline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchiter->GetOfflineADC() > fJetThresholdOffline[kHighThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetJetHighBit());
       if(patchiter->GetADC() > fJetThresholdOnline[kLowThreshold]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
@@ -164,6 +164,10 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
   // Do Level0 patches as well
   std::vector<AliEMCALTriggerRawPatch> l0patches = fL0PatchFinder->FindPatches(*fL0Amplitudes, *fADCOfflineValues);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
+    if(fBufferSize < sizeof(AliHLTCaloTriggerPatchDataStruct)){
+      HLTWarning("Buffer exceeded after %d trigger patches", patchcount);
+      break;
+    }
     ELevel0TriggerStatus_t L0trigger = CheckForL0(patchit->GetColStart(), patchit->GetRowStart());
     if (L0trigger == kNotLevel0) continue;
     Int_t onlinebits = 0;
