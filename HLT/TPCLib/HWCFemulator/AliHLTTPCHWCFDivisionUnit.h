@@ -47,7 +47,11 @@ class AliHLTTPCHWCFDivisionUnit
     fClusterLowerLimit = val << AliHLTTPCHWCFDefinitions::kFixedPoint; 
   }
   
-  /** initialise */
+  /** set tagging of deconvoluted clusters
+   **/
+  void SetTagDeconvolutedClusters( bool b ){ fTagDeconvolutedClusters = b; }
+
+ /** initialise */
   int Init();
   
   /** input stream of data */
@@ -65,6 +69,7 @@ class AliHLTTPCHWCFDivisionUnit
   
   bool fSinglePadSuppression; // suppress not merged clusters
   AliHLTUInt64_t fClusterLowerLimit; // lower charge limit for clusters 
+  bool fTagDeconvolutedClusters; // tag deconvoluted clusters
   const AliHLTTPCHWCFClusterFragment *fkInput; // current input 
   AliHLTTPCHWCFCluster fOutput;  // current output
   int  fDebug; // debug level

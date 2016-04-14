@@ -64,6 +64,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fUseTimeBinWindow(0),
   fUseTimeFollow(0),
   fChargeFluctuation(0),
+  fTagDeconvolutedClusters(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -92,6 +93,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fUseTimeBinWindow(0),
   fUseTimeFollow(0),
   fChargeFluctuation(0),
+  fTagDeconvolutedClusters(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -223,6 +225,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fUseTimeBinWindow = 1;
   fUseTimeFollow = 1;
   fChargeFluctuation = 0;
+  fTagDeconvolutedClusters = 0;
   fDebug = 0;
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
@@ -348,6 +351,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDebug  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Debug level is set to: %d", fDebug );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-tag-deconvoluted-clusters" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fTagDeconvolutedClusters  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Tag Deconvoluted Clusters is set to: %d", fTagDeconvolutedClusters );
       continue;
     }
     
@@ -540,7 +550,9 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fBenchmark.Start(1);
       fCFEmulator.Init
 	( fCFSupport.GetMapping(slice,patch), configWord1, configWord2 );
-      
+
+      fCFEmulator.SetTagDeconvolutedClusters( fTagDeconvolutedClusters );
+
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 
 					  mcLabels, nMCLabels,

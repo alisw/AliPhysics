@@ -74,7 +74,11 @@ class AliHLTTPCHWCFEmulator
   static void CreateDefaultConfiguration( AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 ){
     CreateConfiguration(0,0,0,1,0,0,0, 3, 1, 0, 1, configWord1, configWord2 );
   }
-  
+
+  /** set tagging of deconvoluted clusters
+   **/
+  void SetTagDeconvolutedClusters( bool b ){ fDivisionUnit.SetTagDeconvolutedClusters( b ); }
+
  private: 
 
   /** copy constructor prohibited */
