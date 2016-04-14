@@ -59,7 +59,7 @@
 #include "AliEMCALTriggerTypes.h"
 
 /// \cond CLASSIMP
-ClassImp(AliEMCALReconstructor) 
+ClassImp(AliEMCALReconstructor) ;
 /// \endcond
   
 const AliEMCALRecParam*     AliEMCALReconstructor::fgkRecParam        = 0;   // EMCAL rec. parameters
