@@ -128,7 +128,7 @@ kPrint = print ;
 
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
-                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print));
+                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print,SSsmearing));
   maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
 
   // Analysis tasks setting and configuration
@@ -214,7 +214,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
                                      Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t tmin, Float_t tmax,
                                      Bool_t trackTcut = kFALSE, Float_t minCen = -1, Float_t maxCen = -1,
-                                     Int_t debug = -1, Bool_t print = kFALSE)
+                                     Int_t debug = -1, Bool_t print = kFALSE, Int_t SSsmearing = 0)
 {
   if(simu)
   {
