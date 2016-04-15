@@ -117,7 +117,7 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
 
   // set is_deconvoluted flag at bit 23
 
-  if( fTagDeconvolutedClusters ) fOutput.fRowQ += (fkInput->fIsDeconvoluted & 0x1) << 23;
+  if( fTagDeconvolutedClusters && fkInput->fIsDeconvoluted ) fOutput.fRowQ += (0x1) << 23;
 
   // bits 30,31 are 0
   fOutput.fQ = fkInput->fQ & 0x3FFFFFFF;
