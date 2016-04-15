@@ -69,7 +69,7 @@ struct AliZMQhistViewer : public AliOptionParser, public TQObject {
   void DataReady(); //*SIGNAL*
 
   //thread safe stuff
-  int UpdateCanvas(TCanvas* canvas);
+  int UpdateCanvas(TCanvas* canvas, TPRegexp* sel=NULL, TPRegexp* unsel=NULL);
   int GetData(void* socket);
   std::vector<ZMQviewerObject>* GetIncoming(std::vector<ZMQviewerObject>* in = NULL);
   std::string GetInfo(std::string* in = NULL);
@@ -78,6 +78,8 @@ struct AliZMQhistViewer : public AliOptionParser, public TQObject {
   bool GetTerminated(bool* in = NULL);
   int GetPollInterval(int* in = NULL);
   std::string GetZMQconfig(std::string* in=NULL);
+  TPRegexp* GetSelection(std::string* in=NULL);
+  TPRegexp* GetUnSelection(std::string* in=NULL);
 
   private:
   //internal stuff

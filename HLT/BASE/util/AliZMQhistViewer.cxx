@@ -231,14 +231,8 @@ int AliZMQhistViewer::GetData(void* socket)
 
       if (fVerbose) Printf("--in: %s (%s), %p", object.name.c_str(), tmp->ClassName(), tmp);
 
-      Bool_t selected = kTRUE;
-      Bool_t unselected = kFALSE;
-      if (fSelectionRegexp) selected = fSelectionRegexp->Match(object.name);
-      if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(object.name);
-      if (selected && !unselected) 
-      {
-        incomingObjects->push_back(object);
-      }
+      incomingObjects->push_back(object);
+
     }
 
   } //for iterator i
@@ -252,14 +246,16 @@ int AliZMQhistViewer::GetData(void* socket)
 }
 
 //______________________________________________________________________________
-int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas)
+int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
+                                   TPRegexp* selectionRegexp,
+                                   TPRegexp* unSelectionRegexp)
 {
   //use the thread safe access
   string info = GetInfo();
   std::vector<ZMQviewerObject>* incomingObjects = GetIncoming();
-  if (!incomingObjects) return 1;
   bool forceClearCanvas = GetClearCanvas();
   if (forceClearCanvas && fVerbose) printf("##forceClearCanvas\n"); 
+  if (!incomingObjects) return 1;
 
   if (forceClearCanvas && fContent) {
     canvas->Clear();
@@ -283,6 +279,16 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas)
       incoming!=incomingObjects->end();
       ++incoming)
   {
+    Bool_t selected = kTRUE;
+    Bool_t unselected = kFALSE;
+    if (selectionRegexp) selected = selectionRegexp->Match(incoming->object->GetName());
+    if (unSelectionRegexp) unselected = unSelectionRegexp->Match(incoming->object->GetName());
+    if (!selected || unselected)
+    {
+      if (fVerbose) printf("object %s did not pass selection\n", incoming->object->GetName());
+      continue;
+    }
+
     //check if it will replace something
     bool found=false;
     incoming->redraw=true;
@@ -407,6 +413,7 @@ int AliZMQhistViewer::ProcessOption(TString option, TString value)
   if (option.EqualTo("PollInterval") || option.EqualTo("sleep"))
   {
     fPollInterval = round(value.Atof()*1e3);
+    if (fPollInterval<0) {fPollInterval = -1;}
   }
   else if (option.EqualTo("PollTimeout") || option.EqualTo("timeout"))
   {
@@ -425,13 +432,13 @@ int AliZMQhistViewer::ProcessOption(TString option, TString value)
   }
   else if (option.EqualTo("select"))
   {
-    delete fSelectionRegexp;
-    fSelectionRegexp=new TPRegexp(value);
+    std::string tmp = value.Data();
+    GetSelection(&tmp);
   }
   else if (option.EqualTo("unselect"))
   {
-    delete fUnSelectionRegexp;
-    fUnSelectionRegexp=new TPRegexp(value);
+    std::string tmp = value.Data();
+    GetUnSelection(&tmp);
   }
   else if (option.EqualTo("ResetOnRequest"))
   {
@@ -606,3 +613,41 @@ string AliZMQhistViewer::GetZMQconfig(string* in)
   TThread::UnLock();
   return tmp;
 }
+
+//______________________________________________________________________________
+TPRegexp* AliZMQhistViewer::GetSelection(string* in)
+{
+  TPRegexp* tmp = NULL;
+  TThread::Lock();
+  if (!in) {
+    if (fSelectionRegexp) {
+      tmp = new TPRegexp(*fSelectionRegexp);
+    }
+  } else {
+    delete fSelectionRegexp;
+    fSelectionRegexp = new TPRegexp(in->c_str());
+    tmp = fSelectionRegexp;
+  }
+  TThread::UnLock();
+  return tmp;
+}
+
+//______________________________________________________________________________
+TPRegexp* AliZMQhistViewer::GetUnSelection(string* in)
+{
+  TPRegexp* tmp = NULL;
+  TThread::Lock();
+  if (!in) {
+    if (fUnSelectionRegexp) {
+      tmp = new TPRegexp(*fUnSelectionRegexp);
+    }
+  } else {
+    delete fUnSelectionRegexp;
+    fUnSelectionRegexp = new TPRegexp(in->c_str());
+    tmp = fUnSelectionRegexp;
+  }
+  TThread::UnLock();
+  return tmp;
+}
+
+

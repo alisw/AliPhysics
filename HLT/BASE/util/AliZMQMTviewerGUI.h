@@ -42,6 +42,8 @@ private:
    std::string          fWindowTitle;
    void*                fZMQviewerConfig;
    int                  fInitStatus;
+   TPRegexp*            fSelection;
+   TPRegexp*            fUnSelection;
 
 public:
    AliZMQMTviewerGUI(const TGWindow *p, UInt_t w, UInt_t h, int argc, char** argv);
@@ -55,11 +57,13 @@ public:
    void PadPicked(TPad* pad, TObject *object, Int_t event);
    void UpdateCanvas();
    void ReconfigureViewer(std::string string);
-   void DoResetButton();
    int GetInitStatus() const {return fInitStatus;}
+   void DoResetButton();
+   void DoSelectionEntry();
+   void DoUnSelectionEntry();
 
    // thread method
-   static void *ThreadFunc(void *ptr = 0);
+   static void* RunViewer(void *ptr = 0);
 
    static const char* fUSAGE;
 

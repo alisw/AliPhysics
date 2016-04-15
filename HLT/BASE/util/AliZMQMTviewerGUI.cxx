@@ -1,4 +1,5 @@
 #include "TApplication.h"
+#include "TGLabel.h"
 #include "TGClient.h"
 #include "TCanvas.h"
 #include "TRandom.h"
@@ -52,6 +53,8 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
   , fWindowTitle()
   , fZMQviewerConfig()
   , fInitStatus(0)
+  , fSelection(NULL)
+  , fUnSelection(NULL)
 {
    fViewer = new AliZMQhistViewer();
    int viewerOptionRC = fViewer->ProcessOptionString(argc,argv);
@@ -64,7 +67,7 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    SetCleanup(kDeepCleanup);
    fECanvas = new TRootEmbeddedCanvas ("Ecanvas", this, 600, 400);
    Int_t wid = fECanvas->GetCanvasWindowId();
-   fCanvas = new TCanvas("MyCanvas", 10,10,wid);
+   fCanvas = new TCanvas("", 10,10,wid);
    fECanvas->AdoptCanvas(fCanvas);   
    //fCanvas->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)","AliZMQMTviewerGUI",this, 
    //            "EventInfo(Int_t,Int_t,Int_t,TObject*)");
@@ -77,30 +80,52 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
                                      kLHintsExpandX  | kLHintsExpandY,0,0,1,1));
    
    
-   // Create status frame containing a button and a text entry widget
-   TGCompositeFrame* fStatusFrame = new TGCompositeFrame(this, 60, 20, kHorizontalFrame |
-                                                      kSunkenFrame);
-
-   //TGTextEntry* fConfigInput = new TGTextEntry(fStatusFrame, new TGTextBuffer(100));
-   //fConfigInput->SetToolTipText("This is a text entry widget");
-   //fConfigInput->Resize(300, fConfigInput->GetDefaultHeight());
-   //fStatusFrame->AddFrame(fConfigInput, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,
-   //                                                    5, 2, 2, 2));
+   ///////////////////////////////
+   // selection / unselection frame
+   TGCompositeFrame* fSelectionEntryFrame =
+     new TGCompositeFrame(this, 60, 20, kHorizontalFrame | kSunkenFrame);
    
+   TGLabel *selectionLabel = new TGLabel(fSelectionEntryFrame, "select:");
+   fSelectionEntryFrame->AddFrame(selectionLabel,
+       new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 5, 2, 2, 2));
+
+   TGTextEntry* fSelectionEntry = new TGTextEntry(fSelectionEntryFrame);
+   fSelectionEntry->SetToolTipText("Enter a selection regexp");
+   //fSelectionEntry->Resize(300, fSelectionEntry->GetDefaultHeight());
+   fSelectionEntryFrame->AddFrame(fSelectionEntry,
+       new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2));
+   
+   TGLabel *unSelectionLabel = new TGLabel(fSelectionEntryFrame, "unselect:");
+   fSelectionEntryFrame->AddFrame(unSelectionLabel,
+       new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 5, 2, 2, 2));
+
+   TGTextEntry* fUnSelectionEntry = new TGTextEntry(fSelectionEntryFrame);
+   fUnSelectionEntry->SetToolTipText("this will be inversely matched");
+   //fUnSelectionEntry->Resize(300, fUnSelectionEntry->GetDefaultHeight());
+   fSelectionEntryFrame->AddFrame(fUnSelectionEntry,
+       new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2));
+
+   fResetButton = new TGTextButton(fSelectionEntryFrame, "Pull", 150);
+   fResetButton->Connect("Clicked()", "AliZMQMTviewerGUI", this, "DoResetButton()");
+   fResetButton->SetToolTipText("force update");
+   fSelectionEntryFrame->AddFrame(fResetButton,
+       new TGLayoutHints(kLHintsTop | kLHintsRight, 10, 5, 2, 2));
+   AddFrame(fSelectionEntryFrame, new TGLayoutHints(kLHintsBottom | kLHintsExpandX, 1, 1, 1, 1));
+   
+   ///////////////////////////////
+   // Create status frame containing a button and a text entry widget
+   TGCompositeFrame* fStatusFrame =
+     new TGCompositeFrame(this, 60, 20, kHorizontalFrame | kSunkenFrame);
+
    Int_t parts[] = {70, 30};
    fStatusBar = new TGStatusBar(fStatusFrame, 100, 1, kHorizontalFrame);
    fStatusBar->SetParts(parts, 2);
    fStatusBar->Draw3DCorner(kFALSE);
-   fStatusFrame->AddFrame(fStatusBar, new TGLayoutHints(kLHintsTop|kLHintsLeft|kLHintsExpandX, 10, 10, 2, 2));
+   fStatusFrame->AddFrame(fStatusBar,
+       new TGLayoutHints(kLHintsTop|kLHintsLeft|kLHintsExpandX, 5, 5, 2, 2));
 
-   fResetButton = new TGTextButton(fStatusFrame, "&pull", 150);
-   fResetButton->Connect("Clicked()", "AliZMQMTviewerGUI", this, "DoResetButton()");
-   fResetButton->SetToolTipText("force update");
-   fStatusFrame->AddFrame(fResetButton, new TGLayoutHints(kLHintsTop |
-                          kLHintsLeft, 2, 5, 2, 2));
+   AddFrame(fStatusFrame, new TGLayoutHints(kLHintsBottom | kLHintsExpandX, 1, 1, 1, 1));
 
-   AddFrame(fStatusFrame, new TGLayoutHints(kLHintsBottom | kLHintsExpandX,
-                   1, 1, 1, 1));
    
    int rc = alizmq_socket_init(fZMQviewerConfig, alizmq_context(), "PUSH@inproc://viewerConfig");
    if (rc < 0) {
@@ -110,6 +135,8 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    fViewer->SetCanvas(fCanvas);
    bool updateCanvas = false;
    fViewer->GetUpdateCanvas(&updateCanvas);
+   fSelection = fViewer->GetSelection();
+   fUnSelection = fViewer->GetUnSelection();
 
    //fViewer->Connect("DataReady()","AliZMQMTviewerGUI",this,"UpdateCanvas()");
 
@@ -125,7 +152,7 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    MapWindow();
 
    // set up the threads
-   fThread = new TThread("MyThread1", &AliZMQMTviewerGUI::ThreadFunc, (void*)this);
+   fThread = new TThread("MyThread1", &AliZMQMTviewerGUI::RunViewer, (void*)this);
    fThreadArgs.fRun = kTRUE;
    fThreadArgs.fThread = fThread;
    fThreadArgs.fCanvas = fCanvas;
@@ -160,7 +187,7 @@ void AliZMQMTviewerGUI::CloseWindow()
 }
 
 //______________________________________________________________________________
-void *AliZMQMTviewerGUI::ThreadFunc(void *ptr)
+void *AliZMQMTviewerGUI::RunViewer(void *ptr)
 {
    // this method is called by the thread
 
@@ -182,7 +209,7 @@ void AliZMQMTviewerGUI::UpdateCanvas()
    }
    std::string title = fWindowTitle + info;
    SetWindowName(title.c_str());
-   fViewer->UpdateCanvas(fCanvas);
+   fViewer->UpdateCanvas(fCanvas, fSelection, fUnSelection);
    fCanvas->Update();
 }
 
@@ -260,6 +287,16 @@ void AliZMQMTviewerGUI::DoResetButton()
   rc = zmq_send(tmpsocket, &rc, sizeof(rc), 0);
   if (false) { printf("sleep interrupted rc: %i\n", rc); }
   zmq_close(tmpsocket);
+}
+
+//______________________________________________________________________________
+void DoSelectionEntry()
+{
+}
+
+//______________________________________________________________________________
+void DoUnSelectionEntry()
+{
 }
 
 ClassImp(AliZMQMTviewerGUIview)
