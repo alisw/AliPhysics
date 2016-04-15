@@ -23,7 +23,9 @@ void sim(Int_t nev=3, const TString& config) {
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) {
     simulator.SetQACycles(det, nev+1) ;
   }
-  
+
+  simulator.SetRunHLT("default"); // In case we do not have ancored production
+
   TStopwatch timer;
   timer.Start();
   simulator.Run(nev);
