@@ -23,20 +23,16 @@
 
 #include <vector>
 #include <map>
-#include <algorithm>
 
 #include <Rtypes.h>
-
-class AliAODTrack;
 
 using std::vector;
 using std::map;
 using std::pair;
 using std::make_pair;
 
-typedef vector < pair < Double_t, Int_t > >               vctr_pair_dbl_int;
-
-typedef map    < Int_t, pair < AliAODTrack *, Bool_t > >  map_AliAODTrk;
+typedef vector < pair < Double_t, Int_t > >   vctr_pair_dbl_int;
+typedef map    < Int_t, Bool_t >              map_int_bool;
 
 #ifndef ALILOG_H
 #include "AliLog.h"
