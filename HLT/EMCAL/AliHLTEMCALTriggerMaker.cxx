@@ -173,8 +173,11 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
     Int_t onlinebits = 0;
     if (L0trigger == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit()+fTriggerBitConfig->GetTriggerTypesEnd());
     Int_t offlinebits = 0;
-    if(patchit->GetADC() > fLevel0ThresholdOnline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
-    if(patchit->GetOfflineADC() > fLevel0ThresholdOffline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
+    if(IsSameTRU(*patchit)){
+      // No reqiurement on L0 time for offline and recalc patches, only they have to be in the same TRU
+      if(patchit->GetADC() > fLevel0ThresholdOnline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetLevel0Bit());
+      if(patchit->GetOfflineADC() > fLevel0ThresholdOffline) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetLevel0Bit());
+    }
     if(!(offlinebits || onlinebits))  continue;
     next = fTriggerPatchDataPtr + 1;
     MakeHLTPatch(*patchit, *fTriggerPatchDataPtr, offlinebits, 0, onlinebits);
@@ -298,5 +301,19 @@ AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckFo
     }
   }
   if (nvalid == 4) result = kLevel0Fired;
+  return result;
+}
+
+Bool_t AliHLTEMCALTriggerMaker::IsSameTRU(const AliEMCALTriggerRawPatch &patch) const {
+  bool result = false;
+  Int_t truref = (*fTRUIndexMap)(patch.GetColStart(), patch.GetRowStart()), trumod(-1);
+  for(int icol = patch.GetColStart(); icol < patch.GetColStart() + patch.GetPatchSize(); ++icol){
+    for(int irow = patch.GetRowStart(); irow < patch.GetRowStart() + patch.GetPatchSize(); ++irow){
+      if((*fTRUIndexMap)(icol, irow) != truref){
+        result = false;
+        break;
+      }
+    }
+  }
   return result;
 }

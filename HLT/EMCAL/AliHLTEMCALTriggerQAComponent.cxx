@@ -323,6 +323,9 @@ int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
   Int_t debugLevel = 0;
   Bool_t enabledPatchType[3] = {kTRUE};
 
+  Bool_t isPbPb = GetRunNo() > 244823 && GetRunNo() < 246995; // For the moment quick hack to distinguish PbPb from pp
+  fBeamType = isPbPb ? kPbPb : kPP;
+
   for (int i = 0; i < argc; i++) {
     TString option(argv[i]);
     if (option == "-pp") fBeamType = kPP;

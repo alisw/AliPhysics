@@ -181,8 +181,9 @@ int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   Float_t jetTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
   Float_t gammaTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
   Float_t bkgTh[2] = {0}, l0Th[2] = {0};
-  Int_t jetpatchsize = 16;
-  Bool_t runBkgAlgo = false;
+  Bool_t isPbPb = GetRunNo() > 244823 && GetRunNo() < 246995; // For the moment quick hack to distinguish PbPb from pp
+  Bool_t runBkgAlgo = isPbPb;
+  Int_t jetpatchsize = isPbPb ? 8 : 16;
   for(Int_t iarg = 0; iarg < argc; iarg++){
     TString argstring(argv[iarg]);
     if(argstring.Contains("-gammalowonthresh")){
