@@ -1,4 +1,4 @@
-/*! \page READMEemcfw The EMCAL Analysis framework 
+/*! \page READMEemcfw The EMCAL and Jet Analysis framework 
 
 The EMCAL framework consists of three parts:
 
