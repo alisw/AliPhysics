@@ -9,6 +9,8 @@
 # include <TBrowser.h>
 # include <TCanvas.h>
 # include <THStack.h>
+# include <TROOT.h>
+# include <TClass.h>
 # include "AliAODTracklet.C"
 #else
 class TH1D;
@@ -158,11 +160,25 @@ public:
    */
   void Draw(Option_t* option="");
   /** 
+   * Print information on reweights 
+   *
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const;
+  /** 
    * Store weights histograms in output of analysis 
    * 
    * @param out Collection to add histograms to 
    */
   void Store(TCollection* out);
+  /** 
+   * Retrieve weights from a collection 
+   * 
+   * @param in Input collection 
+   * 
+   * @return true on success
+   */
+  Bool_t Retrieve(TCollection* in);
 protected:
   
   /** 
@@ -227,11 +243,36 @@ protected:
    */
   void StoreMap(TCollection* parent, const char* name, PdgMap& m);
   /** 
+   * Retrieve map contents from an input collection 
+   * 
+   * @param parent Input collection 
+   * @param name   Name of collection 
+   * @param m      Map to add to 
+   * 
+   * @return true on success 
+   */
+  Bool_t RetrieveMap(TCollection* parent, const char* name, PdgMap& m);
+  /** 
    * Modify a drawn stack 
    * 
    * @param stack Stack to modify 
    */
   void ModStack(THStack* stack);
+  /** 
+   * Print a map 
+   *
+   * @param m       The map 
+   * @param name    Name of map
+   * @param options Options 
+   */
+  void PrintMap(const PdgMap& m, const char* name, Option_t* options="") const;
+  /** 
+   * Print info on a histogram
+   * 
+   * @param tag Tag line 
+   * @param h   histogramT
+   */
+  void PrintHist(const char* tag, TH1* h) const;
   
   TH2D*  fPt;     // Weight by centrality and pT
   PdgMap fAbundance;  // Map for abundance weight 
@@ -350,10 +391,13 @@ Double_t AliTrackletWeights::GetPdgWeight(const PdgMap&  m,
 {
   TH1D* h = GetPdgHist(m, apdg);
   if (!h || h->TestBit(kDisabled)) return 1;
-  
+
+#if 1
   Int_t bC = h->GetXaxis()->FindBin(cent);
   if (bC < 1 || bC > h->GetNbinsX()) return 1;
-  
+#else
+  Int_t bC = 1;
+#endif
   Double_t add = (h->TestBit(kUp)   ? +1 :
 		  h->TestBit(kDown) ? -1 : 0) * h->GetBinError(bC);  
   return h->GetBinContent(bC) + add;
@@ -363,10 +407,11 @@ Double_t
 AliTrackletWeights::LookupWeight(Double_t pT, Short_t pdg, Double_t cent) const
 {
   Double_t w = 1;
-  if (fPt && !fPt->TestBit(kDisabled) && pT < fPt->GetYaxis()->GetXmax()) {    
+  if (fPt && !fPt->TestBit(kDisabled)) {
     Int_t    bC  =  fPt->GetXaxis()->FindBin(cent);
-    if (bC >= 1 && bC <= fPt->GetNbinsY()) {
-      Int_t    bpT =  fPt->GetYaxis()->FindBin(pT);
+    Int_t    bpT =  fPt->GetYaxis()->FindBin(pT);
+    if (bC  >= 1 && bC  <= fPt->GetXaxis()->GetNbins() &&
+	bpT >= 1 && bpT <= fPt->GetYaxis()->GetNbins()) {
       Double_t fac = (pT >= 0.05 ?  1 :
 		      (fPt->TestBit(kUp)   ? 1.3 :
 		       fPt->TestBit(kDown) ? 0.7 : 1));
@@ -397,7 +442,7 @@ AliTrackletWeights::LookupWeight(AliAODTracklet* tracklet, Double_t cent) const
   if (mc->GetParentPdg()>0) w *= LookupWeight(mc->GetParentPt(),
 					      mc->GetParentPdg(),
 					      cent);
-  if (!mc->IsCombinatorics()) return w;
+  // if (!mc->IsCombinatorics()) return w;
   if (mc->GetParentPdg(true)>0) w *= LookupWeight(mc->GetParentPt(true),
 						  mc->GetParentPdg(true),
 						  cent);
@@ -433,8 +478,9 @@ AliTrackletWeights::Store(TCollection* parent)
   top->SetOwner(true);
   parent->Add(top);
   if (fPt) {
-    TH2* copy = static_cast<TH2*>(fPt->Clone());
+    TH2* copy = static_cast<TH2*>(fPt->Clone("centPt"));
     copy->SetDirectory(0);
+    copy->SetBinContent(0,0,1); // For counting merges
     top->Add(copy);
   }
   StoreMap(top, "abundance",   fAbundance);
@@ -452,8 +498,64 @@ AliTrackletWeights::StoreMap(TCollection* parent, const char* name, PdgMap& m)
   for (PdgMap::const_iterator i = m.begin(); i != m.end(); ++i) {
     TH1* copy = static_cast<TH1*>(i->second->Clone(Form("w%d",i->first)));
     copy->SetDirectory(0);
+    copy->SetBinContent(0,1); // For counting merges
     top->Add(copy);
   }
+}
+
+//____________________________________________________________________
+Bool_t
+AliTrackletWeights::Retrieve(TCollection* parent)
+{
+  TList* top = static_cast<TList*>(parent->FindObject(GetName()));
+  if (!top) {
+    Warning("Retrieve",
+	    "Collection %s not found in %s", GetName(), parent->GetName());
+    parent->ls();
+    return false;
+  }
+  fPt        = static_cast<TH2D*>(top->FindObject("centPt"));
+  if (!fPt) {
+    Warning("Retrieve","centPt histogram not found in %s", GetName());
+    return false;
+  }
+  fPt->SetDirectory(0);
+  Double_t scale = fPt->GetBinContent(0,0);
+  fPt->Scale(1/scale); // Counting merges
+  
+  if (!RetrieveMap(top, "abundance",   fAbundance)) return false;
+  if (!RetrieveMap(top, "strangeness", fStrangeness)) return false;
+
+  return true;
+}
+//____________________________________________________________________
+Bool_t
+AliTrackletWeights::RetrieveMap(TCollection* parent,
+				const char* name,
+				PdgMap& m)
+{
+  m.clear();
+  TList* top = static_cast<TList*>(parent->FindObject(name));
+  if (!top) {
+    Warning("RetrieveMap",
+	    "Collection %s not found in %s", name, parent->GetName());
+    parent->ls();
+    return false;
+  }
+  TIter    next(top);
+  TObject* o = 0;
+  while ((o = next())) {
+    if (!o->IsA()->InheritsFrom(TH1D::Class())) continue;
+    TH1D* copy = static_cast<TH1D*>(o);
+    copy->SetDirectory(0);
+    Double_t scale = copy->GetBinContent(0); 
+    copy->Scale(1/scale); // Counting merges
+    TString nme(copy->GetName());
+    nme.Remove(0,1);
+    Int_t apdg = nme.Atoi();
+    AddPdgWeight(m, apdg, copy, copy->TestBits(kUp|kDown|kDisabled));
+  }
+  return true;
 }
 
 //____________________________________________________________________
@@ -496,7 +598,46 @@ AliTrackletWeights::Draw(Option_t*)
   master->GetPad(3)->BuildLegend();
 }
 
+//____________________________________________________________________
+void
+AliTrackletWeights::Print(Option_t* option) const
+{
+  gROOT->IndentLevel();
+  Printf("%s : %s", ClassName(), GetName());
+  gROOT->IncreaseDirLevel();
+  PrintHist("pT", fPt);
+  PrintMap(fAbundance,   "Abundance", option);
+  PrintMap(fStrangeness, "Strangeness", option);
+  
+  gROOT->DecreaseDirLevel();
+}
+//____________________________________________________________________
+void
+AliTrackletWeights::PrintHist(const char* tag, TH1* h) const
+{
+  if (!h) return;
+  gROOT->IndentLevel();
+  Printf("%10s (%c): %p %s/%s", tag, 
+	 h->TestBit(kDisabled) ? '0' :
+	 h->TestBit(kUp)       ? '+' :
+	 h->TestBit(kDown)     ? '-' : '=',
+	 h, h->GetName(), h->GetTitle());
 
+}
+//____________________________________________________________________
+void
+AliTrackletWeights::PrintMap(const PdgMap& m,
+			     const char*   name,
+			     Option_t* option) const  
+{
+  gROOT->IndentLevel();
+  Printf("Map of PDG codes: %s", name);
+  gROOT->IncreaseDirLevel();
+  for (PdgMap::const_iterator i = m.begin(); i != m.end(); ++i) 
+    PrintHist(Form("%10d", i->first), i->second);
+
+  gROOT->DecreaseDirLevel();
+}
 #endif
 //____________________________________________________________________
 //

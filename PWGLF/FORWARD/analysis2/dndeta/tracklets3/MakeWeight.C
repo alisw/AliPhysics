@@ -89,4 +89,5 @@ MakeWeight()
   weights->Write();
   outW->Write();
   weights->Draw();
+  weights->Print();
 }
