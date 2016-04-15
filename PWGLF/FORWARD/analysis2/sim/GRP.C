@@ -34,7 +34,20 @@ struct GRPData
      */
     Float_t GetEnergy(Float_t e) const 
     {
-      return e * sqrt(float(z)/a);
+      return e * float(z)/a;
+    }
+    /** 
+     * Get the per nucleon beam momentum given a per charge beam energy
+     * 
+     * @param e Per charge beam energy 
+     * 
+     * @return Per nucleon beam momentum
+     */
+    Float_t GetMomentum(Float_t e) const
+    {
+      Double_t be = GetEnergy(e);
+      Double_t mp =TDatabasePDG::Instance()->GetParticle(2212)->Mass(); 
+      return TMath::Sqrt(be*be-mp*mp);
     }
     /** 
      * Check if this is a proton
@@ -145,12 +158,36 @@ struct GRPData
    */
   Bool_t IsAA() const { return beam1.IsA() && beam2.IsA(); }
 
-  UInt_t CMEnergy(Bool_t calc=false) const
+  UInt_t CMEnergy(UShort_t how=0) const
   {
-    if (!calc) return energy;
-    return UInt_t(TMath::Sqrt(Float_t(beam1.z*beam2.z)/beam1.a/beam2.a)
-		  * beamEnergy);
-  }    
+    switch (how) {
+    case 1:
+      return UInt_t(2*TMath::Sqrt(Float_t(beam1.z*beam2.z)/beam1.a/beam2.a)
+		    * beamEnergy);
+    case 2:
+      return
+	UInt_t(TMath::Sqrt(TMath::Power(BeamEnergy(1)+BeamEnergy(2),2)-
+			   TMath::Power(BeamMomentum(1)-BeamMomentum(2),2)));
+
+    }
+    return energy;
+  }
+  Double_t BeamEnergy(UShort_t which)
+  {
+    switch (which) {
+    case 1: return beam1.GetEnergy(beamEnergy);
+    case 2: return beam2.GetEnergy(beamEnergy);
+    }
+    return beamEnergy;
+  }
+  Double_t BeamMomentum(UShort_t which)
+  {
+    switch (which) {
+    case 1: return beam1.GetMomentum(beamEnergy);
+    case 2: return beam2.GetMomentum(beamEnergy);
+    }
+    return beamEnergy;
+  }
   /** 
    * Get the year 
    *

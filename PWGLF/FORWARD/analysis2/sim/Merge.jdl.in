@@ -47,8 +47,7 @@ InputFile={
 	"LF:@data@/$4Config.C",
 	"LF:@data@/BaseConfig.C",
 	"LF:@data@/DetConfig.C",
-	"LF:@data@/GRP.C",
-	"LF:@data@/fmd_corrections.root"
+	"LF:@data@/GRP.C"
 	
 };
 InputDataListFormat="xml-single";

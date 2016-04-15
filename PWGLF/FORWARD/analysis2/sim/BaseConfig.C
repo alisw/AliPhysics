@@ -268,6 +268,10 @@ struct VirtualEGCfg
   {
     LoadLibrary("libTUHKMgen","TUHKMgen");
   }
+  static void LoadEposLHC()
+  {
+    LoadLibrary("libEPOSLHC","TEposLHC");
+  }
   static void LoadEpos()
   {
     LoadLibrary("libEPOS","TEpos");

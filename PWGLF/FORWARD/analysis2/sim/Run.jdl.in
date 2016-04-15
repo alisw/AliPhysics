@@ -21,15 +21,17 @@ Jobtag={
 	"comment:$4 ($1) $5 MC"
 };
 
+# 	 "VO_ALICE@AliRoot::@aliroot@",
+#	 "VO_ALICE@GEANT3::@geant@",
+#	 "VO_ALICE@ROOT::@root@",
+#	 "VO_ALICE@boost::v1_43_0",
+#	 "VO_ALICE@cgal::v3.6",
+#	 "VO_ALICE@fastjet::v2.4.2",
+#	 "VO_ALICE@jemalloc::v3.0.0"
+
 Packages = {
-	 "VO_ALICE@AliRoot::@aliroot@",
-	 "VO_ALICE@GEANT3::@geant@",
-	 "VO_ALICE@ROOT::@root@",
 	 "VO_ALICE@APISCONFIG::V1.1x",
-	 "VO_ALICE@boost::v1_43_0",
-	 "VO_ALICE@cgal::v3.6",
-	 "VO_ALICE@fastjet::v2.4.2",
-	 "VO_ALICE@jemalloc::v3.0.0"
+	 "VO_ALICE@AliPhysics::@aliphysics@"
 	 };
 
 
@@ -55,8 +57,7 @@ InputFile={
 	"LF:@data@/QAConfig.C",
 	"LF:@data@/AOD.C",
 	"LF:@data@/AODConfig.C",
-	"LF:@data@/GRP.C",
-	"LF:@data@/fmd_corrections.root"
+	"LF:@data@/GRP.C"$6
 };
 
 Output = {
