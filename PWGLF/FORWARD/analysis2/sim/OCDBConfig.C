@@ -33,7 +33,7 @@ struct OCDBCfg : public VirtualOCDBCfg
     AddStore("TPC/Calib/Correction",	forSim);
     AddStore("TPC/Align/Data",		forSim);
     AddStore("TPC/Calib/TimeDrift",	forSim);
-    AddStore("TPC/Calib/RecoParam",	(forSim && !is10h));
+    AddStore("TPC/Calib/RecoParam",	false);
     
     // --- ZDC for 2010 the following is needed ------------------------
     // (https://savannah.cern.ch/task/?func=detailitem&item_id=33180#comment46)

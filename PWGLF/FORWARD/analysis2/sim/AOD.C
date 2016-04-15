@@ -244,7 +244,7 @@ Bool_t LoadAnalysisLibraries()
 {
   // Load common analysis libraries.
   if (aodCfg->UseTender() || aodCfg->UseCDBconnect()) {
-    if (!LoadLibrary("TENDER") ||!LoadLibrary("TENDERSupplies")) return kFALSE;
+    if (!LoadLibrary("Tender") ||!LoadLibrary("TenderSupplies")) return kFALSE;
   }
   // CDBconnect
   if ((aodCfg->UseCDBconnect() && !aodCfg->UseTender()) 

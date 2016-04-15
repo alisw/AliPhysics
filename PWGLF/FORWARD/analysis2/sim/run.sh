@@ -15,6 +15,16 @@ then
 fi
 echo _____________________________________________
 
+if test -f EPOSLHC.tar.gz ; then
+    tar -xzvf EPOSLHC.tar.gz
+    (cd EPOSLHC && ./build.sh)
+    if test $? -ne 0 ; then
+	echo "Failed to build EPOS-LHC"
+	exit 1
+    fi
+    cp -v EPOSLHC/libEPOSLHC.so .
+    cp -v EPOSLHC/data/* .
+fi 
 export PRODUCTION_METADATA="$ALIEN_JDL_LPMMETADATA"
 
 if test -f simrun.sh ; then 
