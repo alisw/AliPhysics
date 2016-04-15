@@ -11,6 +11,7 @@ class THnSparse;
 class TList;
 class TObjArray;
 class TProfile;
+class TProfile2D;
 class AliOADBContainer;
 class AliEMCALGeometry;
 class AliESDEvent;
@@ -105,12 +106,6 @@ class AliAnalysisTaskEMCALPi0V2ShSh : public AliAnalysisTaskSE {
   TH1D        *fHistStatCentrality;
   TH1D        *fHistStatCentralityCorrected;
 
-  TH1F        *fHistEPV0MB;
-  TH1F        *fHistEPV0RMB;
-  TH1F        *fHistEPV0AMB;
-  TH1F        *fHistEPV0CMB;
-  TH1F        *fHistEPTPCMB;
-
   TH2F        *fHistEPTPC;
   TH2F        *fHistEPTPCResolution;
   TH2F        *fHistEPV0;
@@ -136,12 +131,12 @@ class AliAnalysisTaskEMCALPi0V2ShSh : public AliAnalysisTaskSE {
   TH2F        *fHistEPDiffV0AR4_V0AR7;
   TH2F        *fHistEPDiffV0AR_V0CR;
 
-  TProfile    *fHistEPRBRCosV0A;
-  TProfile    *fHistEPRBRSinV0A;
-  TProfile    *fHistEPRBRCosV0C;
-  TProfile    *fHistEPRBRSinV0C;
-  TProfile    *fHistEPRBRCosTPC;
-  TProfile    *fHistEPRBRSinTPC;
+  TProfile2D  *fHistEPRBRCosV0A;
+  TProfile2D  *fHistEPRBRSinV0A;
+  TProfile2D  *fHistEPRBRCosV0C;
+  TProfile2D  *fHistEPRBRSinV0C;
+  TProfile2D  *fHistEPRBRCosTPC;
+  TProfile2D  *fHistEPRBRSinTPC;
 
   TH1F        *fHistClusterEta;
   TH1F        *fHistClusterPhi;
@@ -156,6 +151,8 @@ class AliAnalysisTaskEMCALPi0V2ShSh : public AliAnalysisTaskSE {
   TH2F	      *fHistClusterEtN;
   TH2F        *fHistClusterEtM02;
   TH1D        *fHistClusterdphiV0;
+  TH1D        *fHistClusterNLMRaw;
+  TH1D        *fHistClusterNLM;
 
   TH1F        *fHistTrackPt;
   TH1F        *fHistTrackEta;

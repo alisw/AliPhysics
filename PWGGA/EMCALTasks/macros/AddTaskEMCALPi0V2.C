@@ -32,7 +32,7 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
     taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
     Input = "kCentral";
   } else if (EvtType == 2){ //SemiCentral
-    taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
     Input = "kSemiCentral";
   } else if (EvtType == 3){ //kMB 
     taskMB->SelectCollisionCandidates(AliVEvent::kMB);
