@@ -7,6 +7,7 @@
 #include "TList.h"
 #include "TFile.h"
 
+#include "AliNormalizationCounter.h"
 #include "AliHFCutVarFDsubAxis.h"
 #include "AliHFCutVarFDsubCut.h"
 #include "AliHFCutVarFDsubCutSet.h"
@@ -65,13 +66,17 @@ Int_t AliHFCutVarFDsubAnalysisManagerDplus::GetTHnSparses(const TString strFileM
   if (!fMCgenLevel[kFD]) { cerr << "THnSparseF hMCAccBFeed not found!" << endl; return 7; }
   //-------------------------------------------------------------------------------------------------
   //Real Data
-  TH1F *hNev = 0x0;
+  TString normobj=strListData;
+  normobj.ReplaceAll("coutputDplus","coutputDplusNorm");
+
   if(MConly) {
     //get THnSparse from MC file
     fData = (THnSparseF*)ListMC->FindObject("hMassPtImpParAll");
     if (!fData) { cerr << "THnSparseF hMassPtImpParAll not found!" << endl; return 8; }
-    hNev = (TH1F*)ListMC->FindObject("fHistNEvents");
-    if(!hNev) { cerr << "THnSparseF fHistNEvents not found!" << endl; return 9; }
+
+    //Number of events from normalisation counter
+    AliNormalizationCounter* nc=(AliNormalizationCounter*)DplusDirMC->Get(normobj.Data());
+    fNevents = nc->GetNEventsForNorm();
   }
   else {
     TFile *infileData = TFile::Open(strFileData.Data(),"READ");//open Data file
@@ -84,11 +89,11 @@ Int_t AliHFCutVarFDsubAnalysisManagerDplus::GetTHnSparses(const TString strFileM
     //get THnSparse from Data file
     fData = (THnSparseF*)ListData->FindObject("hMassPtImpParAll");
     if (!fData) { cerr << "THnSparseF hMassPtImpParAll not found!" << endl; return 8; }
-    hNev = (TH1F*)ListData->FindObject("fHistNEvents");
-    if(!hNev) { cerr << "THnSparseF fHistNEvents not found!" << endl; return 9; }
-  }
 
-  fNevents = hNev->GetBinContent(2);
+    //Number of events from normalization counter
+    AliNormalizationCounter* nc=(AliNormalizationCounter*)DplusDirData->Get(normobj.Data());
+    fNevents = nc->GetNEventsForNorm();
+  }
 
   return 0;
 }
@@ -202,17 +207,13 @@ TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFil
       TH1F* hCrossSec = new TH1F(Form("hCrossSec%s",PromptOrFD.Data()),"",nPtBins,PtLims);
 
       Double_t BR=0.0913;
-      Double_t ErrBR=0.0019;
       Double_t Sigma=0;
-      Double_t ErrSigma=0;
       
       if(system=="pPb") {
         Sigma = 2.09;//barn
-        ErrSigma = Sigma*3.5/100;
       }
       else if(system=="pp"){
         Sigma = 0.062;//barn
-        ErrSigma = Sigma*3.5/100;
       }
       else {
         cerr << "only pPb and pp are implemented" << endl;
@@ -220,7 +221,6 @@ TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFil
       } 
       
       for(Int_t iBin=0; iBin<nPtBins; iBin++) {
-
         Double_t CrossSec;
         Double_t CrossSecError;
         
