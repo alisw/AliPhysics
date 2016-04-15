@@ -30,6 +30,8 @@
 #pragma link C++ class AliITSUTrackHyp+;
 #pragma link C++ class AliITSUMatLUT+;
 #pragma link C++ class AliITSUVertexer+;
+//#pragma link C++ class AliITSUVertexerFast+;
+//#pragma link C++ class AliITSUVertexCandidate+;
 
 //
 
