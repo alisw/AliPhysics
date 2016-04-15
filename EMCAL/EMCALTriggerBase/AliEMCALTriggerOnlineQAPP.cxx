@@ -143,8 +143,8 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
 
   fEnabledTriggerTypes[EMCALTrigger::kTMEMCalBkg] = kFALSE;
   fEnabledTriggerTypes[EMCALTrigger::kTMEMCalLevel0] = kTRUE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalGammaL] = kFALSE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalJetL] = kFALSE;
+  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalGammaL] = kTRUE;
+  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalJetL] = kTRUE;
   fEnabledTriggerTypes[EMCALTrigger::kTMEMCalGammaH] = kTRUE;
   fEnabledTriggerTypes[EMCALTrigger::kTMEMCalJetH] = kTRUE;
 }
@@ -368,7 +368,12 @@ void AliEMCALTriggerOnlineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pat
 
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       if (!fEnabledPatchTypes[ipatch]) continue;
-      if (!patch->TestTriggerBit(triggerBits[itrig]+offsets[ipatch])) continue;
+      if(!ipatch){
+        if (!(patch->TestTriggerBit(triggerBits[itrig]+offsets[ipatch]) ||
+            patch->TestTriggerBit(triggerBits[itrig] + patch->GetTriggerBitConfig()->GetTriggerTypesEnd() + offsets[ipatch]))) continue;
+      }
+      else
+        if (!patch->TestTriggerBit(triggerBits[itrig]+offsets[ipatch])) continue;
 
       Int_t idet = 0;
       if (patch->IsEMCal()) {
