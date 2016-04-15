@@ -347,21 +347,22 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  dtc4etaphitpc[aniter]->SetPt(0.5,1.4);
 					if(ichg>=27 && ichg<=33)
 					  dtc4etaphitpc[aniter]->SetPt(0.5,maxPt);
-					dtc4etaphitpc[aniter]->SetEtaDaughters(0.8); //0.8
-					dtc4etaphitpc[aniter]->SetPtPosDaughter(0.5,4.0); //0.5
-					dtc4etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0); //0.16
-					dtc4etaphitpc[aniter]->SetTPCnclsDaughters(80); //80
+					dtc4etaphitpc[aniter]->SetEtaDaughters(0.8);
+					dtc4etaphitpc[aniter]->SetPtPosDaughter(0.5,4.0);
+					dtc4etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0);
+					dtc4etaphitpc[aniter]->SetTPCnclsDaughters(80);
 					dtc4etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
 					dtc4etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
-					dtc4etaphitpc[aniter]->SetOnFlyStatus(kFALSE);
-					dtc4etaphitpc[aniter]->SetParticleType(0); //0-Lambda
-					dtc4etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.05, 0.05); //0.1, 0.3
-					dtc4etaphitpc[aniter]->SetMaxDcaV0Daughters(0.5); //1.5 Jai, 0.6 //0.4
-					dtc4etaphitpc[aniter]->SetMaxDcaV0(0.5); //5.0
-					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
-					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
+					dtc4etaphitpc[aniter]->SetOnFlyStatus(kFALSE); //kTRUE
+					dtc4etaphitpc[aniter]->SetParticleType(0);
+					dtc4etaphitpc[aniter]->SetMaxDcaV0Daughters(1.5); //0.5
+					dtc4etaphitpc[aniter]->SetMaxDcaV0(1.0); //0.5
+					dtc4etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1, 0.1); //0.05
+					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.98); //0.9993
+					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(100.0); //60
 					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
 					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
+
 				      
 					//V0 second particle cut
 					dtc5etaphitpc[aniter] = new AliFemtoV0TrackCut();
@@ -381,11 +382,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
 					dtc5etaphitpc[aniter]->SetOnFlyStatus(kFALSE); //kTRUE
 					dtc5etaphitpc[aniter]->SetParticleType(1);
-					dtc5etaphitpc[aniter]->SetMaxDcaV0Daughters(0.5); //1.5 Jai, 0.6 //0.4
-					dtc5etaphitpc[aniter]->SetMaxDcaV0(0.5);
-					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.05, 0.05); //0.3, 0.1
-					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
-					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
+					dtc5etaphitpc[aniter]->SetMaxDcaV0Daughters(1.5); //0.5
+					dtc5etaphitpc[aniter]->SetMaxDcaV0(1.0); //0.5
+					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1, 0.1); //0.05
+					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.98); //0.9993
+					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(100.0); //60
 					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
 					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 
