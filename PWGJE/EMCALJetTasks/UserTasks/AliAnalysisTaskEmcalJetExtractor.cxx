@@ -13,6 +13,20 @@
 
 
 ClassImp(AliAnalysisTaskEmcalJetExtractor)
+ClassImp(AliBasicJet)
+ClassImp(AliBasicJetConstituent)
+
+//________________________________________________________________________
+AliBasicJet::~AliBasicJet() 
+{
+// dummy destructor
+}
+
+//________________________________________________________________________
+AliBasicJetConstituent::~AliBasicJetConstituent() 
+{
+// dummy destructor
+}
 
 
 //________________________________________________________________________

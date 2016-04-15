@@ -74,7 +74,7 @@ class AliBasicJetConstituent : public TObject
     : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
     {
     }
-    ~AliBasicJetConstituent() {}
+    ~AliBasicJetConstituent();
 
     Bool_t   IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
     Double_t Pt()       { return fpT; }
@@ -101,7 +101,7 @@ class AliBasicJet : public TObject
     : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
     {
     }
-    ~AliBasicJet() {}
+    ~AliBasicJet();
 
     // Basic jet properties
     Bool_t                    IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
