@@ -35,6 +35,9 @@ public:
     Int_t GetEvSelCode() const { return fEvSelCode; }
     void SetEvSelCode(Int_t lEvSelCodeProv) { fEvSelCode = lEvSelCodeProv; }
     
+    //Getter for IsEventSelected 
+    Bool_t IsEventSelected();  
+    
     //Master "Evaluate"
     void Evaluate ( AliMultInput *lInput );
     
@@ -83,9 +86,10 @@ private:
     Bool_t fThisEvent_IsNotAsymmetricInVZERO;   //!
     Bool_t fThisEvent_IsNotIncompleteDAQ;   //!
     
-    ClassDef(AliMultSelection, 3)
+    ClassDef(AliMultSelection, 4)
     // 1 - original implementation
     // 2 - added fEvSelCode for EvSel bypass + getter changed
     // 3 - added booleans to classify which event criteria are satisfied
+    // 4 - added IsEventSelected 
 };
 #endif
