@@ -68,13 +68,12 @@ set(SRCS
 
 if(ZEROMQ_FOUND) 
   include_directories(
-                      ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
-                      ${AliRoot_SOURCE_DIR}/HLT/global
                       ${ZEROMQ_INCLUDE_DIR}
                       )
 
   set(SRCS
       ${SRCS}
+      AliZMQhelpers.cxx
       AliZMQhistViewer.cxx
       AliZMQMTviewerGUI.cxx
      )
@@ -117,14 +116,11 @@ if(ZEROMQ_FOUND)
   # Additional include folders in alphabetical order except ROOT
   include_directories(
                       ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
-                      ${AliRoot_SOURCE_DIR}/HLT/global
                       ${ZEROMQ_INCLUDE_DIR}
                       )
 
   add_executable(ZMQfileProxy ZMQfileProxy.cxx)
   target_link_libraries(ZMQfileProxy HLTbase AliHLTHOMER AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
-  add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
-  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTHOMER AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   add_executable(ZMQHOMERproxy ZMQHOMERproxy.cxx)
   target_link_libraries(ZMQHOMERproxy HLTbase AliHLTHOMER AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   add_executable(ZMQROOTmerger ZMQROOTmerger.cxx)
@@ -139,6 +135,6 @@ if(ZEROMQ_FOUND)
   target_link_libraries(ZMQHLTchain HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   
   # Installation of 
-  install(TARGETS ZMQfileProxy ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQHLTchain ZMQDIMlumiregServer RUNTIME DESTINATION bin)
+  install(TARGETS ZMQfileProxy ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQHLTchain RUNTIME DESTINATION bin)
   install(PROGRAMS ZMQmonitor.py DESTINATION bin)
 endif(ZEROMQ_FOUND)
