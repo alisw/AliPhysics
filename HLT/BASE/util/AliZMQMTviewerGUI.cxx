@@ -21,12 +21,23 @@
 #include "TPad.h"
 #include "AliHLTDataTypes.h"
 
-const char *thread_state[] = {
-   "Invalid", "Created", "Running", "Terminated",
-   "Finished", "Canceling", "Canceled", "Deleting"
-};
-
 ClassImpQ(AliZMQMTviewerGUI)
+
+const char* AliZMQMTviewerGUI::fUSAGE =
+"ZMQhstViewer: Draw() all ROOT drawables in a message\n"
+"options: \n"
+" -in : data in\n"
+" -sleep : how long to sleep in between requests for data in s (if applicable)\n"
+" -timeout : how long to wait for the server to reply (s)\n"
+" -Verbose : be verbose\n"
+" -select : only show selected histograms (by regexp)\n"
+" -unselect : as select, only inverted\n"
+" -drawoptions : what draw option to use\n"
+" -file : dump input to file and exit\n"
+" -log[xyz] : use log scale on [xyz] dimension\n"
+" -histstats : histogram stat box options (default 0)\n"
+" -AllowResetAtSOR : 0/1 to reset at change of run\n"
+;
 
 //______________________________________________________________________
 AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int argc, char** argv)
@@ -40,7 +51,15 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
   , fTimer(NULL)
   , fWindowTitle()
   , fZMQviewerConfig()
+  , fInitStatus(0)
 {
+   fViewer = new AliZMQhistViewer();
+   int viewerOptionRC = fViewer->ProcessOptionString(argc,argv);
+   if (viewerOptionRC<1) {
+     fInitStatus = -1;
+     return;
+   }
+
    // Creates widgets of the example
    SetCleanup(kDeepCleanup);
    fECanvas = new TRootEmbeddedCanvas ("Ecanvas", this, 600, 400);
@@ -88,8 +107,6 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
      printf("WARNING: viewer ZMQ config socket init error: %i %s\n", rc , zmq_strerror(errno));
    }
 
-   fViewer = new AliZMQhistViewer();
-   fViewer->ProcessOptionString(argc,argv);
    fViewer->SetCanvas(fCanvas);
    bool updateCanvas = false;
    fViewer->GetUpdateCanvas(&updateCanvas);
