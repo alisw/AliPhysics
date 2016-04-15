@@ -8,8 +8,8 @@
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile.h>
-#include <TProfile2D.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
@@ -154,8 +154,8 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_100", "Jet constituent count vs. jet p_T (background subtracted)", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_10", "Jet constituent count vs. jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
 
-  AddHistogram2D<TProfile2D>("hJetConstituents_Cent0_100", "Jet constituent count for const p_T and jet p_T (background subtracted)", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "Profile");
-  AddHistogram2D<TProfile2D>("hJetConstituents_Cent0_10", "Jet constituent count for const p_T and jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "Profile");
+  AddHistogram3D<TH3D>("hJetConstituents_Cent0_100", "Jet constituent p_{T} distribution vs. jet p_T + track count (background subtracted)", "", 180, -30., 150., 100, 0., 100., 100, 0., 120., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "N constituents");
+  AddHistogram3D<TH3D>("hJetConstituents_Cent0_10", "Jet constituent p_{T} distribution vs. jet p_T + track count (background subtracted), 0-10 centrality", "", 180, -30., 150., 100, 0., 100., 100, 0., 120., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "N constituents");
 
   AddHistogram2D<TH2D>("hLeadingJetPtRaw", "Jets p_{T} distribution (no bgrd. corr.)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPt", "Jets p_{T} distribution (background subtracted)", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
@@ -380,9 +380,6 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsTracks(AliVTrack* track)
 void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJet* jet)
 {
   // Loop over all jet constituents
-  Int_t count = 0;
-  TH1* tmpConstituents = new TH1D("tmpConstituents", "tmpConstituents", 200, 0., 200.);
-
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
   {
     AliVParticle* constituent = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
@@ -390,27 +387,19 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
       continue;
 
     // Fill jet constituent plots
-    count++;
     FillHistogram("hJetConstituentPt_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
+    FillHistogram3D("hJetConstituents_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), jet->GetNumberOfTracks()); 
     if( (fCent >= 0) && (fCent < 10) )
+    {
       FillHistogram("hJetConstituentPt_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
-
-    tmpConstituents->Fill(constituent->Pt());
+      FillHistogram3D("hJetConstituents_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), jet->GetNumberOfTracks());
+    }
   }
 
-  FillHistogram("hJetConstituentCount_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), count); 
+  FillHistogram("hJetConstituentCount_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
   if( (fCent >= 0) && (fCent < 10) )
-    FillHistogram("hJetConstituentCount_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), count); 
+    FillHistogram("hJetConstituentCount_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
 
-  // Fill the profile showing the number of const. for given jet and const. pT
-  for(Int_t i=1; i<=tmpConstituents->GetNbinsX(); i++)
-  {
-    FillHistogram("hJetConstituents_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), tmpConstituents->GetXaxis()->GetBinCenter(i), tmpConstituents->GetBinContent(i)); 
-    if( (fCent >= 0) && (fCent < 10) )
-      FillHistogram("hJetConstituents_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), tmpConstituents->GetXaxis()->GetBinCenter(i), tmpConstituents->GetBinContent(i));
-  }
-
-  delete tmpConstituents;
 }
 
 //________________________________________________________________________
@@ -458,18 +447,20 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   // ####### Particle loop
   fAcceptedTracks = 0;
   fTracksCont->ResetCurrentID();
+  Int_t trackcount = 0;
   while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
   {
     // Track plots
     FillHistogramsTracks(track);
 
     // Add track to output array
+    trackcount++;
     AddTrackToOutputArray(track);
   }
 
   // ####### Event properties
   FillHistogram("hJetCount", fAcceptedJets, fCent);
-  FillHistogram("hTrackCount", fAcceptedTracks, fCent);
+  FillHistogram("hTrackCount", trackcount, fCent);
   // NOTE: It is possible to use fTracksCont->GetLeadingParticle() since we do not apply additional track cuts
   AliVTrack* leadTrack = static_cast<AliVTrack*>(fTracksCont->GetLeadingParticle());
   if(leadTrack)
@@ -619,6 +610,23 @@ inline void AliAnalysisTaskChargedJetsHadronCF::FillHistogram(const char * key, 
 }
 
 //________________________________________________________________________
+inline void AliAnalysisTaskChargedJetsHadronCF::FillHistogram3D(const char * key, Double_t x, Double_t y, Double_t z, Double_t add)
+{
+  TH3* tmpHist = static_cast<TH3*>(fOutput->FindObject(key));
+  if(!tmpHist)
+  {
+    AliError(Form("Cannot find histogram <%s> ",key));
+    return;
+  }
+  
+  if(add)
+    tmpHist->Fill(x,y,z,add);
+  else
+    tmpHist->Fill(x,y,z);
+}
+
+
+//________________________________________________________________________
 template <class T> T* AliAnalysisTaskChargedJetsHadronCF::AddHistogram1D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, const char* xTitle, const char* yTitle)
 {
   T* tmpHist = new T(name, title, xBins, xMin, xMax);
@@ -638,6 +646,22 @@ template <class T> T* AliAnalysisTaskChargedJetsHadronCF::AddHistogram1D(const c
 template <class T> T* AliAnalysisTaskChargedJetsHadronCF::AddHistogram2D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, const char* xTitle, const char* yTitle, const char* zTitle)
 {
   T* tmpHist = new T(name, title, xBins, xMin, xMax, yBins, yMin, yMax);
+  tmpHist->GetXaxis()->SetTitle(xTitle);
+  tmpHist->GetYaxis()->SetTitle(yTitle);
+  tmpHist->GetZaxis()->SetTitle(zTitle);
+  tmpHist->SetOption(options);
+  tmpHist->SetMarkerStyle(kFullCircle);
+  tmpHist->Sumw2();
+
+  fOutput->Add(tmpHist);
+
+  return tmpHist;
+}
+
+//________________________________________________________________________
+template <class T> T* AliAnalysisTaskChargedJetsHadronCF::AddHistogram3D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, Int_t zBins, Double_t zMin, Double_t zMax, const char* xTitle, const char* yTitle, const char* zTitle)
+{
+  T* tmpHist = new T(name, title, xBins, xMin, xMax, yBins, yMin, yMax, zBins, zMin, zMax);
   tmpHist->GetXaxis()->SetTitle(xTitle);
   tmpHist->GetYaxis()->SetTitle(yTitle);
   tmpHist->GetZaxis()->SetTitle(zTitle);
