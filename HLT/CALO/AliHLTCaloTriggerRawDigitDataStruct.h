@@ -49,7 +49,7 @@ struct AliHLTCaloTriggerRawDigitDataStruct {
   /** Time samples */
   Int_t       fTimeSamples[15];
   /** Subregion */
-  Int_t   fL1SubRegion;
+  Int_t       fL1SubRegion;
 };
 
 /**

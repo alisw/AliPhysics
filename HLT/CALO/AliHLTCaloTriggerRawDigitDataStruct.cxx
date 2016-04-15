@@ -65,8 +65,8 @@ void GetL0Times(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t times[]) {
 
 Bool_t GetTimeSample(const AliHLTCaloTriggerRawDigitDataStruct &dig, Int_t iSample, Int_t& timeBin, Int_t& amp) {
   if (iSample > dig.fNTimeSamples || iSample < 0) return kFALSE;
-  amp     = (Short_t)(dig.fTimeSamples[iSample] & 0xFFFF);
-  timeBin = (Short_t)(dig.fTimeSamples[iSample] >> 16 );
+  amp     = (Int_t)(dig.fTimeSamples[iSample] & 0xFFFF);
+  timeBin = (Int_t)(dig.fTimeSamples[iSample] >> 16 );
   return kTRUE;
 }
 

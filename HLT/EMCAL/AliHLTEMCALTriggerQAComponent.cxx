@@ -198,6 +198,7 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerPatches(const AliHLTComponentB
 
   AliEMCALTriggerPatchInfo patch;
   patch.SetTriggerBitConfig(fTriggerBitConfig);
+  patch.SetOffSet(fTriggerBitConfig->GetTriggerTypesEnd());
 
   if (fBeamType == kPbPb) {
     for(UInt_t ipatch = 0; ipatch < nPatches; ipatch++) {

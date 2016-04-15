@@ -217,8 +217,6 @@ protected:
    */
   ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
-  Bool_t IsSameTRU(const AliEMCALTriggerRawPatch &patch) const;
-
 private:
   /** Pointer to the output buffer */
   AliHLTCaloTriggerPatchDataStruct              *fTriggerPatchDataPtr;

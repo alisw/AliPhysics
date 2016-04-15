@@ -196,10 +196,10 @@ Int_t AliHLTEMCALTriggerDataMakerComponent::MakeTriggerData(AliHLTCaloTriggerDat
   Int_t outputsize = 0, col = 0, row = 0, ntriggers = 0 ;
   AliHLTCaloTriggerRawDigitDataStruct tmpdigit;
   for(UShort_t indcounter = 0; indcounter <= fMaxChannel; indcounter++){
-	if(availableSize < sizeof(AliHLTCaloTriggerDataStruct)){
-		HLTWarning("Buffer exceeded after %d triggers", ntriggers);
-		break;
-	}
+    if(availableSize < sizeof(AliHLTCaloTriggerDataStruct)){
+      HLTWarning("Buffer exceeded after %d triggers", ntriggers);
+      break;
+    }
     fGeometry->GetGeometryPtr()->GetPositionInEMCALFromAbsFastORIndex(indcounter, col, row);
     if(fRawIndexesTRU[indcounter] >= 0 && fRawIndexesSTU[indcounter] >=0){
       CombineTRUSTUDigit(tmpdigit, fTRURawDigitBuffer[fRawIndexesTRU[indcounter]], fSTURawDigitBuffer[fRawIndexesSTU[indcounter]]);
@@ -252,7 +252,7 @@ void AliHLTEMCALTriggerDataMakerComponent::Reset(){
 void AliHLTEMCALTriggerDataMakerComponent::ConvertRawDigit(AliHLTCaloTriggerDataStruct *target, const AliHLTCaloTriggerRawDigitDataStruct *source, Int_t col, Int_t row) {
   target->fCol = col;
   target->fRow = row;
-  Int_t amplitude, time;
+  Int_t amplitude(0), time(0);
   GetRawDigitMaximumAmplitude(*source, amplitude, time);
   target->fAmplitude = static_cast<Float_t>(amplitude);
   target->fTime = static_cast<Float_t>(time);

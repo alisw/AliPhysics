@@ -352,56 +352,63 @@ void AliEMCALTriggerOnlineQAPP::Init()
  */
 void AliEMCALTriggerOnlineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* patch)
 {
-  Int_t triggerBits[6] = { patch->GetTriggerBitConfig()->GetLevel0Bit(),
-      patch->GetTriggerBitConfig()->GetGammaLowBit(),
-      patch->GetTriggerBitConfig()->GetGammaHighBit(),
-      patch->GetTriggerBitConfig()->GetJetLowBit(),
-      patch->GetTriggerBitConfig()->GetJetHighBit(),
-      patch->GetTriggerBitConfig()->GetBkgBit()
+  Bool_t (AliEMCALTriggerPatchInfo::* triggerCheck[3][6])(void) const = {
+      { &AliEMCALTriggerPatchInfo::IsLevel0,
+          &AliEMCALTriggerPatchInfo::IsGammaLow,
+          &AliEMCALTriggerPatchInfo::IsGammaHigh,
+          &AliEMCALTriggerPatchInfo::IsJetLow,
+          &AliEMCALTriggerPatchInfo::IsJetHigh,
+          &AliEMCALTriggerPatchInfo::IsBkg
+      },
+      { &AliEMCALTriggerPatchInfo::IsLevel0Recalc,
+          &AliEMCALTriggerPatchInfo::IsGammaLowRecalc,
+          &AliEMCALTriggerPatchInfo::IsGammaHighRecalc,
+          &AliEMCALTriggerPatchInfo::IsJetLowRecalc,
+          &AliEMCALTriggerPatchInfo::IsJetHighRecalc,
+          &AliEMCALTriggerPatchInfo::IsBkgRecalc
+      },
+      { &AliEMCALTriggerPatchInfo::IsLevel0Simple,
+          &AliEMCALTriggerPatchInfo::IsGammaLowSimple,
+          &AliEMCALTriggerPatchInfo::IsGammaHighSimple,
+          &AliEMCALTriggerPatchInfo::IsJetLowSimple,
+          &AliEMCALTriggerPatchInfo::IsJetHighSimple,
+          &AliEMCALTriggerPatchInfo::IsBkgSimple
+      }
   };
 
-  Int_t offsets[fgkNPatchTypes]    = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
-  Int_t amplitudes[fgkNPatchTypes] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
+  if (fDebugLevel >= 2) {
+    Printf("Processing patch -> global pos = (%d, %d); Amp (online) = %d; Amp (offline) = %d; \n",
+        patch->GetRowStart(), patch->GetColStart(), patch->GetADCAmp(), patch->GetADCOfflineAmp());
+  }
 
   for (Int_t itrig = 0; itrig < fgkNTriggerTypes; itrig++) {
     if (EMCALTrigger::kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
 
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       if (!fEnabledPatchTypes[ipatch]) continue;
-      if(!ipatch){
-        if (!(patch->TestTriggerBit(triggerBits[itrig]+offsets[ipatch]) ||
-            patch->TestTriggerBit(triggerBits[itrig] + patch->GetTriggerBitConfig()->GetTriggerTypesEnd() + offsets[ipatch]))) continue;
-      }
-      else
-        if (!patch->TestTriggerBit(triggerBits[itrig]+offsets[ipatch])) continue;
+      if (!(patch->*(triggerCheck[ipatch][itrig]))()) continue;
 
+      Int_t amp = GetAmplitude(patch, ipatch);
       Int_t idet = 0;
       if (patch->IsEMCal()) {
         idet = 0;
-        if (GetAmplitude(fMaxPatchEMCal[itrig][ipatch], ipatch) < amplitudes[ipatch]) {
+        if (GetAmplitude(fMaxPatchEMCal[itrig][ipatch], ipatch) < amp) {
           *(fMaxPatchEMCal[itrig][ipatch]) = *patch;
         }
       }
       else if (patch->IsDCalPHOS()) {
         idet = 1;
-        if (GetAmplitude(fMaxPatchDCal[itrig][ipatch], ipatch) < amplitudes[ipatch]) *(fMaxPatchDCal[itrig][ipatch]) = *patch;
+        if (GetAmplitude(fMaxPatchDCal[itrig][ipatch], ipatch) < amp) {
+          *(fMaxPatchDCal[itrig][ipatch]) = *patch;
+        }
       }
       else {
         AliWarning(Form("Patch is not EMCal nor DCal/PHOS (pos: %d, %d)", patch->GetRowStart(), patch->GetColStart()));
       }
 
       fNPatches[idet][itrig][ipatch]++;
-      fHistPatchAmp[idet][itrig][ipatch]->Fill(amplitudes[ipatch]);
-      fHistAmpEdgePos[itrig][ipatch]->Fill(patch->GetColStart(), patch->GetRowStart(), amplitudes[ipatch]);
-    }
-
-    if (fDebugLevel >= 2) {
-      Printf("Type = %s; global pos = (%d, %d); Amp (online) = %d; Amp (offline) = %d; Patch energy = %.3f\n"
-          "Position (CM): Eta=%.3f, Phi=%.3f\n"
-          "Position (Geo): Eta=%.3f, Phi=%.3f\n",
-          EMCALTrigger::kEMCalTriggerNames[itrig].Data(), patch->GetRowStart(), patch->GetColStart(), patch->GetADCAmp(), patch->GetADCOfflineAmp(), patch->GetPatchE(),
-          patch->GetEtaCM(), patch->GetPhiCM(),
-          patch->GetEtaGeo(), patch->GetPhiGeo());
+      fHistPatchAmp[idet][itrig][ipatch]->Fill(amp);
+      fHistAmpEdgePos[itrig][ipatch]->Fill(patch->GetColStart(), patch->GetRowStart(), amp);
     }
   }
 }
