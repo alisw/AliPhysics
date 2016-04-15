@@ -214,19 +214,19 @@ public:
   /** 
    * Get parent transverse momentum 
    * 
-   * @param first If true, first parent, otherwise second 
+   * @param second If true, second parent, otherwise first 
    * 
    * @return Here, we always return 0 
    */
-  virtual Real_t GetParentPt(Bool_t first) { return 0; }
+  virtual Real_t GetParentPt(Bool_t second=false) { return 0; }
   /** 
    * Get parent particle type 
    * 
-   * @param first If true, first parent, otherwise second 
+   * @param first If true, second parent, otherwise first 
    * 
    * @return Here, we always return 0 
    */
-  virtual Short_t GetParentPdg(Bool_t first) { return 0; }
+  virtual Short_t GetParentPdg(Bool_t second=false) { return 0; }
   /* @} */
   void Print(Option_t* option="") const;
 protected:

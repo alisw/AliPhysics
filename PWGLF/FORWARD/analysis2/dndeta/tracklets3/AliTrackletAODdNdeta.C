@@ -67,7 +67,7 @@ public:
    * 
    * @param option Ignored 
    */
-  void Print(Option_t* option="") const;
+  virtual void Print(Option_t* option="") const;
   /** 
    * Connect this task to analysis manager 
    * 
@@ -698,12 +698,39 @@ protected:
    * @return List of tracklets or null
    */
   TClonesArray* FindTracklets(AliVEvent* event);
+  /** 
+   * See if we can find an IP position 
+   * 
+   * @param event         Event 
+   * @param maxDispersion Max uncertainty 
+   * @param maxZError     Max uncertainty in Z 
+   * 
+   * @return Pointer to IP position or null
+   */
   const AliVVertex* FindSimpleIP(AliVEvent* event,
 				 Double_t   maxDispersion=0.04,
 				 Double_t   maxZError=0.25);
+  /** 
+   * See if we can find an IP position 
+   * 
+   * @param event         Event 
+   * @param maxDispersion Max uncertainty 
+   * @param maxZError     Max uncertainty in Z 
+   * 
+   * @return Pointer to IP position or null
+   */
   const AliVVertex* FindRealIP(AliVEvent* event,
 			       Double_t   maxDispersion=0.04,
 			       Double_t   maxZError=0.25);
+  /** 
+   * Check if an IP position is OK
+   * 
+   * @param ip            IP position 
+   * @param maxDispersion Max uncertainty 
+   * @param maxZError     Max uncertainty in Z 
+   * 
+   * @return Pointer to IP position or null
+   */
   const AliVVertex* CheckIP(const AliVVertex* ip,
 			    Double_t   maxDispersion=0.04,
 			    Double_t   maxZError=0.25);
@@ -719,7 +746,8 @@ protected:
 			   Double_t   maxDispersion=0.04,
 			   Double_t   maxZError=0.25);
   /** 
-   * Find the centrality of the event 
+   * Find the centrality of the event. This looks for the
+   * AliMultSelection structure.
    * 
    * @param event Event 
    * @param nTracklets Number of tracklets for benchmarking centrality 
@@ -729,7 +757,8 @@ protected:
    */
   Double_t FindMultCentrality(AliVEvent* event, Int_t& nTracklets);
   /** 
-   * Find the centrality of the event 
+   * Find the centrality of the event. This looks for the
+   * AliCentrality structure.
    * 
    * @param event Event 
    * 
@@ -738,9 +767,11 @@ protected:
    */
   Double_t FindCompatCentrality(AliVEvent* event);  
   /** 
-   * Find the centrality of the event 
+   * Find the centrality of the event.  If an AliMultSelection
+   * structure isn't found, fall back to AliCentrality, and that isn't
+   * there either, we fail.
    * 
-   * @param event Event 
+   * @param event      Event 
    * @param nTracklets Number of tracklets for benchmarking centrality 
    * 
    * @return Centrality percentile, or negative number in case of
@@ -806,7 +837,7 @@ protected:
    *
    * @return true on success 
    */
-  Bool_t MasterFinalize(Container* results);
+  virtual Bool_t MasterFinalize(Container* results);
   /* @} */
 
   // -----------------------------------------------------------------
@@ -901,7 +932,6 @@ public:
    * Destructor 
    */
   virtual ~AliTrackletAODMCdNdeta() {}
-  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
   /** 
    * Assignment operator 
    * 
@@ -910,12 +940,25 @@ public:
    * @return Reference to this object 
    */
   AliTrackletAODMCdNdeta& operator=(const AliTrackletAODMCdNdeta& o);
+  /** 
+   * Print information to standard output 
+   * 
+   * @param option Ignored 
+   */
+  void Print(Option_t* option="") const;
 
   // -----------------------------------------------------------------
   /** 
    * @{ 
    * @name Set parameters on the task 
    */
+  /** 
+   * Set the weights to use 
+   * 
+   * @param w 
+   */
+  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
+  /* @} */
   //__________________________________________________________________
   /**
    * A centrality bin.  Here, we need 
@@ -940,6 +983,8 @@ public:
     CentBin()
       : AliTrackletAODdNdeta::CentBin(),
 	fCombinatorics(0),
+	fPrimaries(0),
+	fSecondaries(0),
 	fGenerated(0)
     {
     } 
@@ -958,6 +1003,8 @@ public:
     CentBin(const CentBin& o)
       : AliTrackletAODdNdeta::CentBin(o),
 	fCombinatorics(0),
+	fPrimaries(0),
+	fSecondaries(0),
 	fGenerated(0)
     {}
     /**
@@ -972,6 +1019,8 @@ public:
     CentBin& operator=(const CentBin&) { return *this; }
   protected:
     Histos*    fCombinatorics;
+    Histos*    fPrimaries;
+    Histos*    fSecondaries;
     Histos*    fGenerated;
 
     ClassDef(CentBin,1);
@@ -1025,6 +1074,20 @@ protected:
    * @return The weight - in this class always 1
    */
   virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent);
+  /* @} */
+  // -----------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Finalize the job 
+   */
+  /** 
+   * Finalize the job on the master 
+   * 
+   * @param results The container to add the results to 
+   *
+   * @return true on success 
+   */
+  Bool_t MasterFinalize(Container* results);
   /* @} */
   // -----------------------------------------------------------------
   AliTrackletWeights* fWeights;
@@ -1219,6 +1282,13 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   while ((bin = static_cast<CentBin*>(next()))) {
     bin->Print(option);
   }
+}
+//____________________________________________________________________
+void AliTrackletAODMCdNdeta::Print(Option_t* option) const
+{
+  AliTrackletAODdNdeta::Print(option);
+  if (!fWeights) return;
+  fWeights->Print(option);
 }
 
 //____________________________________________________________________
@@ -1429,12 +1499,26 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
 AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   : AliTrackletAODdNdeta::CentBin(c1, c2),
     fCombinatorics(0),
+    fPrimaries(0),
+    fSecondaries(0),
     fGenerated(0)
 {
+  // Combinatorics is everything that has the combinatorics bit
+  // Primaries all with simulated bit, but not secondary or
+  // combinatorics bit.
+  // Secondaries are all those with the secondary bit set 
   fCombinatorics  = new Histos("combinatorics",
 			       AliAODTracklet::kCombinatorics, 0x00);
+  fPrimaries  = new Histos("primaries",
+			   AliAODTracklet::kSimulated
+			   AliAODTracklet::kCombinatorics|
+			   AliAODTracklet::kSecondary);
+  fSecondaries = new Histos("secondaries",
+			    AliAODTracklet::kSecondary, 0x00);
   fGenerated = new Histos("generated",AliAODTracklet::kGenerated, 0x00);
   fSubs->Add(fCombinatorics);
+  fSubs->Add(fPrimaries);
+  fSubs->Add(fSecondaries);
   fSubs->AddAfter(fMeasured, fGenerated);
 }
 
@@ -1470,13 +1554,17 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
 {
   if (!Sub::WorkerInit(parent, etaAxis, ipzAxis, deltaAxis)) return false;
 
-  fEtaIPz   = Make2D(fContainer, "etaIPz",
-		     Form("Tracklet density - %s",GetName()),
-		     kRed+2, 20, etaAxis, ipzAxis);
-  if (fMask == 0x00 || fMask == AliAODTracklet::kInjection)
-    fEtaDelta = Make2D(fContainer, "etaDelta",
-		       Form("Tracklet quality - %s",GetName()),
-		       kBlue+2, 21, etaAxis, deltaAxis);
+  // Do not make eta vs IPz for secondaries and primaries 
+  if (fMask != AliAODTracklet::kSecondary &&
+      (fMask != AliAODTracklet::kSimulated &&
+       fVeto != AliAODTracklet::kSecondary|AliAODTracklet::kCombinatorics))
+    fEtaIPz   = Make2D(fContainer, "etaIPz",
+		       Form("Tracklet density - %s",GetName()),
+		       kRed+2, 20, etaAxis, ipzAxis);
+  // Always make eta vs Delta distribution 
+  fEtaDelta = Make2D(fContainer, "etaDelta",
+		     Form("Tracklet quality - %s",GetName()),
+		     kBlue+2, 21, etaAxis, deltaAxis);
   return true;
 }
 //____________________________________________________________________
@@ -1742,7 +1830,7 @@ Double_t AliTrackletAODMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
 					      Double_t        cent)
 {
   if (!fWeights) {
-    AliWarning("No weights defined");
+    // AliWarning("No weights defined");
     return 1;
   }
   Double_t w = fWeights->LookupWeight(tracklet, cent);
@@ -1829,9 +1917,9 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   }
   // printf("%12s (0x%02x,0x%02x) signal ", GetName(), fMask, fVeto);
   // tracklet->Print();
-  if (signal)    fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
-  if (fEtaDelta) fEtaDelta->Fill(tracklet->GetEta(), tracklet->GetDelta(),
-				 weight);
+  if (fEtaIPz && signal) fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
+  if (fEtaDelta)         fEtaDelta->Fill(tracklet->GetEta(),
+					 tracklet->GetDelta(), weight);
   return true;
 }
 
@@ -1883,9 +1971,9 @@ Bool_t AliTrackletAODdNdeta::CentBin::FinalizeInit(Container* parent)
 Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
 {
   fContainer   = GetC(parent, fName);
-  fEtaIPz      = GetH2(fContainer, "etaIPz");
+  fEtaIPz      = GetH2(fContainer, "etaIPz", false); // No complaints
   fEtaDelta    = GetH2(fContainer, "etaDelta", false); // No complaints
-  return (fContainer != 0 && fEtaIPz != 0); 
+  return (fContainer != 0); //  && fEtaIPz != 0); 
 }
 
 //____________________________________________________________________
@@ -1927,7 +2015,29 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   }
   return true;
 }
+//____________________________________________________________________
+Bool_t AliTrackletAODMCdNdeta::MasterFinalize(Container* results)
+{
+  if (!AliTrackletAODdNdeta::MasterFinalize(results)) return false;
 
+  TObject* o = fContainer->FindObject("etaWeight");
+  if (o && o->IsA()->InheritsFrom(TH1::Class())) {
+    TH1* etaWeight = static_cast<TH1*>(o->Clone());
+    etaWeight->SetDirectory(0);
+    results->Add(etaWeight);
+  }
+  else {
+    AliWarningF("Object %p (etaWeight ) is not a TH1 or not found",o);
+  }
+  if (!fWeights) return true;
+
+  if (!fWeights->Retrieve(fContainer)) return false;
+  fWeights->Store(results);
+
+  return true;
+}
+
+  
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
 						     TH1*       ,
@@ -1951,20 +2061,18 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
   TIter      next(fSubs);
   Histos*    h = 0;
   while ((h = static_cast<Histos*>(next()))) {
-    if (h->GetMask() == AliAODTracklet::kGenerated) {
+    if (h->GetMask() != AliAODTracklet::kInjection &&
+	h->GetMask() != AliAODTracklet::kCombinatorics) {
+      // For the anything but injection or MC-labels, we just finalize
       if (!h->MasterFinalize(result, fIPz, tailDelta)) {
 	AliWarningF("Failed to finalize %s/%s", GetName(), h->GetName());
 	return false;
       }
-      genCont = GetC(result, h->GetName());
-      continue;
-    }
-    if (h == fMeasured) {
-      if (!h->MasterFinalize(result, fIPz, tailDelta)) {
-	AliWarningF("Failed to finalize %s/%s", GetName(), h->GetName());
-	return false;
-      }
-      measCont = GetC(result, h->GetName());
+      if (h->GetMask() == AliAODTracklet::kGenerated)
+	// Set MC truth container 
+	genCont = GetC(result, h->GetName());
+      if (h == fMeasured)
+	measCont = GetC(result, h->GetName());	
       continue;
     }
     if (!EstimateBackground(result, measCont, genCont, h, tailDelta)) {
@@ -1990,8 +2098,11 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   Double_t nEvents = ipz->GetEntries();
   
   // Scale each vertex range by number of events in that range
-  TH2* etaIPz = ScaleToIPz(fEtaIPz, ipz);
-  result->Add(etaIPz);
+  TH2* etaIPz = 0;
+  if (fEtaIPz) {
+    ScaleToIPz(fEtaIPz, ipz);
+    result->Add(etaIPz);
+  }
 
   // If we do not have eta vs Delta, just return 
   if (!fEtaDelta) return true;
@@ -2002,7 +2113,7 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   TH2* etaDelta = static_cast<TH2*>(CloneAndAdd(result, fEtaDelta));
   etaDelta->Scale(1./nEvents);
 
-  // Make projection of detla 
+  // Make projection of delta 
   TH1* delta = fEtaDelta->ProjectionY("delta");
   delta->SetDirectory(0);
   delta->SetTitle(Form("#Delta - %s", GetName()));
@@ -2063,7 +2174,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
   
   TH2* background    = 0;
   TH2* backgroundEta = 0;
-  if (GetH1(bgCont, "delta", false)) {
+  if (h->GetMask() == AliAODTracklet::kInjection)) {
     // If we have the delta distribution, we can form the real
     // background by scaling to the tail.  We can either scale the
     // observed distribution by the ratios of the total integrals, or

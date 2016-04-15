@@ -52,6 +52,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
     kdNdetas      = 0x00004,
     /** Draw general information */
     kGeneral      = 0x00008,
+    kWeights      = 0x00008,
     /** Draw parameters */
     kParameters   = 0x00010,
     /** Draw delta information */   
@@ -282,6 +283,12 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @param simList  Results from simulated data 
    */
   void DrawGeneral(Container* realList, Container* simList);
+  /** 
+   * Draw the used simulation weights
+   * 
+   * @param simList Simulation list 
+   */
+  void DrawWeights(Container* simList);
   /* @} */
   //____________________________________________________________________
   /** 
@@ -477,8 +484,10 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @param stack     Stack to add results to 
    * @param out       (optional) output directory 
    * @param alt       Set alternative marker set 
+   *
+   * @return Fit to mid rapidity (@f$ |\eta|<0.5@f$)
    */
-  void DrawdNdeta(Container*  realList,
+  TF1* DrawdNdeta(Container*  realList,
 		  Bool_t      realComb,
 		  Container*  simList,
 		  Bool_t      simComb,
@@ -497,11 +506,13 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @param realList Results from real data 
    * @param simList  Results from simulated data 
    * @param stack    Possible stack to add dN/deta to 
+   * @param mid      Histogram to fill with @f$|\eta|<0.5@f$ results
    */
   void ProcessBin(UInt_t     what,     Int_t       bin,
 		  Double_t   c1,       Double_t    c2,
 		  Container* realList, Container*  simList,
-		  THStack*   stack=0,  TDirectory* out=0);
+		  THStack*   stack=0,  TDirectory* out=0,
+		  TH1*       mid=0);
   //====================================================================
   /** 
    * Run it 
@@ -937,6 +948,84 @@ void AliTrackletdNdeta::DrawGeneral(Container* realList,
   
   PrintCanvas("General information");
 }
+
+namespace {
+  void SetCentColors(THStack* s)
+  {
+    if (!s->GetHists()) return;
+
+    const Color_t cc[] = { kMagenta+2, // 0
+			   kBlue+2,    // 1
+			   kAzure-1,   // 2 // 10,
+			   kCyan+2,    // 3
+			   kGreen+1,   // 4 
+			   kSpring+5,  // 5 //+10,
+			   kYellow+1,  // 6
+			   kOrange+5,  // 7 //+10,
+			   kRed+1,     // 8
+			   kPink+5,    // 9 //+10,
+			   kBlack };   // 10    
+    TIter next(s->GetHists());
+    TH1*  h = 0;
+    Int_t i = 0;
+    Double_t min = +10000;
+    Double_t max = -10000;
+    while ((h = static_cast<TH1*>(next()))) {
+      Color_t c = cc[i % 10];
+      h->SetMarkerColor(c);
+      h->SetFillColor(c);
+      h->SetLineColor(c);
+      h->SetMarkerStyle(20+(i%4));
+      min = TMath::Min(h->GetMinimum(), min);
+      max = TMath::Max(h->GetMaximum(), max);
+      i++;
+    }
+    s->SetMinimum(min*.9);
+    s->SetMaximum(max*1.1);
+  }
+  THStack* GetPdgStack(AliTrackletAODUtils::Container* w, const char* name)
+  {
+    AliTrackletAODUtils::Container* c = AliTrackletAODUtils::GetC(w, name);
+    if (!c) return 0;
+
+    THStack* s = new THStack(name, "");
+    TH1*     h = 0;
+    TIter    n(c);
+    while ((h = static_cast<TH1*>(n()))) s->Add(h);
+
+    return s;
+  }
+}
+//____________________________________________________________________
+void AliTrackletdNdeta::DrawWeights(Container* simList)
+{
+  Container* w = GetC(simList,"weights", false);
+  if (!w) return;
+
+  ClearCanvas();
+  fBody->Divide(1,3);
+  
+  THStack* ef = new THStack(GetP2(simList,"etaWeight"),"x","effWeights","");
+  THStack* pt = new THStack(GetH2(w,      "centPt"),   "y","pt","");
+  THStack* ab = GetPdgStack(w, "abundance");
+  THStack* st = GetPdgStack(w, "strangeness");
+  SetCentColors(ef);
+  SetCentColors(pt);
+  SetCentColors(ab);
+  SetCentColors(st);
+
+  DrawInPad(fBody, 1, ef, "nostack");
+  DrawInPad(fBody, 2, pt, "nostack");
+  
+  TVirtualPad* p3 = fBody->GetPad(3);
+  p3->Divide(2,1);
+
+  DrawInPad(p3, 1, ab, "nostack leg");
+  DrawInPad(p3, 2, st, "nostack leg");
+
+  PrintCanvas("Simulation weights");
+}
+  
 //====================================================================
 TH1* AliTrackletdNdeta::FindSub(Container*  ress,
 				const char* sub,
@@ -1382,7 +1471,7 @@ TH2* AliTrackletdNdeta::GetSim(Bool_t      simComb,
 }
 
 //____________________________________________________________________
-void AliTrackletdNdeta::DrawdNdeta(Container*  realList,
+TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
 				   Bool_t      realComb,
 				   Container*  simList,
 				   Bool_t      simComb,
@@ -1407,7 +1496,7 @@ void AliTrackletdNdeta::DrawdNdeta(Container*  realList,
   if (!realMeas || !realSig || !realBg || !realIPz) {
     Warning("DrawdNdeta", "One or more real data histograms missing: "
 	    "meas=%p sig=%p bg=%p ipz=%p", realMeas, realSig, realBg, realIPz);
-    return;
+    return 0;
   }
   if (realBg ->GetMarkerStyle() == 30) realBg ->SetMarkerStyle(29);
   if (realBg ->GetMarkerStyle() == 27) realBg ->SetMarkerStyle(33);
@@ -1424,7 +1513,7 @@ void AliTrackletdNdeta::DrawdNdeta(Container*  realList,
     Warning("DrawdNdeta", "One or more simuluated data histograms missing: "
 	    "meas=%p sig=%p bg=%p ipz=%p alpha=%p",
 	    simMeas, simSig, simBg, simIPz, alpha);
-    return;
+    return 0;
   }
   alpha->Multiply(fiducial);
   TH2* trueGen  = CopyH2(GetC(simList, "generated"), "etaIPz", "trueGen");
@@ -1432,7 +1521,7 @@ void AliTrackletdNdeta::DrawdNdeta(Container*  realList,
   if (!trueGen || !trueIPz) {
     Warning("DrawdNdeta", "One or more generator data histograms missing: "
 	    "gen=%p ipz=%p", trueGen, trueIPz);
-    return;
+    return 0;
   }
 
   realMeas->SetTitle("Measured (real)");  
@@ -1555,6 +1644,7 @@ void AliTrackletdNdeta::DrawdNdeta(Container*  realList,
     result  ->Write();
     dndeta  ->Write();
     summary ->Write();
+    f       ->Write();
     if (scale) scale->Write();
     
     TDirectory* details = out->mkdir("details");
@@ -1586,13 +1676,16 @@ void AliTrackletdNdeta::DrawdNdeta(Container*  realList,
     simIPz      ->Write();
     trueIPz     ->Write();
   }
-  PrintCanvas(Form("%s - %s", fLastBin.Data(),ObsTitle()));  
+  PrintCanvas(Form("%s - %s", fLastBin.Data(),ObsTitle()));
+
+  return f;
 }
 //____________________________________________________________________
 void AliTrackletdNdeta::ProcessBin(UInt_t     what,     Int_t       bin,
 				   Double_t   c1,       Double_t    c2,
 				   Container* realList, Container*  simList,
-				   THStack*   stack,    TDirectory* out)
+				   THStack*   stack,    TDirectory* out,
+				   TH1*       mid)
 {
   fLastBin.Form("%5.1f%% - %5.1f%%", c1, c2);
   printf("Centrality bin %5.1f%% - %5.1f%%: ", c1, c2);
@@ -1622,13 +1715,18 @@ void AliTrackletdNdeta::ProcessBin(UInt_t     what,     Int_t       bin,
   TDirectory* binOut = 0;
   Bool_t      alt    = (what & kAltMarker);
   if (out) binOut = out->mkdir(name);
-    
+
+  TF1* f = 0;
   if (what & kDeltas)      DrawDeltas    (realListBin, simListBin);
   if (what & kBackgrounds) DrawBackground(realListBin, simListBin);
   if (what & kAlphas)      DrawAlpha     (realListBin, simListBin);
-  if (what & kdNdetas)     DrawdNdeta    (realListBin, what & kRealComb,
+  if (what & kdNdetas)     f = DrawdNdeta(realListBin, what & kRealComb,
 					  simListBin,  what & kSimComb,
 					  color, stack, binOut, alt);
+  if (f && mid && bin > 0) {
+    mid->SetBinContent(bin, f->GetParameter(0));
+    mid->SetBinError  (bin, f->GetParError (0));
+  }
   printf(" done \n");
 }
 //====================================================================
@@ -1668,6 +1766,7 @@ void AliTrackletdNdeta::Run(UInt_t      what,
   
   CreateCanvas(Form("%s.pdf", outBase.Data()));
   if (what & kGeneral)    DrawGeneral(realRess, simRess);
+  if (what & kWeights)    DrawWeights(simRess);
   if (what & kParameters) DrawParams(realSums, what & kRealComb,
 				     simSums,  what & kSimComb);
 
@@ -1691,14 +1790,22 @@ void AliTrackletdNdeta::Run(UInt_t      what,
   ProcessBin(what, 0, 0, 100, realRess, simRess, stack);
 
   TFile* out = TFile::Open(Form("%s.root", outBase.Data()), "RECREATE");
+  TH1*   mid = Make1D(0,"mid",Form("%s|_{|#eta|<0.5}", ObsTitle()),
+		      kBlack, 20, *(realCent->GetXaxis()));
+  mid->SetDirectory(out);
+  mid->SetXTitle("Centrality [%]");
+  mid->SetYTitle(mid->GetTitle());
   realCent->Write();
   simCent ->Write();
   for (Int_t i = 1; i <= realCent->GetNbinsX() && i <= maxBins ; i++) {
     Double_t c1 = realCent->GetXaxis()->GetBinLowEdge(i);
     Double_t c2 = realCent->GetXaxis()->GetBinUpEdge (i);
       
-    ProcessBin(what, i, c1, c2, realRess, simRess, stack, out);
+    ProcessBin(what, i, c1, c2, realRess, simRess, stack, out, mid);
   }
+  ClearCanvas();
+  DrawInPad(fBody,0,mid,"E");
+  PrintCanvas(mid->GetTitle());
 
   if (stack->GetHists() && stack->GetHists()->GetEntries() > 0) {
     ClearCanvas();
