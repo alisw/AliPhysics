@@ -15,56 +15,69 @@
 ClassImp(AliParticleContainer)
 /// \endcond
 
-//________________________________________________________________________
+/**
+ * Default constructor.
+ */
 AliMCParticleContainer::AliMCParticleContainer():
   AliParticleContainer(),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
-  // Default constructor.
-
-  fClassName = "AliAODMCParticle";
+  fBaseClassName = "AliAODMCParticle";
+  SetClassName("AliAODMCParticle");
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor.
+ * @param[in] name Name of the container (= name of the array operated on)
+ */
 AliMCParticleContainer::AliMCParticleContainer(const char *name):
   AliParticleContainer(name),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
-  // Standard constructor.
-
-  fClassName = "AliAODMCParticle";
+  fBaseClassName = "AliAODMCParticle";
+  SetClassName("AliAODMCParticle");
 }
 
-//________________________________________________________________________
+/**
+ * Get MC particle using the MC label
+ * @param[in] lab Label of the particle
+ * @return pointer to particle if particle is found, NULL otherwise
+ */
 AliAODMCParticle* AliMCParticleContainer::GetMCParticleWithLabel(Int_t lab) const
 {
-  //Get particle with label lab in array
-
   Int_t i = GetIndexFromLabel(lab);
   return GetMCParticle(i);
 }
 
-//________________________________________________________________________
+/**
+ * Get MC particle using the MC label
+ * @param[in] lab Label of the particle
+ * @return pointer to particle if particle is found and accepted, NULL otherwise
+ */
 AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticleWithLabel(Int_t lab)
 {
-  //Get particle with label lab in array
-
   Int_t i = GetIndexFromLabel(lab);
   return GetAcceptMCParticle(i);
 }
 
-//________________________________________________________________________
+/**
+ * Get track at index in the container
+ * @param[in] i Index of the particle in the container
+ * @return pointer to particle if particle is found, NULL otherwise
+ */
 AliAODMCParticle* AliMCParticleContainer::GetMCParticle(Int_t i) const
 {
-  //Get i^th jet in array
-
   if (i == -1) i = fCurrentID;
   if (i < 0 || i >= fClArray->GetEntriesFast()) return 0;
   AliAODMCParticle *vp = static_cast<AliAODMCParticle*>(fClArray->At(i));
   return vp;
 }
 
-//________________________________________________________________________
+/**
+ * Get track at index in the container
+ * @param[in] i Index of the particle in the container
+ * @return pointer to particle if particle is accepted, NULL otherwise
+ */
 AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i) const
 {
   //return pointer to particle if particle is accepted
@@ -80,11 +93,13 @@ AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i) const
   }
 }
 
-//________________________________________________________________________
+/**
+ * Get next accepted particle in the container selected using the track cuts provided.
+ * @deprecated Old style iterator - for compatibility reasons, use AliParticleContainer::accept_iterator instead
+ * @return Next accepted particle (NULL if the end of the array is reached)
+ */
 AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle()
 {
-  //Get next accepted particle
-
   const Int_t n = GetNEntries();
   AliAODMCParticle *p = 0;
   do {
@@ -96,7 +111,11 @@ AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle()
   return p;
 }
 
-//________________________________________________________________________
+/**
+ * Get next particle in the container
+ * @deprecated Old style iterator - for compatibility reasons, use AliParticleContainer::all_iterator instead
+ * @return Next track in the container (NULL if end of the container is reached)
+ */
 AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
 {
   //Get next particle
@@ -112,105 +131,15 @@ AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
   return p;
 }
 
-//________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const
-{
-  if (part) {
-    if (mass < 0) mass = part->M();
-    mom.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, const AliVParticle* part) const
-{
-  return GetMomentum(mom,part,fMassHypothesis);
-}
-
-//________________________________________________________________________
-Bool_t AliMCParticleContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
-{
-  //Get momentum of the i^th particle in array
-
-  Double_t mass = fMassHypothesis;
-
-  if (i == -1) i = fCurrentID;
-  AliAODMCParticle *vp = GetMCParticle(i);
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliMCParticleContainer::GetNextMomentum(TLorentzVector &mom)
-{
-  //Get momentum of the next particle in array
-
-  Double_t mass = fMassHypothesis;
-
-  AliAODMCParticle *vp = GetNextMCParticle();
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliMCParticleContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
-{
-  //Get momentum of the i^th particle in array
-
-  Double_t mass = fMassHypothesis;
-
-  if (i == -1) i = fCurrentID;
-  AliAODMCParticle *vp = GetAcceptMCParticle(i);
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliMCParticleContainer::GetNextAcceptMomentum(TLorentzVector &mom)
-{
-  //Get momentum of the next accepted particle in array
-
-  Double_t mass = fMassHypothesis;
-
-  AliAODMCParticle *vp = GetNextAcceptMCParticle();
-  if (vp) {
-    if (mass < 0) mass = vp->M();
-    mom.SetPtEtaPhiM(vp->Pt(), vp->Eta(), vp->Phi(), mass);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
+/**
+ * Perform full MC particle selection for the particle vp, consisting
+ * of kinematical particle selection and MC-specific cuts
+ * @param[in] vp Particle to be checked
+ * @param[in] rejectionReason Bitmap encoding the reason why the
+ * particle was rejected. Note: The variable is not set to NULL
+ * inside this function before changing its value.
+ * @return True if the particle is accepted, false otherwise
+ */
 Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
@@ -218,19 +147,20 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-
-  Int_t id = fClArray->IndexOf(vp);
-  if (id >= 0) {
-    GetMomentum(mom, id);
-  }
-  else {
-    GetMomentum(mom, vp);
-  }
+  GetMomentumFromParticle(mom, vp);
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-//________________________________________________________________________
+/**
+ * Perform full MC particle selection for the particle vp, consisting
+ * of kinematical particle selection and MC-specific cuts
+ * @param[in] i Index of the particle to check
+ * @param[in] rejectionReason Bitmap encoding the reason why the
+ * particle was rejected. Note: The variable is not set to NULL
+ * inside this function before changing its value.
+ * @return True if the particle is accepted, false otherwise
+ */
 Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
@@ -243,7 +173,14 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-//________________________________________________________________________
+/**
+ * Apply MC particle cuts, e.g. primary particle selection.
+ * @param[in] vp Particle to be checked
+ * @param[in] rejectionReason Bitmap encoding the reason why the
+ * particle was rejected. Note: The variable is not set to NULL
+ * inside this function before changing its value.
+ * @return True if the particle is accepted, false otherwise
+ */
 Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, UInt_t &rejectionReason) const
 {
   // Return true if i^th particle is accepted.
@@ -257,17 +194,12 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
   return ApplyParticleCuts(vp, rejectionReason);
 }
 
-//________________________________________________________________________
-void AliMCParticleContainer::SetClassName(const char *clname)
-{
-  // Set the class name
-
-  TClass cls(clname);
-  if (cls.InheritsFrom("AliAODMCParticle")) fClassName = clname;
-  else AliError(Form("Unable to set class name %s for a AliMCParticleContainer, it must inherits from AliAODMCParticle!",clname));
-}
-
-//________________________________________________________________________
+/**
+ * Build title of the container consisting of the container name
+ * and a string encoding the minimum \f$ p_{t} \f$ cut applied
+ * in the kinematic particle selection.
+ * @return Title of the container
+ */
 const char* AliMCParticleContainer::GetTitle() const
 {
   static TString trackString;

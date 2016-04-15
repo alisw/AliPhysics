@@ -29,4 +29,5 @@
 #pragma link C++ class AliAnalysisHFCorrOnFlySim+;
 #pragma link C++ class AliHFCorrFitter+;
 #pragma link C++ class AliHFCorrFitSystematics+;
+#pragma link C++ class AliDhCorrelationExtraction+;
 #endif

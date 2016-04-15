@@ -120,6 +120,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliMCParticleContainer     *AddMCParticleContainer(const char *n);
   AliClusterContainer        *AddClusterContainer(const char *n);
   void                        AdoptParticleContainer(AliParticleContainer* cont)    { fParticleCollArray.Add(cont)                        ; }
+  void                        AdoptTrackContainer(AliTrackContainer* cont)          { AdoptParticleContainer(cont)                        ; }
+  void                        AdoptMCParticleContainer(AliMCParticleContainer* cont){ AdoptParticleContainer(cont)                        ; }
   void                        AdoptClusterContainer(AliClusterContainer* cont)      { fClusterCollArray.Add(cont)                         ; }
   AliParticleContainer       *GetParticleContainer(Int_t i=0)         const;
   AliParticleContainer       *GetParticleContainer(const char* name)  const;
@@ -164,7 +166,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
-  void                        SetGeneratePythiaInfoObject(Bool_t b)                 { fGeneratePythiaInfoObject = kTRUE                   ; }
+  void                        SetGeneratePythiaInfoObject(Bool_t b)                 { fGeneratePythiaInfoObject = b                       ; }
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }

@@ -154,10 +154,13 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Bool_t IsSideBand(AliAODv0 *c);
 	Bool_t IsSideBand(TLorentzVector *c);
   void SetSftPosR125(AliAODTrack *track,Double_t bfield,Double_t priVtx[3], Double_t *XSftR125);
+  void SetSftPosR(AliAODTrack *track,Double_t bfield,Double_t R, Double_t priVtx[3], Double_t *XSftR);
   Double_t dEtaSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t dPhiSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en);
   Double_t CalculatePhotonMass(AliAODTrack *track1, AliAODTrack *track2);
+  Double_t DeltaPhi(AliAODv0 *v0, AliAODTrack *trk);
+  Double_t DeltaEta(AliAODv0 *v0, AliAODTrack *trk);
 
  protected:
 	

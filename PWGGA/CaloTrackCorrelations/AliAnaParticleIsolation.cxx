@@ -954,12 +954,13 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     GetReader()->GetVertex(vertex);
   
-  Float_t ptcone = 0;
-  
+  Float_t ptcone        = 0;
+  Float_t distToTrigger = 0;
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
     AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
     calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
+    
     ptcone = fMomentum.Pt();
     
     fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
@@ -1085,10 +1086,13 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   Float_t  ptTrig = aodParticle->Pt();
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
   
+  Float_t pTtrack       = 0;
+  Float_t distToTrigger = 0;
   for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++)
   {
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
-    Float_t pTtrack = track->Pt();
+    
+    pTtrack       = track->Pt();
     
     fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
     fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());

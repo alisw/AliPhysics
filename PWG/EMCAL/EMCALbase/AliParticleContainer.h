@@ -60,7 +60,7 @@ class AliParticleContainer : public AliEmcalContainer {
   public:
     accept_iterator(const AliParticleContainer *cont, int startpos, bool forward  = true);
     accept_iterator(const accept_iterator &other);
-    ~accept_iterator() {}
+    virtual ~accept_iterator() {}
     accept_iterator &operator=(const accept_iterator &other);
     bool operator!=(const accept_iterator &other) const;
 
@@ -120,7 +120,7 @@ class AliParticleContainer : public AliEmcalContainer {
   public:
     all_iterator(const AliParticleContainer *cont, int startpos, bool forward  = true);
     all_iterator(const all_iterator &other);
-    ~all_iterator() {}
+    virtual ~all_iterator() {}
     all_iterator &operator=(const all_iterator &other);
     bool operator!=(const all_iterator &other) const;
 
@@ -162,16 +162,14 @@ class AliParticleContainer : public AliEmcalContainer {
   virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)             const;
   virtual AliVParticle       *GetNextAcceptParticle()                        ;
   virtual AliVParticle       *GetNextParticle()                              ;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part) const;
+  virtual Bool_t              GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;
+  virtual Bool_t              GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part) const;
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
   virtual Bool_t              GetNextAcceptMomentum(TLorentzVector &mom);
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
   Int_t                       GetNAcceptedParticles()                   const;
-
-  void                        SetClassName(const char *clname);
   void                        SetMinDistanceTPCSectorEdge(Double_t min)         { fMinDistanceTPCSectorEdge = min; }
   void                        SetCharge(Short_t c)                              { fCharge = c         ; }
   void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }

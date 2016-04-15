@@ -119,47 +119,28 @@ char* period = "b"
 	
 	if(period == "d"){
 		
-			//printf("======================================================================================\n ");
-			//printf("\n\n Running on 13d period!!!  \n\n  TPC Calibration is set !!! \n\n ");
-			//printf("======================================================================================\n ");
+			printf("======================================================================================\n ");
+			printf("\n\n Running on 13d period!!! WITHOUT CALIBRATION \n\n  TPC Calibration NOT set !!! \n\n ");
+			printf("======================================================================================\n ");
+		
+		
 		task->SetTPCCalibration();
 		task->SetTPC_mean_sigma(0.63, 1.17);
 		task->SetTPCcal_cut_min(-1);
 		task->SetTPCcal_cut_max(3);
 		
-	}	
+	}
 	
+	if(configIndex==300){
 	
-		//Calibration for other periods
-	if(configIndex==200){
-	
-		if(period == "e"){
-			
-				//printf("======================================================================================\n ");
-				//printf("\n\n Running on 13e period!!!  \n\n  TPC Calibration is set !!! \n\n ");
-				//printf("======================================================================================\n ");
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(-0.24, 0.92);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-			
-		}	
-	
-		if(period == "f"){
-			
-				//printf("======================================================================================\n ");
-				//printf("\n\n Running on 13f period!!!  \n\n  TPC Calibration is set !!! \n\n ");
-				//printf("======================================================================================\n ");
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(-0.27, 0.97);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-			
+		if(period == "e" || period == "f"){
+			task->SetTPCCalibration_eta();
 		}
-	 
-	 
-	}//close confiIndex==200
+	}
 	
+	
+	
+			
 		//if(period == "d3"){
 		//task->SetUseShowerShapeCut(kTRUE);
 		//printf("Shower Shape on for d3 because is for the trigger data correction!!! Cannot run as trigger because the corrections with weight\n");

@@ -26,30 +26,30 @@
 //no specification of the variable 'numberOfCuts' needed anymore.
 //***************************************************************************************
 
-class CutHandlerConv{
+class CutHandlerConvMaterial{
   public:
-    CutHandlerConv(Int_t nMax=10){
+    CutHandlerConvMaterial(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
       eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
     void AddCut(TString eventCut, TString photonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26  ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26  ) {cout << "ERROR in CutHandlerConvMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=""; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConvMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
     void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConvMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
       nCuts++;
       return;
@@ -57,10 +57,10 @@ class CutHandlerConv{
 
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
-    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
-    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
-    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
-    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvMaterial: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterial: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterial: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterial: GetClusterCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
@@ -72,13 +72,13 @@ class CutHandlerConv{
 
 
 
-void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,                    // change different set of cuts
-				Int_t 	isMC 				= kFALSE, 
-				TString periodname                      = "LHC10b",           // period name
-				TString periodNameV0Reader              = "",
-				TString periodNameAnchor                = "",
-				Bool_t 	enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
-				){
+void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,                  // change different set of cuts
+                                Int_t   isMC                    = 0,
+                                TString periodname              = "LHC10b",           // period name
+                                TString periodNameV0Reader      = "",
+                                TString periodNameAnchor        = "",
+                                Bool_t 	enableV0findingEffi     = kFALSE              // enables V0finding efficiency histograms
+      ){
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -138,9 +138,10 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
 
   
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
+  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+  AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+  if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetUseConstructGamma(enableConstructGamma);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -155,6 +156,7 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
+      fEventCuts->SetV0ReaderName(V0ReaderName);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -167,6 +169,7 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
       fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(IsHeavyIon);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -199,8 +202,9 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
   fMaterialHistos= new AliAnalysisTaskMaterialHistos(Form("MaterialHistos_%i",trainConfig));
   fMaterialHistos->SetIsMC(isMC);
   fMaterialHistos->SetIsHeavyIon(IsHeavyIon);
+  fMaterialHistos->SetV0ReaderName(V0ReaderName);
 
-  CutHandlerConv cuts;
+  CutHandlerConvMaterial cuts;
   if(trainConfig == 1){
     cuts.AddCut("00000103", "00000009266302004204400000");
     //     cuts.AddCut("00000103", "00000009286372004204400000");
@@ -217,7 +221,12 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     cuts.AddCut("00000103", "00000009217320005800000000");
     cuts.AddCut("00000103", "00000009395074005200000000");
     cuts.AddCut("00000103", "00000009395074005284400000");
-
+ } else if (trainConfig == 5) {
+    cuts.AddCut("00000103", "00000009266320005800000000");
+    cuts.AddCut("00000103", "00000009266320005854400000");
+    cuts.AddCut("00000103", "00000009366320005804400000");
+    cuts.AddCut("00000103", "00000009366300005804400000");
+    cuts.AddCut("00000103", "00000009366300005854400000");
     // Offline V0Finder is used
 
   } else  if(trainConfig == 101){
@@ -236,6 +245,12 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
     cuts.AddCut("00000103", "10000009217320005800000000");
     cuts.AddCut("00000103", "10000009395074005200000000");
     cuts.AddCut("00000103", "10000009395074005284400000");
+ } else if (trainConfig == 105) {
+    cuts.AddCut("00000103", "10000009266320005800000000");
+    cuts.AddCut("00000103", "10000009266320005854400000");
+    cuts.AddCut("00000103", "10000009366320005804400000");
+    cuts.AddCut("00000103", "10000009366300005804400000");
+    cuts.AddCut("00000103", "10000009366300005854400000");
 
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
@@ -263,7 +278,7 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
   
 	if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
-    cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConvMaterial! Returning..." << endl;
     cout << "****************************************************\n\n" << endl;
     return;
   }
@@ -280,19 +295,17 @@ void AddTask_MaterialHistos_pp(	Int_t   trainConfig                 = 1,        
   AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
-    analysisCuts[i]->SetFillCutHistograms("",kTRUE);
-    
-   }
-
-
-
+    analysisCuts[i]->SetFillCutHistograms("",kTRUE);  
+  }
 
   fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);   
   fMaterialHistos->SetConversionCutList(numberOfCuts,ConvCutList);

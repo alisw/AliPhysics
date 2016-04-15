@@ -34,6 +34,7 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TParticle.h>
+#include <TProfile.h>
 #include <TString.h>
 #include <TF1.h>
 #include <TTree.h>
@@ -87,9 +88,9 @@
 
 ClassImp(AliAnalysisTaskHFEMulti)
 
-    //____________________________________________________________
-    AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti():
-    AliAnalysisTaskSE("PID efficiency Analysis")
+//____________________________________________________________
+AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti():
+AliAnalysisTaskSE("PID efficiency Analysis")
     , fAODMCHeader(NULL)
     , fAODArrayMCInfo(NULL)
     , fQAlevel(0)
@@ -131,7 +132,10 @@ ClassImp(AliAnalysisTaskHFEMulti)
     , fMCQA(NULL)
     , fExtraCuts(NULL)
     , fBackgroundSubtraction(NULL)
+    , fMCNtrWeight(NULL)
     , fRefMulti(-1.)
+    , fMultiEstimatorSystem(kNtrk10)
+    , fPIDResponse(NULL)
     , fQA(NULL)
     , fOutput(NULL)
     , fParams(NULL)
@@ -148,7 +152,7 @@ ClassImp(AliAnalysisTaskHFEMulti)
     memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
     memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
     memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
-    memset(fMultEstimatorAvg,0,sizeof(TProfile *) *2);
+    memset(fMultEstimatorAvg,0,sizeof(TProfile *) *4);
 
     SetppAnalysis();
 }
@@ -197,7 +201,10 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const char * name):
     , fMCQA(NULL)
     , fExtraCuts(NULL)
     , fBackgroundSubtraction(NULL)
+    , fMCNtrWeight(NULL)
     , fRefMulti(-1.)
+    , fMultiEstimatorSystem(kNtrk10)
+    , fPIDResponse(NULL)
     , fQA(NULL)
     , fOutput(NULL)
     , fParams(NULL)
@@ -223,7 +230,7 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const char * name):
     memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
     memset(&fisppMultiBin, kFALSE, sizeof(fisppMultiBin));
     memset(fCentralityLimits, 0, sizeof(Float_t) * 12);
-    memset(fMultEstimatorAvg,0,sizeof(TProfile *) *2);
+    memset(fMultEstimatorAvg,0,sizeof(TProfile *) *4);
 
     SetppAnalysis();
 }
@@ -272,7 +279,10 @@ AliAnalysisTaskHFEMulti::AliAnalysisTaskHFEMulti(const AliAnalysisTaskHFEMulti &
     , fMCQA(NULL)
     , fExtraCuts(NULL)
     , fBackgroundSubtraction(NULL)
+    , fMCNtrWeight(ref.fMCNtrWeight)
     , fRefMulti(-1.)
+    , fMultiEstimatorSystem(kNtrk10)
+    , fPIDResponse(ref.fPIDResponse)
     , fQA(NULL)
     , fOutput(NULL)
     , fParams(NULL)
@@ -344,7 +354,10 @@ void AliAnalysisTaskHFEMulti::Copy(TObject &o) const {
     target.fMCQA = fMCQA;
     target.fExtraCuts = fExtraCuts;
     target.fBackgroundSubtraction = fBackgroundSubtraction;
+    target.fMCNtrWeight = fMCNtrWeight;
     target.fRefMulti = fRefMulti;
+    target.fMultiEstimatorSystem = fMultiEstimatorSystem;
+    target.fPIDResponse = fPIDResponse;
     target.fQA = fQA;
     target.fOutput = fOutput;
     target.fParams = fParams;
@@ -414,6 +427,9 @@ void AliAnalysisTaskHFEMulti::UserCreateOutputObjects(){
     printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
     printf("MC Data available %s\n", HasMCData() ? "Yes" : "No");
 
+    // Initialize PIDResponse handler
+    fPIDResponse = dynamic_cast<AliInputEventHandler *>(inputHandler)->GetPIDResponse();
+
     // First Part: Make QA histograms
     fQACollection = new AliHFEcollection("TaskQA", "QA histos from the Electron Task");
     //fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
@@ -421,6 +437,9 @@ void AliAnalysisTaskHFEMulti::UserCreateOutputObjects(){
     fQACollection->CreateTH2F("NtrVsZ","Ntracklets vs Z vertex",400,-10,10,200,0,200);
     fQACollection->CreateTH2F("NtrCorrVsZ","Ntracklets after correction vs Z vertex",400,-10,10,200,0,200);
     fQACollection->CreateTH2F("NchCorrVsNtr","Ntracklets after correction vs Ncharged;N_{tr}^{cor};N_{ch}",200,0,200,300,0,300);
+    fQACollection->CreateTH2F("NtrCorrVsNch","Ntracklets after correction vs Ncharged;N_{ch};N_{tr}^{cor}",300,0,300,200,0,200);
+    fQACollection->CreateTH2F("VZEROVsZ","VZERO vs Z vertex",400,-10,10,500,0,1000);
+    fQACollection->CreateTH2F("VZEROCorrVsZ","VZERO after correction vs Z vertex",400,-10,10,500,0,1000);
     fQA->Add(fQACollection);
 
     // Initialize PID
@@ -459,6 +478,7 @@ void AliAnalysisTaskHFEMulti::UserCreateOutputObjects(){
     }
     if(IsAODanalysis()) fCuts->SetAOD();
     // Make clone for V0 tagging step
+    fCuts->SetPIDResponse(fPIDResponse);
     fCuts->Initialize(fCFM);
     if(fCuts->IsQAOn()) fQA->Add(fCuts->GetQAhistograms());
     fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
@@ -586,7 +606,7 @@ void AliAnalysisTaskHFEMulti::UserExec(Option_t *){
         ProcessMC();  // Run the MC loop + MC QA in case MC Data are available
     }
 
-    AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+    AliPIDResponse *pidResponse = fPIDResponse;
     if(!pidResponse){
         AliDebug(1, "Using default PID Response");
         pidResponse = AliHFEtools::GetDefaultPID(HasMCData(), fInputEvent->IsA() == AliESDEvent::Class());
@@ -816,6 +836,9 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
         fQACollection->Fill("NtrVsZ", eventContainer[0], static_cast<Double_t>(fSPDtracklets));
         fQACollection->Fill("NtrCorrVsZ", eventContainer[0], fSPDtrackletsCorr);
         fQACollection->Fill("NchCorrVsNtr",fSPDtrackletsCorr, static_cast<Double_t>(nch));
+        fQACollection->Fill("NtrCorrVsNch",static_cast<Double_t>(nch),fSPDtrackletsCorr);
+        fQACollection->Fill("VZEROVsZ", eventContainer[0], static_cast<Double_t>(fSPDtracklets));
+        fQACollection->Fill("VZEROCorrVsZ", eventContainer[0], fSPDtrackletsCorr);
     }
 
     if(!fExtraCuts){
@@ -1341,11 +1364,21 @@ Bool_t AliAnalysisTaskHFEMulti::ReadCentrality() {
     fSPDtracklets=GetITSMultiplicity(fInputEvent);
     if(IspPb() && fRefMulti>0){
         Int_t period = (fInputEvent->GetRunNumber() < 195484)?0:1; //TODO get correct period with nicer function
-        fSPDtrackletsCorr = GetCorrectedNtracklets(fMultEstimatorAvg[period], fSPDtracklets, vtx->GetZ(), fRefMulti); 
-        Int_t multiplicityLimits[8] = {0, 1, 22, 29, 35, 44, 70, 200};
-        //Int_t multiplicityLimits[11] = {1, 8, 15, 20, 25, 30, 40, 50, 70, 100, 200};
-        //Int_t multiplicityLimits[10] = {1, 8, 15, 20, 25, 31, 40, 55, 80, 200};
+        const Int_t local_mbins = 8;
+        Int_t multiplicityLimits[local_mbins] = {0, 1, 22, 29, 35, 44, 70, 200};
 
+        if(fMultiEstimatorSystem == kVZERO){
+            period += 2;
+            Int_t tmpMulti[local_mbins] = {0, 91, 133, 173, 227, 789, 800,801};
+            memcpy(multiplicityLimits,tmpMulti,sizeof(multiplicityLimits));
+            fSPDtracklets = GetVZEROMultiplicity(fInputEvent);
+        }
+        fSPDtrackletsCorr = GetCorrectedNtracklets(fMultEstimatorAvg[period], fSPDtracklets, vtx->GetZ(), fRefMulti); 
+        //Weight MC Ntr for difference to data
+        if(HasMCData() && fMCNtrWeight){
+            //Double_t loc_weight = fMCNtrWeight->GetBinContent(fMCNtrWeight->FindBin(fSPDtrackletsCorr));
+            //fSPDtrackletsCorr *= loc_weight;
+        }
 
         if(fSPDtrackletsCorr < multiplicityLimits[0]){
             //store in underflow bin
@@ -1353,7 +1386,7 @@ Bool_t AliAnalysisTaskHFEMulti::ReadCentrality() {
             return kTRUE;
         }
 
-        for(Int_t ibin = 0; ibin < 7; ibin++){  
+        for(Int_t ibin = 0; ibin < local_mbins-1; ibin++){  
             if(fSPDtrackletsCorr >= multiplicityLimits[ibin] && fSPDtrackletsCorr < multiplicityLimits[ibin + 1]){
                 bin = ibin;
                 break;
@@ -1391,6 +1424,21 @@ Int_t AliAnalysisTaskHFEMulti::GetITSMultiplicity(AliVEvent *ev){
     } else return -1;
 
     return nAcc;
+}
+
+
+//___________________________________________________
+Int_t AliAnalysisTaskHFEMulti::GetVZEROMultiplicity(AliVEvent *ev){
+    //
+    // Definition of the Multiplicity according to the D2H group (Zaida)
+    //
+    if (ev->IsA() == AliAODEvent::Class()) {
+        AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(ev)->GetVZEROData());
+        return static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    } else if (ev->IsA() == AliESDEvent::Class()) {
+        return -1;
+    } else return -1;
+
 }
 
 //___________________________________________________

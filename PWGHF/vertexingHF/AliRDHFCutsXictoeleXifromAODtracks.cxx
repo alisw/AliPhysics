@@ -1281,3 +1281,32 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TLorentzVector* vtrk, TLore
   
   return returnvalue;
 }
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::DeltaPhi(AliAODcascade *casc, AliAODTrack *trk)
+{
+  //
+  // Calculate Delta phi
+  //
+  Double_t phiv = atan2(casc->MomXiY(),casc->MomXiX());
+  if(phiv<-M_PI) phiv += 2 *M_PI;
+  if(phiv> M_PI) phiv -= 2 *M_PI;
+  Double_t phie = trk->Phi();
+  if(phie<-M_PI) phie += 2 *M_PI;
+  if(phie> M_PI) phie -= 2 *M_PI;
+  Double_t dphi = phiv - phie;
+  if(dphi<-M_PI) dphi += 2 *M_PI;
+  if(dphi> M_PI) dphi -= 2 *M_PI;
+  return dphi;
+}
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::DeltaEta(AliAODcascade *casc, AliAODTrack *trk)
+{
+  //
+  // Calculate Delta Eta
+  //
+  Double_t ptotxi = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)+pow(casc->MomXiZ(),2));
+	Double_t etav = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
+  Double_t etae = trk->Eta();
+  Double_t deta = etav - etae;
+  return deta;
+}

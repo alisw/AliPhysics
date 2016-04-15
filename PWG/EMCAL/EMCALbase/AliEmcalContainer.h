@@ -159,6 +159,7 @@ class AliEmcalContainer : public TObject {
   void                        SetEtaLimits(Double_t min, Double_t max)  { fMaxEta = max ; fMinEta = min ; }
   void                        SetPhiLimits(Double_t min, Double_t max)  { fMaxPhi = max ; fMinPhi = min ; }
   void                        SetMassHypothesis(Double_t m)             { fMassHypothesis         = m   ; }
+  void                        SetClassName(const char *clname);
 
   const char*                 GetName()                       const { return fName.Data()               ; }
   void                        SetName(const char* n)                { fName = n                         ; }
@@ -171,7 +172,7 @@ class AliEmcalContainer : public TObject {
  protected:
   TString                     fName;                    ///< object name
   TString                     fClArrayName;             ///< name of branch
-  TString                     fClassName;               ///< name of the class in the TClonesArray
+  TString                     fBaseClassName;           ///< name of the base class that this container can handle
   Bool_t                      fIsParticleLevel;         ///< whether or not it is a particle level object collection
   UInt_t                      fBitMap;                  ///< bitmap mask
   Double_t                    fMinPt;                   ///< Min. cut on particle \f$ p_{t} \f$
@@ -192,11 +193,13 @@ class AliEmcalContainer : public TObject {
   TClass                     *fLoadedClass;             //!<! Class of the objects contained in the TClonesArray
 
  private:
+  TString                     fClassName;               ///< name of the class in the TClonesArray
+
   AliEmcalContainer(const AliEmcalContainer& obj); // copy constructor
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalContainer,7);
+  ClassDef(AliEmcalContainer,8);
   /// \endcond
 };
 #endif

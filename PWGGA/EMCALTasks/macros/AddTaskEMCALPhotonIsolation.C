@@ -35,7 +35,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  )
 {
 
-  printf("Preparing neutral cluster analysis\n");
+  Printf("Preparing neutral cluster analysis\n");
   /*  // #### Detect the demanded trigger with its readable name
    TString triggerName(Form("Trigger_%i", trigger));
    if (trigger == AliVEvent::kAnyINT)
@@ -117,7 +117,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
     TString strTrackCuts(trackCutsAna);
     strTrackCuts.ToLower();
-
 
     TString runPeriod(period.Data());
     runPeriod.ToLower();
@@ -207,12 +206,15 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
  TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
  cout<<"name des containers  "<<name.Data()<<endl;
-    AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
+ AliTrackContainer *trackCont  = task->AddTrackContainer(ntracks);
  //  AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
  // if (clusterCont) clusterCont->SetClusPtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
+//  task->GetTrackContainer(0)->SetClassName("AliAODTrack");
+//  task->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
+  
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
     // #### Add analysis task
   manager->AddTask(task);

@@ -15,6 +15,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TF1;
+class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -43,6 +44,7 @@ class AliAnalysisTaskADQA : public AliAnalysisTaskSE {
 		      const char* xLabel = NULL, const char* yLabel = NULL, const char* zLabel = NULL);
 
 private:
+  AliAnalysisUtils* fAnalysisUtils;
 
   TList       *fListHist;                       //! List of histograms
   /*From ESD*/
@@ -101,13 +103,33 @@ private:
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
-  TH3F	      *fHistTimeVsChargePerPM_UnCorr;  
+  TH3F	      *fHistTimeVsChargePerPM_UnCorr;
+  
+  /*Aging monitoring*/
+  TH3F	      *fHistTriggerChargePerPMPerV0Flag;
+  TH3F	      *fHistTailChargePerPMPerV0Flag;
+  TH3F	      *fHistIntegratedChargePerPMPerV0Flag;
+  
+  TH2F	      *fHistTriggerChargePerChannel;
+  TH2F	      *fHistTriggerChargePerChannel_PF;
+  TH2F	      *fHistTriggerChargePerChannel_TVX;
+  TH2F	      *fHistTriggerChargePerChannel_PF_TVX;
+  
+  TH2F	      *fHistTailChargePerChannel;
+  TH2F	      *fHistTailChargePerChannel_PF;
+  TH2F	      *fHistTailChargePerChannel_TVX;
+  TH2F	      *fHistTailChargePerChannel_PF_TVX;  
+  
+  TH2F        *fHistIntegratedChargePerChannel; 
+  TH2F        *fHistIntegratedChargePerChannel_PF;
+  TH2F        *fHistIntegratedChargePerChannel_TVX;  
+  TH2F        *fHistIntegratedChargePerChannel_PF_TVX;  
   
    
   AliAnalysisTaskADQA(const AliAnalysisTaskADQA&);            // not implemented
   AliAnalysisTaskADQA& operator=(const AliAnalysisTaskADQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADQA, 4);
+  ClassDef(AliAnalysisTaskADQA, 5);
 };
 
 #endif

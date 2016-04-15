@@ -385,6 +385,41 @@ Int_t AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effMapList, const ch
 }
 
 //________________________________________________________________________
+Int_t AliMTRChEffAnalysis::CompareEfficiencyMethods ( const char* source, const char* opt, const char* canvasNameSuffix ) const
+{
+  /// Compare efficiency methods
+  if ( ! fConditions ) {
+    AliWarning("No condition found! Please specify the default efficiency condition with SetEffConditions and then add additional tests with AddSystematicCondition");
+    return -1;
+  }
+
+  AliTrigChEffOutput trigOut(source);
+
+  Int_t nConditions = fConditions->GetEntriesFast();
+
+  TObjArray condTitle(nConditions);
+  condTitle.SetOwner();
+  GetShortConditionTitles(&trigOut,condTitle);
+
+  TString titles = "";
+  TObjArray effMapList;
+  effMapList.SetOwner();
+
+  for ( Int_t icond=0; icond<nConditions; icond++ ) {
+    TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
+
+    TList* effList = GetEffHistoList(&trigOut, condition);
+    AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(effList);
+    effMapList.Add(effMap);
+    titles += Form("%s,",condTitle.At(icond)->GetName());
+  }
+
+  titles.Remove(TString::kTrailing,',');
+  return CompareEfficiencies(&effMapList, titles, opt, canvasNameSuffix);
+}
+
+
+//________________________________________________________________________
 void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
 {
   if ( ! HasMergedResults() ) return;
@@ -758,8 +793,6 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
 
   Int_t nConditions = fConditions->GetEntriesFast();
 
-
-  TObjArray* refCondition = 0x0;
   TObjArray condTitle(nConditions);
   condTitle.SetOwner();
 
@@ -773,28 +806,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
     imerged++;
 
     // Get meaningful short titles for each systematic
-    if ( imerged == 0 ) {
-      for ( Int_t icond=0; icond<nConditions; icond++ ) {
-        TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
-        TString title = "";
-        if ( icond == 0 ) {
-          refCondition = condition;
-          title = condition->GetName();
-        }
-        for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
-          TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
-          TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
-          if ( currCond == refCond ) continue;
-          TString add = currCond;
-          if ( ic == 3 ) add = trigOut->GetHistoName(-1,-1,-1,currCond.Atoi(),-1,-1);
-          else if ( ic == 4 ) add = trigOut->GetHistoName(-1,-1,-1,-1,currCond.Atoi(),-1);
-          else if ( ic == 5 ) add = trigOut->GetHistoName(-1,-1,-1,-1,-1,currCond.Atoi());
-          title += Form("_%s",add.Data());
-        }
-        title.Remove(TString::kLeading,'_');
-        condTitle.AddAt(new TObjString(title),icond);
-      }
-    }
+    if ( imerged == 0 ) GetShortConditionTitles(trigOut,condTitle);
 
     TArrayI isEmpty(nConditions);
 
@@ -1076,7 +1088,7 @@ TH1* AliMTRChEffAnalysis::GetHisto ( TList* effHistoList, Int_t itype, Int_t ico
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Bool_t perRPC, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
+TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, Bool_t perRPC, TArrayI* forcedChanges, Double_t minEff, Double_t maxEff )
 {
   /// Get run ranges with an efficiency compatible with constant
 
@@ -1107,6 +1119,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
         TString canName = perRPC ? Form("testRanges_ch%i",11+ich) : Form("testRanges_RPC%i",irpc);
         can = new TCanvas(canName.Data(),canName.Data(),10*ich,10*ich,1200,800);
         can->Divide(6,3,0,0);
+        can->SetMargin(0.,0.,0.,0.);
         canList.AddAt(can,ican);
       }
 
@@ -1114,12 +1127,21 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
         Int_t currDE = ( perRPC ) ? idetel : boards[idetel];
 //      for ( Int_t icount=0; icount<2; icount++ ) {
         TGraphAsymmErrors* trendGraph = GetTrendEff(itype,icount,ich,currDE);
-        TArrayI range = GetHomogeneusRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
+        TArrayI range = GetHomogeneousRanges(trendGraph,chi2Cut,maxNRanges,minEffVariation,forcedChanges, kTRUE);
         trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
 
         can->cd(idetel+1);
         gPad->SetTicks(1,1);
+        gPad->SetMargin(0.08,0.,0.08,0.);
         TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
+
+        TString legendName = Form("%s_%i",can->GetName(),currDE);
+        TLegend* leg = static_cast<TLegend*>(gPad->GetListOfPrimitives()->FindObject(legendName.Data()));
+        if ( ! leg ) {
+          leg = new TLegend(0.2,0.15,0.8,0.4);
+          leg->SetHeader(Form("%s %i",perRPC?"RPC":"Board",currDE));
+          leg->SetName(legendName.Data());
+        }
 
         if ( ! perRPC ) {
           Int_t icolor = ich+1;
@@ -1133,8 +1155,11 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
           }
         }
         trendGraph->GetXaxis()->SetLabelSize(0.07);
+        trendGraph->SetTitle("");
 
         trendGraph->Draw(drawOpt.Data());
+        leg->AddEntry(trendGraph,Form("Chamber %i",11+ich),"lp");
+        leg->Draw();
         for ( Int_t ichange=2; ichange<range.GetSize(); ichange++ ) {
           // Store only the run when the change applies
           if ( ichange%2 == 1 ) continue;
@@ -1207,7 +1232,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( Double_t chi2Cut, Int_t maxNR
 }
 
 //________________________________________________________________________
-TArrayI AliMTRChEffAnalysis::GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Bool_t returnIndex )
+TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut, Int_t maxNRanges, Double_t minEffVariation, TArrayI* forcedChanges, Bool_t returnIndex )
 {
   /// Get run ranges with an efficiency compatible with constant
 
@@ -1416,6 +1441,39 @@ TList* AliMTRChEffAnalysis::GetRunList ( const char* runList ) const
   }
   rl->Sort();
   return rl;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::GetShortConditionTitles ( AliTrigChEffOutput* trigOut, TObjArray& condTitles ) const
+{
+  /// Get short condition titles
+
+  Int_t nConditions = fConditions->GetEntriesFast();
+  TObjArray* refCondition = 0x0;
+
+  for ( Int_t icond=0; icond<nConditions; icond++ ) {
+    TObjArray* condition = static_cast<TObjArray*>(fConditions->UncheckedAt(icond));
+    TString title = "";
+    if ( icond == 0 ) {
+      refCondition = condition;
+      title = condition->GetName();
+    }
+    for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
+      TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
+      TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
+      if ( currCond == refCond ) continue;
+      TString add = currCond;
+      if ( ic == 3 ) add = trigOut->GetHistoName(-1,-1,-1,currCond.Atoi(),-1,-1);
+      else if ( ic == 4 ) add = trigOut->GetHistoName(-1,-1,-1,-1,currCond.Atoi(),-1);
+      else if ( ic == 5 ) add = trigOut->GetHistoName(-1,-1,-1,-1,-1,currCond.Atoi());
+      title += Form("_%s",add.Data());
+    }
+    title.Remove(TString::kLeading,'_');
+    title.ReplaceAll(",","|");
+    condTitles.AddAt(new TObjString(title),icond);
+  }
+
+  return kTRUE;
 }
 
 //________________________________________________________________________

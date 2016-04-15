@@ -11,6 +11,7 @@
 
 class TString;
 class TList;
+class TTree;
 class TH1F;
 class TH2F;
 class TH3F;
@@ -101,7 +102,15 @@ private:
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
-  /*TH3F	      *fHistTimeVsChargePerPM_UnCorr; */
+  
+  TH3F	      *fHistTimeVsChargePerPM_UnCorr;
+  /*TH3F	      *fHistTimeVsChargePerPM_UnCorr_Cut;
+  TH3F	      *fHistTimePairCorrelation;
+  TH3F	      *fHistTimePairCorrelation_Cut; */
+  TTree	      *fTimeSlewingTree;
+  UShort_t    fAdc[16];
+  UShort_t    fAdcTail[16]; 
+  UShort_t    fTdc[16];
   
   TH3F	      *fHistChargeTriggerPerPMPerV0Flag;
   TH3F	      *fHistChargeTailPerPMPerV0Flag;

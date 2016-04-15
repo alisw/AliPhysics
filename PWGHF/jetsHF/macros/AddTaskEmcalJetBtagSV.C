@@ -1,8 +1,8 @@
-AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   = "Tracks",
+AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   = "tracks",
                                                      const char *jetcontname   = "Jets",
-                                                     const char *mctrkcontname = "MCParticles",
+                                                     const char *mctrkcontname = "mcparticles",
                                                      const char *mcjetcontname = "MCJets",
-                                                     Double_t jetRadius = 0.2,
+                                                     Double_t jetRadius = 0.4,
                                                      const char *type  = "TPC",
                                                      TString fileout   = "standard",
                                                      Bool_t corrMode   =  kFALSE,
@@ -27,19 +27,23 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
     ::Error("AddTaskEmcalJetBtagSV", "No analysis manager to connect to.");
     return NULL;
   }
-
+  if (!mgr->GetInputEventHandler())
+  {
+    ::Error("AddTaskEmcalJetBtagSV", "This task requires an input event handler");
+    return NULL;
+  }
   TString name(taskname);
   // Configure analysis task
-  AliAnalysisTaskEmcalJetBtagSV *hfTask = new AliAnalysisTaskEmcalJetBtagSV(name);
-
-  AliParticleContainer *trkCont  = hfTask->AddParticleContainer(trkcontname);
+  AliAnalysisTaskEmcalJetBtagSV2 *hfTask = new AliAnalysisTaskEmcalJetBtagSV2(name);
+ 
+  AliParticleContainer *trkCont  = hfTask->AddTrackContainer(trkcontname);//for data, and reco MC
 
   TString strType(type);
   AliJetContainer *jetCont = hfTask->AddJetContainer(jetcontname, strType, jetRadius);
-
+  jetCont->ConnectParticleContainer(trkCont);
   if (corrMode) {
 
-    AliParticleContainer *mctrackCont  = hfTask->AddParticleContainer(mctrkcontname);
+    AliParticleContainer *mctrackCont  = hfTask->AddMCParticleContainer(mctrkcontname);//for MC particle level
     
     TString strType(type);
     AliJetContainer *mcjetCont = hfTask->AddJetContainer(mcjetcontname, strType, jetRadius);
@@ -53,6 +57,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
   hfTask->SetCheckMCCrossSection(checkXsec);
   if (useWeight) hfTask->SetUseWeightOn();
   hfTask->SetGenNamePattern(patt);
+  //  hfTask->SetDebugLevel(10);
   hfTask->SetDebugLevel(debug);
 
   hfTask->SetJetContName(jetcontname);
@@ -95,7 +100,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
     DefineCutsTagger(tagger);
   }
 
-  // Add task to manager
+  // // Add task to manager
   hfTask->SetTagger(tagger);
   mgr->AddTask(hfTask);
 
@@ -103,7 +108,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
   AliAnalysisDataContainer *cInput =   mgr->GetCommonInputContainer();
   mgr->ConnectInput(hfTask, 0, cInput);
 
-  // All containers in a list
+  //All containers in a list
   AliAnalysisDataContainer *cOutput = mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
   mgr->ConnectOutput(hfTask, 1, cOutput);
 
@@ -112,7 +117,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
 }
 
 //------------------------------------------------------
-Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task, 
+Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV2 *task, 
                       Float_t minC, Float_t maxC, Bool_t corrMode) 
 {
 
@@ -121,7 +126,7 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task,
     // jets
     cuts->SetJetRadius(0.4); // this cut does nothing
     cuts->SetMaxEtaJet(0.5);//0.9-R
-    cuts->SetMinPtJet(5.);
+    cuts->SetMinPtJet(5.);//
     cuts->SetMaxPtJet(100.);
     // Set centrality
     cuts->SetMinCentrality(minC);

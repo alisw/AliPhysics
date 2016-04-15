@@ -642,6 +642,10 @@ private:
   /// pT trig distribution for each pT sum in cone bin for MC tag
   TH1F **       fhSumPtConeBinMC;                        //![fNBkgBin*fgkNmcTypes]
   
+  TH2F *        fhTrackResolution;                       //!<! track resolution sigma pT vs pT, away side, ESDs.
+  
+  TH2F *        fhTrackResolutionUE;                     //!<! track resolution sigma pT vs pT, UE side, ESDs.
+  
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
   
@@ -649,7 +653,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,35) ;
+  ClassDef(AliAnaParticleHadronCorrelation,36) ;
   /// \endcond
   
 } ;

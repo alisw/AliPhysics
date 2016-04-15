@@ -31,7 +31,7 @@
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
-#include "AliFemtoAnalysisAzimuthalPbPb2Order.h"
+//#include "AliFemtoAnalysisAzimuthalPbPb3rdOrder.h"
 #include "AliFemtoCorrFctn3DSpherical.h"
 #include "AliFemtoChi2CorrFctn.h"
 #include "AliFemtoCorrFctnTPCNcls.h"
@@ -52,14 +52,53 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis() {
+AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) {
     
-    char *nametest="sysstudy";
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
     
-    int runmults[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
-    //int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+    
+    
+    
+    if (CentL==0 && CentH==5) {
+        int runmults[10] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    }
+    if (CentL==5 && CentH==10) {
+        int runmults[10] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+    }
+    if (CentL==10 && CentH==20) {
+        int runmults[10] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
+    }
+    if (CentL==20 && CentH==30) {
+        int runmults[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+    }
+    if (CentL==30 && CentH==40) {
+        int runmults[10] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+    }
+    if (CentL==40 && CentH==50 ) {
+        int runmults[10] = {0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
+    }
+    
+    
+    
+    int runktdeprange[4]={1,1,1,1};
+    
+    
+    if(kTRange==1){
+        int runktdeprange[4]={1,0,0,0};
+    }
+    if(kTRange==2){
+        int runktdeprange[4]={1,1,0,0};
+    }
+    if(kTRange==3){
+        int runktdeprange[4]={1,1,1,0};
+    }
+    if(kTRange==4){
+        int runktdeprange[4]={1,1,1,1};
+    }
+    char *nametest="sysstudy";
+    double PionMass = 0.13956995;
+    double KaonMass = 0.493677;
     
     int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 600, 800, 900, 990};
     
@@ -74,7 +113,6 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     
     
     int runktdep = 1;
-    int runktdeprange[4]={1,0,0,0};
     double ktrng[5] = {0.2, 0.3, 0.4, 0.5, 0.7};
     //int phirange[7] = {-15, 15, 45, 75, 105, 135, 165};
     int phirange[10] = {-15, 5, 25,45,65,85,105,125,145,165};
@@ -88,7 +126,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     Reader->SetFilterBit(7);
     Reader->SetEPVZERO(kFALSE); //keep this line it fills the whole histogram of event plane
     //Reader->SetCentralityPreSelection(0.001, 110);//was 0.001
-    Reader->SetCentralityPreSelection(095, 310);//was 0.001
+    Reader->SetCentralityPreSelection(0.001, 510);//was 0.001
     
     
     AliFemtoManager* Manager=new AliFemtoManager();
@@ -109,33 +147,31 @@ AliFemtoManager* ConfigFemtoAnalysis() {
      */
     
     //including delta eta delta phi star cuts
-    AliFemtoAnalysisAzimuthalPbPb2Order		*ana[2][10][5];				//[charge][mult][cuts]
-    AliFemtoBasicEventCut				*mecetaphitpc[2][10][5];	//[charge][mult][cuts]
-    AliFemtoCutMonitorEventMult			*cutPassEvMetaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoCutMonitorEventMult			*cutFailEvMetaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoCutMonitorEventVertex		*cutPassEvVetaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoCutMonitorEventVertex		*cutFailEvVetaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoESDTrackCut					*dtc1etaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoESDTrackCut					*dtc2etaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[2][10][5];//[charge][mult][cuts]
-    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpcRD[2][10][5];//[charge][mult][cuts]
+    AliFemtoAnalysisAzimuthalPbPb2Order		*ana[2][8][2];				//[charge][mult][cuts]
+    AliFemtoBasicEventCut				*mecetaphitpc[2][8][2];	//[charge][mult][cuts]
+    AliFemtoCutMonitorEventMult			*cutPassEvMetaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoCutMonitorEventMult			*cutFailEvMetaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoCutMonitorEventVertex		*cutPassEvVetaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoCutMonitorEventVertex		*cutFailEvVetaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoESDTrackCut					*dtc1etaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoESDTrackCut					*dtc2etaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[2][8][2];//[charge][mult][cuts]
+    AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpcRD[2][8][2];//[charge][mult][cuts]
     
     
     //AliFemtoKTPairCut             *ktpaircut[2][10][5][4][9];		//[charge][mult][cuts][ktrange][phibins]
     //AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][10][5][4][9];	//[charge][mult][cuts][ktrange][phibins]
-    AliFemtoKTPairCut             *ktpaircut[2][10][5][4][9];		//[charge][mult][cuts][ktrange][phibins]
-    AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][10][5][4][9];	//[charge][mult][cuts][ktrange][phibins]
-    AliFemtoKTPairCut             *ktpaircut2[2][10][5][4][10];		//[charge][mult][cuts][ktrange][phibins]
-    AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc2[2][10][5][4][10];	//[charge][mult][cuts][ktrange][phibins]
+    AliFemtoKTPairCut             *ktpaircut[2][8][2][4][10];		//[charge][mult][cuts][ktrange][phibins]
+    AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][8][2][4][10];	//[charge][mult][cuts][ktrange][phibins]
     
-    for (int icuts=0; icuts<5; icuts++) {
+    for (int icuts=0; icuts<2; icuts++) {
         if (rundetadphistar[icuts]) {
-            for (int imult=0; imult<10; imult++) {
+            for (int imult=0; imult<8; imult++) {
                 if (runmults[imult]) {
                     for (int ichg=0; ichg<2; ichg++) {
                         if (runch[ichg]) {
                             
-                            ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],9);
+                            ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],10);
                             //ana[ichg][imult][icuts] = new AliFemtoAnalysisAzimuthalPbPb2Order(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],6);
                             
                             ana[ichg][imult][icuts]->SetNumEventsToMix(3);
@@ -164,7 +200,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                                 dtc1etaphitpc[ichg][imult][icuts]->SetCharge(-1.0);
                             
                             dtc1etaphitpc[ichg][imult][icuts]->SetPt(0.15,1.5);
-                            dtc1etaphitpc[ichg][imult][icuts]->SetEta(-0.8,0.8);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetEta(-1,1);
+                            dtc1etaphitpc[ichg][imult][icuts]->SetRapidity(-0.8,0.8);
                             dtc1etaphitpc[ichg][imult][icuts]->SetMass(PionMass);
                             
                             dtc1etaphitpc[ichg][imult][icuts]->SetMostProbablePion();
@@ -258,37 +295,20 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                                 if (runktdeprange[ikt]) {
                                     for (int iphi=0; iphi<10; iphi++){
                                         
-                                        if (iphi!=9) {
-                                            
-                                            ktpaircut[ichg][imult][icuts][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
-                                            ktpaircut[ichg][imult][icuts][ikt][iphi]->SetPhiRange(phirange[iphi],phirange[iphi+1]);
-                                            
-                                            cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),20,-0.2,0.2);//was 30 bins
-                                            cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][icuts][ikt][iphi]);
-                                            ana[ichg][imult][icuts]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]);
-                                        }
                                         
-                                        ktpaircut2[ichg][imult][icuts][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
-                                        ktpaircut2[ichg][imult][icuts][ikt][iphi]->SetPhiRange(phirange2[iphi],phirange2[iphi+1]);
+                                        ktpaircut[ichg][imult][icuts][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
+                                        ktpaircut[ichg][imult][icuts][ikt][iphi]->SetPhiRange(phirange2[iphi],phirange2[iphi+1]);
                                         
+                                        cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),56,-0.14,0.14);//was 30 bins
+                                        cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][icuts][ikt][iphi]);
+                                        ana[ichg][imult][icuts]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][icuts][ikt][iphi]);
                                         
-                                        cq3dlcmskttpc2[ichg][imult][icuts][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i_%s2", nametest,ichg, imult, ikt, iphi,detadphistar[icuts]),20,-0.2,0.2);//was 30 bins
-                                        cq3dlcmskttpc2[ichg][imult][icuts][ikt][iphi]->SetPairSelectionCut(ktpaircut2[ichg][imult][icuts][ikt][iphi]);
-                                        ana[ichg][imult][icuts]->AddCorrFctn(cq3dlcmskttpc2[ichg][imult][icuts][ikt][iphi]);
-                                        
-                                        // 		cylmkt[ich][imult][ikt][iphi] = new AliFemtoCorrFctnDirectYlm(Form("cylm%imult%ikT%iRP%i", ich, imult, ikt, iphi),2,90,0.0,0.3,1);
-                                        // 		cylmkt[ich][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ich][imult][ikt][iphi]);
-                                        // 		ana[ich][imult]->AddCorrFctn(cylmkt[ich][imult][ikt][iphi]);
-                                        
-                                        // 		cqinvkt[ich][imult][ikt][iphi] = new AliFemtoQinvCorrFctn(Form("cqinv%imult%ikT%iRP%i", ich, imult, ikt, iphi),20,0.0,0.2);
-                                        // 		cqinvkt[ich][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ich][imult][ikt][iphi]);
-                                        // 		ana[ich][imult]->AddCorrFctn(cqinvkt[ich][imult][ikt][iphi]);
                                         
                                         
                                     } //end of phi
                                 }//end of kt case
                             }//end of kt
-                            Manager->AddAnalysis(ana[ichg][imult][icuts]);	
+                            Manager->AddAnalysis(ana[ichg][imult][icuts]);
                         }//end runcharge
                     }//end charge
                 }//end runmult
@@ -296,5 +316,5 @@ AliFemtoManager* ConfigFemtoAnalysis() {
         } //end rundeltaetadeltaphistar
     } //end deltaetap
     return Manager;
-}                         
+}
 

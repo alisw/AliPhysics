@@ -43,6 +43,9 @@ public:
 
   void SetInvariantMassLambda(double,double);
   void SetInvariantMassK0s(double,double);
+
+  void SetInvariantMassRejectK0s(double,double);
+  
   void SetMinDaughtersToPrimVertex(double,double);
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
@@ -50,6 +53,7 @@ public:
   void SetMaxCosPointingAngle(double);
   void SetMinCosPointingAngle(double);
   void SetMaxV0DecayLength(double);
+  void SetMinTransverseDistancePrimSecVtx(double);
   void SetParticleType(short);
   void SetEta(double);
   void SetPt(double,double);
@@ -62,12 +66,15 @@ public:
   void SetOnFlyStatus(bool);
   void SetMinAvgSeparation(double);
 
+  void SetNsigmaPosDaughter(double);
+  void SetNsigmaNegDaughter(double);
+
   //----n sigma----
   bool IsKaonTPCdEdxNSigma(float mom, float nsigmaK);
   bool IsKaonTOFNSigma(float mom, float nsigmaK);
   bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK);
-  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
-  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);
+  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, double nsigmacut=3.0);
+  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacut=3.0);
 
   //-----The fMinvPurityAidHistoV0 is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the V0 collection
   void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidV0=true
@@ -81,13 +88,18 @@ public:
   double fInvMassLambdaMax;        ///< invariant mass lambda max
   double fInvMassK0sMin;           ///< invariant mass lambda min
   double fInvMassK0sMax;           ///< invariant mass lambda max
+
+  double fInvMassRejectK0sMin;           ///< invariant mass lambda min
+  double fInvMassRejectK0sMax;           ///< invariant mass lambda max
+  
   double fMinDcaDaughterPosToVert; ///< DCA of positive daughter to primary vertex
   double fMinDcaDaughterNegToVert; ///< DCA of negative daughter to primary vertex
   double fMaxDcaV0Daughters;       ///< Max DCA of v0 daughters at Decay vertex
   double fMaxDcaV0;
   double fMinDcaV0;
   double fMaxDecayLength;
-
+  double fMinTransverseDistancePrimSecVtx;
+  
   double fMaxCosPointingAngle;    //obsolete
   double fMinCosPointingAngle;    //correct
   short fParticleType;             ///< 0-lambda
@@ -106,6 +118,9 @@ public:
   float fPtMaxNegDaughter;
   double fMinAvgSepDaughters;
 
+  double fNsigmaPosDaughter;
+  double fNsigmaNegDaughter;
+  
   bool fBuildPurityAidV0;
   TH1D* fMinvPurityAidHistoV0;
 

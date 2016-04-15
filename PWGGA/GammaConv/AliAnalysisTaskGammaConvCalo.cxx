@@ -63,6 +63,7 @@ ClassImp(AliAnalysisTaskGammaConvCalo)
 //________________________________________________________________________
 AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
   fBGClusHandler(NULL),
@@ -322,6 +323,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
   fBGClusHandler(NULL),
@@ -1887,7 +1889,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fVectorRecTruePi0s.clear();
   fVectorRecTrueEtas.clear();
     
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;}// GetV0Reader
   
   if(fV0Reader)
@@ -1937,12 +1939,18 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskGammaConvCalo::Notify()
 {
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+    
     if(!((AliConvEventCuts*)fEventCutArray->At(iCut))->GetDoEtaShift()){
       fProfileEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
       continue; // No Eta Shift requested, continue
     }
     if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-      ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod();
       fProfileEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
       ((AliConvEventCuts*)fEventCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
       continue;
@@ -2981,7 +2989,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
         Float_t weightedK0s= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
           if (particle->Pt()>0.005){
-            weightedK0s= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, 0x0, fInputEvent);
+            weightedK0s= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, 0x0, fInputEvent);
             //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
           }
         }
@@ -2996,7 +3004,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
         Float_t weighted= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
           if (particle->Pt()>0.005){
-            weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, 0x0, fInputEvent);
+            weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, 0x0, fInputEvent);
             //                   if(particle->GetPdgCode() == 221){
             //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
             //                   }
@@ -3132,7 +3140,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
           Float_t weightedK0s= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
             if (particle->Pt()>0.005){
-              weightedK0s= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack, fInputEvent);
+              weightedK0s= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCStack, fInputEvent);
               //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
             }
           }
@@ -3150,7 +3158,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
           Float_t weighted= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
             if (particle->Pt()>0.005){
-              weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack, fInputEvent);
+              weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCStack, fInputEvent);
               //                   if(particle->GetPdgCode() == 221){
               //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
               //                   }
@@ -3226,7 +3234,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
             Float_t weighted= 1;
             if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
               if (particle->Pt()>0.005){
-                weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack, fInputEvent);
+                weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCStack, fInputEvent);
         //                   if(particle->GetPdgCode() == 221){
         //                      cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
         //                   }
@@ -3512,7 +3520,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
           Int_t secMotherLabel = ((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetMother(0);
           Float_t weightedSec= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, fMCStack, fInputEvent) && fMCStack->Particle(secMotherLabel)->GetPdgCode()==310){
-            weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+            weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
             //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
           }
           if (isTruePi0){
@@ -3540,7 +3548,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
           Float_t weighted= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1MotherLabel, fMCStack, fInputEvent)){
             if (((TParticle*)fMCStack->Particle(gamma1MotherLabel))->Pt()>0.005){
-              weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gamma1MotherLabel, fMCStack, fInputEvent);
+              weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCStack, fInputEvent);
               //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
             }
           }
@@ -3727,7 +3735,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
         Int_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetMother();
         Float_t weightedSec= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, 0x0, fInputEvent) && static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
-          weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+          weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
           //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
         }
         if (isTruePi0){
@@ -3755,7 +3763,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
         Float_t weighted= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1MotherLabel, 0x0, fInputEvent)){
           if (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->Pt()>0.005){
-          weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gamma1MotherLabel, 0x0, fInputEvent);
+          weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, 0x0, fInputEvent);
           //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
           }
         }
@@ -4232,14 +4240,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
                 Int_t secMotherLabel = ((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetMother(0);
                 Float_t weightedSec= 1;
                 if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, fMCStack, fInputEvent) && fMCStack->Particle(secMotherLabel)->GetPdgCode()==310){
-                  weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+                  weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
                 }
                 fHistoTrueSecondaryPi0MissingPtconv[fiCut]->Fill(gamma0->Pt(),weightedSec*fWeightJetJetMC);
               }else {
                 Float_t weighted= 1;
                 if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0MotherLabel, fMCStack, fInputEvent)){
                   if (((TParticle*)fMCStack->Particle(gamma0MotherLabel))->Pt()>0.005){
-                    weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gamma0MotherLabel, fMCStack, fInputEvent);
+                    weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma0MotherLabel, fMCStack, fInputEvent);
                   }
                 }
                 fHistoTruePrimaryPi0MissingPtconv[fiCut]->Fill(gamma0->Pt(),weighted*fWeightJetJetMC);
@@ -4250,7 +4258,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTags (){
               Float_t weighted= 1;
               if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0MotherLabel, fMCStack, fInputEvent)){
                 if (((TParticle*)fMCStack->Particle(gamma0MotherLabel))->Pt()>0.005){
-                  weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gamma0MotherLabel, fMCStack, fInputEvent);
+                  weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma0MotherLabel, fMCStack, fInputEvent);
                 }
               }
               fHistoTruePrimaryEtaMissingPtconv[fiCut]->Fill(gamma0->Pt(),weighted*fWeightJetJetMC);
@@ -4298,14 +4306,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
                 Int_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->GetMother();
                 Float_t weightedSec= 1;
                 if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, 0x0, fInputEvent) && static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
-                  weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
+                  weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
                 }
                 fHistoTrueSecondaryPi0MissingPtconv[fiCut]->Fill(gamma0->Pt(),weightedSec*fWeightJetJetMC);
               }else {
                 Float_t weighted= 1;
                 if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0MotherLabel, 0x0, fInputEvent)){
                   if (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->Pt()>0.005){
-                    weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gamma0MotherLabel, 0x0, fInputEvent);
+                    weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma0MotherLabel, 0x0, fInputEvent);
                   }
                 }
                 fHistoTruePrimaryPi0MissingPtconv[fiCut]->Fill(gamma0->Pt(),weighted*fWeightJetJetMC);
@@ -4316,7 +4324,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessConversionPhotonsForMissingTagsAOD (){
               Float_t weighted= 1;
               if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0MotherLabel, 0x0, fInputEvent)){
                 if (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel))->Pt()>0.005){
-                  weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gamma0MotherLabel, 0x0, fInputEvent);
+                  weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma0MotherLabel, 0x0, fInputEvent);
                 }
               }
               fHistoTruePrimaryEtaMissingPtconv[fiCut]->Fill(gamma0->Pt(),weighted*fWeightJetJetMC);

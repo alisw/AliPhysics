@@ -16,6 +16,7 @@
 #include <THashList.h>
 #include <THnSparse.h>
 
+#include <AliESDEvent.h>
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerQAPP.h"
 #include "AliEMCALTriggerFastOR.h"
@@ -39,7 +40,11 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP() :
   fADCperBin(20),
   fMinAmplitude(0),
   fDCalPlots(kTRUE),
-  fTriggerPatches(0)
+  fMinTimeStamp(0),
+  fMaxTimeStamp(0),
+  fTimeStampBinWidth(0),
+  fTriggerPatches(0),
+  fESDEvent(0)
 {
 }
 
@@ -54,7 +59,11 @@ AliEmcalTriggerQATaskPP::AliEmcalTriggerQATaskPP(const char *name) :
   fADCperBin(20),
   fMinAmplitude(0),
   fDCalPlots(kTRUE),
-  fTriggerPatches(0)
+  fMinTimeStamp(0),
+  fMaxTimeStamp(0),
+  fTimeStampBinWidth(0),
+  fTriggerPatches(0),
+  fESDEvent(0)
 {
   // Constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -81,6 +90,14 @@ AliEmcalTriggerQATaskPP::~AliEmcalTriggerQATaskPP()
 void AliEmcalTriggerQATaskPP::ExecOnce()
 {
   AliAnalysisTaskEmcal::ExecOnce();
+
+  fESDEvent = dynamic_cast<AliESDEvent*>(InputEvent());
+
+  if (!fESDEvent){
+    fMinTimeStamp = 0;
+    fMaxTimeStamp = 0;
+    fTimeStampBinWidth = 0;
+  }
 
   if (!fInitialized) return;
 
@@ -117,6 +134,7 @@ void AliEmcalTriggerQATaskPP::UserCreateOutputObjects()
   if (fOutput) {  
     for (Int_t i = 0; i < fNcentBins; i++) {
       GetTriggerQA(i)->EnableDCal(fDCalPlots);
+      GetTriggerQA(i)->EnableHistogramsByTimeStamp(fTimeStampBinWidth);
       GetTriggerQA(i)->SetDebugLevel(DebugLevel());
       GetTriggerQA(i)->Init();
       fOutput->Add(GetTriggerQA(i)->GetListOfHistograms());
@@ -142,6 +160,12 @@ Bool_t AliEmcalTriggerQATaskPP::Run()
  */
 Bool_t AliEmcalTriggerQATaskPP::FillHistograms()
 {
+  if (fESDEvent) {
+    if (fESDEvent->GetTimeStamp() < fMinTimeStamp) return kFALSE;
+    if (fMaxTimeStamp > fMinTimeStamp && fESDEvent->GetTimeStamp() > fMaxTimeStamp) return kFALSE;
+    GetTriggerQA(fCentBin)->EventTimeStamp(fESDEvent->GetTimeStamp());
+  }
+
   if (fTriggerPatches) {
     Int_t nPatches = fTriggerPatches->GetEntriesFast();
 

@@ -13,6 +13,13 @@ class AliHFJetsTagging;
 class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
+class AliMCEvent;
+class AliESDEvent;
+class AliESDtrack;
+class AliAnalysisUtils;
+#include "AliESDtrackCuts.h"
+
+
 
 class AliAnalysisTaskHFJetIPQA: public AliAnalysisTaskEmcalJet
 {
@@ -132,6 +139,7 @@ public:
 	};
 
 
+
 	Int_t fNparents; // number of heavy hadrons to be considered
 	Int_t fParentSelect[2][7]; // heavy hadron species
 	static const Int_t fgkMaxGener=10; // ancester level wanted to be checked
@@ -144,11 +152,19 @@ public:
 	virtual ~AliAnalysisTaskHFJetIPQA(){;}
 	virtual void  UserCreateOutputObjects();
 	virtual Bool_t Run();
+
+	void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);};
+	void SetRunESD (Bool_t val = kTRUE){fESD = val;};
+
+
 	/*
 	AliAnalysisTaskHFJetIPQA(const AliAnalysisTaskHFJetIPQA&);
 	AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&);*/
 	virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;};
 	Bool_t IsEventSelected();
+	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+	  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kVertexZContrib,kPhysicsSelection,kNoContributors,kDeltaVertexZ,kNoVertexTracks,kVertexZResolution,kMVPileup,kSPDClusterCut,kZVtxSPDOutFid,kCentralityFlattening};
+	Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
 
 	void SetUseMonteCarloWeighingLinus(
 			TH1F *Pi0 ,
@@ -239,29 +255,47 @@ public:
 	};
 
 	void UseCorrectedRhoPt(bool val = true){fUseCorrPt =val;};
+	void UseGammaV0RejectionESD(bool val = true){fEnableV0GammaRejection =val;};
 private:
-	Bool_t CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
-	Bool_t CalculateTrackImpactParameterTruth(AliAODTrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
-	Bool_t CalculateJetSignedTrackImpactParameter(AliAODTrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength);
-	Double_t GetValImpactParameter(TTypeImpPar type,double *impar, double * cov);
 
-	// Helper
+	Double_t GetArmenteros(AliESDv0 * v0 , int pidneg,int pidpos ,double &alpha);
+	Double_t GetPsiPair(AliESDv0 * v0);
+	Bool_t CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
+	Bool_t CalculateTrackImpactParameter(AliESDtrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
+	Bool_t CalculateTrackImpactParameterTruth(AliAODTrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
+	Bool_t CalculateTrackImpactParameterTruth(AliESDtrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
+	Bool_t CalculateJetSignedTrackImpactParameter(AliAODTrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength);
+	Bool_t CalculateJetSignedTrackImpactParameter(AliESDtrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength);
+	Double_t GetValImpactParameter(TTypeImpPar type,double *impar, double * cov);
+	Bool_t IsV0PhotonFromBeamPipeDaughter(const AliAODTrack* track);
+	Bool_t IsV0PhotonFromBeamPipeDaughter(const AliESDtrack* track);
 	Bool_t IsTrackAccepted(AliAODTrack* track);
+	Bool_t IsTrackAccepted(AliESDtrack* track);
 	Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
 	void   DoJetLoop(); //jet matching function 2/4
 	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0);
 	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
 	Double_t GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB);
+	Double_t GetMonteCarloCorrectionFactor(AliESDtrack* track,bool &ise,bool &fromB);
 	Int_t GetElecSource(const AliAODMCParticle *  const mcpart,Double_t &mpt) const;
 	Double_t GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel);
-
 	Double_t GetWeightFactorLinus( AliAODMCParticle * mcpart,bool &isTrackFromPromptB);
+	Double_t GetWeightFactorLinus( AliMCParticle * mcpart,bool &isTrackFromPromptB);
 	Bool_t ParticleIsPossibleSource(int pdg);
 	Bool_t IsSelectionParticle( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	Bool_t IsSelectionParticle( AliMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
 	Bool_t IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) ;
+	Bool_t IsSecondaryFromWeakDecay( AliMCParticle * particle ) ;
+
 	bool   IsPromptDMeson(AliAODMCParticle * part );
+	bool   IsPromptDMeson(AliMCParticle * part );
+
 	bool   IsPromptBMeson(AliAODMCParticle * part );
+	bool   IsPromptBMeson(AliMCParticle * part );
+
 	Bool_t GetBMesonWeight( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	Bool_t GetBMesonWeight( AliMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+
 	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
 
 	Float_t  GetRapidity(const TParticle *part);
@@ -270,7 +304,8 @@ private:
 	AliHFJetsTagging* fHFJetUtils;//!
 
 	Bool_t fUseCorrPt;
-
+	Bool_t fESD ;
+	Bool_t fEnableV0GammaRejection;
 
 	TH1D * fh1dEventRejectionRDHFCuts;//! Store Rejection reasons and number of accepted events
 	TH1D * fh1dVertexZ;//!
@@ -655,6 +690,9 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird_electron; //!
 	TClonesArray * fMCArray;//!
+	AliMCEvent   * fMCEvent;//!;
+	AliESDtrackCuts  *fESDTrackCut;// copy to manager - root from AddTask
+	AliAnalysisUtils *fUtils;//!
 	//Monte Carlo correction factor containers
 
 	Double_t fBackgroundFactor[9][44];//[9][44]
@@ -662,7 +700,7 @@ private:
 	Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
 	static bool mysort(const myvaluetuple& i, const myvaluetuple& j);
 
-	ClassDef(AliAnalysisTaskHFJetIPQA, 3)
+	ClassDef(AliAnalysisTaskHFJetIPQA, 4	)
 };
 #endif
 

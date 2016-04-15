@@ -172,7 +172,7 @@ Int_t AliRDHFJetsCutsVertex::IsVertexSelected(AliAODVertex* vert, AliAODEvent* a
   }
 
   // sll 06.15 make sure the charge of the vertex does not sum -3 or 3
-  if ( TMath::Abs(sumCh) > 2 ) return 0;
+  //  if ( TMath::Abs(sumCh) > 2 ) return 0;
   
   Double_t invmass = TMath::Sqrt( pxyzSum[0]*pxyzSum[0] - pxyzSum[1]*pxyzSum[1] - pxyzSum[2]*pxyzSum[2] - pxyzSum[3]*pxyzSum[3]);
  

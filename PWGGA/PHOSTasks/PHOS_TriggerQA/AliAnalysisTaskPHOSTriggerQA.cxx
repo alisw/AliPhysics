@@ -35,7 +35,7 @@ ClassImp(AliAnalysisTaskPHOSTriggerQA)
 
 //________________________________________________________________________
 AliAnalysisTaskPHOSTriggerQA::AliAnalysisTaskPHOSTriggerQA() : AliAnalysisTaskSE(),
-  fOutputContainer(0),fPHOSGeo(0),fEventCounter(0)
+  fOutputContainer(0),fPHOSGeo(0),fEventCounter(0),fL1Threshold(-1)
 {
   //Default constructor.  
   // Initialize the PHOS geometry 
@@ -44,9 +44,9 @@ AliAnalysisTaskPHOSTriggerQA::AliAnalysisTaskPHOSTriggerQA() : AliAnalysisTaskSE
 }
 
 //________________________________________________________________________
-AliAnalysisTaskPHOSTriggerQA::AliAnalysisTaskPHOSTriggerQA(const char *name) 
+AliAnalysisTaskPHOSTriggerQA::AliAnalysisTaskPHOSTriggerQA(const char *name, Int_t L1_threshold) 
 : AliAnalysisTaskSE(name),
-  fOutputContainer(0),fPHOSGeo(0),fEventCounter(0)
+  fOutputContainer(0),fPHOSGeo(0),fEventCounter(0),fL1Threshold(L1_threshold)
 {
   
   // Output slots #0 write into a TH1 container
@@ -154,8 +154,8 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   AliESDCaloTrigger* trgESD = event->GetCaloTrigger("PHOS");
   trgESD->Reset();
   
-  if(trgESD->GetEntries()) FillHistogram("hNev",1.); // triggered events
-  FillHistogram("hNtr",trgESD->GetEntries());
+  if(trgESD->GetEntries())
+    FillHistogram("hNev",1.); // triggered events
   
   TString trigClasses = event->GetFiredTriggerClasses();
   printf("\nEvent %d: %d non-zero trigger digits %s\n",
@@ -175,10 +175,17 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   AliESDCaloCells *phsCells = event->GetPHOSCells();
  
   Int_t inPHOS[3] = {};
+  Int_t ntr = 0;
 
+  Int_t kUsedCluster[] = {multClu*0};
+  
   //Loop over 4x4 fired regions
   while(trgESD->Next()) {
 
+    // L1 threshold: -1-L0, 0-high, 1-medium, 2-low
+    if(trgESD->GetL1TimeSum() != fL1Threshold) continue;
+    ntr++;
+    
     Int_t tmod,tabsId; // "Online" module number, bottom-left 4x4 edge cell absId
     trgESD->GetPosition(tmod,tabsId);
     
@@ -189,11 +196,14 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
     FillHistogram(key,trelid[2]-1,trelid[3]-1);
     
     inPHOS[trelid[0]-1]++;
-
+    
     for (Int_t i=0; i<multClu; i++) {
       
       AliESDCaloCluster *c1 = event->GetCaloCluster(i);
+      if(kUsedCluster[i]) continue; // already matched to some trigger patch
+      
       if(!c1->IsPHOS()) continue;
+      if(c1->GetType() == AliESDCaloCluster::kPHOSCharged) continue; // reject CPV cluster
       
       if(c1->E()<0.3) continue; 
       if(c1->GetNCells()<3) continue ; 
@@ -212,7 +222,9 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
       FillHistogram(key,relid[2]-1,relid[3]-1);
       
       if( Matched(trelid,relid) ) {
-
+	
+	kUsedCluster[i] = 1;
+	
 	snprintf(key,55,"hPhotTrigSM%d",relid[0]);
 	FillHistogram(key,c1->E());
 	
@@ -231,6 +243,8 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
       
     }
   } //while(trgESD->Next())
+  
+  FillHistogram("hNtr",ntr); // number of selected triggers per event
   
   for(Int_t sm=1; sm<4; sm++) {
     snprintf(key,55,"hNtrSM%d",sm);

@@ -30,6 +30,8 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
    *    15.) THnSparse is used: (REFERENCE settings) + 18centBins  
    *    16.) THnSparse is used: (REFERENCE settings) + centBin 10  
    *    17.) THnSparse is used: (REFERENCE settings) + centBin 5  
+   *    18.) THnSparse is used: ITS OFF 
+   *    19.) THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 
    * 
    *    MC data --> settingType = 
    *    20.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
@@ -85,7 +87,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   // ****** Do not forget to "DefineOutput(5, TTree::Class());" In the contructor of the task ******
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *cinput,   *coutput1, *coutput2, *coutput3, *coutput4;
-  AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9, *coutput10, *coutput11;
+  AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9, *coutput10, *coutput11, *coutput12, *coutput13;
   
   //  find input container // Output files --> File opening order is important
   TString results = "AnalysisResults.root";
@@ -104,6 +106,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   coutput10 = mgr->CreateContainer("fTreeBayes",    TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput11 = mgr->CreateContainer("fTreeCuts",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   coutput12 = mgr->CreateContainer("dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
+  coutput13 = mgr->CreateContainer("fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
@@ -116,6 +119,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   mgr->ConnectOutput (task,  10, coutput10);
   mgr->ConnectOutput (task,  11, coutput11);
   mgr->ConnectOutput (task,  12, coutput12);
+  mgr->ConnectOutput (task,  13, coutput13);
   cout << " === Containers are ready === " << endl;
   return task;
 }

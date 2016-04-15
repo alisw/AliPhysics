@@ -8,7 +8,7 @@
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (
- TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ TString AnalysisDataType       = "MCAODreco", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb",     // "PbPb", "pPb", "pp"
  int    CentralityGroup         =  1,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
@@ -36,9 +36,9 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  int pidType                    =  2,   // kNSigmaTPC=0, kNSigmaTOF=1, kNSigmaTPCTOF=2
  Bool_t requestTOFPID           =  1,
  double ptTOFPID                =  0.5,
- Bool_t isMC                    =  0,
+ Bool_t isMC                    =  1,
  const char* taskname           = "ChPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/Kaon_08y16_6vZ24_Cent8_G086_Pos_S1S2/Kaon_08y16_6vZ24_Cent8_G086_Pos_S1S2.root" )
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/G86_6vZ24_08y16_Kaon_Cent8_Pos_45runs_S1S2/G86_6vZ24_08y16_Kaon_Cent8_Pos_45runs_S1S2.root" )
 
 {
   // Set Default Configuration of this analysis
@@ -101,6 +101,10 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     { minCentrality[0] = 20.;     maxCentrality[0]  = 40.; }
   else if ( CentralityGroup == 12 )
     { minCentrality[0] = 60.;     maxCentrality[0]  = 80.; }
+  else if ( CentralityGroup == 13 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 100.; }
+  else if ( CentralityGroup == 14 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 80.; }
   else    return 0;
   
   double dedxMin                =  0.0;

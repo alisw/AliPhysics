@@ -160,22 +160,22 @@ void AliAnalysisTaskggMC::UserCreateOutputObjects()
     for(Int_t ikT=0; ikT<6; ikT++){ 
 //      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
  
-      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+//      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
       
       
 //      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+//      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
     
     }        
 
@@ -191,7 +191,14 @@ void AliAnalysisTaskggMC::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hQinv_PhotPiVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
     fOutputContainer->Add(new TH2F(Form("hQinv_PhotChargeVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
     fOutputContainer->Add(new TH2F(Form("hQinv_PhotNeutralVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
-        
+    fOutputContainer->Add(new TH2F(Form("hQinv_PhotAnyVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_PiChargeVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_PiNeutralVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_PiAnyVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_ChargeAnyVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_NeutralAnyVert_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_Other_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,20,0.,2.));
+            
     
     //Common parent
     for(Int_t ip=0; ip<nParents; ip++){
@@ -764,30 +771,79 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
 	    continue ;
 		  
 	FillHistogram(Form("hQinv_%s",cut[iCut]),qinv,kT) ;
-	if(isPhotonAtPHOS1 && isPhotonAtPHOS2)
+	if(isPhotonAtPHOS1 && isPhotonAtPHOS2) 
 	   FillHistogram(Form("hQinv_PhotPHOS_%s",cut[iCut]),qinv,kT) ;
-	if(isPhotonAtVertex1 && isPhotonAtVertex2)
+	if(isPhotonAtVertex1 && isPhotonAtVertex2){ 
 	   FillHistogram(Form("hQinv_PhotVert_%s",cut[iCut]),qinv,kT) ;
-	if(isPionAtVertex1 && isPionAtVertex2)
-	   FillHistogram(Form("hQinv_PiVert_%s",cut[iCut]),qinv,kT) ;
-	if(isChHadronAtVertex1 && isChHadronAtVertex2)
-	   FillHistogram(Form("hQinv_ChargeVert_%s",cut[iCut]),qinv,kT) ;
-	if(isNeuHadronAtVertex1 && isNeuHadronAtVertex2)
-	   FillHistogram(Form("hQinv_NeutralVert_%s",cut[iCut]),qinv,kT) ;
-	if((isPionAtVertex1 && isPhotonAtVertex2) || (isPhotonAtVertex1 && isPionAtVertex2))
-	   FillHistogram(Form("hQinv_PhotPiVert_%s",cut[iCut]),qinv,kT) ;
-	if((isChHadronAtVertex1&& isPhotonAtVertex2) || (isPhotonAtVertex1 && isChHadronAtVertex2))
-	   FillHistogram(Form("hQinv_PhotChargeVert_%s",cut[iCut]),qinv,kT) ;
-	if((isNeuHadronAtVertex1 && isPhotonAtVertex2) || (isPhotonAtVertex1 && isNeuHadronAtVertex2))
-	   FillHistogram(Form("hQinv_PhotNeutralVert_%s",cut[iCut]),qinv,kT) ;
+	}
+	else{
+	  if((isPionAtVertex1 && isPhotonAtVertex2) || (isPhotonAtVertex1 && isPionAtVertex2)){
+	    FillHistogram(Form("hQinv_PhotPiVert_%s",cut[iCut]),qinv,kT) ;
+	  }
+	  else{
+	    if((isChHadronAtVertex1&& isPhotonAtVertex2) || (isPhotonAtVertex1 && isChHadronAtVertex2)){
+	      FillHistogram(Form("hQinv_PhotChargeVert_%s",cut[iCut]),qinv,kT) ;
+	    }
+	    else{
+	      if((isNeuHadronAtVertex1 && isPhotonAtVertex2) || (isPhotonAtVertex1 && isNeuHadronAtVertex2)){
+	       FillHistogram(Form("hQinv_PhotNeutralVert_%s",cut[iCut]),qinv,kT) ;
+	      }
+	      else{
+	        if(isPhotonAtVertex1 || isPhotonAtVertex2){
+	          FillHistogram(Form("hQinv_PhotAnyVert_%s",cut[iCut]),qinv,kT) ;
+	        }
+	        else{
+	          if(isPionAtVertex1 && isPionAtVertex2){
+	            FillHistogram(Form("hQinv_PiVert_%s",cut[iCut]),qinv,kT) ;
+		  }
+		  else{
+	            if((isPionAtVertex1 && isChHadronAtVertex2) || (isChHadronAtVertex1 && isPionAtVertex2)){
+	              FillHistogram(Form("hQinv_PiChargeVert_%s",cut[iCut]),qinv,kT) ;
+		    }
+		    else{
+	              if((isPionAtVertex1 && isNeuHadronAtVertex2) || (isNeuHadronAtVertex1 && isPionAtVertex2)){
+	                FillHistogram(Form("hQinv_PiNeutralVert_%s",cut[iCut]),qinv,kT) ;
+		      }
+		      else{
+	                if(isPionAtVertex1  || isPionAtVertex2){
+	                  FillHistogram(Form("hQinv_PiAnyVert_%s",cut[iCut]),qinv,kT) ;
+		        }
+		        else{		    
+	                  if(isChHadronAtVertex1 && isChHadronAtVertex2){
+	                    FillHistogram(Form("hQinv_ChargeVert_%s",cut[iCut]),qinv,kT) ;
+		          }
+		          else{
+	                    if(isChHadronAtVertex1 || isChHadronAtVertex2){
+	                      FillHistogram(Form("hQinv_ChargeAny_%s",cut[iCut]),qinv,kT) ;
+		            }
+		            else{
+	                      if(isNeuHadronAtVertex1 && isNeuHadronAtVertex2){
+	                         FillHistogram(Form("hQinv_NeutralVert_%s",cut[iCut]),qinv,kT) ;
+		              }
+		              else{
+	                        if(isNeuHadronAtVertex1 || isNeuHadronAtVertex2){
+	                          FillHistogram(Form("hQinv_NeutralAnyVert_%s",cut[iCut]),qinv,kT) ;
+		                }
+		                else{
+	                          FillHistogram(Form("hQinv_Other_%s",cut[iCut]),qinv,kT) ;	
+			        }
+			      }
+			    }
+			  }
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
 	
 	
-	
-	
-	
-        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
-        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//        FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+//        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+//        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
         
       }          
     } // end of loop i2
@@ -873,9 +929,9 @@ void AliAnalysisTaskggMC::UserExec(Option_t *)
 	  
 	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
 
-          FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-          FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
-          FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//           FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+//           FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+//           FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
 	  
 	}
 	

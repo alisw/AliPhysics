@@ -35,6 +35,7 @@ class AliAnalysisBGMonitorQA : public AliAnalysisTaskSE {
   TTree *fTreeTrack2;        //! tree
   TList *fList;             //! list
   TList *fList2;             //! list for additional data 2015.08.20 (blim)
+
   Int_t fUseTree;
 
 
@@ -88,12 +89,12 @@ class AliAnalysisBGMonitorQA : public AliAnalysisTaskSE {
   Int_t t0PileUp;
   Int_t spdPileUp;
   Int_t spdPileUpOutOfBunch;
-  Int_t triMask;  
+  Int_t triMask; 
   Int_t fastORHW;  
   Int_t SPD1;
   Int_t SPD2;
   Int_t SPDHw1;
-  Int_t SPDHw2;  
+  Int_t SPDHw2; 
   Int_t BGFlagA[kMaxUShort];
   Int_t BGFlagC[kMaxUShort];
   Int_t BBFlagA[kMaxUShort];

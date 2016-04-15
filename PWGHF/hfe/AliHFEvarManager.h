@@ -122,11 +122,11 @@ private:
   Double_t *fContentMC;                 //! Cache content of the asssociated MC track in class member
   Double_t fWeightFactor;               // Cache weighting factor
   Bool_t  fSignalTrack;                 // Signal Track
-	Bool_t  fWeighting;                   // Weighting or not for the efficiency maps
+  Bool_t  fWeighting;                   // Weighting or not for the efficiency maps
   AliHFEsignalCuts *fSignal;            // MC Signal Definition
-	TH3F *fWeightFactors;                 // Weight factors
-	TF3  *fWeightFactorsFunction;         // Weight factors
-
+  TH3F *fWeightFactors;                 // Weight factors
+  TF3  *fWeightFactorsFunction;         // Weight factors
+  
 	ClassDef(AliHFEvarManager, 1)         // The variable Manager for the HFE Analysis
 };
 

@@ -59,6 +59,7 @@ ClassImp( AliAnalysisTaskEtaToPiPlPiMiGamma )
 //-----------------------------------------------------------------------------------------------
 AliAnalysisTaskEtaToPiPlPiMiGamma::AliAnalysisTaskEtaToPiPlPiMiGamma():
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fPionSelector(NULL),
 	fBGHandler(NULL),
 	fESDEvent(NULL),
@@ -150,6 +151,7 @@ AliAnalysisTaskEtaToPiPlPiMiGamma::AliAnalysisTaskEtaToPiPlPiMiGamma():
 AliAnalysisTaskEtaToPiPlPiMiGamma::AliAnalysisTaskEtaToPiPlPiMiGamma( const char* name ):
 	AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fPionSelector(NULL),
 	fBGHandler(NULL),
 	fESDEvent(NULL),
@@ -605,7 +607,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserCreateOutputObjects()
 
 	InitBack(); // Init Background Handler
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 		
 	if(fV0Reader)
@@ -653,7 +655,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserExec(Option_t *){
 	// Execute analysis for current event
 	//
 
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
@@ -732,12 +734,18 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserExec(Option_t *){
 
 Bool_t AliAnalysisTaskEtaToPiPlPiMiGamma::Notify(){
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+     if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+   
 		if( !((AliConvEventCuts*)fEventCutArray->At(iCut))->GetDoEtaShift() ){
 			fProfileEtaShift[iCut]->Fill(0.,0.);
 			continue; // No Eta Shift requested, continue
 		}
 		if( ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod();
 			((AliConvEventCuts*)fEventCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once   
 			((AliPrimaryPionCuts*)fPionCutArray->At(iCut))->SetEtaShift( ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift() );
 			fProfileEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
@@ -1107,7 +1115,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessMCParticles(){
 					if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
 						if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack, fInputEvent)){
 							if (particle->Pt()>0.005){
-								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCStack,fInputEvent);
 							}
 						}
 					}
@@ -1124,7 +1132,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessMCParticles(){
 					if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
 						if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
 							if (particle->Pt()>0.005){
-								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCStack,fInputEvent);
 							}
 						}
 					}
@@ -1142,7 +1150,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessMCParticles(){
 					if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
 						if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCStack,fInputEvent)){
 							if (particle->Pt()>0.005){
-								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),i, fMCStack,fInputEvent);
+								weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, fMCStack,fInputEvent);
 							}
 						}
 					}
@@ -1461,7 +1469,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTrueMesonCandidates(AliAODConvers
 				if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) { 
 					if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
 						if (((TParticle*)MCStack->Particle(gammaMotherLabel))->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gammaMotherLabel,fMCStack,fInputEvent);
+							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gammaMotherLabel,fMCStack,fInputEvent);
 						}
 					}
 				}
@@ -1472,7 +1480,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTrueMesonCandidates(AliAODConvers
 				if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) {
 					if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
 						if (((TParticle*)MCStack->Particle(gammaMotherLabel))->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gammaMotherLabel,fMCStack,fInputEvent);
+							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gammaMotherLabel,fMCStack,fInputEvent);
 						}
 					}
 				}
@@ -1483,7 +1491,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessTrueMesonCandidates(AliAODConvers
 				if( ((AliPrimaryPionCuts*) fPionCutArray->At(fiCut))->DoWeights() ) {
 					if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
 						if (((TParticle*)MCStack->Particle(gammaMotherLabel))->Pt()>0.005){
-							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(fV0Reader->GetPeriodName(),gammaMotherLabel,fMCStack,fInputEvent);
+							weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gammaMotherLabel,fMCStack,fInputEvent);
 						}
 					}
 				}

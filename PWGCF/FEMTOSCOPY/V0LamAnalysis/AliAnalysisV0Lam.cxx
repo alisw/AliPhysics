@@ -38,7 +38,7 @@ AliAnalysisTaskSE(),
   fAOD(0),
   fOutputList(0),
   fpidAOD(0),
-  fDefaultCutType(0),
+  fVariableCutType(0),
   fNominalCutIndex(0),
   fEventCount(0),
   fPDGLambda(1.115683),
@@ -53,9 +53,10 @@ AliAnalysisTaskSE(),
   fSigmaCutTOFPion(4.0),
   fIsUsingVariableAvgSepCut(kFALSE),
   fMaxV0Mult(700),
-  fNumberVariableAvgSepCuts(12),
+  fNumberVariableAvgSepCuts(3),
   fCutProcessor(NULL),
-  fNumberOfVariableCutValues(1),
+  fSysStudyType(kNoStudy),
+  fNumberOfTopologicalCutValues(1),
   fNumberOfCfVariableCutValues(1),
   fTotalLambda(0),
   fTotalAntiLambda(0),
@@ -159,13 +160,13 @@ AliAnalysisTaskSE(),
 }
 //________________________________________________________________________
 
-AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, Int_t varCutType, Int_t nominalCutIndex, Bool_t flattenCent):
+AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent):
   AliAnalysisTaskSE(name), 
   fAOD(0), 
   fOutputList(0),
   fpidAOD(0),
-  fDefaultCutType(varCutType),
-  fNominalCutIndex(nominalCutIndex),
+  fVariableCutType(varCutType),
+  fNominalCutIndex(0),
   fEventCount(0),
   fPDGLambda(1.115683),
   fPDGProton(.938272),
@@ -179,9 +180,10 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, Int_t varCutType, Int_t nom
   fSigmaCutTOFPion(4.0),
   fIsUsingVariableAvgSepCut(kFALSE),
   fMaxV0Mult(700),
-  fNumberVariableAvgSepCuts(12),
+  fNumberVariableAvgSepCuts(3),
   fCutProcessor(NULL),
-  fNumberOfVariableCutValues(1),
+  fSysStudyType(sysStudyType),
+  fNumberOfTopologicalCutValues(1),
   fNumberOfCfVariableCutValues(1),
   fTotalLambda(0),
   fTotalAntiLambda(0),
@@ -261,6 +263,10 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, Int_t varCutType, Int_t nom
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
+  if ((kTopologicalStudy == fSysStudyType)
+      || (kTwoTrackStudy == fSysStudyType)) {
+    fNominalCutIndex = 1;
+  }
 
   //   //Load in the lednicky weight histograms
   // TFile lednickyLL("LedWeightsLL.root","read");
@@ -317,12 +323,21 @@ AliAnalysisV0Lam::~AliAnalysisV0Lam()
 void AliAnalysisV0Lam::MyInit()
 {
   // Setup V0 cut processor
-  fCutProcessor = new AliAnalysisV0LamCutProcessing(fOutputList, fDefaultCutType);
-  fNumberOfVariableCutValues = fCutProcessor->GetNumberOfVariableCutValues();
-  if(fIsUsingVariableAvgSepCut){
-    fNumberOfCfVariableCutValues = fNumberVariableAvgSepCuts;
+  AliAnalysisV0LamCutProcessing::CutType_t variedTopologicalCut = AliAnalysisV0LamCutProcessing::kNoCut;
+  if(kTopologicalStudy == fSysStudyType) {
+    variedTopologicalCut = (AliAnalysisV0LamCutProcessing::CutType_t)fVariableCutType;
   }
-  else fNumberOfCfVariableCutValues = fNumberOfVariableCutValues;
+  fCutProcessor = new AliAnalysisV0LamCutProcessing(fOutputList, variedTopologicalCut);
+  if (kTopologicalStudy == fSysStudyType) {
+    fNumberOfTopologicalCutValues = fCutProcessor->GetNumberOfVariableCutValues();
+    fNumberOfCfVariableCutValues = fNumberOfTopologicalCutValues;
+  } else if (kTwoTrackStudy == fSysStudyType) {
+    fNumberOfTopologicalCutValues = 1;
+    fNumberOfCfVariableCutValues = 3;
+  } else {
+    fNumberOfTopologicalCutValues = 1;
+    fNumberOfCfVariableCutValues = 1;
+  }
   // cout<<"Number of variable cf cut values: "<<fNumberOfCfVariableCutValues<<endl;
 
   //setup event collection for event mixing
@@ -397,18 +412,18 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   SetBinsOnOriginHists(fMCTruthOfOriginalParticles);
   SetBinsOnOriginHists(fMCTruthOfV0FinderParticles);
   //The first dimension is the index of the variable cut value
-  fRemainingFromBeginningToRecon = new TH3F("fRemainingFromBeginningToRecon", "Fraction Remaining After Reconstruction", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
-  fRemainingFromV0FinderToRecon = new TH3F("fRemainingFromV0FinderToRecon", "Fraction From V0Finder That Remain After Reconstruction Stage", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
-  fMCTruthOfReconstructedParticles = new TH2F("fMCTruthOfReconstructedParticles", "MC Truth of Reconstructed Particles in Event", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5);
+  fRemainingFromBeginningToRecon = new TH3F("fRemainingFromBeginningToRecon", "Fraction Remaining After Reconstruction", fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5,  AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
+  fRemainingFromV0FinderToRecon = new TH3F("fRemainingFromV0FinderToRecon", "Fraction From V0Finder That Remain After Reconstruction Stage", fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5,  AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
+  fMCTruthOfReconstructedParticles = new TH2F("fMCTruthOfReconstructedParticles", "MC Truth of Reconstructed Particles in Event", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5);
   SetBinsOnOriginHists(fRemainingFromBeginningToRecon);
   SetBinsOnOriginHists(fRemainingFromV0FinderToRecon);
   SetBinsOnOriginHists(fMCTruthOfReconstructedParticles);
 
   // Particle multiplicities
-  fMultDistLambda = new TH2F("fMultDistLambda", "Lambda multiplicity;Cut Bin;Lambda Found;# of Events", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  21, -0.5, 21-0.5);
-  fMultDistAntiLambda = new TH2F("fMultDistAntiLambda", "AntiLambda multiplicity;Cut Bin;Antilambda Found;# of Events", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  21, -0.5, 21-0.5);
-  fMultCentLambda = new TH3F("fMultCentLambda", "Lambda multiplicity vs centrality;Cut Bin; Centrality Bin;Lambdas Found", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
-  fMultCentAntiLambda =  new TH3F("fMultCentAntiLambda", "AntiLambda multiplicity vs centrality;Cut Bin; Centrality Bin;Antilambdas Found", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
+  fMultDistLambda = new TH2F("fMultDistLambda", "Lambda multiplicity;Cut Bin;Lambda Found;# of Events", fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5,  21, -0.5, 21-0.5);
+  fMultDistAntiLambda = new TH2F("fMultDistAntiLambda", "AntiLambda multiplicity;Cut Bin;Antilambda Found;# of Events", fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5,  21, -0.5, 21-0.5);
+  fMultCentLambda = new TH3F("fMultCentLambda", "Lambda multiplicity vs centrality;Cut Bin; Centrality Bin;Lambdas Found", fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
+  fMultCentAntiLambda =  new TH3F("fMultCentAntiLambda", "AntiLambda multiplicity vs centrality;Cut Bin; Centrality Bin;Antilambdas Found", fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
 
   // fMultDistLambda->GetXaxis()->SetTitle("Var Bin");
   // fMultDistLambda->GetYaxis()->SetTitle("Event Multiplicity (Lambdas)");
@@ -856,12 +871,12 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 ////////////////////////////////////////////////////////////////
   
   int v0Count = 0;
-  vector<int> lambdaCount(fNumberOfVariableCutValues,0);
-  vector<int> antiLambdaCount(fNumberOfVariableCutValues,0);
+  vector<int> lambdaCount(fNumberOfTopologicalCutValues,0);
+  vector<int> antiLambdaCount(fNumberOfTopologicalCutValues,0);
   TH1F *mcTruthOriginHist = NULL;
   if(fIsMCEvent) mcTruthOriginHist = CreateLambdaOriginHist(mcArray,numberOfLastHijingLabel); //Find MC truths of all the MC particles (before detector effects)
   TH1F *v0OriginHist = new TH1F("v0OriginHist", "Lambda Origins", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1);
-  TH2F *v0PassedCutsOriginHist = new TH2F("v0PassedCutsOriginHist", "Lambda Origins", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5);
+  TH2F *v0PassedCutsOriginHist = new TH2F("v0PassedCutsOriginHist", "Lambda Origins", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, fNumberOfTopologicalCutValues, -0.5, fNumberOfTopologicalCutValues -0.5);
   for(int i = 0; i < fAOD->GetNumberOfV0s(); i++)
   {
     // cout<<"Testing v0s"<<endl;
@@ -1131,7 +1146,7 @@ vector<TVector3> AliAnalysisV0Lam::GetGlobalPositionAtGlobalRadiiThroughTPC(cons
 
 
 //________________________________________________________________________
-Double_t AliAnalysisV0Lam::GetAverageSeparation(vector<TVector3> &globalPositions1st, vector<TVector3> &globalPositions2nd)
+Double_t AliAnalysisV0Lam::GetAverageSeparation(const vector<TVector3> &globalPositions1st, const vector<TVector3> &globalPositions2nd)
 {
   // cout<<"Calculating avg sep"<<endl;
   //Compute the separation of two daughter tracks, averaged over 9 different positions
@@ -1194,7 +1209,7 @@ void AliAnalysisV0Lam::DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const even
   // Start by looping over variable reconstruction cuts.  There will be
   // different lists of V0s for each reconstruction cut value, which may
   // lead to different sets of V0s competing over daughters.
-  for (int cutIndex = 0; cutIndex < fNumberOfVariableCutValues; cutIndex++){
+  for (int cutIndex = 0; cutIndex < fNumberOfTopologicalCutValues; cutIndex++){
     bool converged;
     int iterations = 0;
     do { //Loop until the judgment cuts converge or 20 iterations pass
@@ -1365,7 +1380,7 @@ void AliAnalysisV0Lam::FillReconstructedV0MCOrigin(const AliReconstructedV0 * v0
 {
   //Make a histogram showing the MCTruth particle type of reconstructed V0s
   //(or the type of the mother particle if the V0 is secondary).
-  for(int i = 0; i < fNumberOfVariableCutValues; i++){
+  for(int i = 0; i < fNumberOfTopologicalCutValues; i++){
     if(v0->isLamCenter[i]
        && (AliReconstructedV0::kFake == v0->mcOriginType))
     {
@@ -1519,7 +1534,7 @@ void AliAnalysisV0Lam::BinOriginInformationForMCParticles(TH1F *mcOriginalV0Hist
   fMCTruthOfV0FinderParticles->Add(mcV0FinderHist);
   fMCTruthOfReconstructedParticles->Add(mcV0PassedCutsHist);
   delete originalToV0Ratio;
-  for(int i = 0; i < fNumberOfVariableCutValues; i++){
+  for(int i = 0; i < fNumberOfTopologicalCutValues; i++){
     //Need to use a loop here because different variable cuts lead
     //to different distributions of reconstructed particles
     TH1F *originalToReconstructedRatio = (TH1F*)mcV0PassedCutsHist->ProjectionX("originalToReconstructedRatio",i+1,i+1);
@@ -1627,7 +1642,7 @@ void AliAnalysisV0Lam::AddV0ToMultiplicityCounts(AliReconstructedV0 *v0, vector<
   //yields for this event.  Depending on the variable cut value, the V0
   //may or may not get categorized as a (anti)Lambda.
   //This information is used for histogramming event multiplicities. 
-  for(int i = 0; i < fNumberOfVariableCutValues; i++){
+  for(int i = 0; i < fNumberOfTopologicalCutValues; i++){
     if(v0->isLamCenter[i]) lambdaCount[i]++;
     if(v0->isALamCenter[i]) antiLambdaCount[i]++;
   }
@@ -1637,7 +1652,7 @@ void AliAnalysisV0Lam::AddV0ToMultiplicityCounts(AliReconstructedV0 *v0, vector<
 void AliAnalysisV0Lam::HistogramEventMultiplicities(vector<int> & lambdaCount, vector<int> & antiLambdaCount, int centralityBin)
 {
   //Add the event yields to the output yield histograms
-  for(int i = 0; i < fNumberOfVariableCutValues; i++){
+  for(int i = 0; i < fNumberOfTopologicalCutValues; i++){
     //Centrality integrated histograms
     fMultDistLambda->Fill(i, lambdaCount[i]);
     fMultDistAntiLambda->Fill(i, antiLambdaCount[i]);
@@ -1739,340 +1754,269 @@ TVector3 AliAnalysisV0Lam::GetEmissionPoint(const AliAODMCParticle * const track
 }
   
 //________________________________________________________________________
-void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const int centralityBin)
+void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, const Int_t centralityBin)
 {
   //Loop over same- and mixed-event pairs and bin correlation function
   //numerators and denominators.
 
-  //Default cut values used for the average separation cuts
-  double avgSepIdenticalProtonCut = 12.; // used for same-charge prot avg sep
-  double avgSepIdenticalPionCut   = 10.; // used for same-charge pi-pi
-  // double avgSepNonIdenticalCut    = 3.5; //used for same-charge pion-proton avg sep
-  double avgSepProtonPionSame     = 10.; // used for same-sign proton-pion charge combinations
-  double avgSepProtonPionDiff     = 15.; // used for diff-sign proton-pion charge combinations
-  double avgSepProtonAntiproton   = 10.; // used for proton-antiproton
-  double avgSepPiPlusPiMinus      = 25.; // used for piplus-piminus
-  double &variableAvgSepValue = avgSepIdenticalPionCut; //the identical
-  //pion cut will be the variable cut in this run.  This needs to be changed
-  //by hand if one wants to study a different cut
-
-  // These values are used for the average separation cuts of the
-  // daughter tracks. When the average separation cut is being studied,
-  // we can loop over many different cut values to see how those different
-  // cuts affect the correlation function results
-  double avgSepCutArray[12] = {0.,1.,2.,2.5,3.,3.5,4.,4.5,5.,6.,7.,10.};
-
-  int numberOfAvgSepCutIndices; //this is the size of the avgSepCutArray
-  if(fIsUsingVariableAvgSepCut) numberOfAvgSepCutIndices = sizeof(avgSepCutArray) / sizeof (avgSepCutArray[0]);
-  else numberOfAvgSepCutIndices = 1;
-
-  int defaultVariableAvgSepCutIndex = 0;
-  if(fIsUsingVariableAvgSepCut) {
-    for(int i = 0; i < numberOfAvgSepCutIndices; i++){
-      // If variable avg sep cuts are being used, this find the default
-      // value for the avg sep cut currently being studied.
-      if (fabs(variableAvgSepValue - avgSepCutArray[i]) < 0.1) defaultVariableAvgSepCutIndex = i;
-    }
-  }
-  for(int cutIndex = 0; cutIndex < fNumberOfVariableCutValues; cutIndex++)
+  for (Int_t topCutIndex = 0; topCutIndex < fNumberOfTopologicalCutValues; topCutIndex++)
   { // Start looping over all variable cut values
-    for(int i=0; i < event->fNumberCandidateV0; i++) 
+    for (Int_t i=0; i < event->fNumberCandidateV0; i++) 
     { //Start looping over reconstructed V0s in this event
       AliReconstructedV0 &v01 = event->fReconstructedV0[i];
       
-      bool center1Lam  = v01.isLamCenter[cutIndex];
-      bool center1ALam = v01.isALamCenter[cutIndex];
+      Bool_t center1Lam  = v01.isLamCenter[topCutIndex];
+      Bool_t center1ALam = v01.isALamCenter[topCutIndex];
       // Disregard V0 if it wasn't reconstructed as a center (anti)Lambda
-      if(!(center1Lam || center1ALam)) continue;
+      if (!(center1Lam || center1ALam)) continue;
       // Disregard V0 if it was removed via the judgment cuts
-      if(v01.isDeemedUnworthy[cutIndex]) continue;
+      if (v01.isDeemedUnworthy[topCutIndex]) continue;
      
-      for(int eventNumber=0; eventNumber<nEventsToMix+1; eventNumber++)
+      for (Int_t eventNumber=0; eventNumber<nEventsToMix+1; eventNumber++)
       { // Event buffer loop: eventNumber=0 is the current event, all other eventNumbers are past events
-	int startBin=0;
+	Int_t startBin=0;
 	// For same event pairs, start 2nd V0 loop at i+1 V0 to avoid
 	// double counting
-	if(eventNumber==0) startBin=i+1;
-	for(int j=startBin; j<(event+eventNumber)->fNumberCandidateV0; j++) 
+	if (eventNumber==0) startBin=i+1;
+	for (Int_t j=startBin; j<(event+eventNumber)->fNumberCandidateV0; j++) 
 	{ // Second V0 loop (from past or current event)
 	  AliReconstructedV0 &v02 = (event+eventNumber)->fReconstructedV0[j];
-	  if(eventNumber==0)  
+	  if (eventNumber==0)  
 	  { // Don't make pairs of V0s if they shared daughter tracks.
 	    // This is redundant if the judgment cut is already employed
-	    if(v01.daughter1ID 
-	       == v02.daughter1ID) continue;
-	    if(v01.daughter1ID 
-	       == v02.daughter2ID) continue;
-	    if(v01.daughter2ID 
-	       == v02.daughter1ID) continue;
-	    if(v01.daughter2ID 
-	       == v02.daughter2ID) continue;
+	    if (v01.daughter1ID == v02.daughter1ID) continue;
+	    if (v01.daughter1ID == v02.daughter2ID) continue;
+	    if (v01.daughter2ID == v02.daughter1ID) continue;
+	    if (v01.daughter2ID == v02.daughter2ID) continue;
 	  }
 	  //Disregard second V0 if it was removed via judgment cuts
-	  if(v02.isDeemedUnworthy[cutIndex]) continue;
+	  if (v02.isDeemedUnworthy[topCutIndex]) continue;
 	  // A central V0 has a mass that falls within the accepted inv
 	  // mass range.  Only make pairs with central V0s
-	  bool center2Lam  = v02.isLamCenter[cutIndex];
-	  bool center2ALam = v02.isALamCenter[cutIndex];
-	  if(!(center2Lam || center2ALam)) continue;
+	  Bool_t center2Lam  = v02.isLamCenter[topCutIndex];
+	  Bool_t center2ALam = v02.isALamCenter[topCutIndex];
+	  if (!(center2Lam || center2ALam)) continue;
+
+	  // Determine the pair type
+	  PairType pairType;
+	  if (center1Lam && center2Lam) {
+	    pairType = kLamLam;
+	  } else if (center1ALam && center2ALam) {
+	    pairType = kALamALam;
+	  } else if (center1Lam && center2ALam) {
+	    pairType = kLamALam;
+	  } else if (center1ALam && center2Lam) {
+	    pairType = kALamLam;
+	  } else {
+	    cout<<"Error: AliAnalysisV0Lam::DoPairStudies - Not a valid pair type"<<endl;
+	    continue;
+	  }
+	  
 	  // Now we calculate a bunch of values that are used later during
 	  // histogramming
-	  double pairKt = (v01.v0Momentum + v02.v0Momentum).Pt()/2;
+	  Double_t pairKt = (v01.v0Momentum + v02.v0Momentum).Pt()/2;
 	  //Calculate k* for V0s and daughters using different mass assumptions
-	  double pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
-	  double pairKstarProtPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGProton,fPDGProton);
-	  double pairKstarProtMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGProton,fPDGProton);
-	  double pairKstarPiPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGPion,fPDGPion);
-	  double pairKstarPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGPion,fPDGPion);
-	  //used for lambda-antilambda daughter kstar
-	  double pairKstarProtPlusPiPlus = 0; 
-	  double pairKstarProtMinusPiMinus = 0;
-	  double pairKstarProtPlusProtMinus = 0;
-	  double pairKstarPiPlusPiMinus = 0;
-
-	  // Need to be careful when calculating the k* of daughter tracks
-	  // of non-identical V0s
-	  if(center1Lam && center2ALam){
-	    pairKstarProtPlusPiPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGProton,fPDGPion);
-	    pairKstarProtMinusPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGPion,fPDGProton);
-	    pairKstarProtPlusProtMinus = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGProton,fPDGProton); 
-	    pairKstarPiPlusPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGPion,fPDGPion); 
-	  }
-	  else if(center1ALam && center2Lam){
-	    pairKstarProtPlusPiPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGPion,fPDGProton);
-	    pairKstarProtMinusPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGProton,fPDGPion);
-	    pairKstarProtPlusProtMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGProton,fPDGProton);
-	    pairKstarPiPlusPiMinus = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGPion,fPDGPion);
-	  }
-	  double pairKstarProtPlusPiMinus1 = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGProton,fPDGPion); // only relevant for LamLam
-	  double pairKstarProtPlusPiMinus2 = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGPion,fPDGProton); // only relevant for LamLam
-
-	  double pairKstarProtMinusPiPlus1 = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGProton,fPDGPion); // only relevant for ALamALam
-	  double pairKstarProtMinusPiPlus2 = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGPion, fPDGProton); // only relevant for ALamALam
-	  //Now find the average separation distance between daughter pairs.  Used to make a merging/splitting cut.
-	  Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
-	  Double_t avgSepNeg = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
-	  Double_t avgSepNegPos = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
-	  Double_t avgSepPosNeg = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
-
-	  Double_t dau1PosPt = v01.daughterPosMomentum.Pt();
-	  Double_t dau1NegPt = v01.daughterNegMomentum.Pt();
-	  Double_t dau2PosPt = v02.daughterPosMomentum.Pt();
-	  Double_t dau2NegPt = v02.daughterNegMomentum.Pt();
+	  Double_t pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
 	  
 	  //****** Now we get to the actual pair histogramming ******
 
 	  // // Momentum smearing study
-	  // if(fIsMCEvent) {
-	  //   if(center1Lam && center2Lam) {
+	  // if (fIsMCEvent) {
+	  //   if (center1Lam && center2Lam) {
 	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 0);
 	  //   }
-	  //   if(center1ALam && center2ALam) {
+	  //   if (center1ALam && center2ALam) {
 	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 1);
 	  //   }
-	  //   if((center1Lam && center2ALam)  || (center1ALam && center2Lam)) {
+	  //   if ((center1Lam && center2ALam)  || (center1ALam && center2Lam)) {
 	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 2);
 	  //   }
 	  // }
 
+	  vector<Bool_t> avgSepCutResults = CheckAvgSepCut(pairType, v01, v02);
+	  if (topCutIndex == fNominalCutIndex) {
+	    FillAvgSepHists(pairType, v01, v02, eventNumber);
+	  }
 
-
-
-
-	  //Normal correlation functions
-	  if(eventNumber==0) //Same event pair histogramming
-	  {
-	    //We do separate binning for each pair type
-	    if(center1Lam && center2Lam){
-	      // Some histograms we only fill when default variable cut
-	      // values have been used
-	      if(cutIndex == fNominalCutIndex){
-		//same sign tracks
-		fSignalLamLamProtSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
-		fSignalLamLamPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
-		//opposite sign tracks
-		fSignalLamLamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		fSignalLamLamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+	  // If this passes the two-track cuts, fill correlation functions
+	  for (UInt_t iTTC = 0; iTTC < avgSepCutResults.size(); iTTC++) {
+	    if (avgSepCutResults[iTTC]) {
+	      Int_t cutBin = 0;
+	      if (kTopologicalStudy == fSysStudyType) {
+		cutBin = topCutIndex;
+	      } else if (kTwoTrackStudy == fSysStudyType) {
+		cutBin = iTTC;
 	      }
-	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){ //looping over different avg sep cut values (if applicable)
-		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if(   (avgSepIdenticalProtonCut < avgSepPos)
-		   && (avgSepIdenticalPionCut   < avgSepNeg)
-		   && (avgSepProtonPionDiff     < avgSepPosNeg)
-		   && (avgSepProtonPionDiff     < avgSepNegPos))
-		{
-		  fSignalLamLam->Fill(cutIndex, centralityBin+1, pairKstarLam);
-		  if(cutIndex == fNominalCutIndex){
-		    fKtLamLamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
-		  }
-		}
-	      }
+	      FillCorrelationHists(pairType, v01, v02, eventNumber, cutBin, centralityBin);
 	    }
-	    if(center1ALam && center2ALam){
-	      if(cutIndex == fNominalCutIndex){
-		//same sign tracks
-		fSignalALamALamAntiProtSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
-		fSignalALamALamPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
-		//opposite sign tracks
-		fSignalALamALamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		fSignalALamALamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-	      }
-	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
-		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if(   (avgSepIdenticalPionCut   < avgSepPos)
-		   && (avgSepIdenticalProtonCut < avgSepNeg)
-		   && (avgSepProtonPionDiff     < avgSepPosNeg)
-		   && (avgSepProtonPionDiff     < avgSepNegPos))
-		{
-		  fSignalALamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
-		  if(cutIndex == fNominalCutIndex){
-		    fKtALamALamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
-		  }
-		}
-	      }
-	    }
-	    if((center1Lam && center2ALam) || (center1ALam && center2Lam)){
-	      if(cutIndex == fNominalCutIndex){
-		fSignalLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
-		fSignalLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
-		//opposite charge tracks
-		if(center1Lam)
-		{
-		  fSignalLamALamProtSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		  fSignalLamALamPionSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-		}
-		else
-		{
-		  fSignalLamALamProtSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-		  fSignalLamALamPionSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		}
-	      }
-	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
-		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if(center1Lam &&
-		   (   !(avgSepProtonPionSame   < avgSepPos)
-		    || !(avgSepProtonPionSame   < avgSepNeg)
-		    || !(avgSepProtonAntiproton < avgSepPosNeg)
-		    || !(avgSepPiPlusPiMinus    < avgSepNegPos))) {
-		  continue;
-		} else if(center1ALam &&
-		   (   !(avgSepProtonPionSame   < avgSepPos)
-		    || !(avgSepProtonPionSame   < avgSepNeg)
-		    || !(avgSepPiPlusPiMinus    < avgSepPosNeg)
-		    || !(avgSepProtonAntiproton < avgSepNegPos))) {
-		  continue;
-		}
-
-		fSignalLamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
-
-		if(cutIndex == fNominalCutIndex){
-		  fKtLamALamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
-		}
-	      }
-	    }
-	  } //end same event pair histogramming
-	  else //Mixed event pair histogramming
-	  {
-	    if(center1Lam && center2Lam){
-	      if(cutIndex == fNominalCutIndex){
-		fBkgLamLamProtSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
-		fBkgLamLamPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
-		//opposite sign tracks
-		fBkgLamLamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		fBkgLamLamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-		if(fIsMCEvent)
-		{ //collect momentum smearing information
-		  int pairType = 0;
-		  BinMomentumSmearing(v01.v0Momentum, v01.v0MomentumTruth, v02.v0Momentum, v02.v0MomentumTruth,pairType);
-		}
-	      }
-	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
-		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if(   (avgSepIdenticalProtonCut < avgSepPos)
-		   && (avgSepIdenticalPionCut   < avgSepNeg)
-		   && (avgSepProtonPionDiff     < avgSepPosNeg)
-		   && (avgSepProtonPionDiff     < avgSepNegPos))
-		{
-		  fBkgLamLam->Fill(cutIndex, centralityBin+1, pairKstarLam);
-		  if(cutIndex == fNominalCutIndex){
-		    fKtLamLamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
-		  }
-		}
-	      }
-	    }
-	    if(center1ALam && center2ALam){
-	      if(cutIndex == fNominalCutIndex){
-		fBkgALamALamAntiProtSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
-		fBkgALamALamPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt );
-		//opposite sign tracks
-		fBkgALamALamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		fBkgALamALamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-		if(fIsMCEvent)
-		{ //collect momentum smearing information
-		  int pairType = 1;
-		  BinMomentumSmearing(v01.v0Momentum, v01.v0MomentumTruth, v02.v0Momentum, v02.v0MomentumTruth,pairType);
-		}
-	      }
-	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
-		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if(   (avgSepIdenticalPionCut   < avgSepPos)
-		   && (avgSepIdenticalProtonCut < avgSepNeg)
-		   && (avgSepProtonPionDiff     < avgSepPosNeg)
-		   && (avgSepProtonPionDiff     < avgSepNegPos))
-		{
-		  fBkgALamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
-		  fKtALamALamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
-		}
-	      }
-	    }
-	    if((center1Lam && center2ALam) || (center1ALam && center2Lam)){
-	      if(cutIndex == fNominalCutIndex){
-		fBkgLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
-		fBkgLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
-		//opposite charge tracks
-		if(center1Lam)
-		{
-		  fBkgLamALamProtSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		  fBkgLamALamPionSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-		}
-		else
-		{
-		  fBkgLamALamProtSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
-		  fBkgLamALamPionSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
-		}
-		if(fIsMCEvent)
-		{ //collect momentum smearing information
-		  int pairType = 2;
-		  BinMomentumSmearing(v01.v0Momentum, v01.v0MomentumTruth, v02.v0Momentum, v02.v0MomentumTruth,pairType);
-		}
-	      }
-	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
-		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if(center1Lam &&
-		   (   !(avgSepProtonPionSame   < avgSepPos)
-		    || !(avgSepProtonPionSame   < avgSepNeg)
-		    || !(avgSepProtonAntiproton < avgSepPosNeg)
-		    || !(avgSepPiPlusPiMinus    < avgSepNegPos))) {
-		  continue;
-		} else if(center1ALam &&
-		   (   !(avgSepProtonPionSame   < avgSepPos)
-		    || !(avgSepProtonPionSame   < avgSepNeg)
-		    || !(avgSepPiPlusPiMinus    < avgSepPosNeg)
-		    || !(avgSepProtonAntiproton < avgSepNegPos))) {
-		  continue;
-		}
-		fBkgLamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
-		if(cutIndex == fNominalCutIndex){
-		  fKtLamALamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
-		}
-	      }//end loop over sepCutIndex
-	    }//end Lam-ALam pair binning
-	  }//end mixed event pair histogramming
+	  }
 	}//end past event
       }//end event buffer
     }//end current event
   }//end variable cut loop
 }//end DoPairStudies()
+
+void AliAnalysisV0Lam::FillAvgSepHists(PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent)
+{
+  // Calculate avg sep for all pairs of daughters
+  Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
+  Double_t avgSepNeg = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
+  Double_t avgSepNegPos = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
+  Double_t avgSepPosNeg = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
+
+  Double_t dau1PosPt = v01.daughterPosMomentum.Pt();
+  Double_t dau1NegPt = v01.daughterNegMomentum.Pt();
+  Double_t dau2PosPt = v02.daughterPosMomentum.Pt();
+  Double_t dau2NegPt = v02.daughterNegMomentum.Pt();
+
+  if (kLamLam == pairType) {
+    if(!isMixedEvent) {
+      fSignalLamLamProtSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fSignalLamLamPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fSignalLamLamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+      fSignalLamLamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+    } else {
+      fBkgLamLamProtSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fBkgLamLamPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fBkgLamLamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+      fBkgLamLamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+    }
+  } else if (kALamALam == pairType) {
+    if(!isMixedEvent) {
+      fSignalALamALamAntiProtSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fSignalALamALamPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fSignalALamALamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+      fSignalALamALamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+    } else {
+      fBkgALamALamAntiProtSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fBkgALamALamPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fBkgALamALamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+      fBkgALamALamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+    }
+  } else if (kLamALam == pairType) {
+    if(!isMixedEvent) {
+      fSignalLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fSignalLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fSignalLamALamProtSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+      fSignalLamALamPionSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+    } else {
+      fBkgLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fBkgLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fBkgLamALamProtSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+      fBkgLamALamPionSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+    }
+  } else if (kALamLam == pairType) {
+    if(!isMixedEvent) {
+      fSignalLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fSignalLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fSignalLamALamProtSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+      fSignalLamALamPionSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+    } else {
+      fBkgLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+      fBkgLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+      fBkgLamALamProtSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+      fBkgLamALamPionSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+    }
+  }
+}
+
+void AliAnalysisV0Lam::FillCorrelationHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixedEvent, const Int_t cutBin, const Int_t centralityBin)
+{
+  // Fill same event and mixed event k* histograms
+  Double_t pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
+
+  if (kLamLam == pairType) {
+    if(!isMixedEvent) {
+      fSignalLamLam->Fill(cutBin, centralityBin+1, pairKstarLam);
+    } else {
+      fBkgLamLam->Fill(cutBin, centralityBin+1, pairKstarLam);
+    }
+  } else if (kALamALam == pairType) {
+    if(!isMixedEvent) {
+      fSignalALamALam->Fill(cutBin, centralityBin+1, pairKstarLam);
+    } else {
+      fBkgALamALam->Fill(cutBin, centralityBin+1, pairKstarLam);
+    }
+  } else if ((kLamALam == pairType) || (kALamLam == pairType)) {
+    if(!isMixedEvent) {
+      fSignalLamALam->Fill(cutBin, centralityBin+1, pairKstarLam);
+    } else {
+      fBkgLamALam->Fill(cutBin, centralityBin+1, pairKstarLam);
+    }
+  }
+}
+
+vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02)
+{
+  // Calculate avg sep for all pairs of daughters
+  Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
+  Double_t avgSepNeg = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
+  Double_t avgSepNegPos = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
+  Double_t avgSepPosNeg = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
+
+  vector<Bool_t> cutResults;
+  Int_t nVariableCuts = 1;
+  if (kTwoTrackStudy == fSysStudyType) {
+    nVariableCuts = 3;
+  }
+  
+  // We may be varying one of the cut values. Loop over the variations.
+  for (Int_t iVar = 0; iVar < nVariableCuts; iVar++) {
+    // Initialize the nominal avg sep cut values.  
+    vector<Double_t> nominalCutValues(6);
+    nominalCutValues[kSameProtProt] = 12.; // Same sign prot-prot cut
+    nominalCutValues[kSamePiPi]     = 10.; // Same sign pi-pi
+    nominalCutValues[kSameProtPi]   = 10.; // Same sign prot-pi
+    nominalCutValues[kDiffProtProt] = 10.; // Diff sign prot-prot
+    nominalCutValues[kDiffPiPi]     = 25.; // Diff sign pi-pi
+    nominalCutValues[kDiffProtPi]   = 15.; // Diff sign prot-pi
+
+    // Vary one of the cut values
+    if (kTwoTrackStudy && (iVar == 0)) {
+      nominalCutValues[fVariableCutType] *= 0.9;
+    } else if (kTwoTrackStudy && (iVar == 2)) {
+      nominalCutValues[fVariableCutType] *= 1.1;
+    }
+
+    // Do different checks for each pair type
+    Bool_t doesPass = kFALSE;
+    if (kLamLam == type) {
+      if (    (nominalCutValues[kSameProtProt] < avgSepPos)
+	   && (nominalCutValues[kSamePiPi]     < avgSepNeg)
+	   && (nominalCutValues[kDiffProtPi]   < avgSepPosNeg)
+	   && (nominalCutValues[kDiffProtPi]   < avgSepNegPos)) {
+	doesPass = kTRUE;
+      }
+    } else if (kALamALam == type) {
+      if (    (nominalCutValues[kSamePiPi]     < avgSepPos)
+	   && (nominalCutValues[kSameProtProt] < avgSepNeg)
+	   && (nominalCutValues[kDiffProtPi]   < avgSepPosNeg)
+	   && (nominalCutValues[kDiffProtPi]   < avgSepNegPos)) {
+	doesPass = kTRUE;
+      }
+    } else if (kLamALam == type) {
+      if (    (nominalCutValues[kSameProtPi]   < avgSepPos)
+	   && (nominalCutValues[kSameProtPi]   < avgSepNeg)
+	   && (nominalCutValues[kDiffProtProt] < avgSepPosNeg)
+	   && (nominalCutValues[kDiffPiPi]     < avgSepNegPos)) {
+	doesPass = kTRUE;
+      }
+    } else if (kALamLam == type) {
+      if (    (nominalCutValues[kSameProtPi]   < avgSepPos)
+	   && (nominalCutValues[kSameProtPi]   < avgSepNeg)
+	   && (nominalCutValues[kDiffPiPi]     < avgSepPosNeg)
+	   && (nominalCutValues[kDiffProtProt] < avgSepNegPos)) {
+	doesPass = kTRUE;
+      }
+    } else {
+      cerr<<"Error: AliAnalysisV0Lam::CheckAvgSepCut - Not a valid pair type!"<<endl;
+    }
+    cutResults.push_back(doesPass);
+  } // end variable cut loop
+
+  // return vector of check results
+  return cutResults;
+}
 
 
 

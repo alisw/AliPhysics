@@ -47,7 +47,8 @@ Bool_t  kPrint = 0  ;             /// Global bool for print option
 /// \param tag : name to pass to analysis generated branch and histo container
 /// \param debug : An int to define the debug level of all the tasks
 /// \param print : A bool to enable the print of the settings per task
-///
+/// \param tmInCone : A bool to enable the CPV in cone (to reject charged clusters in Eiso calculation)
+/// \param SSsmearing : An integer to enable the shower shape smearing, 0: no smearing, 1: Smearing with Gustavo's settings, 2: Smearing with Astrid's settings
 AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone          = 0.4,
                                                       const Float_t  pth           = 2.,
                                                       const Bool_t   leading       = kFALSE,
@@ -74,7 +75,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const TString  tag           = "",
                                                       const Int_t    debug         = -1,
                                                       const Bool_t   print         = kFALSE,
-                                                      const Bool_t   tmInCone      = kTRUE
+                                                      const Bool_t   tmInCone      = kTRUE,
+                                                      const Int_t   SSsmearing    = 0
                                                       )
 {
 kDebug = debug;
@@ -126,7 +128,7 @@ kPrint = print ;
 
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
-                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print));
+                                         calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print,SSsmearing));
   maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
 
   // Analysis tasks setting and configuration
@@ -212,7 +214,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
                                      TString calorimeter = "EMCAL", Bool_t nonlin = kTRUE, Bool_t timecut = kFALSE,
                                      Bool_t primvtx = kFALSE, Bool_t notrackcut = kFALSE, Float_t tmin, Float_t tmax,
                                      Bool_t trackTcut = kFALSE, Float_t minCen = -1, Float_t maxCen = -1,
-                                     Int_t debug = -1, Bool_t print = kFALSE)
+                                     Int_t debug = -1, Bool_t print = kFALSE, Int_t SSsmearing = 0)
 {
   if(simu)
   {
@@ -233,6 +235,20 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD", Bool_t useKi
 
   reader->SwitchOffWriteDeltaAOD()  ;
 
+if(SSsmearing != 0)
+{
+  reader->SwitchOnShowerShapeSmearing();
+    if(SSsmearing == 1) //Gustavo's settings
+    { 
+      reader->SetSmearingFunction(kSmearingLandau);
+      reader->SetShowerShapeSmearWidth(0.005);
+    }
+    else if(SSsmearing == 2) //Astrid's settings
+    { 
+      reader->SetSmearingFunction(kSmearingLandauShift);
+      reader->SetShowerShapeSmearWidth(0.035);
+    }
+}
   // MC settings
   if(useKinematics)
   {

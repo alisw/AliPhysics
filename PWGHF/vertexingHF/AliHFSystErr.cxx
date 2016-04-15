@@ -2581,73 +2581,73 @@ void AliHFSystErr::InitD0toKpi2013pPb0100RapScan0804(){
   InitD0toKpi2013pPb0100();
   
   AliInfo("Settings for D0 --> K pi, pPb collisions at 5.023 TeV, rapidity scan -0.8 < y < -0.4");
-
-  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.04);
-  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.06);
-  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.04);
+  
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.058);
+  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.058);
   
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // 0%
- 
+  
   for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
-
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
   
-
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.028);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
+  
+  
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitD0toKpi2013pPb0100RapScan0401(){
   InitD0toKpi2013pPb0100();
-
-   AliInfo("Settings for D0 --> K pi, pPb collisions at 5.023 TeV, rapidity scan -0.4 < y < -0.1");
   
-  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.04);
-  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.08);
-  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.04);
+  AliInfo("Settings for D0 --> K pi, pPb collisions at 5.023 TeV, rapidity scan -0.4 < y < -0.1");
+  
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.042);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.058);
+  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.058);
   
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // 0%
-
-   for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05);
-   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
-   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
-
+  
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
+  
   for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.028);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitD0toKpi2013pPb0100RapScan0101(){
   InitD0toKpi2013pPb0100();
-
+  
   AliInfo("Settings for D0 --> K pi, pPb collisions at 5.023 TeV, rapidity scan -0.1 < y < 0.1");
-
-  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.04);
-  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.12);
-  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.08);
-
+  
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.104);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.104);
+  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.104);
+  
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // 0%
-
+  
   for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
-
+  
   for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
-
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.028);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
+  
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitD0toKpi2013pPb0100RapScan0104(){
   InitD0toKpi2013pPb0100();
-
+  
   AliInfo("Settings for D0 --> K pi, pPb collisions at 5.023 TeV, rapidity scan 0.1 < y < 0.4");
-
-  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.04);
-  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.03);
-  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.08);
+  
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.042);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.058);
+  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.058);
   
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // 0%
   
@@ -2656,29 +2656,29 @@ void AliHFSystErr::InitD0toKpi2013pPb0100RapScan0104(){
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
   
   for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
-
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.028);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
+  
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitD0toKpi2013pPb0100RapScan0408(){
   InitD0toKpi2013pPb0100();
-
+  
   AliInfo("Settings for D0 --> K pi, pPb collisions at 5.023 TeV, rapidity scan 0.4 < y < 0.8");
-
-   for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.04);
-   for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.03);
-   for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.04);
-
+  
+  for(Int_t i=2;i<=5;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.058);
+  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.058);
+  
   for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.0); // 0%
   
   for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
-
+  
   for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.028);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
   
 };
 
@@ -2698,11 +2698,12 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0804(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.08);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
 
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.10);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 
 };
+
 //_________________________________________________________________________
 void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0401(){
   InitDplustoKpipi2013pPb0100();
@@ -2718,9 +2719,9 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0401(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.08);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
 
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 
 };
 //_________________________________________________________________________
@@ -2738,9 +2739,9 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0101(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.08);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
 
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 
 };
 //_________________________________________________________________________
@@ -2758,10 +2759,9 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0104(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.08);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
   
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
-
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0408(){
@@ -2779,9 +2779,9 @@ void AliHFSystErr::InitDplustoKpipi2013pPb0100RapScan0408(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.08);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.08);
 
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
   
 };
 
@@ -2802,10 +2802,9 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100RapScan0804(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
 
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
-
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitDstartoD0pi2013pPb0100RapScan0401(){
@@ -2823,9 +2822,9 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100RapScan0401(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
 
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 
 };
 //_________________________________________________________________________
@@ -2844,9 +2843,9 @@ InitDstartoD0pi2013pPb0100();
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
   
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 
 };
 //_________________________________________________________________________
@@ -2865,9 +2864,11 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100RapScan0104(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
   
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
+
+
 };
 //_________________________________________________________________________
 void AliHFSystErr::InitDstartoD0pi2013pPb0100RapScan0408(){
@@ -2885,10 +2886,9 @@ void AliHFSystErr::InitDstartoD0pi2013pPb0100RapScan0408(){
   for(Int_t i=6;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
   
-  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.10);
-  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.05);
-
+  for(Int_t i=2;i<=5;i++) fMCPtShape->SetBinContent(i,0.117);
+  for(Int_t i=6;i<=8;i++) fMCPtShape->SetBinContent(i,0.054);
+  for(Int_t i=9;i<=16;i++) fMCPtShape->SetBinContent(i,0.064);
 };
 
 ///_________________________________________________________________________

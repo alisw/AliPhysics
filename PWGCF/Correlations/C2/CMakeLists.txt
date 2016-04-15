@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisC2Settings.cxx
   AliAnalysisC2Utils.cxx
   AliAnalysisTaskC2.cxx
   AliAnalysisTaskC2Base.cxx
@@ -48,7 +49,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW EMCALUtils OADB PHOSUtils)
+set(LIBDEPS ANALYSISalice OADB)
 	generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library

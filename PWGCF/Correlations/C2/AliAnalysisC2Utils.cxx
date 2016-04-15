@@ -105,13 +105,13 @@ THnS* AliAnalysisC2Utils::CreateTransformedHist(THn *h){
 			 eta_bar_nbins,
 			 delta_phi_nbins,
 			 phi_bar_nbins,
-			 h->GetAxis(4)->GetNbins(),         // cent
+			 h->GetAxis(4)->GetNbins(),         // mult
 			 h->GetAxis(5)->GetNbins()};       // zvtx
   const Double_t xmin[] = {delta_eta_min,
 			  eta_bar_min,
 			  delta_phi_min,
 			  phi_bar_min,
-			  0,         // cent
+			  0,         // mult
 			  0};       // zvtx
 
   const Double_t xmax[] = {delta_eta_max,
@@ -123,13 +123,13 @@ THnS* AliAnalysisC2Utils::CreateTransformedHist(THn *h){
 
   THnS *hist_out = new THnS(TString(h->GetName()) + TString("_trans"),
 			    TString(h->GetTitle())
-			    + TString(";#Delta#eta;#bar{#eta};#Delta#phi;#bar{#phi};cent;z_{vtx};"),
+			    + TString(";#Delta#eta;#bar{#eta};#Delta#phi;#bar{#phi};mult;z_{vtx};"),
 			    h->GetNdimensions(),
 			    nbins,
 			    xmin,
 			    xmax);
-  // Copy the axis for cent and zvtx
-  AliAnalysisC2Utils::CopyAxisFromHist(4, h, 4, hist_out);  // cent
+  // Copy the axis for mult and zvtx
+  AliAnalysisC2Utils::CopyAxisFromHist(4, h, 4, hist_out);  // mult
   AliAnalysisC2Utils::CopyAxisFromHist(5, h, 5, hist_out);  // zvtx
   return hist_out;
 }

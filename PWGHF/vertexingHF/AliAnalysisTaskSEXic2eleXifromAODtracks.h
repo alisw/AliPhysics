@@ -53,9 +53,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, TClonesArray *mcArray);
+  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event,  TClonesArray *mcArray);
   void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, TVector *tinfo, TVector *vinfo, Int_t charge);
-  void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
+  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
@@ -122,8 +122,12 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DefineMCEleTreeVariables();
   void DefineMCCascTreeVariables();
   void DefineMCGenPairTreeVariables();
+  void DefineCorrelationTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
+  Bool_t HaveCharmInHistory(Int_t *history);
+  Bool_t HaveBottomInHistory(Int_t *history);
+  Int_t FromSemileptonicDecays(Int_t *history);
 
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
@@ -147,6 +151,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCGenPairVariablesTree;         //!<! tree of mcArray analysis pair tree
+  TTree* fCorrelationVariablesTree;         //!<! Correlation variable tree under histo object list
   Bool_t fReconstructPrimVert;       /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -160,6 +165,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCCascVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCGenPairVariables;   //!<! variables to be written to the tree
+  Float_t *fCorrelationVariables;   //!<! Correlation variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
@@ -318,6 +324,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoXicElectronMCS1;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCS2;         //!<! electron in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoBottomElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoCharmElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoXiMCGen;         //!<! Xi in mcArray (only from charmed baryon)
 
 	TH2F *fHistoLambdaPtvsDl; //!<! Lambda proper life time distribution
@@ -332,7 +340,14 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoEleXiPtvsRapidityMCS; //!<! e-Xi pT vs y
 
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseXiPt; //!<! Response function Lambda pT <- True ept
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
+
+  THnSparse* fHistoElectronPi0Total;         //!<! Number of electrons from pi0
+  THnSparse* fHistoElectronPi0Tag;         //!<! Number of electrons from pi0 and have partner
+  THnSparse* fHistoElectronEtaTotal;         //!<! Number of electrons from eta
+  THnSparse* fHistoElectronEtaTag;         //!<! Number of electrons from eta and have partner
+
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<!  evt vs runnumber
@@ -379,7 +394,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,22); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,24); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

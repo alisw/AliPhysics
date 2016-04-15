@@ -123,7 +123,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
 	fDebugLevel = 0;
-	AnaEntry = 0;
 	fCent = -1;
 	fCBin = -1;
 	fEffMode = 0;
@@ -214,7 +213,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
 	// Create histograms
 	// Called once
-	AnaEntry = 0;
 	// need to fill to book a histo
 	fHMG = new AliJHistManager("AliJFFlucHistManager","test");
 	// set AliJBin here // 
@@ -239,6 +237,14 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fh_ImpactParameter
 		<< TH1D("h_IP", "h_IP", 400, -2, 20)
 		<< "END" ;
+
+	fh_TrkQA_TPCvsCent
+		<< TH2D("h_trk_Cent_vs_TPC","h_trk_Cent_vs_TPC", 100, 0, 100, 100, 0, 3000)
+		<< "END" ;
+
+	fh_TrkQA_TPCvsGlob
+		<< TH2D("h_trk_Glob_vs_TPC", "h_trk_Glob_vs_TPC", 100, 0, 2000, 100, 0, 3000)
+		<< "END";
 
 	fh_vertex
 		<< TH1D("h_vertex","h_vertex", 400, -20, 20)
@@ -339,7 +345,6 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// Main loop
-	if (AnaEntry==0){ cout<< "start event loop " << endl; } ;
 	// find Centrality
 	double inputCent = fCent;
 	fCBin = -1;
@@ -604,7 +609,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	} // QC method done.
 
 	//1 evt is done...
-	AnaEntry++;
 }
 
 //________________________________________________________________________
@@ -647,6 +651,8 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 	for(int iaxis=0; iaxis<3; iaxis++){
 		fh_vertex[iaxis]->Fill(  fVertex[iaxis] );
 	}
+	fh_TrkQA_TPCvsCent->Fill( fCent, fTPCtrks);
+	fh_TrkQA_TPCvsGlob->Fill( fGlbtrks, fTPCtrks);
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::CalculateQnSP( double eta1, double eta2, int harmonics)

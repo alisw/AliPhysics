@@ -37,8 +37,6 @@ using namespace std;
 class AliConversionPhotonCuts : public AliAnalysisCuts {
       
   public: 
-    
-
     enum cutIds {
       kv0FinderType,                
       ketaCut,                                     
@@ -133,9 +131,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void FillPhotonCutIndex(Int_t photoncut){if(fHistoCutIndex)fHistoCutIndex->Fill(photoncut);}    
     void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0s)fHistoEtaDistV0s->Fill(v0Eta);}
     void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
-    
-    static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
-    static AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
+
+    void SetV0ReaderName(TString name){fV0ReaderName = name; return;}
+
+    AliVTrack * GetTrack(AliVEvent * event, Int_t label);
+    AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
     
     ///Cut functions
     Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
@@ -193,7 +193,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
     Int_t GetFirstTPCRow(Double_t radius);
     
-      Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
+    Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
     Bool_t SetTRDElectronPIDCut(Int_t TRDelectronPID);
     
     // Request Flags
@@ -206,6 +206,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
   protected:
     TList*            fHistograms;                          //
     AliPIDResponse*   fPIDResponse;                         //
+
+    TString           fV0ReaderName;
 
     //cuts
     Double_t          fMaxR;                                // r cut
@@ -327,7 +329,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,8)
+    ClassDef(AliConversionPhotonCuts,9)
 };
 
 #endif

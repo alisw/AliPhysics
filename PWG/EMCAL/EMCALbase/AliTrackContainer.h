@@ -58,8 +58,9 @@ class AliTrackContainer : public AliParticleContainer {
   virtual AliVTrack          *GetAcceptTrack(Int_t i=-1)             const;
   virtual AliVTrack          *GetNextAcceptTrack()                        ;
   virtual AliVTrack          *GetNextTrack()                              ;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;
-  virtual Bool_t              GetMomentum(TLorentzVector &mom, const AliVParticle* part) const;
+  Char_t                      GetTrackType(const AliVTrack* track)   const;
+  virtual Bool_t              GetMomentumFromTrack(TLorentzVector &mom, const AliVTrack* track, Double_t mass) const;
+  virtual Bool_t              GetMomentumFromTrack(TLorentzVector &mom, const AliVTrack* track) const;
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom);
@@ -70,8 +71,6 @@ class AliTrackContainer : public AliParticleContainer {
   Char_t                      GetTrackType(Int_t i)                     const   { return i >= 0 && i < fTrackTypes.GetSize() ? fTrackTypes[i] : kUndefined ; }
 
   void                        SetArray(AliVEvent *event);
-
-  void                        SetClassName(const char *clname);
 
   void                        SetTrackFilterType(ETrackFilterType_t f)          { fTrackFilterType = f; }
   void                        SetFilterHybridTracks(Bool_t f)                   { if (f) fTrackFilterType = AliEmcalTrackSelection::kHybridTracks; else fTrackFilterType = AliEmcalTrackSelection::kNoTrackFilter; }   // legacy method

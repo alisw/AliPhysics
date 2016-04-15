@@ -17,10 +17,11 @@
 #include <TList.h>
 #include <TMath.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TRandom3.h>
 #include <TVirtualFFT.h>
 
-//AliRoot include files 
+//AliRoot include files
 #include "AliAnalysisTaskSE.h"
 #include "AliRunLoader.h"
 #include "AliAnalysisManager.h"
@@ -65,7 +66,6 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() :
   fEPV0AR(-999.), fEPV0CR(-999.), fEPV0R(-999.),
   fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.),
   fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-  fHistEPV0MB(0), fHistEPV0RMB(0), fHistEPV0AMB(0), fHistEPV0CMB(0), fHistEPTPCMB(0),
   fHistEPTPC(0), fHistEPTPCResolution(0),
   fHistEPV0(0), fHistEPV0A(0), fHistEPV0C(0),
   fHistEPV0AR(0), fHistEPV0CR(0), fHistEPV0R(0),
@@ -77,7 +77,7 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh() :
   fHistClusterN(0), fHistClusterM02(0),
   fHistClusterEN(0), fHistClusterEtN(0), 
   fHistClusterEM02Raw(0), fHistClusterEM02Cut(0), fHistClusterEtM02(0),
-  fHistClusterdphiV0(0),
+  fHistClusterdphiV0(0), fHistClusterNLMRaw(0), fHistClusterNLM(0),
   fHistTrackPt(0), fHistTrackEta(0), fHistTrackPhi(0), fHistTrackPhiEta(0),
   fClusterV0(0), fClusterV0A(0), fClusterV0C(0), fClusterTPC(0),
   fHistStatEvt(0), fHistStatCluster(0), fHistStatRunNum(0), fHistStatCentrality(0), fHistStatCentralityCorrected(0),
@@ -105,7 +105,6 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) :
   fEPV0AR(-999.), fEPV0CR(-999.), fEPV0R(-999.),
   fEPV0AR4(-999.), fEPV0AR5(-999.), fEPV0AR6(-999.), fEPV0AR7(-999.),
   fEPV0CR0(-999.), fEPV0CR1(-999.), fEPV0CR2(-999.), fEPV0CR3(-999.),
-  fHistEPV0MB(0), fHistEPV0RMB(0), fHistEPV0AMB(0), fHistEPV0CMB(0), fHistEPTPCMB(0),
   fHistEPTPC(0), fHistEPTPCResolution(0),
   fHistEPV0(0), fHistEPV0A(0), fHistEPV0C(0),
   fHistEPV0AR(0), fHistEPV0CR(0), fHistEPV0R(0),
@@ -117,7 +116,7 @@ AliAnalysisTaskEMCALPi0V2ShSh::AliAnalysisTaskEMCALPi0V2ShSh(const char *name) :
   fHistClusterN(0), fHistClusterM02(0),
   fHistClusterEN(0), fHistClusterEtN(0), 
   fHistClusterEM02Raw(0), fHistClusterEM02Cut(0), fHistClusterEtM02(0),
-  fHistClusterdphiV0(0),
+  fHistClusterdphiV0(0), fHistClusterNLMRaw(0), fHistClusterNLM(0),
   fHistTrackPt(0), fHistTrackEta(0), fHistTrackPhi(0), fHistTrackPhiEta(0),
   fClusterV0(0), fClusterV0A(0), fClusterV0C(0), fClusterTPC(0),
   fHistStatEvt(0), fHistStatCluster(0), fHistStatRunNum(0), fHistStatCentrality(0), fHistStatCentralityCorrected(0),
@@ -174,21 +173,6 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fHistStatCentralityCorrected = new TH1D("fHistStatCentralityCorrected", "", 200, 0, 100);
   fOutputList->Add(fHistStatCentralityCorrected);
   
-  fHistEPV0MB = new TH1F("fHistEPV0MB","",100,0.0,TMath::Pi());
-  fOutputList->Add(fHistEPV0MB);
-
-  fHistEPV0RMB = new TH1F("fHistEPV0RMB","",100,0.0,TMath::Pi());
-  fOutputList->Add(fHistEPV0RMB);
-
-  fHistEPV0AMB = new TH1F("fHistEPV0AMB","",100,0.0,TMath::Pi());
-  fOutputList->Add(fHistEPV0AMB);
-
-  fHistEPV0CMB = new TH1F("fHistEPV0CMB","",100,0.0,TMath::Pi());
-  fOutputList->Add(fHistEPV0CMB);
-
-  fHistEPTPCMB = new TH1F("fHistEPTPCMB","",100,0.0,TMath::Pi());
-  fOutputList->Add(fHistEPTPCMB);
-
   fHistEPTPC = new TH2F("fHistEPTPC","",100,0,100,100,0.0,TMath::Pi());
   fOutputList->Add(fHistEPTPC);
 
@@ -231,7 +215,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fHistEPV0CFlatten = new TH2F("fHistEPV0CFlatten","",100,0,100,100,0.0,TMath::Pi());
   fOutputList->Add(fHistEPV0CFlatten);
 
-  fHistEPTPCFlatten = new TH2F("fHistEPTPFlatten","",100,0,100,100,0.0,TMath::Pi());
+  fHistEPTPCFlatten = new TH2F("fHistEPTPCFlatten","",100,0,100,100,0.0,TMath::Pi());
   fOutputList->Add(fHistEPTPCFlatten);
 
   fHistEPDiffV0A_V0CR0 = new TH2F("fHistEPDiffV0A_V0CR0","",100,0,100,100,-1.0,1.0);
@@ -255,22 +239,22 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fHistEPDiffV0AR_V0CR = new TH2F("fHistEPDiffV0AR_V0CR","",100,0,100,100,-1.0,1.0);
   fOutputList->Add(fHistEPDiffV0AR_V0CR);
 
-  fHistEPRBRCosV0A = new TProfile("fHistEPRBRCosV0A","",45,0,45,-1.,1.);
+  fHistEPRBRCosV0A = new TProfile2D("fHistEPRBRCosV0A","",100,0,100,45,0,45,-1.,1.);
   fOutputList->Add(fHistEPRBRCosV0A);
 
-  fHistEPRBRSinV0A = new TProfile("fHistEPRBRSinV0A","",45,0,45,-1.,1.);
+  fHistEPRBRSinV0A = new TProfile2D("fHistEPRBRSinV0A","",100,0,100,45,0,45,-1.,1.);
   fOutputList->Add(fHistEPRBRSinV0A);
 
-  fHistEPRBRCosV0C = new TProfile("fHistEPRBRCosV0C","",45,0,45,-1.,1.);
+  fHistEPRBRCosV0C = new TProfile2D("fHistEPRBRCosV0C","",100,0,100,45,0,45,-1.,1.);
   fOutputList->Add(fHistEPRBRCosV0C);
 
-  fHistEPRBRSinV0C = new TProfile("fHistEPRBRSinV0C","",45,0,45,-1.,1.);
+  fHistEPRBRSinV0C = new TProfile2D("fHistEPRBRSinV0C","",100,0,100,45,0,45,-1.,1.);
   fOutputList->Add(fHistEPRBRSinV0C);
 
-  fHistEPRBRCosTPC = new TProfile("fHistEPRBRCosTPC","",45,0,45,-1.,1.);
+  fHistEPRBRCosTPC = new TProfile2D("fHistEPRBRCosTPC","",100,0,100,45,0,45,-1.,1.);
   fOutputList->Add(fHistEPRBRCosTPC);
 
-  fHistEPRBRSinTPC = new TProfile("fHistEPRBRSinTPC","",45,0,45,-1.,1.);
+  fHistEPRBRSinTPC = new TProfile2D("fHistEPRBRSinTPC","",100,0,100,45,0,45,-1.,1.);
   fOutputList->Add(fHistEPRBRSinTPC);
   
   fHistClusterEta = new TH1F("fHistClusterEta","Cluster Pseudorapidity Distribution",100,-1.0,1.0);
@@ -324,6 +308,14 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
   fHistClusterdphiV0 = new TH1D("fHistClusterdphiV0","Cluster dphiV0 Distribution",100,0.0,TMath::Pi());
   fHistClusterdphiV0->GetYaxis()->SetTitle("Entries"); fHistClusterdphiV0->GetXaxis()->SetTitle("dphiV0 [rad]");
   fOutputList->Add(fHistClusterdphiV0);
+
+  fHistClusterNLMRaw = new TH1D("fHistClusterNLMRaw","",10,0,10);
+  fHistClusterNLMRaw->GetYaxis()->SetTitle("Entries"); fHistClusterNLMRaw->GetXaxis()->SetTitle("NLM");
+  fOutputList->Add(fHistClusterNLMRaw);
+
+  fHistClusterNLM = new TH1D("fHistClusterNLM","",10,0,10);
+  fHistClusterNLM->GetYaxis()->SetTitle("Entries"); fHistClusterNLM->GetXaxis()->SetTitle("NLM");
+  fOutputList->Add(fHistClusterNLM);
 
   fHistTrackPt = new TH1F("fHistTrackPt","Track Transverse Momentum Distribution",100,0.0,30.0);
   fHistTrackPt->GetYaxis()->SetTitle("Entries"); fHistTrackPt->GetXaxis()->SetTitle("P_{t} [GeV/c]");
@@ -588,12 +580,6 @@ void AliAnalysisTaskEMCALPi0V2ShSh::VZEROEventPlane(Bool_t flattenEP)
   fHistEPV0CR0->Fill(fCentrality, fEPV0CR0);
   fHistEPV0CR3->Fill(fCentrality, fEPV0CR3);
 
-  fHistEPV0MB->Fill(fEPV0);
-  fHistEPV0RMB->Fill(fEPV0R);
-  fHistEPV0AMB->Fill(fEPV0A);
-  fHistEPV0CMB->Fill(fEPV0C);  
-  fHistEPTPCMB->Fill(fEPTPC);
-
   if (flattenEP) {
     fEPV0A = ApplyFlatteningV0A(fEPV0A, fCentrality);
     fEPV0C = ApplyFlatteningV0C(fEPV0C, fCentrality);
@@ -616,12 +602,12 @@ void AliAnalysisTaskEMCALPi0V2ShSh::VZEROEventPlane(Bool_t flattenEP)
   fHistEPDiffV0AR_V0CR->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR - fEPV0CR)));
 
   // run-by-run QA
-  fHistEPRBRCosV0A->Fill(fInternalRunNum, TMath::Cos(2*fEPV0A));
-  fHistEPRBRSinV0A->Fill(fInternalRunNum, TMath::Sin(2*fEPV0A));
-  fHistEPRBRCosV0C->Fill(fInternalRunNum, TMath::Cos(2*fEPV0C));
-  fHistEPRBRSinV0C->Fill(fInternalRunNum, TMath::Sin(2*fEPV0C));
-  fHistEPRBRCosTPC->Fill(fInternalRunNum, TMath::Cos(2*fEPTPC));
-  fHistEPRBRSinTPC->Fill(fInternalRunNum, TMath::Sin(2*fEPTPC));
+  fHistEPRBRCosV0A->Fill(fCentrality, fInternalRunNum, TMath::Cos(2*fEPV0A));
+  fHistEPRBRSinV0A->Fill(fCentrality, fInternalRunNum, TMath::Sin(2*fEPV0A));
+  fHistEPRBRCosV0C->Fill(fCentrality, fInternalRunNum, TMath::Cos(2*fEPV0C));
+  fHistEPRBRSinV0C->Fill(fCentrality, fInternalRunNum, TMath::Sin(2*fEPV0C));
+  fHistEPRBRCosTPC->Fill(fCentrality, fInternalRunNum, TMath::Cos(2*fEPTPC));
+  fHistEPRBRSinTPC->Fill(fCentrality, fInternalRunNum, TMath::Sin(2*fEPTPC));
 }
 
 //________________________________________________________________________
@@ -722,6 +708,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::FillHistsCluster()
     fHistClusterEtN->Fill(Et,N);
     fHistClusterEtM02->Fill(Et,M02);
     fHistClusterdphiV0->Fill(dphiV0);
+    fHistClusterNLM->Fill(clus->GetNExMax());
   }
 }
 
@@ -878,14 +865,20 @@ Bool_t AliAnalysisTaskEMCALPi0V2ShSh::IsPi0Candidate(const AliVCluster *c)
   Double_t E = c->E();
   // Double_t Et = (E / (TMath::CosH(vpos.Eta())));
   Double_t M02 = c->GetM02();
+  Int_t nlm = c->GetNExMax();
+  fHistClusterNLMRaw->Fill(nlm);
 
   Double_t M02Min = exp(2.135-0.245*E);
-  // Double_t M02Max = exp(0.0662-0.0201*E) - 0.0955 + 0.00186*E + 9.91/E; // NLM = 1
-  Double_t M02Max = exp(0.353-0.0264*E) - 0.524 + 0.00559*E + 21.9/E; // NLM = 2
+  Double_t M02Max = 0.;
+  if (nlm == 1) M02Max = exp(0.0662-0.0201*E) - 0.0955 + 0.00186*E + 9.91/E;
+  else if (nlm == 2) M02Max = exp(0.353-0.0264*E) - 0.524 + 0.00559*E + 21.9/E;
+
+  if (nlm > 2) M02Max += 0.75;
 
   if (M02>M02Max || M02<M02Min) return kFALSE;
   if (fDebug)
-    cout << "E/M02 = " << E << "/" << M02 << " (" << M02Min << ", " << M02Max << ")" << endl;
+    cout << "E/M02/NLM = " << E << "/" << M02 << "/" << nlm 
+                           << " (" << M02Min << ", " << M02Max << ")" << endl;
 
   return kTRUE;
 }

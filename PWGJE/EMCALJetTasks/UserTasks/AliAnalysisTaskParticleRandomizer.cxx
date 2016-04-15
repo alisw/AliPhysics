@@ -1,7 +1,7 @@
 /**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
+ * Author: R. Haake.                                                      *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -19,15 +19,17 @@
 #include <TString.h>
 #include <TMath.h>
 #include <TClonesArray.h>
-#include "AliAnalysisTaskParticleRandomizer.h"
 #include <AliAODTrack.h>
+#include <AliEmcalJet.h>
+#include <AliRhoParameter.h>
+#include "AliAnalysisTaskParticleRandomizer.h"
 
 
 ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskSE("AliAnalysisTaskParticleRandomizer"), fInitialized(0), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fRandom()
+  AliAnalysisTaskSE("AliAnalysisTaskParticleRandomizer"), fInitialized(0), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fRandom()
 {
 // constructor
 }
@@ -48,7 +50,7 @@ void AliAnalysisTaskParticleRandomizer::UserCreateOutputObjects()
   if(fOutputArrayName == "")
     AliFatal(Form("Name of output array not given!"));
 
-  fRandom = new TRandom3(0); //TODO: Use different seed
+  fRandom = new TRandom3(0);
 }
 
 //_____________________________________________________________________________________________________
@@ -59,8 +61,19 @@ void AliAnalysisTaskParticleRandomizer::ExecOnce()
   if(!fInputArray)
     AliFatal(Form("Input array '%s' not found!", fInputArrayName.Data()));
 
+  // On demand, load also jets
+  if(!fJetRemovalArrayName.IsNull())
+  {
+    fJetRemovalArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fJetRemovalArrayName.Data())));
+    if(!fJetRemovalArray)
+      AliError(Form("Jet array '%s' demanded but not found in event!", fJetRemovalArrayName.Data()));
+  }
+
   if((InputEvent()->FindListObject(Form("%s", fOutputArrayName.Data()))))
     AliFatal(Form("Output array '%s' already exists in the event! Rename it.", fInputArrayName.Data()));
+
+  if(strcmp(fInputArray->GetClass()->GetName(), "AliAODTrack"))
+    AliError(Form("Track type %s not yet supported. Use AliAODTrack", fInputArray->GetClass()->GetName()));
 
   // Copy the input array to the output array
   fOutputArray = new TClonesArray(fInputArray->GetClass()->GetName());
@@ -78,33 +91,65 @@ void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
 
   for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
   {
-    // Create the particle according to the used type and write it into the output clones array
-    if(!strcmp(fOutputArray->GetClass()->GetName(), "AliAODTrack"))
+    if(fJetRemovalArray && IsParticleInJet((AliAODTrack*)fInputArray->At(iPart)))
+      continue;
+
+    new ((*fOutputArray)[iPart]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
+
+    // Randomize on demand
+    AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(iPart));
+
+    if(fRandomizeInPhi)
+      particle->SetPhi(fMinPhi + fRandom->Rndm()*(fMaxPhi-fMinPhi));
+    if(fRandomizeInTheta)
     {
-      new ((*fOutputArray)[iPart]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
-
-      // Randomize on demand
-      AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(iPart));
-
-      if(fRandomizeInPhi)
-        particle->SetPhi(fMinPhi + fRandom->Rndm()*(fMaxPhi-fMinPhi));
-      if(fRandomizeInTheta)
-      {
-        Double_t minTheta = 2.*atan(exp(-fMinEta));
-        Double_t maxTheta = 2.*atan(exp(-fMaxEta));
-        particle->SetTheta(minTheta  + fRandom->Rndm()*(maxTheta-minTheta));
-      }
-      if(fRandomizeInEta)
-      {
-        Double_t randomEta = fMinEta  + fRandom->Rndm()*(fMaxEta-fMinEta);
-        Double_t randomTheta = 2.*atan(exp(-randomEta));
-        particle->SetTheta(randomTheta);
-      }
-
-      if(fRandomizeInPt)
-        particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
+      Double_t minTheta = 2.*atan(exp(-fMinEta));
+      Double_t maxTheta = 2.*atan(exp(-fMaxEta));
+      particle->SetTheta(minTheta  + fRandom->Rndm()*(maxTheta-minTheta));
     }
-    else
-      AliFatal(Form("Track type %s not yet supported.", fOutputArray->GetClass()->GetName()));
+    if(fRandomizeInEta)
+    {
+      Double_t randomEta = fMinEta  + fRandom->Rndm()*(fMaxEta-fMinEta);
+      Double_t randomTheta = 2.*atan(exp(-randomEta));
+      particle->SetTheta(randomTheta);
+    }
+
+    if(fRandomizeInPt)
+      particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
   }
+}
+
+//_____________________________________________________________________________________________________
+Bool_t AliAnalysisTaskParticleRandomizer::IsParticleInJet(AliVParticle* part)
+{
+  for(Int_t i=0; i<fJetRemovalArray->GetEntries(); i++)
+  {
+    AliEmcalJet* tmpJet = static_cast<AliEmcalJet*>(fJetRemovalArray->At(i));
+    Double_t tmpPt = tmpJet->Pt() - tmpJet->Area()*GetExternalRho();
+
+    if(tmpPt >= fJetRemovalPtThreshold)
+      if(tmpJet->ContainsTrack(part, fInputArray))
+        return kTRUE;
+  }
+
+  return kFALSE;
+}
+
+//_____________________________________________________________________________________________________
+Double_t AliAnalysisTaskParticleRandomizer::GetExternalRho()
+{
+ // Get rho from event.
+  AliRhoParameter* rho = 0;
+  if (!fJetRemovalRhoObj.IsNull()) 
+  {
+    rho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fJetRemovalRhoObj.Data()));
+    if (!rho) {
+      AliError(Form("%s: Could not retrieve rho with name %s!", GetName(), fJetRemovalRhoObj.Data())); 
+      return 0;
+    }
+  }
+  else
+    return 0;
+
+  return (rho->GetVal());
 }

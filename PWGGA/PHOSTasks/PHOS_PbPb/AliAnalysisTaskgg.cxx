@@ -181,7 +181,7 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   sprintf(kTbins[4],"Kt10-13") ;
   sprintf(kTbins[5],"Kt13-20") ;
 
-  const Int_t nCuts=7 ;
+  const Int_t nCuts=4 ;
   char cut[7][20] ;
   sprintf(cut[0],"All") ;
   sprintf(cut[1],"Disp") ;
@@ -200,25 +200,33 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-//      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+      fOutputContainer->Add(new TH2F(Form("hetaphi2D_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
+      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+      fOutputContainer->Add(new TH2F(Form("hetaphiRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
 //      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
       
       
 //      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
       fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+      fOutputContainer->Add(new TH3F(Form("hMi2OSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-//      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+      fOutputContainer->Add(new TH2F(Form("hMietaphi2D_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
+      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+      fOutputContainer->Add(new TH2F(Form("hMietaphiRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
+      fOutputContainer->Add(new TH3F(Form("hMi2etaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
 //      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
     
     }        
 
     fOutputContainer->Add(new TH2F(Form("hQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
     fOutputContainer->Add(new TH2F(Form("hMiQinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMi2Qinv_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
     fOutputContainer->Add(new TH2F(Form("hQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
     fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMi2QinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
   }
 
 //   for(Int_t ikT=0; ikT<6; ikT++){ 
@@ -409,7 +417,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   
  
   FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",4.5) ;
+  FillHistogram("hTotSelEvents",5.5) ;
   //All event selections done
   FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
   
@@ -581,8 +589,8 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       //Cut on pair
 // 	if(!PairCut(ph1,ph2,kDefault))
-	if(!PairCut(ph1,ph2,kBoth))
-	  continue;
+//	if(!PairCut(ph1,ph2,kBoth))
+//	  continue;
      
 //      if(!SecondaryPi0Cut(ph1,ph2))
 //        continue ;
@@ -631,6 +639,11 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
       
+      Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
+      Double_t dPsi = rpFull-pairPhi ;
+      while(dPsi<0)dPsi+=TMath::Pi() ;
+      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
+      
       // Yano-Koonin-Podgoretskii Parametrisation 
       Double_t qP=0., qT=0., q0=0. ;
       // source rest frame (usually lab frame)
@@ -641,14 +654,20 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 
 	
-      for(Int_t iCut=0; iCut<7; iCut++){
-   	if(!PairCut(ph1,ph2,iCut))
+      for(Int_t iCut=0; iCut<4; iCut++){
+	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-	if(iCut>3){
-	  if((jetStatus[ph1->Module()])&1<<(iCut-4))
-	    continue ;
-	}
+        FillHistogram(Form("hetaphi2D_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi) ;
+ 
+	if(ph1->Module()!=ph2->Module())
+          continue ;
+	
+	
+// 	if(iCut>3){
+// 	  if((jetStatus[ph1->Module()])&1<<(iCut-4))
+// 	    continue ;
+// 	}
 	
 /*		
         if(iCut==3){//Both	
@@ -668,7 +687,10 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
    
         // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
         FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
-//        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+        FillHistogram(Form("hetaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+	if(TMath::Abs(dEta)>0.02)
+          FillHistogram(Form("hetaphiRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi) ;
+	
 //        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
 
 
@@ -696,8 +718,8 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
 	AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
 	
-	if(!PairCut(ph1,ph2,kDefault))
-	  continue;
+//	if(!PairCut(ph1,ph2,kDefault))
+//	  continue;
 	
         AliFemtoTrack track2;
         AliFemtoThreeVector mom2;
@@ -730,17 +752,25 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
 	Double_t qinv= pair.QInv();
         Double_t kT = pair.KT() ;
-        TString kTbin="15" ;
-        if(kT<0.2) kTbin="Kt00-02";
-        else if(kT<0.4) kTbin="Kt02-04";
-        else if(kT<0.7) kTbin="Kt04-07";
-        else if(kT<1.) kTbin="Kt07-10";
-        else if(kT<1.3) kTbin="Kt10-13";
-        else if(kT<2.0) kTbin="Kt13-20";
+        TString kTbin ;
+	Int_t ikTbin=0 ;
+        if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
+        else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
+        else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
+        else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
+        else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
+        else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
         else  continue;
       
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
+      
+      Double_t wMix = EtaPhiWeight(ikTbin,dPhi );
+
+      Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
+      Double_t dPsi = rpFull-pairPhi ;
+      while(dPsi<0)dPsi+=TMath::Pi() ;
+      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
       
       // Yano-Koonin-Podgoretskii Parametrisation 
       Double_t qP=0., qT=0., q0=0. ;
@@ -751,9 +781,15 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       // longitudinal comoving frame
         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
-	for(Int_t iCut=0; iCut<7; iCut++){
+	for(Int_t iCut=0; iCut<4; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
+	  
+          FillHistogram(Form("hMietaphi2D_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi) ;
+ 
+	  if(ph1->Module()!=ph2->Module())
+            continue ;
+	  
 /*	
           if(iCut==3){//Both	
             Double_t dx = ph1->EMCx()-ph2->EMCx() ;
@@ -764,16 +800,22 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 	  }  */
 	  
 	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
-	   if(TMath::Abs(qo) < 0.05)
+	  FillHistogram(Form("hMi2Qinv_%s",cut[iCut]),qinv,kT,wMix) ;
+	   if(TMath::Abs(qo) < 0.05){
 	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
-
+	     FillHistogram(Form("hMi2QinvCut_%s",cut[iCut]),qinv,kT,wMix) ;
+	   }
           // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
 //          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
           FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
+          FillHistogram(Form("hMi2OSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
 
-//          FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+          FillHistogram(Form("hMietaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE) ;
+	  if(TMath::Abs(dEta)>0.02)
+            FillHistogram(Form("hMietaphiRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi) ;
+          FillHistogram(Form("hMi2etaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE,wMix) ;
 //          FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
 	  
 //          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
@@ -1034,8 +1076,8 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
   
  // if(cut==kDefault){
   //Consider only pairs from same mudule
-  if(ph1->Module()!=ph2->Module())
-    return kFALSE ;
+//  if(ph1->Module()!=ph2->Module())
+//    return kFALSE ;
   
   if(cut==0){
     return kTRUE ;
@@ -1111,5 +1153,17 @@ Int_t AliAnalysisTaskgg::JetRejection(Int_t module) const{
   }
   return result ;
 }
+//___________________________________________________________________________
+Double_t AliAnalysisTaskgg::EtaPhiWeight(Int_t kTbin, Double_t x) const{
 
+  switch(kTbin){
+    case 0: return 1.+0.022008*exp(-(x-0.081527)*(x-0.081527)/2./0.033761/0.033761)+0.022008*exp(-(x+0.081527)*(x+0.081527)/2./0.033761/0.033761)+0.032858*exp(-x*x/2./0.041788/0.041788) ;
+    case 1: return 1.+0.016042*exp(-(x-0.085818)*(x-0.085818)/2./0.034223/0.034223)+0.016042*exp(-(x+0.085818)*(x+0.085818)/2./0.034223/0.034223)+0.032643*exp(-x*x/2./0.053440/0.053440) ;
+    case 2: return 1.+0.014225*exp(-(x-0.087264)*(x-0.087264)/2./0.031328/0.031328)+0.014225*exp(-(x+0.087264)*(x+0.087264)/2./0.031328/0.031328)+0.031660*exp(-x*x/2./0.055178/0.055178) ;
+    case 3: return 1.+0.018115*exp(-(x-0.081410)*(x-0.081410)/2./0.089094/0.089094)+0.018115*exp(-(x+0.081410)*(x+0.081410)/2./0.089094/0.089094)+0.016781*exp(-x*x/2./0.094293/0.094293) ;
+    case 4: return 1.+0.021380*exp(-(x-0.109498)*(x-0.109498)/2./0.029483/0.029483)+0.021380*exp(-(x+0.109498)*(x+0.109498)/2./0.029483/0.029483)+0.048882*exp(-x*x/2./0.084575/0.084575) ;
+    default: return 1.+0.031776*exp(-(x-0.086296)*(x-0.086296)/2./0.023534/0.023534)+0.031776*exp(-(x+0.086296)*(x+0.086296)/2./0.023534/0.023534)+0.064104*exp(-x*x/2./0.087234/0.087234) ;
+  }
+  
+}
 
