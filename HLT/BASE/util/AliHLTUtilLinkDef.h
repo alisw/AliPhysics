@@ -36,6 +36,8 @@
 #pragma link C++ class AliHLTESDTrackCuts+;
 #pragma link C++ class AliHLTObjectRenamer+;
 #pragma link C++ class AliZMQhistViewer;
+#pragma link C++ class AliZMQMTviewerGUI;
+#pragma link C++ class AliZMQMTviewerGUIview;
 
 #endif // __CINT__
 //
