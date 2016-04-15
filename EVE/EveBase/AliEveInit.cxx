@@ -14,9 +14,7 @@
 #include <AliEveMacro.h>
 #include <AliEveGeomGentle.h>
 #include <AliEveDataSourceOffline.h>
-#include <AliEveDataSourceHLTZMQ.h>
 #include <AliEveEventManager.h>
-
 #include <AliCDBManager.h>
 
 #include <TGrid.h>
@@ -72,7 +70,6 @@ fPath(path)
     }
     
     AliEveDataSourceOffline *dataSourceOffline  = (AliEveDataSourceOffline*)man->GetDataSourceOffline();
-    AliEveDataSourceHLTZMQ  *dataSourceHLT      = (AliEveDataSourceHLTZMQ*) man->GetDataSourceHLTZMQ();
     
     ImportMacros();
     Init();

@@ -201,7 +201,7 @@ void AliEveDataSourceOnline::CheckStorageStatus()
 {
     if(!fStorageManager){return;}
     
-    AliEveConfigManager *configManager = AliEveConfigManager::GetMaster();
+    AliEveConfigManager *configManager = AliEveConfigManager::Instance();
     configManager->ConnectEventManagerSignals();
     
     AliZMQManager *eventManager = AliZMQManager::GetInstance();

@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     gEve->RegisterGeometryAlias("Default", Form("%s/resources/geometry/default_geo.root", evedir.Data()));
 
     try {
-        AliEveConfigManager::InitializeMaster(storageManager);
+        AliEveConfigManager::Instance(storageManager);
     }
     catch (TEveException exc) {
         cout<<"\n\nException while initializing config manager"<<endl;

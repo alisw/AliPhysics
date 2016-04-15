@@ -121,6 +121,12 @@ AliEveMultiView::~AliEveMultiView()
 
 void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool rPhi, bool rhoZ)
 {
+    if(!geom)
+    {
+        cout<<"AliEveMultiView::InitSimpleGeom -- geometry is NULL!"<<endl;
+        return;
+    }
+    
     fGeomVector.push_back(geom);
     
     if(rPhi){
