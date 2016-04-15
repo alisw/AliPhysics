@@ -1,0 +1,42 @@
+Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/createOCDBTPCSPDistCalib.sh";
+
+Packages = {
+"VO_ALICE@AliPhysics::v5-08-02-01-1",
+"VO_ALICE@jemalloc::v3.6.0"
+};
+
+Jobtag={
+    "comment:extraction of TPC SP calibration - test with devcalib"
+};
+
+LegoResubmitZombies="1";
+
+TTL="86000";
+Price="20";
+
+Validationcommand="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/validationOCDB.sh";
+
+JDLVariables={
+    "Packages", 
+    "OutputDir",
+    "targetOCDBDir"
+};
+
+Arguments="inputFileList=$1 startRun=$2 endRun=$2";
+
+Workdirectorysize={"6000MB"}; 
+
+InputFile={
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/$1"
+};
+
+OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/$2/OCDB";
+
+Output={
+    "log_archive.zip:*.log,*.list@disk=1",
+    "root_archive.zip:*.root@disk=1"
+};
+
+OutputErrorE={"log_archive.zip:*.log,*.list@disk=1","root_archive.zip:*.root@disk=1"};
+
+targetOCDBDir="alien://folder=/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316"
