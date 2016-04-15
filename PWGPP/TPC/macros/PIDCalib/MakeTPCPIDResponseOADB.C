@@ -60,7 +60,10 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/LHC11d.pass1/splines_11d.root"                               , 146975, 165771, 2);
 
   // PbPb
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/LHC11h.pass2/splines_11h.2.root"                             , 165772, 170718, 2);
+  // AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/LHC11h.pass2/splines_11h.2.root"                             , 165772, 170718, 2);
+  // splines as above, adding a triton parametrisation from Annalisa Mastroserio and Caio Lagana
+  // this is done using the macro /u/wiechula/svn/train/PID/splines/annalisa_triton/myspline.C
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/annalisa_triton/splines_11h.2.root"                             , 165772, 170718, 2);
 
   // not needed any longer?
   //   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/LHC11h.pass2.scenarios/splines_11h.allhigh.root",""));

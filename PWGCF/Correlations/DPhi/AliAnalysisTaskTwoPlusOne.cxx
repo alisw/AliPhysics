@@ -24,6 +24,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+#include "AliGenHepMCEventHeader.h"
 
 #include "AliEventPoolManager.h"
 #include <iostream>
@@ -208,16 +209,21 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	return;
       }
       
-      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
-      if (!collGeometry)
-      {
+      Double_t impact_parameter = -1.;
+
+      if (AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader)) {
+        n_coll = collGeometry->HardScatters();
+        impact_parameter = collGeometry->ImpactParameter();
+      }
+      else if (AliGenHepMCEventHeader *headerHepMC = dynamic_cast<AliGenHepMCEventHeader*> (eventHeader)) {
+        n_coll = headerHepMC->Ncoll_hard();
+        impact_parameter = headerHepMC->impact_parameter();
+      }
+      else {
 	eventHeader->Dump();
 	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
       }
 
-      n_coll = collGeometry->HardScatters();//NN();
-      
-      double impact_parameter = collGeometry->ImpactParameter();
       //put centrality on the middle of the bin
       if(impact_parameter<1.60)
 	centrality = 0.5;

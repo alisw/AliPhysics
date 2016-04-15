@@ -32,8 +32,9 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   
   TTree *ttree=new TTree("trending","tree of trending variables");
   Int_t adReady=0,invalidInput=0,qaNotFound=0,adActive=0,adQANotfound=0,noEntries=0;
-  Int_t LHCstate = -1; Float_t runTime = 0;
+  Int_t LHCstate = -1; Float_t runTime = 0; Int_t fillNumber = 0;
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
+  Float_t meanChargeChannelTime[16];
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
   Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
   Float_t meanTimeErrADA = -1024, meanTimeErrADC = -1024;
@@ -52,6 +53,12 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   Float_t flagNoTimeFraction[16];
   Float_t thresholdData[16], thresholdOCDB[16];
   
+  Float_t integratedChargeChannel[16];
+  Float_t triggerChargeChannel[16];
+  Float_t tailChargeChannel[16];
+  Float_t integratedChargeChannel_Weighted[16];
+  Float_t triggerChargeChannel_Weighted[16];
+  Float_t tailChargeChannel_Weighted[16];
 
   TString treePostFileName="trending.root";
 
@@ -62,6 +69,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   ttree->Branch("adQANotfound",&adQANotfound,"adQANotfound/I");
   ttree->Branch("noEntries",&noEntries,"noEntries/I");
   ttree->Branch("run",&runNumber,"run/I");
+  ttree->Branch("fill",&fillNumber,"fill/I");
   if (!QAfilename) 
     {
     if(!IsADReady(runNumber)) adReady=1;
@@ -97,6 +105,16 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TString machineMode(fGRPData->GetMachineMode());
   TString lhcState(fGRPData->GetLHCState());
   
+  AliCDBEntry *entry3=0;
+  entry3 = man->Get("GRP/GRP/LHCData");
+  AliLHCData* fLHCData=0;
+  if (!entry3) 
+    return 0;
+  printf("Found an AliLHCData in GRP/GRP/LHCData, reading it\n");
+  fLHCData = dynamic_cast<AliLHCData*>(entry3->GetObject()); 
+  entry3->SetOwner(0);
+  fillNumber = fLHCData->GetFillNumber();
+  
   //-----------------------Trending variables------------------------------------------------
   ttree->Branch("LHCstate",&LHCstate,"LHC state;;State/I");
   ttree->Branch("runTime",&runTime,"runTime;;Duration(min)/F");
@@ -104,6 +122,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   ttree->Branch("meanTotalChargeADC",&meanTotalChargeADC,"Mean total charge ADC;;Charge (ADC counts)/F");
   ttree->Branch("meanTimeADA",&meanTimeADA,"Mean time ADA;;Time (ns)/F");
   ttree->Branch("meanTimeADC",&meanTimeADC,"Mean time ADC;;Time (ns)/F");
+  ttree->Branch("meanChargeChannelTime", &meanChargeChannelTime[0], "meanChargeChannelTime[16]/F");
   ttree->Branch("meanTimeErrADA",&meanTimeErrADA,"Mean time err ADA;;Time (ns)/F");
   ttree->Branch("meanTimeErrADC",&meanTimeErrADC,"Mean time err ADC;;Time (ns)/F");
   ttree->Branch("meanTimeSigmaADA",&meanTimeSigmaADA,"Mean time Sigma ADA;;Time Sigma (ns)/F");
@@ -139,6 +158,14 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   ttree->Branch("flagNoTimeFraction", &flagNoTimeFraction[0], "flagNoTimeFraction[16]/F");
   ttree->Branch("thresholdData", &thresholdData[0], "thresholdData[16]/F");
   ttree->Branch("thresholdOCDB", &thresholdOCDB[0], "thresholdOCDB[16]/F");
+  
+  ttree->Branch("integratedChargeChannel", &integratedChargeChannel[0], "integratedChargeChannel[16]/F");
+  ttree->Branch("triggerChargeChannel", &triggerChargeChannel[0], "triggerChargeChannel[16]/F");
+  ttree->Branch("tailChargeChannel", &tailChargeChannel[0], "tailChargeChannel[16]/F");
+  
+  ttree->Branch("integratedChargeChannel_Weighted", &integratedChargeChannel_Weighted[0], "integratedChargeChannel_Weighted[16]/F");
+  ttree->Branch("triggerChargeChannel_Weighted", &triggerChargeChannel_Weighted[0], "triggerChargeChannel_Weighted[16]/F");
+  ttree->Branch("tailChargeChannel_Weighted", &tailChargeChannel_Weighted[0], "tailChargeChannel_Weighted[16]/F");
   
 
   if(!QAfile)
@@ -258,16 +285,12 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 
   TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADA"));
   TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADC"));
-  //TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADA"));
-  //TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADC"));
   TH1F *fHistMeanTimeDifference = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeDifference"));
 
   TH2F *fHistMeanTimeCorrelation = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMeanTimeCorrelation"));
   TH2F *fHistMeanTimeSumDiff = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMeanTimeSumDiff"));
 
   TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
-  //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionBasic"));
-  //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionRobust"));
 
   TH1F *fHistTriggerMasked = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerMasked"));
   TH1F *fHistTriggerOthers = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerOthers"));
@@ -283,6 +306,16 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH2F *fHistMaxChargeValueInt1 = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMaxChargeValueInt1"));
   
   TH3F *fHistTimeVsChargePerPM_UnCorr = dynamic_cast<TH3F*> (flistQA->FindObject("fHistTimeVsChargePerPM_UnCorr"));
+  
+  //Gain mon cosmics
+  TH2F *fHistChargeTriggerPerChannel_PF = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTriggerChargePerChannel_PF"));
+  //Gain mon collisions
+  TH2F *fHistChargeTriggerPerChannel_PF_TVX = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTriggerChargePerChannel_TVX"));
+  TH2F *fHistChargeTailPerChannel_PF_TVX = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTailChargePerChannel_TVX"));
+  TH2F *fHistChargePerPM_BB_PF_TVX = dynamic_cast<TH2F*> (flistQA->FindObject("fHistIntegratedChargePerChannel_TVX"));
+  TH3F *fHistChargeTriggerPerPMPerV0Flag = dynamic_cast<TH3F*> (flistQA->FindObject("fHistTriggerChargePerPMPerV0Flag"));
+  TH3F *fHistChargeTailPerPMPerV0Flag = dynamic_cast<TH3F*> (flistQA->FindObject("fHistTailChargePerPMPerV0Flag"));
+  TH3F *fHistChargeBBPerPMPerV0Flag = dynamic_cast<TH3F*> (flistQA->FindObject("fHistIntegratedChargePerPMPerV0Flag"));
 
   if(fHistTriggerMasked->GetEntries()==0)
     {
@@ -356,7 +389,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   		channelTimeSigma[i] = fitTimeChannel->GetParameter(2);
 	}
   }
-
+  
   const Double_t fTOFADA = 56.63;
   TH1D *hSlewingSlice;
   slewingChi2ADA = 0;
@@ -376,7 +409,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	slewingChi2ADC += TMath::Power(hSlewingSlice->GetMean() - fTOFADC, 2);
   	}
   slewingChi2ADC = slewingChi2ADC/550;
-   
+  
   Float_t nEvents = fHistTotalChargePerEventADA->GetEntries();
   rateUBA = fHistTriggerMasked->GetBinContent(7)/nEvents;
   rateUBC = fHistTriggerMasked->GetBinContent(8)/nEvents;
@@ -384,11 +417,11 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   rateUGC = fHistTriggerMasked->GetBinContent(6)/nEvents;
   rateADAND = fHistTriggerMasked->GetBinContent(1)/nEvents;
   rateADOR = fHistTriggerMasked->GetBinContent(2)/nEvents;
-  rateRatioADV0AND = fHistTriggerOthers->GetBinContent(1)/fHistTriggerMasked->GetBinContent(1);
-  rateRatioADV0OR = fHistTriggerOthers->GetBinContent(2)/fHistTriggerMasked->GetBinContent(2);
+  if(fHistTriggerMasked->GetBinContent(1) != 0)rateRatioADV0AND = fHistTriggerOthers->GetBinContent(1)/fHistTriggerMasked->GetBinContent(1);
+  if(fHistTriggerMasked->GetBinContent(2) != 0)rateRatioADV0OR = fHistTriggerOthers->GetBinContent(2)/fHistTriggerMasked->GetBinContent(2);
   rateErr = 2/TMath::Sqrt(nEvents);
   
-  cout<<"Rate ADand = "<<rateADAND<<" Rate ADor = "<<rateADOR<<" Ratio AND/OR = "<<rateADAND/rateADOR<<endl;
+  //cout<<"Rate ADand = "<<rateADAND<<" Rate ADor = "<<rateADOR<<" Ratio AND/OR = "<<rateADAND/rateADOR<<endl;
   
   ratePhysADAND = fHistDecision->GetBinContent(2,2)/nEvents;
   ratePhysADOR = 0;
@@ -406,7 +439,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	ratePhysBGC += fHistDecision->GetBinContent(i,3)/nEvents;
 	}
   
-  cout<<"Phys sel ADand = "<<ratePhysADAND<<" Phys sel ADor = "<<ratePhysADOR<<" Ratio AND/OR = "<<ratePhysADAND/ratePhysADOR<<endl;
+  //cout<<"Phys sel ADand = "<<ratePhysADAND<<" Phys sel ADor = "<<ratePhysADOR<<" Ratio AND/OR = "<<ratePhysADAND/ratePhysADOR<<endl;
   
   for(Int_t i = 0; i<16; i++) flagNoTimeFraction[i] = fHistFlagNoTime->GetBinContent(i+1)/nEvents;
   
@@ -423,6 +456,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	TString channelNameTime = "hChargeSliceTime";
 	channelNameTime += i;
   	hChargeSliceTime[i] = fHistChargePerPM_Time->ProjectionY(channelNameTime.Data(),i+1,i+1);
+	meanChargeChannelTime[i] = hChargeSliceTime[i]->GetMean();
 	
 	TString channelNameBB = "hChargeSliceBB";
 	channelNameBB += i;
@@ -451,18 +485,13 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   	fitStatus = hThresholdShape[i]->Fit("thrFit","+R");
 	if(fitStatus == 0) thresholdData[i] = thrFit->GetParameter(0);
 	thresholdOCDB[i] = fCalibData->GetCalibDiscriThr(i);
-	cout<<"thr Fit = "<<thresholdData[i]<<" thr OCDB = "<<thresholdOCDB[i]<<endl; 
   	}
   
   for(Int_t i = 0; i<32; i++){
   	meanPedestal[i] = fCalibData->GetPedestal(i);
 	widthPedestal[i] = fCalibData->GetSigma(i);
 	}
-  for(Int_t i = 0; i<16; i++){ 
-  	MPV[i] = fCalibData->GetADCperMIP(i); //MPV
-	MPVErr[i] = 0.0;
-	}
-  
+
   TH1D *hMaxChargeSlice;
   
   Float_t sat=0, nonsat=0;
@@ -486,6 +515,104 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	nonsat += hMaxChargeSlice->Integral(meanPedestal[i]+3*widthPedestal[i],1025);
 	}
   if(nonsat != 0)saturationADA = sat/nonsat;
+  
+  
+  //Gain mon cosmics
+  TF1 *fitMPV = new TF1("fitMPV","landau",0,5);
+  Double_t xq[1] = {0.80};
+  Double_t yq[1];
+  
+  TH1D* hCTSlice;
+  for(Int_t i = 0; i<16; i++){
+	hCTSlice = fHistChargeTriggerPerChannel_PF->ProjectionY("hCTSlice",i+1,i+1);	
+
+	//hCTSlice->Fit(fitMPV);
+  	//MPV[i] = fitMPV->GetParameter(1);
+	//MPVErr[i] = fitMPV->GetParError(1);
+	//MPV[i] = hCTSlice->GetMean();
+	//hCTSlice->GetQuantiles(1,yq,xq);
+	//MPV[i] = yq[0];
+	MPV[i] = fCalibData->GetADCperMIP(i);
+	MPVErr[i] = 0.0;
+  	}
+	
+  //Gain mon collisions	 
+  for(Int_t i = 0; i<16; i++){
+	hCTSlice = fHistChargeTriggerPerChannel_PF_TVX->ProjectionY("hCTSlice",i+1,i+1);	
+	hCTSlice->GetQuantiles(1,yq,xq);
+	triggerChargeChannel[i] = yq[0];
+	//cout<<"Quantile unweighted = "<<triggerChargeChannel[i]<<endl;
+  	}
+  for(Int_t i = 0; i<16; i++){
+	hCTSlice = fHistChargeTailPerChannel_PF_TVX->ProjectionY("hCTSlice",i+1,i+1);	
+	hCTSlice->GetQuantiles(1,yq,xq);
+	tailChargeChannel[i] = yq[0];
+	//cout<<"Quantile unweighted = "<<tailChargeChannel[i]<<endl;
+  	}
+   for(Int_t i = 0; i<16; i++){
+	hCTSlice = fHistChargePerPM_BB_PF_TVX->ProjectionY("hCTSlice",i+1,i+1);	
+	hCTSlice->GetQuantiles(1,yq,xq);
+	integratedChargeChannel[i] = yq[0];
+	//cout<<"Quantile unweighted = "<<integratedChargeChannel[i]<<endl;
+  	}
+
+   TH1D* hVZEROFlags;
+   TH1D* hWeighted;	
+   for(Int_t i = 0; i<16; i++){
+   	hVZEROFlags = dynamic_cast<TH1D*>fHistChargeTriggerPerPMPerV0Flag->Project3D("z");
+	if(hVZEROFlags->Integral() != 0)hVZEROFlags->Scale(1/hVZEROFlags->Integral());
+	hWeighted = dynamic_cast<TH1D*>fHistChargeTriggerPerPMPerV0Flag->Project3D("y");
+	hWeighted->SetName("hWeighted");
+	hWeighted->Reset("ICES");
+	for(Int_t j = 0; j<64; j++){
+		hCTSlice = fHistChargeTriggerPerPMPerV0Flag->ProjectionY("hCTSlice",i+1,i+1,j+1,j+1);
+		Float_t weight = 0.0;
+		if(hVZEROFlags->GetBinContent(j+1) != 0) weight = 1/(64*hVZEROFlags->GetBinContent(j+1));
+		//if(i==0)cout<<"Weight "<<j<<" = "<<weight<<endl;
+		hWeighted->Add(hCTSlice,weight);
+		}
+	
+	hWeighted->GetQuantiles(1,yq,xq);
+	triggerChargeChannel_Weighted[i] = yq[0];
+	//cout<<"Quantile weighted = "<<triggerChargeChannel_Weighted[i]<<endl;
+  	}
+   for(Int_t i = 0; i<16; i++){
+   	hVZEROFlags = dynamic_cast<TH1D*>fHistChargeTailPerPMPerV0Flag->Project3D("z");
+	if(hVZEROFlags->Integral() != 0)hVZEROFlags->Scale(1/hVZEROFlags->Integral());
+	hWeighted = dynamic_cast<TH1D*>fHistChargeTailPerPMPerV0Flag->Project3D("y");
+	hWeighted->SetName("hWeighted");
+	hWeighted->Reset("ICES");
+	for(Int_t j = 0; j<64; j++){
+		hCTSlice = fHistChargeTailPerPMPerV0Flag->ProjectionY("hCTSlice",i+1,i+1,j+1,j+1);
+		Float_t weight = 0.0;
+		if(hVZEROFlags->GetBinContent(j+1) != 0) weight = 1/(64*hVZEROFlags->GetBinContent(j+1));
+		//if(i==0)cout<<"Weight "<<j<<" = "<<weight<<endl;
+		hWeighted->Add(hCTSlice,weight);
+		}
+	
+	hWeighted->GetQuantiles(1,yq,xq);
+	tailChargeChannel_Weighted[i] = yq[0];
+	//cout<<"Quantile weighted = "<<tailChargeChannel_Weighted[i]<<endl;
+  	}
+   for(Int_t i = 0; i<16; i++){
+   	hVZEROFlags = dynamic_cast<TH1D*>fHistChargeBBPerPMPerV0Flag->Project3D("z");
+	if(hVZEROFlags->Integral() != 0)hVZEROFlags->Scale(1/hVZEROFlags->Integral());
+	hWeighted = dynamic_cast<TH1D*>fHistChargeBBPerPMPerV0Flag->Project3D("y");
+	hWeighted->SetName("hWeighted");
+	hWeighted->Reset("ICES");
+	for(Int_t j = 0; j<64; j++){
+		hCTSlice = fHistChargeBBPerPMPerV0Flag->ProjectionY("hCTSlice",i+1,i+1,j+1,j+1);
+		Float_t weight = 0.0;
+		if(hVZEROFlags->GetBinContent(j+1) != 0) weight = 1/(64*hVZEROFlags->GetBinContent(j+1));
+		//if(i==0)cout<<"Weight "<<j<<" = "<<weight<<endl;
+		hWeighted->Add(hCTSlice,weight);
+		}
+	
+	hWeighted->GetQuantiles(1,yq,xq);
+	integratedChargeChannel_Weighted[i] = yq[0];
+	//cout<<"Quantile weighted = "<<integratedChargeChannel_Weighted[i]<<endl;
+  	}		
+  
   
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
   ttree->Fill();
@@ -778,7 +905,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     	    hChannelSlice[i]->DrawCopy("COLZ");
     	    fTimeSlewingSpline[i]->Draw("Psame");
     	    }
-    c42->Print(Form("ADQA_Run_%d.pdf",runNumber)); 
+    c42->Print(Form("ADQA_Run_%d.pdf",runNumber));
     //-------------------------------------------------------------------
     
     myHistSetUp(fHistTimeVsChargeADA_Cut);

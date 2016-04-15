@@ -887,6 +887,8 @@ goMergeCPass()
         done
       else
         printExec aliroot -b -q "QAtrain_duo.C(\"\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
+        #QAtrain_duo default output is called QAresults.root, move to the expected name
+        mv QAresults.root ${qaMergedOutputFileName}
       fi
     ;;
   esac

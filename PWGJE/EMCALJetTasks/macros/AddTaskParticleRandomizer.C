@@ -5,14 +5,9 @@ AliAnalysisTaskParticleRandomizer* AddTaskParticleRandomizer(
   const char *outputParticles    = "tracks_randomized",
   Bool_t      randomizeInPhi     = kTRUE,
   Bool_t      randomizeInEta     = kFALSE,
-  Bool_t      randomizeInPt      = kFALSE,
-  Bool_t      deactivate         = kFALSE
+  Bool_t      randomizeInPt      = kFALSE
 )
 {  
-  // This option is for convenience when running on the LEGO train
-  if(deactivate)
-    return 0;
-
   cout << " ############ MACRO EXECUTION STARTED: AddTaskParticleRandomizer.C ############\n";
   //==============================================================================
   // Prepare analysis manager
@@ -38,6 +33,7 @@ AliAnalysisTaskParticleRandomizer* AddTaskParticleRandomizer(
   randomizer->SetRandomizeInEta(randomizeInEta);
   randomizer->SetRandomizeInPt(randomizeInPt);
 
+  randomizer->SetName(Form("ParticleRandomizer_%s_%s", inputParticles, outputParticles));
   mgr->AddTask(randomizer);
 
   //==============================================================================

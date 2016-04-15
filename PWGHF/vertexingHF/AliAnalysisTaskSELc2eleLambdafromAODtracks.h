@@ -52,9 +52,9 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, TClonesArray *mcArray);
+  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Double_t *v0info, TVector *tinfo, TVector *v0info2, Int_t charge);
-  void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
+  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
@@ -120,8 +120,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   void DefineMCEleTreeVariables();
   void DefineMCV0TreeVariables();
   void DefineMCGenPairTreeVariables();
+  void DefineCorrelationTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
+  Bool_t HaveCharmInHistory(Int_t *history);
+  Bool_t HaveBottomInHistory(Int_t *history);
+  Int_t FromSemileptonicDecays(Int_t *history);
 
   AliAODVertex *CallPrimaryVertex(AliAODv0 *v0, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
@@ -145,6 +149,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCGenPairVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree* fCorrelationVariablesTree;         //!<! Correlation variable tree under histo object list
   Bool_t fReconstructPrimVert;       ///Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -158,6 +163,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCV0Variables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCGenPairVariables;   //!<! variables to be written to the tree
+  Float_t *fCorrelationVariables;   //!<! Correlation variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
@@ -304,6 +310,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCS;         //!<! e-Xi spectra efficiency numerator
   THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCGen;         //!<! e-Xi spectra efficiency numerator
 
+
 	//Checking histograms
   TH1F* fHistoBachPt;      //!<! Bachelor pT histogram
   TH1F* fHistoBachPtMCS;      //!<! Bachelor pT histogram (efficiency numerator)
@@ -382,6 +389,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElectronFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoBottomElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoCharmElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoLambdaMCGen;         //!<! Lambda in mcArray (only from charmed baryon)
 
   THnSparse* fHistoElePtvsV0dlRS;         //!<! Feeddown subtraction using Lambda vertex distribution
@@ -535,11 +544,20 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistoResponseEleLambdaPtFeeddownSigma; //!<! Response function e-Lambda pT <- XicPt
   TH2D *fHistoResponseEleLambdaPtFeeddownSigma1; //!<! Response function e-Lambda pT <- XicPt
   TH2D *fHistoResponseEleLambdaPtFeeddownSigma2; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseLambdaPt; //!<! Response function Lambda pT <- XicPt
+  TH2D *fHistoResponseLambdaPtFeeddownXic0; //!<! Response function Lambda pT <- XicPt
+  TH2D *fHistoResponseLambdaPtFeeddownXicPlus; //!<! Response function Lambda pT <- XicPt
+  TH2D *fHistoResponseLambdaPtFeeddownSigma; //!<! Response function Lambda pT <- XicPt
   THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
 	TH2F *fHistoEleLambdaPtvsRapidityRS; //!<! e-Lambda pT vs y
 	TH2F *fHistoEleLambdaPtvsRapidityWS; //!<! e-Lambda pT vs y
 	TH2F *fHistoEleLambdaPtvsRapidityMCS; //!<! e-Lambda pT vs y
+
+  THnSparse* fHistoElectronPi0Total;         //!<! Number of electrons from pi0
+  THnSparse* fHistoElectronPi0Tag;         //!<! Number of electrons from pi0 and have partner
+  THnSparse* fHistoElectronEtaTotal;         //!<! Number of electrons from eta
+  THnSparse* fHistoElectronEtaTag;         //!<! Number of electrons from eta and have partner
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
@@ -584,7 +602,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,23); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,25); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

@@ -203,12 +203,20 @@ AliFemtoString AliFemtoModelCorrFctn::Report()
 //_______________________
 void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 {
+ 
+ // cout<<" AliFemtoModelCorrFcn add real pair "<<endl;
   Double_t weight = fManager->GetWeight(aPair);
+  //cout<<" wight "<< weight<<endl;
+  //cout<<"Qinv"<<aPair->QInv()<<endl;
+   
   fNumeratorTrue->Fill(aPair->QInv(), weight);
 
   Double_t tQinvTrue = GetQinvTrue(aPair);
-
+   
   fNumeratorTrueIdeal->Fill(tQinvTrue, weight);
+  
+  //cout<<"Qinv true"<<tQinvTrue<<endl;
+  
 }
 //_______________________
 void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
@@ -232,16 +240,20 @@ Double_t AliFemtoModelCorrFctn::GetQinvTrue(AliFemtoPair* aPair)
   AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   AliFemtoLorentzVector fm1;
-  AliFemtoThreeVector* temp = inf1->GetTrueMomentum();
+  AliFemtoThreeVector* temp = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
   fm1.SetVect(*temp);
-  double ener = TMath::Sqrt(temp->Mag2()+(aPair->Track1()->Track()->GetMass())*(aPair->Track1()->Track()->GetMass()));
+  Double_t am1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
+  Double_t am2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
+  double ener = TMath::Sqrt(temp->Mag2()+am1*am1);
   fm1.SetE(ener);
 
   AliFemtoLorentzVector fm2;
-  AliFemtoThreeVector* temp2 = inf2->GetTrueMomentum();
+  AliFemtoThreeVector* temp2 =  ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
   fm2.SetVect(*temp2);
-  ener = TMath::Sqrt(temp2->Mag2()+(aPair->Track2()->Track()->GetMass())*(aPair->Track2()->Track()->GetMass()));
+  ener = TMath::Sqrt(temp2->Mag2()+am2*am2);
   fm2.SetE(ener);
+
+  //std::cout<<" CFModel mass1 mass2 "<<am1<<" "<<am2<<std::endl;
 
   AliFemtoLorentzVector tQinvTrueVec = (fm1-fm2);
   Double_t tQinvTrue = -1.* tQinvTrueVec.m();

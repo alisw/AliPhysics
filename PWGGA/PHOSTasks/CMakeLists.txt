@@ -72,6 +72,7 @@ set(SRCS
     PHOS_PbPb/AliAnalysisTaskgg.cxx
     PHOS_PbPb/AliAnalysisTaskggMC.cxx
     PHOS_PbPb/AliAnalysisTaskPHOSPCMgg.cxx
+    PHOS_PbPb/AliAnalysisTaskEtaPhigg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx
@@ -152,13 +153,21 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
-install(DIRECTORY PHOS_PbPb DESTINATION PWGGA/PHOSTasks)
+install(FILES PHOS_PbPb/AddAODPHOSTender.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSGammaFlow.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSgg.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSggMC.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSPCMgg.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSPi0Flow.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSPi0FlowMC.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(FILES PHOS_PbPb/AddTaskPHOSEtaPhi.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(DIRECTORY UserTasks/macros DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros DESTINATION PWGGA/PHOSTasks/CaloCellQA)
 install(DIRECTORY PHOS_PbPbQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb DESTINATION PWGGA/PHOSTasks)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
+install(FILES PHOS_pp_pi0/AddTaskPHOSpi0Conversion.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
 install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)

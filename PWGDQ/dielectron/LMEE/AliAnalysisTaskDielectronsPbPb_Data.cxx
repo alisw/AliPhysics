@@ -46,12 +46,16 @@ fMaxGoldenChi2(0),
 fMaxTPCchi2(0),
 fMaxITSchi2(0),
 fMaxFracSharedCls(0),
+fITSreq(0),
 fnsigmaTOF_max(0),
 fnsigmaITS_max(0),
 fnsigmaTPC_min(0),
 fnsigmaTPC_max(0),
 fMassLim(0),
 fPhivLim(0),
+fPtMin(0),
+fPtMax(0),
+fEtaLim(0),
 fNcentralityBins(0),
 fNvertexBins(0),
 fNeventPlaneBins(0),
@@ -82,12 +86,16 @@ fMaxGoldenChi2(0),
 fMaxTPCchi2(0),
 fMaxITSchi2(0),
 fMaxFracSharedCls(0),
+fITSreq(0),
 fnsigmaTOF_max(0),
 fnsigmaITS_max(0),
 fnsigmaTPC_min(0),
 fnsigmaTPC_max(0),
 fMassLim(0),
 fPhivLim(0),
+fPtMin(0),
+fPtMax(0),
+fEtaLim(0),
 fNcentralityBins(0),
 fNvertexBins(0),
 fNeventPlaneBins(0),
@@ -477,13 +485,23 @@ Bool_t AliAnalysisTaskDielectronsPbPb_Data::PassedTrackQualityCuts (AliESDtrack*
     fESDTrackCuts -> SetMinNClustersTPC(fTPC_minNcls);
     fESDTrackCuts -> SetRequireTPCRefit(true);
     fESDTrackCuts -> SetRequireITSRefit(true);
-    fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    
+    //ITS Requirement
+    if (strcmp(fITSreq,"kOff")==0)        fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+    if (strcmp(fITSreq,"kNone")==0)       fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+    if (strcmp(fITSreq,"kAny")==0)        fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    if (strcmp(fITSreq,"kFirst")==0)      fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    if (strcmp(fITSreq,"kOnlyFirst")==0)  fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOnlyFirst);
+    if (strcmp(fITSreq,"kSecond")==0)     fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kSecond);
+    if (strcmp(fITSreq,"kOnlySecond")==0) fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOnlySecond);
+    if (strcmp(fITSreq,"kBoth")==0)       fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    
     fESDTrackCuts -> SetMinRatioCrossedRowsOverFindableClustersTPC(fMinCrOverFindableCls);
     fESDTrackCuts -> SetMaxChi2TPCConstrainedGlobal(fMaxGoldenChi2);
     fESDTrackCuts -> SetMaxChi2PerClusterTPC(fMaxTPCchi2);
     fESDTrackCuts -> SetMaxChi2PerClusterITS(fMaxITSchi2);
-    fESDTrackCuts -> SetEtaRange(-0.8, 0.8);
-    fESDTrackCuts -> SetPtRange(0.4,5.0);
+    fESDTrackCuts -> SetEtaRange(-fEtaLim,fEtaLim);
+    fESDTrackCuts -> SetPtRange(fPtMin,fPtMax);
     
     if ( track -> GetTPCsignalN() < fTPC_nClsdEdx ) return false;
     if ( FractionSharedClsITS(track) > fMaxFracSharedCls ) return false;

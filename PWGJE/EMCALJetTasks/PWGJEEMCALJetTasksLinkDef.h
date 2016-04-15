@@ -29,15 +29,25 @@
 #pragma link C++ class AliJetTriggerSelectionTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryBase+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPP+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryPbPb+;
-#pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfoSummaryEmbedding+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>+;
+#pragma link C++ class std::vector<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb>+;
+#pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding>+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
+#pragma link C++ class AliAnalysisTaskEmcalJetExtractor+;
+#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
+#pragma link C++ class AliAnalysisTaskChargedJetsHadronToy+;
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;
 #pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
 #pragma link C++ class AliAnalysisTaskDijetHadron+;
@@ -168,8 +178,6 @@
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliBasicJetConstituent+;
 #pragma link C++ class AliBasicJet+;
-#pragma link C++ class AliAnalysisTaskEmcalJetExtractor+;
-#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullpAJets_Eli_Mod+;
 #pragma link C++ class AliAnalysisTaskFullppJet;

@@ -25,14 +25,17 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Data (
                                               Double_t MaxTPCchi2 = 4,
                                               Double_t MaxITSchi2 = 3,
                                               Double_t MaxFracSharedCls = 0.4,
+                                              const char *ITSreq = "kFirst",
                                               Double_t nsigmaTOF_max = 3.0,
                                               Double_t nsigmaITS_max = 1.0,
                                               Double_t nsigmaTPC_min = -3.0,
                                               Double_t nsigmaTPC_max = 3.0,
                                               Double_t massLim = 0.02,
-                                              Double_t phivLim = 60.0
+                                              Double_t phivLim = 60.0,
+                                              Double_t ptMin = 0.4,
+                                              Double_t ptMax = 5.0,
+                                              Double_t etaLim = 0.8
                                             )  {
-    
     
     //Load Libraries
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
@@ -68,9 +71,11 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Data (
     AliAnalysisTask *task = new AliAnalysisTaskDielectronsPbPb_Data  (TaskName);
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetCentralityRange  (CentralityMin,CentralityMax);
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetDCAparameters    (DCAxy_param0,DCAxy_param1,DCAxy_param2,DCAz_max);
-    task -> AliAnalysisTaskDielectronsPbPb_Data::SetTrackCuts        (ITS_minNcls,TPC_minNcls,TPC_nClsdEdx,TPC_minCr,MinCrOverFindableCls,MaxGoldenChi2,MaxTPCchi2,MaxITSchi2,MaxFracSharedCls);
+    task -> AliAnalysisTaskDielectronsPbPb_Data::SetTrackCuts        (ITS_minNcls,TPC_minNcls,TPC_nClsdEdx,TPC_minCr,MinCrOverFindableCls,MaxGoldenChi2,MaxTPCchi2,
+                                                                      MaxITSchi2,MaxFracSharedCls,ITSreq);
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetPIDCuts          (nsigmaTOF_max,nsigmaITS_max,nsigmaTPC_min,nsigmaTPC_max);
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetPrefilterCuts    (massLim,phivLim);
+    task -> AliAnalysisTaskDielectronsPbPb_Data::SetKinematicCuts    (ptMin,ptMax,etaLim);
     task -> AliAnalysisTaskDielectronsPbPb_Data::EventMixingSettings (MaxNumberEvts,MaxNumberTrks,NumberEvtsToMix,NcentralityBins,NvertexBins,NeventPlaneBins);
     mgr -> AddTask(task);
     AliAnalysisDataContainer *output = mgr->CreateContainer (InputBox,TList::Class(),AliAnalysisManager::kOutputContainer,OutputFile);

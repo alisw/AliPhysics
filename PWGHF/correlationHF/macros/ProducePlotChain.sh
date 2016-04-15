@@ -503,6 +503,7 @@ CompareFitResultsPPtoPPb()
 EOF
 ###### LINK PAPER FIGURE ####
 ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb/ComparePPtoPPbFitResults.* $baseStartingDir/PaperFigures
+ln -s ${baseDir}/AllPlots/Averages/FitResults/NiceStylePlots/cFitOutput_NiceStyle* $baseStartingDir/PaperFigures
 
 fi
 

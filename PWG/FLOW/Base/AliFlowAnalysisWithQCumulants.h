@@ -224,6 +224,8 @@ class AliFlowAnalysisWithQCumulants{
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   void SetPrintFinalResults(Bool_t const printOrNot, Int_t const i) {this->fPrintFinalResults[i] = printOrNot;};
   Bool_t GetPrintFinalResults(Int_t i) const {return this->fPrintFinalResults[i];};  
+  void SetMaxCommonResultsHistogram(Int_t const mcrh) {this->fMaxCommonResultsHistogram = mcrh;};
+  Int_t GetMaxCommonResultsHistogram() const {return this->fMaxCommonResultsHistogram;};
    
   // 2a.) particle weights:
   void SetWeightsList(TList* const wlist) {this->fWeightsList = (TList*)wlist->Clone();}
@@ -584,6 +586,7 @@ class AliFlowAnalysisWithQCumulants{
   Int_t fHarmonic; // harmonic 
   TString *fAnalysisLabel; // analysis label (all histograms and output file will have this label)
   Bool_t fPrintFinalResults[4]; // print on the screen the final results (0=RF, 1=RP, 2=POI, 3=RF rebinned in M)
+  Int_t fMaxCommonResultsHistogram; // can be [2468], e.g. if set to 2, AliFlowCommonHistResults[468]thOrderQC won't be booked
   
   // 2a.) particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights

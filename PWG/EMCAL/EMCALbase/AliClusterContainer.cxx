@@ -37,7 +37,8 @@ AliClusterContainer::AliClusterContainer():
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1)
 {
-  fClassName = "AliVCluster";
+  fBaseClassName = "AliVCluster";
+  SetClassName("AliVCluster");
 
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
     fUserDefEnergyCut[i] = 0.;
@@ -55,7 +56,8 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fExoticCut(kTRUE),
   fDefaultClusterEnergy(-1)
 {
-  fClassName = "AliVCluster";
+  fBaseClassName = "AliVCluster";
+  SetClassName("AliVCluster");
 
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
     fUserDefEnergyCut[i] = 0.;
@@ -397,18 +399,6 @@ void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
   else {
     fMinE = cut;
   }
-}
-
-
-/**
- * Set the class name
- * @param clname
- */
-void AliClusterContainer::SetClassName(const char *clname)
-{
-  TClass cls(clname);
-  if (cls.InheritsFrom("AliVCluster")) fClassName = clname;
-  else AliError(Form("Unable to set class name %s for a AliClusterContainer, it must inherits from AliVCluster!",clname));
 }
 
 const char* AliClusterContainer::GetTitle() const

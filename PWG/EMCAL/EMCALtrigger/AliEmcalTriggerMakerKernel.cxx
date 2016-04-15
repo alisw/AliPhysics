@@ -81,6 +81,12 @@ AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
 }
 
 void AliEmcalTriggerMakerKernel::Init(){
+  if (!fTriggerBitConfig) {
+    AliWarning("Trigger bit configuration was not provided! Assuming new bit configuration (>= 2013).");
+    AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
+    SetTriggerBitConfig(triggerBitConfig);
+  }
+
   fPatchAmplitudes = new AliEMCALTriggerDataGrid<double>;
   fPatchADCSimple = new AliEMCALTriggerDataGrid<double>;
   fPatchADC = new AliEMCALTriggerDataGrid<double>;
@@ -116,7 +122,7 @@ void AliEmcalTriggerMakerKernel::SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowma
 
 void AliEmcalTriggerMakerKernel::ConfigureForPbPb2015()
 {
-  AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigOld();
+  AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
   SetTriggerBitConfig(triggerBitConfig);
 
   // Initialize patch finder

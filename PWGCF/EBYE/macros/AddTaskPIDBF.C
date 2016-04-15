@@ -226,7 +226,11 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
   else if(analysisType == "MCAOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
-    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);    
+    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
+   if(kUsePID) {
+    taskBF->SetUseNSigmaPID(nSigmaMax);
+    taskBF->SetParticleType(ParticleType_);
+    }   
   }
   else if(analysisType == "MCAODrec") {     //++++++++++++++++
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)

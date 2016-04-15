@@ -66,6 +66,7 @@ ClassImp(AliAnalysisTaskGammaConvFlow)
 //________________________________________________________________________
 AliAnalysisTaskGammaConvFlow::AliAnalysisTaskGammaConvFlow(): AliAnalysisTaskSE(),
 fV0Reader(NULL),
+fV0ReaderName("V0ReaderV1"),
 fBGHandler(NULL),
 fBGHandlerRP(NULL),
 fInputEvent(NULL),
@@ -169,6 +170,7 @@ fMCStack(NULL)
 AliAnalysisTaskGammaConvFlow::AliAnalysisTaskGammaConvFlow(const char *name):
 AliAnalysisTaskSE(name),
 fV0Reader(NULL),
+fV0ReaderName("V0ReaderV1"),
 fBGHandler(NULL),
 fBGHandlerRP(NULL),
 fInputEvent(NULL),
@@ -524,7 +526,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	
 
 	
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 	
 	if(fV0Reader)
@@ -570,12 +572,18 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskGammaConvFlow::Notify()
 {
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+        
 		if(!((AliConvEventCuts*)fEventCutArray->At(iCut))->GetDoEtaShift()){
 			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
 			continue; // No Eta Shift requested, continue
 		}
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod();
 			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
 			((AliConvEventCuts*)fEventCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
 			continue;

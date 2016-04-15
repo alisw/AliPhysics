@@ -15,7 +15,7 @@ class AliAODTrack;
 class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
  public:
   AliAnalysisTaskC2();
-  AliAnalysisTaskC2(const char *name, Int_t mode);
+  AliAnalysisTaskC2(const char *name);
   virtual ~AliAnalysisTaskC2() {};
 
   virtual void   UserCreateOutputObjects();
@@ -29,7 +29,7 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
   THn *fPairs;
 
   // QA Histograms
-  TH1F *fcents;
+  TH1F *fmultDistribution;
 
   // struct to buffer the track informations. Makes it easy to replace tracks with random data
   struct cNano_track {
@@ -38,13 +38,13 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
     Double_t pt;
   };
   struct cEventCounterDims {
-    enum type {kCent, kZvtx, kNdimensions};
+    enum type {kMult, kZvtx, kNdimensions};
   };
   struct cPairsDims {
-    enum type {kEta1, kEta2, kPhi1, kPhi2, kPtPair, kCent, kZvtx, kNdimensions};
+    enum type {kEta1, kEta2, kPhi1, kPhi2, kPtPair, kMult, kZvtx, kNdimensions};
   };
   struct cSinglesDims {
-    enum type {kEta, kPhi, kPt, kCent, kZvtx, kNdimensions};
+    enum type {kEta, kPhi, kPt, kMult, kZvtx, kNdimensions};
   };
 
 

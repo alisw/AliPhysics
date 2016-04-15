@@ -993,7 +993,7 @@ void AliAnalysisTaskPi0v2::ProcessEventPlane()
 TVector2 AliAnalysisTaskPi0v2::GetEPContribution(AliAODConversionPhoton *gamma){
 	TVector2 q;
 	for(Int_t ii=0;ii<2;ii++){
-		AliVTrack *fCurrentTrack=AliConversionPhotonCuts::GetTrack(fInputEvent,gamma->GetTrackLabel(ii));
+        AliVTrack *fCurrentTrack=fConversionCuts->GetTrack(fInputEvent,gamma->GetTrackLabel(ii));
 		TVector2 qtrack=GetContributionEP(fCurrentTrack);
 		q+=qtrack;
 	}

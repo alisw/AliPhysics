@@ -117,6 +117,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     Bool_t   fTotalChargeInSlice0;                          // Flag for foreward/backward compatibility for the TRD total charge
     Bool_t   fTRDOldPIDMethod;                              // Flag for old 1D PID method
     Bool_t   fTRD2DPID;                                     // Flag for 2D PID
+ 
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class
 };
 #endif

@@ -49,6 +49,7 @@ fPartInCone(0),
 fDebug(0),
 fFracIsThresh(1),
 fIsTMClusterInConeRejected(1),
+fDistMinToTrigger(-1.),
 fMomentum(),
 fTrackVector()
 {
@@ -257,7 +258,7 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
   Double_t etaBandCells = 0.; //number of cells in band eta
 
   Float_t phiC  = pCandidate->Phi() ;
-  if(phiC<0) phiC+=TMath::TwoPi();
+  if ( phiC < 0 ) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
 
   if(pCandidate->GetDetectorTag() == AliCaloTrackReader::kEMCAL)
@@ -322,12 +323,14 @@ void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandi
       coneBadCellsCoeff = (coneCells-coneBadCellsCoeff)/coneCells;
       //  printf("coneBadCellsCoeff= %.2f\n", coneBadCellsCoeff);
     }
+    
     if (phiBandCells > 0.)
     {
       // printf("Energy density phiBandBadCellsCoeff = %.2f phiBandCells%.2f\n", phiBandBadCellsCoeff,phiBandCells);
       phiBandBadCellsCoeff = (phiBandCells-phiBandBadCellsCoeff)/phiBandCells;
       // printf("phiBandBadCellsCoeff = %.2f\n", phiBandBadCellsCoeff);
     }
+    
     if (etaBandCells > 0.)
     {
       //printf("Energy density etaBandBadCellsCoeff = %.2f etaBandCells%.2f\n", etaBandBadCellsCoeff,etaBandCells);
@@ -363,6 +366,8 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fFracIsThresh=%i \n",fFracIsThresh) ;
   parList+=onePar ;
+  snprintf(onePar,buffersize,"fDistMinToTrigger=%1.2f \n",fDistMinToTrigger) ;
+  parList+=onePar ;
 
   return parList;
 }
@@ -381,6 +386,7 @@ void AliIsolationCut::InitParameters()
   fPartInCone     = kNeutralAndCharged;
   fICMethod       = kSumPtIC; // 0 pt threshol method, 1 cone pt sum method
   fFracIsThresh   = 1;
+  fDistMinToTrigger = -1.; // no effect
 }
 
 //________________________________________________________________________________
@@ -415,7 +421,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 {
   Float_t ptC   = pCandidate->Pt() ;
   Float_t phiC  = pCandidate->Phi() ;
-  if(phiC<0) phiC+=TMath::TwoPi();
+  if ( phiC < 0 ) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
 
   Float_t pt     = -100. ;
@@ -444,7 +450,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   Int_t       ntrackrefs   = 0;
   Int_t       nclusterrefs = 0;
 
-  //Check charged particles in cone.
+  // --------------------------------
+  // Check charged tracks in cone.
+  // --------------------------------
+
   if(plCTS &&
      (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
   {
@@ -477,12 +486,18 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         phi = trackmix->Phi() ;
       }
 
-      if( phi < 0 ) phi+=TMath::TwoPi();
+      // ** Calculate distance between candidate and tracks **
+      
+      if ( phi < 0 ) phi+=TMath::TwoPi();
 
       rad = Radius(etaC, phiC, eta, phi);
 
+      // ** Exclude tracks too close to the candidate, inactive by default **
+      
+      if(rad < fDistMinToTrigger) continue ;
+      
       // ** For the background out of cone **
-
+      
       if(rad > fConeSize)
       {
         if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumTrack += pt;
@@ -514,11 +529,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 //        return ;
 //      }
 
-      // // Check if there is any particle inside cone with pt larger than  fPtThreshold
-      // Check if the leading particule inside the cone has a ptLead larger than fPtThreshold
-
       AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
 
+      //
+      // Select tracks inside the isolation radius
+      //
       if(rad < fConeSize)
       {
         AliDebug(2,"Inside candidate cone");
@@ -568,8 +583,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 
   }//Tracks
 
-
-  //Check neutral particles in cone.
+  // --------------------------------
+  // Check calorimeter clusters in cone.
+  // --------------------------------
+  
   if(plNe &&
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
   {
@@ -580,25 +597,24 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 
       if(calo)
       {
-        //Get the index where the cluster comes, to retrieve the corresponding vertex
+        // Get the index where the cluster comes, to retrieve the corresponding vertex
         Int_t evtIndex = 0 ;
         if (reader->GetMixedEvent())
           evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ;
 
 
-        //Do not count the candidate (photon or pi0) or the daughters of the candidate
+        // Do not count the candidate (photon or pi0) or the daughters of the candidate
         if(calo->GetID() == pCandidate->GetCaloLabel(0) ||
            calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
 
-        //Skip matched clusters with tracks in case of neutral+charged analysis
+        // Skip matched clusters with tracks in case of neutral+charged analysis
         if(fIsTMClusterInConeRejected)
-            {
-
-            if( fPartInCone == kNeutralAndCharged &&
-            pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+        {
+          if( fPartInCone == kNeutralAndCharged &&
+             pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
         }
 
-        //Assume that come from vertex in straight line
+        // Assume that come from vertex in straight line
         calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
 
         pt  = fMomentum.Pt()  ;
@@ -619,10 +635,16 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         phi = calomix->Phi() ;
       }
 
+      // ** Calculate distance between candidate and tracks **
+      
       if( phi < 0 ) phi+=TMath::TwoPi();
 
       rad = Radius(etaC, phiC, eta, phi);
 
+      // ** Exclude clusters too close to the candidate, inactive by default **
+
+      if(rad < fDistMinToTrigger) continue ;
+      
       // ** For the background out of cone **
 
       if(rad > fConeSize)
@@ -664,10 +686,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 //        return ;
 //      }
 
-      //Check if there is any particle inside cone with pt larger than  fPtThreshold
-
       AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
 
+      //
+      // Select calorimeter clusters inside the isolation radius 
+      //
       if(rad < fConeSize)
       {
         AliDebug(2,"Inside candidate cone");
@@ -747,7 +770,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   }
 
   //-------------------------------------------------------------------
-  //Check isolation, depending on selected isolation criteria requested
+  // Check isolation, depending on selected isolation criteria requested
 
   if( fICMethod == kPtThresIC)
   {
@@ -814,6 +837,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                           phiBandPtSumCluster    , etaBandPtSumCluster,
                                           phiBandPtSumClusterNorm, etaBandPtSumClusterNorm,
                                           excessFracEtaCluster   , excessFracPhiCluster    );
+    
     if     (fPartInCone != kOnlyNeutral       )
       CalculateUEBandTrackNormalization(reader, etaC, phiC,
                                           phiBandPtSumTrack    , etaBandPtSumTrack  ,
@@ -856,6 +880,7 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("pT fraction        =     %3.1f\n", fPtFraction ) ;
   printf("particle type in cone =  %d\n",    fPartInCone ) ;
   printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
+  printf("minimum distance to candidate, R>%1.2f\n",fDistMinToTrigger);
   printf("    \n") ;
 }
 
@@ -871,7 +896,7 @@ Float_t AliIsolationCut::Radius(Float_t etaC, Float_t phiC,
 {
   Float_t dEta = etaC-eta;
   Float_t dPhi = phiC-phi;
-
+  
   if(TMath::Abs(dPhi) >= TMath::Pi())
     dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
 

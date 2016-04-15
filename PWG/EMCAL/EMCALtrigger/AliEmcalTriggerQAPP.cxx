@@ -60,6 +60,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
   fMinL1FastORAmp(0),
   fHistManager(),
   fDCalPlots(kTRUE),
+  fTimeStampBinWidth(0),
   fGeom(0),
   fSumOfflineEMCal(0),
   fSumL0EMCal(0),
@@ -72,7 +73,11 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP():
   fNL1EMCal(0),
   fNCellDCal(0),
   fNL0DCal(0),
-  fNL1DCal(0)
+  fNL1DCal(0),
+  fEventTimeStamp(0),
+  fEventTimeStampBin(0),
+  fNTotTRU(0),
+  fMaxFORabsId(0)
 {
   for (Int_t i = 0; i < 3; i++) {
     fEnabledPatchTypes[i] = kTRUE;
@@ -110,6 +115,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
   fMinL1FastORAmp(0),
   fHistManager(name),
   fDCalPlots(kTRUE),
+  fTimeStampBinWidth(0),
   fGeom(0),
   fSumOfflineEMCal(0),
   fSumL0EMCal(0),
@@ -122,7 +128,11 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const char* name):
   fNL1EMCal(0),
   fNCellDCal(0),
   fNL0DCal(0),
-  fNL1DCal(0)
+  fNL1DCal(0),
+  fEventTimeStamp(0),
+  fEventTimeStampBin(0),
+  fNTotTRU(0),
+  fMaxFORabsId(0)
 {
   for (Int_t i = 0; i < 3; i++) {
     fEnabledPatchTypes[i] = kTRUE;
@@ -160,6 +170,7 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const AliEmcalTriggerQAPP& triggerQA) :
   fMinL1FastORAmp(triggerQA.fMinL1FastORAmp),
   fHistManager(triggerQA.GetName()),
   fDCalPlots(triggerQA.fDCalPlots),
+  fTimeStampBinWidth(triggerQA.fTimeStampBinWidth),
   fGeom(0),
   fSumOfflineEMCal(0),
   fSumL0EMCal(0),
@@ -172,7 +183,11 @@ AliEmcalTriggerQAPP::AliEmcalTriggerQAPP(const AliEmcalTriggerQAPP& triggerQA) :
   fNL1EMCal(0),
   fNCellDCal(0),
   fNL0DCal(0),
-  fNL1DCal(0)
+  fNL1DCal(0),
+  fEventTimeStamp(0),
+  fEventTimeStampBin(0),
+  fNTotTRU(0),
+  fMaxFORabsId(0)
 {
   for (Int_t i = 0; i < 3; i++) {
     fEnabledPatchTypes[i] = kTRUE;
@@ -303,28 +318,31 @@ void AliEmcalTriggerQAPP::Init()
   TString hname;
   TString htitle;
 
-  Int_t maxFORabsId = 5000;
-  Int_t ndet = 2;
-  if (!fDCalPlots) {
-    maxFORabsId = 3000;
-    ndet = 1;
+  fNTotTRU = 32; // there are 32 TRU in the EMCal (10 full SM * 3 TRU + 2 small SM * 1 TRU)
+  Int_t ndet = 1;
+  if (fDCalPlots) {
+    fNTotTRU += 20; // there are additional 14 TRU in DCal, some skip in between (see below)
+    ndet += 1;
   }
+  fMaxFORabsId = fNTotTRU * 96;  // there are 96 channels in each TRU
+
+  if (fTimeStampBinWidth > 0) fHistManager.CreateHistoGroup("ByTimeStamp");
 
   hname = Form("EMCTRQA_histFastORL0");
   htitle = Form("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId, 0, maxFORabsId);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
 
   hname = Form("EMCTRQA_histLargeAmpFastORL0");
   htitle = Form("EMCTRQA_histLargeAmpFastORL0 (>%d);FastOR abs. ID;entries above %d", fFastorL0Th, fFastorL0Th);
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId, 0, maxFORabsId);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
 
   hname = Form("EMCTRQA_histFastORL0Amp");
   htitle = Form("EMCTRQA_histFastORL0Amp;FastOR abs. ID;ADC counts");
-  fHistManager.CreateTH2(hname, htitle, maxFORabsId, 0, maxFORabsId, 1024, 0, 4096);
+  fHistManager.CreateTH2(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId, 1024, 0, 4096);
 
   hname = Form("EMCTRQA_histFastORL0Time");
   htitle = Form("EMCTRQA_histFastORL0Time;FastOR abs. ID;time");
-  fHistManager.CreateTH2(hname, htitle, maxFORabsId, 0, maxFORabsId, 21, -1, 20);
+  fHistManager.CreateTH2(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId, 21, -1, 20);
 
   hname = Form("EMCTRQA_histFastORL0AmpVsTime");
   htitle = Form("EMCTRQA_histFastORL0AmpVsTime;time;amplitude");
@@ -332,23 +350,23 @@ void AliEmcalTriggerQAPP::Init()
 
   hname = Form("EMCTRQA_histFastORL0TimeOk");
   htitle = Form("EMCTRQA_histFastORL0TimeOk;FastOR abs. ID;entries (%d < time < %d)", fL0MinTime, fL0MaxTime);
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId, 0, maxFORabsId);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
 
   hname = Form("EMCTRQA_histFastORL0AmpTimeOk");
   htitle = Form("EMCTRQA_histFastORL0AmpTimeOk;FastOR abs. ID;ADC counts  (%d < time < %d)", fL0MinTime, fL0MaxTime);
-  fHistManager.CreateTH2(hname, htitle, maxFORabsId, 0, maxFORabsId, 1024, 0, 4096);
+  fHistManager.CreateTH2(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId, 1024, 0, 4096);
 
   hname = Form("EMCTRQA_histFastORL1");
   htitle = Form("EMCTRQA_histFastORL1;FastOR abs. ID;entries above 0");
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId, 0, maxFORabsId);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
 
   hname = Form("EMCTRQA_histLargeAmpFastORL1");
   htitle = Form("EMCTRQA_histLargeAmpFastORL1 (>%d);FastOR abs. ID;entries above %d", fFastorL1Th, fFastorL1Th);
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId, 0, maxFORabsId);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
 
   hname = Form("EMCTRQA_histFastORL1Amp");
   htitle = Form("EMCTRQA_histFastORL1Amp;FastOR abs. ID;L1 time sum");
-  fHistManager.CreateTH2(hname, htitle, maxFORabsId, 0, maxFORabsId, 1024, 0, 4096);
+  fHistManager.CreateTH2(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId, 1024, 0, 4096);
 
   hname = Form("EMCTRQA_histFastORL1AmpVsL0Amp");
   htitle = Form("EMCTRQA_histFastORL1AmpVsL0Amp;L0 amplitude;L1 time sum;entries");
@@ -356,27 +374,44 @@ void AliEmcalTriggerQAPP::Init()
 
   hname = Form("EMCTRQA_histCellAmp");
   htitle = Form("EMCTRQA_histCellAmp;cell abs. ID;energy (GeV)");
-  fHistManager.CreateTH2(hname, htitle, maxFORabsId*4, 0, maxFORabsId*4, 400, 0, 200);
+  fHistManager.CreateTH2(hname, htitle, fMaxFORabsId*4, 0, fMaxFORabsId*4, 400, 0, 200);
 
   hname = Form("EMCTRQA_histCell");
   htitle = Form("EMCTRQA_histCell;cell abs. ID;entries above 0 GeV");
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId*4, 0, maxFORabsId*4);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId*4, 0, fMaxFORabsId*4);
 
   hname = Form("EMCTRQA_histLargeAmpCell");
   htitle = Form("EMCTRQA_histLargeAmpCell (>%.1f);cell abs. ID;entries above %.1f GeV", fFastorL1Th * EMCALTrigger::kEMCL1ADCtoGeV, fFastorL1Th * EMCALTrigger::kEMCL1ADCtoGeV);
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId*4, 0, maxFORabsId*4);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId*4, 0, fMaxFORabsId*4);
 
   hname = Form("EMCTRQA_histCellAmpVsFastORL0Amp");
   htitle = Form("EMCTRQA_histCellAmpVsFastORL0Amp;FastOR L0 amplitude;2x2 cell sum energy (GeV)");
+  fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+
+  hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered");
+  htitle = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered;FastOR L0 amplitude;2x2 cell sum energy (GeV)");
   fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
 
   hname = Form("EMCTRQA_histCellAmpVsFastORL1Amp");
   htitle = Form("EMCTRQA_histCellAmpVsFastORL1Amp;FastOR L1 amplitude;2x2 cell sum energy (GeV)");
   fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
 
+  for (Int_t nTRU = 0; nTRU < fNTotTRU; nTRU++) {
+    if (nTRU == 34 || nTRU == 35 ||
+        nTRU == 40 || nTRU == 41 ||
+        nTRU == 46 || nTRU == 47) continue;
+    hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTRU%d", nTRU);
+    htitle = Form("EMCTRQA_histCellAmpVsFastORL0Amp%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+
+    hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d", nTRU);
+    htitle = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+  }
+
   hname = Form("EMCTRQA_histFastORNoOffline");
   htitle = Form("EMCTRQA_histFastORNoOffline;FastOR abs. ID;entries with no offline energy");
-  fHistManager.CreateTH1(hname, htitle, maxFORabsId, 0, maxFORabsId);
+  fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
 
   const char* det[2] = { "EMCal", "DCal" };
 
@@ -565,10 +600,13 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
   Bool_t isDCal = kFALSE;
 
   Double_t offlineAmp = 0;
+  Int_t nTRU = -1;
+  Int_t nADC = -1;
 
   if (fGeom) {
     Int_t idx[4] = {-1};
     fGeom->GetCellIndexFromFastORIndex(fastor->GetAbsId(), idx);
+    fGeom->GetTRUFromAbsFastORIndex(fastor->GetAbsId(), nTRU, nADC);
     Double_t pos[3] = {0};
     if (idx[0] >= 0) {
       fGeom->GetGlobal(idx[0], pos);
@@ -586,6 +624,11 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
   }
 
   if (L0amp > fMinL0FastORAmp) {
+    if (fTimeStampBinWidth > 0) {
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+      fHistManager.FillTH1(hname, fastor->GetAbsId());
+    }
+
     hname = Form("EMCTRQA_histFastORL0");
     fHistManager.FillTH1(hname, fastor->GetAbsId());
 
@@ -604,10 +647,20 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
 
       hname = Form("EMCTRQA_histFastORL0AmpTimeOk");
       fHistManager.FillTH2(hname, fastor->GetAbsId(), L0amp);
+
+      hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered");
+      fHistManager.FillTH2(hname, L0amp, offlineAmp);
+
+      hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d",nTRU);
+      fHistManager.FillTH2(hname, L0amp, offlineAmp);
     }
 
     hname = Form("EMCTRQA_histCellAmpVsFastORL0Amp");
     fHistManager.FillTH2(hname, L0amp, offlineAmp);
+
+    hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTRU%d",nTRU);
+    fHistManager.FillTH2(hname, L0amp, offlineAmp);
+
     if (offlineAmp == 0) {
       hname = Form("EMCTRQA_histFastORNoOffline");
       fHistManager.FillTH1(hname, fastor->GetAbsId());
@@ -624,6 +677,11 @@ void AliEmcalTriggerQAPP::ProcessFastor(AliEMCALTriggerFastOR* fastor, AliVCaloC
   }
 
   if (L0amp > fFastorL0Th) {
+    if (fTimeStampBinWidth > 0) {
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+      fHistManager.FillTH1(hname, fastor->GetAbsId());
+    }
+
     hname = Form("EMCTRQA_histLargeAmpFastORL0");
     fHistManager.FillTH1(hname, fastor->GetAbsId());
   }
@@ -773,4 +831,41 @@ Int_t AliEmcalTriggerQAPP::GetAmplitude(AliEMCALTriggerPatchInfo* patch, Int_t i
   else {
     return 0;
   }
+}
+
+/**
+ * This function should be called every event to set the new time stamp.
+ * It sets the time stamp in the internal field, computes the time stamp bin
+ * based on fTimeStampBinWidth and creates the "by-time-stamp" histograms.
+ * \param timeStamp Time stamp of the event
+ */
+void AliEmcalTriggerQAPP::EventTimeStamp(UInt_t timeStamp)
+{
+  fEventTimeStamp = timeStamp;
+
+  if (fTimeStampBinWidth == 0) return;
+
+  UInt_t timeStampBins = fEventTimeStamp / fTimeStampBinWidth;
+  fEventTimeStampBin = timeStampBins*fTimeStampBinWidth;
+
+  TString hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+  if (!fHistManager.FindObject(hname)) {
+    TString htitle;
+
+    hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    htitle = TString::Format("EMCTRQA_histEvents;;events");
+    TH1* hevents = fHistManager.CreateTH1(hname, htitle, 1, 0, 1);
+    hevents->GetXaxis()->SetBinLabel(1, TString::Format("%u <= time stamp < %u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth));
+
+    hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    htitle = TString::Format("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
+    fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+
+    hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    htitle = TString::Format("EMCTRQA_histLargeAmpFastORL0 (>%d);FastOR abs. ID;entries above %d", fFastorL0Th, fFastorL0Th);
+    fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+  }
+
+  hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+  fHistManager.FillTH1(hname, 0.);
 }

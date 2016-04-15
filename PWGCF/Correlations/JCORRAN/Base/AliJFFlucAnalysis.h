@@ -48,6 +48,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;};
 		void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;};
 
+		void SetEventTracksQA(float tpc, float glb){ fTPCtrks = tpc; fGlbtrks = glb;	};
+
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
 
 		TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
@@ -85,6 +87,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJEfficiency *fEfficiency;
 		int fEffMode;
 		int fEffFilterBit;
+		float fTPCtrks;
+		float fGlbtrks;
 		TString fInFileName;
 		Bool_t IsPhiModule;  
 		Bool_t IsSCwithQC; // flag to check SC with QC method
@@ -128,6 +132,8 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 
 		AliJTH1D fh_correlator; // some more complex correlator
+		AliJTH2D fh_TrkQA_TPCvsGlob; // QA histos 
+		AliJTH2D fh_TrkQA_TPCvsCent; // QA histos
 
 
 		// addtinal variables for ptbins(Standard Candles only)

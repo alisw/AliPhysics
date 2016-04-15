@@ -40,6 +40,7 @@ ClassImp(AliAnalysisTaskConversionQA)
 //________________________________________________________________________
 AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE(),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fConversionGammas(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
@@ -131,6 +132,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
 
 AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : AliAnalysisTaskSE(name),
   fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
   fConversionGammas(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
@@ -437,7 +439,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     fTreeList->Add(fTreeQA);
   }
 
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   
   if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
@@ -449,10 +451,17 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskConversionQA::Notify()
 {
+    if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        fEventCuts->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+ 
+  
   if(!fEventCuts->GetDoEtaShift()) return kTRUE;; // No Eta Shift requested, continue
     
   if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-    fEventCuts->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+    fEventCuts->GetCorrectEtaShiftFromPeriod();
     fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
     return kTRUE;
   }

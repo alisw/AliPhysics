@@ -133,7 +133,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TString GetGenerator(Int_t label, AliAODMCHeader* header);
   void GetTrackPrimaryGenerator(Int_t lab, AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   Bool_t IsTrackInjected(Int_t lab, AliAODMCHeader *header,TClonesArray *arrayMC, TString &nameGen);
-  Double_t SmearJetPt(Double_t jetPt, Int_t cl, Double_t jetRadius, Double_t ptmintrack, Double_t& jetPtSmear);
+  Double_t SmearJetPt(Double_t jetPt, Double_t& jetPtSmear);
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
   Bool_t IsRCJCOverlap(TList* recjetlist, const AliVParticle* part, Double_t dDistance) const;
   AliAODJet* GetRandomCone(TList* jetlist, Double_t dEtaConeMax, Double_t dDistance) const;
@@ -501,11 +501,14 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   /* TH2F* fh2CorrHijingLaProton;
   TH2F* fh2CorrInjectLaProton;
   TH2F* fh2CorrHijingALaAProton;
-  TH2F* fh2CorrInjectALaAProton;
+  TH2F* fh2CorrInjectALaAProton;*/
   TH1F* fh1IMK0ConeSmear; //histos for normalisation by number of smeared jets
   TH1F* fh1IMLaConeSmear;
   TH1F* fh1IMALaConeSmear;
-  TH2F* fh2MCEtaVsPtHijingLa;
+  TH2F* fh2MC2K0Cone;
+  TH2F* fh2MC2LaCone;
+  TH2F* fh2MC2ALaCone;
+  /* TH2F* fh2MCEtaVsPtHijingLa;
   TH2F* fh2MCEtaVsPtInjectLa;
   TH2F* fh2MCEtaVsPtHijingALa;
   TH2F* fh2MCEtaVsPtInjectALa;

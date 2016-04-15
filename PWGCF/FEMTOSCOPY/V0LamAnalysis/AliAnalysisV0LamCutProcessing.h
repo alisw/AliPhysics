@@ -54,7 +54,7 @@ public:
   int fNumberOfCutTypes;
   int fNumberOfVariableCutValues;
   int fCurrentCentralityBin;
-  int fDefaultVariableCutType;
+  int fVariableCutType;
   TList *fOutputList; //! Compact output list where histograms are written
   //These hists are filled during the V0 reconstruction process
   TH2F *fHistDaughterPosDcaToPrimLam;

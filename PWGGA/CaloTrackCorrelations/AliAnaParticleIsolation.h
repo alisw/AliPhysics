@@ -171,7 +171,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         SwitchOnOverlapHistograms()           { fFillOverlapHistograms = kTRUE ; }
   void         SwitchOffOverlapHistograms()          { fFillOverlapHistograms = kFALSE; }
-
   
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
@@ -200,7 +199,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
-  
+
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
   UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; ///< In case of study of decay triggers, select the decay. bit

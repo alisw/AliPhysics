@@ -28,11 +28,13 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 		virtual ~AliAnalysisTaskMaterial();
 
 		virtual void   UserCreateOutputObjects();
+    virtual Bool_t Notify                   ();
 		virtual void   UserExec(Option_t *option);
 		virtual void   Terminate(Option_t *);
 
 		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 		void SetConversionCuts(AliConversionPhotonCuts* conversionCuts,Int_t IsHeavyIon ){
 			fConversionCuts=conversionCuts;
 			fIsHeavyIon = IsHeavyIon;
@@ -51,6 +53,7 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 		Int_t CountTracks09();
 
 		AliV0ReaderV1 				*fV0Reader;					// 
+        TString                     fV0ReaderName;
 		TClonesArray 				*fConversionGammas; 		// Reconstructed Photons;
 		AliConversionPhotonCuts 	*fConversionCuts; 			// Cuts used by the V0Reader
 		AliConvEventCuts 			*fEventCuts; 				// Cuts used by the V0Reader
@@ -89,7 +92,7 @@ class AliAnalysisTaskMaterial : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterial& operator=(const AliAnalysisTaskMaterial&); // not implemented
 
 
-		ClassDef(AliAnalysisTaskMaterial, 2);
+        ClassDef(AliAnalysisTaskMaterial, 3);
 };
 
 #endif

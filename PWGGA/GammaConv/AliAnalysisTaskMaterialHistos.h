@@ -33,6 +33,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		void SetIsHeavyIon(Int_t flag)                                { fIsHeavyIon                 = flag    ;}
 		void SetIsMC(Int_t isMC){fIsMC=isMC;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
+        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 
     void SetEventCutList(Int_t nCuts, TList *CutArray)          { fnCuts                        = nCuts     ;
                                                                   fEventCutArray                = CutArray  ;}
@@ -52,6 +53,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		Int_t CountTracks09();
 
 		AliV0ReaderV1 		*fV0Reader;					// 
+        TString              fV0ReaderName;
 		TClonesArray 			*fConversionGammas; 		// Reconstructed Photons;
     TList*            fConversionCutArray;
     TList*            fEventCutArray;         //
@@ -94,6 +96,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hESDConversionEta;              //!  
 		TH1F**            hESDConversionMidPtEta;         //!
 		TH1F**            hESDConversionPt;              //!
+		TH1F**            hESDConversionPt5cm;              //!
 		TH1F**           	hESDConversionDCA;             //!
 		TH1F**           	hESDConversionMidPtDCA;        //!
 		TH1F**           	hESDConversionPsiPair;         //!
@@ -114,6 +117,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hMCTrueConversionEta;              //!  
 		TH1F**            hMCTrueConversionMidPtEta;         //!
 		TH1F**            hMCTrueConversionPt;               //!
+		TH1F**            hMCTrueConversionPt5cm;               //!
   	TH2F**            hMCTrueConversionAsymP;            //!
 		TH1F**            hMCTrueConversionDCA;              //!
 		TH1F**            hMCTrueConversionMidPtDCA;         //!
@@ -142,7 +146,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-		ClassDef(AliAnalysisTaskMaterialHistos, 2);
+        ClassDef(AliAnalysisTaskMaterialHistos, 4);
 };
 
 #endif

@@ -27,6 +27,8 @@
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
+#include "AliMultEstimator.h"
 
 #include "AliAnalysisTaskEmcalPatchesRef.h"
 
@@ -43,7 +45,9 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
         fTriggerSelection(NULL),
         fHistos(NULL),
         fRequestAnalysisUtil(kTRUE),
-        fTriggerStringFromPatches(kFALSE)
+        fTriggerStringFromPatches(kFALSE),
+        fCentralityRange(-999., 999.),
+        fVertexRange(-999., 999.)
 {
 }
 
@@ -57,7 +61,9 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name)
     fTriggerSelection(NULL),
     fHistos(NULL),
     fRequestAnalysisUtil(kTRUE),
-    fTriggerStringFromPatches(kFALSE)
+    fTriggerStringFromPatches(kFALSE),
+    fCentralityRange(-999., 999.),
+    fVertexRange(-999., 999.)
 {
   DefineOutput(1, TList::Class());
 }
@@ -74,6 +80,7 @@ AliAnalysisTaskEmcalPatchesRef::~AliAnalysisTaskEmcalPatchesRef() {
  * + Patch eta-phi map - separated by patch type - for different trigger classes and different min. energies
  */
 void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
+  AliInfo(Form("Creating histograms for task %s\n", GetName()));
   fAnalysisUtil = new AliAnalysisUtils;
 
   TArrayD energybinning, etabinning;
@@ -99,7 +106,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
-
+  AliDebug(1, "Histograms done");
 }
 
 /**
@@ -107,6 +114,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
  * @param Not used
  */
 void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
+  AliDebug(1, Form("%s: Start function\n", GetName()));
   TClonesArray *patches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
@@ -132,20 +140,44 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
       isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, patches);
       isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, patches);
       isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, patches);
+      isDMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDL0, patches);
+      isDJ1 &=  fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ1, patches);
+      isDJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ2, patches);
+      isDG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG1, patches);
+      isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, patches);
 
   }
-  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)){
+    AliDebug(1, Form("%s: Reject trigger\n", GetName()));
+    return;
+  }
+  AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
+  AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
+  if(!fCentralityRange.IsInRange(centrality)){
+    AliDebug(1, Form("%s: Reject centrality\n", GetName()));
+    return;
+  }
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
+  if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-  if(vtx->GetNContributors() < 1) return;
-    // Fill reference distribution for the primary vertex before any z-cut
-    if(fRequestAnalysisUtil){
-      if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
-      if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-      if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+  if(vtx->GetNContributors() < 1){
+    AliDebug(1, Form("%s: Reject contributor\n", GetName()));
+    return;
+  }
+  // Fill reference distribution for the primary vertex before any z-cut
+  if(fRequestAnalysisUtil){
+    AliDebug(1, Form("%s: Reject analysis util\n", GetName()));
+    if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
+    if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
+    if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   }
   // Apply vertex z cut
-  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
+  if(!fVertexRange.IsInRange(vtx->GetZ())){
+    AliDebug(1, Form("%s: Reject Z\n", GetName()));
+    return;
+  }
+  AliDebug(1, Form("%s: Event Selected\n", GetName()));
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
@@ -220,6 +252,8 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     return;
   }
 
+  AliDebug(1, Form("%s: Number of trigger patches %d\n", GetName(), patches->GetEntries()));
+
   Double_t vertexpos[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
 
@@ -228,7 +262,9 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     if(!IsOfflineSimplePatch(*patchIter)) continue;
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
 
-    bool isDCAL = SelectDCALPatch(*patchIter), isSingleShower = SelectSingleShowerPatch(*patchIter), isJetPatch = SelectJetPatch(*patchIter);
+    bool isDCAL         = SelectDCALPatch(*patchIter),
+        isSingleShower  = SelectSingleShowerPatch(*patchIter),
+        isJetPatch      = SelectJetPatch(*patchIter);
 
     std::vector<TString> patchnames;
     if(isJetPatch){
@@ -413,18 +449,30 @@ void AliAnalysisTaskEmcalPatchesRef::CreateLinearBinning(TArrayD& binning, int n
 TString AliAnalysisTaskEmcalPatchesRef::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
   TString triggerstring = "";
   if(!triggerpatches) return triggerstring;
-  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
-  double  minADC_EJ1 = 260.,
-          minADC_EJ2 = 127.,
-          minADC_EG1 = 140.,
-          minADC_EG2 = 89.;
+  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0, nDJ1 = 0, nDJ2 = 0, nDG1 = 0, nDG2 = 0;
+  double  minADC_J1 = 260.,
+          minADC_J2 = 127.,
+          minADC_G1 = 140.,
+          minADC_G2 = 89.;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
-    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
-    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;
-    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_EG1) nEG1++;
-    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_EG2) nEG2++;
+    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_J1){
+      if(patch->IsDCalPHOS()) nDJ1++;
+      else nEJ1++;
+    }
+    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_J2){
+      if(patch->IsDCalPHOS()) nDJ2++;
+      else nEJ2++;
+    }
+    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_G1){
+      if(patch->IsDCalPHOS()) nDG1++;
+      else nEG1++;
+    }
+    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_G2){
+      if(patch->IsDCalPHOS()) nDG2++;
+      else nEG2++;
+    }
   }
   if(nEJ1) triggerstring += "EJ1";
   if(nEJ2){
@@ -438,6 +486,22 @@ TString AliAnalysisTaskEmcalPatchesRef::GetFiredTriggerClassesFromPatches(const 
   if(nEG2){
     if(triggerstring.Length()) triggerstring += ",";
     triggerstring += "EG2";
+  }
+  if(nDJ1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DJ1";
+  }
+  if(nEJ2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DJ2";
+  }
+  if(nDG1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DG1";
+  }
+  if(nDG2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "DG2";
   }
   return triggerstring;
 }

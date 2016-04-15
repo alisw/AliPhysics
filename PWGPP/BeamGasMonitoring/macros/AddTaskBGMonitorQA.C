@@ -10,13 +10,13 @@ AliAnalysisBGMonitorQA *AddTaskBGMonitorQA(Bool_t UseTree = kFALSE)
     return NULL;
   }   
 
+
     // Input handlers
     AliESDInputHandler* esdH = new AliESDInputHandler();
     
     esdH->SetReadFriends(kTRUE);
     mgr->SetInputEventHandler(esdH);
 
-    
     
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskMBVeto", "This task requires an input event handler");
@@ -39,8 +39,11 @@ AliAnalysisBGMonitorQA *AddTaskBGMonitorQA(Bool_t UseTree = kFALSE)
     
     if(UseTree==kTRUE){
         AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cOutputT", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName()));
-        mgr->ConnectOutput(taskMBVeto, 3, coutput3);
+        mgr->ConnectOutput(taskMBVeto, 0, coutput3);
     }
+    
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cOutputT", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName()));
+    mgr->ConnectOutput(taskMBVeto, 0, coutput3);
     
   return taskMBVeto;
   

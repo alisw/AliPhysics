@@ -18,6 +18,7 @@ AliAnalysisTaskChargedJetsHadronCF* AddTaskChargedJetsHadronCF(
   //==============================================================================
   // Prepare analysis manager, containers, etc.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
   if (!mgr)
   {
     ::Error("AddTaskChargedJetsHadronCF", "No analysis manager to connect to.");
@@ -52,8 +53,8 @@ AliAnalysisTaskChargedJetsHadronCF* AddTaskChargedJetsHadronCF(
   jetTask->SetNeedEmcalGeom(kFALSE);
   jetTask->SetVzRange(-10.,10.);
   jetTask->SetOffTrigger(physSel);
-
-  AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackArray);
+  
+  AliTrackContainer *trackCont = jetTask->AddTrackContainer(trackArray);
   trackCont->SetParticlePtCut(minTrackPt);
 
   AliJetContainer *jetCont = jetTask->AddJetContainer(jetArray,6,jetRadius);

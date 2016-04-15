@@ -36,6 +36,7 @@ ClassImp(AliAnalysisTaskMaterial)
 
 AliAnalysisTaskMaterial::AliAnalysisTaskMaterial() : AliAnalysisTaskSE(),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fConversionCuts(NULL),
 	fEventCuts(NULL),
@@ -77,6 +78,7 @@ AliAnalysisTaskMaterial::AliAnalysisTaskMaterial() : AliAnalysisTaskSE(),
 //________________________________________________________________________
 AliAnalysisTaskMaterial::AliAnalysisTaskMaterial(const char *name) : AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
+    fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fConversionCuts(NULL),
 	fEventCuts(NULL),
@@ -122,6 +124,16 @@ AliAnalysisTaskMaterial::~AliAnalysisTaskMaterial()
 {
 	// default deconstructor
 }
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskMaterial::Notify()
+{
+  if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        fEventCuts->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 {
@@ -192,7 +204,7 @@ void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 // 		fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
 // 		fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
 // 	}
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
 		if (fV0Reader->GetV0FindingEfficiencyHistograms())
 			fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());

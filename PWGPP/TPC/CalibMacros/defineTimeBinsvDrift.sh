@@ -30,11 +30,15 @@ if [[ $1 == *.xml ]]; then  # case of xml collection: we need the list of filena
 #echo "the XML file to be parsed is:"
 #cat $1
     cat $1 | extractFileNamesFromXMLCollection > $residualFileList
-    #cat $residualFileList | awk -F'/' '{print $8}' | sort | uniq > $runList
-    echo 
+    echo
+else
+    if [[ $1 != residualFilesList.log ]]; then  # The input file list is not in a file with the filename that we want. We need this for the following step (processTimeBin)
+	ln -s $1 $residualFileList
+    fi
 fi
 
 shift 1
+if [[ -f $runList ]] ; then rm $runList ; fi
 for runNum in "$@"
 do
     echo $runNum >> $runList
@@ -70,7 +74,6 @@ export driftSigmaT=600;     # smoothing  sigma for drift calibration
 export targetOCDBDir="local://`pwd`"
 targetOCDBDir=${ALIEN_JDL_TARGETOCDBDIR-$targetOCDBDir}
 
-
 #
 # 1.) Submit query  to get  time dependent info
 #
@@ -88,16 +91,15 @@ for arun in `cat $runList`; do
     time aliroot -b -q $inclMacro $loadLibMacro ${locMacro}+\(6,$run\) >& submitDrift_$arun.log
     alilog_info "END: 1.) Submit query to calibrate drift velocity"
     alilog_info "BEGIN: 1.) Create OCDB entry for drift velocity"
-    time aliroot -b -q $inclMacro $loadLibMacro ${locMacro}+\(7,$run\) >& createOCDB_$arun.log
+    time aliroot -b -q $inclMacro $loadLibMacro ${locMacro}+\(7,$run\) >& ocdb_vdrift_$arun.log
     alilog_info "END: 1.)  Create OCDB entry for drift velocity"
-    mv fitDrift.root fitDrift_$arun.root
     alilog_info "END: Processing run $arun"
 done
 #
 # 2.) extract bin info
 #
 alilog_info "BEGIN: Define time bins"
-timeDelta=1200 # the width of the time bin will be at minimum 600 s, and at maximum 1200 s 
+timeDelta=2400 # the width of the time bin will be at minimum 600 s, and at maximum 1200 s 
 
 timeBinsFile="timeBins.log"
 

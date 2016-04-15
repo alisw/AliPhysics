@@ -32,9 +32,9 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName);
   eTask->SetTriggerPatchesName(triggerPatchesName);
   eTask->Set2015CaloTriggerNames();
-  eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kOnlinePatch);
-  eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kOfflinePatch);
-  eTask->GetTriggerQA()->EnablePatchType(AliEmcalTriggerQAAP::kRecalcPatch);
+  eTask->GetTriggerQA()->EnablePatchType(AliEMCALTriggerQA::kOnlinePatch);
+  eTask->GetTriggerQA()->EnablePatchType(AliEMCALTriggerQA::kOfflinePatch);
+  eTask->GetTriggerQA()->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch);
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
 

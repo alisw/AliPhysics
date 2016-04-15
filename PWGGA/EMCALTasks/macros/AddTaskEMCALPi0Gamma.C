@@ -99,8 +99,8 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
 
   char ccentmin[10];
   char ccentmax[10];
-  sprintf(ccentmin,"%.0f",centMin);
-  sprintf(ccentmax,"%.0f",centMax);
+  sprintf(ccentmin,"_%.0f",centMin);
+  sprintf(ccentmax,"_%.0f",centMax);
   
   strcat(name,ccentmin);
   strcat(name,ccentmax);

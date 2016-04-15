@@ -186,7 +186,8 @@ ClassImp(AlidNdPtAnalysis)
   fIsInit(kFALSE),
   
   fTRDTriggerRequiredHQU(kFALSE),
-  fTRDTriggerRequiredHJT(kFALSE)
+  fTRDTriggerRequiredHJT(kFALSE),
+  fTRDTriggerRequiredHSE(kFALSE)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -316,7 +317,8 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fIsInit(kFALSE),
   
   fTRDTriggerRequiredHQU(kFALSE),
-  fTRDTriggerRequiredHJT(kFALSE)
+  fTRDTriggerRequiredHJT(kFALSE),
+  fTRDTriggerRequiredHSE(kFALSE)
   
 {
   //
@@ -1239,14 +1241,25 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     //added TRD
     //TRD trigger
     trdSelection->CalcTriggers(esdEvent);
-    triggerResult=trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU);//trigger with low Pt as well
+     triggerResult=trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU);//trigger with low Pt as well
+    // triggerResult=trdSelection->HasTriggered(AliTRDTriggerAnalysis::kHQU); //test MC
+    // TRD trigger END
+  }  
+  if (fTRDTriggerRequiredHSE ){
+    AliTRDTriggerAnalysis* trdSelection = (new AliTRDTriggerAnalysis()); //TRD added
+    if (!trdSelection){Printf("ERROR: Could not receive TRD selection"); return; }
+    //added TRD
+    //TRD trigger
+    trdSelection->CalcTriggers(esdEvent);
+    triggerResult=trdSelection->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE);//trigger with low Pt as well
+    // triggerResult=trdSelection->HasTriggered(AliTRDTriggerAnalysis::kHQU); //test MC
     // TRD trigger END
   }  
    
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    if (fTRDTriggerRequiredHJT || fTRDTriggerRequiredHQU){
+    if (fTRDTriggerRequiredHJT || fTRDTriggerRequiredHQU ||fTRDTriggerRequiredHSE){
       isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask() && triggerResult;
    
     }else{
@@ -1489,8 +1502,11 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
         continue;
       
       if(IsUseTOFBunchCrossing()){
-      Int_t TOFBunchCrossing = track->GetTOFBunchCrossing(esdEvent->GetMagneticField(),kTRUE); /////
-      if(TOFBunchCrossing != 0) continue; 
+//       Int_t TOFBunchCrossing = track->GetTOFBunchCrossing(esdEvent->GetMagneticField(),kTRUE); 
+//       if(TOFBunchCrossing != 0) continue; 
+        if(TMath::Abs(track->GetTOFsignalDz()>10)) continue;
+        if((track->GetTOFsignal())<12000) continue;
+        if((track->GetTOFsignal())>25000) continue; 
       }
       
       //Rejecting Kink Mothers

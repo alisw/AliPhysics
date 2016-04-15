@@ -296,45 +296,72 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   // Calculate pair variables
-  Double_t tPx = inf1->GetTrueMomentum()->x()+inf2->GetTrueMomentum()->x();
-  Double_t tPy = inf1->GetTrueMomentum()->y()+inf2->GetTrueMomentum()->y();
-  Double_t tPz = inf1->GetTrueMomentum()->z()+inf2->GetTrueMomentum()->z();
-  Double_t tM1 = inf1->GetMass();
-  Double_t tM2 = inf2->GetMass();
-  Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->Mag2());
-  Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->Mag2());
+  // Double_t tPx = inf1->GetTrueMomentum()->x()+inf2->GetTrueMomentum()->x();
+ Double_t tPx = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->x()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->x();
+  Double_t tPy = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->y()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->y();
+  Double_t tPz = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->z()  + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->z();
+
+  Double_t tM1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
+  Double_t tM2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
+
+ Double_t tE1 = sqrt(tM1*tM1 + ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->Mag2());
+  Double_t tE2 = sqrt(tM2*tM2 + ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum()->Mag2());
+
+
+ // if (tPx==0 && tPy==0 && tPz==0 ) {cout<<" zero true momentum "<<endl; return 0;}
+
+
   Double_t tE  = tE1 + tE2;
   Double_t tPt = tPx*tPx + tPy*tPy;
   Double_t tMt = tE*tE - tPz*tPz;//mCVK;
   Double_t tM  = sqrt(tMt - tPt);
   tMt = sqrt(tMt);
   tPt = sqrt(tPt);
+  
+ if (tMt==0 || tE==0 || tM==0 || tPt==0 ) {cout<<" weight generator zero tPt || tMt || tM || tPt"<<tM1<<" "<<tM2<<endl; return 0;}
+  
+  
   Double_t tBetat = tPt/tMt;
 
   // Boost to LCMS
   Double_t tBeta = tPz/tE;
-  Double_t tGamma = tE/tMt;	    
-  fKStarLong = tGamma * (inf1->GetTrueMomentum()->z() - tBeta * tE1);
-  Double_t tE1L = tGamma * (tE1  - tBeta * inf1->GetTrueMomentum()->z());
+  Double_t tGamma = tE/tMt;
+
+  Double_t pX=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->x();
+  Double_t pY=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->y();
+  Double_t pZ=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum()->z();
+	    
+  fKStarLong = tGamma * (pZ - tBeta * tE1);
+  Double_t tE1L = tGamma * (tE1  - tBeta * pZ);
     
   // Rotate in transverse plane
-  fKStarOut  = ( inf1->GetTrueMomentum()->x()*tPx + inf1->GetTrueMomentum()->y()*tPy)/tPt;
-  fKStarSide = (-inf1->GetTrueMomentum()->x()*tPy + inf1->GetTrueMomentum()->y()*tPx)/tPt;
+  fKStarOut  = ( pX*tPx + pY*tPy)/tPt;
+  fKStarSide = (-pX*tPy + pY*tPx)/tPt;
       
   // Boost to pair cms
   fKStarOut = tMt/tM * (fKStarOut - tPt/tMt * tE1L);
   
   tBetat = tPt/tMt;
   
-  Double_t tDX = inf1->GetEmissionPoint()->x()-inf2->GetEmissionPoint()->x();
-  Double_t tDY = inf1->GetEmissionPoint()->y()-inf2->GetEmissionPoint()->y();
-  Double_t tRLong = inf1->GetEmissionPoint()->z()-inf2->GetEmissionPoint()->z();
-  Double_t tDTime = inf1->GetEmissionPoint()->t()-inf2->GetEmissionPoint()->t();
+  //Double_t tDX = inf1->GetEmissionPoint()->x()-inf2->GetEmissionPoint()->x();
+  Double_t tDX =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->x()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->x();
+  
+  Double_t tDY =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->y()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->y();
+
+ Double_t tRLong =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->z()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->z();
+
+Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->t()  - ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint()->t();
+
 
   Double_t tROut = (tDX*tPx + tDY*tPy)/tPt;
   Double_t tRSide = (-tDX*tPy + tDY*tPx)/tPt;
 
-//   cout << "Got points 1 " << inf1->GetEmissionPoint()->x() << "  " <<  inf1->GetEmissionPoint()->y() << " "  << inf1->GetEmissionPoint()->z() << "  " << inf1->GetEmissionPoint()->t() << endl;
+
+  
+   //cout << "Got points 1 " << ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->x()
+//    << "  " <<  ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->y() << " "  << 
+//    ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->z()
+//     << "  " << ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint()->t()<< endl;
 
 //   cout << "Got points 2 " << inf2->GetEmissionPoint()->x() << "  " << inf2->GetEmissionPoint()->y() << " " << inf2->GetEmissionPoint()->z() << "  " << inf2->GetEmissionPoint()->t() << endl;
 
@@ -351,17 +378,17 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
 			   fRStarLong*fRStarLong);
   fKStar = ::sqrt(fKStarOut*fKStarOut + fKStarSide*fKStarSide + fKStarLong*fKStarLong);
 
-//   cout << "Got out side " << fRStarOut << " " << fRStarSide << endl;
+  // cout << "-- weights generator : Got out side " << fRStarOut << " " << fRStarSide << endl;
 
-  if (!SetPid(inf1->GetPDGPid(),inf2->GetPDGPid())) {
+  if (!SetPid(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid(),((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid())) {
     fWeightDen=1.;
     return 1;    
   } 
   else { // Good Pid
     AliFemtoThreeVector*  p;
-    p=(inf1->GetTrueMomentum());
+    p=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetTrueMomentum();
     double p1[]={p->x(),p->y(),p->z()};
-    p=(inf2->GetTrueMomentum());
+    p=((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetTrueMomentum();
     double p2[]={p->x(),p->y(),p->z()};
     if ((p1[0]==p2[0])&&(p1[1]==p2[1])&&(p1[2]==p2[2])) {
       fWeightDen=0.;
@@ -373,13 +400,13 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
       fsimomentum(*p1,*p2);
     }
     AliFemtoLorentzVector* tPoint;
-    tPoint=(inf1->GetEmissionPoint());
-//     cout << "Pid1:dans GetWeight = " << aThPair->GetPid1() << endl;
-//     cout << "Pid2:dans GetWeight = " << aThPair->GetPid2() << endl;
+    tPoint=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint();
+    // cout << "Pid1:dans GetWeight = " << aThPair->GetPid1() << endl;
+    // cout << "Pid2:dans GetWeight = " << aThPair->GetPid2() << endl;
 //     cout << "LL:in GetWeight = " << mLL << endl;
 
     double x1[]={tPoint->x(),tPoint->y(),tPoint->z(),tPoint->t()};
-    tPoint=(inf2->GetEmissionPoint());
+    tPoint=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint();
     double x2[]={tPoint->x(),tPoint->y(),tPoint->z(),tPoint->t()};
     if ((x1[0]==x2[0])&&(x1[1]==x2[1])&&(x1[2]==x2[2])&&(x1[3]==x2[3])) {
       fWeightDen=0.;
@@ -393,11 +420,15 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
     FsiSetLL();
     ltran12();
     fsiw(1,fWeif,fWei,fWein);
+    
+//    cout<<" fWeif "<<fWeif<<" fWei "<<fWei<<" fWein "<<fWein<<endl;
 
     if (fI3c==0) return fWein;
     fWeightDen=fWeif;
     return fWei;
   }
+
+
 }
 
 AliFemtoString AliFemtoModelWeightGeneratorLednicky::Report() {

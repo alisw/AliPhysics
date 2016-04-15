@@ -158,9 +158,9 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
     else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
   }
   if(pair->Track2()->V0()){
-    if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();  
+    if(part2==kLambda)
+	weight *= pair->Track2()->V0()->CorrectionLambda();
   }
- 
 
   fDPhiDEtaNumerator->Fill(dphi, deta, weight);
 

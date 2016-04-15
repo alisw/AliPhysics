@@ -199,6 +199,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   
   
   Bool_t                          fCalcResolution;
+  
   TH2D*                           fPrecOverPgen_PGen;
   TH2D*                           fPtRecOverPtGen_PtGen;
   TH2D*                           f1PGenOver1PRec_1PGen;
@@ -207,6 +208,15 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH2D*                           fPtRecOverPtGen_PtGen_poslabel;
   TH2D*                           f1PGenOver1PRec_1PGen_poslabel;
   TH2D*                           f1PtGenOver1PtRec_1PtGen_poslabel;
+  
+  TH2D*                           fPrecOverPgen_PGen_pions;
+  TH2D*                           fPtRecOverPtGen_PtGen_pions;
+  TH2D*                           f1PGenOver1PRec_1PGen_pions;
+  TH2D*                           f1PtGenOver1PtRec_1PtGen_pions;
+  TH2D*                           fPrecOverPgen_PGen_poslabel_pions;
+  TH2D*                           fPtRecOverPtGen_PtGen_poslabel_pions;
+  TH2D*                           f1PGenOver1PRec_1PGen_poslabel_pions;
+  TH2D*                           f1PtGenOver1PtRec_1PtGen_poslabel_pions;
   
   TH2F*                           fEtaGen_EtaRec;
   TH2F*                           fPhiGen_PhiRec;

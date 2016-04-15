@@ -35,7 +35,7 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
   // QA Histograms
   THnS *fPairsConventional;
   TH1F *fdNdeta;
-  TH1F *fcents;
+  TH1F *fmultDistribution;
 
   // struct to buffer the track informations. Makes it easy to replace tracks with random data
   struct cNano_track {

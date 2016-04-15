@@ -61,7 +61,7 @@ class AliClusterContainer : public AliEmcalContainer {
   public:
     accept_iterator(const AliClusterContainer *cont, int startpos, bool forward  = true);
     accept_iterator(const accept_iterator &other);
-    ~accept_iterator() {}
+    virtual ~accept_iterator() {}
     accept_iterator &operator=(const accept_iterator &other);
     bool operator!=(const accept_iterator &other) const;
 
@@ -121,7 +121,7 @@ class AliClusterContainer : public AliEmcalContainer {
   public:
     all_iterator(const AliClusterContainer *cont, int startpos, bool forward  = true);
     all_iterator(const all_iterator &other);
-    ~all_iterator() {}
+    virtual ~all_iterator() {}
     all_iterator &operator=(const all_iterator &other);
     bool operator!=(const all_iterator &other) const;
 
@@ -167,7 +167,6 @@ class AliClusterContainer : public AliEmcalContainer {
   AliVCluster                *GetNextCluster();
   Int_t                       GetNClusters()                         const { return GetNEntries();   }
   Int_t                       GetNAcceptedClusters()                 const;
-  void                        SetClassName(const char* clname);
   void                        SetClusTimeCut(Double_t min, Double_t max)   { fClusTimeCutLow  = min ; fClusTimeCutUp = max ; }
   void                        SetMinMCLabel(Int_t s)                       { fMinMCLabel      = s   ; }
   void                        SetMaxMCLabel(Int_t s)                       { fMaxMCLabel      = s   ; }

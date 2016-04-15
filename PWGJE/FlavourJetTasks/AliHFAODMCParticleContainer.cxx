@@ -31,8 +31,6 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
   fAcceptedDecay(0)
 {
   // Constructor.
-
-  fClassName = "AliAODMCParticle";
 }
 
 /// This is the standard named constructor.
@@ -45,8 +43,6 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
   fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay)
 {
   // Constructor.
-
-  fClassName = "AliAODMCParticle";
 }
 
 

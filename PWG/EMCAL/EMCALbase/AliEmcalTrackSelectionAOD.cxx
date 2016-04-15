@@ -212,7 +212,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
     bits[1] = 9;
   }
 
-  else if (period == "lhc11a" || period == "lhc10hold" || period == "lhc11d") {
+  else if (period == "lhc11a" || period == "lhc10hold" || period == "lhc11c" || period == "lhc11d") {
     bits[0] = 8;
     bits[1] = 4;
   }

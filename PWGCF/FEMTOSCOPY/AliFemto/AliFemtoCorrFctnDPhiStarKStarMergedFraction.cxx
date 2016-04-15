@@ -252,8 +252,8 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
       
       // Calculate dPhiStar:
-      double afsi0b = 0.07510020733*chg1*fMagSign*irad/pt1;
-      double afsi1b = 0.07510020733*chg2*fMagSign*irad/pt2;
+      double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
+      double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
       Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
       dphistar = TVector2::Phi_mpi_pi(dphistar);
 
@@ -275,8 +275,8 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
       // Add pair if the fraction is above limit:
       if(fraction > fMergedFractionLimit) {
 	double rad = fRadiusMin;
-	double afsi0b = 0.07510020733*chg1*fMagSign*rad/pt1;
-	double afsi1b = 0.07510020733*chg2*fMagSign*rad/pt2;
+	double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+	double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
 	Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
 	fDPhiStarKStarMergedNumerator->Fill(kstar, dphistar);
       }
@@ -284,8 +284,8 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
   }
 
   double rad = fRadiusMin;
-  double afsi0b = 0.07510020733*chg1*fMagSign*rad/pt1;
-  double afsi1b = 0.07510020733*chg2*fMagSign*rad/pt2;
+  double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+  double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
   Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
   fDPhiStarKStarTotalNumerator->Fill(kstar, dphistar);
 }
@@ -337,8 +337,8 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pa
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
       
       // Calculate dPhiStar:
-      double afsi0b = 0.07510020733*chg1*fMagSign*irad/pt1;
-      double afsi1b = 0.07510020733*chg2*fMagSign*irad/pt2;
+      double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
+      double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
       Double_t dphistar = phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
       dphistar = TVector2::Phi_mpi_pi(dphistar);
 
@@ -360,8 +360,8 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pa
       // Add pair if the fraction is above limit:
       if(fraction > fMergedFractionLimit) {
 	double rad = fRadiusMin;
-	double afsi0b = 0.07510020733*chg1*fMagSign*rad/pt1;
-	double afsi1b = 0.07510020733*chg2*fMagSign*rad/pt2;
+	double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+	double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
 	Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
 	fDPhiStarKStarMergedDenominator->Fill(kstar, dphistar);
       }
@@ -369,8 +369,8 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pa
   }
 
   double rad = fRadiusMin;
-  double afsi0b = 0.07510020733*chg1*fMagSign*rad/pt1;
-  double afsi1b = 0.07510020733*chg2*fMagSign*rad/pt2;
+  double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+  double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
   Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
   fDPhiStarKStarTotalDenominator->Fill(kstar, dphistar);
 }
