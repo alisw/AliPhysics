@@ -36,6 +36,9 @@
 #include "AliZMQhistViewer.h"
 #include "TThread.h"
 
+#define safename(i) (i->object)?i->object->GetName():"NULL"
+#define safetitle(i) (i->object)?i->object->GetTitle():"NULL"
+
 using namespace std;
 
 ClassImpQ(AliZMQhistViewer)
@@ -229,7 +232,7 @@ int AliZMQhistViewer::GetData(void* socket)
       if (!tmp) continue;
       ZMQviewerObject object(tmp);
 
-      if (fVerbose) Printf("--in: %s (%s), %p", object.name.c_str(), tmp->ClassName(), tmp);
+      if (fVerbose) Printf("--in: %s (%s), %p", tmp->GetName(), tmp->ClassName(), tmp);
 
       incomingObjects->push_back(object);
 
@@ -251,11 +254,12 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
                                    TPRegexp* unSelectionRegexp)
 {
   //use the thread safe access
-  string info = GetInfo();
   std::vector<ZMQviewerObject>* incomingObjects = GetIncoming();
+  if (!incomingObjects) return 1;
+  
+  string info = GetInfo();
   bool forceClearCanvas = GetClearCanvas();
   if (forceClearCanvas && fVerbose) printf("##forceClearCanvas\n"); 
-  if (!incomingObjects) return 1;
 
   if (forceClearCanvas && fContent) {
     canvas->Clear();
@@ -275,42 +279,49 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
   bool verbose = fVerbose;
 
   int nNewPlots = 0;
+  int nPlotsToDraw = 0;
   for (vector<ZMQviewerObject>::iterator incoming=incomingObjects->begin();
       incoming!=incomingObjects->end();
       ++incoming)
   {
     Bool_t selected = kTRUE;
     Bool_t unselected = kFALSE;
-    if (selectionRegexp) selected = selectionRegexp->Match(incoming->object->GetName());
-    if (unSelectionRegexp) unselected = unSelectionRegexp->Match(incoming->object->GetName());
+    if (selectionRegexp) selected = selectionRegexp->Match(safename(incoming));
+    if (unSelectionRegexp) unselected = unSelectionRegexp->Match(safename(incoming));
     if (!selected || unselected)
     {
-      if (fVerbose) printf("object %s did not pass selection\n", incoming->object->GetName());
+      if (fVerbose) printf("object %s did not pass selection (%s) && !(%s)\n",
+                           safename(incoming), (selectionRegexp)?selectionRegexp->GetPattern().Data():"",
+                           (unSelectionRegexp)?unSelectionRegexp->GetPattern().Data():"");
+      incoming->redraw = false;
       continue;
+    }
+    else
+    {
+      incoming->redraw=true;
     }
 
     //check if it will replace something
     bool found=false;
-    incoming->redraw=true;
     for (vector<ZMQviewerObject>::iterator current=fContent->begin();
         current!=fContent->end();
         ++current)
     {
-      if (incoming->name.compare(current->name)==0)
+      if (strcmp(safename(incoming), safename(current))==0)
       {
-        if (fVerbose) printf("  updating %s\n",incoming->name.c_str());
+        if (fVerbose) printf("  updating %s\n",safename(incoming));
         found = true;
         if (!(incoming->object)) { printf("WARNING: null pointer in input data"); }
         else { 
           current->SwapObject(*incoming);
-          if (verbose) printf("  swapping plot %s\n", incoming->name.c_str());
+          if (verbose) printf("  swapping plot %s\n", safename(incoming));
         }
         break;
       }
     }
     if (!found)
     {
-      if (fVerbose) printf("  new object %s\n",incoming->name.c_str());
+      if (fVerbose) printf("  new object %s\n",safename(incoming));
       ZMQviewerObject tmp(*incoming); incoming->object=NULL;
       fContent->push_back(tmp); //completely new one
       nNewPlots++;
@@ -357,10 +368,10 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
     for (vector<ZMQviewerObject>::iterator current=fContent->begin(); current!=fContent->end(); ++current)
     {
       if (!(current->redraw)) {
-        if (verbose) printf("  not replotting %s\n", current->name.c_str());
+        if (verbose) printf("  not replotting %s\n", safename(current));
         continue;
       }
-      if (verbose) printf("  plotting %s at pad %i\n", current->name.c_str(),current->pad);
+      if (verbose) printf("  plotting %s at pad %i\n", safename(current),current->pad);
       TVirtualPad* pad = canvas->cd(current->pad);
       if (!pad) pad = canvas->cd();
       if (fScaleLogX) gPad->SetLogx();
@@ -369,8 +380,8 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
       pad->SetEditable(kFALSE);
       if (current->object)
       {
-        if (verbose) printf("  removing previous %s at %p\n", current->object->GetName(), current->previous);
-        pad->SetName(current->object->GetName());
+        if (verbose) printf("  removing previous %s at %p\n", safename(current), current->previous);
+        pad->SetName(safename(current));
         pad->RecursiveRemove(current->previous);
         pad->GetListOfPrimitives()->Add(current->object,drawOptions);
         pad->Modified();
@@ -390,7 +401,7 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
                                            i!=pieceOfTrash->end(); 
                                            ++i) 
     {
-      if (verbose) printf("    destroying %s, %p\n",i->name.c_str(),i->object);
+      if (verbose) printf("    destroying %s, %p\n",safename(i),i->object);
       delete i->object;
       //if (verbose) printf("destroying previous %s, %p\n",i->name.c_str(),i->previous);
       //delete i->previous;
@@ -507,7 +518,7 @@ AliZMQhistViewer::GetIncoming(std::vector<ZMQviewerObject>* in)
     if (fIncoming) {
       for (std::vector<ZMQviewerObject>::iterator i=fIncoming->begin(); i!=fIncoming->end(); ++i)
       {
-        if (i->object) { if (fVerbose) printf("destroying non consumed object %s %p\n",i->name.c_str(), i->object); }
+        if (i->object) { if (fVerbose) printf("destroying non consumed object %s %p\n",safename(i), i->object); }
         delete i->object; i->object = NULL;
       }
       delete fIncoming;
@@ -624,9 +635,10 @@ TPRegexp* AliZMQhistViewer::GetSelection(string* in)
       tmp = new TPRegexp(*fSelectionRegexp);
     }
   } else {
-    delete fSelectionRegexp;
-    fSelectionRegexp = new TPRegexp(in->c_str());
+    delete fSelectionRegexp; fSelectionRegexp = NULL;
+    if (in->size()>0) fSelectionRegexp = new TPRegexp(in->c_str());
     tmp = fSelectionRegexp;
+    if (fVerbose) printf("GetSelection: %s\n",(in)?in->c_str():"NULL");
   }
   TThread::UnLock();
   return tmp;
@@ -642,9 +654,10 @@ TPRegexp* AliZMQhistViewer::GetUnSelection(string* in)
       tmp = new TPRegexp(*fUnSelectionRegexp);
     }
   } else {
-    delete fUnSelectionRegexp;
-    fUnSelectionRegexp = new TPRegexp(in->c_str());
+    delete fUnSelectionRegexp; fUnSelectionRegexp = NULL;
+    if (in->size()>0) fUnSelectionRegexp = new TPRegexp(in->c_str());
     tmp = fUnSelectionRegexp;
+    if (fVerbose) printf("GetUnSelection: %s\n",(in)?in->c_str():"NULL");
   }
   TThread::UnLock();
   return tmp;

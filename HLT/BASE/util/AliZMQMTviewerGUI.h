@@ -6,6 +6,7 @@ class TThread;
 class TH1F;
 class TRootEmbeddedCanvas;
 class TGTextButton;
+class TGTextEntry;
 class TCanvas;
 struct AliZMQhistViewer;
 class TVirtualPad;
@@ -33,7 +34,9 @@ class AliZMQMTviewerGUI : public TGMainFrame {
 private:
    TRootEmbeddedCanvas* fECanvas;
    TGStatusBar*         fStatusBar;   
-   TGTextButton*        fResetButton;
+   TGTextButton*        fPullButton;
+   TGTextEntry*         fSelectionEntry;
+   TGTextEntry*         fUnSelectionEntry;
    TThread*             fThread;
    TCanvas*             fCanvas;
    ThreadArgs_t         fThreadArgs;
@@ -50,7 +53,6 @@ public:
    virtual ~AliZMQMTviewerGUI() { }
 
    void     CloseWindow();
-   void     Reset();
    Bool_t   HandleTimer(TTimer *t);
    void EventInfo(Int_t event, Int_t px, Int_t py, TObject *selected);   
    void PadSelected(TVirtualPad* pad, TObject *object, Int_t event);
@@ -58,9 +60,8 @@ public:
    void UpdateCanvas();
    void ReconfigureViewer(std::string string);
    int GetInitStatus() const {return fInitStatus;}
-   void DoResetButton();
+   void DoPullButton();
    void DoSelectionEntry();
-   void DoUnSelectionEntry();
 
    // thread method
    static void* RunViewer(void *ptr = 0);

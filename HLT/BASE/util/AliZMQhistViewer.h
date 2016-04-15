@@ -27,30 +27,24 @@ class TPRegexp;
 struct ZMQviewerObject {
   TObject* object;
   TObject* previous;
-  std::string name; //cache the name
-  std::string title;
   int pad;
   bool redraw;
   
-  ZMQviewerObject() : object(NULL), previous(NULL), name(), title(), pad(-1), redraw(true) {}
-  ZMQviewerObject(TObject* o) : object(o), previous(NULL), name(o->GetName()), 
-                                title(o->GetTitle()), pad(-1), redraw(true) {}
-  ZMQviewerObject(const ZMQviewerObject& o) : object(o.object), previous(o.previous), name(o.name),
-                                              title(o.title), pad(o.pad), 
+  ZMQviewerObject() : object(NULL), previous(NULL), pad(-1), redraw(true) {}
+  ZMQviewerObject(TObject* o) : object(o), previous(NULL), 
+                                pad(-1), redraw(true) {}
+  ZMQviewerObject(const ZMQviewerObject& o) : object(o.object), previous(o.previous),
+                                              pad(o.pad), 
                                               redraw(o.redraw) {}
   ZMQviewerObject& operator=(const ZMQviewerObject& o) {
     object = o.object;
     previous = o.previous;
-    name = o.name;
-    title = o.title;
     pad = o.pad;
     redraw = o.redraw;
     return *this;
   }
   void SwapObject(ZMQviewerObject& from) {
     if (from.object) { previous = object; std::swap(object, from.object); }
-    name = from.name;
-    title = from.title;
   }
 
   ~ZMQviewerObject() {}
@@ -133,11 +127,14 @@ struct AliZMQhistViewer : public AliOptionParser, public TQObject {
 
 struct ZMQviewerObjectTitleComparator {
   bool operator()(const ZMQviewerObject& left, const std::string& right) {
-    return right.compare(left.title)>0;
+    if (!(left.object)) {return true;}
+    return right.compare(left.object->GetTitle())>0;
   }
 
   bool operator()(const ZMQviewerObject& left, const ZMQviewerObject& right) {
-    return right.title.compare(left.title)>0;
+    if (!(left.object)) {return true;}
+    if (!(right.object)) {return false;}
+    return strcmp(right.object->GetTitle(),left.object->GetTitle())>0;
   }
 };
 

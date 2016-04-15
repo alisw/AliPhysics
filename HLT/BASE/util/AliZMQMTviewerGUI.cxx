@@ -3,6 +3,7 @@
 #include "TGClient.h"
 #include "TCanvas.h"
 #include "TRandom.h"
+#include "TPRegexp.h"
 #include "TGButton.h"
 #include "TGColorSelect.h"
 #include "TRootEmbeddedCanvas.h"
@@ -44,7 +45,10 @@ const char* AliZMQMTviewerGUI::fUSAGE =
 AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int argc, char** argv)
   : TGMainFrame(p,w,h)
   , fECanvas(NULL)
-  , fStatusBar(NULL)   
+  , fStatusBar(NULL)
+  , fPullButton(NULL)
+  , fSelectionEntry(NULL)
+  , fUnSelectionEntry(NULL)
   , fThread(NULL)
   , fCanvas(NULL)
   , fThreadArgs()
@@ -62,6 +66,8 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
      fInitStatus = -1;
      return;
    }
+   fSelection = fViewer->GetSelection();
+   fUnSelection = fViewer->GetUnSelection();
 
    // Creates widgets of the example
    SetCleanup(kDeepCleanup);
@@ -89,26 +95,32 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    fSelectionEntryFrame->AddFrame(selectionLabel,
        new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 5, 2, 2, 2));
 
-   TGTextEntry* fSelectionEntry = new TGTextEntry(fSelectionEntryFrame);
+   fSelectionEntry = new TGTextEntry(fSelectionEntryFrame);
    fSelectionEntry->SetToolTipText("Enter a selection regexp");
    //fSelectionEntry->Resize(300, fSelectionEntry->GetDefaultHeight());
    fSelectionEntryFrame->AddFrame(fSelectionEntry,
        new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2));
+   fSelectionEntry->Connect("TabPressed()","AliZMQMTviewerGUI",this,"DoSelectionEntry()");
+   fSelectionEntry->Connect("ReturnPressed()","AliZMQMTviewerGUI",this,"DoSelectionEntry()");
+   if (fSelection) fSelectionEntry->SetText(fSelection->GetPattern().Data(), kFALSE);
    
    TGLabel *unSelectionLabel = new TGLabel(fSelectionEntryFrame, "unselect:");
    fSelectionEntryFrame->AddFrame(unSelectionLabel,
        new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 5, 2, 2, 2));
 
-   TGTextEntry* fUnSelectionEntry = new TGTextEntry(fSelectionEntryFrame);
+   fUnSelectionEntry = new TGTextEntry(fSelectionEntryFrame);
    fUnSelectionEntry->SetToolTipText("this will be inversely matched");
    //fUnSelectionEntry->Resize(300, fUnSelectionEntry->GetDefaultHeight());
    fSelectionEntryFrame->AddFrame(fUnSelectionEntry,
        new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2));
+   fUnSelectionEntry->Connect("TabPressed()","AliZMQMTviewerGUI",this,"DoSelectionEntry()");
+   fUnSelectionEntry->Connect("ReturnPressed()","AliZMQMTviewerGUI",this,"DoSelectionEntry()");
+   if (fUnSelection) fUnSelectionEntry->SetText(fUnSelection->GetPattern().Data(), kFALSE);
 
-   fResetButton = new TGTextButton(fSelectionEntryFrame, "Pull", 150);
-   fResetButton->Connect("Clicked()", "AliZMQMTviewerGUI", this, "DoResetButton()");
-   fResetButton->SetToolTipText("force update");
-   fSelectionEntryFrame->AddFrame(fResetButton,
+   fPullButton = new TGTextButton(fSelectionEntryFrame, "Pull", 150);
+   fPullButton->Connect("Clicked()", "AliZMQMTviewerGUI", this, "DoPullButton()");
+   fPullButton->SetToolTipText("force update");
+   fSelectionEntryFrame->AddFrame(fPullButton,
        new TGLayoutHints(kLHintsTop | kLHintsRight, 10, 5, 2, 2));
    AddFrame(fSelectionEntryFrame, new TGLayoutHints(kLHintsBottom | kLHintsExpandX, 1, 1, 1, 1));
    
@@ -135,8 +147,6 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    fViewer->SetCanvas(fCanvas);
    bool updateCanvas = false;
    fViewer->GetUpdateCanvas(&updateCanvas);
-   fSelection = fViewer->GetSelection();
-   fUnSelection = fViewer->GetUnSelection();
 
    //fViewer->Connect("DataReady()","AliZMQMTviewerGUI",this,"UpdateCanvas()");
 
@@ -158,14 +168,6 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    fThreadArgs.fCanvas = fCanvas;
    fThreadArgs.viewer = fViewer;
    fThread->Run(&fThreadArgs);
-}
-
-//______________________________________________________________________
-void AliZMQMTviewerGUI::Reset()
-{
-   // Reset the histograms
-   fCanvas->Modified();
-   fCanvas->Update();
 }
 
 //______________________________________________________________________________
@@ -278,7 +280,7 @@ void AliZMQMTviewerGUI::ReconfigureViewer(std::string string)
 }
 
 //______________________________________________________________________________
-void AliZMQMTviewerGUI::DoResetButton()
+void AliZMQMTviewerGUI::DoPullButton()
 {
   //just send something to interrupt sleep
   void* tmpsocket=NULL;
@@ -290,13 +292,26 @@ void AliZMQMTviewerGUI::DoResetButton()
 }
 
 //______________________________________________________________________________
-void DoSelectionEntry()
+void AliZMQMTviewerGUI::DoSelectionEntry()
 {
-}
+  string sel = fSelectionEntry->GetText();
+  string unsel = fUnSelectionEntry->GetText();
+  delete fSelection; fSelection = NULL;
+  delete fUnSelection; fUnSelection = NULL;
+  if (sel.size()>0) fSelection = new TPRegexp(sel.c_str());
+  if (unsel.size()>0) fUnSelection = new TPRegexp(unsel.c_str());
 
-//______________________________________________________________________________
-void DoUnSelectionEntry()
-{
+  if (fSelectionEntry->HasFocus()) {
+    fUnSelectionEntry->SetFocus();
+  } else if (fUnSelectionEntry->HasFocus()) {
+    fSelectionEntry->SetFocus();
+  }
+  fViewer->GetSelection(&sel);
+  fViewer->GetUnSelection(&unsel);
+  bool tmp = true;
+  fViewer->GetClearCanvas(&tmp);
+  DoPullButton();
+  UpdateCanvas();
 }
 
 ClassImp(AliZMQMTviewerGUIview)
