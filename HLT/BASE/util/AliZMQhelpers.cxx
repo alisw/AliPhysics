@@ -265,6 +265,7 @@ int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::stri
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, topic.size());
   if (rc<0) {
+    zmq_msg_close(topicMsg);
     delete topicMsg;
     return -1;
   }
@@ -274,6 +275,8 @@ int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::stri
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( dataMsg, data.size());
   if (rc<0) {
+    zmq_msg_close(topicMsg);
+    zmq_msg_close(dataMsg);
     delete topicMsg;
     delete dataMsg;
     return -1;
@@ -295,6 +298,7 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, void* data,
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
   if (rc<0) {
+    zmq_msg_close(topicMsg);
     delete topicMsg;
     return -1;
   }
@@ -304,6 +308,8 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, void* data,
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( dataMsg, size);
   if (rc<0) {
+    zmq_msg_close(topicMsg);
+    zmq_msg_close(dataMsg);
     delete topicMsg;
     delete dataMsg;
     return -1;
@@ -325,6 +331,7 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
   if (rc<0) {
+    zmq_msg_close(topicMsg);
     delete topicMsg;
     return -1;
   }
@@ -334,6 +341,8 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( dataMsg, data.size());
   if (rc<0) {
+    zmq_msg_close(topicMsg);
+    zmq_msg_close(dataMsg);
     delete topicMsg;
     delete dataMsg;
     return -1;
@@ -356,6 +365,7 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* ob
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, sizeof(*topic));
   if (rc<0) {
+    zmq_msg_close(topicMsg);
     delete topicMsg;
     return -1;
   }
@@ -367,6 +377,8 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* ob
   rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
        alizmq_deleteTObject, tmessage);
   if (rc<0) {
+    zmq_msg_close(topicMsg);
+    zmq_msg_close(dataMsg);
     delete topicMsg;
     delete dataMsg;
     return -1;
@@ -452,6 +464,7 @@ int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* s
   zmq_msg_t* topicMsg = new zmq_msg_t;
   rc = zmq_msg_init_size( topicMsg, sizeof(topic));
   if (rc<0) {
+    zmq_msg_close(topicMsg);
     delete topicMsg;
     return -1;
   }
@@ -467,6 +480,8 @@ int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* s
   rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
        alizmq_deleteTObject, tmessage);
   if (rc<0) {
+    zmq_msg_close(topicMsg);
+    zmq_msg_close(dataMsg);
     delete topicMsg;
     delete dataMsg;
     return -1;
@@ -749,6 +764,7 @@ int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags)
     if (!zmq_msg_more(topicMsg) || rc<0)
     {
       zmq_msg_close(topicMsg);
+      delete topicMsg;
       receiveStatus=-1;
       break;
     }
@@ -761,6 +777,8 @@ int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags)
     {
       zmq_msg_close(topicMsg);
       zmq_msg_close(dataMsg);
+      delete topicMsg;
+      delete dataMsg;
       receiveStatus=-1;
       break;
     }
