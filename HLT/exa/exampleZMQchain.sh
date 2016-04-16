@@ -17,7 +17,7 @@ histograms=( "hXTRKVtx" "hYTRKVtx" "hZTRKVtx" "hXTRKDefMult" "hYTRKDefMult"  "hZ
 sourcePID=()
 for hist in ${histograms[@]}; do
   echo "starting histogram source ${hist}"
-  ZMQhistSource name=${hist} entries=10 sleep=0.01 distribution="exp(-0.5*((x-0.)/0.1)**2)" range="'-0.5,0.5'" out="PUSH>ipc:///tmp/example_proxyin" &>/dev/null &
+  ZMQhistSource name=${hist} entries=1 nbins=500 sleep=0.01 distribution="exp(-0.5*((x-0.)/0.1)**2)" range="'-0.5,0.5'" out="PUSH>ipc:///tmp/example_proxyin" &>/dev/null &
   sourcePID+=(${!})
 done
 
@@ -25,7 +25,7 @@ ZMQproxy  in="PULL@ipc:///tmp/example_proxyin" out="PUSH@ipc:///tmp/example_prox
 sourcePID+=(${!})
 ZMQROOTmerger in="PULL>ipc:///tmp/example_proxyout" out="PUB@ipc:///tmp/example_mergerout" MaxObjects=10 pushback-period=1&
 sourcePID+=(${!})
-ZMQhistViewer in="SUB>ipc:///tmp/example_mergerout" &
+ZMQhistViewer in="SUB>ipc:///tmp/example_mergerout" histstats=1&
 sourcePID+=(${!})
 
 sleep 1
