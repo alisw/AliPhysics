@@ -438,44 +438,57 @@ void AliEMCALTriggerOfflineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pa
 {
   TString hname;
 
-  Int_t triggerBits[6] = { patch->GetTriggerBitConfig()->GetLevel0Bit(),
-      patch->GetTriggerBitConfig()->GetGammaLowBit(),
-      patch->GetTriggerBitConfig()->GetGammaHighBit(),
-      patch->GetTriggerBitConfig()->GetJetLowBit(),
-      patch->GetTriggerBitConfig()->GetJetHighBit(),
-      patch->GetTriggerBitConfig()->GetBkgBit()
+  Bool_t (AliEMCALTriggerPatchInfo::* triggerCheck[3][6])(void) const = {
+      { &AliEMCALTriggerPatchInfo::IsLevel0,
+          &AliEMCALTriggerPatchInfo::IsGammaLow,
+          &AliEMCALTriggerPatchInfo::IsGammaHigh,
+          &AliEMCALTriggerPatchInfo::IsJetLow,
+          &AliEMCALTriggerPatchInfo::IsJetHigh,
+          &AliEMCALTriggerPatchInfo::IsBkg
+      },
+      { &AliEMCALTriggerPatchInfo::IsLevel0Recalc,
+          &AliEMCALTriggerPatchInfo::IsGammaLowRecalc,
+          &AliEMCALTriggerPatchInfo::IsGammaHighRecalc,
+          &AliEMCALTriggerPatchInfo::IsJetLowRecalc,
+          &AliEMCALTriggerPatchInfo::IsJetHighRecalc,
+          &AliEMCALTriggerPatchInfo::IsBkgRecalc
+      },
+      { &AliEMCALTriggerPatchInfo::IsLevel0Simple,
+          &AliEMCALTriggerPatchInfo::IsGammaLowSimple,
+          &AliEMCALTriggerPatchInfo::IsGammaHighSimple,
+          &AliEMCALTriggerPatchInfo::IsJetLowSimple,
+          &AliEMCALTriggerPatchInfo::IsJetHighSimple,
+          &AliEMCALTriggerPatchInfo::IsBkgSimple
+      }
   };
-
-  Int_t offsets[3] = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
-  Int_t amplitudes[3] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
 
   for (Int_t itrig = 0; itrig < 6; itrig++) {
     if (EMCALTrigger::kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
 
     for (Int_t itype = 0; itype < 3; itype++) {
       if (!fEnabledPatchTypes[itype]) continue;
-      if (!patch->TestTriggerBit(triggerBits[itrig]+offsets[itype])) continue;
+      if (!(patch->*(triggerCheck[itype][itrig]))()) continue;
 
       TString det;
 
       if (patch->IsEMCal()) {
         det = "EMCal";
-        if (GetAmplitude(fMaxPatchEMCal[itrig][itype], itype) < amplitudes[itype]) fMaxPatchEMCal[itrig][itype] = patch;
+        if (GetAmplitude(fMaxPatchEMCal[itrig][itype], itype) < GetAmplitude(patch, itype)) fMaxPatchEMCal[itrig][itype] = patch;
       }
       else if (patch->IsDCalPHOS()) {
         if (!fDCalPlots) return;
         det = "DCal";
-        if (GetAmplitude(fMaxPatchDCal[itrig][itype], itype) < amplitudes[itype]) fMaxPatchDCal[itrig][itype] = patch;
+        if (GetAmplitude(fMaxPatchDCal[itrig][itype], itype) < GetAmplitude(patch, itype)) fMaxPatchDCal[itrig][itype] = patch;
       }
       else {
         AliWarning(Form("Patch is not EMCal nor DCal/PHOS (pos: %d, %d)", patch->GetRowStart(), patch->GetColStart()));
       }
 
       hname = Form("EMCTRQA_hist%s%sOfflineVsRecalc", det.Data(), EMCALTrigger::kEMCalTriggerNames[itrig].Data());
-      fHistManager.FillTH2(hname, amplitudes[1], amplitudes[2]);
+      fHistManager.FillTH2(hname, GetAmplitude(patch, 1) , GetAmplitude(patch, 2));
 
       hname = Form("EMCTRQA_hist%sPatchAmp%s%s", det.Data(), EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
-      fHistManager.FillTH1(hname, amplitudes[itype]);
+      fHistManager.FillTH1(hname, GetAmplitude(patch, itype));
     }
 
     if (fDebugLevel >= 2) {
@@ -767,24 +780,26 @@ void AliEMCALTriggerOfflineQAPP::EventTimeStamp(UInt_t timeStamp)
 {
   AliEMCALTriggerQA::EventTimeStamp(timeStamp);
 
-  TString hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
-  if (!fHistManager.FindObject(hname)) {
-    TString htitle;
+  if (fTimeStampBinWidth > 0) {
+    TString hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+    if (!fHistManager.FindObject(hname)) {
+      TString htitle;
+
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+      htitle = TString::Format("EMCTRQA_histEvents;;events");
+      TH1* hevents = fHistManager.CreateTH1(hname, htitle, 1, 0, 1);
+      hevents->GetXaxis()->SetBinLabel(1, TString::Format("%u <= time stamp < %u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth));
+
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+      htitle = TString::Format("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
+      fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+
+      hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
+      htitle = TString::Format("EMCTRQA_histLargeAmpFastORL0 (>%d);FastOR abs. ID;entries above %d", fFastorL0Th, fFastorL0Th);
+      fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+    }
 
     hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
-    htitle = TString::Format("EMCTRQA_histEvents;;events");
-    TH1* hevents = fHistManager.CreateTH1(hname, htitle, 1, 0, 1);
-    hevents->GetXaxis()->SetBinLabel(1, TString::Format("%u <= time stamp < %u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth));
-
-    hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
-    htitle = TString::Format("EMCTRQA_histFastORL0;FastOR abs. ID;entries above 0");
-    fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
-
-    hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
-    htitle = TString::Format("EMCTRQA_histLargeAmpFastORL0 (>%d);FastOR abs. ID;entries above %d", fFastorL0Th, fFastorL0Th);
-    fHistManager.CreateTH1(hname, htitle, fMaxFORabsId, 0, fMaxFORabsId);
+    fHistManager.FillTH1(hname, 0.);
   }
-
-  hname = TString::Format("ByTimeStamp/EMCTRQA_histEvents_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
-  fHistManager.FillTH1(hname, 0.);
 }
