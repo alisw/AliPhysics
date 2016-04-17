@@ -69,7 +69,7 @@ private:
 //  TClonesArray * fStack ;  
   TList *       fPHOSEvents[10][10][1] ; //Containers for events with PHOS photons
   TList *       fPCMEvents[10][10][1] ; //Containers for events with PHOS photons
-  TList *       fHadrEvents[10][10][1] ; //Containers for events with PHOS photons
+  TClonesArray* fHadrEvents[10][10][1] ; //Containers for events with PHOS photons
   TClonesArray* fPHOSEvent ;      //PHOS photons in current event
   TClonesArray* fPCMEvent ;       //PCM photons in current event
   TClonesArray* fHadrEvent;       //hadrons
