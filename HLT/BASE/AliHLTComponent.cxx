@@ -1541,7 +1541,7 @@ int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataT
     //chache the streamer infos during the first few times
     //no need to do this every time as we mostly push the same objects
     if (fUseSchema) {
-      const TList* schemaList = msg.GetStreamerInfos();
+      const TObjArray* schemaList = msg.GetStreamerInfos();
       if (schemaList)  UpdateSchema(schemaList);
     }
 

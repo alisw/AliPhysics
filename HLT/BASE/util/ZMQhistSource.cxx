@@ -41,7 +41,7 @@ TString fHistDistribution = "exp(-0.5*((x-0.)/0.1)**2)";
 float fHistRangeLow = -0.5;
 float fHistRangeHigh = 0.5;
 int fHistNBins = 100;
-aliZMQTstreamerInfo* fSchema = NULL;
+aliZMQrootStreamerInfo* fSchema = NULL;
 bool fVerbose = false;
 int fCompression = 0;
     
@@ -91,10 +91,7 @@ int main(int argc, char** argv)
   }
   
   if (fSchema) {
-    if (fVerbose) printf("enabling schema for TMessage\n");
-    AliHLTMessage::EnableSchemaEvolutionForAll();
-    TMessage::EnableSchemaEvolutionForAll();
-      if (fVerbose && AliHLTMessage::UsesSchemaEvolutionForAll()) printf("enabled...\n");
+    if (fVerbose) printf("enabling schema for AliHLTMessage\n");
   }
 
   TTimeStamp time;
@@ -135,6 +132,7 @@ int main(int argc, char** argv)
     }
 
     if (fSchema) alizmq_msg_prepend_streamer_infos(&message,fSchema);
+
     alizmq_msg_send(&message, fZMQout, 0);
     alizmq_msg_close(&message);
     if (fVerbose) printf("sent!\n");
@@ -203,7 +201,7 @@ int ProcessOptionString(TString arguments)
       fNHistos = value.Atoi();
     }
     else if (option.EqualTo("schema")) {
-      fSchema = new aliZMQTstreamerInfo;
+      fSchema = new aliZMQrootStreamerInfo;
     }
     else if (option.EqualTo("Verbose")) {
       fVerbose=true;

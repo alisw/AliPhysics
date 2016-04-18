@@ -17,7 +17,7 @@
 #include "TObjArray.h"
 #include "AliHLTMessage.h"
 #include "TStreamerInfo.h"
-#include "TList.h"
+#include "TClass.h"
 
 //init the shared context to null
 void* AliZMQhelpers::gZMQcontext = NULL;
@@ -355,8 +355,8 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object, int compression,
-                   aliZMQTstreamerInfo* streamers)
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object,
+                   int compression, aliZMQrootStreamerInfo* streamers)
 {
   //add a frame to the mesage
   int rc = 0;
@@ -372,7 +372,17 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* ob
   memcpy(zmq_msg_data(topicMsg), topic, sizeof(*topic));
 
   //prepare data msg
-  AliHLTMessage* tmessage = AliHLTMessage::Stream(object, compression);
+  AliHLTMessage* tmessage = AliHLTMessage::Stream(object, compression, 0, streamers);
+  if (!tmessage) {
+    zmq_msg_close(topicMsg);
+    delete topicMsg;
+    return -1;
+  }
+
+  if (streamers) {
+    alizmq_update_streamerlist(streamers, tmessage->GetStreamerInfos());
+  }
+
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
        alizmq_deleteTObject, tmessage);
@@ -384,18 +394,6 @@ int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* ob
     return -1;
   }
   
-  //update the list of streamers used
-  if (streamers) {
-    const TList* streamerInfos = tmessage->GetStreamerInfos();
-    if (streamerInfos) {
-      TIter nextInfo(streamerInfos);
-      TStreamerInfo* info=NULL;
-      while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
-        (*streamers)[info->GetNumber()] = info;
-      }
-    }
-  }
-
   //add the frame to the message
   message->push_back(std::make_pair(topicMsg,dataMsg));
   return message->size();
@@ -455,7 +453,7 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* streamers)
+int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQrootStreamerInfo* streamers)
 {
   //prepend the streamer info to the message as first block.
   int rc = 0;
@@ -471,9 +469,9 @@ int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* s
   memcpy(zmq_msg_data(topicMsg), &topic, sizeof(topic));
 
   //prepare data msg
-  TList listOfInfos;
-  for (aliZMQTstreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
-    listOfInfos.Add(i->second);
+  TObjArray listOfInfos;
+  for (aliZMQrootStreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
+    listOfInfos.Add(*i);
   }
   AliHLTMessage* tmessage = AliHLTMessage::Stream(&listOfInfos, 1); //compress
   zmq_msg_t* dataMsg = new zmq_msg_t;
@@ -493,53 +491,93 @@ int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* s
 }
 
 //_______________________________________________________________________________________
+void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, const TObjArray* newStreamers)
+{
+  //update the list of streamers used
+  if (!streamers) return;
+  if (!newStreamers) return;
+
+  for (int i=0; i<newStreamers->GetEntriesFast(); i++) {
+    TVirtualStreamerInfo* info = const_cast<TVirtualStreamerInfo*> (
+      static_cast<const TVirtualStreamerInfo*>((*newStreamers)[i]) );
+    const char* name = info->GetName();
+    int version = info->GetClassVersion();
+    bool found=false;
+    for (aliZMQrootStreamerInfo::iterator i=streamers->begin(); i!=streamers->end(); ++i)
+    {
+      const char* existingName = (*i)->GetName();
+      int existingVersion = (*i)->GetClassVersion();
+      if (name == existingName && version==existingVersion) {
+        found=true;
+        break;
+      }
+    }
+    if (!found) { 
+      streamers->push_back(info);
+    }
+  }
+}
+
+//_______________________________________________________________________________________
 int alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it)
 {
   int rc = 0;
   TObject* obj = NULL;
   rc = alizmq_msg_iter_data(it,obj); 
-  TList* list = dynamic_cast<TList*>(obj);
-  if (!list) {
+  TObjArray* pSchemas = dynamic_cast<TObjArray*>(obj);
+  if (!pSchemas) {
     return -1;
   }
 
-  //process, this copied from TSocket::RecvStreamerInfos(TMessage*)
-  TIter next(list);
-  TStreamerInfo *info;
-  TObjLink *lnk = list->FirstLink();
-  // First call BuildCheck for regular class
-  while (lnk) {
-    info = (TStreamerInfo*)lnk->GetObject();
-    TObject *element = info->GetElements()->UncheckedAt(0);
-    Bool_t isstl = element && strcmp("This",element->GetName())==0;
-    if (!isstl) {
-      info->BuildCheck();
-      //Printf("RecvStreamerInfos: importing TStreamerInfo: %s, version = %d",
-      //    info->GetName(), info->GetClassVersion());
-    }
-    lnk = lnk->Next();
-  }
-  // Then call BuildCheck for stl class
-  lnk = list->FirstLink();
-  while (lnk) {
-    info = (TStreamerInfo*)lnk->GetObject();
-    TObject *element = info->GetElements()->UncheckedAt(0);
-    Bool_t isstl = element && strcmp("This",element->GetName())==0;
-    if (isstl) {
-      info->BuildCheck();
-      //Printf("RecvStreamerInfos: importing TStreamerInfo: %s, version = %d",
-      //    info->GetName(), info->GetClassVersion());
-    }
-    lnk = lnk->Next();
-  }
-  delete list;
+  pSchemas->SetOwner(kTRUE);
 
-  return 0;  
+  for (int i=0; i<pSchemas->GetEntriesFast(); i++) {
+    if (pSchemas->At(i)) {
+      TStreamerInfo* pSchema=dynamic_cast<TStreamerInfo*>(pSchemas->At(i));
+      if (pSchema) {
+        int version=pSchema->GetClassVersion();
+        TClass* pClass=TClass::GetClass(pSchema->GetName());
+        if (pClass) {
+          if (pClass->GetClassVersion()==version) {
+            //AliDebug(0,Form("skipping schema definition %d version %d to class %s as this is the native version", i, version, pSchema->GetName()));
+            continue;
+          }
+          TObjArray* pInfos=const_cast<TObjArray*>(pClass->GetStreamerInfos());
+          if (pInfos /*&& version<pInfos->GetEntriesFast()*/) {
+            TVirtualStreamerInfo* pInfo = dynamic_cast<TVirtualStreamerInfo*>(pInfos->At(version));
+            if (pInfo==NULL) {
+              pSchema->SetClass(pClass);
+              pSchema->BuildOld();
+              pInfos->AddAtAndExpand(pSchema, version);
+              pSchemas->Remove(pSchema);
+              printf("adding %s %i\n",pSchema->GetName(),version);
+              //AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
+            } else {
+              if (pInfo && pInfo->GetClassVersion()==version) {
+                //AliDebug(0,Form("schema definition %d version %d already available in class %s, skipping ...", i, version, pSchema->GetName()));
+              } else {
+                //AliError(Form("can not verify version for already existing schema definition %d (%s) version %d: version of existing definition is %d", i, pSchema->GetName(), version, pInfo?pInfo->GetClassVersion():-1));
+              }
+            }
+          } else {
+            //AliError(Form("skipping schema definition %d (%s), unable to set version %d in info array of size %d", i, pSchema->GetName(), version, pInfos?pInfos->GetEntriesFast():-1));
+          }
+        } else {
+          //AliError(Form("skipping schema definition %d (%s), unable to find class", i, pSchema->GetName()));
+        }
+      } else {
+        //AliError(Form("skipping schema definition %d, not of TStreamerInfo", i));
+      }
+    }
+  }
+
+  delete pSchemas; //this destroys remaining schemas as pSchemas is set owner
+  return 0;
 }
 
 //_______________________________________________________________________________________
 int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, 
-                    int compression, aliZMQTstreamerInfo* streamers)
+                    int compression, aliZMQrootStreamerInfo* streamers)
 {
   int rc = 0;
 
@@ -548,45 +586,8 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   rc = zmq_msg_init_data( &dataMsg, tmessage->Buffer(), tmessage->Length(),
       alizmq_deleteTObject, tmessage);
   
-  //first update the list of streamers used
   if (streamers) {
-    const TList* streamerInfos = tmessage->GetStreamerInfos();
-    if (streamerInfos) {
-      TIter nextInfo(streamerInfos);
-      TStreamerInfo* info=NULL;
-      while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
-        (*streamers)[info->GetNumber()] = info;
-      }
-      
-      //only do this when actually sending
-      //this will place the streamer infos before the last object
-      if ((flags & ZMQ_SNDMORE) == 0)
-      {
-        AliHLTDataTopic streamerTopic = kAliHLTDataTypeStreamerInfo;
-        rc = zmq_send( socket, &streamerTopic, sizeof(topic), ZMQ_SNDMORE );
-        if (rc<0) {
-          zmq_msg_close(&dataMsg); //have to close to release
-          return rc;
-        }
-
-        TList listOfInfos;
-        for (aliZMQTstreamerInfo::const_iterator i=streamers->begin(); i!=streamers->end(); ++i) {
-          listOfInfos.Add(i->second);
-        }
-
-        AliHLTMessage* tmessageStreamers = AliHLTMessage::Stream(&listOfInfos, compression);
-        zmq_msg_t streamerMsg;
-        rc = zmq_msg_init_data(&streamerMsg , tmessageStreamers->Buffer(), tmessageStreamers->Length(),
-            alizmq_deleteTObject, tmessageStreamers);
-
-        rc = zmq_msg_send(&streamerMsg, socket, ZMQ_SNDMORE);
-        if (rc<0) {
-          zmq_msg_close(&dataMsg); //have to close to release
-          zmq_msg_close(&streamerMsg);
-          return rc;
-        }
-      }
-    }
+    alizmq_update_streamerlist(streamers, tmessage->GetStreamerInfos());
   }
 
   //then send the object topic

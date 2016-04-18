@@ -303,7 +303,7 @@ int AliHLTRootSchemaEvolutionComponent::ShipDataToFXS( const AliHLTComponentEven
   return 0;
 }
 
-int AliHLTRootSchemaEvolutionComponent::UpdateStreamerInfos(const TList* list, TObjArray* infos) const
+int AliHLTRootSchemaEvolutionComponent::UpdateStreamerInfos(const TObjArray* list, TObjArray* infos) const
 {
   // update streamer infos
   int iResult=0;

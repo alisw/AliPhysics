@@ -148,13 +148,14 @@ public:
    static void   EnableSchemaEvolutionForAll(Bool_t enable = kTRUE);
    static Bool_t UsesSchemaEvolutionForAll();
 
-   const TList* GetStreamerInfos() const {return fInfos;}
+   const TObjArray* GetStreamerInfos() const {return fInfos;}
 
    /**
     * Helper function to stream an object into an AliHLTMessage
     * The returned instance must be cleaned by the caller
     */
-   static AliHLTMessage* Stream(TObject* pSrc, Int_t compression=1, unsigned verbosity=0);
+   static AliHLTMessage* Stream(TObject* pSrc, Int_t compression=1, unsigned verbosity=0,
+                                Bool_t enableSchema=kFALSE);
 
    /**
     * Helper function to extract an object from a buffer.
@@ -177,7 +178,7 @@ private:
    char    *fCompPos;     //!Position of fBufCur when message was compressed
    char    *fBufUncompressed; //!Uncompressed buffer
    TBits    fBitsPIDs;    //Array of bits to mark the TProcessIDs uids written to the message
-   TList   *fInfos;       //Array of TStreamerInfo used in WriteObject
+   TObjArray *fInfos;     //Array of TStreamerInfo used in WriteObject
    Bool_t   fEvolution;   //True if support for schema evolution required
 
    static Bool_t fgEvolution;  //True if global support for schema evolution required

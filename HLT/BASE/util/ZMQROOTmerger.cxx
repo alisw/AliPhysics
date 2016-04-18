@@ -78,7 +78,7 @@ Int_t fMaxObjects = 1;        //trigger merge after this many messages
 long fPushbackPeriod = -1;        //in seconds, -1 means never
 TTimeStamp fLastPushBackTime;
 Bool_t fCacheOnly = kFALSE;
-aliZMQTstreamerInfo* fSchema = NULL;
+aliZMQrootStreamerInfo* fSchema = NULL;
 int fCompression = 1;
 
 //ZMQ stuff
@@ -229,10 +229,11 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
   AliHLTDataTopic topic;
   alizmq_msg_iter_topic(block, topic);
 
-  string tmp;
-  tmp.assign(kAliHLTDataTypeStreamerInfo.fID, kAliHLTComponentDataTypefIDsize);
-
-  if (topic.GetID().compare(0,kAliHLTComponentDataTypefIDsize,kAliHLTDataTypeStreamerInfo.fID,kAliHLTComponentDataTypefIDsize)==0)
+  if (topic.GetID().compare(0,kAliHLTComponentDataTypefIDsize,kAliHLTDataTypeCDBEntry.fID,kAliHLTComponentDataTypefIDsize)==0)
+  {
+    //dont merge CDB entries, just cache them
+  }
+  else if (topic.GetID().compare(0,kAliHLTComponentDataTypefIDsize,kAliHLTDataTypeStreamerInfo.fID,kAliHLTComponentDataTypefIDsize)==0)
   {
     //extract the streamer infos
     if (fVerbose) printf("unpacking ROOT streamer infos... %s\n", topic.GetID().c_str());
