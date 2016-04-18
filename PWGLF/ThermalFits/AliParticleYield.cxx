@@ -641,21 +641,20 @@ Bool_t AliParticleYield::CheckTypeConsistency() const {
   Bool_t isOK = kTRUE;
 
   if((fMeasurementType & kTypeOnlyTotError) && GetStatError()) {
-    AliError(Form("Error flagged as total only, but stat error is not 0 (%f)!",GetStatError()));
+    AliError(Form("Error flagged as total only, but stat error is not 0 (%f) [%s]!",GetStatError(), GetPartName().Data()));
     isOK= kFALSE;
   } else if (!(fMeasurementType & kTypeOnlyTotError) && (!GetStatError() || !GetSystError())) {
-    AliError("Stat or syst errors are null");
+    AliError(Form("Stat or syst errors are null [%s]", GetPartName().Data()));
     isOK = kFALSE;
   } 
   if((fMeasurementType & kTypeLinearInterpolation) && (fMeasurementType & kTypeAverageAndRefit) && (fMeasurementType & kTypeExtrPionRatio)) {
-    AliError("Only one out of the \"Liner interpolation\",  \"Average and refit\", \"Extrapolated with constant ratio to pions\" bits can be set"); 
+    AliError(Form("Only one out of the \"Liner interpolation\",  \"Average and refit\", \"Extrapolated with constant ratio to pions\" bits can be set [%s]", GetPartName().Data())); 
     isOK = kFALSE;
   }
   if((fMeasurementType & kTypeAveragePartAntiPart) && !fIsSum) {
-    AliError("Average part antipart set, but fIsSum is 0! This type bit should only be set for sums.");
+    AliError(Form("Average part antipart set, but fIsSum is 0! This type bit should only be set for sums. [%s]", GetPartName().Data()));
     isOK = kFALSE;
   }
-
   return isOK;
 }
 
@@ -858,6 +857,7 @@ void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield
   Int_t ymax = part1->GetYMax() == part2->GetYMax() ? part2->GetYMax() : -1000; 
   Int_t status = part1->GetStatus() == part2->GetStatus() ? part2->GetStatus() : -1; 
   Int_t type = part1->GetMeasurementType() | part2->GetMeasurementType();
+  //  std::cout << "T1 " << std::hex << part1->GetMeasurementType() << ", T2 " << part2->GetMeasurementType() << " = " << type<< std::endl;  
   
   TString centr = part1->GetCentr() == part2->GetCentr() ? part2->GetCentr() : part1->GetCentr()+pdgSep+part2->GetCentr(); 
   TString tag = part1->GetTag() == part2->GetTag() ? part2->GetTag() : part1->GetTag()+pdgSep+part2->GetTag(); 
@@ -898,11 +898,19 @@ AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticl
 
   TString sopt(opt);
   sopt.ToUpper();
-
+    
   Float_t value = part1->GetYield() + part2->GetYield();
   Float_t stat  = SumErrors(part1, part2, 0, sopt.Contains("SL") ? "L": "" ); // the option decices if it is propagated linearly pr or quadratically
   Float_t syst  = SumErrors(part1, part2, 1, sopt.Contains("YQ") ? "" : "L" );// the option decices if it is propagated linearly pr or quadratically
   Float_t norm = SumErrors(part1, part2, 2, sopt.Contains("NQ") ? "" :"L");   
+
+  if(part1->IsTypeOnlyTotErr() || part2->IsTypeOnlyTotErr()) {
+    // If at least one of the particles is marked as total error, it means that if we have a stat error it can only come from one of the particles.
+    // We can add it in quadrature to the syst error to get a total error, and then set stat to 0
+    Printf("WARNING<AliParticleYield::Add>: one of the particle was marked as total error only: setting stat to 0");
+    syst = TMath::Sqrt(syst*syst+stat*stat);
+    stat = 0;
+  }
   
   
   if(correlatedError) {
@@ -968,6 +976,15 @@ AliParticleYield * AliParticleYield::Divide (AliParticleYield * part1, AliPartic
     std::cout << "After  : " << syst << "[" << syst/value*100 <<"%]"<< std::endl;    
   }
 
+  if(part1->IsTypeOnlyTotErr() || part2->IsTypeOnlyTotErr()) {
+    // If at least one of the particles is marked as total error, it means that if we have a stat error it can only come from one of the particles.
+    // We can add it in quadrature to the syst error to get a total error, and then set stat to 0
+    Printf("WARNING<AliParticleYield::Divide>: one of the particle was marked as total error only: setting stat to 0");
+    syst = TMath::Sqrt(syst*syst+stat*stat);
+    stat = 0;
+  }
+
+  
   AliParticleYield * part = new AliParticleYield();
   part->SetYield(value);
   part->SetStatError(stat);
