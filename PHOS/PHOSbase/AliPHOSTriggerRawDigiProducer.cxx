@@ -126,7 +126,7 @@ void AliPHOSTriggerRawDigiProducer::GetL1GammaPatchModuleXZ(Int_t itru, Int_t xg
   Int_t offset;
   Int_t mod = module; // online numeration
   
-  if(mod==1) offset = 0;
+  if(mod==1) offset= -16;
   if(mod==2) offset = 16;
   if(mod==3) offset = 16+32;
   if(mod==4) offset = 16+32+32;
