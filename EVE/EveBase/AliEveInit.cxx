@@ -119,6 +119,11 @@ fPath(path)
             }
         }
     }
+    else{
+        cout<<"\n\nAliEveInit -- geometry files not found!!!"<<endl;
+        cout<<"Searched directory was:"<<endl;
+        dir.Print();
+    }
     
     for(int i=0;i<detectorsList.size();i++)
     {
