@@ -3042,7 +3042,7 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   for (Int_t ipoint=0; ipoint<=1; ipoint++){
     deltaZ[ipoint]=-(*vdriftParam)[1];  // unit OK
     vdgy[ipoint]=-(*vdriftParam)[2];   // units OK
-    t0[ipoint]=-(*vdriftParam)[0];               // t0 to be normzlized to the ms
+    t0[ipoint]=-(*vdriftParam)[0]/(1+(*vdriftParam)[3]);       // t0 to be normalized to the ms
     t0[ipoint]/=(param->GetDriftV()/1000000.); 
   }
   
