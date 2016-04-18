@@ -41,9 +41,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTrackParticleArrayName(""),
   fJetMatchingArrayName(""),
   fRandom(0),
-  hFakeFactorCutProfile(0),
+  fRejectionFunction(0),
+  fFakeFactorCutProfile(0),
   fJetOutputMode(0),
-  fUseFakejetRejection(kFALSE),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
   fEventCriteriumMode(0),
@@ -75,9 +75,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTrackParticleArrayName(""),
   fJetMatchingArrayName(""),
   fRandom(0),
-  hFakeFactorCutProfile(0),
+  fRejectionFunction(0),
+  fFakeFactorCutProfile(0),
   fJetOutputMode(0),
-  fUseFakejetRejection(kFALSE),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
   fEventCriteriumMode(0),
@@ -280,11 +280,18 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
       return kFALSE;
 
   // Fake jet rejection (0810.1219)
-  if(fUseFakejetRejection)
+  if(fFakeFactorCutProfile)
   {
     Double_t fakeFactor = CalculateFakeFactor(jet);
     FillHistogram("hFakeFactor", fakeFactor, fCent);
-    if( (fakeFactor >= fMinFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*hFakeFactorCutProfile->GetBinContent(hFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
+    if( (fakeFactor >= fMinFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
+      return kFALSE;
+  }
+
+  // Poor man's fake jet rejection (according to jet const.)
+  if(fRejectionFunction)
+  {
+    if( jet->GetNumberOfTracks() <  fRejectionFunction->Eval(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()) )
       return kFALSE;
   }
 

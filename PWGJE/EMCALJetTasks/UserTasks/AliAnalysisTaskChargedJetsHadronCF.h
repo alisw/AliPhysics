@@ -25,12 +25,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
   void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
 
-
-  void                        ActivateFakejetRejection(Double_t minFakeFactorPercentage, Double_t maxFakeFactorPercentage, TProfile* cutProfile)
-                                { fMinFakeFactorPercentage = minFakeFactorPercentage; fMaxFakeFactorPercentage = maxFakeFactorPercentage; hFakeFactorCutProfile = cutProfile; fUseFakejetRejection = kTRUE; }
-  void                        SetMinFakeFactorPercentage(Double_t value)  { fMinFakeFactorPercentage = value; }
-  void                        SetMaxFakeFactorPercentage(Double_t value)  { fMaxFakeFactorPercentage = value; }
-  void                        SetUseFakejetRejection(Bool_t value)  { fUseFakejetRejection = value; }
+  void                        ActivateRejectionJetConstituents(TF1* rejectionFunction)
+                                { fRejectionFunction = rejectionFunction; }
+  void                        ActivateRejectionFakeFaktor(Double_t minFakeFactorPercentage, Double_t maxFakeFactorPercentage, TH1* cutProfile)
+                                { fMinFakeFactorPercentage = minFakeFactorPercentage; fMaxFakeFactorPercentage = maxFakeFactorPercentage; fFakeFactorCutProfile = cutProfile; }
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
@@ -63,9 +61,9 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TRandom3*                   fRandom;                                  // random number generator
 
   // Criteria for the selection of jets that are passed to the correlation task
-  TProfile*                   hFakeFactorCutProfile;                    // profile of the fake factor cut distribution
+  TF1*                        fRejectionFunction;                       // Function describing the cut applied to jet const.
+  TH1*                        fFakeFactorCutProfile;                    // profile of the fake factor cut distribution
   Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
-  Bool_t                      fUseFakejetRejection;                     // Use fakejet rejection (a la ATLAS)
   Double_t                    fMinFakeFactorPercentage;                 // min fake factor (percentage relative to cut profile)
   Double_t                    fMaxFakeFactorPercentage;                 // max fake factor (percentage relative to cut profile)
   Int_t                       fEventCriteriumMode;                      // Mode of event selection
@@ -100,6 +98,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF(const AliAnalysisTaskChargedJetsHadronCF&);            // not implemented
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 4) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 5) // Charged jet+h analysis support task
 };
 #endif
