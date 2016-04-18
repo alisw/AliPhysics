@@ -287,13 +287,13 @@ public:
      * Constructor 
      * 
      */
-    Sub(const char* name="") : fName(name), fContainer(0) {}
+    Sub(const char* name="") : fName(name), fContainer(0), fDebug(0) {}
     /** 
      * Copy constructor 
      * 
      * @param o Object to copy from 
      */
-    Sub(const Sub& o) : TObject(o), fName(o.fName), fContainer(0) {}
+    Sub(const Sub& o) : TObject(o), fName(o.fName), fContainer(0), fDebug(0) {}
     /**
      * Destructor 
      */
@@ -364,11 +364,19 @@ public:
     virtual Bool_t MasterFinalize(Container* parent,
 				  TH1*       ipz,
 				  Double_t   tailCut) = 0;
+    /** 
+     * Set debug flag 
+     *
+     * @param lvl Debug level 
+     */
+    virtual void SetDebug(UShort_t lvl) { fDebug = lvl; }
   protected:
     /** The name of the sub-component */
     TString fName;
     /** The sum container of the sub-component */
     Container* fContainer;
+    /** Debug flag */
+    UShort_t fDebug;
     ClassDef(Sub,1); 
   };    
   
@@ -519,8 +527,8 @@ public:
     /** 
      * User constructor 
      * 
-     * @param c1 Lower bound on centrality 
-     * @param c2 Upper bound on centrality
+     * @param c1  Lower bound on centrality 
+     * @param c2  Upper bound on centrality
      */
     CentBin(Double_t c1, Double_t c2);
     /** 
@@ -627,6 +635,12 @@ public:
      * @param option Ignored 
      */
     void Print(Option_t* option="") const;
+    /** 
+     * Set debug flag 
+     *
+     * @param lvl Debug level 
+     */
+    virtual void SetDebug(UShort_t lvl);
   protected:
     Container* fSubs;
     Double_t   fLow;
@@ -1306,6 +1320,17 @@ void AliTrackletAODdNdeta::CentBin::Print(Option_t* option) const
     h->Print(option);
   }
 }
+
+//____________________________________________________________________
+void AliTrackletAODdNdeta::CentBin::SetDebug(UShort_t lvl)
+{
+  Sub::SetDebug(lvl);
+  TIter next(fSubs);
+  Histos* h = 0;
+  while ((h = static_cast<Histos*>(next()))) {
+    h->SetDebug(lvl);
+  }
+}  
 namespace {
   void Bits2String(UChar_t m, char out[7])
   {
@@ -1450,6 +1475,7 @@ Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
     AliWarningF("Failed to initialize bin %s", bin->GetName());
     return false;
   }
+  bin->SetDebug(DebugLevel());
   fCentBins->AddAt(bin, 0);
 
   // Add other bins
@@ -1466,6 +1492,7 @@ Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
       AliWarningF("Failed to initialize %s", bin->GetName());
       return false;
     }
+    bin->SetDebug(DebugLevel());
     fCentBins->AddAt(bin, i);
   }
   return true;
@@ -1510,9 +1537,11 @@ AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   fCombinatorics  = new Histos("combinatorics",
 			       AliAODTracklet::kCombinatorics, 0x00);
   fPrimaries  = new Histos("primaries",
-			   AliAODTracklet::kSimulated
+			   0,
+			   AliAODTracklet::kInjection|
 			   AliAODTracklet::kCombinatorics|
-			   AliAODTracklet::kSecondary);
+			   AliAODTracklet::kSecondary|
+			   AliAODTracklet::kGenerated);
   fSecondaries = new Histos("secondaries",
 			    AliAODTracklet::kSecondary, 0x00);
   fGenerated = new Histos("generated",AliAODTracklet::kGenerated, 0x00);
@@ -1528,7 +1557,8 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
 						 const TAxis& ipzAxis,
 						 const TAxis& deltaAxis)
 {
-  Printf("Initializing centrality bin %s", fName.Data());
+  if (fDebug > 0)
+    Printf("Initializing centrality bin %s", fName.Data());
   if (!Sub::WorkerInit(parent, etaAxis, ipzAxis, deltaAxis)) return false;
   
   TAxis centAxis(20, fLow, fHigh);
@@ -1556,15 +1586,18 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
 
   // Do not make eta vs IPz for secondaries and primaries 
   if (fMask != AliAODTracklet::kSecondary &&
-      (fMask != AliAODTracklet::kSimulated &&
-       fVeto != AliAODTracklet::kSecondary|AliAODTracklet::kCombinatorics))
+      (fVeto != (AliAODTracklet::kSecondary     |
+		 AliAODTracklet::kInjection     |
+		 AliAODTracklet::kCombinatorics |
+		 AliAODTracklet::kGenerated)))
     fEtaIPz   = Make2D(fContainer, "etaIPz",
 		       Form("Tracklet density - %s",GetName()),
 		       kRed+2, 20, etaAxis, ipzAxis);
-  // Always make eta vs Delta distribution 
-  fEtaDelta = Make2D(fContainer, "etaDelta",
-		     Form("Tracklet quality - %s",GetName()),
-		     kBlue+2, 21, etaAxis, deltaAxis);
+  // Always make eta vs Delta distribution
+  if (fMask != AliAODTracklet::kGenerated) 
+    fEtaDelta = Make2D(fContainer, "etaDelta",
+		       Form("Tracklet quality - %s",GetName()),
+		       kBlue+2, 21, etaAxis, deltaAxis);
   return true;
 }
 //____________________________________________________________________
@@ -1707,9 +1740,9 @@ const AliVVertex* AliTrackletAODdNdeta::FindRealIP(AliVEvent* event,
 }
 						   
 //____________________________________________________________________
-  const AliVVertex* AliTrackletAODdNdeta::FindSimpleIP(AliVEvent* event,
-						       Double_t maxDispersion,
-						       Double_t maxZError)   
+const AliVVertex* AliTrackletAODdNdeta::FindSimpleIP(AliVEvent* event,
+						     Double_t maxDispersion,
+						     Double_t maxZError)   
 {
   static AliVertex* ip;
   AliAODSimpleHeader* head =
@@ -1894,6 +1927,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::ProcessTracklet(AliAODTracklet* tracklet,
 {
   TIter   next(fSubs);
   Histos* h = 0;
+  if (fDebug > 3) tracklet->Print();
   while ((h = static_cast<Histos*>(next()))) 
     h->ProcessTracklet(tracklet, ipZ, signal, weight);
   
@@ -1905,18 +1939,23 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
 						     Bool_t          signal,
 						     Double_t        weight)
 {
+  char m[7];
+  if (fDebug > 3) Bits2String(tracklet->GetFlags(), m);
   if (fMask != 0 && (tracklet->GetFlags() & fMask) == 0) {
-    // printf("%12s (0x%02x) rejecting ", GetName(), fMask);
-    // tracklet->Print();
+    if (fDebug > 3)
+      Printf("%14s (0x%02x,----) %6s %7s (0x%02x) ",
+	     GetName(), fMask, "reject", m, tracklet->GetFlags());
     return false;
   }
   if (fVeto != 0 && (tracklet->GetFlags() & fVeto) != 0) {
-    // printf("%12s (0x%02x) veto ", GetName(), fVeto);
-    // tracklet->Print();
+    if (fDebug > 3) 
+      Printf("%14s (----,0x%02x) %6s %7s (0x%02x) ",
+	     GetName(), fVeto, "veto", m, tracklet->GetFlags());
     return false;
   }
-  // printf("%12s (0x%02x,0x%02x) signal ", GetName(), fMask, fVeto);
-  // tracklet->Print();
+  if (fDebug > 3)
+    Printf("%14s (0x%02x,0x%02x) %6s %7s (0x%02x) ",
+	   GetName(), fMask, fVeto, "accept", m, tracklet->GetFlags());
   if (fEtaIPz && signal) fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
   if (fEtaDelta)         fEtaDelta->Fill(tracklet->GetEta(),
 					 tracklet->GetDelta(), weight);
@@ -1972,7 +2011,7 @@ Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
 {
   fContainer   = GetC(parent, fName);
   fEtaIPz      = GetH2(fContainer, "etaIPz", false); // No complaints
-  fEtaDelta    = GetH2(fContainer, "etaDelta", false); // No complaints
+  fEtaDelta    = GetH2(fContainer, "etaDelta", false);
   return (fContainer != 0); //  && fEtaIPz != 0); 
 }
 
@@ -2027,7 +2066,7 @@ Bool_t AliTrackletAODMCdNdeta::MasterFinalize(Container* results)
     results->Add(etaWeight);
   }
   else {
-    AliWarningF("Object %p (etaWeight ) is not a TH1 or not found",o);
+    AliWarningF("Object %p (etaWeight) is not a TH1 or not found",o);
   }
   if (!fWeights) return true;
 
@@ -2100,7 +2139,7 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   // Scale each vertex range by number of events in that range
   TH2* etaIPz = 0;
   if (fEtaIPz) {
-    ScaleToIPz(fEtaIPz, ipz);
+    etaIPz = ScaleToIPz(fEtaIPz, ipz);
     result->Add(etaIPz);
   }
 
@@ -2174,35 +2213,36 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
   
   TH2* background    = 0;
   TH2* backgroundEta = 0;
-  if (h->GetMask() == AliAODTracklet::kInjection)) {
-    // If we have the delta distribution, we can form the real
-    // background by scaling to the tail.  We can either scale the
-    // observed distribution by the ratios of the total integrals, or
-    // we can scale by the integral in eta slices.  Here, we do both
-    // and store them separately
-    Double_t measIntg = GetD(measCont, "deltaTailIntegral",      -1);
-    Double_t measIntE = GetD(measCont, "deltaTailIntegralError", -1);
-    Double_t bgIntg   = GetD(bgCont,   "deltaTailIntegral",      -1);
-    Double_t bgIntE   = GetD(bgCont,   "deltaTailIntegralError", -1);
-    if (measIntg <= 0 || bgIntg <= 0) return true;
-    Double_t scaleE   = 0;
-    Double_t scale    = RatioE(measIntg, measIntE, bgIntg, bgIntE, scaleE);
-    bgCont->Add(new TParameter<double>("deltaTailRatio",      scale));
-    bgCont->Add(new TParameter<double>("deltaTailRatioError", scaleE));
+  if (h->GetMask() == AliAODTracklet::kInjection) {
+  // If we have the delta distribution, we can form the real
+  // background by scaling to the tail.  We can either scale the
+  // observed distribution by the ratios of the total integrals, or
+  // we can scale by the integral in eta slices.  Here, we do both
+  // and store them separately
+  Double_t measIntg = GetD(measCont, "deltaTailIntegral",      -1);
+  Double_t measIntE = GetD(measCont, "deltaTailIntegralError", -1);
+  Double_t bgIntg   = GetD(bgCont,   "deltaTailIntegral",      -1);
+  Double_t bgIntE   = GetD(bgCont,   "deltaTailIntegralError", -1);
+  if (measIntg <= 0 || bgIntg <= 0) return true;
+  Double_t scaleE   = 0;
+  Double_t scale    = RatioE(measIntg, measIntE, bgIntg, bgIntE, scaleE);
+  bgCont->Add(new TParameter<double>("deltaTailRatio",      scale));
+  bgCont->Add(new TParameter<double>("deltaTailRatioError", scaleE));
 
-    TH1* deltaScaled  = CopyH1(bgCont, "delta", "deltaScaled");
-    bgCont->Add(deltaScaled);
-    deltaScaled->SetLineStyle(7);
-    deltaScaled->SetTitle(Form("%s #times%6.3f",
-			       deltaScaled->GetTitle(), scale));
-    Scale(deltaScaled, scale, scaleE);
+  TH1* deltaScaled  = CopyH1(bgCont, "delta", "deltaScaled");
+  bgCont->Add(deltaScaled);
+  deltaScaled->SetLineStyle(7);
+  deltaScaled->SetTitle(Form("%s #times%6.3f",
+			     deltaScaled->GetTitle(), scale));
+  Scale(deltaScaled, scale, scaleE);
 
-    // Make background scaled by full tail 
-    background = CopyH2(bgCont,  "etaIPz", "background");
-    Scale(background, scale, scaleE);
+  // Make background scaled by full tail 
+  background = CopyH2(bgCont,  "etaIPz", "background");
+  if (!background) AliWarningF("Didn't get background in %s", sub);
+  else             Scale(background, scale, scaleE);
 
-    // Get the tail ratio per eta
-    TH1* etaScale = CopyH1(measCont, "etaDeltaTailIntegral",
+  // Get the tail ratio per eta
+  TH1* etaScale = CopyH1(measCont, "etaDeltaTailIntegral",
 			   "etaDeltaTailRatio");
     etaScale->Divide(GetH1(bgCont, "etaDeltaTailIntegral"));
     etaScale->SetYTitle(Form("%s/%s",measCont->GetName(),sub));
@@ -2211,7 +2251,8 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
     
     // Make background scaled by full tail 
     backgroundEta = CopyH2(bgCont,  "etaIPz", "backgroundEta");
-    Scale(backgroundEta, etaScale);
+    if (!background) AliWarningF("Didn't get eta-background in %s", sub);  
+    else             Scale(backgroundEta, etaScale);
   }
   else {
     // If we do not have the delta distribution, then that means we
@@ -2220,24 +2261,33 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
     // bg/meas.
     background = CopyH2(bgCont, "etaIPz", "background");       
     TH2* beta  = CopyH2(bgCont, "etaIPz", "beta");
-    beta->Divide(GetH1(measCont, "etaIPz"));
-    bgCont->Add(beta);
+    if (!background || !beta) AliWarningF("Didn't get backgroun or beta in %s",
+					  sub);
+    else {
+      beta->Divide(GetH1(measCont, "etaIPz"));
+      bgCont->Add(beta);
+    }
   }
   TH2* signal = CopyH2(measCont, "etaIPz", "signal");
-  signal->SetTitle(Form("Signal - %s", sub));
-  signal->Add(background,-1);
-  CopyAttr(background, signal);
-  background->SetTitle(Form("Background - %s", sub));
-  bgCont->Add(background);
-  bgCont->Add(signal);
+  if (!signal) AliWarningF("Didn't get signal in %s", sub);
+  else {
+    signal->SetTitle(Form("Signal - %s", sub));
+    signal->Add(background,-1);
+    CopyAttr(background, signal);
+    background->SetTitle(Form("Background - %s", sub));
+    bgCont->Add(background);
+    bgCont->Add(signal);
+  }
 
   TH1* alpha = 0;
   if (genCont) {
     alpha = CopyH2(genCont, "etaIPz", "alpha");
-    alpha->Divide(signal);
-    alpha->SetTitle(Form("#alpha - %s", sub));
-    CopyAttr(signal, alpha);
-    bgCont->Add(alpha);
+    if (alpha && signal) {
+      alpha->Divide(signal);
+      alpha->SetTitle(Form("#alpha - %s", sub));
+      CopyAttr(signal, alpha);
+      bgCont->Add(alpha);
+    }
   }
   
   if (!backgroundEta) return true;
