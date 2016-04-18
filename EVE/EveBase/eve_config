@@ -54,7 +54,7 @@ primary.vertex.spd.cross:               0
 momentum.histograms.show:               0
 momentum.histograms.all.events.show:    0
 
-simple.geom.path:                       EVE/resources/geometry/run2/
+simple.geom.path:                       ${ALICE_ROOT}/EVE/resources/geometry/run2/
 
 PHS.draw:                               1
 TPC.draw:                               1

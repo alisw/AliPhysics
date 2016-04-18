@@ -19,7 +19,15 @@ TEveGeoShape* AliEveGeomGentle::GetSimpleGeom(char* detector)
     TEnv settings;
     AliEveInit::GetConfig(&settings);
     
-    TFile *f = TFile::Open(Form("%s/%s/simple_geom_%s.root",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/"),detector));
+    string geomPath = settings.GetValue("simple.geom.path","${ALICE_ROOT}/EVE/resources/geometry/run2/");
+    string alirootBasePath = gSystem->Getenv("ALICE_ROOT");
+    size_t alirootPos = geomPath.find("${ALICE_ROOT}");
+    
+    if(alirootPos != string::npos){
+        geomPath.replace(alirootPos,alirootPos+13,alirootBasePath);
+    }
+    
+    TFile *f = TFile::Open(Form("%s/simple_geom_%s.root",geomPath.c_str(),detector));
     if(!f){
         cout<<"AliEveGeomGentle::GetSimpleGeom -- no file with geometry found!"<<endl;
         return nullptr;

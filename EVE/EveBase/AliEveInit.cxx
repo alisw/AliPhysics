@@ -88,11 +88,17 @@ fPath(path)
     
     // read all files with names matching "geom_list_XYZ.txt"
     vector<string> detectorsList;
-    TSystemDirectory dir(Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")),
-                         Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")));
+    string geomPath = settings.GetValue("simple.geom.path","${ALICE_ROOT}/EVE/resources/geometry/run2/");
+    string alirootBasePath = gSystem->Getenv("ALICE_ROOT");
+    size_t alirootPos = geomPath.find("${ALICE_ROOT}");
     
+    if(alirootPos != string::npos){
+        geomPath.replace(alirootPos,alirootPos+13,alirootBasePath);
+    }
+    
+    TSystemDirectory dir(geomPath.c_str(),geomPath.c_str());
     TList *files = dir.GetListOfFiles();
-    
+
     if (files)
     {
         TRegexp e("simple_geom_[A-Z,0-9][A-Z,0-9][A-Z,0-9].root");
