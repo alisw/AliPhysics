@@ -5,6 +5,7 @@
 #include "AliConversionPhotonBase.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TTreeStream.h"
 #include "AliLog.h"
 #include <vector>
@@ -92,7 +93,9 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH2F**            hESDConversionMappingRZ;        //!
 		TH1F**            hESDConversionR;                //!  
 		TH2F**            hESDConversionAsymP;            //!  
-		TH1F**            hESDConversionMidPtR;           //!  
+		TH1F**            hESDConversionMidPtR;           //!
+		TH3F**            hESDConversionRInBins;
+		TH3F**            hESDConversionPhiInBins;
 		TH1F**            hESDConversionEta;              //!  
 		TH1F**            hESDConversionMidPtEta;         //!
 		TH1F**            hESDConversionPt;              //!
@@ -146,7 +149,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 4);
+        ClassDef(AliAnalysisTaskMaterialHistos, 5);
 };
 
 #endif
