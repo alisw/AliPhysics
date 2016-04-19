@@ -27,8 +27,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   void                        ActivateRejectionJetConstituents(TF1* rejectionFunction)
                                 { fRejectionFunction = rejectionFunction; }
-  void                        ActivateRejectionFakeFaktor(Double_t minFakeFactorPercentage, Double_t maxFakeFactorPercentage, TH1* cutProfile)
-                                { fMinFakeFactorPercentage = minFakeFactorPercentage; fMaxFakeFactorPercentage = maxFakeFactorPercentage; fFakeFactorCutProfile = cutProfile; }
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
@@ -40,6 +38,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Bool_t                      Run();
 
   // ######### META FUNCTIONS
+  void                        BinLogAxis(const THn *h, Int_t axisNumber);
   void                        AddJetToOutputArray(AliEmcalJet* jet);
   void                        AddTrackToOutputArray(AliVTrack* track);
   void                        FillHistogramsTracks(AliVTrack* track);
@@ -62,7 +61,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   // Criteria for the selection of jets that are passed to the correlation task
   TF1*                        fRejectionFunction;                       // Function describing the cut applied to jet const.
-  TH1*                        fFakeFactorCutProfile;                    // profile of the fake factor cut distribution
   Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Double_t                    fMinFakeFactorPercentage;                 // min fake factor (percentage relative to cut profile)
   Double_t                    fMaxFakeFactorPercentage;                 // max fake factor (percentage relative to cut profile)
