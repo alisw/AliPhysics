@@ -6,6 +6,7 @@ AliAnalysisTaskRho* AddTaskRhoNew(
    AliJetContainer::JetAcceptanceType acceptance = AliJetContainer::kTPCfid,
    AliJetContainer::EJetType_t jetType           = AliJetContainer::kChargedJet,
    const Bool_t   histo                          = kFALSE,
+   AliJetContainer::ERecoScheme_t rscheme = AliJetContainer::pt_scheme,
    const char    *suffix                         = ""
 )
 {  
@@ -105,7 +106,7 @@ AliAnalysisTaskRho* AddTaskRhoNew(
     clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
-  AliJetContainer *jetCont = rhotask->AddJetContainer(jetType, AliJetContainer::kt_algorithm,  AliJetContainer::pt_scheme, jetradius, acceptance, partCont, clusterCont);
+  AliJetContainer *jetCont = rhotask->AddJetContainer(jetType, AliJetContainer::kt_algorithm, rscheme, jetradius, acceptance, partCont, clusterCont);
   if (jetCont) jetCont->SetJetPtCut(0);
 
   //-------------------------------------------------------
