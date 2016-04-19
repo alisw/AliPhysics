@@ -178,10 +178,11 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
           if (!fCutsHFjets->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes))
             continue;
           
-          
-          nVtxContributorsBelongToV0 = (* mapV0gTrks)[aodTrk_1->GetID()] +
-                                       (* mapV0gTrks)[aodTrk_2->GetID()];
-          
+          if(mapV0gTrks != NULL){
+	    nVtxContributorsBelongToV0 = (* mapV0gTrks)[aodTrk_1->GetID()] +
+	      (* mapV0gTrks)[aodTrk_2->GetID()];
+          }
+	  
           new ((* arrayVtxHF)[nSecndVxtHF]) AliAODVertex(* secAODVertex);
           vecVtxDisp.push_back(make_pair(vtxRes, nVtxContributorsBelongToV0));
           nSecndVxtHF++;
@@ -212,11 +213,11 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet *jet,
             if (!fCutsHFjets->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes))
               continue;
             
-            
-            nVtxContributorsBelongToV0 =  (* mapV0gTrks)[aodTrk_1->GetID()] +
-                                          (* mapV0gTrks)[aodTrk_2->GetID()] +
-                                          (* mapV0gTrks)[aodTrk_2->GetID()];
-            
+            if(mapV0gTrks != NULL){
+	      nVtxContributorsBelongToV0 =  (* mapV0gTrks)[aodTrk_1->GetID()] +
+		(* mapV0gTrks)[aodTrk_2->GetID()] +
+		(* mapV0gTrks)[aodTrk_2->GetID()];
+	    }
             new ((* arrayVtxHF)[nSecndVxtHF]) AliAODVertex(* secAODVertex);
             vecVtxDisp.push_back(make_pair(vtxRes, nVtxContributorsBelongToV0));
             nSecndVxtHF++;
