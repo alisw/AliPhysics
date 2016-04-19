@@ -8,6 +8,12 @@
 //Bool_t gRunShuffling = kTRUE;
 //=============================================//
 
+
+//Task for  BF with PID --------------------------------------
+//[Noor Alam : sk.noor.alam@cern.ch/noor1989phyalam@gmail.com]
+//[Varibale Energy Cyclotron Centre, Kolkata, India]
+//------------------------------------------------------------ 
+
 //PID config
 //#include "AliBalancePsi.h"
 //#include "AliAnalysisTaskPIDBF.h"
@@ -248,6 +254,19 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
       if(electronExclusiveRejection) taskBF->SetElectronOnlyRejection(sigmaElectronRejection); // no other particle in nsigma 
       else                           taskBF->SetElectronRejection(sigmaElectronRejection); // check only if electrons in nsigma
     }
+ 
+    if(kUsePID) {
+      if(kUseBayesianPID)
+        taskBF->SetUseBayesianPID(gMinAcceptedProbability);
+      else if(kUseNSigmaPID)
+        taskBF->SetUseNSigmaPID(nSigmaMax);
+        taskBF->SetParticleType(ParticleType_);   // Added  Noor Alam
+        taskBF->SetTPCPtMinMax(ptMin,kTPCPtMax); // TPC Pt min and max (N.Alam )
+        taskBF->SetTOFPtMinMax(kTPCPtMax,ptMax); // TOF Pt min and max (N.Alam)
+      //   N.A taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kKaon);
+     // taskBF->SetDetectorUsedForPID(AliAnalysisTaskPIDBF::kTPCTOF); //TOFpid,TPCpid
+    }
+
   }//++++++++++++++++
 
   // offline trigger selection (AliVEvent.h)
