@@ -3753,8 +3753,8 @@ if(!fIspp){
 			
 			//efficiency without SS cut for TPC only
 			if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
-				//with weight for TPConly
-				Background(track, iTracks, Vtrack, kTRUE, kTRUE, kFALSE); //IsTPConly=kTRUE, IsWeight=kTRUE
+				//with weight 
+				//	Background(track, iTracks, Vtrack, kTRUE, kTRUE, kFALSE); //IsTPConly=kTRUE, IsWeight=kTRUE
 				//pt bins
 				Background(track, iTracks, Vtrack, kTRUE, kTRUE, kTRUE); //IsTPConly=kTRUE, IsWeight=kTRUE, MassPtBins=kTRUE
 				
@@ -4598,8 +4598,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
 				{
 						//Is Background
-					if(!IsTPConly)fPtBackgroundBeforeReco->Fill(track->Pt());
-					if(IsTPConly)fPtBackgroundBeforeReco2->Fill(track->Pt());
+					if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco->Fill(track->Pt());
+					if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2->Fill(track->Pt());
 					
 					
 						//October 08th weighted histos
@@ -4628,8 +4628,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						//Histo pT mother versus pT electron
 						fpT_m_electron->Fill(mPt, track->Pt());
 						
-						if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./mweight);
-						if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./mweight);
+						if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./mweight);
+						if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./mweight);
 					}
 					else if(fMCparticleMother->GetMother()>0 && (TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 )){
 						
@@ -4654,12 +4654,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						
 						fpT_gm_electron->Fill(gmPt, track->Pt());
 						
-						if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./gmweight);
-						if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./gmweight);
+						if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./gmweight);
+						if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./gmweight);
 					}
 					else{
-						if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt());
-						if(IsTPConly)fPtBackgroundBeforeReco2_weight->Fill(track->Pt());				
+						if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco_weight->Fill(track->Pt());
+						if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2_weight->Fill(track->Pt());				
 					}
 				}//particle kind
 			}//IsAOD
@@ -4675,8 +4675,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
 				{
 						//Is Background
-					if(!IsTPConly)fPtBackgroundBeforeReco->Fill(track->Pt());
-					if(IsTPConly)fPtBackgroundBeforeReco2->Fill(track->Pt());
+					if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco->Fill(track->Pt());
+					if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2->Fill(track->Pt());
 				}
 			}
 		}//IsMC
@@ -4743,7 +4743,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		}
 	
 		//to look the Invariant mass in pT bins 
-		if(MassPtBins && !IsWeight){
+		if(!IsTPConly && MassPtBins && !IsWeight){
 			Double_t fPtBin_trigger2[11] = {1,2,4,6,8,10,12,14,16,18,20};
 			for(Int_t i = 0; i < 10; i++)
 			{
@@ -4845,7 +4845,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					
 					Double_t weight=1;
 					
-					if(!IsTPConly){
+					if(!IsTPConly && !IsWeight && !MassPtBins){
 						if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
 						
@@ -4922,7 +4922,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						
 					}//!IsTPConly
 					
-					if(IsTPConly){
+					if(IsTPConly && !IsWeight && !MassPtBins){
 						if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
 						
@@ -5096,7 +5096,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					
 				}//particle kind
 				
-				if(IsTPConly){
+				if(IsTPConly && !IsWeight && !MassPtBins){
 						//ULS-LS with no pid AOD
 					if(fNonHFE->IsULS()) fPtElec_ULS_NoPid->Fill(fPtE,fNonHFE->GetNULS());
 					if(fNonHFE->IsLS()) fPtElec_LS_NoPid->Fill(fPtE,fNonHFE->GetNLS());
@@ -5108,12 +5108,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 			{
 				if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
 				{
-					if(!IsTPConly){
+					if(!IsTPConly && !IsWeight && !MassPtBins){
 						if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
 					}
 					
-					if(IsTPConly){
+					if(IsTPConly && !IsWeight && !MassPtBins){
 						if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
 					}
@@ -5126,12 +5126,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		 //not MC
 		else
 		{
-			if(!IsTPConly){
+			if(!IsTPConly && !IsWeight && !MassPtBins){
 				if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
 				if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
 			}
 			
-			if(IsTPConly){
+			if(IsTPConly && !IsWeight && !MassPtBins){
 				if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 				if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
 			}
