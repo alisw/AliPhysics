@@ -271,8 +271,8 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
 
     return 1;
   }
-  else
-    return 0;
+  
+  return 0;
 }
 
 //_____________________________________________________________________
