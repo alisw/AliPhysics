@@ -41,6 +41,7 @@
 #include "AliMultiplicity.h"
 #include "AliTracker.h"
 #include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
@@ -58,6 +59,7 @@ ClassImp(AliPtResolAnalysisPbPb)
 
 //_____________________________________________________________________________
   AliPtResolAnalysisPbPb::AliPtResolAnalysisPbPb(): AlidNdPt(),
+  fSigmaScale(0),
   fAnalysisFolder(0),
   fTrackParamHist(0),
   fTrackParamHist2(0),
@@ -69,6 +71,7 @@ ClassImp(AliPtResolAnalysisPbPb)
 
 //_____________________________________________________________________________
 AliPtResolAnalysisPbPb::AliPtResolAnalysisPbPb(Char_t* name, Char_t* title): AlidNdPt(name,title),
+  fSigmaScale(0),
   fAnalysisFolder(0),
   fTrackParamHist(0),
   fTrackParamHist2(0),
@@ -164,7 +167,7 @@ void AliPtResolAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *co
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection) return;
@@ -176,12 +179,15 @@ void AliPtResolAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *co
       if(!triggerAnalysis) return;
       isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
-
-
-   // centrality determination
-   Float_t centralityF = -1.;
-   AliCentrality *esdCentrality = esdEvent->GetCentrality();
-   centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
+    
+  // centrality determination
+  Float_t centralityF = -1.;
+  AliMultSelection *MultSelection = (AliMultSelection*) esdEvent->FindListObject("MultSelection");
+  
+  if ( MultSelection ){
+    centralityF = MultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),kFALSE);
+  }
+  else{Printf("ERROR: Could not receive mult selection"); AliInfo("Didn't find MultSelection!"); }
 
   // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
@@ -233,10 +239,10 @@ void AliPtResolAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *co
 	  //track->GetExternalParameters(x, p);
 	  //track->GetExternalCovariance(cov);
 
-	  Double_t v[3] = {track->OneOverPt(),TMath::Sqrt(track->GetSigma1Pt2()),centralityF};
+	  Double_t v[3] = {track->OneOverPt(),TMath::Sqrt(track->GetSigma1Pt2()+fSigmaScale*fSigmaScale),centralityF};
 	  fTrackParamHist->Fill(v);
 
-	  Double_t v2[3] = {track->Pt(),track->Pt()*TMath::Sqrt(track->GetSigma1Pt2()),centralityF};
+	  Double_t v2[3] = {track->Pt(),track->Pt()*TMath::Sqrt(track->GetSigma1Pt2()+fSigmaScale*fSigmaScale),centralityF};
 	  fTrackParamHist2->Fill(v2);
         }
       }  
