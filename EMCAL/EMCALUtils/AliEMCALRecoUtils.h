@@ -1,19 +1,32 @@
 #ifndef ALIEMCALRECOUTILS_H
 #define ALIEMCALRECOUTILS_H
 
-/* $Id: AliEMCALRecoUtils.h | Tue Jul 23 09:11:15 2013 +0000 | gconesab  $ */
-
 ///////////////////////////////////////////////////////////////////////////////
-//
-// Class AliEMCALRecoUtils
-// Some utilities to recalculate the cluster position or energy linearity
-//
-//
-// Author:  Gustavo Conesa (LPSC- Grenoble) 
-//          Track matching part: Rongrong Ma (Yale)
+///
+/// \class AliEMCALRecoUtils
+/// \brief Some utilities for cluster and cell treatment.
+///
+/// This class contains methods to correct and select the clusters and cells:
+///   * Calibration of cells/clusters
+///      * Energy
+///      * Time
+///      * Temperature
+///   * Cluster energy non linearity
+///   * Rejection of clusters close to borders
+///   * Rejection of clusters/cells containing/considered bad channels
+///   * Recalculation of clusters
+///      * Shower shape
+///      * Position
+///      * Matching to tracks
+///
+/// Plus other helper methods.
+///
+/// \author:  Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC- Grenoble 
+/// \author:  Rongrong Ma, Yale. Track matching part
+///
 ///////////////////////////////////////////////////////////////////////////////
 
-//Root includes
+// Root includes
 #include <TNamed.h>
 #include <TMath.h>
 class TObjArray;
@@ -23,7 +36,7 @@ class TArrayF;
 class TH2F;
 #include <TRandom3.h>
 
-//AliRoot includes
+// AliRoot includes
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
@@ -41,14 +54,15 @@ class AliEMCALRecoUtils : public TNamed {
 public:
   
   AliEMCALRecoUtils();
-  AliEMCALRecoUtils(const AliEMCALRecoUtils&); 
+  AliEMCALRecoUtils(           const AliEMCALRecoUtils&); 
   AliEMCALRecoUtils& operator=(const AliEMCALRecoUtils&); 
   virtual ~AliEMCALRecoUtils() ;  
   
   void     InitParameters();
   void     Print(const Option_t*) const;
 
-  //enums
+  /// Non linearity enum list of possible parametrizations. 
+  /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
   enum     NonlinearityFunctions{ kPi0MC   = 0, kPi0GammaGamma = 1,
                                   kPi0GammaConversion = 2, kNoCorrection = 3,
                                   kBeamTest= 4, kBeamTestCorrected = 5,
@@ -57,16 +71,22 @@ public:
                                   kSDMv5   = 9, kPi0MCv5 = 10,
                                   kSDMv6   =11, kPi0MCv6 = 12,
                                   kBeamTestCorrectedv3   = 13};
-  
+
+  /// Cluster position enum list of possible algoritms
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
-  enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
-  enum     { kNCuts = 12 }; //track matching Marcel
+
+  /// Position depth enum list of possible particle types
+  enum     ParticleType{kPhoton=0, kElectron=1, kHadron =2, kUnknown=-1};
   
+  /// Track matching, Marcel
+  enum     { kNCuts = 12 }; 
+  
+  /// Track matching cuts enum list 
   enum     TrackCutsType{ kTPCOnlyCut = 0, kGlobalCut = 1, kLooseCut = 2, kITSStandAlone = 3, 
                           kGlobalCut2011 = 4, kLooseCutWithITSrefit = 5};  
 
   //-----------------------------------------------------
-  //Position recalculation
+  // Position recalculation
   //-----------------------------------------------------
   void     RecalculateClusterPosition               (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   void     RecalculateClusterPositionFromTowerIndex (const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
@@ -149,7 +169,7 @@ public:
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
   
-  //Recalibrate channels energy with run dependent corrections
+  // Recalibrate channels energy with run dependent corrections
   Bool_t   IsRunDepRecalibrationOn()               const { return fUseRunCorrectionFactors ; }
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
@@ -314,30 +334,7 @@ public:
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
   void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
     
-  // Exotic cells / clusters
-  Bool_t   IsExoticCell(Int_t absId, AliVCaloCells* cells, Int_t bc =-1) ;
-  void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
-  void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
-  Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
-  Float_t  GetECross(Int_t absID, Double_t tcell,
-                     AliVCaloCells* cells, Int_t bc);
-  Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
-  Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
-  Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
-  void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
-  void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
-  void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }
-  Bool_t   IsExoticCluster(const AliVCluster *cluster, AliVCaloCells* cells, Int_t bc=0) ;
-  void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster = kTRUE   ;
-                                                        fRejectExoticCells   = kTRUE   ; }
-  void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
-  Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
-
-  //Cluster cut
-  Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
-                         AliVCaloCells* cells, Int_t bc =-1);
-
-  //Track Cuts 
+  // Track Cuts 
   Bool_t   IsAccepted(AliESDtrack *track);
   void     InitTrackCuts();
   void     SetTrackCutsType(Int_t type)              { fTrackCutsType = type           ; 
@@ -381,99 +378,131 @@ public:
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
   Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel	
 
+  //----------------------------------------------------
+  // Exotic cells / clusters
+  //----------------------------------------------------
+  
+  Bool_t   IsExoticCell(Int_t absId, AliVCaloCells* cells, Int_t bc =-1) ;
+  void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
+  void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
+  Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
+  Float_t  GetECross(Int_t absID, Double_t tcell,
+                     AliVCaloCells* cells, Int_t bc);
+  Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
+  Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
+  Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
+  void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
+  void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
+  void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }
+  Bool_t   IsExoticCluster(const AliVCluster *cluster, AliVCaloCells* cells, Int_t bc=0) ;
+  void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster = kTRUE   ;
+    fRejectExoticCells   = kTRUE   ; }
+  void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
+  Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
+
+  // Cluster selection
+  Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
+                         AliVCaloCells* cells, Int_t bc =-1);
+
 private:  
-  //Position recalculation
-  Float_t    fMisalTransShift[15];       // Shift parameters
-  Float_t    fMisalRotShift[15];         // Shift parameters
-  Int_t      fParticleType;              // Particle type for depth calculation
-  Int_t      fPosAlgo;                   // Position recalculation algorithm
-  Float_t    fW0;                        // Weight0
+  
+  // Position recalculation
+  Float_t    fMisalTransShift[15];       ///< Cluster position translation shift parameters
+  Float_t    fMisalRotShift[15];         ///< Cluster position rotation shift parameters
+  Int_t      fParticleType;              ///< Particle type for depth calculation, see enum ParticleType
+  Int_t      fPosAlgo;                   ///< Position recalculation algorithm, see enum PositionAlgorithms
+  
+  Float_t    fW0;                        ///< Energy weight used in cluster position and shower shape calculations
     
   // Non linearity
-  Int_t      fNonLinearityFunction;      // Non linearity function choice
-  Float_t    fNonLinearityParams[7];     // Parameters for the non linearity function
-  Int_t	     fNonLinearThreshold;        // Non linearity threshold value for kBeamTesh non linearity function 
+  Int_t      fNonLinearityFunction;      ///< Non linearity function choice, see enum NonlinearityFunctions
+  Float_t    fNonLinearityParams[7];     ///< Parameters for the non linearity function
+  Int_t	     fNonLinearThreshold;        ///< Non linearity threshold value for kBeamTest non linearity function 
   
   // Energy smearing for MC
-  Bool_t     fSmearClusterEnergy;        // Smear cluster energy, to be done only for simulated data to match real data
-  Float_t    fSmearClusterParam[3];      // Smearing parameters
-  TRandom3   fRandom;                    // Random generator
+  Bool_t     fSmearClusterEnergy;        ///< Smear cluster energy, to be done only for simulated data to match real data
+  Float_t    fSmearClusterParam[3];      ///< Energy smearing parameters
+  TRandom3   fRandom;                    ///< Random generator for cluster energy smearing
     
   // Energy Recalibration 
-  Bool_t     fCellsRecalibrated;         // Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
-  Bool_t     fRecalibration;             // Switch on or off the recalibration
-  TObjArray* fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
+  Bool_t     fCellsRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
+  Bool_t     fRecalibration;             ///< Switch on or off the recalibration
+  TObjArray* fEMCALRecalibrationFactors; ///< Array of histograms with map of recalibration factors, EMCAL
     
   // Time Recalibration 
-  Float_t    fConstantTimeShift;             //  Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
-  Bool_t     fTimeRecalibration;             // Switch on or off the time recalibration
-  TObjArray* fEMCALTimeRecalibrationFactors; // Array of histograms with map of time recalibration factors, EMCAL
+  Float_t    fConstantTimeShift;         ///< Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
+  Bool_t     fTimeRecalibration;         ///< Switch on or off the time recalibration
+  TObjArray* fEMCALTimeRecalibrationFactors;   ///< Array of histograms with map of time recalibration factors, EMCAL
 
   // Time Recalibration with L1 phase 
-  Bool_t     fUseL1PhaseInTimeRecalibration;          // Switch on or off the L1 phase in time recalibration
-  TObjArray* fEMCALL1PhaseInTimeRecalibration; // Histogram with map of L1 phase per SM, EMCAL
+  Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
+  TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
 
   // Recalibrate with run dependent corrections, energy
-  Bool_t     fUseRunCorrectionFactors;   // Use Run Dependent Correction
+  Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction
     
   // Bad Channels
-  Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
-  Bool_t     fRecalDistToBadChannels;    // Calculate distance from highest energy tower of cluster to closes bad channel
-  TObjArray* fEMCALBadChannelMap;        // Array of histograms with map of bad channels, EMCAL
+  Bool_t     fRemoveBadChannels;         ///< Check the channel status provided and remove clusters with bad channels
+  Bool_t     fRecalDistToBadChannels;    ///< Calculate distance from highest energy tower of cluster to closes bad channel
+  TObjArray* fEMCALBadChannelMap;        ///< Array of histograms with map of bad channels, EMCAL
 
   // Border cells
-  Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
-  Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
+  Int_t      fNCellsFromEMCALBorder;     ///< Number of cells from EMCAL border the cell with maximum amplitude has to be.
+  Bool_t     fNoEMCALBorderAtEta0;       ///< Do fiducial cut in EMCAL region eta = 0?
   
   // Exotic cell / cluster
-  Bool_t     fRejectExoticCluster;       // Switch on or off exotic cluster rejection
-  Bool_t     fRejectExoticCells;         // Remove exotic cells
-  Float_t    fExoticCellFraction;        // Good cell if fraction < 1-ecross/ecell
-  Float_t    fExoticCellDiffTime;        // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
-  Float_t    fExoticCellMinAmplitude;    // Check for exotic only if amplitud is larger than this value
+  Bool_t     fRejectExoticCluster;       ///< Switch on or off exotic cluster rejection
+  Bool_t     fRejectExoticCells;         ///< Remove exotic cells
+  Float_t    fExoticCellFraction;        ///< Good cell if fraction < 1-ecross/ecell
+  Float_t    fExoticCellDiffTime;        ///< If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
+  Float_t    fExoticCellMinAmplitude;    ///< Check for exotic only if amplitud is larger than this value
   
   // PID
-  AliEMCALPIDUtils * fPIDUtils;          // Recalculate PID parameters
+  AliEMCALPIDUtils * fPIDUtils;          ///< Recalculate PID parameters
     
-  //Track matching
-  UInt_t     fAODFilterMask;             // Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
-  Bool_t     fAODHybridTracks;           // Match with hybrid
-  Bool_t     fAODTPCOnlyTracks;          // Match with TPC only tracks
+  // Track matching
+  UInt_t     fAODFilterMask;             ///< Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
+  Bool_t     fAODHybridTracks;           ///< Match with hybrid
+  Bool_t     fAODTPCOnlyTracks;          ///< Match with TPC only tracks
   
-  TArrayI  * fMatchedTrackIndex;         // Array that stores indexes of matched tracks      
-  TArrayI  * fMatchedClusterIndex;       // Array that stores indexes of matched clusters
-  TArrayF  * fResidualEta;               // Array that stores the residual eta
-  TArrayF  * fResidualPhi;               // Array that stores the residual phi
-  Bool_t     fCutEtaPhiSum;              // Place cut on sqrt(dEta^2+dPhi^2)
-  Bool_t     fCutEtaPhiSeparate;         // Cut on dEta and dPhi separately
-  Float_t    fCutR;                      // sqrt(dEta^2+dPhi^2) cut on matching
-  Float_t    fCutEta;                    // dEta cut on matching
-  Float_t    fCutPhi;                    // dPhi cut on matching
-  Double_t   fClusterWindow;             // Select clusters in the window to be matched
-  Double_t   fMass;                      // Mass hypothesis of the track
-  Double_t   fStepSurface;               // Length of step to extrapolate tracks to EMCal surface
-  Double_t   fStepCluster;               // Length of step to extrapolate tracks to clusters
-  Bool_t     fITSTrackSA;                // If track matching is to be done with ITS tracks standing alone	
-  Double_t   fEMCalSurfaceDistance;      // EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
+  TArrayI  * fMatchedTrackIndex;         ///< Array that stores indexes of matched tracks      
+  TArrayI  * fMatchedClusterIndex;       ///< Array that stores indexes of matched clusters
+  TArrayF  * fResidualEta;               ///< Array that stores the residual eta
+  TArrayF  * fResidualPhi;               ///< Array that stores the residual phi
+  Bool_t     fCutEtaPhiSum;              ///< Place cut on sqrt(dEta^2+dPhi^2)
+  Bool_t     fCutEtaPhiSeparate;         ///< Cut on dEta and dPhi separately
+  Float_t    fCutR;                      ///< sqrt(dEta^2+dPhi^2) cut on matching
+  Float_t    fCutEta;                    ///< dEta cut on matching
+  Float_t    fCutPhi;                    ///< dPhi cut on matching
+  Double_t   fClusterWindow;             ///< Select clusters in the window to be matched
+  Double_t   fMass;                      ///< Mass hypothesis of the track
+  Double_t   fStepSurface;               ///< Length of step to extrapolate tracks to EMCal surface
+  Double_t   fStepCluster;               ///< Length of step to extrapolate tracks to clusters
+  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone	
+  Double_t   fEMCalSurfaceDistance;      ///< EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
   // Track cuts  
-  Int_t      fTrackCutsType;             // Esd track cuts type for matching
-  Double_t   fCutMinTrackPt;             // Cut on track pT
-  Int_t      fCutMinNClusterTPC;         // Min number of tpc clusters
-  Int_t      fCutMinNClusterITS;         // Min number of its clusters  
-  Float_t    fCutMaxChi2PerClusterTPC;   // Max tpc fit chi2 per tpc cluster
-  Float_t    fCutMaxChi2PerClusterITS;   // Max its fit chi2 per its cluster
-  Bool_t     fCutRequireTPCRefit;        // Require TPC refit
-  Bool_t     fCutRequireITSRefit;        // Require ITS refit
-  Bool_t     fCutAcceptKinkDaughters;    // Accepting kink daughters?
-  Float_t    fCutMaxDCAToVertexXY;       // Track-to-vertex cut in max absolute distance in xy-plane
-  Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
-  Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made.
-  Bool_t     fCutRequireITSStandAlone;   // Require ITSStandAlone
-  Bool_t     fCutRequireITSpureSA;       // ITS pure standalone tracks
+  Int_t      fTrackCutsType;             ///< ESD track cuts type for matching, see enum TrackCutsType
+  Double_t   fCutMinTrackPt;             ///< Cut on track pT
+  Int_t      fCutMinNClusterTPC;         ///< Min number of tpc clusters
+  Int_t      fCutMinNClusterITS;         ///< Min number of its clusters  
+  Float_t    fCutMaxChi2PerClusterTPC;   ///< Max tpc fit chi2 per tpc cluster
+  Float_t    fCutMaxChi2PerClusterITS;   ///< Max its fit chi2 per its cluster
+  Bool_t     fCutRequireTPCRefit;        ///< Require TPC refit
+  Bool_t     fCutRequireITSRefit;        ///< Require ITS refit
+  Bool_t     fCutAcceptKinkDaughters;    ///< Accepting kink daughters?
+  Float_t    fCutMaxDCAToVertexXY;       ///< Track-to-vertex cut in max absolute distance in xy-plane
+  Float_t    fCutMaxDCAToVertexZ;        ///< Track-to-vertex cut in max absolute distance in z-plane
+  Bool_t     fCutDCAToVertex2D;          ///< If true a 2D DCA cut is made.
+  Bool_t     fCutRequireITSStandAlone;   ///< Require ITSStandAlone
+  Bool_t     fCutRequireITSpureSA;       ///< ITS pure standalone tracks
   
-  ClassDef(AliEMCALRecoUtils, 24)
+  /// \cond CLASSIMP
+  ClassDef(AliEMCALRecoUtils, 24) ;
+  /// \endcond
+
 };
+
 #endif // ALIEMCALRECOUTILS_H
 
 
