@@ -10,6 +10,7 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <THn.h>
+#include <TTree.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
@@ -22,17 +23,35 @@
 #include "AliPicoTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
-#include "AliEmcalJetFinder.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
 ClassImp(AliAnalysisTaskChargedJetsHadronCF)
+ClassImp(AliBasicJet)
+ClassImp(AliBasicJetConstituent)
+
+//________________________________________________________________________
+AliBasicJet::~AliBasicJet() 
+{
+// dummy destructor
+}
+
+//________________________________________________________________________
+AliBasicJetConstituent::~AliBasicJetConstituent() 
+{
+// dummy destructor
+}
 
 //________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronCF", kTRUE),
   fJetsCont(0),
   fTracksCont(0),
+  fJetsTree(0),
+  fJetsTreeBuffer(0),
+  fExtractionPercentage(0),
+  fExtractionMinPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -66,6 +85,10 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fJetsCont(0),
   fTracksCont(0),
+  fJetsTree(0),
+  fJetsTreeBuffer(0),
+  fExtractionPercentage(0),
+  fExtractionMinPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -160,19 +183,13 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   TString axisName[6]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","Eta","Area","Event rho"};
   TString axisTitle[6]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","Eta","Area","Event rho"};
   THnF* histJetConstituents010   = new THnF("hJetConstituents_Cent0_10", "Jet constituent count/p_{T}, centrality 0-10", 6, bins, minEdges, maxEdges);
-  THnF* histJetConstituents0100  = new THnF("hJetConstituents_Cent0_100", "Jet constituent count/p_{T}", 6, bins, minEdges, maxEdges);
   BinLogAxis(histJetConstituents010,0);
   BinLogAxis(histJetConstituents010,1);
-  BinLogAxis(histJetConstituents0100,0);
-  BinLogAxis(histJetConstituents0100,1);
   for (Int_t iaxis=0; iaxis<6;iaxis++){
     histJetConstituents010->GetAxis(iaxis)->SetName(axisName[iaxis]);
     histJetConstituents010->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
-    histJetConstituents0100->GetAxis(iaxis)->SetName(axisName[iaxis]);
-    histJetConstituents0100->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
   }
   fOutput->Add(histJetConstituents010);
-  fOutput->Add(histJetConstituents0100);
 
   AddHistogram2D<TH2D>("hLeadingJetPtRaw", "Jets p_{T} distribution (no bgrd. corr.)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPt", "Jets p_{T} distribution (background subtracted)", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
@@ -239,6 +256,14 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
     fJetsInput = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fJetMatchingArrayName.Data())));
     if(!fJetsInput)
       AliFatal(Form("Importing jets for matching failed! Array '%s' not found!", fJetMatchingArrayName.Data()));
+  }
+
+  // ### Jets tree (optional)
+  if(fExtractionPercentage)
+  {
+    fJetsTree = new TTree("ExtractedJets", "ExtractedJets");
+    fJetsTree->Branch("Jets", "AliBasicJet", &fJetsTreeBuffer, 1000);
+    fOutput->Add(fJetsTree);
   }
 
 }
@@ -414,14 +439,12 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
 
     // Fill jet constituent plots
     FillHistogram("hJetConstituentPt_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
-    THnF* tmpConstituentHist = static_cast<THnF*>(fOutput->FindObject("hJetConstituents_Cent0_100"));
-    Double_t tmpVec1[6] = {jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), static_cast<Double_t>(jet->GetNumberOfTracks()), jet->Eta(), jet->Area(), fJetsCont->GetRhoVal()};
-    tmpConstituentHist->Fill(tmpVec1);
     if( (fCent >= 0) && (fCent < 10) )
     {
       FillHistogram("hJetConstituentPt_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
-      tmpConstituentHist = static_cast<THnF*>(fOutput->FindObject("hJetConstituents_Cent0_10"));
-      tmpConstituentHist->Fill(tmpVec1);
+      THnF* tmpConstituentHist = static_cast<THnF*>(fOutput->FindObject("hJetConstituents_Cent0_10"));
+      Double_t tmpVec2[6] = {jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), static_cast<Double_t>(jet->GetNumberOfTracks()), jet->Eta(), jet->Area(), fJetsCont->GetRhoVal()};
+      tmpConstituentHist->Fill(tmpVec2);
     }
   }
 
@@ -449,6 +472,30 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
+{
+  // Check pT threshold
+  if( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt )
+    return;
+
+  // Discard jets statistically
+  if(fRandom->Rndm() >= fExtractionPercentage)
+    return;
+
+  Long64_t eventID = InputEvent()->GetHeader()->GetEventIdAsLong();
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fJetsCont->GetRhoVal(), eventID, fCent);
+  // Add constituents
+  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
+  {
+    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
+    if(!particle) continue;
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+  }
+  fJetsTreeBuffer = &basicJet;
+  fJetsTree->Fill();
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 {
   CalculateEventProperties();
@@ -469,6 +516,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     FillHistogramsJetConstituents(jet);
 
     // Add jet to output array
+    if(fExtractionPercentage)
+      AddJetToTree(jet);
     AddJetToOutputArray(jet);
   }
 

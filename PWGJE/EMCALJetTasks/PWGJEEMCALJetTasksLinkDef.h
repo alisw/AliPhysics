@@ -45,8 +45,9 @@
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
-#pragma link C++ class AliAnalysisTaskEmcalJetExtractor+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
+#pragma link C++ class AliBasicJetConstituent+;
+#pragma link C++ class AliBasicJet+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronToy+;
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;
 #pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
@@ -177,8 +178,6 @@
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
-#pragma link C++ class AliBasicJetConstituent+;
-#pragma link C++ class AliBasicJet+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullpAJets_Eli_Mod+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
