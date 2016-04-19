@@ -20,6 +20,7 @@
 
 #include  <AliJConst.h>
 #include "AliJHistos.h"
+#include "AliJAcceptanceCorrection.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ public:
   double GetGeoAccCorrIncl(double deltaEta, int assocBin, int assocType);
   
   void SetSampligInclusive(){fsamplingMethod = 1;}
-  
+  void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;}
   
   double DeltaPhi(double phi1, double phi2);
   
@@ -62,6 +63,7 @@ protected:
   
   AliJCard*   fcard; // card
   AliJHistos* fhistos;  // histos
+  AliJAcceptanceCorrection *fAcceptanceCorrection;  // acceptance correction container
   int fnReal; // comment me
   int fnMix; // comment me
   int fsumTriggerAndAssoc; // comment me

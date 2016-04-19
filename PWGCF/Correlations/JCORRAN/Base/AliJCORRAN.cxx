@@ -33,13 +33,13 @@
 #include "AliJEventPool.h"
 #include "AliJDataManager.h"
 
-#include  "AliJEventHeader.h"
-#include  "AliJRunHeader.h"
-#include  "AliJTrack.h"
-#include  "AliJPhoton.h"
-#include  "AliJMCTrack.h"
-#include  "AliJConst.h"
-
+#include "AliJEventHeader.h"
+#include "AliJRunHeader.h"
+#include "AliJTrack.h"
+#include "AliJPhoton.h"
+#include "AliJMCTrack.h"
+#include "AliJConst.h"
+#include "AliJAcceptanceCorrection.h"
 
 
 
@@ -59,7 +59,8 @@ ClassImp(AliJCORRAN)
         fInclusiveFile(""),
         fevt(0),
         fhistos(0), 
-        fcorrelations(0), 
+        fcorrelations(0),
+        fAcceptanceCorrection(0x0),
         fphotonPool(0), 
         fassocPool(0),  
         fphotonList(0),  
@@ -107,8 +108,9 @@ AliJCORRAN::AliJCORRAN(Bool_t execLocal) :
     fInclusiveFile(""),
     fevt(0),
     fhistos(0), 
-    fcorrelations(0), 
-    fphotonPool(0), 
+    fcorrelations(0),
+    fAcceptanceCorrection(0x0),
+    fphotonPool(0),
     fassocPool(0),  
     fphotonList(0),  
     fchargedHadronList(0), 
@@ -159,7 +161,8 @@ AliJCORRAN::AliJCORRAN(const AliJCORRAN& obj) :
     fInclusiveFile(obj.fInclusiveFile),
     fevt(obj.fevt),
     fhistos(obj.fhistos), 
-    fcorrelations(obj.fcorrelations), 
+    fcorrelations(obj.fcorrelations),
+    fAcceptanceCorrection(obj.fAcceptanceCorrection),
     fphotonPool(obj.fphotonPool), 
     fassocPool(obj.fassocPool),  
     fphotonList(obj.fphotonList),  
@@ -210,79 +213,86 @@ void AliJCORRAN::Initialize() const{
 }
 
 void AliJCORRAN::UserCreateOutputObjects(){
-    // local init
-
-
-    cout << "jcorran user create output objects ----------------" << endl;
-
-    fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
-    fIsolationR = fcard->Get("IsolationR");
-
-    fhistos = new AliJHistos( fcard );          
-	fhistos->Set2DHistoCreate(true);
-    fhistos->CreateEventTrackHistos();
-    fhistos->CreateAzimuthCorrHistos();
-    //fhistos->CreateIAAMoons();
-    fhistos->CreateXEHistos();
-    fhistos->CreateXtHistos();
-    //fhistos->CreatePairPtCosThetaStar();
-
-    fhistos->fHMG->Print();
-
-    fEventBC = (Int_t)(fcard->Get( "eventBC" ));
-    fSQRTS = 0.;
-
-
-    //TODO: inclusive fhistos shipping along
-
-    fcorrelations = new AliJCorrelations( fcard, fhistos);
-    cout<<endl<< " -----" <<endl; 
-    if( fInclusiveFile.Length() ) {
-        fhistos->ReadInclusiveHistos(fInclusiveFile);
-        fcorrelations->SetSampligInclusive(); //kperp background and triangle. Default is flat
-        cout<<"Sampling kperp and triangle from " << fInclusiveFile <<endl; 
-    } else cout << "Sampling kperp and triangle from flat" <<endl; 
-    cout<< " -----" <<endl <<endl;  
-
-    //==================================
-
-    //cout<<kParticleTypeStrName[kPhoton]<<" "<<kParticleTypeStrName[fjtrigg]<<endl;
-    // EventPool for Mixing
-    fphotonPool  = new AliJEventPool( fcard, fhistos, fcorrelations, kJPhoton);  // for pi0 mass
-    fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
-
-    fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);      
-    //     TClonesArray *cellList = new TClonesArray("AliJCaloCell",1500);      
-    fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);      
-    fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);      
-    ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);      
-    fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);      
-    fpairList     = new TClonesArray(kParticleProtoType[fjtrigg],1500);      
-    fpairCounterList  = new TClonesArray("AliJTrackCounter",1500);      
-    finputList = NULL;
-    //TClonesArray *isolPizeroList  = new TClonesArray("AliPhJPiZero",1500);
-
-    fdmg = new AliJDataManager(fcard, fhistos, fcorrelations, fExecLocal);
-    fdmg->SetExecLocal( fExecLocal );
-
-    //==== Read the Data files =====
-    if( fExecLocal ){
-        fdmg->ChainInputStream(finputFile);
-        // TODO: run header is not supposed to be here
-        // doesn't work fSQRTS = 2.*frunHeader->GetBeamEnergy();
-
-        // for grid running, numberEvents is filled by the encapsulating
-		// grid task, which has access to the input handlers and can
-		// extract event numbers out of it
-		fnumberEvents = fdmg->GetNEvents();
-		fieout = fnumberEvents/20;
-		frunHeader = fdmg->GetRunHeader();
-		cout<<"RunID = "<<frunHeader->GetRunNumber()<< " Looping over "<<fnumberEvents<<" events"<<endl;
-
-	} else {
-		fdmg->SetRunHeader( frunHeader );
-		frunHeader = fdmg->GetRunHeader();
-	}
+  // local init
+  
+  
+  cout << "jcorran user create output objects ----------------" << endl;
+  
+  fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
+  fIsolationR = fcard->Get("IsolationR");
+  
+  fhistos = new AliJHistos( fcard );
+  fhistos->Set2DHistoCreate(true);
+  fhistos->CreateEventTrackHistos();
+  fhistos->CreateAzimuthCorrHistos();
+  //fhistos->CreateIAAMoons();
+  fhistos->CreateXEHistos();
+  fhistos->CreateXtHistos();
+  //fhistos->CreatePairPtCosThetaStar();
+  
+  fhistos->fHMG->Print();
+  
+  fEventBC = (Int_t)(fcard->Get( "eventBC" ));
+  fSQRTS = 0.;
+  
+  // Create a class for acceptance correction
+  fAcceptanceCorrection = new AliJAcceptanceCorrection(fcard);
+  
+  fcorrelations = new AliJCorrelations( fcard, fhistos);
+  cout<<endl<< " -----" <<endl;
+  
+  // If inclusive file is specified, set inclusive sampling for correlation analysis and
+  // read the inclusive histograms for the acceptance correction and histogram class
+  if( fInclusiveFile.Length() ) {
+    fhistos->ReadInclusiveHistos(fInclusiveFile);
+    fcorrelations->SetSampligInclusive(); //kperp background and triangle. Default is flat
+    fAcceptanceCorrection->ReadInclusiveHistos(fInclusiveFile);
+    cout<<"Sampling kperp and triangle from " << fInclusiveFile <<endl;
+  } else cout << "Sampling kperp and triangle from flat" <<endl;
+  cout<< " -----" <<endl <<endl;
+  
+  // Tell the correlation analysis to use the defined acceptance correction
+  fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
+  
+  //==================================
+  
+  //cout<<kParticleTypeStrName[kPhoton]<<" "<<kParticleTypeStrName[fjtrigg]<<endl;
+  // EventPool for Mixing
+  fphotonPool  = new AliJEventPool( fcard, fhistos, fcorrelations, kJPhoton);  // for pi0 mass
+  fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
+  
+  fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
+  //     TClonesArray *cellList = new TClonesArray("AliJCaloCell",1500);
+  fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);
+  fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
+  ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
+  fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
+  fpairList     = new TClonesArray(kParticleProtoType[fjtrigg],1500);
+  fpairCounterList  = new TClonesArray("AliJTrackCounter",1500);
+  finputList = NULL;
+  //TClonesArray *isolPizeroList  = new TClonesArray("AliPhJPiZero",1500);
+  
+  fdmg = new AliJDataManager(fcard, fhistos, fcorrelations, fExecLocal);
+  fdmg->SetExecLocal( fExecLocal );
+  
+  //==== Read the Data files =====
+  if( fExecLocal ){
+    fdmg->ChainInputStream(finputFile);
+    // TODO: run header is not supposed to be here
+    // doesn't work fSQRTS = 2.*frunHeader->GetBeamEnergy();
+    
+    // for grid running, numberEvents is filled by the encapsulating
+    // grid task, which has access to the input handlers and can
+    // extract event numbers out of it
+    fnumberEvents = fdmg->GetNEvents();
+    fieout = fnumberEvents/20;
+    frunHeader = fdmg->GetRunHeader();
+    cout<<"RunID = "<<frunHeader->GetRunNumber()<< " Looping over "<<fnumberEvents<<" events"<<endl;
+    
+  } else {
+    fdmg->SetRunHeader( frunHeader );
+    frunHeader = fdmg->GetRunHeader();
+  }
 
 	//==== Efficiency ====
 	fEfficiency = new AliJEfficiency;
