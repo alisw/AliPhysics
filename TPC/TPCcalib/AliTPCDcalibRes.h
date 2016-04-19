@@ -142,7 +142,7 @@ class AliTPCDcalibRes: public TNamed
  static float   RoFunc(int np, const float* x, const float* y, float b, float &aa);
  static Float_t SelKthMin(int k, int np, float* arr);
  static void    medFit(int np, const float* x, const float* y, float &a, float &b, float *err=0, float delI=0.f);
- static Int_t*  LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac=0.7);
+ static Int_t*  LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac=0.7, Bool_t sorted=kFALSE);
  static Float_t MAD2Sigma(int np, float* y);
  static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
  static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);

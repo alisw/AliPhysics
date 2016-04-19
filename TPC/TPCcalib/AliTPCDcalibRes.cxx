@@ -1057,12 +1057,13 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
 void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes)
 {
   // extract X,Y,Z distortions of the voxel
+  const float kDefLTMCut = 0.8;
   if (np<fMinEntriesVoxel) return;
   float a,b,err[3];
   TVectorF zres(7),yres(7);
-  if (!TStatToolkit::LTMUnbinned(np,dz,zres,0.8)) return; 
+  if (!TStatToolkit::LTMUnbinned(np,dz,zres,kDefLTMCut)) return; 
   //
-  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,0.95);
+  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,kDefLTMCut);
   if (!indY) return;
   // rearrange used events in increasing order
   TStatToolkit::Reorder(np,dy,indY);
@@ -1073,18 +1074,20 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   int offs =  TMath::Nint(yres[5]);
   // use only entries selected by LTM for the fit
   AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
-  float yc[np],ycm[np];
-  for (int i=np;i--;) yc[i] = dy[i]-(a*b*tg[i]);
-  memcpy(ycm,yc,np*sizeof(float));
+  float ycm[np];
+  int indcm[np];
+  for (int i=np;i--;) ycm[i] = dy[i]-(a+b*tg[i]);
+  TMath::Sort(np,ycm,indcm,kFALSE);
+  TStatToolkit::Reorder(np,ycm,indcm);
+  TStatToolkit::Reorder(np,dy,indcm); // we must keep the same order
+  TStatToolkit::Reorder(np,tg,indcm);
   //
   // robust estimate of sigma after crude slope correction
-  float sigMAD = AliTPCDcalibRes::MAD2Sigma(np,ycm);
+  float sigMAD = AliTPCDcalibRes::MAD2Sigma(npuse,ycm+offs);
   // find LTM estimate matching to sigMAD, keaping at least given fraction
-  indY = LTMUnbinnedSig(np, ycm, yres, sigMAD,0.7);
+  indY = AliTPCDcalibRes::LTMUnbinnedSig(np, ycm, yres, sigMAD,0.5,kTRUE);
   if (!indY) return;
   // final fit
-  TStatToolkit::Reorder(np,dy,indY);
-  TStatToolkit::Reorder(np,tg,indY);
   npuse = TMath::Nint(yres[0]);
   offs =  TMath::Nint(yres[5]);
   AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
@@ -1672,7 +1675,7 @@ int AliTPCDcalibRes::DiffToMedLine(int np, const float* x, const float *y, const
 }
 
 //_________________________________________________________
-Int_t* AliTPCDcalibRes::LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac)
+Int_t* AliTPCDcalibRes::LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac, Bool_t sorted)
 {
   //
   // LTM : Trimmed keeping at most minFrac of unbinned array to reach targer sigma
@@ -1708,7 +1711,8 @@ Int_t* AliTPCDcalibRes::LTMUnbinnedSig(int np, const float *arr, TVectorF &param
   }
   //
   double *wx1 = w, *wx2 = wx1+np;
-  TMath::Sort(np,arr,index,kFALSE); // sort in increasing order
+  if (!sorted) TMath::Sort(np,arr,index,kFALSE); // sort in increasing order
+  else for (int i=0;i<np;i++) index[i]=i;
   // build cumulants
   double sum1=0.0,sum2=0.0;
   for (int i=0;i<np;i++) {
@@ -1793,7 +1797,7 @@ void AliTPCDcalibRes::medFit(int np, const float* x, const float* y, float &a, f
     //
     for (int j=np;j--;) { sy += y[j]; sxy += x[j]*y[j];}
     //
-    float delI = 1./del;
+    delI = 1./del;
     aa = (sxx*sy-sx*sxy)*delI;
     bb = (np*sxy-sx*sy)*delI;
     if (err) {
