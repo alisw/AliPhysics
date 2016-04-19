@@ -1416,7 +1416,10 @@ void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t
 {
   // Recalibrate time of cell with absID  considering the recalibration map 
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
-  if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) {
+  if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) 
+  {
+    bc=bc%4;
+
     Float_t offsetPerSM=0.;
     Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
     Int_t l1Phase=l1PhaseShift & 3; //bit operation
