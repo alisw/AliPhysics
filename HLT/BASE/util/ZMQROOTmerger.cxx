@@ -79,6 +79,8 @@ long fPushbackPeriod = -1;        //in seconds, -1 means never
 TTimeStamp fLastPushBackTime;
 Bool_t fCacheOnly = kFALSE;
 aliZMQrootStreamerInfo* fSchema = NULL;
+bool fSchemaOnRequest = false;
+bool fSchemaOnSend = false;
 int fCompression = 1;
 
 //ZMQ stuff
@@ -111,6 +113,8 @@ const char* fUSAGE =
     " -annotateTitle : prepend string to title (if applicable)\n"
     " -ZMQtimeout: when to timeout the sockets\n"
     " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
+    " -SchemaOnRequest : include streamers ONCE (after a request)\n"
+    " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
     ;
 
 void* work(void* /*param*/)
@@ -245,10 +249,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
     //reconfigure (first send a reply to not cause problems on the other end)
     std::string requestBody;
     alizmq_msg_iter_data(block, requestBody);
-
-    //std::string reply = "Reconfiguring...";
-    //zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
-    //zmq_send(socket, reply.c_str(), reply.size(), 0);
+    if (fVerbose) printf("received CONFIG %s\n", requestBody.c_str());
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
@@ -279,7 +280,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
 //_____________________________________________________________________
 Int_t HandleRequest(aliZMQmsg::iterator block, void* socket)
 {
-  if (DoControl(block, socket)>0) return 0;
+  DoControl(block, socket);
   return DoReply(block, socket);
 }
 
@@ -297,6 +298,7 @@ Int_t DoReply(aliZMQmsg::iterator block, void* socket)
 
   //reset the "one shot" options to default values
   fResetOnRequest = kFALSE;
+  fSchemaOnRequest = false;
   if (fVerbose && (fSendSelection || fUnSendSelection)) 
   {
     Printf("unsetting include=%s, exclude=%s",
@@ -467,7 +469,9 @@ Int_t DoSend(void* socket)
     }
   }
 
-  if (fSchema) alizmq_msg_prepend_streamer_infos(&message, fSchema);
+  if ((fSchemaOnRequest || fSchemaOnSend) && fSchema) {
+    alizmq_msg_prepend_streamer_infos(&message, fSchema);
+  }
 
   //send
   int sentBytes = alizmq_msg_send(&message, socket, 0);
@@ -634,6 +638,20 @@ Int_t ProcessOptionString(TString arguments)
     {
       fAllowResetAtSOR = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
     }
+    else if (option.EqualTo("schema"))
+    {
+      if (!fSchema) fSchema = new aliZMQrootStreamerInfo;
+    }
+    else if (option.EqualTo("SchemaOnRequest"))
+    {
+      if (!fSchema) fSchema = new aliZMQrootStreamerInfo;
+      fSchemaOnRequest = true;
+    }
+    else if (option.EqualTo("SchemaOnSend"))
+    {
+      if (!fSchema) fSchema = new aliZMQrootStreamerInfo;
+      fSchemaOnSend = (value.Contains("0"))?false:true;
+    }
     else
     {
       Printf("unrecognized option |%s|",option.Data());
@@ -660,8 +678,6 @@ int main(Int_t argc, char** argv)
     return 1;
   }
 
-  //globally enable schema evolution for serializing ROOT objects
-  TMessage::EnableSchemaEvolutionForAll(kTRUE);
   //the context
   fZMQcontext = alizmq_context();
 
