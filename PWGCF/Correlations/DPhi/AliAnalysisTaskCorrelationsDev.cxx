@@ -50,6 +50,7 @@ fTreeTrackConfig(0)
   // Default constructor
 
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 AliAnalysisTaskCorrelationsDev::~AliAnalysisTaskCorrelationsDev() 
@@ -100,6 +101,8 @@ void  AliAnalysisTaskCorrelationsDev::UserCreateOutputObjects()
     fOutputContainer = new Float_t[fOutputTree->GetNvar()];
 
     Printf("Created tree with %d branches: %s", fOutputTree->GetNvar(), varlist.Data());
+
+    PostData(2, fOutputTree);
   }
 
   // Initialize output list of containers
@@ -114,8 +117,6 @@ void  AliAnalysisTaskCorrelationsDev::UserCreateOutputObjects()
   
   fListOfHistos->Add(new TH2F("tofSignalvsMult", ";multiplicity;tofSignal", 10, 0.5, 10.5, 1000, 0, 40000));
   fListOfHistos->Add(new TH2F("tofSignalvsTOFMult", ";multiplicity;tofSignal", 10, 0.5, 10.5, 1000, 0, 40000));
-  
-  fListOfHistos->Add(fOutputTree);
   
   PostData(1, fListOfHistos);
   
