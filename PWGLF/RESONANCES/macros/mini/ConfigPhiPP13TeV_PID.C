@@ -59,7 +59,8 @@ Bool_t ConfigPhiPP13TeV_PID
 
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,kFALSE);
-  /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes,kTRUE);
+  /* mother mass      */ Int_t mmID   = task->CreateValue(AliRsnMiniValue::kInvMassMother,kFALSE);
+  /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,kFALSE);
@@ -81,14 +82,14 @@ Bool_t ConfigPhiPP13TeV_PID
   // [2] = like ++
   // [3] = like --
 
-  Bool_t  use    [9]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,isMC, isMC,isMC, useMixLS,useMixLS};
-  Bool_t  useIM  [9]={ 1      ,  1     , 1      ,  1     ,  1     ,  1        ,  0     , 1        , 1        };
-  TString name   [9]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"TruesFine","Res"   ,"MixingPP","MixingMM"};
-  TString comp   [9]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" , "TRUE"    ,"TRUE"  ,"MIX"     ,"MIX"     };
-  TString output [9]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE","SPARSE"  ,"SPARSE"  };
-  Int_t   pdgCode[9]={333     , 333    ,333     ,333     , 333    , 333       ,333     , 333      ,333       };
-  Char_t  charge1[9]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'     ,'+'       ,'-'       };
-  Char_t  charge2[9]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'     ,'+'       ,'-'       };
+  Bool_t  use    [11]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly, isMC,isMC,isMC,isMC,isMC, useMixLS,useMixLS};
+  Int_t   useIM  [11]={ 1      ,  1     , 1      ,  1     ,  1     ,  1        ,  2      , 2           ,0       , 1        , 1        };
+  TString name   [11]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"TruesFine","TruesMM","TruesFineMM","Res"   ,"MixingPP","MixingMM"};
+  TString comp   [11]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" , "TRUE"    ,"TRUE"   ,"TRUE"       ,"TRUE"  ,"MIX"     ,"MIX"     };
+  TString output [11]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE" ,"SPARSE"     ,"SPARSE","SPARSE"  ,"SPARSE"  };
+  Int_t   pdgCode[11]={333     , 333    ,333     ,333     , 333    , 333       ,333      ,333          ,333     , 333      ,333       };
+  Char_t  charge1[11]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'      , '+'         ,'+'     ,'+'       ,'-'       };
+  Char_t  charge2[11]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'      , '-'         ,'-'     ,'+'       ,'-'       };
 
   for(Int_t i=0;i<9;i++){
     if(!use[i]) continue;
@@ -104,15 +105,16 @@ Bool_t ConfigPhiPP13TeV_PID
     out->SetPairCuts(cutsPair);
 
     //axis X: invmass (or resolution)
-    if(useIM[i]) out->AddAxis(imID,215,0.985,1.2);
-    else out->AddAxis(resID,200,-0.02,0.02);
+    if(useIM[i]==1) out->AddAxis(imID,215,0.985,1.2);
+    if(useIM[i]==2) out->AddAxis(mmID,75,0.985,1.06);
+    else out->AddAxis(diffID,200,-0.02,0.02);
 
     //axis Y: transverse momentum of pair as default - else chosen value
     if(yaxisVar==AliRsnMiniValue::kFirstDaughterPt) out->AddAxis(fdpt,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterPt) out->AddAxis(sdpt,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
-    else if(isMC && i==5) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
+    else if(isMC && (i==5 || i==7)) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     else out->AddAxis(ptID,200,0.,20.);//default use mother pt
 
     // axis Z: centrality-multiplicity
