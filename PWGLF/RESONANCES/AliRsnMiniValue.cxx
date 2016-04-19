@@ -106,6 +106,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPt:           return "Pt";
       case kPz:           return "Pz";
       case kInvMass:      return "InvMass";
+      case kInvMassMother: return "InvMassMother";
       case kInvMassRes:   return "InvMassResolution";
       case kInvMassDiff:  return "InvMassDifference";
       case kEta:          return "Eta";
@@ -176,6 +177,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->Pt(fUseMCInfo);
       case kInvMass:
          return pair->InvMass(fUseMCInfo);
+      case kInvMassMother:
+         return pair->InvMass(kTRUE);
       case kEta:
          return pair->Eta(fUseMCInfo);
       case kInvMassRes:
