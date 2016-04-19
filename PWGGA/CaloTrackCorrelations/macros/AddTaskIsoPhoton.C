@@ -240,12 +240,12 @@ if(SSsmearing != 0)
   reader->SwitchOnShowerShapeSmearing();
     if(SSsmearing == 1) //Gustavo's settings
     { 
-      reader->SetSmearingFunction(kSmearingLandau);
+      reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandau);
       reader->SetShowerShapeSmearWidth(0.005);
     }
     else if(SSsmearing == 2) //Astrid's settings
     { 
-      reader->SetSmearingFunction(kSmearingLandauShift);
+      reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandauShift);
       reader->SetShowerShapeSmearWidth(0.035);
     }
 }
