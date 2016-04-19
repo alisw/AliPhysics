@@ -274,6 +274,7 @@ void AliTPCDcalibRes::CollectData(int mode)
   const float kEps = 1e-6;
   const float q2ptIniTolerance = 1.5;
   if (!fInitDone) Init();
+  if (!AliGeomManager::GetGeometry()) InitGeom(); // in case started from saved object
   //  gEnv->SetValue("TFile.AsyncPrefetching", 1);
   TVectorF *vecDY=0,*vecDZ=0,*vecZ=0,*vecR=0,*vecSec=0,*vecPhi=0, *vecDYITS=0,*vecDZITS=0;
   UShort_t npValid = 0;
