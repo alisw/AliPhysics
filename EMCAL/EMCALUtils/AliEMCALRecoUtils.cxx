@@ -13,21 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// Class AliEMCALRecoUtils
-// Some utilities to recalculate the cluster position or energy linearity
-//
-//
-// Author:  Gustavo Conesa (LPSC- Grenoble) 
-//          Track matching part: Rongrong Ma (Yale)
-
-///////////////////////////////////////////////////////////////////////////////
-// --- standard c ---
-
-// standard C++ includes
-//#include <Riostream.h>
-
 // ROOT includes
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
@@ -144,7 +129,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   //Copy ctor
   
   for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
-                                   fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
+                                    fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
   for (Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
 
@@ -1096,11 +1081,12 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
   //printf("Max end---\n");
 }
 
+///
+/// Initialize data members with default values
+///
 //______________________________________
 void AliEMCALRecoUtils::InitParameters()
-{
-  // Initialize data members with default values
-  
+{  
   fParticleType = kPhoton;
   fPosAlgo      = kUnchanged;
   fW0           = 4.5;
@@ -1148,17 +1134,17 @@ void AliEMCALRecoUtils::InitParameters()
   fCutRequireITSStandAlone = kFALSE; //MARCEL
   fCutRequireITSpureSA     = kFALSE; //Marcel
   
-  //Misalignment matrices
+  // Misalignment matrices
   for (Int_t i = 0; i < 15 ; i++) 
   {
     fMisalTransShift[i] = 0.; 
     fMisalRotShift[i]   = 0.; 
   }
   
-  //Non linearity
+  // Non linearity
   for (Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = 0.; 
   
-  //For kBeamTestCorrectedv2 case, but default is no correction
+  // For kBeamTestCorrectedv2 case, but default is no correction
   fNonLinearityParams[0] =  0.983504;
   fNonLinearityParams[1] =  0.210106;
   fNonLinearityParams[2] =  0.897274;
@@ -1167,19 +1153,22 @@ void AliEMCALRecoUtils::InitParameters()
   fNonLinearityParams[5] =  31.5028;
   fNonLinearityParams[6] =  0.968;
   
-  //Cluster energy smearing
+  // Cluster energy smearing
   fSmearClusterEnergy   = kFALSE;
   fSmearClusterParam[0] = 0.07; // * sqrt E term
   fSmearClusterParam[1] = 0.00; // * E term
   fSmearClusterParam[2] = 0.00; // constant
 }
 
+///
+/// Init EMCAL energy calibration factors container
+///
 //_____________________________________________________
 void AliEMCALRecoUtils::InitEMCALRecalibrationFactors()
 {
-  //Init EMCAL recalibration factors
   AliDebug(2,"AliCalorimeterUtils::InitEMCALRecalibrationFactors()");
-  //In order to avoid rewriting the same histograms
+  
+  // In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
@@ -1202,16 +1191,19 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors()
   fEMCALRecalibrationFactors->SetOwner(kTRUE);
   fEMCALRecalibrationFactors->Compress();
   
-  //In order to avoid rewriting the same histograms
+  // In order to avoid rewriting the same histograms
   TH1::AddDirectory(oldStatus);    
 }
 
+///
+/// Init EMCAL time calibration shifts container
+///
 //_________________________________________________________
 void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
 {
-  //Init EMCAL recalibration factors
   AliDebug(2,"AliCalorimeterUtils::InitEMCALRecalibrationFactors()");
-  //In order to avoid rewriting the same histograms
+
+  // In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
@@ -1220,7 +1212,7 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
     fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
                                                  Form("hAllTimeAvBC%d",i),  
                                                  48*24*22,0.,48*24*22)          );
-  //Init the histograms with 1
+  // Init the histograms with 1
   for (Int_t bc = 0; bc < 4; bc++) 
   {
     for (Int_t i = 0; i < 48*24*22; i++) 
@@ -1230,76 +1222,88 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
   fEMCALTimeRecalibrationFactors->SetOwner(kTRUE);
   fEMCALTimeRecalibrationFactors->Compress();
   
-  //In order to avoid rewriting the same histograms
+  // In order to avoid rewriting the same histograms
   TH1::AddDirectory(oldStatus);    
 }
 
+///
+/// Init EMCAL bad channels map container
+///
 //____________________________________________________
 void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()
 {
-  //Init EMCAL bad channels map
   AliDebug(2,"AliEMCALRecoUtils::InitEMCALBadChannelStatusMap()");
-  //In order to avoid rewriting the same histograms
+
+  // In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
   fEMCALBadChannelMap = new TObjArray(22);
   //TH2F * hTemp = new  TH2I("EMCALBadChannelMap","EMCAL SuperModule bad channel map", 48, 0, 48, 24, 0, 24);
+  
   for (int i = 0; i < 22; i++) 
-  {
     fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_Mod%d",i),Form("EMCALBadChannelMap_Mod%d",i), 48, 0, 48, 24, 0, 24));
-  }
   
   fEMCALBadChannelMap->SetOwner(kTRUE);
   fEMCALBadChannelMap->Compress();
   
-  //In order to avoid rewriting the same histograms
+  // In order to avoid rewriting the same histograms
   TH1::AddDirectory(oldStatus);    
 }
 
-//____________________________________________________
+///
+/// Init EMCAL L1 phase shifts container
+///
+//___________________________________________________________
 void AliEMCALRecoUtils::InitEMCALL1PhaseInTimeRecalibration()
 {
-  //Init EMCAL L1 phase 
   AliDebug(2,"AliEMCALRecoUtils::InitEMCALL1PhaseInTimeRecalibrationFactors()");
-  //In order to avoid rewriting the same histograms
+ 
+  // In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
   fEMCALL1PhaseInTimeRecalibration = new TObjArray(1);
 
   fEMCALL1PhaseInTimeRecalibration->Add(new TH1C("h0","EMCALL1phaseForSM", 22, 0, 22));
+  
   for (Int_t i = 0; i < 22; i++) //loop over SMs, default value = 0
     SetEMCALL1PhaseInTimeRecalibrationForSM(i,0);
   
   fEMCALL1PhaseInTimeRecalibration->SetOwner(kTRUE);
   fEMCALL1PhaseInTimeRecalibration->Compress();
   
-  //In order to avoid rewriting the same histograms
+  // In order to avoid rewriting the same histograms
   TH1::AddDirectory(oldStatus);    
 }
 
+///
+/// Recalibrate the cluster energy and time, considering the recalibration map 
+/// and the time and energy of the cells that compose the cluster.
+///
+/// \param geom: pointer to geometry
+/// \param cluster: pointer to cluster
+/// \param cells: list of cells
+/// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
+///
 //____________________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom, 
                                                  AliVCluster * cluster, 
                                                  AliVCaloCells * cells, 
                                                  Int_t bc)
-{
-  // Recalibrate the cluster energy and Time, considering the recalibration map 
-  // and the energy of the cells and time that compose the cluster.
-  // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
-  
-  if (!cluster) {
+{  
+  if (!cluster) 
+  {
     AliInfo("Cluster pointer null!");
     return;
   }  
   
-  //Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+  // Get the cluster number of cells and list of absId, check what kind of cluster do we have.
   UShort_t * index    = cluster->GetCellsAbsId() ;
   Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
   Int_t ncells = cluster->GetNCells();
   
-  //Initialize some used variables
+  // Initialize some used variables
   Float_t energy = 0;
   Int_t   absId  =-1;
   Int_t   icol   =-1, irow =-1, imod=1;
@@ -1307,19 +1311,20 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Int_t   absIdMax = -1;
   Float_t emax     = 0;
   
-  //Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+  // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
   for (Int_t icell = 0; icell < ncells; icell++)
   {
     absId = index[icell];
     frac =  fraction[icell];
     if (frac < 1e-5) frac = 1; //in case of EMCAL, this is set as 0 since unfolding is off
     
-    if (!fCellsRecalibrated && IsRecalibrationOn()) {
+    if (!fCellsRecalibrated && IsRecalibrationOn()) 
+    {
       // Energy  
       Int_t iTower = -1, iIphi = -1, iIeta = -1; 
       geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
       if (fEMCALRecalibrationFactors->GetEntries() <= imod) 
-	continue;
+        continue;
       geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
       factor = GetEMCALChannelRecalibrationFactor(imod,icol,irow);
       
@@ -1330,45 +1335,49 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
     
     energy += cells->GetCellAmplitude(absId)*factor*frac;
     
-    if (emax < cells->GetCellAmplitude(absId)*factor*frac) {
+    if (emax < cells->GetCellAmplitude(absId)*factor*frac) 
+    {
       emax     = cells->GetCellAmplitude(absId)*factor*frac;
       absIdMax = absId;
     }
   }
   
   AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Energy before %f, after %f \n",cluster->E(),energy));
-
+  
   cluster->SetE(energy);
-
+  
   // Recalculate time of cluster
   Double_t timeorg = cluster->GetTOF();
-
+  
   Double_t time = cells->GetCellTime(absIdMax);
   if (!fCellsRecalibrated && IsTimeRecalibrationOn())
     RecalibrateCellTime(absIdMax,bc,time);
   time-=fConstantTimeShift*1e-9; // only in case of Run1 old simulations
   
-  //Recalibrate time with L1 phase 
+  // Recalibrate time with L1 phase 
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn())
     RecalibrateCellTimeL1Phase(imod, bc, time);
-
+  
   cluster->SetTOF(time);
-
+  
   AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Time before %f, after %f \n",timeorg,cluster->GetTOF()));
 }
 
-//_____________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
-                                         Int_t bc)
+///
+/// Recalibrate all the cells time and energy, considering the recalibration map and 
+/// the energy and time of each cell.
+///
+/// \param cells: list of cells
+/// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
+///
+//_______________________________________________________________________
+void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
 {
-  // Recalibrate the cells time and energy, considering the recalibration map and the energy 
-  // of the cells that compose the cluster.
-  // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
-
   if (!IsRecalibrationOn() && !IsTimeRecalibrationOn() && !IsBadChannelsRemovalSwitchedOn()) 
     return;
   
-  if (!cells) {
+  if (!cells) 
+  {
     AliInfo("Cells pointer null!");
     return;
   }  
@@ -1388,34 +1397,43 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells,
     cells->GetCell( iCell, absId, ecellin, tcellin, mclabel, efrac );
     
     accept = AcceptCalibrateCell(absId, bc, ecell ,tcell ,cells); 
-    if (!accept) {
+    if (!accept)
+    {
       ecell = 0;
       tcell = -1;
     }
     
-    //Set new values
+    // Set new values
     cells->SetCell(iCell,absId,ecell, tcell, mclabel, efrac);
   }
 
   fCellsRecalibrated = kTRUE;
 }
 
+///
+/// Recalibrate time of cell from AbsID number considering cell calibration map 
+///
+/// \param absID: cell absolute ID number
+/// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
+/// \param celltime: cell time to be returned calibrated
+///
 //_______________________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & celltime) const
-{
-  // Recalibrate time of cell with absID  considering the recalibration map 
-  // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
-  
-  if (!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0) {
+{  
+  if (!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0) 
     celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId)*1.e-9;    ;  
-  }
 }
-  
+
+///
+/// Recalibrate time of cell from SM number considering the L1 phase shift 
+///
+/// \param iSM: supermodule number
+/// \param bc: bunch crossing number returned by esdevent->GetBunchCrossNumber()
+/// \param celltime: cell time to be returned calibrated
+///
 //_______________________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t & celltime) const
 {
-  // Recalibrate time of cell with absID  considering the recalibration map 
-  // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
   if (!fCellsRecalibrated && IsL1PhaseInTimeRecalibrationOn() && bc >= 0) 
   {
     bc=bc%4;
@@ -1423,6 +1441,7 @@ void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t
     Float_t offsetPerSM=0.;
     Int_t l1PhaseShift = GetEMCALL1PhaseInTimeRecalibrationForSM(iSM);
     Int_t l1Phase=l1PhaseShift & 3; //bit operation
+
     if(bc >= l1Phase)
       offsetPerSM = (bc - l1Phase)*25;
     else
@@ -2473,10 +2492,10 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
 }
 
 
-//------------------------------------------------------------------------------------
 ///
 /// Extrapolate track to EMCAL surface
 ///
+//---------------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                          Double_t emcalR,
                                                          Double_t mass, 
@@ -2507,10 +2526,10 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *
   return kTRUE;
 }
 
-//-----------------------------------------------------------------------------------
 ///
 /// Return the residual by extrapolating a track param to a global position
 ///
+//-----------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, 
                                                      const Float_t *clsPos, 
                                                      Double_t mass, 
@@ -2552,10 +2571,10 @@ Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkP
   return kTRUE;
 }
 
-//----------------------------------------------------------------------------------
 ///
 /// Return the residual by extrapolating a track param to a cluster
 ///
+//----------------------------------------------------------------------------------
 Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, 
                                                     const AliVCluster *cluster, 
                                                     Double_t mass, 
